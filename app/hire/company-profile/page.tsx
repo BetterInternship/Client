@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -28,6 +28,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { usePageTour } from "@/components/PageTourWrapper"
+import { useAuthContext } from "../authctx"
 
 export default function CompanyProfile() {
   const router = useRouter()
@@ -35,13 +36,29 @@ export default function CompanyProfile() {
   // Tour integration
   const { TourButton, ProductTour } = usePageTour('company-profile')
   
+  // Import auth context
+  const { user, logout } = useAuthContext()
+  
   const [companyData, setCompanyData] = useState({
-    name: "Google",
-    description: "Google LLC is an American multinational technology company that specializes in Internet-related services and products, which include online advertising technologies, a search engine, cloud computing, software, and hardware.",
-    locations: ["Legazpi Village, Makati", "BGC, Taguig", "Ortigas, Pasig"],
-    hrEmail: "hr@google.com",
-    phone: "+63 2 8888 9999"
+    name: user?.company_name || "Google",
+    description: user?.company_description || "Google LLC is an American multinational technology company that specializes in Internet-related services and products, which include online advertising technologies, a search engine, cloud computing, software, and hardware. We organize the world's information and make it universally accessible and useful.",
+    locations: user?.company_locations || ["1600 Amphitheatre Parkway, Mountain View, CA", "Legazpi Village, Makati City, Philippines", "Marina One, Singapore"],
+    hrEmail: user?.hr_email || "hr@google.com",
+    phone: user?.phone || "+1 (650) 253-0000"
   })
+
+  // Update company data when user data changes
+  useEffect(() => {
+    if (user) {
+      setCompanyData({
+        name: user.company_name || "Google",
+        description: user.company_description || "Google LLC is an American multinational technology company that specializes in Internet-related services and products, which include online advertising technologies, a search engine, cloud computing, software, and hardware. We organize the world's information and make it universally accessible and useful.",
+        locations: user.company_locations || ["1600 Amphitheatre Parkway, Mountain View, CA", "Legazpi Village, Makati City, Philippines", "Marina One, Singapore"],
+        hrEmail: user.hr_email || "hr@google.com",
+        phone: user.phone || "+1 (650) 253-0000"
+      })
+    }
+  }, [user])
 
   const [newLocation, setNewLocation] = useState("")
   const [isEditing, setIsEditing] = useState(false)
@@ -81,9 +98,9 @@ export default function CompanyProfile() {
     setIsEditing(false)
   }
 
-  const handleLogout = () => {
-    // Clear any stored authentication data (if you add localStorage/sessionStorage later)
-    // localStorage.removeItem('authToken') // Future implementation
+  const handleLogout = async () => {
+    // Use the logout function from auth context
+    await logout()
     
     // Redirect to login page
     router.push('/login')

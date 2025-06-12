@@ -44,8 +44,21 @@ import { useJobs, useJobActions, useProfile } from "@/hooks/useApi"
 import { useAuthContext } from "../authctx"
 import { Application, Job } from "@/lib/api-client"
 import Markdown from 'react-markdown'
+<<<<<<< Updated upstream
+=======
+import { Paginator } from "@/components/ui/paginator"
+import { useIsMobile } from "@/components/ui/use-mobile"
+import MobileSearchPage from "./mobile-page"
+>>>>>>> Stashed changes
 
 export default function SearchPage() {
+  const isMobile = useIsMobile()
+  
+  // Render mobile version for mobile devices
+  if (isMobile) {
+    return <MobileSearchPage />
+  }
+
   const router = useRouter();
   const searchParams = useSearchParams()
   const { isAuthenticated } = useAuthContext()

@@ -43,20 +43,20 @@ import ProductTour from "@/components/ProductTour"
 import TourButton from "@/components/TourButton"
 import { useTourIntegration } from "@/components/useTourIntegration"
 
-// Placeholder data for applicants
+// Fake applicants data for Google
 const applicantsData = [
-  { id: 1, name: "John Doe", school: "DLSU", program: "IT", job: "DevOps", mode: "Full-Time", status: "New" },
-  { id: 2, name: "Jane Smith", school: "DLSU", program: "CS", job: "Frontend Dev", mode: "Part-Time", status: "Rejected" },
-  { id: 3, name: "Mike Johnson", school: "DLSU", program: "IT", job: "Backend Dev", mode: "Full-Time", status: "To Interview" },
-  { id: 4, name: "Sarah Wilson", school: "DLSU", program: "CS", job: "Full Stack", mode: "Full-Time", status: "Offer Sent" },
-  { id: 5, name: "Chris Brown", school: "DLSU", program: "IT", job: "Mobile Dev", mode: "Part-Time", status: "Shortlisted" },
-  { id: 6, name: "Emily Davis", school: "DLSU", program: "CS", job: "UI/UX", mode: "OJT", status: "Hired" },
-  { id: 7, name: "Alex Garcia", school: "DLSU", program: "IT", job: "DevOps", mode: "Full-Time", status: "Interviewing" },
-  { id: 8, name: "Lisa Martinez", school: "DLSU", program: "CS", job: "Data Science", mode: "Part-Time", status: "Offer Declined" },
-  { id: 9, name: "Tom Anderson", school: "DLSU", program: "IT", job: "QA Engineer", mode: "Full-Time", status: "Shortlisted" },
-  { id: 10, name: "Maria Rodriguez", school: "DLSU", program: "CS", job: "DevOps", mode: "OJT", status: "Hired" },
-  { id: 11, name: "Kevin Lee", school: "DLSU", program: "IT", job: "Frontend Dev", mode: "Part-Time", status: "Interviewing" },
-  { id: 12, name: "Anna Taylor", school: "DLSU", program: "CS", job: "Backend Dev", mode: "Full-Time", status: "Offer Declined" },
+  { id: 1, name: "John Chen", school: "Stanford University", program: "Computer Science", job: "Software Engineering Intern", mode: "Full-Time", status: "New" },
+  { id: 2, name: "Sarah Johnson", school: "MIT", program: "Computer Science", job: "Data Science Intern", mode: "Full-Time", status: "Interviewing" },
+  { id: 3, name: "Mike Rodriguez", school: "UC Berkeley", program: "EECS", job: "Software Engineering Intern", mode: "Full-Time", status: "To Interview" },
+  { id: 4, name: "Emily Wang", school: "Carnegie Mellon", program: "Computer Science", job: "Product Management Intern", mode: "Full-Time", status: "Offer Sent" },
+  { id: 5, name: "David Park", school: "Harvard University", program: "Computer Science", job: "UX Design Intern", mode: "Full-Time", status: "Shortlisted" },
+  { id: 6, name: "Lisa Zhang", school: "Cornell University", program: "Information Science", job: "Marketing Analyst Intern", mode: "Full-Time", status: "Hired" },
+  { id: 7, name: "Alex Thompson", school: "University of Washington", program: "Computer Science", job: "Software Engineering Intern", mode: "Full-Time", status: "Interviewing" },
+  { id: 8, name: "Maria Garcia", school: "Georgia Tech", program: "Computer Science", job: "Data Science Intern", mode: "Full-Time", status: "Offer Declined" },
+  { id: 9, name: "James Kim", school: "UCSD", program: "Computer Engineering", job: "Software Engineering Intern", mode: "Full-Time", status: "Shortlisted" },
+  { id: 10, name: "Anna Patel", school: "UT Austin", program: "Computer Science", job: "Product Management Intern", mode: "Full-Time", status: "Hired" },
+  { id: 11, name: "Kevin Liu", school: "Northwestern", program: "Computer Science", job: "UX Design Intern", mode: "Full-Time", status: "Interviewing" },
+  { id: 12, name: "Rachel Brown", school: "Duke University", program: "Computer Science", job: "Marketing Analyst Intern", mode: "Full-Time", status: "Offer Declined" },
 ]
 
 const statusOptions = [
