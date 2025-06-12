@@ -17,7 +17,11 @@ jobs:
           git config --global user.name "neue-dev"
           git config --global user.email "modavid.1964@gmail.com"
 
-      - name: Push to deployment fork
+      - name: Debug line
         run: |
-          git remote add fork https://neue-dev:${{ secrets.DEPLOY_FORK_PAT }}@github.com/neue-dev/Better-Internships-Client.git
-          git push fork main --force
+          echo "Token starts with: ${{ secrets.DEPLOY_FORK_PAT }}"
+
+      # - name: Push to deployment fork
+      #   run: |
+      #     git remote add fork https://neue-dev:${{ secrets.DEPLOY_FORK_PAT }}@github.com/neue-dev/Better-Internships-Client.git
+      #     git push fork main --force
