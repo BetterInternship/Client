@@ -24,8 +24,9 @@ class FetchClient {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.warn(`${url}: ${errorData.message || response.status}`);
-        return { error: errorData.message } as T;
+        const errorMessage = errorData.message || `HTTP error! status: ${response.status}`;
+        console.warn(`${url}: ${errorMessage}`);
+        throw new Error(errorMessage);
       }
 
       const contentType = response.headers.get("content-type");

@@ -333,15 +333,17 @@ export function useApplications(
       setLoading(true);
       setError(null);
       const response = await application_service.get_applications(params);
-      setApplications(response.applications);
+      setApplications(response.applications || []);
       setPagination({
-        totalPages: response.totalPages,
-        currentPage: response.currentPage,
-        total: response.total,
+        totalPages: response.totalPages || 0,
+        currentPage: response.currentPage || 1,
+        total: response.total || 0,
       });
     } catch (err) {
       const errorMessage = handle_api_error(err);
       setError(errorMessage);
+      // Reset applications to empty array on error
+      setApplications([]);
     } finally {
       setLoading(false);
     }

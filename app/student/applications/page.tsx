@@ -35,6 +35,17 @@ import { useAuthContext } from "../authctx"
 export default function ApplicationsPage() {
   const { is_authenticated } = useAuthContext()
   const { applications, loading, error, refetch } = useApplications()
+  
+  // Debug logging
+  useEffect(() => {
+    console.log('Applications Debug:', {
+      applications,
+      applicationsType: typeof applications,
+      applicationsIsArray: Array.isArray(applications),
+      loading,
+      error
+    })
+  }, [applications, loading, error])
   const router = useRouter()
 
   useEffect(() => {
@@ -181,7 +192,7 @@ export default function ApplicationsPage() {
               <div className="flex items-center gap-3 mb-8">
                 <BookA className="w-8 h-8 text-blue-500" />
                 <h1 className="text-3xl font-bold text-gray-900">Applications</h1>
-                {!loading && (
+                {!loading && applications && (
                   <Badge variant="outline" className="ml-2">
                     {applications.length} applications
                   </Badge>
@@ -198,7 +209,7 @@ export default function ApplicationsPage() {
                   <p className="text-red-600 mb-4">Failed to load applications: {error}</p>
                   <Button onClick={refetch}>Try Again</Button>
                 </div>
-              ) : applications.length === 0 ? (
+              ) : !applications || applications.length === 0 ? (
                 <div className="text-center py-12">
                   <BookA className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                   <div className="text-gray-500 text-lg mb-4">No applications yet</div>
@@ -211,7 +222,7 @@ export default function ApplicationsPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {applications.map((application) => (
+                  {applications && applications.map((application) => (
                     <div key={application.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
