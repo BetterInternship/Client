@@ -1,0 +1,18 @@
+name: Sync to Deployment Fork
+
+on:
+  push:
+    branches:
+      - main  # Release branch
+
+jobs:
+  call-fork:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger sync in fork
+        run: |
+          curl -X POST https://api.github.com/repos/neue-dev/Better-Internships-Client/actions/workflows/168126727/dispatches \
+            -H "Authorization: token ${{ secrets.DEPLOY_FORK_PAT }}" \
+            -H "Accept: application/vnd.github+json" \
+            -d '{"ref":"main"}'

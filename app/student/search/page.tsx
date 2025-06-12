@@ -45,10 +45,12 @@ import { useAuthContext } from "../authctx"
 import { Application, Job } from "@/lib/db/db.types"
 import Markdown from 'react-markdown'
 import { Paginator } from "@/components/ui/paginator"
+import { useRefs, RefsAPI } from "@/lib/db/use-refs"
 
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams()
+  const refs = useRefs();
   const { is_authenticated } = useAuthContext()
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
@@ -385,6 +387,7 @@ export default function SearchPage() {
                           job={job}
                           isSelected={selectedJob?.id === job.id}
                           onClick={() => setSelectedJob(job)}
+                          refs={refs}
                         />
                       ))}
                     </div>) : (<div>
@@ -406,6 +409,7 @@ export default function SearchPage() {
                       onSave={handleSave}
                       isSaved={is_saved(selectedJob.id ?? '')}
                       applicationStatus={getApplicationStatus(selectedJob.id ?? '')}
+                      refs={refs}
                     />
                   )}
                 </div>
@@ -819,22 +823,23 @@ function CategoryLink({ icon, label, category }: { icon: React.ReactNode; label:
   )
 }
 
-function getModeIcon(mode: string) {
-  if (!mode) return <Briefcase className="w-3 h-3 mr-1" />
+function getModeIcon(mode: number | null | undefined) {
+  if (!mode && mode !== 0) return <Briefcase className="w-3 h-3 mr-1" />
   
-  const modeStr = mode.toLowerCase()
-  if (modeStr.includes('remote')) {
-    return <Wifi className="w-3 h-3 mr-1" />
-  } else if (modeStr.includes('hybrid')) {
-    return <Globe className="w-3 h-3 mr-1" />
-  } else if (modeStr.includes('in-person') || modeStr.includes('face to face') || modeStr.includes('onsite')) {
-    return <Users2 className="w-3 h-3 mr-1" />
+  switch (mode) {
+    case 0:
+      return <Users2 className="w-3 h-3 mr-1" />
+    case 1:
+      return <Globe className="w-3 h-3 mr-1" />
+    case 2:
+      return <Wifi className="w-3 h-3 mr-1" />
   }
   
   return <Briefcase className="w-3 h-3 mr-1" />
 }
 
-function JobCard({ job, isSelected, onClick }: { job: Job; isSelected: boolean; onClick: () => void }) {
+function JobCard({ job, isSelected, onClick, refs }: { job: Job; isSelected: boolean; onClick: () => void, refs: RefsAPI }) {
+  const { ref_loading, get_job_mode, get_job_type } = refs;
   return (
     <div
       className={`border rounded-lg p-4 cursor-pointer transition-colors ${
@@ -843,31 +848,25 @@ function JobCard({ job, isSelected, onClick }: { job: Job; isSelected: boolean; 
       onClick={onClick}
     >
       <h3 className="font-semibold text-gray-800 mb-1">{job.title}</h3>
-      <p className="text-sm text-gray-600 mb-3">{job.employer.name}</p>
+      <p className="text-sm text-gray-600 mb-3">{job.employer?.name}</p>
 
       <div className="flex flex-wrap gap-2 mb-2">
-        {job.shift && (
-          <Badge variant="outline" className="text-xs">
-            <Clock className="w-3 h-3 mr-1" />
-            {job.shift}
-          </Badge>
-        )}
-        {job.type && (<Badge variant="outline" className="text-xs">
-          {job.type}
-        </Badge>)}
+        {!ref_loading ? job.type && (<Badge variant="outline" className="text-xs">
+          {get_job_type(job.type)?.name}
+        </Badge>) : <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground text-xs" />}
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {job.salary && (
+        {!ref_loading && job.salary && (
           <Badge variant="outline" className="text-xs">
             <PhilippinePeso className="w-3 h-3 mr-1" />
             {job.salary}
           </Badge>
         )}
-        {job.mode && (
+        {!ref_loading && (job.mode !== null && job.mode !== undefined) && (
           <Badge variant="outline" className="text-xs">
             {getModeIcon(job.mode)}
-            {job.mode}
+            {get_job_mode(job.mode)?.name}
           </Badge>
          )}
       </div>
@@ -875,31 +874,19 @@ function JobCard({ job, isSelected, onClick }: { job: Job; isSelected: boolean; 
   )
 }
 
-function getModeIconForDetails(mode: string) {
-  if (!mode) return <Briefcase className="w-4 h-4 text-gray-500" />
+function getModeIconForDetails(mode: number | null | undefined) {
+  if (!mode && mode !== 0) return <Briefcase className="w-4 h-4 text-gray-500" />
   
-  const modeStr = mode.toLowerCase()
-  if (modeStr.includes('remote')) {
-    return <Wifi className="w-4 h-4 text-gray-500" />
-  } else if (modeStr.includes('hybrid')) {
-    return <Globe className="w-4 h-4 text-gray-500" />
-  } else if (modeStr.includes('in-person') || modeStr.includes('face to face') || modeStr.includes('onsite')) {
-    return <Users2 className="w-4 h-4 text-gray-500" />
+  switch (mode) {
+    case 0:
+      return <Users2 className="w-3 h-3 mr-1" />
+    case 1:
+      return <Globe className="w-3 h-3 mr-1" />
+    case 2:
+      return <Wifi className="w-3 h-3 mr-1" />
   }
   
   return <Briefcase className="w-4 h-4 text-gray-500" />
-}
-
-function getEmploymentType(job: Job): string {
-  // Logic to determine employment type based on job data
-  if (job.type) {
-    if (job.type.toLowerCase().includes('intern')) return 'Project Based'
-    if (job.type.toLowerCase().includes('full')) return 'Full-Time'
-    if (job.type.toLowerCase().includes('part')) return 'Part-Time'
-  }
-  
-  // Default fallback - could be based on other job properties
-  return 'Flexible'
 }
 
 function JobDetails({ 
@@ -908,15 +895,18 @@ function JobDetails({
   onSave, 
   isSaved, 
   saving,
-  applicationStatus 
+  applicationStatus,
+  refs
 }: { 
   job: Job
   onApply: () => void
   onSave: (job: Job) => void
   saving: boolean,
   isSaved: boolean
-  applicationStatus?: any
+  applicationStatus?: any,
+  refs: RefsAPI,
 }) {
+  const { get_job_type } = refs;
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -931,11 +921,11 @@ function JobDetails({
         <h1 className="text-xl font-bold text-gray-800 mb-1">{job.title}</h1>
         <div className="flex items-center gap-2 mb-2">
           <Building className="w-4 h-4 text-gray-500" />
-          <p className="text-gray-600">{job.employer.name}</p>
+          <p className="text-gray-600">{job.employer?.name}</p>
         </div>
         <div className="flex items-center gap-2 mb-4">
           <Calendar className="w-4 h-4 text-gray-500" />
-          <p className="text-sm text-gray-500">Listed on {formatDate(job.createdAt)}</p>
+          <p className="text-sm text-gray-500">Listed on {formatDate(job.created_at ?? "")}</p>
         </div>
 
         <div className="flex gap-3">
@@ -1001,7 +991,7 @@ function JobDetails({
             <div>
               <p className="text-sm">
                 <span className="font-medium">Employment Type: </span>
-                <span className="opacity-80">{getEmploymentType(job)}</span>
+                <span className="opacity-80">{get_job_type(job.type)?.name ?? "Not specified"}</span>
               </p>
             </div>
           </div>
@@ -1014,7 +1004,7 @@ function JobDetails({
           <>
             <h3 className="text-lg font-semibold mb-3">Requirements</h3>
             <ul className="list-disc list-inside text-gray-700 mb-6 space-y-1">
-              {job.requirements.map((req: string, index: number) => (
+              {job.requirements?.map((req: string, index: number) => (
                 <li key={index}>{req}</li>
               ))}
             </ul>
@@ -1025,14 +1015,14 @@ function JobDetails({
           <>
             <h3 className="text-lg font-semibold mb-3">Responsibilities</h3>
             <ul className="list-disc list-inside text-gray-700 space-y-1">
-              {job.responsibilities.map((resp: string, index: number) => (
+              {job.responsibilities?.map((resp: string, index: number) => (
                 <li key={index}>{resp}</li>
               ))}
             </ul>
           </>
         )}
 
-        {job.employer.description && (
+        {job.employer?.description && (
           <>
             <h3 className="text-lg font-semibold mb-3 mt-6">About the Company</h3>
             <p className="text-gray-700 leading-relaxed">{job.employer.description}</p>

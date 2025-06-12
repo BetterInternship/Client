@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-10 04:31:46
- * @ Modified time: 2025-06-11 02:05:34
+ * @ Modified time: 2025-06-12 23:04:43
  * @ Description:
  *
  * Accesses refs directly from the database.
@@ -25,6 +25,35 @@ const db_anon_key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 if (!db_url || !db_anon_key)
   throw new Error("[ERROR:ENV] Missing supabase configuration.");
 const db = createClient(db_url ?? "", db_anon_key ?? "");
+
+export interface RefsAPI {
+  ref_loading: boolean;
+
+  levels: Level[];
+  colleges: College[];
+  universities: University[];
+  job_types: JobType[];
+  job_modes: JobMode[];
+  job_allowances: JobAllowance[];
+  job_pay_freq: JobPayFreq[];
+
+  get_level: (id: number) => Level | null;
+  get_college: (id: string) => College | null;
+  get_university: (id: string) => University | null;
+  get_job_type: (id: number) => JobType | null;
+  get_job_mode: (id: number) => JobMode | null;
+  get_job_allowance: (id: number) => JobAllowance | null;
+  get_job_pay_freq: (id: number) => JobPayFreq | null;
+
+  get_level_by_name: (name: string) => Level | null;
+  get_college_by_name: (name: string) => College | null;
+  get_university_by_name: (name: string) => University | null;
+  get_university_by_domain: (name: string) => University | null;
+  get_job_type_by_name: (name: string) => JobType | null;
+  get_job_mode_by_name: (name: string) => JobMode | null;
+  get_job_allowance_by_name: (name: string) => JobAllowance | null;
+  get_job_pay_freq_by_name: (name: string) => JobPayFreq | null;
+}
 
 /**
  * A utility that allows us to create ref hooks from our reference tables.
@@ -100,7 +129,7 @@ const createRefHook = <
  *
  * @returns
  */
-export const useRefs = () => {
+export const useRefs = (): RefsAPI => {
   const [loading, setLoading] = useState(true);
   const {
     data: levels,

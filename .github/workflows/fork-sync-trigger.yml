@@ -1,0 +1,32 @@
+# This is meant to run on the deployment fork
+
+name: Sync Deployment Fork with Upstream
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # Every day at 3AM UTC
+  workflow_dispatch:     # Allows manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Add upstream and fetch
+        run: |
+          git remote add upstream https://github.com/BetterInternship/Client.git
+          git fetch upstream
+          git reset --hard upstream/main
+
+      - name: Push changes to fork
+        run: |
+          git push origin main --force
