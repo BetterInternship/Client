@@ -457,10 +457,20 @@ export const application_service = {
 // Error handling utility
 export const handle_api_error = (error: any) => {
   console.error("API Error:", error);
+  console.error("Error details:", {
+    message: error.message,
+    stack: error.stack,
+    response: error.response
+  });
 
   if (error.message === "Unauthorized") {
     // Already handled by apiClient
-    return;
+    return "Authentication required";
+  }
+
+  // Parse validation errors
+  if (error.message && error.message.includes("Invalid input")) {
+    return "Data validation error: " + error.message;
   }
 
   // You can add more specific error handling here

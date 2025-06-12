@@ -33,9 +33,12 @@ export function useJobs(
       setError(null);
       // Fetch all jobs with a high limit to get everything
       const response = await job_service.get_jobs({ limit: 1000 });
+      console.log('📊 Fetched jobs from API:', response.jobs.length, 'jobs');
+      console.log('📋 Sample job data:', response.jobs[0]);
       setAllJobs(response.jobs);
     } catch (err) {
       const errorMessage = handle_api_error(err);
+      console.error('❌ Failed to fetch jobs:', errorMessage);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -51,37 +54,47 @@ export function useJobs(
     let filtered = [...allJobs];
     const { type, mode, search, location, industry } = params;
 
+    console.log('🔍 Filtering with params:', { type, mode, search, location, industry });
+    console.log('📋 Starting with', allJobs.length, 'jobs');
+
     // Apply type filter
-    if (type && type !== "All types") {
+    if (type && type !== "All types" && type !== "All Job Types") {
+      const beforeCount = filtered.length;
       filtered = filtered.filter(job => {
-        if (type === "Internships") return job.type?.toLowerCase().includes('intern');
+        if (type === "Internships" || type === "Internship") return job.type?.toLowerCase().includes('intern');
         if (type === "Full-time") return job.type?.toLowerCase().includes('full');
         if (type === "Part-time") return job.type?.toLowerCase().includes('part');
         return job.type === type;
       });
+      console.log('🏢 Type filter:', beforeCount, '→', filtered.length, 'jobs');
     }
 
     // Apply mode filter
-    if (mode && mode !== "Any location") {
+    if (mode && mode !== "Any location" && mode !== "Any Location") {
+      const beforeCount = filtered.length;
       filtered = filtered.filter(job => {
-        if (mode === "In-Person") {
+        if (mode === "In-Person" || mode === "Face to Face") {
           return job.mode?.toLowerCase().includes('face to face') || 
                  job.mode?.toLowerCase().includes('in-person') ||
                  job.mode?.toLowerCase().includes('onsite');
         }
         return job.mode?.toLowerCase().includes(mode.toLowerCase());
       });
+      console.log('🌍 Mode filter:', beforeCount, '→', filtered.length, 'jobs');
     }
 
     // Apply industry filter
     if (industry && industry !== "All industries") {
+      const beforeCount = filtered.length;
       filtered = filtered.filter(job => {
         return job.company?.industry?.toLowerCase().includes(industry.toLowerCase());
       });
+      console.log('🏢 Industry filter:', beforeCount, '→', filtered.length, 'jobs');
     }
 
     // Apply search filter
     if (search && search.trim()) {
+      const beforeCount = filtered.length;
       const searchLower = search.toLowerCase().trim();
       filtered = filtered.filter(job => {
         // Search in multiple fields
@@ -98,15 +111,19 @@ export function useJobs(
         
         return searchableText.includes(searchLower);
       });
+      console.log('🔎 Search filter:', beforeCount, '→', filtered.length, 'jobs');
     }
 
     // Apply location filter
     if (location && location.trim()) {
+      const beforeCount = filtered.length;
       filtered = filtered.filter(job => 
         job.location?.toLowerCase().includes(location.toLowerCase())
       );
+      console.log('📍 Location filter:', beforeCount, '→', filtered.length, 'jobs');
     }
 
+    console.log('✅ Final filtered jobs:', filtered.length);
     return filtered;
   }, [allJobs, params]);
 

@@ -25,13 +25,8 @@ import ProfileButton from "@/components/student/profile-button"
 
 export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState("")
-<<<<<<< Updated upstream
-  const [jobTypeFilter, setJobTypeFilter] = useState("Internships")
-  const [locationFilter, setLocationFilter] = useState("Face to Face")
-=======
   const [jobTypeFilter, setJobTypeFilter] = useState("All Job Types")
   const [locationFilter, setLocationFilter] = useState("Any location")
->>>>>>> Stashed changes
   const [activeFilter, setActiveFilter] = useState("");
   const router = useRouter()
   const justBetterRef = useRef<HTMLSpanElement>(null);

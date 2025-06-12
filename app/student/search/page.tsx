@@ -44,21 +44,12 @@ import { useJobs, useJobActions, useProfile } from "@/hooks/useApi"
 import { useAuthContext } from "../authctx"
 import { Application, Job } from "@/lib/api-client"
 import Markdown from 'react-markdown'
-<<<<<<< Updated upstream
-=======
 import { Paginator } from "@/components/ui/paginator"
 import { useIsMobile } from "@/components/ui/use-mobile"
-import MobileSearchPage from "./mobile-page"
->>>>>>> Stashed changes
 
 export default function SearchPage() {
   const isMobile = useIsMobile()
   
-  // Render mobile version for mobile devices
-  if (isMobile) {
-    return <MobileSearchPage />
-  }
-
   const router = useRouter();
   const searchParams = useSearchParams()
   const { isAuthenticated } = useAuthContext()
@@ -76,6 +67,7 @@ export default function SearchPage() {
   const [showApplicationModal, setShowApplicationModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [showFilterModal, setShowFilterModal] = useState(false)
+  const [showMobileJobModal, setShowMobileJobModal] = useState(false) // New state for mobile job details modal
   const [lastApplication, setLastApplication] = useState<Partial<Application>>({})
   const [applying, setApplying] = useState(false)
   const [autoCloseProgress, setAutoCloseProgress] = useState(100)
@@ -304,6 +296,386 @@ export default function SearchPage() {
           <p className="text-red-600 mb-4">Failed to load jobs: {jobs_error}</p>
           <Button onClick={refetch}>Try Again</Button>
         </div>
+      </div>
+    )
+  }
+
+  // Mobile Layout
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-white pb-20">
+        {/* Mobile Header */}
+        <header className="bg-white border-b px-4 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-lg font-semibold text-black">Job Search</h1>
+            <ProfileButton />
+          </div>
+          
+          {/* Mobile Search Bar */}
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Search jobs..."
+                className="pl-10 w-full h-12 bg-white border border-gray-300 rounded-lg"
+              />
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowFilterModal(true)}
+              className="h-12 px-3 bg-blue-600 hover:bg-blue-700 border-blue-600 text-white"
+            >
+              <Filter className="h-4 w-4" />
+            </Button>
+          </div>
+        </header>
+
+        {/* Mobile Job List */}
+        <div className="p-4">
+          {jobs_loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading jobs...</p>
+              </div>
+            </div>
+          ) : jobs.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              <p>No jobs found</p>
+              <p className="text-sm mt-2">Try adjusting your search criteria</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {jobs.map((job) => (
+                <MobileJobCard
+                  key={job.id}
+                  job={job}
+                  onClick={() => {
+                    setSelectedJob(job)
+                    setShowMobileJobModal(true)
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Mobile Job Details Modal */}
+        <AnimatePresence>
+          {showMobileJobModal && selectedJob && (
+            <motion.div 
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              onClick={() => setShowMobileJobModal(false)}
+            >
+              <motion.div 
+                className="bg-white rounded-t-2xl w-full max-h-[90vh] overflow-hidden"
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Modal Header */}
+                <div className="flex items-center justify-between p-4 border-b">
+                  <h2 className="text-lg font-semibold">Job Details</h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowMobileJobModal(false)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
+
+                {/* Modal Content */}
+                <div className="overflow-y-auto max-h-[calc(90vh-4rem)]">
+                  <MobileJobDetails 
+                    job={selectedJob} 
+                    onApply={handleApply} 
+                    onSave={handleSave}
+                    isSaved={isSaved(selectedJob.id)}
+                    applicationStatus={getApplicationStatus(selectedJob.id)}
+                    onClose={() => setShowMobileJobModal(false)}
+                  />
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Mobile Modals (reuse existing ones) */}
+        {/* Application Modal */}
+        <AnimatePresence>
+          {showApplicationModal && (
+            <motion.div 
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <motion.div 
+                className="bg-white rounded-lg w-11/12 max-w-md p-6"
+                initial={{ scale: 0.8, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.8, opacity: 0, y: 20 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-bold">Apply to {selectedJob?.title}</h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowApplicationModal(false)}
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
+
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <h3 className="font-medium text-orange-800 mb-2">Missing Job Requirements</h3>
+                      <p className="text-sm text-orange-700 mb-3">
+                        This job requires additional profile information:
+                      </p>
+                      <ul className="text-sm text-orange-700 list-disc list-inside mb-4">
+                        {getMissingJobRequirements().map((field, index) => (
+                          <li key={index}>{field}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={() => {
+                    setShowApplicationModal(false)
+                    router.push('/profile')
+                  }}
+                  className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Update Profile
+                </Button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Success Modal */}
+        <AnimatePresence>
+          {showSuccessModal && (
+            <motion.div 
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <motion.div 
+                className="bg-white rounded-2xl w-11/12 max-w-md mx-4 shadow-2xl overflow-hidden"
+                initial={{ scale: 0.5, opacity: 0, y: 50 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.5, opacity: 0, y: 50 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex justify-between items-center p-6 pb-0">
+                  <div></div>
+                  <motion.button
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    onClick={() => setShowSuccessModal(false)}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <X className="h-5 w-5 text-gray-400" />
+                  </motion.button>
+                </div>
+
+                <div className="px-6 pb-8 text-center">
+                  <motion.div 
+                    className="mb-6"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.5 }}
+                  >
+                    <motion.div 
+                      className="w-20 h-20 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center"
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ delay: 0.3, duration: 0.6, type: "spring", bounce: 0.5 }}
+                    >
+                      <CheckCircle className="w-10 h-10 text-green-600" />
+                    </motion.div>
+
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                      Application Sent!
+                    </h2>
+                    
+                    <p className="text-gray-600 mb-6 leading-relaxed">
+                      Your application for <span className="font-semibold text-gray-800">{selectedJob?.title}</span> has been successfully submitted.
+                    </p>
+
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                      <p className="text-sm text-blue-800">
+                        💼 Check <span className="font-semibold">My Applications</span> to keep track of all your submissions and updates.
+                      </p>
+                    </div>
+                  </motion.div>
+
+                  <Button 
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors"
+                    onClick={() => {
+                      setShowSuccessModal(false)
+                      router.push('/applications')
+                    }}
+                  >
+                    <Clipboard className="w-4 h-4 mr-2" />
+                    View My Applications
+                  </Button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Filter Modal */}
+        <AnimatePresence>
+          {showFilterModal && (
+            <motion.div 
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setActiveFilter("")}
+            >
+              <motion.div 
+                className="bg-white rounded-2xl w-full max-w-lg p-8 shadow-2xl"
+                initial={{ scale: 0.8, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.8, opacity: 0, y: 20 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex justify-between items-center mb-8">
+                  <h2 className="text-2xl font-bold text-gray-900">Filter Jobs</h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowFilterModal(false)}
+                    className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+                  >
+                    <X className="h-5 w-5 text-gray-500" />
+                  </Button>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">Job Type</label>
+                    <div className="relative">
+                      <button
+                        onClick={() => setActiveFilter(activeFilter === "jobType" ? "" : "jobType")}
+                        className="w-full h-14 px-4 pr-10 border-2 border-gray-200 rounded-xl bg-white text-left text-gray-700 font-medium transition-all duration-200 cursor-pointer hover:border-gray-300"
+                      >
+                        {tempJobTypeFilter}
+                      </button>
+                      <ChevronDown className={`absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 transition-transform duration-200 ${activeFilter === "jobType" ? "rotate-180" : ""}`} />
+                      
+                      {activeFilter === "jobType" && (
+                        <div className="absolute top-full mt-1 w-full bg-white border-2 border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden">
+                          {["All types", "Internships", "Full-time", "Part-time"].map((option) => (
+                            <button
+                              key={option}
+                              onClick={() => {
+                                setTempJobTypeFilter(option)
+                                setActiveFilter("")
+                              }}
+                              className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors duration-150 ${
+                                tempJobTypeFilter === option ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-700"
+                              }`}
+                            >
+                              {option}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">Work Mode</label>
+                    <div className="relative">
+                      <button
+                        onClick={() => setActiveFilter(activeFilter === "workMode" ? "" : "workMode")}
+                        className="w-full h-14 px-4 pr-10 border-2 border-gray-200 rounded-xl bg-white text-left text-gray-700 font-medium transition-all duration-200 cursor-pointer hover:border-gray-300"
+                      >
+                        {tempLocationFilter}
+                      </button>
+                      <ChevronDown className={`absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 transition-transform duration-200 ${activeFilter === "workMode" ? "rotate-180" : ""}`} />
+                      
+                      {activeFilter === "workMode" && (
+                        <div className="absolute top-full mt-1 w-full bg-white border-2 border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden">
+                          {["Any location", "In-Person", "Remote", "Hybrid"].map((option) => (
+                            <button
+                              key={option}
+                              onClick={() => {
+                                setTempLocationFilter(option)
+                                setActiveFilter("")
+                              }}
+                              className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors duration-150 ${
+                                tempLocationFilter === option ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-700"
+                              }`}
+                            >
+                              {option}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4 pt-6">
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        setTempJobTypeFilter("All types")
+                        setTempLocationFilter("Any location")
+                        setTempIndustryFilter("All industries")
+                      }}
+                      className="flex-1 h-12 border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all duration-200"
+                    >
+                      Clear Filters
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        setJobTypeFilter(tempJobTypeFilter)
+                        setLocationFilter(tempLocationFilter)
+                        setIndustryFilter(tempIndustryFilter)
+                        setShowFilterModal(false)
+                      }}
+                      className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                    >
+                      Apply Filters
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     )
   }
@@ -827,6 +1199,181 @@ function CategoryLink({ icon, label, category }: { icon: React.ReactNode; label:
       <div className="border rounded-full p-2 bg-white flex-shrink-0">{icon}</div>
       <span className="truncate">{label}</span>
     </Link>
+  )
+}
+
+// Mobile-specific components
+function MobileJobCard({ job, onClick }: { job: Job; onClick: () => void }) {
+  return (
+    <div
+      className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+      onClick={onClick}
+    >
+      <div className="flex justify-between items-start mb-2">
+        <h3 className="font-semibold text-gray-800 text-lg">{job.title}</h3>
+        <div className="text-gray-400">
+          <ChevronDown className="w-5 h-5 rotate-[-90deg]" />
+        </div>
+      </div>
+      
+      <div className="flex items-center gap-2 mb-3">
+        <Building className="w-4 h-4 text-gray-500" />
+        <p className="text-gray-600 font-medium">{job.company.name}</p>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-3">
+        {job.type && (
+          <Badge variant="outline" className="text-xs">
+            {job.type}
+          </Badge>
+        )}
+        {job.mode && (
+          <Badge variant="outline" className="text-xs">
+            {getModeIcon(job.mode)}
+            {job.mode}
+          </Badge>
+        )}
+        {job.salary && (
+          <Badge variant="outline" className="text-xs">
+            <PhilippinePeso className="w-3 h-3 mr-1" />
+            {job.salary}
+          </Badge>
+        )}
+      </div>
+
+      <div className="flex items-center gap-2 text-sm text-gray-500">
+        <MapPin className="w-4 h-4" />
+        <span>{job.location}</span>
+      </div>
+    </div>
+  )
+}
+
+function MobileJobDetails({ 
+  job, 
+  onApply, 
+  onSave, 
+  isSaved, 
+  applicationStatus,
+  onClose 
+}: { 
+  job: Job
+  onApply: () => void
+  onSave: (job: Job) => void
+  isSaved: boolean
+  applicationStatus?: any
+  onClose: () => void
+}) {
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  }
+
+  return (
+    <div className="p-4">
+      {/* Job Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">{job.title}</h1>
+        <div className="flex items-center gap-2 mb-2">
+          <Building className="w-5 h-5 text-gray-500" />
+          <p className="text-gray-600 text-lg font-medium">{job.company.name}</p>
+        </div>
+        <div className="flex items-center gap-2 mb-4">
+          <Calendar className="w-4 h-4 text-gray-500" />
+          <p className="text-sm text-gray-500">Listed on {formatDate(job.createdAt)}</p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-3 mb-6">
+          {applicationStatus ? (
+            <Button disabled className="flex-1 bg-green-600 text-white h-12">
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Applied ({applicationStatus.status})
+            </Button>
+          ) : (
+            <Button className="flex-1 bg-blue-600 hover:bg-blue-700 h-12" onClick={onApply}>
+              Apply Now
+            </Button>
+          )}
+          
+          <Button 
+            variant="outline" 
+            onClick={() => onSave(job)}
+            className={`h-12 px-6 ${
+              isSaved ? "bg-red-50 border-red-200 text-red-600" : ""
+            }`}
+          >
+            <Heart className={`w-4 h-4 mr-2 ${isSaved ? "fill-current" : ""}`} />
+            {isSaved ? "Saved" : "Save"}
+          </Button>
+        </div>
+      </div>
+
+      {/* Job Details Grid */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold mb-4">Job Details</h2>
+        
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+            <MapPin className="w-5 h-5 text-gray-500" />
+            <div>
+              <p className="font-medium text-sm">Location</p>
+              <p className="text-gray-600">{job.location}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+            {getModeIconForDetails(job.mode)}
+            <div>
+              <p className="font-medium text-sm">Work Mode</p>
+              <p className="text-gray-600">{job.mode || "Not specified"}</p>
+            </div>
+          </div>
+
+          {job.salary && (
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <PhilippinePeso className="w-5 h-5 text-gray-500" />
+              <div>
+                <p className="font-medium text-sm">Salary</p>
+                <p className="text-gray-600">{job.salary}</p>
+              </div>
+            </div>
+          )}
+
+          {job.type && (
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <Briefcase className="w-5 h-5 text-gray-500" />
+              <div>
+                <p className="font-medium text-sm">Employment Type</p>
+                <p className="text-gray-600">{job.type}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Job Description */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold mb-4">Job Description</h2>
+        <div className="prose max-w-none text-gray-700">
+          <Markdown>{job.description}</Markdown>
+        </div>
+      </div>
+
+      {/* Close Button */}
+      <div className="pt-4 border-t">
+        <Button 
+          variant="outline" 
+          onClick={onClose}
+          className="w-full h-12"
+        >
+          Close
+        </Button>
+      </div>
+    </div>
   )
 }
 
