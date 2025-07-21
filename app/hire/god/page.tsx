@@ -76,7 +76,7 @@ export default function GodLandingPage() {
     <div className="w-full h-[90vh] overflow-hidden">
       <TabGroup>
         <Tab name="verified employers">
-          <div className="absolute flex flex-row items-center gap-4 w-full px-4 py-4 bg-gray-900">
+          <div className="absolute flex flex-row items-center gap-4 w-full px-4 py-4 bg-gray-900 z-50">
             <Autocomplete
               setter={set_search_name}
               options={employers.data.map((e) => e.name ?? "")}
@@ -143,7 +143,7 @@ export default function GodLandingPage() {
         </Tab>
 
         <Tab name="unverified employers">
-          <div className="absolute flex flex-row iterms-center gap-4 w-full px-4 py-4 bg-gray-900">
+          <div className="absolute flex flex-row iterms-center gap-4 w-full px-4 py-4 bg-gray-900 z-50">
             <Autocomplete
               setter={set_search_name}
               options={employers.data.map((e) => e.name ?? "")}
@@ -211,7 +211,7 @@ export default function GodLandingPage() {
         </Tab>
 
         <Tab name="students">
-          <div className="absolute flex flex-row items-center gap-4 w-full px-4 py-4 bg-gray-900">
+          <div className="absolute flex flex-row items-center gap-4 w-full px-4 py-4 bg-gray-900 z-50">
             <Autocomplete
               setter={set_search_name}
               options={users.map((u) => getFullName(u) ?? "")}
@@ -290,7 +290,7 @@ export default function GodLandingPage() {
         </Tab>
 
         <Tab name="applications">
-          <div className="absolute w-full px-4 py-4 bg-gray-900">
+          <div className="absolute w-full px-4 py-4 bg-gray-900 z-50">
             <Autocomplete
               setter={set_search_name}
               options={applications.map(

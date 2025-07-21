@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-07-11 17:06:17
- * @ Modified time: 2025-07-13 09:49:07
+ * @ Modified time: 2025-07-21 20:44:25
  * @ Description:
  *
  * Used by student users for managing conversation state.
@@ -27,21 +27,26 @@ export const useConversation = (
   conversationId?: string
 ) => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [employerId, setEmployerId] = useState("");
+  const [senderId, setSenderId] = useState("");
   const [loading, setLoading] = useState(true);
   const { pb, user } = usePocketbase(type);
 
   useEffect(() => {
     let unsubscribe = () => {};
 
-    if (!user || !conversationId || !conversationId.trim().length)
+    if (!user || !conversationId || !conversationId.trim().length) {
+      setMessages([]);
+      setSenderId("");
       return () => unsubscribe();
+    }
 
     // Pull messages first
     pb.collection("conversations")
       .getOne(conversationId)
       .then((conversation) => {
-        setEmployerId(conversation.employer_id);
+        setSenderId(
+          conversation.subscribers.find((id: string) => id !== user.id)
+        );
         setMessages(conversation.contents);
       });
 
@@ -64,7 +69,7 @@ export const useConversation = (
 
   return {
     messages,
-    employerId,
+    senderId,
     loading,
   };
 };
@@ -78,34 +83,39 @@ export const useConversations = (type: "user" | "employer") => {
     if (!user) return () => unsubscribe();
 
     // Pull all convos first
-    pb.collection("notifications")
-      .getOne(user.id)
-      .then((notification) => {
-        const conversations = Object.keys(notification.conversations).map(
-          (id) => ({
-            id,
-            ...notification.conversations[id],
+    pb.collection("users")
+      .getOne(user.id, {
+        expand: "conversations",
+        fields: "*,expand.conversations.id,expand.conversations.subscribers",
+      })
+      .then((subscriber) => {
+        const conversations = subscriber.expand?.conversations.map(
+          (conversation: any) => ({
+            ...conversation,
+            last_unread: subscriber.last_unreads[conversation.id],
           })
         );
         setConversations(conversations);
       });
 
     // Subscribe to notifications
-    pb.collection("notifications")
+    pb.collection("users")
       .subscribe(
         "*",
         function (e) {
-          const notification = e.record;
-          const conversations = Object.keys(notification.conversations).map(
-            (id) => ({
-              id,
-              ...notification.conversations[id],
+          const subscriber = e.record;
+          const conversations = subscriber.expand?.conversations.map(
+            (conversation: any) => ({
+              ...conversation,
+              last_unread: subscriber.last_unreads[conversation.id],
             })
           );
           setConversations(conversations);
         },
         {
           filter: `id = '${user.id}'`,
+          expand: "conversations",
+          fields: "*,expand.conversations.id,expand.conversations.subscribers",
         }
       )
       .then((u) => (unsubscribe = u));

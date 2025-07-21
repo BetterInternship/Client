@@ -6,6 +6,7 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { useQueryClient } from "@tanstack/react-query";
+import { usePocketbase } from "./pocketbase";
 
 interface IAuthContext {
   register: (
@@ -50,6 +51,7 @@ export const AuthContextProvider = ({
   children: React.ReactNode;
 }) => {
   const router = useRouter();
+  const pocketbase = usePocketbase("user");
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -66,6 +68,7 @@ export const AuthContextProvider = ({
       return null;
     }
 
+    pocketbase.refresh();
     setIsAuthenticated(true);
     setIsLoading(false);
     return response.user;
@@ -119,6 +122,7 @@ export const AuthContextProvider = ({
   };
 
   const logout = async () => {
+    pocketbase.logout();
     AuthService.logout();
     setIsAuthenticated(false);
   };
