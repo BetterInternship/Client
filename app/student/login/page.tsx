@@ -129,7 +129,7 @@ export default function LoginPage() {
               </div>
             </form>
             <Button
-              type="submit"
+              onClick={handleSubmit}
               className="w-full h-12 bg-black hover:bg-gray-800 text-white transition-colors cursor-pointer mt-4"
             >
               {loading ? "Checking..." : "Continue"}
