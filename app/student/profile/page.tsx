@@ -1,5 +1,6 @@
 "use client";
 
+import Select from "react-select"
 import {
   useState,
   useEffect,
@@ -56,6 +57,7 @@ import {
 } from "@/lib/utils/name-utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
+import { Autocomplete } from "@/components/ui/autocomplete";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
@@ -365,7 +367,7 @@ const ProfileEditor = forwardRef<
   // Provide an external link to save profile
   useImperativeHandle(ref, () => ({
     save: async () => {
-      validateFormData();
+      await validateFormData();
       const hasErrors = Object.values(formErrors).some((err) => !!err);
       if (hasErrors) {
         return false;
@@ -455,7 +457,52 @@ const ProfileEditor = forwardRef<
       (link: string) =>
         !isValidOptionalCalendarURL(link) && "Invalid calendar link."
     );
-  }, []);
+
+    addValidator(
+      "university",
+      (id: string) =>
+        !universityOptions.some((u) => u.id === id) && "Select a valid university."
+    );
+    addValidator(
+      "college",
+      (id: string) =>
+        !collegeOptions.some((c) => c.id === id) && "Select a valid college."
+    );
+    addValidator(
+      "department",
+      (id: string) =>
+        !departmentOptions.some((d) => d.id === id) && "Select a valid department."
+    );
+    addValidator(
+      "degree",
+      (id: string) =>
+        !degreeOptions.some((d) => d.id === id) && "Select a valid degree."
+    );
+    addValidator(
+      "year_level",
+      (id: string) =>
+        !id || !levels.some((l) => l.id === Number(id)) ? "Select a valid year level." : ""
+    );
+  }, [universityOptions, collegeOptions, departmentOptions, degreeOptions, levels]);
+
+  const [showCalendarHelp, setShowCalendarHelp] = useState(false);
+  const helpBtnRef = useRef<HTMLButtonElement>(null);
+  const helpPopupRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showCalendarHelp) return;
+    function handleClick(e: MouseEvent) {
+      if (
+        helpBtnRef.current?.contains(e.target as Node) ||
+        helpPopupRef.current?.contains(e.target as Node)
+      ) {
+        return;
+      }
+      setShowCalendarHelp(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [showCalendarHelp]);
 
   return (
     <>
@@ -519,39 +566,84 @@ const ProfileEditor = forwardRef<
         <div className="text-2xl tracking-tight font-medium text-gray-700 my-6">
           Educational Background
         </div>
-        <div className="flex flex-col space-y-3">
-          <FormDropdown
-            label={"University"}
-            value={formData.university ?? ""}
-            options={universityOptions}
-            setter={fieldSetter("university")}
-          />
-          <FormDropdown
-            label={"College"}
-            value={formData.college ?? ""}
-            options={collegeOptions}
-            setter={fieldSetter("college")}
-          />
-          <FormDropdown
-            label={"Department"}
-            value={formData.department ?? ""}
-            options={departmentOptions}
-            setter={fieldSetter("department")}
-          />
-          <FormDropdown
-            label={"Degree"}
-            value={formData.degree ?? ""}
-            options={degreeOptions}
-            setter={fieldSetter("degree")}
-          />
-          <FormDropdown
-            label="Year Level"
-            value={formData.year_level ?? ""}
-            options={levels}
-            setter={fieldSetter("year_level")}
-          />
+        <div className="flex flex-col space-y-3 w-full ">
+          <div>
+            <div className="text-sm font-medium text-gray-700 mb-1">University</div>
+            <ErrorLabel value={formErrors.university} />
+            <Autocomplete
+              options={universityOptions.map((u) => u.name)}
+              value={
+                universityOptions.find((u) => u.id === formData.university)?.name || ""
+              }
+              setter={(val) => {
+                const uni = universityOptions.find((u) => u.name === val);
+                fieldSetter("university")(uni ? uni.id : "");
+              }}
+              placeholder="Select University"
+            />
+          </div>
+          <div>
+            <div className="text-sm font-medium text-gray-700 mb-1">College</div>
+            <ErrorLabel value={formErrors.college} />
+            <Autocomplete
+              options={collegeOptions.map((c) => c.name)}
+              value={
+                collegeOptions.find((c) => c.id === formData.college)?.name || ""
+              }
+              setter={(val) => {
+                const col = collegeOptions.find((c) => c.name === val);
+                fieldSetter("college")(col ? col.id : "");
+              }}
+              placeholder="Select College"
+            />
+          </div>
+          <div>
+            <div className="text-sm font-medium text-gray-700 mb-1">Department</div>
+            <ErrorLabel value={formErrors.department} />
+            <Autocomplete
+              options={departmentOptions.map((d) => d.name)}
+              value={
+                departmentOptions.find((d) => d.id === formData.department)?.name || ""
+              }
+              setter={(val) => {
+                const dep = departmentOptions.find((d) => d.name === val);
+                fieldSetter("department")(dep ? dep.id : "");
+              }}
+              placeholder="Select Department"
+            />
+          </div>
+          <div>
+            <div className="text-sm font-medium text-gray-700 mb-1">Degree</div>
+            <ErrorLabel value={formErrors.degree} />
+            <Autocomplete
+              options={degreeOptions.map((d) => d.name)}
+              value={
+                degreeOptions.find((d) => d.id === formData.degree)?.name || ""
+              }
+              setter={(val) => {
+                const deg = degreeOptions.find((d) => d.name === val);
+                fieldSetter("degree")(deg ? deg.id : "");
+              }}
+              placeholder="Select Degree"
+            />
+          </div>
+          <div>
+            <div className="text-sm font-medium text-gray-700 mb-1">Year Level</div>
+            <ErrorLabel value={formErrors.year_level} />
+            <Autocomplete
+              options={levels.map((l) => l.name)}
+              value={
+                levels.find((l) => l.id === formData.year_level)?.name || ""
+              }
+              setter={(val) => {
+                const lvl = levels.find((l) => l.name === val);
+                fieldSetter("year_level")(lvl ? lvl.id : "");
+              }}
+              placeholder="Select Year Level"
+            />
+          </div>
           <FormInput
-            label={"Degree Notes"}
+            label={"Major/Minor degree"}
             value={formData.degree_notes ?? ""}
             setter={fieldSetter("degree_notes")}
             maxLength={100}
@@ -605,21 +697,47 @@ const ProfileEditor = forwardRef<
             setter={fieldSetter("linkedin_link")}
             required={false}
           />
-          <div className="relative">
-            <div className="absolute ml-24">
-              <Link
-                href="https://www.canva.com/design/DAGrKQdRG-8/XDGzebwKdB4CMWLOszcheg/edit"
-                target="_blank"
-                className="opacity-70 hover:opacity-90"
+          <div className="relative flex flex-col">
+            <div className="flex items-center mb-1">
+              <span className="text-sm font-medium text-gray-700">
+                Calendar Link <span className="text-red-500">*</span>
+              </span>
+              <button
+                type="button"
+                ref={helpBtnRef}
+                className="ml-2 opacity-70 hover:opacity-90"
+                onClick={() => setShowCalendarHelp((v) => !v)}
+                tabIndex={-1}
               >
                 <MessageCircleQuestion className="w-4 h-4 text-blue-500" />
-              </Link>
+              </button>
             </div>
             <FormInput
-              label={"Calendar Link"}
+              label={undefined}
               value={formData.calendar_link ?? ""}
               setter={fieldSetter("calendar_link")}
             />
+            {showCalendarHelp && (
+              <div
+                ref={helpPopupRef}
+                className="absolute left-0 top-full mt-2 w-full bg-gray-100 border border-gray-300 rounded p-3 text-xs text-gray-700 shadow z-10"
+              >
+                Go to <b>calendar.google.com</b>, press the <b>+</b> icon, and set
+                up an appointment schedule to get this link.
+                <br />
+                <br />
+                If you need help, you can head to{" "}
+                <a
+                  href="https://www.canva.com/design/DAGrKQdRG-8/XDGzebwKdB4CMWLOszcheg/edit"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline"
+                >
+                  this link
+                </a>
+                .
+              </div>
+            )}
           </div>
         </div>
       </Card>
