@@ -1,14 +1,15 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-07-11 17:06:17
- * @ Modified time: 2025-07-21 20:44:25
+ * @ Modified time: 2025-07-21 23:57:39
  * @ Description:
  *
  * Used by student users for managing conversation state.
  */
 
+import { APIClient, APIRoute } from "@/lib/api/api-client";
 import { usePocketbase } from "@/lib/pocketbase";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface Message {
   sender_id: string;
@@ -31,6 +32,15 @@ export const useConversation = (
   const [loading, setLoading] = useState(true);
   const { pb, user } = usePocketbase(type);
 
+  const seenConversation = useCallback(async () => {
+    if (!conversationId) return;
+    const route =
+      type === "employer"
+        ? APIRoute("conversations").r("read", "hire", conversationId).build()
+        : APIRoute("conversations").r("read", conversationId).build();
+    await APIClient.post(route);
+  }, [conversationId]);
+
   useEffect(() => {
     let unsubscribe = () => {};
 
@@ -43,20 +53,22 @@ export const useConversation = (
     // Pull messages first
     pb.collection("conversations")
       .getOne(conversationId)
-      .then((conversation) => {
+      .then(async (conversation) => {
         setSenderId(
           conversation.subscribers.find((id: string) => id !== user.id)
         );
         setMessages(conversation.contents);
+        await seenConversation();
       });
 
     // Subscribe to messages
     pb.collection("conversations")
       .subscribe(
         "*",
-        function (e) {
+        async (e) => {
           const conversation = e.record;
           setMessages(conversation.contents);
+          await seenConversation();
         },
         {
           filter: `id = '${conversationId}'`,
