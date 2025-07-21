@@ -2,7 +2,7 @@
 import { useConversation, useConversations } from "@/hooks/use-conversation";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Card } from "@/components/ui/our-card";
-import { Conversation, Employer } from "../../../lib/db/db.types";
+import { Employer } from "../../../lib/db/db.types";
 import { EmployerPfp } from "@/components/shared/pfp";
 import { ChevronRight, SendHorizonal } from "lucide-react";
 import { cn } from "@/lib/utils";
