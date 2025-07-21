@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-07-11 17:06:17
- * @ Modified time: 2025-07-21 18:10:11
+ * @ Modified time: 2025-07-21 20:44:25
  * @ Description:
  *
  * Used by student users for managing conversation state.
@@ -83,9 +83,18 @@ export const useConversations = (type: "user" | "employer") => {
     if (!user) return () => unsubscribe();
 
     // Pull all convos first
-    pb.collection("conversations")
-      .getFullList({ filter: `subscribers ~ '${user.id}'` })
-      .then((conversations) => {
+    pb.collection("users")
+      .getOne(user.id, {
+        expand: "conversations",
+        fields: "*,expand.conversations.id,expand.conversations.subscribers",
+      })
+      .then((subscriber) => {
+        const conversations = subscriber.expand?.conversations.map(
+          (conversation: any) => ({
+            ...conversation,
+            last_unread: subscriber.last_unreads[conversation.id],
+          })
+        );
         setConversations(conversations);
       });
 
@@ -95,16 +104,18 @@ export const useConversations = (type: "user" | "employer") => {
         "*",
         function (e) {
           const subscriber = e.record;
-          const conversations = Object.keys(subscriber.last_unreads).map(
-            (id) => ({
-              id,
-              ...subscriber.last_unreads[id],
+          const conversations = subscriber.expand?.conversations.map(
+            (conversation: any) => ({
+              ...conversation,
+              last_unread: subscriber.last_unreads[conversation.id],
             })
           );
           setConversations(conversations);
         },
         {
           filter: `id = '${user.id}'`,
+          expand: "conversations",
+          fields: "*,expand.conversations.id,expand.conversations.subscribers",
         }
       )
       .then((u) => (unsubscribe = u));
