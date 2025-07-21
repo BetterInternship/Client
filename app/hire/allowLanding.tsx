@@ -1,7 +1,7 @@
 "use client"
 
 import { usePathname } from "next/navigation";
-import Header from "@/components/features/student/header";
+import Header from "@/components/features/hire/header";
 import { Footer } from "@/components/shared/footer";
 
 export default function AllowLanding({ children }: { children: React.ReactNode }) {

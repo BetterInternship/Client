@@ -1,39 +1,45 @@
-"use client";
+import { Features } from "@/components/landingHire/sections/3rdSection/feature-section";
 
-import { FeatureSteps } from "@/components/landingStudent/sections/3rdSection/feature-section";
+import { Brain, BrainCog } from "lucide-react";
 
 const features = [
 	{
-		step: "Step 1",
+		id: 1,
+		icon: BrainCog,
 		title: "Calendar Integration",
-		content:
+		description:
 			"See student availability instantly and book interviews in seconds—no more email back-and-forth.",
 		image: "/landingPage/2ndSec/popimage3.png",
 	},
 	{
-		step: "Step 2",
+		id: 2,
+		icon: BrainCog,
 		title: "Automated Paperwork",
-		content: "We generate and fill out all the school’s internship documents for you.",
+		description:
+			"We generate and fill out all the school’s internship documents for you.",
 		image: "/landingPage/2ndSec/popimage1.png",
 	},
 	{
-		step: "Step 3",
+		id: 3,
+		icon: Brain,
 		title: "All-in-One Dashboard",
-		content:
+		description:
 			"Track, message, and manage every applicant in one place—no spreadsheets needed.",
 		image: "/landingPage/2ndSec/popimage2.png",
 	},
 ];
 
-export function PlatformSection() {
+const DemoOne = () => {
 	return (
-		<div className="border-t border-b border-gray-900 h-[100vh] bg-black text-white">
-			<FeatureSteps
+		<div className="dark">
+			<Features
+				primaryColor="sky-500"
+				progressGradientLight="bg-white"
+				progressGradientDark="bg-white"
 				features={features}
-				title="Everything you need to hire interns, in one platform."
-				autoPlayInterval={10000}
-				imageHeight="h-[500px]"
 			/>
 		</div>
 	);
-}
+};
+
+export { DemoOne };

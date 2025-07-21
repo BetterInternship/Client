@@ -2,10 +2,8 @@
 
 import {
   HeroSection,
-  PlatformSection,
-  LogoCarouselBasic,
-  Feature,
-  Testimonials
+  DemoOne,
+  LogoCarouselBasic
 } from "@/components/landingHire/sections";
 import { Navigation } from "@/components/landingHire/navigation";
 import { Footer } from "@/components/shared/footer";
@@ -20,11 +18,7 @@ export default function HomePage() {
       {/* Companies showcase */}
       <LogoCarouselBasic />
       {/* Benefits clickable */}
-      <PlatformSection />
-      {/* CTA  */}
-      
-
-
+      <DemoOne />
 
       <div className="dark">
         <Footer />

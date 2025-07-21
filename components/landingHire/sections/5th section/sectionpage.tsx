@@ -1,7 +1,6 @@
 "use client";
 
 import { LogoCarousel } from "@/components/landingStudent/sections/5th section/companies";
-import { Card, CardContent } from "@/components/landingStudent/ui/card";
 
 const demoLogos = [
 	{
@@ -30,27 +29,29 @@ const demoLogos = [
 
 function LogoCarouselBasic() {
 	return (
-		<div className="w-full bg-black border-t border-b border-gray-800 py-8 flex items-center justify-center">
-			<Card className="w-full max-w-7xl mx-auto shadow-lg bg-white">
-				<CardContent className="bg-white py-12">
-					<div className="text-center mb-10">
-						<h2 className="sm:text-[3.5rem] text-[2.5rem] font-bold tracking-tight leading-none text-black mb-4">
-							It's 100% Free!
-						</h2>
-						<p className="mt-2 text-lg text-gray-700 max-w-2xl mx-auto">
-							Built for employers, at zero cost. BetterInternship makes it easy to connect with motivated students—no fees, no hassle, just great matches.
-						</p>
+		<div className="w-full bg-black border-t border-b border-gray-800/50 py-16 flex items-center justify-center">
+			<div className="w-full max-w-8xl mx-auto px-6 sm:px-8 lg:px-12">
+				<div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+					<div className="py-20 px-8 sm:px-12 lg:px-16">
+						<div className="text-center mb-16">
+							<h2 className="text-5xl sm:text-6xl lg:text-6xl font-black tracking-tighter leading-none text-black mb-6">
+								It's 100% Free.
+							</h2>
+							<p className="text-xl text-gray-700 max-w-4xl mx-auto leading-relaxed font-medium">
+								Built for employers, at zero cost. BetterInternship makes it easy to connect with motivated students—no fees, no hassle, just great matches.
+							</p>
+						</div>
+						<div className="text-center mb-2">
+							<span className="text-lg font-semibold text-gray-600 tracking-wide uppercase">
+								Trusted by leading companies to discover top student talent
+							</span>
+						</div>
+						<div className="flex justify-center">
+							<LogoCarousel logos={demoLogos} />
+						</div>
 					</div>
-					<div className="text-center mb-8">
-            <span className="text-base font-medium text-gray-500">
-              Trusted by leading companies to discover top student talent with BetterInternship
-            </span>
-					</div>
-					<div className="flex justify-center">
-						<LogoCarousel logos={demoLogos} />
-					</div>
-				</CardContent>
-			</Card>
+				</div>
+			</div>
 		</div>
 	);
 }

@@ -19,9 +19,9 @@ export const Footer = ({ content }: { content?: string }) => {
   }
 
   return (
-    <div className="bg-transparent dark:bg-black px-6 py-4 opacity-70 dark:opacity-100 dark:border-t dark:border-gray-900">
-      <div className="text-center">
-        <p className="text-xs text-gray-500 dark:text-white">
+    <div className="bg-transparent dark:bg-black px-8 py-8 opacity-70 dark:opacity-100 dark:border-t dark:border-gray-900/50">
+      <div className="text-center max-w-4xl mx-auto">
+        <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
           {content ?? (
             <>
               © 2025 BetterInternship. All rights reserved.{" "}
@@ -29,7 +29,7 @@ export const Footer = ({ content }: { content?: string }) => {
                 href="/TermsConditions.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary hover:underline"
+                className="text-primary hover:underline transition-colors duration-200"
               >
                 Terms & Conditions
               </a>{" "}
@@ -38,7 +38,7 @@ export const Footer = ({ content }: { content?: string }) => {
                 href="/PrivacyPolicy.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary hover:underline"
+                className="text-primary hover:underline transition-colors duration-200"
               >
                 Privacy Policy
               </a>

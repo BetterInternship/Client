@@ -79,7 +79,7 @@ export function HeroSection() {
             <Link href="/login">
               <Button
                 size="lg"
-                className="bg-white hover:bg-gray-100 text-gray-800 px-8 py-4 text-lg rounded-full tracking-tight"
+                className="bg-white hover:bg-gray-100 text-gray-800 px-8 py-4 text-lg rounded-2xl tracking-tight"
               >
                 Post An Internship
               </Button>
@@ -88,10 +88,10 @@ export function HeroSection() {
             <Link href={"https://calendar.app.google/EF3XRLuEti5ac63c8"}>
               <Button
                 variant="ghost"
-                className="text-white hover:opacity-70 hover:bg-transparent transition-opacity text-lg font-medium flex items-center"
+                className="text-white hover:text-white/80 hover:bg-white/10 transition-all duration-300 text-xl font-medium flex items-center px-8 py-6 rounded-2xl backdrop-blur-sm border border-white/20"
               >
-                <ChevronRight />
-                Book a 15 minute Demo.
+                <ChevronRight className="w-6 h-6" />
+                Book a 15 minute Demo
               </Button>
             </Link>
           </motion.div>

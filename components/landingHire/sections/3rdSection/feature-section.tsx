@@ -1,126 +1,170 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
 
-interface Feature {
-  step: string;
-  title?: string;
-  content: string;
-  image: string;
+
+interface FeaturesProps {
+  features: {
+    id: number;
+    icon: React.ElementType;
+    title: string;
+    description: string;
+    image: string;
+  }[];
+  primaryColor?: string;
+  progressGradientLight?: string;
+  progressGradientDark?: string;
 }
 
-interface FeatureStepsProps {
-  features: Feature[];
-  className?: string;
-  title?: string;
-  autoPlayInterval?: number;
-  imageHeight?: string;
-}
-
-export function FeatureSteps({
+export function Features({
   features,
-  className,
-  title = "How to get Started",
-  autoPlayInterval = 3000,
-  imageHeight = "h-[600px]",
-}: FeatureStepsProps) {
+  primaryColor,
+  progressGradientLight,
+  progressGradientDark,
+}: FeaturesProps) {
   const [currentFeature, setCurrentFeature] = useState(0);
   const [progress, setProgress] = useState(0);
+  const featureRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      if (progress < 100) {
-        setProgress((prev) => prev + 100 / (autoPlayInterval / 100));
-      } else {
-        setCurrentFeature((prev) => (prev + 1) % features.length);
-        setProgress(0);
-      }
+    const interval = setInterval(() => {
+      setProgress((prev) => (prev >= 100 ? 100 : prev + 1));
     }, 100);
 
-    return () => clearInterval(timer);
-  }, [progress, features.length, autoPlayInterval]);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (progress >= 100) {
+      setTimeout(() => {
+        setCurrentFeature((prev) => (prev + 1) % features.length);
+        setProgress(0);
+      }, 200);
+    }
+  }, [progress]);
+
+  useEffect(() => {
+    const activeFeatureElement = featureRefs.current[currentFeature];
+    const container = containerRef.current;
+
+    if (activeFeatureElement && container) {
+      const containerRect = container.getBoundingClientRect();
+      const elementRect = activeFeatureElement.getBoundingClientRect();
+
+      container.scrollTo({
+        left:
+          activeFeatureElement.offsetLeft -
+          (containerRect.width - elementRect.width) / 2,
+        behavior: "smooth",
+      });
+    }
+  }, [currentFeature]);
+
+  const handleFeatureClick = (index: number) => {
+    setCurrentFeature(index);
+    setProgress(0);
+  };
 
   return (
-    <div
-      className={cn(
-        "p-8 md:p-12 bg-black dark:bg-black text-white text-white",
-        className
-      )}
-    >
-      <div className="max-w-7xl mx-auto w-full">
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center justify-center text-black text-opacity-90 mb-4">
-          {title}
-        </h2>
-        <div className="flex flex-col md:grid md:grid-cols-2 gap-6 md:gap-10">
-          <div className="order-2 md:order-1 space-y-3">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                className="flex items-center gap-6 md:gap-8"
-                initial={{ opacity: 0.3 }}
-                animate={{ opacity: index === currentFeature ? 1 : 0.3 }}
-                transition={{ duration: 0.5 }}
-              >
-                <motion.div
-                  className={cn(
-                    "w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center border-2",
-                    index === currentFeature
-                      ? "bg-primary border-primary text-primary-foreground scale-110"
-                      : "bg-muted border-muted-foreground"
-                  )}
-                >
-                  {index <= currentFeature ? (
-                    <span className="text-lg font-bold text-black">✓</span>
-                  ) : (
-                    <span className="text-lg font-semibold text-black">
-                      {index + 1}
-                    </span>
-                  )}
-                </motion.div>
+    <div className="min-h-screen py-16 px-4 bg-black text-white">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-10">
+          <h2 className="text-4xl md:text-5xl font-bold text-white mt-4 mb-4">
+            Everything You Need to Hire Interns, In One Platform.
+          </h2>
+        </div>
 
-                <div className="flex-1">
-                  <h3 className="text-xl md:text-2xl font-semibold text-black">
-                    {feature.title || feature.step}
-                  </h3>
-                  <p className="text-sm md:text-lg text-black">
-                    {feature.content}
-                  </p>
+        <div className="grid lg:grid-cols-2 lg:gap-16 gap-8 items-center">
+          {/* Left Side - Features with Progress Lines */}
+          <div
+            ref={containerRef}
+            className="lg:space-y-6 md:space-x-6 lg:space-x-0 overflow-x-auto overflow-hidden no-scrollbar lg:overflow-visible flex lg:flex lg:flex-col flex-row order-1 pb-4 scroll-smooth"
+          >
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              const isActive = currentFeature === index;
+
+              return (
+                <div
+                  key={feature.id}
+                  ref={(el) => {
+                    featureRefs.current[index] = el;
+                  }}
+                  className="relative cursor-pointer flex-shrink-0"
+                  onClick={() => handleFeatureClick(index)}
+                >
+                  {/* Feature Content */}
+                  <div
+                    className={`
+    flex lg:flex-row flex-col items-start space-x-4 p-3 max-w-sm md:max-w-sm lg:max-w-2xl transition-all duration-300
+  `}
+                  >
+                    {/* Icon */}
+                    <div
+                      className={`
+      p-3 hidden md:block rounded-full transition-all duration-300
+      ${isActive ? "bg-white text-black" : "bg-white/10 text-white"}
+    `}
+                    >
+                      <Icon size={24} />
+                    </div>
+                    {/* Content */}
+                    <div className="flex-1">
+                      <h3
+                        className={`
+        text-lg md:mt-4 lg:mt-0 font-semibold mb-2 transition-colors duration-300
+        ${isActive ? "text-white" : "text-gray-300"}
+      `}
+                      >
+                        {feature.title}
+                      </h3>
+                      <p
+                        className={`
+        transition-colors duration-300 text-sm
+        ${isActive ? "text-gray-400" : "text-gray-500"}
+      `}
+                      >
+                        {feature.description}
+                      </p>
+                      <div className="mt-4 bg-gray-800 rounded-sm h-1 overflow-hidden">
+                        {isActive && (
+                          <motion.div
+                            className={`h-full ${progressGradientDark}`}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${progress}%` }}
+                            transition={{ duration: 0.1, ease: "linear" }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </motion.div>
-            ))}
+              );
+            })}
           </div>
 
-          <div
-            className={cn(
-              "order-1 md:order-2 relative md:h-[300px] lg:h-[400px] h-0 overflow-hidden rounded-lg"
-            )}
-          >
-            <AnimatePresence mode="wait">
-              {features.map(
-                (feature, index) =>
-                  index === currentFeature && (
-                    <motion.div
-                      key={index}
-                      className="absolute inset-0 rounded-lg overflow-hidden sm:block hidden"
-                      initial={{ y: 100, opacity: 0, rotateX: -20 }}
-                      animate={{ y: 0, opacity: 1, rotateX: 0 }}
-                      exit={{ y: -100, opacity: 0, rotateX: 20 }}
-                      transition={{ duration: 0.5, ease: "easeInOut" }}
-                    >
-                      <Image
-                        src={feature.image}
-                        alt={feature.step}
-                        className="w-full h-full object-cover transition-transform transform"
-                        width={1000}
-                        height={500}
-                      />
-                    </motion.div>
-                  )
-              )}
-            </AnimatePresence>
+          {/* Right Side - Image Display */}
+          <div className="relative order-1 max-w-lg mx-auto lg:order-2 h-[400px] overflow-hidden flex items-center justify-center">
+            <motion.div
+              key={currentFeature}
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -50 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="relative w-full h-full"
+            >
+              <Image
+                className="rounded-2xl border border-gray-800 shadow-lg object-cover w-full h-full"
+                src={features[currentFeature].image}
+                alt={features[currentFeature].title}
+                width={600}
+                height={400}
+              />
+            </motion.div>
           </div>
         </div>
       </div>
