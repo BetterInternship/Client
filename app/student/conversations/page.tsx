@@ -32,8 +32,8 @@ export default function ConversationsPage() {
     if (message.trim() === "") return;
 
     setSending(true);
-    const employerConversation = conversations.data.find(
-      (c) => c.employer_id === employerId
+    const employerConversation = conversations.data.find((c) =>
+      c.subscribers.includes(employerId)
     );
 
     // Create convo if it doesn't exist first
@@ -57,17 +57,17 @@ export default function ConversationsPage() {
               {conversations.data
                 ?.toSorted(
                   (a, b) =>
-                    (b.latest_message?.timestamp ?? 0) -
-                    (a.latest_message?.timestamp ?? 0)
+                    (b.last_message?.timestamp ?? 0) -
+                    (a.last_message?.timestamp ?? 0)
                 )
                 .map((conversation) => (
                   <ConversationCard
                     key={conversation.id}
                     latestYou={
-                      conversation.latest_message.sender_id ===
+                      conversation.last_message.sender_id ===
                       conversation.user_id
                     }
-                    latestMessage={conversation.latest_message.message}
+                    latestMessage={conversation.last_message.message}
                     conversation={conversation}
                     setConversationId={setConversationId}
                   />
@@ -97,7 +97,7 @@ export default function ConversationsPage() {
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
-                      handleMessage(conversation.employerId, message);
+                      handleMessage(conversation.senderId, message);
                     }
                   }}
                   maxLength={1000}
@@ -106,8 +106,8 @@ export default function ConversationsPage() {
                   size="md"
                   disabled={sending || !message.trim()}
                   onClick={() =>
-                    conversation.employerId &&
-                    handleMessage(conversation.employerId, message)
+                    conversation.senderId &&
+                    handleMessage(conversation.senderId, message)
                   }
                 >
                   {sending ? "Sending..." : "Send Message"}

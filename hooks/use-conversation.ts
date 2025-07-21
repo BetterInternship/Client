@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-07-11 17:06:17
- * @ Modified time: 2025-07-13 09:49:07
+ * @ Modified time: 2025-07-21 17:52:04
  * @ Description:
  *
  * Used by student users for managing conversation state.
@@ -27,7 +27,7 @@ export const useConversation = (
   conversationId?: string
 ) => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [employerId, setEmployerId] = useState("");
+  const [senderId, setSenderid] = useState("");
   const [loading, setLoading] = useState(true);
   const { pb, user } = usePocketbase(type);
 
@@ -41,7 +41,9 @@ export const useConversation = (
     pb.collection("conversations")
       .getOne(conversationId)
       .then((conversation) => {
-        setEmployerId(conversation.employer_id);
+        setSenderid(
+          conversation.subscribers.find((id: string) => id !== user.id)
+        );
         setMessages(conversation.contents);
       });
 
@@ -64,7 +66,7 @@ export const useConversation = (
 
   return {
     messages,
-    employerId,
+    senderId,
     loading,
   };
 };
@@ -78,28 +80,22 @@ export const useConversations = (type: "user" | "employer") => {
     if (!user) return () => unsubscribe();
 
     // Pull all convos first
-    pb.collection("notifications")
-      .getOne(user.id)
-      .then((notification) => {
-        const conversations = Object.keys(notification.conversations).map(
-          (id) => ({
-            id,
-            ...notification.conversations[id],
-          })
-        );
+    pb.collection("conversations")
+      .getFullList({ filter: `subscribers ~ '${user.id}'` })
+      .then((conversations) => {
         setConversations(conversations);
       });
 
     // Subscribe to notifications
-    pb.collection("notifications")
+    pb.collection("users")
       .subscribe(
         "*",
         function (e) {
-          const notification = e.record;
-          const conversations = Object.keys(notification.conversations).map(
+          const subscriber = e.record;
+          const conversations = Object.keys(subscriber.last_unreads).map(
             (id) => ({
               id,
-              ...notification.conversations[id],
+              ...subscriber.last_unreads[id],
             })
           );
           setConversations(conversations);
