@@ -178,8 +178,6 @@ export default function SearchPage() {
   };
 
   const handleApply = () => {
-    console.log("handleApply called");
-
     if (!isAuthenticated()) {
       console.log("Not authenticated, redirecting to login");
       window.location.href = "/login";

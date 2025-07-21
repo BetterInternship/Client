@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-07-11 17:06:17
- * @ Modified time: 2025-07-21 23:57:39
+ * @ Modified time: 2025-07-22 01:57:01
  * @ Description:
  *
  * Used by student users for managing conversation state.
@@ -101,7 +101,7 @@ export const useConversations = (type: "user" | "employer") => {
         fields: "*,expand.conversations.id,expand.conversations.subscribers",
       })
       .then((subscriber) => {
-        const conversations = subscriber.expand?.conversations.map(
+        const conversations = subscriber.expand?.conversations?.map(
           (conversation: any) => ({
             ...conversation,
             last_unread: subscriber.last_unreads[conversation.id],
@@ -116,7 +116,7 @@ export const useConversations = (type: "user" | "employer") => {
         "*",
         function (e) {
           const subscriber = e.record;
-          const conversations = subscriber.expand?.conversations.map(
+          const conversations = subscriber.expand?.conversations?.map(
             (conversation: any) => ({
               ...conversation,
               last_unread: subscriber.last_unreads[conversation.id],
