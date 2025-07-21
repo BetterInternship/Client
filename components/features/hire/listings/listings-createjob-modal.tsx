@@ -53,7 +53,6 @@ const CreateModalForm = ({
       is_year_round: formData.is_year_round,
     };
 
-    console.log(job);
     set_creating(true);
     try {
       const response = await create_job(job);

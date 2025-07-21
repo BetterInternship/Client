@@ -12,6 +12,7 @@ const pb = new PocketBase(process.env.NEXT_PUBLIC_CHAT_URL as string);
  */
 export const usePocketbase = (type: "user" | "employer") => {
   const [user, setUser] = useState<AuthRecord>(null);
+  const [loading, setLoading] = useState(true);
 
   const auth = async () => {
     // Already authed
@@ -29,6 +30,7 @@ export const usePocketbase = (type: "user" | "employer") => {
       token: string;
       user: AuthRecord;
     }>(route);
+    console.log("auth", user, token);
     if (token && user) pb.authStore.save(token, user);
 
     // Save state

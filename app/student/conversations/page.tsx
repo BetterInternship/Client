@@ -32,7 +32,7 @@ export default function ConversationsPage() {
     if (message.trim() === "") return;
 
     setSending(true);
-    const employerConversation = conversations.data.find((c) =>
+    const employerConversation = conversations.data?.find((c) =>
       c?.subscribers?.includes(employerId)
     );
 
@@ -191,8 +191,6 @@ export const ConversationCard = ({
   }, [conversation]);
 
   useEffect(() => {
-    console.log(employerId);
-
     // ! refactor lol
     APIClient.get<any>(APIRoute("employer").r(employerId).build()).then(
       ({ employer }: { employer: Employer }) => {
