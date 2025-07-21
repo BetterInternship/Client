@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-07-11 17:06:17
- * @ Modified time: 2025-07-21 17:52:04
+ * @ Modified time: 2025-07-21 18:10:11
  * @ Description:
  *
  * Used by student users for managing conversation state.
@@ -27,21 +27,24 @@ export const useConversation = (
   conversationId?: string
 ) => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [senderId, setSenderid] = useState("");
+  const [senderId, setSenderId] = useState("");
   const [loading, setLoading] = useState(true);
   const { pb, user } = usePocketbase(type);
 
   useEffect(() => {
     let unsubscribe = () => {};
 
-    if (!user || !conversationId || !conversationId.trim().length)
+    if (!user || !conversationId || !conversationId.trim().length) {
+      setMessages([]);
+      setSenderId("");
       return () => unsubscribe();
+    }
 
     // Pull messages first
     pb.collection("conversations")
       .getOne(conversationId)
       .then((conversation) => {
-        setSenderid(
+        setSenderId(
           conversation.subscribers.find((id: string) => id !== user.id)
         );
         setMessages(conversation.contents);
