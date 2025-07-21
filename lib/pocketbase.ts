@@ -29,10 +29,19 @@ export const usePocketbase = (type: "user" | "employer") => {
       token: string;
       user: AuthRecord;
     }>(route);
-    pb.authStore.save(token, user);
+    if (token && user) pb.authStore.save(token, user);
 
     // Save state
     setUser(user);
+  };
+
+  const logout = async () => {
+    pb.authStore.clear();
+  };
+
+  const refresh = async () => {
+    pb.authStore.clear();
+    auth();
   };
 
   useEffect(() => {
@@ -42,5 +51,7 @@ export const usePocketbase = (type: "user" | "employer") => {
   return {
     pb,
     user,
+    refresh,
+    logout,
   };
 };

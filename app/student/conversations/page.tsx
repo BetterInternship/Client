@@ -33,7 +33,7 @@ export default function ConversationsPage() {
 
     setSending(true);
     const employerConversation = conversations.data.find((c) =>
-      c.subscribers.includes(employerId)
+      c?.subscribers?.includes(employerId)
     );
 
     // Create convo if it doesn't exist first
@@ -57,17 +57,16 @@ export default function ConversationsPage() {
               {conversations.data
                 ?.toSorted(
                   (a, b) =>
-                    (b.last_message?.timestamp ?? 0) -
-                    (a.last_message?.timestamp ?? 0)
+                    (b.last_unread?.timestamp ?? 0) -
+                    (a.last_unread?.timestamp ?? 0)
                 )
                 .map((conversation) => (
                   <ConversationCard
                     key={conversation.id}
                     latestYou={
-                      conversation.last_message.sender_id ===
-                      conversation.user_id
+                      conversation.last_unread?.sender_id === profile.data?.id
                     }
-                    latestMessage={conversation.last_message.message}
+                    latestMessage={conversation.last_unread?.message}
                     conversation={conversation}
                     setConversationId={setConversationId}
                   />
@@ -77,9 +76,10 @@ export default function ConversationsPage() {
           {/* Conversation Pane */}
           <div className="flex flex-col justify-end flex-1 max-w-[75%] max-h-[100%]">
             <div className="flex flex-col gap-1 p-2 max-h-[100%] overflow-auto">
-              {conversation.messages.map((message) => {
+              {conversation.messages?.map((message, idx) => {
                 return (
                   <Message
+                    key={idx}
                     message={message.message}
                     self={message.sender_id === profile.data?.id}
                   />
@@ -172,21 +172,34 @@ export const ConversationCard = ({
   latestMessage,
   setConversationId,
 }: {
-  conversation: Conversation;
+  // ! change to type conversation
+  conversation: any;
   latestYou: boolean;
   latestMessage: string;
   setConversationId: (id: string) => void;
 }) => {
+  const profile = useProfile();
+  const [employerId, setEmployerId] = useState("");
   const [employerName, setEmployerName] = useState("");
 
   useEffect(() => {
+    setEmployerId(
+      conversation.subscribers.find(
+        (subscriberId: string) => subscriberId !== profile.data?.id
+      )
+    );
+  }, [conversation]);
+
+  useEffect(() => {
+    console.log(employerId);
+
     // ! refactor lol
-    APIClient.get<any>(
-      APIRoute("employer").r(conversation.employer_id).build()
-    ).then(({ employer }: { employer: Employer }) => {
-      setEmployerName(employer.name ?? "");
-    });
-  }, []);
+    APIClient.get<any>(APIRoute("employer").r(employerId).build()).then(
+      ({ employer }: { employer: Employer }) => {
+        setEmployerName(employer.name ?? "");
+      }
+    );
+  }, [employerId]);
 
   return (
     <Card
@@ -195,7 +208,7 @@ export const ConversationCard = ({
     >
       <div className="flex flex-row justify-between items-center">
         <div className="flex flex-row items-center gap-4">
-          <EmployerPfp employer_id={conversation.employer_id} />
+          {employerId && <EmployerPfp employer_id={employerId} />}
           <div className="flex flex-col">
             <span className="font-medium">{employerName}</span>
             <span className="text-xs opacity-60 line-clamp-1 max-w-prose text-ellipsis  ">
