@@ -32,7 +32,9 @@ function DashboardContent() {
   const [conversationId, setConversationId] = useState("");
   const conversations = useConversations("employer");
   const updateConversationId = (userId: string) => {
-    let userConversation = conversations.data.find((c) => c.user_id === userId);
+    let userConversation = conversations.data.find((c) =>
+      c.subscribers.includes(userId)
+    );
     setConversationId(userConversation?.id);
   };
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
@@ -52,9 +54,12 @@ function DashboardContent() {
   // Handle message
   const handleMessage = async (userId: string, message: string) => {
     setSending(true);
-    let userConversation = conversations.data.find(
-      (c: { user_id: string }) => c.user_id === userId
+    // ! remove type any
+    let userConversation = conversations.data.find((c: any) =>
+      c.subscribers.includes(userId)
     );
+
+    console.log(userConversation);
 
     // Create convo if it doesn't exist first
     if (!userConversation) {
