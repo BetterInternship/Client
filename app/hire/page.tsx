@@ -3,7 +3,8 @@
 import {
   HeroSection,
   DemoOne,
-  LogoCarouselBasic
+  LogoCarouselBasic,
+  CallToAction
 } from "@/components/landingHire/sections";
 import { Navigation } from "@/components/landingHire/navigation";
 import { Footer } from "@/components/shared/footer";
@@ -19,6 +20,8 @@ export default function HomePage() {
       <LogoCarouselBasic />
       {/* Benefits clickable */}
       <DemoOne />
+      {/* Call To Action */}
+      <CallToAction />
 
       <div className="dark">
         <Footer />
