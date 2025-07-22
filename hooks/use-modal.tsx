@@ -14,7 +14,7 @@ const modalContext = createContext<IModalContext>({} as IModalContext);
  */
 export const useModal = (
   name: string,
-  options?: { showCloseButton?: boolean }
+  options?: { onClose?: () => void; showCloseButton?: boolean }
 ) => {
   const [isOpen, setIsOpen] = useState(false);
   const { showCloseButton = true } = options || {};
@@ -67,6 +67,10 @@ export const useModal = (
       };
     }
   }, [isOpen, isMobile]);
+
+  useEffect(() => {
+    if (!isOpen && options?.onClose) options?.onClose();
+  }, [isOpen]);
 
   return {
     state: isOpen,

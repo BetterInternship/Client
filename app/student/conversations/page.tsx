@@ -79,8 +79,9 @@ export default function ConversationsPage() {
           </div>
           {/* Conversation Pane */}
           <div className="flex flex-col justify-end flex-1 max-w-[75%] max-h-[100%]">
-            <div className="flex flex-col gap-1 p-2 max-h-[100%] overflow-auto">
-              {conversation.messages?.map((message, idx) => {
+            <div className="flex flex-col-reverse gap-1 p-2 max-h-[100%] overflow-auto">
+              <div ref={chatAnchorRef} />
+              {conversation.messages?.toReversed()?.map((message, idx) => {
                 return (
                   <Message
                     key={idx}
@@ -89,7 +90,6 @@ export default function ConversationsPage() {
                   />
                 );
               })}
-              <div ref={chatAnchorRef} />
             </div>
             {conversationId ? (
               <div className="flex flex-col p-2 gap-3">
