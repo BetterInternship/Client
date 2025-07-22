@@ -28,9 +28,19 @@ function FAQ() {
                   platform makes hiring interns simple, efficient, and stress-free.
                 </p>
               </div>
-              <div className="">
-                <Button className="gap-4 text-white" variant="outline">
-                  Any questions? Book a Demo <PhoneCall className="w-4 h-4" />
+              <div>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="inline-flex items-center gap-4 border-white text-white hover:bg-white hover:text-black transition-colors"
+                >
+                  <a
+                    href="https://calendar.app.google/EF3XRLuEti5ac63c8"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Any questions? Book a Demo <PhoneCall className="w-4 h-4 ml-2" />
+                  </a>
                 </Button>
               </div>
             </div>
@@ -40,27 +50,27 @@ function FAQ() {
               {
                 question: "How does the matching process work?",
                 answer:
-                  "We use a combination of AI and human review to match interns with businesses based on skills, interests, and availability.",
+                  "Post your internship and receive applications from talented applicants. Our dashboard makes it easy to review candidates and manage applications.",
               },
               {
-                question: "Is there a fee for posting internships?",
+                question: "Is it free to post internships?",
                 answer:
-                  "Posting internships is free for small businesses. Premium features are available for a fee.",
+                  "Yes, posting internships and using all platform features is completely free.",
               },
               {
-                question: "Can I edit my internship posting?",
+                question: "Can I update my internship listing?",
                 answer:
-                  "Yes, you can edit or update your posting at any time from your dashboard.",
+                  "Yes, you can edit or update your internship details anytime from your dashboard.",
               },
               {
-                question: "What paperwork do you handle?",
+                question: "What paperwork can you handle?",
                 answer:
-                  "We handle contracts, NDAs, onboarding documents, and scheduling to save you time.",
+                  "We handle contracts, MOAs, onboarding documents, and scheduling, so you can focus on hiring.",
               },
               {
-                question: "How do I contact support?",
+                question: "How can I get support?",
                 answer:
-                  "You can reach out via our contact form or use the chat feature in your dashboard for instant help.",
+                  "Contact us at hello@betterinternship.com for quick assistance from our team.",
               },
             ].map((item, index) => (
               <AccordionItem key={index} value={"index-" + index}>

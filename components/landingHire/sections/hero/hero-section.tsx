@@ -101,7 +101,7 @@ export function HeroSection() {
               transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
               className="flex flex-col sm:flex-row gap-4 items-center pt-8"
             >
-              <Link href="/register">
+              <Link href="/login">
                 <Button
                   size="lg"
                   className="bg-white hover:bg-gray-100 text-gray-800 px-8 py-4 text-lg tracking-tight"
