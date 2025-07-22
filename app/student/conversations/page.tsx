@@ -28,6 +28,12 @@ export default function ConversationsPage() {
 
   redirectIfNotLoggedIn();
 
+  const endSend = () => {
+    setMessage("");
+    setSending(false);
+    chatAnchorRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   const handleMessage = async (employerId: string, message: string) => {
     if (message.trim() === "") return;
 
@@ -37,14 +43,12 @@ export default function ConversationsPage() {
     );
 
     // Create convo if it doesn't exist first
-    if (!employerConversation) return;
+    if (!employerConversation) return endSend();
     const response = await UserConversationService.sendToEmployer(
       employerConversation?.id,
       message
-    );
-    setMessage("");
-    setSending(false);
-    chatAnchorRef.current?.scrollIntoView({ behavior: "smooth" });
+    ).catch(endSend);
+    endSend();
   };
 
   return (

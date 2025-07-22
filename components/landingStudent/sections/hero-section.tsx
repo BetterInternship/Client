@@ -51,28 +51,27 @@ export function HeroSection() {
       <div className="absolute inset-0 bg-black/60" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full h-full flex items-center justify-center">
-        <div className="max-w-5xl w-full flex flex-col items-center justify-center">
+        <div className="max-w-5xl w-full flex flex-col items-left justify-center">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-5xl sm:text-7xl font-bold text-white text-opacity-90 tracking-tighter mb-6 text-center leading-tight"
+            className="text-5xl sm:text-8xl font-bold text-white text-opacity-90 tracking-tighter mb-6 leading-tight"
           >
-            Interviews in 48 hours.
-            <br />
-            Skip Waiting. Start your Career.
+            No More Waiting. <br />
+            Interview in 48 hours.
           </motion.h1>
 
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-            className="flex flex-col sm:flex-row gap-4 items-start items-center pt-32 lg:py-16"
+            className="flex flex-col sm:flex-row gap-4 items-center pt-32 lg:py-16"
           >
             <Link href="/search">
               <Button
                 size="lg"
-                className="bg-white hover:bg-gray-100 text-gray-800 px-8 py-4 text-lg rounded-full tracking-tight"
+                className="bg-white hover:bg-gray-100 text-gray-800 px-8 py-4 text-lg rounded-[0.33em] tracking-tight"
               >
                 Find Internships
               </Button>
