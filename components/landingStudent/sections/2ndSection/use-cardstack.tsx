@@ -64,7 +64,7 @@ export function SoftwareSection() {
     useResponsiveCardSwap();
 
   return (
-    <section className="bg-black">
+    <section className="bg-neutral-950">
       <div className="max-w-7xl text-white sm:px-6 lg:px-8 mt-[-5em] sm:mt-0">
         {/* Main Layout with Header Left and Cards Center-Right */}
         <motion.div
