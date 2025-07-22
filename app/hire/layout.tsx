@@ -11,6 +11,7 @@ import { MoaContextProvider } from "@/lib/db/use-moa";
 import { PostHogProvider } from "../posthog-provider";
 import TanstackProvider from "../tanstack-provider";
 import Head from "next/head";
+import AllowLanding from "./allowLanding";
 
 export const metadata: Metadata = {
   title: "Recruiter Dashboard - BetterInternship",
@@ -69,13 +70,7 @@ const HTMLContent = ({
                   />
                 </Head>
                 <body className="h-full overflow-hidden">
-                  <div className="flex flex-col h-full">
-                    <Header />
-                    <div className="flex w-full flex-1 overflow-hidden">
-                      {children}
-                    </div>
-                    <Footer />
-                  </div>
+                  <AllowLanding>{children}</AllowLanding>
                 </body>
               </html>
             </PostHogProvider>

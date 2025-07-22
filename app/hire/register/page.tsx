@@ -39,7 +39,7 @@ export default function RegisterPage() {
           <EmployerEditor registerProfile={register} />
         </EmployerRegisterForm>
       </div>
-      <div className="fixed bottom-0 bg-gray-50 z-[100] h-10 w-full flex flex-row justify-center">
+      <div className="fixed bottom-0 bg-gray-50 z-[100] h-16 w-full flex flex-row justify-center">
         <div className="opacity-80 text-sm">
           Need help? Contact us at{" "}
           <a href="mailto:hello@betterinternship.com">

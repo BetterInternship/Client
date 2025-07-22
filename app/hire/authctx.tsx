@@ -7,6 +7,7 @@ import { EmployerAuthService } from "@/lib/api/hire.api";
 import { getFullName } from "@/lib/utils/user-utils";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { useQueryClient } from "@tanstack/react-query";
+import { usePocketbase } from "@/lib/pocketbase";
 
 interface IAuthContext {
   user: Partial<PublicEmployerUser> | null;
@@ -56,6 +57,7 @@ export const AuthContextProvider = ({
     return isAuthed ? JSON.parse(isAuthed) : false;
   });
   const queryClient = useQueryClient();
+  const pocketbase = usePocketbase("employer");
   const [god, setGod] = useState(false);
   const [user, setUser] = useState<Partial<PublicEmployerUser> | null>(() => {
     if (typeof window === "undefined") return null;
@@ -127,6 +129,7 @@ export const AuthContextProvider = ({
       return null;
     }
 
+    pocketbase.refresh();
     queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] });
     setProxy(getFullName(response.user));
     setUser(response.user);
@@ -139,7 +142,9 @@ export const AuthContextProvider = ({
   };
 
   const logout = async () => {
-    EmployerAuthService.logout();
+    pocketbase.logout();
+    await EmployerAuthService.logout();
+
     router.push("/login");
     setUser(null);
     setGod(false);

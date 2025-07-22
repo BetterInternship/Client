@@ -11,7 +11,7 @@ import { Badge, BoolBadge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 import { getFullName } from "@/lib/utils/user-utils";
 import { BooleanCheckIcon } from "@/components/ui/icons";
-import { EmployerApplication, PublicUser } from "@/lib/db/db.types";
+import { Employer, EmployerApplication, PublicUser } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useModal } from "@/hooks/use-modal";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
@@ -26,8 +26,8 @@ export default function GodLandingPage() {
   const { login_as } = useAuthContext();
   const employers = useEmployers();
   const { users } = useUsers();
-  const [search_name, set_search_name] = useState<string | null>();
-  const [selected, set_selected] = useState("");
+  const [searchName, setSearchName] = useState<string | null>();
+  const [selected, setSelected] = useState("");
   const { to_app_status_name } = useDbRefs();
   const router = useRouter();
   const [hideNoApps, setHideNoApps] = useState(false);
@@ -72,14 +72,20 @@ export default function GodLandingPage() {
     router.push("/dashboard");
   };
 
+  const setSearchQuery = (id?: number | string | null) =>
+    setSearchName(id?.toString());
+
   return (
     <div className="w-full h-[90vh] overflow-hidden">
       <TabGroup>
         <Tab name="verified employers">
-          <div className="absolute flex flex-row items-center gap-4 w-full px-4 py-4 bg-gray-900">
+          <div className="absolute flex flex-row items-center gap-4 w-full px-4 py-4 bg-gray-900 z-50">
             <Autocomplete
-              setter={set_search_name}
-              options={employers.data.map((e) => e.name ?? "")}
+              setter={setSearchQuery}
+              options={employers.data.map((e) => ({
+                id: e.id ?? "",
+                name: e.name ?? "",
+              }))}
               placeholder="Search name..."
             ></Autocomplete>
             <div className="flex flex-row items-center gap-1">
@@ -91,8 +97,12 @@ export default function GodLandingPage() {
             {employers.data
               // @ts-ignore
               .filter((e) => !hideNoApps || e?.applications?.length)
-              .filter((e) =>
-                e.name?.toLowerCase().includes(search_name?.toLowerCase() ?? "")
+              .filter(
+                (e) =>
+                  e.name
+                    ?.toLowerCase()
+                    .includes(searchName?.toLowerCase() ?? "") ||
+                  e.id === searchName
               )
               .filter((e) => e.is_verified)
               .toSorted((a, b) => a.name?.localeCompare(b.name ?? "") ?? 0)
@@ -114,7 +124,7 @@ export default function GodLandingPage() {
                     size="xs"
                     disabled={employers.isUnverifying && e.id === selected}
                     onClick={() => {
-                      set_selected(e.id ?? "");
+                      setSelected(e.id ?? "");
                       employers.unverify(e.id ?? "");
                     }}
                   >
@@ -143,10 +153,13 @@ export default function GodLandingPage() {
         </Tab>
 
         <Tab name="unverified employers">
-          <div className="absolute flex flex-row iterms-center gap-4 w-full px-4 py-4 bg-gray-900">
+          <div className="absolute flex flex-row iterms-center gap-4 w-full px-4 py-4 bg-gray-900 z-50">
             <Autocomplete
-              setter={set_search_name}
-              options={employers.data.map((e) => e.name ?? "")}
+              setter={setSearchQuery}
+              options={employers.data.map((e) => ({
+                id: e.id ?? "",
+                name: e.name ?? "",
+              }))}
               placeholder="Search name..."
             ></Autocomplete>
             <div className="flex flex-row items-center gap-1">
@@ -158,8 +171,12 @@ export default function GodLandingPage() {
             {employers.data
               // @ts-ignore
               .filter((e) => !hideNoApps || e?.applications?.length)
-              .filter((e) =>
-                e.name?.toLowerCase().includes(search_name?.toLowerCase() ?? "")
+              .filter(
+                (e) =>
+                  e.name
+                    ?.toLowerCase()
+                    .includes(searchName?.toLowerCase() ?? "") ||
+                  e.id === searchName
               )
               .filter((e) => !e.is_verified)
               .toSorted((a, b) => a.name?.localeCompare(b.name ?? "") ?? 0)
@@ -181,7 +198,7 @@ export default function GodLandingPage() {
                     scheme="supportive"
                     disabled={employers.isVerifying && e.id === selected}
                     onClick={() => {
-                      set_selected(e.id ?? "");
+                      setSelected(e.id ?? "");
                       employers.verify(e.id ?? "");
                     }}
                   >
@@ -211,10 +228,13 @@ export default function GodLandingPage() {
         </Tab>
 
         <Tab name="students">
-          <div className="absolute flex flex-row items-center gap-4 w-full px-4 py-4 bg-gray-900">
+          <div className="absolute flex flex-row items-center gap-4 w-full px-4 py-4 bg-gray-900 z-50">
             <Autocomplete
-              setter={set_search_name}
-              options={users.map((u) => getFullName(u) ?? "")}
+              setter={setSearchQuery}
+              options={users.map((u) => ({
+                id: u.id,
+                name: getFullName(u) ?? "",
+              }))}
               placeholder="Search name..."
             ></Autocomplete>
             <div className="flex flex-row items-center gap-1">
@@ -227,14 +247,15 @@ export default function GodLandingPage() {
               .filter(
                 (u) =>
                   !hideNoApps ||
-                  applications.filter((a) => a.user_id === u.id).length
+                  applications.filter((a) => a.user_id === u.id).length ||
+                  u.id === searchName
               )
               .filter((u) =>
                 `${getFullName(u)} ${u.email} ${refs.to_college_name(
                   u.college
                 )} ${refs.to_degree_full_name(u.degree)}}`
                   ?.toLowerCase()
-                  .includes(search_name?.toLowerCase() ?? "")
+                  .includes(searchName?.toLowerCase() ?? "")
               )
               .toSorted(
                 (a, b) =>
@@ -290,26 +311,28 @@ export default function GodLandingPage() {
         </Tab>
 
         <Tab name="applications">
-          <div className="absolute w-full px-4 py-4 bg-gray-900">
+          <div className="absolute w-full px-4 py-4 bg-gray-900 z-50">
             <Autocomplete
-              setter={set_search_name}
-              options={applications.map(
-                (a) =>
-                  `${a.job?.employers?.name} ${getFullName(a.users)} ${
-                    a.jobs?.employers?.name
-                  }`
-              )}
+              setter={setSearchQuery}
+              options={applications.map((a) => ({
+                id: a.id ?? "",
+                name: `${a.job?.employers?.name} ${getFullName(a.users)} ${
+                  a.jobs?.employers?.name
+                }`,
+              }))}
               placeholder="Search name..."
             ></Autocomplete>
           </div>
           <div className="absolute top-16 w-[100%] h-[85%] flex flex-col overflow-scroll p-4">
             {applications
-              .filter((a) =>
-                `${a.job?.employers?.name} ${getFullName(a.users)} ${
-                  a.jobs?.employers?.name
-                }`
-                  ?.toLowerCase()
-                  .includes(search_name?.toLowerCase() ?? "")
+              .filter(
+                (a) =>
+                  `${a.job?.employers?.name} ${getFullName(a.users)} ${
+                    a.jobs?.employers?.name
+                  }`
+                    ?.toLowerCase()
+                    .includes(searchName?.toLowerCase() ?? "") ||
+                  a.id === searchName
               )
               .toSorted(
                 (a, b) =>
