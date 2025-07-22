@@ -256,7 +256,7 @@ function DashboardContent() {
             <div className="overflow-y-hidden flex-1 border border-gray-300 rounded-[0.33em] max-h-[75%]">
               <div className="flex flex-col-reverse max-h-full overflow-y-scroll p-2 gap-1">
                 <div ref={chatAnchorRef} />
-                {conversation.messages?.toReversed().map((message, idx) => {
+                {conversation.messages?.toReversed()?.map((message, idx) => {
                   return (
                     <Message
                       key={idx}
