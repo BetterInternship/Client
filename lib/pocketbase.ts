@@ -30,7 +30,6 @@ export const usePocketbase = (type: "user" | "employer") => {
       token: string;
       user: AuthRecord;
     }>(route);
-    console.log("auth", user, token);
     if (token && user) pb.authStore.save(token, user);
 
     // Save state

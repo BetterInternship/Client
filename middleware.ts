@@ -31,9 +31,6 @@ export function middleware(request: NextRequest) {
     subdomain_is(hostname, school)
   );
 
-  // Lol
-  //if (process.env.DEVELOPMENT) return NextResponse.next();
-
   // There's a matching school
   if (school.length) {
     return reroute_to_subdomain("school", pathname, request.url);

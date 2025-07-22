@@ -3,16 +3,16 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 export const HeaderTitle = () => {
-  const { isMobile: is_mobile } = useAppContext();
+  const { isMobile, view } = useAppContext();
   return (
     <Link
-      href="/search"
+      href={view === "student" ? "/search" : "/dashboard"}
       className="block outline-none focus:outline-none border-none"
     >
       <h1
         className={cn(
           "font-display font-bold text-gray-900 flex flex-row space-x-2 items-center",
-          is_mobile ? "text-lg" : "text-2xl"
+          isMobile ? "text-lg" : "text-2xl"
         )}
       >
         <img

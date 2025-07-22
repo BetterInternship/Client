@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-04 14:10:41
- * @ Modified time: 2025-07-01 19:10:17
+ * @ Modified time: 2025-07-23 02:51:07
  * @ Description:
  *
  * Centralized app state with improved mobile detection
@@ -11,8 +11,11 @@
 
 import React, { createContext, useState, useContext, useEffect } from "react";
 
+type View = "student" | "hire";
+
 interface IAppContext {
   isMobile: boolean;
+  view: View | null;
 }
 
 const AppContext = createContext<IAppContext>({} as IAppContext);
@@ -64,6 +67,7 @@ export const AppContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
+  const [view, setView] = useState<View | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const checkMobile = () => setIsMobile(detectMobile());
 
@@ -78,17 +82,23 @@ export const AppContextProvider = ({
       timeoutId = setTimeout(checkMobile, 250);
     };
 
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("orientationchange", checkMobile);
+    // Set view
+    const hostname = window?.location?.hostname?.split(".");
+    setView(hostname.length > 1 ? (hostname[0] as View) : "student");
+
+    window?.addEventListener("resize", handleResize);
+    window?.addEventListener("orientationchange", checkMobile);
 
     return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("orientationchange", checkMobile);
+      window?.removeEventListener("resize", handleResize);
+      window?.removeEventListener("orientationchange", checkMobile);
       clearTimeout(timeoutId);
     };
   }, []);
 
   return (
-    <AppContext.Provider value={{ isMobile }}>{children}</AppContext.Provider>
+    <AppContext.Provider value={{ isMobile, view }}>
+      {children}
+    </AppContext.Provider>
   );
 };
