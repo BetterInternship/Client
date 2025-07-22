@@ -51,50 +51,60 @@ export function HeroSection() {
       <div className="absolute inset-0 bg-black/60" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full h-full flex items-center justify-center">
-        <div className="max-w-4xl w-full flex flex-col items-center justify-center">
+        <div className="max-w-fit w-fit flex flex-col items-start">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-5xl sm:text-5xl md:text-7xl font-bold text-white text-opacity-90 tracking-tighter mb-6 text-center leading-tight"
+            className="text-6xl break-all md:text-8xl font-bold text-white text-opacity-90 tracking-tighter mb-6 text-left leading-tight"
           >
-            Find Better Interns, 10x Faster.
+            Interns. <br />
+            <span className="italic sm:not-italic">
+              More. <br className="sm:hidden inline-block" />
+              Faster. <br className="sm:hidden inline-block" />
+              Better.
+            </span>
           </motion.h1>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-            className="text-xl sm:text-2xl font-medium text-white text-opacity-80 mb-4 text-center max-w-2xl"
+            className="text-xl sm:text-3xl font-medium text-white text-left text-opacity-80 mb-4"
           >
-            Post once. We handle matching, paperwork, and scheduling — so you
-            don’t have to.
+            We handle matching, paperwork, and scheduling — <br />
+            so you don’t have to.
           </motion.h2>
+          <div className="flex flex-row items-center justify-center w-full">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+              className="flex flex-col sm:flex-row gap-4 items-center pt-8"
+            >
+              <Link href="/register">
+                <Button
+                  size="lg"
+                  className="bg-white hover:bg-gray-100 text-gray-800 px-8 py-4 text-lg tracking-tight"
+                >
+                  Post An Internship
+                </Button>
+              </Link>
 
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-            className="flex flex-col sm:flex-row gap-4 items-center pt-8"
-          >
-            <Link href="/login">
-              <Button
-                size="lg"
-                className="bg-white hover:bg-gray-100 text-gray-800 px-8 py-4 text-lg rounded-2xl tracking-tight"
+              <Link
+                href={"https://calendar.app.google/EF3XRLuEti5ac63c8"}
+                target="_blank"
               >
-                Post An Internship
-              </Button>
-            </Link>
-
-            <Link href={"https://calendar.app.google/EF3XRLuEti5ac63c8"}>
-              <Button
-                variant="ghost"
-                className="text-white hover:text-white/80 hover:bg-white/10 transition-all duration-300 text-xl font-medium flex items-center px-8 py-6 rounded-2xl backdrop-blur-sm border border-white/20"
-              >
-                <ChevronRight className="w-6 h-6" />
-                Book a 15 minute Demo
-              </Button>
-            </Link>
-          </motion.div>
+                <Button
+                  size="lg"
+                  variant="ghost"
+                  className="text-white hover:text-white/80 hover:bg-white/10 transition-all duration-300 text-lg font-medium flex items-center px-8 py-6 backdrop-blur-sm border border-white/20"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                  Book a 15 minute Demo
+                </Button>
+              </Link>
+            </motion.div>
+          </div>
         </div>
       </div>
 

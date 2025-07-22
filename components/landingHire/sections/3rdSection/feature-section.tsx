@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-
+import { ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface FeaturesProps {
   features: {
@@ -72,10 +73,18 @@ export function Features({
     <div className="min-h-screen py-16 px-4 bg-black text-white">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-10">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mt-4 mb-4">
-            Everything You Need to Hire Interns, In One Platform.
+        <div className="text-left mb-10">
+          <h2 className="text-4xl font-normal text-white mt-4 mb-4 text-opacity-30">
+            Everything you need on one platform.
           </h2>
+          <div className="flex flex-row gap-4 items-center">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mt-4 mb-4">
+              Instant Interviews
+            </h2>
+            <Button variant="ghost" className="min-h-[100%] rounded-[0.33em]">
+              <ChevronRight className="w-28 h-28 text-white" />
+            </Button>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-2 lg:gap-16 gap-8 items-center">
