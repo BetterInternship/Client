@@ -2,10 +2,12 @@
 
 import {
   HeroSection,
-  PlatformSection,
+  TimelineDemo,
   Testimonials,
   LogoCarouselBasic,
   Feature,
+  Preview,
+  FAQ
 } from "@/components/landingStudent/sections";
 import { Navigation } from "@/components/landingStudent/navigation";
 import { Footer } from "@/components/shared/footer";
@@ -24,10 +26,11 @@ export default function HomePage() {
       <Feature />
 
       {/* Benefits clickable */}
-      <PlatformSection />
+      <TimelineDemo />
 
-      {/* Companies showcase */}
-      <LogoCarouselBasic />
+      <FAQ />
+
+      <Preview />
 
       <div className="dark">
         <Footer />

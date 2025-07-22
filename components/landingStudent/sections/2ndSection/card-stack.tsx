@@ -59,7 +59,7 @@ export const CardStack = ({
               {/* Top badges and time */}
               <div className="flex flex-wrap items-center justify-between mb-3 gap-y-2">
                 <div className="flex gap-2 flex-wrap">
-                  <span className="inline-block bg-neutral-200 text-black text-xs font-semibold px-3 py-1 rounded-full">
+                  <span className="inline-block bg-neutral-950 text-black text-xs font-semibold px-3 py-1 rounded-full">
                     New Listing
                   </span>
                   <span className="inline-block bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full">

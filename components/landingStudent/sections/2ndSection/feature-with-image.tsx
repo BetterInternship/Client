@@ -5,11 +5,11 @@ import { useAppContext } from "@/lib/ctx-app";
 export function Feature() {
   const { isMobile } = useAppContext();
   return (
-    <div className="w-full py-20 border-t border-gray-900 overflow-hidden overflow-x-hidden h-[100vh] bg-black text-white dark:bg-black dark:text-white">
+    <div className="w-full py-20 pb-30 border-t border-gray-700 overflow-hidden overflow-x-hidden bg-neutral-950 text-white dark:bg-neutral-950 dark:text-white">
       <div className="flex flex-col lg:flex-row lg:items-center gap-20">
         <div className="flex gap-4 pl-0 lg:pl-20 flex-col flex-1">
           <div className="flex gap-2 mx-8 flex-col z-30">
-            <h2 className="text-5xl sm:text-8xl tracking-tighter text-opacity-90 lg:max-w-2xl font-regular text-left text-gray-900 dark:text-white">
+            <h2 className="text-5xl sm:text-6xl tracking-tighter text-opacity-90 lg:max-w-2xl font-regular text-left text-gray-900 dark:text-white">
               Apply fast, <br />
               Get hired faster.
             </h2>
