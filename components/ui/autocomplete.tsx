@@ -1,65 +1,97 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Input } from "./input";
 import { useDetectClickOutside } from "react-detect-click-outside";
 
-export const Autocomplete = ({
+interface IAutocompleteOption<ID extends number | string> {
+  id: ID;
+  name: string;
+}
+
+export const Autocomplete = <ID extends number | string>({
   options,
   setter,
   placeholder,
-  value = "",
+  value,
 }: {
-  options: string[];
-  setter: (value: string) => void;
+  options: IAutocompleteOption<ID>[];
+  setter: (value?: ID | null) => void;
   placeholder?: string;
-  value?: string;
+  value?: ID | null;
 }) => {
-  const [query, set_query] = useState("");
-  const [is_open, set_is_open] = useState(false);
-  const [selected, set_selected] = useState<string | null>(null);
-  const ref = useDetectClickOutside({ onTriggered: () => set_is_open(false) });
+  const [query, setQuery] = useState("");
+  const [is_open, setIsOpen] = useState(false);
+  const [selected, setSelected] = useState<IAutocompleteOption<ID> | null>(
+    null
+  );
+  const ref = useDetectClickOutside({ onTriggered: () => setIsOpen(false) });
+  const [filteredOptions, setFilteredOptions] = useState<
+    IAutocompleteOption<ID>[]
+  >([]);
 
   useEffect(() => {
-    set_selected(value || null);
-    set_query("");
+    setSelected(options.find((o) => o.id === value) || null);
   }, [value]);
 
-  const filtered_options = query
-    ? options.filter((option) =>
-        option.toLowerCase().includes(query.toLowerCase())
-      )
-    : options;
+  useEffect(() => {
+    const match = options.find((o) => o.id === value);
+    if (match) {
+      setSelected(match);
+      setIsOpen(false);
+    }
+  }, [options]);
+
+  // Filter by query
+  useEffect(() => {
+    setFilteredOptions(
+      query
+        ? options.filter((option) =>
+            option?.name?.toLowerCase()?.includes(query.toLowerCase())
+          )
+        : options
+    );
+  }, [query, options]);
 
   return (
     <div className="relative w-full" ref={ref}>
       <Input
-        value={selected ?? query}
+        value={selected?.name ?? undefined}
         className="border-gray-300"
         placeholder={placeholder}
         onChange={(e) => {
-          setter(e.target.value);
-          set_query(e.target.value);
-          set_selected(null);
-          set_is_open(true);
+          setter(e.target.value as ID);
+          setQuery(e.target.value);
+          setSelected(null);
+          setIsOpen(true);
+
+          const match = options.find((o) => o.name === e.target.value);
+          if (match) {
+            setSelected(match);
+            setter(match.id);
+            setQuery("");
+            setIsOpen(false);
+          }
         }}
-        onFocus={() => set_is_open(true)}
+        onFocus={() => setIsOpen(true)}
       />
-      {is_open && !selected && query.length ? (
-        <ul className="absolute z-50 w-full mt-1 max-h-60 overflow-auto rounded-md bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5">
-          {filtered_options.length ? (
-            filtered_options.map((option, index) => (
-              <li
-                key={index}
-                onClick={() => {
-                  set_selected(option);
-                  setter(option);
-                  set_query("");
-                  set_is_open(false);
-                }}
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
-              >
-                {option}
-              </li>
-            ))
+      {is_open && !selected ? (
+        <ul className="absolute z-50 w-full mt-1 max-h-60 overflow-auto rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5">
+          {filteredOptions.length ? (
+            filteredOptions
+              .toSorted((a, b) => a.name.localeCompare(b.name))
+              .map((option, index) => (
+                <li
+                  key={index}
+                  onClick={() => {
+                    setSelected(option);
+                    setter(option.id);
+                    setQuery("");
+                    setIsOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
+                >
+                  {option.name}
+                </li>
+              ))
           ) : (
             <li
               key="no-match"

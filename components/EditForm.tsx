@@ -63,8 +63,10 @@ export const createEditForm = <T extends IFormData>(): [
     ) => {
       validators.current.push((data: T) => {
         const error = hasError(data[field]);
-        if (typeof error === "boolean") return false; // NO ERROR OCCURED
-        else errs.current[field] = error;
+        if (typeof error === "boolean") {
+          errs.current[field] = null;
+          return false; // NO ERROR OCCURED
+        } else errs.current[field] = error;
         return true; // AN ERROR OCCURED
       });
     };

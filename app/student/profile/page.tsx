@@ -1,6 +1,4 @@
 "use client";
-
-import Select from "react-select"
 import {
   useState,
   useEffect,
@@ -461,7 +459,8 @@ const ProfileEditor = forwardRef<
     addValidator(
       "university",
       (id: string) =>
-        !universityOptions.some((u) => u.id === id) && "Select a valid university."
+        !universityOptions.some((u) => u.id === id) &&
+        "Select a valid university."
     );
     addValidator(
       "college",
@@ -471,19 +470,26 @@ const ProfileEditor = forwardRef<
     addValidator(
       "department",
       (id: string) =>
-        !departmentOptions.some((d) => d.id === id) && "Select a valid department."
+        !departmentOptions.some((d) => d.id === formData.department) &&
+        "Select a valid department."
     );
     addValidator(
       "degree",
       (id: string) =>
         !degreeOptions.some((d) => d.id === id) && "Select a valid degree."
     );
-    addValidator(
-      "year_level",
-      (id: string) =>
-        !id || !levels.some((l) => l.id === Number(id)) ? "Select a valid year level." : ""
+    addValidator("year_level", (id: string) =>
+      !id || !levels.some((l) => l.id === Number(id))
+        ? "Select a valid year level."
+        : ""
     );
-  }, [universityOptions, collegeOptions, departmentOptions, degreeOptions, levels]);
+  }, [
+    universityOptions,
+    collegeOptions,
+    departmentOptions,
+    degreeOptions,
+    levels,
+  ]);
 
   const [showCalendarHelp, setShowCalendarHelp] = useState(false);
   const helpBtnRef = useRef<HTMLButtonElement>(null);
@@ -568,47 +574,38 @@ const ProfileEditor = forwardRef<
         </div>
         <div className="flex flex-col space-y-3 w-full ">
           <div>
-            <div className="text-sm font-medium text-gray-700 mb-1">University</div>
+            <div className="text-sm font-medium text-gray-700 mb-1">
+              University
+            </div>
             <ErrorLabel value={formErrors.university} />
             <Autocomplete
-              options={universityOptions.map((u) => u.name)}
-              value={
-                universityOptions.find((u) => u.id === formData.university)?.name || ""
-              }
-              setter={(val) => {
-                const uni = universityOptions.find((u) => u.name === val);
-                fieldSetter("university")(uni ? uni.id : "");
-              }}
+              options={universityOptions}
+              value={formData.university}
+              setter={fieldSetter("university")}
               placeholder="Select University"
             />
           </div>
           <div>
-            <div className="text-sm font-medium text-gray-700 mb-1">College</div>
+            <div className="text-sm font-medium text-gray-700 mb-1">
+              College
+            </div>
             <ErrorLabel value={formErrors.college} />
             <Autocomplete
-              options={collegeOptions.map((c) => c.name)}
-              value={
-                collegeOptions.find((c) => c.id === formData.college)?.name || ""
-              }
-              setter={(val) => {
-                const col = collegeOptions.find((c) => c.name === val);
-                fieldSetter("college")(col ? col.id : "");
-              }}
+              options={collegeOptions}
+              value={formData.college}
+              setter={fieldSetter("college")}
               placeholder="Select College"
             />
           </div>
           <div>
-            <div className="text-sm font-medium text-gray-700 mb-1">Department</div>
+            <div className="text-sm font-medium text-gray-700 mb-1">
+              Department
+            </div>
             <ErrorLabel value={formErrors.department} />
             <Autocomplete
-              options={departmentOptions.map((d) => d.name)}
-              value={
-                departmentOptions.find((d) => d.id === formData.department)?.name || ""
-              }
-              setter={(val) => {
-                const dep = departmentOptions.find((d) => d.name === val);
-                fieldSetter("department")(dep ? dep.id : "");
-              }}
+              options={departmentOptions}
+              value={formData.department}
+              setter={fieldSetter("department")}
               placeholder="Select Department"
             />
           </div>
@@ -616,29 +613,21 @@ const ProfileEditor = forwardRef<
             <div className="text-sm font-medium text-gray-700 mb-1">Degree</div>
             <ErrorLabel value={formErrors.degree} />
             <Autocomplete
-              options={degreeOptions.map((d) => d.name)}
-              value={
-                degreeOptions.find((d) => d.id === formData.degree)?.name || ""
-              }
-              setter={(val) => {
-                const deg = degreeOptions.find((d) => d.name === val);
-                fieldSetter("degree")(deg ? deg.id : "");
-              }}
+              options={degreeOptions}
+              value={formData.degree}
+              setter={fieldSetter("degree")}
               placeholder="Select Degree"
             />
           </div>
           <div>
-            <div className="text-sm font-medium text-gray-700 mb-1">Year Level</div>
+            <div className="text-sm font-medium text-gray-700 mb-1">
+              Year Level
+            </div>
             <ErrorLabel value={formErrors.year_level} />
             <Autocomplete
-              options={levels.map((l) => l.name)}
-              value={
-                levels.find((l) => l.id === formData.year_level)?.name || ""
-              }
-              setter={(val) => {
-                const lvl = levels.find((l) => l.name === val);
-                fieldSetter("year_level")(lvl ? lvl.id : "");
-              }}
+              options={levels}
+              value={formData.year_level}
+              setter={fieldSetter("year_level")}
               placeholder="Select Year Level"
             />
           </div>
@@ -722,8 +711,8 @@ const ProfileEditor = forwardRef<
                 ref={helpPopupRef}
                 className="absolute left-0 top-full mt-2 w-full bg-gray-100 border border-gray-300 rounded p-3 text-xs text-gray-700 shadow z-10"
               >
-                Go to <b>calendar.google.com</b>, press the <b>+</b> icon, and set
-                up an appointment schedule to get this link.
+                Go to <b>calendar.google.com</b>, press the <b>+</b> icon, and
+                set up an appointment schedule to get this link.
                 <br />
                 <br />
                 If you need help, you can head to{" "}
