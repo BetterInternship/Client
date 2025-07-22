@@ -1,11 +1,12 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, LayoutGroup } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useAppContext } from "@/lib/ctx-app";
+import { TextRotate } from "@/components/landingHire/sections/hero/text-rotate";
 
 export function HeroSection() {
   const videos = [
@@ -52,19 +53,38 @@ export function HeroSection() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full h-full flex items-center justify-center">
         <div className="max-w-fit w-fit flex flex-col items-start">
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-6xl break-all md:text-8xl font-bold text-white text-opacity-90 tracking-tighter mb-6 text-left leading-tight"
-          >
-            Interns. <br />
-            <span className="italic sm:not-italic">
-              More. <br className="sm:hidden inline-block" />
-              Faster. <br className="sm:hidden inline-block" />
-              Better.
-            </span>
-          </motion.h1>
+          {/* Animated headline from Preview */}
+          <LayoutGroup>
+            <motion.p
+              className="flex flex-col whitespace-pre text-6xl break-all md:text-8xl font-bold text-white text-opacity-90 tracking-tighter mb-6 text-left leading-tight"
+              layout
+            >
+              <motion.span
+                className="pt-0.5 sm:pt-1 md:pt-2"
+                layout
+                transition={{ type: "spring", damping: 30, stiffness: 400 }}
+              >
+                Interns.
+              </motion.span>
+              <TextRotate
+                texts={[
+                  "Faster.",
+                  "Better.",
+                  "Easier.",
+                ]}
+                mainClassName="text-white border-b-2 border-white/60 overflow-hidden w-fit justify-start mt-2"
+                staggerFrom={"last"}
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "-120%" }}
+                staggerDuration={0.025}
+                splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
+                transition={{ type: "spring", damping: 30, stiffness: 400 }}
+                rotationInterval={3000}
+              />
+            </motion.p>
+          </LayoutGroup>
+          {/* Subtitle and buttons remain unchanged */}
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
