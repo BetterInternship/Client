@@ -38,6 +38,7 @@ function DashboardContent() {
     setConversationId(userConversation?.id);
   };
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
+  const chatAnchorRef = useRef<HTMLDivElement>(null);
   const [sending, setSending] = useState(false);
   const conversation = useConversation("employer", conversationId);
   const { url: resumeURL, sync: syncResumeURL } = useFile({
@@ -51,11 +52,20 @@ function DashboardContent() {
       : "",
   });
 
+  const endSend = () => {
+    setSending(false);
+    setTimeout(() => {
+      chatAnchorRef.current?.scrollIntoView({ behavior: "instant" });
+      messageInputRef.current?.focus();
+    }, 100);
+  };
+
   // Handle message
   const handleMessage = async (userId: string, message: string) => {
+    if (message.trim() === "") return;
+
     setSending(true);
-    // ! remove type any
-    let userConversation = conversations.data?.find((c: any) =>
+    let userConversation = conversations.data?.find((c) =>
       c?.subscribers?.includes(userId)
     );
 
@@ -63,11 +73,11 @@ function DashboardContent() {
     if (!userConversation) {
       const response = await EmployerConversationService.createConversation(
         userId
-      );
+      ).catch(endSend);
 
       if (!response?.success) {
         alert("Could not initiate conversation with user.");
-        setSending(false);
+        endSend();
         return;
       }
 
@@ -76,12 +86,12 @@ function DashboardContent() {
       userConversation = response.conversation;
     }
 
-    if (!userConversation) return;
-    const response = await EmployerConversationService.sendToUser(
+    if (!userConversation) return endSend();
+    await EmployerConversationService.sendToUser(
       userConversation?.id,
       message
-    );
-    setSending(false);
+    ).catch(endSend);
+    endSend();
   };
 
   const {
@@ -243,16 +253,19 @@ function DashboardContent() {
             <div className="text-4xl font-bold tracking-tight">
               {getFullName(selectedApplication?.user)}
             </div>
-            <div className="flex flex-col justify-end flex-1 border border-gray-300 rounded-[0.33em] h-full gap-1 p-2">
-              {conversation.messages?.map((message, idx) => {
-                return (
-                  <Message
-                    key={idx}
-                    message={message.message}
-                    self={message.sender_id === profile.data?.id}
-                  />
-                );
-              })}
+            <div className="overflow-y-hidden flex-1 border border-gray-300 rounded-[0.33em] max-h-[75%]">
+              <div className="flex flex-col-reverse max-h-full overflow-y-scroll p-2 gap-1">
+                <div ref={chatAnchorRef} />
+                {conversation.messages?.toReversed().map((message, idx) => {
+                  return (
+                    <Message
+                      key={idx}
+                      message={message.message}
+                      self={message.sender_id === profile.data?.id}
+                    />
+                  );
+                })}
+              </div>
             </div>
             <Textarea
               ref={messageInputRef}
@@ -267,7 +280,6 @@ function DashboardContent() {
                       selectedApplication.user_id,
                       messageInputRef.current.value
                     );
-                    messageInputRef.current.value = "";
                   }
                 }
               }}
@@ -283,7 +295,6 @@ function DashboardContent() {
                     selectedApplication?.user_id,
                     messageInputRef.current?.value
                   );
-                  messageInputRef.current.value = "";
                 }
               }}
             >
