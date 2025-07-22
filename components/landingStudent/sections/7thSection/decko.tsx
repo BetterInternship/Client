@@ -19,7 +19,7 @@ export function Preview() {
           ]}
           speed={70}
           className="text-white"
-          waitTime={1500}
+          waitTime={3000}
           deleteSpeed={40}
           cursorChar={"_"}
         />
