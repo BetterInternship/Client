@@ -25,7 +25,7 @@ export function Preview() {
         />
       </div>
       <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 space-x-0 md:space-x-4 mt-8">
-        <Link href="/login">
+        <Link href="/search">
           <button className="w-48 h-12 rounded-xl bg-white text-black border border-white text-base font-semibold hover:bg-gray-100 transition">
             Find Internships
           </button>
