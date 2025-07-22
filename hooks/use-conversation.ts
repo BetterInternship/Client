@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-07-11 17:06:17
- * @ Modified time: 2025-07-22 01:57:01
+ * @ Modified time: 2025-07-23 06:12:39
  * @ Description:
  *
  * Used by student users for managing conversation state.
@@ -9,7 +9,7 @@
 
 import { APIClient, APIRoute } from "@/lib/api/api-client";
 import { usePocketbase } from "@/lib/pocketbase";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface Message {
   sender_id: string;
@@ -31,6 +31,7 @@ export const useConversation = (
   const [senderId, setSenderId] = useState("");
   const [loading, setLoading] = useState(true);
   const { pb, user } = usePocketbase(type);
+  const [unsubscribe, setUnsubscribe] = useState<Function>(() => () => {});
 
   const seenConversation = useCallback(async () => {
     if (!conversationId) return;
@@ -42,8 +43,6 @@ export const useConversation = (
   }, [conversationId]);
 
   useEffect(() => {
-    let unsubscribe = () => {};
-
     if (!user || !conversationId || !conversationId.trim().length) {
       setMessages([]);
       setSenderId("");
@@ -74,15 +73,17 @@ export const useConversation = (
           filter: `id = '${conversationId}'`,
         }
       )
-      .then((u) => (unsubscribe = u));
+      .then((u) => setUnsubscribe(u));
 
     return () => unsubscribe();
   }, [user, conversationId]);
+  console.log(unsubscribe);
 
   return {
     messages,
     senderId,
     loading,
+    unsubscribe,
   };
 };
 

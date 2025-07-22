@@ -7,11 +7,14 @@ import { Button } from "@/components/ui/button";
  *
  * @hook
  */
-export const useSideModal = (name: string) => {
+export const useSideModal = (
+  name: string,
+  options?: { onClose?: () => void }
+) => {
   const [isOpen, setIsOpen] = useState(false);
   return {
     open: () => setIsOpen(true),
-    close: () => setIsOpen(false),
+    close: () => (setIsOpen(false), options?.onClose && options?.onClose()),
     SideModal: ({ children }: { children: React.ReactNode }) => {
       return (
         isOpen && (
@@ -21,7 +24,9 @@ export const useSideModal = (name: string) => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => (
+                    setIsOpen(false), options?.onClose && options?.onClose()
+                  )}
                   className="p-2 hover:bg-gray-100 rounded-full"
                 >
                   <ArrowLeft className="h-5 w-5" />

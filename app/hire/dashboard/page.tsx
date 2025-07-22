@@ -98,7 +98,9 @@ function DashboardContent() {
     open: openChatModal,
     close: closeChatModal,
     SideModal: ChatModal,
-  } = useSideModal("chat-modal");
+  } = useSideModal("chat-modal", {
+    onClose: () => conversation.unsubscribe(),
+  });
 
   const {
     open: openApplicantModal,
