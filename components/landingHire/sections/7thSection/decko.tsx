@@ -4,7 +4,7 @@ import { Typewriter } from "@/components/landingHire/sections/7thSection/typewri
 
 export function Preview() {
   return (
-    <div className="flex flex-col border-t border-gray-900 items-center justify-center min-h-[18rem] py-24 bg-black text-white">
+    <div className="flex flex-col border-t border-gray-700 items-center justify-center min-h-[18rem] py-24 bg-black text-white">
       <p className="text-gray-400 text-base mt-6 text-center max-w-xl">
         Start hiring better interns — without the paperwork, emails and
         spreadsheets.
