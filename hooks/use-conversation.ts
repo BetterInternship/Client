@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-07-11 17:06:17
- * @ Modified time: 2025-07-23 14:08:16
+ * @ Modified time: 2025-07-23 14:39:02
  * @ Description:
  *
  * Used by student users for managing conversation state.
@@ -89,6 +89,7 @@ export const useConversation = (
 export const useConversations = (type: "user" | "employer") => {
   const { pb, user } = usePocketbase(type);
   const [conversations, setConversations] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let unsubscribe = () => {};
@@ -108,6 +109,7 @@ export const useConversations = (type: "user" | "employer") => {
           })
         );
         setConversations(conversations);
+        setLoading(false);
       });
 
     // Subscribe to notifications
@@ -123,6 +125,7 @@ export const useConversations = (type: "user" | "employer") => {
             })
           );
           setConversations(conversations);
+          setLoading(false);
         },
         {
           filter: `id = '${user.id}'`,
@@ -137,5 +140,6 @@ export const useConversations = (type: "user" | "employer") => {
 
   return {
     data: conversations,
+    loading,
   };
 };
