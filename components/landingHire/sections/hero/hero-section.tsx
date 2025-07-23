@@ -24,7 +24,7 @@ export function HeroSection() {
 
       <div className="absolute inset-0 bg-black/60" />
 
-      <div className="relative z-10 max-w-7xl w-full h-full flex items-center justify-center">
+      <div className="relative z-10 max-w-7xl px-4 w-full h-full flex items-center justify-center">
         <div className="max-w-fit w-fit flex flex-col items-start">
           {/* Animated headline from Preview */}
           <LayoutGroup>
