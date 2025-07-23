@@ -8,17 +8,17 @@ export function TimelineDemo() {
       title: "Instant Interviews",
       content: (
         <div>
-          <p className="text-neutral-800 dark:text-neutral-200 text-lg md:text-lg font-normal mb-8">
+          <p className="text-neutral-800 dark:text-neutral-200 text-lg md:text-lg font-normal mb-10">
             View student availability instantly on the platform. Book interviews
             in seconds.
           </p>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-left">
             <Image
-              src="/landingPage/instant-interviews.png"
+              src="/landingPage/3rdSec/1.png"
               alt="hero template"
-              width={500}
-              height={500}
-              className="rounded-[0.33em] object-cover w-full"
+              width={600}
+              height={350} 
+              className="rounded-[0.33em] object-cover"
             />
           </div>
         </div>
@@ -31,16 +31,16 @@ export function TimelineDemo() {
           <p className="text-neutral-800 dark:text-neutral-200 text-lg md:text-lg font-normal">
             Talk to applicants as soon as they apply.
           </p>
-          <p className="text-neutral-800 dark:text-neutral-200 text-lg md:text-lg font-normal mb-8">
+          <p className="text-neutral-800 dark:text-neutral-200 text-lg md:text-lg font-normal mb-10">
             Manage hundreds of conversations without flooding your inbox.
           </p>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-left">
             <Image
-              src="/landingPage/instant-messaging.png"
+              src="/landingPage/3rdSec/2.png"
               alt="hero template"
-              width={500}
-              height={500}
-              className="rounded-[0.33em] object-cover w-full"
+              width={600}
+              height={350}
+              className="rounded-[0.33em] object-cover"
             />
           </div>
         </div>
@@ -50,16 +50,16 @@ export function TimelineDemo() {
       title: "Instant Paperwork",
       content: (
         <div>
-          <p className="text-neutral-800 dark:text-neutral-200 text-lg md:text-lg font-normal mb-4">
+          <p className="text-neutral-800 dark:text-neutral-200 text-lg md:text-lg font-normal mb-10">
             Let us handle the paperwork for you. No spreadsheets needed.
           </p>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-left">
             <Image
-              src="/landingPage/instant-paperwork.png"
+              src="/landingPage/3rdSec/3.png"
               alt="hero template"
-              width={500}
-              height={500}
-              className="rounded-[0.33em] object-cover w-full"
+              width={600}
+              height={350}
+              className="rounded-[0.33em] object-cover"
             />
           </div>
         </div>

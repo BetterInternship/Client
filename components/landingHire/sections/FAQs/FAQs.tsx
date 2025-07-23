@@ -19,14 +19,9 @@ function FAQ() {
                 <Badge variant="outline">FAQ</Badge>
               </div>
               <div className="flex gap-2 flex-col">
-                <h4 className="text-3xl md:text-5xl tracking-tighter max-w-xl text-left text-white font-regular">
-                  Got Questions?
+                <h4 className="text-5xl md:text-7xl tracking-tighter max-w-xl text-left text-white font-regular">
+                  FAQs Section
                 </h4>
-                <p className="text-lg max-w-xl lg:max-w-lg leading-relaxed tracking-tight text-white  text-left">
-                  Running a business comes with enough challenges. We help
-                  you skip the hassle of old-school processes and paperwork. Our
-                  platform makes hiring interns simple, efficient, and stress-free.
-                </p>
               </div>
               <div>
                 <Button
@@ -45,32 +40,32 @@ function FAQ() {
               </div>
             </div>
           </div>
-          <Accordion type="single" collapsible className="w-full text-white">
+          <Accordion type="single" collapsible className="w-full text-white text-left">
             {[
               {
-                question: "How does the matching process work?",
+                question: "How much does it cost to post on BetterInternship?",
                 answer:
-                  "Post your internship and receive applications from talented applicants. Our dashboard makes it easy to review candidates and manage applications.",
+                  "Nothing. BetterInternship is completely free for companies to post and for students to apply.",
               },
               {
-                question: "Is it free to post internships?",
+                question: "What makes BetterInternship different from other job sites?",
                 answer:
-                  "Yes, posting internships and using all platform features is completely free.",
+                  "We focus solely on internships in the Philippines. From one-click interview scheduling to instant messaging and paperwork management, we streamline the entire internship process for both students and companies.",
               },
               {
-                question: "Can I update my internship listing?",
+                question: "Who runs BetterInternship?",
                 answer:
-                  "Yes, you can edit or update your internship details anytime from your dashboard.",
+                  "It’s built and maintained by students from the Misfit Community in DLSU.",
               },
               {
-                question: "What paperwork can you handle?",
+                question: "Is BetterInternship officially affiliated with DLSU?",
                 answer:
-                  "We handle contracts, MOAs, onboarding documents, and scheduling, so you can focus on hiring.",
+                  "No. BetterInternship is only officially endorsed by DLSU College of Computer Studies as of this moment.",
               },
               {
-                question: "How can I get support?",
+                question: "Can any company use BetterInternship?",
                 answer:
-                  "Contact us at hello@betterinternship.com for quick assistance from our team.",
+                  "Yes, but all company accounts must be verified by our admins before posting.",
               },
             ].map((item, index) => (
               <AccordionItem key={index} value={"index-" + index}>

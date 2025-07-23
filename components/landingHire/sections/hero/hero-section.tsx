@@ -9,44 +9,17 @@ import { useAppContext } from "@/lib/ctx-app";
 import { TextRotate } from "@/components/landingHire/sections/hero/text-rotate";
 
 export function HeroSection() {
-  const videos = [
-    "/landingPage/smile.mov",
-    "/landingPage/coding.mov",
-    "/landingPage/friends.mov",
-    "/landingPage/coding2.mov",
-    "/landingPage/nod.mov",
-  ];
-  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const { isMobile } = useAppContext();
-
-  useEffect(() => {
-    if (isMobile) return;
-    const interval = setInterval(() => {
-      setCurrentVideoIndex((prevIndex) => (prevIndex + 1) % videos.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [isMobile, videos.length]);
 
   return (
     <section className="relative min-h-screen flex items-center bg-black overflow-hidden">
-      {/* Show image on mobile, video on tablet/desktop */}
+      {/* Use image for both mobile and desktop */}
       <div className="absolute inset-0 w-full h-full overflow-y-hidden">
-        {isMobile ? (
-          <img
-            src="/landingPage/mobileBG.jpg"
-            alt="Landing"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        ) : (
-          <video
-            key={currentVideoIndex}
-            autoPlay
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover"
-            src={videos[currentVideoIndex]}
-          />
-        )}
+        <img
+          src="/landingPage/mobileBG.png"
+          alt="Landing"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
       </div>
 
       <div className="absolute inset-0 bg-black/60" />
@@ -94,12 +67,12 @@ export function HeroSection() {
             We handle matching, paperwork, and scheduling — <br />
             so you don’t have to.
           </motion.h2>
-          <div className="flex flex-row items-center justify-center w-full">
+          <div className="flex flex-row justify-start pt-10 w-full items-start">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-              className="flex flex-col sm:flex-row gap-4 items-center pt-8"
+              className="flex flex-col sm:flex-row gap-4 items-start"
             >
               <Link href="/login">
                 <Button
