@@ -7,14 +7,14 @@ import { EmployerPfp } from "@/components/shared/pfp";
 import { ChevronRight, SendHorizonal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
-import { useEffect, useRef, useState } from "react";
+import { Ref, useEffect, useRef, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Message } from "@/components/ui/messages";
 import { Button } from "@/components/ui/button";
 import { UserConversationService } from "@/lib/api/services";
 import { useProfile } from "@/lib/api/student.api";
-import { APIClient, APIRoute } from "@/lib/api/api-client";
 import { Loader } from "@/components/ui/loader";
+import { useEmployerName } from "@/hooks/use-employer-api";
 
 export default function ConversationsPage() {
   const { isAuthenticated, redirectIfNotLoggedIn } = useAuthContext();
@@ -71,7 +71,7 @@ export default function ConversationsPage() {
                 .map((conversation) => (
                   <ConversationCard
                     key={conversation.id}
-                    latestYou={
+                    latestIsYou={
                       conversation.last_unread?.sender_id === profile.data?.id
                     }
                     latestMessage={conversation.last_unread?.message}
@@ -83,18 +83,10 @@ export default function ConversationsPage() {
           </div>
           {/* Conversation Pane */}
           <div className="flex flex-col justify-end flex-1 max-w-[75%] max-h-[100%]">
-            <div className="flex flex-col-reverse gap-1 p-2 max-h-[100%] overflow-auto">
-              <div ref={chatAnchorRef} />
-              {conversation.messages?.toReversed()?.map((message, idx) => {
-                return (
-                  <Message
-                    key={idx}
-                    message={message.message}
-                    self={message.sender_id === profile.data?.id}
-                  />
-                );
-              })}
-            </div>
+            <ConversationPane
+              conversation={conversation}
+              chatAnchorRef={chatAnchorRef}
+            />
             {conversationId ? (
               <div className="flex flex-col p-2 gap-3">
                 <Textarea
@@ -174,38 +166,72 @@ export default function ConversationsPage() {
   );
 }
 
-export const ConversationCard = ({
+// ! change type to conversation
+const ConversationPane = ({
   conversation,
-  latestYou,
+  chatAnchorRef,
+}: {
+  conversation: any;
+  chatAnchorRef: Ref<HTMLDivElement>;
+}) => {
+  const profile = useProfile();
+  const { employerName } = useEmployerName(conversation.senderId);
+  let lastSelf = false;
+
+  return (
+    <div className="flex flex-col-reverse gap-1 p-2 max-h-[100%] overflow-auto">
+      <div ref={chatAnchorRef} />
+      {conversation.messages
+        ?.map((message: any, idx: number) => {
+          if (!idx) lastSelf = false;
+          const oldLastSelf = lastSelf;
+          lastSelf = message.sender_id === profile.data?.id;
+          return {
+            key: idx,
+            message: message.message,
+            self: message.sender_id === profile.data?.id,
+            prevSelf: oldLastSelf,
+            them: employerName,
+          };
+        })
+        ?.toReversed()
+        ?.map((d: any) => (
+          <Message
+            key={d.key}
+            message={d.message}
+            self={d.self}
+            prevSelf={d.prevSelf}
+            them={d.them}
+          />
+        ))}
+    </div>
+  );
+};
+
+const ConversationCard = ({
+  conversation,
+  latestIsYou,
   latestMessage,
   setConversationId,
 }: {
   // ! change to type conversation
   conversation: any;
-  latestYou: boolean;
+  latestIsYou: boolean;
   latestMessage: string;
   setConversationId: (id: string) => void;
 }) => {
   const profile = useProfile();
   const [employerId, setEmployerId] = useState("");
-  const [employerName, setEmployerName] = useState("");
+  const { employerName } = useEmployerName(employerId);
 
+  // ! refactor
   useEffect(() => {
     setEmployerId(
-      conversation.subscribers.find(
+      conversation?.subscribers?.find(
         (subscriberId: string) => subscriberId !== profile.data?.id
-      )
+      ) ?? ""
     );
   }, [conversation]);
-
-  useEffect(() => {
-    // ! refactor lol
-    APIClient.get<any>(APIRoute("employer").r(employerId).build()).then(
-      ({ employer }: { employer: Employer }) => {
-        setEmployerName(employer.name ?? "");
-      }
-    );
-  }, [employerId]);
 
   return (
     <Card
@@ -218,7 +244,7 @@ export const ConversationCard = ({
           <div className="flex flex-col">
             <span className="font-medium">{employerName}</span>
             <span className="text-xs opacity-60 line-clamp-1 max-w-prose text-ellipsis  ">
-              {(latestYou ? "You: " : "") + latestMessage}
+              {(latestIsYou ? "You: " : "") + latestMessage}
             </span>
           </div>
         </div>

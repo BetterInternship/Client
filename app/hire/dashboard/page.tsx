@@ -81,17 +81,21 @@ function DashboardContent() {
         return;
       }
 
+      console.log(response);
+
       // Update the conversation
       setConversationId(response.conversation?.id ?? "");
       userConversation = response.conversation;
+      endSend();
     }
 
-    if (!userConversation) return endSend();
-    await EmployerConversationService.sendToUser(
-      userConversation?.id,
-      message
-    ).catch(endSend);
-    endSend();
+    setTimeout(async () => {
+      if (!userConversation) return endSend();
+      await EmployerConversationService.sendToUser(
+        userConversation?.id,
+        message
+      ).catch(endSend);
+    });
   };
 
   const {
@@ -166,6 +170,9 @@ function DashboardContent() {
       </div>
     );
   }
+
+  // ! remove, find a better way
+  let lastSelf = false;
 
   return (
     <ContentLayout>
@@ -256,17 +263,31 @@ function DashboardContent() {
               {getFullName(selectedApplication?.user)}
             </div>
             <div className="overflow-y-hidden flex-1 border border-gray-300 rounded-[0.33em] max-h-[75%]">
-              <div className="flex flex-col-reverse max-h-full overflow-y-scroll p-2 gap-1">
+              <div className="flex flex-col-reverse max-h-full min-h-full overflow-y-scroll p-2 gap-1">
                 <div ref={chatAnchorRef} />
-                {conversation.messages?.toReversed()?.map((message, idx) => {
-                  return (
+                {conversation.messages
+                  ?.map((message: any, idx: number) => {
+                    if (!idx) lastSelf = false;
+                    const oldLastSelf = lastSelf;
+                    lastSelf = message.sender_id === profile.data?.id;
+                    return {
+                      key: idx,
+                      message: message.message,
+                      self: message.sender_id === profile.data?.id,
+                      prevSelf: oldLastSelf,
+                      them: getFullName(selectedApplication?.user),
+                    };
+                  })
+                  ?.toReversed()
+                  ?.map((d: any) => (
                     <Message
-                      key={idx}
-                      message={message.message}
-                      self={message.sender_id === profile.data?.id}
+                      key={d.key}
+                      message={d.message}
+                      self={d.self}
+                      prevSelf={d.prevSelf}
+                      them={d.them}
                     />
-                  );
-                })}
+                  ))}
               </div>
             </div>
             <Textarea
