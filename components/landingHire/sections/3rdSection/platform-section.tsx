@@ -1,18 +1,19 @@
 import Image from "next/image";
 import React from "react";
 import { Timeline } from "@/components/landingHire/sections/3rdSection/feature-section";
+import { Card } from "@/components/ui/our-card";
 
 export function TimelineDemo() {
   const data = [
     {
       title: "Instant Interviews",
       content: (
-        <div>
-          <p className="text-neutral-800 dark:text-neutral-200 text-lg md:text-lg font-normal mb-8">
-            View student availability instantly on the platform. Book interviews
-            in seconds.
+        <Card className="bg-transparent flex flex-col border-opacity-20">
+          <p className="text-neutral-800 dark:text-neutral-200 text-lg md:text-lg font-normal">
+            View student availability instantly on the platform. <br />
+            Book interviews in seconds.
           </p>
-          <div className="grid grid-cols-2 gap-4">
+          {/* <div className="grid grid-cols-2 gap-4">
             <Image
               src="/landingPage/instant-interviews.png"
               alt="hero template"
@@ -20,21 +21,19 @@ export function TimelineDemo() {
               height={500}
               className="rounded-[0.33em] object-cover w-full"
             />
-          </div>
-        </div>
+          </div> */}
+        </Card>
       ),
     },
     {
       title: "Instant Messaging",
       content: (
-        <div>
+        <Card className="bg-transparent flex flex-col border-opacity-20">
           <p className="text-neutral-800 dark:text-neutral-200 text-lg md:text-lg font-normal">
-            Talk to applicants as soon as they apply.
-          </p>
-          <p className="text-neutral-800 dark:text-neutral-200 text-lg md:text-lg font-normal mb-8">
+            Talk to applicants as soon as they apply. <br />
             Manage hundreds of conversations without flooding your inbox.
           </p>
-          <div className="grid grid-cols-2 gap-4">
+          {/* <div className="grid grid-cols-2 gap-4">
             <Image
               src="/landingPage/instant-messaging.png"
               alt="hero template"
@@ -42,18 +41,19 @@ export function TimelineDemo() {
               height={500}
               className="rounded-[0.33em] object-cover w-full"
             />
-          </div>
-        </div>
+          </div> */}
+        </Card>
       ),
     },
     {
       title: "Instant Paperwork",
       content: (
-        <div>
-          <p className="text-neutral-800 dark:text-neutral-200 text-lg md:text-lg font-normal mb-4">
-            Let us handle the paperwork for you. No spreadsheets needed.
+        <Card className="bg-transparent flex flex-col border-opacity-20">
+          <p className="text-neutral-800 dark:text-neutral-200 text-lg md:text-lg font-normal">
+            Let us handle the paperwork for you. <br />
+            No spreadsheets needed.
           </p>
-          <div className="grid grid-cols-2 gap-4">
+          {/* <div className="grid grid-cols-2 gap-4">
             <Image
               src="/landingPage/instant-paperwork.png"
               alt="hero template"
@@ -61,8 +61,8 @@ export function TimelineDemo() {
               height={500}
               className="rounded-[0.33em] object-cover w-full"
             />
-          </div>
-        </div>
+          </div> */}
+        </Card>
       ),
     },
   ];
