@@ -77,7 +77,7 @@ export function HeroSection() {
               <Link href="/login">
                 <Button
                   size="lg"
-                  className="bg-white hover:bg-gray-100 text-gray-800 px-14 py-4 text-lg tracking-tight"
+                  className="bg-white hover:bg-gray-100 text-gray-800 py-4 text-lg tracking-tight"
                 >
                   Post An Internship
                 </Button>
@@ -90,9 +90,9 @@ export function HeroSection() {
                 <Button
                   size="lg"
                   variant="ghost"
-                  className="text-white hover:text-white/80 hover:bg-white/10 transition-all duration-300 text-lg font-medium flex items-center px-8 py-6 backdrop-blur-sm border border-white/20"
+                  className="text-white hover:text-white/80 hover:bg-white/10 transition-all duration-300 text-lg font-medium flex items-center px-9 py-4 backdrop-blur-sm border border-white/20"
                 >
-                  Book a 15 minute Demo
+                  Request a Demo
                 </Button>
               </Link>
             </motion.div>
