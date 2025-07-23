@@ -67,12 +67,12 @@ export function HeroSection() {
             We handle matching, paperwork, and scheduling — <br />
             so you don’t have to.
           </motion.h2>
-          <div className="flex flex-row items-center justify-center w-full">
+          <div className="flex flex-row justify-start pt-10 w-full items-start">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-              className="flex flex-col sm:flex-row gap-4 items-center pt-8"
+              className="flex flex-col sm:flex-row gap-4 items-start"
             >
               <Link href="/login">
                 <Button
