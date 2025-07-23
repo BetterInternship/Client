@@ -64,7 +64,7 @@ export function HeroSection() {
             transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
             className="text-xl sm:text-3xl font-medium text-white text-left text-opacity-80 mb-4"
           >
-            We handle matching, scheduling, and paperwork — <br />
+            We handle matching, scheduling, and paperwork —
             so you don’t have to.
           </motion.h2>
           <div className="flex flex-row justify-start pt-10 w-full items-start">
@@ -77,7 +77,7 @@ export function HeroSection() {
               <Link href="/login">
                 <Button
                   size="lg"
-                  className="bg-white hover:bg-gray-100 text-gray-800 px-8 py-4 text-lg tracking-tight"
+                  className="bg-white hover:bg-gray-100 text-gray-800 px-14 py-4 text-lg tracking-tight"
                 >
                   Post An Internship
                 </Button>
@@ -92,7 +92,6 @@ export function HeroSection() {
                   variant="ghost"
                   className="text-white hover:text-white/80 hover:bg-white/10 transition-all duration-300 text-lg font-medium flex items-center px-8 py-6 backdrop-blur-sm border border-white/20"
                 >
-                  <ChevronRight className="w-6 h-6" />
                   Book a 15 minute Demo
                 </Button>
               </Link>

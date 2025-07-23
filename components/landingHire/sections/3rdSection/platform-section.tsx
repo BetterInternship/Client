@@ -8,18 +8,17 @@ export function TimelineDemo() {
       title: "Instant Interviews",
       content: (
         <div>
-          <p className="text-neutral-800 dark:text-neutral-200 text-base sm:text-lg md:text-2xl font-normal mb-6 max-w-[95vw]">
+          <p className="text-neutral-800 dark:text-neutral-200 text-xl md:text-3xl font-normal mb-10">
             View student availability instantly on the platform. Book interviews
             in seconds.
           </p>
-          <div className="flex items-left w-full max-w-[95vw]">
+          <div className="flex items-left">
             <Image
               src="/landingPage/3rdSec/1.png"
               alt="hero template"
-              width={0}
-              height={0}
-              sizes="100vw"
-              className="rounded-[0.33em] object-cover w-full h-auto max-w-[95vw]"
+              width={350}
+              height={200}
+              className="rounded-[0.33em] object-cover]"
               style={{ maxWidth: "95vw", height: "auto" }}
             />
           </div>
@@ -30,11 +29,8 @@ export function TimelineDemo() {
       title: "Instant Messaging",
       content: (
         <div>
-          <p className="text-neutral-800 dark:text-neutral-200 text-xl md:text-3xl font-normal">
-            Talk to applicants as soon as they apply.
-          </p>
           <p className="text-neutral-800 dark:text-neutral-200 text-xl md:text-3xl font-normal mb-10">
-            Manage hundreds of conversations without flooding your inbox.
+            Manage hundred of applicant conversations without flooding your inbox.
           </p>
           <div className="flex items-left">
             <Image
@@ -53,7 +49,7 @@ export function TimelineDemo() {
       content: (
         <div>
           <p className="text-neutral-800 dark:text-neutral-200 text-xl md:text-3xl font-normal mb-10">
-            Let us handle the paperwork for you. No spreadsheets needed.
+            Let us handle the paperwork for you. No Headache needed.
           </p>
           <div className="flex items-left">
             <Image

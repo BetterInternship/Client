@@ -39,21 +39,12 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
     >
       <div className="max-w-7xl mx-auto pt-12 px-4 sm:px-6 md:px-8 lg:px-10">
         <h2
-          className="mb-4 text-black dark:text-white max-w-[95vw] overflow-hidden"
-          style={{
-            fontSize: "clamp(2rem, 8vw, 2.5rem)", // smaller max for mobile
-            lineHeight: 1.1,
-            fontWeight: 700,
-          }}
+          className="mb-4 text-black dark:text-white max-w-[95vw] text-6xl lg:text-8xl overflow-hidden"
         >
           Everything you need in One Platform.
         </h2>
         <p
-          className="text-neutral-700 dark:text-neutral-300 max-w-[95vw] overflow-hidden"
-          style={{
-            fontSize: "clamp(1rem, 5vw, 1.15rem)", // smaller max for mobile
-            lineHeight: 1.3,
-          }}
+          className="text-neutral-700 dark:text-neutral-300 max-w-[95vw] text-xl lg:text-3xl"
         >
           All-in-one tools for hiring, onboarding, and managing talent—simple, fast,
           and seamless.
@@ -87,7 +78,7 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
           style={{
             height: height + "px",
           }}
-          className="absolute md:left-8 left-8 top-0 overflow-hidden w-[2px] bg-[linear-gradient(to_bottom,var(--tw-gradient-stops))] from-transparent from-[0%] via-neutral-200 dark:via-neutral-700 to-transparent to-[99%]  [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_90%,transparent_100%)] "
+          className="absolute md:left-8 left-8 top-0 w-[2px] bg-[linear-gradient(to_bottom,var(--tw-gradient-stops))] from-transparent from-[0%] via-neutral-200 dark:via-neutral-700 to-transparent to-[99%]  [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_90%,transparent_100%)] "
         >
           <motion.div
             style={{
