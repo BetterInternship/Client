@@ -8,7 +8,7 @@ export function TimelineDemo() {
       title: "Instant Interviews",
       content: (
         <div>
-            <p className="text-neutral-800 dark:text-neutral-200 text-base sm:text-lg md:text-2xl font-normal mb-6 w-full">
+            <p className="text-neutral-800 dark:text-neutral-200 text-xl md:text-3xl font-normal mb-10">
             View student availability instantly on the platform. Book interviews
             in seconds.
           </p>
@@ -18,7 +18,7 @@ export function TimelineDemo() {
               alt="hero template"
               width={350}
               height={200}
-              className="rounded-[0.33em] object-cover]"
+              className="rounded-[0.33em] object-cover"
             />
           </div>
         </div>
