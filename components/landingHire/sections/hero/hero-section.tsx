@@ -9,49 +9,22 @@ import { useAppContext } from "@/lib/ctx-app";
 import { TextRotate } from "@/components/landingHire/sections/hero/text-rotate";
 
 export function HeroSection() {
-  const videos = [
-    "/landingPage/smile.mov",
-    "/landingPage/coding.mov",
-    "/landingPage/friends.mov",
-    "/landingPage/coding2.mov",
-    "/landingPage/nod.mov",
-  ];
-  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const { isMobile } = useAppContext();
-
-  useEffect(() => {
-    if (isMobile) return;
-    const interval = setInterval(() => {
-      setCurrentVideoIndex((prevIndex) => (prevIndex + 1) % videos.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [isMobile, videos.length]);
 
   return (
     <section className="relative min-h-screen flex items-center bg-black overflow-hidden">
-      {/* Show image on mobile, video on tablet/desktop */}
+      {/* Use image for both mobile and desktop */}
       <div className="absolute inset-0 w-full h-full overflow-y-hidden">
-        {isMobile ? (
-          <img
-            src="/landingPage/mobileBG.jpg"
-            alt="Landing"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        ) : (
-          <video
-            key={currentVideoIndex}
-            autoPlay
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover"
-            src={videos[currentVideoIndex]}
-          />
-        )}
+        <img
+          src="/landingPage/mobileBG.png"
+          alt="Landing"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
       </div>
 
       <div className="absolute inset-0 bg-black/60" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full h-full flex items-center justify-center">
+      <div className="relative z-10 max-w-7xl px-4 w-full h-full flex items-center justify-center">
         <div className="max-w-fit w-fit flex flex-col items-start">
           {/* Animated headline from Preview */}
           <LayoutGroup>
@@ -91,20 +64,20 @@ export function HeroSection() {
             transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
             className="text-xl sm:text-3xl font-medium text-white text-left text-opacity-80 mb-4"
           >
-            We handle matching, paperwork, and scheduling — <br />
-            so you don’t have to.
+            We handle matching, scheduling, and paperwork <br/>
+            — so you don’t have to.
           </motion.h2>
-          <div className="flex flex-row items-center justify-center w-full">
+          <div className="flex flex-row justify-start pt-10 w-full items-start">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-              className="flex flex-col sm:flex-row gap-4 items-center pt-8"
+              className="flex flex-col sm:flex-row gap-4 items-start"
             >
               <Link href="/login">
                 <Button
                   size="lg"
-                  className="bg-white hover:bg-gray-100 text-gray-800 px-8 py-4 text-lg tracking-tight"
+                  className="bg-white hover:bg-gray-100 text-gray-800 py-4 text-lg tracking-tight"
                 >
                   Post An Internship
                 </Button>
@@ -117,10 +90,9 @@ export function HeroSection() {
                 <Button
                   size="lg"
                   variant="ghost"
-                  className="text-white hover:text-white/80 hover:bg-white/10 transition-all duration-300 text-lg font-medium flex items-center px-8 py-6 backdrop-blur-sm border border-white/20"
+                  className="text-white hover:text-white/80 hover:bg-white/10 transition-all duration-300 text-lg font-medium flex items-center px-9 py-4 backdrop-blur-sm border border-white/20"
                 >
-                  <ChevronRight className="w-6 h-6" />
-                  Book a 15 minute Demo
+                  Request a Demo
                 </Button>
               </Link>
             </motion.div>

@@ -5,15 +5,11 @@ import { Typewriter } from "@/components/landingHire/sections/7thSection/typewri
 export function Preview() {
   return (
     <div className="flex flex-col border-t border-gray-700 items-center justify-center min-h-[18rem] py-24 bg-black text-white">
-      <p className="text-gray-400 text-base mt-6 text-center max-w-xl">
-        Start hiring better interns — without the paperwork, emails and
-        spreadsheets.
-      </p>
-      <div className="md:text-4xl lg:text-5xl sm:text-3xl pt-4 text-2xl mb-8 text-center w-full flex items-center justify-center">
+      <div className="pt-4 mb-8 text-center flex flex-col md:flex-row items-center justify-center text-5xl lg:text-6xl gap-2">
         <span>{"Ready to "}</span>
         <Typewriter
           text={[
-            " make hiring easy?"
+            "make hiring easier?"
           ]}
           speed={70}
           className="text-white"

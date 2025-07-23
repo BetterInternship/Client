@@ -1,68 +1,65 @@
 import Image from "next/image";
 import React from "react";
 import { Timeline } from "@/components/landingHire/sections/3rdSection/feature-section";
-import { Card } from "@/components/ui/our-card";
 
 export function TimelineDemo() {
   const data = [
     {
       title: "Instant Interviews",
       content: (
-        <Card className="bg-transparent flex flex-col border-opacity-20">
-          <p className="text-neutral-800 dark:text-neutral-200 text-lg md:text-lg font-normal">
-            View student availability instantly on the platform. <br />
-            Book interviews in seconds.
+        <div>
+            <p className="text-neutral-800 dark:text-neutral-200 text-xl md:text-3xl font-normal mb-10">
+            View student availability instantly on the platform. Book interviews
+            in seconds.
           </p>
-          {/* <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-left">
             <Image
-              src="/landingPage/instant-interviews.png"
+              src="/landingPage/3rdSec/1.png"
               alt="hero template"
-              width={500}
-              height={500}
-              className="rounded-[0.33em] object-cover w-full"
+              width={350}
+              height={200}
+              className="rounded-[0.33em] object-cover"
             />
-          </div> */}
-        </Card>
+          </div>
+        </div>
       ),
     },
     {
       title: "Instant Messaging",
       content: (
-        <Card className="bg-transparent flex flex-col border-opacity-20">
-          <p className="text-neutral-800 dark:text-neutral-200 text-lg md:text-lg font-normal">
-            Talk to applicants as soon as they apply. <br />
-            Manage hundreds of conversations without flooding your inbox.
+        <div>
+          <p className="text-neutral-800 dark:text-neutral-200 text-xl md:text-3xl font-normal mb-10">
+            Manage hundred of applicant conversations without flooding your inbox.
           </p>
-          {/* <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-left">
             <Image
-              src="/landingPage/instant-messaging.png"
+              src="/landingPage/3rdSec/2.png"
               alt="hero template"
-              width={500}
-              height={500}
-              className="rounded-[0.33em] object-cover w-full"
+              width={350}      // increased from 350
+              height={200}     // increased from 200
+              className="rounded-[0.33em] object-cover"
             />
-          </div> */}
-        </Card>
+          </div>
+        </div>
       ),
     },
     {
       title: "Instant Paperwork",
       content: (
-        <Card className="bg-transparent flex flex-col border-opacity-20">
-          <p className="text-neutral-800 dark:text-neutral-200 text-lg md:text-lg font-normal">
-            Let us handle the paperwork for you. <br />
-            No spreadsheets needed.
+        <div>
+          <p className="text-neutral-800 dark:text-neutral-200 text-xl md:text-3xl font-normal mb-10">
+            Let us handle the paperwork for you. No Headache needed.
           </p>
-          {/* <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-left">
             <Image
-              src="/landingPage/instant-paperwork.png"
+              src="/landingPage/3rdSec/3.png"
               alt="hero template"
-              width={500}
-              height={500}
-              className="rounded-[0.33em] object-cover w-full"
+              width={350}      // increased from 350
+              height={200}     // increased from 200
+              className="rounded-[0.33em] object-cover"
             />
-          </div> */}
-        </Card>
+          </div>
+        </div>
       ),
     },
   ];
