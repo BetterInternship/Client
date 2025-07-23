@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-07-11 17:06:17
- * @ Modified time: 2025-07-23 06:12:39
+ * @ Modified time: 2025-07-23 14:08:16
  * @ Description:
  *
  * Used by student users for managing conversation state.
@@ -73,11 +73,10 @@ export const useConversation = (
           filter: `id = '${conversationId}'`,
         }
       )
-      .then((u) => setUnsubscribe(u));
+      .then((u) => setUnsubscribe(() => u));
 
     return () => unsubscribe();
   }, [user, conversationId]);
-  console.log(unsubscribe);
 
   return {
     messages,
