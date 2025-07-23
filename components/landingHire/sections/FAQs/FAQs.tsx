@@ -30,7 +30,7 @@ function FAQ() {
                   "Nothing. BetterInternship is completely free for companies to post and for students to apply.",
               },
               {
-                question: "What makes BetterInternship different from other job sites?",
+                question: "How is BetterInternship different from other job sites?",
                 answer:
                   "We focus solely on internships in the Philippines. From one-click interview scheduling to instant messaging and paperwork management, we streamline the entire internship process for both students and companies.",
               },
