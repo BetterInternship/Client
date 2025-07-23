@@ -9,11 +9,11 @@ export function Preview() {
         Start hiring better interns — without the paperwork, emails and
         spreadsheets.
       </p>
-      <div className=" lg:text-6xl pt-4 text-3xl mb-8 text-center w-full flex items-center justify-center">
+      <div className="pt-4 mb-8 text-center flex flex-col md:flex-row items-center justify-center text-3xl lg:text-6xl gap-2">
         <span>{"Ready to "}</span>
         <Typewriter
           text={[
-            " make hiring easy?"
+            "make hiring easy?"
           ]}
           speed={70}
           className="text-white"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 
@@ -69,22 +69,42 @@ function LogoColumn({ logos, columnIndex, currentTime }: LogoColumnProps) {
   );
 }
 
+function useMobileColumns() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    function handleResize() {
+      setIsMobile(window.innerWidth < 640); // Tailwind's 'sm' breakpoint
+    }
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return isMobile ? 2 : 4;
+}
+
 interface LogoCarouselProps {
   columns?: number;
   logos: Logo[];
 }
 
-export function LogoCarousel({ columns = 4, logos }: LogoCarouselProps) {
+export function LogoCarousel({ columns, logos }: LogoCarouselProps) {
+  const dynamicColumns = useMobileColumns();
+  const actualColumns = columns ?? dynamicColumns;
   const [logoColumns, setLogoColumns] = useState<Logo[][]>([]);
   const [time, setTime] = useState(0);
+
+  // Mobile: show 2x2 grid of first 4 logos
+  const isMobile = actualColumns === 2;
 
   const distributeLogos = useCallback(
     (logos: Logo[]) => {
       const shuffled = [...logos].sort(() => Math.random() - 0.5);
-      const result: Logo[][] = Array.from({ length: columns }, () => []);
+      const result: Logo[][] = Array.from({ length: actualColumns }, () => []);
 
       shuffled.forEach((logo, index) => {
-        result[index % columns].push(logo);
+        result[index % actualColumns].push(logo);
       });
 
       const maxLength = Math.max(...result.map((col) => col.length));
@@ -96,23 +116,55 @@ export function LogoCarousel({ columns = 4, logos }: LogoCarouselProps) {
 
       return result;
     },
-    [columns]
+    [actualColumns]
   );
 
   useEffect(() => {
-    setLogoColumns(distributeLogos(logos));
-  }, [logos, distributeLogos]);
+    if (!isMobile) {
+      setLogoColumns(distributeLogos(logos));
+    }
+  }, [logos, distributeLogos, isMobile]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTime((prev) => prev + 100);
-    }, 100);
-    return () => clearInterval(interval);
-  }, []);
+    if (!isMobile) {
+      const interval = setInterval(() => {
+        setTime((prev) => prev + 100);
+      }, 100);
+      return () => clearInterval(interval);
+    }
+  }, [isMobile]);
 
+  if (isMobile) {
+    // 2 columns, 2 rows
+    const mobileLogos = logos.slice(0, 4);
+    const col1 = [mobileLogos[0], mobileLogos[2]].filter(Boolean);
+    const col2 = [mobileLogos[1], mobileLogos[3]].filter(Boolean);
+
+    return (
+      <div className="bg-black w-full flex flex-row items-center justify-center px-4 py-4 gap-4">
+        {[col1, col2].map((col, idx) => (
+          <div key={idx} className="flex flex-col gap-4">
+            {col.map((logo) => (
+              <div key={logo.id} className="bg-white rounded-[0.33rem] flex items-center justify-center w-24 h-14">
+                <Image
+                  src={logo.src}
+                  alt={logo.name}
+                  width={120}
+                  height={40}
+                  className="h-auto w-auto max-h-[80%] max-w-[80%] object-contain"
+                />
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // Desktop: carousel as before
   return (
     <div className="bg-black w-full">
-      <div className="w-full  bg-black flex px-12 justify-center">
+      <div className={`w-full bg-black flex flex-col ${actualColumns > 2 ? "md:flex-row" : "flex-row"} flex-wrap items-center justify-center px-4 md:px-12`}>
         {logoColumns.map((columnLogos, index) => (
           <LogoColumn
             key={index}
