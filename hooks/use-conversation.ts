@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-07-11 17:06:17
- * @ Modified time: 2025-07-23 14:39:02
+ * @ Modified time: 2025-07-23 16:02:47
  * @ Description:
  *
  * Used by student users for managing conversation state.
@@ -58,6 +58,7 @@ export const useConversation = (
         );
         setMessages(conversation.contents);
         await seenConversation();
+        setLoading(false);
       });
 
     // Subscribe to messages
@@ -68,6 +69,7 @@ export const useConversation = (
           const conversation = e.record;
           setMessages(conversation.contents);
           await seenConversation();
+          setLoading(false);
         },
         {
           filter: `id = '${conversationId}'`,
@@ -96,21 +98,28 @@ export const useConversations = (type: "user" | "employer") => {
     if (!user) return () => unsubscribe();
 
     // Pull all convos first
-    pb.collection("users")
-      .getOne(user.id, {
-        expand: "conversations",
-        fields: "*,expand.conversations.id,expand.conversations.subscribers",
-      })
-      .then((subscriber) => {
-        const conversations = subscriber.expand?.conversations?.map(
-          (conversation: any) => ({
-            ...conversation,
-            last_unread: subscriber.last_unreads[conversation.id],
-          })
+    const intervalId = setInterval(() => {
+      console.log("one more time...");
+      pb.collection("users")
+        .getOne(user.id, {
+          expand: "conversations",
+          fields: "*,expand.conversations.id,expand.conversations.subscribers",
+        })
+        .then((subscriber) => {
+          const conversations = subscriber.expand?.conversations?.map(
+            (conversation: any) => ({
+              ...conversation,
+              last_unread: subscriber.last_unreads[conversation.id],
+            })
+          );
+          setConversations(conversations);
+          setLoading(false);
+          clearInterval(intervalId);
+        })
+        .catch((e) =>
+          console.log("Conversations could not be loaded. Retrying...")
         );
-        setConversations(conversations);
-        setLoading(false);
-      });
+    }, 1500);
 
     // Subscribe to notifications
     pb.collection("users")
