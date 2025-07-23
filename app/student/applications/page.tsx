@@ -101,10 +101,20 @@ const ApplicationCard = ({ application }: { application: UserApplication }) => {
             Applied {formatTimeAgo(application.applied_at ?? "")}
           </Badge>
           <Badge type="accent">{to_app_status_name(application.status)}</Badge>
+          {(!application.job?.is_active || application.job?.is_deleted) && (
+            <Badge type="destructive">Job no longer available.</Badge>
+          )}
         </div>
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pt-3 border-t border-gray-100">
           <Link href={`/search/${application.job?.id}`}>
-            <Button size="sm">View Details</Button>
+            <Button
+              disabled={
+                !application.job?.is_active || application.job?.is_deleted
+              }
+              size="sm"
+            >
+              View Details
+            </Button>
           </Link>
         </div>
       </div>
