@@ -38,10 +38,10 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
       ref={containerRef}
     >
       <div className="max-w-7xl mx-auto pt-20 px-4 md:px-8 lg:px-10">
-        <h2 className="text-2xl md:text-6xl mb-4 text-black dark:text-white max-w-4xl">
+        <h2 className="text-6xl md:text-8xl mb-4 text-black dark:text-white max-w-8xl mb-4">
           Everything you need in One Platform.
         </h2>
-        <p className="text-neutral-700 dark:text-neutral-300 text-sm md:text-base max-w-sm">
+        <p className="text-neutral-700 dark:text-neutral-300 text-xl md:text-3xl max-w-3xl">
           All-in-one tools for hiring, onboarding, and managing talent—simple, fast, and seamless.
         </p>
       </div>
@@ -56,7 +56,7 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
               <div className="h-10 absolute left-3 md:left-3 w-10 rounded-full bg-white dark:bg-black flex items-center justify-center">
                 <div className="h-4 w-4 rounded-full bg-neutral-200 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 p-2" />
               </div>
-              <h3 className="hidden md:block text-xl md:pl-20 md:text-5xl font-bold text-white dark:text-white ">
+              <h3 className="hidden md:block text-3xl md:pl-20 md:text-6xl font-bold text-white dark:text-white ">
                 {item.title}
               </h3>
             </div>

@@ -54,13 +54,15 @@ function LogoColumn({ logos, columnIndex, currentTime }: LogoColumnProps) {
             transition: { duration: 0.3 },
           }}
         >
-          <Image
-            src={currentLogo.src}
-            alt={currentLogo.name}
-            width={120}
-            height={40}
-            className="h-auto w-auto max-h-[80%] max-w-[80%] object-contain"
-          />
+          <div className="bg-white rounded-[0.33rem] flex items-center justify-center w-[90%] h-[90%]">
+            <Image
+              src={currentLogo.src}
+              alt={currentLogo.name}
+              width={120}
+              height={40}
+              className="h-auto w-auto max-h-[80%] max-w-[80%] object-contain"
+            />
+          </div>
         </motion.div>
       </AnimatePresence>
     </motion.div>
@@ -109,8 +111,8 @@ export function LogoCarousel({ columns = 4, logos }: LogoCarouselProps) {
   }, []);
 
   return (
-    <div className="bg-white w-full">
-      <div className="w-full  bg-white flex px-12 justify-center">
+    <div className="bg-black w-full">
+      <div className="w-full  bg-black flex px-12 justify-center">
         {logoColumns.map((columnLogos, index) => (
           <LogoColumn
             key={index}

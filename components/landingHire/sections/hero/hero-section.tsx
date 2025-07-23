@@ -64,7 +64,7 @@ export function HeroSection() {
             transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
             className="text-xl sm:text-3xl font-medium text-white text-left text-opacity-80 mb-4"
           >
-            We handle matching, paperwork, and scheduling — <br />
+            We handle matching, scheduling, and paperwork — <br />
             so you don’t have to.
           </motion.h2>
           <div className="flex flex-row justify-start pt-10 w-full items-start">

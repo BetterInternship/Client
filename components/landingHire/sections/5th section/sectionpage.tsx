@@ -30,11 +30,11 @@ const demoLogos = [
 
 function LogoCarouselBasic() {
   return (
-    <div className="text-white bg-white border-t border-gray-900 pt-6">
+    <div className="text-white bg-black border-t border-gray-900 pt-6">
       <Card>
-        <CardContent className="bg-white">
+        <CardContent className="bg-black">
           <div className="text-center justify-center mb-8">
-            <h2 className="sm:text-[3.5rem] text-[2.5rem] font-bold tracking-tight leading-none text-black">
+            <h2 className="sm:text-[3.5rem] text-[2.5rem] font-bold tracking-tight leading-none text-white">
               The best are already here.
             </h2>
           </div>

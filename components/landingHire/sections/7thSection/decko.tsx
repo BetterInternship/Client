@@ -9,7 +9,7 @@ export function Preview() {
         Start hiring better interns — without the paperwork, emails and
         spreadsheets.
       </p>
-      <div className="md:text-4xl lg:text-5xl sm:text-3xl pt-4 text-2xl mb-8 text-center w-full flex items-center justify-center">
+      <div className=" lg:text-6xl pt-4 text-3xl mb-8 text-center w-full flex items-center justify-center">
         <span>{"Ready to "}</span>
         <Typewriter
           text={[

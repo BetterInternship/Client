@@ -15,32 +15,14 @@ function FAQ() {
         <div className="grid lg:grid-cols-2 gap-10">
           <div className="flex gap-10 flex-col">
             <div className="flex gap-4 flex-col">
-              <div>
-                <Badge variant="outline">FAQ</Badge>
-              </div>
               <div className="flex gap-2 flex-col">
-                <h4 className="text-5xl md:text-7xl tracking-tighter max-w-xl text-left text-white font-regular">
+                <h4 className="text-6xl md:text-8xl tracking-tighter max-w-xl text-left text-white font-regular">
                   FAQs Section
                 </h4>
               </div>
-              <div>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="inline-flex items-center gap-4 border-white text-white hover:bg-white hover:text-black transition-colors"
-                >
-                  <a
-                    href="https://calendar.app.google/EF3XRLuEti5ac63c8"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Any questions? Book a Demo <PhoneCall className="w-4 h-4 ml-2" />
-                  </a>
-                </Button>
-              </div>
             </div>
           </div>
-          <Accordion type="single" collapsible className="w-full text-white text-left">
+          <Accordion type="single" collapsible className="w-full text-white text-left text-3xl">
             {[
               {
                 question: "How much does it cost to post on BetterInternship?",
