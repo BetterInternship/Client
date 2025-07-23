@@ -19,7 +19,6 @@ export function TimelineDemo() {
               width={350}
               height={200}
               className="rounded-[0.33em] object-cover]"
-              style={{ maxWidth: "95vw", height: "auto" }}
             />
           </div>
         </div>
