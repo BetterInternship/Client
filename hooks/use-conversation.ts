@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-07-11 17:06:17
- * @ Modified time: 2025-07-23 16:15:31
+ * @ Modified time: 2025-07-23 16:16:21
  * @ Description:
  *
  * Used by student users for managing conversation state.
@@ -100,9 +100,12 @@ export const useConversations = (type: "user" | "employer") => {
 
     // Pull all convos first
     const intervalId = setInterval(async () => {
+      if (counter.current > 5) clearInterval(intervalId);
+
       console.log(`one more time... (${counter.current})`);
       counter.current += 1;
       await refresh();
+
       pb.collection("users")
         .getOne(user.id, {
           expand: "conversations",
