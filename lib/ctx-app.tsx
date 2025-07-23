@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-04 14:10:41
- * @ Modified time: 2025-07-23 02:51:07
+ * @ Modified time: 2025-07-23 14:31:55
  * @ Description:
  *
  * Centralized app state with improved mobile detection
@@ -84,7 +84,13 @@ export const AppContextProvider = ({
 
     // Set view
     const hostname = window?.location?.hostname?.split(".");
-    setView(hostname.length > 1 ? (hostname[0] as View) : "student");
+    setView(
+      hostname.length > 1
+        ? hostname[0] === "hire"
+          ? "hire"
+          : "student"
+        : "student"
+    );
 
     window?.addEventListener("resize", handleResize);
     window?.addEventListener("orientationchange", checkMobile);

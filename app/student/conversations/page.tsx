@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { UserConversationService } from "@/lib/api/services";
 import { useProfile } from "@/lib/api/student.api";
 import { APIClient, APIRoute } from "@/lib/api/api-client";
+import { Loader } from "@/components/ui/loader";
 
 export default function ConversationsPage() {
   const { isAuthenticated, redirectIfNotLoggedIn } = useAuthContext();
@@ -51,9 +52,12 @@ export default function ConversationsPage() {
     endSend();
   };
 
+  if (conversations.loading)
+    return <Loader>Loading your conversations...</Loader>;
+
   return (
     <div className="w-full h-full flex flex-row">
-      {conversations.data?.length ? (
+      {conversations.data?.length && !conversations.loading ? (
         <div className="w-full flex flex-row animate-fade-in h-full ">
           {/* Side Panel */}
           <div className="min-w-[25%] border-r border-r-gray-300 h-full max-h-full overflow-y-auto">
