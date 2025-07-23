@@ -12,8 +12,8 @@ function FAQ() {
   return (
     <div className="w-full py-20 lg:py-40 dark border-t border-gray-900 dark:bg-black dark:text-white">
       <div className="container mx-auto">
-        <div className="grid lg:grid-cols-2 gap-4 items-start">
-          <h4 className="text-6xl md:text-8xl tracking-tighter max-w-lg text-left text-white font-regular">
+        <div className="grid lg:grid-cols-2 gap-2 items-start">
+          <h4 className="text-6xl md:pl-10 md:text-8xl tracking-tighter max-w-lg text-left text-white font-regular">
             FAQ
           </h4>
           <Accordion type="single" collapsible className="w-full text-white text-left text-lg">
