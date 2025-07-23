@@ -5,7 +5,7 @@ import { Typewriter } from "@/components/landingHire/sections/7thSection/typewri
 export function Preview() {
   return (
     <div className="flex flex-col border-t border-gray-700 items-center justify-center min-h-[18rem] py-24 bg-black text-white">
-      <div className="pt-4 mb-8 text-center flex flex-col md:flex-row items-center justify-center text-3xl lg:text-6xl gap-2">
+      <div className="pt-4 mb-8 text-center flex flex-col md:flex-row items-center justify-center text-5xl lg:text-6xl gap-2">
         <span>{"Ready to "}</span>
         <Typewriter
           text={[

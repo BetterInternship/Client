@@ -31,12 +31,12 @@ const demoLogos = [
 function LogoCarouselBasic() {
 	return (
 		<div className="text-white bg-black border-t border-gray-900 pt-6 w-full flex flex-col items-center justify-center">
-			<Card className="w-full max-w-screen-xl bg-black">
+			<Card className="w-full max-w-screen-xl bg-black py-32">
 				<CardContent className="bg-black px-4 sm:px-8 w-full">
 					<div className="text-center justify-center mb-8">
-						<h2 className="sm:text-[3.5rem] text-[2.5rem] font-bold tracking-tight leading-none text-white">
-							The best are already here.
-						</h2>
+            <h2 className="sm:text-6xl text-4xl font-bold tracking-tight leading-none text-white">
+              Join the growing list of companies hiring here.
+            </h2>
 					</div>
 					<div className="w-full flex justify-center">
 						<LogoCarousel logos={demoLogos} />
