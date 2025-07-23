@@ -34,15 +34,29 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
 
   return (
     <div
-      className="w-full bg-white dark:bg-neutral-950 font-sans md:px-10"
+      className="w-full bg-white dark:bg-neutral-950 font-sans md:px-10 overflow-x-hidden"
       ref={containerRef}
     >
-      <div className="max-w-7xl mx-auto pt-20 px-4 md:px-8 lg:px-10">
-        <h2 className="text-6xl md:text-8xl mb-4 text-black dark:text-white max-w-8xl mb-4">
+      <div className="max-w-7xl mx-auto pt-12 px-4 sm:px-6 md:px-8 lg:px-10">
+        <h2
+          className="mb-4 text-black dark:text-white max-w-[95vw] overflow-hidden"
+          style={{
+            fontSize: "clamp(2rem, 8vw, 2.5rem)", // smaller max for mobile
+            lineHeight: 1.1,
+            fontWeight: 700,
+          }}
+        >
           Everything you need in One Platform.
         </h2>
-        <p className="text-neutral-700 dark:text-neutral-300 text-xl md:text-3xl max-w-3xl">
-          All-in-one tools for hiring, onboarding, and managing talent—simple, fast, and seamless.
+        <p
+          className="text-neutral-700 dark:text-neutral-300 max-w-[95vw] overflow-hidden"
+          style={{
+            fontSize: "clamp(1rem, 5vw, 1.15rem)", // smaller max for mobile
+            lineHeight: 1.3,
+          }}
+        >
+          All-in-one tools for hiring, onboarding, and managing talent—simple, fast,
+          and seamless.
         </p>
       </div>
 
