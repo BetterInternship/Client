@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-07-11 17:06:17
- * @ Modified time: 2025-07-23 16:24:38
+ * @ Modified time: 2025-07-23 16:32:26
  * @ Description:
  *
  * Used by student users for managing conversation state.
@@ -92,40 +92,32 @@ export const useConversations = (type: "user" | "employer") => {
   const { pb, user, refresh } = usePocketbase(type);
   const [conversations, setConversations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const counter = useRef<number>(0);
 
   useEffect(() => {
     let unsubscribe = () => {};
     if (!user) return () => unsubscribe();
 
+    console.log("USERID", user.id);
+
     // Pull all convos first
-    const intervalId = setInterval(async () => {
-      if (counter.current > 2) return clearInterval(intervalId);
-
-      console.log(`one more time... (${counter.current})`);
-      counter.current += 1;
-      await refresh();
-
-      pb.collection("users")
-        .getOne(user.id, {
-          expand: "conversations",
-          fields: "*,expand.conversations.id,expand.conversations.subscribers",
-        })
-        .then((subscriber) => {
-          const conversations = subscriber.expand?.conversations?.map(
-            (conversation: any) => ({
-              ...conversation,
-              last_unread: subscriber.last_unreads[conversation.id],
-            })
-          );
-          setConversations(conversations);
-          setLoading(false);
-          clearInterval(intervalId);
-        })
-        .catch((e) =>
-          console.log("Conversations could not be loaded. Retrying...")
+    pb.collection("users")
+      .getOne(user.id, {
+        expand: "conversations",
+        fields: "*,expand.conversations.id,expand.conversations.subscribers",
+      })
+      .then((subscriber) => {
+        const conversations = subscriber.expand?.conversations?.map(
+          (conversation: any) => ({
+            ...conversation,
+            last_unread: subscriber.last_unreads[conversation.id],
+          })
         );
-    }, 500);
+        setConversations(conversations);
+        setLoading(false);
+      })
+      .catch(async (e) => {
+        await refresh();
+      });
 
     // Subscribe to notifications
     pb.collection("users")
@@ -150,7 +142,7 @@ export const useConversations = (type: "user" | "employer") => {
       )
       .then((u) => (unsubscribe = u));
 
-    return () => (unsubscribe(), clearInterval(intervalId));
+    return () => unsubscribe();
   }, [user]);
 
   return {
