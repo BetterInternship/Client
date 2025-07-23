@@ -46,8 +46,7 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
         <p
           className="text-neutral-700 dark:text-neutral-300 max-w-[95vw] text-xl lg:text-3xl"
         >
-          All-in-one tools for hiring, onboarding, and managing talent—simple, fast,
-          and seamless.
+          All-in-one internship hiring platform. Simple. Fast. Seamless.
         </p>
       </div>
 
