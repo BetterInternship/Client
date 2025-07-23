@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-07-11 17:06:17
- * @ Modified time: 2025-07-23 16:02:47
+ * @ Modified time: 2025-07-23 16:16:21
  * @ Description:
  *
  * Used by student users for managing conversation state.
@@ -89,17 +89,23 @@ export const useConversation = (
 };
 
 export const useConversations = (type: "user" | "employer") => {
-  const { pb, user } = usePocketbase(type);
+  const { pb, user, refresh } = usePocketbase(type);
   const [conversations, setConversations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const counter = useRef<number>(0);
 
   useEffect(() => {
     let unsubscribe = () => {};
     if (!user) return () => unsubscribe();
 
     // Pull all convos first
-    const intervalId = setInterval(() => {
-      console.log("one more time...");
+    const intervalId = setInterval(async () => {
+      if (counter.current > 5) clearInterval(intervalId);
+
+      console.log(`one more time... (${counter.current})`);
+      counter.current += 1;
+      await refresh();
+
       pb.collection("users")
         .getOne(user.id, {
           expand: "conversations",
@@ -144,7 +150,7 @@ export const useConversations = (type: "user" | "employer") => {
       )
       .then((u) => (unsubscribe = u));
 
-    return () => unsubscribe();
+    return () => (unsubscribe(), clearInterval(intervalId));
   }, [user]);
 
   return {
