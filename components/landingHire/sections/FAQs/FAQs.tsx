@@ -19,14 +19,9 @@ function FAQ() {
                 <Badge variant="outline">FAQ</Badge>
               </div>
               <div className="flex gap-2 flex-col">
-                <h4 className="text-3xl md:text-5xl tracking-tighter max-w-xl text-left text-white font-regular">
-                  Got Questions?
+                <h4 className="text-5xl md:text-7xl tracking-tighter max-w-xl text-left text-white font-regular">
+                  FAQs Section
                 </h4>
-                <p className="text-lg max-w-xl lg:max-w-lg leading-relaxed tracking-tight text-white  text-left">
-                  Running a business comes with enough challenges. We help
-                  you skip the hassle of old-school processes and paperwork. Our
-                  platform makes hiring interns simple, efficient, and stress-free.
-                </p>
               </div>
               <div>
                 <Button
@@ -71,11 +66,6 @@ function FAQ() {
                 question: "Can any company use BetterInternship?",
                 answer:
                   "Yes, but all company accounts must be verified by our admins before posting.",
-              },
-              {
-                question: "Can any student use BetterInternship?",
-                answer:
-                  "Currently, it's open to DLSU students only. We're working to expand to other schools. Interested? Email us at hello@betterinternship.com.",
               },
             ].map((item, index) => (
               <AccordionItem key={index} value={"index-" + index}>
