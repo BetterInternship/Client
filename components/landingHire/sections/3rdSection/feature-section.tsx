@@ -42,7 +42,8 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
           Everything you need in One Platform.
         </h2>
         <p className="text-neutral-700 dark:text-neutral-300 text-sm md:text-base max-w-sm">
-          All-in-one tools for hiring, onboarding, and managing talent—simple, fast, and seamless.
+          All-in-one tools for hiring, onboarding, and managing talent—simple,
+          fast, and seamless.
         </p>
       </div>
 
