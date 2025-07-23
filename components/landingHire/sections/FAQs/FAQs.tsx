@@ -22,7 +22,7 @@ function FAQ() {
               </div>
             </div>
           </div>
-          <Accordion type="single" collapsible className="w-full text-white text-left text-3xl">
+          <Accordion type="single" collapsible className="w-full text-white text-left text-lg">
             {[
               {
                 question: "How much does it cost to post on BetterInternship?",
