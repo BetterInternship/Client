@@ -17,7 +17,7 @@ function FAQ() {
             <div className="flex gap-4 flex-col">
               <div className="flex gap-2 flex-col">
                 <h4 className="text-6xl md:text-8xl tracking-tighter max-w-xl text-left text-white font-regular">
-                  FAQs Section
+                  FAQ
                 </h4>
               </div>
             </div>
