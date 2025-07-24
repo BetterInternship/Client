@@ -22,6 +22,7 @@ import { PDFPreview } from "@/components/shared/pdf-preview";
 import { FormCheckbox, FormInput } from "@/components/EditForm";
 import { APIClient, APIRoute } from "@/lib/api/api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
+import { QueryClient } from "@tanstack/react-query";
 
 export default function GodLandingPage() {
   const { login_as } = useAuthContext();
@@ -435,6 +436,7 @@ const RegisterModalContent = () => {
   const [dba, setDba] = useState("");
   const [email, setEmail] = useState("");
   const [registering, setRegistering] = useState(false);
+  const queryClient = new QueryClient();
 
   const handleRegister = async () => {
     if (!isValidEmail(email)) return alert("Email is not valid.");
@@ -451,6 +453,9 @@ const RegisterModalContent = () => {
 
     if (response?.success) {
       alert("Account was created successfully. Check email for password.");
+      queryClient.invalidateQueries({ queryKey: ["god-employers"] });
+    } else {
+      alert("Something went wrong. Please check browser logs and tell Mo lol.");
     }
     setRegistering(false);
   };
