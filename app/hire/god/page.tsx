@@ -20,6 +20,8 @@ import { useFile } from "@/hooks/use-file";
 import { FileText, UserPlus } from "lucide-react";
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import { FormCheckbox, FormInput } from "@/components/EditForm";
+import { APIClient, APIRoute } from "@/lib/api/api-client";
+import { FetchResponse } from "@/lib/api/use-fetch";
 
 export default function GodLandingPage() {
   const { login_as } = useAuthContext();
@@ -439,6 +441,17 @@ const RegisterModalContent = () => {
     if (!dba.length) return alert("DBA is required.");
 
     setRegistering(true);
+    const response = await APIClient.post<FetchResponse>(
+      APIRoute("employer").r("god", "register").build(),
+      {
+        name: dba,
+        user_email: email,
+      }
+    );
+
+    if (response?.success) {
+      alert("Account was created successfully. Check email for password.");
+    }
     setRegistering(false);
   };
 
@@ -450,10 +463,12 @@ const RegisterModalContent = () => {
         </h1>
         <div className="flex flex-col gap-2">
           <FormInput
+            value={dba}
             label="Doing Business As"
             setter={(value) => setDba(value)}
           />
           <FormInput
+            value={email}
             label="User Account Email"
             setter={(value) => setEmail(value)}
           />
