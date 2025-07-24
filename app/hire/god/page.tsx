@@ -8,19 +8,20 @@ import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { useAuthContext } from "../authctx";
 import { Badge, BoolBadge } from "@/components/ui/badge";
-import { formatDate } from "@/lib/utils";
+import { formatDate, isValidEmail } from "@/lib/utils";
 import { getFullName } from "@/lib/utils/user-utils";
 import { BooleanCheckIcon } from "@/components/ui/icons";
-import { Employer, EmployerApplication, PublicUser } from "@/lib/db/db.types";
+import { EmployerApplication, PublicUser } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useModal } from "@/hooks/use-modal";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { UserService } from "@/lib/api/services";
 import { useFile } from "@/hooks/use-file";
-import { FileText } from "lucide-react";
+import { FileText, UserPlus } from "lucide-react";
 import { PDFPreview } from "@/components/shared/pdf-preview";
-import { Checkbox } from "@/components/ui/checkbox";
-import { FormCheckbox } from "@/components/EditForm";
+import { FormCheckbox, FormInput } from "@/components/EditForm";
+import { APIClient, APIRoute } from "@/lib/api/api-client";
+import { FetchResponse } from "@/lib/api/use-fetch";
 
 export default function GodLandingPage() {
   const { login_as } = useAuthContext();
@@ -62,12 +63,18 @@ export default function GodLandingPage() {
     Modal: ResumeModal,
   } = useModal("resume-modal");
 
+  const {
+    open: openRegisterModal,
+    close: closeRegisterModal,
+    Modal: RegisterModal,
+  } = useModal("register-modal");
+
   /**
    * Handle auth by proxy
    *
    * @returns
    */
-  const authorize_as = async (employer_id: string) => {
+  const authorizeAs = async (employer_id: string) => {
     await login_as(employer_id);
     router.push("/dashboard");
   };
@@ -86,8 +93,16 @@ export default function GodLandingPage() {
                 id: e.id ?? "",
                 name: e.name ?? "",
               }))}
+              className="w-96"
               placeholder="Search name..."
             ></Autocomplete>
+            <Button
+              className=""
+              scheme="supportive"
+              onClick={() => openRegisterModal()}
+            >
+              <UserPlus className="" />
+            </Button>
             <div className="flex flex-row items-center gap-1">
               <FormCheckbox checked={hideNoApps} setter={setHideNoApps} />
               <div className="text-white">Hide rows without applications</div>
@@ -114,7 +129,7 @@ export default function GodLandingPage() {
                   <Button
                     scheme="primary"
                     size="xs"
-                    onClick={() => authorize_as(e.id ?? "")}
+                    onClick={() => authorizeAs(e.id ?? "")}
                   >
                     View
                   </Button>
@@ -160,6 +175,7 @@ export default function GodLandingPage() {
                 id: e.id ?? "",
                 name: e.name ?? "",
               }))}
+              className="w-96"
               placeholder="Search name..."
             ></Autocomplete>
             <div className="flex flex-row items-center gap-1">
@@ -188,7 +204,7 @@ export default function GodLandingPage() {
                   <Button
                     scheme="primary"
                     size="xs"
-                    onClick={() => authorize_as(e.id ?? "")}
+                    onClick={() => authorizeAs(e.id ?? "")}
                   >
                     View
                   </Button>
@@ -235,6 +251,7 @@ export default function GodLandingPage() {
                 id: u.id,
                 name: getFullName(u) ?? "",
               }))}
+              className="w-96"
               placeholder="Search name..."
             ></Autocomplete>
             <div className="flex flex-row items-center gap-1">
@@ -320,6 +337,7 @@ export default function GodLandingPage() {
                   a.jobs?.employers?.name
                 }`,
               }))}
+              className="w-96"
               placeholder="Search name..."
             ></Autocomplete>
           </div>
@@ -398,13 +416,75 @@ export default function GodLandingPage() {
               <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">
                 No Resume Available
               </h1>
-              <div className="max-w-md text-center border border-red-200 text-red-600 bg-red-50 rounded-lg p-4">
+              <div className="max-w-md text-center border border-red-200 text-red-600 bg-red-50 rounded-[0.33em] p-4">
                 This applicant has not uploaded a resume yet.
               </div>
             </div>
           </div>
         )}
       </ResumeModal>
+
+      <RegisterModal>
+        <RegisterModalContent />
+      </RegisterModal>
     </div>
   );
 }
+
+const RegisterModalContent = () => {
+  const [dba, setDba] = useState("");
+  const [email, setEmail] = useState("");
+  const [registering, setRegistering] = useState(false);
+
+  const handleRegister = async () => {
+    if (!isValidEmail(email)) return alert("Email is not valid.");
+    if (!dba.length) return alert("DBA is required.");
+
+    setRegistering(true);
+    const response = await APIClient.post<FetchResponse>(
+      APIRoute("employer").r("god", "register").build(),
+      {
+        name: dba,
+        user_email: email,
+      }
+    );
+
+    if (response?.success) {
+      alert("Account was created successfully. Check email for password.");
+      window.location.reload();
+    } else {
+      alert("Something went wrong. Please check browser logs and tell Mo lol.");
+    }
+    setRegistering(false);
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center p-8 pt-0">
+      <div className="text-left">
+        <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">
+          Register a New Employer Account
+        </h1>
+        <div className="flex flex-col gap-2">
+          <FormInput
+            value={dba}
+            label="Doing Business As"
+            setter={(value) => setDba(value)}
+          />
+          <FormInput
+            value={email}
+            label="User Account Email"
+            setter={(value) => setEmail(value)}
+          />
+          <Button
+            variant="default"
+            scheme="supportive"
+            disabled={registering}
+            onClick={handleRegister}
+          >
+            {!registering ? "Register" : "Registering..."}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
