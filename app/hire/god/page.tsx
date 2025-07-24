@@ -425,13 +425,13 @@ export default function GodLandingPage() {
       </ResumeModal>
 
       <RegisterModal>
-        <RegisterModalContent refetch={employers.refetch} />
+        <RegisterModalContent />
       </RegisterModal>
     </div>
   );
 }
 
-const RegisterModalContent = ({ refetch }: { refetch: () => void }) => {
+const RegisterModalContent = () => {
   const [dba, setDba] = useState("");
   const [email, setEmail] = useState("");
   const [registering, setRegistering] = useState(false);
@@ -451,11 +451,10 @@ const RegisterModalContent = ({ refetch }: { refetch: () => void }) => {
 
     if (response?.success) {
       alert("Account was created successfully. Check email for password.");
-      refetch();
+      window.location.reload();
     } else {
       alert("Something went wrong. Please check browser logs and tell Mo lol.");
     }
-
     setRegistering(false);
   };
 

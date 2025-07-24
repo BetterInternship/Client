@@ -72,7 +72,6 @@ export function useEmployers() {
   });
 
   const updateEmployers = () => {
-    queryClient.invalidateQueries({ queryKey: ["god-employers"] });
     setTimeout(() =>
       setEmployers(
         queryClient
@@ -94,7 +93,6 @@ export function useEmployers() {
     isVerifying,
     isUnverifying,
     data: employers,
-    refetch: updateEmployers,
     verify,
     unverify,
     error,
