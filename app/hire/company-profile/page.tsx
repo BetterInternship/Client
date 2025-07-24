@@ -323,6 +323,14 @@ const ProfileEditor = forwardRef<
   // Data validators
   useEffect(() => {
     addValidator(
+      "name",
+      (name: string) => !name.trim() && "Invalid business name."
+    );
+    addValidator(
+      "legal_entity_name",
+      (name: string) => !name.trim() && "Invalid legal entity name."
+    );
+    addValidator(
       "email",
       (email: string) => !isValidEmail(email) && "Invalid Philippine number."
     );
@@ -359,12 +367,14 @@ const ProfileEditor = forwardRef<
             value={formData.location ?? ""}
             setter={fieldSetter("location")}
             maxLength={100}
+            required={false}
           />
           <FormDropdown
             label="Industry"
             value={formData.industry ?? ""}
             options={industries.sort((a, b) => a.name.localeCompare(b.name))}
             setter={fieldSetter("industry")}
+            required={false}
           />
         </div>
         <label className="text-xs text-gray-400 italic mb-1 block">
@@ -375,6 +385,7 @@ const ProfileEditor = forwardRef<
           onChange={(e) => setField("description", e.target.value)}
           placeholder="Let applicants know what they're in for..."
           className="w-full border border-gray-200 rounded-[0.25em] p-3 px-5 text-sm min-h-24 resize-none focus:border-opacity-70 focus:ring-transparent"
+          required={false}
           maxLength={750}
         />
         <p className="text-xs text-muted-foreground text-right">
@@ -397,6 +408,7 @@ const ProfileEditor = forwardRef<
             label="Phone Number"
             value={formData.phone_number ?? ""}
             setter={fieldSetter("phone_number")}
+            required={false}
           />
         </div>
         <div className="mb-3">
@@ -405,6 +417,7 @@ const ProfileEditor = forwardRef<
             label="Website"
             value={formData.website ?? ""}
             setter={fieldSetter("website")}
+            required={false}
           />
         </div>
         <div className="text-xl tracking-tight font-medium text-gray-700 mt-8">
