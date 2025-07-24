@@ -10,7 +10,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
  */
 export function useEmployers() {
   const queryClient = useQueryClient();
-  const { isPending, error } = useQuery({
+  const { isPending, error, isFetching } = useQuery({
     queryKey: ["god-employers"],
     queryFn: async () => {
       const { success, employers } =
@@ -86,7 +86,7 @@ export function useEmployers() {
 
   useEffect(() => {
     updateEmployers();
-  }, []);
+  }, [isFetching]);
 
   return {
     isPending,
