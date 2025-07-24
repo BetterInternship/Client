@@ -323,11 +323,6 @@ const ProfileEditor = forwardRef<
   // Data validators
   useEffect(() => {
     addValidator(
-      "phone_number",
-      (number: string) =>
-        !isValidPHNumber(number) && "Invalid Philippine number."
-    );
-    addValidator(
       "email",
       (email: string) => !isValidEmail(email) && "Invalid Philippine number."
     );
