@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Input } from "./input";
 import { useDetectClickOutside } from "react-detect-click-outside";
+import { cn } from "@/lib/utils";
 
 interface IAutocompleteOption<ID extends number | string> {
   id: ID;
@@ -11,11 +12,13 @@ export const Autocomplete = <ID extends number | string>({
   options,
   setter,
   placeholder,
+  className,
   value,
 }: {
   options: IAutocompleteOption<ID>[];
   setter: (value?: ID | null) => void;
   placeholder?: string;
+  className?: string;
   value?: ID | null;
 }) => {
   const [query, setQuery] = useState("");
@@ -52,7 +55,7 @@ export const Autocomplete = <ID extends number | string>({
   }, [query, options]);
 
   return (
-    <div className="relative w-full" ref={ref}>
+    <div className={cn("relative w-full", className)} ref={ref}>
       <Input
         value={selected?.name ?? undefined}
         className="border-gray-300"
