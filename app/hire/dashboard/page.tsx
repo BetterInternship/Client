@@ -30,7 +30,7 @@ function DashboardContent() {
   const [selectedApplication, setSelectedApplication] =
     useState<EmployerApplication | null>(null);
   const [conversationId, setConversationId] = useState("");
-  const conversations = useConversations("employer");
+  const conversations = useConversations();
   const updateConversationId = (userId: string) => {
     let userConversation = conversations.data?.find((c) =>
       c?.subscribers?.includes(userId)
@@ -81,8 +81,6 @@ function DashboardContent() {
         return;
       }
 
-      console.log(response);
-
       // Update the conversation
       setConversationId(response.conversation?.id ?? "");
       userConversation = response.conversation;
@@ -95,6 +93,7 @@ function DashboardContent() {
         userConversation?.id,
         message
       ).catch(endSend);
+      endSend();
     });
   };
 
@@ -103,7 +102,7 @@ function DashboardContent() {
     close: closeChatModal,
     SideModal: ChatModal,
   } = useSideModal("chat-modal", {
-    onClose: () => conversation.unsubscribe(),
+    onClose: () => setConversationId(""),
   });
 
   const {

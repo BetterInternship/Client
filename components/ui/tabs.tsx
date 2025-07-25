@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Children, useState, useEffect } from "react";
 import { Button } from "./button";
+import { cn } from "@/lib/utils";
 
 /**
  * Represents a child of the TabGroup component.
@@ -12,8 +13,9 @@ import { Button } from "./button";
 interface TabProps {
   name: string;
   children: React.ReactNode;
+  indicator?: boolean;
 }
-export const Tab = ({ name, children }: TabProps) => {
+export const Tab = ({ name, children, indicator }: TabProps) => {
   return <>{children}</>;
 };
 
@@ -26,15 +28,15 @@ interface TabGroupProps {
   children: React.ReactElement<TabProps>[];
 }
 export const TabGroup = ({ children }: TabGroupProps) => {
-  const [active_tab, set_active_tab] = useState("");
+  const [activeTab, setActiveTab] = useState("");
 
   // Set the initial active tab to be the first element
   useEffect(() => {
-    const first_child = Children.toArray(
+    const firstChild = Children.toArray(
       children
     )[0] as React.ReactElement<TabProps>;
-    if (React.isValidElement(first_child))
-      set_active_tab(first_child.props?.name ?? "");
+    if (React.isValidElement(firstChild))
+      setActiveTab(firstChild.props?.name ?? "");
   }, []);
 
   // Create the selection
@@ -44,13 +46,20 @@ export const TabGroup = ({ children }: TabGroupProps) => {
         {Children.map(children, (child) => {
           if (React.isValidElement(child)) {
             const name = child.props?.name ?? "No name";
+            const indicator = child.props?.indicator ?? false;
             return (
               <Button
                 variant="ghost"
-                aria-selected={active_tab === name}
-                className="px-5 py-4 text-gray-700 aria-selected:text-white aria-selected:bg-gray-900 w-fit rounded-t-[0.33em] rounded-b-none"
-                onClick={() => set_active_tab(name)}
+                aria-selected={activeTab === name}
+                className="relative px-5 py-4 text-gray-700 aria-selected:text-white aria-selected:bg-gray-900 w-fit rounded-t-[0.33em] rounded-b-none"
+                onClick={() => setActiveTab(name)}
               >
+                <div
+                  className={cn(
+                    "absolute top-[-0.25em] right-[-0.25em] rounded-full w-2 h-2 bg-primary",
+                    indicator ? "block" : "hidden"
+                  )}
+                ></div>
                 <span className="text-xs">{name}</span>
               </Button>
             );
@@ -61,7 +70,7 @@ export const TabGroup = ({ children }: TabGroupProps) => {
         {
           Children.toArray(children).filter((child) => {
             const c = child as React.ReactElement<TabProps>;
-            if (React.isValidElement(c)) return c.props?.name === active_tab;
+            if (React.isValidElement(c)) return c.props?.name === activeTab;
           })[0]
         }
       </div>
