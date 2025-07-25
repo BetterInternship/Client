@@ -54,13 +54,15 @@ export const TabGroup = ({ children }: TabGroupProps) => {
                 className="relative px-5 py-4 text-gray-700 aria-selected:text-white aria-selected:bg-gray-900 w-fit rounded-t-[0.33em] rounded-b-none"
                 onClick={() => setActiveTab(name)}
               >
-                <div
-                  className={cn(
-                    "absolute top-[-0.25em] right-[-0.25em] rounded-full w-2 h-2 bg-primary",
-                    indicator ? "block" : "hidden"
-                  )}
-                ></div>
-                <span className="text-xs">{name}</span>
+                <span className="flex flex-row items-center text-xs gap-1">
+                  <div
+                    className={cn(
+                      "rounded-full w-2 h-2 bg-warning",
+                      indicator ? "block" : "hidden"
+                    )}
+                  ></div>
+                  {name}
+                </span>
               </Button>
             );
           }
