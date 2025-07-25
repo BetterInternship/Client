@@ -61,6 +61,18 @@ export function ApplicationRow({
       </td>
       <td className="text-center px-6">
         <div className="flex items-center space-x-2 flex-row justify-end">
+          <Badge
+            type="warning"
+            className={cn(
+              conversations.unreads.some((unread) =>
+                unread.subscribers.includes(application.user_id)
+              )
+                ? "block"
+                : "hidden"
+            )}
+          >
+            New Unreads
+          </Badge>
           <Button
             variant="outline"
             size="sm"
@@ -73,16 +85,6 @@ export function ApplicationRow({
             className="relative"
           >
             Message
-            <div
-              className={cn(
-                "absolute top-[-0.25em] right-[-0.25em] rounded-full w-2 h-2 bg-primary",
-                conversations.unreads.some((unread) =>
-                  unread.subscribers.includes(application.user_id)
-                )
-                  ? "block"
-                  : "hidden"
-              )}
-            ></div>
           </Button>
           <Button
             variant="outline"

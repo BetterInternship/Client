@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-07-11 17:06:17
- * @ Modified time: 2025-07-25 17:21:41
+ * @ Modified time: 2025-07-25 18:56:07
  * @ Description:
  *
  * Used by student users for managing conversation state.
@@ -38,7 +38,7 @@ export const useConversation = (
   const [messages, setMessages] = useState<Message[]>([]);
   const [senderId, setSenderId] = useState("");
   const [loading, setLoading] = useState(true);
-  const { pb, user } = usePocketbase(type);
+  const { pb, user, refresh } = usePocketbase(type);
   const [unsubscribe, setUnsubscribe] = useState<Function>(() => () => {});
 
   const seenConversation = useCallback(async () => {
@@ -49,6 +49,10 @@ export const useConversation = (
         : APIRoute("conversations").r("read", conversationId).build();
     await APIClient.post(route);
   }, [conversationId]);
+
+  useEffect(() => {
+    refresh();
+  }, []);
 
   useEffect(() => {
     if (!user || !conversationId || !conversationId.trim().length) {
@@ -171,7 +175,6 @@ export const ConversationsContextProvider = ({
               conversation?.last_read?.timestamp
           );
 
-          console.log("conversations", conversations);
           setConversations(conversations);
           setUnreadConversations(unreads);
           setLoading(false);
