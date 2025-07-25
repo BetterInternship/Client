@@ -15,12 +15,13 @@ import { UserConversationService } from "@/lib/api/services";
 import { useProfile } from "@/lib/api/student.api";
 import { Loader } from "@/components/ui/loader";
 import { useEmployerName } from "@/hooks/use-employer-api";
+import { Badge } from "@/components/ui/badge";
 
 export default function ConversationsPage() {
   const { isAuthenticated, redirectIfNotLoggedIn } = useAuthContext();
   const profile = useProfile();
   const [conversationId, setConversationId] = useState("");
-  const conversations = useConversations("user");
+  const conversations = useConversations();
   const conversation = useConversation("user", conversationId);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
@@ -221,6 +222,7 @@ const ConversationCard = ({
   setConversationId: (id: string) => void;
 }) => {
   const profile = useProfile();
+  const conversations = useConversations();
   const [employerId, setEmployerId] = useState("");
   const { employerName } = useEmployerName(employerId);
 
@@ -242,7 +244,21 @@ const ConversationCard = ({
         <div className="flex flex-row items-center gap-4">
           {employerId && <EmployerPfp employer_id={employerId} />}
           <div className="flex flex-col">
-            <span className="font-medium">{employerName}</span>
+            <span className="font-medium flex flex-row items-center gap-2">
+              {employerName}{" "}
+              <Badge
+                type="warning"
+                className={cn(
+                  conversations.unreads.some((unread) =>
+                    unread.subscribers.includes(employerId)
+                  )
+                    ? "block"
+                    : "hidden"
+                )}
+              >
+                Unread
+              </Badge>
+            </span>
             <span className="text-xs opacity-60 line-clamp-1 max-w-prose text-ellipsis  ">
               {(latestIsYou ? "You: " : "") + latestMessage}
             </span>

@@ -12,6 +12,7 @@ const pb = new PocketBase(process.env.NEXT_PUBLIC_CHAT_URL as string);
  */
 export const usePocketbase = (type: "user" | "employer") => {
   const [user, setUser] = useState<AuthRecord>(null);
+  const [token, setToken] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
   const auth = async () => {
@@ -26,14 +27,15 @@ export const usePocketbase = (type: "user" | "employer") => {
       type === "employer"
         ? APIRoute("conversations").r("auth/hire").build()
         : APIRoute("conversations").r("auth").build();
-    const { token, user } = await APIClient.post<{
+    const { token: newToken, user } = await APIClient.post<{
       token: string;
       user: AuthRecord;
     }>(route);
-    if (token && user) pb.authStore.save(token, user);
+    if (newToken && user) pb.authStore.save(newToken, user);
 
     // Save state
     setUser(user);
+    setToken(newToken);
   };
 
   const logout = async () => {
@@ -52,6 +54,7 @@ export const usePocketbase = (type: "user" | "employer") => {
   return {
     pb,
     user,
+    token,
     refresh,
     logout,
   };

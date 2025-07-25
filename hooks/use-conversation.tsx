@@ -1,15 +1,23 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-07-11 17:06:17
- * @ Modified time: 2025-07-23 16:32:26
+ * @ Modified time: 2025-07-25 18:56:07
  * @ Description:
  *
  * Used by student users for managing conversation state.
  */
 
+"use client";
+
 import { APIClient, APIRoute } from "@/lib/api/api-client";
 import { usePocketbase } from "@/lib/pocketbase";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 interface Message {
   sender_id: string;
@@ -30,7 +38,7 @@ export const useConversation = (
   const [messages, setMessages] = useState<Message[]>([]);
   const [senderId, setSenderId] = useState("");
   const [loading, setLoading] = useState(true);
-  const { pb, user } = usePocketbase(type);
+  const { pb, user, refresh } = usePocketbase(type);
   const [unsubscribe, setUnsubscribe] = useState<Function>(() => () => {});
 
   const seenConversation = useCallback(async () => {
@@ -41,6 +49,10 @@ export const useConversation = (
         : APIRoute("conversations").r("read", conversationId).build();
     await APIClient.post(route);
   }, [conversationId]);
+
+  useEffect(() => {
+    refresh();
+  }, []);
 
   useEffect(() => {
     if (!user || !conversationId || !conversationId.trim().length) {
@@ -88,16 +100,33 @@ export const useConversation = (
   };
 };
 
-export const useConversations = (type: "user" | "employer") => {
-  const { pb, user, refresh } = usePocketbase(type);
+/**
+ * Create a new context. We use contexts so we dont have to keep sub/unsubbing to pocketbase.
+ */
+interface IConversationsContext {
+  data: any[];
+  unreads: any[];
+  loading: boolean;
+}
+const ConversationsContext = createContext<IConversationsContext>(
+  {} as IConversationsContext
+);
+export const ConversationsContextProvider = ({
+  type,
+  children,
+}: {
+  type: "user" | "employer";
+  children: React.ReactNode;
+}) => {
+  const { pb, user, token, refresh } = usePocketbase(type);
+  // ! change to Conversation type later on
   const [conversations, setConversations] = useState<any[]>([]);
+  const [unreadConversations, setUnreadConversations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let unsubscribe = () => {};
     if (!user) return () => unsubscribe();
-
-    console.log("USERID", user.id);
 
     // Pull all convos first
     pb.collection("users")
@@ -110,9 +139,17 @@ export const useConversations = (type: "user" | "employer") => {
           (conversation: any) => ({
             ...conversation,
             last_unread: subscriber.last_unreads[conversation.id],
+            last_read: subscriber.last_reads[conversation.id],
           })
         );
+        const unreads = conversations.filter(
+          (conversation: any) =>
+            conversation?.last_unread?.timestamp !==
+            conversation?.last_read?.timestamp
+        );
+
         setConversations(conversations);
+        setUnreadConversations(unreads);
         setLoading(false);
       })
       .catch(async (e) => {
@@ -129,9 +166,17 @@ export const useConversations = (type: "user" | "employer") => {
             (conversation: any) => ({
               ...conversation,
               last_unread: subscriber.last_unreads[conversation.id],
+              last_read: subscriber.last_reads[conversation.id],
             })
           );
+          const unreads = conversations.filter(
+            (conversation: any) =>
+              conversation?.last_unread?.timestamp !==
+              conversation?.last_read?.timestamp
+          );
+
           setConversations(conversations);
+          setUnreadConversations(unreads);
           setLoading(false);
         },
         {
@@ -143,10 +188,21 @@ export const useConversations = (type: "user" | "employer") => {
       .then((u) => (unsubscribe = u));
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user, token]);
 
-  return {
+  const conversationsContext = {
     data: conversations,
+    unreads: unreadConversations,
     loading,
   };
+
+  return (
+    <ConversationsContext.Provider value={conversationsContext}>
+      {children}
+    </ConversationsContext.Provider>
+  );
+};
+
+export const useConversations = () => {
+  return useContext(ConversationsContext);
 };

@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-07-13 19:13:50
+ * @ Modified time: 2025-07-25 15:18:23
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -168,6 +168,7 @@ export const GroupableRadioDropdown = <ID extends number | string>({
   defaultValue = null,
   size = "sm",
   className = "",
+  fallback = "Select Option"
 }: {
   name: string;
   options: IRadioDropdownOption<ID>[];
@@ -176,6 +177,7 @@ export const GroupableRadioDropdown = <ID extends number | string>({
   disabled?: boolean | undefined;
   size?: "xs" | "sm" | "md" | "lg";
   className?: string;
+  fallback?: string;
 }) => {
   const { isMobile } = useAppContext();
   const { activeDropdown, setActiveDropdown } =
@@ -234,7 +236,7 @@ export const GroupableRadioDropdown = <ID extends number | string>({
             {options.filter((o) => o.id === value)[0]?.name}
           </span>
         ) : (
-          <span className="text-gray-400">Select Option</span>
+          <span className="text-gray-400">{fallback}</span>
         )}
         <ChevronDown
           className={cn(
