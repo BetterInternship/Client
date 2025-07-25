@@ -102,7 +102,9 @@ function DashboardContent() {
     close: closeChatModal,
     SideModal: ChatModal,
   } = useSideModal("chat-modal", {
-    onClose: () => setConversationId(""),
+    onClose: () => (
+      conversation.unsubscribe(), setConversationId(""), alert("lol")
+    ),
   });
 
   const {
