@@ -12,6 +12,7 @@ import { PostHogProvider } from "../posthog-provider";
 import TanstackProvider from "../tanstack-provider";
 import Head from "next/head";
 import AllowLanding from "./allowLanding";
+import { ConversationsContextProvider } from "@/hooks/use-conversation";
 
 export const metadata: Metadata = {
   title: "Recruiter Dashboard - BetterInternship",
@@ -59,20 +60,22 @@ const HTMLContent = ({
           <TooltipProvider>
             <Sonner />
             <PostHogProvider>
-              <html
-                lang="en"
-                className="min-w-fit w-full h-[100vh] overflow-hidden"
-              >
-                <Head>
-                  <meta
-                    name="viewport"
-                    content="width=device-width, initial-scale=1.0"
-                  />
-                </Head>
-                <body className="h-full overflow-hidden">
-                  <AllowLanding>{children}</AllowLanding>
-                </body>
-              </html>
+              <ConversationsContextProvider type="employer">
+                <html
+                  lang="en"
+                  className="min-w-fit w-full h-[100vh] overflow-hidden"
+                >
+                  <Head>
+                    <meta
+                      name="viewport"
+                      content="width=device-width, initial-scale=1.0"
+                    />
+                  </Head>
+                  <body className="h-full overflow-hidden">
+                    <AllowLanding>{children}</AllowLanding>
+                  </body>
+                </html>
+              </ConversationsContextProvider>
             </PostHogProvider>
           </TooltipProvider>
         </AuthContextProvider>

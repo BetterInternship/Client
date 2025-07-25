@@ -8,6 +8,8 @@ import { getFullName } from "@/lib/utils/user-utils";
 import { UserPfp } from "@/components/shared/pfp";
 import { StatusDropdown } from "@/components/common/StatusDropdown";
 import { useDbRefs } from "@/lib/db/use-refs";
+import { useConversations } from "@/hooks/use-conversation";
+import { cn } from "@/lib/utils";
 
 interface ApplicationRowProps {
   application: EmployerApplication;
@@ -31,6 +33,8 @@ export function ApplicationRow({
   setSelectedApplication,
 }: ApplicationRowProps) {
   const { to_university_name, to_level_name, to_app_status_name } = useDbRefs();
+  const conversations = useConversations();
+  console.log("unreads", conversations.unreads);
 
   return (
     <tr
@@ -67,8 +71,19 @@ export function ApplicationRow({
               setSelectedApplication(application);
               updateConversationId(application.user_id ?? "");
             }}
+            className="relative"
           >
             Message
+            <div
+              className={cn(
+                "absolute top-[-0.25em] right-[-0.25em] rounded-full w-2 h-2 bg-destructive",
+                conversations.unreads.some((unread) =>
+                  unread.subscribers.includes(application.user_id)
+                )
+                  ? "block"
+                  : "hidden"
+              )}
+            ></div>
           </Button>
           <Button
             variant="outline"

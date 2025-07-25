@@ -2,13 +2,12 @@ import type { Metadata } from "next";
 import "../globals.css";
 import { AuthContextProvider } from "@/lib/ctx-auth";
 import { RefsContextProvider } from "@/lib/db/use-refs";
-import Header from "@/components/features/student/header";
 import { AppContextProvider } from "@/lib/ctx-app";
-import { Footer } from "@/components/shared/footer";
 import { MoaContextProvider } from "@/lib/db/use-moa";
 import { PostHogProvider } from "../posthog-provider";
 import TanstackProvider from "../tanstack-provider";
 import AllowLanding from "./allowLanding";
+import { ConversationsContextProvider } from "@/hooks/use-conversation";
 
 export const metadata: Metadata = {
   title: "BetterInternship",
@@ -54,17 +53,19 @@ const HTMLContent = ({
     <TanstackProvider>
       <AppContextProvider>
         <AuthContextProvider>
-          <html lang="en">
-            <body className="overflow-x-hidden m-0 p-0">
-              <AllowLanding>
-                <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
-                  <div className="flex-grow max-h-[100%] overflow-auto flex flex-col">
-                    {children}
+          <ConversationsContextProvider type="user">
+            <html lang="en">
+              <body className="overflow-x-hidden m-0 p-0">
+                <AllowLanding>
+                  <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
+                    <div className="flex-grow max-h-[100%] overflow-auto flex flex-col">
+                      {children}
+                    </div>
                   </div>
-                </div>
-              </AllowLanding>
-            </body>
-          </html>
+                </AllowLanding>
+              </body>
+            </html>
+          </ConversationsContextProvider>
         </AuthContextProvider>
       </AppContextProvider>
     </TanstackProvider>
