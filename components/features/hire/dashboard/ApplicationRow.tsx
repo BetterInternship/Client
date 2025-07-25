@@ -34,7 +34,6 @@ export function ApplicationRow({
 }: ApplicationRowProps) {
   const { to_university_name, to_level_name, to_app_status_name } = useDbRefs();
   const conversations = useConversations();
-  console.log("unreads", conversations.unreads);
 
   return (
     <tr
@@ -76,7 +75,7 @@ export function ApplicationRow({
             Message
             <div
               className={cn(
-                "absolute top-[-0.25em] right-[-0.25em] rounded-full w-2 h-2 bg-destructive",
+                "absolute top-[-0.25em] right-[-0.25em] rounded-full w-2 h-2 bg-primary",
                 conversations.unreads.some((unread) =>
                   unread.subscribers.includes(application.user_id)
                 )
