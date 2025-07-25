@@ -20,13 +20,14 @@ export function StatusDropdown({
 
   return (
     <GroupableRadioDropdown
-      key={value} // Force re-render when value changes
+      key={value}
       name="status"
       className={className}
       disabled={disabled}
-      options={app_statuses}
+      options={app_statuses.filter(as => as.id !== 5)}
       defaultValue={value}
       onChange={onChange}
+      fallback="Withdrawn"
     />
   );
 }
