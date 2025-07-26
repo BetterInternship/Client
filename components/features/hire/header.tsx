@@ -23,7 +23,7 @@ import { useProfile } from "@/hooks/use-employer-api";
 export const Header = () => {
   const { god } = useAuthContext();
   const header_routes = ["/login", "/register", "/otp"];
-  const { route_excluded } = useRoute();
+  const { routeExcluded: route_excluded } = useRoute();
 
   return (
     <div className="relative flex py-3 px-6 justify-between items-center bg-white backdrop-blur-md border-b border-gray-100 z-[100]">
