@@ -8,18 +8,17 @@ import {
 import { Job } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMoa as usDbMoa } from "../db/use-moa";
 
 // Jobs Hook with Client-Side Filtering
 export function useJobs(
   params: {
-    category?: string;
-    type?: string;
-    mode?: string;
     search?: string;
-    location?: string;
-    industry?: string;
+    moaFilter?: boolean;
   } = {}
 ) {
+  const dbMoas = usDbMoa();
+  const dbRefs = useDbRefs();
   const { isPending, data, error } = useQuery({
     queryKey: ["jobs"],
     queryFn: () =>
@@ -28,7 +27,6 @@ export function useJobs(
       }),
     staleTime: 60 * 60 * 1000,
   });
-  const { get_job_category_by_name } = useDbRefs();
 
   // Client-side filtering logic
   const filteredJobs = useMemo(() => {
@@ -53,69 +51,12 @@ export function useJobs(
         if (!searchableText.includes(searchTerm)) return false;
       }
 
-      // Industry filter (through employer.industry)
-      if (
-        params.industry &&
-        !params.industry.toLowerCase().includes("all") &&
-        !params.industry.toLowerCase().includes("industries")
-      ) {
-        const jobIndustry = job.employer?.industry?.toLowerCase();
-        const filterIndustry = params.industry.toLowerCase();
-
-        // Handle partial matches for industry names
-        if (
-          !jobIndustry?.includes(filterIndustry) &&
-          !filterIndustry.includes(jobIndustry || "")
-        ) {
-          return false;
-        }
-      }
-
-      // Category filter - Improved logic with better keyword matching and potential field matching
-      if (
-        params.category &&
-        !params.category.toLowerCase().includes("all") &&
-        !params.category.toLowerCase().includes("categories")
-      ) {
-        const category_id = get_job_category_by_name(params.category)?.id;
-        // @ts-ignore
-        return category_id === job.category;
-      }
-
-      // Job type filter
-      if (
-        params.type &&
-        !params.type.toLowerCase().includes("all") &&
-        !params.type.toLowerCase().includes("types")
-      ) {
-        // Map filter values to job type values
-        const typeMapping: { [key: string]: number } = {
-          Internships: 0,
-          "Part-time": 1,
-          "Full-time": 2,
-        };
-
-        const expectedType = typeMapping[params.type];
-        if (expectedType !== undefined && job.type !== expectedType)
-          return false;
-      }
-
-      // Location/Mode filter
-      if (
-        params.mode &&
-        !params.mode.toLowerCase().includes("any") &&
-        !params.mode.toLowerCase().includes("location")
-      ) {
-        // Map filter values to job mode values
-        const modeMapping: { [key: string]: number } = {
-          "In-Person": 0,
-          Remote: 1,
-          Hybrid: 2,
-        };
-
-        const expectedMode = modeMapping[params.mode];
-        if (expectedMode !== undefined && job.mode !== expectedMode)
-          return false;
+      // Moa filter
+      if (params.moaFilter) {
+        return dbMoas.check(
+          job?.employer_id ?? "",
+          dbRefs.get_university_by_name("DLSU - Manila")?.id ?? ""
+        );
       }
 
       return true;
@@ -185,25 +126,6 @@ export function useProfile() {
     isUpdating,
   };
 }
-
-/**
- * Conversations hook
- *
- * @hook
- */
-export const useConversations = () => {
-  const { isPending, data, error } = useQuery({
-    queryKey: ["my-conversations"],
-    queryFn: UserConversationService.getMyConversations,
-    staleTime: 2 * 1000,
-  });
-
-  return {
-    data: data?.conversations,
-    error,
-    isPending,
-  };
-};
 
 /**
  * Saved jobs hook
