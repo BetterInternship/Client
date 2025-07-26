@@ -23,9 +23,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Message } from "@/components/ui/messages";
 import { useFile } from "@/hooks/use-file";
 import { Card } from "@/components/ui/our-card";
+import { Loader } from "@/components/ui/loader";
 
 function DashboardContent() {
-  const { redirectIfNotLoggedIn } = useAuthContext();
+  const { isAuthenticated, redirectIfNotLoggedIn, loading } = useAuthContext();
   const profile = useProfile();
   const applications = useEmployerApplications();
   const [selectedApplication, setSelectedApplication] =
@@ -170,6 +171,9 @@ function DashboardContent() {
       </div>
     );
   }
+
+  if (loading || !isAuthenticated())
+    return <Loader>Loading dashboard...</Loader>;
 
   // ! remove, find a better way
   let lastSelf = false;

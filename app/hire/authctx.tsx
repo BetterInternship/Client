@@ -13,6 +13,7 @@ interface IAuthContext {
   user: Partial<PublicEmployerUser> | null;
   god: boolean;
   proxy: string;
+  loading: boolean;
   register: (
     employer: Partial<Employer>
   ) => Promise<Partial<PublicEmployerUser> | null>;
@@ -21,15 +22,13 @@ interface IAuthContext {
     email: string,
     password: string
   ) => Promise<Partial<PublicEmployerUser> | null>;
-  login_as: (
-    employer_id: string
-  ) => Promise<Partial<PublicEmployerUser> | null>;
-  email_status: (
+  loginAs: (employer_id: string) => Promise<Partial<PublicEmployerUser> | null>;
+  emailStatus: (
     email: string
   ) => Promise<{ existing_user: boolean; verified_user: boolean }>;
   logout: () => Promise<void>;
-  is_authenticated: () => boolean;
-  refresh_authentication: () => void;
+  isAuthenticated: () => boolean;
+  refreshAuthentication: () => void;
   redirectIfNotLoggedIn: () => void;
   redirectIfLoggedIn: () => void;
 }
@@ -50,8 +49,8 @@ export const AuthContextProvider = ({
 }) => {
   const router = useRouter();
   const [proxy, setProxy] = useState("");
-  const [is_loading, set_is_loading] = useState(true);
-  const [is_authenticated, set_is_authenticated] = useState(() => {
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
     if (typeof window === "undefined") return false;
     const isAuthed = sessionStorage.getItem("isAuthenticated");
     return isAuthed ? JSON.parse(isAuthed) : false;
@@ -70,23 +69,23 @@ export const AuthContextProvider = ({
     if (user) sessionStorage.setItem("user", JSON.stringify(user));
     else sessionStorage.removeItem("user");
 
-    if (is_authenticated)
+    if (isAuthenticated)
       sessionStorage.setItem("isAuthenticated", JSON.stringify(true));
     else sessionStorage.removeItem("isAuthenticated");
-  }, [user, is_authenticated]);
+  }, [user, isAuthenticated]);
 
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] });
     queryClient.invalidateQueries({ queryKey: ["my-employer-conversations"] });
     queryClient.invalidateQueries({ queryKey: ["god-employers"] });
-  }, [is_authenticated]);
+  }, [isAuthenticated]);
 
-  const refresh_authentication =
+  const refreshAuthentication =
     async (): Promise<Partial<PublicEmployerUser> | null> => {
       const response = await EmployerAuthService.loggedin();
 
       if (!response.success) {
-        set_is_loading(false);
+        setLoading(false);
         return null;
       }
 
@@ -95,8 +94,8 @@ export const AuthContextProvider = ({
       // @ts-ignore
       if (response.god) setGod(true);
 
-      set_is_authenticated(true);
-      set_is_loading(false);
+      setIsAuthenticated(true);
+      setLoading(false);
       return response.user as PublicEmployerUser;
     };
 
@@ -114,7 +113,7 @@ export const AuthContextProvider = ({
     if (!response.success) return null;
 
     setUser(response.user as PublicEmployerUser);
-    set_is_authenticated(true);
+    setIsAuthenticated(true);
 
     // @ts-ignore
     if (response.god) setGod(true);
@@ -122,7 +121,7 @@ export const AuthContextProvider = ({
     return response;
   };
 
-  const login_as = async (employer_id: string) => {
+  const loginAs = async (employer_id: string) => {
     const response = await EmployerAuthService.loginAsEmployer(employer_id);
     if (!response.success) {
       alert("Error logging in by proxy.");
@@ -136,7 +135,7 @@ export const AuthContextProvider = ({
     return response.user;
   };
 
-  const email_status = async (email: string) => {
+  const emailStatus = async (email: string) => {
     const response = await EmployerAuthService.email_status(email);
     return response;
   };
@@ -148,21 +147,21 @@ export const AuthContextProvider = ({
     router.push("/login");
     setUser(null);
     setGod(false);
-    set_is_authenticated(false);
+    setIsAuthenticated(false);
   };
 
-  const redirect_if_not_logged_in = () =>
+  const redirectIfNotLoggedIn = () =>
     useEffect(() => {
-      if (!is_loading && !is_authenticated) router.push("/login");
-    }, [is_authenticated, is_loading]);
+      if (!loading && !isAuthenticated) router.push("/login");
+    }, [isAuthenticated, loading]);
 
-  const redirect_if_logged_in = () =>
+  const redirectIfLoggedIn = () =>
     useEffect(() => {
-      if (!is_loading && is_authenticated) router.push("/dashboard");
-    }, [is_authenticated, is_loading]);
+      if (!loading && isAuthenticated) router.push("/dashboard");
+    }, [isAuthenticated, loading]);
 
   useEffect(() => {
-    refresh_authentication();
+    refreshAuthentication();
   }, []);
 
   return (
@@ -175,13 +174,14 @@ export const AuthContextProvider = ({
         register,
         // @ts-ignore
         login,
-        login_as,
-        email_status,
+        loginAs,
+        loading,
+        emailStatus,
         logout,
-        refresh_authentication,
-        is_authenticated: () => is_authenticated,
-        redirectIfNotLoggedIn: redirect_if_not_logged_in,
-        redirectIfLoggedIn: redirect_if_logged_in,
+        refreshAuthentication,
+        isAuthenticated: () => isAuthenticated,
+        redirectIfNotLoggedIn,
+        redirectIfLoggedIn,
       }}
     >
       {children}

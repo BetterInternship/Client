@@ -24,7 +24,7 @@ import { APIClient, APIRoute } from "@/lib/api/api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
 
 export default function GodLandingPage() {
-  const { login_as } = useAuthContext();
+  const { loginAs: login_as } = useAuthContext();
   const employers = useEmployers();
   const { users } = useUsers();
   const [searchName, setSearchName] = useState<string | null>();
