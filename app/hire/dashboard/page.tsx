@@ -12,7 +12,7 @@ import { useConversation, useConversations } from "@/hooks/use-conversation";
 import { useEmployerApplications, useProfile } from "@/hooks/use-employer-api";
 import { Button } from "@/components/ui/button";
 import { EmployerApplication } from "@/lib/db/db.types";
-import { FileText, SendHorizonal } from "lucide-react";
+import { FileText, MessageCircle, SendHorizonal } from "lucide-react";
 import { EmployerConversationService, UserService } from "@/lib/api/services";
 import { useModal } from "@/hooks/use-modal";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
@@ -22,6 +22,7 @@ import { getFullName } from "@/lib/utils/user-utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Message } from "@/components/ui/messages";
 import { useFile } from "@/hooks/use-file";
+import { Card } from "@/components/ui/our-card";
 
 function DashboardContent() {
   const { redirectIfNotLoggedIn } = useAuthContext();
@@ -264,29 +265,41 @@ function DashboardContent() {
             <div className="overflow-y-hidden flex-1 border border-gray-300 rounded-[0.33em] max-h-[75%]">
               <div className="flex flex-col-reverse max-h-full min-h-full overflow-y-scroll p-2 gap-1">
                 <div ref={chatAnchorRef} />
-                {conversation.messages
-                  ?.map((message: any, idx: number) => {
-                    if (!idx) lastSelf = false;
-                    const oldLastSelf = lastSelf;
-                    lastSelf = message.sender_id === profile.data?.id;
-                    return {
-                      key: idx,
-                      message: message.message,
-                      self: message.sender_id === profile.data?.id,
-                      prevSelf: oldLastSelf,
-                      them: getFullName(selectedApplication?.user),
-                    };
-                  })
-                  ?.toReversed()
-                  ?.map((d: any) => (
-                    <Message
-                      key={d.key}
-                      message={d.message}
-                      self={d.self}
-                      prevSelf={d.prevSelf}
-                      them={d.them}
-                    />
-                  ))}
+                {conversation?.messages?.length ? (
+                  conversation.messages
+                    ?.map((message: any, idx: number) => {
+                      if (!idx) lastSelf = false;
+                      const oldLastSelf = lastSelf;
+                      lastSelf = message.sender_id === profile.data?.id;
+                      return {
+                        key: idx,
+                        message: message.message,
+                        self: message.sender_id === profile.data?.id,
+                        prevSelf: oldLastSelf,
+                        them: getFullName(selectedApplication?.user),
+                      };
+                    })
+                    ?.toReversed()
+                    ?.map((d: any) => (
+                      <Message
+                        key={d.key}
+                        message={d.message}
+                        self={d.self}
+                        prevSelf={d.prevSelf}
+                        them={d.them}
+                      />
+                    ))
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center">
+                    <Card className="flex flex-col text-left gap-1 p-4 px-6 border-transparent">
+                      <MessageCircle className="w-16 h-16 my-4 opacity-50" />
+                      <div className="text-xl font-bold">
+                        Send a Message Now!
+                      </div>
+                      You don't have any messages with this applicant yet.
+                    </Card>
+                  </div>
+                )}
               </div>
             </div>
             <Textarea

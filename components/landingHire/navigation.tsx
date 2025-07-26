@@ -19,7 +19,7 @@ export function Navigation() {
         </div>
       </div>
       <div
-        className="absolute flex flex-row text-white opacity-40 right-0 top-[50%] translate-y-[-50%] pr-12"
+        className="absolute flex flex-row text-white opacity-40 right-0 top-[50%] translate-y-[-50%] pr-12 hover:cursor-pointer"
         onClick={() => router.push("/login")}
       >
         <UserCircle className="w-8 h-8" />
