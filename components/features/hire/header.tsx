@@ -22,8 +22,8 @@ import { useProfile } from "@/hooks/use-employer-api";
  */
 export const Header = () => {
   const { god } = useAuthContext();
-  const header_routes = ["/login", "/register", "/otp"];
-  const { route_excluded } = useRoute();
+  const headerRoutes = ["/login", "/register", "/otp"];
+  const { routeExcluded: route_excluded } = useRoute();
 
   return (
     <div className="relative flex py-3 px-6 justify-between items-center bg-white backdrop-blur-md border-b border-gray-100 z-[100]">
@@ -37,7 +37,7 @@ export const Header = () => {
           </Link>
         </div>
       )}
-      {route_excluded(header_routes) ? (
+      {route_excluded(headerRoutes) ? (
         <ProfileButton />
       ) : (
         <div className="w-1 h-10 bg-transparent"></div>
@@ -54,7 +54,7 @@ export const Header = () => {
 export const ProfileButton = () => {
   const router = useRouter();
   const { data: profile } = useProfile();
-  const { user, is_authenticated, logout } = useAuthContext();
+  const { user, isAuthenticated: is_authenticated, logout } = useAuthContext();
 
   const handle_logout = () => {
     logout().then(() => {

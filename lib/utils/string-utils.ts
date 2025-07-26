@@ -130,3 +130,12 @@ export const getSanitizedFilterValue = (value?: string): string => {
   if (!value || value === "all") return "";
   return value.replace(/[^a-z0-9_]/gi, "_").toLowerCase();
 };
+
+export const hashStringToInt = (str: string): number => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0; // Keep it 32-bit signed
+  }
+  return hash >>> 0; // Convert to unsigned
+};

@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-07-25 15:18:23
+ * @ Modified time: 2025-07-26 13:54:22
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -168,7 +168,7 @@ export const GroupableRadioDropdown = <ID extends number | string>({
   defaultValue = null,
   size = "sm",
   className = "",
-  fallback = "Select Option"
+  fallback = "Select Option",
 }: {
   name: string;
   options: IRadioDropdownOption<ID>[];
@@ -257,8 +257,7 @@ export const GroupableRadioDropdown = <ID extends number | string>({
         >
           <div
             className={cn(
-              "relative z-[100] max-h-64 overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
-              isMobile ? "max-h-60" : "max-h-52" // Slightly taller on mobile for better UX
+              "relative z-[100] overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 max-h-64"
             )}
           >
             {options.map((option, index) => (

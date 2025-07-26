@@ -24,7 +24,7 @@ import { APIClient, APIRoute } from "@/lib/api/api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
 
 export default function GodLandingPage() {
-  const { login_as } = useAuthContext();
+  const { loginAs: login_as } = useAuthContext();
   const employers = useEmployers();
   const { users } = useUsers();
   const [searchName, setSearchName] = useState<string | null>();
@@ -148,6 +148,25 @@ export default function GodLandingPage() {
                       : "Unverify"}
                   </Button>
                   <div className="text-gray-700 w-full">{e.name}</div>
+                  <Badge
+                    // @ts-ignore
+                    type={!e?.last_session ? "destructive" : "default"}
+                  >
+                    {
+                      // @ts-ignore
+                      !e?.last_session
+                        ? "Never"
+                        : new Date(
+                            // @ts-ignore
+                            e?.last_session?.timestamp
+                          ).toLocaleDateString() +
+                          ", " +
+                          new Date(
+                            // @ts-ignore
+                            e?.last_session?.timestamp
+                          ).toLocaleTimeString()
+                    }
+                  </Badge>
                   <Badge
                     // @ts-ignore
                     type={!e?.applications?.length ? "destructive" : "default"}

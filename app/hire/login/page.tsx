@@ -9,7 +9,7 @@ import { useAuthContext } from "../authctx";
 
 export default function LoginPage() {
   const {
-    email_status,
+    emailStatus: email_status,
     login,
     redirectIfLoggedIn: redirect_if_logged_in,
     redirectIfNotLoggedIn: redirect_if_not_logged_in,

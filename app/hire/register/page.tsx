@@ -19,12 +19,19 @@ import { StoryBook } from "@/components/ui/storybook";
 import { Button } from "@/components/ui/button";
 import { isValidEmail, isValidPHNumber } from "@/lib/utils";
 import { MultipartFormBuilder } from "@/lib/multipart-form";
+import { Loader } from "@/components/ui/loader";
 
 const [EmployerRegisterForm, useEmployerRegisterForm] =
   createEditForm<Employer>();
 
 export default function RegisterPage() {
-  const { register } = useAuthContext();
+  const { register, isAuthenticated, redirectIfLoggedIn, loading } =
+    useAuthContext();
+
+  redirectIfLoggedIn();
+
+  if (loading || isAuthenticated())
+    return <Loader>Loading registration...</Loader>;
 
   return (
     <div className="flex-1 flex justify-center px-6 py-12 pt-12 overflow-y-auto">

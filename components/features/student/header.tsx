@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useAuthContext } from "@/lib/ctx-auth";
 import { useRouter, usePathname } from "next/navigation";
 import {
   User,
@@ -22,6 +21,9 @@ import { MyUserPfp } from "@/components/shared/pfp";
 import { getFullName, getMissingProfileFields } from "@/lib/utils/user-utils";
 import { useProfile } from "@/lib/api/student.api";
 import CompleteAccBanner from "@/components/features/student/CompleteAccBanner";
+import { useAuthContext } from "@/lib/ctx-auth";
+import Link from "next/link";
+import { useConversations } from "@/hooks/use-conversation";
 
 /**
  * The header present on every page
@@ -29,9 +31,9 @@ import CompleteAccBanner from "@/components/features/student/CompleteAccBanner";
  * @component
  */
 export const Header = () => {
-  const { isMobile: is_mobile } = useAppContext();
+  const { isMobile } = useAppContext();
   const header_routes = ["/login", "/register", "/otp"];
-  const { route_excluded } = useRoute();
+  const { routeExcluded } = useRoute();
   const router = useRouter();
   const profile = useProfile();
   const pathname = usePathname();
@@ -52,7 +54,7 @@ export const Header = () => {
       <div
         className={cn(
           "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
-          is_mobile ? "px-6 py-4" : "py-4 px-8"
+          isMobile ? "px-6 py-4" : "py-4 px-8"
         )}
         style={{
           overflow: "visible",
@@ -63,9 +65,9 @@ export const Header = () => {
         <div className="flex items-center gap-4">
           <HeaderTitle />
         </div>
-        {route_excluded(header_routes) ? (
+        {routeExcluded(header_routes) ? (
           <div className="flex items-center gap-6">
-            {!is_mobile && pathname === "/search" && hasMissing && (
+            {!isMobile && pathname === "/search" && hasMissing && (
               <button
                 className="text-base ml-4 text-blue-700 font-medium hover:underline focus:outline-none"
                 onClick={() => router.push("/profile?edit=true")}
@@ -79,7 +81,7 @@ export const Header = () => {
           <div className="w-1 h-10 bg-transparent"></div>
         )}
       </div>
-      {is_mobile && pathname === "/search" && <CompleteAccBanner />}
+      {isMobile && pathname === "/search" && <CompleteAccBanner />}
     </>
   );
 };
@@ -91,6 +93,7 @@ export const Header = () => {
  */
 export const ProfileButton = () => {
   const profile = useProfile();
+  const conversations = useConversations();
   const { isAuthenticated, logout } = useAuthContext();
   const router = useRouter();
 
@@ -101,7 +104,18 @@ export const ProfileButton = () => {
   };
 
   return isAuthenticated() ? (
-    <div className="relative ">
+    <div className="relative flex flex-row items-center gap-2">
+      <Link href="/conversations">
+        <Button variant="outline" className="relative">
+          <span className="text-xs">Chats</span>{" "}
+          <MessageCircleMore className="w-6 h-6" />
+          {conversations?.unreads?.length ? (
+            <div className="absolute w-3 h-3 top-[-0.33em] right-[-0.4em] rounded-full bg-warning opacity-70"></div>
+          ) : (
+            <></>
+          )}
+        </Button>
+      </Link>
       <GroupableNavDropdown
         display={
           <>
@@ -131,10 +145,6 @@ export const ProfileButton = () => {
         <DropdownOption href="/saved">
           <Heart className="w-4 h-4 inline-block m-1 mr-2" />
           Saved Jobs
-        </DropdownOption>
-        <DropdownOption href="/conversations">
-          <MessageCircleMore className="w-4 h-4 inline-block m-1 mr-2" />
-          Conversations
         </DropdownOption>
         <DropdownOption href="/help">
           <HelpCircle className="w-4 h-4 inline-block m-1 mr-2" />

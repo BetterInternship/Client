@@ -80,6 +80,7 @@ export const AuthContextProvider = ({
 
   // Whenever auth occurs, invalidate profile
   useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["jobs"] });
     queryClient.invalidateQueries({ queryKey: ["my-profile"] });
     queryClient.invalidateQueries({ queryKey: ["my-applications"] });
     queryClient.invalidateQueries({ queryKey: ["my-saved-jobs"] });

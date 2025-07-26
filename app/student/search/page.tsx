@@ -24,14 +24,9 @@ import {
   useApplications,
 } from "@/lib/api/student.api";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { Job, PublicUser } from "@/lib/db/db.types";
+import { Job } from "@/lib/db/db.types";
 import { Paginator } from "@/components/ui/paginator";
 import { useDbRefs } from "@/lib/db/use-refs";
-import {
-  DropdownGroup,
-  GroupableRadioDropdown,
-} from "@/components/ui/dropdown";
-import { useFilter } from "@/lib/filter";
 import { useAppContext } from "@/lib/ctx-app";
 import { useModal } from "@/hooks/use-modal";
 import {
@@ -52,42 +47,25 @@ import { UserService } from "@/lib/api/services";
 import { useFile } from "@/hooks/use-file";
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import { openURL } from "@/lib/utils/url-utils";
+import { Card } from "@/components/ui/our-card";
+import { Badge } from "@/components/ui/badge";
+import { FormCheckbox } from "@/components/EditForm";
 
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated } = useAuthContext();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [moaFilter, setMoaFilter] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const textarea_ref = useRef<HTMLTextAreaElement>(null);
   const [showCoverLetterInput, setShowCoverLetterInput] = useState(false);
-
-  // Initialize filters with URL synchronization and proper defaults
-  const { filters, filter_setter, clear_filters } = useFilter<{
-    job_type: string;
-    location: string;
-    industry: string;
-    category: string;
-  }>(
-    {
-      job_type: searchParams.get("jobType") || "All types",
-      location: searchParams.get("location") || "Any work load type",
-      industry: searchParams.get("industry") || "All industries",
-      category: searchParams.get("category") || "All categories",
-    },
-    true
-  ); // Enable URL synchronization
 
   const {
     open: openSuccessModal,
     close: closeSuccessModal,
     Modal: SuccessModal,
   } = useModal("success-modal");
-  const {
-    open: openFilterModal,
-    close: closeFilterModal,
-    Modal: FilterModal,
-  } = useModal("filter-modal");
   const {
     open: openJobModal,
     close: closeJobModal,
@@ -120,17 +98,14 @@ export default function SearchPage() {
     fetcher: UserService.getMyResumeURL,
     route: "/users/me/resume",
   });
-  const { industries, job_modes, job_categories } = useDbRefs();
+  const { industries, job_categories } = useDbRefs();
 
   // API hooks with dynamic filtering based on current filter state
   const jobs_page_size = 10;
   const [jobs_page, setJobsPage] = useState(1);
   const jobs = useJobs({
     search: searchTerm.trim() || undefined,
-    category: job_categories.filter((c) => c.id === filters.category)[0]?.name,
-    mode: job_modes.filter((j) => j.id.toString() === filters.location)[0]
-      ?.name,
-    industry: industries.filter((i) => i.id === filters.industry)[0]?.name,
+    moaFilter: moaFilter,
   });
 
   // Get paginated jobs directly from getJobsPage
@@ -147,13 +122,7 @@ export default function SearchPage() {
   // Reset to page 1 when filters or search term change
   useEffect(() => {
     setJobsPage(1);
-  }, [
-    searchTerm,
-    filters.job_type,
-    filters.location,
-    filters.industry,
-    filters.category,
-  ]);
+  }, [searchTerm, moaFilter]);
 
   // Set first job as selected when jobs load
   useEffect(() => {
@@ -291,9 +260,7 @@ export default function SearchPage() {
                       className="w-full h-12 pl-12 pr-4 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
                     />
                   </div>
-                  <Button onClick={() => openFilterModal()} size="icon">
-                    <Filter className="h-4 w-4" />
-                  </Button>
+                  <Card>// ! to replace</Card>
                 </div>
               </div>
             </div>
@@ -346,9 +313,13 @@ export default function SearchPage() {
                         className="w-full h-12 pl-12 pr-4 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
                       />
                     </div>
-                    <Button onClick={() => openFilterModal()} size="icon">
-                      <Filter className="h-4 w-4" />
-                    </Button>
+                    <div className="flex flex-row gap-2 items-center border-transparent border-l-black/50 border p-0 px-2 rounded-none">
+                      <Badge type="supportive">MOA only</Badge>{" "}
+                      <FormCheckbox
+                        checked={moaFilter}
+                        setter={(value) => setMoaFilter(value)}
+                      ></FormCheckbox>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -629,62 +600,6 @@ export default function SearchPage() {
           </motion.div>
         </div>
       </SuccessModal>
-
-      {/* Filter Modal */}
-      <FilterModal>
-        <div className="space-y-3 px-8">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-900">Filter Jobs</h2>
-          </div>
-          <br />
-          <DropdownGroup>
-            <GroupableRadioDropdown
-              name="industry"
-              options={[
-                { id: "All industries", name: "All industries" },
-                ...industries,
-              ]}
-              onChange={filter_setter("industry")}
-              defaultValue={filters.industry}
-            />
-            <GroupableRadioDropdown
-              name="category"
-              options={[
-                { id: "All categories", name: "All categories" },
-                ...job_categories.toSorted((a, b) => a.order - b.order),
-              ]}
-              onChange={filter_setter("category")}
-              defaultValue={filters.category}
-            />
-          </DropdownGroup>
-
-          <br />
-          <div className="flex space-x-2">
-            <Button
-              onClick={() => closeFilterModal()}
-              size="sm"
-              className="transition-all duration-200"
-            >
-              Apply Filters
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                clear_filters({
-                  location: "Any location",
-                  industry: "All industries",
-                  category: "All categories",
-                });
-              }}
-              className="transition-all duration-200"
-            >
-              Clear Filters
-            </Button>
-          </div>
-          <br />
-        </div>
-      </FilterModal>
 
       {/* Application Confirmation Modal - Redesigned */}
       <ApplicationConfirmationModal>

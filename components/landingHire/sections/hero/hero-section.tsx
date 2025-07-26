@@ -9,8 +9,6 @@ import { useAppContext } from "@/lib/ctx-app";
 import { TextRotate } from "@/components/landingHire/sections/hero/text-rotate";
 
 export function HeroSection() {
-  const { isMobile } = useAppContext();
-
   return (
     <section className="relative min-h-screen flex items-center bg-black overflow-hidden">
       {/* Use image for both mobile and desktop */}
@@ -40,11 +38,7 @@ export function HeroSection() {
                 Interns.
               </motion.span>
               <TextRotate
-                texts={[
-                  "Faster.",
-                  "Better.",
-                  "Easier.",
-                ]}
+                texts={["Faster.", "Better.", "Easier."]}
                 mainClassName="text-white border-b-2 border-white/60 overflow-hidden w-fit justify-start mt-2"
                 staggerFrom={"last"}
                 initial={{ y: "100%" }}
@@ -64,8 +58,8 @@ export function HeroSection() {
             transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
             className="text-xl sm:text-3xl font-medium text-white text-left text-opacity-80 mb-4"
           >
-            We handle matching, scheduling, and paperwork <br/>
-            — so you don’t have to.
+            We handle matching, scheduling, and paperwork <br />— so you don't
+            have to.
           </motion.h2>
           <div className="flex flex-row justify-start pt-10 w-full items-start">
             <motion.div
@@ -74,7 +68,7 @@ export function HeroSection() {
               transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
               className="flex flex-col sm:flex-row gap-4 items-start"
             >
-              <Link href="/login">
+              <Link href="/register">
                 <Button
                   size="lg"
                   className="bg-white hover:bg-gray-100 text-gray-800 py-4 text-lg tracking-tight"

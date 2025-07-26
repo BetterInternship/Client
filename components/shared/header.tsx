@@ -1,12 +1,21 @@
 import { useAppContext } from "@/lib/ctx-app";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { useAuthContext } from "@/app/hire/authctx";
 
 export const HeaderTitle = () => {
   const { isMobile, view } = useAppContext();
+  const { isAuthenticated } = useAuthContext()!;
+
   return (
     <Link
-      href={view === "student" ? "/search" : "/dashboard"}
+      href={
+        view === "student"
+          ? "/search"
+          : isAuthenticated && isAuthenticated()
+          ? "/dashboard"
+          : "/"
+      }
       className="block outline-none focus:outline-none border-none"
     >
       <h1

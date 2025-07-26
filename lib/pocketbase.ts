@@ -15,7 +15,7 @@ export const usePocketbase = (type: "user" | "employer") => {
   const [token, setToken] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
-  const auth = async () => {
+  const auth = async (retries: number = 0) => {
     // Already authed
     if (pb.authStore.record) {
       setUser(pb.authStore.record);
@@ -31,7 +31,14 @@ export const usePocketbase = (type: "user" | "employer") => {
       token: string;
       user: AuthRecord;
     }>(route);
-    if (newToken && user) pb.authStore.save(newToken, user);
+
+    // Retry if not successful
+    if (newToken && user) {
+      pb.authStore.save(newToken, user);
+    } else if (retries < 3) {
+      await logout();
+      return await auth(retries + 1);
+    }
 
     // Save state
     setUser(user);
