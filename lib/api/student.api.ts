@@ -1,14 +1,15 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   JobService,
   UserService,
   ApplicationService,
-  UserConversationService,
 } from "@/lib/api/services";
 import { Job } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMoa as usDbMoa } from "../db/use-moa";
+import shuffle from "knuth-shuffle-seeded";
+import { hashStringToInt } from "../utils";
 
 // Jobs Hook with Client-Side Filtering
 export function useJobs(
@@ -19,11 +20,18 @@ export function useJobs(
 ) {
   const dbMoas = usDbMoa();
   const dbRefs = useDbRefs();
+  const profile = useProfile();
+  const seed = useRef<number>(
+    hashStringToInt((profile.data?.email ?? "") + new Date().getDay())
+  );
   const { isPending, data, error } = useQuery({
     queryKey: ["jobs"],
     queryFn: () =>
       JobService.getAllJobs({
         last_update: new Date(0).getTime(),
+      }).then((data) => {
+        data.jobs = shuffle(data.jobs ?? [], seed.current);
+        return data;
       }),
     staleTime: 60 * 60 * 1000,
   });

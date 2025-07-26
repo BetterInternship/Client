@@ -64,6 +64,7 @@
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
     "jszip": "^3.10.1",
+    "knuth-shuffle-seeded": "^1.0.6",
     "lucide-react": "^0.454.0",
     "luxon": "^3.6.1",
     "next": "15.2.4",
@@ -93,6 +94,7 @@
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.10",
+    "@types/knuth-shuffle-seeded": "^1.0.2",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
