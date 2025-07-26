@@ -150,6 +150,25 @@ export default function GodLandingPage() {
                   <div className="text-gray-700 w-full">{e.name}</div>
                   <Badge
                     // @ts-ignore
+                    type={!e?.last_session ? "destructive" : "default"}
+                  >
+                    {
+                      // @ts-ignore
+                      !e?.last_session
+                        ? "Never"
+                        : new Date(
+                            // @ts-ignore
+                            e?.last_session?.timestamp
+                          ).toLocaleDateString() +
+                          ", " +
+                          new Date(
+                            // @ts-ignore
+                            e?.last_session?.timestamp
+                          ).toLocaleTimeString()
+                    }
+                  </Badge>
+                  <Badge
+                    // @ts-ignore
                     type={!e?.applications?.length ? "destructive" : "default"}
                   >
                     {
