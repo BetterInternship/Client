@@ -133,20 +133,6 @@ export default function GodLandingPage() {
                   >
                     View
                   </Button>
-                  <Button
-                    variant="outline"
-                    scheme="destructive"
-                    size="xs"
-                    disabled={employers.isUnverifying && e.id === selected}
-                    onClick={() => {
-                      setSelected(e.id ?? "");
-                      employers.unverify(e.id ?? "");
-                    }}
-                  >
-                    {employers.isUnverifying && e.id === selected
-                      ? "Unverifying..."
-                      : "Unverify"}
-                  </Button>
                   <div className="text-gray-700 w-full">{e.name}</div>
                   <Badge
                     // @ts-ignore
