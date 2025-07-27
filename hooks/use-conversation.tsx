@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-07-11 17:06:17
- * @ Modified time: 2025-07-27 12:33:05
+ * @ Modified time: 2025-07-27 13:14:14
  * @ Description:
  *
  * Used by student users for managing conversation state.
@@ -40,6 +40,7 @@ export const useConversation = (
   const [loading, setLoading] = useState(true);
   const { pb, user, refresh } = usePocketbase();
   const [unsubscribe, setUnsubscribe] = useState<Function>(() => () => {});
+  const setLoadingFalse = () => setTimeout(() => setLoading(false), 500);
 
   const seenConversation = useCallback(async () => {
     if (!conversationId) return;
@@ -55,10 +56,11 @@ export const useConversation = (
   }, []);
 
   useEffect(() => {
+    setLoading(true);
     if (!user || !conversationId || !conversationId.trim().length) {
       setMessages([]);
       setSenderId("");
-      return () => unsubscribe();
+      return () => (unsubscribe(), setLoadingFalse());
     }
 
     // Pull messages first
@@ -70,7 +72,7 @@ export const useConversation = (
         );
         setMessages(conversation.contents);
         await seenConversation();
-        setLoading(false);
+        setLoadingFalse();
       });
 
     // Subscribe to messages
@@ -81,13 +83,13 @@ export const useConversation = (
           const conversation = e.record;
           setMessages(conversation.contents);
           await seenConversation();
-          setLoading(false);
+          setLoadingFalse();
         },
         {
           filter: `id = '${conversationId}'`,
         }
       )
-      .then((u) => setUnsubscribe(() => u));
+      .then((u) => setUnsubscribe(() => (setLoadingFalse(), u)));
 
     return () => unsubscribe();
   }, [user, conversationId]);

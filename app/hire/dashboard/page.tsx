@@ -24,6 +24,7 @@ import { Message } from "@/components/ui/messages";
 import { useFile } from "@/hooks/use-file";
 import { Card } from "@/components/ui/our-card";
 import { Loader } from "@/components/ui/loader";
+import { motion } from "framer-motion";
 
 function DashboardContent() {
   const { isAuthenticated, redirectIfNotLoggedIn, loading } = useAuthContext();
@@ -269,7 +270,11 @@ function DashboardContent() {
             <div className="overflow-y-hidden flex-1 border border-gray-300 rounded-[0.33em] max-h-[75%]">
               <div className="flex flex-col-reverse max-h-full min-h-full overflow-y-scroll p-2 gap-1">
                 <div ref={chatAnchorRef} />
-                {conversation?.messages?.length ? (
+                {conversation?.loading ?? true ? (
+                  <div className="flex-1 flex flex-col items-center justify-center">
+                    <Loader>Loading conversation...</Loader>
+                  </div>
+                ) : conversation?.messages?.length ? (
                   conversation.messages
                     ?.map((message: any, idx: number) => {
                       if (!idx) lastSelf = false;
@@ -295,13 +300,19 @@ function DashboardContent() {
                     ))
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center">
-                    <Card className="flex flex-col text-left gap-1 p-4 px-6 border-transparent">
-                      <MessageCircle className="w-16 h-16 my-4 opacity-50" />
-                      <div className="text-xl font-bold">
-                        Send a Message Now!
-                      </div>
-                      You don't have any messages with this applicant yet.
-                    </Card>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Card className="flex flex-col text-left gap-1 p-4 px-6 border-transparent">
+                        <MessageCircle className="w-16 h-16 my-4 opacity-50" />
+                        <div className="text-xl font-bold">
+                          Send a Message Now!
+                        </div>
+                        You don't have any messages with this applicant yet.
+                      </Card>
+                    </motion.div>
                   </div>
                 )}
               </div>

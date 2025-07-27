@@ -53,6 +53,10 @@ export default function ConversationsPage() {
     endSend();
   };
 
+  useEffect(() => {
+    conversation.unsubscribe();
+  }, [conversationId]);
+
   if (conversations.loading)
     return <Loader>Loading your conversations...</Loader>;
 
