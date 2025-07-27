@@ -11,7 +11,6 @@ const pb = new PocketBase(process.env.NEXT_PUBLIC_CHAT_URL as string);
  * @returns
  */
 export const usePocketbase = (type: "user" | "employer") => {
-  const MAX_RETRIES = 3;
   const [user, setUser] = useState<AuthRecord>(null);
   const [token, setToken] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -34,14 +33,9 @@ export const usePocketbase = (type: "user" | "employer") => {
     }>(route);
 
     // Retry if not successful
-    if (newToken && user) {
-      pb.authStore.save(newToken, user);
-    } else if (retries < MAX_RETRIES) {
-      await logout();
-      console.log(retries);
-      return await auth(retries + 1);
-    }
+    if (newToken && user) pb.authStore.save(newToken, user);
 
+    // Set user and token anyway
     setUser(user);
     setToken(newToken);
   };
@@ -52,7 +46,7 @@ export const usePocketbase = (type: "user" | "employer") => {
 
   const refresh = async () => {
     pb.authStore.clear();
-    auth(MAX_RETRIES + 1);
+    auth();
   };
 
   useEffect(() => {
