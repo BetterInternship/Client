@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-07-11 17:06:17
- * @ Modified time: 2025-07-27 13:14:14
+ * @ Modified time: 2025-07-27 14:06:37
  * @ Description:
  *
  * Used by student users for managing conversation state.
@@ -11,6 +11,7 @@
 
 import { APIClient, APIRoute } from "@/lib/api/api-client";
 import { usePocketbase } from "@/lib/pocketbase";
+import { usePathname } from "next/navigation";
 import {
   createContext,
   useCallback,
@@ -120,12 +121,19 @@ export const ConversationsContextProvider = ({
   type: "user" | "employer";
   children: React.ReactNode;
 }) => {
+  const pathname = usePathname();
   const { pb, user, refresh } = usePocketbase();
   // ! change to Conversation type later on
   const [conversations, setConversations] = useState<any[]>([]);
   const [unreadConversations, setUnreadConversations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Just so users get unread notifs after they leave page
+  useEffect(() => {
+    pb.collection("conversations").unsubscribe();
+  }, [pathname]);
+
+  // Subscribe and init conversations
   useEffect(() => {
     let unsubscribe = () => {};
     if (!user) return () => unsubscribe();
@@ -161,7 +169,8 @@ export const ConversationsContextProvider = ({
       });
 
     // Subscribe to notifications
-    pb.collection("users")
+    const unsubscribePromise = pb
+      .collection("users")
       .subscribe(
         "*",
         function (e) {
@@ -191,7 +200,11 @@ export const ConversationsContextProvider = ({
       )
       .then((u) => (unsubscribe = u));
 
-    return () => unsubscribe();
+    return () =>
+      (async () => {
+        const unsubscribe = await unsubscribePromise;
+        unsubscribe();
+      })();
   }, [user]);
 
   const conversationsContext = {
