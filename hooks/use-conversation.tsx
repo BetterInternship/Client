@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-07-11 17:06:17
- * @ Modified time: 2025-07-25 18:56:07
+ * @ Modified time: 2025-07-27 12:33:05
  * @ Description:
  *
  * Used by student users for managing conversation state.
@@ -38,7 +38,7 @@ export const useConversation = (
   const [messages, setMessages] = useState<Message[]>([]);
   const [senderId, setSenderId] = useState("");
   const [loading, setLoading] = useState(true);
-  const { pb, user, refresh } = usePocketbase(type);
+  const { pb, user, refresh } = usePocketbase();
   const [unsubscribe, setUnsubscribe] = useState<Function>(() => () => {});
 
   const seenConversation = useCallback(async () => {
@@ -118,7 +118,7 @@ export const ConversationsContextProvider = ({
   type: "user" | "employer";
   children: React.ReactNode;
 }) => {
-  const { pb, user, token, refresh } = usePocketbase(type);
+  const { pb, user, refresh } = usePocketbase();
   // ! change to Conversation type later on
   const [conversations, setConversations] = useState<any[]>([]);
   const [unreadConversations, setUnreadConversations] = useState<any[]>([]);
@@ -142,17 +142,19 @@ export const ConversationsContextProvider = ({
             last_read: subscriber.last_reads[conversation.id],
           })
         );
-        const unreads = conversations.filter(
-          (conversation: any) =>
-            conversation?.last_unread?.timestamp !==
-            conversation?.last_read?.timestamp
-        );
+        const unreads =
+          conversations?.filter(
+            (conversation: any) =>
+              conversation?.last_unread?.timestamp !==
+              conversation?.last_read?.timestamp
+          ) ?? [];
 
         setConversations(conversations);
         setUnreadConversations(unreads);
         setLoading(false);
       })
       .catch(async (e) => {
+        console.log(e);
         await refresh();
       });
 
@@ -188,7 +190,7 @@ export const ConversationsContextProvider = ({
       .then((u) => (unsubscribe = u));
 
     return () => unsubscribe();
-  }, [user, token]);
+  }, [user]);
 
   const conversationsContext = {
     data: conversations,

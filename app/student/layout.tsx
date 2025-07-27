@@ -8,6 +8,7 @@ import { PostHogProvider } from "../posthog-provider";
 import TanstackProvider from "../tanstack-provider";
 import AllowLanding from "./allowLanding";
 import { ConversationsContextProvider } from "@/hooks/use-conversation";
+import { PocketbaseProvider } from "@/lib/pocketbase";
 
 export const metadata: Metadata = {
   title: "BetterInternship",
@@ -31,7 +32,9 @@ export const RootLayout = ({
     <RefsContextProvider>
       <MoaContextProvider>
         <PostHogProvider>
-          <HTMLContent>{children}</HTMLContent>
+          <PocketbaseProvider type={"user"}>
+            <HTMLContent>{children}</HTMLContent>
+          </PocketbaseProvider>
         </PostHogProvider>
       </MoaContextProvider>
     </RefsContextProvider>

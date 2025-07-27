@@ -51,7 +51,7 @@ export const AuthContextProvider = ({
   children: React.ReactNode;
 }) => {
   const router = useRouter();
-  const pocketbase = usePocketbase("user");
+  const pocketbase = usePocketbase();
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(() => {

@@ -56,7 +56,7 @@ export const AuthContextProvider = ({
     return isAuthed ? JSON.parse(isAuthed) : false;
   });
   const queryClient = useQueryClient();
-  const pocketbase = usePocketbase("employer");
+  const pocketbase = usePocketbase();
   const [god, setGod] = useState(false);
   const [user, setUser] = useState<Partial<PublicEmployerUser> | null>(() => {
     if (typeof window === "undefined") return null;
