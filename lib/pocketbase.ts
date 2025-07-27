@@ -35,14 +35,13 @@ export const usePocketbase = (type: "user" | "employer") => {
     // Retry if not successful
     if (newToken && user) {
       pb.authStore.save(newToken, user);
+      setUser(user);
+      setToken(newToken);
     } else if (retries < 3) {
       await logout();
+      console.log(retries);
       return await auth(retries + 1);
     }
-
-    // Save state
-    setUser(user);
-    setToken(newToken);
   };
 
   const logout = async () => {
