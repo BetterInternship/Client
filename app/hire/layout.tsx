@@ -56,12 +56,12 @@ const HTMLContent = ({
 
   return (
     <TanstackProvider>
-      <AppContextProvider>
-        <AuthContextProvider>
-          <TooltipProvider>
-            <Sonner />
-            <PostHogProvider>
-              <PocketbaseProvider type={"employer"}>
+      <PocketbaseProvider type={"employer"}>
+        <AppContextProvider>
+          <AuthContextProvider>
+            <TooltipProvider>
+              <Sonner />
+              <PostHogProvider>
                 <ConversationsContextProvider type="employer">
                   <html
                     lang="en"
@@ -78,11 +78,11 @@ const HTMLContent = ({
                     </body>
                   </html>
                 </ConversationsContextProvider>
-              </PocketbaseProvider>
-            </PostHogProvider>
-          </TooltipProvider>
-        </AuthContextProvider>
-      </AppContextProvider>
+              </PostHogProvider>
+            </TooltipProvider>
+          </AuthContextProvider>
+        </AppContextProvider>
+      </PocketbaseProvider>
     </TanstackProvider>
   );
 };

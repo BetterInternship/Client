@@ -32,9 +32,7 @@ export const RootLayout = ({
     <RefsContextProvider>
       <MoaContextProvider>
         <PostHogProvider>
-          <PocketbaseProvider type={"user"}>
-            <HTMLContent>{children}</HTMLContent>
-          </PocketbaseProvider>
+          <HTMLContent>{children}</HTMLContent>
         </PostHogProvider>
       </MoaContextProvider>
     </RefsContextProvider>
@@ -54,23 +52,25 @@ const HTMLContent = ({
 }>) => {
   return (
     <TanstackProvider>
-      <AppContextProvider>
-        <AuthContextProvider>
-          <ConversationsContextProvider type="user">
-            <html lang="en">
-              <body className="overflow-x-hidden m-0 p-0">
-                <AllowLanding>
-                  <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
-                    <div className="flex-grow max-h-[100%] overflow-auto flex flex-col">
-                      {children}
+      <PocketbaseProvider type={"user"}>
+        <AppContextProvider>
+          <AuthContextProvider>
+            <ConversationsContextProvider type="user">
+              <html lang="en">
+                <body className="overflow-x-hidden m-0 p-0">
+                  <AllowLanding>
+                    <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
+                      <div className="flex-grow max-h-[100%] overflow-auto flex flex-col">
+                        {children}
+                      </div>
                     </div>
-                  </div>
-                </AllowLanding>
-              </body>
-            </html>
-          </ConversationsContextProvider>
-        </AuthContextProvider>
-      </AppContextProvider>
+                  </AllowLanding>
+                </body>
+              </html>
+            </ConversationsContextProvider>
+          </AuthContextProvider>
+        </AppContextProvider>
+      </PocketbaseProvider>
     </TanstackProvider>
   );
 };
