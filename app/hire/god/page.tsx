@@ -138,6 +138,9 @@ export default function GodLandingPage() {
                     // @ts-ignore
                     type={!e?.last_session ? "destructive" : "default"}
                   >
+                    <span className="font-bold italic opacity-50 mr-1">
+                      last login at:
+                    </span>{" "}
                     {
                       // @ts-ignore
                       !e?.last_session
@@ -230,6 +233,28 @@ export default function GodLandingPage() {
                   <div className="text-gray-700 w-full">{e.name}</div>
                   <Badge
                     // @ts-ignore
+                    type={!e?.last_session ? "destructive" : "default"}
+                  >
+                    <span className="font-bold italic opacity-50 mr-1">
+                      last login at:
+                    </span>{" "}
+                    {
+                      // @ts-ignore
+                      !e?.last_session
+                        ? "Never"
+                        : new Date(
+                            // @ts-ignore
+                            e?.last_session?.timestamp
+                          ).toLocaleDateString() +
+                          ", " +
+                          new Date(
+                            // @ts-ignore
+                            e?.last_session?.timestamp
+                          ).toLocaleTimeString()
+                    }
+                  </Badge>
+                  <Badge
+                    // @ts-ignore
                     type={!e?.applications?.length ? "destructive" : "default"}
                   >
                     {
@@ -304,6 +329,29 @@ export default function GodLandingPage() {
                         {refs.to_degree_full_name(u.degree)}
                       </Badge>
                     </div>
+                    <Badge
+                      // @ts-ignore
+                      type={!u?.last_session ? "destructive" : "default"}
+                    >
+                      <span className="font-bold italic opacity-50 mr-1">
+                        last login at:
+                      </span>{" "}
+                      {
+                        // @ts-ignore
+                        !u?.last_session
+                          ? "Never"
+                          : new Date(
+                              // @ts-ignore
+                              u?.last_session?.timestamp
+                            ).toLocaleDateString() +
+                            ", " +
+                            new Date(
+                              // @ts-ignore
+                              u?.last_session?.timestamp
+                            ).toLocaleTimeString()
+                      }
+                    </Badge>
+
                     <BoolBadge
                       state={u.is_verified}
                       onValue="verified"
@@ -324,6 +372,9 @@ export default function GodLandingPage() {
                     </Badge>
 
                     <Badge strength="medium">
+                      <span className="font-bold italic opacity-50 mr-1">
+                        created at:
+                      </span>{" "}
                       {formatDate(u.created_at ?? "")}
                     </Badge>
                   </div>
