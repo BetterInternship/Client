@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-07-11 17:06:17
- * @ Modified time: 2025-07-25 18:56:07
+ * @ Modified time: 2025-07-27 14:06:37
  * @ Description:
  *
  * Used by student users for managing conversation state.
@@ -11,6 +11,7 @@
 
 import { APIClient, APIRoute } from "@/lib/api/api-client";
 import { usePocketbase } from "@/lib/pocketbase";
+import { usePathname } from "next/navigation";
 import {
   createContext,
   useCallback,
@@ -38,8 +39,9 @@ export const useConversation = (
   const [messages, setMessages] = useState<Message[]>([]);
   const [senderId, setSenderId] = useState("");
   const [loading, setLoading] = useState(true);
-  const { pb, user, refresh } = usePocketbase(type);
+  const { pb, user, refresh } = usePocketbase();
   const [unsubscribe, setUnsubscribe] = useState<Function>(() => () => {});
+  const setLoadingFalse = () => setTimeout(() => setLoading(false), 500);
 
   const seenConversation = useCallback(async () => {
     if (!conversationId) return;
@@ -55,10 +57,11 @@ export const useConversation = (
   }, []);
 
   useEffect(() => {
+    setLoading(true);
     if (!user || !conversationId || !conversationId.trim().length) {
       setMessages([]);
       setSenderId("");
-      return () => unsubscribe();
+      return () => (unsubscribe(), setLoadingFalse());
     }
 
     // Pull messages first
@@ -70,7 +73,7 @@ export const useConversation = (
         );
         setMessages(conversation.contents);
         await seenConversation();
-        setLoading(false);
+        setLoadingFalse();
       });
 
     // Subscribe to messages
@@ -81,13 +84,13 @@ export const useConversation = (
           const conversation = e.record;
           setMessages(conversation.contents);
           await seenConversation();
-          setLoading(false);
+          setLoadingFalse();
         },
         {
           filter: `id = '${conversationId}'`,
         }
       )
-      .then((u) => setUnsubscribe(() => u));
+      .then((u) => setUnsubscribe(() => (setLoadingFalse(), u)));
 
     return () => unsubscribe();
   }, [user, conversationId]);
@@ -118,12 +121,19 @@ export const ConversationsContextProvider = ({
   type: "user" | "employer";
   children: React.ReactNode;
 }) => {
-  const { pb, user, token, refresh } = usePocketbase(type);
+  const pathname = usePathname();
+  const { pb, user, refresh } = usePocketbase();
   // ! change to Conversation type later on
   const [conversations, setConversations] = useState<any[]>([]);
   const [unreadConversations, setUnreadConversations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Just so users get unread notifs after they leave page
+  useEffect(() => {
+    pb.collection("conversations").unsubscribe();
+  }, [pathname]);
+
+  // Subscribe and init conversations
   useEffect(() => {
     let unsubscribe = () => {};
     if (!user) return () => unsubscribe();
@@ -142,22 +152,25 @@ export const ConversationsContextProvider = ({
             last_read: subscriber.last_reads[conversation.id],
           })
         );
-        const unreads = conversations.filter(
-          (conversation: any) =>
-            conversation?.last_unread?.timestamp !==
-            conversation?.last_read?.timestamp
-        );
+        const unreads =
+          conversations?.filter(
+            (conversation: any) =>
+              conversation?.last_unread?.timestamp !==
+              conversation?.last_read?.timestamp
+          ) ?? [];
 
         setConversations(conversations);
         setUnreadConversations(unreads);
         setLoading(false);
       })
       .catch(async (e) => {
+        console.log(e);
         await refresh();
       });
 
     // Subscribe to notifications
-    pb.collection("users")
+    const unsubscribePromise = pb
+      .collection("users")
       .subscribe(
         "*",
         function (e) {
@@ -187,8 +200,12 @@ export const ConversationsContextProvider = ({
       )
       .then((u) => (unsubscribe = u));
 
-    return () => unsubscribe();
-  }, [user, token]);
+    return () =>
+      (async () => {
+        const unsubscribe = await unsubscribePromise;
+        unsubscribe();
+      })();
+  }, [user]);
 
   const conversationsContext = {
     data: conversations,

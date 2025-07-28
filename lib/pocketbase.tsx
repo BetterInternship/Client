@@ -1,21 +1,32 @@
-// firebaseClient.ts
-import { useEffect, useState } from "react";
+"use client";
+
+import { createContext, useContext, useEffect, useState } from "react";
 import { APIClient, APIRoute } from "./api/api-client";
 import PocketBase, { AuthRecord } from "pocketbase";
 
 const pb = new PocketBase(process.env.NEXT_PUBLIC_CHAT_URL as string);
 
-/**
- * Make the API easier to deal with.
- *
- * @returns
- */
-export const usePocketbase = (type: "user" | "employer") => {
-  const [user, setUser] = useState<AuthRecord>(null);
-  const [token, setToken] = useState<string>("");
-  const [loading, setLoading] = useState(true);
+interface IPocketbaseContext {
+  pb: PocketBase;
+  user: AuthRecord;
+  refresh: () => Promise<void>;
+  logout: () => Promise<void>;
+}
 
-  const auth = async () => {
+const PocketbaseContext = createContext<IPocketbaseContext>(
+  {} as IPocketbaseContext
+);
+
+export const PocketbaseProvider = ({
+  type,
+  children,
+}: {
+  type: "employer" | "user";
+  children: React.ReactNode;
+}) => {
+  const [user, setUser] = useState<AuthRecord>(null);
+
+  const auth = async (retries: number = 0) => {
     // Already authed
     if (pb.authStore.record) {
       setUser(pb.authStore.record);
@@ -31,11 +42,12 @@ export const usePocketbase = (type: "user" | "employer") => {
       token: string;
       user: AuthRecord;
     }>(route);
+
+    // Retry if not successful
     if (newToken && user) pb.authStore.save(newToken, user);
 
-    // Save state
+    // Set user and token anyway
     setUser(user);
-    setToken(newToken);
   };
 
   const logout = async () => {
@@ -51,11 +63,25 @@ export const usePocketbase = (type: "user" | "employer") => {
     auth();
   }, []);
 
-  return {
+  const pocketbaseContext = {
     pb,
     user,
-    token,
     refresh,
     logout,
   };
+
+  return (
+    <PocketbaseContext.Provider value={pocketbaseContext}>
+      {children}
+    </PocketbaseContext.Provider>
+  );
+};
+
+/**
+ * Make the API easier to deal with.
+ *
+ * @returns
+ */
+export const usePocketbase = () => {
+  return useContext(PocketbaseContext);
 };

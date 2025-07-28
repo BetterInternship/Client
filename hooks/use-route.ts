@@ -10,7 +10,7 @@
 import { usePathname } from "next/navigation";
 
 interface IRoute {
-  route_excluded: (routes: string[]) => boolean;
+  routeExcluded: (routes: string[]) => boolean;
   route_included: (routes: string[]) => boolean;
 }
 
@@ -31,7 +31,7 @@ export const useRoute = (): IRoute => {
     routes.some((route) => pathname.split("?")[0] === route);
 
   return {
-    route_excluded,
+    routeExcluded: route_excluded,
     route_included,
   };
 };

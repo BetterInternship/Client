@@ -53,6 +53,10 @@ export default function ConversationsPage() {
     endSend();
   };
 
+  useEffect(() => {
+    conversation.unsubscribe();
+  }, [conversationId]);
+
   if (conversations.loading)
     return <Loader>Loading your conversations...</Loader>;
 
@@ -83,51 +87,57 @@ export default function ConversationsPage() {
             </div>
           </div>
           {/* Conversation Pane */}
-          <div className="flex flex-col justify-end flex-1 max-w-[75%] max-h-[100%]">
-            <ConversationPane
-              conversation={conversation}
-              chatAnchorRef={chatAnchorRef}
-            />
-            {conversationId ? (
-              <div className="flex flex-col p-2 gap-3">
-                <Textarea
-                  placeholder="Send a message here..."
-                  className="w-full h-20 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleMessage(conversation.senderId, message);
+          {conversation?.loading ?? true ? (
+            <div className="flex-1 flex flex-col items-center justify-center">
+              <Loader>Loading conversation...</Loader>
+            </div>
+          ) : (
+            <div className="flex flex-col justify-end flex-1 max-w-[75%] max-h-[100%]">
+              <ConversationPane
+                conversation={conversation}
+                chatAnchorRef={chatAnchorRef}
+              />
+              {conversationId ? (
+                <div className="flex flex-col p-2 gap-3">
+                  <Textarea
+                    placeholder="Send a message here..."
+                    className="w-full h-20 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleMessage(conversation.senderId, message);
+                      }
+                    }}
+                    maxLength={1000}
+                  />
+                  <Button
+                    size="md"
+                    disabled={sending || !message.trim()}
+                    onClick={() =>
+                      conversation.senderId &&
+                      handleMessage(conversation.senderId, message)
                     }
-                  }}
-                  maxLength={1000}
-                />
-                <Button
-                  size="md"
-                  disabled={sending || !message.trim()}
-                  onClick={() =>
-                    conversation.senderId &&
-                    handleMessage(conversation.senderId, message)
-                  }
-                >
-                  {sending ? "Sending..." : "Send Message"}
-                  <SendHorizonal className="w-5 h-5" />
-                </Button>
-              </div>
-            ) : (
-              <div className="h-[100%] flex flex-col items-center pt-[25%]">
-                <Card className="flex flex-col items-start mx-auto max-w-prose">
-                  <div className="font-bold mb-1">
-                    Welcome to your conversations!
-                  </div>
-                  <div className="text-xs opacity-70">
-                    Click on a conversation to start chatting.
-                  </div>
-                </Card>
-              </div>
-            )}
-          </div>
+                  >
+                    {sending ? "Sending..." : "Send Message"}
+                    <SendHorizonal className="w-5 h-5" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="h-[100%] flex flex-col items-center pt-[25%]">
+                  <Card className="flex flex-col items-start mx-auto max-w-prose">
+                    <div className="font-bold mb-1">
+                      Welcome to your conversations!
+                    </div>
+                    <div className="text-xs opacity-70">
+                      Click on a conversation to start chatting.
+                    </div>
+                  </Card>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       ) : (
         <div className="relative w-full flex items-center animate-fade-in h-full">
