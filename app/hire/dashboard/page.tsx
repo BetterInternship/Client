@@ -7,7 +7,7 @@ import ContentLayout from "@/components/features/hire/content-layout";
 import { ApplicationsTable } from "@/components/features/hire/dashboard/ApplicationsTable";
 import { ShowUnverifiedBanner } from "@/components/ui/banner";
 import { useSideModal } from "@/hooks/use-side-modal";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useConversation, useConversations } from "@/hooks/use-conversation";
 import { useEmployerApplications, useProfile } from "@/hooks/use-employer-api";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,7 @@ function DashboardContent() {
   };
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const chatAnchorRef = useRef<HTMLDivElement>(null);
+  const [lastSending, setLastSending] = useState(false);
   const [sending, setSending] = useState(false);
   const conversation = useConversation("employer", conversationId);
   const { url: resumeURL, sync: syncResumeURL } = useFile({
@@ -59,9 +60,19 @@ function DashboardContent() {
     setSending(false);
     setTimeout(() => {
       chatAnchorRef.current?.scrollIntoView({ behavior: "instant" });
-      messageInputRef.current?.focus();
     }, 100);
   };
+
+  useEffect(() => {
+    setLastSending(sending);
+  }, [sending]);
+
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    if (!sending && !lastSending)
+      timeout = setTimeout(() => messageInputRef.current?.focus(), 200);
+    return () => timeout && clearTimeout(timeout);
+  }, [lastSending]);
 
   // Handle message
   const handleMessage = async (userId: string, message: string) => {
