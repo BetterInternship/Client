@@ -1,6 +1,16 @@
-export const Card = ({ children }: { children: React.ReactNode }) => {
+import { cn } from "@/lib/utils";
+
+export const Card = ({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
   return (
-    <div className="border border-gray-200 rounded-[0.33em] p-4">
+    <div
+      className={cn("border border-gray-200 rounded-[0.33em] p-4", className)}
+    >
       {children}
     </div>
   );

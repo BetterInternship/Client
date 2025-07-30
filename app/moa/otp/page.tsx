@@ -7,52 +7,53 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export const LoginPage = () => {
-  const [tin, setTin] = useState("");
-  const [tinError, setTinError] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpError, setOtpError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      if (!/^(?:\d{12}|\d{3}-\d{3}-\d{3}-\d{3})$/.test(tin) && tin.trim())
-        return setTinError("Invalid TIN.");
-      else return setTinError("");
+      if (!/^\d{6}$/.test(otp) && otp.trim())
+        return setOtpError("Invalid OTP.");
+      else return setOtpError("");
     }, 150);
 
     return () => clearTimeout(timeout);
-  }, [tin]);
+  }, [otp]);
 
   return (
     <div className="w-[100vw] min-h-screen flex flex-col justify-left items-start p-24 py-32 gap-8">
       <div className="font-bold text-5xl tracking-tighter text-gray-700 text-left min-w-[600px]">
-        Welcome to the DLSU MOA portal!
+        Verify your email.
       </div>
       <div className="text-gray-700 text-xl">
-        Start or manage your Memorandum of Agreement with De La Salle University
+        We've sent a 6-digit verification code to your email address. Please
+        enter it below.
       </div>
       <div className="flex flex-row items-end gap-8">
         <FormInput
-          label="Company Tax Identification Number (TIN)"
-          value={tin}
-          setter={(value) => setTin(value)}
+          label="Verification Code"
+          value={otp}
+          setter={(value) => setOtp(value)}
           className="border-gray-400 placeholder-gray-200"
-          placeholder="123-456-789-000"
+          placeholder="------"
           required={false}
         />
-        <ErrorLabel value={tinError} />
+        <ErrorLabel value={otpError} />
       </div>
       <Button
         type="button"
         scheme="supportive"
         disabled={loading}
         onClick={() => {
-          if (!tinError.trim()) {
+          if (!otpError.trim()) {
             setLoading(true);
-            router.push("/otp");
+            router.push("/dashboard");
           }
         }}
       >
-        {loading ? "Checking..." : "Continue"}
+        {loading ? "Logging in..." : "Login"}
       </Button>
     </div>
   );
