@@ -12,6 +12,9 @@ import { FormInput } from "@/components/EditForm";
 
 export default function DashboardPage() {
   const router = useRouter();
+  const [approving, setApproving] = useState(false);
+  const [denying, setDenying] = useState(false);
+  const [sending, setSending] = useState(false);
   const [company, setCompany] = useState<{
     id: string;
     name: string;
@@ -503,14 +506,29 @@ export default function DashboardPage() {
                 <Card>
                   <div className="font-bold text-2xl mb-4">MOA Details</div>
                   <div className="flex flex-col gap-2">
-                    <Badge type="supportive" className="w-fit">
-                      MOA Status: Valid
-                    </Badge>
+                    <div className="flex flex-row gap-2">
+                      <div className="w-64 max-w-64">MOA Status:</div>
+                      <div className="w-64 max-w-64">Active</div>
+                    </div>
                     <div className="flex flex-row gap-2">
                       <div className="w-64 max-w-64">Valid Until:</div>
                       <div className="w-64 max-w-64">02/15/26</div>
                     </div>
                   </div>
+                  <a
+                    href="https://api.dev.betterinternship.com/api/services/sample-signed"
+                    className="underline"
+                    target="_blank"
+                  >
+                    <Button
+                      variant="outline"
+                      scheme="primary"
+                      className="w-fit mt-4"
+                    >
+                      Download MOA
+                      <Download />
+                    </Button>
+                  </a>
                 </Card>
                 <Card>
                   <div className="font-bold text-2xl mb-4">Company Details</div>
@@ -791,10 +809,11 @@ export default function DashboardPage() {
                 variant="outline"
                 className="w-fit"
                 onClick={async () => {
+                  setSending(true);
                   APIClient.post<{}>(APIRoute("services").r("email").build(), {
                     to: "modavid.1964@gmail.com",
                     from: "hello@betterinternship.com",
-                    fromName: "Mo David",
+                    fromName: "DLSU Legal via BetterInternship",
                     content: `
 <!DOCTYPE html>
 <html lang="en">
@@ -840,10 +859,15 @@ export default function DashboardPage() {
                     subject: "MOA - Additional Information Required",
                     apiKey:
                       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30",
-                  }).then(console.log);
+                  })
+                    .then(() => {
+                      alert("Message sent");
+                      setSending(false);
+                    })
+                    .catch(() => setSending(false));
                 }}
               >
-                Send
+                {denying ? "Sending..." : "Send"}
                 <SendHorizonal />
               </Button>
             </div>
@@ -854,10 +878,11 @@ export default function DashboardPage() {
                 scheme="supportive"
                 size="lg"
                 onClick={async () => {
+                  setApproving(true);
                   APIClient.post<{}>(APIRoute("services").r("email").build(), {
                     to: "modavid.1964@gmail.com",
                     from: "hello@betterinternship.com",
-                    fromName: "Mo David",
+                    fromName: "DLSU Legal via BetterInternship",
                     content: `
                     <!DOCTYPE html>
 <html>
@@ -951,19 +976,25 @@ export default function DashboardPage() {
                     subject: "MOA Accepted",
                     apiKey:
                       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30",
-                  }).then(console.log);
+                  })
+                    .then(() => {
+                      alert("Company approved");
+                      setApproving(false);
+                    })
+                    .catch(() => setApproving(false));
                 }}
               >
-                Approve
+                {approving ? "Approving..." : "Approve"}
               </Button>
               <Button
                 scheme="destructive"
                 size="lg"
                 onClick={async () => {
+                  setDenying(true);
                   APIClient.post<{}>(APIRoute("services").r("email").build(), {
                     to: "modavid.1964@gmail.com",
                     from: "hello@betterinternship.com",
-                    fromName: "Mo David",
+                    fromName: "DLSU Legal via BetterInternship",
                     content: `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1004,10 +1035,15 @@ export default function DashboardPage() {
                     subject: "MOA Request Denied",
                     apiKey:
                       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30",
-                  }).then(console.log);
+                  })
+                    .then(() => {
+                      alert("Company denied");
+                      setDenying(false);
+                    })
+                    .catch(() => setDenying(false));
                 }}
               >
-                Deny
+                {denying ? "Denying..." : "Deny"}
               </Button>
             </div>
           </div>
