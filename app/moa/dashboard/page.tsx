@@ -2,9 +2,8 @@
 
 import { useRouter } from "next/navigation";
 
-export default function LandingPage() {
+export default function DashboardPage() {
   const router = useRouter();
-  router.push("/login");
 
-  return <></>;
+  return <div className="">dashboard</div>;
 }
