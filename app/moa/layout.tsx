@@ -1,6 +1,7 @@
 import "../globals.css";
 import Head from "next/head";
 import type { Metadata } from "next";
+import { Header } from "./components/header";
 
 export const metadata: Metadata = {
   title: "MOA Management Platform",
@@ -40,7 +41,12 @@ const HTMLContent = ({
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
-      <body className="h-full overflow-hidden">{children}</body>
+      <body className="h-full w-full min-h-screen overflow-hidden ">
+        <main className="flex flex-col items-center w-full">
+          <Header></Header>
+          <div className="flex-1">{children}</div>
+        </main>
+      </body>
     </html>
   );
 };
