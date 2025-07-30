@@ -723,7 +723,7 @@ export default function DashboardPage() {
               </Card>
             )}
           </div>
-          <div className="absolute ml-80 h-64 bottom-64 border-t border-gray-400 w-full p-8">
+          <div className="absolute translate-y-28 ml-80 h-[30vh] bottom-[20vh] border-t border-gray-400 w-full p-8 bg-white z-[1000]">
             <div className="tracking-tight mb-2">Request for Response:</div>
             <div className="flex flex-col gap-2">
               <textarea
@@ -773,31 +773,15 @@ export default function DashboardPage() {
               })}
             </div>
           </div>
-          <div className="w-[100vw] min-h-screen flex flex-col justify-left items-start p-16 gap-8">
+          <div className="w-[100vw] max-h-[50vh] flex flex-col justify-left items-start p-16 gap-8 overflow-auto">
             {company && (
-              <Card>
-                <div className="font-bold text-2xl">Request Details</div>
-                <div className="text-gray-500 italic mb-4">{company.date}</div>
-                <label className="text-xs text-gray-400 italic block">
-                  Reason for Custom Terms
-                </label>
-                <Card className="mb-2 max-w-prose">{company.reason}</Card>
-                <div className="flex flex-row gap-1 mt-4">
-                  <a
-                    href="https://api.dev.betterinternship.com/api/services/sample-signed"
-                    className="underline w-full"
-                    target="_blank"
-                  >
-                    <Button scheme="primary" className="w-full" size="lg">
-                      MOA
-                      <Download />
-                    </Button>
-                  </a>
-                </div>
-              </Card>
+              <>
+                <div>MOA Request History</div>
+                <Timeline />
+              </>
             )}
           </div>
-          <div className="absolute ml-80 h-64 bottom-64 border-t border-gray-400 w-full p-8">
+          <div className="absolute translate-y-60 ml-80 h-[30vh] bottom-[20vh] border-t border-gray-400 w-full p-8 bg-white z-[1000]">
             <div className="tracking-tight mb-2">Request for Response:</div>
             <div className="flex flex-col gap-2">
               <textarea
@@ -1052,3 +1036,118 @@ export default function DashboardPage() {
     </TabGroup>
   );
 }
+
+const timelineData = [
+  {
+    side: "employer",
+    date: "May 25, 2025",
+    title: "Employer MOA Revision Request",
+    content:
+      "The MOA needs to be edited to align with our company's NDA policy to ensure consistency in confidentiality obligations and prevent conflicts.",
+    file: {
+      name: "revised_moa.pdf",
+      url: "https://api.dev.betterinternship.com/api/services/sample-signed",
+    },
+  },
+  {
+    side: "university",
+    date: "May 27, 2025",
+    title: "University Feedback",
+    content:
+      "The proposed edits are acceptable, but ensure that the NDA is mutual. See revised language in document attached.",
+    file: {
+      name: "revised_moa.pdf",
+      url: "https://api.dev.betterinternship.com/api/services/sample-signed",
+    },
+  },
+  {
+    side: "employer",
+    date: "May 28, 2025",
+    title: "Employer Response",
+    content:
+      "Confirmed. The NDA has been adjusted to reflect mutual protection as per your request.",
+    file: {
+      name: "revised_moa.pdf",
+      url: "https://api.dev.betterinternship.com/api/services/sample-signed",
+    },
+  },
+  {
+    side: "university",
+    date: "May 29, 2025",
+    title: "University Feedback",
+    content:
+      "Looks like there was a mistype on the Section 3 header. I fixed it. Please see attached.",
+    file: {
+      name: "corrected_section3.pdf",
+      url: "https://api.dev.betterinternship.com/api/services/sample-signed",
+    },
+  },
+  {
+    side: "employer",
+    date: "May 30, 2025",
+    title: "Employer Response",
+    content:
+      "We agree with the changes. Here is the final draft with our signatories filled in.",
+    file: {
+      name: "final_moa.pdf",
+      url: "https://api.dev.betterinternship.com/api/services/sample-signed",
+    },
+  },
+];
+
+const Timeline = () => {
+  return (
+    <div className="flex flex-col items-center px-4 py-10">
+      <div className="w-full max-w-4xl relative">
+        {/* Timeline Items */}
+        <div className="relative">
+          {timelineData.map((item, index) => (
+            <div
+              key={index}
+              className={`relative flex justify-${
+                item.side === "employer" ? "start" : "end"
+              } items-center w-full mb-2`}
+            >
+              <div
+                className={`w-1/2 px-4 ${
+                  item.side === "employer"
+                    ? "text-left self-start"
+                    : "text-right self-end"
+                }`}
+              >
+                <div className="bg-white p-4 rounded-xl shadow-md border border-gray-200">
+                  <div className="text-sm text-gray-500 mb-1">{item.date}</div>
+                  <div className="font-semibold text-gray-800 mb-1">
+                    {item.title}
+                  </div>
+                  <div className="text-gray-700 text-sm leading-snug mb-2">
+                    {item.content}
+                  </div>
+                  {item.file && (
+                    <div className="flex items-center gap-2 text-blue-600 text-sm hover:underline cursor-pointer">
+                      <Download className="w-4 h-4" />
+                      <a href={item.file.url} download target="_blank">
+                        {item.file.name}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {/* Dot on the center line */}
+              <div className="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-green-600 rounded-full z-10"></div>
+            </div>
+          ))}
+
+          {/* Center Line spanning only between first and last dots */}
+          <div
+            className="absolute left-1/2 transform -translate-x-1/2 w-1 bg-gray-300 z-0"
+            style={{
+              top: `calc(1.5rem + 0.5rem)`,
+              bottom: `calc(3rem + 0.5rem)`,
+            }}
+          ></div>
+        </div>
+      </div>
+    </div>
+  );
+};
