@@ -44,6 +44,10 @@ export function middleware(request: NextRequest) {
     return reroute_to_subdomain("hire", pathname, request.url);
   }
 
+  if (subdomain_is(hostname, "univ")) {
+    return reroute_to_subdomain("moa/univ", pathname, request.url);
+  }
+
   if (subdomain_is(hostname, "")) {
     return reroute_to_subdomain("student", pathname, request.url);
   }

@@ -59,7 +59,7 @@ export default function DashboardPage() {
         disabled={!consent || !name.trim() || !title.trim()}
         scheme="primary"
         size="lg"
-        onClick={() => router.push("/negotiated")}
+        onClick={() => router.push("/standard/success")}
       >
         Submit MOA Request
       </Button>

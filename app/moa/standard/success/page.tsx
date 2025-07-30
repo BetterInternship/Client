@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SquareCheckBig } from "lucide-react";
 
-export default function DashboardPage() {
+export default function SuccessPage() {
   const router = useRouter();
 
   return (
@@ -37,7 +37,7 @@ export default function DashboardPage() {
         >
           Go To Dashboard
         </Button>
-        <Button size="lg" onClick={() => router.push("/tracker")}>
+        <Button size="lg" onClick={() => router.push("/standard/tracker")}>
           Track Request
         </Button>
       </div>
