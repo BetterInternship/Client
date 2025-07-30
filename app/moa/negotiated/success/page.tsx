@@ -15,15 +15,15 @@ export default function DashboardPage() {
         Request Submitted Successfully!
       </div>
       <div className="text-gray-700 text-xl max-w-prose">
-        Your Standard MOA request has been submitted to DLSU for review.
+        Your Custom MOA request has been submitted to DLSU for review.
         <br />
         <br />
         <div className="flex flex-col gap-2">
           <Badge type="primary" className="w-fit">
             Reference Number: #MOA-2024-001234
           </Badge>
-          <Badge type="primary" className="w-fit">
-            Expected processing time: 1-2 business days
+          <Badge type="warning" className="w-fit">
+            Expected processing time: 2-4 weeks
           </Badge>
         </div>
         <br />

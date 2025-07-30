@@ -86,7 +86,7 @@ export default function DashboardPage() {
         disabled={!reason}
         scheme="primary"
         size="lg"
-        onClick={() => router.push("/negotiated")}
+        onClick={() => router.push("/negotiated/success")}
       >
         Submit MOA Request
       </Button>

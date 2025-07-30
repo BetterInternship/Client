@@ -42,6 +42,7 @@ export const LoginPage = () => {
         <ErrorLabel value={tinError} />
       </div>
       <Button
+        size="lg"
         type="button"
         scheme="supportive"
         disabled={loading}

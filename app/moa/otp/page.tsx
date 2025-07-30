@@ -43,6 +43,7 @@ export const LoginPage = () => {
         <ErrorLabel value={otpError} />
       </div>
       <Button
+        size="lg"
         type="button"
         scheme="supportive"
         disabled={loading}
