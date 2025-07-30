@@ -9,7 +9,7 @@ export const Card = ({
 }) => {
   return (
     <div
-      className={cn("border border-gray-200 rounded-[0.33em] p-4", className)}
+      className={cn("border border-gray-400 rounded-[0.33em] p-6", className)}
     >
       {children}
     </div>

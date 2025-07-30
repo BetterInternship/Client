@@ -34,7 +34,12 @@ export default function DashboardPage() {
                 Processing time: 1-2 Business Days
               </Badge>
               <br />
-              <Button scheme="primary" variant="outline" size="lg">
+              <Button
+                scheme="primary"
+                variant="outline"
+                size="lg"
+                onClick={() => router.push("/standard")}
+              >
                 Get Started
               </Button>
             </div>
@@ -58,7 +63,12 @@ export default function DashboardPage() {
                 Processing time: 2-4 weeks
               </Badge>
               <br />
-              <Button scheme="primary" variant="outline" size="lg">
+              <Button
+                scheme="primary"
+                variant="outline"
+                size="lg"
+                onClick={() => router.push("/negotiated")}
+              >
                 Get Started
               </Button>
             </div>
