@@ -33,7 +33,7 @@ export default function SuccessPage() {
         <Button
           size="lg"
           variant="outline"
-          onClick={() => router.push("/dashboard")}
+          onClick={() => router.push("/dashboard/existing")}
         >
           Go To Dashboard
         </Button>
