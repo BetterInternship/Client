@@ -168,8 +168,307 @@ export default function DashboardPage() {
   return (
     <TabGroup>
       <Tab name="Dashboard">
-        <div className="w-[100vw] h-[100vh]">
-          <div>Dashboard</div>
+        <div className="w-[100vw] h-[100vh] overflow-auto">
+          <div className="w-[100vw] min-h-screen flex flex-col justify-left items-center">
+            <div className="w-fit min-h-screen flex flex-col justify-left items-start p-20 py-28 gap-8">
+              <div className="font-bold text-5xl tracking-tighter text-gray-700 text-left min-w-[600px]">
+                DLSU MOA Management Dashboard
+              </div>
+              <div className="text-gray-700 text-xl">
+                Overview of MOA requests, company registrations, and activity
+                logs.
+              </div>
+              <div className="flex flex-row items-start gap-2">
+                <Button variant="outline" className="w-fit h-fit p-0">
+                  <Card className="p-8 w-prose max-w-prose w-64">
+                    <div className="flex flex-col gap-4 justify-start">
+                      <div className="text-7xl font-bold tracking-tighter text-gray-500 text-left">
+                        21
+                      </div>
+                      <Badge type="supportive" className="w-fit">
+                        New Companies
+                      </Badge>
+                    </div>
+                  </Card>
+                </Button>
+                <Button variant="outline" className="w-fit h-fit p-0">
+                  <Card className="p-8 w-prose max-w-prose w-64">
+                    <div className="flex flex-col gap-4 justify-start">
+                      <div className="text-7xl font-bold tracking-tighter text-gray-500 text-left">
+                        12
+                      </div>
+                      <Badge type="warning" className="w-fit">
+                        MOA Requests
+                      </Badge>
+                    </div>
+                  </Card>
+                </Button>
+                <Button variant="outline" className="w-fit h-fit p-0">
+                  <Card className="p-8 w-prose max-w-prose w-64">
+                    <div className="flex flex-col gap-4 justify-start">
+                      <div className="text-7xl font-bold tracking-tighter text-gray-500 text-left">
+                        1249
+                      </div>
+                      <Badge type="accent" className="w-fit">
+                        Total Companies
+                      </Badge>
+                    </div>
+                  </Card>
+                </Button>
+                <Button variant="outline" className="w-fit h-fit p-0">
+                  <Card className="p-8 w-prose max-w-prose w-64">
+                    <div className="flex flex-col gap-4 justify-start">
+                      <div className="text-7xl font-bold tracking-tighter text-gray-500 text-left">
+                        1023
+                      </div>
+                      <Badge type="primary" className="w-fit">
+                        Active MOAs
+                      </Badge>
+                    </div>
+                  </Card>
+                </Button>
+              </div>
+              <Card>
+                <table className="table-fixed w-full text-sm font-mono border border-gray-300">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="w-36 px-4 py-2 text-left border-b border-gray-300">
+                        Date
+                      </th>
+                      <th className="w-56 px-4 py-2 text-left border-b border-gray-300">
+                        Company
+                      </th>
+                      <th className="w-64 px-4 py-2 text-left border-b border-gray-300">
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="px-4 py-1 border-b">
+                        <pre>2025-07-30</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Orion Technologies</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>MOA approved</pre>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-1 border-b">
+                        <pre>2025-07-29</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>QuantumWare Ltd</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>MOA requested</pre>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-1 border-b">
+                        <pre>2025-07-28</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>NovaEdge Corp</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Company blacklisted</pre>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-1 border-b">
+                        <pre>2025-07-27</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Horizon Systems</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>MOA renewed</pre>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-1 border-b">
+                        <pre>2025-07-26</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Nexa Solutions</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>MOA approved</pre>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-1 border-b">
+                        <pre>2025-07-25</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>TerraTech Inc</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>MOA requested</pre>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-1 border-b">
+                        <pre>2025-07-24</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Fusion Dynamics</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>New Company Registration</pre>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-1 border-b">
+                        <pre>2025-07-23</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Zenith Innovations</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>MOA renewed</pre>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-1 border-b">
+                        <pre>2025-07-22</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Stratos Labs</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>MOA approved</pre>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-1 border-b">
+                        <pre>2025-07-21</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Apex Global</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>MOA requested</pre>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-1 border-b">
+                        <pre>2025-07-20</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Skyline Ventures</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Company blacklisted</pre>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-1 border-b">
+                        <pre>2025-07-19</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Voltura Analytics</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>MOA renewed</pre>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-1 border-b">
+                        <pre>2025-07-18</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Arcadia Robotics</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>MOA approved</pre>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-1 border-b">
+                        <pre>2025-07-17</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Nimbus AI</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>MOA requested</pre>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-1 border-b">
+                        <pre>2025-07-16</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Helixon Group</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>New Company Registration</pre>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-1 border-b">
+                        <pre>2025-07-15</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Polaris Technologies</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>MOA renewed</pre>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-1 border-b">
+                        <pre>2025-07-14</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Synerbyte Corp</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>MOA approved</pre>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-1 border-b">
+                        <pre>2025-07-13</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Equinox Systems</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>MOA requested</pre>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-1 border-b">
+                        <pre>2025-07-12</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Lumenix Inc</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Company blacklisted</pre>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-1 border-b">
+                        <pre>2025-07-11</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>BlueNova Solutions</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>New Company Registration</pre>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </Card>
+            </div>
+          </div>
         </div>
       </Tab>
       <Tab name="Companies">
@@ -618,13 +917,13 @@ export default function DashboardPage() {
   </style>
 </head>
 <body>
-  <div class="email-container">
-    <div class="header">
-      <span class="header-icon">✅</span>
+  <div className="email-container">
+    <div className="header">
+      <span className="header-icon">✅</span>
       <strong>MOA Request Approved!</strong>
     </div>
 
-    <div class="details">
+    <div className="details">
       <p>Dear ABC Corporation Team,</p>
       <p>Congratulations! Your Memorandum of Agreement (MOA) request has been successfully approved by De La Salle University.</p>
       <p>Your MOA is now active and ready for implementation. Below are the details:</p>
@@ -636,9 +935,9 @@ export default function DashboardPage() {
         <li><strong>Expiration Date:</strong> February 1, 2028</li>
       </ul>
       <p>You can download your signed MOA document using the link below:</p>
-      <a href="https://api.dev.betterinternship.com/api/services/sample-signed" target="_blank" class="button">📄 Download MOA</a>
+      <a href="https://api.dev.betterinternship.com/api/services/sample-signed" target="_blank" className="button">📄 Download MOA</a>
 
-      <div class="footer">
+      <div className="footer">
         <p>Best regards,</p>
         <p>De La Salle University<br>
         Partnership & Legal Affairs Office</p>
