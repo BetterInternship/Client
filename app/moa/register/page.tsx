@@ -115,7 +115,7 @@ export const Page = () => {
         disabled={loading}
         onClick={() => {
           setLoading(true);
-          router.push("/login");
+          router.push("/otp");
         }}
       >
         {loading ? "Checking..." : "Continue"}
