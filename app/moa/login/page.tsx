@@ -49,7 +49,7 @@ export const LoginPage = () => {
         onClick={() => {
           if (!tinError.trim()) {
             setLoading(true);
-            router.push("/otp");
+            router.push("/register");
           }
         }}
       >
