@@ -26,8 +26,9 @@ export const Tab = ({ name, children, indicator }: TabProps) => {
  */
 interface TabGroupProps {
   children: React.ReactElement<TabProps>[];
+  className?: string;
 }
-export const TabGroup = ({ children }: TabGroupProps) => {
+export const TabGroup = ({ children, className }: TabGroupProps) => {
   const [activeTab, setActiveTab] = useState("");
 
   // Set the initial active tab to be the first element
@@ -68,7 +69,7 @@ export const TabGroup = ({ children }: TabGroupProps) => {
           }
         })}
       </div>
-      <div className="relative w-full h-full">
+      <div className={cn("relative w-full h-full", className)}>
         {
           Children.toArray(children).filter((child) => {
             const c = child as React.ReactElement<TabProps>;

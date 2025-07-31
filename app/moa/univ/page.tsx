@@ -169,699 +169,717 @@ export default function DashboardPage() {
   ];
 
   return (
-    <TabGroup>
-      <Tab name="Dashboard">
-        <div className="w-[100vw] h-[100vh] overflow-auto">
-          <div className="w-[100vw] min-h-screen flex flex-col justify-left items-center">
-            <div className="w-fit min-h-screen flex flex-col justify-left items-start p-20 py-28 gap-8">
-              <div className="font-bold text-5xl tracking-tighter text-gray-700 text-left min-w-[600px]">
-                DLSU MOA Management Dashboard
-              </div>
-              <div className="text-gray-700 text-xl">
-                Overview of MOA requests, company registrations, and activity
-                logs.
-              </div>
-              <div className="flex flex-row items-start gap-2">
-                <Button variant="outline" className="w-fit h-fit p-0">
-                  <Card className="p-8 w-prose max-w-prose w-64">
-                    <div className="flex flex-col gap-4 justify-start">
-                      <div className="text-7xl font-bold tracking-tighter text-gray-500 text-left">
-                        21
+    <div className="child flex-1 flex flex-col overflow-auto">
+      <TabGroup className="relative child flex-1 max-h-[calc(100vh-7em)] overflow-auto">
+        <Tab name="Dashboard">
+          <div className="w-full max-h-full overflow-auto">
+            <div className="w-[100vw] flex flex-col justify-left items-center">
+              <div className="w-fit flex flex-col justify-left items-start p-20 py-28 gap-8">
+                <div className="font-bold text-5xl tracking-tighter text-gray-700 text-left min-w-[600px]">
+                  DLSU MOA Management Dashboard
+                </div>
+                <div className="text-gray-700 text-xl">
+                  Overview of MOA requests, company registrations, and activity
+                  logs.
+                </div>
+                <div className="flex flex-row items-start gap-2">
+                  <Button variant="outline" className="w-fit h-fit p-0">
+                    <Card className="p-8 w-prose max-w-prose w-64">
+                      <div className="flex flex-col gap-4 justify-start">
+                        <div className="text-7xl font-bold tracking-tighter text-gray-500 text-left">
+                          21
+                        </div>
+                        <Badge type="supportive" className="w-fit">
+                          New Companies
+                        </Badge>
                       </div>
-                      <Badge type="supportive" className="w-fit">
-                        New Companies
-                      </Badge>
-                    </div>
-                  </Card>
-                </Button>
-                <Button variant="outline" className="w-fit h-fit p-0">
-                  <Card className="p-8 w-prose max-w-prose w-64">
-                    <div className="flex flex-col gap-4 justify-start">
-                      <div className="text-7xl font-bold tracking-tighter text-gray-500 text-left">
-                        12
-                      </div>
-                      <Badge type="warning" className="w-fit">
-                        MOA Requests
-                      </Badge>
-                    </div>
-                  </Card>
-                </Button>
-                <Button variant="outline" className="w-fit h-fit p-0">
-                  <Card className="p-8 w-prose max-w-prose w-64">
-                    <div className="flex flex-col gap-4 justify-start">
-                      <div className="text-7xl font-bold tracking-tighter text-gray-500 text-left">
-                        1249
-                      </div>
-                      <Badge type="accent" className="w-fit">
-                        Total Companies
-                      </Badge>
-                    </div>
-                  </Card>
-                </Button>
-                <Button variant="outline" className="w-fit h-fit p-0">
-                  <Card className="p-8 w-prose max-w-prose w-64">
-                    <div className="flex flex-col gap-4 justify-start">
-                      <div className="text-7xl font-bold tracking-tighter text-gray-500 text-left">
-                        1023
-                      </div>
-                      <Badge type="primary" className="w-fit">
-                        Active MOAs
-                      </Badge>
-                    </div>
-                  </Card>
-                </Button>
-              </div>
-              <Card>
-                <table className="table-fixed w-full text-sm font-mono border border-gray-300">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="w-36 px-4 py-2 text-left border-b border-gray-300">
-                        Date
-                      </th>
-                      <th className="w-56 px-4 py-2 text-left border-b border-gray-300">
-                        Company
-                      </th>
-                      <th className="w-64 px-4 py-2 text-left border-b border-gray-300">
-                        Action
-                      </th>
-                      <th className="w-40 px-4 py-2 text-left border-b border-gray-300">
-                        Performed by
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="px-4 py-1 border-b">
-                        <pre>2025-07-30</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Orion Technologies</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>MOA approved</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Jordan Deja</pre>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-1 border-b">
-                        <pre>2025-07-29</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>QuantumWare Ltd</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>MOA requested</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Ethel Ong</pre>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-1 border-b">
-                        <pre>2025-07-28</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>NovaEdge Corp</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Company blacklisted</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Atty. Mike</pre>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-1 border-b">
-                        <pre>2025-07-27</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Horizon Systems</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>MOA renewed</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Jordan Deja</pre>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-1 border-b">
-                        <pre>2025-07-26</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Nexa Solutions</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>MOA approved</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Ethel Ong</pre>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-1 border-b">
-                        <pre>2025-07-25</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>TerraTech Inc</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>MOA requested</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Atty. Mike</pre>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-1 border-b">
-                        <pre>2025-07-24</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Fusion Dynamics</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>New Company Registration</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Jordan Deja</pre>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-1 border-b">
-                        <pre>2025-07-23</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Zenith Innovations</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>MOA renewed</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Ethel Ong</pre>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-1 border-b">
-                        <pre>2025-07-22</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Stratos Labs</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>MOA approved</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Atty. Mike</pre>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-1 border-b">
-                        <pre>2025-07-21</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Apex Global</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>MOA requested</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Jordan Deja</pre>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-1 border-b">
-                        <pre>2025-07-20</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Skyline Ventures</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Company blacklisted</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Ethel Ong</pre>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-1 border-b">
-                        <pre>2025-07-19</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Voltura Analytics</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>MOA renewed</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Atty. Mike</pre>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-1 border-b">
-                        <pre>2025-07-18</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Arcadia Robotics</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>MOA approved</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Jordan Deja</pre>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-1 border-b">
-                        <pre>2025-07-17</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Nimbus AI</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>MOA requested</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Ethel Ong</pre>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-1 border-b">
-                        <pre>2025-07-16</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Helixon Group</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>New Company Registration</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Atty. Mike</pre>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-1 border-b">
-                        <pre>2025-07-15</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Polaris Technologies</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>MOA renewed</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Jordan Deja</pre>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-1 border-b">
-                        <pre>2025-07-14</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Synerbyte Corp</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>MOA approved</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Ethel Ong</pre>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-1 border-b">
-                        <pre>2025-07-13</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Equinox Systems</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>MOA requested</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Atty. Mike</pre>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-1 border-b">
-                        <pre>2025-07-12</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Lumenix Inc</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Company blacklisted</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Jordan Deja</pre>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-1 border-b">
-                        <pre>2025-07-11</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>BlueNova Solutions</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>New Company Registration</pre>
-                      </td>
-                      <td className="px-4 py-1 border-b">
-                        <pre>Ethel Ong</pre>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </Tab>
-      <Tab name="Companies">
-        <div className="w-[100vw] h-[100vh] flex flex-row">
-          <div className="flex flex-col">
-            <div className="flex flex-row items-center gap-2 p-2 px-8">
-              <Search />
-              <FormInput placeholder="Search company..." />
-            </div>
-            <div className="flex flex-col items-start justify-start">
-              {requests.map((request) => {
-                return (
-                  <Button
-                    scheme="default"
-                    variant="outline"
-                    className="overflow-hidden w-full text-left justify-start h-12"
-                    onClick={() => setCompany(request)}
-                  >
-                    <div className="flex flex-col text-left justify-left p-4">
-                      <span className="text-lg tracking-tighter">
-                        {request.name}
-                      </span>
-                    </div>
+                    </Card>
                   </Button>
-                );
-              })}
+                  <Button variant="outline" className="w-fit h-fit p-0">
+                    <Card className="p-8 w-prose max-w-prose w-64">
+                      <div className="flex flex-col gap-4 justify-start">
+                        <div className="text-7xl font-bold tracking-tighter text-gray-500 text-left">
+                          12
+                        </div>
+                        <Badge type="warning" className="w-fit">
+                          MOA Requests
+                        </Badge>
+                      </div>
+                    </Card>
+                  </Button>
+                  <Button variant="outline" className="w-fit h-fit p-0">
+                    <Card className="p-8 w-prose max-w-prose w-64">
+                      <div className="flex flex-col gap-4 justify-start">
+                        <div className="text-7xl font-bold tracking-tighter text-gray-500 text-left">
+                          1249
+                        </div>
+                        <Badge type="accent" className="w-fit">
+                          Total Companies
+                        </Badge>
+                      </div>
+                    </Card>
+                  </Button>
+                  <Button variant="outline" className="w-fit h-fit p-0">
+                    <Card className="p-8 w-prose max-w-prose w-64">
+                      <div className="flex flex-col gap-4 justify-start">
+                        <div className="text-7xl font-bold tracking-tighter text-gray-500 text-left">
+                          1023
+                        </div>
+                        <Badge type="primary" className="w-fit">
+                          Active MOAs
+                        </Badge>
+                      </div>
+                    </Card>
+                  </Button>
+                </div>
+                <Card>
+                  <table className="table-fixed w-full text-sm font-mono border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="w-36 px-4 py-2 text-left border-b border-gray-300">
+                          Date
+                        </th>
+                        <th className="w-56 px-4 py-2 text-left border-b border-gray-300">
+                          Company
+                        </th>
+                        <th className="w-64 px-4 py-2 text-left border-b border-gray-300">
+                          Action
+                        </th>
+                        <th className="w-40 px-4 py-2 text-left border-b border-gray-300">
+                          Performed by
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="px-4 py-1 border-b">
+                          <pre>2025-07-30</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Orion Technologies</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>MOA approved</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Jordan Deja</pre>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-1 border-b">
+                          <pre>2025-07-29</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>QuantumWare Ltd</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>MOA requested</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Ethel Ong</pre>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-1 border-b">
+                          <pre>2025-07-28</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>NovaEdge Corp</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Company blacklisted</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Atty. Mike</pre>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-1 border-b">
+                          <pre>2025-07-27</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Horizon Systems</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>MOA renewed</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Jordan Deja</pre>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-1 border-b">
+                          <pre>2025-07-26</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Nexa Solutions</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>MOA approved</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Ethel Ong</pre>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-1 border-b">
+                          <pre>2025-07-25</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>TerraTech Inc</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>MOA requested</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Atty. Mike</pre>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-1 border-b">
+                          <pre>2025-07-24</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Fusion Dynamics</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>New Company Registration</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Jordan Deja</pre>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-1 border-b">
+                          <pre>2025-07-23</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Zenith Innovations</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>MOA renewed</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Ethel Ong</pre>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-1 border-b">
+                          <pre>2025-07-22</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Stratos Labs</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>MOA approved</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Atty. Mike</pre>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-1 border-b">
+                          <pre>2025-07-21</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Apex Global</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>MOA requested</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Jordan Deja</pre>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-1 border-b">
+                          <pre>2025-07-20</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Skyline Ventures</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Company blacklisted</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Ethel Ong</pre>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-1 border-b">
+                          <pre>2025-07-19</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Voltura Analytics</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>MOA renewed</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Atty. Mike</pre>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-1 border-b">
+                          <pre>2025-07-18</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Arcadia Robotics</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>MOA approved</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Jordan Deja</pre>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-1 border-b">
+                          <pre>2025-07-17</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Nimbus AI</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>MOA requested</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Ethel Ong</pre>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-1 border-b">
+                          <pre>2025-07-16</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Helixon Group</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>New Company Registration</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Atty. Mike</pre>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-1 border-b">
+                          <pre>2025-07-15</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Polaris Technologies</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>MOA renewed</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Jordan Deja</pre>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-1 border-b">
+                          <pre>2025-07-14</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Synerbyte Corp</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>MOA approved</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Ethel Ong</pre>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-1 border-b">
+                          <pre>2025-07-13</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Equinox Systems</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>MOA requested</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Atty. Mike</pre>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-1 border-b">
+                          <pre>2025-07-12</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Lumenix Inc</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Company blacklisted</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Jordan Deja</pre>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-1 border-b">
+                          <pre>2025-07-11</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>BlueNova Solutions</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>New Company Registration</pre>
+                        </td>
+                        <td className="px-4 py-1 border-b">
+                          <pre>Ethel Ong</pre>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </Card>
+              </div>
             </div>
           </div>
-          <div className="p-8">
-            {company && (
-              <div className="flex flex-col gap-2">
-                <Card>
-                  <div className="font-bold text-2xl mb-4">MOA Details</div>
-                  <div className="flex flex-col gap-2">
-                    <div className="flex flex-row gap-2">
-                      <div className="w-64 max-w-64">MOA Status:</div>
-                      <div className="w-64 max-w-64">Active</div>
-                    </div>
-                    <div className="flex flex-row gap-2">
-                      <div className="w-64 max-w-64">Valid Until:</div>
-                      <div className="w-64 max-w-64">02/15/26</div>
-                    </div>
-                  </div>
-                  <a
-                    href="https://api.dev.betterinternship.com/api/services/sample-notarized"
-                    className="underline"
-                    target="_blank"
-                  >
+        </Tab>
+        <Tab name="Companies">
+          <div className="w-[100vw] max-h-[100%] flex flex-row overflow-auto">
+            <div className="flex flex-col">
+              <div className="flex flex-row items-center gap-2 p-2 px-8">
+                <Search />
+                <FormInput placeholder="Search company..." />
+              </div>
+              <div className="flex flex-col items-start justify-start">
+                {requests.map((request) => {
+                  return (
                     <Button
+                      scheme="default"
                       variant="outline"
-                      scheme="primary"
-                      className="w-fit mt-4"
+                      className="overflow-hidden w-full text-left justify-start h-12"
+                      onClick={() => setCompany(request)}
                     >
-                      Download MOA
-                      <Download />
-                    </Button>
-                  </a>
-                </Card>
-                <Card>
-                  <div className="font-bold text-2xl mb-4">Company Details</div>
-                  <div className="flex flex-col gap-2">
-                    <div className="flex flex-row gap-2">
-                      <div className="w-64 max-w-64">Company Name:</div>
-                      <div className="w-64 max-w-64">{company.name}</div>
-                    </div>
-                    <div className="flex flex-row gap-2">
-                      <div className="w-64 max-w-64">TIN:</div>
-                      <div className="w-64 max-w-64">{company.tin}</div>
-                    </div>
-                    <div className="flex flex-row gap-2">
-                      <div className="w-64 max-w-64">Contact Person:</div>
-                      <div className="w-64 max-w-64">
-                        {company.contactPerson}
+                      <div className="flex flex-col text-left justify-left p-4">
+                        <span className="text-lg tracking-tighter">
+                          {request.name}
+                        </span>
                       </div>
-                    </div>
-                    <div className="flex flex-row gap-2">
-                      <div className="w-64 max-w-64">Email Address:</div>
-                      <div className="w-64 max-w-64">{company.email}</div>
-                    </div>
-                    <div className="flex flex-row gap-2">
-                      <div className="w-64 max-w-64">Industry:</div>
-                      <div className="w-64 max-w-64">{company.industry}</div>
-                    </div>
-                  </div>
-                  <br />
-
-                  <div className="font-bold text-2xl mb-2">
-                    Company Documents
-                  </div>
-                  <div className="flex flex-row gap-1">
-                    <a
-                      href="https://api.dev.betterinternship.com/api/services/sample-signed"
-                      className="underline"
-                      target="_blank"
-                    >
-                      <Button
-                        variant="outline"
-                        scheme="primary"
-                        className="w-full"
-                      >
-                        Business Permit
-                        <Download />
-                      </Button>
-                    </a>
-                    <a
-                      href="https://api.dev.betterinternship.com/api/services/sample-signed"
-                      className="underline"
-                      target="_blank"
-                    >
-                      <Button
-                        variant="outline"
-                        scheme="primary"
-                        className="w-full"
-                      >
-                        Company Incorporation
-                        <Download />
-                      </Button>
-                    </a>
-                    <a
-                      href="https://api.dev.betterinternship.com/api/services/sample-signed"
-                      className="underline"
-                      target="_blank"
-                    >
-                      <Button
-                        variant="outline"
-                        scheme="primary"
-                        className="w-full"
-                      >
-                        BIR Permit
-                        <Download />
-                      </Button>
-                    </a>
-                  </div>
-                </Card>
-                <Card>
-                  <pre>
-                    [08/21/2024] MOA Renewed <br />
-                    [01/20/2023] MOA Renewed <br />
-                    [12/10/2022] MOA Requested <br />
-                    [12/01/2022] Company Registered <br />
-                  </pre>
-                </Card>
-                <Button scheme="destructive" variant="outline">
-                  Blacklist Company
-                </Button>
+                    </Button>
+                  );
+                })}
               </div>
-            )}
-          </div>
-        </div>
-      </Tab>
-      <Tab name="Company Verification">
-        <div className="relative flex flex-row">
-          <div className="w-80 border-r h-[85vh] overflow-auto max-h-[85vh]">
-            <div className="flex flex-col items-start justify-start">
-              {requests.map((request) => {
-                return (
-                  <Button
-                    scheme="default"
-                    variant="outline"
-                    className="overflow-hidden w-full text-left justify-start h-20"
-                    onClick={() => setCompany(request)}
-                  >
-                    <div className="flex flex-col text-left justify-left p-4">
-                      <span className="text-lg tracking-tighter">
-                        {request.name}
-                      </span>
-                      <span className="text-gray-500 italic">
-                        {request.date}
-                      </span>
-                    </div>
-                  </Button>
-                );
-              })}
             </div>
-          </div>
-          <div className="w-[100vw] min-h-screen flex flex-col justify-left items-start p-16 gap-8">
-            {company && (
-              <Card>
-                <div className="font-bold text-2xl mb-4">Company Details</div>
+            <div className="">
+              {company && (
                 <div className="flex flex-col gap-2">
-                  <div className="flex flex-row gap-2">
-                    <div className="w-64 max-w-64">Company Name:</div>
-                    <div className="w-64 max-w-64">{company.name}</div>
-                  </div>
-                  <div className="flex flex-row gap-2">
-                    <div className="w-64 max-w-64">TIN:</div>
-                    <div className="w-64 max-w-64">{company.tin}</div>
-                  </div>
-                  <div className="flex flex-row gap-2">
-                    <div className="w-64 max-w-64">Contact Person:</div>
-                    <div className="w-64 max-w-64">{company.contactPerson}</div>
-                  </div>
-                  <div className="flex flex-row gap-2">
-                    <div className="w-64 max-w-64">Email Address:</div>
-                    <div className="w-64 max-w-64">{company.email}</div>
-                  </div>
-                  <div className="flex flex-row gap-2">
-                    <div className="w-64 max-w-64">Industry:</div>
-                    <div className="w-64 max-w-64">{company.industry}</div>
-                  </div>
-                </div>
-                <br />
-
-                <div className="font-bold text-2xl mb-2">Company Documents</div>
-                <div className="flex flex-row gap-1">
-                  <a
-                    href="https://api.dev.betterinternship.com/api/services/sample-signed"
-                    className="underline"
-                    target="_blank"
-                  >
-                    <Button
-                      variant="outline"
-                      scheme="primary"
-                      className="w-full"
-                    >
-                      Business Permit
-                      <Download />
-                    </Button>
-                  </a>
-                  <a
-                    href="https://api.dev.betterinternship.com/api/services/sample-signed"
-                    className="underline"
-                    target="_blank"
-                  >
-                    <Button
-                      variant="outline"
-                      scheme="primary"
-                      className="w-full"
-                    >
-                      Company Incorporation
-                      <Download />
-                    </Button>
-                  </a>
-                  <a
-                    href="https://api.dev.betterinternship.com/api/services/sample-signed"
-                    className="underline"
-                    target="_blank"
-                  >
-                    <Button
-                      variant="outline"
-                      scheme="primary"
-                      className="w-full"
-                    >
-                      BIR Permit
-                      <Download />
-                    </Button>
-                  </a>
-                </div>
-              </Card>
-            )}
-          </div>
-          <div className="absolute translate-y-28 ml-80 h-[30vh] bottom-[20vh] border-t border-gray-400 w-full p-8 bg-white z-[1000]">
-            <div className="tracking-tight mb-2">Request for Response:</div>
-            <div className="flex flex-col gap-2">
-              <textarea
-                className="w-full max-w-xl border border-gray-400 rounded-[0.25em] p-3 px-5 text-sm min-h-24 resize-none focus:border-opacity-70 focus:ring-transparent"
-                maxLength={1000}
-              />
-              <Button scheme="secondary" variant="outline" className="w-fit">
-                Send
-                <SendHorizonal />
-              </Button>
-            </div>
-            <br />
-            <div>Final Decision:</div>
-            <div className="flex flex-row gap-2 mt-2">
-              <Button scheme="supportive" size="lg">
-                Approve
-              </Button>
-              <Button scheme="destructive" size="lg">
-                Deny
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Tab>
-      <Tab name="MOA Request">
-        <div className="relative flex flex-row">
-          <div className="w-80 border-r h-[85vh] overflow-auto max-h-[85vh]">
-            <div className="flex flex-col items-start justify-start">
-              {requests.map((request) => {
-                return (
-                  <Button
-                    scheme="default"
-                    variant="outline"
-                    className="overflow-hidden w-full text-left justify-start h-20"
-                    onClick={() => setCompany(request)}
-                  >
-                    <div className="flex flex-col text-left justify-left p-4">
-                      <span className="text-lg tracking-tighter">
-                        {request.name}
-                      </span>
-                      <span className="text-gray-500 italic">
-                        {request.date}
-                      </span>
+                  <Card>
+                    <div className="font-bold text-2xl mb-4">MOA Details</div>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex flex-row gap-2">
+                        <div className="w-64 max-w-64">MOA Status:</div>
+                        <div className="w-64 max-w-64">Active</div>
+                      </div>
+                      <div className="flex flex-row gap-2">
+                        <div className="w-64 max-w-64">Valid Until:</div>
+                        <div className="w-64 max-w-64">02/15/26</div>
+                      </div>
                     </div>
+                    <a
+                      href="https://api.dev.betterinternship.com/api/services/sample-notarized"
+                      className="underline"
+                      target="_blank"
+                    >
+                      <Button
+                        variant="outline"
+                        scheme="primary"
+                        className="w-fit mt-4"
+                      >
+                        Download MOA
+                        <Download />
+                      </Button>
+                    </a>
+                  </Card>
+                  <Card>
+                    <div className="font-bold text-2xl mb-4">
+                      Company Details
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex flex-row gap-2">
+                        <div className="w-64 max-w-64">Company Name:</div>
+                        <div className="w-64 max-w-64">{company.name}</div>
+                      </div>
+                      <div className="flex flex-row gap-2">
+                        <div className="w-64 max-w-64">TIN:</div>
+                        <div className="w-64 max-w-64">{company.tin}</div>
+                      </div>
+                      <div className="flex flex-row gap-2">
+                        <div className="w-64 max-w-64">Contact Person:</div>
+                        <div className="w-64 max-w-64">
+                          {company.contactPerson}
+                        </div>
+                      </div>
+                      <div className="flex flex-row gap-2">
+                        <div className="w-64 max-w-64">Email Address:</div>
+                        <div className="w-64 max-w-64">{company.email}</div>
+                      </div>
+                      <div className="flex flex-row gap-2">
+                        <div className="w-64 max-w-64">Industry:</div>
+                        <div className="w-64 max-w-64">{company.industry}</div>
+                      </div>
+                    </div>
+                    <br />
+
+                    <div className="font-bold text-2xl mb-2">
+                      Company Documents
+                    </div>
+                    <div className="flex flex-row gap-1">
+                      <a
+                        href="https://api.dev.betterinternship.com/api/services/sample-signed"
+                        className="underline"
+                        target="_blank"
+                      >
+                        <Button
+                          variant="outline"
+                          scheme="primary"
+                          className="w-full"
+                        >
+                          Business Permit
+                          <Download />
+                        </Button>
+                      </a>
+                      <a
+                        href="https://api.dev.betterinternship.com/api/services/sample-signed"
+                        className="underline"
+                        target="_blank"
+                      >
+                        <Button
+                          variant="outline"
+                          scheme="primary"
+                          className="w-full"
+                        >
+                          Company Incorporation
+                          <Download />
+                        </Button>
+                      </a>
+                      <a
+                        href="https://api.dev.betterinternship.com/api/services/sample-signed"
+                        className="underline"
+                        target="_blank"
+                      >
+                        <Button
+                          variant="outline"
+                          scheme="primary"
+                          className="w-full"
+                        >
+                          BIR Permit
+                          <Download />
+                        </Button>
+                      </a>
+                    </div>
+                  </Card>
+                  <Card>
+                    <pre>
+                      [08/21/2024] MOA Renewed <br />
+                      [01/20/2023] MOA Renewed <br />
+                      [12/10/2022] MOA Requested <br />
+                      [12/01/2022] Company Registered <br />
+                    </pre>
+                  </Card>
+                  <Button scheme="destructive" variant="outline">
+                    Blacklist Company
                   </Button>
-                );
-              })}
+                </div>
+              )}
             </div>
           </div>
-          <div className="w-[100vw] max-h-[50vh] flex flex-col justify-left items-start p-16 gap-8 overflow-auto">
-            {company && (
-              <>
-                <div>MOA Request History</div>
-                <Timeline />
-              </>
-            )}
+        </Tab>
+        <Tab name="Company Verification">
+          <div className="relative flex flex-row">
+            <div className="w-80 border-r h-[85vh] overflow-auto max-h-[85vh]">
+              <div className="flex flex-col items-start justify-start">
+                {requests.map((request) => {
+                  return (
+                    <Button
+                      scheme="default"
+                      variant="outline"
+                      className="overflow-hidden w-full text-left justify-start h-20"
+                      onClick={() => setCompany(request)}
+                    >
+                      <div className="flex flex-col text-left justify-left p-4">
+                        <span className="text-lg tracking-tighter">
+                          {request.name}
+                        </span>
+                        <span className="text-gray-500 italic">
+                          {request.date}
+                        </span>
+                      </div>
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="w-[100vw] min-h-screen flex flex-col justify-left items-start p-16 py-0 gap-8">
+              <div className="w-full max-h-[22em] overflow-auto ">
+                {company && (
+                  <>
+                    <br />
+                    <Card className="w-fit">
+                      <div className="font-bold text-2xl mb-4">
+                        Company Details
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex flex-row gap-2">
+                          <div className="w-64 max-w-64">Company Name:</div>
+                          <div className="w-64 max-w-64">{company.name}</div>
+                        </div>
+                        <div className="flex flex-row gap-2">
+                          <div className="w-64 max-w-64">TIN:</div>
+                          <div className="w-64 max-w-64">{company.tin}</div>
+                        </div>
+                        <div className="flex flex-row gap-2">
+                          <div className="w-64 max-w-64">Contact Person:</div>
+                          <div className="w-64 max-w-64">
+                            {company.contactPerson}
+                          </div>
+                        </div>
+                        <div className="flex flex-row gap-2">
+                          <div className="w-64 max-w-64">Email Address:</div>
+                          <div className="w-64 max-w-64">{company.email}</div>
+                        </div>
+                        <div className="flex flex-row gap-2">
+                          <div className="w-64 max-w-64">Industry:</div>
+                          <div className="w-64 max-w-64">
+                            {company.industry}
+                          </div>
+                        </div>
+                      </div>
+                      <br />
+
+                      <div className="font-bold text-2xl mb-2">
+                        Company Documents
+                      </div>
+                      <div className="flex flex-row gap-1">
+                        <a
+                          href="https://api.dev.betterinternship.com/api/services/sample-signed"
+                          className="underline"
+                          target="_blank"
+                        >
+                          <Button
+                            variant="outline"
+                            scheme="primary"
+                            className="w-full"
+                          >
+                            Business Permit
+                            <Download />
+                          </Button>
+                        </a>
+                        <a
+                          href="https://api.dev.betterinternship.com/api/services/sample-signed"
+                          className="underline"
+                          target="_blank"
+                        >
+                          <Button
+                            variant="outline"
+                            scheme="primary"
+                            className="w-full"
+                          >
+                            Company Incorporation
+                            <Download />
+                          </Button>
+                        </a>
+                        <a
+                          href="https://api.dev.betterinternship.com/api/services/sample-signed"
+                          className="underline"
+                          target="_blank"
+                        >
+                          <Button
+                            variant="outline"
+                            scheme="primary"
+                            className="w-full"
+                          >
+                            BIR Permit
+                            <Download />
+                          </Button>
+                        </a>
+                      </div>
+                    </Card>
+                  </>
+                )}
+              </div>
+            </div>
+            <div className="absolute translate-y-28 ml-80 h-[30vh] bottom-[20em] border-t border-gray-400 w-full p-8 bg-white z-[1000]">
+              <div className="tracking-tight mb-2">Request for Response:</div>
+              <div className="flex flex-col gap-2">
+                <textarea
+                  className="w-full max-w-xl border border-gray-400 rounded-[0.25em] p-3 px-5 text-sm min-h-24 resize-none focus:border-opacity-70 focus:ring-transparent"
+                  maxLength={1000}
+                />
+                <Button scheme="secondary" variant="outline" className="w-fit">
+                  Send
+                  <SendHorizonal />
+                </Button>
+              </div>
+              <br />
+              <div>Final Decision:</div>
+              <div className="flex flex-row gap-2 mt-2">
+                <Button scheme="supportive" size="lg">
+                  Approve
+                </Button>
+                <Button scheme="destructive" size="lg">
+                  Deny
+                </Button>
+              </div>
+            </div>
           </div>
-          <div className="absolute translate-y-60 ml-80 h-[30vh] bottom-[20vh] border-t border-gray-400 w-full p-8 bg-white z-[1000]">
-            <div className="tracking-tight mb-2">Request for Response:</div>
-            <div className="flex flex-col gap-2">
-              <textarea
-                className="w-full max-w-xl border border-gray-400 rounded-[0.25em] p-3 px-5 text-sm min-h-24 resize-none focus:border-opacity-70 focus:ring-transparent"
-                maxLength={1000}
-              />
-              <Button
-                scheme="secondary"
-                variant="outline"
-                className="w-fit"
-                onClick={async () => {
-                  setSending(true);
-                  APIClient.post<{}>(APIRoute("services").r("email").build(), {
-                    to: "bowei.gai@gmail.com",
-                    from: "hello@betterinternship.com",
-                    fromName: "DLSU Legal via BetterInternship",
-                    content: `
+        </Tab>
+        <Tab name="MOA Request">
+          <div className="relative flex flex-row">
+            <div className="w-80 border-r h-[85vh] overflow-auto max-h-[85vh]">
+              <div className="flex flex-col items-start justify-start">
+                {requests.map((request) => {
+                  return (
+                    <Button
+                      scheme="default"
+                      variant="outline"
+                      className="overflow-hidden w-full text-left justify-start h-20"
+                      onClick={() => setCompany(request)}
+                    >
+                      <div className="flex flex-col text-left justify-left p-4">
+                        <span className="text-lg tracking-tighter">
+                          {request.name}
+                        </span>
+                        <span className="text-gray-500 italic">
+                          {request.date}
+                        </span>
+                      </div>
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="w-[100vw] max-h-[22em] flex flex-col justify-left items-start p-16 gap-8 overflow-auto">
+              {company && (
+                <>
+                  <div>MOA Request History</div>
+                  <Timeline />
+                </>
+              )}
+            </div>
+            <div className="absolute translate-y-60 ml-80 h-[30vh] bottom-[20em] border-t border-gray-400 w-full p-8 bg-white z-[1000]">
+              <div className="tracking-tight mb-2">Request for Response:</div>
+              <div className="flex flex-col gap-2">
+                <textarea
+                  className="w-full max-w-xl border border-gray-400 rounded-[0.25em] p-3 px-5 text-sm min-h-24 resize-none focus:border-opacity-70 focus:ring-transparent"
+                  maxLength={1000}
+                />
+                <Button
+                  scheme="secondary"
+                  variant="outline"
+                  className="w-fit"
+                  onClick={async () => {
+                    setSending(true);
+                    APIClient.post<{}>(
+                      APIRoute("services").r("email").build(),
+                      {
+                        to: "bowei.gai@gmail.com",
+                        from: "hello@betterinternship.com",
+                        fromName: "DLSU Legal via BetterInternship",
+                        content: `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -903,34 +921,37 @@ export default function DashboardPage() {
 </body>
 </html>
         `,
-                    subject: "MOA - Additional Information Required",
-                    apiKey:
-                      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30",
-                  })
-                    .then(() => {
-                      alert("Message sent");
-                      setSending(false);
-                    })
-                    .catch(() => setSending(false));
-                }}
-              >
-                {denying ? "Sending..." : "Send"}
-                <SendHorizonal />
-              </Button>
-            </div>
-            <br />
-            <div>Final Decision:</div>
-            <div className="flex flex-row gap-2 mt-2">
-              <Button
-                scheme="supportive"
-                size="lg"
-                onClick={async () => {
-                  setApproving(true);
-                  APIClient.post<{}>(APIRoute("services").r("email").build(), {
-                    to: "bowei.gai@gmail.com",
-                    from: "hello@betterinternship.com",
-                    fromName: "DLSU Legal via BetterInternship",
-                    content: `
+                        subject: "MOA - Additional Information Required",
+                        apiKey:
+                          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30",
+                      }
+                    )
+                      .then(() => {
+                        alert("Message sent");
+                        setSending(false);
+                      })
+                      .catch(() => setSending(false));
+                  }}
+                >
+                  {denying ? "Sending..." : "Send"}
+                  <SendHorizonal />
+                </Button>
+              </div>
+              <br />
+              <div>Final Decision:</div>
+              <div className="flex flex-row gap-2 mt-2">
+                <Button
+                  scheme="supportive"
+                  size="lg"
+                  onClick={async () => {
+                    setApproving(true);
+                    APIClient.post<{}>(
+                      APIRoute("services").r("email").build(),
+                      {
+                        to: "bowei.gai@gmail.com",
+                        from: "hello@betterinternship.com",
+                        fromName: "DLSU Legal via BetterInternship",
+                        content: `
                     <!DOCTYPE html>
 <html>
 <head>
@@ -1020,29 +1041,32 @@ export default function DashboardPage() {
 </body>
 </html>
 `,
-                    subject: "MOA Accepted",
-                    apiKey:
-                      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30",
-                  })
-                    .then(() => {
-                      alert("Company approved");
-                      setApproving(false);
-                    })
-                    .catch(() => setApproving(false));
-                }}
-              >
-                {approving ? "Approving..." : "Approve"}
-              </Button>
-              <Button
-                scheme="destructive"
-                size="lg"
-                onClick={async () => {
-                  setDenying(true);
-                  APIClient.post<{}>(APIRoute("services").r("email").build(), {
-                    to: "bowei.gai@gmail.com",
-                    from: "hello@betterinternship.com",
-                    fromName: "DLSU Legal via BetterInternship",
-                    content: `<!DOCTYPE html>
+                        subject: "MOA Accepted",
+                        apiKey:
+                          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30",
+                      }
+                    )
+                      .then(() => {
+                        alert("Company approved");
+                        setApproving(false);
+                      })
+                      .catch(() => setApproving(false));
+                  }}
+                >
+                  {approving ? "Approving..." : "Approve"}
+                </Button>
+                <Button
+                  scheme="destructive"
+                  size="lg"
+                  onClick={async () => {
+                    setDenying(true);
+                    APIClient.post<{}>(
+                      APIRoute("services").r("email").build(),
+                      {
+                        to: "bowei.gai@gmail.com",
+                        from: "hello@betterinternship.com",
+                        fromName: "DLSU Legal via BetterInternship",
+                        content: `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -1079,24 +1103,26 @@ export default function DashboardPage() {
 </body>
 </html>
 `,
-                    subject: "MOA Request Denied",
-                    apiKey:
-                      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30",
-                  })
-                    .then(() => {
-                      alert("Company denied");
-                      setDenying(false);
-                    })
-                    .catch(() => setDenying(false));
-                }}
-              >
-                {denying ? "Denying..." : "Deny"}
-              </Button>
+                        subject: "MOA Request Denied",
+                        apiKey:
+                          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30",
+                      }
+                    )
+                      .then(() => {
+                        alert("Company denied");
+                        setDenying(false);
+                      })
+                      .catch(() => setDenying(false));
+                  }}
+                >
+                  {denying ? "Denying..." : "Deny"}
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </Tab>
-    </TabGroup>
+        </Tab>
+      </TabGroup>
+    </div>
   );
 }
 
