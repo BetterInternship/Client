@@ -566,7 +566,7 @@ export default function DashboardPage() {
             </div>
             <div className="">
               {company && (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 p-8">
                   <Card>
                     <div className="font-bold text-2xl mb-4">MOA Details</div>
                     <div className="flex flex-col gap-2">
@@ -714,7 +714,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="w-[100vw] min-h-screen flex flex-col justify-left items-start p-16 py-0 gap-8">
-              <div className="w-full max-h-[22em] overflow-auto ">
+              <div className="w-full max-h-[22em] flex flex-col justify-left items-start p-16 gap-8 overflow-auto">
                 {company && (
                   <>
                     <br />
@@ -798,6 +798,9 @@ export default function DashboardPage() {
                         </a>
                       </div>
                     </Card>
+                    <br />
+                    <br />
+                    <br />
                   </>
                 )}
               </div>
