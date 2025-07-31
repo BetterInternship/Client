@@ -242,7 +242,10 @@ export default function DashboardPage() {
                         Company
                       </th>
                       <th className="w-64 px-4 py-2 text-left border-b border-gray-300">
-                        Status
+                        Action
+                      </th>
+                      <th className="w-40 px-4 py-2 text-left border-b border-gray-300">
+                        Performed by
                       </th>
                     </tr>
                   </thead>
@@ -257,6 +260,9 @@ export default function DashboardPage() {
                       <td className="px-4 py-1 border-b">
                         <pre>MOA approved</pre>
                       </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Jordan Deja</pre>
+                      </td>
                     </tr>
                     <tr>
                       <td className="px-4 py-1 border-b">
@@ -267,6 +273,9 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-4 py-1 border-b">
                         <pre>MOA requested</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Ethel Ong</pre>
                       </td>
                     </tr>
                     <tr>
@@ -279,6 +288,9 @@ export default function DashboardPage() {
                       <td className="px-4 py-1 border-b">
                         <pre>Company blacklisted</pre>
                       </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Atty. Mike</pre>
+                      </td>
                     </tr>
                     <tr>
                       <td className="px-4 py-1 border-b">
@@ -289,6 +301,9 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-4 py-1 border-b">
                         <pre>MOA renewed</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Jordan Deja</pre>
                       </td>
                     </tr>
                     <tr>
@@ -301,6 +316,9 @@ export default function DashboardPage() {
                       <td className="px-4 py-1 border-b">
                         <pre>MOA approved</pre>
                       </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Ethel Ong</pre>
+                      </td>
                     </tr>
                     <tr>
                       <td className="px-4 py-1 border-b">
@@ -311,6 +329,9 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-4 py-1 border-b">
                         <pre>MOA requested</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Atty. Mike</pre>
                       </td>
                     </tr>
                     <tr>
@@ -323,6 +344,9 @@ export default function DashboardPage() {
                       <td className="px-4 py-1 border-b">
                         <pre>New Company Registration</pre>
                       </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Jordan Deja</pre>
+                      </td>
                     </tr>
                     <tr>
                       <td className="px-4 py-1 border-b">
@@ -333,6 +357,9 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-4 py-1 border-b">
                         <pre>MOA renewed</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Ethel Ong</pre>
                       </td>
                     </tr>
                     <tr>
@@ -345,6 +372,9 @@ export default function DashboardPage() {
                       <td className="px-4 py-1 border-b">
                         <pre>MOA approved</pre>
                       </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Atty. Mike</pre>
+                      </td>
                     </tr>
                     <tr>
                       <td className="px-4 py-1 border-b">
@@ -355,6 +385,9 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-4 py-1 border-b">
                         <pre>MOA requested</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Jordan Deja</pre>
                       </td>
                     </tr>
                     <tr>
@@ -367,6 +400,9 @@ export default function DashboardPage() {
                       <td className="px-4 py-1 border-b">
                         <pre>Company blacklisted</pre>
                       </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Ethel Ong</pre>
+                      </td>
                     </tr>
                     <tr>
                       <td className="px-4 py-1 border-b">
@@ -377,6 +413,9 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-4 py-1 border-b">
                         <pre>MOA renewed</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Atty. Mike</pre>
                       </td>
                     </tr>
                     <tr>
@@ -389,6 +428,9 @@ export default function DashboardPage() {
                       <td className="px-4 py-1 border-b">
                         <pre>MOA approved</pre>
                       </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Jordan Deja</pre>
+                      </td>
                     </tr>
                     <tr>
                       <td className="px-4 py-1 border-b">
@@ -399,6 +441,9 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-4 py-1 border-b">
                         <pre>MOA requested</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Ethel Ong</pre>
                       </td>
                     </tr>
                     <tr>
@@ -411,6 +456,9 @@ export default function DashboardPage() {
                       <td className="px-4 py-1 border-b">
                         <pre>New Company Registration</pre>
                       </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Atty. Mike</pre>
+                      </td>
                     </tr>
                     <tr>
                       <td className="px-4 py-1 border-b">
@@ -421,6 +469,9 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-4 py-1 border-b">
                         <pre>MOA renewed</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Jordan Deja</pre>
                       </td>
                     </tr>
                     <tr>
@@ -433,6 +484,9 @@ export default function DashboardPage() {
                       <td className="px-4 py-1 border-b">
                         <pre>MOA approved</pre>
                       </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Ethel Ong</pre>
+                      </td>
                     </tr>
                     <tr>
                       <td className="px-4 py-1 border-b">
@@ -443,6 +497,9 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-4 py-1 border-b">
                         <pre>MOA requested</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Atty. Mike</pre>
                       </td>
                     </tr>
                     <tr>
@@ -455,6 +512,9 @@ export default function DashboardPage() {
                       <td className="px-4 py-1 border-b">
                         <pre>Company blacklisted</pre>
                       </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Jordan Deja</pre>
+                      </td>
                     </tr>
                     <tr>
                       <td className="px-4 py-1 border-b">
@@ -465,6 +525,9 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-4 py-1 border-b">
                         <pre>New Company Registration</pre>
+                      </td>
+                      <td className="px-4 py-1 border-b">
+                        <pre>Ethel Ong</pre>
                       </td>
                     </tr>
                   </tbody>
@@ -516,7 +579,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <a
-                    href="https://api.dev.betterinternship.com/api/services/sample-signed"
+                    href="https://api.dev.betterinternship.com/api/services/sample-notarized"
                     className="underline"
                     target="_blank"
                   >
@@ -795,7 +858,7 @@ export default function DashboardPage() {
                 onClick={async () => {
                   setSending(true);
                   APIClient.post<{}>(APIRoute("services").r("email").build(), {
-                    to: "modavid.1964@gmail.com",
+                    to: "bowei.gai@gmail.com",
                     from: "hello@betterinternship.com",
                     fromName: "DLSU Legal via BetterInternship",
                     content: `
@@ -864,7 +927,7 @@ export default function DashboardPage() {
                 onClick={async () => {
                   setApproving(true);
                   APIClient.post<{}>(APIRoute("services").r("email").build(), {
-                    to: "modavid.1964@gmail.com",
+                    to: "bowei.gai@gmail.com",
                     from: "hello@betterinternship.com",
                     fromName: "DLSU Legal via BetterInternship",
                     content: `
@@ -944,7 +1007,7 @@ export default function DashboardPage() {
         <li><strong>Expiration Date:</strong> February 1, 2028</li>
       </ul>
       <p>You can download your signed MOA document using the link below:</p>
-      <a href="https://api.dev.betterinternship.com/api/services/sample-signed" target="_blank" className="button">📄 Download MOA</a>
+      <a href="https://api.dev.betterinternship.com/api/services/sample-notarized" target="_blank" className="button">📄 Download MOA</a>
 
       <div className="footer">
         <p>Best regards,</p>
@@ -976,7 +1039,7 @@ export default function DashboardPage() {
                 onClick={async () => {
                   setDenying(true);
                   APIClient.post<{}>(APIRoute("services").r("email").build(), {
-                    to: "modavid.1964@gmail.com",
+                    to: "bowei.gai@gmail.com",
                     from: "hello@betterinternship.com",
                     fromName: "DLSU Legal via BetterInternship",
                     content: `<!DOCTYPE html>
