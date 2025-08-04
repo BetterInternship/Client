@@ -15,7 +15,7 @@ import { useAuthContext } from "@/lib/ctx-auth";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { formatTimeAgo } from "@/lib/utils";
 import { Loader } from "@/components/ui/loader";
-import { Card } from "@/components/ui/our-card";
+import { Card } from "@/components/ui/card";
 import { JobHead } from "@/components/shared/jobs";
 import { UserApplication } from "@/lib/db/db.types";
 

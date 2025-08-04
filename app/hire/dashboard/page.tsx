@@ -22,7 +22,7 @@ import { getFullName } from "@/lib/utils/user-utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Message } from "@/components/ui/messages";
 import { useFile } from "@/hooks/use-file";
-import { Card } from "@/components/ui/our-card";
+import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
 import { motion } from "framer-motion";
 

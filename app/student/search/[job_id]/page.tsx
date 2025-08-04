@@ -39,7 +39,7 @@ import {
   JobHead,
   JobApplicationRequirements,
 } from "@/components/shared/jobs";
-import { Card } from "@/components/ui/our-card";
+import { Card } from "@/components/ui/card";
 
 /**
  * The individual job page.
@@ -444,12 +444,19 @@ export default function JobPage() {
             );
 
             // Add job-specific requirements if needed
-            if (job.data?.require_github && !profile.data?.github_link?.trim()) {
+            if (
+              job.data?.require_github &&
+              !profile.data?.github_link?.trim()
+            ) {
               if (!missing.includes("github_link")) missing.push("github_link");
               labels.github_link = "GitHub Profile";
             }
-            if (job.data?.require_portfolio && !profile.data?.portfolio_link?.trim()) {
-              if (!missing.includes("portfolio_link")) missing.push("portfolio_link");
+            if (
+              job.data?.require_portfolio &&
+              !profile.data?.portfolio_link?.trim()
+            ) {
+              if (!missing.includes("portfolio_link"))
+                missing.push("portfolio_link");
               labels.portfolio_link = "Portfolio Link";
             }
 

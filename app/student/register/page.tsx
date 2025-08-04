@@ -12,7 +12,7 @@ import {
   FormDropdown,
   FormInput,
 } from "@/components/EditForm";
-import { Card } from "@/components/ui/our-card";
+import { Card } from "@/components/ui/card";
 import { ErrorLabel } from "@/components/ui/labels";
 import { StoryBook } from "@/components/ui/storybook";
 import { Button } from "@/components/ui/button";

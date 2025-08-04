@@ -278,7 +278,7 @@ const DocumentsManagement = () => {
                 {category.title}
               </AccordionTrigger>
               <AccordionContent className="p-0">
-                <Card className="border-none shadow-none rounded-t-none">
+                <Card className="border-none shadow-none rounded-t-none p-3">
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>

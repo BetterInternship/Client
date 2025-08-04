@@ -23,7 +23,7 @@ import { UserService } from "@/lib/api/services";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { Button } from "@/components/ui/button";
 import { FileUploadInput, useFile, useFileUpload } from "@/hooks/use-file";
-import { Card } from "@/components/ui/our-card";
+import { Card } from "@/components/ui/card";
 import { getFullName } from "@/lib/utils/user-utils";
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import {

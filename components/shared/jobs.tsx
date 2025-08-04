@@ -25,7 +25,7 @@ import { MDXEditor } from "../MDXEditor";
 import { DropdownGroup } from "../ui/dropdown";
 import { useMoa } from "@/lib/db/use-moa";
 import { Toggle } from "../ui/toggle";
-import { Card } from "../ui/our-card";
+import { Card } from "../ui/card";
 
 export const JobHead = ({
   title,

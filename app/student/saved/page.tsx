@@ -7,7 +7,7 @@ import { Heart } from "lucide-react";
 import { useSavedJobs } from "@/lib/api/student.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Loader } from "@/components/ui/loader";
-import { Card } from "@/components/ui/our-card";
+import { Card } from "@/components/ui/card";
 import { JobHead } from "@/components/shared/jobs";
 import { Job } from "@/lib/db/db.types";
 
