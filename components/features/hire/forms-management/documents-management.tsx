@@ -23,12 +23,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import ModeToggle from "@/components/features/hire/forms-management/mode-toggle";
 import TrustModeTable from "@/components/features/hire/forms-management/trust-mode-table";
 import JSZip from "jszip";
-
-import Image from "next/image";
-import hire_coming_soon from "./hire-coming-soon.jpg";
+import { useRouter } from "next/navigation";
 
 interface Student {
   id: string;
@@ -166,6 +163,7 @@ const internshipData: InternshipCategory[] = [
 
 const DocumentsManagement = () => {
   const [isTrustMode, setIsTrustMode] = useState(false);
+  const router = useRouter();
 
   const handleDownload = (url: string) => {
     const link = document.createElement("a");
@@ -222,13 +220,16 @@ const DocumentsManagement = () => {
     }
   };
 
+  router.push("/dashboard");
+  return <></>;
+
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8">
       <h1 className="text-3xl sm:text-4xl font-bold mb-6 text-center">
         Internship Forms Automation
       </h1>
 
-{/*       <div className="relative flex flex-row justify-center w-full py-8">
+      {/*       <div className="relative flex flex-row justify-center w-full py-8">
         <Image
           className="invisible relative"
           src={hire_coming_soon}
