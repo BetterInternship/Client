@@ -36,16 +36,8 @@ export function middleware(request: NextRequest) {
     return reroute_to_subdomain("school", pathname, request.url);
   }
 
-  if (subdomain_is(hostname, "moa")) {
-    return reroute_to_subdomain("moa", pathname, request.url);
-  }
-
   if (subdomain_is(hostname, "hire")) {
     return reroute_to_subdomain("hire", pathname, request.url);
-  }
-
-  if (subdomain_is(hostname, "univ")) {
-    return reroute_to_subdomain("moa/univ", pathname, request.url);
   }
 
   if (subdomain_is(hostname, "")) {
