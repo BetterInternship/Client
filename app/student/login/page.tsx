@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { MultipartFormBuilder } from "@/lib/multipart-form";
+import { NotAccepted } from "@/lib/images";
+import { motion, AnimatePresence } from "framer-motion";
+
 
 export default function LoginPage() {
   const { emailStatus, register, redirectIfLoggedIn } = useAuthContext();
@@ -13,6 +16,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showVerificationMessage, setShowVerificationMessage] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false); // Added for smoother error transition
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -54,6 +58,7 @@ export default function LoginPage() {
     try {
       setLoading(true);
       setError("");
+      setImageLoaded(false); // Reset image loading when submitting again
 
       // Production flow with OTP
       await emailStatus(email).then((response) => {
@@ -102,12 +107,37 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Error Message */}
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600">{error}</p>
-              </div>
+            {/* Preload image invisibly for smoother error div */}
+            {error && !imageLoaded && (
+              <img
+                src={NotAccepted.src}
+                alt=""
+                className="hidden"
+                onLoad={() => setImageLoaded(true)}
+              />
             )}
+
+            {/* Error Message */}
+            {<AnimatePresence>
+                {error && imageLoaded && (
+                    <motion.div
+                    key="error-box"
+                    initial={{ opacity: 0, scale: 0.97, y: 12 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.97, y: -6 }}
+                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                    className="mb-6 flex flex-col items-center text-center p-4 bg-red-50 border rounded-xl error-box"
+                    >
+                    <img
+                        src={NotAccepted.src}
+                        alt="Not accepted illustration"
+                        className="w-44 h-43 mx-auto mb-4 bounce-slow"
+                    />
+                    <p className="text-sm text-red-600 font-medium text-justify">{error}</p>
+                    </motion.div>
+                )}
+            </AnimatePresence>  }
+
 
             {/* Login Form */}
             <form onSubmit={handleSubmit} className="space-y-3">
@@ -137,6 +167,51 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        .fade-slide-in {
+          animation: fadeSlideIn 0.5s cubic-bezier(0.33, 1, 0.68, 1) both;
+        }
+
+        @keyframes fadeSlideIn {
+          0% {
+            opacity: 0;
+            transform: translateY(6px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .bounce-slow {
+          animation: bounce 2s infinite ease-in-out;
+          transform-origin: bottom center;
+        }
+
+        @keyframes bounce {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-5px);
+          }
+        }
+
+        .error-box {
+          animation: borderPulse 3s infinite ease-in-out;
+          border-width: 1.5px;
+        }
+
+        @keyframes borderPulse {
+          0%, 100% {
+            border-color: rgba(248, 113, 113, 0.3); /* red-400 */
+          }
+          50% {
+            border-color: rgba(248, 113, 113, 0.7);
+          }
+        }
+      `}</style>
     </>
   );
 }
