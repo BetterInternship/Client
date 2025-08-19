@@ -14,9 +14,7 @@ export default function LoginPage() {
     redirectIfLoggedIn: redirect_if_logged_in,
     redirectIfNotLoggedIn: redirect_if_not_logged_in,
   } = useAuthContext();
-
   const [email, setEmail] = useState("");
-  const [emailNorm, setEmailNorm] = useState(""); // keep a normalized copy for API calls
   const [password, setPassword] = useState("");
   const [new_account, set_new_account] = useState(false);
   const [step, setStep] = useState<"email" | "password">("email");
@@ -27,42 +25,35 @@ export default function LoginPage() {
   redirect_if_not_logged_in();
   redirect_if_logged_in();
 
-  const normalize = (s: string) => s.trim().toLowerCase();
-
   const handle_email_submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
-    const normalized = normalize(email);
-    if (!normalized) {
+    if (email.trim() === "") {
       setIsLoading(false);
       setError("Email is required.");
       return;
     }
 
-    setEmailNorm(normalized);
-
-    try {
-      const r = await email_status(normalized);
-      if (!r?.success) {
-        setIsLoading(false);
-        alert(r?.message ?? "Unknown error");
-        return;
-      }
-
+    await email_status(email).then(async (r) => {
       if (!r.existing_user) {
         setIsLoading(false);
         set_new_account(true);
         return;
       }
 
+      // @ts-ignore
+      if (!r.success) {
+        setIsLoading(false);
+        // @ts-ignore
+        alert(r.message);
+        return;
+      }
+
       setIsLoading(false);
       setStep("password");
-    } catch (err: any) {
-      setIsLoading(false);
-      setError(err?.message ?? "Something went wrong.");
-    }
+    });
   };
 
   const handle_password_submit = async (e: React.FormEvent) => {
@@ -70,26 +61,21 @@ export default function LoginPage() {
     setIsLoading(true);
     setError("");
 
-    // Use the normalized value if we have it; else normalize on the fly
-    const normalized = emailNorm || normalize(email);
-
-    try {
-      const r = await login(normalized, password); // ✅ login with normalized
+    await login(email, password).then((r) => {
       // @ts-ignore
       if (r?.success) {
         // @ts-ignore
         if (r.god) {
           router.push("/god");
+          router.push("/dashboard");
+        } else {
+          router.push("/dashboard");
         }
-        router.push("/dashboard");
       } else {
         setError("Invalid password.");
         setIsLoading(false);
       }
-    } catch (err: any) {
-      setError(err?.message ?? "Something went wrong.");
-      setIsLoading(false);
-    }
+    });
   };
 
   const handle_back_to_email = () => {

@@ -16,8 +16,6 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const normalizeEmail = (e: string) => e.trim().toLowerCase();
-
   redirectIfLoggedIn();
 
   // Check if user just registered
@@ -41,14 +39,12 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const normalized = normalizeEmail(email);
-
-    if (!normalized) {
+    if (!email.trim()) {
       setError("Please enter your email address");
       return;
     }
 
-    if (!validateDLSUEmail(normalized)) {
+    if (!validateDLSUEmail(email)) {
       setError(
         "We're currently not accepting non-DLSU students, but we're open to partnering with your school if you can serve as our campus ambassador to help us gather the necessary data and paperwork. Contact us at hello@betterinternship.com."
       );
@@ -60,14 +56,14 @@ export default function LoginPage() {
       setError("");
 
       // Production flow with OTP
-      await emailStatus(normalized).then((response) => {
+      await emailStatus(email).then((response) => {
         if (!response?.existing_user) {
-          router.push(`/register?email=${encodeURIComponent(normalized)}`);
+          router.push(`/register?email=${encodeURIComponent(email)}`);
           setLoading(false);
         } else if (!response.verified_user) {
           router.push(`/login?verified=pending`);
         } else {
-          router.push(`/login/otp?email=${encodeURIComponent(normalized)}`);
+          router.push(`/login/otp?email=${encodeURIComponent(email)}`);
         }
       });
     } catch (err: any) {
