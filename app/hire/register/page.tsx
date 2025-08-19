@@ -271,7 +271,7 @@ const EmployerEditor = ({
             <div>
               <ErrorLabel value={formErrors.name} />
               <FormInput
-                label="Doing Business As"
+                label="Company Name"
                 value={formData.name ?? ""}
                 setter={fieldSetter("name")}
                 maxLength={100}

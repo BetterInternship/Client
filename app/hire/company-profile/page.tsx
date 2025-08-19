@@ -351,7 +351,7 @@ const ProfileEditor = forwardRef<
         </div>
         <div className={"mb-4 flex flex-col space-y-3"}>
           <FormInput
-            label="Doing Business As"
+            label="Company Name"
             value={formData.name ?? ""}
             setter={fieldSetter("name")}
             maxLength={100}
