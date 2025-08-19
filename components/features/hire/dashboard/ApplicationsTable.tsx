@@ -2,7 +2,7 @@
 
 import { EmployerApplication } from "@/lib/db/db.types";
 import { ApplicationRow } from "./ApplicationRow";
-import { Card } from "@/components/ui/our-card";
+import { Card } from "@/components/ui/card";
 import { Tab, TabGroup } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useConversations } from "@/hooks/use-conversation";

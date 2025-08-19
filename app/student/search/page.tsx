@@ -47,7 +47,7 @@ import { UserService } from "@/lib/api/services";
 import { useFile } from "@/hooks/use-file";
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import { openURL } from "@/lib/utils/url-utils";
-import { Card } from "@/components/ui/our-card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FormCheckbox } from "@/components/EditForm";
 

@@ -1,4 +1,4 @@
-import { Card } from "./our-card";
+import { Card } from "./card";
 
 export const Message = ({
   message,

@@ -1,7 +1,10 @@
 "use client";
 
-import { UserCircle } from "lucide-react";
+import Link from "next/link";
+import { LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+
 
 export function Navigation() {
   const router = useRouter();
@@ -18,12 +21,7 @@ export function Navigation() {
           <div className="flex items-center space-x-6"></div>
         </div>
       </div>
-      <div
-        className="absolute flex flex-row text-white opacity-40 right-0 top-[50%] translate-y-[-50%] pr-12 hover:cursor-pointer"
-        onClick={() => router.push("/login")}
-      >
-        <UserCircle className="w-8 h-8" />
-      </div>
+      
     </nav>
   );
 }

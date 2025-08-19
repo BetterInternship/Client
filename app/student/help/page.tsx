@@ -14,8 +14,7 @@ import {
   Phone,
   Mail,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Collapsible } from "@/components/ui/collapsible";
 
 interface FAQ {
@@ -177,8 +176,8 @@ export default function HelpPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 + categoryIndex * 0.1, duration: 0.5 }}
             >
-              <Card className="shadow-sm">
-                <CardHeader className="pb-4">
+              <Card className="shadow-sm p-3">
+                <div className="p-7 pb-4">
                   <motion.h2
                     className="text-xl sm:text-2xl font-semibold text-gray-900 flex items-center gap-3"
                     initial={{ opacity: 0, x: -20 }}
@@ -191,8 +190,8 @@ export default function HelpPage() {
                     {faqs.find((faq) => faq.category === category)?.icon}
                     {category}
                   </motion.h2>
-                </CardHeader>
-                <CardContent className="pt-0">
+                </div>
+                <div className="p-7 pt-0">
                   <div className="space-y-3">
                     {faqs
                       .filter((faq) => faq.category === category)
@@ -276,7 +275,7 @@ export default function HelpPage() {
                         </motion.div>
                       ))}
                   </div>
-                </CardContent>
+                </div>
               </Card>
             </motion.div>
           ))}
@@ -288,8 +287,8 @@ export default function HelpPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.2, duration: 0.6 }}
         >
-          <Card className="mt-8 sm:mt-12 bg-blue-50 border-blue-200">
-            <CardContent className="p-6 sm:p-8 text-center">
+          <Card className="mt-8 sm:mt-12 bg-blue-50 border-blue-200 p-3">
+            <div className="p-7 text-center">
               <motion.h3
                 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-3 sm:mb-4"
                 initial={{ opacity: 0, y: 20 }}
@@ -322,7 +321,7 @@ export default function HelpPage() {
                   hello@betterinternship.com
                 </a>
               </motion.div>
-            </CardContent>
+            </div>
           </Card>
         </motion.div>
       </div>

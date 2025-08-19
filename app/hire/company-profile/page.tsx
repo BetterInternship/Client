@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { useMoa } from "@/lib/db/use-moa";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { Badge, BoolBadge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/our-card";
+import { Card } from "@/components/ui/card";
 import { Employer } from "@/lib/db/db.types";
 import { cn, isValidEmail, isValidPHNumber, isValidUUID } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
@@ -351,7 +351,7 @@ const ProfileEditor = forwardRef<
         </div>
         <div className={"mb-4 flex flex-col space-y-3"}>
           <FormInput
-            label="Doing Business As"
+            label="Company Name"
             value={formData.name ?? ""}
             setter={fieldSetter("name")}
             maxLength={100}

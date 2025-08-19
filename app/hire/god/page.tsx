@@ -523,7 +523,7 @@ const RegisterModalContent = () => {
         <div className="flex flex-col gap-2">
           <FormInput
             value={dba}
-            label="Doing Business As"
+            label="Company Name"
             setter={(value) => setDba(value)}
           />
           <FormInput
