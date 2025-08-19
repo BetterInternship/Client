@@ -3,7 +3,7 @@
 import { motion, LayoutGroup } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-import { ChevronRight } from "lucide-react";
+import { Briefcase, LogIn, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useAppContext } from "@/lib/ctx-app";
 import { TextRotate } from "@/components/landingHire/sections/hero/text-rotate";
@@ -61,12 +61,12 @@ export function HeroSection() {
             We handle matching, scheduling, and paperwork <br />— so you don't
             have to.
           </motion.h2>
-          <div className="flex flex-row justify-start pt-10 w-full items-start">
+          <div className="flex flex-row justify-start pt-4 w-full items-start align-center">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-              className="flex flex-col sm:flex-row gap-4 items-start"
+              className="flex flex-col sm:flex-row gap-6 items-start"
             >
               <Link href="/register">
                 <Button
@@ -77,20 +77,32 @@ export function HeroSection() {
                 </Button>
               </Link>
 
-              <Link
-                href={"https://calendar.app.google/EF3XRLuEti5ac63c8"}
-                target="_blank"
-              >
+              {/* <Link href="/login">
                 <Button
                   size="lg"
-                  variant="ghost"
-                  className="text-white hover:text-white/80 hover:bg-white/10 transition-all duration-300 text-lg font-medium flex items-center px-9 py-4 backdrop-blur-sm border border-white/20"
+                  variant="secondary"
+                  className="bg-white/10 text-white hover:bg-white/15 border border-white/20 backdrop-blur-sm px-6 py-4 text-lg inline-flex items-center gap-2"
+                  aria-label="Log in to your employer account"
                 >
-                  Request a Demo
+                  Login
                 </Button>
-              </Link>
+              </Link> */}
+
+              {/* Helper hint (mobile-first clarity) */}
+              <p className="text-white/70 mt-2">
+                Already have an account?{" "}
+                <Link
+                  href="/login"
+                  className="text-white font-medium hover:underline underline-offset-4 decoration-white/40 hover:text-white hover:decoration-white transition-colors"
+                >
+                  Log in
+                </Link>
+              </p>
             </motion.div>
           </div>
+
+          
+
         </div>
       </div>
 
