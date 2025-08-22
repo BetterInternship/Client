@@ -58,8 +58,8 @@ export function HeroSection() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="text-5xl sm:text-8xl font-bold text-white text-opacity-90 tracking-tighter mb-6 leading-tight"
           >
-            No More Waiting. <br />
-            Interview in 48 hours.
+            Land an internship. <br />
+            10x faster.
           </motion.h1>
 
           <motion.div
