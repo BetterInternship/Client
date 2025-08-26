@@ -113,7 +113,8 @@ export const isCompleteProfile = (user: PublicUser | null): boolean => {
   )
     return false;
 
-  if (!user.calendar_link?.trim() || !user.resume?.trim()) return false;
+  // ! uncomment when calendar back
+  if (/*!user.calendar_link?.trim() || */ !user.resume?.trim()) return false;
 
   return true;
 };

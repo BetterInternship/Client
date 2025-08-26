@@ -96,7 +96,8 @@ export function ApplicationRow({
           >
             Notes
           </Button>
-          <Button
+          {/* // ! uncomment when calendar back */}
+          {/* <Button
             variant="outline"
             size="sm"
             onClick={(e) => {
@@ -105,7 +106,7 @@ export function ApplicationRow({
             }}
           >
             Schedule
-          </Button>
+          </Button> */}
           <div>
             <StatusDropdown
               value={application.status ?? 0}
