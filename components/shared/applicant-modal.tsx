@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 04:14:35
- * @ Modified time: 2025-07-13 20:09:04
+ * @ Modified time: 2025-08-26 12:35:52
  * @ Description:
  *
  * What employers see when clicking on an applicant to view.
@@ -122,7 +122,8 @@ export const ApplicantModalContent = ({
               <FileText className="h-4 w-4 mr-2" />
               {applicant.resume ? "View Resume" : "No Resume"}
             </Button>
-            <Button
+            {/* // ! uncomment when calendar back */}
+            {/* <Button
               variant="outline"
               className="h-10 sm:h-11"
               size="md"
@@ -131,7 +132,7 @@ export const ApplicantModalContent = ({
             >
               <Calendar className="h-4 w-4 mr-2" />
               {applicant?.calendar_link ? "Schedule" : "No Calendar"}
-            </Button>
+            </Button> */}
           </div>
         </div>
 

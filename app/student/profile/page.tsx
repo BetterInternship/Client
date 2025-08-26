@@ -450,11 +450,12 @@ const ProfileEditor = forwardRef<
       (link: string) =>
         !isValidOptionalLinkedinURL(link) && "Invalid linkedin link."
     );
-    addValidator(
-      "calendar_link",
-      (link: string) =>
-        !isValidOptionalCalendarURL(link) && "Invalid calendar link."
-    );
+    // ! uncomment when calendar back
+    // addValidator(
+    //   "calendar_link",
+    //   (link: string) =>
+    //     !isValidOptionalCalendarURL(link) && "Invalid calendar link."
+    // );
 
     addValidator(
       "university",
@@ -665,7 +666,8 @@ const ProfileEditor = forwardRef<
           <ErrorLabel value={formErrors.portfolio_link} />
           <ErrorLabel value={formErrors.github_link} />
           <ErrorLabel value={formErrors.linkedin_link} />
-          <ErrorLabel value={formErrors.calendar_link} />
+          {/* // ! uncomment when calendar back */}
+          {/* <ErrorLabel value={formErrors.calendar_link} /> */}
         </div>
         <div className="flex flex-col space-y-3">
           <FormInput
@@ -686,7 +688,8 @@ const ProfileEditor = forwardRef<
             setter={fieldSetter("linkedin_link")}
             required={false}
           />
-          <div className="relative flex flex-col">
+          {/* // ! uncomment when calendar back */}
+          {/* <div className="relative flex flex-col">
             <div className="flex items-center mb-1">
               <span className="text-sm font-medium text-gray-700">
                 Calendar Link <span className="text-red-500">*</span>
@@ -727,7 +730,7 @@ const ProfileEditor = forwardRef<
                 .
               </div>
             )}
-          </div>
+          </div> */}
         </div>
       </Card>
       <br />
