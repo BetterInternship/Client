@@ -62,7 +62,6 @@ export const getMissingProfileFields = (
 
   // Check each required field
   const requiredFields = [
-    "calendar_link",
     "college",
     "degree",
     "department",
