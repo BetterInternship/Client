@@ -23,18 +23,9 @@ import {
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Job } from "@/lib/db/db.types";
 import { Paginator } from "@/components/ui/paginator";
-import { useDbRefs } from "@/lib/db/use-refs";
 import { useAppContext } from "@/lib/ctx-app";
 import { useModal, useModalRef } from "@/hooks/use-modal";
-import {
-  JobApplicationRequirements,
-  JobBadges,
-  JobCard,
-  JobDetails,
-  MobileJobCard,
-} from "@/components/shared/jobs";
-import { cn, formatDate } from "@/lib/utils";
-import ReactMarkdown from "react-markdown";
+import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import {
   getMissingProfileFields,
@@ -48,9 +39,10 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FormCheckbox } from "@/components/EditForm";
 import { IncompleteProfileModal } from "@/components/modals/IncompleteProfileModal";
+import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
+import { JobModal } from "@/components/modals/JobModal";
 
 export default function SearchPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated } = useAuthContext();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
@@ -59,16 +51,6 @@ export default function SearchPage() {
   const textarea_ref = useRef<HTMLTextAreaElement>(null);
   const [showCoverLetterInput, setShowCoverLetterInput] = useState(false);
 
-  const {
-    open: openSuccessModal,
-    close: closeSuccessModal,
-    Modal: SuccessModal,
-  } = useModal("success-modal");
-  const {
-    open: openJobModal,
-    close: closeJobModal,
-    Modal: JobModal,
-  } = useModal("job-modal", { showCloseButton: false });
   const {
     open: openApplicationConfirmationModal,
     close: closeApplicationConfirmationModal,
@@ -79,7 +61,9 @@ export default function SearchPage() {
     close: closeProfilePreviewModal,
     Modal: ProfilePreviewModal,
   } = useModal("profile-preview-modal");
+  const jobModalRef = useModalRef();
   const incompleteModalRef = useModalRef();
+  const successModalRef = useModalRef();
 
   const { open: openResumeModal, Modal: ResumeModal } =
     useModal("resume-modal");
@@ -190,7 +174,7 @@ export default function SearchPage() {
       })
       .then(() => {
         if (applications.createError) alert(applications.createError.message);
-        else openSuccessModal();
+        else successModalRef.current?.open();
       });
   };
 
@@ -210,7 +194,7 @@ export default function SearchPage() {
 
   const handleJobCardClick = (job: Job) => {
     setSelectedJob(job);
-    if (is_mobile) openJobModal();
+    if (is_mobile) jobModalRef.current?.open();
   };
 
   if (jobs.error) {
@@ -414,185 +398,10 @@ export default function SearchPage() {
       </div>
 
       {/* Mobile Job Details Modal */}
-      <JobModal>
-        <div className="h-full flex flex-col bg-white overflow-hidden">
-          {/* Fixed Header with Close Button */}
-          <div className="flex flex-col justify-start items-start p-4 border-b bg-white flex-shrink-0">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => closeJobModal()}
-              className="h-8 w-8 p-0 ml-[-8px] mb-2 hover:bg-gray-100 rounded-full"
-            >
-              <ArrowLeft className="h-5 w-5 text-gray-500" />
-            </Button>
-            {/* Fixed Job Header - Non-scrollable */}
-            {selectedJob && (
-              <div className=" bg-white flex-shrink-0">
-                <h1 className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2">
-                  {selectedJob.title}
-                </h1>
-                <div className="flex items-center gap-2 text-gray-600 mb-1">
-                  <Building className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate text-sm">
-                    {selectedJob.employer?.name}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-500 mb-3">
-                  Listed on {formatDate(selectedJob.created_at ?? "")}
-                </p>
-                <JobBadges job={selectedJob} />
-              </div>
-            )}
-          </div>
-
-          {/* Scrollable Content Area - MUST be properly configured */}
-          <div
-            className="flex-1 overflow-y-scroll overscroll-contain pb-32"
-            style={{ maxHeight: "calc(100vh - 200px)" }}
-          >
-            {selectedJob && (
-              <div className="p-4">
-                <div className="mb-6">
-                  <h2 className="text-lg font-semibold mb-3 text-gray-900">
-                    Description
-                  </h2>
-                  <div className="prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
-                    <ReactMarkdown>{selectedJob.description}</ReactMarkdown>
-                  </div>
-                </div>
-                <div className="mb-6">
-                  <h2 className="text-lg font-semibold mb-3 text-gray-900">
-                    Requirements
-                  </h2>
-                  <JobApplicationRequirements job={selectedJob} />
-                  <div className="prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
-                    <ReactMarkdown>{selectedJob.requirements}</ReactMarkdown>
-                  </div>
-                </div>
-                <div className="pb-20"></div>
-              </div>
-            )}
-          </div>
-
-          {/* Fixed Action Buttons at Bottom - Always Visible and Prominent */}
-          <div className="absolute bottom-0 left-0 right-0 bg-white border-t-2 p-4">
-            <div className="flex gap-3">
-              <Button
-                disabled={applications.appliedJob(selectedJob?.id ?? "")}
-                onClick={handleApply}
-                className={cn(
-                  "flex-1 h-14 transition-all duration-300",
-                  applications.appliedJob(selectedJob?.id ?? "")
-                    ? "bg-supportive text-white"
-                    : "bg-primary  text-white"
-                )}
-              >
-                {applications.appliedJob(selectedJob?.id ?? "")
-                  ? "Applied"
-                  : "Apply Now"}
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={() => selectedJob && handleSave(selectedJob)}
-                scheme={
-                  savedJobs.isJobSaved(selectedJob?.id ?? "")
-                    ? "destructive"
-                    : "default"
-                }
-                className="h-14 w-14"
-              >
-                <Heart
-                  className={cn(
-                    "w-6 h-6",
-                    savedJobs.isJobSaved(selectedJob?.id ?? "")
-                      ? "fill-current"
-                      : ""
-                  )}
-                />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </JobModal>
+      <JobModal job={selectedJob} handleApply={handleApply} ref={jobModalRef} />
 
       {/* Success Modal */}
-      <SuccessModal>
-        {/* Header with close button */}
-        <div className="flex justify-between items-center p-6 pb-0"></div>
-
-        {/* Content */}
-        <div className="px-6 pb-8 text-center">
-          {/* Success Animation */}
-          <motion.div
-            className="mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-          >
-            <motion.div
-              className="w-20 h-20 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center"
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{
-                delay: 0.3,
-                duration: 0.6,
-                type: "spring",
-                bounce: 0.5,
-              }}
-            >
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8, duration: 0.3 }}
-              >
-                <CheckCircle className="w-10 h-10 text-green-600" />
-              </motion.div>
-            </motion.div>
-
-            <motion.h2
-              className="text-2xl font-bold text-gray-800 mb-2"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.4 }}
-            >
-              Application Sent!
-            </motion.h2>
-
-            <motion.p
-              className="text-gray-600 mb-6 leading-relaxed"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.4 }}
-            >
-              Your application for{" "}
-              <span className="font-semibold max-w-prose text-gray-800">
-                {selectedJob?.title}
-              </span>{" "}
-              has been successfully submitted.
-            </motion.p>
-          </motion.div>
-
-          {/* Action Buttons */}
-          <motion.div
-            className="space-y-3"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.4 }}
-          >
-            <Button
-              onClick={() => {
-                closeSuccessModal();
-                router.push("/applications");
-              }}
-            >
-              <Clipboard className="w-4 h-4 mr-2" />
-              View My Applications
-            </Button>
-          </motion.div>
-        </div>
-      </SuccessModal>
+      <ApplySuccessModal job={selectedJob} ref={successModalRef} />
 
       {/* Application Confirmation Modal - Redesigned */}
       <ApplicationConfirmationModal>
