@@ -92,6 +92,7 @@
 @layer base {
   html {
     @apply scroll-smooth;
+    overflow: hidden;
   }
 
   body {
@@ -99,6 +100,7 @@
     @apply text-base leading-normal;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     font-variation-settings: normal;
+    overflow: hidden;
   }
 
   /* Enhanced typography scale */

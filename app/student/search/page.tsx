@@ -2,16 +2,8 @@
 
 import React, { useRef } from "react";
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
-import {
-  Search,
-  Heart,
-  CheckCircle,
-  Clipboard,
-  Building,
-  ArrowLeft,
-} from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Search, Heart, CheckCircle, Clipboard, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -152,7 +144,6 @@ export default function SearchPage() {
     }
 
     // If profile is complete, show confirmation modal
-    console.log("Opening application confirmation modal");
     openApplicationConfirmationModal();
   };
 
