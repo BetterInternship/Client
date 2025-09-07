@@ -109,8 +109,8 @@ export function LogoCarousel({ columns = 4, logos }: LogoCarouselProps) {
   }, []);
 
   return (
-    <div className="bg-black w-full">
-      <div className="w-full bg-white flex justify-center py-8">
+    <div className="w-full">
+      <div className="w-full  flex justify-center py-8">
         {logoColumns.map((columnLogos, index) => (
           <LogoColumn
             key={index}

@@ -15,7 +15,7 @@ export default function HomePage() {
   const { redirectIfLoggedIn } = useAuthContext();
   redirectIfLoggedIn();
   return (
-    <div className="min-h-screen bg-black text-white dark dark:bg-black dark:text-white">
+    <div className="min-h-screen">
       {/* Navbar */}
       <Navigation />
       {/* Hero Section */}
@@ -26,12 +26,7 @@ export default function HomePage() {
       {/* Benefits clickable */}
       <PlatformSection />
 
-      {/* Companies showcase */}
-      <LogoCarouselBasic />
-
-      <div className="dark">
-        <Footer />
-      </div>
+      <Footer />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { LogoCarousel } from "@/components/landingStudent/sections/5th section/companies";
+import { LogoCarousel } from "@/components/landingStudent/sections/5thSection/companies";
 import { Card, CardContent } from "@/components/landingStudent/ui/card";
 
 const demoLogos = [
@@ -30,18 +30,14 @@ const demoLogos = [
 
 function LogoCarouselBasic() {
   return (
-    <div className="text-white bg-white border-t border-gray-900 pt-10">
-      <Card>
-        <CardContent className="bg-white">
-          <div className="text-center justify-center">
-            <h2 className="sm:text-[3.5rem] text-[2.5rem] font-bold tracking-tight leading-none text-black">
-              The best are already here.
-            </h2>
-          </div>
-          <LogoCarousel logos={demoLogos} />
-          <div></div>
-        </CardContent>
-      </Card>
+    <div className="mt-10">
+      <div className="text-center justify-center">
+        <h2 className="text-xl font-light tracking-tight leading-none">
+          The best are already here.
+        </h2>
+      </div>
+      <LogoCarousel logos={demoLogos} />
+      <div></div>
     </div>
   );
 }

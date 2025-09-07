@@ -1,14 +1,16 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-
 export function Navigation() {
   return (
-    <nav className="fixed top-0 w-full z-50 bg-[rgba(15,15,15,1)] py-1 border-b border-gray-800">
+    <nav className="fixed top-0 w-full z-50 py-1 ">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center">
-            <div className="text-2xl font-bold text-white tracking-tight">
+          <div className="flex items-center gap-2">
+            <img
+              src="/BetterInternshipLogo.png"
+              className="w-8 h-8 inline-block"
+            ></img>
+            <div className="text-2xl font-bold font-primary tracking-tight">
               BetterInternship
             </div>
           </div>

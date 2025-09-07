@@ -1,104 +1,123 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
+import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
-import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { useAppContext } from "@/lib/ctx-app";
+import { ChevronRight } from "lucide-react";
+import { LogoCarouselBasic } from "@/components/landingStudent/sections/5thSection/sectionpage";
+
+const HIRE_URL = process.env.NEXT_PUBLIC_CLIENT_HIRE_URL ?? "/hire";
+
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: "easeOut" },
+  },
+};
+
+const fadeUpDelayed: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: "easeOut", delay: 0.2 },
+  },
+};
 
 export function HeroSection() {
-  const videos = [
-    "/landingPage/smile.mov",
-    "/landingPage/coding.mov",
-    "/landingPage/friends.mov",
-    "/landingPage/coding2.mov",
-    "/landingPage/nod.mov",
-  ];
-  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
-  const { isMobile } = useAppContext();
-
-  useEffect(() => {
-    if (isMobile) return;
-    const interval = setInterval(() => {
-      setCurrentVideoIndex((prevIndex) => (prevIndex + 1) % videos.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [isMobile, videos.length]);
-
   return (
-    <section className="relative min-h-screen flex items-center bg-black overflow-hidden">
-      {/* Show image on mobile, video on tablet/desktop */}
-      <div className="absolute inset-0 w-full h-full overflow-y-hidden">
-        {isMobile ? (
-          <img
-            src="/landingPage/mobileBG.jpg"
-            alt="Landing"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        ) : (
-          <video
-            key={currentVideoIndex}
-            autoPlay
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover"
-            src={videos[currentVideoIndex]}
-          />
-        )}
-      </div>
+    <div className="relative isolate w-full overflow-hidden">
+      {/* backdrop */}
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-white/40" />
 
-      <div className="absolute inset-0 bg-black/60" />
+      <section
+        aria-labelledby="hero-heading"
+        className="relative min-h-[100svh] flex flex-col items-center justify-center text-center gap-5 px-4 sm:px-6"
+      >
+        {/* Pill */}
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          animate="show"
+          className="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-semibold text-gray-900 shadow-sm"
+        >
+          <span className="h-2 w-2 animate-pulse rounded-full bg-primary" />
+          <span>One profile. One click.</span>
+        </motion.div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full h-full flex items-center justify-center">
-        <div className="max-w-5xl w-full flex flex-col items-left justify-center">
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-5xl sm:text-8xl font-bold text-white text-opacity-90 tracking-tighter mb-6 leading-tight"
-          >
-            Land an internship. <br />
-            10x faster.
-          </motion.h1>
+        {/* Heading */}
+        <motion.h1
+          id="hero-heading"
+          variants={fadeUp}
+          initial="hidden"
+          animate="show"
+          className="mt-4 text-4xl sm:text-7xl md:text-8xl font-medium tracking-tighter leading-tight text-black/80"
+        >
+          Land an internship. <br />
+          <AnimatedShinyText>10x faster.</AnimatedShinyText>
+        </motion.h1>
 
+        {/* Body stack */}
+        <div className="w-full sm:max-w-[36rem] md:max-w-3xl">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-            className="flex flex-col sm:flex-row gap-4 items-center pt-32 lg:py-16"
+            variants={fadeUpDelayed}
+            initial="hidden"
+            animate="show"
+            className="flex flex-col gap-8 sm:gap-20"
           >
-            <Link href="/search">
-              <Button
-                size="lg"
-                className="bg-white hover:bg-gray-100 text-gray-800 px-8 py-4 text-lg rounded-[0.33em] tracking-tight"
-              >
-                Find Internships
-              </Button>
-            </Link>
+            {/* CTAs */}
+            <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+              <Link href="/search" className="w-full sm:w-auto">
+                <Button
+                  size="lg"
+                  className="w-full sm:w-auto rounded-[0.33em] border border-gray-300 bg-white px-8 py-4 text-lg tracking-tight text-gray-800 shadow-sm hover:bg-gray-50"
+                >
+                  Find Internships
+                </Button>
+              </Link>
 
-            <Link href={process.env.NEXT_PUBLIC_CLIENT_HIRE_URL as string}>
-              <Button
-                variant="ghost"
-                className="text-white hover:opacity-70 hover:bg-transparent transition-opacity text-lg font-medium flex items-center"
-              >
-                <ChevronRight />
-                For Employers
-              </Button>
-            </Link>
+              <Link href={HIRE_URL} className="w-full sm:w-auto">
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  className="flex w-full items-center justify-center text-lg font-medium text-gray-900 hover:bg-gray-100 sm:w-auto sm:justify-start"
+                >
+                  <ChevronRight className="mr-1" />
+                  For Employers
+                </Button>
+              </Link>
+            </div>
+
+            {/* Companies carousel */}
+            <div className="overflow-x-auto no-scrollbar">
+              <LogoCarouselBasic />
+            </div>
           </motion.div>
         </div>
-      </div>
 
-      {/* Subtle animated elements */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.1 }}
-        transition={{ duration: 2, delay: 1 }}
-        className="absolute right-0 top-1/2 transform -translate-y-1/2 w-1/2 h-full"
-      >
-        <div className="w-full h-full bg-gradient-to-l from-white/5 to-transparent" />
-      </motion.div>
-    </section>
+        {/* Scroll hint */}
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-4 hidden justify-center text-gray-400 sm:bottom-8 sm:flex"
+          aria-hidden="true"
+        >
+          <svg
+            className="h-6 w-6 animate-bounce"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </div>
+      </section>
+    </div>
   );
 }

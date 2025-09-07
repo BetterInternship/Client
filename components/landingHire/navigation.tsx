@@ -5,7 +5,6 @@ import { LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
-
 export function Navigation() {
   const router = useRouter();
   return (
@@ -21,7 +20,6 @@ export function Navigation() {
           <div className="flex items-center space-x-6"></div>
         </div>
       </div>
-      
     </nav>
   );
 }

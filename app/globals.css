@@ -87,6 +87,9 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 48%;
   }
+  .theme {
+    --animate-shiny-text: shiny-text 8s infinite;
+  }
 }
 
 @layer base {
@@ -570,4 +573,42 @@ button[role="checkbox"]:checked {
   }
 }
 
+.shiny-text {
+  color: #b5b5b5a4; /* Adjust this color to change intensity/style */
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0) 60%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  display: inline-block;
+  animation: shine 5s linear infinite;
+}
 
+/* Shiny text sweep (react-bits–style) */
+@keyframes shine {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Mostly dark text with a moving light band */
+.shiny-text {
+  /* adjust dark tone to match your gray/900 if you want */
+  background-image: linear-gradient(
+    110deg,
+      rgba(15, 23, 42, 0.9) 0%,
+      rgba(15, 23, 42, 0.9) 42%,
+      rgba(255, 255, 255, 0.75) 50%,
+      rgba(15, 23, 42, 0.9) 58%,
+      rgba(15, 23, 42, 0.9) 100%
+  );
+  background-size: 200% 100%;
+  animation: shine 2.25s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shiny-text { animation: none; }
+}
