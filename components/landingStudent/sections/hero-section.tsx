@@ -6,9 +6,10 @@ import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { LogoCarouselBasic } from "@/components/landingStudent/sections/1stSection/5thSection/sectionpage";
-import { InteractiveGridPattern } from "@/components/magicui/interactive-grid-pattern";
+import { LogoCarouselBasic } from "@/components/landingStudent/sections/5thSection/sectionpage";
+import { InteractiveGridPattern } from "@/components/landingStudent/sections/1stSection/interactive-grid-pattern";
 import { Navigation } from "@/components/landingStudent/navigation";
+import { DoodleUnderline } from "@/components/landingStudent/ui/doodle-underline";
 
 const HIRE_URL = process.env.NEXT_PUBLIC_CLIENT_HIRE_URL ?? "/hire";
 
@@ -70,37 +71,6 @@ function MagneticButton({
   );
 }
 
-/* ---------- Scribble underline ---------- */
-function DoodleUnderline({ className = "" }: { className?: string }) {
-  const prefersReduce = useReducedMotion();
-  return (
-    <svg
-      className={`absolute -bottom-2 left-0 right-0 h-3 w-full ${className}`}
-      viewBox="0 0 100 10"
-      preserveAspectRatio="none"
-      aria-hidden="true"
-    >
-      <motion.path
-        d="M2 7 C 20 1, 40 11, 60 3 S 95 9, 98 5"
-        fill="none"
-        stroke="url(#g)"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: prefersReduce ? 1 : 1 }}
-        transition={{ duration: prefersReduce ? 0 : 1.2, ease: "easeOut" }}
-      />
-      <defs>
-        <linearGradient id="g" x1="0" x2="1" y1="0" y2="0">
-          <stop offset="0%" stopColor="hsl(220 90% 60% / 0.5)" />
-          <stop offset="50%" stopColor="hsl(220 90% 55% / 0.8)" />
-          <stop offset="100%" stopColor="hsl(220 90% 60% / 0.5)" />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
-}
-
 /* ---------- Paper airplane path ---------- */
 function AirplanePath() {
   const prefersReduce = useReducedMotion();
@@ -153,7 +123,12 @@ export function HeroSection() {
       {/* orbs */}
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden>
         <span className="absolute -top-16 -left-20 h-72 w-72 rounded-full bg-gradient-to-br from-primary/25 to-blue-400/20 blur-3xl" />
-        <span className="absolute -top-200 -right-24 h-80 w-80 rounded-full bg-gradient-to-br from-primary/25 to-blue-400/20 blur-2xl" />
+        <span
+          className="absolute -top-200 -right-24 bsolute
+            bottom-20
+            h-80 w-80 rounded-full
+            bg-gradient-to-br from-primary/25 to-blue-400/20 blur-3xl"
+        />
       </div>
 
       {/* Navigation */}

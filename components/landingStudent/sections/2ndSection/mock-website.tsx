@@ -205,7 +205,7 @@ export function SideCopy() {
       </span>
       <h2 className="text-4xl font-semibold tracking-tight sm:text-5xl">
         Apply fast, <br className="hidden sm:block" />
-        Get hired 
+        Get hired {""}
         <AnimatedShinyText>faster.</AnimatedShinyText>
       </h2>
       <ul className="mt-2 space-y-2 text-sm text-slate-600">

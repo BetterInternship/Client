@@ -3,8 +3,6 @@
 import {
   HeroSection,
   PlatformSection,
-  Testimonials,
-  LogoCarouselBasic,
   Feature,
 } from "@/components/landingStudent/sections";
 import { Footer } from "@/components/shared/footer";
