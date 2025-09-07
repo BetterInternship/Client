@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, Variants, useReducedMotion, useInView } from "framer-motion";
+import { motion, Variants, useReducedMotion } from "framer-motion";
 import { useRef, useState } from "react";
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 import { Button } from "@/components/ui/button";

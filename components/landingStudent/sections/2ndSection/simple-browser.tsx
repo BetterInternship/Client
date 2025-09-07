@@ -13,9 +13,9 @@ export function SimpleBrowser({ children }: { children: ReactNode }) {
       "
     >
       {/* desktop chrome */}
-      <div className="hidden items-center gap-3 border-b border-slate-200 bg-white/90 px-4 py-2 backdrop-blur sm:flex">
+      <div className="hidden items-center gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur sm:flex">
         <div className="flex-1">
-          <div className="flex items-center rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm">
+          <div className="flex items-center rounded-md px-3 py-1.5 text-sm">
             <Search className="mr-2 h-4 w-4 text-slate-400" aria-hidden />
             <input
               aria-label="Address bar"
@@ -27,8 +27,8 @@ export function SimpleBrowser({ children }: { children: ReactNode }) {
       </div>
 
       {/* mobile chrome */}
-      <div className="border-b border-slate-200 bg-white/95 px-3 py-2 sm:hidden">
-        <div className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs">
+      <div className="border-b border-slate-200 bg-white/95 px-3 sm:hidden">
+        <div className="rounded-full px-3 py-1.5 text-xs">
           <div className="flex items-center">
             <Search className="mr-2 h-3.5 w-3.5 text-slate-400" aria-hidden />
             <input
@@ -40,7 +40,7 @@ export function SimpleBrowser({ children }: { children: ReactNode }) {
         </div>
       </div>
 
-      {/* viewport – shell does NOT scroll */}
+      {/* viewport */}
       <div className="relative lg:h-[75vh]">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-white to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white to-transparent" />

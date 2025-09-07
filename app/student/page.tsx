@@ -1,10 +1,7 @@
 "use client";
 
-import {
-  HeroSection,
-  PlatformSection,
-  Feature,
-} from "@/components/landingStudent/sections";
+import { HeroSection, Feature } from "@/components/landingStudent/sections";
+import Testimonials from "@/components/landingStudent/sections/3rdSection/testimonials";
 import { Footer } from "@/components/shared/footer";
 import { useAuthContext } from "@/lib/ctx-auth";
 
@@ -18,7 +15,7 @@ export default function HomePage() {
       {/* Apply Fast */}
       <Feature />
       {/* Benefits clickable */}
-      <PlatformSection />
+      <Testimonials />
 
       <Footer />
     </div>
