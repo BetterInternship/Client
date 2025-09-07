@@ -1,6 +1,6 @@
 "use client";
 
-import { LogoCarousel } from "@/components/landingStudent/sections/5thSection/companies";
+import { LogoCarousel } from "@/components/landingStudent/sections/1stSection/5thSection/companies";
 import { Card, CardContent } from "@/components/landingStudent/ui/card";
 
 const demoLogos = [

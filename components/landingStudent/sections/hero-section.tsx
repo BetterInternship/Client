@@ -5,14 +5,9 @@ import { useRef, useState } from "react";
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import {
-  ChevronRight,
-  Sparkles,
-
-} from "lucide-react";
-import { LogoCarouselBasic } from "@/components/landingStudent/sections/5thSection/sectionpage";
+import { ChevronRight } from "lucide-react";
+import { LogoCarouselBasic } from "@/components/landingStudent/sections/1stSection/5thSection/sectionpage";
 import { InteractiveGridPattern } from "@/components/magicui/interactive-grid-pattern";
-import { CheckCircle2 } from "lucide-react";
 import { Navigation } from "@/components/landingStudent/navigation";
 
 const HIRE_URL = process.env.NEXT_PUBLIC_CLIENT_HIRE_URL ?? "/hire";
@@ -158,7 +153,7 @@ export function HeroSection() {
       {/* orbs */}
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden>
         <span className="absolute -top-16 -left-20 h-72 w-72 rounded-full bg-gradient-to-br from-primary/25 to-blue-400/20 blur-3xl" />
-        <span className="absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-gradient-to-tr from-fuchsia-300/25 to-amber-200/25 blur-3xl" />
+        <span className="absolute -top-200 -right-24 h-80 w-80 rounded-full bg-gradient-to-br from-primary/25 to-blue-400/20 blur-2xl" />
       </div>
 
       {/* Navigation */}
@@ -180,7 +175,7 @@ export function HeroSection() {
           animate="show"
           className="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-900 shadow-sm"
         >
-          <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden />
+          <span className="h-2 w-2 animate-pulse rounded-full bg-primary" />
           <span>One profile. One click.</span>
         </motion.div>
 
@@ -233,24 +228,8 @@ export function HeroSection() {
               </Link>
             </div>
 
-            {/* Steps */}
-            <ul className="mx-auto flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-gray-600 mt-8">
-              <li className="inline-flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4 text-primary" aria-hidden />
-                Auto-fill paperwork
-              </li>
-              <li className="inline-flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4 text-primary" aria-hidden />
-                One-click apply
-              </li>
-              <li className="inline-flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4 text-primary" aria-hidden />
-                MOA-ready docs
-              </li>
-            </ul>
-
             {/* logos */}
-            <div className="overflow-x-auto no-scrollbar">
+            <div className="overflow-x-auto no-scrollbar mt-10">
               <LogoCarouselBasic />
             </div>
           </motion.div>

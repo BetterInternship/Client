@@ -1,40 +1,28 @@
-import { ChevronDown, ChevronRight } from "lucide-react";
-import { SoftwareSection } from "./use-cardstack";
-import { useAppContext } from "@/lib/ctx-app";
+"use client";
+
+import { SimpleBrowser } from "./simple-browser";
+import { SideCopy, SearchPreview} from "./mock-website";
 
 export function Feature() {
-  const { isMobile } = useAppContext();
   return (
-    <div className="w-full py-20 border-t border-gray-900 overflow-hidden overflow-x-hidden h-[100vh] bg-black text-white dark:bg-black dark:text-white">
-      <div className="flex flex-col lg:flex-row lg:items-center gap-20">
-        <div className="flex gap-4 pl-0 lg:pl-20 flex-col flex-1">
-          <div className="flex gap-2 mx-8 flex-col z-30">
-            <h2 className="text-5xl sm:text-8xl tracking-tighter text-opacity-90 lg:max-w-2xl font-regular text-left text-gray-900 dark:text-white">
-              Apply fast, <br />
-              Get hired faster.
-            </h2>
-            <div className="flex flex-row items-center gap-8 mt-4">
-              <p className="text-xs sm:text-lg max-w-xl lg:max-w-sm leading-relaxed tracking-tight text-muted-foreground text-left dark:text-gray-400">
-                Instantly apply to jobs with a single click—
-                <br />
-                no forms, no hassle.{" "}
-                <b className="text-white text-opacity-100">Try it here</b>
-              </p>
-
-              {isMobile ? (
-                <ChevronDown className="opacity-30 w-12 h-12 animate-bounce" />
-              ) : (
-                <ChevronRight className="opacity-30 w-16 h-16 animate-[sidebounce_1s_ease-in-out_infinite]" />
-              )}
-            </div>
+    <section className="w-full bg-gradient-to-b from-slate-50 to-white py-16 sm:py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="grid items-center gap-10 lg:grid-cols-12">
+          {/* Side copy */}
+          <div className="lg:col-span-3">
+            <SideCopy />
           </div>
-        </div>
-        <div className="relative group items-center justify-center w-full flex-1">
-          <div className="relative z-10">
-            <SoftwareSection />
+
+          {/* Browser */}
+          <div className="lg:col-span-9">
+            <SimpleBrowser>
+              <div className="lg:h-[75vh]">
+                <SearchPreview />
+              </div>
+            </SimpleBrowser>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

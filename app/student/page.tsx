@@ -19,7 +19,6 @@ export default function HomePage() {
       <HeroSection />
       {/* Apply Fast */}
       <Feature />
-
       {/* Benefits clickable */}
       <PlatformSection />
 
