@@ -192,7 +192,10 @@ export default function TestimonialsMarquee() {
             ))}
           </div>
           {/* copy B */}
-          <div className="flex w-max items-stretch gap-4 sm:gap-6" aria-hidden>
+          <div
+            className="flex w-max items-stretch gap-4 sm:gap-6 "
+            aria-hidden
+          >
             {items.map((t, i) => (
               <TestimonialCard key={`b-${i}`} t={t} />
             ))}
@@ -244,8 +247,8 @@ export default function TestimonialsMarquee() {
 
         {/* rows (left → right), slower */}
         <div className="space-y-6">
-          <MarqueeRow items={ROW_ONE} seconds={42} />
-          <MarqueeRow items={ROW_TWO} seconds={52} />
+          <MarqueeRow items={ROW_ONE} seconds={42} className="py-3" />
+          <MarqueeRow items={ROW_TWO} seconds={52} className="py-3" />
         </div>
       </div>
 
