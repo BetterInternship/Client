@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   Settings,
   BookA,
@@ -371,6 +371,7 @@ export const Header = () => {
   const router = useRouter();
   const profile = useProfile();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const outsideClickRef = useDetectClickOutside({
     onTriggered: (e) => {
       setIsJobDetailFiltering(false);
@@ -389,6 +390,48 @@ export const Header = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isJobPositionFiltering, setIsJobPositionFiltering] = useState(false);
   const [isJobDetailFiltering, setIsJobDetailFiltering] = useState(false);
+
+  // Initialize search term from URL
+  useEffect(() => {
+    const query = searchParams.get("query") || "";
+    const position = searchParams.get("position")?.split(",") || [];
+    const jobAllowance = searchParams.get("allowance")?.split(",") || [];
+    const jobWorkload = searchParams.get("workload")?.split(",") || [];
+    const jobMode = searchParams.get("mode")?.split(",") || [];
+    const jobMoa = searchParams.get("moa")?.split(",") || [];
+
+    setJobFilters({
+      position,
+      jobAllowance,
+      jobWorkload,
+      jobMode,
+      jobMoa,
+    });
+    setSearchTerm(query);
+  }, [searchParams]);
+
+  const doSearch = () => {
+    router.push(
+      `/search/?query=${searchTerm}` +
+        (jobFilters.position?.length
+          ? `&position=${encodeURIComponent(jobFilters.position.join(","))}`
+          : "") +
+        (jobFilters.jobMode?.length
+          ? `&mode=${encodeURIComponent(jobFilters.jobMode.join(","))}`
+          : "") +
+        (jobFilters.jobWorkload?.length
+          ? `&workload=${encodeURIComponent(jobFilters.jobWorkload.join(","))}`
+          : "") +
+        (jobFilters.jobAllowance?.length
+          ? `&allowance=${encodeURIComponent(
+              jobFilters.jobAllowance.join(",")
+            )}`
+          : "") +
+        (jobFilters.jobMoa?.length
+          ? `&moa=${encodeURIComponent(jobFilters.jobMoa.join(","))}`
+          : "")
+    );
+  };
 
   useEffect(() => {
     if (profile.data) {
@@ -424,35 +467,7 @@ export const Header = () => {
                   type="text"
                   value={searchTerm}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter")
-                      router.push(
-                        `/search/?query=${searchTerm}` +
-                          (jobFilters.position?.length
-                            ? `&position=${encodeURIComponent(
-                                jobFilters.position.join(",")
-                              )}`
-                            : "") +
-                          (jobFilters.jobMode?.length
-                            ? `&mode=${encodeURIComponent(
-                                jobFilters.jobMode.join(",")
-                              )}`
-                            : "") +
-                          (jobFilters.jobWorkload?.length
-                            ? `&workload=${encodeURIComponent(
-                                jobFilters.jobWorkload.join(",")
-                              )}`
-                            : "") +
-                          (jobFilters.jobAllowance?.length
-                            ? `&allowance=${encodeURIComponent(
-                                jobFilters.jobAllowance.join(",")
-                              )}`
-                            : "") +
-                          (jobFilters.jobMoa?.length
-                            ? `&moa=${encodeURIComponent(
-                                jobFilters.jobMoa.join(",")
-                              )}`
-                            : "")
-                      );
+                    if (e.key === "Enter") doSearch();
                   }}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search Internship Listings"
@@ -513,6 +528,23 @@ export const Header = () => {
                 >
                   {isJobPositionFiltering && <JobPositionSelect />}
                   {isJobDetailFiltering && <JobDetailSelect />}
+                  <br />
+                  <div className="flex flex-row gap-2">
+                    <Button size="md" onClick={() => doSearch()}>
+                      Apply
+                    </Button>
+                    <Button
+                      variant="outline"
+                      scheme="secondary"
+                      size="md"
+                      onClick={() => (
+                        setIsJobPositionFiltering(false),
+                        setIsJobDetailFiltering(false)
+                      )}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>

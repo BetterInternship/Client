@@ -96,13 +96,13 @@ export default function SearchPage() {
     const jobAllowance = searchParams.get("allowance")?.split(",") || [];
     const jobWorkload = searchParams.get("workload")?.split(",") || [];
     const jobMode = searchParams.get("mode")?.split(",") || [];
-    const jobMOA = searchParams.get("moa")?.split(",") || [];
+    const jobMoa = searchParams.get("moa")?.split(",") || [];
 
     setPosition(position);
     setJobAllowanceFilter(jobAllowance);
     setJobWorkloadFilter(jobWorkload);
     setJobModeFilter(jobMode);
-    setJobMoaFilter(jobMOA);
+    setJobMoaFilter(jobMoa);
     setSearchTerm(query);
   }, [searchParams]);
 
