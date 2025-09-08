@@ -114,15 +114,20 @@ export default function TestimonialsMarquee() {
     }, [value, durationMs]);
 
     return (
-      <div className={`flex flex-col items-start ${className}`}>
+      <div className={`w-full flex flex-col items-end ${className}`}>
         <span
           ref={ref}
-          className="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900"
+          className="tabular-nums text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 leading-tight"
         >
           {display.toFixed(decimals)}
           {suffix}
         </span>
-        {label ? <span className="text-sm text-slate-600">{label}</span> : null}
+
+        {label ? (
+          <span className="mt-1 text-sm leading-5 text-slate-600 text-right text-balance min-h-[2.5rem]">
+            {label}
+          </span>
+        ) : null}
       </div>
     );
   }
@@ -192,10 +197,7 @@ export default function TestimonialsMarquee() {
             ))}
           </div>
           {/* copy B */}
-          <div
-            className="flex w-max items-stretch gap-4 sm:gap-6 "
-            aria-hidden
-          >
+          <div className="flex w-max items-stretch gap-4 sm:gap-6 " aria-hidden>
             {items.map((t, i) => (
               <TestimonialCard key={`b-${i}`} t={t} />
             ))}
