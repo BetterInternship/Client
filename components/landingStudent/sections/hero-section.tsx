@@ -148,9 +148,13 @@ export function HeroSection() {
           variants={fadeUp}
           initial="hidden"
           animate="show"
-          className="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-900 shadow-sm"
+          className="
+    inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white
+    px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm
+    sm:px-3 sm:py-2 sm:text-xs
+  "
         >
-          <span className="h-2 w-2 animate-pulse rounded-full bg-primary" />
+          <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-primary sm:h-2 sm:w-2" />
           <span>One profile. One click.</span>
         </motion.div>
 
@@ -160,7 +164,10 @@ export function HeroSection() {
           variants={fadeUp}
           initial="hidden"
           animate="show"
-          className="relative text-4xl sm:text-7xl md:text-8xl font-medium tracking-tighter leading-tight text-black/80"
+          className="
+            relative text-5xl sm:text-7xl md:text-8xl
+            font-medium tracking-tighter leading-[1.05] text-black/80
+          "
         >
           Land an{" "}
           <span className="relative inline-block">
