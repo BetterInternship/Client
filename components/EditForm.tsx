@@ -245,7 +245,7 @@ export const FormCheckbox = ({
 interface FormDatePickerProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
-  date: number;
+  date?: number;
   setter?: (value?: number) => void;
   className?: string;
 }
@@ -267,7 +267,7 @@ export const FormDatePicker = ({
       <div className="relative flex items-center z-[100]">
         <DatePicker
           id=""
-          selected={date ? new Date(date) : new Date()}
+          selected={date != null ? new Date(date) : null}
           className="relative w-full flex h-8 rounded-[0.33em] border border-gray-200 focus:border-primary focus:border-opacity-50 hover:cursor-cell text-sm"
           onChange={(date) => setter && setter(date?.getTime())}
         ></DatePicker>
