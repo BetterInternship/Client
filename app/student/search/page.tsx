@@ -3,7 +3,7 @@
 import React, { useRef } from "react";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Search, Heart, CheckCircle, Clipboard, ArrowLeft } from "lucide-react";
+import { Heart, CheckCircle, Clipboard, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -27,9 +27,6 @@ import { UserService } from "@/lib/api/services";
 import { useFile } from "@/hooks/use-file";
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import { openURL } from "@/lib/utils/url-utils";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { FormCheckbox } from "@/components/EditForm";
 import { IncompleteProfileModal } from "@/components/modals/IncompleteProfileModal";
 import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { JobModal } from "@/components/modals/JobModal";
@@ -48,11 +45,13 @@ export default function SearchPage() {
     close: closeApplicationConfirmationModal,
     Modal: ApplicationConfirmationModal,
   } = useModal("application-confirmation-modal");
+
   const {
     open: openProfilePreviewModal,
     close: closeProfilePreviewModal,
     Modal: ProfilePreviewModal,
   } = useModal("profile-preview-modal");
+
   const jobModalRef = useModalRef();
   const incompleteModalRef = useModalRef();
   const successModalRef = useModalRef();
@@ -169,20 +168,6 @@ export default function SearchPage() {
       });
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      // Reset to page 1 and trigger re-filter with current search term
-      setJobsPage(1);
-      // The useJobs hook will automatically re-filter based on the searchTerm
-      (e.currentTarget as HTMLInputElement).blur();
-    }
-  };
-
-  const handleSearchChange = (value: string) => {
-    setSearchTerm(value);
-    setJobsPage(1); // Reset to first page when search changes
-  };
-
   const handleJobCardClick = (job: Job) => {
     setSelectedJob(job);
     if (is_mobile) jobModalRef.current?.open();
@@ -213,27 +198,6 @@ export default function SearchPage() {
           </div>
         ) : is_mobile ? (
           <div className="w-full flex flex-col h-full">
-            {/* Fixed Mobile Search Bar */}
-            <div className="bg-white border-b border-gray-100 p-6 flex-shrink-0">
-              <div className="bg-white rounded-md border border-gray-200 p-2">
-                <div className="flex items-center gap-3">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-                    <input
-                      type="text"
-                      value={searchTerm}
-                      onChange={(e) => handleSearchChange(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="Search Job Listings"
-                      className="w-full h-12 pl-12 pr-4 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
-                    />
-                  </div>
-                  <Card>// ! to replace</Card>
-                </div>
-              </div>
-            </div>
-
-            {/* Scrollable Job Cards Area */}
             <div className="flex-1 overflow-y-auto p-6 pt-4">
               {jobsPage.length ? (
                 <div className="space-y-4">
@@ -267,31 +231,6 @@ export default function SearchPage() {
             {/* Job List */}
             <div className="w-1/3 border-r overflow-x-hidden overflow-y-auto p-6">
               {/* Desktop Search Bar */}
-              <div className="w-full max-w-4xl mx-auto mb-6">
-                <div className="bg-white rounded-md border border-gray-200 p-2">
-                  <div className="flex items-center gap-3">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-                      <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={(e) => handleSearchChange(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                        placeholder="Search Job Listings"
-                        className="w-full h-12 pl-12 pr-4 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
-                      />
-                    </div>
-                    <div className="flex flex-row gap-2 items-center border-transparent border-l-black/50 border p-0 px-2 rounded-none">
-                      <Badge type="supportive">MOA only</Badge>{" "}
-                      <FormCheckbox
-                        checked={moaFilter}
-                        setter={(value) => setMoaFilter(value)}
-                      ></FormCheckbox>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               {jobsPage.length ? (
                 <div className="space-y-3">
                   {jobsPage.map((job) => (
@@ -308,7 +247,6 @@ export default function SearchPage() {
                   <p className="p-4">No jobs found.</p>
                 </div>
               )}
-
               {/* Desktop Paginator */}
               <Paginator
                 totalItems={jobs.filteredJobs.length}

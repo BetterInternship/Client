@@ -388,7 +388,7 @@ export const Header = () => {
     },
   });
 
-  const [jobFilters, setFilters] = useState({
+  const [jobFilters, setJobFilters] = useState({
     position: [],
     jobMode: [],
     jobWorkload: [],
@@ -397,7 +397,6 @@ export const Header = () => {
   } as IJobFilter);
   const [hasMissing, setHasMissing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [jobFilter, setJobFilter] = useState({} as IJobFilter);
   const [isJobPositionFiltering, setIsJobPositionFiltering] = useState(false);
   const [isJobDetailFiltering, setIsJobDetailFiltering] = useState(false);
 
@@ -434,6 +433,37 @@ export const Header = () => {
                 <input
                   type="text"
                   value={searchTerm}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter")
+                      router.push(
+                        `/search/?query=${searchTerm}` +
+                          (jobFilters.position?.length
+                            ? `&position=${encodeURIComponent(
+                                jobFilters.position.join(",")
+                              )}`
+                            : "") +
+                          (jobFilters.jobMode?.length
+                            ? `&mode=${encodeURIComponent(
+                                jobFilters.jobMode.join(",")
+                              )}`
+                            : "") +
+                          (jobFilters.jobWorkload?.length
+                            ? `&workload=${encodeURIComponent(
+                                jobFilters.jobWorkload.join(",")
+                              )}`
+                            : "") +
+                          (jobFilters.jobAllowance?.length
+                            ? `&allowance=${encodeURIComponent(
+                                jobFilters.jobAllowance.join(",")
+                              )}`
+                            : "") +
+                          (jobFilters.jobMoa?.length
+                            ? `&moa=${encodeURIComponent(
+                                jobFilters.jobMoa.join(",")
+                              )}`
+                            : "")
+                      );
+                  }}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search Internship Listings"
                   className="w-full h-12 pl-12 pr-4 w-4xl bg-transparent border-0 outline-none focus:ring-0 text-gray-900 hover:bg-gray-100 focus:bg-gray-100 duration-150 placeholder:text-gray-500"
