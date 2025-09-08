@@ -41,7 +41,13 @@ export function SimpleBrowser({ children }: { children: ReactNode }) {
       </div>
 
       {/* viewport */}
-      <div className="relative lg:h-[75vh]">
+      <div
+        className="
+          relative
+          h-[62dvh] sm:h-[68dvh] lg:h-[75vh]   
+          overflow-y-auto                    
+        "
+      >
         <div className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-white to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white to-transparent" />
         <div className="h-full">{children}</div>

@@ -7,6 +7,7 @@ import {
   Wallet,
   Laptop2,
   CheckCircle2,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
@@ -209,54 +210,82 @@ export function SearchPreview() {
     [selectedId]
   );
 
+  // ⬅️ NEW: mobile popup state
+  const [openId, setOpenId] = useState<string | null>(null);
+  const openedJob = useMemo(
+    () => (openId ? JOBS.find((j) => j.id === openId) ?? null : null),
+    [openId]
+  );
+
   return (
-    <div className="grid grid-cols-1 lg:h-full lg:grid-cols-12">
+    // ⬅️ CHANGED: add `relative` so our mobile overlay is confined to this "browser"
+    <div className="relative grid grid-cols-1 lg:h-full lg:grid-cols-12">
       {/* Left column (desktop) — the ONLY scroller */}
       <div className="hidden min-w-0 border-r border-slate-200 lg:col-span-4 lg:block lg:h-full lg:overflow-y-auto">
         <JobList selectedId={selectedId} onSelect={setSelectedId} />
       </div>
 
       {/* Right column (fixed within the shell height) */}
-      <div className="min-w-0 lg:col-span-8 lg:h-full lg:overflow-hidden">
+      {/* ⬅️ CHANGED: hide on mobile, keep desktop identical */}
+      <div className="hidden min-w-0 lg:col-span-8 lg:block lg:h-full lg:overflow-hidden">
         <DetailsPane job={selectedJob} />
       </div>
 
-      {/* Mobile list below details */}
+      {/* Mobile list (cards first) */}
       <div className="border-t border-slate-200 lg:hidden">
         <div className="p-4 sm:p-6">
           <div className="space-y-3">
-            {JOBS.map((job) => {
-              const selected = job.id === selectedId;
-              return (
-                <button
-                  type="button"
-                  key={job.id}
-                  onClick={() => setSelectedId(job.id)}
-                  className={`w-full text-left rounded-md border bg-white p-4 shadow-sm ${
-                    selected
-                      ? "border-blue-300 ring-1 ring-blue-200"
-                      : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
-                  }`}
-                >
-                  <div className="text-[13px] text-slate-600">
-                    {job.company}
-                  </div>
-                  <h4 className="mt-0.5 text-base font-semibold text-slate-900">
-                    {job.title}
-                  </h4>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {job.tags.map((t, i) => (
-                      <Tag key={i} tone={t === "DLSU MOA" ? "green" : "slate"}>
-                        {t}
-                      </Tag>
-                    ))}
-                  </div>
-                </button>
-              );
-            })}
+            {JOBS.map((job) => (
+              <button
+                type="button"
+                key={job.id}
+                onClick={() => setOpenId(job.id)} // ⬅️ open mobile overlay
+                className="w-full text-left rounded-md border bg-white p-4 shadow-sm border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+              >
+                <div className="text-[13px] text-slate-600">{job.company}</div>
+                <h4 className="mt-0.5 text-base font-semibold text-slate-900">
+                  {job.title}
+                </h4>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {job.tags.map((t, i) => (
+                    <Tag key={i} tone={t === "DLSU MOA" ? "green" : "slate"}>
+                      {t}
+                    </Tag>
+                  ))}
+                </div>
+              </button>
+            ))}
           </div>
         </div>
       </div>
+
+      {/* ⬅️ NEW: Mobile overlay confined to the SimpleBrowser content */}
+      {openedJob && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/25 p-3 lg:hidden">
+          {/* Phone-sized panel; inner scroll, not the page */}
+          <div
+            className="
+              relative mx-auto w-[min(96vw,420px)]
+              h-[85dvh] max-h-[720px] max-h-[calc(100%-1.5rem)]
+              overflow-hidden rounded-2xl bg-white shadow-2xl
+            "
+          >
+            {/* Close button */}
+            <button
+              aria-label="Close details"
+              onClick={() => setOpenId(null)}
+              className="absolute right-3 top-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white/90 shadow-sm backdrop-blur-md"
+            >
+              <X className="h-4 w-4 text-slate-600" />
+            </button>
+
+            {/* Scrollable content */}
+            <div className="h-full overflow-y-auto">
+              <DetailsPane job={openedJob} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
