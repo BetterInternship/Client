@@ -62,7 +62,7 @@ const JobPositionSelect = () => {
     <div className="flex flex-col gap-2">
       <SubcategorySelect
         name="Computer Science"
-        value={"Computer Science"}
+        value="Computer Science"
         checked={positionChecker("Computer Science")}
         setter={positionSetter}
         suboptions={[
@@ -176,14 +176,6 @@ const JobPositionSelect = () => {
 const JobDetailSelect = () => {
   const jobFilter = useJobFilter();
 
-  const jobModeChecker = (jobMode: string) =>
-    jobFilter.jobMode?.find((j) => j === jobMode) ? true : false;
-  const jobModeSetter = (jobMode: string, toggle: boolean) => {
-    if (toggle) jobFilter.jobMode.push(jobMode);
-    else
-      jobFilter.jobMode = jobFilter.jobMode?.filter((j) => j !== jobMode) ?? [];
-  };
-
   const jobWorkloadChecker = (jobWorkload: string) =>
     jobFilter.jobWorkload?.find((j) => j === jobWorkload) ? true : false;
   const jobWorkloadSetter = (jobWorkload: string, toggle: boolean) => {
@@ -191,6 +183,14 @@ const JobDetailSelect = () => {
     else
       jobFilter.jobWorkload =
         jobFilter.jobWorkload?.filter((j) => j !== jobWorkload) ?? [];
+  };
+
+  const jobModeChecker = (jodMode: string) =>
+    jobFilter.jobMode?.find((j) => j === jodMode) ? true : false;
+  const jobModeSetter = (jobMode: string, toggle: boolean) => {
+    if (toggle) jobFilter.jobMode.push(jobMode);
+    else
+      jobFilter.jobMode = jobFilter.jobMode?.filter((j) => j !== jobMode) ?? [];
   };
 
   const jobAllowanceChecker = (jobAllowance: string) =>
@@ -214,64 +214,64 @@ const JobDetailSelect = () => {
       <div className="font-bold tracking-tight">Internship Workload</div>
       <div className="flex flex-row justify-start items-center gap-3">
         <SubcategorySelect
-          name="Full-time"
-          value="Full-time"
-          setter={jobModeSetter}
-          checked={jobModeChecker("Full-time")}
+          name="Part-time"
+          value="1"
+          setter={jobWorkloadSetter}
+          checked={jobWorkloadChecker("1")}
         ></SubcategorySelect>
         <SubcategorySelect
-          name="Part-time"
-          value="Part-time"
-          setter={jobModeSetter}
-          checked={jobModeChecker("Part-time")}
+          name="Full-time"
+          value="2"
+          setter={jobWorkloadSetter}
+          checked={jobWorkloadChecker("2")}
         ></SubcategorySelect>
         <SubcategorySelect
           name="Project-based"
-          value="Project-based"
-          setter={jobModeSetter}
-          checked={jobModeChecker("Project-based")}
+          value="3"
+          setter={jobWorkloadSetter}
+          checked={jobWorkloadChecker("3")}
         ></SubcategorySelect>
         <SubcategorySelect
           name="Flexible"
-          value="Flexible"
-          setter={jobModeSetter}
-          checked={jobModeChecker("Flexible")}
+          value="4"
+          setter={jobWorkloadSetter}
+          checked={jobWorkloadChecker("4")}
         ></SubcategorySelect>
       </div>
       <div className="font-bold tracking-tight mt-4">Internship Mode</div>
       <div className="flex flex-row justify-start gap-3">
         <SubcategorySelect
           name="Face-to-face"
-          value="Face-to-face"
-          setter={jobWorkloadSetter}
-          checked={jobWorkloadChecker("Face-to-face")}
+          value="0"
+          setter={jobModeSetter}
+          checked={jobModeChecker("0")}
         ></SubcategorySelect>
         <SubcategorySelect
           name="Hybrid"
-          value="Hybrid"
-          setter={jobWorkloadSetter}
-          checked={jobWorkloadChecker("Hybrid")}
+          value="1"
+          setter={jobModeSetter}
+          checked={jobModeChecker("1")}
         ></SubcategorySelect>
         <SubcategorySelect
           name="Remote"
-          value="Remote"
-          setter={jobWorkloadSetter}
-          checked={jobWorkloadChecker("Remote")}
+          value="2"
+          setter={jobModeSetter}
+          checked={jobModeChecker("2")}
         ></SubcategorySelect>
       </div>
       <div className="font-bold tracking-tight mt-4">Internship Allowance</div>
       <div className="flex flex-row justify-start gap-3">
         <SubcategorySelect
           name="Paid"
-          value="Paid"
+          value="0"
           setter={jobAllowanceSetter}
-          checked={jobAllowanceChecker("Paid")}
+          checked={jobAllowanceChecker("0")}
         ></SubcategorySelect>
         <SubcategorySelect
           name="Non-paid"
-          value="Non-paid"
+          value="1"
           setter={jobAllowanceSetter}
-          checked={jobAllowanceChecker("Non-paid")}
+          checked={jobAllowanceChecker("1")}
         ></SubcategorySelect>
       </div>
       <div className="font-bold tracking-tight mt-4">Internship MOA</div>
@@ -311,16 +311,6 @@ const SubcategorySelect = ({
 }: ISuboption) => {
   const [isSelected, setIsSelected] = useState(checked);
   const jobFilter = useJobFilter();
-
-  useEffect(() => {
-    console.log(jobFilter);
-    if (isSelected) jobFilter?.position?.push(value);
-    else
-      jobFilter.position =
-        jobFilter?.position?.filter((v) => v !== value) ??
-        jobFilter.position ??
-        [];
-  }, [isSelected]);
 
   return (
     <>

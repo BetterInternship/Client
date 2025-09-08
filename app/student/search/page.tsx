@@ -35,7 +35,11 @@ export default function SearchPage() {
   const searchParams = useSearchParams();
   const { isAuthenticated } = useAuthContext();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
-  const [moaFilter, setMoaFilter] = useState(false);
+  const [position, setPosition] = useState<string[]>([]);
+  const [jobModeFilter, setJobModeFilter] = useState<string[]>([]);
+  const [jobWorkloadFilter, setJobWorkloadFilter] = useState<string[]>([]);
+  const [jobAllowanceFilter, setJobAllowanceFilter] = useState<string[]>([]);
+  const [jobMoaFilter, setJobMoaFilter] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const textarea_ref = useRef<HTMLTextAreaElement>(null);
   const [showCoverLetterInput, setShowCoverLetterInput] = useState(false);
@@ -73,7 +77,11 @@ export default function SearchPage() {
   const [jobs_page, setJobsPage] = useState(1);
   const jobs = useJobs({
     search: searchTerm.trim() || undefined,
-    moaFilter: moaFilter,
+    position,
+    jobModeFilter,
+    jobWorkloadFilter,
+    jobAllowanceFilter,
+    jobMoaFilter,
   });
 
   // Get paginated jobs directly from getJobsPage
@@ -83,14 +91,25 @@ export default function SearchPage() {
 
   // Initialize search term from URL
   useEffect(() => {
-    const query = searchParams.get("q") || "";
+    const query = searchParams.get("query") || "";
+    const position = searchParams.get("position")?.split(",") || [];
+    const jobAllowance = searchParams.get("allowance")?.split(",") || [];
+    const jobWorkload = searchParams.get("workload")?.split(",") || [];
+    const jobMode = searchParams.get("mode")?.split(",") || [];
+    const jobMOA = searchParams.get("moa")?.split(",") || [];
+
+    setPosition(position);
+    setJobAllowanceFilter(jobAllowance);
+    setJobWorkloadFilter(jobWorkload);
+    setJobModeFilter(jobMode);
+    setJobMoaFilter(jobMOA);
     setSearchTerm(query);
   }, [searchParams]);
 
   // Reset to page 1 when filters or search term change
   useEffect(() => {
     setJobsPage(1);
-  }, [searchTerm, moaFilter]);
+  }, [searchTerm, jobMoaFilter]);
 
   // Set first job as selected when jobs load
   useEffect(() => {

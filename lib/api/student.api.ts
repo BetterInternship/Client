@@ -15,7 +15,11 @@ import { hashStringToInt } from "../utils";
 export function useJobs(
   params: {
     search?: string;
-    moaFilter?: boolean;
+    jobMoaFilter?: string[];
+    jobModeFilter?: string[];
+    jobWorkloadFilter?: string[];
+    jobAllowanceFilter?: string[];
+    position?: string[];
   } = {}
 ) {
   const dbMoas = usDbMoa();
@@ -60,12 +64,36 @@ export function useJobs(
       }
 
       // Moa filter
-      if (params.moaFilter) {
-        return dbMoas.check(
-          job?.employer_id ?? "",
-          dbRefs.get_university_by_name("DLSU - Manila")?.id ?? ""
-        );
-      }
+      // ! remove hard code "Has MOA"
+      const hasMoa = dbMoas.check(
+        job?.employer_id ?? "",
+        dbRefs.get_university_by_name("DLSU - Manila")?.id ?? ""
+      )
+        ? "Has MOA"
+        : "No MOA";
+
+      console.log(params.jobMoaFilter);
+
+      if (params.jobMoaFilter?.length && !params.jobMoaFilter?.includes(hasMoa))
+        return false;
+      if (
+        params.jobModeFilter?.length &&
+        !params.jobModeFilter?.includes(job.mode?.toString() ?? "#")
+      )
+        return false;
+      if (
+        params.jobWorkloadFilter?.length &&
+        !params.jobWorkloadFilter?.includes(job.type?.toString() ?? "#")
+      )
+        return false;
+      if (
+        params.jobAllowanceFilter?.length &&
+        !params.jobAllowanceFilter?.includes(job.allowance?.toString() ?? "#")
+      )
+        return false;
+
+      // ! add sherwin data
+      // ! position filter
 
       return true;
     });
