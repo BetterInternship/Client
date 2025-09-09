@@ -150,7 +150,15 @@ export const useModal = (
     state: isOpen,
     open: () => setIsOpen(true),
     close: () => setIsOpen(false),
-    Modal: ({ children }: { children?: React.ReactNode }) => (
+    Modal: ({
+      children,
+      className,
+      backdropClassName,
+    }: {
+      children?: React.ReactNode;
+      className?: string;
+      backdropClassName?: string;
+    }) => (
       <>
         {isOpen && (
           <div
@@ -159,7 +167,7 @@ export const useModal = (
               isMobile
                 ? "items-end justify-center p-0"
                 : "items-center justify-center p-4"
-            }`}
+            } ${backdropClassName}`}
             onClick={handleBackdropClick}
             onTouchEnd={(e) => {
               if (
@@ -179,7 +187,7 @@ export const useModal = (
                 isMobile
                   ? "w-full max-w-full mx-0 rounded-t-sm rounded-b-none max-h-[85vh] min-h-[200px] flex flex-col animate-in slide-in-from-bottom duration-300"
                   : "max-w-2xl rounded-sm max-h-[90vh] animate-in fade-in zoom-in-95 duration-200"
-              }`}
+              } ${className}`}
               style={{
                 maxHeight: isMobile ? "calc(var(--vh, 1vh) * 85)" : "90vh",
                 height: "auto",
