@@ -339,7 +339,7 @@ const SubcategorySelect = ({
   };
 
   const unselect = () => {
-    setTimeout(() => refs.current.map((r) => r?.unselect()));
+    refs.current.map((r) => r?.unselect());
     setIsSelected(false);
     setter?.(value, false);
   };
