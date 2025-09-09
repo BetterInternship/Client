@@ -148,8 +148,6 @@ export default function SearchPage() {
       return;
     }
 
-    // Check for any missing required profile fields
-    const { missing } = getMissingProfileFields(profile.data);
     if (
       !isCompleteProfile(profile.data) ||
       (selectedJob?.require_github &&
