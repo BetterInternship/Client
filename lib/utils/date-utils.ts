@@ -62,3 +62,13 @@ export const isoToMs = (iso?: string | null) => {
 export const msToISO = (ms?: number | null) =>
   ms == null ? undefined : new Date(ms).toISOString().slice(0, 10);
 
+export const isISO = (s?: string | null) => !!s && /^\d{4}-\d{2}-\d{2}$/.test(s);
+export const fmtISO = (s?: string | null) =>
+  isISO(s)
+    ? new Date(`${s}T00:00:00Z`).toLocaleDateString("en-PH", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "Not provided";
+

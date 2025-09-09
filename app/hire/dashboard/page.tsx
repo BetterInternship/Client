@@ -30,8 +30,10 @@ function DashboardContent() {
   const { isAuthenticated, redirectIfNotLoggedIn, loading } = useAuthContext();
   const profile = useProfile();
   const applications = useEmployerApplications();
+
   const [selectedApplication, setSelectedApplication] =
     useState<EmployerApplication | null>(null);
+
   const [conversationId, setConversationId] = useState("");
   const conversations = useConversations();
   const updateConversationId = (userId: string) => {
@@ -40,21 +42,31 @@ function DashboardContent() {
     );
     setConversationId(userConversation?.id);
   };
+
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const chatAnchorRef = useRef<HTMLDivElement>(null);
   const [lastSending, setLastSending] = useState(false);
   const [sending, setSending] = useState(false);
   const conversation = useConversation("employer", conversationId);
+
+  // Fetch a presigned resume URL for the currently selected user
   const { url: resumeURL, sync: syncResumeURL } = useFile({
     fetcher: useCallback(
       async () =>
         await UserService.getUserResumeURL(selectedApplication?.user_id ?? ""),
-      [selectedApplication]
+      [selectedApplication?.user_id]
     ),
     route: selectedApplication
       ? `/users/${selectedApplication.user_id}/resume`
       : "",
   });
+
+  // Refresh presigned URL whenever the selected applicant changes
+  useEffect(() => {
+    if (selectedApplication?.user_id) {
+      syncResumeURL();
+    }
+  }, [selectedApplication?.user_id, syncResumeURL]);
 
   const endSend = () => {
     setSending(false);
@@ -152,8 +164,8 @@ function DashboardContent() {
   redirectIfNotLoggedIn();
 
   const handleApplicationClick = (application: EmployerApplication) => {
-    openApplicantModal();
-    setSelectedApplication(application);
+    setSelectedApplication(application); // set first
+    openApplicantModal(); // then open
   };
 
   const handleNotesClick = (application: EmployerApplication) => {
@@ -211,7 +223,7 @@ function DashboardContent() {
         </div>
       </div>
 
-      <ApplicantModal>
+      <ApplicantModal className="max-w-7xl w-full">
         <ApplicantModalContent
           is_employer={true}
           clickable={true}
@@ -232,6 +244,7 @@ function DashboardContent() {
             openResumeModal();
           }}
           job={selectedApplication?.job}
+          resume_url={resumeURL}
         />
       </ApplicantModal>
 
