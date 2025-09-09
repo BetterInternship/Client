@@ -3,6 +3,8 @@ import { Employer, PrivateUser } from "@/lib/db/db.types";
 import { handleApiError } from "./services";
 import { EmployerAuthService } from "./hire.api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { APIClient, APIRoute } from "@/lib/api/api-client";
+import { FetchResponse } from "@/lib/api/use-fetch";
 
 /**
  * Retrieves aggregate employer information.
@@ -133,4 +135,35 @@ export function useUsers() {
     loading,
     error,
   };
+}
+
+export const StudentGodAPI = {
+  impersonate: async (studentId: string, reason?: string) =>
+    APIClient.post<FetchResponse>(
+      APIRoute("student-god")
+        .r("students", studentId, "impersonations")
+        .build(),
+      reason ? { reason } : {}
+    ),
+  stop: async () =>
+    APIClient.post<FetchResponse>(
+      APIRoute("student-god").r("impersonations", "stop").build(),
+      {}
+    ),
+};
+
+export function useStudentImpersonation() {
+  const impersonate = useMutation({
+    mutationFn: ({
+      studentId,
+      reason,
+    }: {
+      studentId: string;
+      reason?: string;
+    }) => StudentGodAPI.impersonate(studentId, reason),
+  });
+  const stop = useMutation({
+    mutationFn: () => StudentGodAPI.stop(),
+  });
+  return { impersonate, stop };
 }
