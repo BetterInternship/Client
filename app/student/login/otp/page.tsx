@@ -222,7 +222,7 @@ export default function OTPPage() {
                     {minutes > 0 || seconds > 0
                       ? `Resend in ${minutes || ""}${minutes ? ":" : ""}${
                           seconds || "00"
-                        } secsonds`
+                        } seconds`
                       : resending
                       ? "Sending..."
                       : "Resend OTP"}

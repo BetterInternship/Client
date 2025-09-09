@@ -103,6 +103,9 @@ const UserEditor = ({
     if (!formData.last_name) {
       missingFields.push("Last Name");
     }
+    if (!formData.phone_number || !isValidPHNumber(formData.phone_number)) {
+      missingFields.push("Valid Philippine Phone Number");
+    }
     if (!dbRefs.isNotNull(formData.university)) {
       missingFields.push("University");
     }
@@ -163,6 +166,13 @@ const UserEditor = ({
       (email: string) => email && !isValidEmail(email) && "Invalid email."
     );
     addValidator(
+      "phone_number",
+      (phone: string) =>
+        phone &&
+        !isValidPHNumber(phone) &&
+        "Invalid PH number."
+    );
+    addValidator(
       "university",
       (university: string) =>
         dbRefs.isNotNull(university) &&
@@ -201,6 +211,15 @@ const UserEditor = ({
                 label="Last Name"
                 value={formData.last_name ?? ""}
                 setter={fieldSetter("last_name")}
+                maxLength={100}
+              />
+            </div>
+            <div>
+              <ErrorLabel value={formErrors.phone_number} />
+              <FormInput
+                label="Phone Number"
+                value={formData.phone_number ?? ""}
+                setter={fieldSetter("phone_number")}
                 maxLength={100}
               />
             </div>

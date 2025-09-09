@@ -50,3 +50,15 @@ export const formatTimeAgo = (fromDateString: string) => {
 
   return "just now";
 };
+
+const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+export const isoToMs = (iso?: string | null) => {
+  if (!iso || !ISO_RE.test(iso)) return undefined;
+  const [y, m, d] = iso.split("-").map(Number);
+  return Date.UTC(y, m - 1, d);
+};
+
+export const msToISO = (ms?: number | null) =>
+  ms == null ? undefined : new Date(ms).toISOString().slice(0, 10);
+

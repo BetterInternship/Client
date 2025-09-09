@@ -1,11 +1,85 @@
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import { useState, useEffect, useRef, useCallback, createContext } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  createContext,
+  useImperativeHandle,
+  forwardRef,
+  createElement,
+  Ref,
+} from "react";
 import { useAppContext } from "@/lib/ctx-app";
 import { useMobile } from "./use-mobile";
+import React from "react";
 
 interface IModalContext {}
 const modalContext = createContext<IModalContext>({} as IModalContext);
+
+/**
+ * The interface exposed by the modal hook.
+ *
+ * @hook
+ */
+export type ModalHandle = {
+  open: () => void;
+  close: () => void;
+};
+
+/**
+ * Wraps a modal component to expose functions that ancestors can call.
+ *
+ * @param name
+ * @param onClose
+ * @returns
+ */
+const ModalTemplate = (
+  name: string,
+  {
+    content,
+    onClose,
+  }: {
+    content?: React.ReactNode;
+    onClose?: () => void;
+  }
+) => {
+  const { open, close, Modal } = useModal(name, { onClose });
+  return forwardRef<ModalHandle, { children?: React.ReactNode }>(
+    (props, ref) => {
+      useImperativeHandle(ref, () => ({
+        open,
+        close,
+      }));
+      return createElement(Modal, props, content);
+    }
+  );
+};
+
+/**
+ * The actual Modal Component to instantiate.
+ *
+ * @component
+ */
+export const ModalComponent = ({
+  children,
+  ref,
+}: {
+  children?: React.ReactNode;
+  ref?: Ref<ModalHandle | null>;
+}) => {
+  const ModalComponent = ModalTemplate("IncompleteProfileModal", {
+    content: children,
+  });
+
+  return <ModalComponent ref={ref} />;
+};
+
+/**
+ *@hook
+ */
+export const useModalRef = () => useRef<ModalHandle | null>(null);
 
 /**
  * Creates a reusable modal component with robust mobile touch handling.
@@ -76,7 +150,7 @@ export const useModal = (
     state: isOpen,
     open: () => setIsOpen(true),
     close: () => setIsOpen(false),
-    Modal: ({ children }: { children: React.ReactNode }) => (
+    Modal: ({ children }: { children?: React.ReactNode }) => (
       <>
         {isOpen && (
           <div

@@ -1,4 +1,4 @@
-import { TestimonialsColumn } from "@/components/landingStudent/sections/6th section/testimonials-columns-1";
+import { TestimonialsColumn } from "@/components/landingStudent/sections/6thSection/testimonials-columns-1";
 import { motion } from "framer-motion";
 
 const testimonials = [
@@ -58,16 +58,13 @@ const testimonials = [
   },
 ];
 
-
 const firstColumn = testimonials.slice(0, 3);
 const secondColumn = testimonials.slice(3, 6);
 const thirdColumn = testimonials.slice(6, 9);
 
-
 export function Testimonials() {
   return (
     <section className="bg-background my-20 relative">
-
       <div className="container z-10 mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -81,23 +78,19 @@ export function Testimonials() {
           </h2>
           <div className="flex mb-16 flex-col lg:flexrow">
             <div>
-              <h2 className="text-6xl font-bold mt-5 text-center">
-                1-2 Days
-              </h2>
-                <h2 className="text-lg text-gray-500 font-bold mt-5 text-center">
+              <h2 className="text-6xl font-bold mt-5 text-center">1-2 Days</h2>
+              <h2 className="text-lg text-gray-500 font-bold mt-5 text-center">
                 Time between Application and Response
-                </h2>
+              </h2>
             </div>
             <div>
-              <h2 className="text-6xl font-bold mt-5 text-center">
-                200+
-              </h2>
+              <h2 className="text-6xl font-bold mt-5 text-center">200+</h2>
               <h2 className="text-lg text-gray-500 font-bold mt-5 text-center">
                 Companies in the platform
               </h2>
             </div>
           </div>
-          
+
           <p className="text-center mt-5 opacity-75 mb-">
             See what our customers have to say about us.
           </p>
@@ -105,10 +98,18 @@ export function Testimonials() {
 
         <div className="flex justify-center gap-6 mt-10 [mask-image:linear-gradient(to_bottom,transparent,black_25%,black_75%,transparent)] max-h-[740px] overflow-hidden">
           <TestimonialsColumn testimonials={firstColumn} duration={15} />
-          <TestimonialsColumn testimonials={secondColumn} className="hidden md:block" duration={19} />
-          <TestimonialsColumn testimonials={thirdColumn} className="hidden lg:block" duration={17} />
+          <TestimonialsColumn
+            testimonials={secondColumn}
+            className="hidden md:block"
+            duration={19}
+          />
+          <TestimonialsColumn
+            testimonials={thirdColumn}
+            className="hidden lg:block"
+            duration={17}
+          />
         </div>
       </div>
     </section>
   );
-};
+}

@@ -1,15 +1,18 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
-  User,
   Settings,
   BookA,
   Heart,
   LogOut,
   HelpCircle,
   MessageCircleMore,
+  Search,
+  CheckIcon,
+  ChevronRight,
+  XIcon,
 } from "lucide-react";
 import { useAppContext } from "@/lib/ctx-app";
 import { DropdownOption, GroupableNavDropdown } from "@/components/ui/dropdown";
@@ -24,6 +27,337 @@ import CompleteAccBanner from "@/components/features/student/CompleteAccBanner";
 import { useAuthContext } from "@/lib/ctx-auth";
 import Link from "next/link";
 import { useConversations } from "@/hooks/use-conversation";
+import { ChevronDown } from "lucide-react";
+import { Checkbox } from "@radix-ui/react-checkbox";
+import { useDetectClickOutside } from "react-detect-click-outside";
+
+interface IJobFilter {
+  position: string[];
+  jobMode: string[];
+  jobMoa: string[];
+  jobWorkload: string[];
+  jobAllowance: string[];
+}
+const JobFilterContext = createContext<IJobFilter>({} as IJobFilter);
+const useJobFilter = () => useContext(JobFilterContext);
+
+// ! move elsewhere
+const JobPositionSelect = () => {
+  const jobFilter = useJobFilter();
+
+  // Sets the position in the filter context
+  const positionSetter = (position: string, toggle: boolean) => {
+    if (toggle) jobFilter?.position?.push(position);
+    else
+      jobFilter.position =
+        jobFilter.position?.filter((p) => p !== position) ?? [];
+  };
+
+  const positionChecker = (position: string) => {
+    console.log("checking: " + position);
+    return jobFilter.position?.find((p) => p === position) ? true : false;
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <SubcategorySelect
+        name="Computer Science"
+        value="Computer Science"
+        checked={positionChecker("Computer Science")}
+        setter={positionSetter}
+        suboptions={[
+          {
+            name: "Data Science/AI",
+            value: "Data Science/AI",
+            setter: positionSetter,
+            checked: positionChecker("Data Science/AI"),
+          },
+          {
+            name: "Cybersecurity",
+            value: "Cybersecurity",
+            setter: positionSetter,
+            checked: positionChecker("Cybersecurity"),
+          },
+          {
+            name: "Full Stack",
+            value: "Full Stack",
+            setter: positionSetter,
+            checked: positionChecker("Full Stack"),
+          },
+          {
+            name: "Backend",
+            value: "Backend",
+            setter: positionSetter,
+            checked: positionChecker("Backend"),
+          },
+          {
+            name: "Frontend",
+            value: "Frontend",
+            setter: positionSetter,
+            checked: positionChecker("Frontend"),
+          },
+        ]}
+      ></SubcategorySelect>
+      <SubcategorySelect
+        name="Business"
+        value="Business"
+        setter={positionSetter}
+        checked={positionChecker("Business")}
+        suboptions={[
+          {
+            name: "Accounting/Finance",
+            value: "Accounting/Finance",
+            setter: positionSetter,
+            checked: positionChecker("Accounting/Finance"),
+          },
+          {
+            name: "HR/Administrative",
+            value: "HR/Administrative",
+            setter: positionSetter,
+            checked: positionChecker("HR/Administrative"),
+          },
+          {
+            name: "Marketing/Sales",
+            value: "Marketing/Sales",
+            setter: positionSetter,
+            checked: positionChecker("Marketing/Sales"),
+          },
+          {
+            name: "Business Development",
+            value: "Business Development",
+            setter: positionSetter,
+            checked: positionChecker("Business Development"),
+          },
+          {
+            name: "Operations",
+            value: "Operations",
+            setter: positionSetter,
+            checked: positionChecker("Operations"),
+          },
+        ]}
+      ></SubcategorySelect>
+      <SubcategorySelect
+        name="Engineering"
+        value="Engineering"
+        setter={positionSetter}
+        checked={positionChecker("Engineering")}
+      ></SubcategorySelect>
+      <SubcategorySelect
+        name="Others"
+        value="Others"
+        setter={positionSetter}
+        checked={positionChecker("Others")}
+        suboptions={[
+          {
+            name: "Legal",
+            value: "Legal",
+            setter: positionSetter,
+            checked: positionChecker("Legal"),
+          },
+          {
+            name: "Research",
+            value: "Research",
+            setter: positionSetter,
+            checked: positionChecker("Research"),
+          },
+          {
+            name: "Graphic Design",
+            value: "Graphic Design",
+            setter: positionSetter,
+            checked: positionChecker("Graphic Design"),
+          },
+        ]}
+      ></SubcategorySelect>
+    </div>
+  );
+};
+
+// ! move this elsewhere
+const JobDetailSelect = () => {
+  const jobFilter = useJobFilter();
+
+  const jobWorkloadChecker = (jobWorkload: string) =>
+    jobFilter.jobWorkload?.find((j) => j === jobWorkload) ? true : false;
+  const jobWorkloadSetter = (jobWorkload: string, toggle: boolean) => {
+    if (toggle) jobFilter.jobWorkload.push(jobWorkload);
+    else
+      jobFilter.jobWorkload =
+        jobFilter.jobWorkload?.filter((j) => j !== jobWorkload) ?? [];
+  };
+
+  const jobModeChecker = (jodMode: string) =>
+    jobFilter.jobMode?.find((j) => j === jodMode) ? true : false;
+  const jobModeSetter = (jobMode: string, toggle: boolean) => {
+    if (toggle) jobFilter.jobMode.push(jobMode);
+    else
+      jobFilter.jobMode = jobFilter.jobMode?.filter((j) => j !== jobMode) ?? [];
+  };
+
+  const jobAllowanceChecker = (jobAllowance: string) =>
+    jobFilter.jobAllowance?.find((j) => j === jobAllowance) ? true : false;
+  const jobAllowanceSetter = (jobAllowance: string, toggle: boolean) => {
+    if (toggle) jobFilter.jobAllowance.push(jobAllowance);
+    else
+      jobFilter.jobAllowance =
+        jobFilter.jobAllowance?.filter((j) => j !== jobAllowance) ?? [];
+  };
+
+  const jobMOAChecker = (jobMoa: string) =>
+    jobFilter.jobMoa?.find((j) => j === jobMoa) ? true : false;
+  const jobMOASetter = (jobMoa: string, toggle: boolean) => {
+    if (toggle) jobFilter.jobMoa.push(jobMoa);
+    else jobFilter.jobMoa = jobFilter.jobMoa?.filter((j) => j !== jobMoa) ?? [];
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="font-bold tracking-tight">Internship Workload</div>
+      <div className="flex flex-row justify-start items-center gap-3">
+        <SubcategorySelect
+          name="Part-time"
+          value="1"
+          setter={jobWorkloadSetter}
+          checked={jobWorkloadChecker("1")}
+        ></SubcategorySelect>
+        <SubcategorySelect
+          name="Full-time"
+          value="2"
+          setter={jobWorkloadSetter}
+          checked={jobWorkloadChecker("2")}
+        ></SubcategorySelect>
+        <SubcategorySelect
+          name="Project-based"
+          value="3"
+          setter={jobWorkloadSetter}
+          checked={jobWorkloadChecker("3")}
+        ></SubcategorySelect>
+        <SubcategorySelect
+          name="Flexible"
+          value="4"
+          setter={jobWorkloadSetter}
+          checked={jobWorkloadChecker("4")}
+        ></SubcategorySelect>
+      </div>
+      <div className="font-bold tracking-tight mt-4">Internship Mode</div>
+      <div className="flex flex-row justify-start gap-3">
+        <SubcategorySelect
+          name="Face-to-face"
+          value="0"
+          setter={jobModeSetter}
+          checked={jobModeChecker("0")}
+        ></SubcategorySelect>
+        <SubcategorySelect
+          name="Hybrid"
+          value="1"
+          setter={jobModeSetter}
+          checked={jobModeChecker("1")}
+        ></SubcategorySelect>
+        <SubcategorySelect
+          name="Remote"
+          value="2"
+          setter={jobModeSetter}
+          checked={jobModeChecker("2")}
+        ></SubcategorySelect>
+      </div>
+      <div className="font-bold tracking-tight mt-4">Internship Allowance</div>
+      <div className="flex flex-row justify-start gap-3">
+        <SubcategorySelect
+          name="Paid"
+          value="0"
+          setter={jobAllowanceSetter}
+          checked={jobAllowanceChecker("0")}
+        ></SubcategorySelect>
+        <SubcategorySelect
+          name="Non-paid"
+          value="1"
+          setter={jobAllowanceSetter}
+          checked={jobAllowanceChecker("1")}
+        ></SubcategorySelect>
+      </div>
+      <div className="font-bold tracking-tight mt-4">Internship MOA</div>
+      <div className="flex flex-row justify-start gap-3">
+        <SubcategorySelect
+          name="Has MOA"
+          value="Has MOA"
+          setter={jobMOASetter}
+          checked={jobMOAChecker("Has MOA")}
+        ></SubcategorySelect>
+        <SubcategorySelect
+          name="No MOA"
+          value="No MOA"
+          setter={jobMOASetter}
+          checked={jobMOAChecker("No MOA")}
+        ></SubcategorySelect>
+      </div>
+    </div>
+  );
+};
+
+interface ISuboption {
+  name: string;
+  value: string;
+  checked?: boolean;
+  setter?: (f: string, on: boolean) => void;
+  suboptions?: ISuboption[];
+}
+
+// ! multiselect option
+const SubcategorySelect = ({
+  name,
+  value,
+  checked,
+  suboptions,
+  setter,
+}: ISuboption) => {
+  const [isSelected, setIsSelected] = useState(checked);
+  const jobFilter = useJobFilter();
+
+  return (
+    <>
+      <div className="flex flex-row gap-1 items-center w-fit">
+        <Checkbox
+          checked={isSelected}
+          className={cn(
+            "flex flex-row items-center justify-center w-5 h-5 hover:cursor-pointer ",
+            isSelected
+              ? "border-blue-500 border-opacity-85 bg-blue-200"
+              : "border-gray-300 bg-gray-200"
+          )}
+          onCheckedChange={(isSelected: boolean) => (
+            setIsSelected(isSelected), setter?.(value, isSelected)
+          )}
+        >
+          {isSelected ? (
+            <CheckIcon className="text-blue-500 pointer-events-none" />
+          ) : (
+            <XIcon className="text-gray-400 pointer-events-none" />
+          )}
+        </Checkbox>
+        {name}
+        {suboptions?.length ? (
+          isSelected ? (
+            <ChevronDown className="pointer-events-none text-gray-300 h-5 w-5" />
+          ) : (
+            <ChevronRight className="pointer-events-none text-gray-300 h-5 w-5" />
+          )
+        ) : (
+          <></>
+        )}
+      </div>
+      <div className="">
+        {isSelected &&
+          suboptions?.map((suboption) => {
+            return (
+              <div className="flex flex-row">
+                <div className="w-6 ml-2 h-10 border-l border-l-gray-400"></div>
+                <SubcategorySelect {...suboption}></SubcategorySelect>
+              </div>
+            );
+          })}
+      </div>
+    </>
+  );
+};
 
 /**
  * The header present on every page
@@ -32,13 +366,72 @@ import { useConversations } from "@/hooks/use-conversation";
  */
 export const Header = () => {
   const { isMobile } = useAppContext();
-  const header_routes = ["/login", "/register", "/otp"];
   const { routeExcluded } = useRoute();
+  const headerRoutes = ["/login", "/register", "/otp"];
   const router = useRouter();
   const profile = useProfile();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const outsideClickRef = useDetectClickOutside({
+    onTriggered: (e) => {
+      setIsJobDetailFiltering(false);
+      setIsJobPositionFiltering(false);
+    },
+  });
 
+  const [jobFilters, setJobFilters] = useState({
+    position: [],
+    jobMode: [],
+    jobWorkload: [],
+    jobAllowance: [],
+    jobMoa: [],
+  } as IJobFilter);
   const [hasMissing, setHasMissing] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isJobPositionFiltering, setIsJobPositionFiltering] = useState(false);
+  const [isJobDetailFiltering, setIsJobDetailFiltering] = useState(false);
+
+  // Initialize search term from URL
+  useEffect(() => {
+    const query = searchParams.get("query") || "";
+    const position = searchParams.get("position")?.split(",") || [];
+    const jobAllowance = searchParams.get("allowance")?.split(",") || [];
+    const jobWorkload = searchParams.get("workload")?.split(",") || [];
+    const jobMode = searchParams.get("mode")?.split(",") || [];
+    const jobMoa = searchParams.get("moa")?.split(",") || [];
+
+    setJobFilters({
+      position,
+      jobAllowance,
+      jobWorkload,
+      jobMode,
+      jobMoa,
+    });
+    setSearchTerm(query);
+  }, [searchParams]);
+
+  const doSearch = () => {
+    router.push(
+      `/search/?query=${searchTerm}` +
+        (jobFilters.position?.length
+          ? `&position=${encodeURIComponent(jobFilters.position.join(","))}`
+          : "") +
+        (jobFilters.jobMode?.length
+          ? `&mode=${encodeURIComponent(jobFilters.jobMode.join(","))}`
+          : "") +
+        (jobFilters.jobWorkload?.length
+          ? `&workload=${encodeURIComponent(jobFilters.jobWorkload.join(","))}`
+          : "") +
+        (jobFilters.jobAllowance?.length
+          ? `&allowance=${encodeURIComponent(
+              jobFilters.jobAllowance.join(",")
+            )}`
+          : "") +
+        (jobFilters.jobMoa?.length
+          ? `&moa=${encodeURIComponent(jobFilters.jobMoa.join(","))}`
+          : "")
+    );
+  };
 
   useEffect(() => {
     if (profile.data) {
@@ -51,37 +444,113 @@ export const Header = () => {
 
   return (
     <>
-      <div
-        className={cn(
-          "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
-          isMobile ? "px-6 py-4" : "py-4 px-8"
-        )}
-        style={{
-          overflow: "visible",
-          position: "relative",
-          zIndex: 100,
-        }}
-      >
-        <div className="flex items-center gap-4">
-          <HeaderTitle />
-        </div>
-        {routeExcluded(header_routes) ? (
-          <div className="flex items-center gap-6">
-            {!isMobile && pathname === "/search" && hasMissing && (
-              <button
-                className="text-base ml-4 text-blue-700 font-medium hover:underline focus:outline-none"
-                onClick={() => router.push("/profile?edit=true")}
-              >
-                Finish your profile to start applying!
-              </button>
+      <JobFilterContext.Provider value={jobFilters}>
+        <div className="flex flex-col">
+          <div
+            className={cn(
+              "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
+              isMobile ? "px-6 py-4" : "py-4 px-8"
             )}
-            <ProfileButton />
+            style={{
+              overflow: "visible",
+              position: "relative",
+              zIndex: 100,
+            }}
+          >
+            <div className="flex items-center gap-4">
+              <HeaderTitle />
+            </div>
+            <div className="flex flex-row max-w-2xl w-full gap-4 items-center">
+              <div className="relative max-w-2xl w-full border border-gray-300 rounded-[0.33em] hover:pointer-cursor ">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") doSearch();
+                  }}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search Internship Listings"
+                  className="w-full h-12 pl-12 pr-4 w-4xl bg-transparent border-0 outline-none focus:ring-0 text-gray-900 hover:bg-gray-100 focus:bg-gray-100 duration-150 placeholder:text-gray-500"
+                />
+              </div>
+              <div className="flex flex-row gap-2">
+                <Button
+                  scheme="primary"
+                  variant="outline"
+                  size="md"
+                  onClick={() => (
+                    setIsJobPositionFiltering(true),
+                    setIsJobDetailFiltering(false)
+                  )}
+                >
+                  Internship Position
+                  <ChevronDown />
+                </Button>
+                <Button
+                  scheme="primary"
+                  variant="outline"
+                  size="md"
+                  onClick={() => (
+                    setIsJobDetailFiltering(true),
+                    setIsJobPositionFiltering(false)
+                  )}
+                >
+                  Internship Details
+                  <ChevronDown />
+                </Button>
+              </div>
+            </div>
+            {routeExcluded(headerRoutes) ? (
+              <div className="flex items-center gap-6">
+                {!isMobile && pathname === "/search" && hasMissing && (
+                  <button
+                    className="text-base ml-4 text-blue-700 font-medium hover:underline focus:outline-none"
+                    onClick={() => router.push("/profile?edit=true")}
+                  >
+                    Finish your profile to start applying!
+                  </button>
+                )}
+                <ProfileButton />
+              </div>
+            ) : (
+              <div className="w-1 h-10 bg-transparent"></div>
+            )}
           </div>
-        ) : (
-          <div className="w-1 h-10 bg-transparent"></div>
-        )}
-      </div>
-      {isMobile && pathname === "/search" && <CompleteAccBanner />}
+          {isMobile && pathname === "/search" && <CompleteAccBanner />}
+          {(isJobPositionFiltering || isJobDetailFiltering) && (
+            <div className="relative overflow-visible h-0">
+              <div className="absolute flex flex-col items-center justify-start w-full h-[100vh] z-[100] bg-black/10 backdrop-blur-sm p-5">
+                <div
+                  className="max-w-2xl w-full h-fit bg-white rounded-[0.33em] px-5 py-4"
+                  ref={outsideClickRef}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {isJobPositionFiltering && <JobPositionSelect />}
+                  {isJobDetailFiltering && <JobDetailSelect />}
+                  <br />
+                  <div className="flex flex-row gap-2">
+                    <Button size="md" onClick={() => doSearch()}>
+                      Apply
+                    </Button>
+                    <Button
+                      variant="outline"
+                      scheme="secondary"
+                      size="md"
+                      onClick={() => (
+                        setIsJobPositionFiltering(false),
+                        setIsJobDetailFiltering(false)
+                      )}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </JobFilterContext.Provider>
     </>
   );
 };

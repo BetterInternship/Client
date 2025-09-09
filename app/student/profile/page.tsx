@@ -44,6 +44,7 @@ import { useAppContext } from "@/lib/ctx-app";
 import {
   createEditForm,
   FormCheckbox,
+  FormDatePicker,
   FormDropdown,
   FormInput,
 } from "@/components/EditForm";
@@ -55,7 +56,8 @@ import {
 } from "@/lib/utils/name-utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
-import { Autocomplete } from "@/components/ui/autocomplete";
+import { Autocomplete, AutocompleteMulti } from "@/components/ui/autocomplete";
+import { isoToMs, msToISO } from "@/lib/utils/date-utils";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
@@ -340,6 +342,7 @@ const ProfileEditor = forwardRef<
   { save: () => Promise<boolean> },
   { updateProfile: (updatedProfile: Partial<PublicUser>) => void }
 >(({ updateProfile }, ref) => {
+  const qc = useQueryClient();
   const {
     formData,
     formErrors,
@@ -356,10 +359,16 @@ const ProfileEditor = forwardRef<
     colleges,
     departments,
     degrees,
+    job_modes,
+    job_types,
+    job_categories,
     getUniversityFromDomain: get_universities_from_domain,
     get_colleges_by_university,
     get_departments_by_college,
     get_degrees_by_university,
+    get_job_mode,
+    get_job_type,
+    get_job_category,
   } = useDbRefs();
 
   // Provide an external link to save profile
@@ -376,8 +385,18 @@ const ProfileEditor = forwardRef<
         github_link: toURL(formData.github_link)?.toString(),
         linkedin_link: toURL(formData.linkedin_link)?.toString(),
         calendar_link: toURL(formData.calendar_link)?.toString(),
+        expected_start_date: formData.expected_start_date || null,
+        expected_end_date: formData.expected_end_date || null,
+        expected_duration_hours:
+          typeof formData.expected_duration_hours === "number"
+            ? formData.expected_duration_hours
+            : null,
+        job_mode_ids: formData.job_mode_ids ?? null,
+        job_type_ids: formData.job_type_ids ?? null,
+        job_category_ids: formData.job_category_ids ?? null,
       };
       await updateProfile(updatedProfile);
+      qc.invalidateQueries({ queryKey: ["my-profile"] });
       return true;
     },
   }));
@@ -387,6 +406,9 @@ const ProfileEditor = forwardRef<
   const [collegeOptions, setCollegeOptions] = useState(colleges);
   const [departmentOptions, setDepartmentOptions] = useState(departments);
   const [degreeOptions, setDegreeOptions] = useState(degrees);
+  const [jobModeOptions, setJobModeOptions] = useState(job_modes);
+  const [jobTypeOptions, setJobTypeOptions] = useState(job_types);
+  const [jobCategoryOptions, setJobCategoryOptions] = useState(job_categories);
 
   // Update dropdown options
   useEffect(() => {
@@ -415,9 +437,26 @@ const ProfileEditor = forwardRef<
         .map((d) => ({ ...d, name: `${d.type} ${d.name}` }))
     );
 
+    setJobModeOptions((job_modes ?? []).slice());
+    setJobTypeOptions((job_types ?? []).slice());
+    setJobCategoryOptions((job_categories ?? []).slice());
+
     const debouncedValidation = setTimeout(() => validateFormData(), 500);
     return () => clearTimeout(debouncedValidation);
-  }, [formData]);
+  }, [
+    formData,
+    universities,
+    colleges,
+    departments,
+    degrees,
+    job_modes,
+    job_types,
+    job_categories,
+    get_universities_from_domain,
+    get_colleges_by_university,
+    get_departments_by_college,
+    get_degrees_by_university,
+  ]);
 
   // Data validators
   useEffect(() => {
@@ -484,12 +523,50 @@ const ProfileEditor = forwardRef<
         ? "Select a valid year level."
         : ""
     );
+    addValidator("expected_start_date", (s?: string) => {
+      if (!s) return "";
+      return /^\d{4}-\d{2}-\d{2}$/.test(s) ? "" : "Invalid start date.";
+    });
+    addValidator("expected_end_date", (s?: string) => {
+      if (!s) return "";
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return "Invalid end date.";
+      const sMs = isoToMs(formData.expected_start_date);
+      const eMs = isoToMs(s);
+      return sMs != null && eMs != null && eMs < sMs
+        ? "End date must be on/after start date."
+        : "";
+    });
+
+    addValidator("job_mode_ids", (vals?: string[]) => {
+      if (!vals) return "";
+      const valid = new Set(jobModeOptions.map((o) => o.id));
+      return vals.every((v) => valid.has(v))
+        ? ""
+        : "Invalid work mode selected.";
+    });
+    addValidator("job_type_ids", (vals?: string[]) => {
+      if (!vals) return "";
+      const valid = new Set(jobTypeOptions.map((o) => o.id));
+      return vals.every((v) => valid.has(v))
+        ? ""
+        : "Invalid workload type selected.";
+    });
+    addValidator("job_category_ids", (vals?: string[]) => {
+      if (!vals) return "";
+      const valid = new Set(jobCategoryOptions.map((o) => o.id));
+      return vals.every((v) => valid.has(v))
+        ? ""
+        : "Invalid job category selected.";
+    });
   }, [
     universityOptions,
     collegeOptions,
     departmentOptions,
     degreeOptions,
     levels,
+    jobModeOptions,
+    jobTypeOptions,
+    jobCategoryOptions,
   ]);
 
   const [showCalendarHelp, setShowCalendarHelp] = useState(false);
@@ -513,183 +590,282 @@ const ProfileEditor = forwardRef<
 
   return (
     <>
-      <Card>
-        <div className="text-2xl tracking-tight font-medium text-gray-700 mb-4">
-          Identity
-        </div>
-        <div className="flex flex-col space-y-1 mb-2">
-          <ErrorLabel value={formErrors.first_name} />
-          <ErrorLabel value={formErrors.middle_name} />
-          <ErrorLabel value={formErrors.last_name} />
-        </div>
-        <div
-          className={cn(
-            "mb-4",
-            isMobile ? "flex flex-col space-y-3" : "flex flex-row space-x-2"
-          )}
-        >
-          <FormInput
-            label="First Name"
-            value={formData.first_name ?? ""}
-            setter={fieldSetter("first_name")}
-            maxLength={32}
-          />
-          <FormInput
-            label="Middle Name"
-            value={formData.middle_name ?? ""}
-            setter={fieldSetter("middle_name")}
-            maxLength={2}
-            required={false}
-          />
-          <FormInput
-            label="Last Name"
-            value={formData.last_name ?? ""}
-            setter={fieldSetter("last_name")}
-          />
-        </div>
-        <div className="flex flex-col space-y-1 mb-2">
-          <ErrorLabel value={formErrors.phone_number} />
-        </div>
-        <div className="mb-8">
-          <FormInput
-            label="Phone Number"
-            value={formData.phone_number ?? ""}
-            setter={fieldSetter("phone_number")}
-          />
-        </div>
-        <div className="text-2xl tracking-tight font-medium text-gray-700 my-6 mt-12">
-          Personal Bio
-        </div>
-        <textarea
-          value={formData.bio || ""}
-          onChange={(e) => setField("bio", e.target.value)}
-          placeholder="Tell us about yourself, your interests, goals, and what makes you unique..."
-          className="w-full border border-gray-200 rounded-[0.25em] p-3 px-5 text-sm min-h-24 resize-none focus:border-opacity-70 focus:ring-transparent"
-          maxLength={500}
-        />
-        <p className="text-xs text-muted-foreground text-right">
-          {(formData.bio || "").length}/500 characters
-        </p>
-        <div className="text-2xl tracking-tight font-medium text-gray-700 my-6">
-          Educational Background
-        </div>
-        <div className="flex flex-col space-y-3 w-full ">
-          <div>
-            <div className="text-sm font-medium text-gray-700 mb-1">
-              University
-            </div>
-            <ErrorLabel value={formErrors.university} />
-            <Autocomplete
-              options={universityOptions}
-              value={formData.university}
-              setter={fieldSetter("university")}
-              placeholder="Select University"
-            />
+      <Card className="flex flex-col gap-5">
+        {/* Identity Section */}
+        <div>
+          <div className="text-2xl tracking-tight font-medium text-gray-700">
+            Identity
           </div>
-          <div>
-            <div className="text-sm font-medium text-gray-700 mb-1">
-              College
-            </div>
-            <ErrorLabel value={formErrors.college} />
-            <Autocomplete
-              options={collegeOptions}
-              value={formData.college}
-              setter={fieldSetter("college")}
-              placeholder="Select College"
-            />
+          <div className="flex flex-col space-y-1 mb-2">
+            <ErrorLabel value={formErrors.first_name} />
+            <ErrorLabel value={formErrors.middle_name} />
+            <ErrorLabel value={formErrors.last_name} />
           </div>
-          <div>
-            <div className="text-sm font-medium text-gray-700 mb-1">
-              Department
-            </div>
-            <ErrorLabel value={formErrors.department} />
-            <Autocomplete
-              options={departmentOptions}
-              value={formData.department}
-              setter={fieldSetter("department")}
-              placeholder="Select Department"
-            />
-          </div>
-          <div>
-            <div className="text-sm font-medium text-gray-700 mb-1">Degree</div>
-            <ErrorLabel value={formErrors.degree} />
-            <Autocomplete
-              options={degreeOptions}
-              value={formData.degree}
-              setter={fieldSetter("degree")}
-              placeholder="Select Degree"
-            />
-          </div>
-          <div>
-            <div className="text-sm font-medium text-gray-700 mb-1">
-              Year Level
-            </div>
-            <ErrorLabel value={formErrors.year_level} />
-            <Autocomplete
-              options={levels}
-              value={formData.year_level}
-              setter={fieldSetter("year_level")}
-              placeholder="Select Year Level"
-            />
-          </div>
-          <FormInput
-            label={"Major/Minor degree"}
-            value={formData.degree_notes ?? ""}
-            setter={fieldSetter("degree_notes")}
-            maxLength={100}
-            required={false}
-          />
-          <div className="flex flex-col space-y-2">
-            <div className="flex flex-row items-center justify-start mt-8 my-2">
-              <FormCheckbox
-                checked={formData.taking_for_credit}
-                setter={fieldSetter("taking_for_credit")}
-              />
-              <div className="text-sm text-gray-500 ml-3">
-                Taking internships for credit?
-              </div>
-            </div>
-            {formData.taking_for_credit && (
-              <FormInput
-                label={"Linkage Officer"}
-                value={formData.linkage_officer ?? ""}
-                setter={fieldSetter("linkage_officer")}
-                required={false}
-              />
+          <div
+            className={cn(
+              "mb-4",
+              isMobile ? "flex flex-col space-y-3" : "flex flex-row space-x-2"
             )}
+          >
+            <FormInput
+              label="First Name"
+              value={formData.first_name ?? ""}
+              setter={fieldSetter("first_name")}
+              maxLength={32}
+            />
+            <FormInput
+              label="Middle Name"
+              value={formData.middle_name ?? ""}
+              setter={fieldSetter("middle_name")}
+              maxLength={2}
+              required={false}
+            />
+            <FormInput
+              label="Last Name"
+              value={formData.last_name ?? ""}
+              setter={fieldSetter("last_name")}
+            />
+          </div>
+          <div className="flex flex-col space-y-1 mb-2">
+            <ErrorLabel value={formErrors.phone_number} />
+          </div>
+          <div className="mb-2">
+            <FormInput
+              label="Phone Number"
+              value={formData.phone_number ?? ""}
+              setter={fieldSetter("phone_number")}
+            />
           </div>
         </div>
-        <div className="text-2xl tracking-tight font-medium text-gray-700 my-4 mt-12">
-          External Profiles
+
+        {/* Personal Bio */}
+        <div>
+          <div className="text-2xl tracking-tight font-medium text-gray-700 mb-2">
+            Personal Bio
+          </div>
+          <textarea
+            value={formData.bio || ""}
+            onChange={(e) => setField("bio", e.target.value)}
+            placeholder="Tell us about yourself, your interests, goals, and what makes you unique..."
+            className="w-full border border-gray-200 rounded-[0.25em] p-3 px-5 text-sm min-h-24 resize-none focus:border-opacity-70 focus:ring-transparent"
+            maxLength={500}
+          />
+          <p className="text-xs text-muted-foreground text-right">
+            {(formData.bio || "").length}/500 characters
+          </p>
         </div>
-        <div className="flex flex-col space-y-1 mb-2">
-          <ErrorLabel value={formErrors.portfolio_link} />
-          <ErrorLabel value={formErrors.github_link} />
-          <ErrorLabel value={formErrors.linkedin_link} />
-          {/* // ! uncomment when calendar back */}
-          {/* <ErrorLabel value={formErrors.calendar_link} /> */}
+
+        {/* Educational Background */}
+        <div>
+          <div className="text-2xl tracking-tight font-medium text-gray-700 mb-2">
+            Educational Background
+          </div>
+          <div className="flex flex-col space-y-3 w-full ">
+            <div>
+              <div className="text-xs text-gray-400 italic mb-1 block">
+                University
+              </div>
+              <ErrorLabel value={formErrors.university} />
+              <Autocomplete
+                options={universityOptions}
+                value={formData.university}
+                setter={fieldSetter("university")}
+                placeholder="Select University"
+              />
+            </div>
+            <div>
+              <div className="text-xs text-gray-400 italic mb-1 block">
+                College
+              </div>
+              <ErrorLabel value={formErrors.college} />
+              <Autocomplete
+                options={collegeOptions}
+                value={formData.college}
+                setter={fieldSetter("college")}
+                placeholder="Select College"
+              />
+            </div>
+            <div>
+              <div className="text-xs text-gray-400 italic mb-1 block">
+                Department
+              </div>
+              <ErrorLabel value={formErrors.department} />
+              <Autocomplete
+                options={departmentOptions}
+                value={formData.department}
+                setter={fieldSetter("department")}
+                placeholder="Select Department"
+              />
+            </div>
+            <div>
+              <div className="text-xs text-gray-400 italic mb-1 block">
+                Degree
+              </div>
+              <ErrorLabel value={formErrors.degree} />
+              <Autocomplete
+                options={degreeOptions}
+                value={formData.degree}
+                setter={fieldSetter("degree")}
+                placeholder="Select Degree"
+              />
+            </div>
+            <div>
+              <div className="text-xs text-gray-400 italic mb-1 block">
+                Year Level
+              </div>
+              <ErrorLabel value={formErrors.year_level} />
+              <Autocomplete
+                options={levels}
+                value={formData.year_level}
+                setter={fieldSetter("year_level")}
+                placeholder="Select Year Level"
+              />
+            </div>
+            <FormInput
+              label={"Major/Minor degree"}
+              value={formData.degree_notes ?? ""}
+              setter={fieldSetter("degree_notes")}
+              maxLength={100}
+              required={false}
+            />
+          </div>
         </div>
-        <div className="flex flex-col space-y-3">
-          <FormInput
-            label={"Portfolio Link"}
-            value={formData.portfolio_link ?? ""}
-            setter={fieldSetter("portfolio_link")}
+
+        {/* Internship Details */}
+        <div className="flex flex-col space-y-2 gap-1">
+          <div className="text-2xl tracking-tight font-medium text-gray-700">
+            Internship Details
+          </div>
+          <div className="flex flex-row items-center justify-start mt-8 my-2">
+            <FormCheckbox
+              checked={formData.taking_for_credit}
+              setter={fieldSetter("taking_for_credit")}
+            />
+            <div className="text-sm text-gray-500 ml-3">
+              Taking internships for credit?
+            </div>
+          </div>
+          {formData.taking_for_credit && (
+            <FormInput
+              label={"Linkage Officer"}
+              value={formData.linkage_officer ?? ""}
+              setter={fieldSetter("linkage_officer")}
+              required={false}
+            />
+          )}
+
+          <FormDatePicker
+            label="Expected Start Date"
+            date={isoToMs(formData.expected_start_date)}
+            setter={(ms?: number) =>
+              setField("expected_start_date", msToISO(ms) ?? null)
+            }
             required={false}
           />
-          <FormInput
-            label={"Github Profile"}
-            value={formData.github_link ?? ""}
-            setter={fieldSetter("github_link")}
+
+          <FormDatePicker
+            label="Expected End Date"
+            date={isoToMs(formData.expected_end_date)}
+            setter={(ms?: number) =>
+              setField("expected_end_date", msToISO(ms) ?? null)
+            }
             required={false}
           />
+
           <FormInput
-            label={"Linkedin Profile"}
-            value={formData.linkedin_link ?? ""}
-            setter={fieldSetter("linkedin_link")}
+            label="Expected Duration (in hours)"
+            type="number"
+            inputMode="numeric"
+            value={formData.expected_duration_hours ?? ""}
+            setter={(v: string) => {
+              const n = v === "" || v == null ? null : Number(v);
+              setField(
+                "expected_duration_hours",
+                Number.isFinite(n as number) ? (n as number) : null
+              );
+            }}
             required={false}
           />
-          {/* // ! uncomment when calendar back */}
-          {/* <div className="relative flex flex-col">
+        </div>
+
+        <div>
+          <div className="text-2xl tracking-tight font-medium text-gray-700">
+            Internship Preferences
+          </div>
+
+          <div className="mt-2">
+            <div className="text-xs text-gray-400 italic mb-1 block">
+              Work Modes
+            </div>
+            <AutocompleteMulti
+              options={jobModeOptions}
+              value={formData.job_mode_ids ?? []}
+              setter={fieldSetter("job_mode_ids")}
+              placeholder="Select one or more"
+            />
+            <ErrorLabel value={formErrors.job_mode_ids} />
+          </div>
+
+          <div className="mt-2">
+            <div className="text-xs text-gray-400 italic mb-1 block">
+              Workload Types
+            </div>
+            <AutocompleteMulti
+              options={jobTypeOptions}
+              value={formData.job_type_ids ?? []}
+              setter={fieldSetter("job_type_ids")}
+              placeholder="Select one or more"
+            />
+            <ErrorLabel value={formErrors.job_type_ids} />
+          </div>
+
+          <div className="mt-2">
+            <div className="text-xs text-gray-400 italic mb-1 block">
+              Positions / Categories
+            </div>
+            <AutocompleteMulti
+              options={jobCategoryOptions}
+              value={formData.job_category_ids ?? []}
+              setter={fieldSetter("job_category_ids")}
+              placeholder="Select one or more"
+            />
+            <ErrorLabel value={formErrors.job_category_ids} />
+          </div>
+        </div>
+
+        {/* External Profiles */}
+        <div>
+          <div className="text-2xl tracking-tight font-medium text-gray-700">
+            External Profiles
+          </div>
+          <div className="flex flex-col space-y-1 mb-2">
+            <ErrorLabel value={formErrors.portfolio_link} />
+            <ErrorLabel value={formErrors.github_link} />
+            <ErrorLabel value={formErrors.linkedin_link} />
+            {/* // ! uncomment when calendar back */}
+            {/* <ErrorLabel value={formErrors.calendar_link} /> */}
+          </div>
+          <div className="flex flex-col space-y-3">
+            <FormInput
+              label={"Portfolio Link"}
+              value={formData.portfolio_link ?? ""}
+              setter={fieldSetter("portfolio_link")}
+              required={false}
+            />
+            <FormInput
+              label={"Github Profile"}
+              value={formData.github_link ?? ""}
+              setter={fieldSetter("github_link")}
+              required={false}
+            />
+            <FormInput
+              label={"Linkedin Profile"}
+              value={formData.linkedin_link ?? ""}
+              setter={fieldSetter("linkedin_link")}
+              required={false}
+            />
+            {/* // ! uncomment when calendar back */}
+            {/* <div className="relative flex flex-col">
             <div className="flex items-center mb-1">
               <span className="text-sm font-medium text-gray-700">
                 Calendar Link <span className="text-red-500">*</span>
@@ -731,6 +907,7 @@ const ProfileEditor = forwardRef<
               </div>
             )}
           </div> */}
+          </div>
         </div>
       </Card>
       <br />
