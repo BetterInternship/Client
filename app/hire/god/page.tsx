@@ -3,7 +3,11 @@
 import { Autocomplete } from "@/components/ui/autocomplete";
 import { Button } from "@/components/ui/button";
 import { TabGroup, Tab } from "@/components/ui/tabs";
-import { useEmployers, useUsers } from "@/lib/api/god.api";
+import {
+  useEmployers,
+  useUsers,
+  useStudentImpersonation,
+} from "@/lib/api/god.api";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { useAuthContext } from "../authctx";
@@ -23,6 +27,14 @@ import { FormCheckbox, FormInput } from "@/components/EditForm";
 import { APIClient, APIRoute } from "@/lib/api/api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
 
+const STUDENT_ORIGIN =
+  process.env.NEXT_PUBLIC_CLIENT_URL || "http://localhost:3000";
+const STUDENT_HOME = process.env.NEXT_PUBLIC_STUDENT_HOME || "/search";
+const EMPLOYER_ORIGIN =
+  process.env.NEXT_PUBLIC_CLIENT_HIRE_URL ||
+  (typeof window !== "undefined" ? window.location.origin : "");
+
+
 export default function GodLandingPage() {
   const { loginAs: login_as } = useAuthContext();
   const employers = useEmployers();
@@ -33,6 +45,7 @@ export default function GodLandingPage() {
   const router = useRouter();
   const [hideNoApps, setHideNoApps] = useState(false);
   const [selectedUser, setSelectedUser] = useState<PublicUser | null>(null);
+
   const applications = useMemo(() => {
     const apps: EmployerApplication[] = [];
     // @ts-ignore
@@ -50,7 +63,7 @@ export default function GodLandingPage() {
     route: selectedUser ? `/users/${selectedUser?.id}/resume` : "",
   });
 
-  // Use modal
+  // Modals
   const {
     open: openApplicantModal,
     close: closeApplicantModal,
@@ -69,11 +82,7 @@ export default function GodLandingPage() {
     Modal: RegisterModal,
   } = useModal("register-modal");
 
-  /**
-   * Handle auth by proxy
-   *
-   * @returns
-   */
+  // Employer proxy login
   const authorizeAs = async (employer_id: string) => {
     await login_as(employer_id);
     router.push("/dashboard");
@@ -81,6 +90,41 @@ export default function GodLandingPage() {
 
   const setSearchQuery = (id?: number | string | null) =>
     setSearchName(id?.toString());
+
+  // Student impersonation
+  const { impersonate, stop } = useStudentImpersonation();
+  const [impUserId, setImpUserId] = useState<string | null>(null);
+
+  const goToStudentHome = () => {
+    const dest = new URL(STUDENT_HOME, STUDENT_ORIGIN).toString();
+    window.location.assign(dest);
+  };
+
+  const viewAsStudent = async (studentId: string) => {
+    try {
+      setImpUserId(studentId);
+      await impersonate.mutateAsync({ studentId });
+      // Jump to student app (different origin)
+      goToStudentHome();
+    } catch (e) {
+      console.error(e);
+      alert("Failed to start student mode. Check network tab.");
+    } finally {
+      setImpUserId(null);
+    }
+  };
+
+  const exitStudentMode = async () => {
+    try {
+      await stop.mutateAsync();
+      // Bounce back to employer god page (ensure same origin)
+      const dest = new URL("/god", EMPLOYER_ORIGIN).toString();
+      window.location.assign(dest);
+    } catch (e) {
+      console.error(e);
+      alert("Failed to stop student mode. Check network tab.");
+    }
+  };
 
   return (
     <div className="w-full h-[90vh] overflow-hidden">
@@ -95,7 +139,7 @@ export default function GodLandingPage() {
               }))}
               className="w-96"
               placeholder="Search name..."
-            ></Autocomplete>
+            />
             <Button
               className=""
               scheme="supportive"
@@ -185,7 +229,7 @@ export default function GodLandingPage() {
               }))}
               className="w-96"
               placeholder="Search name..."
-            ></Autocomplete>
+            />
             <div className="flex flex-row items-center gap-1">
               <FormCheckbox checked={hideNoApps} setter={setHideNoApps} />
               <div className="text-white">Hide rows without applications</div>
@@ -283,11 +327,19 @@ export default function GodLandingPage() {
               }))}
               className="w-96"
               placeholder="Search name..."
-            ></Autocomplete>
+            />
             <div className="flex flex-row items-center gap-1">
               <FormCheckbox checked={hideNoApps} setter={setHideNoApps} />
               <div className="text-white">Hide rows without applications</div>
             </div>
+            <Button
+              variant="outline"
+              size="xs"
+              onClick={exitStudentMode}
+              disabled={stop.isPending}
+            >
+              {stop.isPending ? "Exiting..." : "Exit student mode"}
+            </Button>
           </div>
           <div className="absolute top-16 w-[100%] h-[85%] flex flex-col overflow-scroll p-4">
             {users
@@ -300,7 +352,7 @@ export default function GodLandingPage() {
               .filter((u) =>
                 `${getFullName(u)} ${u.email} ${refs.to_college_name(
                   u.college
-                )} ${refs.to_degree_full_name(u.degree)}}`
+                )} ${refs.to_degree_full_name(u.degree)}`
                   ?.toLowerCase()
                   .includes(searchName?.toLowerCase() ?? "")
               )
@@ -313,14 +365,28 @@ export default function GodLandingPage() {
                 const userApplications = applications.filter(
                   (a) => a.user_id === u.id
                 );
+                const isRowPending =
+                  impersonate.isPending && impUserId === u.id;
+
                 return (
                   <div
                     key={u.id}
                     className="flex flex-row items-center p-2 space-x-2 hover:bg-gray-200 hover:cursor-pointer transition-all"
                     onClick={() => (setSelectedUser(u), openApplicantModal())}
                   >
-                    <div className="flex flex-row text-gray-700 w-full gap-1">
-                      {getFullName(u)}{" "}
+                    <div className="flex flex-row text-gray-700 w-full gap-1 items-center">
+                      <Button
+                        scheme="primary"
+                        size="xs"
+                        disabled={isRowPending}
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          viewAsStudent(u.id);
+                        }}
+                      >
+                        {isRowPending ? "Starting..." : "View"}
+                      </Button>
+                      <span className="ml-2">{getFullName(u)}</span>
                       <Badge strength="medium">{u.email}</Badge>
                       <Badge strength="medium">
                         {refs.to_college_name(u.college)}
@@ -329,6 +395,7 @@ export default function GodLandingPage() {
                         {refs.to_degree_full_name(u.degree)}
                       </Badge>
                     </div>
+
                     <Badge
                       // @ts-ignore
                       type={!u?.last_session ? "destructive" : "default"}
@@ -395,7 +462,7 @@ export default function GodLandingPage() {
               }))}
               className="w-96"
               placeholder="Search name..."
-            ></Autocomplete>
+            />
           </div>
           <div className="absolute top-16 w-[100%] h-[85%] flex flex-col overflow-scroll p-4">
             {applications

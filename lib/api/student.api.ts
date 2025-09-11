@@ -72,8 +72,6 @@ export function useJobs(
         ? "Has MOA"
         : "No MOA";
 
-      console.log(params.jobMoaFilter);
-
       if (params.jobMoaFilter?.length && !params.jobMoaFilter?.includes(hasMoa))
         return false;
       if (
@@ -91,9 +89,11 @@ export function useJobs(
         !params.jobAllowanceFilter?.includes(job.allowance?.toString() ?? "#")
       )
         return false;
-
-      // ! add sherwin data
-      // ! position filter
+      if (
+        params.position?.length &&
+        !params.position?.includes(job.category?.join(",") ?? "#")
+      )
+        return false;
 
       return true;
     });

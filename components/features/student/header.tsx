@@ -1,6 +1,14 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  Ref,
+  useContext,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   Settings,
@@ -62,109 +70,115 @@ const JobPositionSelect = () => {
     <div className="flex flex-col gap-2">
       <SubcategorySelect
         name="Computer Science"
-        value="Computer Science"
-        checked={positionChecker("Computer Science")}
+        value="1e3b7585-293b-430a-a5cb-c773e0639bb0"
+        checked={positionChecker("1e3b7585-293b-430a-a5cb-c773e0639bb0")}
         setter={positionSetter}
         suboptions={[
           {
             name: "Data Science/AI",
-            value: "Data Science/AI",
+            value: "dc3780b4-b9c0-4294-a035-faa4e2086611",
             setter: positionSetter,
-            checked: positionChecker("Data Science/AI"),
+            checked: positionChecker("dc3780b4-b9c0-4294-a035-faa4e2086611"),
           },
           {
             name: "Cybersecurity",
-            value: "Cybersecurity",
+            value: "ca8ae32d-55a8-4ded-9cfe-1582d72cbaf1",
             setter: positionSetter,
-            checked: positionChecker("Cybersecurity"),
+            checked: positionChecker("ca8ae32d-55a8-4ded-9cfe-1582d72cbaf1"),
           },
           {
             name: "Full Stack",
-            value: "Full Stack",
+            value: "381239bf-7c82-4f87-a1b8-39d952f8876b",
             setter: positionSetter,
-            checked: positionChecker("Full Stack"),
+            checked: positionChecker("381239bf-7c82-4f87-a1b8-39d952f8876b"),
           },
           {
             name: "Backend",
-            value: "Backend",
+            value: "e5a73819-ee90-43fb-b71b-7ba12f0a4dbf",
             setter: positionSetter,
-            checked: positionChecker("Backend"),
+            checked: positionChecker("e5a73819-ee90-43fb-b71b-7ba12f0a4dbf"),
           },
           {
             name: "Frontend",
-            value: "Frontend",
+            value: "8b323584-9340-41e8-928e-f9345f1ad59e",
             setter: positionSetter,
-            checked: positionChecker("Frontend"),
+            checked: positionChecker("8b323584-9340-41e8-928e-f9345f1ad59e"),
+          },
+          {
+            name: "QA",
+            value: "91b180be-3d23-4f0a-bd64-c82cef9d3ae5",
+            setter: positionSetter,
+            checked: positionChecker("91b180be-3d23-4f0a-bd64-c82cef9d3ae5"),
           },
         ]}
       ></SubcategorySelect>
       <SubcategorySelect
         name="Business"
-        value="Business"
+        value="0fb4328b-4163-458b-8ac7-8ab3861e1ad6"
         setter={positionSetter}
-        checked={positionChecker("Business")}
+        checked={positionChecker("0fb4328b-4163-458b-8ac7-8ab3861e1ad6")}
         suboptions={[
           {
             name: "Accounting/Finance",
-            value: "Accounting/Finance",
+            value: "6506ab1d-f1a6-4c6f-a917-474a96e6d2bb",
             setter: positionSetter,
-            checked: positionChecker("Accounting/Finance"),
+            checked: positionChecker("6506ab1d-f1a6-4c6f-a917-474a96e6d2bb"),
           },
           {
             name: "HR/Administrative",
-            value: "HR/Administrative",
+            value: "976d7433-8297-4f8d-950d-3392682dadbb",
             setter: positionSetter,
-            checked: positionChecker("HR/Administrative"),
+            checked: positionChecker("976d7433-8297-4f8d-950d-3392682dadbb"),
           },
           {
             name: "Marketing/Sales",
-            value: "Marketing/Sales",
+            value: "1f6ab152-9754-4082-9fc2-4b276f5a9ef9",
             setter: positionSetter,
-            checked: positionChecker("Marketing/Sales"),
+            checked: positionChecker("1f6ab152-9754-4082-9fc2-4b276f5a9ef9"),
           },
           {
             name: "Business Development",
-            value: "Business Development",
+            value: "25bce220-1927-48c0-8e81-6be4af64d9b9",
             setter: positionSetter,
-            checked: positionChecker("Business Development"),
+            checked: positionChecker("25bce220-1927-48c0-8e81-6be4af64d9b9"),
           },
           {
             name: "Operations",
-            value: "Operations",
+            value: "61727f3b-dc36-458c-a487-5c44b5cd83a5",
             setter: positionSetter,
-            checked: positionChecker("Operations"),
+            checked: positionChecker("61727f3b-dc36-458c-a487-5c44b5cd83a5"),
           },
         ]}
       ></SubcategorySelect>
       <SubcategorySelect
         name="Engineering"
-        value="Engineering"
+        value="ab93abaf-c117-4482-9594-8bfecec44f69"
         setter={positionSetter}
-        checked={positionChecker("Engineering")}
+        checked={positionChecker("ab93abaf-c117-4482-9594-8bfecec44f69")}
       ></SubcategorySelect>
       <SubcategorySelect
         name="Others"
-        value="Others"
+        value="0debeda8-f257-49a6-881f-11a6b8eb560b"
         setter={positionSetter}
-        checked={positionChecker("Others")}
+        checked={positionChecker("0debeda8-f257-49a6-881f-11a6b8eb560b")}
         suboptions={[
           {
             name: "Legal",
-            value: "Legal",
+            value: "79161041-5009-4e66-84d2-a88357301427",
             setter: positionSetter,
-            checked: positionChecker("Legal"),
+            checked: positionChecker("79161041-5009-4e66-84d2-a88357301427"),
           },
           {
             name: "Research",
-            value: "Research",
+            value: "31a39059-1050-4f22-8875-5b903b7db3bf",
             setter: positionSetter,
-            checked: positionChecker("Research"),
+            checked: positionChecker("31a39059-1050-4f22-8875-5b903b7db3bf"),
           },
           {
             name: "Graphic Design",
-            value: "Graphic Design",
+            value: "f50b009d-5ed7-4ef1-851a-3fcf5d6572aa",
             setter: positionSetter,
-            checked: positionChecker("Graphic Design"),
+            checked: positionChecker("f50b009d-5ed7-4ef1-851a-3fcf5d6572aa"),
           },
         ]}
       ></SubcategorySelect>
@@ -301,6 +315,11 @@ interface ISuboption {
   suboptions?: ISuboption[];
 }
 
+interface ISuboptionActions {
+  select: () => void;
+  unselect: () => void;
+}
+
 // ! multiselect option
 const SubcategorySelect = ({
   name,
@@ -308,9 +327,29 @@ const SubcategorySelect = ({
   checked,
   suboptions,
   setter,
-}: ISuboption) => {
+  ref,
+}: ISuboption & { ref?: Ref<ISuboptionActions> }) => {
   const [isSelected, setIsSelected] = useState(checked);
-  const jobFilter = useJobFilter();
+  const refs = useRef<(ISuboptionActions | null)[]>([]);
+
+  const select = () => {
+    setTimeout(() => refs.current.map((r) => r?.select()));
+    setIsSelected(true);
+    setter?.(value, true);
+  };
+
+  const unselect = () => {
+    refs.current.map((r) => r?.unselect());
+    setIsSelected(false);
+    setter?.(value, false);
+  };
+
+  const update = (isSelected: boolean) => {
+    if (isSelected) select();
+    else unselect();
+  };
+
+  useImperativeHandle(ref, () => ({ select, unselect }));
 
   return (
     <>
@@ -323,9 +362,7 @@ const SubcategorySelect = ({
               ? "border-blue-500 border-opacity-85 bg-blue-200"
               : "border-gray-300 bg-gray-200"
           )}
-          onCheckedChange={(isSelected: boolean) => (
-            setIsSelected(isSelected), setter?.(value, isSelected)
-          )}
+          onCheckedChange={update}
         >
           {isSelected ? (
             <CheckIcon className="text-blue-500 pointer-events-none" />
@@ -346,11 +383,21 @@ const SubcategorySelect = ({
       </div>
       <div className="">
         {isSelected &&
-          suboptions?.map((suboption) => {
+          suboptions?.map((suboption, i) => {
             return (
               <div className="flex flex-row">
                 <div className="w-6 ml-2 h-10 border-l border-l-gray-400"></div>
-                <SubcategorySelect {...suboption}></SubcategorySelect>
+                <SubcategorySelect
+                  {...suboption}
+                  key={i}
+                  ref={(optionRef) => {
+                    if (!refs.current) return;
+                    if (optionRef) refs.current[i] = optionRef;
+                    return () => {
+                      refs.current[i] = null;
+                    };
+                  }}
+                ></SubcategorySelect>
               </div>
             );
           })}

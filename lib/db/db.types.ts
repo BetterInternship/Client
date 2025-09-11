@@ -1,4 +1,4 @@
-import { Database as _Database, Tables } from "./db.base-types.js";
+import { Database as _Database, Tables } from "@betterinternship/schema.base";
 
 export type Database = _Database;
 export type Level = Tables<"ref_levels">;
