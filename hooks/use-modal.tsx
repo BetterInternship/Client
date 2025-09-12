@@ -136,8 +136,8 @@ export const useModal = (
           className={cn(
             "bg-white overflow-hidden shadow-2xl flex flex-col",
             isMobile
-              ? "w-full max-w-full mx-0 rounded-t-sm rounded-b-none h-[85vh] min-h-[200px] animate-in slide-in-from-bottom duration-300"
-              : "w-full max-w-2xl rounded-sm h-[90vh] animate-in fade-in zoom-in-95 duration-200",
+              ? "w-full max-w-full mx-0 rounded-t-sm rounded-b-none h-fit min-h-[200px] animate-in slide-in-from-bottom duration-300"
+              : "w-full max-w-2xl rounded-sm h-fit animate-in fade-in zoom-in-95 duration-200",
             className
           )}
         >
