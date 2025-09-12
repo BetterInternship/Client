@@ -1,11 +1,23 @@
 "use client";
 
+/**
+ * Lightweight modal hook (no provider/registry).
+ * Usage:
+ *   const { Modal, open, close } = useModal("register-modal");
+ *   <Button onClick={open}>Open</Button>
+ *   <Modal>...content...</Modal>
+ *
+ * IMPORTANT:
+ * - Call useModal() ONCE per modal instance (in the page/owner).
+ * - Pass open()/close()/Modal to children via props.
+ * - Do NOT call useModal("same-name") in another component to open the same modal.
+ */
+
 import React, {
   useState,
   useEffect,
   useRef,
   useCallback,
-  createContext,
   useImperativeHandle,
   forwardRef,
   createElement,
@@ -13,29 +25,14 @@ import React, {
 } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import { useAppContext } from "@/lib/ctx-app";
-import { useMobile } from "./use-mobile";
+import { useAppContext } from "@/lib/ctx-app"; // should expose { isMobile }
+import { useMobile } from "./use-mobile"; // touch helpers
 import { cn } from "@/lib/utils";
 
-interface IModalContext {}
-const modalContext = createContext<IModalContext>({} as IModalContext);
+/** Exposed for optional imperative usage */
+export type ModalHandle = { open: () => void; close: () => void };
 
-/**
- * The interface exposed by the modal hook.
- */
-export type ModalHandle = {
-  open: () => void;
-  close: () => void;
-};
-
-/**
- * Creates a reusable modal with robust mobile behavior.
- * - Locks body scroll when open
- * - Fixes iOS 100vh with --vh
- * - Desktop click-outside to close
- * - Mobile touch close on backdrop
- * - Accepts `className` for panel sizing and `backdropClassName` for wrapper
- */
+/** The main hook */
 export const useModal = (
   name: string,
   options?: { onClose?: () => void; showCloseButton?: boolean }
@@ -45,23 +42,32 @@ export const useModal = (
   const { isMobile } = useAppContext();
   const { isTouchOnSingleElement, isTouchEndOnElement, isSwipe } = useMobile();
 
-  // Refs
+  // For debug: track transitions
+  useEffect(() => {
+    console.debug(`[useModal:${name}] mounted`);
+    return () => console.debug(`[useModal:${name}] unmounted`);
+  }, [name]);
+
+  // Desktop backdrop click
   const backdropRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Desktop: close on backdrop click
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {
       if (isMobile) return;
-      if (e.target === backdropRef.current) setIsOpen(false);
+      if (e.target === backdropRef.current) {
+        console.debug(`[useModal:${name}] backdrop click -> close`);
+        setIsOpen(false);
+      }
     },
-    [isMobile]
+    [isMobile, name]
   );
 
-  // Body scroll lock + iOS --vh fix
+  // Lock body scroll + iOS --vh fix when open
   useEffect(() => {
     if (!isOpen) return;
 
+    console.debug(`[useModal:${name}] open -> lock body`);
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
@@ -77,6 +83,7 @@ export const useModal = (
       window.addEventListener("orientationchange", setVH);
 
       return () => {
+        console.debug(`[useModal:${name}] close -> unlock body (mobile)`);
         document.body.style.overflow = originalOverflow;
         document.documentElement.style.removeProperty("--vh");
         window.removeEventListener("resize", setVH);
@@ -85,15 +92,31 @@ export const useModal = (
     }
 
     return () => {
+      console.debug(`[useModal:${name}] close -> unlock body`);
       document.body.style.overflow = originalOverflow;
     };
-  }, [isOpen, isMobile]);
+  }, [isOpen, isMobile, name]);
 
-  // Fire onClose callback after closing
+  // onClose callback after closing
   useEffect(() => {
-    if (!isOpen && options?.onClose) options.onClose();
+    if (!isOpen && options?.onClose) {
+      console.debug(`[useModal:${name}] onClose`);
+      options.onClose();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
+  const open = useCallback(() => {
+    console.debug(`[useModal:${name}] open()`);
+    setIsOpen(true);
+  }, [name]);
+
+  const close = useCallback(() => {
+    console.debug(`[useModal:${name}] close()`);
+    setIsOpen(false);
+  }, [name]);
+
+  /** The modal renderer (overlay). Keep z-index high to avoid being hidden */
   const Modal = ({
     children,
     className,
@@ -105,11 +128,13 @@ export const useModal = (
   }) => {
     if (!isOpen) return null;
 
+    console.debug(`[useModal:${name}] render <Modal>`);
+
     return (
       <div
         ref={backdropRef}
         className={cn(
-          "fixed inset-0 bg-black/50 flex z-[100] backdrop-blur-sm",
+          "fixed inset-0 bg-black/50 flex z-[1000] backdrop-blur-sm",
           isMobile
             ? "items-end justify-center p-0"
             : "items-center justify-center p-4",
@@ -122,6 +147,7 @@ export const useModal = (
             isTouchOnSingleElement() &&
             isTouchEndOnElement(backdropRef.current)
           ) {
+            console.debug(`[useModal:${name}] touch backdrop -> close`);
             setIsOpen(false);
           }
         }}
@@ -146,9 +172,13 @@ export const useModal = (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  console.debug(`[useModal:${name}] close button click`);
+                  setIsOpen(false);
+                }}
                 onTouchEnd={(e) => {
                   e.stopPropagation();
+                  console.debug(`[useModal:${name}] close button touch`);
                   setIsOpen(false);
                 }}
                 className={cn(
@@ -162,7 +192,7 @@ export const useModal = (
             </div>
           )}
 
-          {/* Give children a solid scroll container */}
+          {/* content scroll area */}
           <div
             className={cn(
               showCloseButton && isMobile ? "pt-0" : "",
@@ -172,22 +202,17 @@ export const useModal = (
             {children}
           </div>
 
-          {/* Mobile safe area padding */}
+          {/* mobile safe area */}
           {isMobile && <div className="pb-safe h-4" />}
         </div>
       </div>
     );
   };
 
-  return {
-    state: isOpen,
-    open: () => setIsOpen(true),
-    close: () => setIsOpen(false),
-    Modal,
-  };
+  return { state: isOpen, open, close, Modal };
 };
 
-/* ---------- Optional helpers, kept for API parity ---------- */
+/* -------- Optional same-API helpers (unchanged) -------- */
 
 const ModalTemplate = (
   name: string,
@@ -213,9 +238,6 @@ const ModalTemplate = (
   });
 };
 
-/**
- * The actual Modal Component to instantiate (if you need a ready-made one).
- */
 export const ModalComponent = ({
   children,
   ref,
@@ -227,7 +249,4 @@ export const ModalComponent = ({
   return <M ref={ref} />;
 };
 
-/**
- * Small helper to create a ref you can pass down to ModalComponent.
- */
 export const useModalRef = () => useRef<ModalHandle | null>(null);

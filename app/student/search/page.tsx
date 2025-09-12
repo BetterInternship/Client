@@ -349,7 +349,7 @@ export default function SearchPage() {
       {/* Success Modal */}
       <ApplySuccessModal job={selectedJob} ref={successModalRef} />
 
-      {/* Application Confirmation Modal - Redesigned */}
+      {/* Application Confirmation Modal*/}
       <ApplicationConfirmationModal>
         <div className="max-w-lg mx-auto p-6 max-h-[60vh] overflow-auto">
           <div className="text-center mb-8">
