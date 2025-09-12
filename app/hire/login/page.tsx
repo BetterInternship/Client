@@ -191,7 +191,7 @@ export default function LoginPage() {
           </form>
         </div>
         
-        <div className="flex flex-col gap-2 justify-start self-center w-[50vw] lg:w-[30vw]">
+        <div className="flex flex-col gap-2 self-center w-[50vw] lg:w-[30vw]">
           <p className="text-gray-400">Don't have an account? <a className="text-gray-400 underline">Register here</a></p>
           <p className="text-gray-400">Need help? Call our hotline: <a className="text-gray-400 underline" href="tel:09626604999">09626604999</a></p>
         </div>
