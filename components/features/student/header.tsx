@@ -227,7 +227,7 @@ const JobDetailSelect = () => {
   return (
     <div className="flex flex-col gap-2">
       <div className="font-bold tracking-tight">Internship Workload</div>
-      <div className="flex flex-row justify-start items-center gap-3">
+      <div className="flex flex-col justify-start items-start gap-1">
         <SubcategorySelect
           name="Part-time"
           value="1"
@@ -254,7 +254,7 @@ const JobDetailSelect = () => {
         ></SubcategorySelect>
       </div>
       <div className="font-bold tracking-tight mt-4">Internship Mode</div>
-      <div className="flex flex-row justify-start gap-3">
+      <div className="flex flex-col justify-start gap-1">
         <SubcategorySelect
           name="Face-to-face"
           value="0"
@@ -275,7 +275,7 @@ const JobDetailSelect = () => {
         ></SubcategorySelect>
       </div>
       <div className="font-bold tracking-tight mt-4">Internship Allowance</div>
-      <div className="flex flex-row justify-start gap-3">
+      <div className="flex flex-col justify-start gap-1">
         <SubcategorySelect
           name="Paid"
           value="0"
@@ -290,7 +290,7 @@ const JobDetailSelect = () => {
         ></SubcategorySelect>
       </div>
       <div className="font-bold tracking-tight mt-4">Internship MOA</div>
-      <div className="flex flex-row justify-start gap-3">
+      <div className="flex flex-col justify-start gap-1">
         <SubcategorySelect
           name="Has MOA"
           value="Has MOA"
