@@ -10,17 +10,18 @@ import { useRouter } from "next/navigation";
 import { useState, useMemo } from "react";
 import { Autocomplete } from "@/components/ui/autocomplete";
 import { Button } from "@/components/ui/button";
-import { Badge, BoolBadge } from "@/components/ui/badge";
 import {
   ListShell,
   RowCard,
   Meta,
   LastLogin,
+  ListSummary,
 } from "@/components/features/hire/god/ui";
 import {
   RegisterEmployerButton,
   RegisterEmployerModal,
 } from "@/components/features/hire/god/RegisterEmployerModal";
+import { BoolBadge } from "@/components/ui/badge";
 import { useEmployers } from "@/lib/api/god.api";
 import { useModal } from "@/hooks/use-modal";
 
@@ -28,7 +29,6 @@ export default function VerifiedEmployersPage() {
   const router = useRouter();
   const employers = useEmployers();
 
-  // 👇 create ONE modal instance here
   const {
     Modal: RegisterModal,
     open: openRegister,
@@ -55,18 +55,84 @@ export default function VerifiedEmployersPage() {
     router.push("/dashboard");
   };
 
+  const verifiedOnly = useMemo(
+    () => employers.data.filter((e: any) => e.is_verified),
+    [employers.data]
+  );
+
+  const filtered = verifiedOnly
+    .filter((e: any) => !hideNoApps || e?.applications?.length)
+    .filter((e: any) => {
+      if (!search) return true;
+      return (
+        e.name?.toLowerCase().includes(search.toLowerCase()) || e.id === search
+      );
+    })
+    .toSorted((a: any, b: any) => a.name?.localeCompare(b.name ?? "") ?? 0);
+
+  const rows = filtered.map((e: any) => {
+    const lastTs = e?.last_session?.timestamp
+      ? new Date(e.last_session.timestamp).getTime()
+      : undefined;
+
+    return (
+      <RowCard
+        key={e.id}
+        title={e.name}
+        metas={
+          <>
+            <Meta>{e.applications?.length ?? 0} applications</Meta>
+            <BoolBadge
+              state={e.is_verified}
+              onValue="verified"
+              offValue="unverified"
+            />
+            <LastLogin ts={lastTs} />
+          </>
+        }
+        leftActions={
+          <Button
+            scheme="primary"
+            size="xs"
+            onClick={(ev) => {
+              ev.stopPropagation();
+              authorizeAs(e.id ?? "");
+            }}
+          >
+            View
+          </Button>
+        }
+        more={
+          <div className="space-y-2 text-sm">
+            <div>
+              Employer ID: <code className="text-slate-500">{e.id}</code>
+            </div>
+            <div>
+              Created:{" "}
+              {e.created_at ? new Date(e.created_at).toLocaleString() : "—"}
+            </div>
+            <div>Contact: {e.contact_email || "—"}</div>
+          </div>
+        }
+      />
+    );
+  });
+
   const toolbar = (
     <div className="flex flex-wrap items-center gap-3">
+      <ListSummary
+        label="Verified employers"
+        total={verifiedOnly.length}
+        visible={filtered.length}
+      />
       <Autocomplete
         setter={setSearchQuery}
         options={options}
         className="w-80"
         placeholder="Search employer..."
       />
-
-      {/* 👇 Button gets the owner’s open() via props */}
+      {/* Button gets the owner’s open() via props */}
       <RegisterEmployerButton onOpen={openRegister} />
-
       <label className="flex items-center gap-2 text-sm">
         <input
           type="checkbox"
@@ -79,70 +145,12 @@ export default function VerifiedEmployersPage() {
     </div>
   );
 
-  const rows = employers.data
-    .filter((e: any) => !hideNoApps || e?.applications?.length)
-    .filter((e: any) => e.is_verified)
-    .filter((e: any) => {
-      if (!search) return true;
-      return (
-        e.name?.toLowerCase().includes(search.toLowerCase()) || e.id === search
-      );
-    })
-    .toSorted((a: any, b: any) => a.name?.localeCompare(b.name ?? "") ?? 0)
-    .map((e: any) => {
-      const lastTs = e?.last_session?.timestamp
-        ? new Date(e.last_session.timestamp).getTime()
-        : undefined;
-      return (
-        <RowCard
-          key={e.id}
-          title={e.name}
-          metas={
-            <>
-              <Meta>{e.applications?.length ?? 0} applications</Meta>
-              <BoolBadge
-                state={e.is_verified}
-                onValue="verified"
-                offValue="unverified"
-              />
-              <LastLogin ts={lastTs} />
-            </>
-          }
-          leftActions={
-            <Button
-              scheme="primary"
-              size="xs"
-              onClick={(ev) => {
-                ev.stopPropagation();
-                authorizeAs(e.id ?? "");
-              }}
-            >
-              View
-            </Button>
-          }
-          more={
-            <div className="space-y-2 text-sm">
-              <div>
-                Employer ID: <code className="text-slate-500">{e.id}</code>
-              </div>
-              <div>
-                Created:{" "}
-                {e.created_at ? new Date(e.created_at).toLocaleString() : "—"}
-              </div>
-              <div>Contact: {e.contact_email || "—"}</div>
-            </div>
-          }
-        />
-      );
-    });
-
   return (
     <>
       <ListShell toolbar={toolbar} fullWidth>
         {rows}
       </ListShell>
 
-      {/* 👇 Modal host mounted ONCE, receives the owner’s Modal + close */}
       <RegisterEmployerModal Modal={RegisterModal} onClose={closeRegister} />
     </>
   );

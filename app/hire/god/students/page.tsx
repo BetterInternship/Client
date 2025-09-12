@@ -11,8 +11,9 @@ import {
   useLocalTagMap,
   EditableTags,
   TagFilterBar,
+  ListSummary,
 } from "@/components/features/hire/god/ui";
-import { Badge, BoolBadge } from "@/components/ui/badge";
+import { BoolBadge } from "@/components/ui/badge";
 import { getFullName } from "@/lib/utils/user-utils";
 import { formatDate } from "@/lib/utils";
 import {
@@ -32,16 +33,13 @@ import { Separator } from "@/components/ui/separator";
 const STUDENT_ORIGIN =
   process.env.NEXT_PUBLIC_CLIENT_URL || "http://localhost:3000";
 const STUDENT_HOME = process.env.NEXT_PUBLIC_STUDENT_HOME || "/search";
-const EMPLOYER_ORIGIN =
-  process.env.NEXT_PUBLIC_CLIENT_HIRE_URL ||
-  (typeof window !== "undefined" ? window.location.origin : "");
 
 export default function StudentsPage() {
   const { users } = useUsers();
-  const employers = useEmployers(); // for applications aggregation
+  const employers = useEmployers();
   const refs = useDbRefs();
 
-  // ⬇️ tags for students (by user.id)
+  // tags for students (by user.id)
   const { tagMap, addTag, removeTag, allTags } =
     useLocalTagMap("god-tags:students");
   const [activeTags, setActiveTags] = useState<string[]>([]);
@@ -61,7 +59,6 @@ export default function StudentsPage() {
 
   const applications = useMemo(() => {
     const apps: any[] = [];
-    // @ts-ignore
     employers.data.forEach((e: any) =>
       e?.applications?.map((a: any) => apps.push(a))
     );
@@ -89,7 +86,7 @@ export default function StudentsPage() {
   });
 
   // Student impersonation
-  const { impersonate, stop } = useStudentImpersonation();
+  const { impersonate } = useStudentImpersonation();
   const [impUserId, setImpUserId] = useState<string | null>(null);
 
   const goToStudentHome = () => {
@@ -110,17 +107,6 @@ export default function StudentsPage() {
     }
   };
 
-  const exitStudentMode = async () => {
-    try {
-      await stop.mutateAsync();
-      const dest = new URL("/god", EMPLOYER_ORIGIN).toString();
-      window.location.assign(dest);
-    } catch (e) {
-      console.error(e);
-      alert("Failed to stop student mode. Check network tab.");
-    }
-  };
-
   const matchesTagFilter = (id: string) => {
     if (activeTags.length === 0) return true;
     const tags = tagMap[id] ?? [];
@@ -129,8 +115,154 @@ export default function StudentsPage() {
       : activeTags.every((t) => tags.includes(t));
   };
 
+  const filtered = users
+    .filter(
+      (u: any) =>
+        !hideNoApps ||
+        applications.some((a) => a.user_id === u.id) ||
+        u.id === search
+    )
+    .filter((u: any) =>
+      `${getFullName(u)} ${u.email} ${refs.to_college_name(
+        u.college
+      )} ${refs.to_degree_full_name(u.degree)}`
+        ?.toLowerCase()
+        .includes(search?.toLowerCase() ?? "")
+    )
+    .filter((u: any) => matchesTagFilter(u.id))
+    .toSorted(
+      (a: any, b: any) =>
+        new Date(b.created_at ?? "").getTime() -
+        new Date(a.created_at ?? "").getTime()
+    );
+
+  // join one or many IDs into a "·"-separated string via a name mapper
+  const toCommaText = <ID extends string | number>(
+    idsOrId: ID[] | ID | null | undefined,
+    toName: (id: ID) => string | null
+  ) => {
+    const ids: ID[] = Array.isArray(idsOrId)
+      ? idsOrId
+      : idsOrId != null
+      ? [idsOrId]
+      : [];
+    return ids
+      .map((x) => toName(x) ?? "")
+      .filter(Boolean)
+      .join(", ");
+  };
+
+  const rows = filtered.map((u: any) => {
+    const userApplications = applications.filter((a) => a.user_id === u.id);
+    const isRowPending = impersonate.isPending && impUserId === u.id;
+    const lastTs = u?.last_session?.timestamp
+      ? new Date(u.last_session.timestamp).getTime()
+      : undefined;
+    const rowTags = tagMap[u.id] ?? [];
+
+    const modeName = (id: number) => refs.to_job_mode_name(id);
+    const typeName = (id: number) => refs.to_job_type_name(id);
+    const categoryName = (id: string) => refs.to_job_category_name(id, "");
+    const modeTxt = toCommaText<number>(u.job_mode_ids ?? u.job_mode, modeName);
+    const typeTxt = toCommaText<number>(u.job_type_ids ?? u.job_type, typeName);
+    const posTxt = toCommaText<string>(u.job_category_ids, categoryName);
+    console.log({ modeTxt, typeTxt, posTxt });
+
+    return (
+      <RowCard
+        key={u.id}
+        title={getFullName(u)}
+        subtitle={<span className="text-xs text-slate-500">{u.email}</span>}
+        metas={
+          <>
+            <BoolBadge
+              state={u.is_verified}
+              onValue="verified"
+              offValue="not verified"
+            />
+            <LastLogin ts={lastTs} />
+            <Meta>created: {formatDate(u.created_at ?? "")}</Meta>
+
+            <Separator orientation="vertical" className="h-6" />
+            {/* <Meta>{refs.to_college_name(u.college)}</Meta> */}
+            <Meta>{refs.to_degree_full_name(u.degree)}</Meta>
+            <Meta>{userApplications.length ?? 0} applications</Meta>
+
+            {(modeTxt || typeTxt || posTxt) && (
+              <Separator orientation="vertical" className="h-6" />
+            )}
+            {modeTxt && <Meta>{modeTxt}</Meta>}
+            {typeTxt && <Meta>{typeTxt}</Meta>}
+            {posTxt && <Meta>{posTxt}</Meta>}
+          </>
+        }
+        footer={
+          <EditableTags
+            id={u.id}
+            tags={rowTags}
+            onAdd={addTag}
+            onRemove={removeTag}
+            suggestions={allTags}
+            placeholder="tag student…"
+          />
+        }
+        leftActions={
+          <Button
+            scheme="primary"
+            size="xs"
+            disabled={isRowPending}
+            onClick={(ev) => {
+              ev.stopPropagation();
+              viewAsStudent(u.id);
+            }}
+          >
+            {isRowPending ? "Starting..." : "View"}
+          </Button>
+        }
+        more={
+          <div className="space-y-2 text-sm">
+            <div>
+              Student ID: <code className="text-slate-500">{u.id}</code>
+            </div>
+            <div>
+              Calendar:{" "}
+              {u.calendar_link ? (
+                <a
+                  className="text-blue-600 underline"
+                  href={u.calendar_link}
+                  target="_blank"
+                >
+                  Open
+                </a>
+              ) : (
+                "—"
+              )}
+            </div>
+          </div>
+        }
+        onClick={() => {
+          setSelectedUser(u);
+          openApplicantModal();
+        }}
+      />
+    );
+  });
+
   const toolbar = (
     <div className="flex flex-wrap items-center gap-3">
+      <ListSummary
+        label="Students"
+        total={users.length}
+        visible={filtered.length}
+        extras={
+          activeTags.length > 0 ? (
+            <span>
+              {mode.toUpperCase()} · {activeTags.length} tag
+              {activeTags.length > 1 ? "s" : ""}
+            </span>
+          ) : null
+        }
+      />
       <Autocomplete
         setter={setSearchQuery}
         options={users.map((u: any) => ({
@@ -162,105 +294,6 @@ export default function StudentsPage() {
       />
     </div>
   );
-
-  const rows = users
-    .filter(
-      (u: any) =>
-        !hideNoApps ||
-        applications.filter((a) => a.user_id === u.id).length ||
-        u.id === search
-    )
-    .filter((u: any) =>
-      `${getFullName(u)} ${u.email} ${refs.to_college_name(
-        u.college
-      )} ${refs.to_degree_full_name(u.degree)}`
-        ?.toLowerCase()
-        .includes(search?.toLowerCase() ?? "")
-    )
-    .filter((u: any) => matchesTagFilter(u.id))
-    .toSorted(
-      (a: any, b: any) =>
-        new Date(b.created_at ?? "").getTime() -
-        new Date(a.created_at ?? "").getTime()
-    )
-    .map((u: any) => {
-      const userApplications = applications.filter((a) => a.user_id === u.id);
-      const isRowPending = impersonate.isPending && impUserId === u.id;
-      const lastTs = u?.last_session?.timestamp
-        ? new Date(u.last_session.timestamp).getTime()
-        : undefined;
-      const rowTags = tagMap[u.id] ?? [];
-
-      return (
-        <RowCard
-          key={u.id}
-          title={getFullName(u)}
-          subtitle={<span className="text-xs text-slate-500">{u.email}</span>}
-          metas={
-            <>
-              <Meta>{refs.to_college_name(u.college)}</Meta>
-              <Meta>{refs.to_degree_full_name(u.degree)}</Meta>
-              <Meta>{userApplications.length ?? 0} applications</Meta>
-              <BoolBadge
-                state={u.is_verified}
-                onValue="verified"
-                offValue="not verified"
-              />
-              <LastLogin ts={lastTs} />
-              <Meta>created: {formatDate(u.created_at ?? "")}</Meta>
-            </>
-          }
-          footer={
-            <EditableTags
-              id={u.id}
-              tags={rowTags}
-              onAdd={addTag}
-              onRemove={removeTag}
-              suggestions={allTags}
-              placeholder="tag student…"
-            />
-          }
-          leftActions={
-            <Button
-              scheme="primary"
-              size="xs"
-              disabled={isRowPending}
-              onClick={(ev) => {
-                ev.stopPropagation();
-                viewAsStudent(u.id);
-              }}
-            >
-              {isRowPending ? "Starting..." : "View"}
-            </Button>
-          }
-          more={
-            <div className="space-y-2 text-sm">
-              <div>
-                Student ID: <code className="text-slate-500">{u.id}</code>
-              </div>
-              <div>
-                Calendar:{" "}
-                {u.calendar_link ? (
-                  <a
-                    className="text-blue-600 underline"
-                    href={u.calendar_link}
-                    target="_blank"
-                  >
-                    Open
-                  </a>
-                ) : (
-                  "—"
-                )}
-              </div>
-            </div>
-          }
-          onClick={() => {
-            setSelectedUser(u);
-            openApplicantModal();
-          }}
-        />
-      );
-    });
 
   return (
     <>

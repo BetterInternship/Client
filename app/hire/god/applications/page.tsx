@@ -2,7 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { Autocomplete } from "@/components/ui/autocomplete";
-import { ListShell, RowCard, Meta } from "@/components/features/hire/god/ui";
+import {
+  ListShell,
+  RowCard,
+  Meta,
+  ListSummary,
+} from "@/components/features/hire/god/ui";
 import { useEmployers } from "@/lib/api/god.api";
 import { getFullName } from "@/lib/utils/user-utils";
 import { formatDate } from "@/lib/utils";
@@ -37,18 +42,7 @@ export default function ApplicationsPage() {
     [applications]
   );
 
-  const toolbar = (
-    <div className="flex flex-wrap items-center gap-3">
-      <Autocomplete
-        setter={setSearchQuery}
-        options={options}
-        className="w-96"
-        placeholder="Search applications..."
-      />
-    </div>
-  );
-
-  const rows = applications
+  const filtered = applications
     .filter((a: any) => {
       if (!search) return true;
       const hay = `${a.job?.employers?.name} ${getFullName(a.users)} ${
@@ -60,42 +54,63 @@ export default function ApplicationsPage() {
       (a: any, b: any) =>
         new Date(b.applied_at ?? "").getTime() -
         new Date(a.applied_at ?? "").getTime()
-    )
-    .map((a: any) => (
-      <RowCard
-        key={a.id}
-        title={
-          <span className="flex items-center gap-2">
-            <span className="font-medium">{a.jobs?.title || a.job?.title}</span>
-            <Badge strength="medium">{to_app_status_name(a.status)}</Badge>
-          </span>
-        }
-        subtitle={
-          <span className="text-xs text-slate-500">
-            {a.jobs?.employers?.name || a.job?.employers?.name}
-          </span>
-        }
-        metas={
-          <>
-            <Meta>applicant: {getFullName(a.users)}</Meta>
-            <Meta>applied: {formatDate(a.applied_at ?? "")}</Meta>
-          </>
-        }
-        more={
-          <div className="space-y-2 text-sm">
-            <div>
-              Application ID: <code className="text-slate-500">{a.id}</code>
-            </div>
-            <div>
-              Job ID: <code className="text-slate-500">{a.job_id}</code>
-            </div>
-            <div>
-              User ID: <code className="text-slate-500">{a.user_id}</code>
-            </div>
-          </div>
-        }
-      />
-    ));
+    );
 
-  return <ListShell toolbar={toolbar} fullWidth>{rows}</ListShell>;
+  const rows = filtered.map((a: any) => (
+    <RowCard
+      key={a.id}
+      title={
+        <span className="flex items-center gap-2">
+          <span className="font-medium">{a.jobs?.title || a.job?.title}</span>
+          <Badge strength="medium">{to_app_status_name(a.status)}</Badge>
+        </span>
+      }
+      subtitle={
+        <span className="text-xs text-slate-500">
+          {a.jobs?.employers?.name || a.job?.employers?.name}
+        </span>
+      }
+      metas={
+        <>
+          <Meta>applicant: {getFullName(a.users)}</Meta>
+          <Meta>applied: {formatDate(a.applied_at ?? "")}</Meta>
+        </>
+      }
+      more={
+        <div className="space-y-2 text-sm">
+          <div>
+            Application ID: <code className="text-slate-500">{a.id}</code>
+          </div>
+          <div>
+            Job ID: <code className="text-slate-500">{a.job_id}</code>
+          </div>
+          <div>
+            User ID: <code className="text-slate-500">{a.user_id}</code>
+          </div>
+        </div>
+      }
+    />
+  ));
+
+  const toolbar = (
+    <div className="flex flex-wrap items-center gap-3">
+      <Autocomplete
+        setter={setSearchQuery}
+        options={options}
+        className="w-96"
+        placeholder="Search applications..."
+      />
+      <ListSummary
+        label="Applications"
+        total={applications.length}
+        visible={filtered.length}
+      />
+    </div>
+  );
+
+  return (
+    <ListShell toolbar={toolbar} fullWidth>
+      {rows}
+    </ListShell>
+  );
 }

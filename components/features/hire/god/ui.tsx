@@ -20,6 +20,7 @@ import {
   Filter,
   Search,
   ChevronDown,
+  Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -49,13 +50,21 @@ export function ListShell({
 }
 
 /** Compact text chip for secondary information */
-export function Meta({ children }: { children: ReactNode }) {
+export function Meta({ children }: { children?: React.ReactNode }) {
+  const empty =
+    children == null ||
+    (typeof children === "string" && children.trim() === "") ||
+    children == "Not specified";
+
+  if (empty) return null;
+
   return (
     <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs text-slate-600">
       {children}
     </span>
   );
 }
+
 
 export function LastLogin({ ts }: { ts?: number }) {
   if (!ts) return <Meta>last login: Never</Meta>;
@@ -213,7 +222,6 @@ export function TagPill({
 }) {
   return (
     <span
-      // ⬇️ stop the row's onClick when you click a tag chip
       onClick={(e) => {
         e.stopPropagation();
         onClick?.();
@@ -241,7 +249,6 @@ export function TagPill({
     </span>
   );
 }
-
 
 /** Inline editor shown under a row: existing tags + input to add new */
 export function EditableTags({
@@ -319,6 +326,43 @@ export function EditableTags({
   );
 }
 
+/** Compact summary chip: "Students · 42 (showing 17)" + extras */
+export function ListSummary({
+  label,
+  total,
+  visible,
+  extras,
+}: {
+  label: string;
+  total: number;
+  visible: number;
+  extras?: React.ReactNode;
+}) {
+  const filtered = visible !== total;
+  return (
+    <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs text-slate-700 bg-white">
+      <span className="font-medium">{label}</span>
+      <span className="tabular-nums">
+        {filtered ? (
+          <>
+            <span className="text-slate-500">·</span> {visible}{" "}
+            <span className="text-slate-400">(of {total})</span>
+          </>
+        ) : (
+          <>
+            <span className="text-slate-500">·</span> {total}
+          </>
+        )}
+      </span>
+      {extras ? (
+        <>
+          <span className="text-slate-300">|</span>
+          <span className="flex items-center gap-1">{extras}</span>
+        </>
+      ) : null}
+    </span>
+  );
+}
 
 /** Toolbar filter bar with ANY/ALL toggle + popover picker */
 export function TagFilterBar({
@@ -340,8 +384,7 @@ export function TagFilterBar({
   const [q, setQ] = React.useState("");
 
   const filtered = React.useMemo(
-    () =>
-      allTags.filter((t) => t.toLowerCase().includes(q.toLowerCase())),
+    () => allTags.filter((t) => t.toLowerCase().includes(q.toLowerCase())),
     [allTags, q]
   );
 
@@ -461,12 +504,7 @@ export function TagFilterBar({
         ) : (
           <>
             {visibleActive.map((t) => (
-              <TagPill
-                key={t}
-                label={t}
-                active
-                onRemove={() => onToggle(t)}
-              />
+              <TagPill key={t} label={t} active onRemove={() => onToggle(t)} />
             ))}
             {restCount > 0 && (
               <TagPill
@@ -481,4 +519,3 @@ export function TagFilterBar({
     </div>
   );
 }
-

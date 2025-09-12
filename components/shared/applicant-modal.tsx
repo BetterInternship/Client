@@ -75,26 +75,16 @@ export const ApplicantModalContent = ({
     job_modes,
     job_types,
     job_categories,
-    get_job_mode_by_name,
-    get_job_type_by_name,
-    get_job_category_by_name,
+    to_job_mode_name,
+    to_job_category_name,
   } = useDbRefs();
 
   // Name mappers
-  const modeName = (id: any) =>
-    get_job_mode_by_name?.(id) ??
-    job_modes?.find((m: any) => m.id === id)?.name ??
-    String(id);
+  const modeName = (id: any) => to_job_mode_name(id);
 
-  const typeName = (id: any) =>
-    get_job_type_by_name?.(id) ??
-    job_types?.find((t: any) => t.id === id)?.name ??
-    String(id);
+  const typeName = (id: any) => to_job_type_name(id);
 
-  const categoryName = (id: any) =>
-    get_job_category_by_name?.(id) ??
-    job_categories?.find((c: any) => c.id === id)?.name ??
-    String(id);
+  const categoryName = (id: any) => to_job_category_name(id);
 
   const jobModeNames = useMemo(
     () => (applicant.job_mode_ids ?? []).map(modeName).filter(Boolean),
