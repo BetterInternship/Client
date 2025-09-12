@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft } from "lucide-react";
 import { useAuthContext } from "../authctx";
 
 export default function LoginPage() {
@@ -19,7 +18,6 @@ export default function LoginPage() {
   const [emailNorm, setEmailNorm] = useState(""); // keep a normalized copy for API calls
   const [password, setPassword] = useState("");
   const [new_account, set_new_account] = useState(false);
-  const [step, setStep] = useState<"email" | "password">("email");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
@@ -28,6 +26,44 @@ export default function LoginPage() {
   redirect_if_logged_in();
 
   const normalize = (s: string) => s.trim().toLowerCase();
+
+  const handle_login_request = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    const normalized = normalize(email);
+    if (!normalized) {
+      setIsLoading(false);
+      setError("Email is required.");
+      return;
+    }
+
+    setEmailNorm(normalized);
+
+    try {
+      const r = await email_status(normalized);
+
+      // @ts-ignore
+      if (!r?.success) {
+        setIsLoading(false);
+        // @ts-ignore
+        alert(r?.message ?? "Unknown error");
+        return;
+      }
+
+      if (!r.existing_user) {
+        setIsLoading(false);
+        set_new_account(true);
+        return;
+      }
+
+      setIsLoading(false);
+    } catch (err: any) {
+      setIsLoading(false);
+      setError(err?.message ?? "Something went wrong");
+    }
+  }
 
   const handle_email_submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +94,6 @@ export default function LoginPage() {
       }
 
       setIsLoading(false);
-      setStep("password");
     } catch (err: any) {
       setIsLoading(false);
       setError(err?.message ?? "Something went wrong.");
@@ -92,31 +127,12 @@ export default function LoginPage() {
     }
   };
 
-  const handle_back_to_email = () => {
-    setStep("email");
-    setPassword("");
-    setError("");
-  };
-
   return (
     <div className="flex-1 flex items-center justify-center px-6 py-12 h-[80vh]">
       <div className="w-full">
-        {/* Back Arrow for OTP step */}
-        {step === "password" && (
-          <div className="mb-6">
-            <button
-              onClick={handle_back_to_email}
-              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-          </div>
-        )}
-
         {/* Welcome Message */}
         <div className="text-center mb-10">
-          {step === "email" ? (
-            !new_account ? (
+            {!new_account ? (
               <h2 className="text-5xl font-heading font-bold text-gray-900 mb-2">
                 Future interns are waiting!
               </h2>
@@ -127,14 +143,7 @@ export default function LoginPage() {
                 </h2>
                 <p className="">Don't miss out, sign up with us now!</p>
               </>
-            )
-          ) : (
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                Enter Password
-              </h2>
-            </div>
-          )}
+            )}
         </div>
 
         <div className="max-w-md m-auto">
@@ -146,9 +155,8 @@ export default function LoginPage() {
           )}
 
           {/* Login Form */}
-          {step === "email" ? (
-            <form onSubmit={handle_email_submit} className="space-y-6">
-              <div>
+          <form onSubmit={handle_email_submit}>
+            <div className="flex flex-col gap-4">
                 <Input
                   type="email"
                   placeholder="Email Address"
@@ -157,33 +165,10 @@ export default function LoginPage() {
                   required
                   className="w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
                 />
-              </div>
 
-              {!new_account ? (
-                <Button
-                  type="submit"
-                  disabled={isLoading || !email}
-                  className="w-full h-12 bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? "Verifying email..." : "Continue"}
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  disabled={isLoading || !email}
-                  className="w-full h-12 bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => router.push("/register")}
-                >
-                  {isLoading ? "Loading..." : "Set Up Account"}
-                </Button>
-              )}
-            </form>
-          ) : (
-            <form onSubmit={handle_password_submit} className="space-y-6">
-              {/* OTP Input Boxes */}
               <Input
                 type="password"
-                className="w-full h-12 input-box hover:cursor-text"
+                className="w-full h-12 px-4 input-box hover:cursor-text"
                 placeholder="Password..."
                 onChange={(e) => setPassword(e.target.value)}
               ></Input>
@@ -191,12 +176,13 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="h-12 self-end px-6 hover:bg-gray-800 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                scheme={"primary"}
               >
                 {isLoading ? "Logging in..." : "Login"}
               </Button>
-            </form>
-          )}
+            </div>
+          </form>
         </div>
       </div>
     </div>
