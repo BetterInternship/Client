@@ -213,7 +213,11 @@ export function TagPill({
 }) {
   return (
     <span
-      onClick={onClick}
+      // ⬇️ stop the row's onClick when you click a tag chip
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick?.();
+      }}
       className={cn(
         "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs",
         active ? "bg-slate-800 text-white border-slate-800" : "text-slate-700",
@@ -225,7 +229,7 @@ export function TagPill({
       {onRemove ? (
         <button
           onClick={(e) => {
-            e.stopPropagation();
+            e.stopPropagation(); // already present for remove safety
             onRemove();
           }}
           className="ml-0.5 -mr-0.5 rounded hover:bg-black/10 p-[2px]"
@@ -237,6 +241,7 @@ export function TagPill({
     </span>
   );
 }
+
 
 /** Inline editor shown under a row: existing tags + input to add new */
 export function EditableTags({
@@ -251,7 +256,7 @@ export function EditableTags({
   tags: string[];
   onAdd: (id: string, tag: string) => void;
   onRemove: (id: string, tag: string) => void;
-  suggestions?: string[]; // all known tags to suggest
+  suggestions?: string[];
   placeholder?: string;
 }) {
   const [draft, setDraft] = useState("");
@@ -268,7 +273,13 @@ export function EditableTags({
   };
 
   return (
-    <div className="flex flex-col gap-1">
+    <div
+      className="flex flex-col gap-1"
+      // ⬇️ prevent clicks/presses inside this block from triggering the row click
+      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+      onKeyDown={(e) => e.stopPropagation()}
+    >
       <div className="flex flex-wrap items-center gap-1.5">
         {tags?.map((t) => (
           <TagPill key={t} label={t} onRemove={() => onRemove(id, t)} />
@@ -289,6 +300,7 @@ export function EditableTags({
           />
         </div>
       </div>
+
       {draft && remaining.length > 0 ? (
         <div className="flex flex-wrap items-center gap-1">
           {remaining.map((t) => (
@@ -306,6 +318,7 @@ export function EditableTags({
     </div>
   );
 }
+
 
 /** Toolbar filter bar with ANY/ALL toggle + popover picker */
 export function TagFilterBar({
