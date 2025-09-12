@@ -510,7 +510,7 @@ export const Header = () => {
             </div>
             {!isMobile && (
               <div className="flex flex-row max-w-2xl w-full gap-4 items-center">
-                <div className="relative max-w-2xl w-full border border-gray-300 rounded-[0.33em] hover:pointer-cursor ">
+                <div className="relative max-w-2xl h-10 w-full border border-gray-300 rounded-[0.33em] hover:pointer-cursor ">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                   <input
                     type="text"
@@ -520,7 +520,7 @@ export const Header = () => {
                     }}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search Internship Listings"
-                    className="w-full h-12 pl-12 pr-4 w-4xl bg-transparent border-0 outline-none focus:ring-0 text-gray-900 hover:bg-gray-100 focus:bg-gray-100 duration-150 placeholder:text-gray-500"
+                    className="w-full h-10 pl-12 pr-4 w-4xl bg-transparent border-0 outline-none focus:ring-0 text-gray-900 text-sm hover:bg-gray-100 focus:bg-gray-100 duration-150 placeholder:text-gray-500"
                   />
                 </div>
                 <div className="flex flex-row gap-2">
@@ -533,7 +533,8 @@ export const Header = () => {
                       setIsJobDetailFiltering(false)
                     )}
                   >
-                    Internship Position
+                    <FilterIcon />
+                    Category
                     <ChevronDown />
                   </Button>
                   <Button
@@ -545,7 +546,8 @@ export const Header = () => {
                       setIsJobPositionFiltering(false)
                     )}
                   >
-                    Internship Details
+                    <FilterIcon />
+                    Details
                     <ChevronDown />
                   </Button>
                 </div>
@@ -601,7 +603,7 @@ export const Header = () => {
           )}
           {isMobile && (
             <div className="flex flex-col max-w-2xl w-full gap-4 items-center">
-              <div className="relative max-w-2xl w-full border border-gray-300 rounded-[0.33em] hover:pointer-cursor ">
+              <div className="relative max-w-2xl w-full border bg-red-500 border-gray-300 rounded-[0.33em] hover:pointer-cursor ">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                 <input
                   type="text"
