@@ -134,7 +134,7 @@ export const useModal = (
       <div
         ref={backdropRef}
         className={cn(
-          "fixed inset-0 bg-black/50 flex z-[1000] backdrop-blur-sm",
+          "fixed inset-0 bg-black/10 flex z-[1000] backdrop-blur-sm",
           isMobile
             ? "items-end justify-center p-0"
             : "items-center justify-center p-4",

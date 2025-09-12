@@ -54,7 +54,6 @@ export const ApplicantModalContent = ({
   open_calendar,
   is_employer = false,
   job = {} as Partial<Job>,
-  // NEW (minimal): consume a presigned URL if parent provides it
   resume_url,
 }: {
   applicant?: Partial<PublicUser>;
@@ -423,7 +422,6 @@ export const ApplicantModalContent = ({
           <div className="w-full h-full flex items-center justify-center">
             <div className="text-center px-6">
               <p className="text-gray-600 mb-3">No resume to display.</p>
-              {/* The left-side “View Resume” still opens the signed modal */}
             </div>
           </div>
         )}

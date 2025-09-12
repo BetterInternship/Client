@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Autocomplete } from "@/components/ui/autocomplete";
 import { Button } from "@/components/ui/button";
 import {
@@ -77,6 +77,7 @@ export default function StudentsPage() {
     Modal: ResumeModal,
   } = useModal("resume-modal");
 
+  // Signed resume URL for the currently selected user
   const { url: resumeURL, sync: syncResumeURL } = useFile({
     fetcher: useCallback(
       async () => await UserService.getUserResumeURL(selectedUser?.id ?? ""),
@@ -84,6 +85,13 @@ export default function StudentsPage() {
     ),
     route: selectedUser ? `/users/${selectedUser?.id}/resume` : "",
   });
+
+  // Prefetch signed URL whenever a new student is selected
+  useEffect(() => {
+    if (selectedUser?.id) {
+      syncResumeURL();
+    }
+  }, [selectedUser?.id, syncResumeURL]);
 
   // Student impersonation
   const { impersonate } = useStudentImpersonation();
@@ -136,10 +144,11 @@ export default function StudentsPage() {
         new Date(a.created_at ?? "").getTime()
     );
 
-  // join one or many IDs into a "·"-separated string via a name mapper
-  const toCommaText = <ID extends string | number>(
+  // join one or many IDs into a separated string via a name mapper
+  const toSepText = <ID extends string | number>(
     idsOrId: ID[] | ID | null | undefined,
-    toName: (id: ID) => string | null
+    toName: (id: ID) => string | null,
+    sep = ", "
   ) => {
     const ids: ID[] = Array.isArray(idsOrId)
       ? idsOrId
@@ -149,7 +158,7 @@ export default function StudentsPage() {
     return ids
       .map((x) => toName(x) ?? "")
       .filter(Boolean)
-      .join(", ");
+      .join(sep);
   };
 
   const rows = filtered.map((u: any) => {
@@ -163,10 +172,18 @@ export default function StudentsPage() {
     const modeName = (id: number) => refs.to_job_mode_name(id);
     const typeName = (id: number) => refs.to_job_type_name(id);
     const categoryName = (id: string) => refs.to_job_category_name(id, "");
-    const modeTxt = toCommaText<number>(u.job_mode_ids ?? u.job_mode, modeName);
-    const typeTxt = toCommaText<number>(u.job_type_ids ?? u.job_type, typeName);
-    const posTxt = toCommaText<string>(u.job_category_ids, categoryName);
-    console.log({ modeTxt, typeTxt, posTxt });
+
+    const modeTxt = toSepText<number>(
+      u.job_mode_ids ?? u.job_mode,
+      modeName,
+      " · "
+    );
+    const typeTxt = toSepText<number>(
+      u.job_type_ids ?? u.job_type,
+      typeName,
+      " · "
+    );
+    const posTxt = toSepText<string>(u.job_category_ids, categoryName, " · ");
 
     return (
       <RowCard
@@ -301,7 +318,7 @@ export default function StudentsPage() {
         {rows}
       </ListShell>
 
-      <ApplicantModal>
+      <ApplicantModal className="!w-3/4 !max-w-8xl">
         <ApplicantModalContent
           is_employer={true}
           clickable={true}
@@ -310,6 +327,7 @@ export default function StudentsPage() {
           }
           pfp_route={`/users/${selectedUser?.id}/pic`}
           applicant={selectedUser ?? undefined}
+          resume_url={resumeURL}
           open_calendar={async () => {
             closeApplicantModal();
             window?.open(selectedUser?.calendar_link ?? "", "_blank")?.focus();
@@ -324,7 +342,7 @@ export default function StudentsPage() {
       </ApplicantModal>
 
       <ResumeModal>
-        {selectedUser?.resume ? (
+        {resumeURL ? (
           <div className="h-full flex flex-col">
             <h1 className="font-bold font-heading text-2xl px-6 py-4 text-gray-900">
               {getFullName(selectedUser)} - Resume
