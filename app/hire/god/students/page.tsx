@@ -3,8 +3,16 @@
 import { useCallback, useMemo, useState } from "react";
 import { Autocomplete } from "@/components/ui/autocomplete";
 import { Button } from "@/components/ui/button";
+import {
+  ListShell,
+  RowCard,
+  Meta,
+  LastLogin,
+  useLocalTagMap,
+  EditableTags,
+  TagFilterBar,
+} from "@/components/features/hire/god/ui";
 import { Badge, BoolBadge } from "@/components/ui/badge";
-import { ListShell, RowCard, Meta, LastLogin } from "@/components/features/hire/god/ui";
 import { getFullName } from "@/lib/utils/user-utils";
 import { formatDate } from "@/lib/utils";
 import {
@@ -19,6 +27,7 @@ import { PDFPreview } from "@/components/shared/pdf-preview";
 import { UserService } from "@/lib/api/services";
 import { useFile } from "@/hooks/use-file";
 import { FileText } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 const STUDENT_ORIGIN =
   process.env.NEXT_PUBLIC_CLIENT_URL || "http://localhost:3000";
@@ -31,6 +40,17 @@ export default function StudentsPage() {
   const { users } = useUsers();
   const employers = useEmployers(); // for applications aggregation
   const refs = useDbRefs();
+
+  // ⬇️ tags for students (by user.id)
+  const { tagMap, addTag, removeTag, allTags } =
+    useLocalTagMap("god-tags:students");
+  const [activeTags, setActiveTags] = useState<string[]>([]);
+  const [mode, setMode] = useState<"any" | "all">("any");
+  const toggleActive = (t: string) =>
+    setActiveTags((prev) =>
+      prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]
+    );
+  const clearActive = () => setActiveTags([]);
 
   const [search, setSearch] = useState<string | null>(null);
   const [hideNoApps, setHideNoApps] = useState(false);
@@ -54,7 +74,6 @@ export default function StudentsPage() {
     close: closeApplicantModal,
     Modal: ApplicantModal,
   } = useModal("applicant-modal");
-
   const {
     open: openResumeModal,
     close: closeResumeModal,
@@ -102,6 +121,14 @@ export default function StudentsPage() {
     }
   };
 
+  const matchesTagFilter = (id: string) => {
+    if (activeTags.length === 0) return true;
+    const tags = tagMap[id] ?? [];
+    return mode === "any"
+      ? activeTags.some((t) => tags.includes(t))
+      : activeTags.every((t) => tags.includes(t));
+  };
+
   const toolbar = (
     <div className="flex flex-wrap items-center gap-3">
       <Autocomplete
@@ -122,14 +149,17 @@ export default function StudentsPage() {
         />
         Hide without applications
       </label>
-      <Button
-        variant="outline"
-        size="xs"
-        onClick={exitStudentMode}
-        disabled={stop.isPending}
-      >
-        {stop.isPending ? "Exiting..." : "Exit student mode"}
-      </Button>
+
+      <Separator orientation="vertical" className="h-6" />
+
+      <TagFilterBar
+        allTags={allTags}
+        active={activeTags}
+        onToggle={toggleActive}
+        onClear={clearActive}
+        mode={mode}
+        setMode={setMode}
+      />
     </div>
   );
 
@@ -147,6 +177,7 @@ export default function StudentsPage() {
         ?.toLowerCase()
         .includes(search?.toLowerCase() ?? "")
     )
+    .filter((u: any) => matchesTagFilter(u.id))
     .toSorted(
       (a: any, b: any) =>
         new Date(b.created_at ?? "").getTime() -
@@ -158,6 +189,7 @@ export default function StudentsPage() {
       const lastTs = u?.last_session?.timestamp
         ? new Date(u.last_session.timestamp).getTime()
         : undefined;
+      const rowTags = tagMap[u.id] ?? [];
 
       return (
         <RowCard
@@ -177,6 +209,16 @@ export default function StudentsPage() {
               <LastLogin ts={lastTs} />
               <Meta>created: {formatDate(u.created_at ?? "")}</Meta>
             </>
+          }
+          footer={
+            <EditableTags
+              id={u.id}
+              tags={rowTags}
+              onAdd={addTag}
+              onRemove={removeTag}
+              suggestions={allTags}
+              placeholder="tag student…"
+            />
           }
           leftActions={
             <Button
@@ -222,7 +264,9 @@ export default function StudentsPage() {
 
   return (
     <>
-      <ListShell toolbar={toolbar} fullWidth>{rows}</ListShell>
+      <ListShell toolbar={toolbar} fullWidth>
+        {rows}
+      </ListShell>
 
       <ApplicantModal>
         <ApplicantModalContent
