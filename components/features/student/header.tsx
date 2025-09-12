@@ -21,8 +21,9 @@ import {
   CheckIcon,
   ChevronRight,
   XIcon,
+  FilterIcon,
 } from "lucide-react";
-import { useAppContext } from "@/lib/ctx-app";
+import { useMobile } from "@/hooks/use-mobile";
 import { DropdownOption, GroupableNavDropdown } from "@/components/ui/dropdown";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -412,7 +413,7 @@ const SubcategorySelect = ({
  * @component
  */
 export const Header = () => {
-  const { isMobile } = useAppContext();
+  const { isMobile } = useMobile();
   const { routeExcluded } = useRoute();
   const headerRoutes = ["/login", "/register", "/otp"];
   const router = useRouter();
@@ -507,47 +508,49 @@ export const Header = () => {
             <div className="flex items-center gap-4">
               <HeaderTitle />
             </div>
-            <div className="flex flex-row max-w-2xl w-full gap-4 items-center">
-              <div className="relative max-w-2xl w-full border border-gray-300 rounded-[0.33em] hover:pointer-cursor ">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") doSearch();
-                  }}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search Internship Listings"
-                  className="w-full h-12 pl-12 pr-4 w-4xl bg-transparent border-0 outline-none focus:ring-0 text-gray-900 hover:bg-gray-100 focus:bg-gray-100 duration-150 placeholder:text-gray-500"
-                />
+            {!isMobile && (
+              <div className="flex flex-row max-w-2xl w-full gap-4 items-center">
+                <div className="relative max-w-2xl w-full border border-gray-300 rounded-[0.33em] hover:pointer-cursor ">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") doSearch();
+                    }}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search Internship Listings"
+                    className="w-full h-12 pl-12 pr-4 w-4xl bg-transparent border-0 outline-none focus:ring-0 text-gray-900 hover:bg-gray-100 focus:bg-gray-100 duration-150 placeholder:text-gray-500"
+                  />
+                </div>
+                <div className="flex flex-row gap-2">
+                  <Button
+                    scheme="primary"
+                    variant="outline"
+                    size="md"
+                    onClick={() => (
+                      setIsJobPositionFiltering(true),
+                      setIsJobDetailFiltering(false)
+                    )}
+                  >
+                    Internship Position
+                    <ChevronDown />
+                  </Button>
+                  <Button
+                    scheme="primary"
+                    variant="outline"
+                    size="md"
+                    onClick={() => (
+                      setIsJobDetailFiltering(true),
+                      setIsJobPositionFiltering(false)
+                    )}
+                  >
+                    Internship Details
+                    <ChevronDown />
+                  </Button>
+                </div>
               </div>
-              <div className="flex flex-row gap-2">
-                <Button
-                  scheme="primary"
-                  variant="outline"
-                  size="md"
-                  onClick={() => (
-                    setIsJobPositionFiltering(true),
-                    setIsJobDetailFiltering(false)
-                  )}
-                >
-                  Internship Position
-                  <ChevronDown />
-                </Button>
-                <Button
-                  scheme="primary"
-                  variant="outline"
-                  size="md"
-                  onClick={() => (
-                    setIsJobDetailFiltering(true),
-                    setIsJobPositionFiltering(false)
-                  )}
-                >
-                  Internship Details
-                  <ChevronDown />
-                </Button>
-              </div>
-            </div>
+            )}
             {routeExcluded(headerRoutes) ? (
               <div className="flex items-center gap-6">
                 {!isMobile && pathname === "/search" && hasMissing && (
@@ -593,6 +596,51 @@ export const Header = () => {
                     </Button>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+          {isMobile && (
+            <div className="flex flex-col max-w-2xl w-full gap-4 items-center">
+              <div className="relative max-w-2xl w-full border border-gray-300 rounded-[0.33em] hover:pointer-cursor ">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") doSearch();
+                  }}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search Internship Listings"
+                  className="w-full h-12 pl-12 pr-4 w-4xl bg-transparent border-0 outline-none focus:ring-0 text-gray-900 hover:bg-gray-100 focus:bg-gray-100 duration-150 placeholder:text-gray-500"
+                />
+              </div>
+              <div className="flex flex-row gap-2">
+                <Button
+                  scheme="primary"
+                  variant="outline"
+                  size="md"
+                  onClick={() => (
+                    setIsJobPositionFiltering(true),
+                    setIsJobDetailFiltering(false)
+                  )}
+                >
+                  <FilterIcon />
+                  Category
+                  <ChevronDown />
+                </Button>
+                <Button
+                  scheme="primary"
+                  variant="outline"
+                  size="md"
+                  onClick={() => (
+                    setIsJobDetailFiltering(true),
+                    setIsJobPositionFiltering(false)
+                  )}
+                >
+                  <FilterIcon />
+                  Details
+                  <ChevronDown />
+                </Button>
               </div>
             </div>
           )}

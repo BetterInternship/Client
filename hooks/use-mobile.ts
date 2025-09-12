@@ -103,6 +103,7 @@ export const useMobile = () => {
   };
 
   return {
+    isMobile,
     isTouchOnSingleElement,
     isTouchEndOnElement,
     isSwipe,
