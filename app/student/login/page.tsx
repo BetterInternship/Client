@@ -138,6 +138,9 @@ export default function LoginPage() {
             >
               {loading ? "Checking..." : "Continue"}
             </Button>
+            <div className="text-center text-gray-400 mt-4">
+              Need help? Here's our hotline: 09626604999
+            </div>
           </div>
         </div>
       </div>

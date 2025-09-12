@@ -15,14 +15,10 @@ import {
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Job } from "@/lib/db/db.types";
 import { Paginator } from "@/components/ui/paginator";
-import { useAppContext } from "@/lib/ctx-app";
 import { useModal, useModalRef } from "@/hooks/use-modal";
 import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
-import {
-  getMissingProfileFields,
-  isCompleteProfile,
-} from "@/lib/utils/user-utils";
+import { isCompleteProfile } from "@/lib/utils/user-utils";
 import { UserService } from "@/lib/api/services";
 import { useFile } from "@/hooks/use-file";
 import { PDFPreview } from "@/components/shared/pdf-preview";
@@ -30,10 +26,12 @@ import { openURL } from "@/lib/utils/url-utils";
 import { IncompleteProfileModal } from "@/components/modals/IncompleteProfileModal";
 import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { JobModal } from "@/components/modals/JobModal";
+import { useMobile } from "@/hooks/use-mobile";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
   const { isAuthenticated } = useAuthContext();
+  const { isMobile } = useMobile();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [position, setPosition] = useState<string[]>([]);
   const [jobModeFilter, setJobModeFilter] = useState<string[]>([]);
@@ -62,8 +60,6 @@ export default function SearchPage() {
 
   const { open: openResumeModal, Modal: ResumeModal } =
     useModal("resume-modal");
-
-  const { isMobile: is_mobile } = useAppContext();
   const profile = useProfile();
 
   // Resume URL management for profile preview
@@ -187,7 +183,7 @@ export default function SearchPage() {
 
   const handleJobCardClick = (job: Job) => {
     setSelectedJob(job);
-    if (is_mobile) jobModalRef.current?.open();
+    if (isMobile) jobModalRef.current?.open();
   };
 
   if (jobs.error) {
@@ -213,7 +209,7 @@ export default function SearchPage() {
               <p className="text-gray-600">Loading jobs...</p>
             </div>
           </div>
-        ) : is_mobile ? (
+        ) : isMobile ? (
           <div className="w-full flex flex-col h-full">
             <div className="flex-1 overflow-y-auto p-6 pt-4">
               {jobsPage.length ? (
