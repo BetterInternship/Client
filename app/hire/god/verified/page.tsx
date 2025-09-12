@@ -81,12 +81,13 @@ export default function VerifiedEmployersPage() {
         title={e.name}
         metas={
           <>
-            <Meta>{e.applications?.length ?? 0} applications</Meta>
             <BoolBadge
               state={e.is_verified}
               onValue="verified"
               offValue="unverified"
             />
+            <Meta>{e.applications?.length ?? 0} applications</Meta>
+
             <LastLogin ts={lastTs} />
           </>
         }

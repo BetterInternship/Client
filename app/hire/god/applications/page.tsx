@@ -61,8 +61,8 @@ export default function ApplicationsPage() {
       key={a.id}
       title={
         <span className="flex items-center gap-2">
-          <span className="font-medium">{a.jobs?.title || a.job?.title}</span>
           <Badge strength="medium">{to_app_status_name(a.status)}</Badge>
+          <span className="font-medium">{a.jobs?.title || a.job?.title}</span>
         </span>
       }
       subtitle={
@@ -94,16 +94,16 @@ export default function ApplicationsPage() {
 
   const toolbar = (
     <div className="flex flex-wrap items-center gap-3">
+      <ListSummary
+        label="Applications"
+        total={applications.length}
+        visible={filtered.length}
+      />
       <Autocomplete
         setter={setSearchQuery}
         options={options}
         className="w-96"
         placeholder="Search applications..."
-      />
-      <ListSummary
-        label="Applications"
-        total={applications.length}
-        visible={filtered.length}
       />
     </div>
   );

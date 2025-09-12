@@ -41,7 +41,7 @@ export function ListShell({
         <div className={`mx-auto w-full px-4 py-3`}>{toolbar}</div>
       </div>
       <div className={`mx-auto ${container} flex-1 overflow-auto px-4 py-4`}>
-        <div className="rounded-2xl border bg-white shadow-sm">
+        <div className="rounded-md border bg-white shadow-sm">
           <ul className="divide-y">{children}</ul>
         </div>
       </div>
@@ -340,7 +340,7 @@ export function ListSummary({
 }) {
   const filtered = visible !== total;
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs text-slate-700 bg-white">
+    <span className="inline-flex items-center gap-2 rounded-md border px-3 py-1 text-xs text-slate-700 bg-white">
       <span className="font-medium">{label}</span>
       <span className="tabular-nums">
         {filtered ? (

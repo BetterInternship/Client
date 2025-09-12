@@ -59,12 +59,12 @@ export default function UnverifiedEmployersPage() {
         title={e.name}
         metas={
           <>
-            <Meta>{e.applications?.length ?? 0} applications</Meta>
             <BoolBadge
               state={e.is_verified}
               onValue="verified"
               offValue="unverified"
             />
+            <Meta>{e.applications?.length ?? 0} applications</Meta>
             <LastLogin ts={lastTs} />
           </>
         }
@@ -101,6 +101,11 @@ export default function UnverifiedEmployersPage() {
 
   const toolbar = (
     <div className="flex flex-wrap items-center gap-3">
+      <ListSummary
+        label="Unverified employers"
+        total={totalUnverified}
+        visible={filtered.length}
+      />
       <Autocomplete
         setter={setSearchQuery}
         options={options}
@@ -116,11 +121,6 @@ export default function UnverifiedEmployersPage() {
         />
         Hide without applications
       </label>
-      <ListSummary
-        label="Unverified employers"
-        total={totalUnverified}
-        visible={filtered.length}
-      />
     </div>
   );
 
