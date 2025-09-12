@@ -42,26 +42,32 @@ export default function LoginPage() {
     setEmailNorm(normalized);
 
     try {
-      const r = await email_status(normalized);
+      const email_r = await email_status(normalized);
+      const r = await login(normalized, password);
 
       // @ts-ignore
-      if (!r?.success) {
+      if (!email_r?.success) {
         setIsLoading(false);
         // @ts-ignore
         alert(r?.message ?? "Unknown error");
         return;
       }
+      
+      // @ts-ignore
+      if (r?.success) {
+        // @ts-ignore
+        if (r.god) {
+          router.push("/god");
+        }
 
-      if (!r.existing_user) {
+        router.push("/dashboard");
+      } else {
+        setError("Invalid password.");
         setIsLoading(false);
-        set_new_account(true);
-        return;
       }
-
-      setIsLoading(false);
     } catch (err: any) {
-      setIsLoading(false);
       setError(err?.message ?? "Something went wrong");
+      setIsLoading(false);
     }
   }
 
@@ -129,16 +135,16 @@ export default function LoginPage() {
 
   return (
     <div className="flex-1 flex items-center justify-center px-6 py-12 h-[80vh]">
-      <div className="w-full">
+      <div className="flex flex-col gap-12 w-full">
         {/* Welcome Message */}
-        <div className="text-center mb-10">
+        <div className="text-center">
             {!new_account ? (
-              <h2 className="text-5xl font-heading font-bold text-gray-900 mb-2">
+              <h2 className="text-5xl font-heading font-bold text-gray-900">
                 Future interns are waiting!
               </h2>
             ) : (
               <>
-                <h2 className="text-5xl font-heading font-bold text-gray-900 mb-2">
+                <h2 className="text-5xl font-heading font-bold text-gray-900">
                   First time here?
                 </h2>
                 <p className="">Don't miss out, sign up with us now!</p>
@@ -146,7 +152,7 @@ export default function LoginPage() {
             )}
         </div>
 
-        <div className="max-w-md m-auto">
+        <div className="w-[50vw] lg:w-[30vw] self-center">
           {/* Error Message */}
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -155,20 +161,20 @@ export default function LoginPage() {
           )}
 
           {/* Login Form */}
-          <form onSubmit={handle_email_submit}>
+          <form onSubmit={handle_login_request}>
             <div className="flex flex-col gap-4">
-                <Input
-                  type="email"
-                  placeholder="Email Address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
-                />
+              <Input
+                type="email"
+                placeholder="Email Address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="h-12 px-4 input-box hover:cursor-text focus:ring-0"
+              />
 
               <Input
                 type="password"
-                className="w-full h-12 px-4 input-box hover:cursor-text"
+                className="h-12 px-4 input-box hover:cursor-text"
                 placeholder="Password..."
                 onChange={(e) => setPassword(e.target.value)}
               ></Input>
@@ -176,13 +182,18 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="h-12 self-end px-6 hover:bg-gray-800 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="h-12 self-start px-8 rounded-lg"
                 scheme={"primary"}
               >
                 {isLoading ? "Logging in..." : "Login"}
               </Button>
             </div>
           </form>
+        </div>
+        
+        <div className="flex flex-col gap-2 justify-start self-center w-[50vw] lg:w-[30vw]">
+          <p className="text-gray-400">Don't have an account? <a className="text-gray-400 underline">Register here</a></p>
+          <p className="text-gray-400">Need help? Call our hotline: <a className="text-gray-400 underline" href="tel:09626604999">09626604999</a></p>
         </div>
       </div>
     </div>
