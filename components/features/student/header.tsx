@@ -415,7 +415,7 @@ const SubcategorySelect = ({
 export const Header = () => {
   const { isMobile } = useMobile();
   const { routeExcluded } = useRoute();
-  const headerRoutes = ["/login", "/register", "/otp"];
+  const headerRoutes = ["/login", "/login/otp", "/register", "/otp"];
   const router = useRouter();
   const profile = useProfile();
   const pathname = usePathname();
