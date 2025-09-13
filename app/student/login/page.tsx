@@ -138,8 +138,8 @@ export default function LoginPage() {
             >
               {loading ? "Checking..." : "Continue"}
             </Button>
-            <div className="text-center text-gray-400 mt-4">
-              Need help? Here's our hotline: 09626604999
+            <div className="text-center text-gray-400 mt-4 text-sm">
+              Need help? Here's our hotline: <span className="cursor-pointer hover:underline hover:text-primary underline-offset-6 transition-all">09626604999</span>
             </div>
           </div>
         </div>
