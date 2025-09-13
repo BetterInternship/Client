@@ -240,7 +240,7 @@ export function TagPill({
             e.stopPropagation(); // already present for remove safety
             onRemove();
           }}
-          className="ml-0.5 -mr-0.5 rounded hover:bg-black/10 p-[2px]"
+          className="ml-0.5 -mr-0.5 rounded hover:bg-black/10 p-[2px] transition-all"
           aria-label={`Remove ${label}`}
         >
           <X className="h-3 w-3" />
@@ -290,7 +290,7 @@ export function EditableTags({
         {tags?.map((t) => (
           <TagPill key={t} label={t} onRemove={() => onRemove(id, t)} />
         ))}
-        <div className="inline-flex items-center gap-1">
+        <span className="inline-flex items-center gap-1">
           <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -303,8 +303,10 @@ export function EditableTags({
             placeholder={placeholder}
             className="h-6 rounded border px-2 text-xs text-slate-700 outline-none focus:ring-1 focus:ring-slate-300"
           />
-          <Plus className="h-4 w-4 hover:text-destructive cursor-pointer" onClick={commit} />
-        </div>
+          <button className="ml-0.5 -mr-0.5 rounded hover:bg-black/10 p-[2px] transition-all" onClick={commit} >
+            <Plus className="h-3 w-3" />
+          </button>
+        </span>
       </div>
 
       {draft && remaining.length > 0 ? (
