@@ -282,7 +282,6 @@ export function EditableTags({
   return (
     <div
       className="flex flex-col gap-1"
-      // ⬇️ prevent clicks/presses inside this block from triggering the row click
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
       onKeyDown={(e) => e.stopPropagation()}
@@ -292,7 +291,6 @@ export function EditableTags({
           <TagPill key={t} label={t} onRemove={() => onRemove(id, t)} />
         ))}
         <div className="inline-flex items-center gap-1">
-          <Plus className="h-3.5 w-3.5 opacity-60" />
           <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -305,6 +303,7 @@ export function EditableTags({
             placeholder={placeholder}
             className="h-6 rounded border px-2 text-xs text-slate-700 outline-none focus:ring-1 focus:ring-slate-300"
           />
+          <Plus className="h-4 w-4 hover:text-destructive cursor-pointer" onClick={commit} />
         </div>
       </div>
 
