@@ -2,34 +2,35 @@
 // Wraps everything in DashboardProvider for shared state management
 "use client";
 
-import { useAuthContext } from "../authctx";
 import ContentLayout from "@/components/features/hire/content-layout";
 import { ApplicationsTable } from "@/components/features/hire/dashboard/ApplicationsTable";
-import { ShowUnverifiedBanner } from "@/components/ui/banner";
-import { useSideModal } from "@/hooks/use-side-modal";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useConversation, useConversations } from "@/hooks/use-conversation";
-import { useEmployerApplications, useProfile } from "@/hooks/use-employer-api";
-import { Button } from "@/components/ui/button";
-import { EmployerApplication } from "@/lib/db/db.types";
-import { FileText, MessageCircle, SendHorizonal } from "lucide-react";
-import { EmployerConversationService, UserService } from "@/lib/api/services";
-import { useModal } from "@/hooks/use-modal";
-import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { ReviewModalContent } from "@/components/features/hire/dashboard/ReviewModalContent";
+import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { PDFPreview } from "@/components/shared/pdf-preview";
-import { getFullName } from "@/lib/utils/user-utils";
-import { Textarea } from "@/components/ui/textarea";
-import { Message } from "@/components/ui/messages";
-import { useFile } from "@/hooks/use-file";
+import { ShowUnverifiedBanner } from "@/components/ui/banner";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
+import { Message } from "@/components/ui/messages";
+import { Textarea } from "@/components/ui/textarea";
+import { useConversation, useConversations } from "@/hooks/use-conversation";
+import { useEmployerApplications, useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
+import { useFile } from "@/hooks/use-file";
+import { useModal } from "@/hooks/use-modal";
+import { useSideModal } from "@/hooks/use-side-modal";
+import { EmployerConversationService, UserService } from "@/lib/api/services";
+import { EmployerApplication } from "@/lib/db/db.types";
+import { getFullName } from "@/lib/utils/user-utils";
 import { motion } from "framer-motion";
+import { FileText, MessageCircle, SendHorizonal } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useAuthContext } from "../authctx";
 
 function DashboardContent() {
   const { isAuthenticated, redirectIfNotLoggedIn, loading } = useAuthContext();
   const profile = useProfile();
   const applications = useEmployerApplications();
+  const jobs = useOwnedJobs();
 
   const [selectedApplication, setSelectedApplication] =
     useState<EmployerApplication | null>(null);
@@ -211,6 +212,7 @@ function DashboardContent() {
           ) : (
             <ApplicationsTable
               applications={applications.employer_applications}
+              jobs={jobs.ownedJobs}
               openChatModal={openChatModal}
               updateConversationId={updateConversationId}
               onApplicationClick={handleApplicationClick}

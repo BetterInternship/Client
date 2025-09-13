@@ -1,14 +1,16 @@
 "use client";
 
-import { EmployerApplication } from "@/lib/db/db.types";
-import { ApplicationRow } from "./ApplicationRow";
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Tab, TabGroup } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { useConversations } from "@/hooks/use-conversation";
+import { EmployerApplication, Job } from "@/lib/db/db.types";
+import { ApplicationRow } from "./ApplicationRow";
+import { JobListingsBox } from "./JobListingsBox";
 
 interface ApplicationsTableProps {
   applications: EmployerApplication[];
+  jobs: Job[];
   onApplicationClick: (application: EmployerApplication) => void;
   onNotesClick: (application: EmployerApplication) => void;
   onScheduleClick: (application: EmployerApplication) => void;
@@ -20,6 +22,7 @@ interface ApplicationsTableProps {
 
 export function ApplicationsTable({
   applications,
+  jobs,
   onApplicationClick,
   onNotesClick,
   onScheduleClick,
@@ -50,7 +53,7 @@ export function ApplicationsTable({
         >
           <table className="relative table-auto border-separate border-spacing-0 w-full h-full max-h-full">
             <tbody className="w-full h-full max-h-full ">
-              {sortedApplications.some(
+              {/* {sortedApplications.some(
                 (application) => application.status === 0
               ) ? (
                 sortedApplications
@@ -68,6 +71,21 @@ export function ApplicationsTable({
                       openChatModal={openChatModal}
                       setSelectedApplication={setSelectedApplication}
                       updateConversationId={updateConversationId}
+                    />
+                  ))
+              ) : ( */}
+              {jobs.length > 0 ? (
+                jobs
+                  .filter(job => 
+                    applications.some(app => app.job_id === job.id && app.status === 0)
+                  )
+                  .map((job) => (
+                    <JobListingsBox 
+                      key={job.id}
+                      job={job}
+                      applications={applications}
+                      // onJobListingClick={handleJobListingClick}
+                      statusID={0}
                     />
                   ))
               ) : (
