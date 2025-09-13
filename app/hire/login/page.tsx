@@ -182,7 +182,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="h-12 self-start px-8 rounded-lg"
+                className="h-12 self-end px-8 rounded-lg"
                 scheme={"primary"}
               >
                 {isLoading ? "Logging in..." : "Login"}
@@ -191,8 +191,8 @@ export default function LoginPage() {
           </form>
         </div>
         
-        <div className="flex flex-col gap-2 self-center w-[50vw] lg:w-[30vw]">
-          <p className="text-gray-400">Don't have an account? <a className="text-gray-400 underline">Register here</a></p>
+        <div className="flex flex-col gap-2 self-center items-center w-[50vw] lg:w-[30vw]">
+          <p className="text-gray-400">Don't have an account? <a className="text-gray-400 underline" href="/register">Register here</a></p>
           <p className="text-gray-400">Need help? Call our hotline: <a className="text-gray-400 underline" href="tel:09626604999">09626604999</a></p>
         </div>
       </div>
