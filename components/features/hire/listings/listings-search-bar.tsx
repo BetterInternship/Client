@@ -1,19 +1,20 @@
 import { Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Link from "next/link"
 
 interface ListingsSearchBarProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   onKeyPress: (e: React.KeyboardEvent) => void;
-  onCreateJob: () => void;
+  //onCreateJob: () => void;
 }
 
 export function ListingsSearchBar({
   searchTerm,
   onSearchChange,
   onKeyPress,
-  onCreateJob,
+  //onCreateJob,
 }: ListingsSearchBarProps) {
   return (
     <div
@@ -31,13 +32,15 @@ export function ListingsSearchBar({
           className="pl-12 pr-4 h-12 bg-white border border-gray-200 rounded-xl shadow-sm text-gray-900 placeholder:text-gray-400 text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
         />
       </div>
-      <Button
-        size="icon"
-        onClick={onCreateJob}
-        data-tour="add-job-btn"
-      >
-        <Plus className="h-4 w-4" />
-      </Button>
+      <Link href="/listings/create">
+        <Button
+          size="icon"
+          //onClick={onCreateJob}
+          data-tour="add-job-btn"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
+      </Link>
     </div>
   );
 }
