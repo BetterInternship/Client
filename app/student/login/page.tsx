@@ -5,10 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { MultipartFormBuilder } from "@/lib/multipart-form";
 
 export default function LoginPage() {
-  const { emailStatus, register, redirectIfLoggedIn } = useAuthContext();
+  const { emailStatus, redirectIfLoggedIn } = useAuthContext();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -28,16 +27,6 @@ export default function LoginPage() {
     }
   }, [searchParams, error]);
 
-  const validateDLSUEmail = (email: string): boolean => {
-    const dlsuDomains = [
-      "@dlsu.edu.ph",
-      "@students.dlsu.edu.ph",
-      "@staff.dlsu.edu.ph",
-      "@faculty.dlsu.edu.ph",
-    ];
-    return dlsuDomains.some((domain) => email.toLowerCase().endsWith(domain));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -45,13 +34,6 @@ export default function LoginPage() {
 
     if (!normalized) {
       setError("Please enter your email address");
-      return;
-    }
-
-    if (!validateDLSUEmail(normalized)) {
-      setError(
-        "We're currently not accepting non-DLSU students, but we're open to partnering with your school if you can serve as our campus ambassador to help us gather the necessary data and paperwork. Contact us at hello@betterinternship.com."
-      );
       return;
     }
 
@@ -139,7 +121,10 @@ export default function LoginPage() {
               {loading ? "Checking..." : "Continue"}
             </Button>
             <div className="text-center text-gray-400 mt-4 text-sm">
-              Need help? Here's our hotline: <span className="cursor-pointer hover:underline hover:text-primary underline-offset-6 transition-all">09626604999</span>
+              Need help? Here's our hotline:{" "}
+              <span className="cursor-pointer hover:underline hover:text-primary underline-offset-6 transition-all">
+                09626604999
+              </span>
             </div>
           </div>
         </div>

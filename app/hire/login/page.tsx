@@ -52,7 +52,7 @@ export default function LoginPage() {
         alert(r?.message ?? "Unknown error");
         return;
       }
-      
+
       // @ts-ignore
       if (r?.success) {
         // @ts-ignore
@@ -69,7 +69,7 @@ export default function LoginPage() {
       setError(err?.message ?? "Something went wrong");
       setIsLoading(false);
     }
-  }
+  };
 
   const handle_email_submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,18 +138,18 @@ export default function LoginPage() {
       <div className="flex flex-col gap-12 w-full">
         {/* Welcome Message */}
         <div className="text-center">
-            {!new_account ? (
+          {!new_account ? (
+            <h2 className="text-5xl font-heading font-bold text-gray-900">
+              Future interns are waiting!
+            </h2>
+          ) : (
+            <>
               <h2 className="text-5xl font-heading font-bold text-gray-900">
-                Future interns are waiting!
+                First time here?
               </h2>
-            ) : (
-              <>
-                <h2 className="text-5xl font-heading font-bold text-gray-900">
-                  First time here?
-                </h2>
-                <p className="">Don't miss out, sign up with us now!</p>
-              </>
-            )}
+              <p className="">Don't miss out, sign up with us now!</p>
+            </>
+          )}
         </div>
 
         <div className="w-[50vw] lg:w-[30vw] self-center">
@@ -169,12 +169,12 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-12 px-4 input-box hover:cursor-text focus:ring-0"
+                className="h-12 px-4 !rounded-[0.33em] input-box hover:cursor-text focus:ring-0"
               />
 
               <Input
                 type="password"
-                className="h-12 px-4 input-box hover:cursor-text"
+                className="h-12 px-4 !rounded-[0.33em] input-box hover:cursor-text"
                 placeholder="Password..."
                 onChange={(e) => setPassword(e.target.value)}
               ></Input>
@@ -182,7 +182,8 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="h-12 self-end px-8 rounded-lg"
+                className="self-end px-8"
+                size="md"
                 scheme={"primary"}
               >
                 {isLoading ? "Logging in..." : "Login"}
@@ -190,10 +191,26 @@ export default function LoginPage() {
             </div>
           </form>
         </div>
-        
+
         <div className="flex flex-col gap-2 self-center items-center w-[80vw] lg:w-[30vw]">
-          <p className="text-gray-500">Don't have an account? <a className="text-primary hover:underline transition-colors duration-200" href="/register">Register here</a></p>
-          <p className="text-gray-500">Need help? Call our hotline: <a className="text-primary hover:underline transition-colors duration-200" href="tel:09276604999">09276604999</a></p>
+          <p className="text-gray-500">
+            Don't have an account?{" "}
+            <a
+              className="text-primary hover:underline transition-colors duration-200"
+              href="/register"
+            >
+              Register here
+            </a>
+          </p>
+          <p className="text-gray-500">
+            Need help? Call our hotline:{" "}
+            <a
+              className="text-primary hover:underline transition-colors duration-200"
+              href="tel:09276604999"
+            >
+              09276604999
+            </a>
+          </p>
         </div>
       </div>
     </div>

@@ -3,23 +3,17 @@
 import { useEffect, useState } from "react";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useRouter, useSearchParams } from "next/navigation";
-import { isValidRequiredURL, toURL } from "@/lib/utils/url-utils";
-import { Employer, PublicUser } from "@/lib/db/db.types";
-import {
-  createEditForm,
-  FormCheckbox,
-  FormDatePicker,
-  FormDropdown,
-  FormInput,
-} from "@/components/EditForm";
+import { PublicUser } from "@/lib/db/db.types";
+import { createEditForm, FormDropdown, FormInput } from "@/components/EditForm";
 import { Card } from "@/components/ui/card";
-import { ErrorLabel } from "@/components/ui/labels";
+import { ErrorLabel, LabeledProperty } from "@/components/ui/labels";
 import { StoryBook } from "@/components/ui/storybook";
 import { Button } from "@/components/ui/button";
 import { isValidEmail, isValidPHNumber } from "@/lib/utils";
 import { MultipartFormBuilder } from "@/lib/multipart-form";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 
 const [UserRegisterForm, useUserRegisterForm] = createEditForm<PublicUser>();
 
@@ -103,6 +97,9 @@ const UserEditor = ({
     if (!formData.last_name) {
       missingFields.push("Last Name");
     }
+    if (!formData.edu_verification_email) {
+      missingFields.push("Last Name");
+    }
     if (!formData.phone_number || !isValidPHNumber(formData.phone_number)) {
       missingFields.push("Valid Philippine Phone Number");
     }
@@ -168,9 +165,7 @@ const UserEditor = ({
     addValidator(
       "phone_number",
       (phone: string) =>
-        phone &&
-        !isValidPHNumber(phone) &&
-        "Invalid PH number."
+        phone && !isValidPHNumber(phone) && "Invalid PH number."
     );
     addValidator(
       "university",
@@ -196,6 +191,21 @@ const UserEditor = ({
             Student Registration Form
           </div>
           <div className="mb-4 flex flex-col space-y-3">
+            <Badge>
+              <div className="">
+                An edu.ph is required to register, and is used to verify our
+                users.
+              </div>
+            </Badge>
+            <div>
+              <ErrorLabel value={formErrors.edu_verification_email} />
+              <FormInput
+                label="Edu Email"
+                value={formData.edu_verification_email ?? ""}
+                setter={fieldSetter("edu_verification_email")}
+                maxLength={100}
+              />
+            </div>
             <div>
               <ErrorLabel value={formErrors.first_name} />
               <FormInput
@@ -211,15 +221,6 @@ const UserEditor = ({
                 label="Last Name"
                 value={formData.last_name ?? ""}
                 setter={fieldSetter("last_name")}
-                maxLength={100}
-              />
-            </div>
-            <div>
-              <ErrorLabel value={formErrors.phone_number} />
-              <FormInput
-                label="Phone Number"
-                value={formData.phone_number ?? ""}
-                setter={fieldSetter("phone_number")}
                 maxLength={100}
               />
             </div>
