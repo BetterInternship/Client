@@ -6,7 +6,6 @@ import { Tab, TabGroup } from "@/components/ui/tabs";
 import { useConversations } from "@/hooks/use-conversation";
 import { EmployerApplication, Job } from "@/lib/db/db.types";
 import { ApplicationRow } from "./ApplicationRow";
-import { JobListingsBox } from "./JobListingsBox";
 
 interface ApplicationsTableProps {
   applications: EmployerApplication[];
@@ -14,6 +13,7 @@ interface ApplicationsTableProps {
   onApplicationClick: (application: EmployerApplication) => void;
   onNotesClick: (application: EmployerApplication) => void;
   onScheduleClick: (application: EmployerApplication) => void;
+  onJobListingClick: (jobId: string, statusId: number) => void;
   onStatusChange: (application: EmployerApplication, status: number) => void;
   openChatModal: () => void;
   updateConversationId: (coversationId: string) => void;
@@ -26,6 +26,7 @@ export function ApplicationsTable({
   onApplicationClick,
   onNotesClick,
   onScheduleClick,
+  onJobListingClick,
   onStatusChange,
   openChatModal,
   updateConversationId,
@@ -53,7 +54,7 @@ export function ApplicationsTable({
         >
           <table className="relative table-auto border-separate border-spacing-0 w-full h-full max-h-full">
             <tbody className="w-full h-full max-h-full ">
-              {/* {sortedApplications.some(
+              {sortedApplications.some(
                 (application) => application.status === 0
               ) ? (
                 sortedApplications
@@ -73,22 +74,22 @@ export function ApplicationsTable({
                       updateConversationId={updateConversationId}
                     />
                   ))
-              ) : ( */}
-              {jobs.length > 0 ? (
-                jobs
-                  .filter(job => 
-                    applications.some(app => app.job_id === job.id && app.status === 0)
-                  )
-                  .map((job) => (
-                    <JobListingsBox 
-                      key={job.id}
-                      job={job}
-                      applications={applications}
-                      // onJobListingClick={handleJobListingClick}
-                      statusID={0}
-                    />
-                  ))
               ) : (
+              // {jobs.length > 0 ? (
+              //   jobs
+              //     .filter(job =>
+              //       applications.some(app => app.job_id === job.id && app.status === 0)
+              //     )
+              //     .map((job) => (
+              //       <JobListingsBox
+              //         key={job.id}
+              //         job={job}
+              //         applications={applications}
+              //         onJobListingClick={() => onJobListingClick}
+              //         statusID={0}
+              //       />
+              //     ))
+              // ) : (
                 <div className="p-2">
                   <Badge>No applications under this category.</Badge>
                 </div>

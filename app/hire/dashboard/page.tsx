@@ -3,7 +3,8 @@
 "use client";
 
 import ContentLayout from "@/components/features/hire/content-layout";
-import { ApplicationsTable } from "@/components/features/hire/dashboard/ApplicationsTable";
+import { ApplicationsContent } from "@/components/features/hire/dashboard/ApplicationsContent";
+import { JobsContent } from "@/components/features/hire/dashboard/JobsContent";
 import { ReviewModalContent } from "@/components/features/hire/dashboard/ReviewModalContent";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { PDFPreview } from "@/components/shared/pdf-preview";
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
 import { Message } from "@/components/ui/messages";
+import { Tab, TabGroup } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useConversation, useConversations } from "@/hooks/use-conversation";
 import { useEmployerApplications, useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
@@ -43,6 +45,12 @@ function DashboardContent() {
     );
     setConversationId(userConversation?.id);
   };
+
+  const [viewMode, setViewMode] = useState<'jobs' | 'applications'>('jobs');
+  const [selectedJobId, setSelectedJobId] =
+    useState<string | null>(null);
+  const [filteredStatus, setFilteredStatus] =
+    useState<number[]>([]);
 
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const chatAnchorRef = useRef<HTMLDivElement>(null);
@@ -162,6 +170,14 @@ function DashboardContent() {
       applications.review(id, { status: reviewOptions.status });
   };
 
+  const filteredApplications = selectedJobId
+    ? applications.employer_applications.filter(application =>
+        application.job_id === selectedJobId &&
+        (filteredStatus.includes(0) ? true : application.status !== undefined && filteredStatus.includes(application.status))
+      )
+    : applications.employer_applications;
+
+
   redirectIfNotLoggedIn();
 
   const handleApplicationClick = (application: EmployerApplication) => {
@@ -178,6 +194,22 @@ function DashboardContent() {
     setSelectedApplication(application);
     window?.open(application.user?.calendar_link ?? "", "_blank");
   };
+
+  const handleJobListingClick = (jobId: string, statusId: number[]) => {
+    setSelectedJobId(jobId);
+    setFilteredStatus(statusId);
+    setViewMode('applications');
+  };
+
+  const handleJobBack = () => {
+    setViewMode('jobs');
+    setSelectedJobId(null);
+    setFilteredStatus([]);
+  }
+
+  const handleCurrentStatus = (application: EmployerApplication) => {
+
+  }
 
   const handleStatusChange = (
     application: EmployerApplication,
@@ -210,17 +242,161 @@ function DashboardContent() {
           {!profile.loading && !profile.data?.is_verified ? (
             <ShowUnverifiedBanner />
           ) : (
-            <ApplicationsTable
-              applications={applications.employer_applications}
-              jobs={jobs.ownedJobs}
-              openChatModal={openChatModal}
-              updateConversationId={updateConversationId}
-              onApplicationClick={handleApplicationClick}
-              onNotesClick={handleNotesClick}
-              onScheduleClick={handleScheduleClick}
-              onStatusChange={handleStatusChange}
-              setSelectedApplication={setSelectedApplication}
-            />
+            // <ApplicationsTable
+            //   applications={applications.employer_applications}
+            //   jobs={jobs.ownedJobs}
+            //   openChatModal={openChatModal}
+            //   updateConversationId={updateConversationId}
+            //   onApplicationClick={handleApplicationClick}
+            //   onNotesClick={handleNotesClick}
+            //   onScheduleClick={handleScheduleClick}
+            //   onJobListingClick={handleJobListingClick}
+            //   onStatusChange={handleStatusChange}
+            //   setSelectedApplication={setSelectedApplication}
+            // />
+            <>
+              {viewMode === 'applications' && (
+                <Button
+                  variant="outline"
+                  onClick={handleJobBack}
+                  className="mb-4 w-fit"
+                >
+                  Back
+                </Button>
+              )}
+              <Card className="overflow-auto h-full max-h-full border-none p-0 pt-2">
+                <>
+                <TabGroup>
+                  <Tab
+                    indicator={applications.employer_applications
+                      .filter((application) => application.status === 0)
+                      .some((application) =>
+                        conversations.unreads.some((unread) =>
+                          unread.subscribers.includes(application.user_id)
+                        )
+                      )}
+                    name="New Applications"
+                  >
+                    {viewMode === 'jobs' ? (
+                      <JobsContent
+                        applications={applications.employer_applications}
+                        jobs={jobs.ownedJobs}
+                        statusId={[0]}
+                        onJobListingClick={handleJobListingClick}
+                      />
+                    ) : (
+                      <ApplicationsContent
+                        applications={filteredApplications}
+                        statusId={[0]}
+                        openChatModal={openChatModal}
+                        updateConversationId={updateConversationId}
+                        onApplicationClick={handleApplicationClick}
+                        onNotesClick={handleNotesClick}
+                        onScheduleClick={handleScheduleClick}
+                        onStatusChange={handleStatusChange}
+                        setSelectedApplication={setSelectedApplication}
+                      />
+                    )}
+                  </Tab>
+                  
+                  <Tab
+                    name="Ongoing Applications"
+                    indicator={applications.employer_applications
+                      .filter((application) => application.status === 1)
+                      .some((application) =>
+                        conversations.unreads.some((unread) =>
+                          unread.subscribers.includes(application.user_id)
+                        )
+                      )}
+                  >
+                    {viewMode === 'jobs' ? (
+                      <JobsContent
+                        applications={applications.employer_applications}
+                        jobs={jobs.ownedJobs}
+                        statusId={[1]}
+                        onJobListingClick={handleJobListingClick}
+                      />
+                    ) : (
+                      <ApplicationsContent
+                        applications={filteredApplications}
+                        statusId={[1]}
+                        openChatModal={openChatModal}
+                        updateConversationId={updateConversationId}
+                        onApplicationClick={handleApplicationClick}
+                        onNotesClick={handleNotesClick}
+                        onScheduleClick={handleScheduleClick}
+                        onStatusChange={handleStatusChange}
+                        setSelectedApplication={setSelectedApplication}
+                      />
+                    )}
+                  </Tab>
+                  
+                  <Tab
+                    name="Finalized Applications"
+                    indicator={applications.employer_applications
+                      .filter((application) => application.status === 4 || application.status === 6)
+                      .some((application) =>
+                        conversations.unreads.some((unread) =>
+                          unread.subscribers.includes(application.user_id)
+                        )
+                      )}
+                  >
+                    {viewMode === 'jobs' ? (
+                      <JobsContent
+                        applications={applications.employer_applications}
+                        jobs={jobs.ownedJobs}
+                        statusId={[4, 6]}
+                        onJobListingClick={handleJobListingClick}
+                      />
+                    ) : (
+                      <ApplicationsContent
+                        applications={filteredApplications}
+                        statusId={[4, 6]}
+                        openChatModal={openChatModal}
+                        updateConversationId={updateConversationId}
+                        onApplicationClick={handleApplicationClick}
+                        onNotesClick={handleNotesClick}
+                        onScheduleClick={handleScheduleClick}
+                        onStatusChange={handleStatusChange}
+                        setSelectedApplication={setSelectedApplication}
+                      />
+                    )}
+                  </Tab>
+                  <Tab
+                    name="Archived Applications"
+                    indicator={applications.employer_applications
+                      .filter((application) => application.status === 1)
+                      .some((application) =>
+                        conversations.unreads.some((unread) =>
+                          unread.subscribers.includes(application.user_id)
+                        ) && jobs.ownedJobs.filter((job) => job.is_active === false || job.is_deleted === true || job.is_unlisted === true)
+                      )}
+                  >
+                    {viewMode === 'jobs' ? (
+                      <JobsContent
+                        applications={applications.employer_applications}
+                        jobs={jobs.ownedJobs.filter((job) => job.is_active === false || job.is_deleted === true || job.is_unlisted === true)}
+                        statusId={[0, 1, 4, 6]}
+                        onJobListingClick={handleJobListingClick}
+                      />
+                    ) : (
+                      <ApplicationsContent
+                        applications={filteredApplications}
+                        statusId={[0, 1, 4, 6]}
+                        openChatModal={openChatModal}
+                        updateConversationId={updateConversationId}
+                        onApplicationClick={handleApplicationClick}
+                        onNotesClick={handleNotesClick}
+                        onScheduleClick={handleScheduleClick}
+                        onStatusChange={handleStatusChange}
+                        setSelectedApplication={setSelectedApplication}
+                      />
+                    )}
+                  </Tab>
+                </TabGroup>
+                </>
+              </Card>
+            </>
           )}
         </div>
       </div>

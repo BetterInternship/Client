@@ -6,20 +6,28 @@ import { EmployerApplication, Job } from "@/lib/db/db.types";
 interface JobListingProps {
     job: Job;
     applications: EmployerApplication[];
-    // onJobListingClick: (job_id: string) => void;
-    statusID: number;
+    onJobListingClick: (jobId: string, statusId: number[]) => void;
+    statusId: number[];
 }
 
 export function JobListingsBox ({
     job,
     applications,
-    // onJobListingClick,
-    statusID }: JobListingProps) {
+    onJobListingClick,
+    statusId }: JobListingProps) {
         const applicants = applications.filter((application) => application.job_id === job.id);
-        const statusFilteredApplicants = applicants.filter((application) => application.status === statusID);
+        const statusFilteredApplicants = applicants.filter((application) => application.status !== undefined &&
+        statusId.includes(application.status));
+        const handleClick = () => {
+            if(job.id){
+                onJobListingClick(job.id, statusId);
+            }
+        };
 
     return(
-        <Card className="m-4 hover:bg-primary/25 hover:cursor-pointer">
+        <Card className="m-4 hover:bg-primary/25 hover:cursor-pointer"
+        onClick={handleClick}
+        >
             <h1 className="font-bold text-gray-900 text-base">{job.title}</h1>
             <p className="text-sm text-gray-500">
                 <Badge strength="medium" className="bg-white">

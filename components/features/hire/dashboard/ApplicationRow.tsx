@@ -1,15 +1,15 @@
 // Single row component for the applications table
 // Props in (application data), events out (onView, onNotes, etc.)
 // No business logic - just presentation and event emission
-import { EmployerApplication } from "@/lib/db/db.types";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { getFullName } from "@/lib/utils/user-utils";
-import { UserPfp } from "@/components/shared/pfp";
 import { StatusDropdown } from "@/components/common/StatusDropdown";
-import { useDbRefs } from "@/lib/db/use-refs";
+import { UserPfp } from "@/components/shared/pfp";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useConversations } from "@/hooks/use-conversation";
+import { EmployerApplication } from "@/lib/db/db.types";
+import { useDbRefs } from "@/lib/db/use-refs";
 import { cn } from "@/lib/utils";
+import { getFullName } from "@/lib/utils/user-utils";
 
 interface ApplicationRowProps {
   application: EmployerApplication;
@@ -46,14 +46,16 @@ export function ApplicationRow({
           <div>
             <p className="font-medium text-gray-900">
               {getFullName(application.user)}{" "}
-              <span className="opacity-70">
-                — {to_university_name(application.user?.university) || ""} •{" "}
+              <span className="opacity-70 text-sm">
+                — 
+                {/* {to_university_name(application.user?.university) || ""} •{" "} */}
                 {to_level_name(application.user?.year_level) || ""}
               </span>
             </p>
             <p className="text-sm text-gray-500">
               <Badge strength="medium" className="bg-white">
-                {application.job?.title}
+                {/* {application.job?.title} */}
+                {to_university_name(application.user?.university) || ""}
               </Badge>
             </p>
           </div>
