@@ -754,23 +754,27 @@ const ProfileEditor = forwardRef<
             />
           )}
 
-          <FormDatePicker
-            label="Expected Start Date"
-            date={isoToMs(formData.expected_start_date)}
-            setter={(ms?: number) =>
-              setField("expected_start_date", msToISO(ms) ?? null)
-            }
-            required={false}
-          />
+          <div className="flex flex-row gap-6">
+            <FormDatePicker
+              className="w-full"
+              label="Expected Start Date"
+              date={isoToMs(formData.expected_start_date)}
+              setter={(ms?: number) =>
+                setField("expected_start_date", msToISO(ms) ?? null)
+              }
+              required={false}
+            />
 
-          <FormDatePicker
-            label="Expected End Date"
-            date={isoToMs(formData.expected_end_date)}
-            setter={(ms?: number) =>
-              setField("expected_end_date", msToISO(ms) ?? null)
-            }
-            required={false}
-          />
+            <FormDatePicker
+              className="w-full"
+              label="Expected End Date"
+              date={isoToMs(formData.expected_end_date)}
+              setter={(ms?: number) =>
+                setField("expected_end_date", msToISO(ms) ?? null)
+              }
+              required={false}
+            />
+          </div>
 
           <FormInput
             label="Expected Duration (in hours)"
