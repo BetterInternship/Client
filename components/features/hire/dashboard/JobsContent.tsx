@@ -1,3 +1,5 @@
+//contains the contents to display the job listings box
+
 "use client";
 
 import { Badge } from "@/components/ui/badge";

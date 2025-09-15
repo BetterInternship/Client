@@ -1,4 +1,5 @@
-// components/features/hire/dashboard/ApplicationsContent.tsx
+// contains the contents to display the application rows
+// rework of ApplicationsTable
 "use client";
 
 import { Badge } from "@/components/ui/badge";

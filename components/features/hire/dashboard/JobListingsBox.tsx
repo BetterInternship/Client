@@ -1,3 +1,5 @@
+// ui for the job box or card
+
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { EmployerApplication, Job } from "@/lib/db/db.types";

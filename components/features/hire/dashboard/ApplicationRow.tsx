@@ -37,7 +37,7 @@ export function ApplicationRow({
 
   return (
     <tr
-      className="w-full hover:bg-primary/25 even:bg-gray-100 hover:cursor-pointer transition-colors flex flex-row items-center justify-between"
+      className="w-full hover:bg-primary/25 odd:bg-gray-100 hover:cursor-pointer transition-colors flex flex-row items-center justify-between"
       onClick={onView}
     >
       <td className="w-full px-4 p-1">

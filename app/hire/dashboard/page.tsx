@@ -24,7 +24,7 @@ import { EmployerConversationService, UserService } from "@/lib/api/services";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { getFullName } from "@/lib/utils/user-utils";
 import { motion } from "framer-motion";
-import { FileText, MessageCircle, SendHorizonal } from "lucide-react";
+import { ArrowLeft, FileText, MessageCircle, SendHorizonal } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthContext } from "../authctx";
 
@@ -170,6 +170,7 @@ function DashboardContent() {
       applications.review(id, { status: reviewOptions.status });
   };
 
+  //gets applications for the specific job id
   const filteredApplications = selectedJobId
     ? applications.employer_applications.filter(application =>
         application.job_id === selectedJobId &&
@@ -195,12 +196,14 @@ function DashboardContent() {
     window?.open(application.user?.calendar_link ?? "", "_blank");
   };
 
+  //shows applications when job listing is clicked
   const handleJobListingClick = (jobId: string, statusId: number[]) => {
     setSelectedJobId(jobId);
     setFilteredStatus(statusId);
     setViewMode('applications');
   };
 
+  //sets the job list
   const handleJobBack = () => {
     setViewMode('jobs');
     setSelectedJobId(null);
@@ -236,6 +239,7 @@ function DashboardContent() {
   let lastSelf = false;
 
   return (
+    //! big change is moving the tab group from ApplicationsTable to the page here for both access to jobs and applications
     <ContentLayout>
       <div className="flex-1 flex flex-col w-full">
         <div className="p-6 flex flex-col h-0 flex-1 space-y-6">
@@ -255,7 +259,7 @@ function DashboardContent() {
             //   setSelectedApplication={setSelectedApplication}
             // />
             <>
-              {viewMode === 'applications' && (
+              {/* {viewMode === 'applications' && (
                 <Button
                   variant="outline"
                   onClick={handleJobBack}
@@ -263,7 +267,7 @@ function DashboardContent() {
                 >
                   Back
                 </Button>
-              )}
+              )} */}
               <Card className="overflow-auto h-full max-h-full border-none p-0 pt-2">
                 <>
                 <TabGroup>
@@ -285,7 +289,14 @@ function DashboardContent() {
                         onJobListingClick={handleJobListingClick}
                       />
                     ) : (
-                      <ApplicationsContent
+                      <>
+                        <button
+                          onClick={handleJobBack}
+                          className="flex items-center text-gray-600 hover:text-gray-900 transition-colors m-4"
+                        >
+                          <ArrowLeft className="h-5 w-5" />
+                        </button>
+                        <ApplicationsContent
                         applications={filteredApplications}
                         statusId={[0]}
                         openChatModal={openChatModal}
@@ -295,7 +306,8 @@ function DashboardContent() {
                         onScheduleClick={handleScheduleClick}
                         onStatusChange={handleStatusChange}
                         setSelectedApplication={setSelectedApplication}
-                      />
+                        ></ApplicationsContent>
+                      </>
                     )}
                   </Tab>
                   
@@ -317,7 +329,14 @@ function DashboardContent() {
                         onJobListingClick={handleJobListingClick}
                       />
                     ) : (
-                      <ApplicationsContent
+                      <>
+                        <button
+                          onClick={handleJobBack}
+                          className="flex items-center text-gray-600 hover:text-gray-900 transition-colors m-4"
+                        >
+                          <ArrowLeft className="h-5 w-5" />
+                        </button>
+                        <ApplicationsContent
                         applications={filteredApplications}
                         statusId={[1]}
                         openChatModal={openChatModal}
@@ -327,7 +346,8 @@ function DashboardContent() {
                         onScheduleClick={handleScheduleClick}
                         onStatusChange={handleStatusChange}
                         setSelectedApplication={setSelectedApplication}
-                      />
+                        ></ApplicationsContent>
+                      </>
                     )}
                   </Tab>
                   
@@ -349,7 +369,14 @@ function DashboardContent() {
                         onJobListingClick={handleJobListingClick}
                       />
                     ) : (
-                      <ApplicationsContent
+                      <>
+                        <button
+                          onClick={handleJobBack}
+                          className="flex items-center text-gray-600 hover:text-gray-900 transition-colors m-4"
+                        >
+                          <ArrowLeft className="h-5 w-5" />
+                        </button>
+                        <ApplicationsContent
                         applications={filteredApplications}
                         statusId={[4, 6]}
                         openChatModal={openChatModal}
@@ -359,7 +386,8 @@ function DashboardContent() {
                         onScheduleClick={handleScheduleClick}
                         onStatusChange={handleStatusChange}
                         setSelectedApplication={setSelectedApplication}
-                      />
+                        ></ApplicationsContent>
+                      </>
                     )}
                   </Tab>
                   <Tab
@@ -380,7 +408,14 @@ function DashboardContent() {
                         onJobListingClick={handleJobListingClick}
                       />
                     ) : (
-                      <ApplicationsContent
+                      <>
+                        <button
+                          onClick={handleJobBack}
+                          className="flex items-center text-gray-600 hover:text-gray-900 transition-colors m-4"
+                        >
+                          <ArrowLeft className="h-5 w-5" />
+                        </button>
+                        <ApplicationsContent
                         applications={filteredApplications}
                         statusId={[0, 1, 4, 6]}
                         openChatModal={openChatModal}
@@ -390,7 +425,8 @@ function DashboardContent() {
                         onScheduleClick={handleScheduleClick}
                         onStatusChange={handleStatusChange}
                         setSelectedApplication={setSelectedApplication}
-                      />
+                        ></ApplicationsContent>
+                      </>
                     )}
                   </Tab>
                 </TabGroup>
