@@ -104,8 +104,6 @@ function AirplanePath() {
   );
 }
 
-/* ================================================ */
-
 export function HeroSection() {
   return (
     <div className="relative isolate w-full overflow-hidden">
@@ -138,9 +136,14 @@ export function HeroSection() {
 
       <section
         aria-labelledby="hero-heading"
-        className="relative min-h-[100svh] pt-6 flex flex-col items-center justify-center text-center gap-6 px-4 sm:px-6"
+        className="
+          relative min-h-[100svh]
+          pt-[calc(env(safe-area-inset-top)+5rem)] [@media_(max-width:390px)]:pt-[calc(env(safe-area-inset-top)+5.75rem)] sm:pt-6
+          flex flex-col items-center justify-center text-center
+          gap-8 sm:gap-6
+          px-4 sm:px-6
+        "
       >
-        {/* paper airplane path behind heading */}
         <AirplanePath />
 
         {/* pill */}
@@ -149,10 +152,11 @@ export function HeroSection() {
           initial="hidden"
           animate="show"
           className="
-    inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white
-    px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm
-    sm:px-3 sm:py-2 sm:text-xs
-  "
+            inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white
+            px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm
+            sm:px-3 sm:py-2 sm:text-xs
+            mt-2 sm:mt-0
+          "
         >
           <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-primary sm:h-2 sm:w-2" />
           <span>One profile. One click.</span>
