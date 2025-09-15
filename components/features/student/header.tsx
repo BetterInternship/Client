@@ -512,14 +512,17 @@ export const Header: React.FC = () => {
   const headerRoutes = ["/login", "/login/otp", "/register", "/otp"];
   const showHeaderRight = routeExcluded(headerRoutes);
 
+  // only show filters on /search (allow subpaths like /search/results)
+  const showFilters = pathname?.startsWith("/search") === true;
+
   // lock body scroll when drawer open
   useEffect(() => {
     document.body.style.overflow = isMenuOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [isMenuOpen]);
 
-  // init from URL
   useEffect(() => {
+    if (!showFilters) return;
     const q = searchParams.get("query") || "";
     const fromCSV = (key: string) => searchParams.get(key)?.split(",").filter(Boolean) || [];
     dispatch({
@@ -533,7 +536,7 @@ export const Header: React.FC = () => {
       },
     });
     setSearchTerm(q);
-  }, [searchParams]);
+  }, [searchParams, showFilters]);
 
   // profile completeness banner
   useEffect(() => {
@@ -569,29 +572,41 @@ export const Header: React.FC = () => {
     <JobFilterContext.Provider value={{ state, dispatch }}>
       <div className="flex flex-col">
         {/* Top Bar */}
-        <div className={cn("flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]", isMobile ? "px-4 py-3" : "py-4 px-8")}
-             style={{ overflow: "visible", position: "relative", zIndex: 100 }}>
+        <div className={cn("flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
+            isMobile ? "px-4 py-3" : "py-4 px-8")}
+          style={{ overflow: "visible", position: "relative", zIndex: 100 }}
+        >
           {/* Left: Brand */}
           <div className="flex items-center gap-3"><HeaderTitle /></div>
 
-          {/* Center: Desktop search + filters */}
+          {/* Center: Desktop search + filters (filters only on /search) */}
           {!isMobile && showHeaderRight && (
             <div className="flex items-center gap-4 w-full max-w-2xl">
-              <SearchInput value={searchTerm} onChange={setSearchTerm} onEnter={doSearch} />
-              {FilterButtons}
+              {showFilters && (
+                <SearchInput value={searchTerm} onChange={setSearchTerm} onEnter={doSearch} />
+              )}
+              {showFilters && FilterButtons}
             </div>
           )}
 
           {/* Right: Desktop profile / Mobile burger */}
           {showHeaderRight ? (
             isMobile ? (
-              <button type="button" aria-label="Open menu" className="inline-flex items-center justify-center h-10 w-10 rounded-md border border-gray-300 hover:bg-gray-50" onClick={() => setIsMenuOpen(true)}>
+              <button
+                type="button"
+                aria-label="Open menu"
+                className="inline-flex items-center justify-center h-10 w-10 rounded-md border border-gray-300 hover:bg-gray-50"
+                onClick={() => setIsMenuOpen(true)}
+              >
                 <Menu className="h-5 w-5" />
               </button>
             ) : (
               <div className="flex items-center gap-6">
                 {pathname === "/search" && hasMissing && (
-                  <button className="text-base ml-4 text-blue-700 font-medium hover:underline focus:outline-none" onClick={() => router.push("/profile?edit=true")}>
+                  <button
+                    className="text-base ml-4 text-blue-700 font-medium hover:underline focus:outline-none"
+                    onClick={() => router.push("/profile?edit=true")}
+                  >
                     Finish your profile to start applying!
                   </button>
                 )}
@@ -606,22 +621,34 @@ export const Header: React.FC = () => {
         {/* Mobile banner under bar */}
         {isMobile && pathname === "/search" && <CompleteAccBanner />}
 
-        {/* Mobile: search + filter buttons */}
-        {isMobile && showHeaderRight && (
+        {/* Mobile: search + (filters only on /search) */}
+        {isMobile && showHeaderRight && showFilters && (
           <div className="flex flex-col max-w-2xl w-full gap-3 items-center px-4 pt-3">
             <SearchInput value={searchTerm} onChange={setSearchTerm} onEnter={doSearch} className="h-12" />
-            {FilterButtons}
+            {showFilters && FilterButtons}
           </div>
         )}
 
-        {/* Filter overlays */}
-        <FilterOverlay visible={showPositions} onClose={() => setShowPositions(false)} onApply={() => { setShowPositions(false); doSearch(); }}>
-          <JobPositionPanel />
-        </FilterOverlay>
+        {/* Mount filter overlays ONLY on /search */}
+        {showFilters && (
+          <>
+            <FilterOverlay
+              visible={showPositions}
+              onClose={() => setShowPositions(false)}
+              onApply={() => { setShowPositions(false); doSearch(); }}
+            >
+              <JobPositionPanel />
+            </FilterOverlay>
 
-        <FilterOverlay visible={showDetails} onClose={() => setShowDetails(false)} onApply={() => { setShowDetails(false); doSearch(); }}>
-          <JobDetailPanel />
-        </FilterOverlay>
+            <FilterOverlay
+              visible={showDetails}
+              onClose={() => setShowDetails(false)}
+              onApply={() => { setShowDetails(false); doSearch(); }}
+            >
+              <JobDetailPanel />
+            </FilterOverlay>
+          </>
+        )}
 
         {/* Mobile drawer */}
         {isMobile && showHeaderRight && (
