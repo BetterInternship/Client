@@ -171,8 +171,6 @@ export function LogoCarousel({ columns = 4, logos }: LogoCarouselProps) {
       <div className="sm:hidden grid grid-cols-2 gap-4 justify-items-center py-6">
         <LogoTile logos={logos} slot={0} currentTime={time} />
         <LogoTile logos={logos} slot={1} currentTime={time} />
-        <LogoTile logos={logos} slot={2} currentTime={time} />
-        <LogoTile logos={logos} slot={3} currentTime={time} />
       </div>
 
       {/* Tablet/Desktop: original animated columns */}
