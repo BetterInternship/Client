@@ -228,13 +228,13 @@ export default function TestimonialsMarquee() {
           <div className="grid grid-cols-3 gap-4 sm:gap-6 items-end justify-items-end">
             <CounterStat
               className="text-right"
-              value={8000}
+              value={800}
               suffix="+"
               label="Applications auto-filled"
             />
             <CounterStat
               className="text-right"
-              value={200}
+              value={100}
               suffix="+"
               label="Partner companies"
             />
