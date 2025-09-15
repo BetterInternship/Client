@@ -113,23 +113,20 @@ export function HeroSection() {
           width={36}
           height={36}
           squares={[60, 40]}
-          className="h-full w-full opacity-15 [mask-image:radial-gradient(120%_80%_at_50%_40%,black,transparent)]"
-          squaresClassName="border border-gray-200/50"
+          className="h-full w-full opacity-30 [mask-image:radial-gradient(120%_80%_at_50%_40%,black,transparent)]"
+          squaresClassName="border border-gray-200/10"
         />
       </div>
 
       {/* orbs */}
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden>
-        <span className="absolute -top-16 -left-20 h-72 w-72 rounded-full bg-gradient-to-br from-primary/25 to-blue-400/20 blur-3xl" />
-        <span
-          className="absolute -top-200 -right-24 bsolute
-            bottom-20
-            h-80 w-80 rounded-full
-            bg-gradient-to-br from-primary/25 to-blue-400/20 blur-3xl"
-        />
+        <span className="absolute -top-16 -left-20 h-72 w-72 rounded-full
+          bg-gradient-to-br from-primary/25 to-blue-400/20 blur-xl sm:blur-3xl" />
+        <span className="absolute -right-24 bottom-20 h-80 w-80 rounded-full
+          bg-gradient-to-br from-primary/25 to-blue-400/20 blur-xl sm:blur-3xl" />
       </div>
 
-      {/* Navigation */}
+      {/* navigation */}
       <div className="absolute inset-x-0 top-0 z-40">
         <Navigation />
       </div>
