@@ -302,8 +302,13 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
   const { isAuthenticated, logout } = useAuthContext();
   const conversations = useConversations();
   const router = useRouter();
+  const pathname = usePathname();
+  const params = useSearchParams();
 
   const handleLogout = () => logout().then(() => router.push("/"));
+  useEffect(() => {
+    if (open) onClose();
+  }, [pathname, params?.toString()]);
 
   return (
     <>
