@@ -100,9 +100,6 @@ const UserEditor = ({
     if (!formData.edu_verification_email) {
       missingFields.push("Last Name");
     }
-    if (!formData.phone_number || !isValidPHNumber(formData.phone_number)) {
-      missingFields.push("Valid Philippine Phone Number");
-    }
     if (!dbRefs.isNotNull(formData.university)) {
       missingFields.push("University");
     }
