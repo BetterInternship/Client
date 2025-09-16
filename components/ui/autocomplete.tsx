@@ -262,3 +262,276 @@ export const AutocompleteMulti = <ID extends number | string>({
     />
   );
 };
+
+/* -------------------------------------------------------
+ * Public API: grouped multi-select with tree (uuid[] etc.)
+ * -----------------------------------------------------*/
+export type SubOption = { name: string; value: string };
+export type PositionCategory = { name: string; value: string; children?: SubOption[] };
+
+export function AutocompleteTreeMulti({
+  tree,
+  value = [],
+  setter,
+  placeholder,
+  className,
+}: {
+  tree: PositionCategory[];
+  value?: string[];
+  setter: (next: string[]) => void;
+  placeholder?: string;
+  className?: string;
+}) {
+  const [query, setQuery] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useDetectClickOutside({ onTriggered: () => setIsOpen(false) });
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // Build ID -> label map (child shows "Parent · Child")
+  const labelMap = useMemo(() => {
+    const m = new Map<string, string>();
+    tree.forEach((p) => {
+      if (!p.children?.length) {
+        m.set(p.value, p.name); // standalone parent
+      } else {
+        p.children.forEach((c) => m.set(c.value, `${p.name} · ${c.name}`));
+      }
+    });
+    return m;
+  }, [tree]);
+
+  // Valid id set (standalone parents + children)
+  const validIds = useMemo(() => {
+    const s = new Set<string>();
+    tree.forEach((p) => {
+      if (!p.children?.length) s.add(p.value);
+      p.children?.forEach((c) => s.add(c.value));
+    });
+    return s;
+  }, [tree]);
+
+  // sanitize external value
+  const selected = useMemo(
+    () => Array.from(new Set((value ?? []).filter((v) => validIds.has(v)))),
+    [value, validIds]
+  );
+  const selectedSet = useMemo(() => new Set(selected), [selected]);
+
+  // Helpers
+  const setSelected = (arr: string[]) => setter(Array.from(new Set(arr)));
+  const toggleChild = (cid: string) => {
+    const next = new Set(selected);
+    next.has(cid) ? next.delete(cid) : next.add(cid);
+    setSelected(Array.from(next));
+  };
+  const toggleParent = (p: PositionCategory) => {
+    if (!p.children?.length) {
+      const next = new Set(selected);
+      next.has(p.value) ? next.delete(p.value) : next.add(p.value);
+      setSelected(Array.from(next));
+      return;
+    }
+    const childIds = p.children.map((c) => c.value);
+    const allSelected = childIds.every((id) => selectedSet.has(id));
+    const next = new Set(selected);
+    if (allSelected) childIds.forEach((id) => next.delete(id));
+    else childIds.forEach((id) => next.add(id));
+    setSelected(Array.from(next));
+  };
+  const removeAt = (id: string) => setSelected(selected.filter((x) => x !== id));
+
+  // query filter (keeps parents with any matching child)
+  const filteredTree = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return tree;
+    return tree
+      .map((p) => {
+        const parentMatch = p.name.toLowerCase().includes(q);
+        const kids = p.children?.filter((c) =>
+          `${p.name} ${c.name}`.toLowerCase().includes(q)
+        );
+        if (!p.children?.length) {
+          // standalone parent
+          return parentMatch ? p : null;
+        }
+        if (parentMatch) return p; // keep entire group
+        if (kids && kids.length > 0) return { ...p, children: kids };
+        return null;
+      })
+      .filter(Boolean) as PositionCategory[];
+  }, [tree, query]);
+
+  // counts for indeterminate
+  const counts = useMemo(() => {
+    const m = new Map<string, { total: number; sel: number }>();
+    tree.forEach((p) => {
+      const hasKids = !!p.children?.length;
+      if (!hasKids) {
+        m.set(p.value, { total: 1, sel: selectedSet.has(p.value) ? 1 : 0 });
+      } else {
+        const ids = p.children!.map((c) => c.value);
+        const sel = ids.reduce((a, id) => a + (selectedSet.has(id) ? 1 : 0), 0);
+        m.set(p.value, { total: ids.length, sel });
+      }
+    });
+    return m;
+  }, [tree, selectedSet]);
+
+  // chips
+  const chips = useMemo(
+    () =>
+      selected
+        .map((id) => [id, labelMap.get(id) ?? id] as const)
+        .sort((a, b) => a[1].localeCompare(b[1])),
+    [selected, labelMap]
+  );
+
+  // keyboard (enter = take first visible child if any)
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && query.length === 0 && selected.length > 0) {
+      removeAt(selected[selected.length - 1]);
+      e.preventDefault();
+    }
+    if (e.key === "Enter") {
+      // find first child in filtered tree to toggle
+      outer: for (const p of filteredTree) {
+        if (!p.children?.length) {
+          toggleParent(p);
+          break outer;
+        }
+        for (const c of p.children!) {
+          toggleChild(c.value);
+          break outer;
+        }
+      }
+      setQuery("");
+      setIsOpen(true);
+      e.preventDefault();
+    }
+    if (e.key === "ArrowDown") setIsOpen(true);
+    if (e.key === "Escape") setIsOpen(false);
+  };
+
+  return (
+    <div className={cn("relative w-full", className)} ref={ref}>
+      {/* input + chips (same look/feel as AutocompleteMulti) */}
+      <div
+        className={cn(
+          "min-h-9 w-full rounded-[0.33em] border border-gray-300 bg-white",
+          "px-2 py-1 flex flex-wrap items-center gap-1",
+          "focus-within:border-primary focus-within:border-opacity-50"
+        )}
+        onClick={() => inputRef.current?.focus()}
+      >
+        {chips.map(([id, label]) => (
+          <span
+            key={id}
+            className="px-2 py-1 text-xs rounded-full bg-gray-100 border border-gray-300 flex items-center gap-1"
+          >
+            {label}
+            <button
+              type="button"
+              className="ml-1 text-gray-500 hover:text-gray-700 leading-none"
+              onClick={() => removeAt(id)}
+              aria-label={`Remove ${label}`}
+            >
+              ×
+            </button>
+          </span>
+        ))}
+        <input
+          ref={inputRef}
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setIsOpen(true);
+          }}
+          onKeyDown={onKeyDown}
+          onFocus={() => setIsOpen(true)}
+          placeholder={selected.length === 0 ? (placeholder ?? "Select one or more") : ""}
+          className={cn(
+            "flex-1 min-w-[8ch] h-7 text-sm",
+            "bg-transparent outline-none border-none focus:ring-0"
+          )}
+        />
+      </div>
+
+      {isOpen && (
+        <ul className="absolute left-0 right-0 z-50 mt-1 max-h-60 overflow-auto rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5">
+          {filteredTree.length ? (
+            filteredTree.map((p) => {
+              const info = counts.get(p.value)!;
+              const hasKids = !!p.children?.length;
+              const all = hasKids && info.sel === info.total;
+              const some = hasKids && info.sel > 0 && info.sel < info.total;
+              const parentChecked = !hasKids && info.sel === 1;
+
+              return (
+                <li key={p.value} className="w-full">
+                  {/* Parent row */}
+                  <button
+                    type="button"
+                    className={cn(
+                      "w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-100"
+                    )}
+                    onClick={() => toggleParent(p)}
+                  >
+                    <span className="inline-flex items-center justify-center w-4 h-4">
+                      <input
+                        type="checkbox"
+                        readOnly
+                        checked={all || parentChecked}
+                        ref={(el) => {
+                          if (el) el.indeterminate = Boolean(some);
+                        }}
+                        className="align-middle"
+                      />
+                    </span>
+                    <span className="font-medium">{p.name}</span>
+                    {hasKids && (
+                      <span className="ml-auto text-xs text-gray-500">
+                        {info.sel}/{info.total}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Children */}
+                  {hasKids && (
+                    <ul className="pl-8">
+                      {p.children!.map((c) => {
+                        const active = selectedSet.has(c.value);
+                        return (
+                          <li key={c.value}>
+                            <button
+                              type="button"
+                              className={cn(
+                                "w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-100"
+                              )}
+                              onClick={() => {
+                                toggleChild(c.value);
+                                setIsOpen(true);
+                                setQuery("");
+                                inputRef.current?.focus();
+                              }}
+                            >
+                              <input type="checkbox" readOnly checked={active} />
+                              {c.name}
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </li>
+              );
+            })
+          ) : (
+            <li className="w-full text-left px-4 py-2 text-sm text-gray-700">
+              No matching results.
+            </li>
+          )}
+        </ul>
+      )}
+    </div>
+  );
+}
