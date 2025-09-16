@@ -33,6 +33,8 @@ function DashboardContent() {
   const profile = useProfile();
   const applications = useEmployerApplications();
   const jobs = useOwnedJobs();
+  const archivedJobs = jobs.ownedJobs.filter((job) => job.is_active === false ||
+    job.is_deleted === true || job.is_unlisted === true);
 
   const [selectedApplication, setSelectedApplication] =
     useState<EmployerApplication | null>(null);
@@ -286,6 +288,7 @@ function DashboardContent() {
                         applications={applications.employer_applications}
                         jobs={jobs.ownedJobs}
                         statusId={[0]}
+                        employerId={profile.data?.id || ""}
                         onJobListingClick={handleJobListingClick}
                       />
                     ) : (
@@ -326,6 +329,7 @@ function DashboardContent() {
                         applications={applications.employer_applications}
                         jobs={jobs.ownedJobs}
                         statusId={[1]}
+                        employerId={profile.data?.id || ""}
                         onJobListingClick={handleJobListingClick}
                       />
                     ) : (
@@ -366,6 +370,7 @@ function DashboardContent() {
                         applications={applications.employer_applications}
                         jobs={jobs.ownedJobs}
                         statusId={[4, 6]}
+                        employerId={profile.data?.id || ""}
                         onJobListingClick={handleJobListingClick}
                       />
                     ) : (
@@ -393,18 +398,20 @@ function DashboardContent() {
                   <Tab
                     name="Archived Applications"
                     indicator={applications.employer_applications
-                      .filter((application) => application.status === 1)
+                      .filter((application) => application.status === 0 || application.status === 1 ||
+                      application.status === 4 || application.status === 6)
                       .some((application) =>
                         conversations.unreads.some((unread) =>
                           unread.subscribers.includes(application.user_id)
-                        ) && jobs.ownedJobs.filter((job) => job.is_active === false || job.is_deleted === true || job.is_unlisted === true)
+                        )
                       )}
                   >
                     {viewMode === 'jobs' ? (
                       <JobsContent
                         applications={applications.employer_applications}
-                        jobs={jobs.ownedJobs.filter((job) => job.is_active === false || job.is_deleted === true || job.is_unlisted === true)}
+                        jobs={archivedJobs}
                         statusId={[0, 1, 4, 6]}
+                        employerId={profile.data?.id || ""}
                         onJobListingClick={handleJobListingClick}
                       />
                     ) : (

@@ -1,14 +1,14 @@
+import { FetchResponse } from "@/lib/api/use-fetch";
 import {
+  Conversation,
+  Employer,
+  EmployerApplication,
   Job,
   PublicUser,
-  UserApplication,
   SavedJob,
-  EmployerApplication,
-  Employer,
-  Conversation,
+  UserApplication,
 } from "@/lib/db/db.types";
 import { APIClient, APIRoute } from "./api-client";
-import { FetchResponse } from "@/lib/api/use-fetch";
 
 interface EmployerResponse extends FetchResponse {
   employer: Partial<Employer>;
