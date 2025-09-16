@@ -5,6 +5,7 @@ import {
   useRef,
   forwardRef,
   useImperativeHandle,
+  useMemo,
 } from "react";
 import {
   Edit2,
@@ -415,6 +416,15 @@ const ProfileEditor = forwardRef<
   const [jobTypeOptions, setJobTypeOptions] = useState(job_types);
   const [jobCategoryOptions, setJobCategoryOptions] = useState(job_categories);
 
+  const validIdsFromTree = useMemo(() => {
+    const s = new Set<string>();
+    POSITION_TREE.forEach((p) => {
+      if (!p.children?.length) s.add(p.value);
+      p.children?.forEach((c) => s.add(c.value));
+    });
+    return s;
+  }, []);
+
   // Update dropdown options
   useEffect(() => {
     setUniversityOptions(
@@ -541,7 +551,6 @@ const ProfileEditor = forwardRef<
         ? "End date must be on/after start date."
         : "";
     });
-
     addValidator("job_mode_ids", (vals?: string[]) => {
       if (!vals) return "";
       const valid = new Set(jobModeOptions.map((o) => o.id));
@@ -556,16 +565,6 @@ const ProfileEditor = forwardRef<
         ? ""
         : "Invalid workload type selected.";
     });
-
-    const validIdsFromTree = useMemo(() => {
-      const s = new Set<string>();
-      POSITION_TREE.forEach((p) => {
-        if (!p.children?.length) s.add(p.value);
-        p.children?.forEach((c) => s.add(c.value));
-      });
-      return s;
-    }, []);
-
     addValidator("job_category_ids", (vals?: string[]) => {
       if (!vals) return "";
       return vals.every((v) => validIdsFromTree.has(v))
