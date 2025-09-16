@@ -739,11 +739,12 @@ export const Header: React.FC = () => {
   };
 
   const FilterButtons = (
-    <div className="flex gap-2">
+    <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto">
       <Button
         scheme="primary"
         variant="outline"
         size="md"
+        className="w-full min-w-0 sm:w-auto"
         onClick={() => {
           setShowPositions(true);
           setShowDetails(false);
@@ -755,6 +756,7 @@ export const Header: React.FC = () => {
         scheme="primary"
         variant="outline"
         size="md"
+        className="w-full min-w-0 sm:w-auto"
         onClick={() => {
           setShowDetails(true);
           setShowPositions(false);
@@ -764,6 +766,9 @@ export const Header: React.FC = () => {
       </Button>
     </div>
   );
+
+
+
 
   return (
     <JobFilterContext.Provider value={{ state, dispatch }}>

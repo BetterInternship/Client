@@ -207,17 +207,16 @@ export const JobCard = ({
   selected?: boolean;
   on_click?: (job: Job) => void;
 }) => {
-  const { universities } = useDbRefs();
-
   return (
     <Card
       key={job.id}
       onClick={() => on_click && on_click(job)}
-      className={
+      className={cn(
+        "group relative overflow-hidden",
         selected
-          ? "selected ring-1 ring-primary ring-offset-1"
-          : "hover:shadow-md hover:border-gray-300 cursor-pointer"
-      }
+          ? "ring-1 ring-primary ring-offset-1"
+          : "hover:shadow-sm hover:border-gray-300 cursor-pointer"
+      )}
     >
       <div className="space-y-3">
         <div className="flex items-start justify-between">
@@ -229,6 +228,7 @@ export const JobCard = ({
     </Card>
   );
 };
+
 
 /**
  * The scrollable job card component.
