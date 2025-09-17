@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useMemo, useRef, useState, useEffect } from "react";
+import React, {
+  useMemo,
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Heart,
@@ -35,6 +41,17 @@ import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { JobModal } from "@/components/modals/JobModal";
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+
+/* =======================================================================================
+   tiny helper to keep callback identity stable across renders
+======================================================================================= */
+function useEvent<T extends (...args: any[]) => any>(fn: T) {
+  const ref = React.useRef(fn);
+  useEffect(() => {
+    ref.current = fn;
+  }, [fn]);
+  return useCallback((...args: Parameters<T>) => ref.current(...args), []);
+}
 
 /* =======================================================================================
    Page
@@ -148,10 +165,12 @@ export default function SearchPage() {
     const jobId = searchParams.get("jobId");
     if (jobId && jobsPage.length > 0) {
       const targetJob = jobsPage.find((job) => job.id === jobId);
-      if (targetJob && targetJob.id !== selectedJob?.id) setSelectedJob(targetJob);
+      if (targetJob && targetJob.id !== selectedJob?.id)
+        setSelectedJob(targetJob);
     } else if (jobsPage.length > 0 && !selectedJob?.id) {
       setSelectedJob(jobsPage[0]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobsPage.length, searchParams]);
 
   /* --------------------------------------------
@@ -211,7 +230,7 @@ export default function SearchPage() {
       (selectedJob?.require_github &&
         (!profile.data?.github_link || profile.data.github_link === "")) ||
       (selectedJob?.require_portfolio &&
-        (!profile.data?.portfolio_link || profile.data.portfolio_link === ""))
+        (!profile.data?.portfolio_link || profile.data?.portfolio_link === ""))
     ) {
       incompleteModalRef.current?.open();
       return;
@@ -221,7 +240,10 @@ export default function SearchPage() {
 
   const handleDirectApplication = async () => {
     if (!selectedJob) return;
-    if (selectedJob?.require_cover_letter && !textarea_ref.current?.value.trim()) {
+    if (
+      selectedJob?.require_cover_letter &&
+      !textarea_ref.current?.value.trim()
+    ) {
       alert("A cover letter is required to apply for this job.");
       return;
     }
@@ -242,7 +264,7 @@ export default function SearchPage() {
   };
 
   /* --------------------------------------------
-   * Mass apply actions
+   * Mass apply actions (stable + minimal re-renders)
   -------------------------------------------- */
   const openMassApply = () => {
     if (!isAuthenticated()) {
@@ -257,7 +279,9 @@ export default function SearchPage() {
       selectedJobsList.length > 0 &&
       selectedJobsList.every((j) => applications.appliedJob(j.id ?? ""));
     if (!selectedJobsList.length || allApplied) {
-      alert("No eligible jobs selected. Select jobs you haven’t applied to yet.");
+      alert(
+        "No eligible jobs selected. Select jobs you haven’t applied to yet."
+      );
       return;
     }
     openMassApplyModal();
@@ -270,73 +294,104 @@ export default function SearchPage() {
     failed: { job: Job; error: string }[];
   }>({ ok: [], skipped: [], failed: [] });
 
-  const runMassApply = async () => {
-    if (!selectedJobsList.length) return;
+  // guard against double-submit
+  const isSubmittingRef = useRef(false);
 
-    const skipped: { job: Job; reason: string }[] = [];
-    const eligible: Job[] = [];
+  const runMassApply = useCallback(
+    async (coverLetter: string) => {
+      if (isSubmittingRef.current) return;
+      isSubmittingRef.current = true;
 
-    for (const job of selectedJobsList) {
-      if (applications.appliedJob(job.id ?? "")) {
-        skipped.push({ job, reason: "Already applied" });
-        continue;
-      }
-      const needsGithub =
-        job.require_github && !(profile.data?.github_link?.trim());
-      const needsPortfolio =
-        job.require_portfolio && !(profile.data?.portfolio_link?.trim());
-      const needsCover = job.require_cover_letter && !bulkCoverLetter.trim();
-
-      if (needsGithub) {
-        skipped.push({ job, reason: "Requires GitHub profile" });
-        continue;
-      }
-      if (needsPortfolio) {
-        skipped.push({ job, reason: "Requires portfolio link" });
-        continue;
-      }
-      if (needsCover) {
-        skipped.push({ job, reason: "Requires a cover letter" });
-        continue;
-      }
-      eligible.push(job);
-    }
-
-    if (!eligible.length) {
-      setMassResult({ ok: [], skipped, failed: [] });
-      closeMassApplyModal();
-      openMassApplyResultModal();
-      return;
-    }
-
-    setMassApplying(true);
-    const ok: Job[] = [];
-    const failed: { job: Job; error: string }[] = [];
-
-    for (const job of eligible) {
       try {
-        await applications.create({
-          job_id: job.id ?? "",
-          cover_letter: bulkCoverLetter || "",
-        });
-        if (applications.createError) {
-          failed.push({
-            job,
-            error: applications.createError.message || "Unknown error",
-          });
-        } else {
-          ok.push(job);
-        }
-      } catch (e: any) {
-        failed.push({ job, error: e?.message || "Unknown error" });
-      }
-    }
+        if (!selectedJobsList.length) return;
 
-    setMassApplying(false);
-    setMassResult({ ok, skipped, failed });
+        const skipped: { job: Job; reason: string }[] = [];
+        const eligible: Job[] = [];
+
+        for (const job of selectedJobsList) {
+          if (applications.appliedJob(job.id ?? "")) {
+            skipped.push({ job, reason: "Already applied" });
+            continue;
+          }
+          const needsGithub =
+            job.require_github && !profile.data?.github_link?.trim();
+          const needsPortfolio =
+            job.require_portfolio && !profile.data?.portfolio_link?.trim();
+          const needsCover = job.require_cover_letter && !coverLetter.trim();
+
+          if (needsGithub) {
+            skipped.push({ job, reason: "Requires GitHub profile" });
+            continue;
+          }
+          if (needsPortfolio) {
+            skipped.push({ job, reason: "Requires portfolio link" });
+            continue;
+          }
+          if (needsCover) {
+            skipped.push({ job, reason: "Requires a cover letter" });
+            continue;
+          }
+          eligible.push(job);
+        }
+
+        if (!eligible.length) {
+          setMassResult({ ok: [], skipped, failed: [] });
+          closeMassApplyModal();
+          openMassApplyResultModal();
+          return;
+        }
+
+        setMassApplying(true); // 1 render
+
+        const ok: Job[] = [];
+        const failed: { job: Job; error: string }[] = [];
+
+        // sequential, no setState in the loop
+        for (const job of eligible) {
+          try {
+            await applications.create({
+              job_id: job.id ?? "",
+              cover_letter: coverLetter || "",
+            });
+            if (applications.createError) {
+              failed.push({
+                job,
+                error: applications.createError.message || "Unknown error",
+              });
+            } else {
+              ok.push(job);
+            }
+          } catch (e: any) {
+            failed.push({ job, error: e?.message || "Unknown error" });
+          }
+        }
+
+        // publish results once (another render)
+        setMassApplying(false);
+        setMassResult({ ok, skipped, failed });
+        closeMassApplyModal();
+        openMassApplyResultModal();
+      } finally {
+        isSubmittingRef.current = false;
+      }
+    },
+    [
+      applications,
+      profile.data,
+      selectedJobsList,
+      closeMassApplyModal,
+      openMassApplyResultModal,
+    ]
+  );
+
+  // stable handlers for modal child (no inline lambdas)
+  const onCancelCompose = useEvent(() => {
     closeMassApplyModal();
-    openMassApplyResultModal();
-  };
+  });
+  const onSubmitCompose = useEvent(async (text: string) => {
+    setBulkCoverLetter(text); // optional: keep for later reuse
+    await runMassApply(text);
+  });
 
   if (jobs.error) {
     return (
@@ -365,7 +420,6 @@ export default function SearchPage() {
             </div>
           )}
 
-          {/* Selection controls (appear in select mode or when anything is selected) */}
           {(selectMode || selectedIds.size > 0) && (
             <div className="flex items-center gap-2">
               <Button
@@ -393,7 +447,6 @@ export default function SearchPage() {
           )}
         </div>
 
-        {/* Right side: mass apply & exit selection */}
         <div className="flex items-center gap-2">
           {selectMode ? (
             <>
@@ -455,7 +508,8 @@ export default function SearchPage() {
                   variant={selectMode ? "default" : "outline"}
                   size="sm"
                   onClick={() => {
-                    if (selectMode && selectedIds.size === 0) setSelectMode(false);
+                    if (selectMode && selectedIds.size === 0)
+                      setSelectMode(false);
                     else setSelectMode((v) => !v);
                   }}
                 >
@@ -503,7 +557,10 @@ export default function SearchPage() {
                         </button>
                       )}
 
-                      <MobileJobCard job={job} on_click={() => handleJobCardClick(job)} />
+                      <MobileJobCard
+                        job={job}
+                        on_click={() => handleJobCardClick(job)}
+                      />
                     </div>
                   ))}
                 </div>
@@ -527,8 +584,6 @@ export default function SearchPage() {
           <>
             {/* Left: List */}
             <div className="w-1/3 border-r overflow-x-hidden overflow-y-auto p-6">
-              {/* page-level toolbar for desktop already rendered above */}
-
               {jobsPage.length ? (
                 <div className="space-y-3">
                   {jobsPage.map((job) => (
@@ -536,11 +591,15 @@ export default function SearchPage() {
                       {/* Embedded select control on the card (shows on hover / select mode) */}
                       <button
                         type="button"
-                        aria-label={isSelected(job.id) ? "Unselect job" : "Select job"}
+                        aria-label={
+                          isSelected(job.id) ? "Unselect job" : "Select job"
+                        }
                         className={cn(
                           "absolute right-3 top-3 z-20 h-6 w-6 bg-white/95 backdrop-blur",
                           "flex items-center justify-center shadow-sm transition-opacity",
-                          selectMode ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                          selectMode
+                            ? "opacity-100"
+                            : "opacity-0 group-hover:opacity-100"
                         )}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -557,7 +616,8 @@ export default function SearchPage() {
 
                       <div
                         className={cn(
-                          isSelected(job.id) && "ring-1 ring-primary ring-offset-[2px] rounded-[0.4em]"
+                          isSelected(job.id) &&
+                            "ring-1 ring-primary ring-offset-[2px] rounded-[0.4em]"
                         )}
                         onClick={() => handleJobCardClick(job)}
                       >
@@ -792,28 +852,12 @@ Best regards,
 
       {/* Mass Apply — Compose */}
       <MassApplyModal>
-        <div className="max-w-lg mx-auto p-6 space-y-4">
-          <h2 className="text-xl font-semibold">Apply to {selectedIds.size} jobs</h2>
-          <p className="text-sm text-gray-600">
-            One cover letter will be used for all selected jobs. We’ll skip any
-            postings that require info your profile doesn’t have (e.g., GitHub/Portfolio).
-          </p>
-          <Textarea
-            value={bulkCoverLetter}
-            onChange={(e) => setBulkCoverLetter(e.target.value)}
-            placeholder="Write a brief cover letter (optional unless required by the job)…"
-            className="w-full h-32"
-            maxLength={1000}
-          />
-          <div className="flex items-center justify-between">
-            <Button variant="outline" onClick={closeMassApplyModal}>
-              Cancel
-            </Button>
-            <Button onClick={runMassApply} disabled={massApplying}>
-              {massApplying ? "Submitting…" : `Submit ${selectedIds.size} applications`}
-            </Button>
-          </div>
-        </div>
+        <MassApplyBody
+          initialText={bulkCoverLetter}
+          onCancel={onCancelCompose}
+          onSubmit={onSubmitCompose}
+          disabled={massApplying}
+        />
       </MassApplyModal>
 
       {/* Mass Apply — Results */}
@@ -888,9 +932,7 @@ Best regards,
       </MassApplyResultModal>
 
       {/* Resume Modal */}
-      {resumeURL.length > 0 && (
-        <ProfileResumePreview url={resumeURL} />
-      )}
+      {resumeURL.length > 0 && <ProfileResumePreview url={resumeURL} />}
 
       {/* Incomplete Profile Modal */}
       <IncompleteProfileModal
@@ -917,3 +959,57 @@ function ProfileResumePreview({ url }: { url: string }) {
     </ResumeModal>
   );
 }
+
+/* =======================================================================================
+   Mass Apply Body (memoized, simple)
+======================================================================================= */
+
+const MassApplyBody = React.memo(function MassApplyBody({
+  initialText,
+  onCancel,
+  onSubmit,
+  disabled,
+}: {
+  initialText: string;
+  onCancel: () => void;
+  onSubmit: (text: string) => void;
+  disabled?: boolean;
+}) {
+  const [text, setText] = useState(initialText);
+
+  // refresh the seed when the modal re-opens or seed changes
+  useEffect(() => {
+    setText(initialText || "");
+  }, [initialText]);
+
+  return (
+    <div className="max-w-lg mx-auto p-6 space-y-4">
+      <h2 className="text-xl font-semibold">Apply to selected jobs</h2>
+      <p className="text-sm text-gray-600">
+        One cover letter will be used for all selected jobs. We’ll skip any
+        postings that require info your profile doesn’t have.
+      </p>
+
+      <Textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        className="w-full h-32"
+        maxLength={1000}
+        placeholder="Write a brief cover letter…"
+      />
+
+      <div className="flex items-center justify-between">
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button
+          type="button"
+          onClick={() => onSubmit(text)}
+          disabled={disabled}
+        >
+          {disabled ? "Submitting…" : "Submit applications"}
+        </Button>
+      </div>
+    </div>
+  );
+});
