@@ -356,7 +356,7 @@ export default function SearchPage() {
 
   // page toolbar (under the global header)
   const PageToolbar = (
-    <div className="border-b">
+    <div className="border-b bg-white">
       <div className="flex items-center justify-between gap-3 px-7 py-2">
         <div className="flex items-center gap-8">
           {!isMobile && (
