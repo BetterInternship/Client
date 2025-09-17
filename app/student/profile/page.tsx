@@ -63,6 +63,7 @@ import {
   AutocompleteTreeMulti,
   type PositionCategory,
 } from "@/components/ui/autocomplete";
+import { TabGroup, Tab } from "@/components/ui/tabs";
 import { POSITION_TREE } from "@/lib/consts/positions";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
@@ -372,17 +373,43 @@ const ProfileEditor = forwardRef<
     get_colleges_by_university,
     get_departments_by_college,
     get_degrees_by_university,
-    get_job_mode,
-    get_job_type,
-    get_job_category,
   } = useDbRefs();
 
-  // Provide an external link to save profile
+  // ---- Tabs ----
+  type TabKey = "Student Profile" | "Internship Preferences" | "Calendar";
+  const [tab, setTab] = useState<TabKey>("Student Profile");
+
+  // decide which tab has errors
+  const hasProfileErrors = !!(
+    formErrors.first_name ||
+    formErrors.last_name ||
+    formErrors.phone_number ||
+    formErrors.university ||
+    formErrors.college ||
+    formErrors.department ||
+    formErrors.degree ||
+    formErrors.year_level
+  );
+
+  const hasPrefsErrors = !!(
+    formErrors.expected_start_date ||
+    formErrors.expected_end_date ||
+    formErrors.job_mode_ids ||
+    formErrors.job_type_ids ||
+    formErrors.job_category_ids
+  );
+
+  const hasCalendarErrors = !!formErrors.calendar_link;
+
+  // external save
   useImperativeHandle(ref, () => ({
     save: async () => {
       await validateFormData();
-      const hasErrors = Object.values(formErrors).some((err) => !!err);
+      const hasErrors = Object.values(formErrors).some(Boolean);
       if (hasErrors) {
+        if (hasCalendarErrors) setTab("Calendar");
+        else if (hasPrefsErrors) setTab("Internship Preferences");
+        else setTab("Student Profile");
         return false;
       }
       const updatedProfile = {
@@ -456,8 +483,8 @@ const ProfileEditor = forwardRef<
     setJobTypeOptions((job_types ?? []).slice());
     setJobCategoryOptions((job_categories ?? []).slice());
 
-    const debouncedValidation = setTimeout(() => validateFormData(), 500);
-    return () => clearTimeout(debouncedValidation);
+    const t = setTimeout(() => validateFormData(), 500);
+    return () => clearTimeout(t);
   }, [
     formData,
     universities,
@@ -582,6 +609,7 @@ const ProfileEditor = forwardRef<
     jobCategoryOptions,
   ]);
 
+  // ---- Calendar help popover ----
   const [showCalendarHelp, setShowCalendarHelp] = useState(false);
   const helpBtnRef = useRef<HTMLButtonElement>(null);
   const helpPopupRef = useRef<HTMLDivElement>(null);
@@ -592,9 +620,8 @@ const ProfileEditor = forwardRef<
       if (
         helpBtnRef.current?.contains(e.target as Node) ||
         helpPopupRef.current?.contains(e.target as Node)
-      ) {
+      )
         return;
-      }
       setShowCalendarHelp(false);
     }
     document.addEventListener("mousedown", handleClick);
@@ -602,335 +629,346 @@ const ProfileEditor = forwardRef<
   }, [showCalendarHelp]);
 
   return (
-    <>
-      <Card className="flex flex-col gap-5">
-        {/* Identity Section */}
-        <div>
-          <div className="text-2xl tracking-tight font-medium text-gray-700">
-            Identity
-          </div>
-          <div className="flex flex-col space-y-1 mb-2">
-            <ErrorLabel value={formErrors.first_name} />
-            <ErrorLabel value={formErrors.middle_name} />
-            <ErrorLabel value={formErrors.last_name} />
-          </div>
-          <div
-            className={cn(
-              "mb-4",
-              isMobile ? "flex flex-col space-y-3" : "flex flex-row space-x-2"
-            )}
-          >
-            <FormInput
-              label="First Name"
-              value={formData.first_name ?? ""}
-              setter={fieldSetter("first_name")}
-              maxLength={32}
-            />
-            <FormInput
-              label="Middle Name"
-              value={formData.middle_name ?? ""}
-              setter={fieldSetter("middle_name")}
-              maxLength={2}
-              required={false}
-            />
-            <FormInput
-              label="Last Name"
-              value={formData.last_name ?? ""}
-              setter={fieldSetter("last_name")}
-            />
-          </div>
-          <div className="flex flex-col space-y-1 mb-2">
-            <ErrorLabel value={formErrors.phone_number} />
-          </div>
-          <div className="mb-2">
+    <Card className="flex flex-col gap-5">
+      <TabGroup
+        value={tab}
+        onValueChange={(v) => setTab(v as TabKey)}
+        unmountInactive={false} // keep inputs mounted = smoother UX
+      >
+        {/* --- Student Profile --- */}
+        <Tab name="Student Profile" indicator={hasProfileErrors}>
+          {/* Identity */}
+          <section>
+            <div className="text-2xl tracking-tight font-medium text-gray-700">
+              Identity
+            </div>
+            <div className="flex flex-col space-y-1 mb-2">
+              <ErrorLabel value={formErrors.first_name} />
+              <ErrorLabel value={formErrors.middle_name} />
+              <ErrorLabel value={formErrors.last_name} />
+              <ErrorLabel value={formErrors.phone_number} />
+            </div>
+            <div
+              className={cn(
+                "mb-4",
+                isMobile ? "flex flex-col space-y-3" : "flex flex-row space-x-2"
+              )}
+            >
+              <FormInput
+                label="First Name"
+                value={formData.first_name ?? ""}
+                setter={fieldSetter("first_name")}
+                maxLength={32}
+              />
+              <FormInput
+                label="Middle Name"
+                value={formData.middle_name ?? ""}
+                setter={fieldSetter("middle_name")}
+                maxLength={2}
+                required={false}
+              />
+              <FormInput
+                label="Last Name"
+                value={formData.last_name ?? ""}
+                setter={fieldSetter("last_name")}
+              />
+            </div>
             <FormInput
               label="Phone Number"
               value={formData.phone_number ?? ""}
               setter={fieldSetter("phone_number")}
             />
-          </div>
-        </div>
+          </section>
 
-        {/* Personal Bio */}
-        <div>
-          <div className="text-2xl tracking-tight font-medium text-gray-700 mb-2">
-            Personal Bio
-          </div>
-          <textarea
-            value={formData.bio || ""}
-            onChange={(e) => setField("bio", e.target.value)}
-            placeholder="Tell us about yourself, your interests, goals, and what makes you unique..."
-            className="w-full border border-gray-200 rounded-[0.25em] p-3 px-5 text-sm min-h-24 resize-none focus:border-opacity-70 focus:ring-transparent"
-            maxLength={500}
-          />
-          <p className="text-xs text-muted-foreground text-right">
-            {(formData.bio || "").length}/500 characters
-          </p>
-        </div>
+          {/* Bio */}
+          <section>
+            <div className="text-2xl tracking-tight font-medium text-gray-700 mb-2 mt-5">
+              Personal Bio
+            </div>
+            <textarea
+              value={formData.bio || ""}
+              onChange={(e) => setField("bio", e.target.value)}
+              placeholder="Tell us about yourself, your interests, goals, and what makes you unique..."
+              className="w-full border border-gray-200 rounded-[0.25em] p-3 px-5 text-sm min-h-24 resize-none focus:border-opacity-70 focus:ring-transparent"
+              maxLength={500}
+            />
+            <p className="text-xs text-muted-foreground text-right">
+              {(formData.bio || "").length}/500 characters
+            </p>
+          </section>
 
-        {/* Educational Background */}
-        <div>
-          <div className="text-2xl tracking-tight font-medium text-gray-700 mb-2">
-            Educational Background
-          </div>
-          <div className="flex flex-col space-y-3 w-full ">
-            <div>
-              <div className="text-xs text-gray-400 italic mb-1 block">
-                University
+          {/* Education */}
+          <section>
+            <div className="text-2xl tracking-tight font-medium text-gray-700 mb-2 mt-5">
+              Educational Background
+            </div>
+            <div className="flex flex-col space-y-3">
+              <div>
+                <div className="text-xs text-gray-400 italic mb-1">
+                  University
+                </div>
+                <ErrorLabel value={formErrors.university} />
+                <Autocomplete
+                  options={universityOptions}
+                  value={formData.university}
+                  setter={fieldSetter("university")}
+                  placeholder="Select University"
+                />
               </div>
-              <ErrorLabel value={formErrors.university} />
-              <Autocomplete
-                options={universityOptions}
-                value={formData.university}
-                setter={fieldSetter("university")}
-                placeholder="Select University"
+              <div>
+                <div className="text-xs text-gray-400 italic mb-1">College</div>
+                <ErrorLabel value={formErrors.college} />
+                <Autocomplete
+                  options={collegeOptions}
+                  value={formData.college}
+                  setter={fieldSetter("college")}
+                  placeholder="Select College"
+                />
+              </div>
+              <div>
+                <div className="text-xs text-gray-400 italic mb-1">
+                  Department
+                </div>
+                <ErrorLabel value={formErrors.department} />
+                <Autocomplete
+                  options={departmentOptions}
+                  value={formData.department}
+                  setter={fieldSetter("department")}
+                  placeholder="Select Department"
+                />
+              </div>
+              <div>
+                <div className="text-xs text-gray-400 italic mb-1">Degree</div>
+                <ErrorLabel value={formErrors.degree} />
+                <Autocomplete
+                  options={degreeOptions}
+                  value={formData.degree}
+                  setter={fieldSetter("degree")}
+                  placeholder="Select Degree"
+                />
+              </div>
+              <div>
+                <div className="text-xs text-gray-400 italic mb-1">
+                  Year Level
+                </div>
+                <ErrorLabel value={formErrors.year_level} />
+                <Autocomplete
+                  options={levels}
+                  value={formData.year_level}
+                  setter={fieldSetter("year_level")}
+                  placeholder="Select Year Level"
+                />
+              </div>
+              <FormInput
+                label={"Major/Minor degree"}
+                value={formData.degree_notes ?? ""}
+                setter={fieldSetter("degree_notes")}
+                maxLength={100}
+                required={false}
               />
             </div>
-            <div>
-              <div className="text-xs text-gray-400 italic mb-1 block">
-                College
-              </div>
-              <ErrorLabel value={formErrors.college} />
-              <Autocomplete
-                options={collegeOptions}
-                value={formData.college}
-                setter={fieldSetter("college")}
-                placeholder="Select College"
+          </section>
+
+          {/* External Profiles (no calendar here) */}
+          <section>
+            <div className="text-2xl tracking-tight font-medium text-gray-700 mt-5">
+              External Profiles
+            </div>
+            <div className="flex flex-col space-y-1 mb-2">
+              <ErrorLabel value={formErrors.portfolio_link} />
+              <ErrorLabel value={formErrors.github_link} />
+              <ErrorLabel value={formErrors.linkedin_link} />
+            </div>
+            <div className="flex flex-col space-y-3">
+              <FormInput
+                label={"Portfolio Link"}
+                value={formData.portfolio_link ?? ""}
+                setter={fieldSetter("portfolio_link")}
+                required={false}
+              />
+              <FormInput
+                label={"Github Profile"}
+                value={formData.github_link ?? ""}
+                setter={fieldSetter("github_link")}
+                required={false}
+              />
+              <FormInput
+                label={"Linkedin Profile"}
+                value={formData.linkedin_link ?? ""}
+                setter={fieldSetter("linkedin_link")}
+                required={false}
               />
             </div>
-            <div>
-              <div className="text-xs text-gray-400 italic mb-1 block">
-                Department
-              </div>
-              <ErrorLabel value={formErrors.department} />
-              <Autocomplete
-                options={departmentOptions}
-                value={formData.department}
-                setter={fieldSetter("department")}
-                placeholder="Select Department"
+          </section>
+        </Tab>
+
+        {/* --- Internship Preferences --- */}
+        <Tab name="Internship Preferences" indicator={hasPrefsErrors}>
+          <section className="flex flex-col space-y-2 gap-1">
+            <div className="text-2xl tracking-tight font-medium text-gray-700">
+              Internship Details
+            </div>
+
+            <div className="flex flex-row items-center justify-start mt-8 my-2">
+              <FormCheckbox
+                checked={formData.taking_for_credit}
+                setter={fieldSetter("taking_for_credit")}
               />
-            </div>
-            <div>
-              <div className="text-xs text-gray-400 italic mb-1 block">
-                Degree
+              <div className="text-sm text-gray-500 ml-3">
+                Taking internships for credit?
               </div>
-              <ErrorLabel value={formErrors.degree} />
-              <Autocomplete
-                options={degreeOptions}
-                value={formData.degree}
-                setter={fieldSetter("degree")}
-                placeholder="Select Degree"
+            </div>
+            {formData.taking_for_credit && (
+              <FormInput
+                label={"Linkage Officer"}
+                value={formData.linkage_officer ?? ""}
+                setter={fieldSetter("linkage_officer")}
+                required={false}
               />
-            </div>
-            <div>
-              <div className="text-xs text-gray-400 italic mb-1 block">
-                Year Level
-              </div>
-              <ErrorLabel value={formErrors.year_level} />
-              <Autocomplete
-                options={levels}
-                value={formData.year_level}
-                setter={fieldSetter("year_level")}
-                placeholder="Select Year Level"
-              />
-            </div>
-            <FormInput
-              label={"Major/Minor degree"}
-              value={formData.degree_notes ?? ""}
-              setter={fieldSetter("degree_notes")}
-              maxLength={100}
-              required={false}
-            />
-          </div>
-        </div>
-
-        {/* Internship Details */}
-        <div className="flex flex-col space-y-2 gap-1">
-          <div className="text-2xl tracking-tight font-medium text-gray-700">
-            Internship Details
-          </div>
-          <div className="flex flex-row items-center justify-start mt-8 my-2">
-            <FormCheckbox
-              checked={formData.taking_for_credit}
-              setter={fieldSetter("taking_for_credit")}
-            />
-            <div className="text-sm text-gray-500 ml-3">
-              Taking internships for credit?
-            </div>
-          </div>
-          {formData.taking_for_credit && (
-            <FormInput
-              label={"Linkage Officer"}
-              value={formData.linkage_officer ?? ""}
-              setter={fieldSetter("linkage_officer")}
-              required={false}
-            />
-          )}
-
-          <div className="flex flex-row gap-6">
-            <FormDatePicker
-              className="w-full"
-              label="Expected Start Date"
-              date={isoToMs(formData.expected_start_date)}
-              setter={(ms?: number) =>
-                setField("expected_start_date", msToISO(ms) ?? null)
-              }
-              required={false}
-            />
-
-            <FormDatePicker
-              className="w-full"
-              label="Expected End Date"
-              date={isoToMs(formData.expected_end_date)}
-              setter={(ms?: number) =>
-                setField("expected_end_date", msToISO(ms) ?? null)
-              }
-              required={false}
-            />
-          </div>
-
-          <FormInput
-            label="Expected Duration (in hours)"
-            type="number"
-            inputMode="numeric"
-            value={formData.expected_duration_hours ?? ""}
-            setter={(v: string) => {
-              const n = v === "" || v == null ? null : Number(v);
-              setField(
-                "expected_duration_hours",
-                Number.isFinite(n as number) ? (n as number) : null
-              );
-            }}
-            required={false}
-          />
-        </div>
-
-        {/* Internship Preferences */}
-        <div>
-          <div className="text-2xl tracking-tight font-medium text-gray-700">
-            Internship Preferences
-          </div>
-
-          <div className="mt-2">
-            <div className="text-xs text-gray-400 italic mb-1 block">
-              Work Modes
-            </div>
-            <AutocompleteMulti
-              options={jobModeOptions}
-              value={formData.job_mode_ids ?? []}
-              setter={fieldSetter("job_mode_ids")}
-              placeholder="Select one or more"
-            />
-            <ErrorLabel value={formErrors.job_mode_ids} />
-          </div>
-
-          <div className="mt-2">
-            <div className="text-xs text-gray-400 italic mb-1 block">
-              Workload Types
-            </div>
-            <AutocompleteMulti
-              options={jobTypeOptions}
-              value={formData.job_type_ids ?? []}
-              setter={fieldSetter("job_type_ids")}
-              placeholder="Select one or more"
-            />
-            <ErrorLabel value={formErrors.job_type_ids} />
-          </div>
-
-          <div className="mt-2">
-            <div className="text-xs text-gray-400 italic mb-1 block">
-              Positions / Categories
-            </div>
-            <AutocompleteTreeMulti
-              tree={POSITION_TREE}
-              value={formData.job_category_ids ?? []}
-              setter={fieldSetter("job_category_ids")}
-              placeholder="Select one or more"
-            />
-            <ErrorLabel value={formErrors.job_category_ids} />
-          </div>
-        </div>
-
-        {/* External Profiles */}
-        <div>
-          <div className="text-2xl tracking-tight font-medium text-gray-700">
-            External Profiles
-          </div>
-          <div className="flex flex-col space-y-1 mb-2">
-            <ErrorLabel value={formErrors.portfolio_link} />
-            <ErrorLabel value={formErrors.github_link} />
-            <ErrorLabel value={formErrors.linkedin_link} />
-            {/* // ! uncomment when calendar back */}
-            {/* <ErrorLabel value={formErrors.calendar_link} /> */}
-          </div>
-          <div className="flex flex-col space-y-3">
-            <FormInput
-              label={"Portfolio Link"}
-              value={formData.portfolio_link ?? ""}
-              setter={fieldSetter("portfolio_link")}
-              required={false}
-            />
-            <FormInput
-              label={"Github Profile"}
-              value={formData.github_link ?? ""}
-              setter={fieldSetter("github_link")}
-              required={false}
-            />
-            <FormInput
-              label={"Linkedin Profile"}
-              value={formData.linkedin_link ?? ""}
-              setter={fieldSetter("linkedin_link")}
-              required={false}
-            />
-            {/* // ! uncomment when calendar back */}
-            {/* <div className="relative flex flex-col">
-            <div className="flex items-center mb-1">
-              <span className="text-sm font-medium text-gray-700">
-                Calendar Link <span className="text-red-500">*</span>
-              </span>
-              <button
-                type="button"
-                ref={helpBtnRef}
-                className="ml-2 opacity-70 hover:opacity-90"
-                onClick={() => setShowCalendarHelp((v) => !v)}
-                tabIndex={-1}
-              >
-                <MessageCircleQuestion className="w-4 h-4 text-blue-500" />
-              </button>
-            </div>
-            <FormInput
-              label={undefined}
-              value={formData.calendar_link ?? ""}
-              setter={fieldSetter("calendar_link")}
-            />
-            {showCalendarHelp && (
-              <div
-                ref={helpPopupRef}
-                className="absolute left-0 top-full mt-2 w-full bg-gray-100 border border-gray-300 rounded p-3 text-xs text-gray-700 shadow z-10"
-              >
-                Go to <b>calendar.google.com</b>, press the <b>+</b> icon, and
-                set up an appointment schedule to get this link.
-                <br />
-                <br />
-                If you need help, you can head to{" "}
-                <a
-                  href="https://www.canva.com/design/DAGrKQdRG-8/XDGzebwKdB4CMWLOszcheg/edit"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 underline"
-                >
-                  this link
-                </a>
-                .
-              </div>
             )}
-          </div> */}
-          </div>
-        </div>
-      </Card>
-      <br />
-      <br />
-    </>
+
+            <div className="flex flex-row gap-6">
+              <FormDatePicker
+                className="w-full"
+                label="Expected Start Date"
+                date={isoToMs(formData.expected_start_date)}
+                setter={(ms?: number) =>
+                  setField("expected_start_date", msToISO(ms) ?? null)
+                }
+                required={false}
+              />
+              <FormDatePicker
+                className="w-full"
+                label="Expected End Date"
+                date={isoToMs(formData.expected_end_date)}
+                setter={(ms?: number) =>
+                  setField("expected_end_date", msToISO(ms) ?? null)
+                }
+                required={false}
+              />
+            </div>
+
+            <FormInput
+              label="Expected Duration (in hours)"
+              type="number"
+              inputMode="numeric"
+              value={formData.expected_duration_hours ?? ""}
+              setter={(v: string) => {
+                const n = v === "" || v == null ? null : Number(v);
+                setField(
+                  "expected_duration_hours",
+                  Number.isFinite(n as number) ? (n as number) : null
+                );
+              }}
+              required={false}
+            />
+          </section>
+
+          <section>
+            <div className="text-2xl tracking-tight font-medium text-gray-700">
+              Internship Preferences
+            </div>
+
+            <div className="mt-2">
+              <div className="text-xs text-gray-400 italic mb-1">
+                Work Modes
+              </div>
+              <AutocompleteMulti
+                options={jobModeOptions}
+                value={formData.job_mode_ids ?? []}
+                setter={fieldSetter("job_mode_ids")}
+                placeholder="Select one or more"
+              />
+              <ErrorLabel value={formErrors.job_mode_ids} />
+            </div>
+
+            <div className="mt-2">
+              <div className="text-xs text-gray-400 italic mb-1">
+                Workload Types
+              </div>
+              <AutocompleteMulti
+                options={jobTypeOptions}
+                value={formData.job_type_ids ?? []}
+                setter={fieldSetter("job_type_ids")}
+                placeholder="Select one or more"
+              />
+              <ErrorLabel value={formErrors.job_type_ids} />
+            </div>
+
+            <div className="mt-2">
+              <div className="text-xs text-gray-400 italic mb-1">
+                Positions / Categories
+              </div>
+              <AutocompleteTreeMulti
+                tree={POSITION_TREE}
+                value={formData.job_category_ids ?? []}
+                setter={fieldSetter("job_category_ids")}
+                placeholder="Select one or more"
+              />
+              <ErrorLabel value={formErrors.job_category_ids} />
+            </div>
+          </section>
+        </Tab>
+
+        {/* TODO: Comment out when calendar */}
+        {/* --- Calendar --- */}
+        {/* <Tab name="Calendar" indicator={hasCalendarErrors}>
+          <section>
+            <div className="text-2xl tracking-tight font-medium text-gray-700">
+              Calendar
+            </div>
+            <div className="flex flex-col space-y-1 mb-2">
+              <ErrorLabel value={formErrors.calendar_link} />
+            </div>
+
+            <div className="relative flex flex-col">
+              <div className="flex items-center mb-1">
+                <span className="text-sm font-medium text-gray-700">
+                  Calendar Link{" "}
+                  <span className="text-gray-400 font-normal">(optional)</span>
+                </span>
+                <button
+                  type="button"
+                  ref={helpBtnRef}
+                  className="ml-2 opacity-70 hover:opacity-90"
+                  onClick={() => setShowCalendarHelp((v) => !v)}
+                  tabIndex={-1}
+                >
+                  <MessageCircleQuestion className="w-4 h-4 text-blue-500" />
+                </button>
+              </div>
+              <FormInput
+                label={undefined}
+                value={formData.calendar_link ?? ""}
+                setter={fieldSetter("calendar_link")}
+                required={false}
+              />
+              {showCalendarHelp && (
+                <div
+                  ref={helpPopupRef}
+                  className="absolute left-0 top-full mt-2 w-full bg-gray-100 border border-gray-300 rounded p-3 text-xs text-gray-700 shadow z-10"
+                >
+                  Go to <b>calendar.google.com</b>, press the <b>+</b> icon, and
+                  set up an appointment schedule to get this link.
+                  <br />
+                  <br />
+                  If you need help, you can head to{" "}
+                  <a
+                    href="https://www.canva.com/design/DAGrKQdRG-8/XDGzebwKdB4CMWLOszcheg/edit"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline"
+                  >
+                    this guide
+                  </a>
+                  .
+                </div>
+              )}
+            </div>
+          </section>
+        </Tab> */}
+      </TabGroup>
+    </Card>
   );
 });
 
