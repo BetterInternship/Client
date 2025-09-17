@@ -657,7 +657,7 @@ export const ProfileButton: React.FC = () => {
           <HelpCircle className="w-4 h-4 inline-block m-1 mr-2" />
           Help Center
         </DropdownOption>
-        <DropdownOption href="/login" on_click={handleLogout}>
+        <DropdownOption href="/" on_click={handleLogout}>
           <LogOut className="text-red-500 w-4 h-4 inline-block m-1 mr-2" />
           <span className="text-red-500">Sign Out</span>
         </DropdownOption>
@@ -685,8 +685,9 @@ export const Header: React.FC = () => {
   const [showDetails, setShowDetails] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const headerRoutes = ["/login", "/login/otp", "/register", "/otp"];
-  const showHeaderRight = routeExcluded(headerRoutes);
+  const noProfileRoutes = ["/register"];
+  const noHeaderRoutes = ["/register"];
+  const showProfileButton = routeExcluded(noProfileRoutes);
 
   // only show filters on /search (allow subpaths like /search/results)
   const showFilters = pathname?.startsWith("/search") === true;
@@ -767,119 +768,120 @@ export const Header: React.FC = () => {
     </div>
   );
 
-
-
-
   return (
     <JobFilterContext.Provider value={{ state, dispatch }}>
-      <div className="flex flex-col">
-        {/* Top Bar */}
-        <div
-          className={cn(
-            "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
-            isMobile ? "px-4 py-3" : "py-4 px-8"
-          )}
-          style={{ overflow: "visible", position: "relative", zIndex: 100 }}
-        >
-          {/* Left: Brand */}
-          <div className="flex items-center gap-3">
-            <HeaderTitle />
+      {routeExcluded(noHeaderRoutes) ? (
+        <div className="flex flex-col">
+          {/* Top Bar */}
+          <div
+            className={cn(
+              "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
+              isMobile ? "px-4 py-3" : "py-4 px-8"
+            )}
+            style={{ overflow: "visible", position: "relative", zIndex: 100 }}
+          >
+            {/* Left: Brand */}
+            <div className="flex items-center gap-3">
+              <HeaderTitle />
+            </div>
+
+            {/* Center: Desktop search + filters (filters only on /search) */}
+            {!isMobile && showProfileButton && (
+              <div className="flex items-center gap-4 w-full max-w-2xl">
+                {showFilters && (
+                  <SearchInput
+                    value={searchTerm}
+                    onChange={setSearchTerm}
+                    onEnter={doSearch}
+                  />
+                )}
+                {showFilters && FilterButtons}
+              </div>
+            )}
+
+            {/* Right: Desktop profile / Mobile burger */}
+            {showProfileButton ? (
+              isMobile ? (
+                <button
+                  type="button"
+                  aria-label="Open menu"
+                  className="inline-flex items-center justify-center h-10 w-10 rounded-md border border-gray-300 hover:bg-gray-50"
+                  onClick={() => setIsMenuOpen(true)}
+                >
+                  <Menu className="h-5 w-5" />
+                </button>
+              ) : (
+                <div className="flex items-center gap-6">
+                  {pathname === "/search" && hasMissing && (
+                    <button
+                      className="text-base ml-4 text-blue-700 font-medium hover:underline focus:outline-none"
+                      onClick={() => router.push("/profile?edit=true")}
+                    >
+                      Finish your profile to start applying!
+                    </button>
+                  )}
+                  <ProfileButton />
+                </div>
+              )
+            ) : (
+              <div className="w-1 h-10 bg-transparent" />
+            )}
           </div>
 
-          {/* Center: Desktop search + filters (filters only on /search) */}
-          {!isMobile && showHeaderRight && (
-            <div className="flex items-center gap-4 w-full max-w-2xl">
-              {showFilters && (
-                <SearchInput
-                  value={searchTerm}
-                  onChange={setSearchTerm}
-                  onEnter={doSearch}
-                />
-              )}
+          {/* Mobile banner under bar */}
+          {isMobile && pathname === "/search" && <CompleteAccBanner />}
+
+          {/* Mobile: search + (filters only on /search) */}
+          {isMobile && showProfileButton && showFilters && (
+            <div className="flex flex-col max-w-2xl w-full gap-3 items-center px-4 pt-3">
+              <SearchInput
+                value={searchTerm}
+                onChange={setSearchTerm}
+                onEnter={doSearch}
+                className="h-12"
+              />
               {showFilters && FilterButtons}
             </div>
           )}
 
-          {/* Right: Desktop profile / Mobile burger */}
-          {showHeaderRight ? (
-            isMobile ? (
-              <button
-                type="button"
-                aria-label="Open menu"
-                className="inline-flex items-center justify-center h-10 w-10 rounded-md border border-gray-300 hover:bg-gray-50"
-                onClick={() => setIsMenuOpen(true)}
+          {/* Mount filter overlays ONLY on /search */}
+          {showFilters && (
+            <>
+              <FilterOverlay
+                visible={showPositions}
+                onClose={() => setShowPositions(false)}
+                onApply={() => {
+                  setShowPositions(false);
+                  doSearch();
+                }}
               >
-                <Menu className="h-5 w-5" />
-              </button>
-            ) : (
-              <div className="flex items-center gap-6">
-                {pathname === "/search" && hasMissing && (
-                  <button
-                    className="text-base ml-4 text-blue-700 font-medium hover:underline focus:outline-none"
-                    onClick={() => router.push("/profile?edit=true")}
-                  >
-                    Finish your profile to start applying!
-                  </button>
-                )}
-                <ProfileButton />
-              </div>
-            )
-          ) : (
-            <div className="w-1 h-10 bg-transparent" />
+                <JobPositionPanel />
+              </FilterOverlay>
+
+              <FilterOverlay
+                visible={showDetails}
+                onClose={() => setShowDetails(false)}
+                onApply={() => {
+                  setShowDetails(false);
+                  doSearch();
+                }}
+              >
+                <JobDetailPanel />
+              </FilterOverlay>
+            </>
+          )}
+
+          {/* Mobile drawer */}
+          {isMobile && showProfileButton && (
+            <MobileDrawer
+              open={isMenuOpen}
+              onClose={() => setIsMenuOpen(false)}
+            />
           )}
         </div>
-
-        {/* Mobile banner under bar */}
-        {isMobile && pathname === "/search" && <CompleteAccBanner />}
-
-        {/* Mobile: search + (filters only on /search) */}
-        {isMobile && showHeaderRight && showFilters && (
-          <div className="flex flex-col max-w-2xl w-full gap-3 items-center px-4 pt-3">
-            <SearchInput
-              value={searchTerm}
-              onChange={setSearchTerm}
-              onEnter={doSearch}
-              className="h-12"
-            />
-            {showFilters && FilterButtons}
-          </div>
-        )}
-
-        {/* Mount filter overlays ONLY on /search */}
-        {showFilters && (
-          <>
-            <FilterOverlay
-              visible={showPositions}
-              onClose={() => setShowPositions(false)}
-              onApply={() => {
-                setShowPositions(false);
-                doSearch();
-              }}
-            >
-              <JobPositionPanel />
-            </FilterOverlay>
-
-            <FilterOverlay
-              visible={showDetails}
-              onClose={() => setShowDetails(false)}
-              onApply={() => {
-                setShowDetails(false);
-                doSearch();
-              }}
-            >
-              <JobDetailPanel />
-            </FilterOverlay>
-          </>
-        )}
-
-        {/* Mobile drawer */}
-        {isMobile && showHeaderRight && (
-          <MobileDrawer
-            open={isMenuOpen}
-            onClose={() => setIsMenuOpen(false)}
-          />
-        )}
-      </div>
+      ) : (
+        <></>
+      )}
     </JobFilterContext.Provider>
   );
 };

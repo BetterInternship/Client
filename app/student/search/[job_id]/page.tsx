@@ -73,7 +73,7 @@ export default function JobPage() {
 
   const handleSave = async (job: Job) => {
     if (!isAuthenticated()) {
-      window.location.href = "/login";
+      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
       return;
     }
     await savedJobs.toggle(job.id ?? "");
@@ -81,7 +81,7 @@ export default function JobPage() {
 
   const handleApply = () => {
     if (!isAuthenticated()) {
-      window.location.href = "/login";
+      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
       return;
     }
 

@@ -7,13 +7,7 @@ import {
   useImperativeHandle,
   useMemo,
 } from "react";
-import {
-  Edit2,
-  Upload,
-  Eye,
-  Camera,
-  MessageCircleQuestion,
-} from "lucide-react";
+import { Edit2, Upload, Eye, Camera } from "lucide-react";
 import { useProfile } from "@/lib/api/student.api";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
@@ -29,7 +23,6 @@ import { getFullName } from "@/lib/utils/user-utils";
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import {
   isValidOptionalLinkedinURL,
-  isValidOptionalCalendarURL,
   toURL,
   openURL,
 } from "@/lib/utils/url-utils";
@@ -46,23 +39,15 @@ import {
   createEditForm,
   FormCheckbox,
   FormDatePicker,
-  FormDropdown,
   FormInput,
 } from "@/components/EditForm";
 import { Divider } from "@/components/ui/divider";
-import Link from "next/link";
-import {
-  isValidOptionalUserName,
-  isValidRequiredUserName,
-} from "@/lib/utils/name-utils";
+import { isValidRequiredUserName } from "@/lib/utils/name-utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { Autocomplete, AutocompleteMulti } from "@/components/ui/autocomplete";
 import { isoToMs, msToISO } from "@/lib/utils/date-utils";
-import {
-  AutocompleteTreeMulti,
-  type PositionCategory,
-} from "@/components/ui/autocomplete";
+import { AutocompleteTreeMulti } from "@/components/ui/autocomplete";
 import { TabGroup, Tab } from "@/components/ui/tabs";
 import { POSITION_TREE } from "@/lib/consts/positions";
 

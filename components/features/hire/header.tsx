@@ -22,10 +22,11 @@ import { useProfile } from "@/hooks/use-employer-api";
  */
 export const Header = () => {
   const { god } = useAuthContext();
-  const headerRoutes = ["/login", "/register", "/otp"];
-  const { routeExcluded: route_excluded } = useRoute();
+  const { routeExcluded } = useRoute();
+  const noProfileRoutes = ["/login", "/register", "/otp"];
+  const noHeaderRoutes: string[] = [];
 
-  return (
+  return routeExcluded(noHeaderRoutes) ? (
     <div className="relative flex py-3 px-6 justify-between items-center bg-white backdrop-blur-md border-b border-gray-100 z-[100]">
       <HeaderTitle />
       {god && (
@@ -37,12 +38,14 @@ export const Header = () => {
           </Link>
         </div>
       )}
-      {route_excluded(headerRoutes) ? (
+      {routeExcluded(noProfileRoutes) ? (
         <ProfileButton />
       ) : (
         <div className="w-1 h-10 bg-transparent"></div>
       )}
     </div>
+  ) : (
+    <></>
   );
 };
 

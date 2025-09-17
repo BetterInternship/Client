@@ -1,316 +1,204 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useDbRefs } from "@/lib/db/use-refs";
-import { useRouter, useSearchParams } from "next/navigation";
-import { PublicUser } from "@/lib/db/db.types";
-import { createEditForm, FormDropdown, FormInput } from "@/components/EditForm";
-import { Card } from "@/components/ui/card";
-import { ErrorLabel, LabeledProperty } from "@/components/ui/labels";
-import { StoryBook } from "@/components/ui/storybook";
 import { Button } from "@/components/ui/button";
-import { isValidEmail, isValidPHNumber } from "@/lib/utils";
-import { MultipartFormBuilder } from "@/lib/multipart-form";
-import { useAuthContext } from "@/lib/ctx-auth";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { useEffect, useMemo, useState } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import ResumeUpload from "./ResumeUpload";
+import { useAnalyzeResume } from "@/hooks/use-register";
+import { Autocomplete } from "@/components/ui/autocomplete";
+import { useDbRefs } from "@/lib/db/use-refs";
 
-const [UserRegisterForm, useUserRegisterForm] = createEditForm<PublicUser>();
+type Inputs = {
+  first_name: string;
+  middle_name: string;
+  last_name: string;
+  phone_number: string;
+  university: string;
+  college: string;
+  degree: string;
+  degree_notes: string;
+};
 
-export default function RegisterPage() {
-  const { register } = useAuthContext();
-  const [email, setEmail] = useState("");
-  const searchParams = useSearchParams();
-  const dbRefs = useDbRefs();
-  const router = useRouter();
-
-  useEffect(() => {
-    const emailParam = searchParams.get("email");
-    if (!emailParam && !dbRefs.ref_loading) return router.push("/login");
-    if (!emailParam) return;
-
-    setEmail(emailParam);
-    if (!dbRefs.universities.length) return;
-
-    const domain = emailParam.split("@")[1];
-    const unis = dbRefs.getUniversityFromDomain(domain);
-    if (!unis.length && !dbRefs.ref_loading) return router.push("/login");
-  }, [searchParams, dbRefs, router]);
-
-  return (
-    <div className="flex-1 flex justify-center px-6 py-12 pt-12 overflow-y-auto">
-      <div className="w-full max-w-2xl">
-        <div className="text-center mb-10">
-          <h2 className="text-4xl tracking-tighter font-bold text-gray-700 mb-4">
-            Welcome to BetterInternship!
-          </h2>
-        </div>
-
-        <UserRegisterForm data={{}}>
-          <UserEditor registerProfile={register} email={email} />
-        </UserRegisterForm>
-      </div>
-      <div className="fixed bottom-0 bg-gray-50 z-[100] h-10 w-full flex flex-row justify-center">
-        <div className="opacity-80 text-sm">
-          Need help? Contact us at{" "}
-          <a href="mailto:hello@betterinternship.com">
-            hello@betterinternship.com
-          </a>
-        </div>
-      </div>
-    </div>
+// Data for defining the steps of the page
+const stepData = [
+  { title: "Welcome to BetterInternship" },
+  { title: "", exclude: true },
+  { title: "Help us figure out who you are" },
+  { title: "What kind of internships are you looking for?" },
+  { title: "You're good to go!", exclude: true },
+];
+const offsets = [0];
+const stepCount = stepData.filter((step) => !step.exclude).length;
+stepData
+  .slice(1)
+  .map((step) =>
+    offsets.push(offsets[offsets.length - 1] + (step.exclude ? 1 : 0))
   );
-}
 
-const UserEditor = ({
-  email,
-  registerProfile,
-}: {
-  email: string;
-  registerProfile: (newProfile: Partial<PublicUser>) => Promise<any>;
-}) => {
+export const RegisterPage = () => {
+  const [file, setFile] = useState<File | null>(null);
+  const [step, setStep] = useState(2);
+  const [currentStep, setCurrentStep] = useState(stepData[step]);
+  const [currentOffset, setCurrentOffset] = useState(offsets[step]);
+  const { upload, fileInputRef, response } = useAnalyzeResume(file);
   const {
-    formData,
-    formErrors,
-    setField,
-    fieldSetter,
-    addValidator,
-    validateFormData,
-    cleanFormData,
-  } = useUserRegisterForm();
-  const router = useRouter();
-  const dbRefs = useDbRefs();
-  const [isRegistering, setIsRegistering] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false);
+    watch,
+    register,
+    setValue,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<Inputs>();
+  const refs = useDbRefs();
 
-  useEffect(() => {
-    setField("email", email);
-  }, [email]);
+  // Options for dropdowns
+  const universityOptions = refs.universities;
+  const collegeOptions = useMemo(
+    () =>
+      refs.colleges.filter((c) =>
+        refs.get_colleges_by_university(watch("university")).includes(c.id)
+      ),
+    [watch("university")]
+  );
+  const degreeOptions = useMemo(
+    () =>
+      refs.degrees.filter((c) =>
+        refs.get_degrees_by_university(watch("university")).includes(c.id)
+      ),
+    [watch("university")]
+  );
 
-  const register = async () => {
-    // Validate required fields before submitting
-    const missingFields = [];
+  const onSubmit: SubmitHandler<Inputs> = (data) => console.log(data);
 
-    if (!formData.first_name) {
-      missingFields.push("First Name");
-    }
-    if (!formData.last_name) {
-      missingFields.push("Last Name");
-    }
-    if (!formData.edu_verification_email) {
-      missingFields.push("Last Name");
-    }
-    if (!dbRefs.isNotNull(formData.university)) {
-      missingFields.push("University");
-    }
-    if (!dbRefs.isNotNull(formData.year_level)) {
-      missingFields.push("Year Level");
-    }
-
-    if (missingFields.length > 0) {
-      const errorMessage = `Please complete the following required fields:\n\n• ${missingFields.join(
-        "\n• "
-      )}`;
-      alert(errorMessage);
-      return;
-    }
-
-    const multipartForm = MultipartFormBuilder.new();
-    const newProfile = {
-      ...cleanFormData(),
-      email,
-    };
-    multipartForm.from(newProfile);
-    setIsRegistering(true);
-    // @ts-ignore
-    const result = await registerProfile(multipartForm.build());
-    // @ts-ignore
-    if (!result?.success) {
-      const errorMsg =
-        result?.error ||
-        result?.message ||
-        "Registration failed. Please check your information and try again.";
-      alert(`Registration Error: ${errorMsg}`);
-      setIsRegistering(false);
-      return;
-    }
-
-    router.push("/verify");
-    setIsRegistering(false);
+  // State changes for the step
+  const nextStep = () => {
+    setStep(step + 1);
+  };
+  const lastStep = () => {
+    setStep(step - 1);
   };
 
-  // Update dropdown options
-  useEffect(() => {
-    const debouncedValidation = setTimeout(() => validateFormData(), 500);
-    return () => clearTimeout(debouncedValidation);
-  }, [formData]);
+  // Handles update from resume parse
+  const handleFormUpdate = (parsedResume: Partial<Inputs>) => {
+    console.log("pasred resume", parsedResume);
+    const keys = Object.keys(parsedResume) as (keyof Inputs)[];
+    for (const key of keys)
+      if (parsedResume[key]) setValue(key, parsedResume[key]);
+  };
 
-  // Data validators
+  // Upload file on select
   useEffect(() => {
-    addValidator(
-      "first_name",
-      (name: string) => !name.trim() && `First name is not valid.`
-    );
-    addValidator(
-      "last_name",
-      (name: string) => !name.trim() && `Last name is not valid.`
-    );
-    addValidator(
-      "email",
-      (email: string) => email && !isValidEmail(email) && "Invalid email."
-    );
-    addValidator(
-      "phone_number",
-      (phone: string) =>
-        phone && !isValidPHNumber(phone) && "Invalid PH number."
-    );
-    addValidator(
-      "university",
-      (university: string) =>
-        dbRefs.isNotNull(university) &&
-        !!dbRefs.get_university(university) &&
-        "Invalid university."
-    );
-    addValidator(
-      "year_level",
-      (level: number) =>
-        dbRefs.isNotNull(level) &&
-        !!dbRefs.to_level_name(level) &&
-        "Invalid year level."
-    );
-  }, []);
+    upload(file);
+  }, [file]);
+
+  useEffect(() => {
+    setCurrentStep(stepData[step]);
+    setCurrentOffset(offsets[step]);
+  }, [step]);
 
   return (
-    <>
-      <StoryBook>
-        <Card>
-          <div className="text-2xl tracking-tight font-bold text-gray-700 mb-4">
-            Student Registration Form
-          </div>
-          <div className="mb-4 flex flex-col space-y-3">
-            <Badge>
-              <div className="">
-                An edu.ph is required to register, and is used to verify our
-                users.
-              </div>
-            </Badge>
-            <div>
-              <ErrorLabel value={formErrors.edu_verification_email} />
-              <FormInput
-                label="Edu Email"
-                value={formData.edu_verification_email ?? ""}
-                setter={fieldSetter("edu_verification_email")}
-                maxLength={100}
-              />
-            </div>
-            <div>
-              <ErrorLabel value={formErrors.first_name} />
-              <FormInput
-                label="First Name"
-                value={formData.first_name ?? ""}
-                setter={fieldSetter("first_name")}
-                maxLength={100}
-              />
-            </div>
-            <div>
-              <ErrorLabel value={formErrors.last_name} />
-              <FormInput
-                label="Last Name"
-                value={formData.last_name ?? ""}
-                setter={fieldSetter("last_name")}
-                maxLength={100}
-              />
-            </div>
-            <FormDropdown
-              label="University"
-              options={dbRefs.universities.filter((u) =>
-                dbRefs
-                  .getUniversityFromDomain(email?.split("@")[1])
-                  .includes(u.id)
+    <div className="bg-[#FEFCFF] h-full">
+      <form onSubmit={handleSubmit(onSubmit)} className="relative h-full">
+        <div className="relative h-full flex flex-col justify-start max-w-prose sm:w-1/2 w-fit m-auto my-8">
+          <div className="pt-4">
+            <h1 className="text-3xl font-semibold tracking-tight text-center text-gray-700">
+              <img
+                src="/BetterInternshipLogo.png"
+                className="w-prose max-w-32 m-auto mt-16 mb-0"
+              ></img>
+              {currentStep.title.trim() && (
+                <>
+                  <br />
+                  {currentStep.title}
+                </>
               )}
-              value={formData.university ?? ""}
-              setter={fieldSetter("university")}
-            />
-            <FormDropdown
-              label="Year Level"
-              options={dbRefs.levels}
-              value={formData.year_level ?? ""}
-              setter={fieldSetter("year_level")}
-            />
+            </h1>
           </div>
-          <div className="flex flex-col space-y-1 mb-2">
-            <ErrorLabel value={formErrors.taking_for_credit} />
-            <ErrorLabel value={formErrors.email} />
-          </div>
-          <div className="mb-4 flex flex-col space-y-3">
-            <Card className="p-3">
-              <div className="flex items-start gap-3">
-                <Checkbox
-                  id="taking-for-credit"
-                  checked={formData.taking_for_credit}
-                  onCheckedChange={(checked) =>
-                    setField("taking_for_credit", checked)
-                  }
-                  className="mt-1"
-                />
-                <label
-                  htmlFor="taking-for-credit"
-                  className="text-sm text-gray-700 leading-relaxed cursor-pointer flex-1"
-                >
-                  I am taking internships for school credit.
-                </label>
-              </div>
-            </Card>
 
-            <Card className="p-3">
-              <div className="flex items-start gap-3">
-                <Checkbox
-                  id="accept-terms"
-                  checked={termsAccepted}
-                  onCheckedChange={(checked) =>
-                    setTermsAccepted(checked as boolean)
-                  }
-                  className="mt-1"
-                />
-                <label
-                  htmlFor="accept-terms"
-                  className="text-sm text-gray-700 leading-relaxed cursor-pointer flex-1"
-                >
-                  I have read and agree to the{" "}
-                  <a
-                    href="/TermsConditions.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 underline font-medium"
-                  >
-                    Terms & Conditions
-                  </a>{" "}
-                  and{" "}
-                  <a
-                    href="/PrivacyPolicy.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 underline font-medium"
-                  >
-                    Privacy Policy
-                  </a>
-                  .
-                </label>
-              </div>
-            </Card>
+          {step <= 1 && (
+            <ResumeUpload
+              ref={fileInputRef}
+              promise={response?.then(({ extractedUser }) =>
+                handleFormUpdate(extractedUser)
+              )}
+              onSelect={(file) => {
+                setFile(file);
+                nextStep();
+              }}
+              onComplete={() => {
+                nextStep();
+              }}
+            />
+          )}
 
-            <Button
-              onClick={register}
-              disabled={!termsAccepted || isRegistering}
-              className="w-full h-12 bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
-            >
-              {isRegistering ? "Registering..." : "Register"}
-            </Button>
+          <div className={cn("", step === 2 ? "" : "hidden")}>
+            <div className="flex flex-col gap-2 mt-4">
+              {errors.first_name && <span>This field is required</span>}
+              <Input
+                placeholder="First name..."
+                {...register("first_name", { required: true })}
+              ></Input>
+              <Input
+                placeholder="Middle name..."
+                {...register("middle_name", { required: true })}
+              ></Input>
+              <Input
+                placeholder="Last name..."
+                {...register("last_name", { required: true })}
+              ></Input>
+              <Input
+                placeholder="Phone number..."
+                {...register("phone_number", { required: true })}
+              ></Input>
+              <Autocomplete
+                value={watch("university")}
+                options={universityOptions}
+                setter={(value: any) => setValue("university", value)}
+                placeholder="Select university..."
+              />
+              <Autocomplete
+                value={watch("college")}
+                options={collegeOptions}
+                setter={(value: any) => setValue("college", value)}
+                placeholder="Select college..."
+              />
+              <Autocomplete
+                value={watch("degree")}
+                options={degreeOptions}
+                setter={(value: any) => setValue("degree", value)}
+                placeholder="Select degree..."
+              />
+              <Input
+                placeholder="Additional degree notes..."
+                {...register("degree_notes", { required: true })}
+              ></Input>
+              <div className="justify-end flex flex-row gap-1 mt-4">
+                <Button
+                  scheme="secondary"
+                  variant="outline"
+                  onClick={() => setStep(0)}
+                >
+                  Prev
+                </Button>
+                <Button scheme="primary" onClick={nextStep}>
+                  Next
+                </Button>
+              </div>
+            </div>
           </div>
-        </Card>
-      </StoryBook>
-      <br />
-      <br />
-    </>
+
+          <div className="flex-1"></div>
+
+          <div className="w-full text-center opacity-50">
+            Step {step + 1 - currentOffset} out of {stepCount}
+          </div>
+
+          <div className="mb-16"></div>
+        </div>
+      </form>
+    </div>
   );
 };
+
+export default RegisterPage;

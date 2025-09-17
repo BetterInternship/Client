@@ -209,7 +209,7 @@ export default function SearchPage() {
   -------------------------------------------- */
   const handleSave = async (job: Job) => {
     if (!isAuthenticated()) {
-      window.location.href = "/login";
+      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
       return;
     }
     await savedJobs.toggle(job.id ?? "");
@@ -217,7 +217,7 @@ export default function SearchPage() {
 
   const handleApply = () => {
     if (!isAuthenticated()) {
-      window.location.href = "/login";
+      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
       return;
     }
     const applied = applications.appliedJob(selectedJob?.id ?? "");
@@ -268,7 +268,7 @@ export default function SearchPage() {
   -------------------------------------------- */
   const openMassApply = () => {
     if (!isAuthenticated()) {
-      window.location.href = "/login";
+      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
       return;
     }
     if (!isCompleteProfile(profile.data)) {

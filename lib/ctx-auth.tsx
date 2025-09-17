@@ -130,7 +130,8 @@ export const AuthContextProvider = ({
 
   const redirectIfNotLoggedIn = () =>
     useEffect(() => {
-      if (!isLoading && !isAuthenticated) router.push("/login");
+      if (!isLoading && !isAuthenticated)
+        router.push(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`);
     }, [isAuthenticated, isLoading]);
 
   const redirectIfLoggedIn = () =>

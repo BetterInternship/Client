@@ -69,6 +69,14 @@ export const AuthService = {
     return APIClient.post<AuthResponse>(APIRoute("auth").r("loggedin").build());
   },
 
+  async parseResume(form: FormData) {
+    return APIClient.post<UserResponse>(
+      APIRoute("auth").r("register", "resume").build(),
+      form,
+      "form-data"
+    );
+  },
+
   async register(user: Partial<PublicUser>) {
     return APIClient.post<AuthResponse>(
       APIRoute("auth").r("register").build(),
@@ -177,10 +185,10 @@ export const UserService = {
     );
   },
 
-  async updateMyResume(file: FormData) {
+  async updateMyResume(form: FormData) {
     return APIClient.put<Response>(
       APIRoute("users").r("me", "resume").build(),
-      file,
+      form,
       "form-data"
     );
   },

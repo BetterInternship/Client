@@ -9,12 +9,12 @@ import { useAppContext } from "@/lib/ctx-app";
  * @component
  */
 export const Footer = ({ content }: { content?: string }) => {
-  const { isMobile: is_mobile } = useAppContext();
-  const footer_routes = ["/login", "/register", "/otp", "/"];
-  const { routeExcluded: route_excluded } = useRoute();
+  const { isMobile } = useAppContext();
+  const noFooterRoutes = ["/login", "/register", "/otp", "/"];
+  const { routeExcluded } = useRoute();
 
   // If on mobile or on a page with no footer
-  if (is_mobile || route_excluded(footer_routes)) {
+  if (isMobile || routeExcluded(noFooterRoutes)) {
     return <></>;
   }
 

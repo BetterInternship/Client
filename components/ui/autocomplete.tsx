@@ -20,6 +20,7 @@ function AutocompleteBase<ID extends number | string>({
   placeholder,
   className,
   multiple = true,
+  ...props
 }: {
   options: IAutocompleteOption<ID>[];
   value?: ID[]; // single => 0..1 items, multi => any length
@@ -142,6 +143,7 @@ function AutocompleteBase<ID extends number | string>({
               "flex-1 min-w-[8ch] h-7 text-sm",
               "bg-transparent outline-none border-none focus:ring-0"
             )}
+            {...props}
           />
         </div>
       ) : (
@@ -216,12 +218,14 @@ export const Autocomplete = <ID extends number | string>({
   placeholder,
   className,
   value,
+  props,
 }: {
   options: IAutocompleteOption<ID>[];
   setter: (value?: ID | null) => void;
   placeholder?: string;
   className?: string;
   value?: ID | null;
+  props?: any[];
 }) => {
   return (
     <AutocompleteBase<ID>
@@ -231,6 +235,7 @@ export const Autocomplete = <ID extends number | string>({
       setter={(arr) => setter(arr[0] ?? null)}
       placeholder={placeholder}
       className={className}
+      {...props}
     />
   );
 };
@@ -267,7 +272,11 @@ export const AutocompleteMulti = <ID extends number | string>({
  * Public API: grouped multi-select with tree (uuid[] etc.)
  * -----------------------------------------------------*/
 export type SubOption = { name: string; value: string };
-export type PositionCategory = { name: string; value: string; children?: SubOption[] };
+export type PositionCategory = {
+  name: string;
+  value: string;
+  children?: SubOption[];
+};
 
 export function AutocompleteTreeMulti({
   tree,
@@ -338,7 +347,8 @@ export function AutocompleteTreeMulti({
     else childIds.forEach((id) => next.add(id));
     setSelected(Array.from(next));
   };
-  const removeAt = (id: string) => setSelected(selected.filter((x) => x !== id));
+  const removeAt = (id: string) =>
+    setSelected(selected.filter((x) => x !== id));
 
   // query filter (keeps parents with any matching child)
   const filteredTree = useMemo(() => {
@@ -448,7 +458,9 @@ export function AutocompleteTreeMulti({
           }}
           onKeyDown={onKeyDown}
           onFocus={() => setIsOpen(true)}
-          placeholder={selected.length === 0 ? (placeholder ?? "Select one or more") : ""}
+          placeholder={
+            selected.length === 0 ? placeholder ?? "Select one or more" : ""
+          }
           className={cn(
             "flex-1 min-w-[8ch] h-7 text-sm",
             "bg-transparent outline-none border-none focus:ring-0"
@@ -514,7 +526,11 @@ export function AutocompleteTreeMulti({
                                 inputRef.current?.focus();
                               }}
                             >
-                              <input type="checkbox" readOnly checked={active} />
+                              <input
+                                type="checkbox"
+                                readOnly
+                                checked={active}
+                              />
                               {c.name}
                             </button>
                           </li>
