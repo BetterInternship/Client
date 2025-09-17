@@ -1,9 +1,16 @@
 "use client";
 
-import React, { useRef } from "react";
-import { useState, useEffect } from "react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Heart, CheckCircle, Clipboard, ArrowLeft } from "lucide-react";
+import {
+  Heart,
+  CheckCircle,
+  Clipboard,
+  ArrowLeft,
+  CheckSquare,
+  Square,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -27,11 +34,23 @@ import { IncompleteProfileModal } from "@/components/modals/IncompleteProfileMod
 import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { JobModal } from "@/components/modals/JobModal";
 import { useMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
+
+/* =======================================================================================
+   Page
+======================================================================================= */
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
   const { isAuthenticated } = useAuthContext();
   const { isMobile } = useMobile();
+
+  // selection + bulk apply
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkCoverLetter, setBulkCoverLetter] = useState("");
+
+  // job list & filters
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [position, setPosition] = useState<string[]>([]);
   const [jobModeFilter, setJobModeFilter] = useState<string[]>([]);
@@ -39,38 +58,12 @@ export default function SearchPage() {
   const [jobAllowanceFilter, setJobAllowanceFilter] = useState<string[]>([]);
   const [jobMoaFilter, setJobMoaFilter] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const textarea_ref = useRef<HTMLTextAreaElement>(null);
-  const [showCoverLetterInput, setShowCoverLetterInput] = useState(false);
 
-  const {
-    open: openApplicationConfirmationModal,
-    close: closeApplicationConfirmationModal,
-    Modal: ApplicationConfirmationModal,
-  } = useModal("application-confirmation-modal");
-
-  const {
-    open: openProfilePreviewModal,
-    close: closeProfilePreviewModal,
-    Modal: ProfilePreviewModal,
-  } = useModal("profile-preview-modal");
-
-  const jobModalRef = useModalRef();
-  const incompleteModalRef = useModalRef();
-  const successModalRef = useModalRef();
-
-  const { open: openResumeModal, Modal: ResumeModal } =
-    useModal("resume-modal");
-  const profile = useProfile();
-
-  // Resume URL management for profile preview
-  const { url: resumeURL, sync: syncResumeURL } = useFile({
-    fetcher: UserService.getMyResumeURL,
-    route: "/users/me/resume",
-  });
-
-  // API hooks with dynamic filtering based on current filter state
+  // page + pagination
   const jobs_page_size = 10;
   const [jobs_page, setJobsPage] = useState(1);
+
+  // hooks
   const jobs = useJobs({
     search: searchTerm.trim() || undefined,
     position,
@@ -79,22 +72,65 @@ export default function SearchPage() {
     jobAllowanceFilter,
     jobMoaFilter,
   });
-
-  // Get paginated jobs directly from getJobsPage
-  const jobsPage = jobs.getJobsPage({ page: jobs_page, limit: jobs_page_size });
   const savedJobs = useSavedJobs();
   const applications = useApplications();
 
-  // Initialize search term from URL
+  // resume preview (profile modal)
+  const { url: resumeURL, sync: syncResumeURL } = useFile({
+    fetcher: UserService.getMyResumeURL,
+    route: "/users/me/resume",
+  });
+
+  // modals
+  const { open: openResumeModal, Modal: ResumeModal } =
+    useModal("resume-modal");
+  const profile = useProfile();
+
+  const {
+    open: openApplicationConfirmationModal,
+    close: closeApplicationConfirmationModal,
+    Modal: ApplicationConfirmationModal,
+  } = useModal("application-confirmation-modal");
+  const {
+    open: openProfilePreviewModal,
+    close: closeProfilePreviewModal,
+    Modal: ProfilePreviewModal,
+  } = useModal("profile-preview-modal");
+
+  // mass apply modals
+  const {
+    open: openMassApplyModal,
+    close: closeMassApplyModal,
+    Modal: MassApplyModal,
+  } = useModal("mass-apply-modal");
+  const {
+    open: openMassApplyResultModal,
+    close: closeMassApplyResultModal,
+    Modal: MassApplyResultModal,
+  } = useModal("mass-apply-result-modal");
+
+  const jobModalRef = useModalRef();
+  const incompleteModalRef = useModalRef();
+  const successModalRef = useModalRef();
+
+  // single-apply cover letter input
+  const textarea_ref = useRef<HTMLTextAreaElement>(null);
+
+  // computed pages
+  const jobsPage = jobs.getJobsPage({ page: jobs_page, limit: jobs_page_size });
+
+  /* --------------------------------------------
+   * URL → local filter state
+  -------------------------------------------- */
   useEffect(() => {
     const query = searchParams.get("query") || "";
-    const position = searchParams.get("position")?.split(",") || [];
+    const pos = searchParams.get("position")?.split(",") || [];
     const jobAllowance = searchParams.get("allowance")?.split(",") || [];
     const jobWorkload = searchParams.get("workload")?.split(",") || [];
     const jobMode = searchParams.get("mode")?.split(",") || [];
     const jobMoa = searchParams.get("moa")?.split(",") || [];
 
-    setPosition(position);
+    setPosition(pos);
     setJobAllowanceFilter(jobAllowance);
     setJobWorkloadFilter(jobWorkload);
     setJobModeFilter(jobMode);
@@ -107,20 +143,51 @@ export default function SearchPage() {
     setJobsPage(1);
   }, [searchTerm, jobMoaFilter]);
 
-  // Set first job as selected when jobs load
+  // Sync selected job
   useEffect(() => {
     const jobId = searchParams.get("jobId");
-
     if (jobId && jobsPage.length > 0) {
       const targetJob = jobsPage.find((job) => job.id === jobId);
-      if (targetJob && targetJob.id !== selectedJob?.id) {
-        setSelectedJob(targetJob);
-      }
+      if (targetJob && targetJob.id !== selectedJob?.id) setSelectedJob(targetJob);
     } else if (jobsPage.length > 0 && !selectedJob?.id) {
       setSelectedJob(jobsPage[0]);
     }
   }, [jobsPage.length, searchParams]);
 
+  /* --------------------------------------------
+   * Selection helpers
+  -------------------------------------------- */
+  const toggleSelect = (jobId: string) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(jobId) ? next.delete(jobId) : next.add(jobId);
+      return next;
+    });
+
+  const isSelected = (jobId?: string) => !!jobId && selectedIds.has(jobId);
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const selectAllOnPage = () => {
+    const next = new Set(selectedIds);
+    jobsPage.forEach((j) => j.id && next.add(j.id));
+    setSelectedIds(next);
+  };
+
+  const unselectAllOnPage = () => {
+    const next = new Set(selectedIds);
+    jobsPage.forEach((j) => j.id && next.delete(j.id));
+    setSelectedIds(next);
+  };
+
+  const selectedJobsList = useMemo(
+    () => jobs.filteredJobs.filter((j) => j.id && selectedIds.has(j.id)),
+    [jobs.filteredJobs, selectedIds]
+  );
+
+  /* --------------------------------------------
+   * Single apply actions
+  -------------------------------------------- */
   const handleSave = async (job: Job) => {
     if (!isAuthenticated()) {
       window.location.href = "/login";
@@ -131,19 +198,14 @@ export default function SearchPage() {
 
   const handleApply = () => {
     if (!isAuthenticated()) {
-      console.log("Not authenticated, redirecting to login");
       window.location.href = "/login";
       return;
     }
-
-    // Check if already applied
-    const applicationStatus = applications.appliedJob(selectedJob?.id ?? "");
-    if (applicationStatus) {
-      console.log("Already applied to this job");
+    const applied = applications.appliedJob(selectedJob?.id ?? "");
+    if (applied) {
       alert("You have already applied to this job!");
       return;
     }
-
     if (
       !isCompleteProfile(profile.data) ||
       (selectedJob?.require_github &&
@@ -154,22 +216,15 @@ export default function SearchPage() {
       incompleteModalRef.current?.open();
       return;
     }
-
-    // If profile is complete, show confirmation modal
     openApplicationConfirmationModal();
   };
 
   const handleDirectApplication = async () => {
     if (!selectedJob) return;
-
-    if (
-      selectedJob?.require_cover_letter &&
-      !textarea_ref.current?.value.trim()
-    ) {
+    if (selectedJob?.require_cover_letter && !textarea_ref.current?.value.trim()) {
       alert("A cover letter is required to apply for this job.");
       return;
     }
-
     await applications
       .create({
         job_id: selectedJob.id ?? "",
@@ -186,6 +241,103 @@ export default function SearchPage() {
     if (isMobile) jobModalRef.current?.open();
   };
 
+  /* --------------------------------------------
+   * Mass apply actions
+  -------------------------------------------- */
+  const openMassApply = () => {
+    if (!isAuthenticated()) {
+      window.location.href = "/login";
+      return;
+    }
+    if (!isCompleteProfile(profile.data)) {
+      incompleteModalRef.current?.open();
+      return;
+    }
+    const allApplied =
+      selectedJobsList.length > 0 &&
+      selectedJobsList.every((j) => applications.appliedJob(j.id ?? ""));
+    if (!selectedJobsList.length || allApplied) {
+      alert("No eligible jobs selected. Select jobs you haven’t applied to yet.");
+      return;
+    }
+    openMassApplyModal();
+  };
+
+  const [massApplying, setMassApplying] = useState(false);
+  const [massResult, setMassResult] = useState<{
+    ok: Job[];
+    skipped: { job: Job; reason: string }[];
+    failed: { job: Job; error: string }[];
+  }>({ ok: [], skipped: [], failed: [] });
+
+  const runMassApply = async () => {
+    if (!selectedJobsList.length) return;
+
+    const skipped: { job: Job; reason: string }[] = [];
+    const eligible: Job[] = [];
+
+    for (const job of selectedJobsList) {
+      if (applications.appliedJob(job.id ?? "")) {
+        skipped.push({ job, reason: "Already applied" });
+        continue;
+      }
+      const needsGithub =
+        job.require_github && !(profile.data?.github_link?.trim());
+      const needsPortfolio =
+        job.require_portfolio && !(profile.data?.portfolio_link?.trim());
+      const needsCover = job.require_cover_letter && !bulkCoverLetter.trim();
+
+      if (needsGithub) {
+        skipped.push({ job, reason: "Requires GitHub profile" });
+        continue;
+      }
+      if (needsPortfolio) {
+        skipped.push({ job, reason: "Requires portfolio link" });
+        continue;
+      }
+      if (needsCover) {
+        skipped.push({ job, reason: "Requires a cover letter" });
+        continue;
+      }
+      eligible.push(job);
+    }
+
+    if (!eligible.length) {
+      setMassResult({ ok: [], skipped, failed: [] });
+      closeMassApplyModal();
+      openMassApplyResultModal();
+      return;
+    }
+
+    setMassApplying(true);
+    const ok: Job[] = [];
+    const failed: { job: Job; error: string }[] = [];
+
+    for (const job of eligible) {
+      try {
+        await applications.create({
+          job_id: job.id ?? "",
+          cover_letter: bulkCoverLetter || "",
+        });
+        if (applications.createError) {
+          failed.push({
+            job,
+            error: applications.createError.message || "Unknown error",
+          });
+        } else {
+          ok.push(job);
+        }
+      } catch (e: any) {
+        failed.push({ job, error: e?.message || "Unknown error" });
+      }
+    }
+
+    setMassApplying(false);
+    setMassResult({ ok, skipped, failed });
+    closeMassApplyModal();
+    openMassApplyResultModal();
+  };
+
   if (jobs.error) {
     return (
       <div className="h-screen bg-white flex items-center justify-center">
@@ -198,28 +350,161 @@ export default function SearchPage() {
     );
   }
 
+  /* =======================================================================================
+     UI
+  ====================================================================================== */
+
+  // page toolbar (under the global header)
+  const PageToolbar = (
+    <div className="border-b">
+      <div className="flex items-center justify-between gap-3 px-7 py-2">
+        <div className="flex items-center gap-8">
+          {!isMobile && (
+            <div className="text-sm text-gray-500">
+              {jobs.filteredJobs.length} internships
+            </div>
+          )}
+
+          {/* Selection controls (appear in select mode or when anything is selected) */}
+          {(selectMode || selectedIds.size > 0) && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={selectAllOnPage}
+                className="h-8"
+              >
+                <CheckSquare className="w-4 h-4 mr-2" />
+                Select page
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={unselectAllOnPage}
+                className="h-8"
+              >
+                <Square className="w-4 h-4 mr-2" />
+                Unselect page
+              </Button>
+              <span className="text-sm text-gray-600">
+                {selectedIds.size} selected
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Right side: mass apply & exit selection */}
+        <div className="flex items-center gap-2">
+          {selectMode ? (
+            <>
+              <Button
+                size="sm"
+                onClick={openMassApply}
+                className="h-8"
+                disabled={selectedIds.size === 0}
+              >
+                Apply to {selectedIds.size || 0} selected
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8"
+                onClick={() => {
+                  setSelectMode(false);
+                  clearSelection();
+                }}
+              >
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8"
+              onClick={() => setSelectMode(true)}
+            >
+              Mass apply
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <>
-      {/* Desktop and Mobile Layout */}
+      {/* In-page toolbar */}
+      {!isMobile && PageToolbar}
+
       <div className="flex-1 flex overflow-hidden max-h-full">
         {jobs.isPending ? (
           <div className="w-full flex items-center justify-center">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4" />
               <p className="text-gray-600">Loading jobs...</p>
             </div>
           </div>
         ) : isMobile ? (
+          // Mobile list
           <div className="w-full flex flex-col h-full">
+            {/* On mobile, put mass-apply as a floating action row */}
+            <div className="px-4 pt-2 bg-white/80 backdrop-blur">
+              <div className="flex items-center justify-between gap-2">
+                <Button
+                  variant={selectMode ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => {
+                    if (selectMode && selectedIds.size === 0) setSelectMode(false);
+                    else setSelectMode((v) => !v);
+                  }}
+                >
+                  {selectMode ? "Selecting…" : "Mass apply"}
+                </Button>
+                {selectMode && (
+                  <Button
+                    size="sm"
+                    onClick={openMassApply}
+                    disabled={selectedIds.size === 0}
+                  >
+                    Apply ({selectedIds.size})
+                  </Button>
+                )}
+              </div>
+            </div>
+
             <div className="flex-1 overflow-y-auto p-6 pt-4">
               {jobsPage.length ? (
                 <div className="space-y-4">
                   {jobsPage.map((job) => (
-                    <MobileJobCard
+                    <div
                       key={job.id}
-                      job={job}
-                      on_click={() => handleJobCardClick(job)}
-                    />
+                      className="relative group"
+                      onClick={() => handleJobCardClick(job)}
+                    >
+                      {/* selection tick */}
+                      {selectMode && (
+                        <button
+                          type="button"
+                          className={cn(
+                            "absolute right-2 top-2 z-10 rounded-md bg-white shadow-sm p-1",
+                            "hover:shadow transition"
+                          )}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (job.id) toggleSelect(job.id);
+                          }}
+                        >
+                          {isSelected(job.id) ? (
+                            <CheckSquare className="w-4 h-4 text-blue-600" />
+                          ) : (
+                            <Square className="w-4 h-4 text-gray-400" />
+                          )}
+                        </button>
+                      )}
+
+                      <MobileJobCard job={job} on_click={() => handleJobCardClick(job)} />
+                    </div>
                   ))}
                 </div>
               ) : (
@@ -228,7 +513,6 @@ export default function SearchPage() {
                 </div>
               )}
 
-              {/* Mobile Paginator */}
               <div className="mt-6">
                 <Paginator
                   totalItems={jobs.filteredJobs.length}
@@ -239,20 +523,51 @@ export default function SearchPage() {
             </div>
           </div>
         ) : (
-          /* Desktop Layout - Split View */
+          // Desktop split view
           <>
-            {/* Job List */}
+            {/* Left: List */}
             <div className="w-1/3 border-r overflow-x-hidden overflow-y-auto p-6">
-              {/* Desktop Search Bar */}
+              {/* page-level toolbar for desktop already rendered above */}
+
               {jobsPage.length ? (
                 <div className="space-y-3">
                   {jobsPage.map((job) => (
-                    <JobCard
-                      key={job.id}
-                      job={job}
-                      selected={selectedJob?.id === job.id}
-                      on_click={() => handleJobCardClick(job)}
-                    />
+                    <div key={job.id} className="relative group">
+                      {/* Embedded select control on the card (shows on hover / select mode) */}
+                      <button
+                        type="button"
+                        aria-label={isSelected(job.id) ? "Unselect job" : "Select job"}
+                        className={cn(
+                          "absolute right-3 top-3 z-20 h-6 w-6 bg-white/95 backdrop-blur",
+                          "flex items-center justify-center shadow-sm transition-opacity",
+                          selectMode ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                        )}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!selectMode) setSelectMode(true);
+                          if (job.id) toggleSelect(job.id);
+                        }}
+                      >
+                        {isSelected(job.id) ? (
+                          <CheckSquare className="w-4 h-4 text-blue-600" />
+                        ) : (
+                          <Square className="w-4 h-4 text-gray-400" />
+                        )}
+                      </button>
+
+                      <div
+                        className={cn(
+                          isSelected(job.id) && "ring-1 ring-primary ring-offset-[2px] rounded-[0.4em]"
+                        )}
+                        onClick={() => handleJobCardClick(job)}
+                      >
+                        <JobCard
+                          job={job}
+                          selected={selectedJob?.id === job.id}
+                          on_click={() => handleJobCardClick(job)}
+                        />
+                      </div>
+                    </div>
                   ))}
                 </div>
               ) : (
@@ -260,15 +575,17 @@ export default function SearchPage() {
                   <p className="p-4">No jobs found.</p>
                 </div>
               )}
-              {/* Desktop Paginator */}
-              <Paginator
-                totalItems={jobs.filteredJobs.length}
-                itemsPerPage={jobs_page_size}
-                onPageChange={(page) => setJobsPage(page)}
-              />
+
+              <div className="mt-4">
+                <Paginator
+                  totalItems={jobs.filteredJobs.length}
+                  itemsPerPage={jobs_page_size}
+                  onPageChange={(page) => setJobsPage(page)}
+                />
+              </div>
             </div>
 
-            {/* Job Details */}
+            {/* Right: Details */}
             <div className="w-2/3 flex flex-col overflow-hidden">
               {selectedJob?.id ? (
                 <JobDetails
@@ -345,7 +662,7 @@ export default function SearchPage() {
       {/* Success Modal */}
       <ApplySuccessModal job={selectedJob} ref={successModalRef} />
 
-      {/* Application Confirmation Modal*/}
+      {/* Single-apply Confirmation Modal */}
       <ApplicationConfirmationModal>
         <div className="max-w-lg mx-auto p-6 max-h-[60vh] overflow-auto">
           <div className="text-center mb-8">
@@ -372,7 +689,7 @@ export default function SearchPage() {
             </p>
           </div>
 
-          {/* Profile Preview Section */}
+          {/* Profile Preview */}
           <div className="mb-6">
             <Button
               variant="outline"
@@ -391,51 +708,18 @@ export default function SearchPage() {
             </p>
           </div>
 
-          {/* Cover Letter Section */}
+          {/* Cover Letter */}
           <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
-                  <Clipboard className="w-4 h-4 text-amber-600" />
-                </div>
-                <label
-                  htmlFor="add-cover-letter"
-                  className="font-medium text-gray-900"
-                >
-                  Cover Letter
-                </label>
-              </div>
-              {!selectedJob?.require_cover_letter && (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="add-cover-letter"
-                    checked={
-                      showCoverLetterInput ||
-                      (selectedJob?.require_cover_letter ?? false)
-                    }
-                    disabled={selectedJob?.require_cover_letter ?? false}
-                    onChange={() =>
-                      setShowCoverLetterInput(!showCoverLetterInput)
-                    }
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                  />
-                  <span className="text-sm text-gray-500">Include</span>
-                </div>
-              )}
-            </div>
-
-            {(showCoverLetterInput ||
-              (selectedJob?.require_cover_letter ?? false)) && (
+            {(selectedJob?.require_cover_letter ?? true) && (
               <div className="space-y-3">
                 <Textarea
                   ref={textarea_ref}
-                  placeholder="Dear Hiring Manager,
+                  placeholder={`Dear Hiring Manager,
 
 I am excited to apply for this position because...
 
 Best regards,
-[Your name]"
+[Your name]`}
                   className="w-full h-20 p-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 resize-none text-sm overflow-y-auto"
                   maxLength={500}
                 />
@@ -448,13 +732,12 @@ Best regards,
             )}
           </div>
 
-          {/* Action Buttons */}
+          {/* Actions */}
           <div className="flex gap-3">
             <Button
               variant="outline"
               onClick={() => {
                 closeApplicationConfirmationModal();
-                setShowCoverLetterInput(false);
               }}
               className="flex-1 h-12 transition-all duration-200"
             >
@@ -464,7 +747,6 @@ Best regards,
               onClick={() => {
                 closeApplicationConfirmationModal();
                 handleDirectApplication();
-                setShowCoverLetterInput(false);
               }}
               className="flex-1 h-12 transition-all duration-200"
             >
@@ -508,14 +790,106 @@ Best regards,
         )}
       </ProfilePreviewModal>
 
+      {/* Mass Apply — Compose */}
+      <MassApplyModal>
+        <div className="max-w-lg mx-auto p-6 space-y-4">
+          <h2 className="text-xl font-semibold">Apply to {selectedIds.size} jobs</h2>
+          <p className="text-sm text-gray-600">
+            One cover letter will be used for all selected jobs. We’ll skip any
+            postings that require info your profile doesn’t have (e.g., GitHub/Portfolio).
+          </p>
+          <Textarea
+            value={bulkCoverLetter}
+            onChange={(e) => setBulkCoverLetter(e.target.value)}
+            placeholder="Write a brief cover letter (optional unless required by the job)…"
+            className="w-full h-32"
+            maxLength={1000}
+          />
+          <div className="flex items-center justify-between">
+            <Button variant="outline" onClick={closeMassApplyModal}>
+              Cancel
+            </Button>
+            <Button onClick={runMassApply} disabled={massApplying}>
+              {massApplying ? "Submitting…" : `Submit ${selectedIds.size} applications`}
+            </Button>
+          </div>
+        </div>
+      </MassApplyModal>
+
+      {/* Mass Apply — Results */}
+      <MassApplyResultModal>
+        <div className="max-w-lg mx-auto p-6 space-y-4">
+          <h2 className="text-xl font-semibold">Bulk application summary</h2>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-green-700">Applied</span>
+              <span className="font-medium">{massResult.ok.length}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-amber-700">Skipped</span>
+              <span className="font-medium">{massResult.skipped.length}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-red-700">Failed</span>
+              <span className="font-medium">{massResult.failed.length}</span>
+            </div>
+          </div>
+
+          {massResult.skipped.length > 0 && (
+            <div className="border rounded-md p-3">
+              <div className="text-sm font-medium mb-2">Skipped</div>
+              <ul className="space-y-1 text-sm text-gray-700 max-h-40 overflow-auto">
+                {massResult.skipped.map(({ job, reason }) => (
+                  <li key={`skip-${job.id}`}>
+                    <span className="font-medium">{job.title}</span>{" "}
+                    <span className="text-gray-500">— {reason}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {massResult.failed.length > 0 && (
+            <div className="border rounded-md p-3">
+              <div className="text-sm font-medium mb-2">Failed</div>
+              <ul className="space-y-1 text-sm text-gray-700 max-h-40 overflow-auto">
+                {massResult.failed.map(({ job, error }) => (
+                  <li key={`fail-${job.id}`}>
+                    <span className="font-medium">{job.title}</span>{" "}
+                    <span className="text-gray-500">— {error}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="flex justify-between">
+            <Button
+              variant="outline"
+              onClick={() => {
+                closeMassApplyResultModal();
+              }}
+            >
+              Close
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                clearSelection();
+                setSelectMode(false);
+                closeMassApplyResultModal();
+              }}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Clear selection
+            </Button>
+          </div>
+        </div>
+      </MassApplyResultModal>
+
       {/* Resume Modal */}
       {resumeURL.length > 0 && (
-        <ResumeModal>
-          <div className="space-y-4">
-            <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
-            <PDFPreview url={resumeURL} />
-          </div>
-        </ResumeModal>
+        <ProfileResumePreview url={resumeURL} />
       )}
 
       {/* Incomplete Profile Modal */}
@@ -525,5 +899,21 @@ Best regards,
         job={selectedJob}
       />
     </>
+  );
+}
+
+/* =======================================================================================
+   Small helper for resume modal
+======================================================================================= */
+
+function ProfileResumePreview({ url }: { url: string }) {
+  const { Modal: ResumeModal } = useModal("resume-modal");
+  return (
+    <ResumeModal>
+      <div className="space-y-4">
+        <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
+        <PDFPreview url={url} />
+      </div>
+    </ResumeModal>
   );
 }

@@ -19,7 +19,6 @@ export const JobModal = ({
   handleApply: () => void;
   ref?: RefObject<ModalHandle | null>;
 }) => {
-  const router = useRouter();
   const savedJobs = useSavedJobs();
   const applications = useApplications();
   const auth = useAuthContext();
@@ -34,42 +33,41 @@ export const JobModal = ({
 
   return (
     <ModalComponent ref={ref}>
-      <div className="h-full flex flex-col bg-white overflow-hidden">
-        {/* Fixed Header with Close Button */}
-        <div className="flex flex-col justify-start items-start p-4 border-b bg-white flex-shrink-0">
+      {/* Full dynamic viewport height + relative for bottom bar anchoring */}
+      <div className="relative flex h-[100svh] max-h-[100svh] w-full flex-col bg-white">
+        {/* Top bar (close only) — sticky and safe-area aware */}
+        <div className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b px-4 pb-2 pt-5">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => ref?.current?.close()}
-            className="h-8 w-8 p-0 ml-[-8px] mb-2 hover:bg-gray-100 rounded-full"
+            className="h-8 w-8 p-0 -ml-2 hover:bg-gray-100 rounded-full"
+            aria-label="Close"
           >
             <ArrowLeft className="h-5 w-5 text-gray-500" />
           </Button>
-          {/* Fixed Job Header - Non-scrollable */}
-          {job && (
-            <div className=" bg-white flex-shrink-0">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2">
-                {job.title}
-              </h1>
-              <div className="flex items-center gap-2 text-gray-600 mb-1">
-                <Building className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate text-sm">{job.employer?.name}</span>
-              </div>
-              <p className="text-xs text-gray-500 mb-3">
-                Listed on {formatDate(job.created_at ?? "")}
-              </p>
-              <JobBadges job={job} />
-            </div>
-          )}
         </div>
 
-        {/* Scrollable Content Area - MUST be properly configured */}
-        <div
-          className="flex-1 overflow-y-scroll overscroll-contain pb-32"
-          style={{ maxHeight: "calc(100vh - 200px)" }}
-        >
+        {/* Scrollable content — header now scrolls with content */}
+        <div className="flex-1 overflow-y-auto overscroll-contain">
           {job && (
-            <div className="p-4">
+            <div className="px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+96px)]">
+              {/* Job header (NOT fixed) */}
+              <div className="mb-4">
+                <h1 className="text-2xl font-bold text-gray-900 mb-2 leading-tight">
+                  {job.title}
+                </h1>
+                <div className="flex items-center gap-2 text-gray-600 mb-1">
+                  <Building className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate text-sm">{job.employer?.name}</span>
+                </div>
+                <p className="text-xs text-gray-500 mb-3">
+                  Listed on {formatDate(job.created_at ?? "")}
+                </p>
+                <JobBadges job={job} />
+              </div>
+
+              {/* Description */}
               <div className="mb-6">
                 <h2 className="text-lg font-semibold mb-3 text-gray-900">
                   Description
@@ -78,6 +76,8 @@ export const JobModal = ({
                   <ReactMarkdown>{job.description}</ReactMarkdown>
                 </div>
               </div>
+
+              {/* Requirements */}
               <div className="mb-6">
                 <h2 className="text-lg font-semibold mb-3 text-gray-900">
                   Requirements
@@ -87,13 +87,12 @@ export const JobModal = ({
                   <ReactMarkdown>{job.requirements}</ReactMarkdown>
                 </div>
               </div>
-              <div className="pb-20"></div>
             </div>
           )}
         </div>
 
-        {/* Fixed Action Buttons at Bottom - Always Visible and Prominent */}
-        <div className="absolute bottom-0 left-0 right-0 bg-white border-t-2 p-4">
+        {/* Bottom action bar — fixed within modal, safe-area aware */}
+        <div className="absolute bottom-0 left-0 right-0 z-30 bg-white border-t p-4 pb-[calc(env(safe-area-inset-bottom)+16px)]">
           <div className="flex gap-3">
             <Button
               disabled={applications.appliedJob(job?.id ?? "")}
@@ -102,7 +101,7 @@ export const JobModal = ({
                 "flex-1 h-14 transition-all duration-300",
                 applications.appliedJob(job?.id ?? "")
                   ? "bg-supportive text-white"
-                  : "bg-primary  text-white"
+                  : "bg-primary text-white"
               )}
             >
               {applications.appliedJob(job?.id ?? "") ? "Applied" : "Apply Now"}
@@ -115,6 +114,9 @@ export const JobModal = ({
                 savedJobs.isJobSaved(job?.id ?? "") ? "destructive" : "default"
               }
               className="h-14 w-14"
+              aria-label={
+                savedJobs.isJobSaved(job?.id ?? "") ? "Unsave" : "Save"
+              }
             >
               <Heart
                 className={cn(
@@ -129,3 +131,5 @@ export const JobModal = ({
     </ModalComponent>
   );
 };
+
+

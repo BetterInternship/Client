@@ -5,6 +5,7 @@ import {
   useRef,
   forwardRef,
   useImperativeHandle,
+  useMemo,
 } from "react";
 import {
   Edit2,
@@ -58,6 +59,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { Autocomplete, AutocompleteMulti } from "@/components/ui/autocomplete";
 import { isoToMs, msToISO } from "@/lib/utils/date-utils";
+import {
+  AutocompleteTreeMulti,
+  type PositionCategory,
+} from "@/components/ui/autocomplete";
+import { POSITION_TREE } from "@/lib/consts/positions";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
@@ -410,6 +416,15 @@ const ProfileEditor = forwardRef<
   const [jobTypeOptions, setJobTypeOptions] = useState(job_types);
   const [jobCategoryOptions, setJobCategoryOptions] = useState(job_categories);
 
+  const validIdsFromTree = useMemo(() => {
+    const s = new Set<string>();
+    POSITION_TREE.forEach((p) => {
+      if (!p.children?.length) s.add(p.value);
+      p.children?.forEach((c) => s.add(c.value));
+    });
+    return s;
+  }, []);
+
   // Update dropdown options
   useEffect(() => {
     setUniversityOptions(
@@ -536,7 +551,6 @@ const ProfileEditor = forwardRef<
         ? "End date must be on/after start date."
         : "";
     });
-
     addValidator("job_mode_ids", (vals?: string[]) => {
       if (!vals) return "";
       const valid = new Set(jobModeOptions.map((o) => o.id));
@@ -553,8 +567,7 @@ const ProfileEditor = forwardRef<
     });
     addValidator("job_category_ids", (vals?: string[]) => {
       if (!vals) return "";
-      const valid = new Set(jobCategoryOptions.map((o) => o.id));
-      return vals.every((v) => valid.has(v))
+      return vals.every((v) => validIdsFromTree.has(v))
         ? ""
         : "Invalid job category selected.";
     });
@@ -792,6 +805,7 @@ const ProfileEditor = forwardRef<
           />
         </div>
 
+        {/* Internship Preferences */}
         <div>
           <div className="text-2xl tracking-tight font-medium text-gray-700">
             Internship Preferences
@@ -827,8 +841,8 @@ const ProfileEditor = forwardRef<
             <div className="text-xs text-gray-400 italic mb-1 block">
               Positions / Categories
             </div>
-            <AutocompleteMulti
-              options={jobCategoryOptions}
+            <AutocompleteTreeMulti
+              tree={POSITION_TREE}
               value={formData.job_category_ids ?? []}
               setter={fieldSetter("job_category_ids")}
               placeholder="Select one or more"
