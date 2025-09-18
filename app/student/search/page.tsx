@@ -490,7 +490,7 @@ export default function SearchPage() {
       {/* In-page toolbar */}
       {!isMobile && PageToolbar}
 
-      <div className="flex-1 flex overflow-hidden max-h-full">
+      <div className="flex-1 flex overflow-hidden min-h-0">
         {jobs.isPending ? (
           <div className="w-full flex items-center justify-center">
             <div className="text-center">
