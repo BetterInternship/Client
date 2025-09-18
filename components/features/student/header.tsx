@@ -403,9 +403,9 @@ const FilterOverlay = ({
         onClick={(e) => e.stopPropagation()}
       >
         {children}
-        <div className="mt-4 flex gap-2 justify-between w-full sm:w-auto">
+        <div className="mt-4 flex gap-2 justify-between sm:justify-end w-full sm:w-auto">
           <Button
-            className="w-full"
+            className="w-full sm:w-auto"
             variant="outline"
             scheme="secondary"
             size="md"
@@ -413,7 +413,7 @@ const FilterOverlay = ({
           >
             Cancel
           </Button>
-          <Button size="md" onClick={onApply} className="w-full">
+          <Button size="md" onClick={onApply} className="w-full sm:w-auto ">
             Apply
           </Button>
         </div>
