@@ -490,7 +490,7 @@ export default function SearchPage() {
       {/* In-page toolbar */}
       {!isMobile && PageToolbar}
 
-      <div className="flex-1 flex overflow-hidden min-h-0">
+      <div className="flex-1 flex overflow-hidden min-h-0 max-h-100">
         {jobs.isPending ? (
           <div className="w-full flex items-center justify-center">
             <div className="text-center">
@@ -502,7 +502,7 @@ export default function SearchPage() {
           // Mobile list
           <div className="w-full flex flex-col h-full">
             {/* On mobile, put mass-apply as a floating action row */}
-            <div className="px-4 pt-2 bg-white/80 backdrop-blur">
+            <div className="px-4 py-2 bg-white/80 backdrop-blur">
               <div className="flex items-center justify-between gap-2">
                 <Button
                   variant={selectMode ? "default" : "outline"}
