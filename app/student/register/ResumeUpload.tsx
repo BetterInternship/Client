@@ -29,20 +29,19 @@ const ResumeUpload = ({
       {isProcessing ? (
         <ProcessingTransition promise={promise} onComplete={onComplete} />
       ) : (
-        <div className="flex flex-col items-center p-8 w-full max-w-md mx-auto">
+        <div className="flex flex-col items-center p-8 w-full mx-auto">
           <div
             className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-[#94A3B8] cursor-pointer hover:border-primary rounded-[0.33em] transition-colors"
             onClick={() => ref.current?.click()}
           >
             <UploadIcon className="w-10 h-10 stroke-primary" />
             <br />
-            <div className="font-bold text-primary text-xl">
-              Upload Your Resume
-            </div>
+            <div className="font-bold text-primary">Upload Your Resume</div>
           </div>
           <input
             id="file-upload"
             type="file"
+            accept=".pdf"
             className="hidden"
             ref={ref}
             onChange={handleFileChange}

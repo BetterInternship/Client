@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Autocomplete, AutocompleteMulti, AutocompleteTreeMulti } from "@/components/ui/autocomplete";
+import {
+  Autocomplete,
+  AutocompleteMulti,
+  AutocompleteTreeMulti,
+} from "@/components/ui/autocomplete";
 import { useDbRefs } from "@/lib/db/use-refs";
 import ResumeUpload from "./ResumeUpload";
 import { useAnalyzeResume } from "@/hooks/use-register";
@@ -15,6 +19,8 @@ import { isoToMs, msToISO } from "@/lib/utils/date-utils";
 import { POSITION_TREE } from "@/lib/consts/positions";
 import { ProcessingTransition } from "./ProcessingTransition";
 import { Separator } from "@/components/ui/separator";
+import { useAuthContext } from "@/lib/ctx-auth";
+import { useRouter } from "next/navigation";
 
 // ------------------ Types ------------------
 
@@ -37,7 +43,7 @@ interface PrefInputs {
   job_mode_ids?: string[];
   job_type_ids?: string[];
   job_category_ids?: string[];
-  auto_apply?: boolean; 
+  auto_apply?: boolean;
 }
 
 // ------------------ Small UI Bits ------------------
@@ -47,11 +53,16 @@ function Stepper({ step, total }: { step: number; total: number }) {
   return (
     <div className="w-full">
       <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>Step {step + 1} / {total}</span>
+        <span>
+          Step {step + 1} / {total}
+        </span>
         <span>{pct}%</span>
       </div>
       <div className="mt-2 h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-        <div className="h-full bg-primary transition-[width] duration-500" style={{ width: `${pct}%` }} />
+        <div
+          className="h-full bg-primary transition-[width] duration-500"
+          style={{ width: `${pct}%` }}
+        />
       </div>
     </div>
   );
@@ -73,38 +84,50 @@ function SubtleNote({ children }: { children: React.ReactNode }) {
   return <p className="text-xs text-gray-500">{children}</p>;
 }
 
-function AIResumeStatus({ isParsing, parsedKeys }: { isParsing: boolean; parsedKeys: string[] }) {
+function AIResumeStatus({
+  isParsing,
+  parsedKeys,
+}: {
+  isParsing: boolean;
+  parsedKeys: string[];
+}) {
   return (
-    <Card className="p-4 sm:p-5 min-h-[260px]">
+    <>
       {isParsing ? (
         <>
           <div className="w-full">
             <ProcessingTransition promise={undefined} onComplete={() => {}} />
           </div>
           <div className="mt-4 text-[11px] text-gray-500 text-center px-2">
-            We’re scanning your profile. In the meantime, answer your{" "}
+            We're scanning your profile. In the meantime, answer your{" "}
             <span className="font-medium">Internship Preferences</span>.
           </div>
         </>
       ) : (
-        <div className="w-full">
-          <div className="text-sm font-medium text-emerald-600 text-center">Resume analysis finished</div>
-          <div className="mt-3 text-xs text-gray-500">Fields auto-filled:</div>
-          <ul className="mt-1 space-y-1 text-xs">
-            {parsedKeys.length === 0 ? (
-              <li className="text-gray-400 italic">No fields detected.</li>
-            ) : (
-              parsedKeys.map((k) => (
-                <li key={k} className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  <span className="capitalize">{k.replaceAll("_", " ")}</span>
-                </li>
-              ))
-            )}
-          </ul>
-        </div>
+        <Card className="p-4 sm:p-5 min-h-[260px]">
+          <div className="w-full">
+            <div className="text-sm font-medium text-emerald-600 text-center">
+              Resume analysis finished
+            </div>
+            <div className="mt-3 text-xs text-gray-500">
+              Fields auto-filled:
+            </div>
+            <ul className="mt-1 space-y-1 text-xs">
+              {parsedKeys.length === 0 ? (
+                <li className="text-gray-400 italic">No fields detected.</li>
+              ) : (
+                parsedKeys.map((k) => (
+                  <li key={k} className="flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    <span className="capitalize">{k.replaceAll("_", " ")}</span>
+                  </li>
+                ))
+              )}
+            </ul>
+          </div>
+        </Card>
       )}
-    </Card>
+    </>
   );
 }
 
@@ -112,10 +135,10 @@ function AIResumeStatus({ isParsing, parsedKeys }: { isParsing: boolean; parsedK
 
 const stepData = [
   { title: "Welcome to BetterInternship" }, // 0
-  { title: "Upload your resume" },          // 1
-  { title: "Tell us about you" },           // 2 (skipped if resume provided)
-  { title: "Internship preferences" },      // 3
-  { title: "Review & submit" },             // 4
+  { title: "Let's set you up in a few quick steps" }, // 1
+  { title: "Tell us about you" }, // 2 (skipped if resume provided)
+  { title: "Internship preferences" }, // 3
+  { title: "Review & submit" }, // 4
 ];
 
 export default function RegisterPage() {
@@ -127,9 +150,11 @@ export default function RegisterPage() {
   const handledResponseRef = useRef<Promise<any> | null>(null);
 
   const hasResume = !!file;
+  const { register } = useAuthContext();
 
   // ------ steps ------
   const [step, setStep] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
   const visibleSteps = hasResume ? [1, 3, 4] : [1, 2, 3, 4];
   const currentVisibleIndex = Math.max(0, visibleSteps.indexOf(step));
   const stepCount = visibleSteps.length;
@@ -150,17 +175,27 @@ export default function RegisterPage() {
   });
 
   const refs = useDbRefs();
+  const router = useRouter();
 
   // Use useWatch to avoid triggering memos on every render
-  const university = useWatch({ control: basicForm.control, name: "university" });
+  const university = useWatch({
+    control: basicForm.control,
+    name: "university",
+  });
 
   const universityOptions = refs.universities;
   const collegeOptions = useMemo(
-    () => refs.colleges.filter((c) => refs.get_colleges_by_university(university).includes(c.id)),
+    () =>
+      refs.colleges.filter((c) =>
+        refs.get_colleges_by_university(university).includes(c.id)
+      ),
     [university, refs]
   );
   const degreeOptions = useMemo(
-    () => refs.degrees.filter((d) => refs.get_degrees_by_university(university).includes(d.id)),
+    () =>
+      refs.degrees.filter((d) =>
+        refs.get_degrees_by_university(university).includes(d.id)
+      ),
     [university, refs]
   );
 
@@ -187,7 +222,10 @@ export default function RegisterPage() {
         keys.forEach((k) => {
           const v = extractedUser[k];
           if (v) {
-            basicForm.setValue(k, v as any, { shouldDirty: true, shouldTouch: true });
+            basicForm.setValue(k, v as any, {
+              shouldDirty: true,
+              shouldTouch: true,
+            });
             newlyParsed.push(k as string);
           }
         });
@@ -212,70 +250,96 @@ export default function RegisterPage() {
         {/* Header */}
         <div className="flex items-center justify-center">
           <div className="text-center">
-            <img src="/BetterInternshipLogo.png" className="w-36 mx-auto mb-3" alt="BetterInternship" />
+            <img
+              src="/BetterInternshipLogo.png"
+              className="w-36 mx-auto mb-3"
+              alt="BetterInternship"
+            />
             <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-800">
               {stepData[step].title}
             </h1>
-            <p className="text-sm text-gray-500 mt-1">Let’s get you set up in a couple of quick steps.</p>
-            <div className="mt-4"><Stepper step={currentVisibleIndex} total={stepCount} /></div>
+            <div className="mt-4">
+              <Stepper step={currentVisibleIndex} total={stepCount} />
+            </div>
           </div>
         </div>
 
         {/* Shell */}
-        {/* items-start keeps both columns’ first cards aligned to the top */}
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* items-start keeps both columns' first cards aligned to the top */}
+        <div className="mt-8 flex flex-col items-center gap-2">
+          {/* Right: Live AI parsing status */}
+          {step > 1 && step < 4 && (
+            <AIResumeStatus isParsing={isParsing} parsedKeys={parsedKeys} />
+          )}
           {/* Left: Forms */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-6 max-w-lg w-full ">
             {/* Step 1: Upload Resume */}
-            <Card className={cn("p-4 sm:p-6", step === 1 ? "block" : "hidden")}>
-              <SectionTitle>Upload your resume</SectionTitle>
-              <p className="text-sm text-gray-500 mb-3">
-                We’ll auto-fill your details. We’ll bring you straight to preferences while we scan.
-              </p>
+            <div className={cn("w-full", step === 1 ? "block" : "hidden")}>
               <ResumeUpload
                 ref={fileInputRef}
                 promise={response}
                 onSelect={(f) => {
                   setFile(f);
                 }}
-                onComplete={() => setStep(3)}
+                onComplete={() => {}}
               />
               {isParsing && (
                 <div className="mt-4 text-xs text-gray-500">
-                  We’re scanning your profile. Head over to <b>Internship preferences</b> while this completes.
+                  We're scanning your profile. Head over to{" "}
+                  <b>Internship preferences</b> while this completes.
                 </div>
               )}
               <div className="flex justify-end gap-2 mt-6">
-                <Button onClick={() => setStep(hasResume ? 3 : 2)} disabled={!file && !isParsing}>
+                <Button
+                  onClick={() => setStep(hasResume ? 3 : 2)}
+                  disabled={!file && !isParsing}
+                >
                   {hasResume ? "Go to preferences" : "Next"}
                 </Button>
               </div>
-            </Card>
+            </div>
 
             {/* Step 2: Basic Identity (skipped if resume exists, but accessible for edits) */}
             <Card className={cn("p-4 sm:p-6", step === 2 ? "block" : "hidden")}>
-              <form onSubmit={basicForm.handleSubmit(() => setStep(3))} className="space-y-4">
+              <form
+                onSubmit={basicForm.handleSubmit(() => setStep(3))}
+                className="space-y-4"
+              >
                 <SectionTitle>Tell us about you</SectionTitle>
-                <SubtleNote>Only edit if something looks off from the auto-fill.</SubtleNote>
+                <SubtleNote>
+                  Only edit if something looks off from the auto-fill.
+                </SubtleNote>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <FieldLabel>First name</FieldLabel>
-                    <Input placeholder="First name" {...basicForm.register("first_name", { required: true })} />
+                    <Input
+                      placeholder="First name"
+                      {...basicForm.register("first_name", { required: true })}
+                    />
                   </div>
                   <div>
                     <FieldLabel>Middle name</FieldLabel>
-                    <Input placeholder="Middle name" {...basicForm.register("middle_name")} />
+                    <Input
+                      placeholder="Middle name"
+                      {...basicForm.register("middle_name")}
+                    />
                   </div>
                   <div>
                     <FieldLabel>Last name</FieldLabel>
-                    <Input placeholder="Last name" {...basicForm.register("last_name", { required: true })} />
+                    <Input
+                      placeholder="Last name"
+                      {...basicForm.register("last_name", { required: true })}
+                    />
                   </div>
                 </div>
 
                 <div>
                   <FieldLabel>Phone number</FieldLabel>
-                  <Input placeholder="09XX…" {...basicForm.register("phone_number", { required: true })} />
+                  <Input
+                    placeholder="09XX…"
+                    {...basicForm.register("phone_number", { required: true })}
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -284,7 +348,9 @@ export default function RegisterPage() {
                     <Autocomplete
                       value={basicForm.watch("university")}
                       options={universityOptions}
-                      setter={(val: any) => basicForm.setValue("university", val)}
+                      setter={(val: any) =>
+                        basicForm.setValue("university", val)
+                      }
                       placeholder="Select university…"
                     />
                   </div>
@@ -311,12 +377,23 @@ export default function RegisterPage() {
                   </div>
                   <div>
                     <FieldLabel>Degree notes (optional)</FieldLabel>
-                    <Input placeholder="e.g., Major in…" {...basicForm.register("degree_notes")} />
+                    <Input
+                      placeholder="e.g., Major in…"
+                      {...basicForm.register("degree_notes")}
+                    />
                   </div>
                 </div>
 
                 <div className="flex justify-between mt-4">
-                  <Button variant="outline" onClick={(e) => { e.preventDefault(); setStep(1); }}>Back</Button>
+                  <Button
+                    variant="outline"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setStep(1);
+                    }}
+                  >
+                    Back
+                  </Button>
                   <Button type="submit">Save & continue</Button>
                 </div>
               </form>
@@ -324,16 +401,29 @@ export default function RegisterPage() {
 
             {/* Step 3: Preferences */}
             <Card className={cn("p-4 sm:p-6", step === 3 ? "block" : "hidden")}>
-              <form onSubmit={prefsForm.handleSubmit(() => setStep(4))} className="space-y-4">
+              <form
+                onSubmit={prefsForm.handleSubmit(() => setStep(4))}
+                className="space-y-4"
+              >
                 <SectionTitle>Internship preferences</SectionTitle>
                 <SubtleNote>
                   {isParsing ? (
-                    <>We’re completing your profile scan. In the meantime, answer these questions.</>
+                    <>
+                      We're completing your profile scan. In the meantime,
+                      answer these questions.
+                    </>
                   ) : (
-                    <>Review your preferences below. If your personal details look wrong,{" "}
-                      <button type="button" className="underline hover:opacity-80" onClick={() => setStep(2)}>
+                    <>
+                      Review your preferences below. If your personal details
+                      look wrong,{" "}
+                      <button
+                        type="button"
+                        className="underline hover:opacity-80"
+                        onClick={() => setStep(2)}
+                      >
                         edit your basic info
-                      </button>.
+                      </button>
+                      .
                     </>
                   )}
                 </SubtleNote>
@@ -343,9 +433,13 @@ export default function RegisterPage() {
                     type="checkbox"
                     className="h-4 w-4 rounded border-gray-300"
                     checked={!!prefsForm.watch("taking_for_credit")}
-                    onChange={(e) => prefsForm.setValue("taking_for_credit", e.target.checked)}
+                    onChange={(e) =>
+                      prefsForm.setValue("taking_for_credit", e.target.checked)
+                    }
                   />
-                  <span className="text-sm text-gray-600">Taking internships for credit?</span>
+                  <span className="text-sm text-gray-600">
+                    Taking internships for credit?
+                  </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -354,7 +448,12 @@ export default function RegisterPage() {
                     <FormDatePicker
                       className="w-full"
                       date={isoToMs(prefsForm.watch("expected_start_date"))}
-                      setter={(ms?: number) => prefsForm.setValue("expected_start_date", msToISO(ms) ?? null)}
+                      setter={(ms?: number) =>
+                        prefsForm.setValue(
+                          "expected_start_date",
+                          msToISO(ms) ?? null
+                        )
+                      }
                       required={false}
                       label={undefined}
                     />
@@ -364,7 +463,12 @@ export default function RegisterPage() {
                     <FormDatePicker
                       className="w-full"
                       date={isoToMs(prefsForm.watch("expected_end_date"))}
-                      setter={(ms?: number) => prefsForm.setValue("expected_end_date", msToISO(ms) ?? null)}
+                      setter={(ms?: number) =>
+                        prefsForm.setValue(
+                          "expected_end_date",
+                          msToISO(ms) ?? null
+                        )
+                      }
                       required={false}
                       label={undefined}
                     />
@@ -394,7 +498,9 @@ export default function RegisterPage() {
                     <AutocompleteMulti
                       options={refs.job_modes}
                       value={prefsForm.watch("job_mode_ids") || []}
-                      setter={(vals: string[]) => prefsForm.setValue("job_mode_ids", vals)}
+                      setter={(vals: string[]) =>
+                        prefsForm.setValue("job_mode_ids", vals)
+                      }
                       placeholder="Select one or more"
                     />
                   </div>
@@ -403,7 +509,9 @@ export default function RegisterPage() {
                     <AutocompleteMulti
                       options={refs.job_types}
                       value={prefsForm.watch("job_type_ids") || []}
-                      setter={(vals: string[]) => prefsForm.setValue("job_type_ids", vals)}
+                      setter={(vals: string[]) =>
+                        prefsForm.setValue("job_type_ids", vals)
+                      }
                       placeholder="Select one or more"
                     />
                   </div>
@@ -414,7 +522,9 @@ export default function RegisterPage() {
                   <AutocompleteTreeMulti
                     tree={POSITION_TREE}
                     value={prefsForm.watch("job_category_ids") || []}
-                    setter={(vals: string[]) => prefsForm.setValue("job_category_ids", vals)}
+                    setter={(vals: string[]) =>
+                      prefsForm.setValue("job_category_ids", vals)
+                    }
                     placeholder="Select one or more"
                   />
                 </div>
@@ -425,16 +535,25 @@ export default function RegisterPage() {
                     type="checkbox"
                     className="h-4 w-4 rounded border-gray-300"
                     checked={!!prefsForm.watch("auto_apply")}
-                    onChange={(e) => prefsForm.setValue("auto_apply", e.target.checked)}
+                    onChange={(e) =>
+                      prefsForm.setValue("auto_apply", e.target.checked)
+                    }
                   />
                   <span className="text-sm text-gray-600">
-                    Auto-apply for me using <span className="font-semibold">SherwinAI</span> when a job matches my profile
+                    Auto-apply for me using{" "}
+                    <span className="font-semibold">SherwinAI</span> when a job
+                    matches my profile
                   </span>
                 </div>
 
-
                 <div className="flex justify-between mt-4">
-                  <Button variant="outline" onClick={(e) => { e.preventDefault(); setStep(hasResume ? 1 : 2); }}>
+                  <Button
+                    variant="outline"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setStep(hasResume ? 1 : 2);
+                    }}
+                  >
                     Back
                   </Button>
                   <Button type="submit">Next</Button>
@@ -445,65 +564,93 @@ export default function RegisterPage() {
             {/* Step 4: Review & Submit */}
             <Card className={cn("p-4 sm:p-6", step === 4 ? "block" : "hidden")}>
               <SectionTitle>Review & submit</SectionTitle>
-              <p className="text-sm text-gray-600 mb-4">Quick glance before we create your account.</p>
+              <p className="text-sm text-gray-600 mb-4">
+                Quick glance before we create your account.
+              </p>
 
               <div className="grid gap-4 text-sm">
                 <div>
-                  <div className="uppercase tracking-wide text-gray-500 mb-1">Identity</div>
+                  <div className="uppercase tracking-wide text-gray-500 mb-1">
+                    Identity
+                  </div>
                   <div className="p-3 rounded-lg bg-gray-50 border">
-                    <div className="font-semibold"> 
-                      {basicForm.watch("first_name")} {basicForm.watch("middle_name")}{" "}
+                    <div className="font-semibold">
+                      {basicForm.watch("first_name")}{" "}
+                      {basicForm.watch("middle_name")}{" "}
                       {basicForm.watch("last_name")}
                     </div>
-                    <div className="mt-1 text-gray-600">Phone Number: {basicForm.watch("phone_number") || "—"}</div>
                     <div className="mt-1 text-gray-600">
-                      University: {basicForm.watch("university") || "—"}
+                      Phone Number: {basicForm.watch("phone_number") || "—"}
                     </div>
                     <div className="mt-1 text-gray-600">
-                      College: {basicForm.watch("college") || "—"}
+                      University:{" "}
+                      {refs.get_university(basicForm.watch("university"))
+                        ?.name || "—"}
                     </div>
                     <div className="mt-1 text-gray-600">
-                      Degree: {basicForm.watch("degree") || "—"}
+                      College:{" "}
+                      {refs.get_college(basicForm.watch("college"))?.name ||
+                        "—"}
+                    </div>
+                    <div className="mt-1 text-gray-600">
+                      Degree:{" "}
+                      {refs.get_degree(basicForm.watch("degree"))?.name || "—"}
                     </div>
                     <div className="mt-1 text-gray-600">
                       Notes: {basicForm.watch("degree_notes") || "—"}
                     </div>
-                    <button type="button" className="text-xs underline mt-2" onClick={() => setStep(2)}>Edit details</button>
+                    <button
+                      type="button"
+                      className="text-xs underline mt-2"
+                      onClick={() => setStep(2)}
+                    >
+                      Edit details
+                    </button>
                   </div>
                 </div>
-                
-                
+
                 <div>
-                  <div className="uppercase tracking-wide text-gray-500 mb-1">Preferences</div>
+                  <div className="uppercase tracking-wide text-gray-500 mb-1">
+                    Preferences
+                  </div>
                   <div className="p-3 rounded-lg bg-gray-50 border">
                     <div>
-                      For credit: {prefsForm.watch("taking_for_credit") ? "Yes" : "No"}
+                      For credit:{" "}
+                      {prefsForm.watch("taking_for_credit") ? "Yes" : "No"}
                     </div>
                     <div>
                       Dates: {prefsForm.watch("expected_start_date") || "—"} →{" "}
                       {prefsForm.watch("expected_end_date") || "—"}
                     </div>
                     <div>
-                      Duration: {prefsForm.watch("expected_duration_hours") || "—"} hrs
+                      Duration:{" "}
+                      {prefsForm.watch("expected_duration_hours") || "—"} hrs
                     </div>
                     <div>
                       Work modes:{" "}
                       {(prefsForm.watch("job_mode_ids") || [])
-                        .map((id) => refs.job_modes.find((m) => m.id === id)?.label)
+                        .map(
+                          (id) => refs.job_modes.find((m) => m.id === id)?.label
+                        )
                         .filter(Boolean)
                         .join(", ") || "—"}
                     </div>
                     <div>
                       Workload types:{" "}
                       {(prefsForm.watch("job_type_ids") || [])
-                        .map((id) => refs.job_types.find((t) => t.id === id)?.label)
+                        .map(
+                          (id) => refs.job_types.find((t) => t.id === id)?.label
+                        )
                         .filter(Boolean)
                         .join(", ") || "—"}
                     </div>
                     <div>
                       Positions:{" "}
                       {(prefsForm.watch("job_category_ids") || [])
-                        .map((id) => refs.job_categories.find((c) => c.id === id)?.label)
+                        .map(
+                          (id) =>
+                            refs.job_categories.find((c) => c.id === id)?.label
+                        )
                         .filter(Boolean)
                         .join(", ") || "—"}
                     </div>
@@ -513,22 +660,43 @@ export default function RegisterPage() {
                     </div>
                   </div>
                 </div>
-                
               </div>
 
               <div className="flex justify-between mt-6">
-                <Button variant="outline" onClick={() => setStep(3)}>Back</Button>
-                <Button onClick={() => {
-                  const payload = { ...basicForm.getValues(), ...prefsForm.getValues() } as BasicInputs & PrefInputs;
-                  console.log("REGISTER payload:", payload);
-                }}>Create my account</Button>
+                <Button variant="outline" onClick={() => setStep(3)}>
+                  Back
+                </Button>
+                <Button
+                  disabled={submitting}
+                  onClick={async () => {
+                    type Payload = BasicInputs & PrefInputs & { resume: any };
+                    const formData = new FormData();
+                    const payload = {
+                      ...basicForm.getValues(),
+                      // ...prefsForm.getValues(),
+                      resume: file,
+                    } as Payload;
+                    const keys = Object.keys(payload);
+                    for (const key of keys) {
+                      let value = payload[key];
+                      try {
+                        value = JSON.parse(payload[key]);
+                      } catch {
+                        value = payload[key];
+                      }
+                      formData.append(key, value);
+                    }
+
+                    setSubmitting(true);
+                    await register(formData)
+                      .then(() => router.push("/profile"))
+                      .catch(() => router.push("/profile"));
+                  }}
+                >
+                  {submitting ? "Creating account..." : "Create my account"}
+                </Button>
               </div>
             </Card>
-          </div>
-
-          {/* Right: Live AI parsing status */}
-          <div className="">
-            <AIResumeStatus isParsing={isParsing} parsedKeys={parsedKeys} />
           </div>
         </div>
       </div>
