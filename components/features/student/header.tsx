@@ -200,7 +200,7 @@ const SearchInput = ({
 }) => (
   <div
     className={cn(
-      "relative h-10 w-full border border-gray-300 rounded-[0.33em]",
+      "relative w-full border border-gray-300 rounded-[0.33em]",
       className
     )}
   >
@@ -392,27 +392,30 @@ const FilterOverlay = ({
   const outsideClickRef = useDetectClickOutside({ onTriggered: onClose });
   if (!visible) return null;
   return (
-    <div className="relative overflow-visible h-0">
-      <div className="absolute flex flex-col items-center justify-start w-full h-[100vh] z-[100] bg-black/10 backdrop-blur-sm p-5">
-        <div
-          className="max-w-2xl w-full h-fit bg-white rounded-[0.33em] px-5 py-4"
-          ref={outsideClickRef}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {children}
-          <div className="mt-4 flex gap-2">
-            <Button size="md" onClick={onApply}>
-              Apply
-            </Button>
-            <Button
-              variant="outline"
-              scheme="secondary"
-              size="md"
-              onClick={onClose}
-            >
-              Cancel
-            </Button>
-          </div>
+    <div
+      className="fixed inset-0 z-[100] bg-black/10 backdrop-blur-sm flex items0start justify-center p-4 sm:p-5"
+      aria-modal="true"
+      role="dialog"
+    >
+      <div
+        className="max-w-2xl w-full mt-6 sm:mt-10 h-fit bg-white rounded-[0.33em] px-5 py-4 shadow-lg max-h-[min(84dvh,720px)] overflow-y-auto"
+        ref={outsideClickRef}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {children}
+        <div className="mt-4 flex gap-2 justify-between w-full sm:w-auto">
+          <Button
+            className="w-full"
+            variant="outline"
+            scheme="secondary"
+            size="md"
+            onClick={onClose}
+          >
+            Cancel
+          </Button>
+          <Button size="md" onClick={onApply} className="w-full">
+            Apply
+          </Button>
         </div>
       </div>
     </div>
@@ -833,7 +836,7 @@ export const Header: React.FC = () => {
 
           {/* Mobile: search + (filters only on /search) */}
           {isMobile && showProfileButton && showFilters && (
-            <div className="flex flex-col max-w-2xl w-full gap-3 items-center px-4 pt-3">
+            <div className="flex flex-col max-w-2xl w-full gap-2 items-center px-4 pt-3">
               <SearchInput
                 value={searchTerm}
                 onChange={setSearchTerm}
