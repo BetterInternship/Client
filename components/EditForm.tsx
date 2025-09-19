@@ -145,7 +145,7 @@ export const FormInput = ({
   return (
     <div>
       {label && (
-        <label className="text-xs text-gray-400 italic mb-1 block">
+        <label className="text-xs text-gray-600 mb-1 block">
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
@@ -186,7 +186,7 @@ export const FormDropdown = ({
   return (
     <div>
       {label && (
-        <label className="text-xs text-gray-400 italic mb-1 block">
+        <label className="text-xs text-gray-600 mb-1 block">
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
@@ -223,7 +223,7 @@ export const FormCheckbox = ({
   return (
     <div>
       {label && (
-        <label className="text-xs text-gray-400 italic mb-1 block">
+        <label className="text-xs text-gray-600 mb-1 block">
           {label}
         </label>
       )}
@@ -306,7 +306,7 @@ export const FormDatePicker = ({
       {label && (
         <label
           htmlFor={props.id ?? "date"}
-          className="text-xs text-gray-400 italic mb-1 block"
+          className="text-xs text-gray-600 mb-1 block"
         >
           {label}
         </label>
