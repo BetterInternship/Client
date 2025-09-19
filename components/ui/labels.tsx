@@ -72,7 +72,7 @@ export const Property: ValueComponent = ({
   className = "",
 }: ValueComponentProps) => {
   return (
-    <p
+    <div
       className={cn(
         "text-gray-700 text-sm overflow-hidden text-ellipsis",
         className
@@ -83,7 +83,7 @@ export const Property: ValueComponent = ({
           {fallback ?? DEFAULT_LABEL}
         </span>
       )}
-    </p>
+    </div>
   );
 };
 

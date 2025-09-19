@@ -167,7 +167,7 @@ const WORKLOAD_OPTIONS: SubOption[] = [
 ];
 
 const MODE_OPTIONS: SubOption[] = [
-  { name: "Face-to-face", value: "0" },
+  { name: "Onsite", value: "0" },
   { name: "Hybrid", value: "1" },
   { name: "Remote", value: "2" },
 ];
