@@ -53,6 +53,8 @@ function DashboardContent() {
     useState<string | null>(null);
   const [filteredStatus, setFilteredStatus] =
     useState<number[]>([]);
+  const [jobName, setJobName] =
+    useState<string>("");
 
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const chatAnchorRef = useRef<HTMLDivElement>(null);
@@ -199,9 +201,10 @@ function DashboardContent() {
   };
 
   //shows applications when job listing is clicked
-  const handleJobListingClick = (jobId: string, statusId: number[]) => {
+  const handleJobListingClick = (jobId: string, statusId: number[], jobTitle: string) => {
     setSelectedJobId(jobId);
     setFilteredStatus(statusId);
+    setJobName(jobTitle);
     setViewMode('applications');
   };
 
@@ -210,10 +213,15 @@ function DashboardContent() {
     setViewMode('jobs');
     setSelectedJobId(null);
     setFilteredStatus([]);
-  }
+    setJobName("");
+  };
 
-  const handleCurrentStatus = (application: EmployerApplication) => {
-
+  //resets view when switching between tabs
+  const handleTabChange = () =>{
+    setViewMode('jobs');
+    setSelectedJobId(null);
+    setFilteredStatus([]);
+    setJobName("");
   }
 
   const handleStatusChange = (
@@ -272,7 +280,8 @@ function DashboardContent() {
               )} */}
               <Card className="overflow-auto h-full max-h-full border-none p-0 pt-2">
                 <>
-                <TabGroup>
+                <TabGroup 
+                onTabChange={handleTabChange}>
                   <Tab
                     indicator={applications.employer_applications
                       .filter((application) => application.status === 0)
@@ -292,13 +301,18 @@ function DashboardContent() {
                         onJobListingClick={handleJobListingClick}
                       />
                     ) : (
-                      <>
-                        <button
+                      <div>
+                        <div className="flex items-center bg-white">
+                          <button
                           onClick={handleJobBack}
                           className="flex items-center text-gray-600 hover:text-gray-900 transition-colors m-4"
-                        >
-                          <ArrowLeft className="h-5 w-5" />
-                        </button>
+                          >
+                            <ArrowLeft className="h-5 w-5" />
+                          </button>
+                          <h2 className="font-medium text-gray-900 text-base truncate">
+                            Applications for: <strong>{jobName}</strong>
+                          </h2>
+                        </div>
                         <ApplicationsContent
                         applications={filteredApplications}
                         statusId={[0]}
@@ -310,7 +324,7 @@ function DashboardContent() {
                         onStatusChange={handleStatusChange}
                         setSelectedApplication={setSelectedApplication}
                         ></ApplicationsContent>
-                      </>
+                      </div>
                     )}
                   </Tab>
                   
@@ -334,12 +348,17 @@ function DashboardContent() {
                       />
                     ) : (
                       <>
-                        <button
+                        <div className="flex items-center">
+                          <button
                           onClick={handleJobBack}
                           className="flex items-center text-gray-600 hover:text-gray-900 transition-colors m-4"
-                        >
-                          <ArrowLeft className="h-5 w-5" />
-                        </button>
+                          >
+                            <ArrowLeft className="h-5 w-5" />
+                          </button>
+                          <h2 className="font-medium text-gray-900 text-base truncate">
+                            Applications for: <strong>{jobName}</strong>
+                          </h2>
+                        </div>
                         <ApplicationsContent
                         applications={filteredApplications}
                         statusId={[1]}
@@ -375,12 +394,17 @@ function DashboardContent() {
                       />
                     ) : (
                       <>
-                        <button
+                        <div className="flex items-center">
+                          <button
                           onClick={handleJobBack}
                           className="flex items-center text-gray-600 hover:text-gray-900 transition-colors m-4"
-                        >
-                          <ArrowLeft className="h-5 w-5" />
-                        </button>
+                          >
+                            <ArrowLeft className="h-5 w-5" />
+                          </button>
+                          <h2 className="font-medium text-gray-900 text-base truncate">
+                            Applications for: <strong>{jobName}</strong>
+                          </h2>
+                        </div>
                         <ApplicationsContent
                         applications={filteredApplications}
                         statusId={[4, 6]}
@@ -416,12 +440,17 @@ function DashboardContent() {
                       />
                     ) : (
                       <>
-                        <button
+                        <div className="flex items-center">
+                          <button
                           onClick={handleJobBack}
                           className="flex items-center text-gray-600 hover:text-gray-900 transition-colors m-4"
-                        >
-                          <ArrowLeft className="h-5 w-5" />
-                        </button>
+                          >
+                            <ArrowLeft className="h-5 w-5" />
+                          </button>
+                          <h2 className="font-medium text-gray-900 text-base truncate">
+                            Applications for: <strong>{jobName}</strong>
+                          </h2>
+                        </div>
                         <ApplicationsContent
                         applications={filteredApplications}
                         statusId={[0, 1, 4, 6]}

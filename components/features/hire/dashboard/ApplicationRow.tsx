@@ -37,7 +37,7 @@ export function ApplicationRow({
 
   return (
     <tr
-      className="w-full hover:bg-primary/25 odd:bg-gray-100 hover:cursor-pointer transition-colors flex flex-row items-center justify-between"
+      className="w-full hover:bg-primary/25 odd:bg-gray-100 hover:cursor-pointer transition-colors flex flex-row items-center justify-between p-1"
       onClick={onView}
     >
       <td className="w-full px-4 p-1">
@@ -47,16 +47,18 @@ export function ApplicationRow({
             <p className="font-medium text-gray-900">
               {getFullName(application.user)}{" "}
               <span className="opacity-70 text-sm">
-                — 
+                — {to_level_name(application.user?.year_level) || ""}
                 {/* {to_university_name(application.user?.university) || ""} •{" "} */}
-                {to_level_name(application.user?.year_level) || ""}
               </span>
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 space-x-1">
               <Badge strength="medium" className="bg-white">
                 {/* {application.job?.title} */}
                 {to_university_name(application.user?.university) || ""}
               </Badge>
+              <Badge strength="medium" className="bg-white">
+                {application.user?.taking_for_credit ? "For Credit" : "Voluntary"}
+              </Badge> • {application.user?.expected_start_date} — {application.user?.expected_end_date}
             </p>
           </div>
         </div>
@@ -93,10 +95,10 @@ export function ApplicationRow({
             size="sm"
             onClick={(e) => {
               e.stopPropagation();
-              onNotes();
+              // onNotes();
             }}
           >
-            Notes
+            Send Survey
           </Button>
           {/* // ! uncomment when calendar back */}
           {/* <Button

@@ -26,8 +26,9 @@ export const Tab = ({ name, children, indicator }: TabProps) => {
  */
 interface TabGroupProps {
   children: React.ReactElement<TabProps>[];
+  onTabChange?: () => void;
 }
-export const TabGroup = ({ children }: TabGroupProps) => {
+export const TabGroup = ({ children, onTabChange }: TabGroupProps) => {
   const [activeTab, setActiveTab] = useState("");
 
   // Set the initial active tab to be the first element
@@ -38,6 +39,10 @@ export const TabGroup = ({ children }: TabGroupProps) => {
     if (React.isValidElement(firstChild))
       setActiveTab(firstChild.props?.name ?? "");
   }, []);
+
+  const handleTabClick = () => {
+    onTabChange?.();
+  };
 
   // Create the selection
   return (

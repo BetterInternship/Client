@@ -8,7 +8,7 @@ import { EmployerApplication, Job } from "@/lib/db/db.types";
 interface JobListingProps {
     job: Job;
     applications: EmployerApplication[];
-    onJobListingClick: (jobId: string, statusId: number[]) => void;
+    onJobListingClick: (jobId: string, statusId: number[], jobTitle: string) => void;
     statusId: number[];
 }
 
@@ -21,8 +21,8 @@ export function JobListingsBox ({
         const statusFilteredApplicants = applicants.filter((application) => application.status !== undefined &&
         statusId.includes(application.status));
         const handleClick = () => {
-            if(job.id){
-                onJobListingClick(job.id, statusId);
+            if(job.id && job.title !== undefined){
+                onJobListingClick(job.id, statusId, job.title);
             }
         };
 

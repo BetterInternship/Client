@@ -12,7 +12,7 @@ interface JobsContentProps {
     jobs: Job[];
     statusId: number[];
     employerId: string;
-    onJobListingClick: (jobId: string, statusId: number[]) => void;
+    onJobListingClick: (jobId: string, statusId: number[], jobTitle: string) => void;
 }
 
 export function JobsContent({
