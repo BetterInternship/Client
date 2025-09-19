@@ -50,6 +50,7 @@ import { isoToMs, msToISO } from "@/lib/utils/date-utils";
 import { AutocompleteTreeMulti } from "@/components/ui/autocomplete";
 import { TabGroup, Tab } from "@/components/ui/tabs";
 import { POSITION_TREE } from "@/lib/consts/positions";
+import AvailabilityGrid, { DemoMeetingPoll } from "@/components/shared/calendar/AvailabilityCalendar";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
@@ -897,12 +898,15 @@ const ProfileEditor = forwardRef<
 
         {/* TODO: Comment out when calendar */}
         {/* --- Calendar --- */}
-        {/* <Tab name="Calendar" indicator={hasCalendarErrors}>
+        <Tab name="Calendar" indicator={hasCalendarErrors}>
           <section>
             <div className="text-2xl tracking-tight font-medium text-gray-700">
               Calendar
             </div>
-            <div className="flex flex-col space-y-1 mb-2">
+
+            <DemoMeetingPoll />
+
+            {/* <div className="flex flex-col space-y-1 mb-2">
               <ErrorLabel value={formErrors.calendar_link} />
             </div>
 
@@ -949,9 +953,9 @@ const ProfileEditor = forwardRef<
                   .
                 </div>
               )}
-            </div>
+            </div> */}
           </section>
-        </Tab> */}
+        </Tab>
       </TabGroup>
     </Card>
   );
