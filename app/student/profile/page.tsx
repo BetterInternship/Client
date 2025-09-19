@@ -689,11 +689,9 @@ const ProfileEditor = forwardRef<
             </div>
             <div className="flex flex-col space-y-3">
               <div>
-                <div className="text-xs text-gray-400 italic mb-1">
-                  University
-                </div>
                 <ErrorLabel value={formErrors.university} />
                 <Autocomplete
+                  label={"University"}
                   options={universityOptions}
                   value={formData.university}
                   setter={fieldSetter("university")}
@@ -701,9 +699,9 @@ const ProfileEditor = forwardRef<
                 />
               </div>
               <div>
-                <div className="text-xs text-gray-400 italic mb-1">College</div>
                 <ErrorLabel value={formErrors.college} />
                 <Autocomplete
+                  label={"College"}
                   options={collegeOptions}
                   value={formData.college}
                   setter={fieldSetter("college")}
@@ -711,11 +709,9 @@ const ProfileEditor = forwardRef<
                 />
               </div>
               <div>
-                <div className="text-xs text-gray-400 italic mb-1">
-                  Department
-                </div>
                 <ErrorLabel value={formErrors.department} />
                 <Autocomplete
+                  label={"Department"}
                   options={departmentOptions}
                   value={formData.department}
                   setter={fieldSetter("department")}
@@ -723,9 +719,9 @@ const ProfileEditor = forwardRef<
                 />
               </div>
               <div>
-                <div className="text-xs text-gray-400 italic mb-1">Degree</div>
                 <ErrorLabel value={formErrors.degree} />
                 <Autocomplete
+                  label={"Degree"}
                   options={degreeOptions}
                   value={formData.degree}
                   setter={fieldSetter("degree")}
@@ -733,11 +729,9 @@ const ProfileEditor = forwardRef<
                 />
               </div>
               <div>
-                <div className="text-xs text-gray-400 italic mb-1">
-                  Year Level
-                </div>
                 <ErrorLabel value={formErrors.year_level} />
                 <Autocomplete
+                  label={"Year Level"}
                   options={levels}
                   value={formData.year_level}
                   setter={fieldSetter("year_level")}
@@ -855,10 +849,8 @@ const ProfileEditor = forwardRef<
             </div>
 
             <div className="mt-2">
-              <div className="text-xs text-gray-400 italic mb-1">
-                Work Modes
-              </div>
               <AutocompleteMulti
+                label={"Work Modes"}
                 options={jobModeOptions}
                 value={formData.job_mode_ids ?? []}
                 setter={fieldSetter("job_mode_ids")}
@@ -868,10 +860,8 @@ const ProfileEditor = forwardRef<
             </div>
 
             <div className="mt-2">
-              <div className="text-xs text-gray-400 italic mb-1">
-                Workload Types
-              </div>
               <AutocompleteMulti
+                label={"Workload Types"}
                 options={jobTypeOptions}
                 value={formData.job_type_ids ?? []}
                 setter={fieldSetter("job_type_ids")}
@@ -881,10 +871,8 @@ const ProfileEditor = forwardRef<
             </div>
 
             <div className="mt-2">
-              <div className="text-xs text-gray-400 italic mb-1">
-                Positions / Categories
-              </div>
               <AutocompleteTreeMulti
+                label={"Ppsitions / Categories"}
                 tree={POSITION_TREE}
                 value={formData.job_category_ids ?? []}
                 setter={fieldSetter("job_category_ids")}
