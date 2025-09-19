@@ -64,7 +64,7 @@ export default function MyListings() {
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
                 onKeyPress={handleKeyPress}
-                onCreateJob={openCreateModal}
+                //onCreateJob={openCreateModal}
               />
 
               {/* Job Panel */}
