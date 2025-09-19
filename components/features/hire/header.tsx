@@ -23,7 +23,7 @@ import { useProfile } from "@/hooks/use-employer-api";
 export const Header = () => {
   const { god } = useAuthContext();
   const { routeExcluded } = useRoute();
-  const noProfileRoutes = ["/login", "/register", "/otp"];
+  const noProfileRoutes = ["/login", "/register"];
   const noHeaderRoutes: string[] = [];
 
   return routeExcluded(noHeaderRoutes) ? (

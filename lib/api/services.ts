@@ -49,10 +49,6 @@ interface AuthResponse extends FetchResponse {
   user: Partial<PublicUser>;
 }
 
-interface OTPRequestResponse extends FetchResponse {
-  email: string;
-}
-
 interface EmailStatusResponse extends FetchResponse {
   existing_user: boolean;
   verified_user: boolean;
@@ -106,27 +102,6 @@ export const AuthService = {
     return APIClient.post<EmailStatusResponse>(
       APIRoute("auth").r("email-status").build(),
       { email }
-    );
-  },
-
-  async sendOtpRequest(email: string) {
-    return APIClient.post<OTPRequestResponse>(
-      APIRoute("auth").r("send-new-otp").build(),
-      { email }
-    );
-  },
-
-  async resendOtpRequest(email: string) {
-    return APIClient.post<OTPRequestResponse>(
-      APIRoute("auth").r("resend-new-otp").build(),
-      { email }
-    );
-  },
-
-  async verifyOtp(email: string, otp: string) {
-    return APIClient.post<AuthResponse>(
-      APIRoute("auth").r("verify-otp").build(),
-      { email, otp }
     );
   },
 

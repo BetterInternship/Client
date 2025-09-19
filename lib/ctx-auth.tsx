@@ -1,8 +1,8 @@
 "use client";
 
+import React, { createContext, useState, useContext, useEffect } from "react";
 import { PublicUser } from "@/lib/db/db.types";
 import { AuthService } from "@/lib/api/services";
-import React, { createContext, useState, useContext, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { useQueryClient } from "@tanstack/react-query";
@@ -15,14 +15,6 @@ interface IAuthContext {
   verify: (
     userId: string,
     key: string
-  ) => Promise<Partial<PublicUser> & FetchResponse>;
-  sendOtpRequest: (email: string) => Promise<{ email: string } & FetchResponse>;
-  resendOtpRequest: (
-    email: string
-  ) => Promise<{ email: string } & FetchResponse>;
-  verifyOtp: (
-    email: string,
-    otp: string
   ) => Promise<Partial<PublicUser> & FetchResponse>;
   emailStatus: (
     email: string
@@ -100,23 +92,6 @@ export const AuthContextProvider = ({
     return response;
   };
 
-  const sendOtpRequest = async (email: string) => {
-    const response = await AuthService.sendOtpRequest(email);
-    return response;
-  };
-
-  const resendOtpRequest = async (email: string) => {
-    const response = await AuthService.resendOtpRequest(email);
-    return response;
-  };
-
-  const verifyOtp = async (email: string, otp: string) => {
-    const response = await AuthService.verifyOtp(email, otp);
-    if (!response.success) return null;
-    setIsAuthenticated(true);
-    return response;
-  };
-
   const emailStatus = async (email: string) => {
     const response = await AuthService.emailStatus(email);
     return response;
@@ -142,14 +117,9 @@ export const AuthContextProvider = ({
   return (
     <AuthContext.Provider
       value={{
-        // @ts-ignore
         register,
         // @ts-ignore
         verify,
-        sendOtpRequest,
-        resendOtpRequest,
-        // @ts-ignore
-        verifyOtp,
         emailStatus,
         logout,
         refreshAuthentication,

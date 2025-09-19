@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-22 19:43:25
- * @ Modified time: 2025-07-05 10:27:12
+ * @ Modified time: 2025-09-19 13:57:56
  * @ Description:
  *
  * Routes used by employers
@@ -24,10 +24,6 @@ interface EmployerResponse extends FetchResponse {
 interface AuthResponse extends FetchResponse {
   success: boolean;
   user: Partial<PublicEmployerUser>;
-}
-
-interface OTPRequestResponse extends FetchResponse {
-  email: string;
 }
 
 interface EmailStatusResponse extends FetchResponse {
