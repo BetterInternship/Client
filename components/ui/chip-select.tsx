@@ -3,7 +3,14 @@
 import * as React from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
-import { Check } from "lucide-react";
+import {
+  Check,
+  CheckCheckIcon,
+  CheckCircle2Icon,
+  CheckIcon,
+  CheckSquare,
+  CheckSquare2,
+} from "lucide-react";
 
 export type Option = { value: string; label: string };
 
@@ -40,7 +47,7 @@ export function MultiChipSelect({
           value={opt.value}
           aria-label={opt.label}
           className={cn(
-            "group inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs",
+            "group inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs h-7",
             "bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
             "data-[state=on]:bg-primary/10 data-[state=on]:border-primary",
@@ -51,12 +58,12 @@ export function MultiChipSelect({
           <span
             aria-hidden
             className={cn(
-              "inline-flex h-4 w-4 items-center justify-center rounded-[4px] border",
-              "border-gray-400 bg-white",
+              "inline-flex h-3 w-3 items-center justify-center border",
+              "border-gray-400 bg-white rounded-[2px]",
               "group-data-[state=on]:bg-primary group-data-[state=on]:border-primary"
             )}
           >
-            <Check className="h-3 w-3 opacity-0 text-primary-foreground group-data-[state=on]:opacity-100 transition-opacity" />
+            <Check className="!h-2 !w-2 opacity-0 text-primary-foreground group-data-[state=on]:opacity-100 transition-opacity" />
           </span>
           <span className="whitespace-nowrap">{opt.label}</span>
         </ToggleGroupItem>
@@ -99,7 +106,7 @@ export function SingleChipSelect({
           aria-label={opt.label}
           role="radio"
           className={cn(
-            "group inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs",
+            "group inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs h-7",
             "bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
             "data-[state=on]:bg-primary/10 data-[state=on]:border-primary",
@@ -110,14 +117,14 @@ export function SingleChipSelect({
           <span
             aria-hidden
             className={cn(
-              "inline-flex h-4 w-4 items-center justify-center rounded-full border-2",
+              "inline-flex h-3 w-3 items-center justify-center rounded-full border-2",
               "border-gray-400 bg-white",
               "group-data-[state=on]:border-primary"
             )}
           >
             <span
               className={cn(
-                "h-2 w-2 rounded-full bg-primary scale-0 transition-transform",
+                "h-[0.5em] w-[0.5em] rounded-full bg-primary scale-0 transition-transform",
                 "group-data-[state=on]:scale-100"
               )}
             />
