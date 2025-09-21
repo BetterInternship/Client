@@ -24,25 +24,31 @@ export const Footer = ({ content }: { content?: string }) => {
         <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
           {content ?? (
             <>
-              © 2025 BetterInternship. All rights reserved.{" "}
-              <a
-                href="/TermsConditions.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline transition-colors duration-200"
-              >
-                Terms & Conditions
-              </a>{" "}
-              and{" "}
-              <a
-                href="/PrivacyPolicy.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline transition-colors duration-200"
-              >
-                Privacy Policy
-              </a>
-              .
+              <div>
+                BetterInternship hotline: {""}
+                <a className="text-primary hover:underline transition-colors duration-200">09276604999</a>
+              </div>
+              <div>
+                © 2025 BetterInternship. All rights reserved.{" "}
+                <a
+                  href="/TermsConditions.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline transition-colors duration-200"
+                >
+                  Terms & Conditions
+                </a>{" "}
+                and{" "}
+                <a
+                  href="/PrivacyPolicy.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline transition-colors duration-200"
+                >
+                  Privacy Policy
+                </a>
+                .
+              </div>
             </>
           )}
         </p>
