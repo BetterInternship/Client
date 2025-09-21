@@ -9,18 +9,13 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import { POSITION_TREE } from "@/lib/consts/positions";
 import { FormInput } from "@/components/EditForm";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Info } from "lucide-react";
+import { FormDatePicker } from "@/components/EditForm";
 import {
   MultiChipSelect,
   SingleChipSelect,
   type Option as ChipOpt,
 } from "@/components/ui/chip-select";
+import { SinglePickerBig } from "@/components/features/student/SinglePickerBig";
 
 // ------------------ Types ------------------
 
@@ -36,7 +31,7 @@ type BasicInputs = {
 };
 
 interface PrefInputs {
-  program_type_ids?: string[]; // ['credited','voluntary']
+  program_type_id?: "credited" | "voluntary" | null;
   job_mode_ids?: string[];
   job_type_ids?: string[];
   job_category_ids?: string[];
@@ -95,7 +90,7 @@ export default function RegisterPage() {
   const basicForm = useForm<BasicInputs>();
   const prefsForm = useForm<PrefInputs>({
     defaultValues: {
-      program_type_ids: [],
+      program_type_id: null,
       job_mode_ids: [],
       job_type_ids: [],
       job_category_ids: [],
@@ -129,9 +124,9 @@ export default function RegisterPage() {
   };
 
   // Derived state
-  const programTypes = prefsForm.watch("program_type_ids") || [];
-  const isCredited = programTypes.includes("credited");
-  const isVoluntary = programTypes.includes("voluntary");
+  const programType = prefsForm.watch("program_type_id");
+  const isCredited = programType === "credited";
+  const isVoluntary = programType === "voluntary";
 
   const creditedTerm = prefsForm.watch("credited_term");
   const voluntaryDuration = prefsForm.watch("voluntary_duration");
@@ -221,12 +216,9 @@ export default function RegisterPage() {
               className="w-36 mx-auto mb-3"
               alt="BetterInternship"
             />
-            <h1 className="text-3xl font-semibold">
-              Welcome {university || "DLSU"} student!
+            <h1 className="text-3xl font-bold">
+              Welcome to BetterInternship!
             </h1>
-            <div className="text-sm text-gray-500">
-              Please fill this out before continuing
-            </div>
           </div>
         </div>
 
@@ -237,115 +229,39 @@ export default function RegisterPage() {
                 className="space-y-4"
                 onSubmit={prefsForm.handleSubmit(onSubmit)}
               >
-                <SectionTitle>Internship preferences</SectionTitle>
-
                 {/* Q1: Voluntary or Credited */}
                 <div className="space-y-2">
-                  <FieldLabel>
-                    Are you looking for a voluntary or credited internship?
-                  </FieldLabel>
-                  <MultiChipSelect
-                    value={programTypes}
-                    onChange={(v) => prefsForm.setValue("program_type_ids", v)}
-                    options={PROGRAM_TYPES}
-                    className="justify-start"
-                  />
-                </div>
-
-                {/* Work modes / types */}
-                <div className="space-y-2">
-                  <FieldLabel>Work modes</FieldLabel>
-                  <MultiChipSelect
-                    className="justify-start"
-                    value={prefsForm.watch("job_mode_ids") || []}
-                    onChange={(vals) =>
-                      prefsForm.setValue("job_mode_ids", vals)
+                  <SinglePickerBig
+                  autoCollapse={false}
+                    label="What kind of internship are you looking for?"
+                    options={[
+                      { value: "credited", label: "Credited", description: "Counts for OJT" },
+                      { value: "voluntary", label: "Voluntary", description: "Outside practicum" },
+                    ]}
+                    value={programType ?? null}
+                    onChange={(v) =>
+                      prefsForm.setValue("program_type_id", v, {
+                        shouldDirty: true,
+                        shouldTouch: true,
+                      })
                     }
-                    options={(refs.job_modes || []).map((o: any) => ({
-                      value: String(o.id),
-                      label: o.name,
-                    }))}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <FieldLabel>Workload types</FieldLabel>
-                  <MultiChipSelect
-                    className="justify-start"
-                    value={prefsForm.watch("job_type_ids") || []}
-                    onChange={(vals) =>
-                      prefsForm.setValue("job_type_ids", vals)
-                    }
-                    options={(refs.job_types || []).map((o: any) => ({
-                      value: String(o.id),
-                      label: o.name,
-                    }))}
-                  />
-                </div>
-
-                {/* Job categories (unchanged) */}
-                <div className="space-y-2">
-                  <FieldLabel>Job categories</FieldLabel>
-                  <AutocompleteTreeMulti
-                    tree={POSITION_TREE}
-                    value={prefsForm.watch("job_category_ids") || []}
-                    setter={(vals: string[]) =>
-                      prefsForm.setValue("job_category_ids", vals)
-                    }
-                    placeholder="Select one or more"
                   />
                 </div>
 
                 {/* If CREDITED selected */}
                 {isCredited && (
-                  <div className="mt-4 space-y-3 border-t pt-4">
-                    <div className="flex items-center gap-2">
-                      <SectionTitle>For credited internship</SectionTitle>
-                    </div>
-
+                  <div className="space-y-3">
                     <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <FieldLabel>When will the OJT be credited?</FieldLabel>
-                        <TooltipProvider delayDuration={150}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="inline-flex h-4 w-4 items-center justify-center">
-                                <Info className="h-4 w-4 text-gray-500" />
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent className="text-xs max-w-xs">
-                              {/* Replace with your real dates */}
-                              <p>
-                                <b>Term 1:</b> Sep–Dec 2025
-                              </p>
-                              <p>
-                                <b>Term 2:</b> Jan–Apr 2026
-                              </p>
-                              <p>
-                                <b>Term 3:</b> May–Aug 2026
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-
-                      <SingleChipSelect
-                        className="justify-start"
-                        value={creditedTerm ?? null}
-                        onChange={(v) =>
-                          prefsForm.setValue(
-                            "credited_term",
-                            (v as PrefInputs["credited_term"]) || null
-                          )
-                        }
-                        options={CREDITED_TERMS}
-                      />
+                      <FormDatePicker
+                          className="w-full"
+                          label="Ideal internship start"
+                          required={false}
+                        />
                     </div>
 
                     <div className="space-y-1">
-                      <FieldLabel>Hours to be credited</FieldLabel>
                       <FormInput
-                        label={null}
+                        label="Total internship hours"
                         type="number"
                         inputMode="numeric"
                         value={prefsForm.watch("credited_hours") ?? ""}
@@ -365,104 +281,78 @@ export default function RegisterPage() {
 
                 {/* If VOLUNTARY selected */}
                 {isVoluntary && (
-                  <div className="mt-4 space-y-3 border-t pt-4">
-                    <SectionTitle>For voluntary internship</SectionTitle>
-
+                  <div className="space-y-3">
                     <div className="space-y-2">
-                      <FieldLabel>
-                        Are you looking for a voluntary internship ASAP?
-                      </FieldLabel>
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id="asap"
-                          checked={!!prefsForm.watch("voluntary_asap")}
-                          onCheckedChange={(checked) =>
-                            prefsForm.setValue("voluntary_asap", !!checked)
-                          }
-                        />
-                        <label
-                          htmlFor="asap"
-                          className="text-sm text-gray-800 select-none"
-                        >
-                          ASAP
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <FieldLabel>Preferred duration</FieldLabel>
-                      <SingleChipSelect
-                        className="justify-start"
-                        value={voluntaryDuration ?? null}
-                        onChange={(v) =>
-                          prefsForm.setValue(
-                            "voluntary_duration",
-                            (v as PrefInputs["voluntary_duration"]) || null
-                          )
-                        }
-                        options={VOLUNTARY_DURATION}
-                      />
-                    </div>
-
-                    {voluntaryDuration === "hours" && (
-                      <div className="space-y-1">
-                        <FieldLabel>Target hours</FieldLabel>
-                        <FormInput
-                          label={null}
-                          type="number"
-                          inputMode="numeric"
-                          value={prefsForm.watch("voluntary_hours") ?? ""}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            const n = v === "" ? null : Number(v);
-                            prefsForm.setValue(
-                              "voluntary_hours",
-                              Number.isFinite(n as number)
-                                ? (n as number)
-                                : null
-                            );
-                          }}
+                      <FormDatePicker
+                          className="w-full"
+                          label="Ideal internship start"
                           required={false}
                         />
-                      </div>
-                    )}
-
-                    {voluntaryDuration === "months" && (
-                      <div className="space-y-1">
-                        <FieldLabel>Target months</FieldLabel>
-                        <FormInput
-                          label={null}
-                          type="number"
-                          inputMode="numeric"
-                          value={prefsForm.watch("voluntary_months") ?? ""}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            const n = v === "" ? null : Number(v);
-                            prefsForm.setValue(
-                              "voluntary_months",
-                              Number.isFinite(n as number)
-                                ? (n as number)
-                                : null
-                            );
-                          }}
-                          required={false}
-                        />
-                      </div>
-                    )}
+                    </div>
                   </div>
                 )}
 
-                <div className="flex justify-end mt-4">
-                  <Button
-                    className="w-full sm:w-auto"
-                    type="submit"
-                    disabled={submitting}
-                  >
-                    Next
-                  </Button>
-                </div>
+                {(isCredited || isVoluntary) && (
+                  <div className="mt-4 space-y-3 border-t pt-4">
+                    {/* Work modes / types */}
+                    <div className="space-y-2">
+                      <FieldLabel>Work setup</FieldLabel>
+                      <MultiChipSelect
+                        className="justify-start"
+                        value={prefsForm.watch("job_mode_ids") || []}
+                        onChange={(vals) =>
+                          prefsForm.setValue("job_mode_ids", vals)
+                        }
+                        options={(refs.job_modes || []).map((o: any) => ({
+                          value: String(o.id),
+                          label: o.name,
+                        }))}
+                      />
+                    </div>
+
+                    {/* Job types */}
+                    <div className="space-y-2">
+                      <FieldLabel>Work-time commitment</FieldLabel>
+                      <MultiChipSelect
+                        className="justify-start"
+                        value={prefsForm.watch("job_type_ids") || []}
+                        onChange={(vals) =>
+                          prefsForm.setValue("job_type_ids", vals)
+                        }
+                        options={(refs.job_types || []).map((o: any) => ({
+                          value: String(o.id),
+                          label: o.name,
+                        }))}
+                      />
+                    </div>
+
+                    {/* Job categories*/}
+                    <div className="space-y-2">
+                      <AutocompleteTreeMulti
+                        label="Desired internship role"
+                        tree={POSITION_TREE}
+                        value={prefsForm.watch("job_category_ids") || []}
+                        setter={(vals: string[]) =>
+                          prefsForm.setValue("job_category_ids", vals)
+                        }
+                        placeholder="Select one or more"
+                      />
+                    </div>
+                  </div>
+                )}
               </form>
             </Card>
+
+            <div className="flex justify-end mt-4">
+              <Button
+                className="w-full sm:w-auto"
+                type="submit"
+                disabled={submitting}
+              >
+                Next
+              </Button>
+            </div>
+            
           </div>
         </div>
       </div>
