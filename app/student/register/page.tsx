@@ -8,16 +8,9 @@ import { AutocompleteTreeMulti } from "@/components/ui/autocomplete";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { POSITION_TREE } from "@/lib/consts/positions";
 import { FormInput } from "@/components/EditForm";
-import { Checkbox } from "@/components/ui/checkbox";
 import { FormDatePicker } from "@/components/EditForm";
-import {
-  MultiChipSelect,
-  SingleChipSelect,
-  type Option as ChipOpt,
-} from "@/components/ui/chip-select";
+import { MultiChipSelect } from "@/components/ui/chip-select";
 import { SinglePickerBig } from "@/components/features/student/SinglePickerBig";
-
-// ------------------ Types ------------------
 
 type BasicInputs = {
   first_name: string;
@@ -51,38 +44,9 @@ interface PrefInputs {
   auto_apply?: boolean;
 }
 
-// ------------------ Small UI Bits ------------------
-
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return <div className="text-xs text-gray-600 mb-1 block">{children}</div>;
 }
-
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="text-xl sm:text-2xl tracking-tight font-semibold text-gray-800 mb-3">
-      {children}
-    </div>
-  );
-}
-
-// ------------------ Options ------------------
-
-const PROGRAM_TYPES: ChipOpt[] = [
-  { value: "credited", label: "Credited" },
-  { value: "voluntary", label: "Voluntary" },
-];
-
-const CREDITED_TERMS: ChipOpt[] = [
-  { value: "term1", label: "Term 1" },
-  { value: "term2", label: "Term 2" },
-  { value: "term3", label: "Term 3" },
-];
-
-const VOLUNTARY_DURATION: ChipOpt[] = [
-  { value: "hours", label: "Hours" },
-  { value: "months", label: "Months" },
-  { value: "flexible", label: "Flexible" },
-];
 
 export default function RegisterPage() {
   const [submitting, setSubmitting] = useState(false);
@@ -127,9 +91,6 @@ export default function RegisterPage() {
   const programType = prefsForm.watch("program_type_id");
   const isCredited = programType === "credited";
   const isVoluntary = programType === "voluntary";
-
-  const creditedTerm = prefsForm.watch("credited_term");
-  const voluntaryDuration = prefsForm.watch("voluntary_duration");
 
   // Build "select all" ids for work modes
   const allJobModeIds = useMemo(
@@ -216,9 +177,7 @@ export default function RegisterPage() {
               className="w-36 mx-auto mb-3"
               alt="BetterInternship"
             />
-            <h1 className="text-3xl font-bold">
-              Welcome to BetterInternship!
-            </h1>
+            <h1 className="text-3xl font-bold">Welcome to BetterInternship!</h1>
           </div>
         </div>
 
@@ -232,11 +191,19 @@ export default function RegisterPage() {
                 {/* Q1: Voluntary or Credited */}
                 <div className="space-y-2">
                   <SinglePickerBig
-                  autoCollapse={false}
+                    autoCollapse={false}
                     label="What kind of internship are you looking for?"
                     options={[
-                      { value: "credited", label: "Credited", description: "Counts for OJT" },
-                      { value: "voluntary", label: "Voluntary", description: "Outside practicum" },
+                      {
+                        value: "credited",
+                        label: "Credited",
+                        description: "Counts for OJT",
+                      },
+                      {
+                        value: "voluntary",
+                        label: "Voluntary",
+                        description: "Outside practicum",
+                      },
                     ]}
                     value={programType ?? null}
                     onChange={(v) =>
@@ -253,10 +220,10 @@ export default function RegisterPage() {
                   <div className="space-y-3">
                     <div className="space-y-2">
                       <FormDatePicker
-                          className="w-full"
-                          label="Ideal internship start"
-                          required={false}
-                        />
+                        className="w-full"
+                        label="Ideal internship start"
+                        required={false}
+                      />
                     </div>
 
                     <div className="space-y-1">
@@ -284,10 +251,10 @@ export default function RegisterPage() {
                   <div className="space-y-3">
                     <div className="space-y-2">
                       <FormDatePicker
-                          className="w-full"
-                          label="Ideal internship start"
-                          required={false}
-                        />
+                        className="w-full"
+                        label="Ideal internship start"
+                        required={false}
+                      />
                     </div>
                   </div>
                 )}
@@ -352,7 +319,6 @@ export default function RegisterPage() {
                 Next
               </Button>
             </div>
-            
           </div>
         </div>
       </div>

@@ -106,17 +106,17 @@ export function SinglePickerBig<T extends string = string>({
                     type="button"
                     onClick={() => handlePick(opt.value)}
                     className={cn(
-                      "relative rounded-2xl border px-4 py-3 text-left transition-colors",
+                      "relative rounded-[0.33em] border px-4 py-3 text-left transition-colors aspect-[1.67]",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
-                      "hover:shadow-sm",
+                      "hover:shadow-sm hover:bg-border/10 hover:border-primary/50",
                       active
                         ? "border-primary/60 bg-primary/5"
                         : "border-border bg-card"
                     )}
                   >
                     <div className="flex items-center gap-3">
-                      <div>
-                        <div className="text-base font-semibold leading-tight">
+                      <div className="text-center w-full">
+                        <div className="text-lg font-semibold leading-tight text-primary">
                           {opt.label}
                         </div>
                         {opt.description && (
