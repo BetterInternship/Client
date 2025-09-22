@@ -1,16 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AutocompleteTreeMulti } from "@/components/ui/autocomplete";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { POSITION_TREE } from "@/lib/consts/positions";
-import { FormInput } from "@/components/EditForm";
-import { FormDatePicker } from "@/components/EditForm";
+import { FormInput, FormMonthPicker } from "@/components/EditForm";
 import { MultiChipSelect } from "@/components/ui/chip-select";
 import { SinglePickerBig } from "@/components/features/student/SinglePickerBig";
+import { Separator } from "@/components/ui/separator";
 
 type BasicInputs = {
   first_name: string;
@@ -28,20 +28,8 @@ interface PrefInputs {
   job_mode_ids?: string[];
   job_type_ids?: string[];
   job_category_ids?: string[];
-
-  credited_term?: "term1" | "term2" | "term3" | null;
-  credited_hours?: number | null;
-
-  voluntary_asap?: boolean;
-  voluntary_duration?: "hours" | "months" | "flexible" | null;
-  voluntary_hours?: number | null;
-  voluntary_months?: number | null;
-
-  taking_for_credit?: boolean;
-  expected_start_date?: string | null;
-  expected_end_date?: string | null;
+  internship_start?: number | null;
   expected_duration_hours?: number | null;
-  auto_apply?: boolean;
 }
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
@@ -58,29 +46,12 @@ export default function RegisterPage() {
       job_mode_ids: [],
       job_type_ids: [],
       job_category_ids: [],
-
-      credited_term: null,
-      credited_hours: null,
-
-      voluntary_asap: false,
-      voluntary_duration: null,
-      voluntary_hours: null,
-      voluntary_months: null,
-
-      taking_for_credit: false,
-      expected_start_date: null,
-      expected_end_date: null,
+      internship_start: null,
       expected_duration_hours: null,
-      auto_apply: false,
     },
   });
 
   const refs = useDbRefs();
-
-  const university = useWatch({
-    control: basicForm.control,
-    name: "university",
-  });
 
   const onSubmit = () => {
     const merged = { ...basicForm.getValues(), ...prefsForm.getValues() };
@@ -92,79 +63,71 @@ export default function RegisterPage() {
   const isCredited = programType === "credited";
   const isVoluntary = programType === "voluntary";
 
-  // Build "select all" ids for work modes
+  // Build ALL ids for work modes and types
   const allJobModeIds = useMemo(
     () => (refs.job_modes ?? []).map((o: any) => String(o.id)),
     [refs.job_modes]
   );
 
-  // Find "Full-time" job type id (robust regex)
-  const fullTimeJobTypeId = useMemo(() => {
-    const jt = (refs.job_types ?? []).find(
-      (o: any) => /full[\s-]?time/i.test(o.name) || /\bft\b/i.test(o.name)
-    );
-    return jt ? String(jt.id) : null;
-  }, [refs.job_types]);
+  const allJobTypeIds = useMemo(
+    () => (refs.job_types ?? []).map((o: any) => String(o.id)),
+    [refs.job_types]
+  );
 
-  // Clear credited/voluntary-only fields when toggled off
+  // Helpers to find specific ids
+  const fullTimeJobTypeId = "2"
+  const hybridModeId = "1"
+  const remoteModeId = "2"
+
+  // Auto-select job_type_ids per rules
   useEffect(() => {
-    if (!isCredited) {
-      prefsForm.setValue("credited_term", null);
-      prefsForm.setValue("credited_hours", null);
-    }
-    if (!isVoluntary) {
-      prefsForm.setValue("voluntary_asap", false);
-      prefsForm.setValue("voluntary_duration", null);
-      prefsForm.setValue("voluntary_hours", null);
-      prefsForm.setValue("voluntary_months", null);
-    }
-  }, [isCredited, isVoluntary, prefsForm]);
+    if (!refs.job_types?.length) return;
 
-  // Auto-prefill when "Credited" just turned ON
-  const prevIsCredited = useRef(isCredited);
-  useEffect(() => {
-    const turnedOn = isCredited && !prevIsCredited.current;
-
-    if (turnedOn) {
-      // Modes: select ALL
-      if (allJobModeIds.length) {
-        prefsForm.setValue("job_mode_ids", allJobModeIds, {
-          shouldDirty: true,
-        });
+    if (programType === "credited") {
+      if (allJobTypeIds.length) {
+        prefsForm.setValue("job_type_ids", allJobTypeIds, { shouldDirty: true });
       }
-      // Types: set to Full-time (override)
-      if (fullTimeJobTypeId) {
-        prefsForm.setValue("job_type_ids", [fullTimeJobTypeId], {
-          shouldDirty: true,
-        });
-      }
+    } else if (programType === "voluntary") {
+      const filtered = fullTimeJobTypeId
+        ? allJobTypeIds.filter((id) => id !== fullTimeJobTypeId)
+        : allJobTypeIds;
+      prefsForm.setValue("job_type_ids", filtered, { shouldDirty: true });
+    } else {
+      prefsForm.setValue("job_type_ids", [], { shouldDirty: true });
     }
+  }, [programType, refs.job_types, allJobTypeIds, fullTimeJobTypeId, prefsForm]);
 
-    prevIsCredited.current = isCredited;
-  }, [isCredited, allJobModeIds, fullTimeJobTypeId, prefsForm]);
-
-  // Handle late-loaded refs while credited is ON
+  // Auto-select job_mode_ids per rules
   useEffect(() => {
-    if (!isCredited) return;
+    if (!refs.job_modes?.length) return;
 
-    const currentModes = prefsForm.getValues("job_mode_ids") || [];
-    const sameModes =
-      currentModes.length === allJobModeIds.length &&
-      currentModes.every((id) => allJobModeIds.includes(id));
-    if (!sameModes && allJobModeIds.length) {
+    if (programType === "credited") {
       prefsForm.setValue("job_mode_ids", allJobModeIds, { shouldDirty: true });
+    } else if (programType === "voluntary") {
+      const filtered = [hybridModeId, remoteModeId].filter(Boolean) as string[];
+      prefsForm.setValue("job_mode_ids", filtered, { shouldDirty: true });
+    } else {
+      prefsForm.setValue("job_mode_ids", [], { shouldDirty: true });
     }
+  }, [programType, refs.job_modes, allJobModeIds, hybridModeId, remoteModeId, prefsForm]);
 
-    const currentTypes = prefsForm.getValues("job_type_ids") || [];
-    if (
-      fullTimeJobTypeId &&
-      (currentTypes.length !== 1 || currentTypes[0] !== fullTimeJobTypeId)
-    ) {
-      prefsForm.setValue("job_type_ids", [fullTimeJobTypeId], {
-        shouldDirty: true,
-      });
+  // Keep job_type_ids valid when refs load late
+  useEffect(() => {
+    if (!refs.job_types?.length) return;
+    const current = prefsForm.getValues("job_type_ids") || [];
+    if (!current.length) return;
+    const next = current.filter((id) => allJobTypeIds.includes(id));
+    if (next.length !== current.length) {
+      prefsForm.setValue("job_type_ids", next, { shouldDirty: true });
     }
-  }, [isCredited, allJobModeIds, fullTimeJobTypeId, prefsForm]);
+  }, [refs.job_types, allJobTypeIds, prefsForm]);
+
+  // Clear internship hours when switching to voluntary
+  useEffect(() => {
+    if (programType === "voluntary") {
+      prefsForm.setValue("expected_duration_hours", null, { shouldDirty: true });
+    }
+  }, [programType, prefsForm]);
 
   return (
     <div className="min-h-full">
@@ -185,8 +148,9 @@ export default function RegisterPage() {
           <div className="lg:col-span-2 space-y-6 max-w-lg w-full ">
             <Card className="p-4 sm:p-6 block">
               <form
-                className="space-y-4"
+                className="space-y-3"
                 onSubmit={prefsForm.handleSubmit(onSubmit)}
+                id="reg-form"
               >
                 {/* Q1: Voluntary or Credited */}
                 <div className="space-y-2">
@@ -194,16 +158,8 @@ export default function RegisterPage() {
                     autoCollapse={false}
                     label="What kind of internship are you looking for?"
                     options={[
-                      {
-                        value: "credited",
-                        label: "Credited",
-                        description: "Counts for OJT",
-                      },
-                      {
-                        value: "voluntary",
-                        label: "Voluntary",
-                        description: "Outside practicum",
-                      },
+                      { value: "credited", label: "Credited", description: "Counts for OJT" },
+                      { value: "voluntary", label: "Voluntary", description: "Outside practicum" },
                     ]}
                     value={programType ?? null}
                     onChange={(v) =>
@@ -215,106 +171,101 @@ export default function RegisterPage() {
                   />
                 </div>
 
-                {/* If CREDITED selected */}
-                {isCredited && (
-                  <div className="space-y-3">
-                    <div className="space-y-2">
-                      <FormDatePicker
-                        className="w-full"
-                        label="Ideal internship start"
-                        required={false}
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <FormInput
-                        label="Total internship hours"
-                        type="number"
-                        inputMode="numeric"
-                        value={prefsForm.watch("credited_hours") ?? ""}
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          const n = v === "" ? null : Number(v);
-                          prefsForm.setValue(
-                            "credited_hours",
-                            Number.isFinite(n as number) ? (n as number) : null
-                          );
-                        }}
-                        required={false}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* If VOLUNTARY selected */}
-                {isVoluntary && (
-                  <div className="space-y-3">
-                    <div className="space-y-2">
-                      <FormDatePicker
-                        className="w-full"
-                        label="Ideal internship start"
-                        required={false}
-                      />
-                    </div>
-                  </div>
-                )}
-
+                {/* Start date + hours (only credited shows hours) */}
                 {(isCredited || isVoluntary) && (
-                  <div className="mt-4 space-y-3 border-t pt-4">
-                    {/* Work modes / types */}
-                    <div className="space-y-2">
-                      <FieldLabel>Work setup</FieldLabel>
-                      <MultiChipSelect
-                        className="justify-start"
-                        value={prefsForm.watch("job_mode_ids") || []}
-                        onChange={(vals) =>
-                          prefsForm.setValue("job_mode_ids", vals)
-                        }
-                        options={(refs.job_modes || []).map((o: any) => ({
-                          value: String(o.id),
-                          label: o.name,
-                        }))}
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <FormMonthPicker
+                      label="Ideal internship start"
+                      date={prefsForm.watch("internship_start") ?? undefined}
+                      setter={(ms) =>
+                        prefsForm.setValue("internship_start", ms ?? null, {
+                          shouldDirty: true,
+                        })
+                      }
+                      fromYear={2025}
+                      toYear={2030}
+                      placeholder="Select month"
+                    />
 
-                    {/* Job types */}
-                    <div className="space-y-2">
-                      <FieldLabel>Work-time commitment</FieldLabel>
-                      <MultiChipSelect
-                        className="justify-start"
-                        value={prefsForm.watch("job_type_ids") || []}
-                        onChange={(vals) =>
-                          prefsForm.setValue("job_type_ids", vals)
-                        }
-                        options={(refs.job_types || []).map((o: any) => ({
-                          value: String(o.id),
-                          label: o.name,
-                        }))}
-                      />
-                    </div>
+                    {isCredited && (
+                      <div className="space-y-1">
+                        <FormInput
+                          label="Total internship hours"
+                          inputMode="numeric"
+                          value={prefsForm.watch("expected_duration_hours") ?? ""}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            const n = v === "" ? null : Number(v);
+                            prefsForm.setValue(
+                              "expected_duration_hours",
+                              Number.isFinite(n as number) ? (n as number) : null,
+                              { shouldDirty: true }
+                            );
+                          }}
+                          required={false}
+                        />
+                      </div>
+                    )}
 
-                    {/* Job categories*/}
-                    <div className="space-y-2">
-                      <AutocompleteTreeMulti
-                        label="Desired internship role"
-                        tree={POSITION_TREE}
-                        value={prefsForm.watch("job_category_ids") || []}
-                        setter={(vals: string[]) =>
-                          prefsForm.setValue("job_category_ids", vals)
-                        }
-                        placeholder="Select one or more"
-                      />
+                    <div className="space-y-3">
+                      <Separator className="mt-5 bg-gray-300" />
+                      {/* Work modes */}
+                      <div className="space-y-2">
+                        <FieldLabel>Work setup</FieldLabel>
+                        <MultiChipSelect
+                          className="justify-start"
+                          value={prefsForm.watch("job_mode_ids") || []}
+                          onChange={(vals) =>
+                            prefsForm.setValue("job_mode_ids", vals)
+                          }
+                          options={(refs.job_modes || []).map((o: any) => ({
+                            value: String(o.id),
+                            label: o.name,
+                          }))}
+                        />
+                      </div>
+
+                      {/* Job types */}
+                      <div className="space-y-2">
+                        <FieldLabel>Work-time commitment</FieldLabel>
+                        <MultiChipSelect
+                          className="justify-start"
+                          value={prefsForm.watch("job_type_ids") || []}
+                          onChange={(vals) =>
+                            prefsForm.setValue("job_type_ids", vals)
+                          }
+                          options={(refs.job_types || []).map((o: any) => ({
+                            value: String(o.id),
+                            label: o.name,
+                          }))}
+                        />
+                      </div>
+
+                      {/* Job categories */}
+                      <div className="space-y-2">
+                        <AutocompleteTreeMulti
+                          label="Desired internship role"
+                          tree={POSITION_TREE}
+                          value={prefsForm.watch("job_category_ids") || []}
+                          setter={(vals: string[]) =>
+                            prefsForm.setValue("job_category_ids", vals)
+                          }
+                          placeholder="Select one or more"
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
               </form>
             </Card>
 
-            <div className="flex justify-end mt-4">
+            {/* Submit button*/}
+            <div className="flex justify-end">
               <Button
                 className="w-full sm:w-auto"
                 type="submit"
                 disabled={submitting}
+                form="reg-form"
               >
                 Next
               </Button>

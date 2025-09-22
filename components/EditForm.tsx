@@ -9,7 +9,7 @@ import { Input } from "./ui/input";
 import { GroupableRadioDropdown } from "./ui/dropdown";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { cn } from "@/lib/utils";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import "react-datepicker/dist/react-datepicker.css";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,13 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/landingStudent/ui/select"
 
 interface EditFormContext<T extends IFormData> {
   formData: T;
@@ -345,3 +352,217 @@ export const FormDatePicker = ({
     </div>
   );
 };
+
+/**
+ * Month picker.
+ *
+ * @component
+ */
+/**
+ * Datepicker (shadcn).
+ *
+ * Accepts/returns a number timestamp (ms) via `date` / `setter`.
+ */
+interface FormMonthPickerProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
+  label: string;
+  /** ms since epoch; will be normalized to the first day of the month */
+  date?: number;
+  /** setter receives ms since epoch (first day of month at local midnight) or undefined when cleared */
+  setter?: (value?: number) => void;
+  className?: string;
+  side?: "top" | "right" | "bottom" | "left";
+  align?: "start" | "center" | "end";
+  sideOffset?: number;
+  contentClassName?: string;
+
+  /** Placeholder text when no month selected */
+  placeholder?: string;
+
+  /** Format the button text */
+  format?: (d: Date) => string;
+
+  /** Year bounds for navigation (inclusive) */
+  fromYear?: number;
+  toYear?: number;
+
+  /** Close popover automatically on select (default true) */
+  autoClose?: boolean;
+}
+
+export const FormMonthPicker = ({
+  label,
+  date,
+  setter,
+  className,
+  side = "bottom",
+  align = "start",
+  sideOffset = 6,
+  contentClassName,
+  placeholder = "Select month",
+  format = (d) =>
+    d.toLocaleDateString(undefined, { month: "short", year: "numeric" }),
+  fromYear = new Date().getFullYear() - 5,
+  toYear = new Date().getFullYear() + 5,
+  autoClose = true,
+  ...props
+}: FormMonthPickerProps) => {
+  const [open, setOpen] = React.useState(false);
+
+  // normalize incoming ms -> first day of month
+  const selected = React.useMemo(() => {
+    if (date == null) return undefined;
+    const d = new Date(date);
+    return new Date(d.getFullYear(), d.getMonth(), 1, 0, 0, 0, 0);
+  }, [date]);
+
+  const [viewYear, setViewYear] = React.useState<number>(
+    selected?.getFullYear() ?? new Date().getFullYear()
+  );
+
+  React.useEffect(() => {
+    if (selected) setViewYear(selected.getFullYear());
+  }, [selected]);
+
+  const months = React.useMemo(
+    () =>
+      Array.from({ length: 12 }, (_, m) => ({
+        m,
+        label: new Date(2000, m, 1).toLocaleString(undefined, { month: "short" }),
+      })),
+    []
+  );
+
+  const clampYear = (y: number) => Math.min(Math.max(y, fromYear), toYear);
+
+  const selectMonth = (monthIndex: number) => {
+    const y = clampYear(viewYear);
+    const firstOfMonth = new Date(y, monthIndex, 1, 0, 0, 0, 0).getTime();
+    setter?.(firstOfMonth);
+    if (autoClose) setOpen(false);
+  };
+
+  const prevYear = () => setViewYear((y) => clampYear(y - 1));
+  const nextYear = () => setViewYear((y) => clampYear(y + 1));
+
+  const isYearMin = viewYear <= fromYear;
+  const isYearMax = viewYear >= toYear;
+
+  return (
+    <div className={cn("flex flex-col", className)}>
+      {label && (
+        <label
+          htmlFor={props.id ?? "month"}
+          className="text-xs text-gray-600 mb-1 block"
+        >
+          {label}
+        </label>
+      )}
+
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            id={props.id ?? "month"}
+            className="justify-between font-normal"
+          >
+            {selected ? format(selected) : placeholder}
+            <ChevronDown className="h-4 w-4 opacity-70" />
+          </Button>
+        </PopoverTrigger>
+
+        <PopoverContent
+          align={align}
+          side={side}
+          sideOffset={sideOffset}
+          className={cn("w-72 p-3", contentClassName)}
+        >
+          {/* Header: year controls */}
+          <div className="mb-3 flex items-center justify-between">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={prevYear}
+              disabled={isYearMin}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+
+            <Select
+              value={String(viewYear)}
+              onValueChange={(val) => setViewYear(clampYear(Number(val)))}
+            >
+              <SelectTrigger className="w-fit text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="h-fit">
+                {Array.from({ length: toYear - fromYear + 1 }, (_, i) => fromYear + i).map(
+                  (y) => (
+                    <SelectItem key={y} value={String(y)}>
+                      {y}
+                    </SelectItem>
+                  )
+                )}
+              </SelectContent>
+            </Select>
+
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={nextYear}
+              disabled={isYearMax}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {/* Month grid */}
+          <div className="grid grid-cols-3 gap-2">
+            {months.map(({ m, label }) => {
+              const isActive =
+                selected &&
+                selected.getFullYear() === viewYear &&
+                selected.getMonth() === m;
+
+              return (
+                <Button
+                  key={m}
+                  type="button"
+                  variant={isActive ? "default" : "outline"}
+                  className={cn(
+                    "h-9 justify-center rounded-lg",
+                    isActive ? "" : "bg-background"
+                  )}
+                  onClick={() => selectMonth(m)}
+                >
+                  <span className="text-sm">{label}</span>
+                </Button>
+              );
+            })}
+          </div>
+
+          {/* Clear (optional) */}
+          <div className="mt-3 flex justify-end">
+            <Button
+              type="button"
+              variant="ghost"
+              className="h-8 px-2 text-xs"
+              onClick={() => {
+                setter?.(undefined);
+                setOpen(false);
+              }}
+            >
+              Clear
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+};
+

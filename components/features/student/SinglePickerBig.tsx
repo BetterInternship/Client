@@ -62,7 +62,7 @@ export function SinglePickerBig<T extends string = string>({
             transition={{ duration: 0.25, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <div className="flex items-center justify-between rounded-xl border bg-background px-3 py-2">
+            <div className="flex items-center justify-between rounded-[0.33em] border border-gray-300 bg-background px-3 py-2">
               <div className="flex items-center gap-2">
                 <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-primary/10">
                   {selected.icon ? (
