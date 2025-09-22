@@ -618,8 +618,7 @@ export const ProfileButton: React.FC = () => {
   return (
     <div className="relative flex items-center gap-2">
       <Link href="/conversations">
-        <Button variant="outline" className="relative">
-          <span className="text-xs">Chats</span>{" "}
+        <Button variant="ghost" className="relative">
           <MessageCircleMore className="w-6 h-6" />
           {conversations?.unreads?.length ? (
             <div className="absolute w-3 h-3 top-[-0.33em] right-[-0.4em] rounded-full bg-warning opacity-70" />
@@ -642,7 +641,7 @@ export const ProfileButton: React.FC = () => {
             </p>
           </div>
         }
-        className="z-[200]"
+        className="z-[200] w-fit"
       >
         <DropdownOption href="/profile">
           <Settings className="w-4 h-4 inline-block m-1 mr-2" />
@@ -830,9 +829,6 @@ export const Header: React.FC = () => {
               <div className="w-1 h-10 bg-transparent" />
             )}
           </div>
-
-          {/* Mobile banner under bar */}
-          {isMobile && pathname === "/search" && <CompleteAccBanner />}
 
           {/* Mobile: search + (filters only on /search) */}
           {isMobile && showProfileButton && showFilters && (
