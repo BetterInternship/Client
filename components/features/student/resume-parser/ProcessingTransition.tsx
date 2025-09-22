@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { AnimatedShinyText } from "../../../components/ui/animated-shiny-text";
+import { AnimatedShinyText } from "../../../ui/animated-shiny-text";
 
 export const ProcessingTransition = ({
   promise,

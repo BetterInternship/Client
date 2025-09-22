@@ -619,7 +619,7 @@ export const ProfileButton: React.FC = () => {
     <div className="relative flex items-center gap-2">
       <Link href="/conversations">
         <Button variant="ghost" className="relative">
-          <MessageCircleMore className="w-6 h-6" />
+          <MessageCircleMore className="w-7 h-7" />
           {conversations?.unreads?.length ? (
             <div className="absolute w-3 h-3 top-[-0.33em] right-[-0.4em] rounded-full bg-warning opacity-70" />
           ) : null}

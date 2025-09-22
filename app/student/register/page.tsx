@@ -75,9 +75,9 @@ export default function RegisterPage() {
   );
 
   // Helpers to find specific ids
-  const fullTimeJobTypeId = "2"
-  const hybridModeId = "1"
-  const remoteModeId = "2"
+  const fullTimeJobTypeId = "2";
+  const hybridModeId = "1";
+  const remoteModeId = "2";
 
   // Auto-select job_type_ids per rules
   useEffect(() => {
@@ -85,7 +85,9 @@ export default function RegisterPage() {
 
     if (programType === "credited") {
       if (allJobTypeIds.length) {
-        prefsForm.setValue("job_type_ids", allJobTypeIds, { shouldDirty: true });
+        prefsForm.setValue("job_type_ids", allJobTypeIds, {
+          shouldDirty: true,
+        });
       }
     } else if (programType === "voluntary") {
       const filtered = fullTimeJobTypeId
@@ -95,7 +97,13 @@ export default function RegisterPage() {
     } else {
       prefsForm.setValue("job_type_ids", [], { shouldDirty: true });
     }
-  }, [programType, refs.job_types, allJobTypeIds, fullTimeJobTypeId, prefsForm]);
+  }, [
+    programType,
+    refs.job_types,
+    allJobTypeIds,
+    fullTimeJobTypeId,
+    prefsForm,
+  ]);
 
   // Auto-select job_mode_ids per rules
   useEffect(() => {
@@ -109,7 +117,14 @@ export default function RegisterPage() {
     } else {
       prefsForm.setValue("job_mode_ids", [], { shouldDirty: true });
     }
-  }, [programType, refs.job_modes, allJobModeIds, hybridModeId, remoteModeId, prefsForm]);
+  }, [
+    programType,
+    refs.job_modes,
+    allJobModeIds,
+    hybridModeId,
+    remoteModeId,
+    prefsForm,
+  ]);
 
   // Keep job_type_ids valid when refs load late
   useEffect(() => {
@@ -125,7 +140,9 @@ export default function RegisterPage() {
   // Clear internship hours when switching to voluntary
   useEffect(() => {
     if (programType === "voluntary") {
-      prefsForm.setValue("expected_duration_hours", null, { shouldDirty: true });
+      prefsForm.setValue("expected_duration_hours", null, {
+        shouldDirty: true,
+      });
     }
   }, [programType, prefsForm]);
 
@@ -158,8 +175,16 @@ export default function RegisterPage() {
                     autoCollapse={false}
                     label="What kind of internship are you looking for?"
                     options={[
-                      { value: "credited", label: "Credited", description: "Counts for OJT" },
-                      { value: "voluntary", label: "Voluntary", description: "Outside practicum" },
+                      {
+                        value: "credited",
+                        label: "Credited",
+                        description: "Counts for OJT",
+                      },
+                      {
+                        value: "voluntary",
+                        label: "Voluntary",
+                        description: "Outside practicum",
+                      },
                     ]}
                     value={programType ?? null}
                     onChange={(v) =>
@@ -192,13 +217,17 @@ export default function RegisterPage() {
                         <FormInput
                           label="Total internship hours"
                           inputMode="numeric"
-                          value={prefsForm.watch("expected_duration_hours") ?? ""}
+                          value={
+                            prefsForm.watch("expected_duration_hours") ?? ""
+                          }
                           onChange={(e) => {
                             const v = e.target.value;
                             const n = v === "" ? null : Number(v);
                             prefsForm.setValue(
                               "expected_duration_hours",
-                              Number.isFinite(n as number) ? (n as number) : null,
+                              Number.isFinite(n as number)
+                                ? (n as number)
+                                : null,
                               { shouldDirty: true }
                             );
                           }}
