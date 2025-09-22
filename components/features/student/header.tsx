@@ -631,7 +631,7 @@ export const ProfileButton: React.FC = () => {
             <div className="overflow-hidden rounded-full flex items-center justify-center">
               <MyUserPfp size="7" />
             </div>
-            {getFullName(profile.data)}
+            {getFullName(profile.data, false)}
           </>
         }
         content={
@@ -681,7 +681,6 @@ export const Header: React.FC = () => {
 
   const [state, dispatch] = useReducer(jobFilterReducer, initialFilter);
   const [searchTerm, setSearchTerm] = useState("");
-  const [hasMissing, setHasMissing] = useState(false);
 
   const [showPositions, setShowPositions] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -719,14 +718,6 @@ export const Header: React.FC = () => {
     });
     setSearchTerm(q);
   }, [searchParams, showFilters]);
-
-  // profile completeness banner
-  useEffect(() => {
-    if (profile.data) {
-      const { missing } = getMissingProfileFields(profile.data);
-      setHasMissing(Array.isArray(missing) && missing.length > 0);
-    }
-  }, [profile.data]);
 
   const doSearch = () => {
     const params = new URLSearchParams();
@@ -814,14 +805,6 @@ export const Header: React.FC = () => {
                 </button>
               ) : (
                 <div className="flex items-center gap-6">
-                  {pathname === "/search" && hasMissing && (
-                    <button
-                      className="text-base ml-4 text-blue-700 font-medium hover:underline focus:outline-none"
-                      onClick={() => router.push("/profile?edit=true")}
-                    >
-                      Finish your profile to start applying!
-                    </button>
-                  )}
                   <ProfileButton />
                 </div>
               )
