@@ -26,7 +26,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/landingStudent/ui/select"
+} from "@/components/landingStudent/ui/select";
 
 interface EditFormContext<T extends IFormData> {
   formData: T;
@@ -230,15 +230,13 @@ export const FormCheckbox = ({
   return (
     <div>
       {label && (
-        <label className="text-xs text-gray-600 mb-1 block">
-          {label}
-        </label>
+        <label className="text-xs text-gray-600 mb-1 block">{label}</label>
       )}
       <Checkbox
         name={label ?? ""}
         checked={checked}
         className={cn(
-          "flex flex-row items-center justify-center border rounded-[0.2em] w-4 h-4",
+          "flex flex-row items-center justify-center border rounded-[0.33em] w-4 h-4",
           checked
             ? "border-primary border-opacity-85 bg-blue-200"
             : "border-gray-300 bg-gray-50"
@@ -428,7 +426,9 @@ export const FormMonthPicker = ({
     () =>
       Array.from({ length: 12 }, (_, m) => ({
         m,
-        label: new Date(2000, m, 1).toLocaleString(undefined, { month: "short" }),
+        label: new Date(2000, m, 1).toLocaleString(undefined, {
+          month: "short",
+        }),
       })),
     []
   );
@@ -498,16 +498,16 @@ export const FormMonthPicker = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="h-fit">
-                {Array.from({ length: toYear - fromYear + 1 }, (_, i) => fromYear + i).map(
-                  (y) => (
-                    <SelectItem key={y} value={String(y)}>
-                      {y}
-                    </SelectItem>
-                  )
-                )}
+                {Array.from(
+                  { length: toYear - fromYear + 1 },
+                  (_, i) => fromYear + i
+                ).map((y) => (
+                  <SelectItem key={y} value={String(y)}>
+                    {y}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-
 
             <Button
               type="button"
@@ -535,7 +535,7 @@ export const FormMonthPicker = ({
                   type="button"
                   variant={isActive ? "default" : "outline"}
                   className={cn(
-                    "h-9 justify-center rounded-lg",
+                    "h-9 justify-center rounded-[0.33em]",
                     isActive ? "" : "bg-background"
                   )}
                   onClick={() => selectMonth(m)}
@@ -565,4 +565,3 @@ export const FormMonthPicker = ({
     </div>
   );
 };
-

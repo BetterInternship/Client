@@ -7,7 +7,8 @@ import { Job, PublicUser } from "../db/db.types";
  * @returns
  */
 export const getFullName = (
-  user: Partial<PublicUser> | null | undefined
+  user: Partial<PublicUser> | null | undefined,
+  titleCase: boolean = true
 ): string => {
   let name = "";
   if (!user) return name.slice(0, 32);
@@ -16,12 +17,17 @@ export const getFullName = (
   if (user.first_name && !user.last_name) name = user.first_name;
   if (user.first_name && user.last_name)
     name = `${user.first_name ?? ""} ${user.last_name ?? ""}`;
-  return name
-    .replace(
+  name = name.slice(0, 32);
+
+  // Change the case of the name
+  if (titleCase) {
+    name = name.replace(
       /\w\S*/g,
       (text) => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
-    )
-    .slice(0, 32);
+    );
+  }
+
+  return name;
 };
 
 /**
