@@ -65,14 +65,6 @@ export const AuthService = {
     return APIClient.post<AuthResponse>(APIRoute("auth").r("loggedin").build());
   },
 
-  async parseResume(form: FormData) {
-    return APIClient.post<UserResponse>(
-      APIRoute("auth").r("register", "resume").build(),
-      form,
-      "form-data"
-    );
-  },
-
   async register(user: Partial<PublicUser>) {
     return APIClient.post<AuthResponse>(
       APIRoute("auth").r("register").build(),
@@ -97,10 +89,17 @@ export const AuthService = {
     );
   },
 
-  async emailStatus(email: string) {
-    return APIClient.post<EmailStatusResponse>(
-      APIRoute("auth").r("email-status").build(),
+  async requestActivation(email: string) {
+    return APIClient.post<ResourceHashResponse>(
+      APIRoute("auth").r("activate").build(),
       { email }
+    );
+  },
+
+  async activate(email: string, otp: string) {
+    return APIClient.post<ResourceHashResponse>(
+      APIRoute("auth").r("activate", "otp").build(),
+      { email, otp }
     );
   },
 
@@ -125,6 +124,14 @@ export const UserService = {
 
   async updateMyProfile(data: Partial<PublicUser>) {
     return APIClient.put<UserResponse>(APIRoute("users").r("me").build(), data);
+  },
+
+  async parseResume(form: FormData) {
+    return APIClient.post<UserResponse>(
+      APIRoute("users").r("me", "extract-resume").build(),
+      form,
+      "form-data"
+    );
   },
 
   async getMyResumeURL() {

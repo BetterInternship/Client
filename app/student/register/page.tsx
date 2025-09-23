@@ -212,15 +212,6 @@ export default function RegisterPage() {
 
         <div className="mt-8 flex flex-col items-center gap-2">
           <div className="lg:col-span-2 space-y-2 max-w-lg w-full">
-            <Card className="border-warning bg-warning/5">
-              <div className="max-w-prose border-gray-300">
-                <Badge type="warning">Reminder</Badge>
-                <div className="text-xs mt-2 text-gray-600">
-                  Using you university email means you could lose access to your
-                  account after graduating.
-                </div>
-              </div>
-            </Card>
             <Card className="p-4 sm:p-6 block">
               <form
                 className="space-y-6"

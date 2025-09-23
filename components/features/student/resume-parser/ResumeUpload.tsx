@@ -35,7 +35,9 @@ const ResumeUpload = ({
             onClick={() => ref.current?.click()}
           >
             <UploadIcon className="w-10 h-10 stroke-primary" />
-            <div className="font-semibold text-primary mt-2">Upload Your Resume</div>
+            <div className="font-semibold text-primary mt-2">
+              Upload Your Resume
+            </div>
           </div>
           <input
             id="file-upload"

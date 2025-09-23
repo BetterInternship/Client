@@ -136,7 +136,7 @@ export const AuthContextProvider = ({
   };
 
   const emailStatus = async (email: string) => {
-    const response = await EmployerAuthService.email_status(email);
+    const response = await EmployerAuthService.emailStatus(email);
     return response;
   };
 

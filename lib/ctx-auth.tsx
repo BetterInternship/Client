@@ -16,11 +16,6 @@ interface IAuthContext {
     userId: string,
     key: string
   ) => Promise<Partial<PublicUser> & FetchResponse>;
-  emailStatus: (
-    email: string
-  ) => Promise<
-    { existing_user: boolean; verified_user: boolean } & FetchResponse
-  >;
   logout: () => Promise<void>;
   isAuthenticated: () => boolean;
   refreshAuthentication: () => void;
@@ -92,11 +87,6 @@ export const AuthContextProvider = ({
     return response;
   };
 
-  const emailStatus = async (email: string) => {
-    const response = await AuthService.emailStatus(email);
-    return response;
-  };
-
   const logout = async () => {
     pocketbase.logout();
     AuthService.logout();
@@ -120,7 +110,6 @@ export const AuthContextProvider = ({
         register,
         // @ts-ignore
         verify,
-        emailStatus,
         logout,
         refreshAuthentication,
         isAuthenticated: () => isAuthenticated,

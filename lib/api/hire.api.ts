@@ -38,7 +38,7 @@ export const EmployerAuthService = {
     );
   },
 
-  async email_status(email: string) {
+  async emailStatus(email: string) {
     return APIClient.post<EmailStatusResponse>(
       APIRoute("auth").r("hire", "email-status").build(),
       { email }
