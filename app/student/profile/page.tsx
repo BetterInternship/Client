@@ -7,7 +7,15 @@ import {
   useImperativeHandle,
   useMemo,
 } from "react";
-import { Edit2, Upload, Eye, Camera } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  Edit2,
+  Upload,
+  Eye,
+  Camera,
+  ArrowRight,
+  CheckCircle2,
+} from "lucide-react";
 import { useProfile } from "@/lib/api/student.api";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
@@ -21,13 +29,10 @@ import { FileUploadInput, useFile, useFileUpload } from "@/hooks/use-file";
 import { Card } from "@/components/ui/card";
 import { getFullName } from "@/lib/utils/user-utils";
 import { PDFPreview } from "@/components/shared/pdf-preview";
-import {
-  isValidOptionalLinkedinURL,
-  toURL,
-  openURL,
-} from "@/lib/utils/url-utils";
+import { toURL, openURL } from "@/lib/utils/url-utils";
 import {
   isValidOptionalGitHubURL,
+  isValidOptionalLinkedinURL,
   isValidOptionalURL,
 } from "@/lib/utils/url-utils";
 import { Loader } from "@/components/ui/loader";
@@ -50,6 +55,145 @@ import { isoToMs, msToISO } from "@/lib/utils/date-utils";
 import { AutocompleteTreeMulti } from "@/components/ui/autocomplete";
 import { TabGroup, Tab } from "@/components/ui/tabs";
 import { POSITION_TREE } from "@/lib/consts/positions";
+import { OutsideTabs, OutsideTabPanel } from "@/components/ui/outside-tabs";
+// ----------------------------
+//  Helpers
+// ----------------------------
+
+function getFileNameFromURL(url?: string | null) {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    // Try common filename hints in query params first
+    const qpHints = ["filename", "response-content-disposition", "name"];
+    for (const k of qpHints) {
+      const v = u.searchParams.get(k);
+      if (v) {
+        // content-disposition might look like attachment; filename="CV.pdf"
+        const m = /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i.exec(v);
+        if (m) return decodeURIComponent(m[1] || m[2]);
+        return decodeURIComponent(v);
+      }
+    }
+    // Fallback to last path segment
+    const last = u.pathname.split("/").filter(Boolean).pop();
+    if (last) return decodeURIComponent(last);
+  } catch {
+    // Fallback for non-URL strings
+    const parts = url.split("?")[0].split("/").filter(Boolean);
+    return decodeURIComponent(parts.pop() || "");
+  }
+  return null;
+}
+
+function computeProfileScore(p?: Partial<PublicUser>): {
+  score: number;
+  parts: Record<string, boolean>;
+  tips: string[];
+} {
+  const u = p ?? {};
+  const parts = {
+    name: !!(u.first_name && u.last_name),
+    phone: !!u.phone_number,
+    bio: !!u.bio && u.bio.trim().length >= 50, // richer bios
+    school: !!(
+      u.university &&
+      u.college &&
+      u.department &&
+      u.degree &&
+      u.year_level
+    ),
+    links: !!(u.github_link || u.linkedin_link || u.portfolio_link),
+    prefs: !!(
+      u.job_mode_ids?.length ||
+      u.job_type_ids?.length ||
+      u.job_category_ids?.length
+    ),
+    dates: !!(u.expected_start_date || u.expected_end_date),
+    resume: !!u.resume,
+  };
+
+  // weights sum to 100
+  const weights: Record<keyof typeof parts, number> = {
+    name: 10,
+    phone: 5,
+    bio: 15,
+    school: 20,
+    links: 10,
+    prefs: 20,
+    dates: 10,
+    resume: 10,
+  };
+
+  const score = Object.entries(parts).reduce(
+    (acc, [k, ok]) => acc + (ok ? weights[k as keyof typeof parts] : 0),
+    0
+  );
+
+  const tips: string[] = [];
+  if (!parts.bio) tips.push("Add a 50+ character bio highlighting skills.");
+  if (!parts.links) tips.push("Add your LinkedIn/GitHub/Portfolio.");
+  if (!parts.prefs) tips.push("Pick work modes, types, and roles you want.");
+  if (!parts.dates) tips.push("Add expected internship dates.");
+  if (!parts.school) tips.push("Complete university/college/degree fields.");
+  if (!parts.resume) tips.push("Upload a resume in PDF (≤2.5MB).");
+
+  return { score, parts, tips };
+}
+
+function computeResumeScore(
+  u?: Partial<PublicUser>,
+  resumeName?: string | null
+) {
+  if (!u?.resume) return { score: 0, reasons: ["No resume uploaded yet."] };
+
+  let score = 60; // base for having a resume
+  const reasons: string[] = [];
+
+  // +10 if name appears in the filename (good employer UX)
+  const fullName = `${u?.first_name ?? ""} ${u?.last_name ?? ""}`
+    .trim()
+    .toLowerCase();
+  const hasNameInFile =
+    !!resumeName &&
+    fullName.length > 3 &&
+    resumeName.toLowerCase().includes((u?.last_name ?? "").toLowerCase());
+  if (hasNameInFile) {
+    score += 10;
+  } else {
+    reasons.push(
+      "Rename file to include your name (e.g., Dimalanta_Jason_CV.pdf)."
+    );
+  }
+
+  // +10 if education is complete
+  const hasEdu = !!(
+    u?.university &&
+    u?.college &&
+    u?.department &&
+    u?.degree &&
+    u?.year_level
+  );
+  if (hasEdu) score += 10;
+  else reasons.push("Ensure education details are complete in your profile.");
+
+  // +10 if preferences present (roles/modes/types help matching)
+  const hasPrefs = !!(
+    u?.job_mode_ids?.length ||
+    u?.job_type_ids?.length ||
+    u?.job_category_ids?.length
+  );
+  if (hasPrefs) score += 10;
+  else reasons.push("Select at least your preferred roles/modes/types.");
+
+  // +10 if dates present (availability clarity)
+  const hasDates = !!(u?.expected_start_date || u?.expected_end_date);
+  if (hasDates) score += 10;
+  else reasons.push("Add expected start/end dates.");
+
+  if (score > 100) score = 100;
+  return { score, reasons };
+}
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
@@ -74,6 +218,15 @@ export default function ProfilePage() {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
 
+  const [lastUploadedResumeName, setLastUploadedResumeName] = useState<
+    string | null
+  >(null);
+
+  const resumeFileName =
+    lastUploadedResumeName ||
+    getFileNameFromURL(resumeURL) ||
+    (profile.data?.resume ? "resume.pdf" : null);
+
   redirectIfNotLoggedIn();
 
   const {
@@ -86,17 +239,21 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
-    if (searchParams.get("edit") === "true") {
-      setIsEditing(true);
-    }
+    if (searchParams.get("edit") === "true") setIsEditing(true);
   }, [searchParams]);
 
-  if (profile.isPending) return <Loader>Loading profile...</Loader>;
+  if (profile.isPending) {
+    return (
+      <div className="min-h-screen grid place-items-center">
+        <Loader>Loading profile…</Loader>
+      </div>
+    );
+  }
 
   if (profile.error) {
     return (
-      <Card className="flex flex-col items-center justify-center max-w-md m-auto">
-        <p className="text-red-600 mb-4 text-base sm:text-lg">
+      <Card className="flex flex-col items-center justify-center max-w-md m-auto p-6 gap-4">
+        <p className="text-red-600 text-base sm:text-lg text-center">
           Failed to load profile: {profile.error.message}
         </p>
         <Button onClick={() => window.location.reload()}>Try Again</Button>
@@ -104,122 +261,199 @@ export default function ProfilePage() {
     );
   }
 
-  return (
-    profile.data && (
-      <>
-        <div className="min-h-screen bg-transparent p-6 py-12 w-full">
-          <div className="flex items-start gap-8 flex-1 w-full max-w-[600px] m-auto">
-            <div className="relative flex-shrink-0">
-              <MyUserPfp size="36" />
-              <Button
-                variant="outline"
-                size="icon"
-                className="absolute bottom-[0.5em] right-[0.5em] h-6 w-6 sm:h-7 sm:w-7 rounded-full"
-                onClick={() => pfpFileInputRef.current?.open()}
-                disabled={pfpIsUploading}
-              >
-                <Camera className="h-3 w-3" />
-              </Button>
-              <FileUploadInput
-                ref={pfpFileInputRef}
-                allowedTypes={["image/jpeg", "image/png", "image/webp"]}
-                maxSize={1}
-                onSelect={(file) => (
-                  pfpUpload(file),
-                  queryClient.invalidateQueries({ queryKey: ["my-profile"] })
-                )}
-              />
-            </div>
+  const data = profile.data as PublicUser | undefined;
+  const { score, parts, tips } = computeProfileScore(data);
+  const { score: resumeScore, reasons: resumeTips } = computeResumeScore(
+    data,
+    resumeFileName
+  );
 
-            <div className="flex-1 min-w-0">
-              <h1 className="text-3xl font-bold font-heading mb-1 line-clamp-1">
-                {getFullName(profile.data)}
-              </h1>
-              <p className="text-muted-foreground text-sm mt-2">
-                <div>
-                  <BoolBadge
-                    state={profile.data.taking_for_credit}
-                    onValue="Taking for credit"
-                    offValue="Not taking for credit"
-                  />
+  return (
+    data && (
+      <div className="min-h-screen w-full">
+        {/* Top header */}
+        <div className="relative">
+          <header className="relative mx-auto max-w-5xl px-4 sm:px-6 pt-10">
+            <div className="flex flex-col lg:flex-row gap-6 items-start">
+              {/* PFP */}
+              <div className="relative">
+                <div className="h-50 w-50 grid place-items-center overflow-hidden">
+                  <MyUserPfp size="40" />
                 </div>
-              </p>
-              <div className="flex w-full flex-row flex-wrap gap-2 flex-shrink-0 mt-10">
+
                 <Button
                   variant="outline"
-                  scheme="primary"
-                  disabled={isEditing}
-                  onClick={() => openEmployerModal()}
+                  size="icon"
+                  className="absolute -bottom-0.5 -right-0.5 h-10 w-10 rounded-full"
+                  onClick={() => pfpFileInputRef.current?.open()}
+                  disabled={pfpIsUploading}
                 >
-                  <Eye className="h-4 w-4" />
-                  Preview
+                  <Camera className="h-4 w-4" />
                 </Button>
-                {/* Edit Mode Buttons */}
-                {isEditing ? (
-                  <div className="flex gap-2 w-full sm:w-auto">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setIsEditing(false);
-                        setSaveError(null);
-                      }}
-                      disabled={saving}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={async () => {
-                        setSaving(true);
-                        setSaveError(null);
-                        const success = await profileEditorRef.current?.save();
-                        setSaving(false);
-                        if (success) {
-                          setIsEditing(false);
-                        } else {
-                          setSaveError(
-                            "Please fix the errors in the form before saving."
-                          );
-                        }
-                      }}
-                      disabled={saving}
-                    >
-                      {saving ? "Saving..." : "Save"}
-                    </Button>
-                  </div>
-                ) : (
-                  <Button onClick={() => setIsEditing(true)}>
-                    <Edit2 className="h-4 w-4" />
-                    Edit
+                <FileUploadInput
+                  ref={pfpFileInputRef}
+                  allowedTypes={["image/jpeg", "image/png", "image/webp"]}
+                  maxSize={1}
+                  onSelect={(file) => (
+                    pfpUpload(file),
+                    queryClient.invalidateQueries({ queryKey: ["my-profile"] })
+                  )}
+                />
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 w-full min-w-0 mt-1">
+                <div className="flex items-center gap-3 mt-2">
+                  <motion.h1
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35 }}
+                    className="text-3xl sm:text-4xl font-bold tracking-tight"
+                  >
+                    {getFullName(data)}
+                  </motion.h1>
+                </div>
+
+                <div className="text-muted-foreground leading-snug mt-2">
+                  <HeaderLine profile={data} />
+                </div>
+
+                {/* Actions */}
+                <div className="mt-6 flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    scheme="primary"
+                    disabled={isEditing}
+                    onClick={() => openEmployerModal()}
+                  >
+                    <Eye className="h-4 w-4" /> Preview
                   </Button>
+                  {isEditing ? (
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setIsEditing(false);
+                          setSaveError(null);
+                        }}
+                        disabled={saving}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={async () => {
+                          setSaving(true);
+                          setSaveError(null);
+                          const success =
+                            await profileEditorRef.current?.save();
+                          setSaving(false);
+                          if (success) setIsEditing(false);
+                          else
+                            setSaveError(
+                              "Please fix the errors in the form before saving."
+                            );
+                        }}
+                        disabled={saving}
+                      >
+                        {saving ? "Saving…" : "Save changes"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button onClick={() => setIsEditing(true)}>
+                      <Edit2 className="h-4 w-4" /> Edit profile
+                    </Button>
+                  )}
+                </div>
+                {saveError && (
+                  <p className="text-xs text-amber-600 mt-2">{saveError}</p>
                 )}
               </div>
-              {isEditing && saveError && (
-                <p className="text-red-600 text-sm mt-4 mb-2 text-left">
-                  {saveError}
-                </p>
-              )}
             </div>
-          </div>
+          </header>
+        </div>
 
-          <div className="w-full max-w-[600px] m-auto space-y-2 mt-8">
-            {!isEditing && <ProfileDetails profile={profile.data} />}
+        {/* Main content */}
+        <main className="mx-auto max-w-5xl px-4 sm:px-6 pt-8 pb-16 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left column */}
+          <div className="lg:col-span-2 flex flex-col gap-6">
+            {/* Resume */}
+            <div className="font-medium">Resume</div>
+            <Card className="p-5">
+              <ResumeBox
+                profile={data}
+                openResumeModal={openResumeModal}
+                setLastUploadedName={setLastUploadedResumeName} // NEW
+                resumeFileName={resumeFileName} // NEW
+              />
+            </Card>
+
+            {/* Profile */}
+            {!isEditing && (
+              <>
+                {/* NEW: Read-only tabs mirroring the edit tabs (same vibe) */}
+                <ProfileReadOnlyTabs profile={data} />
+              </>
+            )}
             {isEditing && (
-              <ProfileEditForm data={profile.data}>
+              <ProfileEditForm data={data}>
                 <ProfileEditor
                   updateProfile={profile.update}
                   ref={profileEditorRef}
                 />
               </ProfileEditForm>
             )}
-            <ResumeBox
-              profile={profile.data}
-              openResumeModal={openResumeModal}
-            />
-            <br />
-            <br />
           </div>
-        </div>
 
+          {/* Right column */}
+          <aside className="lg:col-span-1 space-y-6">
+            {/* Completion meter */}
+            <div className="mt-6">
+              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                <span>Profile completeness</span>
+                <span>{score}%</span>
+              </div>
+              <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-primary"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${score}%` }}
+                  transition={{ type: "spring", stiffness: 150, damping: 20 }}
+                />
+              </div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {Object.entries(parts).map(([k, ok]) => (
+                  <span
+                    key={k}
+                    className={cn(
+                      "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs border",
+                      ok
+                        ? "border-emerald-500/40 text-emerald-600"
+                        : "border-amber-500/40 text-amber-700"
+                    )}
+                  >
+                    <CheckCircle2
+                      className={cn(
+                        "h-3.5 w-3.5 mr-1",
+                        ok ? "opacity-100" : "opacity-50"
+                      )}
+                    />{" "}
+                    {k}
+                  </span>
+                ))}
+              </div>
+              {/* NEW: quick tips, only show top 2 so it stays compact */}
+              {tips.length > 0 && (
+                <ul className="mt-3 text-xs text-muted-foreground list-disc pl-5 space-y-1">
+                  {tips.slice(0, 2).map((t) => (
+                    <li key={t}>{t}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </aside>
+        </main>
+
+        {/* Modals */}
         {resumeURL.length > 0 && (
           <ResumeModal>
             <div className="space-y-4">
@@ -231,7 +465,7 @@ export default function ProfilePage() {
 
         <EmployerModal>
           <ApplicantModalContent
-            applicant={profile.data}
+            applicant={data}
             pfp_fetcher={() => UserService.getUserPfpURL("me")}
             pfp_route="/users/me/pic"
             open_resume={async () => {
@@ -240,16 +474,61 @@ export default function ProfilePage() {
               openResumeModal();
             }}
             open_calendar={async () => {
-              openURL(profile.data?.calendar_link);
+              openURL(data?.calendar_link);
             }}
           />
         </EmployerModal>
-      </>
+      </div>
     )
   );
 }
 
-const ProfileDetails = ({ profile }: { profile: PublicUser }) => {
+// ----------------------------
+//  Compact header info
+// ----------------------------
+function HeaderLine({ profile }: { profile: PublicUser }) {
+  const { to_level_name, to_degree_full_name, to_university_name } =
+    useDbRefs();
+
+  const degree = profile.degree ? to_degree_full_name(profile.degree) : null;
+  const uni = profile.university
+    ? to_university_name(profile.university)
+    : null;
+  const level = profile.year_level ? to_level_name(profile.year_level) : null;
+
+  const chips: string[] = [];
+  if (profile.expected_start_date || profile.expected_end_date) {
+    const start = profile.expected_start_date ?? "—";
+    const end = profile.expected_end_date ?? "—";
+    chips.push(`Availability: ${start} → ${end}`);
+  }
+  if (profile.job_mode_ids?.length)
+    chips.push(`Modes: ${profile.job_mode_ids.length}`);
+  if (profile.job_type_ids?.length)
+    chips.push(`Types: ${profile.job_type_ids.length}`);
+  if (profile.job_category_ids?.length)
+    chips.push(`Roles: ${profile.job_category_ids.length}`);
+
+  return (
+    <div className="flex flex-col gap-1">
+      {(degree || level || uni) && (
+        <div className="flex gap-2">
+          <div className="py-1 px-2 rounded-lg bg-gray-100 border border-gray-300 flex items-center gap-1 text-sm">
+            {uni}
+          </div>
+          <div className="py-1 px-2 rounded-lg bg-gray-100 border border-gray-300 flex items-center gap-1 text-sm">
+            {degree}
+          </div>
+          <div className="py-1 px-2 rounded-lg bg-gray-100 border border-gray-300 flex items-center gap-1 text-sm">
+            {level}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProfileReadOnlyTabs({ profile }: { profile: PublicUser }) {
   const { isMobile } = useAppContext();
   const {
     to_college_name,
@@ -259,77 +538,195 @@ const ProfileDetails = ({ profile }: { profile: PublicUser }) => {
     to_university_name,
   } = useDbRefs();
 
+  type TabKey = "Student Profile" | "Internship Preferences";
+  const [tab, setTab] = useState<TabKey>("Student Profile");
+
+  const tabs = [
+    { key: "Student Profile", label: "Student Profile" },
+    { key: "Internship Preferences", label: "Internship Preferences" },
+  ] as const;
+
   return (
-    <>
-      <Card className="bg-white p-3 px-5 overflow-hidden text-wrap">
-        <p className="text-sm leading-relaxed">
-          {profile.bio || (
-            <span className="text-muted-foreground italic">
-              No bio provided. Click "Edit" to add information about yourself.
-            </span>
-          )}
-        </p>
-      </Card>
+    <OutsideTabs
+      tabs={tabs as unknown as { key: string; label: string }[]}
+      value={tab}
+      onChange={(v) => setTab(v as TabKey)}
+    >
+      {/* Student Profile */}
+      <OutsideTabPanel when="Student Profile" activeKey={tab}>
+        <section>
+          <div className="text-xl sm:text-2xl tracking-tight font-semibold">
+            Identity
+          </div>
+          <div
+            className={cn(
+              isMobile ? "grid grid-cols-1 gap-5" : "grid grid-cols-3 gap-5"
+            )}
+          >
+            <LabeledProperty
+              label="First Name"
+              value={toSafeString(profile.first_name)}
+            />
+            <LabeledProperty
+              label="Middle Name"
+              value={toSafeString(profile.middle_name)}
+            />
+            <LabeledProperty
+              label="Last Name"
+              value={toSafeString(profile.last_name)}
+            />
+            <LabeledProperty
+              label="Phone Number"
+              value={toSafeString(profile.phone_number)}
+            />
+          </div>
+        </section>
 
-      <Card className="px-5">
-        <div
-          className={cn(
-            isMobile
-              ? "grid grid-cols-1 space-y-5 mb-8"
-              : "grid grid-cols-2 gap-y-5"
-          )}
-        >
-          <LabeledProperty
-            label="Full Name"
-            value={`${toSafeString(profile.first_name)} ${toSafeString(
-              profile.middle_name
-            )} ${toSafeString(profile.last_name)}`}
-          />
+        <Divider className="my-5" />
 
-          <LabeledProperty label="Phone Number" value={profile.phone_number} />
+        <section>
+          <div className="text-xl sm:text-2xl tracking-tight font-semibold">
+            Personal Bio
+          </div>
+          <p className="text-sm whitespace-pre-wrap mt-2">
+            {profile.bio?.trim()?.length ? profile.bio : "—"}
+          </p>
+        </section>
 
-          <LabeledProperty
-            label="Year Level"
-            value={to_level_name(profile.year_level)}
-          />
+        <Divider className="my-5" />
 
-          <LabeledProperty
-            label="Education"
-            value={`${to_university_name(profile.university)}\n
-              ${to_college_name(profile.college)}\n
-              ${to_department_name(profile.department)}\n
-              ${to_degree_full_name(profile.degree)}`}
-          />
-        </div>
-        <Divider />
-        <div
-          className={cn(
-            "mb-8",
-            isMobile
-              ? "grid grid-cols-1 space-y-2"
-              : "flex flex-row space-x-2 items-center justify-start"
-          )}
-        >
-          <ProfileLinkBadge
-            title="Portfolio Link"
-            link={profile.portfolio_link}
-          />
-          <ProfileLinkBadge title="Github Profile" link={profile.github_link} />
-          <ProfileLinkBadge
-            title="Linkedin Profile"
-            link={profile.linkedin_link}
-          />
-          <ProfileLinkBadge
-            title="Calendar Link"
-            link={profile.calendar_link}
-          />
-        </div>
-      </Card>
-      <br />
-    </>
+        <section>
+          <div className="text-xl sm:text-2xl tracking-tight font-semibold">
+            Educational Background
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-2">
+            <LabeledProperty
+              label="University"
+              value={
+                profile.university
+                  ? to_university_name(profile.university)
+                  : "—"
+              }
+            />
+            <LabeledProperty
+              label="College"
+              value={profile.college ? to_college_name(profile.college) : "—"}
+            />
+            <LabeledProperty
+              label="Department"
+              value={
+                profile.department
+                  ? to_department_name(profile.department)
+                  : "—"
+              }
+            />
+            <LabeledProperty
+              label="Degree"
+              value={profile.degree ? to_degree_full_name(profile.degree) : "—"}
+            />
+            <LabeledProperty
+              label="Year Level"
+              value={
+                profile.year_level ? to_level_name(profile.year_level) : "—"
+              }
+            />
+            <LabeledProperty
+              label="Major/Minor degree"
+              value={profile.degree_notes || "—"}
+            />
+          </div>
+        </section>
+
+        <Divider className="my-5" />
+
+        <section>
+          <div className="text-xl sm:text-2xl tracking-tight font-semibold">
+            External Profiles
+          </div>
+          <div className="flex flex-row flex-wrap gap-2 mt-2">
+            <ProfileLinkBadge title="Portfolio" link={profile.portfolio_link} />
+            <ProfileLinkBadge title="GitHub" link={profile.github_link} />
+            <ProfileLinkBadge title="LinkedIn" link={profile.linkedin_link} />
+            <ProfileLinkBadge title="Calendar" link={profile.calendar_link} />
+          </div>
+        </section>
+      </OutsideTabPanel>
+
+      {/* Internship Preferences */}
+      <OutsideTabPanel when="Internship Preferences" activeKey={tab}>
+        <section>
+          <div className="text-xl sm:text-2xl tracking-tight font-semibold">
+            Internship Details
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-2">
+            <LabeledProperty
+              label="Taking for Credit"
+              value={profile.taking_for_credit ? "Yes" : "No"}
+            />
+            <LabeledProperty
+              label="Linkage Officer"
+              value={profile.linkage_officer || "—"}
+            />
+            <LabeledProperty
+              label="Expected Start Date"
+              value={profile.expected_start_date || "—"}
+            />
+            <LabeledProperty
+              label="Expected End Date"
+              value={profile.expected_end_date || "—"}
+            />
+            <LabeledProperty
+              label="Expected Duration (hours)"
+              value={
+                typeof profile.expected_duration_hours === "number"
+                  ? String(profile.expected_duration_hours)
+                  : "—"
+              }
+            />
+          </div>
+        </section>
+
+        <Divider className="my-5" />
+
+        <section>
+          <div className="text-xl sm:text-2xl tracking-tight font-semibold">
+            Preferences
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-2">
+            <LabeledProperty
+              label="Work Modes"
+              value={
+                profile.job_mode_ids?.length
+                  ? `${profile.job_mode_ids.length} selected`
+                  : "—"
+              }
+            />
+            <LabeledProperty
+              label="Workload Types"
+              value={
+                profile.job_type_ids?.length
+                  ? `${profile.job_type_ids.length} selected`
+                  : "—"
+              }
+            />
+            <LabeledProperty
+              label="Positions / Categories"
+              value={
+                profile.job_category_ids?.length
+                  ? `${profile.job_category_ids.length} selected`
+                  : "—"
+              }
+            />
+          </div>
+        </section>
+      </OutsideTabPanel>
+    </OutsideTabs>
   );
-};
+}
 
+// ----------------------------
+//  Editor (unchanged structure)
+// ----------------------------
 const ProfileEditor = forwardRef<
   { save: () => Promise<boolean> },
   { updateProfile: (updatedProfile: Partial<PublicUser>) => void }
@@ -360,11 +757,9 @@ const ProfileEditor = forwardRef<
     get_degrees_by_university,
   } = useDbRefs();
 
-  // ---- Tabs ----
   type TabKey = "Student Profile" | "Internship Preferences" | "Calendar";
   const [tab, setTab] = useState<TabKey>("Student Profile");
 
-  // decide which tab has errors
   const hasProfileErrors = !!(
     formErrors.first_name ||
     formErrors.last_name ||
@@ -375,7 +770,6 @@ const ProfileEditor = forwardRef<
     formErrors.degree ||
     formErrors.year_level
   );
-
   const hasPrefsErrors = !!(
     formErrors.expected_start_date ||
     formErrors.expected_end_date ||
@@ -383,10 +777,8 @@ const ProfileEditor = forwardRef<
     formErrors.job_type_ids ||
     formErrors.job_category_ids
   );
-
   const hasCalendarErrors = !!formErrors.calendar_link;
 
-  // external save
   useImperativeHandle(ref, () => ({
     save: async () => {
       await validateFormData();
@@ -419,7 +811,6 @@ const ProfileEditor = forwardRef<
     },
   }));
 
-  // Dropdown options
   const [universityOptions, setUniversityOptions] = useState(universities);
   const [collegeOptions, setCollegeOptions] = useState(colleges);
   const [departmentOptions, setDepartmentOptions] = useState(departments);
@@ -437,7 +828,6 @@ const ProfileEditor = forwardRef<
     return s;
   }, []);
 
-  // Update dropdown options
   useEffect(() => {
     setUniversityOptions(
       universities.filter((u) =>
@@ -468,7 +858,7 @@ const ProfileEditor = forwardRef<
     setJobTypeOptions((job_types ?? []).slice());
     setJobCategoryOptions((job_categories ?? []).slice());
 
-    const t = setTimeout(() => validateFormData(), 500);
+    const t = setTimeout(() => validateFormData(), 400);
     return () => clearTimeout(t);
   }, [
     formData,
@@ -485,7 +875,6 @@ const ProfileEditor = forwardRef<
     get_degrees_by_university,
   ]);
 
-  // Data validators
   useEffect(() => {
     addValidator(
       "first_name",
@@ -509,20 +898,13 @@ const ProfileEditor = forwardRef<
     addValidator(
       "github_link",
       (link: string) =>
-        !isValidOptionalGitHubURL(link) && "Invalid github link."
+        !isValidOptionalGitHubURL(link) && "Invalid GitHub link."
     );
     addValidator(
       "linkedin_link",
       (link: string) =>
-        !isValidOptionalLinkedinURL(link) && "Invalid linkedin link."
+        !isValidOptionalLinkedinURL(link) && "Invalid LinkedIn link."
     );
-    // ! uncomment when calendar back
-    // addValidator(
-    //   "calendar_link",
-    //   (link: string) =>
-    //     !isValidOptionalCalendarURL(link) && "Invalid calendar link."
-    // );
-
     addValidator(
       "university",
       (id: string) =>
@@ -591,10 +973,8 @@ const ProfileEditor = forwardRef<
     levels,
     jobModeOptions,
     jobTypeOptions,
-    jobCategoryOptions,
   ]);
 
-  // ---- Calendar help popover ----
   const [showCalendarHelp, setShowCalendarHelp] = useState(false);
   const helpBtnRef = useRef<HTMLButtonElement>(null);
   const helpPopupRef = useRef<HTMLDivElement>(null);
@@ -614,345 +994,349 @@ const ProfileEditor = forwardRef<
   }, [showCalendarHelp]);
 
   return (
-    <Card className="flex flex-col gap-5">
-      <TabGroup
-        value={tab}
-        onValueChange={(v) => setTab(v as TabKey)}
-        unmountInactive={false} // keep inputs mounted = smoother UX
-      >
-        {/* --- Student Profile --- */}
-        <Tab name="Student Profile" indicator={hasProfileErrors}>
-          {/* Identity */}
-          <section>
-            <div className="text-2xl tracking-tight font-medium text-gray-700">
-              Identity
-            </div>
-            <div className="flex flex-col space-y-1 mb-2">
-              <ErrorLabel value={formErrors.first_name} />
-              <ErrorLabel value={formErrors.middle_name} />
-              <ErrorLabel value={formErrors.last_name} />
-              <ErrorLabel value={formErrors.phone_number} />
-            </div>
-            <div
-              className={cn(
-                "mb-4",
-                isMobile ? "flex flex-col space-y-3" : "flex flex-row space-x-2"
-              )}
-            >
-              <FormInput
-                label="First Name"
-                value={formData.first_name ?? ""}
-                setter={fieldSetter("first_name")}
-                maxLength={32}
-              />
-              <FormInput
-                label="Middle Name"
-                value={formData.middle_name ?? ""}
-                setter={fieldSetter("middle_name")}
-                maxLength={2}
-                required={false}
-              />
-              <FormInput
-                label="Last Name"
-                value={formData.last_name ?? ""}
-                setter={fieldSetter("last_name")}
-              />
-            </div>
-            <FormInput
-              label="Phone Number"
-              value={formData.phone_number ?? ""}
-              setter={fieldSetter("phone_number")}
-            />
-          </section>
-
-          {/* Bio */}
-          <section>
-            <div className="text-2xl tracking-tight font-medium text-gray-700 mb-2 mt-5">
-              Personal Bio
-            </div>
-            <textarea
-              value={formData.bio || ""}
-              onChange={(e) => setField("bio", e.target.value)}
-              placeholder="Tell us about yourself, your interests, goals, and what makes you unique..."
-              className="w-full border border-gray-200 rounded-[0.25em] p-3 px-5 text-sm min-h-24 resize-none focus:border-opacity-70 focus:ring-transparent"
-              maxLength={500}
-            />
-            <p className="text-xs text-muted-foreground text-right">
-              {(formData.bio || "").length}/500 characters
-            </p>
-          </section>
-
-          {/* Education */}
-          <section>
-            <div className="text-2xl tracking-tight font-medium text-gray-700 mb-2 mt-5">
-              Educational Background
-            </div>
-            <div className="flex flex-col space-y-3">
-              <div>
-                <ErrorLabel value={formErrors.university} />
-                <Autocomplete
-                  label={"University"}
-                  options={universityOptions}
-                  value={formData.university}
-                  setter={fieldSetter("university")}
-                  placeholder="Select University"
-                />
-              </div>
-              <div>
-                <ErrorLabel value={formErrors.college} />
-                <Autocomplete
-                  label={"College"}
-                  options={collegeOptions}
-                  value={formData.college}
-                  setter={fieldSetter("college")}
-                  placeholder="Select College"
-                />
-              </div>
-              <div>
-                <ErrorLabel value={formErrors.department} />
-                <Autocomplete
-                  label={"Department"}
-                  options={departmentOptions}
-                  value={formData.department}
-                  setter={fieldSetter("department")}
-                  placeholder="Select Department"
-                />
-              </div>
-              <div>
-                <ErrorLabel value={formErrors.degree} />
-                <Autocomplete
-                  label={"Degree"}
-                  options={degreeOptions}
-                  value={formData.degree}
-                  setter={fieldSetter("degree")}
-                  placeholder="Select Degree"
-                />
-              </div>
-              <div>
-                <ErrorLabel value={formErrors.year_level} />
-                <Autocomplete
-                  label={"Year Level"}
-                  options={levels}
-                  value={formData.year_level}
-                  setter={fieldSetter("year_level")}
-                  placeholder="Select Year Level"
-                />
-              </div>
-              <FormInput
-                label={"Major/Minor degree"}
-                value={formData.degree_notes ?? ""}
-                setter={fieldSetter("degree_notes")}
-                maxLength={100}
-                required={false}
-              />
-            </div>
-          </section>
-
-          {/* External Profiles (no calendar here) */}
-          <section>
-            <div className="text-2xl tracking-tight font-medium text-gray-700 mt-5">
-              External Profiles
-            </div>
-            <div className="flex flex-col space-y-1 mb-2">
-              <ErrorLabel value={formErrors.portfolio_link} />
-              <ErrorLabel value={formErrors.github_link} />
-              <ErrorLabel value={formErrors.linkedin_link} />
-            </div>
-            <div className="flex flex-col space-y-3">
-              <FormInput
-                label={"Portfolio Link"}
-                value={formData.portfolio_link ?? ""}
-                setter={fieldSetter("portfolio_link")}
-                required={false}
-              />
-              <FormInput
-                label={"Github Profile"}
-                value={formData.github_link ?? ""}
-                setter={fieldSetter("github_link")}
-                required={false}
-              />
-              <FormInput
-                label={"Linkedin Profile"}
-                value={formData.linkedin_link ?? ""}
-                setter={fieldSetter("linkedin_link")}
-                required={false}
-              />
-            </div>
-          </section>
-        </Tab>
-
-        {/* --- Internship Preferences --- */}
-        <Tab name="Internship Preferences" indicator={hasPrefsErrors}>
-          <section className="flex flex-col space-y-2 gap-1">
-            <div className="text-2xl tracking-tight font-medium text-gray-700">
-              Internship Details
-            </div>
-
-            <div className="flex flex-row items-center justify-start mt-8 my-2">
-              <FormCheckbox
-                checked={formData.taking_for_credit}
-                setter={fieldSetter("taking_for_credit")}
-              />
-              <div className="text-sm text-gray-500 ml-3">
-                Taking internships for credit?
-              </div>
-            </div>
-            {formData.taking_for_credit && (
-              <FormInput
-                label={"Linkage Officer"}
-                value={formData.linkage_officer ?? ""}
-                setter={fieldSetter("linkage_officer")}
-                required={false}
-              />
+    <OutsideTabs
+      tabs={[
+        {
+          key: "Student Profile",
+          label: "Student Profile",
+          indicator: hasProfileErrors,
+        },
+        {
+          key: "Internship Preferences",
+          label: "Internship Preferences",
+          indicator: hasPrefsErrors,
+        },
+        // If you want to re-enable Calendar in the UI:
+        // { key: "Calendar", label: "Calendar", indicator: hasCalendarErrors },
+      ]}
+      value={tab}
+      onChange={(v) => setTab(v as TabKey)}
+    >
+      {/* Student Profile */}
+      <OutsideTabPanel when="Student Profile" activeKey={tab}>
+        {/* Identity */}
+        <section>
+          <div className="text-xl sm:text-2xl tracking-tight font-semibold">
+            Identity
+          </div>
+          <div className="flex flex-col space-y-1 mb-2">
+            <ErrorLabel value={formErrors.first_name} />
+            <ErrorLabel value={formErrors.middle_name} />
+            <ErrorLabel value={formErrors.last_name} />
+            <ErrorLabel value={formErrors.phone_number} />
+          </div>
+          <div
+            className={cn(
+              "mb-4",
+              isMobile ? "flex flex-col space-y-3" : "grid grid-cols-3 gap-2"
             )}
-
-            <div className="flex flex-row gap-6">
-              <FormDatePicker
-                className="w-full"
-                label="Expected Start Date"
-                date={isoToMs(formData.expected_start_date)}
-                setter={(ms?: number) =>
-                  setField("expected_start_date", msToISO(ms) ?? null)
-                }
-                required={false}
-              />
-              <FormDatePicker
-                className="w-full"
-                label="Expected End Date"
-                date={isoToMs(formData.expected_end_date)}
-                setter={(ms?: number) =>
-                  setField("expected_end_date", msToISO(ms) ?? null)
-                }
-                required={false}
-              />
-            </div>
-
+          >
             <FormInput
-              label="Expected Duration (in hours)"
-              type="number"
-              inputMode="numeric"
-              value={formData.expected_duration_hours ?? ""}
-              setter={(v: string) => {
-                const n = v === "" || v == null ? null : Number(v);
-                setField(
-                  "expected_duration_hours",
-                  Number.isFinite(n as number) ? (n as number) : null
-                );
-              }}
+              label="First Name"
+              value={formData.first_name ?? ""}
+              setter={fieldSetter("first_name")}
+              maxLength={32}
+            />
+            <FormInput
+              label="Middle Name"
+              value={formData.middle_name ?? ""}
+              setter={fieldSetter("middle_name")}
+              maxLength={2}
               required={false}
             />
-          </section>
+            <FormInput
+              label="Last Name"
+              value={formData.last_name ?? ""}
+              setter={fieldSetter("last_name")}
+            />
+          </div>
+          <FormInput
+            label="Phone Number"
+            value={formData.phone_number ?? ""}
+            setter={fieldSetter("phone_number")}
+          />
+        </section>
 
-          <section>
-            <div className="text-2xl tracking-tight font-medium text-gray-700">
-              Internship Preferences
-            </div>
+        {/* Bio */}
+        <section>
+          <div className="text-xl sm:text-2xl tracking-tight font-semibold mb-2 mt-5">
+            Personal Bio
+          </div>
+          <textarea
+            value={formData.bio || ""}
+            onChange={(e) => setField("bio", e.target.value)}
+            placeholder="Tell us about yourself: strengths, interests, and goals. Aim for at least 50 characters for a stronger profile."
+            className="w-full border rounded-md p-3 text-sm min-h-28 resize-none focus-visible:outline-none focus:ring-2 focus:ring-primary/30"
+            maxLength={500}
+          />
+          <p className="text-xs text-muted-foreground text-right">
+            {(formData.bio || "").length}/500 characters
+          </p>
+        </section>
 
-            <div className="mt-2">
-              <AutocompleteMulti
-                label={"Work Modes"}
-                options={jobModeOptions}
-                value={formData.job_mode_ids ?? []}
-                setter={fieldSetter("job_mode_ids")}
-                placeholder="Select one or more"
+        {/* Education */}
+        <section>
+          <div className="text-xl sm:text-2xl tracking-tight font-semibold mb-2 mt-5">
+            Educational Background
+          </div>
+          <div className="flex flex-col space-y-3">
+            <div>
+              <ErrorLabel value={formErrors.university} />
+              <Autocomplete
+                label={"University"}
+                options={universityOptions}
+                value={formData.university}
+                setter={fieldSetter("university")}
+                placeholder="Select University"
               />
-              <ErrorLabel value={formErrors.job_mode_ids} />
             </div>
-
-            <div className="mt-2">
-              <AutocompleteMulti
-                label={"Workload Types"}
-                options={jobTypeOptions}
-                value={formData.job_type_ids ?? []}
-                setter={fieldSetter("job_type_ids")}
-                placeholder="Select one or more"
+            <div>
+              <ErrorLabel value={formErrors.college} />
+              <Autocomplete
+                label={"College"}
+                options={collegeOptions}
+                value={formData.college}
+                setter={fieldSetter("college")}
+                placeholder="Select College"
               />
-              <ErrorLabel value={formErrors.job_type_ids} />
             </div>
-
-            <div className="mt-2">
-              <AutocompleteTreeMulti
-                label={"Ppsitions / Categories"}
-                tree={POSITION_TREE}
-                value={formData.job_category_ids ?? []}
-                setter={fieldSetter("job_category_ids")}
-                placeholder="Select one or more"
+            <div>
+              <ErrorLabel value={formErrors.department} />
+              <Autocomplete
+                label={"Department"}
+                options={departmentOptions}
+                value={formData.department}
+                setter={fieldSetter("department")}
+                placeholder="Select Department"
               />
-              <ErrorLabel value={formErrors.job_category_ids} />
             </div>
-          </section>
-        </Tab>
-
-        {/* TODO: Comment out when calendar */}
-        {/* --- Calendar --- */}
-        {/* <Tab name="Calendar" indicator={hasCalendarErrors}>
-          <section>
-            <div className="text-2xl tracking-tight font-medium text-gray-700">
-              Calendar
-            </div>
-            <div className="flex flex-col space-y-1 mb-2">
-              <ErrorLabel value={formErrors.calendar_link} />
-            </div>
-
-            <div className="relative flex flex-col">
-              <div className="flex items-center mb-1">
-                <span className="text-sm font-medium text-gray-700">
-                  Calendar Link{" "}
-                  <span className="text-gray-400 font-normal">(optional)</span>
-                </span>
-                <button
-                  type="button"
-                  ref={helpBtnRef}
-                  className="ml-2 opacity-70 hover:opacity-90"
-                  onClick={() => setShowCalendarHelp((v) => !v)}
-                  tabIndex={-1}
-                >
-                  <MessageCircleQuestion className="w-4 h-4 text-blue-500" />
-                </button>
-              </div>
-              <FormInput
-                label={undefined}
-                value={formData.calendar_link ?? ""}
-                setter={fieldSetter("calendar_link")}
-                required={false}
+            <div>
+              <ErrorLabel value={formErrors.degree} />
+              <Autocomplete
+                label={"Degree"}
+                options={degreeOptions}
+                value={formData.degree}
+                setter={fieldSetter("degree")}
+                placeholder="Select Degree"
               />
-              {showCalendarHelp && (
-                <div
-                  ref={helpPopupRef}
-                  className="absolute left-0 top-full mt-2 w-full bg-gray-100 border border-gray-300 rounded p-3 text-xs text-gray-700 shadow z-10"
-                >
-                  Go to <b>calendar.google.com</b>, press the <b>+</b> icon, and
-                  set up an appointment schedule to get this link.
-                  <br />
-                  <br />
-                  If you need help, you can head to{" "}
-                  <a
-                    href="https://www.canva.com/design/DAGrKQdRG-8/XDGzebwKdB4CMWLOszcheg/edit"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 underline"
-                  >
-                    this guide
-                  </a>
-                  .
-                </div>
-              )}
             </div>
-          </section>
-        </Tab> */}
-      </TabGroup>
-    </Card>
+            <div>
+              <ErrorLabel value={formErrors.year_level} />
+              <Autocomplete
+                label={"Year Level"}
+                options={levels}
+                value={formData.year_level}
+                setter={fieldSetter("year_level")}
+                placeholder="Select Year Level"
+              />
+            </div>
+            <FormInput
+              label={"Major/Minor degree"}
+              value={formData.degree_notes ?? ""}
+              setter={fieldSetter("degree_notes")}
+              maxLength={100}
+              required={false}
+            />
+          </div>
+        </section>
+
+        {/* External Profiles */}
+        <section>
+          <div className="text-xl sm:text-2xl tracking-tight font-semibold mt-5">
+            External Profiles
+          </div>
+          <div className="flex flex-col space-y-1 mb-2">
+            <ErrorLabel value={formErrors.portfolio_link} />
+            <ErrorLabel value={formErrors.github_link} />
+            <ErrorLabel value={formErrors.linkedin_link} />
+          </div>
+          <div className="flex flex-col space-y-3">
+            <FormInput
+              label={"Portfolio Link"}
+              value={formData.portfolio_link ?? ""}
+              setter={fieldSetter("portfolio_link")}
+              required={false}
+            />
+            <FormInput
+              label={"GitHub Profile"}
+              value={formData.github_link ?? ""}
+              setter={fieldSetter("github_link")}
+              required={false}
+            />
+            <FormInput
+              label={"LinkedIn Profile"}
+              value={formData.linkedin_link ?? ""}
+              setter={fieldSetter("linkedin_link")}
+              required={false}
+            />
+          </div>
+        </section>
+      </OutsideTabPanel>
+
+      {/* Internship Preferences */}
+      <OutsideTabPanel when="Internship Preferences" activeKey={tab}>
+        <section className="flex flex-col space-y-2 gap-1">
+          <div className="text-xl sm:text-2xl tracking-tight font-semibold">
+            Internship Details
+          </div>
+
+          <div className="flex items-center mt-4">
+            <FormCheckbox
+              checked={formData.taking_for_credit}
+              setter={fieldSetter("taking_for_credit")}
+            />
+            <div className="text-sm text-muted-foreground ml-3">
+              Taking internships for credit?
+            </div>
+          </div>
+          {formData.taking_for_credit && (
+            <FormInput
+              label={"Linkage Officer"}
+              value={formData.linkage_officer ?? ""}
+              setter={fieldSetter("linkage_officer")}
+              required={false}
+            />
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+            <FormDatePicker
+              className="w-full"
+              label="Expected Start Date"
+              date={isoToMs(formData.expected_start_date)}
+              setter={(ms?: number) =>
+                setField("expected_start_date", msToISO(ms) ?? null)
+              }
+              required={false}
+            />
+            <FormDatePicker
+              className="w-full"
+              label="Expected End Date"
+              date={isoToMs(formData.expected_end_date)}
+              setter={(ms?: number) =>
+                setField("expected_end_date", msToISO(ms) ?? null)
+              }
+              required={false}
+            />
+          </div>
+
+          <FormInput
+            label="Expected Duration (hours)"
+            type="number"
+            inputMode="numeric"
+            value={formData.expected_duration_hours ?? ""}
+            setter={(v: string) => {
+              const n = v === "" || v == null ? null : Number(v);
+              setField(
+                "expected_duration_hours",
+                Number.isFinite(n as number) ? (n as number) : null
+              );
+            }}
+            required={false}
+          />
+        </section>
+
+        <section>
+          <div className="text-xl sm:text-2xl tracking-tight font-semibold">
+            Preferences
+          </div>
+
+          <div className="mt-2">
+            <AutocompleteMulti
+              label={"Work Modes"}
+              options={jobModeOptions}
+              value={formData.job_mode_ids ?? []}
+              setter={fieldSetter("job_mode_ids")}
+              placeholder="Select one or more"
+            />
+            <ErrorLabel value={formErrors.job_mode_ids} />
+          </div>
+
+          <div className="mt-2">
+            <AutocompleteMulti
+              label={"Workload Types"}
+              options={jobTypeOptions}
+              value={formData.job_type_ids ?? []}
+              setter={fieldSetter("job_type_ids")}
+              placeholder="Select one or more"
+            />
+            <ErrorLabel value={formErrors.job_type_ids} />
+          </div>
+
+          <div className="mt-2">
+            <AutocompleteTreeMulti
+              label={"Positions / Categories"}
+              tree={POSITION_TREE}
+              value={formData.job_category_ids ?? []}
+              setter={fieldSetter("job_category_ids")}
+              placeholder="Select one or more"
+            />
+            <ErrorLabel value={formErrors.job_category_ids} />
+          </div>
+        </section>
+      </OutsideTabPanel>
+
+      {/* Optional Calendar tab */}
+      {/* 
+    <OutsideTabPanel when="Calendar" activeKey={tab}>
+      <section>
+        <div className="text-xl sm:text-2xl tracking-tight font-semibold">Calendar</div>
+        <div className="flex flex-col space-y-1 mb-2">
+          <ErrorLabel value={formErrors.calendar_link} />
+        </div>
+        <div className="relative flex flex-col">
+          <div className="flex items-center mb-1">
+            <span className="text-sm font-medium">
+              Calendar Link <span className="text-muted-foreground font-normal">(optional)</span>
+            </span>
+            // your help icon + popover…
+          </div>
+          <FormInput
+            label={undefined}
+            value={formData.calendar_link ?? ""}
+            setter={fieldSetter("calendar_link")}
+            required={false}
+          />
+        </div>
+      </section>
+    </OutsideTabPanel>
+    */}
+    </OutsideTabs>
   );
 });
+ProfileEditor.displayName = "ProfileEditor";
 
+// ----------------------------
+//  Tiny score pill
+// ----------------------------
+function TinyScore({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="text-xs flex items-center gap-2">
+      <span className="text-muted-foreground">{label}</span>
+      <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
+        <div
+          className="h-full bg-primary"
+          style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
+        />
+      </div>
+      <span className="tabular-nums">{value}%</span>
+    </div>
+  );
+}
+
+// ----------------------------
+//  Resume
+// ----------------------------
 const ResumeBox = ({
   profile,
   openResumeModal,
+  setLastUploadedName,
+  resumeFileName,
 }: {
   profile: PublicUser;
   openResumeModal: () => void;
+  setLastUploadedName: (n: string | null) => void;
+  resumeFileName: string | null;
 }) => {
-  // File upload handlers
   const queryClient = useQueryClient();
   const {
     fileInputRef: resumeFileInputRef,
@@ -964,39 +1348,56 @@ const ResumeBox = ({
   });
 
   return (
-    <Card>
-      <div className="flex flex-col items-center justify-center space-y-2">
-        <BoolBadge
-          state={!!profile.resume}
-          onValue="Resume Uploaded"
-          offValue="No Resume"
-        />
-        <Button
-          onClick={() => resumeFileInputRef.current?.open()}
-          disabled={resumeIsUploading}
-        >
-          <Upload className="h-4 w-4" />
-          {resumeIsUploading
-            ? "Uploading..."
-            : !!profile.resume
-            ? "Upload New"
-            : "Upload"}
-        </Button>
-        <p className="text-xs text-muted-foreground mt-2">PDF up to 2.5MB</p>
+    <div>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        {/* Show filename if available */}
+        <div className="text-muted-foreground truncate flex gap-2">
+          {resumeFileName ? `File: ${resumeFileName}` : "No resume file yet"}
+          {!!profile.resume && (
+            <BoolBadge onValue="Uploaded" offValue="Missing" />
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => resumeFileInputRef.current?.open()}
+            disabled={resumeIsUploading}
+          >
+            <Upload className="h-4 w-4" />{" "}
+            {resumeIsUploading
+              ? "Uploading…"
+              : !!profile.resume
+              ? "Upload new"
+              : "Upload"}
+          </Button>
+          {!!profile.resume && (
+            <div>
+              <Button variant="outline" onClick={openResumeModal}>
+                <Eye className="h-4 w-4" /> Preview
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
+      <p className="text-xs text-muted-foreground mt-2 justify-end flex">
+        PDF up to 2.5MB
+      </p>
       <FileUploadInput
         ref={resumeFileInputRef}
         maxSize={2.5}
         allowedTypes={["application/pdf"]}
-        onSelect={(file) => (
-          resumeUpload(file),
-          queryClient.invalidateQueries({ queryKey: ["my-profile"] })
-        )}
+        onSelect={(file) => {
+          setLastUploadedName(file?.name ?? null); // NEW: remember name right away
+          resumeUpload(file);
+          queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+        }}
       />
-    </Card>
+    </div>
   );
 };
 
+// ----------------------------
+//  Link Badge
+// ----------------------------
 const ProfileLinkBadge = ({
   title,
   link,
@@ -1004,14 +1405,15 @@ const ProfileLinkBadge = ({
   title: string;
   link?: string | null;
 }) => {
+  const enabled = !!link;
   return (
     <Button
-      variant="ghost"
-      className="p-0 h-6 w-fit"
-      disabled={!link}
+      variant={enabled ? "ghost" : "outline"}
+      className="justify-start h-9"
+      disabled={!enabled}
       onClick={() => openURL(link)}
     >
-      <BoolBadge state={!!link} onValue={title} offValue={title} />
+      <BoolBadge state={enabled} onValue={title} offValue={`${title} (none)`} />
     </Button>
   );
 };
