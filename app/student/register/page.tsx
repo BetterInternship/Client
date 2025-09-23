@@ -15,9 +15,8 @@ import {
 import { MultiChipSelect } from "@/components/ui/chip-select";
 import { SinglePickerBig } from "@/components/features/student/SinglePickerBig";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { useRouter } from "next/navigation";
-import { isValidEmail } from "@/lib/utils";
-import { Json } from "@betterinternship/schema.base";
+import { useSearchParams } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
 
 interface FormInputs {
   university?: string;
@@ -45,7 +44,9 @@ const getNearestMonthTimestamp = () => {
 export default function RegisterPage() {
   const refs = useDbRefs();
   const auth = useAuthContext();
+  const searchParams = useSearchParams();
   const [submitting, setSubmitting] = useState(false);
+  const [isEduEmail, setIsEduEmail] = useState(false);
   const regForm = useForm<FormInputs>({
     defaultValues: {
       internship_type: null,
@@ -189,6 +190,11 @@ export default function RegisterPage() {
     }
   }, [internshipType, regForm]);
 
+  useEffect(() => {
+    const isEduEmail = JSON.parse(searchParams.get("edu-email") ?? "false");
+    setIsEduEmail(isEduEmail);
+  }, [searchParams]);
+
   return (
     <div className="min-h-full">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
@@ -205,7 +211,16 @@ export default function RegisterPage() {
         </div>
 
         <div className="mt-8 flex flex-col items-center gap-2">
-          <div className="lg:col-span-2 space-y-6 max-w-lg w-full">
+          <div className="lg:col-span-2 space-y-2 max-w-lg w-full">
+            <Card className="border-warning bg-warning/5">
+              <div className="max-w-prose border-gray-300">
+                <Badge type="warning">Reminder</Badge>
+                <div className="text-xs mt-2 text-gray-600">
+                  Using you university email means you could lose access to your
+                  account after graduating.
+                </div>
+              </div>
+            </Card>
             <Card className="p-4 sm:p-6 block">
               <form
                 className="space-y-6"
