@@ -93,6 +93,16 @@ export default function RegisterPage() {
       return;
     }
 
+    // Cap internship hours
+    if (
+      (values.expected_duration_hours ?? 2000) > 2000 ||
+      (values.expected_duration_hours ?? 100) < 100
+    ) {
+      alert("Duration hours must be between 100-2000..");
+      setSubmitting(false);
+      return;
+    }
+
     // Extract fields
     const { university, ...internship_preferences } = values;
 
