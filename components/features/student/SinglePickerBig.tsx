@@ -18,6 +18,7 @@ type SinglePickerBigProps<T extends string = string> = {
   options: PickOption<T>[];
   value: T | null;
   onChange: (v: T | null) => void;
+  onClear: () => void;
   className?: string;
   autoCollapse?: boolean;
   startCollapsed?: boolean;
@@ -29,6 +30,7 @@ export function SinglePickerBig<T extends string = string>({
   options,
   value,
   onChange,
+  onClear,
   className,
   autoCollapse = true,
   startCollapsed = true,
@@ -50,7 +52,7 @@ export function SinglePickerBig<T extends string = string>({
 
   return (
     <div className={cn("space-y-2", className)}>
-      {label && <div className="text-xs text-muted-foreground">{label}</div>}
+      {label && <div className="text-xs text-gray-600">{label}</div>}
 
       <AnimatePresence initial={false} mode="wait">
         {collapsed && selected ? (
@@ -81,7 +83,7 @@ export function SinglePickerBig<T extends string = string>({
               <button
                 type="button"
                 className="text-xs text-primary hover:underline inline-flex items-center gap-1"
-                onClick={() => setCollapsed(false)}
+                onClick={() => (setCollapsed(false), onClear())}
               >
                 Change <ChevronDown className="h-3 w-3" />
               </button>

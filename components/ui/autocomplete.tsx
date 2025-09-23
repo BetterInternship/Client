@@ -455,7 +455,7 @@ export function AutocompleteTreeMulti({
       <div
         className={cn(
           "min-h-9 w-full rounded-[0.33em] border border-gray-300 bg-white",
-          "px-2 py-1 flex flex-wrap items-center gap-1",
+          "py-1 flex flex-wrap items-center gap-1",
           "focus-within:border-primary focus-within:border-opacity-50"
         )}
         onClick={() => inputRef.current?.focus()}
@@ -463,7 +463,7 @@ export function AutocompleteTreeMulti({
         {chips.map(([id, label]) => (
           <span
             key={id}
-            className="px-2 py-1 text-xs rounded-full bg-gray-100 border border-gray-300 flex items-center gap-1"
+            className="ml-2 mt-[0.25em] px-2 py-1 text-xs rounded-full bg-gray-100 border border-gray-300 flex items-center gap-1"
           >
             {label}
             <button

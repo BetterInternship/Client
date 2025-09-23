@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-07-26 13:54:22
+ * @ Modified time: 2025-09-22 20:41:02
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -168,7 +168,7 @@ export const GroupableRadioDropdown = <ID extends number | string>({
   defaultValue = null,
   size = "sm",
   className = "",
-  fallback = "Select Option",
+  fallback = "Select option",
 }: {
   name: string;
   options: IRadioDropdownOption<ID>[];
@@ -236,7 +236,7 @@ export const GroupableRadioDropdown = <ID extends number | string>({
             {options.filter((o) => o.id === value)[0]?.name}
           </span>
         ) : (
-          <span className="text-gray-400">{fallback}</span>
+          <span className="text-gray-500 font-normal">{fallback}</span>
         )}
         <ChevronDown
           className={cn(

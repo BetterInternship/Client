@@ -7,14 +7,20 @@ import { Card } from "@/components/ui/card";
 import { AutocompleteTreeMulti } from "@/components/ui/autocomplete";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { POSITION_TREE } from "@/lib/consts/positions";
-import { FormInput, FormMonthPicker } from "@/components/EditForm";
+import {
+  FormDropdown,
+  FormInput,
+  FormMonthPicker,
+} from "@/components/EditForm";
 import { MultiChipSelect } from "@/components/ui/chip-select";
 import { SinglePickerBig } from "@/components/features/student/SinglePickerBig";
-import { Separator } from "@/components/ui/separator";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useRouter } from "next/navigation";
+import { isValidEmail } from "@/lib/utils";
+import { Json } from "@betterinternship/schema.base";
 
-interface PrefInputs {
+interface FormInputs {
+  university?: string;
   internship_type?: "credited" | "voluntary" | null;
   job_setup_ids?: string[];
   job_commitment_ids?: string[];
@@ -36,11 +42,11 @@ const getNearestMonthTimestamp = () => {
   return Date.parse(dateString);
 };
 
-getNearestMonthTimestamp();
-
 export default function RegisterPage() {
+  const refs = useDbRefs();
+  const auth = useAuthContext();
   const [submitting, setSubmitting] = useState(false);
-  const prefsForm = useForm<PrefInputs>({
+  const regForm = useForm<FormInputs>({
     defaultValues: {
       internship_type: null,
       job_setup_ids: [],
@@ -51,12 +57,8 @@ export default function RegisterPage() {
     },
   });
 
-  const refs = useDbRefs();
-  const auth = useAuthContext();
-  const router = useRouter();
-
   // Derived state
-  const internshipType = prefsForm.watch("internship_type");
+  const internshipType = regForm.watch("internship_type");
   const isCredited = internshipType === "credited";
   const isVoluntary = internshipType === "voluntary";
 
@@ -78,15 +80,30 @@ export default function RegisterPage() {
 
   /**
    * Handle form submit
+   *
+   * @param values
    */
-  const handleSubmit = (values: any) => {
+  const handleSubmit = (values: FormInputs) => {
     setSubmitting(true);
+
+    // Check for missing fields
+    if (!values.university?.trim()) {
+      alert("University is required.");
+      setSubmitting(false);
+      return;
+    }
+
+    // Extract fields
+    const { university, ...internship_preferences } = values;
+
     auth
       .register({
-        internship_preferences: values,
+        university,
+        internship_preferences,
       })
       .then(() => {
-        router.push("/search");
+        // We don't use router, because we need the reload for some reason
+        location.href = "/search";
       })
       .catch((error) => {
         setSubmitting(false);
@@ -101,7 +118,7 @@ export default function RegisterPage() {
 
     if (internshipType === "credited") {
       if (allJobTypeIds.length) {
-        prefsForm.setValue("job_commitment_ids", allJobTypeIds, {
+        regForm.setValue("job_commitment_ids", allJobTypeIds, {
           shouldDirty: true,
         });
       }
@@ -109,16 +126,16 @@ export default function RegisterPage() {
       const filtered = fullTimeJobTypeId
         ? allJobTypeIds.filter((id) => id !== fullTimeJobTypeId)
         : allJobTypeIds;
-      prefsForm.setValue("job_commitment_ids", filtered, { shouldDirty: true });
+      regForm.setValue("job_commitment_ids", filtered, { shouldDirty: true });
     } else {
-      prefsForm.setValue("job_commitment_ids", [], { shouldDirty: true });
+      regForm.setValue("job_commitment_ids", [], { shouldDirty: true });
     }
   }, [
     internshipType,
     refs.job_types,
     allJobTypeIds,
     fullTimeJobTypeId,
-    prefsForm,
+    regForm,
   ]);
 
   // Auto-select job_setup_ids per rules
@@ -126,12 +143,12 @@ export default function RegisterPage() {
     if (!refs.job_modes?.length) return;
 
     if (internshipType === "credited") {
-      prefsForm.setValue("job_setup_ids", allJobModeIds, { shouldDirty: true });
+      regForm.setValue("job_setup_ids", allJobModeIds, { shouldDirty: true });
     } else if (internshipType === "voluntary") {
       const filtered = [hybridModeId, remoteModeId].filter(Boolean) as string[];
-      prefsForm.setValue("job_setup_ids", filtered, { shouldDirty: true });
+      regForm.setValue("job_setup_ids", filtered, { shouldDirty: true });
     } else {
-      prefsForm.setValue("job_setup_ids", [], { shouldDirty: true });
+      regForm.setValue("job_setup_ids", [], { shouldDirty: true });
     }
   }, [
     internshipType,
@@ -139,28 +156,28 @@ export default function RegisterPage() {
     allJobModeIds,
     hybridModeId,
     remoteModeId,
-    prefsForm,
+    regForm,
   ]);
 
   // Keep job_commitment_ids valid when refs load late
   useEffect(() => {
     if (!refs.job_types?.length) return;
-    const current = prefsForm.getValues("job_commitment_ids") || [];
+    const current = regForm.getValues("job_commitment_ids") || [];
     if (!current.length) return;
     const next = current.filter((id) => allJobTypeIds.includes(id));
     if (next.length !== current.length) {
-      prefsForm.setValue("job_commitment_ids", next, { shouldDirty: true });
+      regForm.setValue("job_commitment_ids", next, { shouldDirty: true });
     }
-  }, [refs.job_types, allJobTypeIds, prefsForm]);
+  }, [refs.job_types, allJobTypeIds, regForm]);
 
   // Clear internship hours when switching to voluntary
   useEffect(() => {
     if (internshipType === "voluntary") {
-      prefsForm.setValue("expected_duration_hours", null, {
+      regForm.setValue("expected_duration_hours", 300, {
         shouldDirty: true,
       });
     }
-  }, [internshipType, prefsForm]);
+  }, [internshipType, regForm]);
 
   return (
     <div className="min-h-full">
@@ -178,14 +195,18 @@ export default function RegisterPage() {
         </div>
 
         <div className="mt-8 flex flex-col items-center gap-2">
-          <div className="lg:col-span-2 space-y-6 max-w-lg w-full ">
+          <div className="lg:col-span-2 space-y-6 max-w-lg w-full">
             <Card className="p-4 sm:p-6 block">
-              <form className="space-y-3" id="reg-form">
+              <form
+                className="space-y-6"
+                id="reg-form"
+                onSubmit={() => handleSubmit(regForm.getValues())}
+              >
                 {/* Q1: Voluntary or Credited */}
                 <div className="space-y-2">
                   <SinglePickerBig
                     autoCollapse={false}
-                    label="What kind of internship are you looking for?"
+                    label="Are you looking for internship credit?"
                     options={[
                       {
                         value: "credited",
@@ -199,8 +220,9 @@ export default function RegisterPage() {
                       },
                     ]}
                     value={internshipType ?? null}
+                    onClear={() => regForm.setValue("internship_type", null)}
                     onChange={(v) =>
-                      prefsForm.setValue("internship_type", v, {
+                      regForm.setValue("internship_type", v, {
                         shouldDirty: true,
                         shouldTouch: true,
                       })
@@ -210,12 +232,12 @@ export default function RegisterPage() {
 
                 {/* Start date + hours (only credited shows hours) */}
                 {(isCredited || isVoluntary) && (
-                  <div className="space-y-2">
+                  <div className="space-y-5">
                     <FormMonthPicker
                       label="Ideal internship start"
-                      date={prefsForm.watch("expected_start_date") ?? undefined}
+                      date={regForm.watch("expected_start_date") ?? undefined}
                       setter={(ms) =>
-                        prefsForm.setValue("expected_start_date", ms ?? null, {
+                        regForm.setValue("expected_start_date", ms ?? null, {
                           shouldDirty: true,
                         })
                       }
@@ -229,13 +251,11 @@ export default function RegisterPage() {
                         <FormInput
                           label="Total internship hours"
                           inputMode="numeric"
-                          value={
-                            prefsForm.watch("expected_duration_hours") ?? ""
-                          }
+                          value={regForm.watch("expected_duration_hours") ?? ""}
                           onChange={(e) => {
                             const v = e.target.value;
                             const n = v === "" ? null : Number(v);
-                            prefsForm.setValue(
+                            regForm.setValue(
                               "expected_duration_hours",
                               Number.isFinite(n as number)
                                 ? (n as number)
@@ -248,52 +268,59 @@ export default function RegisterPage() {
                       </div>
                     )}
 
-                    <div className="space-y-3">
-                      <Separator className="mt-5 bg-gray-300" />
-                      {/* Work modes */}
-                      <div className="space-y-2">
-                        <FieldLabel>Work setup</FieldLabel>
-                        <MultiChipSelect
-                          className="justify-start"
-                          value={prefsForm.watch("job_setup_ids") || []}
-                          onChange={(vals) =>
-                            prefsForm.setValue("job_setup_ids", vals)
-                          }
-                          options={(refs.job_modes || []).map((o: any) => ({
-                            value: String(o.id),
-                            label: o.name,
-                          }))}
-                        />
-                      </div>
+                    <div className="space-y-2">
+                      <FieldLabel>Work setup</FieldLabel>
+                      <MultiChipSelect
+                        className="justify-start"
+                        value={regForm.watch("job_setup_ids") || []}
+                        onChange={(vals) =>
+                          regForm.setValue("job_setup_ids", vals)
+                        }
+                        options={(refs.job_modes || []).map((o: any) => ({
+                          value: String(o.id),
+                          label: o.name,
+                        }))}
+                      />
+                    </div>
 
-                      {/* Job types */}
-                      <div className="space-y-2">
-                        <FieldLabel>Work-time commitment</FieldLabel>
-                        <MultiChipSelect
-                          className="justify-start"
-                          value={prefsForm.watch("job_commitment_ids") || []}
-                          onChange={(vals) =>
-                            prefsForm.setValue("job_commitment_ids", vals)
-                          }
-                          options={(refs.job_types || []).map((o: any) => ({
-                            value: String(o.id),
-                            label: o.name,
-                          }))}
-                        />
-                      </div>
+                    {/* Job types */}
+                    <div className="space-y-2">
+                      <FieldLabel>Work-time commitment</FieldLabel>
+                      <MultiChipSelect
+                        className="justify-start"
+                        value={regForm.watch("job_commitment_ids") || []}
+                        onChange={(vals) =>
+                          regForm.setValue("job_commitment_ids", vals)
+                        }
+                        options={(refs.job_types || []).map((o: any) => ({
+                          value: String(o.id),
+                          label: o.name,
+                        }))}
+                      />
+                    </div>
 
-                      {/* Job categories */}
-                      <div className="space-y-2">
-                        <AutocompleteTreeMulti
-                          label="Desired internship role"
-                          tree={POSITION_TREE}
-                          value={prefsForm.watch("job_category_ids") || []}
-                          setter={(vals: string[]) =>
-                            prefsForm.setValue("job_category_ids", vals)
-                          }
-                          placeholder="Select one or more"
-                        />
-                      </div>
+                    {/* Job categories */}
+                    <div className="space-y-2">
+                      <AutocompleteTreeMulti
+                        label="Desired internship role"
+                        tree={POSITION_TREE}
+                        value={regForm.watch("job_category_ids") || []}
+                        setter={(vals: string[]) =>
+                          regForm.setValue("job_category_ids", vals)
+                        }
+                        placeholder="Select one or more"
+                      />
+                    </div>
+
+                    {/* University email */}
+                    <div className="space-y-2">
+                      <FormDropdown
+                        label="Which university are you from?"
+                        options={refs.universities}
+                        setter={(value) =>
+                          regForm.setValue("university", value)
+                        }
+                      />
                     </div>
                   </div>
                 )}
@@ -301,17 +328,19 @@ export default function RegisterPage() {
             </Card>
 
             {/* Submit button*/}
-            <div className="flex justify-end">
-              <Button
-                className="w-full sm:w-auto"
-                type="button"
-                disabled={submitting}
-                form="reg-form"
-                onClick={() => handleSubmit(prefsForm.getValues())}
-              >
-                {submitting ? "Creating account..." : "Create account"}
-              </Button>
-            </div>
+            {(isCredited || isVoluntary) && (
+              <div className="flex justify-end">
+                <Button
+                  className="w-full sm:w-auto"
+                  type="button"
+                  disabled={submitting}
+                  form="reg-form"
+                  onClick={() => handleSubmit(regForm.getValues())}
+                >
+                  {submitting ? "Creating account..." : "Create account"}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
