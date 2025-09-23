@@ -94,7 +94,7 @@ export const LabeledProperty: LabeledComponent = ({
 }: LabeledComponentProps) => {
   return (
     <div>
-      <label className="text-xs text-gray-400 italic mb-1 block">{label}</label>
+      <label className="text-xs text-gray-600  mb-1 block">{label}</label>
       <Property value={value} fallback={fallback} />
     </div>
   );
