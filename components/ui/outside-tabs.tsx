@@ -18,6 +18,7 @@ export function OutsideTabs({
   className,
   tabsClassName,
   cardClassName,
+  rightSlot,
 }: {
   tabs: OutsideTab[];
   value: string;
@@ -26,6 +27,7 @@ export function OutsideTabs({
   className?: string;
   tabsClassName?: string;
   cardClassName?: string;
+  rightSlot?: React.ReactNode; // optional element to show on the right side of the tabs
 }) {
   return (
     <div className={cn("relative", className)}>
@@ -53,12 +55,13 @@ export function OutsideTabs({
             </button>
           );
         })}
+
+        {/* Right slot */}
+        {rightSlot && <div className="ml-auto">{rightSlot}</div>}
       </div>
 
       {/* Card below */}
-      <Card className={cn("flex flex-col p-5", cardClassName)}>
-        {children}
-      </Card>
+      <Card className={cn("flex flex-col p-5", cardClassName)}>{children}</Card>
     </div>
   );
 }

@@ -56,144 +56,6 @@ import { AutocompleteTreeMulti } from "@/components/ui/autocomplete";
 import { TabGroup, Tab } from "@/components/ui/tabs";
 import { POSITION_TREE } from "@/lib/consts/positions";
 import { OutsideTabs, OutsideTabPanel } from "@/components/ui/outside-tabs";
-// ----------------------------
-//  Helpers
-// ----------------------------
-
-function getFileNameFromURL(url?: string | null) {
-  if (!url) return null;
-  try {
-    const u = new URL(url);
-    // Try common filename hints in query params first
-    const qpHints = ["filename", "response-content-disposition", "name"];
-    for (const k of qpHints) {
-      const v = u.searchParams.get(k);
-      if (v) {
-        // content-disposition might look like attachment; filename="CV.pdf"
-        const m = /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i.exec(v);
-        if (m) return decodeURIComponent(m[1] || m[2]);
-        return decodeURIComponent(v);
-      }
-    }
-    // Fallback to last path segment
-    const last = u.pathname.split("/").filter(Boolean).pop();
-    if (last) return decodeURIComponent(last);
-  } catch {
-    // Fallback for non-URL strings
-    const parts = url.split("?")[0].split("/").filter(Boolean);
-    return decodeURIComponent(parts.pop() || "");
-  }
-  return null;
-}
-
-function computeProfileScore(p?: Partial<PublicUser>): {
-  score: number;
-  parts: Record<string, boolean>;
-  tips: string[];
-} {
-  const u = p ?? {};
-  const parts = {
-    name: !!(u.first_name && u.last_name),
-    phone: !!u.phone_number,
-    bio: !!u.bio && u.bio.trim().length >= 50, // richer bios
-    school: !!(
-      u.university &&
-      u.college &&
-      u.department &&
-      u.degree &&
-      u.year_level
-    ),
-    links: !!(u.github_link || u.linkedin_link || u.portfolio_link),
-    prefs: !!(
-      u.job_mode_ids?.length ||
-      u.job_type_ids?.length ||
-      u.job_category_ids?.length
-    ),
-    dates: !!(u.expected_start_date || u.expected_end_date),
-    resume: !!u.resume,
-  };
-
-  // weights sum to 100
-  const weights: Record<keyof typeof parts, number> = {
-    name: 10,
-    phone: 5,
-    bio: 15,
-    school: 20,
-    links: 10,
-    prefs: 20,
-    dates: 10,
-    resume: 10,
-  };
-
-  const score = Object.entries(parts).reduce(
-    (acc, [k, ok]) => acc + (ok ? weights[k as keyof typeof parts] : 0),
-    0
-  );
-
-  const tips: string[] = [];
-  if (!parts.bio) tips.push("Add a 50+ character bio highlighting skills.");
-  if (!parts.links) tips.push("Add your LinkedIn/GitHub/Portfolio.");
-  if (!parts.prefs) tips.push("Pick work modes, types, and roles you want.");
-  if (!parts.dates) tips.push("Add expected internship dates.");
-  if (!parts.school) tips.push("Complete university/college/degree fields.");
-  if (!parts.resume) tips.push("Upload a resume in PDF (≤2.5MB).");
-
-  return { score, parts, tips };
-}
-
-function computeResumeScore(
-  u?: Partial<PublicUser>,
-  resumeName?: string | null
-) {
-  if (!u?.resume) return { score: 0, reasons: ["No resume uploaded yet."] };
-
-  let score = 60; // base for having a resume
-  const reasons: string[] = [];
-
-  // +10 if name appears in the filename (good employer UX)
-  const fullName = `${u?.first_name ?? ""} ${u?.last_name ?? ""}`
-    .trim()
-    .toLowerCase();
-  const hasNameInFile =
-    !!resumeName &&
-    fullName.length > 3 &&
-    resumeName.toLowerCase().includes((u?.last_name ?? "").toLowerCase());
-  if (hasNameInFile) {
-    score += 10;
-  } else {
-    reasons.push(
-      "Rename file to include your name (e.g., Dimalanta_Jason_CV.pdf)."
-    );
-  }
-
-  // +10 if education is complete
-  const hasEdu = !!(
-    u?.university &&
-    u?.college &&
-    u?.department &&
-    u?.degree &&
-    u?.year_level
-  );
-  if (hasEdu) score += 10;
-  else reasons.push("Ensure education details are complete in your profile.");
-
-  // +10 if preferences present (roles/modes/types help matching)
-  const hasPrefs = !!(
-    u?.job_mode_ids?.length ||
-    u?.job_type_ids?.length ||
-    u?.job_category_ids?.length
-  );
-  if (hasPrefs) score += 10;
-  else reasons.push("Select at least your preferred roles/modes/types.");
-
-  // +10 if dates present (availability clarity)
-  const hasDates = !!(u?.expected_start_date || u?.expected_end_date);
-  if (hasDates) score += 10;
-  else reasons.push("Add expected start/end dates.");
-
-  if (score > 100) score = 100;
-  return { score, reasons };
-}
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
@@ -207,25 +69,20 @@ export default function ProfilePage() {
     fetcher: UserService.getMyResumeURL,
     route: "/users/me/resume",
   });
+
+  // Modals
   const {
     open: openEmployerModal,
     close: closeEmployerModal,
     Modal: EmployerModal,
   } = useModal("employer-modal");
+
   const { open: openResumeModal, Modal: ResumeModal } =
     useModal("resume-modal");
+
   const profileEditorRef = useRef<{ save: () => Promise<boolean> }>(null);
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
-
-  const [lastUploadedResumeName, setLastUploadedResumeName] = useState<
-    string | null
-  >(null);
-
-  const resumeFileName =
-    lastUploadedResumeName ||
-    getFileNameFromURL(resumeURL) ||
-    (profile.data?.resume ? "resume.pdf" : null);
 
   redirectIfNotLoggedIn();
 
@@ -263,10 +120,6 @@ export default function ProfilePage() {
 
   const data = profile.data as PublicUser | undefined;
   const { score, parts, tips } = computeProfileScore(data);
-  const { score: resumeScore, reasons: resumeTips } = computeResumeScore(
-    data,
-    resumeFileName
-  );
 
   return (
     data && (
@@ -277,9 +130,7 @@ export default function ProfilePage() {
             <div className="flex flex-col lg:flex-row gap-6 items-start">
               {/* PFP */}
               <div className="relative">
-                <div className="h-50 w-50 grid place-items-center overflow-hidden">
-                  <MyUserPfp size="40" />
-                </div>
+                <MyUserPfp size="36" />
 
                 <Button
                   variant="outline"
@@ -303,7 +154,7 @@ export default function ProfilePage() {
 
               {/* Info */}
               <div className="flex-1 w-full min-w-0 mt-1">
-                <div className="flex items-center gap-3 mt-2">
+                <div className="flex items-center gap-3">
                   <motion.h1
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -328,41 +179,6 @@ export default function ProfilePage() {
                   >
                     <Eye className="h-4 w-4" /> Preview
                   </Button>
-                  {isEditing ? (
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        onClick={() => {
-                          setIsEditing(false);
-                          setSaveError(null);
-                        }}
-                        disabled={saving}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        onClick={async () => {
-                          setSaving(true);
-                          setSaveError(null);
-                          const success =
-                            await profileEditorRef.current?.save();
-                          setSaving(false);
-                          if (success) setIsEditing(false);
-                          else
-                            setSaveError(
-                              "Please fix the errors in the form before saving."
-                            );
-                        }}
-                        disabled={saving}
-                      >
-                        {saving ? "Saving…" : "Save changes"}
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button onClick={() => setIsEditing(true)}>
-                      <Edit2 className="h-4 w-4" /> Edit profile
-                    </Button>
-                  )}
                 </div>
                 {saveError && (
                   <p className="text-xs text-amber-600 mt-2">{saveError}</p>
@@ -377,21 +193,19 @@ export default function ProfilePage() {
           {/* Left column */}
           <div className="lg:col-span-2 flex flex-col gap-6">
             {/* Resume */}
-            <div className="font-medium">Resume</div>
             <Card className="p-5">
-              <ResumeBox
-                profile={data}
-                openResumeModal={openResumeModal}
-                setLastUploadedName={setLastUploadedResumeName} // NEW
-                resumeFileName={resumeFileName} // NEW
-              />
+              <div className="font-medium">Resume/CV</div>
+
+              <ResumeBox profile={data} openResumeModal={openResumeModal} />
             </Card>
 
             {/* Profile */}
             {!isEditing && (
               <>
-                {/* NEW: Read-only tabs mirroring the edit tabs (same vibe) */}
-                <ProfileReadOnlyTabs profile={data} />
+                <ProfileReadOnlyTabs
+                  profile={data}
+                  onEdit={() => setIsEditing(true)}
+                />
               </>
             )}
             {isEditing && (
@@ -399,6 +213,26 @@ export default function ProfilePage() {
                 <ProfileEditor
                   updateProfile={profile.update}
                   ref={profileEditorRef}
+                  rightSlot={
+                    <Button
+                    className="text-xs"
+                      onClick={async () => {
+                        setSaving(true);
+                        setSaveError(null);
+                        const success = await profileEditorRef.current?.save();
+                        setSaving(false);
+                        if (success) setIsEditing(false);
+                        else
+                          setSaveError(
+                            "Please fix the errors in the form before saving."
+                          );
+                      }}
+                      disabled={saving}
+                    >
+                      <CheckCircle2 className="h-4 w-4 mr-1" />
+                      {saving ? "Saving…" : "Save changes"}
+                    </Button>
+                  }
                 />
               </ProfileEditForm>
             )}
@@ -407,7 +241,7 @@ export default function ProfilePage() {
           {/* Right column */}
           <aside className="lg:col-span-1 space-y-6">
             {/* Completion meter */}
-            <div className="mt-6">
+            <div className="">
               <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
                 <span>Profile completeness</span>
                 <span>{score}%</span>
@@ -458,7 +292,9 @@ export default function ProfilePage() {
           <ResumeModal>
             <div className="space-y-4">
               <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
-              <PDFPreview url={resumeURL} />
+              <div className="px-6 pb-6">
+                <PDFPreview url={resumeURL} />
+              </div>
             </div>
           </ResumeModal>
         )}
@@ -483,9 +319,6 @@ export default function ProfilePage() {
   );
 }
 
-// ----------------------------
-//  Compact header info
-// ----------------------------
 function HeaderLine({ profile }: { profile: PublicUser }) {
   const { to_level_name, to_degree_full_name, to_university_name } =
     useDbRefs();
@@ -513,37 +346,44 @@ function HeaderLine({ profile }: { profile: PublicUser }) {
     <div className="flex flex-col gap-1">
       {(degree || level || uni) && (
         <div className="flex gap-2">
-          <div className="py-1 px-2 rounded-lg bg-gray-100 border border-gray-300 flex items-center gap-1 text-sm">
+          <div className="py-1 px-2 rounded-lg border border-gray-300 bg-white flex items-center gap-1 text-sm">
             {uni}
           </div>
-          <div className="py-1 px-2 rounded-lg bg-gray-100 border border-gray-300 flex items-center gap-1 text-sm">
-            {degree}
-          </div>
-          <div className="py-1 px-2 rounded-lg bg-gray-100 border border-gray-300 flex items-center gap-1 text-sm">
-            {level}
-          </div>
+
+          {degree && (
+            <div className="py-1 px-2 rounded-lg border border-gray-300 bg-white flex items-center gap-1 text-sm">
+              {degree}
+            </div>
+          )}
+
+          {level && (
+            <div className="py-1 px-2 rounded-lg border border-gray-300 bg-white flex items-center gap-1 text-sm">
+              {level}
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-function ProfileReadOnlyTabs({ profile }: { profile: PublicUser }) {
+function ProfileReadOnlyTabs({
+  profile,
+  onEdit,
+}: {
+  profile: PublicUser;
+  onEdit: () => void;
+}) {
   const { isMobile } = useAppContext();
-  const {
-    to_college_name,
-    to_level_name,
-    to_department_name,
-    to_degree_full_name,
-    to_university_name,
-  } = useDbRefs();
+  const { to_level_name, to_degree_full_name, to_university_name } =
+    useDbRefs();
 
-  type TabKey = "Student Profile" | "Internship Preferences";
+  type TabKey = "Student Profile" | "Internship Details";
   const [tab, setTab] = useState<TabKey>("Student Profile");
 
   const tabs = [
     { key: "Student Profile", label: "Student Profile" },
-    { key: "Internship Preferences", label: "Internship Preferences" },
+    { key: "Internship Details", label: "Internship Details" },
   ] as const;
 
   return (
@@ -551,6 +391,13 @@ function ProfileReadOnlyTabs({ profile }: { profile: PublicUser }) {
       tabs={tabs as unknown as { key: string; label: string }[]}
       value={tab}
       onChange={(v) => setTab(v as TabKey)}
+      rightSlot={
+        <div>
+          <Button variant="outline" onClick={onEdit} className="text-xs">
+            <Edit2 className="h-3 w-3" /> Edit profile
+          </Button>
+        </div>
+      }
     >
       {/* Student Profile */}
       <OutsideTabPanel when="Student Profile" activeKey={tab}>
@@ -558,11 +405,7 @@ function ProfileReadOnlyTabs({ profile }: { profile: PublicUser }) {
           <div className="text-xl sm:text-2xl tracking-tight font-semibold">
             Identity
           </div>
-          <div
-            className={cn(
-              isMobile ? "grid grid-cols-1 gap-5" : "grid grid-cols-3 gap-5"
-            )}
-          >
+          <div className="grid grid-cols-1 gap-5 mt-2 sm:grid sm:grid-cols-3 sm:gap-5 sm:mt-2">
             <LabeledProperty
               label="First Name"
               value={toSafeString(profile.first_name)}
@@ -582,18 +425,7 @@ function ProfileReadOnlyTabs({ profile }: { profile: PublicUser }) {
           </div>
         </section>
 
-        <Divider className="my-5" />
-
-        <section>
-          <div className="text-xl sm:text-2xl tracking-tight font-semibold">
-            Personal Bio
-          </div>
-          <p className="text-sm whitespace-pre-wrap mt-2">
-            {profile.bio?.trim()?.length ? profile.bio : "—"}
-          </p>
-        </section>
-
-        <Divider className="my-5" />
+        <Divider />
 
         <section>
           <div className="text-xl sm:text-2xl tracking-tight font-semibold">
@@ -608,7 +440,7 @@ function ProfileReadOnlyTabs({ profile }: { profile: PublicUser }) {
                   : "—"
               }
             />
-            <LabeledProperty
+            {/* <LabeledProperty
               label="College"
               value={profile.college ? to_college_name(profile.college) : "—"}
             />
@@ -619,7 +451,7 @@ function ProfileReadOnlyTabs({ profile }: { profile: PublicUser }) {
                   ? to_department_name(profile.department)
                   : "—"
               }
-            />
+            /> */}
             <LabeledProperty
               label="Degree"
               value={profile.degree ? to_degree_full_name(profile.degree) : "—"}
@@ -630,63 +462,61 @@ function ProfileReadOnlyTabs({ profile }: { profile: PublicUser }) {
                 profile.year_level ? to_level_name(profile.year_level) : "—"
               }
             />
-            <LabeledProperty
-              label="Major/Minor degree"
-              value={profile.degree_notes || "—"}
-            />
           </div>
         </section>
 
-        <Divider className="my-5" />
+        <Divider />
 
         <section>
           <div className="text-xl sm:text-2xl tracking-tight font-semibold">
             External Profiles
           </div>
-          <div className="flex flex-row flex-wrap gap-2 mt-2">
+          <div className="">
             <ProfileLinkBadge title="Portfolio" link={profile.portfolio_link} />
             <ProfileLinkBadge title="GitHub" link={profile.github_link} />
             <ProfileLinkBadge title="LinkedIn" link={profile.linkedin_link} />
             <ProfileLinkBadge title="Calendar" link={profile.calendar_link} />
           </div>
         </section>
+
+        <Divider />
+
+        <section>
+          <div className="text-xl sm:text-2xl tracking-tight font-semibold">
+            Personal Bio
+          </div>
+          <p className="text-sm text-justify mt-2">
+            {profile.bio?.trim()?.length ? profile.bio : "—"}
+          </p>
+        </section>
       </OutsideTabPanel>
 
-      {/* Internship Preferences */}
-      <OutsideTabPanel when="Internship Preferences" activeKey={tab}>
+      {/* Internship Details*/}
+      <OutsideTabPanel when="Internship Details" activeKey={tab}>
         <section>
           <div className="text-xl sm:text-2xl tracking-tight font-semibold">
             Internship Details
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-2">
             <LabeledProperty
-              label="Taking for Credit"
-              value={profile.taking_for_credit ? "Yes" : "No"}
+              label="Type of internship"
+              value={profile.taking_for_credit ? "Credited" : "Voluntary"}
             />
-            <LabeledProperty
-              label="Linkage Officer"
-              value={profile.linkage_officer || "—"}
-            />
-            <LabeledProperty
-              label="Expected Start Date"
-              value={profile.expected_start_date || "—"}
-            />
-            <LabeledProperty
-              label="Expected End Date"
-              value={profile.expected_end_date || "—"}
-            />
-            <LabeledProperty
-              label="Expected Duration (hours)"
-              value={
-                typeof profile.expected_duration_hours === "number"
-                  ? String(profile.expected_duration_hours)
-                  : "—"
-              }
-            />
+
+            {profile.taking_for_credit && (
+              <LabeledProperty
+                label="Expected Duration (hours)"
+                value={
+                  typeof profile.expected_duration_hours === "number"
+                    ? String(profile.expected_duration_hours)
+                    : "—"
+                }
+              />
+            )}
           </div>
         </section>
 
-        <Divider className="my-5" />
+        <Divider />
 
         <section>
           <div className="text-xl sm:text-2xl tracking-tight font-semibold">
@@ -724,13 +554,13 @@ function ProfileReadOnlyTabs({ profile }: { profile: PublicUser }) {
   );
 }
 
-// ----------------------------
-//  Editor (unchanged structure)
-// ----------------------------
 const ProfileEditor = forwardRef<
   { save: () => Promise<boolean> },
-  { updateProfile: (updatedProfile: Partial<PublicUser>) => void }
->(({ updateProfile }, ref) => {
+  {
+    updateProfile: (updatedProfile: Partial<PublicUser>) => void;
+    rightSlot?: React.ReactNode;
+  }
+>(({ updateProfile, rightSlot }, ref) => {
   const qc = useQueryClient();
   const {
     formData,
@@ -757,7 +587,7 @@ const ProfileEditor = forwardRef<
     get_degrees_by_university,
   } = useDbRefs();
 
-  type TabKey = "Student Profile" | "Internship Preferences" | "Calendar";
+  type TabKey = "Student Profile" | "Internship Details" | "Calendar";
   const [tab, setTab] = useState<TabKey>("Student Profile");
 
   const hasProfileErrors = !!(
@@ -785,7 +615,7 @@ const ProfileEditor = forwardRef<
       const hasErrors = Object.values(formErrors).some(Boolean);
       if (hasErrors) {
         if (hasCalendarErrors) setTab("Calendar");
-        else if (hasPrefsErrors) setTab("Internship Preferences");
+        else if (hasPrefsErrors) setTab("Internship Details");
         else setTab("Student Profile");
         return false;
       }
@@ -1002,13 +832,14 @@ const ProfileEditor = forwardRef<
           indicator: hasProfileErrors,
         },
         {
-          key: "Internship Preferences",
-          label: "Internship Preferences",
+          key: "Internship Details",
+          label: "Internship Details",
           indicator: hasPrefsErrors,
         },
-        // If you want to re-enable Calendar in the UI:
+        // TODO: Reenable for calendar
         // { key: "Calendar", label: "Calendar", indicator: hasCalendarErrors },
       ]}
+      rightSlot={rightSlot}
       value={tab}
       onChange={(v) => setTab(v as TabKey)}
     >
@@ -1057,26 +888,11 @@ const ProfileEditor = forwardRef<
           />
         </section>
 
-        {/* Bio */}
-        <section>
-          <div className="text-xl sm:text-2xl tracking-tight font-semibold mb-2 mt-5">
-            Personal Bio
-          </div>
-          <textarea
-            value={formData.bio || ""}
-            onChange={(e) => setField("bio", e.target.value)}
-            placeholder="Tell us about yourself: strengths, interests, and goals. Aim for at least 50 characters for a stronger profile."
-            className="w-full border rounded-md p-3 text-sm min-h-28 resize-none focus-visible:outline-none focus:ring-2 focus:ring-primary/30"
-            maxLength={500}
-          />
-          <p className="text-xs text-muted-foreground text-right">
-            {(formData.bio || "").length}/500 characters
-          </p>
-        </section>
+        <Divider />
 
         {/* Education */}
         <section>
-          <div className="text-xl sm:text-2xl tracking-tight font-semibold mb-2 mt-5">
+          <div className="text-xl sm:text-2xl tracking-tight font-semibold mb-2">
             Educational Background
           </div>
           <div className="flex flex-col space-y-3">
@@ -1088,26 +904,6 @@ const ProfileEditor = forwardRef<
                 value={formData.university}
                 setter={fieldSetter("university")}
                 placeholder="Select University"
-              />
-            </div>
-            <div>
-              <ErrorLabel value={formErrors.college} />
-              <Autocomplete
-                label={"College"}
-                options={collegeOptions}
-                value={formData.college}
-                setter={fieldSetter("college")}
-                placeholder="Select College"
-              />
-            </div>
-            <div>
-              <ErrorLabel value={formErrors.department} />
-              <Autocomplete
-                label={"Department"}
-                options={departmentOptions}
-                value={formData.department}
-                setter={fieldSetter("department")}
-                placeholder="Select Department"
               />
             </div>
             <div>
@@ -1130,19 +926,14 @@ const ProfileEditor = forwardRef<
                 placeholder="Select Year Level"
               />
             </div>
-            <FormInput
-              label={"Major/Minor degree"}
-              value={formData.degree_notes ?? ""}
-              setter={fieldSetter("degree_notes")}
-              maxLength={100}
-              required={false}
-            />
           </div>
         </section>
 
+        <Divider />
+
         {/* External Profiles */}
         <section>
-          <div className="text-xl sm:text-2xl tracking-tight font-semibold mt-5">
+          <div className="text-xl sm:text-2xl tracking-tight font-semibold">
             External Profiles
           </div>
           <div className="flex flex-col space-y-1 mb-2">
@@ -1171,10 +962,29 @@ const ProfileEditor = forwardRef<
             />
           </div>
         </section>
+
+        <Divider />
+
+        {/* Bio */}
+        <section>
+          <div className="text-xl sm:text-2xl tracking-tight font-semibold mb-2">
+            Personal Bio
+          </div>
+          <textarea
+            value={formData.bio || ""}
+            onChange={(e) => setField("bio", e.target.value)}
+            placeholder="Tell us about yourself: strengths, interests, and goals. Aim for at least 50 characters for a stronger profile."
+            className="w-full border rounded-md p-3 text-sm min-h-28 resize-none focus-visible:outline-none focus:ring-2 focus:ring-primary/30"
+            maxLength={500}
+          />
+          <p className="text-xs text-muted-foreground text-right">
+            {(formData.bio || "").length}/500 characters
+          </p>
+        </section>
       </OutsideTabPanel>
 
-      {/* Internship Preferences */}
-      <OutsideTabPanel when="Internship Preferences" activeKey={tab}>
+      {/* Internship Details */}
+      <OutsideTabPanel when="Internship Details" activeKey={tab}>
         <section className="flex flex-col space-y-2 gap-1">
           <div className="text-xl sm:text-2xl tracking-tight font-semibold">
             Internship Details
@@ -1189,14 +999,6 @@ const ProfileEditor = forwardRef<
               Taking internships for credit?
             </div>
           </div>
-          {formData.taking_for_credit && (
-            <FormInput
-              label={"Linkage Officer"}
-              value={formData.linkage_officer ?? ""}
-              setter={fieldSetter("linkage_officer")}
-              required={false}
-            />
-          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
             <FormDatePicker
@@ -1235,6 +1037,9 @@ const ProfileEditor = forwardRef<
           />
         </section>
 
+        <Divider />
+
+        {/* Preferences */}
         <section>
           <div className="text-xl sm:text-2xl tracking-tight font-semibold">
             Preferences
@@ -1305,39 +1110,15 @@ const ProfileEditor = forwardRef<
 });
 ProfileEditor.displayName = "ProfileEditor";
 
-// ----------------------------
-//  Tiny score pill
-// ----------------------------
-function TinyScore({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="text-xs flex items-center gap-2">
-      <span className="text-muted-foreground">{label}</span>
-      <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
-        <div
-          className="h-full bg-primary"
-          style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
-        />
-      </div>
-      <span className="tabular-nums">{value}%</span>
-    </div>
-  );
-}
-
-// ----------------------------
-//  Resume
-// ----------------------------
 const ResumeBox = ({
   profile,
   openResumeModal,
-  setLastUploadedName,
-  resumeFileName,
 }: {
   profile: PublicUser;
   openResumeModal: () => void;
-  setLastUploadedName: (n: string | null) => void;
-  resumeFileName: string | null;
 }) => {
   const queryClient = useQueryClient();
+
   const {
     fileInputRef: resumeFileInputRef,
     upload: resumeUpload,
@@ -1347,50 +1128,64 @@ const ResumeBox = ({
     filename: "resume",
   });
 
+  const hasResume = !!profile.resume;
+
   return (
-    <div>
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        {/* Show filename if available */}
-        <div className="text-muted-foreground truncate flex gap-2">
-          {resumeFileName ? `File: ${resumeFileName}` : "No resume file yet"}
-          {!!profile.resume && (
-            <BoolBadge onValue="Uploaded" offValue="Missing" />
-          )}
-        </div>
+    <div className="space-y-3">
+      {/* Header row: status + actions */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3">
+          <BoolBadge state={hasResume} onValue="Uploaded" offValue="Missing" />
+        </div>
+
+        <div className="flex items-center gap-2">
+          {hasResume && (
+            <Button
+              variant="outline"
+              onClick={openResumeModal}
+              disabled={resumeIsUploading}
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+          )}
           <Button
             onClick={() => resumeFileInputRef.current?.open()}
             disabled={resumeIsUploading}
           >
-            <Upload className="h-4 w-4" />{" "}
+            <Upload className="h-4 w-4" />
             {resumeIsUploading
               ? "Uploading…"
-              : !!profile.resume
+              : hasResume
               ? "Upload new"
               : "Upload"}
           </Button>
-          {!!profile.resume && (
-            <div>
-              <Button variant="outline" onClick={openResumeModal}>
-                <Eye className="h-4 w-4" /> Preview
-              </Button>
-            </div>
-          )}
         </div>
       </div>
-      <p className="text-xs text-muted-foreground mt-2 justify-end flex">
-        PDF up to 2.5MB
-      </p>
+
+      {/* Optional hint / empty state line */}
+      {!hasResume && !resumeIsUploading && (
+        <div className="rounded-md border border-dashed p-3 text-xs text-muted-foreground">
+          No resume yet. Click <span className="font-medium">Upload</span> to
+          add your PDF.
+        </div>
+      )}
+
+      {/* Hidden input handler */}
       <FileUploadInput
         ref={resumeFileInputRef}
         maxSize={2.5}
         allowedTypes={["application/pdf"]}
         onSelect={(file) => {
-          setLastUploadedName(file?.name ?? null); // NEW: remember name right away
+          // filename display removed by design
           resumeUpload(file);
           queryClient.invalidateQueries({ queryKey: ["my-profile"] });
         }}
       />
+
+      {/* Uploading hint */}
+      {resumeIsUploading && (
+        <p className="text-xs text-muted-foreground">Uploading your resume…</p>
+      )}
     </div>
   );
 };
@@ -1417,3 +1212,142 @@ const ProfileLinkBadge = ({
     </Button>
   );
 };
+
+// ----------------------------
+//  Helpers
+// ----------------------------
+
+function getFileNameFromURL(url?: string | null) {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    // Try common filename hints in query params first
+    const qpHints = ["filename", "response-content-disposition", "name"];
+    for (const k of qpHints) {
+      const v = u.searchParams.get(k);
+      if (v) {
+        // content-disposition might look like attachment; filename="CV.pdf"
+        const m = /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i.exec(v);
+        if (m) return decodeURIComponent(m[1] || m[2]);
+        return decodeURIComponent(v);
+      }
+    }
+    // Fallback to last path segment
+    const last = u.pathname.split("/").filter(Boolean).pop();
+    if (last) return decodeURIComponent(last);
+  } catch {
+    // Fallback for non-URL strings
+    const parts = url.split("?")[0].split("/").filter(Boolean);
+    return decodeURIComponent(parts.pop() || "");
+  }
+  return null;
+}
+
+function computeProfileScore(p?: Partial<PublicUser>): {
+  score: number;
+  parts: Record<string, boolean>;
+  tips: string[];
+} {
+  const u = p ?? {};
+  const parts = {
+    name: !!(u.first_name && u.last_name),
+    phone: !!u.phone_number,
+    bio: !!u.bio && u.bio.trim().length >= 50, // richer bios
+    school: !!(
+      u.university &&
+      u.college &&
+      u.department &&
+      u.degree &&
+      u.year_level
+    ),
+    links: !!(u.github_link || u.linkedin_link || u.portfolio_link),
+    prefs: !!(
+      u.job_mode_ids?.length ||
+      u.job_type_ids?.length ||
+      u.job_category_ids?.length
+    ),
+    dates: !!(u.expected_start_date || u.expected_end_date),
+    resume: !!u.resume,
+  };
+
+  // weights sum to 100
+  const weights: Record<keyof typeof parts, number> = {
+    name: 10,
+    phone: 5,
+    bio: 15,
+    school: 20,
+    links: 10,
+    prefs: 20,
+    dates: 10,
+    resume: 10,
+  };
+
+  const score = Object.entries(parts).reduce(
+    (acc, [k, ok]) => acc + (ok ? weights[k as keyof typeof parts] : 0),
+    0
+  );
+
+  const tips: string[] = [];
+  if (!parts.bio) tips.push("Add a 50+ character bio highlighting skills.");
+  if (!parts.links) tips.push("Add your LinkedIn/GitHub/Portfolio.");
+  if (!parts.prefs) tips.push("Pick work modes, types, and roles you want.");
+  if (!parts.dates) tips.push("Add expected internship dates.");
+  if (!parts.school) tips.push("Complete university/college/degree fields.");
+  if (!parts.resume) tips.push("Upload a resume in PDF (≤2.5MB).");
+
+  return { score, parts, tips };
+}
+
+function computeResumeScore(
+  u?: Partial<PublicUser>,
+  resumeName?: string | null
+) {
+  if (!u?.resume) return { score: 0, reasons: ["No resume uploaded yet."] };
+
+  let score = 60; // base for having a resume
+  const reasons: string[] = [];
+
+  // +10 if name appears in the filename (good employer UX)
+  const fullName = `${u?.first_name ?? ""} ${u?.last_name ?? ""}`
+    .trim()
+    .toLowerCase();
+  const hasNameInFile =
+    !!resumeName &&
+    fullName.length > 3 &&
+    resumeName.toLowerCase().includes((u?.last_name ?? "").toLowerCase());
+  if (hasNameInFile) {
+    score += 10;
+  } else {
+    reasons.push(
+      "Rename file to include your name (e.g., Dimalanta_Jason_CV.pdf)."
+    );
+  }
+
+  // +10 if education is complete
+  const hasEdu = !!(
+    u?.university &&
+    u?.college &&
+    u?.department &&
+    u?.degree &&
+    u?.year_level
+  );
+  if (hasEdu) score += 10;
+  else reasons.push("Ensure education details are complete in your profile.");
+
+  // +10 if preferences present (roles/modes/types help matching)
+  const hasPrefs = !!(
+    u?.job_mode_ids?.length ||
+    u?.job_type_ids?.length ||
+    u?.job_category_ids?.length
+  );
+  if (hasPrefs) score += 10;
+  else reasons.push("Select at least your preferred roles/modes/types.");
+
+  // +10 if dates present (availability clarity)
+  const hasDates = !!(u?.expected_start_date || u?.expected_end_date);
+  if (hasDates) score += 10;
+  else reasons.push("Add expected start/end dates.");
+
+  if (score > 100) score = 100;
+  return { score, reasons };
+}
