@@ -483,12 +483,12 @@ function ProfileReadOnlyTabs({
             />
             <ProfileLinkBadge
               title="GitHub"
-              icon={<Github />}
+              // icon={<GithubLogo />}
               link={profile.github_link}
             />
             <ProfileLinkBadge
               title="LinkedIn"
-              icon={<Linkedin />}
+              // icon={<LinkedinLogo />}
               link={profile.linkedin_link}
             />
             <ProfileLinkBadge
