@@ -15,6 +15,10 @@ import {
   Camera,
   ArrowRight,
   CheckCircle2,
+  Globe2,
+  Github,
+  Linkedin,
+  CalendarDays,
 } from "lucide-react";
 import { useProfile } from "@/lib/api/student.api";
 import { useAuthContext } from "../../../lib/ctx-auth";
@@ -215,7 +219,7 @@ export default function ProfilePage() {
                   ref={profileEditorRef}
                   rightSlot={
                     <Button
-                    className="text-xs"
+                      className="text-xs"
                       onClick={async () => {
                         setSaving(true);
                         setSaveError(null);
@@ -471,11 +475,27 @@ function ProfileReadOnlyTabs({
           <div className="text-xl sm:text-2xl tracking-tight font-semibold">
             External Profiles
           </div>
-          <div className="">
-            <ProfileLinkBadge title="Portfolio" link={profile.portfolio_link} />
-            <ProfileLinkBadge title="GitHub" link={profile.github_link} />
-            <ProfileLinkBadge title="LinkedIn" link={profile.linkedin_link} />
-            <ProfileLinkBadge title="Calendar" link={profile.calendar_link} />
+          <div className="flex gap-2 mt-2">
+            <ProfileLinkBadge
+              title="Portfolio"
+              icon={<Globe2 />}
+              link={profile.portfolio_link}
+            />
+            <ProfileLinkBadge
+              title="GitHub"
+              icon={<Github />}
+              link={profile.github_link}
+            />
+            <ProfileLinkBadge
+              title="LinkedIn"
+              icon={<Linkedin />}
+              link={profile.linkedin_link}
+            />
+            <ProfileLinkBadge
+              title="Calendar"
+              icon={<CalendarDays />}
+              link={profile.calendar_link}
+            />
           </div>
         </section>
 
@@ -1196,19 +1216,28 @@ const ResumeBox = ({
 const ProfileLinkBadge = ({
   title,
   link,
+  icon,
 }: {
   title: string;
   link?: string | null;
+  icon?: React.ReactNode;
 }) => {
   const enabled = !!link;
+  const handleClick = () => {
+    if (!link) return;
+    window.open(link, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <Button
-      variant={enabled ? "ghost" : "outline"}
-      className="justify-start h-9"
+      type="button"
+      variant="outline"
+      className="justify-start text-xs"
       disabled={!enabled}
-      onClick={() => openURL(link)}
+      onClick={enabled ? handleClick : undefined}
     >
-      <BoolBadge state={enabled} onValue={title} offValue={`${title} (none)`} />
+      {icon ? <span className="">{icon}</span> : null}
+      <span>{title}</span>
     </Button>
   );
 };
@@ -1216,32 +1245,6 @@ const ProfileLinkBadge = ({
 // ----------------------------
 //  Helpers
 // ----------------------------
-
-function getFileNameFromURL(url?: string | null) {
-  if (!url) return null;
-  try {
-    const u = new URL(url);
-    // Try common filename hints in query params first
-    const qpHints = ["filename", "response-content-disposition", "name"];
-    for (const k of qpHints) {
-      const v = u.searchParams.get(k);
-      if (v) {
-        // content-disposition might look like attachment; filename="CV.pdf"
-        const m = /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i.exec(v);
-        if (m) return decodeURIComponent(m[1] || m[2]);
-        return decodeURIComponent(v);
-      }
-    }
-    // Fallback to last path segment
-    const last = u.pathname.split("/").filter(Boolean).pop();
-    if (last) return decodeURIComponent(last);
-  } catch {
-    // Fallback for non-URL strings
-    const parts = url.split("?")[0].split("/").filter(Boolean);
-    return decodeURIComponent(parts.pop() || "");
-  }
-  return null;
-}
 
 function computeProfileScore(p?: Partial<PublicUser>): {
   score: number;
@@ -1296,58 +1299,4 @@ function computeProfileScore(p?: Partial<PublicUser>): {
   if (!parts.resume) tips.push("Upload a resume in PDF (≤2.5MB).");
 
   return { score, parts, tips };
-}
-
-function computeResumeScore(
-  u?: Partial<PublicUser>,
-  resumeName?: string | null
-) {
-  if (!u?.resume) return { score: 0, reasons: ["No resume uploaded yet."] };
-
-  let score = 60; // base for having a resume
-  const reasons: string[] = [];
-
-  // +10 if name appears in the filename (good employer UX)
-  const fullName = `${u?.first_name ?? ""} ${u?.last_name ?? ""}`
-    .trim()
-    .toLowerCase();
-  const hasNameInFile =
-    !!resumeName &&
-    fullName.length > 3 &&
-    resumeName.toLowerCase().includes((u?.last_name ?? "").toLowerCase());
-  if (hasNameInFile) {
-    score += 10;
-  } else {
-    reasons.push(
-      "Rename file to include your name (e.g., Dimalanta_Jason_CV.pdf)."
-    );
-  }
-
-  // +10 if education is complete
-  const hasEdu = !!(
-    u?.university &&
-    u?.college &&
-    u?.department &&
-    u?.degree &&
-    u?.year_level
-  );
-  if (hasEdu) score += 10;
-  else reasons.push("Ensure education details are complete in your profile.");
-
-  // +10 if preferences present (roles/modes/types help matching)
-  const hasPrefs = !!(
-    u?.job_mode_ids?.length ||
-    u?.job_type_ids?.length ||
-    u?.job_category_ids?.length
-  );
-  if (hasPrefs) score += 10;
-  else reasons.push("Select at least your preferred roles/modes/types.");
-
-  // +10 if dates present (availability clarity)
-  const hasDates = !!(u?.expected_start_date || u?.expected_end_date);
-  if (hasDates) score += 10;
-  else reasons.push("Add expected start/end dates.");
-
-  if (score > 100) score = 100;
-  return { score, reasons };
 }
