@@ -127,8 +127,18 @@ export default function ProfilePage() {
   }
 
   const data = profile.data as PublicUser | undefined;
-  console.log(data);
   const { score, parts, tips } = computeProfileScore(data);
+
+  useEffect(() => {
+    if (data?.resume) {
+      syncResumeURL();
+    }
+  }, [data?.resume, syncResumeURL]);
+
+  const openEmployerWithResume = async () => {
+    await syncResumeURL();
+    openEmployerModal();
+  };
 
   return (
     data && (
@@ -194,7 +204,10 @@ export default function ProfilePage() {
             <Card className="p-5">
               <div className="font-medium">Resume/CV</div>
 
-              <ResumeBox profile={data} openResumeModal={openResumeModal} />
+              <ResumeBox
+                profile={data}
+                openResumeModal={openEmployerWithResume}
+              />
             </Card>
 
             {/* Profile */}
@@ -285,19 +298,7 @@ export default function ProfilePage() {
           </aside>
         </main>
 
-        {/* Modals */}
-        {resumeURL.length > 0 && (
-          <ResumeModal>
-            <div className="space-y-4">
-              <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
-              <div className="px-6 pb-6">
-                <PDFPreview url={resumeURL} />
-              </div>
-            </div>
-          </ResumeModal>
-        )}
-
-        <EmployerModal>
+        <EmployerModal className="max-w-[80vw]">
           <ApplicantModalContent
             applicant={data}
             pfp_fetcher={() => UserService.getUserPfpURL("me")}
@@ -310,6 +311,7 @@ export default function ProfilePage() {
             open_calendar={async () => {
               openURL(data?.calendar_link);
             }}
+            resume_url={resumeURL}
           />
         </EmployerModal>
       </div>
@@ -592,9 +594,7 @@ function ProfileReadOnlyTabs({
                 return items.length ? (
                   <div className="flex flex-wrap gap-1.5">
                     {items.map((it) => (
-                      <Badge key={it.id}>
-                        {it.name}
-                      </Badge>
+                      <Badge key={it.id}>{it.name}</Badge>
                     ))}
                   </div>
                 ) : (
@@ -625,9 +625,7 @@ function ProfileReadOnlyTabs({
                 return items.length ? (
                   <div className="flex flex-wrap gap-1.5">
                     {items.map((it) => (
-                      <Badge key={it.id}>
-                        {it.name}
-                      </Badge>
+                      <Badge key={it.id}>{it.name}</Badge>
                     ))}
                   </div>
                 ) : (
@@ -655,9 +653,7 @@ function ProfileReadOnlyTabs({
                 return items.length ? (
                   <div className="flex flex-wrap gap-1.5">
                     {items.map((it) => (
-                      <Badge key={it.id}>
-                        {it.name}
-                      </Badge>
+                      <Badge key={it.id}>{it.name}</Badge>
                     ))}
                   </div>
                 ) : (
