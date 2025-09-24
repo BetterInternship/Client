@@ -64,7 +64,6 @@ import {
   type Option as ChipOpt,
 } from "@/components/ui/chip-select";
 
-
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
 export default function ProfilePage() {
@@ -548,8 +547,7 @@ function ProfileReadOnlyTabs({
                 }
               />
             )}
-          </div>  
-      
+          </div>
         </section>
 
         <Divider />
@@ -660,14 +658,15 @@ const ProfileEditor = forwardRef<
         github_link: toURL(formData.github_link)?.toString(),
         linkedin_link: toURL(formData.linkedin_link)?.toString(),
         calendar_link: toURL(formData.calendar_link)?.toString(),
-        taking_for_credit: typeof formData.taking_for_credit === "boolean"
-          ? formData.taking_for_credit
-          : false,
+        taking_for_credit:
+          typeof formData.taking_for_credit === "boolean"
+            ? formData.taking_for_credit
+            : false,
         expected_start_date: formData.expected_start_date
-        ? (/^\d{4}-\d{2}$/.test(formData.expected_start_date)
-            ? `${formData.expected_start_date}-01`                 // store as YYYY-MM-DD
-            : formData.expected_start_date)                        // already a full date
-        : null,
+          ? /^\d{4}-\d{2}$/.test(formData.expected_start_date)
+            ? `${formData.expected_start_date}-01` // store as YYYY-MM-DD
+            : formData.expected_start_date // already a full date
+          : null,
         expected_duration_hours:
           typeof formData.expected_duration_hours === "number"
             ? formData.expected_duration_hours
@@ -689,7 +688,7 @@ const ProfileEditor = forwardRef<
   const [jobModeOptions, setJobModeOptions] = useState(job_modes);
   const [jobTypeOptions, setJobTypeOptions] = useState(job_types);
   const [jobCategoryOptions, setJobCategoryOptions] = useState(job_categories);
-    const creditOptions: ChipOpt[] = [
+  const creditOptions: ChipOpt[] = [
     { value: "credit", label: "Credited" },
     { value: "voluntary", label: "Voluntary" },
   ];
@@ -809,13 +808,17 @@ const ProfileEditor = forwardRef<
     );
     addValidator("expected_start_date", (v?: string | null) => {
       if (!v) return "Please select an expected start month.";
-      const ym = /^\d{4}-\d{2}$/;        
-      const ymd = /^\d{4}-\d{2}-\d{2}$/;  
-      return ym.test(v) || ymd.test(v) ? "" : "Invalid date format (use YYYY-MM).";
+      const ym = /^\d{4}-\d{2}$/;
+      const ymd = /^\d{4}-\d{2}-\d{2}$/;
+      return ym.test(v) || ymd.test(v)
+        ? ""
+        : "Invalid date format (use YYYY-MM).";
     });
     addValidator("expected_duration_hours", (n?: number | null) => {
       if (n == null) return "Please enter expected duration.";
-      return Number.isFinite(n as number) && (n as number) >= 0 && (n as number) <= 2000
+      return Number.isFinite(n as number) &&
+        (n as number) >= 0 &&
+        (n as number) <= 2000
         ? ""
         : "Enter a valid number of hours (0-2000).";
     });
@@ -1050,8 +1053,8 @@ const ProfileEditor = forwardRef<
         <section className="flex flex-col space-y-2 gap-1">
           <div className="text-xl sm:text-2xl tracking-tight font-semibold">
             Internship Details
-          </div>                          
-          
+          </div>
+
           <div className="mt-2 flex gap-3 items-center">
             <div className="text-xs text-gray-600 mb-1 block">
               Are you looking for internship credit?
@@ -1067,7 +1070,9 @@ const ProfileEditor = forwardRef<
             className="w-full"
             label="Ideal internship start"
             date={ymToFirstDayTs(formData.expected_start_date)}
-            setter={(ms?: number) => setField("expected_start_date", monthFromMs(ms))}
+            setter={(ms?: number) =>
+              setField("expected_start_date", monthFromMs(ms))
+            }
             fromYear={2025}
             toYear={2030}
             required={false}
@@ -1400,5 +1405,3 @@ function toYYYYMM(input?: string | number | null): string | null {
 
   return null;
 }
-
-
