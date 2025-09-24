@@ -497,7 +497,7 @@ export function AutocompleteTreeMulti({
       </div>
 
       {isOpen && (
-        <ul className="absolute left-0 right-0 z-50 mt-1 max-h-60 overflow-auto rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5">
+        <ul className="absolute left-0 right-0 z-50 mt-1 max-h-40 overflow-auto rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5">
           {filteredTree.length ? (
             filteredTree.map((p) => {
               const info = counts.get(p.value)!;
