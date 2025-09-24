@@ -616,8 +616,6 @@ const ProfileEditor = forwardRef<
     job_types,
     job_categories,
     getUniversityFromDomain: get_universities_from_domain,
-    get_colleges_by_university,
-    get_departments_by_college,
     get_degrees_by_university,
   } = useDbRefs();
 
@@ -629,8 +627,7 @@ const ProfileEditor = forwardRef<
     formErrors.last_name ||
     formErrors.phone_number ||
     formErrors.university ||
-    formErrors.degree ||
-    formErrors.year_level
+    formErrors.degree
   );
   const hasPrefsErrors = !!(
     formErrors.expected_start_date ||
@@ -688,6 +685,7 @@ const ProfileEditor = forwardRef<
   const [jobModeOptions, setJobModeOptions] = useState(job_modes);
   const [jobTypeOptions, setJobTypeOptions] = useState(job_types);
   const [jobCategoryOptions, setJobCategoryOptions] = useState(job_categories);
+  const [yearLevelOptions, setYearLevelOptions] = useState(levels);
   const creditOptions: ChipOpt[] = [
     { value: "credit", label: "Credited" },
     { value: "voluntary", label: "Voluntary" },
@@ -714,30 +712,13 @@ const ProfileEditor = forwardRef<
   }, []);
 
   useEffect(() => {
-    setUniversityOptions(
-      universities.filter((u) =>
-        get_universities_from_domain(formData.email.split("@")[1]).includes(
-          u.id
-        )
-      )
-    );
-    setCollegeOptions(
-      colleges.filter((c) =>
-        get_colleges_by_university(formData.university ?? "").includes(c.id)
-      )
-    );
-    setDepartmentOptions(
-      departments.filter((d) =>
-        get_departments_by_college(formData.college ?? "").includes(d.id)
-      )
-    );
+    setUniversityOptions(universities);
     setDegreeOptions(
-      degrees
-        .filter((d) =>
-          get_degrees_by_university(formData.university ?? "").includes(d.id)
-        )
-        .map((d) => ({ ...d, name: `${d.type} ${d.name}` }))
+      degrees.filter((d) =>
+        get_degrees_by_university(formData.university ?? "").includes(d.id)
+      )
     );
+    setYearLevelOptions(levels);
 
     setJobModeOptions((job_modes ?? []).slice());
     setJobTypeOptions((job_types ?? []).slice());
@@ -755,8 +736,6 @@ const ProfileEditor = forwardRef<
     job_types,
     job_categories,
     get_universities_from_domain,
-    get_colleges_by_university,
-    get_departments_by_college,
     get_degrees_by_university,
   ]);
 
@@ -801,11 +780,11 @@ const ProfileEditor = forwardRef<
       (id: string) =>
         !degreeOptions.some((d) => d.id === id) && "Select a valid degree."
     );
-    addValidator("year_level", (id: string) =>
-      !id || !levels.some((l) => l.id === Number(id))
-        ? "Select a valid year level."
-        : ""
-    );
+    addValidator("year_level", (id?: string) => {
+      if (!id) return "";
+      const ok = yearLevelOptions.some((l) => String(l.id) === String(id));
+      return ok ? "" : "Select a valid year level.";
+    });
     addValidator("expected_start_date", (v?: string | null) => {
       if (!v) return "Please select an expected start month.";
       const ym = /^\d{4}-\d{2}$/;
@@ -815,6 +794,7 @@ const ProfileEditor = forwardRef<
         : "Invalid date format (use YYYY-MM).";
     });
     addValidator("expected_duration_hours", (n?: number | null) => {
+      if (formData.taking_for_credit === false) return "";
       if (n == null) return "Please enter expected duration.";
       return Number.isFinite(n as number) &&
         (n as number) >= 0 &&
@@ -985,7 +965,7 @@ const ProfileEditor = forwardRef<
               <ErrorLabel value={formErrors.year_level} />
               <Autocomplete
                 label={"Year Level"}
-                options={levels}
+                options={yearLevelOptions}
                 value={formData.year_level}
                 setter={fieldSetter("year_level")}
                 placeholder="Select Year Level"

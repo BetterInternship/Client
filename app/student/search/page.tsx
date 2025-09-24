@@ -930,7 +930,7 @@ export default function SearchPage() {
       </MassApplyResultModal>
 
       <IncompleteModal className="w-[50dvw] h-fit">
-        <IncompleteProfileContent profile={profile} job={selectedJob} />
+        <IncompleteProfileContent profile={profile} job={selectedJob} onFinish={closeIncomplete} />
       </IncompleteModal>
 
       {/* Resume Modal */}

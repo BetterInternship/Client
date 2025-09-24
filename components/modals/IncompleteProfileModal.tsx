@@ -82,7 +82,13 @@ function AIResumeStatus({
 
 /* ======================== Modal BODY (container) ======================== */
 
-export function IncompleteProfileContent({ profile }: { profile: any }) {
+export function IncompleteProfileContent({
+  profile,
+  handleClose,
+}: {
+  profile: any;
+  handleClose: () => void;
+}) {
   return (
     <div className="p-6 h-full overflow-y-auto pt-0">
       {/* Modal title */}
@@ -95,7 +101,10 @@ export function IncompleteProfileContent({ profile }: { profile: any }) {
         </h2>
       </div>
 
-      <CompleteProfileStepper initialProfile={profileToDraft(profile)} />
+      <CompleteProfileStepper
+        initialProfile={profileToDraft(profile)}
+        onFinish={handleClose}
+      />
     </div>
   );
 }
@@ -151,10 +160,13 @@ const steps = [
   { id: 2, title: "Activate your account", icon: MailCheck },
 ] as const;
 
+const SUCCESS_STEP = 3;
+
 const STEP_SUBTITLES: Record<number, string> = {
   0: "Upload a PDF and we'll auto-fill what we can.",
   1: "",
   2: "Verify your university email and start applying now!",
+  3: "Your profile’s ready to use. You can start applying right away.",
 };
 
 function CompleteProfileStepper({
@@ -275,16 +287,18 @@ function CompleteProfileStepper({
   return (
     <div className="w-full mx-auto">
       {/* Stepper (top) */}
-      <StepperHeader step={step} />
+      {step < SUCCESS_STEP && <StepperHeader step={step} />}
 
-      {/* Per-step header */}
-      <div className="mt-6 flex items-start gap-3">
-        <div className="flex-1">
-          <p className="text-sm text-muted-foreground">
-            {STEP_SUBTITLES[step]}
-          </p>
+      {/* Subtitle */}
+      {step < SUCCESS_STEP && (
+        <div className="mt-6 flex items-start gap-3">
+          <div className="flex-1">
+            <p className="text-sm text-muted-foreground">
+              {STEP_SUBTITLES[step]}
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Card body */}
       <div className="mt-3">
@@ -311,27 +325,44 @@ function CompleteProfileStepper({
           <StepBasicIdentity value={profile} onChange={setProfile} />
         )}
 
-        {step === 2 && <StepActivateOTP onFinish={() => {}} />}
+        {step === 2 && (
+          <StepActivateOTP
+            onFinish={() => {
+              setStep(SUCCESS_STEP);
+            }}
+          />
+        )}
+
+        {step === SUCCESS_STEP && (
+          <StepSuccess
+            onClose={() => {
+              onFinish?.();
+            }}
+          />
+        )}
       </div>
 
       {/* Shared footer controls (outside the card) */}
-      <div className="mt-4 flex items-center justify-between">
-        <div />
-        <div className="flex gap-2">
-          {showBack && (
-            <Button type="button" scheme="secondary" onClick={onBack}>
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Back
-            </Button>
-          )}
-          {step < 2 && (
-            <Button type="button" onClick={onNext} disabled={!canNext}>
-              {nextLabel}
-              {step < 2 && <ChevronRight className="ml-2 h-4 w-4" />}
-            </Button>
-          )}
+      {step < SUCCESS_STEP && (
+        <div className="mt-4 flex items-center justify-between">
+          <div />
+          <div className="flex gap-2">
+            {showBack && (
+              <Button type="button" scheme="secondary" onClick={onBack}>
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                Back
+              </Button>
+            )}
+            {(step === 0 || step === 1) && (
+              <Button type="button" onClick={onNext} disabled={!canNext}>
+                {nextLabel}
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            )}
+            {/* Step 2 advances via StepActivateOTP -> onFinish */}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -566,7 +597,6 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
       setActivating(true);
       AuthService.activate(eduEmail, otp).then((response) => {
         if (response.success) {
-          alert("Account activated!");
           onFinish();
         } else {
           alert(response.message ?? "OTP not valid.");
@@ -641,6 +671,26 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
         </div>
       </div>
     </div>
+  );
+}
+
+/* --------------------------- Success --------------------------- */
+
+function StepSuccess({ onClose }: { onClose: () => void }) {
+  return (
+    <Card className="p-6 sm:p-8 text-center">
+      <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
+        <CheckCircle2 className="h-9 w-9 text-emerald-600" />
+      </div>
+      <h3 className="text-2xl font-bold tracking-tight">You’re good to go!</h3>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Account activated and profile saved. You can now browse jobs and apply.
+      </p>
+
+      <div className="mt-6 flex items-center justify-center gap-2">
+        <Button onClick={onClose}>Start applying</Button>
+      </div>
+    </Card>
   );
 }
 
