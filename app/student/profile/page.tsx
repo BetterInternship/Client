@@ -494,11 +494,11 @@ function ProfileReadOnlyTabs({
               // icon={<LinkedinLogo />}
               link={profile.linkedin_link}
             />
-            <ProfileLinkBadge
+            {/* <ProfileLinkBadge
               title="Calendar"
               icon={<CalendarDays />}
               link={profile.calendar_link}
-            />
+            /> */}
           </div>
         </section>
 
