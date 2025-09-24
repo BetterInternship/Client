@@ -144,6 +144,17 @@ export default function SearchPage() {
   // computed pages
   const jobsPage = jobs.getJobsPage({ page: jobs_page, limit: jobs_page_size });
 
+  useEffect(() => {
+    if (profile?.data?.resume) {
+      syncResumeURL();
+    }
+  }, [profile?.data?.resume, syncResumeURL]);
+
+  const openStudentPreview = async () => {
+    await syncResumeURL();
+    openStudentPreview();
+  };
+
   /* --------------------------------------------
     * URL → local filter state
     -------------------------------------------- */
@@ -818,7 +829,7 @@ export default function SearchPage() {
       </ApplicationConfirmationModal>
 
       {/* Profile Preview Modal */}
-      <ProfilePreviewModal>
+      <ProfilePreviewModal className="max-w-[80vw]">
         <Button
           variant="ghost"
           size="sm"
@@ -844,6 +855,7 @@ export default function SearchPage() {
             open_calendar={async () => {
               openURL(profile.data?.calendar_link);
             }}
+            resume_url={resumeURL}
           />
         )}
       </ProfilePreviewModal>
