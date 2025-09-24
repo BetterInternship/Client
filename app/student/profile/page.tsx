@@ -1451,16 +1451,13 @@ function computeProfileScore(p?: Partial<PublicUser>): {
     bio: !!u.bio && u.bio.trim().length >= 50, // richer bios
     school: !!(
       u.university &&
-      u.college &&
-      u.department &&
-      u.degree &&
       u.year_level
     ),
     links: !!(u.github_link || u.linkedin_link || u.portfolio_link),
     prefs: !!(
-      u.job_mode_ids?.length ||
-      u.job_type_ids?.length ||
-      u.job_category_ids?.length
+      u.internship_preferences?.job_category_ids?.length ||
+      u.internship_preferences?.job_commitment_ids?.length ||
+      u.internship_preferences?.job_setup_ids?.length
     ),
     dates: !!(u.expected_start_date || u.expected_end_date),
     resume: !!u.resume,
@@ -1488,7 +1485,7 @@ function computeProfileScore(p?: Partial<PublicUser>): {
   if (!parts.links) tips.push("Add your LinkedIn/GitHub/Portfolio.");
   if (!parts.prefs) tips.push("Pick work modes, types, and roles you want.");
   if (!parts.dates) tips.push("Add expected internship dates.");
-  if (!parts.school) tips.push("Complete university/college/degree fields.");
+  if (!parts.school) tips.push("Complete university/degree fields.");
   if (!parts.resume) tips.push("Upload a resume in PDF (≤2.5MB).");
 
   return { score, parts, tips };
