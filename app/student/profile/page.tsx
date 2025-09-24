@@ -126,6 +126,7 @@ export default function ProfilePage() {
   }
 
   const data = profile.data as PublicUser | undefined;
+  console.log(data);
   const { score, parts, tips } = computeProfileScore(data);
 
   return (
@@ -133,7 +134,7 @@ export default function ProfilePage() {
       <div className="min-h-screen w-full">
         {/* Top header */}
         <div className="relative">
-          <header className="relative mx-auto max-w-5xl px-4 sm:px-6 pt-10">
+          <header className="relative mx-auto max-w-5xl px-4 sm:px-6 pt-10 ">
             <div className="flex flex-col lg:flex-row gap-6 items-start">
               {/* PFP */}
               <div className="relative">
@@ -160,7 +161,7 @@ export default function ProfilePage() {
               </div>
 
               {/* Info */}
-              <div className="flex-1 w-full min-w-0 mt-1">
+              <div className="flex-1 w-full min-w-0">
                 <div className="flex items-center gap-3">
                   <motion.h1
                     initial={{ opacity: 0, y: 6 }}
@@ -176,17 +177,6 @@ export default function ProfilePage() {
                   <HeaderLine profile={data} />
                 </div>
 
-                {/* Actions */}
-                <div className="mt-6 flex flex-wrap gap-2">
-                  <Button
-                    variant="outline"
-                    scheme="primary"
-                    disabled={isEditing}
-                    onClick={() => openEmployerModal()}
-                  >
-                    <Eye className="h-4 w-4" /> Preview
-                  </Button>
-                </div>
                 {saveError && (
                   <p className="text-xs text-amber-600 mt-2">{saveError}</p>
                 )}
@@ -381,7 +371,6 @@ function ProfileReadOnlyTabs({
   profile: PublicUser;
   onEdit: () => void;
 }) {
-  const { isMobile } = useAppContext();
   const { to_level_name, to_degree_full_name, to_university_name } =
     useDbRefs();
 
@@ -520,29 +509,47 @@ function ProfileReadOnlyTabs({
           <div className="text-xl sm:text-2xl tracking-tight font-semibold">
             Internship Details
           </div>
+          {/*  */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-2">
             <LabeledProperty
               label="Type of internship"
               value={
-                profile.taking_for_credit == null
-                  ? "—"
-                  : profile.taking_for_credit
-                  ? "Credited"
-                  : "Voluntary"
+                profile.internship_preferences?.internship_type
+                  ? profile.internship_preferences.internship_type ===
+                    "credited"
+                    ? "Credited"
+                    : "Voluntary"
+                  : profile.taking_for_credit != null
+                  ? profile.taking_for_credit
+                    ? "Credited"
+                    : "Voluntary"
+                  : "—"
               }
             />
-
+            {/* TODO: Remove this when we removed the columns */}
             <LabeledProperty
               label="Ideal internship start"
-              value={toYYYYMM(profile.expected_start_date) ?? "—"}
+              value={
+                toYYYYMM(
+                  profile.internship_preferences?.expected_start_date ??
+                    profile.expected_start_date
+                ) ?? "—"
+              }
             />
-
-            {profile.taking_for_credit && (
+            {/* TODO: Remove this when we removed the columns */}
+            {(profile.internship_preferences?.internship_type
+              ? profile.internship_preferences.internship_type === "credited"
+              : profile.taking_for_credit === true) && (
               <LabeledProperty
                 label="Expected Duration (hours)"
                 value={
                   typeof profile.expected_duration_hours === "number"
                     ? String(profile.expected_duration_hours)
+                    : typeof profile.internship_preferences
+                        ?.expected_duration_hours === "number"
+                    ? String(
+                        profile.internship_preferences.expected_duration_hours
+                      )
                     : "—"
                 }
               />
@@ -560,24 +567,47 @@ function ProfileReadOnlyTabs({
             <LabeledProperty
               label="Work Modes"
               value={
-                profile.job_mode_ids?.length
-                  ? `${profile.job_mode_ids.length} selected`
+                (profile.internship_preferences?.job_setup_ids?.length ?? 0) ||
+                (profile.job_mode_ids?.length ?? 0)
+                  ? `${
+                      (profile.internship_preferences?.job_setup_ids?.length ??
+                        0) ||
+                      (profile.job_mode_ids?.length ?? 0)
+                    } selected`
                   : "—"
               }
             />
+
+            {/* TODO: Remove this when we removed the columns */}
             <LabeledProperty
               label="Workload Types"
               value={
-                profile.job_type_ids?.length
-                  ? `${profile.job_type_ids.length} selected`
+                (profile.internship_preferences?.job_commitment_ids?.length ??
+                  0) ||
+                (profile.job_type_ids?.length ?? 0)
+                  ? `${
+                      (profile.internship_preferences?.job_commitment_ids
+                        ?.length ??
+                        0) ||
+                      (profile.job_type_ids?.length ?? 0)
+                    } selected`
                   : "—"
               }
             />
+
+            {/* TODO: Remove this when we removed the columns */}
             <LabeledProperty
               label="Positions / Categories"
               value={
-                profile.job_category_ids?.length
-                  ? `${profile.job_category_ids.length} selected`
+                (profile.internship_preferences?.job_category_ids?.length ??
+                  0) ||
+                (profile.job_category_ids?.length ?? 0)
+                  ? `${
+                      (profile.internship_preferences?.job_category_ids
+                        ?.length ??
+                        0) ||
+                      (profile.job_category_ids?.length ?? 0)
+                    } selected`
                   : "—"
               }
             />
@@ -649,6 +679,22 @@ const ProfileEditor = forwardRef<
         console.log(hasErrors, formErrors);
         return false;
       }
+
+      const prefs = {
+        internship_type: formData.taking_for_credit ? "credited" : "voluntary",
+        expected_start_date:
+          ymToFirstDayTs(formData.expected_start_date) ?? null,
+        expected_duration_hours:
+          formData.taking_for_credit === true
+            ? typeof formData.expected_duration_hours === "number"
+              ? formData.expected_duration_hours
+              : null
+            : null,
+        job_setup_ids: toStrArr(formData.job_mode_ids),
+        job_commitment_ids: toStrArr(formData.job_type_ids),
+        job_category_ids: toStrArr(formData.job_category_ids),
+      } as const;
+
       const updatedProfile = {
         ...cleanFormData(),
         portfolio_link: toURL(formData.portfolio_link)?.toString(),
@@ -668,9 +714,20 @@ const ProfileEditor = forwardRef<
           typeof formData.expected_duration_hours === "number"
             ? formData.expected_duration_hours
             : null,
-        job_mode_ids: formData.job_mode_ids ?? null,
-        job_type_ids: formData.job_type_ids ?? null,
-        job_category_ids: formData.job_category_ids ?? null,
+        // job_mode_ids: formData.job_mode_ids ?? null,
+        // job_type_ids: formData.job_type_ids ?? null,
+        // job_category_ids: formData.job_category_ids ?? null,
+        internship_preferences: {
+          ...(formData.internship_preferences ?? {}),
+          job_setup_ids: (
+            formData.internship_preferences?.job_setup_ids ?? []
+          ).map(String),
+          job_commitment_ids: (
+            formData.internship_preferences?.job_commitment_ids ?? []
+          ).map(String),
+          job_category_ids:
+            formData.internship_preferences?.job_category_ids ?? [],
+        },
       };
       await updateProfile(updatedProfile);
       qc.invalidateQueries({ queryKey: ["my-profile"] });
@@ -692,14 +749,18 @@ const ProfileEditor = forwardRef<
   ];
 
   const creditValue =
-    formData.taking_for_credit == null
+    formData.internship_preferences?.internship_type == null
       ? null
-      : formData.taking_for_credit
+      : formData.internship_preferences?.internship_type === "credited"
       ? "credit"
       : "voluntary";
 
   const handleCreditChange = (v: string | null) => {
-    setField("taking_for_credit", v == null ? null : v === "credit");
+    setField("internship_preferences", {
+      ...(formData.internship_preferences ?? {}),
+      internship_type:
+        v === "credit" ? "credited" : v === "voluntary" ? "voluntary" : null,
+    });
   };
 
   const validIdsFromTree = useMemo(() => {
@@ -867,6 +928,20 @@ const ProfileEditor = forwardRef<
       setField("expected_start_date", next);
     }
   }, []);
+
+  const prefs = formData.internship_preferences ?? {
+    job_setup_ids: [],
+    job_commitment_ids: [],
+    job_category_ids: [],
+  };
+
+  // helper for nested updates
+  const setPrefsField = <K extends keyof typeof prefs>(key: K, val: any) => {
+    setField("internship_preferences", {
+      ...prefs,
+      [key]: Array.isArray(val) ? val : val, // we'll map to strings in setter below
+    });
+  };
 
   return (
     <OutsideTabs
@@ -1040,8 +1115,20 @@ const ProfileEditor = forwardRef<
               Are you looking for internship credit?
             </div>
             <SingleChipSelect
-              value={creditValue}
-              onChange={handleCreditChange}
+              value={
+                formData.internship_preferences?.internship_type === "credited"
+                  ? "credit"
+                  : formData.internship_preferences?.internship_type ===
+                    "voluntary"
+                  ? "voluntary"
+                  : null
+              }
+              onChange={(v) =>
+                setField("internship_preferences", {
+                  ...(formData.internship_preferences ?? {}),
+                  internship_type: v === "credit" ? "credited" : "voluntary",
+                })
+              }
               options={creditOptions}
             />
           </div>
@@ -1049,10 +1136,16 @@ const ProfileEditor = forwardRef<
           <FormMonthPicker
             className="w-full"
             label="Ideal internship start"
-            date={ymToFirstDayTs(formData.expected_start_date)}
-            setter={(ms?: number) =>
-              setField("expected_start_date", monthFromMs(ms))
+            date={
+              formData.internship_preferences?.expected_start_date ??
+              ymToFirstDayTs(formData.expected_start_date)
             }
+            setter={(ms?: number) => {
+              setField("internship_preferences", {
+                ...(formData.internship_preferences ?? {}),
+                expected_start_date: ms ?? null, // FormMonthPicker gives ms
+              });
+            }}
             fromYear={2025}
             toYear={2030}
             required={false}
@@ -1061,19 +1154,26 @@ const ProfileEditor = forwardRef<
 
           <ErrorLabel value={formErrors.expected_start_date} />
 
-          {formData.taking_for_credit === true && (
+          {/* TODO: CHECK LEGACY CODE THEN INTERNSHIP PREF */}
+          {formData.internship_preferences?.internship_type === "credited" && (
             <div className="mt-3 space-y-2">
               <FormInput
                 label="Expected Duration (hours)"
                 inputMode="numeric"
-                value={formData.expected_duration_hours ?? ""}
-                setter={(v: string) => {
-                  const n = v === "" || v == null ? null : Number(v);
-                  setField(
-                    "expected_duration_hours",
-                    Number.isFinite(n as number) ? (n as number) : null
-                  );
-                }}
+                value={
+                  formData.internship_preferences?.expected_duration_hours ?? ""
+                }
+                setter={(v: string) =>
+                  setField("internship_preferences", {
+                    ...(formData.internship_preferences ?? {}),
+                    expected_duration_hours:
+                      v === ""
+                        ? null
+                        : Number.isFinite(Number(v))
+                        ? Number(v)
+                        : null,
+                  })
+                }
                 required={false}
               />
               <ErrorLabel value={formErrors.expected_duration_hours} />
@@ -1091,21 +1191,34 @@ const ProfileEditor = forwardRef<
 
           <div className="mt-2">
             <AutocompleteMulti
-              label={"Work Modes"}
+              label="Work Modes"
               options={jobModeOptions}
-              value={formData.job_mode_ids ?? []}
-              setter={fieldSetter("job_mode_ids")}
+              value={(formData.internship_preferences?.job_setup_ids ?? []).map(
+                Number
+              )}
+              setter={(ids: number[]) =>
+                setField("internship_preferences", {
+                  ...(formData.internship_preferences ?? {}),
+                  job_setup_ids: ids.map(String),
+                })
+              }
               placeholder="Select one or more"
             />
-            <ErrorLabel value={formErrors.job_mode_ids} />
           </div>
 
           <div className="mt-2">
             <AutocompleteMulti
-              label={"Workload Types"}
+              label="Workload Types"
               options={jobTypeOptions}
-              value={formData.job_type_ids ?? []}
-              setter={fieldSetter("job_type_ids")}
+              value={(
+                formData.internship_preferences?.job_commitment_ids ?? []
+              ).map(Number)}
+              setter={(ids: number[]) =>
+                setField("internship_preferences", {
+                  ...(formData.internship_preferences ?? {}),
+                  job_commitment_ids: ids.map(String),
+                })
+              }
               placeholder="Select one or more"
             />
             <ErrorLabel value={formErrors.job_type_ids} />
@@ -1113,10 +1226,15 @@ const ProfileEditor = forwardRef<
 
           <div className="mt-2">
             <AutocompleteTreeMulti
-              label={"Positions / Categories"}
-              tree={POSITION_TREE}
-              value={formData.job_category_ids ?? []}
-              setter={fieldSetter("job_category_ids")}
+              label="Positions / Categories"
+              tree={POSITION_TREE} // string ids
+              value={formData.internship_preferences?.job_category_ids ?? []}
+              setter={(ids: string[]) =>
+                setField("internship_preferences", {
+                  ...(formData.internship_preferences ?? {}),
+                  job_category_ids: ids, // store as string[]
+                })
+              }
               placeholder="Select one or more"
             />
             <ErrorLabel value={formErrors.job_category_ids} />
@@ -1385,3 +1503,7 @@ function toYYYYMM(input?: string | number | null): string | null {
 
   return null;
 }
+
+const toStrArr = (a?: unknown[] | null) => (a ?? []).map(String);
+const toStrArrOrNull = (a?: unknown[] | null) =>
+  a && a.length ? a.map(String) : null;
