@@ -514,13 +514,13 @@ function MobileDrawer({
 
             <Separator className="my-4" />
 
-            {/* Navigation (Chats second, styled as list items) */}
+            {/* Navigation */}
             <nav>
               <ul className="grid gap-1">
                 {isAuthenticated() && (
                   <li>
                     <Link href="/conversations" className="block w-full">
-                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200">
+                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2">
                         <span className="inline-flex items-center gap-2 text-sm">
                           <MessageCircleMore className="w-4 h-4" /> Chats
                         </span>
@@ -538,15 +538,21 @@ function MobileDrawer({
                 <li>
                   <Link href="/search" className="block w-full">
                     <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                      <span>Browse</span>
+                      <div>
+                        <Search className="w-4 h-4 inline-block mr-2" />
+                        <span>Browse</span>
+                      </div>
                       <ChevronRight className="w-4 h-4 text-gray-300" />
                     </button>
                   </Link>
                 </li>
                 <li>
-                  <Link href="/saved" className="block w-full">
+                  <Link href="/profile" className="block w-full">
                     <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                      <span>Saved Jobs</span>
+                      <div>
+                        <Settings className="w-4 h-4 inline-block mr-2" />
+                        <span>Profile</span>
+                      </div>
                       <ChevronRight className="w-4 h-4 text-gray-300" />
                     </button>
                   </Link>
@@ -554,15 +560,33 @@ function MobileDrawer({
                 <li>
                   <Link href="/applications" className="block w-full">
                     <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                      <span>Applications</span>
+                      <div>
+                        <BookA className="w-4 h-4 inline-block mr-2" />
+                        <span>Applications</span>
+                      </div>
                       <ChevronRight className="w-4 h-4 text-gray-300" />
                     </button>
                   </Link>
                 </li>
                 <li>
+                  <Link href="/saved" className="block w-full">
+                    <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
+                      <div>
+                        <Heart className="w-4 h-4 inline-block mr-2" />
+                        <span>Saved Jobs</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-gray-300" />
+                    </button>
+                  </Link>
+                </li>
+
+                <li>
                   <Link href="/help" className="block w-full">
                     <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                      <span>Help Center</span>
+                      <div>
+                        <HelpCircle className="w-4 h-4 inline-block mr-2" />
+                        <span>Help Center</span>
+                      </div>
                       <ChevronRight className="w-4 h-4 text-gray-300" />
                     </button>
                   </Link>
@@ -644,23 +668,23 @@ export const ProfileButton: React.FC = () => {
         className="z-[200] w-fit"
       >
         <DropdownOption href="/profile">
-          <Settings className="w-4 h-4 inline-block m-1 mr-2" />
-          Profile Settings
+          <Settings className="w-4 h-4 inline-block mr-2 text-primary" />
+          <span className="text-primary">Profile</span>
         </DropdownOption>
         <DropdownOption href="/applications">
-          <BookA className="w-4 h-4 inline-block m-1 mr-2" />
-          Applications
+          <BookA className="w-4 h-4 inline-block mr-2 text-primary" />
+          <span className="text-primary">Applications</span>
         </DropdownOption>
         <DropdownOption href="/saved">
-          <Heart className="w-4 h-4 inline-block m-1 mr-2" />
-          Saved Jobs
+          <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
+          <span className="text-primary">Saved Jobs</span>
         </DropdownOption>
         <DropdownOption href="/help">
-          <HelpCircle className="w-4 h-4 inline-block m-1 mr-2" />
-          Help Center
+          <HelpCircle className="w-4 h-4 inline-block mr-2 text-primary" />
+          <span className="text-primary">Help Center</span>
         </DropdownOption>
         <DropdownOption href="/" on_click={handleLogout}>
-          <LogOut className="text-red-500 w-4 h-4 inline-block m-1 mr-2" />
+          <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />
           <span className="text-red-500">Sign Out</span>
         </DropdownOption>
       </GroupableNavDropdown>
