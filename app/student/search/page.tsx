@@ -134,7 +134,7 @@ export default function SearchPage() {
     Modal: IncompleteModal,
     open: openIncomplete,
     close: closeIncomplete,
-  } = useModal("IncompleteProfileModal");
+  } = useModal("IncompleteProfileModal", { allowBackdropClick: false });
 
   const successModalRef = useModalRef();
 
@@ -941,10 +941,9 @@ export default function SearchPage() {
         </div>
       </MassApplyResultModal>
 
-      <IncompleteModal className="w-[50dvw] h-fit">
+      <IncompleteModal className="sm:w-[50dvw] sm:h-fit">
         <IncompleteProfileContent
           profile={profile}
-          job={selectedJob}
           handleClose={closeIncomplete}
         />
       </IncompleteModal>

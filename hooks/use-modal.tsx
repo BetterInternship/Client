@@ -35,10 +35,14 @@ export type ModalHandle = { open: () => void; close: () => void };
 /** The main hook */
 export const useModal = (
   name: string,
-  options?: { onClose?: () => void; showCloseButton?: boolean }
+  options?: {
+    onClose?: () => void;
+    showCloseButton?: boolean;
+    allowBackdropClick?: boolean;
+  }
 ) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { showCloseButton = true } = options || {};
+  const { showCloseButton = true, allowBackdropClick = true } = options || {};
   const { isMobile } = useAppContext();
   const { isTouchOnSingleElement, isTouchEndOnElement, isSwipe } = useMobile();
 
@@ -54,13 +58,14 @@ export const useModal = (
 
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {
+      if (!allowBackdropClick) return;
       if (isMobile) return;
       if (e.target === backdropRef.current) {
         console.debug(`[useModal:${name}] backdrop click -> close`);
         setIsOpen(false);
       }
     },
-    [isMobile, name]
+    [isMobile, name, allowBackdropClick]
   );
 
   // Lock body scroll + iOS --vh fix when open
