@@ -76,7 +76,7 @@ export function BoolBadge({
     <Badge
       type={state ? onScheme : offScheme}
       {...props}
-      className={cn("pointer-events-none", className)}
+      className={cn("pointer-events-none rounded-[0.33em]", className)}
     >
       <BooleanCheckIcon checked={state} />
       {state ? onValue : offValue}

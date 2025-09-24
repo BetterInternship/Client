@@ -63,6 +63,7 @@ import {
   SingleChipSelect,
   type Option as ChipOpt,
 } from "@/components/ui/chip-select";
+import { Badge } from "@/components/ui/badge";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
@@ -343,18 +344,18 @@ function HeaderLine({ profile }: { profile: PublicUser }) {
     <div className="flex flex-col gap-1">
       {(degree || level || uni) && (
         <div className="flex gap-2">
-          <div className="py-1 px-2 rounded-lg border border-gray-300 bg-white flex items-center gap-1 text-sm">
+          <div className="py-1 px-2 rounded-[0.33em] border border-gray-300 bg-white flex items-center gap-1 text-sm">
             {uni}
           </div>
 
           {degree && (
-            <div className="py-1 px-2 rounded-lg border border-gray-300 bg-white flex items-center gap-1 text-sm">
+            <div className="py-1 px-2 rounded-[0.33em] border border-gray-300 bg-white flex items-center gap-1 text-sm">
               {degree}
             </div>
           )}
 
           {level && (
-            <div className="py-1 px-2 rounded-lg border border-gray-300 bg-white flex items-center gap-1 text-sm">
+            <div className="py-1 px-2 rounded-[0.33em] border border-gray-300 bg-white flex items-center gap-1 text-sm">
               {level}
             </div>
           )}
@@ -371,8 +372,14 @@ function ProfileReadOnlyTabs({
   profile: PublicUser;
   onEdit: () => void;
 }) {
-  const { to_level_name, to_degree_full_name, to_university_name } =
-    useDbRefs();
+  const {
+    to_level_name,
+    to_degree_full_name,
+    to_university_name,
+    job_modes,
+    job_types,
+    job_categories,
+  } = useDbRefs();
 
   type TabKey = "Student Profile" | "Internship Details";
   const [tab, setTab] = useState<TabKey>("Student Profile");
@@ -564,53 +571,100 @@ function ProfileReadOnlyTabs({
             Preferences
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-2">
-            <LabeledProperty
-              label="Work Modes"
-              value={
-                (profile.internship_preferences?.job_setup_ids?.length ?? 0) ||
-                (profile.job_mode_ids?.length ?? 0)
-                  ? `${
-                      (profile.internship_preferences?.job_setup_ids?.length ??
-                        0) ||
-                      (profile.job_mode_ids?.length ?? 0)
-                    } selected`
-                  : "—"
-              }
-            />
+            {/* TODO: Remove this when we removed the columns */}
+            <div>
+              <div className="text-xs text-muted-foreground mb-1">
+                Work Modes
+              </div>
+              {(() => {
+                const ids = (profile.internship_preferences?.job_setup_ids ??
+                  profile.job_mode_ids ??
+                  []) as (string | number)[];
+                const items = ids
+                  .map((id) => {
+                    const m = job_modes.find(
+                      (x) => String(x.id) === String(id)
+                    );
+                    return m ? { id: String(m.id), name: m.name } : null;
+                  })
+                  .filter(Boolean) as { id: string; name: string }[];
+
+                return items.length ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {items.map((it) => (
+                      <Badge key={it.id}>
+                        {it.name}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground">—</div>
+                );
+              })()}
+            </div>
 
             {/* TODO: Remove this when we removed the columns */}
-            <LabeledProperty
-              label="Workload Types"
-              value={
-                (profile.internship_preferences?.job_commitment_ids?.length ??
-                  0) ||
-                (profile.job_type_ids?.length ?? 0)
-                  ? `${
-                      (profile.internship_preferences?.job_commitment_ids
-                        ?.length ??
-                        0) ||
-                      (profile.job_type_ids?.length ?? 0)
-                    } selected`
-                  : "—"
-              }
-            />
+            <div>
+              <div className="text-xs text-muted-foreground mb-1">
+                Workload Types
+              </div>
+              {(() => {
+                const ids = (profile.internship_preferences
+                  ?.job_commitment_ids ??
+                  profile.job_type_ids ??
+                  []) as (string | number)[];
+                const items = ids
+                  .map((id) => {
+                    const t = job_types.find(
+                      (x) => String(x.id) === String(id)
+                    );
+                    return t ? { id: String(t.id), name: t.name } : null;
+                  })
+                  .filter(Boolean) as { id: string; name: string }[];
+
+                return items.length ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {items.map((it) => (
+                      <Badge key={it.id}>
+                        {it.name}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground">—</div>
+                );
+              })()}
+            </div>
 
             {/* TODO: Remove this when we removed the columns */}
-            <LabeledProperty
-              label="Positions / Categories"
-              value={
-                (profile.internship_preferences?.job_category_ids?.length ??
-                  0) ||
-                (profile.job_category_ids?.length ?? 0)
-                  ? `${
-                      (profile.internship_preferences?.job_category_ids
-                        ?.length ??
-                        0) ||
-                      (profile.job_category_ids?.length ?? 0)
-                    } selected`
-                  : "—"
-              }
-            />
+            <div className="sm:col-span-2">
+              <div className="text-xs text-muted-foreground mb-1">
+                Positions / Categories
+              </div>
+              {(() => {
+                const ids = (profile.internship_preferences?.job_category_ids ??
+                  profile.job_category_ids ??
+                  []) as string[];
+                const items = ids
+                  .map((id) => {
+                    const c = job_categories.find((x) => x.id === id);
+                    return c ? { id: c.id, name: c.name } : null;
+                  })
+                  .filter(Boolean) as { id: string; name: string }[];
+
+                return items.length ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {items.map((it) => (
+                      <Badge key={it.id}>
+                        {it.name}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground">—</div>
+                );
+              })()}
+            </div>
           </div>
         </section>
       </OutsideTabPanel>
@@ -1094,7 +1148,7 @@ const ProfileEditor = forwardRef<
             value={formData.bio || ""}
             onChange={(e) => setField("bio", e.target.value)}
             placeholder="Tell us about yourself: strengths, interests, and goals. Aim for at least 50 characters for a stronger profile."
-            className="w-full border rounded-md p-3 text-sm min-h-28 resize-none focus-visible:outline-none focus:ring-2 focus:ring-primary/30"
+            className="w-full border rounded-[0.33em] p-3 text-sm min-h-28 resize-none focus-visible:outline-none focus:ring-2 focus:ring-primary/30"
             maxLength={500}
           />
           <p className="text-xs text-muted-foreground text-right">
@@ -1326,7 +1380,7 @@ const ResumeBox = ({
 
       {/* Optional hint / empty state line */}
       {!hasResume && !resumeIsUploading && (
-        <div className="rounded-md border border-dashed p-3 text-xs text-muted-foreground">
+        <div className="rounded-[0.33em] border border-dashed p-3 text-xs text-muted-foreground">
           No resume yet. Click <span className="font-medium">Upload</span> to
           add your PDF.
         </div>
