@@ -111,12 +111,12 @@ export const isCompleteProfile = (user: PublicUser | null): boolean => {
 
   if (
     nullish(user.university) ||
-    nullish(user.college) ||
-    nullish(user.department) ||
-    nullish(user.degree) ||
-    nullish(user.year_level)
+    nullish(user.degree)
+    // nullish(user.year_level)
   )
     return false;
+
+  if (user.resume?.length === 0) return false;
 
   // ! uncomment when calendar back
   if (/*!user.calendar_link?.trim() || */ !user.resume?.trim()) return false;
