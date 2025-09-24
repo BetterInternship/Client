@@ -46,8 +46,7 @@ import { MyUserPfp } from "@/components/shared/pfp";
 import { useAppContext } from "@/lib/ctx-app";
 import {
   createEditForm,
-  FormCheckbox,
-  FormDatePicker,
+  FormMonthPicker,
   FormInput,
 } from "@/components/EditForm";
 import { Divider } from "@/components/ui/divider";
@@ -60,6 +59,11 @@ import { AutocompleteTreeMulti } from "@/components/ui/autocomplete";
 import { TabGroup, Tab } from "@/components/ui/tabs";
 import { POSITION_TREE } from "@/lib/consts/positions";
 import { OutsideTabs, OutsideTabPanel } from "@/components/ui/outside-tabs";
+import {
+  SingleChipSelect,
+  type Option as ChipOpt,
+} from "@/components/ui/chip-select";
+
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
@@ -228,7 +232,7 @@ export default function ProfilePage() {
                         if (success) setIsEditing(false);
                         else
                           setSaveError(
-                            "Please fix the errors in the form before saving."
+                            "Please fix the errors in the form before saving." // TODO: Make this a toast
                           );
                       }}
                       disabled={saving}
@@ -520,7 +524,18 @@ function ProfileReadOnlyTabs({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-2">
             <LabeledProperty
               label="Type of internship"
-              value={profile.taking_for_credit ? "Credited" : "Voluntary"}
+              value={
+                profile.taking_for_credit == null
+                  ? "—"
+                  : profile.taking_for_credit
+                  ? "Credited"
+                  : "Voluntary"
+              }
+            />
+
+            <LabeledProperty
+              label="Ideal internship start"
+              value={toYYYYMM(profile.expected_start_date) ?? "—"}
             />
 
             {profile.taking_for_credit && (
@@ -533,7 +548,8 @@ function ProfileReadOnlyTabs({
                 }
               />
             )}
-          </div>
+          </div>  
+      
         </section>
 
         <Divider />
@@ -615,14 +631,12 @@ const ProfileEditor = forwardRef<
     formErrors.last_name ||
     formErrors.phone_number ||
     formErrors.university ||
-    formErrors.college ||
-    formErrors.department ||
     formErrors.degree ||
     formErrors.year_level
   );
   const hasPrefsErrors = !!(
     formErrors.expected_start_date ||
-    formErrors.expected_end_date ||
+    formErrors.expected_duration_hours ||
     formErrors.job_mode_ids ||
     formErrors.job_type_ids ||
     formErrors.job_category_ids
@@ -637,6 +651,7 @@ const ProfileEditor = forwardRef<
         if (hasCalendarErrors) setTab("Calendar");
         else if (hasPrefsErrors) setTab("Internship Details");
         else setTab("Student Profile");
+        console.log(hasErrors, formErrors);
         return false;
       }
       const updatedProfile = {
@@ -645,8 +660,14 @@ const ProfileEditor = forwardRef<
         github_link: toURL(formData.github_link)?.toString(),
         linkedin_link: toURL(formData.linkedin_link)?.toString(),
         calendar_link: toURL(formData.calendar_link)?.toString(),
-        expected_start_date: formData.expected_start_date || null,
-        expected_end_date: formData.expected_end_date || null,
+        taking_for_credit: typeof formData.taking_for_credit === "boolean"
+          ? formData.taking_for_credit
+          : false,
+        expected_start_date: formData.expected_start_date
+        ? (/^\d{4}-\d{2}$/.test(formData.expected_start_date)
+            ? `${formData.expected_start_date}-01`                 // store as YYYY-MM-DD
+            : formData.expected_start_date)                        // already a full date
+        : null,
         expected_duration_hours:
           typeof formData.expected_duration_hours === "number"
             ? formData.expected_duration_hours
@@ -668,6 +689,21 @@ const ProfileEditor = forwardRef<
   const [jobModeOptions, setJobModeOptions] = useState(job_modes);
   const [jobTypeOptions, setJobTypeOptions] = useState(job_types);
   const [jobCategoryOptions, setJobCategoryOptions] = useState(job_categories);
+    const creditOptions: ChipOpt[] = [
+    { value: "credit", label: "Credited" },
+    { value: "voluntary", label: "Voluntary" },
+  ];
+
+  const creditValue =
+    formData.taking_for_credit == null
+      ? null
+      : formData.taking_for_credit
+      ? "credit"
+      : "voluntary";
+
+  const handleCreditChange = (v: string | null) => {
+    setField("taking_for_credit", v == null ? null : v === "credit");
+  };
 
   const validIdsFromTree = useMemo(() => {
     const s = new Set<string>();
@@ -762,17 +798,6 @@ const ProfileEditor = forwardRef<
         "Select a valid university."
     );
     addValidator(
-      "college",
-      (id: string) =>
-        !collegeOptions.some((c) => c.id === id) && "Select a valid college."
-    );
-    addValidator(
-      "department",
-      (id: string) =>
-        !departmentOptions.some((d) => d.id === formData.department) &&
-        "Select a valid department."
-    );
-    addValidator(
       "degree",
       (id: string) =>
         !degreeOptions.some((d) => d.id === id) && "Select a valid degree."
@@ -782,18 +807,17 @@ const ProfileEditor = forwardRef<
         ? "Select a valid year level."
         : ""
     );
-    addValidator("expected_start_date", (s?: string) => {
-      if (!s) return "";
-      return /^\d{4}-\d{2}-\d{2}$/.test(s) ? "" : "Invalid start date.";
+    addValidator("expected_start_date", (v?: string | null) => {
+      if (!v) return "Please select an expected start month.";
+      const ym = /^\d{4}-\d{2}$/;        
+      const ymd = /^\d{4}-\d{2}-\d{2}$/;  
+      return ym.test(v) || ymd.test(v) ? "" : "Invalid date format (use YYYY-MM).";
     });
-    addValidator("expected_end_date", (s?: string) => {
-      if (!s) return "";
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return "Invalid end date.";
-      const sMs = isoToMs(formData.expected_start_date);
-      const eMs = isoToMs(s);
-      return sMs != null && eMs != null && eMs < sMs
-        ? "End date must be on/after start date."
-        : "";
+    addValidator("expected_duration_hours", (n?: number | null) => {
+      if (n == null) return "Please enter expected duration.";
+      return Number.isFinite(n as number) && (n as number) >= 0 && (n as number) <= 2000
+        ? ""
+        : "Enter a valid number of hours (0-2000).";
     });
     addValidator("job_mode_ids", (vals?: string[]) => {
       if (!vals) return "";
@@ -842,6 +866,24 @@ const ProfileEditor = forwardRef<
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [showCalendarHelp]);
+
+  const didInitNormalize = useRef(false);
+  useEffect(() => {
+    if (didInitNormalize.current) return;
+    didInitNormalize.current = true;
+
+    const current = formData.expected_start_date;
+    let next = toYYYYMM(current);
+
+    // If you want a default only when credited:
+    if (!next) {
+      next = monthFromMs(getNearestMonthTimestamp());
+    }
+
+    if (next && next !== current) {
+      setField("expected_start_date", next);
+    }
+  }, []);
 
   return (
     <OutsideTabs
@@ -1008,53 +1050,50 @@ const ProfileEditor = forwardRef<
         <section className="flex flex-col space-y-2 gap-1">
           <div className="text-xl sm:text-2xl tracking-tight font-semibold">
             Internship Details
-          </div>
-
-          <div className="flex items-center mt-4">
-            <FormCheckbox
-              checked={formData.taking_for_credit}
-              setter={fieldSetter("taking_for_credit")}
-            />
-            <div className="text-sm text-muted-foreground ml-3">
-              Taking internships for credit?
+          </div>                          
+          
+          <div className="mt-2 flex gap-3 items-center">
+            <div className="text-xs text-gray-600 mb-1 block">
+              Are you looking for internship credit?
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-            <FormDatePicker
-              className="w-full"
-              label="Expected Start Date"
-              date={isoToMs(formData.expected_start_date)}
-              setter={(ms?: number) =>
-                setField("expected_start_date", msToISO(ms) ?? null)
-              }
-              required={false}
-            />
-            <FormDatePicker
-              className="w-full"
-              label="Expected End Date"
-              date={isoToMs(formData.expected_end_date)}
-              setter={(ms?: number) =>
-                setField("expected_end_date", msToISO(ms) ?? null)
-              }
-              required={false}
+            <SingleChipSelect
+              value={creditValue}
+              onChange={handleCreditChange}
+              options={creditOptions}
             />
           </div>
 
-          <FormInput
-            label="Expected Duration (hours)"
-            type="number"
-            inputMode="numeric"
-            value={formData.expected_duration_hours ?? ""}
-            setter={(v: string) => {
-              const n = v === "" || v == null ? null : Number(v);
-              setField(
-                "expected_duration_hours",
-                Number.isFinite(n as number) ? (n as number) : null
-              );
-            }}
+          <FormMonthPicker
+            className="w-full"
+            label="Ideal internship start"
+            date={ymToFirstDayTs(formData.expected_start_date)}
+            setter={(ms?: number) => setField("expected_start_date", monthFromMs(ms))}
+            fromYear={2025}
+            toYear={2030}
             required={false}
+            placeholder="Select month"
           />
+
+          <ErrorLabel value={formErrors.expected_start_date} />
+
+          {formData.taking_for_credit === true && (
+            <div className="mt-3 space-y-2">
+              <FormInput
+                label="Expected Duration (hours)"
+                inputMode="numeric"
+                value={formData.expected_duration_hours ?? ""}
+                setter={(v: string) => {
+                  const n = v === "" || v == null ? null : Number(v);
+                  setField(
+                    "expected_duration_hours",
+                    Number.isFinite(n as number) ? (n as number) : null
+                  );
+                }}
+                required={false}
+              />
+              <ErrorLabel value={formErrors.expected_duration_hours} />
+            </div>
+          )}
         </section>
 
         <Divider />
@@ -1246,6 +1285,7 @@ const ProfileLinkBadge = ({
 //  Helpers
 // ----------------------------
 
+// For profile score
 function computeProfileScore(p?: Partial<PublicUser>): {
   score: number;
   parts: Record<string, boolean>;
@@ -1300,3 +1340,65 @@ function computeProfileScore(p?: Partial<PublicUser>): {
 
   return { score, parts, tips };
 }
+
+// Returns the UNIX timestamp of the first day of the current month
+const getNearestMonthTimestamp = () => {
+  const date = new Date();
+  const dateString = `${date.getFullYear()}-${(
+    "0" + (date.getMonth() + 1).toString()
+  ).slice(-2)}-01T00:00:00.000Z`;
+  return Date.parse(dateString);
+};
+
+function ymToFirstDayTs(ym?: string | number | null): number | undefined {
+  if (ym == null || ym === "") return undefined;
+
+  if (typeof ym === "number") {
+    const d = new Date(ym);
+    return new Date(d.getFullYear(), d.getMonth(), 1, 0, 0, 0, 0).getTime();
+  }
+
+  // Extract YYYY and MM safely from any string that starts with "YYYY-MM"
+  const m = /^(\d{4})-(\d{2})/.exec(String(ym));
+  if (!m) return undefined;
+
+  const y = Number(m[1]);
+  const mo = Number(m[2]) - 1;
+  return new Date(y, mo, 1, 0, 0, 0, 0).getTime(); // local midnight
+}
+
+function monthFromMs(ms?: number | null): string | null {
+  if (ms == null || Number.isNaN(ms)) return null;
+  const d = new Date(ms); // local time
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  return `${y}-${m}`;
+}
+
+// Coerce many date-ish inputs to "YYYY-MM" or null
+function toYYYYMM(input?: string | number | null): string | null {
+  if (input == null || input === "") return null;
+
+  // Already "YYYY-MM"
+  if (typeof input === "string" && /^\d{4}-\d{2}$/.test(input)) return input;
+
+  // If string contains "YYYY-MM" at the start (e.g., "YYYY-MM-DD", ISO)
+  if (typeof input === "string") {
+    const m = input.match(/^(\d{4}-\d{2})/);
+    if (m) return m[1];
+  }
+
+  // Timestamp (number or numeric string)
+  const n = typeof input === "number" ? input : Number(input);
+  if (Number.isFinite(n)) return monthFromMs(n);
+
+  // Fallback: parseable string date
+  if (typeof input === "string") {
+    const parsed = Date.parse(input);
+    if (!Number.isNaN(parsed)) return monthFromMs(parsed);
+  }
+
+  return null;
+}
+
+
