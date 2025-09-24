@@ -336,7 +336,7 @@ function CompleteProfileStepper({
         {step === SUCCESS_STEP && (
           <StepSuccess
             onClose={() => {
-              onFinish?.();
+              onFinish();
             }}
           />
         )}
