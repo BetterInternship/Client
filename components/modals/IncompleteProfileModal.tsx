@@ -371,39 +371,46 @@ function CompleteProfileStepper({
 
 function StepperHeader({ step }: { step: number }) {
   return (
-    <div className="grid grid-cols-3 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
       {steps.map((s, idx) => {
         const ActiveIcon = s.icon;
         const active = idx === step;
         const done = idx < step;
+
         return (
           <motion.div
             key={s.id}
             layout
-            className={
-              "flex items-center gap-2 rounded-[0.33em] border p-3 " +
-              (active
+            className={[
+              "flex items-center gap-1.5 sm:gap-2 rounded-[0.33em] border p-2.5 sm:p-3 min-w-0",
+              active
                 ? "border-primary/60 bg-primary/5"
                 : done
                 ? "border-emerald-500/40 bg-emerald-500/5"
-                : "border-border/60")
-            }
+                : "border-border/60",
+            ].join(" ")}
+            aria-current={active ? "step" : undefined}
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-background shadow-inner">
+            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-background shadow-inner shrink-0">
               {done ? (
-                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600" />
               ) : (
                 <ActiveIcon
                   className={
-                    "h-5 w-5 " +
+                    "h-4 w-4 sm:h-5 sm:w-5 " +
                     (active ? "text-primary" : "text-muted-foreground")
                   }
                 />
               )}
             </div>
-            <div className="text-sm font-medium leading-tight">
-              <div className="text-xs text-gray-400">Step {idx + 1}</div>
-              {s.title}
+
+            <div className="text-xs sm:text-sm font-medium leading-tight min-w-0">
+              <div className="text-[10px] sm:text-xs text-gray-400">
+                Step {idx + 1}
+              </div>
+              <div className="truncate" title={s.title}>
+                {s.title}
+              </div>
             </div>
           </motion.div>
         );

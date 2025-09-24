@@ -941,7 +941,7 @@ export default function SearchPage() {
         </div>
       </MassApplyResultModal>
 
-      <IncompleteModal className="sm:w-[50dvw] sm:h-fit">
+      <IncompleteModal className="sm:w-[50dvw] h-[100dvh] sm:h-fit overflow-y-auto">
         <IncompleteProfileContent
           profile={profile}
           handleClose={closeIncomplete}
