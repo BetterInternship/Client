@@ -15,11 +15,10 @@ import {
 import { MultiChipSelect } from "@/components/ui/chip-select";
 import { SinglePickerBig } from "@/components/features/student/SinglePickerBig";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { useSearchParams } from "next/navigation";
 
 interface FormInputs {
   university?: string;
-  internship_type?: "credited" | "voluntary" | null;
+  internship_type?: "credited" | "voluntary";
   job_setup_ids?: string[];
   job_commitment_ids?: string[];
   job_category_ids?: string[];
@@ -43,12 +42,10 @@ const getNearestMonthTimestamp = () => {
 export default function RegisterPage() {
   const refs = useDbRefs();
   const auth = useAuthContext();
-  const searchParams = useSearchParams();
   const [submitting, setSubmitting] = useState(false);
-  const [isEduEmail, setIsEduEmail] = useState(false);
   const regForm = useForm<FormInputs>({
     defaultValues: {
-      internship_type: null,
+      internship_type: undefined,
       job_setup_ids: [],
       job_commitment_ids: [],
       job_category_ids: [],
@@ -195,11 +192,6 @@ export default function RegisterPage() {
     }
   }, [internshipType, regForm]);
 
-  useEffect(() => {
-    const isEduEmail = JSON.parse(searchParams.get("edu-email") ?? "false");
-    setIsEduEmail(isEduEmail);
-  }, [searchParams]);
-
   return (
     <div className="min-h-full">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
@@ -242,9 +234,11 @@ export default function RegisterPage() {
                       },
                     ]}
                     value={internshipType ?? null}
-                    onClear={() => regForm.setValue("internship_type", null)}
+                    onClear={() =>
+                      regForm.setValue("internship_type", undefined)
+                    }
                     onChange={(v) =>
-                      regForm.setValue("internship_type", v, {
+                      regForm.setValue("internship_type", v ?? undefined, {
                         shouldDirty: true,
                         shouldTouch: true,
                       })

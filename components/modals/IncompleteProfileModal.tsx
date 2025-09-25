@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Upload,
@@ -17,9 +17,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-
-import type { Job } from "@/lib/db/db.types";
 import { useAnalyzeResume } from "@/hooks/use-register";
 import { ProcessingTransition } from "@/components/features/student/resume-parser/ProcessingTransition";
 
@@ -36,6 +33,7 @@ import {
 import { AuthService, UserService } from "@/lib/api/services";
 import { Input } from "../ui/input";
 import { useProfile } from "@/lib/api/student.api";
+import { useQueryClient } from "@tanstack/react-query";
 
 /* ============================== Bits ============================== */
 
@@ -178,6 +176,7 @@ function CompleteProfileStepper({
   finishLabel?: string;
   onFinish: () => void;
 }) {
+  const queryClient = useQueryClient();
   const [step, setStep] = useState(0);
 
   // profile being edited
@@ -277,6 +276,7 @@ function CompleteProfileStepper({
       }).then(() => {
         setIsUpdating(false);
         setStep(2);
+        queryClient.invalidateQueries({ queryKey: ["my-profile"] });
       });
     } else if (step === 2) {
     }

@@ -1250,32 +1250,6 @@ const ProfileEditor = forwardRef<
           </div>
         </section>
       </OutsideTabPanel>
-
-      {/* Optional Calendar tab */}
-      {/* 
-    <OutsideTabPanel when="Calendar" activeKey={tab}>
-      <section>
-        <div className="text-xl sm:text-2xl tracking-tight font-semibold">Calendar</div>
-        <div className="flex flex-col space-y-1 mb-2">
-          <ErrorLabel value={formErrors.calendar_link} />
-        </div>
-        <div className="relative flex flex-col">
-          <div className="flex items-center mb-1">
-            <span className="text-sm font-medium">
-              Calendar Link <span className="text-muted-foreground font-normal">(optional)</span>
-            </span>
-            // your help icon + popover…
-          </div>
-          <FormInput
-            label={undefined}
-            value={formData.calendar_link ?? ""}
-            setter={fieldSetter("calendar_link")}
-            required={false}
-          />
-        </div>
-      </section>
-    </OutsideTabPanel>
-    */}
     </OutsideTabs>
   );
 });
@@ -1499,5 +1473,3 @@ function toYYYYMM(input?: string | number | null): string | null {
 }
 
 const toStrArr = (a?: unknown[] | null) => (a ?? []).map(String);
-const toStrArrOrNull = (a?: unknown[] | null) =>
-  a && a.length ? a.map(String) : null;
