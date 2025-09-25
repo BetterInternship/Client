@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-15 03:09:57
- * @ Modified time: 2025-07-18 15:51:12
+ * @ Modified time: 2025-09-25 17:41:57
  * @ Description:
  *
  * The actual backend connection to provide the refs data
@@ -9,7 +9,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  Level,
   College,
   University,
   JobType,
@@ -36,7 +35,6 @@ const db = createClient(db_url ?? "", db_anon_key ?? "");
 export interface IRefsContext {
   ref_loading: boolean;
 
-  levels: Level[];
   colleges: College[];
   degrees: Degree[];
   departments: Department[];
@@ -48,13 +46,6 @@ export interface IRefsContext {
   job_pay_freq: JobPayFreq[];
   app_statuses: AppStatus[];
   industries: Industry[];
-
-  get_level: (id: number | null | undefined) => Level | null;
-  to_level_name: (
-    id: number | null | undefined,
-    def?: string | null
-  ) => string | null;
-  get_level_by_name: (name: string | null | undefined) => Level | null;
 
   get_college: (id: string | null | undefined) => College | null;
   to_college_name: (
@@ -248,13 +239,6 @@ const createRefInternalHook = <
 
 export const createRefsContext = () => {
   const [loading, setLoading] = useState(true);
-  const {
-    data: levels,
-    get: get_level,
-    to_name: to_level_name,
-    get_by_name: get_level_by_name,
-    loading: l1,
-  } = createRefInternalHook<number, Level>("ref_levels");
 
   const {
     data: colleges,
@@ -404,7 +388,6 @@ export const createRefsContext = () => {
   const refs_context = {
     ref_loading: loading,
 
-    levels,
     colleges,
     degrees,
     departments,
@@ -418,7 +401,6 @@ export const createRefsContext = () => {
     app_statuses,
     domains,
 
-    to_level_name,
     to_college_name,
     to_degree_name,
     to_department_name,
@@ -432,7 +414,6 @@ export const createRefsContext = () => {
     to_industry_name,
     to_degree_full_name,
 
-    get_level,
     get_college,
     get_degree,
     get_department,
@@ -445,7 +426,6 @@ export const createRefsContext = () => {
     get_app_status,
     get_industry,
 
-    get_level_by_name,
     get_college_by_name,
     get_degree_by_name,
     get_department_by_name,

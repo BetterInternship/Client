@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 04:14:35
- * @ Modified time: 2025-08-26 12:35:52
+ * @ Modified time: 2025-09-25 17:41:51
  * @ Description:
  *
  * What employers see when clicking on an applicant to view.
@@ -41,7 +41,6 @@ export const ApplicantModalContent = ({
   resume_url?: string;
 }) => {
   const {
-    to_level_name,
     to_college_name,
     to_degree_name,
     to_job_type_name,
@@ -180,9 +179,9 @@ export const ApplicantModalContent = ({
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500">Year Level</p>
+                <p className="text-xs text-gray-500">Expected Graduation Date</p>
                 <p className="font-medium text-gray-900">
-                  {to_level_name(applicant?.year_level)}
+                  {applicant.expected_graduation_date}
                 </p>
               </div>
               <div>

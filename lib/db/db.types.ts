@@ -1,7 +1,6 @@
 import { Database as _Database, Tables } from "@betterinternship/schema.base";
 
 export type Database = _Database;
-export type Level = Tables<"ref_levels">;
 export type College = Tables<"ref_colleges">;
 export type University = Tables<"ref_universities">;
 export type JobType = Tables<"ref_job_types">;
