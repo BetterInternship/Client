@@ -17,6 +17,9 @@ import { SinglePickerBig } from "@/components/features/student/SinglePickerBig";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { Divider } from "/components/ui/divider";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Switch } from "@/components/ui/switch";
 
 interface FormInputs {
   university?: string;
@@ -26,6 +29,7 @@ interface FormInputs {
   job_category_ids?: string[];
   expected_start_date?: number | null;
   expected_duration_hours?: number | null;
+  auto_apply?: boolean; // TODO: CONNECT TO BACKEND
 }
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
@@ -55,6 +59,7 @@ export default function RegisterPage() {
       job_category_ids: [],
       expected_start_date: getNearestMonthTimestamp(),
       expected_duration_hours: 300,
+      auto_apply: true,
     },
   });
 
@@ -90,6 +95,12 @@ export default function RegisterPage() {
     // Check for missing fields
     if (!values.university?.trim()) {
       alert("University is required.");
+      setSubmitting(false);
+      return;
+    }
+
+    if (values.job_category_ids?.length === 0) {
+      alert("Desired internship role is required");
       setSubmitting(false);
       return;
     }
@@ -221,6 +232,7 @@ export default function RegisterPage() {
                 {/* Q1: Voluntary or Credited */}
                 <div className="space-y-2">
                   <SinglePickerBig
+                    required
                     autoCollapse={false}
                     label="Are you looking for internship credit?"
                     options={[
@@ -285,6 +297,19 @@ export default function RegisterPage() {
                     )}
 
                     <div className="space-y-2">
+                      <AutocompleteTreeMulti
+                        required
+                        label="Desired internship role"
+                        tree={POSITION_TREE}
+                        value={regForm.watch("job_category_ids") || []}
+                        setter={(vals: string[]) =>
+                          regForm.setValue("job_category_ids", vals)
+                        }
+                        placeholder="Select one or more"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
                       <FieldLabel>Work setup</FieldLabel>
                       <MultiChipSelect
                         className="justify-start"
@@ -315,19 +340,6 @@ export default function RegisterPage() {
                       />
                     </div>
 
-                    {/* Job categories */}
-                    <div className="space-y-2">
-                      <AutocompleteTreeMulti
-                        label="Desired internship role"
-                        tree={POSITION_TREE}
-                        value={regForm.watch("job_category_ids") || []}
-                        setter={(vals: string[]) =>
-                          regForm.setValue("job_category_ids", vals)
-                        }
-                        placeholder="Select one or more"
-                      />
-                    </div>
-
                     {/* University email */}
                     <div className="space-y-2">
                       <FormDropdown
@@ -337,6 +349,21 @@ export default function RegisterPage() {
                           regForm.setValue("university", value)
                         }
                       />
+                    </div>
+
+                    <div className="flex items-center gap-2 mt-4">
+                      <Switch
+                        checked={!!regForm.watch("auto_apply")}
+                        onCheckedChange={(checked) =>
+                          regForm.setValue("auto_apply", checked, {
+                            shouldDirty: true,
+                          })
+                        }
+                        aria-label="Auto-apply"
+                      />
+                      <span className="text-sm text-gray-600">
+                        Auto-apply for me when a job matches my profile.
+                      </span>
                     </div>
                   </div>
                 )}

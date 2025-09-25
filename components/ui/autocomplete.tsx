@@ -14,6 +14,7 @@ export interface IAutocompleteOption<ID extends number | string> {
  * Base component (array-based). Single uses length 0..1.
  * -----------------------------------------------------*/
 function AutocompleteBase<ID extends number | string>({
+  required,
   options,
   value = [],
   setter,
@@ -23,6 +24,7 @@ function AutocompleteBase<ID extends number | string>({
   label,
   ...props
 }: {
+  required?: boolean
   options: IAutocompleteOption<ID>[];
   value?: ID[]; // single => 0..1 items, multi => any length
   setter: (next: ID[]) => void; // set the whole selection
@@ -106,7 +108,7 @@ function AutocompleteBase<ID extends number | string>({
     <div className={cn("relative w-full", className)} ref={ref}>
       {label ? (
         <label htmlFor={inputId} className="text-xs text-gray-600 mb-1 block">
-          {label}
+          {label} {required && <span className="text-red-500">*</span>}
         </label>
       ) : null}
 
@@ -225,6 +227,7 @@ function AutocompleteBase<ID extends number | string>({
  * Public API: single-select (same signature + label)
  * -----------------------------------------------------*/
 export const Autocomplete = <ID extends number | string>({
+  required, 
   options,
   setter,
   placeholder,
@@ -233,6 +236,7 @@ export const Autocomplete = <ID extends number | string>({
   label,
   props,
 }: {
+  required?: boolean;
   options: IAutocompleteOption<ID>[];
   setter: (value?: ID | null) => void;
   placeholder?: string;
@@ -243,6 +247,7 @@ export const Autocomplete = <ID extends number | string>({
 }) => {
   return (
     <AutocompleteBase<ID>
+      required={required}
       options={options}
       multiple={false}
       value={value != null ? [value] : []}
@@ -259,6 +264,7 @@ export const Autocomplete = <ID extends number | string>({
  * Public API: multi-select (uuid[] etc.) + label
  * -----------------------------------------------------*/
 export const AutocompleteMulti = <ID extends number | string>({
+  required,
   options,
   setter,
   placeholder,
@@ -266,6 +272,7 @@ export const AutocompleteMulti = <ID extends number | string>({
   value,
   label,
 }: {
+  required?: boolean;
   options: IAutocompleteOption<ID>[];
   setter: (value: ID[]) => void;
   placeholder?: string;
@@ -275,6 +282,7 @@ export const AutocompleteMulti = <ID extends number | string>({
 }) => {
   return (
     <AutocompleteBase<ID>
+      required={required}
       options={options}
       multiple
       value={value ?? []}
@@ -297,6 +305,7 @@ export type PositionCategory = {
 };
 
 export function AutocompleteTreeMulti({
+  required,
   tree,
   value = [],
   setter,
@@ -304,6 +313,7 @@ export function AutocompleteTreeMulti({
   className,
   label,
 }: {
+  required?: boolean;
   tree: PositionCategory[];
   value?: string[];
   setter: (next: string[]) => void;
@@ -447,7 +457,7 @@ export function AutocompleteTreeMulti({
     <div className={cn("relative w-full", className)} ref={ref}>
       {label ? (
         <label htmlFor={inputId} className="text-xs text-gray-600 mb-1 block">
-          {label}
+          {label} {required && <span className="text-red-500">*</span>}
         </label>
       ) : null}
 

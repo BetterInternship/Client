@@ -22,10 +22,12 @@ type SinglePickerBigProps<T extends string = string> = {
   className?: string;
   autoCollapse?: boolean;
   startCollapsed?: boolean;
+  required?: boolean;
 };
 
 // ------------ Component ------------
 export function SinglePickerBig<T extends string = string>({
+  required,
   label = "Select one",
   options,
   value,
@@ -52,7 +54,7 @@ export function SinglePickerBig<T extends string = string>({
 
   return (
     <div className={cn("space-y-2", className)}>
-      {label && <div className="text-xs text-gray-600">{label}</div>}
+      {label && <div className="text-xs text-gray-600">{label} {required && <span className="text-red-500">*</span>}</div>}
 
       <AnimatePresence initial={false} mode="wait">
         {collapsed && selected ? (
