@@ -64,6 +64,7 @@ import {
   type Option as ChipOpt,
 } from "@/components/ui/chip-select";
 import { Badge } from "@/components/ui/badge";
+import { AutoApplyCard } from "@/components/features/student/profile/AutoApplyCard";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
@@ -142,10 +143,10 @@ export default function ProfilePage() {
 
   return (
     data && (
-      <div className="min-h-screen w-full">
+      <div className="min-h-screen mx-auto max-w-6xl">
         {/* Top header */}
         <div className="relative">
-          <header className="relative mx-auto max-w-5xl px-4 sm:px-6 pt-10 ">
+          <header className="relative px-4 sm:px-6 pt-10 ">
             <div className="flex flex-col lg:flex-row gap-6 items-start">
               {/* PFP */}
               <div className="relative">
@@ -197,7 +198,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Main content */}
-        <main className="mx-auto max-w-5xl px-4 sm:px-6 pt-8 pb-16 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <main className="px-4 sm:px-6 pt-8 pb-16 grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left column */}
           <div className="lg:col-span-2 flex flex-col gap-6">
             {/* Resume */}
@@ -251,6 +252,12 @@ export default function ProfilePage() {
 
           {/* Right column */}
           <aside className="lg:col-span-1 space-y-6">
+
+            <AutoApplyCard 
+              initialEnabled={!!(data as any)?.auto_apply_enabled}
+              onSave={() => {}}
+            />
+            
             {/* Completion meter */}
             <div className="">
               <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
@@ -295,6 +302,8 @@ export default function ProfilePage() {
                 </ul>
               )}
             </div>
+
+            
           </aside>
         </main>
 
