@@ -161,9 +161,6 @@ export const ApplicantModalContent = ({
           {/* Academic Background Card */}
           <div className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200">
             <div className="flex items-center gap-3 mb-4 sm:mb-5">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <GraduationCap className="h-4 w-4 text-blue-600" />
-              </div>
               <h3 className="font-semibold text-gray-900 text-base sm:text-lg">
                 Academic Background
               </h3>
@@ -200,9 +197,6 @@ export const ApplicantModalContent = ({
           {/* Contact & Links */}
           <div className="bg-gray-50 rounded-[0.33em] p-4 border border-gray-200">
             <div className="flex items-center gap-3 mb-4 sm:mb-5">
-              <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                <ExternalLink className="h-4 w-4 text-gray-600" />
-              </div>
               <h3 className="font-semibold text-gray-900 text-base sm:text-lg">
                 Contact & Professional Links
               </h3>
@@ -407,11 +401,11 @@ export const ApplicantModalContent = ({
           {/* About */}
           {applicant?.bio && applicant.bio.trim() && (
             <div className="mb-4 sm:mb-6">
-              <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-base sm:text-lg">
-                About the Candidate
-              </h3>
-              <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200">
-                <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
+              <div className="bg-white rounded-[0.33em] p-4 border border-gray-200">
+                <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-base sm:text-lg">
+                  About the Candidate
+                </h3>
+                <p className="text-gray-700 leading-relaxed text-sm sm:text-base text-justify">
                   {applicant.bio}
                 </p>
               </div>
