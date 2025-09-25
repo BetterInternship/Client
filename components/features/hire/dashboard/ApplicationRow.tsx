@@ -9,7 +9,9 @@ import { useConversations } from "@/hooks/use-conversation";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { cn } from "@/lib/utils";
+import { fmtISO } from "@/lib/utils/date-utils";
 import { getFullName } from "@/lib/utils/user-utils";
+import { CalendarClock, MessageCircle } from "lucide-react";
 
 interface ApplicationRowProps {
   application: EmployerApplication;
@@ -51,14 +53,17 @@ export function ApplicationRow({
                 {/* {to_university_name(application.user?.university) || ""} •{" "} */}
               </span>
             </p>
-            <p className="text-sm text-gray-500 space-x-1">
+            <p className="text-xs text-gray-500 space-x-1">
               <Badge strength="medium" className="bg-white">
                 {/* {application.job?.title} */}
                 {to_university_name(application.user?.university) || ""}
               </Badge>
               <Badge strength="medium" className="bg-white">
                 {application.user?.taking_for_credit ? "For Credit" : "Voluntary"}
-              </Badge> • {application.user?.expected_start_date} — {application.user?.expected_end_date}
+              </Badge> 
+              {application.user?.expected_start_date || application.user?.expected_end_date ? (
+                <> • {fmtISO(application.user?.expected_start_date)} — {fmtISO(application.user?.expected_end_date)}</>
+              ) : <> • No dates provided</>}
             </p>
           </div>
         </div>
@@ -88,7 +93,22 @@ export function ApplicationRow({
             }}
             className="relative"
           >
-            Message
+            <MessageCircle
+            className="h-6 w-6"
+            />
+          </Button>
+          {/* // ! uncomment when calendar back */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              // onSchedule();
+            }}
+          >
+            <CalendarClock
+            className="h-6 w-6"
+            />
           </Button>
           <Button
             variant="outline"
@@ -100,17 +120,6 @@ export function ApplicationRow({
           >
             Send Survey
           </Button>
-          {/* // ! uncomment when calendar back */}
-          {/* <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onSchedule();
-            }}
-          >
-            Schedule
-          </Button> */}
           <div>
             <StatusDropdown
               value={application.status ?? 0}

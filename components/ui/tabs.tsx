@@ -14,8 +14,9 @@ interface TabProps {
   name: string;
   children: React.ReactNode;
   indicator?: boolean;
+  onTabChange?: () => void;
 }
-export const Tab = ({ name, children, indicator }: TabProps) => {
+export const Tab = ({ name, children, indicator, onTabChange }: TabProps) => {
   return <>{children}</>;
 };
 
@@ -26,9 +27,8 @@ export const Tab = ({ name, children, indicator }: TabProps) => {
  */
 interface TabGroupProps {
   children: React.ReactElement<TabProps>[];
-  onTabChange?: () => void;
 }
-export const TabGroup = ({ children, onTabChange }: TabGroupProps) => {
+export const TabGroup = ({ children }: TabGroupProps) => {
   const [activeTab, setActiveTab] = useState("");
 
   // Set the initial active tab to be the first element
@@ -40,8 +40,11 @@ export const TabGroup = ({ children, onTabChange }: TabGroupProps) => {
       setActiveTab(firstChild.props?.name ?? "");
   }, []);
 
-  const handleTabClick = () => {
-    onTabChange?.();
+  const handleTabChange = (name: string, onTabChange?: () => void) => {
+    setActiveTab(name);
+    if (onTabChange){
+      onTabChange();
+    }
   };
 
   // Create the selection
@@ -52,12 +55,13 @@ export const TabGroup = ({ children, onTabChange }: TabGroupProps) => {
           if (React.isValidElement(child)) {
             const name = child.props?.name ?? "No name";
             const indicator = child.props?.indicator ?? false;
+            const onTabChange = child.props?.onTabChange;
             return (
               <Button
                 variant="ghost"
                 aria-selected={activeTab === name}
                 className="relative px-5 py-4 text-gray-700 aria-selected:text-white aria-selected:bg-gray-900 w-fit rounded-t-[0.33em] rounded-b-none"
-                onClick={() => setActiveTab(name)}
+                onClick={() => handleTabChange(name, onTabChange)}
               >
                 <span className="flex flex-row items-center text-xs gap-1">
                   <div

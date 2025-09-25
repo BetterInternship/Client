@@ -160,6 +160,8 @@ export function useOwnedJobs(
 
       // Otherwise, pull from server
       const response = await JobService.get_owned_jobs();
+      // console.log('All owned jobs:', response.jobs);
+      // console.log('Deleted jobs:', response.jobs?.filter(job => job.is_deleted === true));
       if (response.success) {
         setOwnedJobs(response.jobs ?? []);
         set_cache(response.jobs ?? []);

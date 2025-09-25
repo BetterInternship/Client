@@ -40,7 +40,7 @@ export function JobsContent({
                         />
                     ))
                 ) : (
-                    <div className="p-2">
+                    <div className="p-2 m-4">
                         <Badge>No job listings currently.</Badge>
                     </div>
                 )}
