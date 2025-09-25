@@ -250,17 +250,19 @@ export default function SearchPage() {
   };
 
   const handleApply = () => {
-    if (
-      !isProfileResume(profile.data) ||
-      !isProfileBaseComplete(profile.data) ||
-      !isProfileVerified(profile.data)
-    )
-      return openIncomplete();
-
     if (!isAuthenticated()) {
       window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
       return;
     }
+
+    if (
+      !isProfileResume(profile.data) ||
+      !isProfileBaseComplete(profile.data) ||
+      !isProfileVerified(profile.data)
+    ) {
+      return openIncomplete();
+    }
+    
     const applied = applications.appliedJob(selectedJob?.id ?? "");
     if (applied) {
       alert("You have already applied to this job!");
