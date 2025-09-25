@@ -43,6 +43,7 @@ import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
+import { useGlobalModal } from "@/components/providers/ModalProvider";
 
 /* =======================================================================================
     tiny helper to keep callback identity stable across renders
@@ -94,6 +95,8 @@ export default function SearchPage() {
   const savedJobs = useSavedJobs();
   const applications = useApplications();
 
+  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
+
   // resume preview (profile modal)
   const { url: resumeURL, sync: syncResumeURL } = useFile({
     fetcher: UserService.getMyResumeURL,
@@ -132,11 +135,11 @@ export default function SearchPage() {
 
   const jobModalRef = useModalRef();
 
-  const {
-    Modal: IncompleteModal,
-    open: openIncomplete,
-    close: closeIncomplete,
-  } = useModal("IncompleteProfileModal", { allowBackdropClick: false });
+  // const {
+  //   Modal: IncompleteModal,
+  //   open: openIncomplete,
+  //   close: closeIncomplete,
+  // } = useModal("IncompleteProfileModal", { allowBackdropClick: false });
 
   const successModalRef = useModalRef();
 
@@ -247,7 +250,13 @@ export default function SearchPage() {
       return;
     }
     if (!isCompleteProfile(profile.data)) {
-      openIncomplete();
+      openGlobalModal(
+        "incomplete-profile",
+        <IncompleteProfileContent
+          profile={profile}
+          handleClose={() => closeGlobalModal("incomplete-profile")}
+        />
+      );
       return;
     }
     openApplicationConfirmationModal();
@@ -948,12 +957,12 @@ export default function SearchPage() {
         </div>
       </MassApplyResultModal>
 
-      <IncompleteModal className="sm:w-[50dvw] h-[100dvh] sm:h-fit overflow-y-auto">
+      {/* <IncompleteModal className="sm:w-[50dvw] h-[100dvh] sm:h-fit overflow-y-auto">
         <IncompleteProfileContent
           profile={profile}
           handleClose={closeIncomplete}
         />
-      </IncompleteModal>
+      </IncompleteModal> */}
 
       {/* Resume Modal */}
       {resumeURL.length > 0 && <ProfileResumePreview url={resumeURL} />}

@@ -95,7 +95,7 @@ export function IncompleteProfileContent({
           <UserCheck className="w-8 h-8 text-primary" />
         </div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          Finish your profile to apply
+          Your profile isn’t complete yet
         </h2>
       </div>
 

@@ -45,6 +45,9 @@ import { useProfile } from "@/lib/api/student.api";
 import { cn } from "@/lib/utils";
 import { getFullName, getMissingProfileFields } from "@/lib/utils/user-utils";
 import { Chip } from "@/components/ui/chip-select";
+import { isCompleteProfile } from "@/lib/utils/user-utils";
+import { IncompleteProfileContent } from "@/components/modals/IncompleteProfileModal";
+import { useGlobalModal } from "@/components/providers/ModalProvider";
 
 /* =======================================================================================
    Filter State (immutable + typed) 
@@ -246,8 +249,10 @@ function AppliedPills({
     </span>
   );
 
-  const labelFrom = (value: string, options: { name: string; value: string }[]) =>
-    options.find((o) => o.value === value)?.name ?? value;
+  const labelFrom = (
+    value: string,
+    options: { name: string; value: string }[]
+  ) => options.find((o) => o.value === value)?.name ?? value;
 
   const pills: React.ReactNode[] = [
     ...state.position.map((v) => {
@@ -258,7 +263,9 @@ function AppliedPills({
       ];
       return makePill(labelFrom(v, flat), v, "position");
     }),
-    ...state.jobMode.map((v) => makePill(labelFrom(v, MODE_OPTIONS), v, "jobMode")),
+    ...state.jobMode.map((v) =>
+      makePill(labelFrom(v, MODE_OPTIONS), v, "jobMode")
+    ),
     ...state.jobWorkload.map((v) =>
       makePill(labelFrom(v, WORKLOAD_OPTIONS), v, "jobWorkload")
     ),
@@ -327,7 +334,11 @@ function FilterEnvelope({
           </div>
         </div>
 
-        <AppliedPills state={state} dispatch={dispatch} onClearAll={onClearAll} />
+        <AppliedPills
+          state={state}
+          dispatch={dispatch}
+          onClearAll={onClearAll}
+        />
       </div>
     </div>
   );
@@ -358,7 +369,8 @@ const JobPositionPanel: React.FC = () => {
               </Chip>
               {!!childSelectedCount && (
                 <span className="text-xs text-gray-500">
-                  {childSelectedCount} sub-role{childSelectedCount > 1 ? "s" : ""} selected
+                  {childSelectedCount} sub-role
+                  {childSelectedCount > 1 ? "s" : ""} selected
                 </span>
               )}
             </div>
@@ -404,7 +416,11 @@ const JobDetailPanel: React.FC = () => {
         <h4 className="font-semibold text-sm mb-2">{title}</h4>
         <div className="flex flex-wrap gap-2">
           {options.map((o) => (
-            <Chip key={o.value} selected={set.has(o.value)} onClick={() => toggle(o.value)}>
+            <Chip
+              key={o.value}
+              selected={set.has(o.value)}
+              onClick={() => toggle(o.value)}
+            >
               {o.name}
             </Chip>
           ))}
@@ -415,9 +431,17 @@ const JobDetailPanel: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-3">
-      <Group title="Internship Workload" options={WORKLOAD_OPTIONS} keyName="jobWorkload" />
+      <Group
+        title="Internship Workload"
+        options={WORKLOAD_OPTIONS}
+        keyName="jobWorkload"
+      />
       <Group title="Internship Mode" options={MODE_OPTIONS} keyName="jobMode" />
-      <Group title="Internship Allowance" options={ALLOWANCE_OPTIONS} keyName="jobAllowance" />
+      <Group
+        title="Internship Allowance"
+        options={ALLOWANCE_OPTIONS}
+        keyName="jobAllowance"
+      />
       <Group title="Internship MOA" options={MOA_OPTIONS} keyName="jobMoa" />
     </div>
   );
@@ -668,8 +692,26 @@ export const ProfileButton: React.FC = () => {
   const conversations = useConversations();
   const { isAuthenticated, logout } = useAuthContext();
   const router = useRouter();
+  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
 
   const handleLogout = () => logout().then(() => router.push("/"));
+
+  const handleProfileClick = () => {
+    if (!isCompleteProfile(profile.data)) {
+      console.log("INCOMPLETE PROFILE");
+      setTimeout(() => {
+        openGlobalModal(
+          "incomplete-profile",
+          <IncompleteProfileContent
+            profile={profile}
+            handleClose={() => closeGlobalModal("incomplete-profile")}
+          />
+        );
+      }, 3);
+    } else {
+      router.push("/profile");
+    }
+  };
 
   if (!isAuthenticated()) {
     return (
@@ -715,7 +757,11 @@ export const ProfileButton: React.FC = () => {
         }
         className="z-[200] w-fit"
       >
-        <DropdownOption href="/profile">
+        <DropdownOption
+          on_click={() => {
+            handleProfileClick();
+          }}
+        >
           <Settings className="w-4 h-4 inline-block mr-2 text-primary" />
           <span className="text-primary">Profile</span>
         </DropdownOption>
