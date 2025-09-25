@@ -1,24 +1,22 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Upload,
   CheckCircle2,
   UserCheck,
-  ChevronLeft,
-  ChevronRight,
   MailCheck,
   FileText,
   AlertTriangle,
   Repeat,
+  User,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAnalyzeResume } from "@/hooks/use-register";
-import { ProcessingTransition } from "@/components/features/student/resume-parser/ProcessingTransition";
 
 import { Autocomplete } from "@/components/ui/autocomplete";
 import { useDbRefs } from "@/lib/db/use-refs";
@@ -34,65 +32,20 @@ import { AuthService, UserService } from "@/lib/api/services";
 import { Input } from "../ui/input";
 import { useProfile } from "@/lib/api/student.api";
 import { useQueryClient } from "@tanstack/react-query";
-
-/* ============================== Bits ============================== */
-
-function AIResumeStatus({
-  isParsing,
-  parsedKeys,
-}: {
-  isParsing: boolean;
-  parsedKeys: string[];
-}) {
-  return (
-    <>
-      {isParsing ? (
-        <div className="w-full">
-          <ProcessingTransition promise={undefined} onComplete={() => {}} />
-        </div>
-      ) : (
-        <Card className="p-4 sm:p-5 min-h-[200px]">
-          <div className="w-full">
-            <div className="text-sm font-medium text-emerald-600 text-center">
-              Resume analysis finished
-            </div>
-            <div className="mt-3 text-xs text-gray-500">
-              Fields auto-filled:
-            </div>
-            <ul className="mt-1 space-y-1 text-xs">
-              {parsedKeys.length === 0 ? (
-                <li className="text-gray-400 italic">No fields detected.</li>
-              ) : (
-                parsedKeys.map((k) => (
-                  <li key={k} className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    <span className="capitalize">{k.replaceAll("_", " ")}</span>
-                  </li>
-                ))
-              )}
-            </ul>
-          </div>
-        </Card>
-      )}
-    </>
-  );
-}
-
-/* ======================== Modal BODY (container) ======================== */
+import { Stepper } from "../stepper/stepper";
 
 export function IncompleteProfileContent({
-  profile,
   handleClose,
 }: {
-  profile: any;
   handleClose: () => void;
 }) {
+  const profile = useProfile();
   return (
     <div className="p-6 h-full overflow-y-auto pt-0">
       {/* Modal title */}
       <div className="text-center mb-6">
         <div className="w-16 h-16 mx-auto mb-4 bg-primary/15 rounded-full flex items-center justify-center">
-          <UserCheck className="w-8 h-8 text-primary" />
+          <User className="w-8 h-8 text-primary" />
         </div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
           Your profile isn’t complete yet
@@ -150,30 +103,11 @@ function profileToDraft(p: any): ProfileDraft {
   };
 }
 
-/* ============================== Stepper ============================== */
-
-const steps = [
-  { id: 0, title: "Upload your resume", icon: Upload },
-  { id: 1, title: "Basic details", icon: UserCheck },
-  { id: 2, title: "Activate your account", icon: MailCheck },
-] as const;
-
-const SUCCESS_STEP = 3;
-
-const STEP_SUBTITLES: Record<number, string> = {
-  0: "Upload a PDF and we'll auto-fill what we can.",
-  1: "",
-  2: "Verify your university email and start applying now!",
-  3: "Your profile’s ready to use. You can start applying right away.",
-};
-
 function CompleteProfileStepper({
   initialProfile,
-  finishLabel = "Verify & Save",
   onFinish,
 }: {
   initialProfile?: ProfileDraft;
-  finishLabel?: string;
   onFinish: () => void;
 }) {
   const queryClient = useQueryClient();
@@ -246,20 +180,40 @@ function CompleteProfileStepper({
     };
   }, [response]);
 
-  // Shared Back / Next handlers
-  const nextLabel = isUpdating
-    ? "Updating..."
-    : step === 2
-    ? finishLabel
-    : "Next";
-  const showBack = step > 0;
-
-  const canNext =
-    step === 0
-      ? Boolean(file) && !isParsing
-      : step === 1
-      ? Boolean(profile.firstName && profile.lastName) && !isUpdating
-      : true;
+  const steps = useMemo(
+    () => [
+      {
+        title: "Upload your resume",
+        subtitle: "Upload a PDF and we'll auto-fill what we can.",
+        icon: Upload,
+        canNext: () => !!file && !isParsing,
+        component: (
+          <StepResume
+            file={file}
+            isParsing={isParsing}
+            parsedReady={parsedReady}
+            parseError={parseError}
+            onPick={(f) => setFile(f)}
+            fileInputRef={fileInputRef}
+            response={response}
+          />
+        ),
+      },
+      {
+        title: "Basic details",
+        icon: UserCheck,
+        canNext: () => !!profile.firstName && !!profile.lastName && !isUpdating,
+        component: <StepBasicIdentity value={profile} onChange={setProfile} />,
+      },
+      {
+        title: "Activate your account",
+        subtitle: "Verify your university email and start applying now!",
+        icon: MailCheck,
+        component: <StepActivateOTP onFinish={() => {}} />,
+      },
+    ],
+    [file, profile, isParsing, isUpdating]
+  );
 
   const onNext = async () => {
     if (step === 0) {
@@ -282,89 +236,7 @@ function CompleteProfileStepper({
     }
   };
 
-  const onBack = () => setStep((s) => Math.max(0, s - 1));
-
-  return (
-    <div className="w-full mx-auto">
-      {/* Stepper (top) */}
-      {step < SUCCESS_STEP && <StepperHeader step={step} />}
-
-      {/* Subtitle */}
-      {step < SUCCESS_STEP && (
-        <div className="mt-6 flex items-start gap-3">
-          <div className="flex-1">
-            <p className="text-sm text-muted-foreground">
-              {STEP_SUBTITLES[step]}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Card body */}
-      <div className="mt-3">
-        {step === 0 && (
-          <div className="">
-            {!isParsing && (
-              <StepResume
-                file={file}
-                isParsing={isParsing}
-                parsedReady={parsedReady}
-                parseError={parseError}
-                onPick={(f) => setFile(f)}
-                fileInputRef={fileInputRef}
-                response={response}
-              />
-            )}
-            {isParsing && (
-              <AIResumeStatus isParsing={isParsing} parsedKeys={parsedKeys} />
-            )}
-          </div>
-        )}
-
-        {step === 1 && (
-          <StepBasicIdentity value={profile} onChange={setProfile} />
-        )}
-
-        {step === 2 && (
-          <StepActivateOTP
-            onFinish={() => {
-              setStep(SUCCESS_STEP);
-            }}
-          />
-        )}
-
-        {step === SUCCESS_STEP && (
-          <StepSuccess
-            onClose={() => {
-              onFinish();
-            }}
-          />
-        )}
-      </div>
-
-      {/* Shared footer controls (outside the card) */}
-      {step < SUCCESS_STEP && (
-        <div className="mt-4 flex items-center justify-between">
-          <div />
-          <div className="flex gap-2">
-            {showBack && (
-              <Button type="button" scheme="secondary" onClick={onBack}>
-                <ChevronLeft className="mr-2 h-4 w-4" />
-                Back
-              </Button>
-            )}
-            {(step === 0 || step === 1) && (
-              <Button type="button" onClick={onNext} disabled={!canNext}>
-                {nextLabel}
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            )}
-            {/* Step 2 advances via StepActivateOTP -> onFinish */}
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  return <Stepper steps={steps} onNext={onNext}></Stepper>;
 }
 
 /* ========================= Subcomponents ========================= */
@@ -443,6 +315,7 @@ function StepResume({
       <ResumeUpload
         ref={fileInputRef}
         promise={response ?? undefined}
+        isParsing={isParsing}
         onSelect={(f) => onPick(f)}
         onComplete={() => {}}
       />
@@ -461,17 +334,10 @@ function StepResume({
           {parsedReady ? (
             <Badge type="supportive">Parsed</Badge>
           ) : isParsing ? (
-            <Badge type="warning">Parsing…</Badge>
+            <Badge type="warning">Parsing...</Badge>
           ) : (
-            <Badge type="warning">Waiting…</Badge>
+            <Badge type="warning">Waiting...</Badge>
           )}
-        </div>
-      )}
-
-      {isParsing && (
-        <div className="mt-3 text-xs text-gray-500">
-          We’re scanning your profile. You can go ahead to <b>Basic details</b>{" "}
-          while this completes.
         </div>
       )}
 

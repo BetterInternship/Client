@@ -8,6 +8,7 @@ const ResumeUpload = ({
   promise,
   onSelect,
   onComplete,
+  isParsing,
   accept = ".pdf,application/pdf",
   maxSizeMB = 5,
 }: {
@@ -15,16 +16,15 @@ const ResumeUpload = ({
   promise?: Promise<any>;
   onSelect: (file: File) => void;
   onComplete: () => void;
+  isParsing: boolean;
   accept?: string;
   maxSizeMB?: number;
 }) => {
   const [file, setFile] = useState<File | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
 
   const triggerFileDialog = () => ref.current?.click();
-
   const handleChosenFile = (f?: File | null) => {
     if (!f) return;
 
@@ -49,7 +49,6 @@ const ResumeUpload = ({
 
     setFile(f);
     onSelect(f);
-    setIsProcessing(true);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,7 +85,7 @@ const ResumeUpload = ({
 
   return (
     <AnimatePresence>
-      {isProcessing ? (
+      {isParsing ? (
         <ProcessingTransition promise={promise} onComplete={onComplete} />
       ) : (
         <div className="flex flex-col items-center w-full mx-auto">
