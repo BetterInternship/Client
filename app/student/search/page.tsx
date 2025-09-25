@@ -240,9 +240,9 @@ export default function SearchPage() {
   };
 
   const handleApply = () => {
-    // ! REMOVE BEFORE PUSH
-    openIncomplete();
-    return;
+    // // ! REMOVE BEFORE PUSH
+    // openIncomplete();
+    // return;
 
     if (!isAuthenticated()) {
       window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
