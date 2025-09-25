@@ -41,6 +41,9 @@ import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { JobModal } from "@/components/modals/JobModal";
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
+import { Toast } from "@/components/landingStudent/ui/toast";
 
 /* =======================================================================================
     tiny helper to keep callback identity stable across renders
@@ -417,6 +420,11 @@ export default function SearchPage() {
       </div>
     );
   }
+
+  toast("Auto-Apply turned off", {
+    description: "No applications will be sent automatically.",
+  });
+
 
   /* =======================================================================================
       UI
@@ -950,6 +958,13 @@ export default function SearchPage() {
 
       {/* Resume Modal */}
       {resumeURL.length > 0 && <ProfileResumePreview url={resumeURL} />}
+
+      <Toaster
+        position={isMobile ? "bottom-center" : "bottom-right"}
+        closeButton
+        richColors
+        theme="light"
+      />
     </>
   );
 }
