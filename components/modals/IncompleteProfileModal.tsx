@@ -172,6 +172,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     // No resume
     if (!isProfileResume(existingProfile.data)) {
       s.push({
+        id: "resume",
         title: "Upload your resume",
         subtitle: "Upload a PDF and we'll auto-fill what we can.",
         icon: Upload,
@@ -193,6 +194,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     // Not complete
     if (!isProfileBaseComplete(existingProfile.data)) {
       s.push({
+        id: "base",
         title: "Basic details",
         icon: UserCheck,
         canNext: () => !!profile.firstName && !!profile.lastName && !isUpdating,
@@ -203,6 +205,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     // Not verified
     if (!isProfileVerified(existingProfile.data)) {
       s.push({
+        id: "activation",
         title: "Activate your account",
         subtitle: "Verify your university email and start applying now!",
         icon: MailCheck,
@@ -222,9 +225,9 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   }, [file, profile, isParsing, isUpdating]);
 
   const onNext = async () => {
-    if (step === 0) {
-      setStep(1);
-    } else if (step === 1) {
+    if (steps[step].id === "resume") {
+      setStep(step + 1);
+    } else if (steps[step].id === "base") {
       setIsUpdating(true);
       UserService.updateMyProfile({
         first_name: profile.firstName ?? "",
@@ -235,9 +238,8 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
         degree: profile.degree ?? "",
       }).then(() => {
         setIsUpdating(false);
-        setStep(2);
+        setStep(step + 1);
       });
-    } else if (step === 2) {
     }
   };
 
