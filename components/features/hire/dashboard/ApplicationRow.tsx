@@ -32,7 +32,7 @@ export function ApplicationRow({
   updateConversationId,
   setSelectedApplication,
 }: ApplicationRowProps) {
-  const { to_university_name, to_level_name, to_app_status_name } = useDbRefs();
+  const { to_university_name, to_app_status_name } = useDbRefs();
   const conversations = useConversations();
 
   return (
@@ -48,7 +48,7 @@ export function ApplicationRow({
               {getFullName(application.user)}{" "}
               <span className="opacity-70">
                 — {to_university_name(application.user?.university) || ""} •{" "}
-                {to_level_name(application.user?.year_level) || ""}
+                {application.user.expected_graduation_date || ""}
               </span>
             </p>
             <p className="text-sm text-gray-500">

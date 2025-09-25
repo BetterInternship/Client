@@ -52,7 +52,7 @@ export const getMissingProfileFields = (
     phone_number: "Phone Number",
     resume: "Resume",
     university: "University",
-    year_level: "Year Level",
+    expected_graduation_date: "Expected Graduation Date",
   };
 
   const not_null = (ref: any) => ref || ref === 0;
@@ -77,7 +77,7 @@ export const getMissingProfileFields = (
     "phone_number",
     "resume",
     "university",
-    "year_level",
+    "expected_graduation_date",
   ] as const;
 
   requiredFields.forEach((field) => {
@@ -109,12 +109,7 @@ export const isCompleteProfile = (user: PublicUser | null): boolean => {
   )
     return false;
 
-  if (
-    nullish(user.university) ||
-    nullish(user.degree)
-    // nullish(user.year_level)
-  )
-    return false;
+  if (nullish(user.university) || nullish(user.degree)) return false;
 
   if (user.resume?.length === 0) return false;
 

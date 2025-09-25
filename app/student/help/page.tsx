@@ -43,7 +43,7 @@ export default function HelpPage() {
       icon: <User className="h-4 w-4" />,
       question: "What information do I need to provide?",
       answer:
-        "You'll need to provide your full name, phone number, college, department, year level, and degree information. Optional but recommended fields include your bio, portfolio link, GitHub profile, LinkedIn profile, and calendar link for scheduling interviews.",
+        "You'll need to provide your full name, phone number, college, department, expected graduation date, and degree information. Optional but recommended fields include your bio, portfolio link, GitHub profile, LinkedIn profile, and calendar link for scheduling interviews.",
     },
     {
       id: "3",

@@ -8,18 +8,7 @@ import {
   useMemo,
 } from "react";
 import { motion } from "framer-motion";
-import {
-  Edit2,
-  Upload,
-  Eye,
-  Camera,
-  ArrowRight,
-  CheckCircle2,
-  Globe2,
-  Github,
-  Linkedin,
-  CalendarDays,
-} from "lucide-react";
+import { Edit2, Upload, Eye, Camera, CheckCircle2, Globe2 } from "lucide-react";
 import { useProfile } from "@/lib/api/student.api";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
@@ -32,7 +21,6 @@ import { Button } from "@/components/ui/button";
 import { FileUploadInput, useFile, useFileUpload } from "@/hooks/use-file";
 import { Card } from "@/components/ui/card";
 import { getFullName } from "@/lib/utils/user-utils";
-import { PDFPreview } from "@/components/shared/pdf-preview";
 import { toURL, openURL } from "@/lib/utils/url-utils";
 import {
   isValidOptionalGitHubURL,
@@ -54,9 +42,7 @@ import { isValidRequiredUserName } from "@/lib/utils/name-utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { Autocomplete, AutocompleteMulti } from "@/components/ui/autocomplete";
-import { isoToMs, msToISO } from "@/lib/utils/date-utils";
 import { AutocompleteTreeMulti } from "@/components/ui/autocomplete";
-import { TabGroup, Tab } from "@/components/ui/tabs";
 import { POSITION_TREE } from "@/lib/consts/positions";
 import { OutsideTabs, OutsideTabPanel } from "@/components/ui/outside-tabs";
 import {
@@ -67,6 +53,14 @@ import { Badge } from "@/components/ui/badge";
 import { AutoApplyCard } from "@/components/features/student/profile/AutoApplyCard";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
+
+const getNearestMonthTimestamp = () => {
+  const date = new Date();
+  const dateString = `${date.getFullYear()}-${(
+    "0" + (date.getMonth() + 1).toString()
+  ).slice(-2)}-01T00:00:00.000Z`;
+  return Date.parse(dateString);
+};
 
 export default function ProfilePage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
@@ -329,14 +323,13 @@ export default function ProfilePage() {
 }
 
 function HeaderLine({ profile }: { profile: PublicUser }) {
-  const { to_level_name, to_degree_full_name, to_university_name } =
-    useDbRefs();
+  const { to_degree_full_name, to_university_name } = useDbRefs();
 
   const degree = profile.degree ? to_degree_full_name(profile.degree) : null;
   const uni = profile.university
     ? to_university_name(profile.university)
     : null;
-  const level = profile.year_level ? to_level_name(profile.year_level) : null;
+  const expectedGraduationDate = profile.expected_graduation_date ?? null;
 
   const chips: string[] = [];
   if (profile.expected_start_date || profile.expected_end_date) {
@@ -353,7 +346,7 @@ function HeaderLine({ profile }: { profile: PublicUser }) {
 
   return (
     <div className="flex flex-col gap-1">
-      {(degree || level || uni) && (
+      {(degree || expectedGraduationDate || uni) && (
         <div className="flex gap-2">
           <div className="py-1 px-2 rounded-[0.33em] border border-gray-300 bg-white flex items-center gap-1 text-sm">
             {uni}
@@ -365,9 +358,9 @@ function HeaderLine({ profile }: { profile: PublicUser }) {
             </div>
           )}
 
-          {level && (
+          {expectedGraduationDate && (
             <div className="py-1 px-2 rounded-[0.33em] border border-gray-300 bg-white flex items-center gap-1 text-sm">
-              {level}
+              {expectedGraduationDate}
             </div>
           )}
         </div>
@@ -384,7 +377,6 @@ function ProfileReadOnlyTabs({
   onEdit: () => void;
 }) {
   const {
-    to_level_name,
     to_degree_full_name,
     to_university_name,
     job_modes,
@@ -471,10 +463,8 @@ function ProfileReadOnlyTabs({
               value={profile.degree ? to_degree_full_name(profile.degree) : "—"}
             />
             <LabeledProperty
-              label="Year Level"
-              value={
-                profile.year_level ? to_level_name(profile.year_level) : "—"
-              }
+              label="Expected Graduation Date"
+              value={expectedGraduationDate ?? "-"}
             />
           </div>
         </section>
@@ -696,7 +686,6 @@ const ProfileEditor = forwardRef<
   } = useProfileEditForm();
   const { isMobile } = useAppContext();
   const {
-    levels,
     universities,
     colleges,
     departments,
@@ -801,7 +790,6 @@ const ProfileEditor = forwardRef<
   const [jobModeOptions, setJobModeOptions] = useState(job_modes);
   const [jobTypeOptions, setJobTypeOptions] = useState(job_types);
   const [jobCategoryOptions, setJobCategoryOptions] = useState(job_categories);
-  const [yearLevelOptions, setYearLevelOptions] = useState(levels);
   const creditOptions: ChipOpt[] = [
     { value: "credit", label: "Credited" },
     { value: "voluntary", label: "Voluntary" },
@@ -838,7 +826,6 @@ const ProfileEditor = forwardRef<
         get_degrees_by_university(formData.university ?? "").includes(d.id)
       )
     );
-    setYearLevelOptions(levels);
 
     setJobModeOptions((job_modes ?? []).slice());
     setJobTypeOptions((job_types ?? []).slice());
@@ -900,11 +887,6 @@ const ProfileEditor = forwardRef<
       (id: string) =>
         !degreeOptions.some((d) => d.id === id) && "Select a valid degree."
     );
-    addValidator("year_level", (id?: string) => {
-      if (!id) return "";
-      const ok = yearLevelOptions.some((l) => String(l.id) === String(id));
-      return ok ? "" : "Select a valid year level.";
-    });
     addValidator("expected_start_date", (v?: string | null) => {
       if (!v) return "Please select an expected start month.";
       const ym = /^\d{4}-\d{2}$/;
@@ -947,7 +929,6 @@ const ProfileEditor = forwardRef<
     collegeOptions,
     departmentOptions,
     degreeOptions,
-    levels,
     jobModeOptions,
     jobTypeOptions,
   ]);
@@ -1096,13 +1077,18 @@ const ProfileEditor = forwardRef<
               />
             </div>
             <div>
-              <ErrorLabel value={formErrors.year_level} />
-              <Autocomplete
-                label={"Year Level"}
-                options={yearLevelOptions}
-                value={formData.year_level}
-                setter={fieldSetter("year_level")}
-                placeholder="Select Year Level"
+              <ErrorLabel value={formErrors.expected_graduation_date} />
+              <FormMonthPicker
+                label="Expected Graduation Date"
+                date={
+                  formData.expected_graduation_date
+                    ? Date.parse(formData.expected_graduation_date)
+                    : undefined
+                }
+                setter={fieldSetter("expected_graduation_date")}
+                fromYear={2025}
+                toYear={2030}
+                placeholder="Select month"
               />
             </div>
           </div>
@@ -1458,10 +1444,7 @@ function computeProfileScore(p?: Partial<PublicUser>): {
     name: !!(u.first_name && u.last_name),
     phone: !!u.phone_number,
     bio: !!u.bio && u.bio.trim().length >= 50, // richer bios
-    school: !!(
-      u.university &&
-      u.year_level
-    ),
+    school: !!(u.university && u.degree),
     links: !!(u.github_link || u.linkedin_link || u.portfolio_link),
     prefs: !!(
       u.internship_preferences?.job_category_ids?.length ||
