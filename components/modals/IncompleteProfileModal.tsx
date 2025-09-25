@@ -1,10 +1,8 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
 import {
   Upload,
-  CheckCircle2,
   UserCheck,
   MailCheck,
   FileText,
@@ -14,7 +12,6 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAnalyzeResume } from "@/hooks/use-register";
 
@@ -33,13 +30,17 @@ import { Input } from "../ui/input";
 import { useProfile } from "@/lib/api/student.api";
 import { useQueryClient } from "@tanstack/react-query";
 import { Stepper } from "../stepper/stepper";
+import {
+  isProfileResume,
+  isProfileBaseComplete,
+  isProfileVerified,
+} from "../../lib/profile";
 
 export function IncompleteProfileContent({
   handleClose,
 }: {
   handleClose: () => void;
 }) {
-  const profile = useProfile();
   return (
     <div className="p-6 h-full overflow-y-auto pt-0">
       {/* Modal title */}
@@ -48,14 +49,11 @@ export function IncompleteProfileContent({
           <User className="w-8 h-8 text-primary" />
         </div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          Your profile isn’t complete yet
+          Let's finish setting up your profile
         </h2>
       </div>
 
-      <CompleteProfileStepper
-        initialProfile={profileToDraft(profile)}
-        onFinish={handleClose}
-      />
+      <CompleteProfileStepper onFinish={handleClose} />
     </div>
   );
 }
@@ -103,24 +101,19 @@ function profileToDraft(p: any): ProfileDraft {
   };
 }
 
-function CompleteProfileStepper({
-  initialProfile,
-  onFinish,
-}: {
-  initialProfile?: ProfileDraft;
-  onFinish: () => void;
-}) {
+function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   const queryClient = useQueryClient();
+  const existingProfile = useProfile();
   const [step, setStep] = useState(0);
 
   // profile being edited
   const [profile, setProfile] = useState<ProfileDraft>({
-    firstName: initialProfile?.firstName ?? "",
-    middleName: initialProfile?.middleName ?? "",
-    lastName: initialProfile?.lastName ?? "",
-    phone: initialProfile?.phone ?? "",
-    university: initialProfile?.university ?? "",
-    degree: initialProfile?.degree ?? "",
+    firstName: existingProfile.data?.first_name ?? "",
+    middleName: existingProfile.data?.middle_name ?? "",
+    lastName: existingProfile.data?.last_name ?? "",
+    phone: existingProfile.data?.phone_number ?? "",
+    university: existingProfile.data?.university ?? "",
+    degree: existingProfile.data?.degree ?? "",
   });
 
   // parsing/upload states
@@ -129,7 +122,6 @@ function CompleteProfileStepper({
   const [isUpdating, setIsUpdating] = useState(false);
   const [parsedReady, setParsedReady] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
-  const [parsedKeys, setParsedKeys] = useState<string[]>([]);
 
   // analyze
   const { upload, fileInputRef, response } = useAnalyzeResume(file);
@@ -155,12 +147,6 @@ function CompleteProfileStepper({
         if (cancelled) return;
         if (extractedUser) {
           const patch = snakeToDraft(extractedUser);
-          const newlyParsed = Object.keys(extractedUser).filter(
-            (k) => (extractedUser as any)[k]
-          );
-          setParsedKeys((prev) =>
-            Array.from(new Set([...prev, ...newlyParsed]))
-          );
           setProfile((p) => ({ ...p, ...patch }));
         }
         setParsedReady(true);
@@ -180,9 +166,12 @@ function CompleteProfileStepper({
     };
   }, [response]);
 
-  const steps = useMemo(
-    () => [
-      {
+  const steps = useMemo(() => {
+    const s = [];
+
+    // No resume
+    if (!isProfileResume(existingProfile.data)) {
+      s.push({
         title: "Upload your resume",
         subtitle: "Upload a PDF and we'll auto-fill what we can.",
         icon: Upload,
@@ -198,22 +187,39 @@ function CompleteProfileStepper({
             response={response}
           />
         ),
-      },
-      {
+      });
+    }
+
+    // Not complete
+    if (!isProfileBaseComplete(existingProfile.data)) {
+      s.push({
         title: "Basic details",
         icon: UserCheck,
         canNext: () => !!profile.firstName && !!profile.lastName && !isUpdating,
         component: <StepBasicIdentity value={profile} onChange={setProfile} />,
-      },
-      {
+      });
+    }
+
+    // Not verified
+    if (!isProfileVerified(existingProfile.data)) {
+      s.push({
         title: "Activate your account",
         subtitle: "Verify your university email and start applying now!",
         icon: MailCheck,
-        component: <StepActivateOTP onFinish={() => {}} />,
-      },
-    ],
-    [file, profile, isParsing, isUpdating]
-  );
+        hideNext: true,
+        component: (
+          <StepActivateOTP
+            onFinish={() => {
+              queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+              onFinish();
+            }}
+          />
+        ),
+      });
+    }
+
+    return s;
+  }, [file, profile, isParsing, isUpdating]);
 
   const onNext = async () => {
     if (step === 0) {
@@ -230,64 +236,18 @@ function CompleteProfileStepper({
       }).then(() => {
         setIsUpdating(false);
         setStep(2);
-        queryClient.invalidateQueries({ queryKey: ["my-profile"] });
       });
     } else if (step === 2) {
     }
   };
 
-  return <Stepper steps={steps} onNext={onNext}></Stepper>;
-}
-
-/* ========================= Subcomponents ========================= */
-
-function StepperHeader({ step }: { step: number }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
-      {steps.map((s, idx) => {
-        const ActiveIcon = s.icon;
-        const active = idx === step;
-        const done = idx < step;
-
-        return (
-          <motion.div
-            key={s.id}
-            layout
-            className={[
-              "flex items-center gap-1.5 sm:gap-2 rounded-[0.33em] border p-2.5 sm:p-3 min-w-0",
-              active
-                ? "border-primary/60 bg-primary/5"
-                : done
-                ? "border-emerald-500/40 bg-emerald-500/5"
-                : "border-border/60",
-            ].join(" ")}
-            aria-current={active ? "step" : undefined}
-          >
-            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-background shadow-inner shrink-0">
-              {done ? (
-                <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600" />
-              ) : (
-                <ActiveIcon
-                  className={
-                    "h-4 w-4 sm:h-5 sm:w-5 " +
-                    (active ? "text-primary" : "text-muted-foreground")
-                  }
-                />
-              )}
-            </div>
-
-            <div className="text-xs sm:text-sm font-medium leading-tight min-w-0">
-              <div className="text-[10px] sm:text-xs text-gray-400">
-                Step {idx + 1}
-              </div>
-              <div className="truncate" title={s.title}>
-                {s.title}
-              </div>
-            </div>
-          </motion.div>
-        );
-      })}
-    </div>
+    <Stepper
+      step={step}
+      steps={steps}
+      onNext={onNext}
+      onBack={() => setStep(step - 1)}
+    ></Stepper>
   );
 }
 
@@ -350,8 +310,6 @@ function StepResume({
     </div>
   );
 }
-
-/* -------- Step 1: Basic Identity (clean sections + grid) -------- */
 
 function StepBasicIdentity({
   value,
@@ -537,26 +495,6 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
         </div>
       </div>
     </div>
-  );
-}
-
-/* --------------------------- Success --------------------------- */
-
-function StepSuccess({ onClose }: { onClose: () => void }) {
-  return (
-    <Card className="p-6 sm:p-8 text-center">
-      <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
-        <CheckCircle2 className="h-9 w-9 text-emerald-600" />
-      </div>
-      <h3 className="text-2xl font-bold tracking-tight">You’re good to go!</h3>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Account activated and profile saved. You can now browse jobs and apply.
-      </p>
-
-      <div className="mt-6 flex items-center justify-center gap-2">
-        <Button onClick={onClose}>Start applying</Button>
-      </div>
-    </Card>
   );
 }
 

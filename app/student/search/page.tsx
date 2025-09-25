@@ -44,6 +44,12 @@ import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  isProfileBaseComplete,
+  isProfileResume,
+  isProfileVerified,
+} from "@/lib/profile";
 
 /* =======================================================================================
     tiny helper to keep callback identity stable across renders
@@ -107,6 +113,7 @@ export default function SearchPage() {
   const { open: openResumeModal, Modal: ResumeModal } =
     useModal("resume-modal");
   const profile = useProfile();
+  const queryClient = useQueryClient();
 
   const {
     open: openApplicationConfirmationModal,
@@ -135,11 +142,11 @@ export default function SearchPage() {
 
   const jobModalRef = useModalRef();
 
-  // const {
-  //   Modal: IncompleteModal,
-  //   open: openIncomplete,
-  //   close: closeIncomplete,
-  // } = useModal("IncompleteProfileModal", { allowBackdropClick: false });
+  const {
+    Modal: IncompleteModal,
+    open: openIncomplete,
+    close: closeIncomplete,
+  } = useModal("IncompleteProfileModal", { allowBackdropClick: false });
 
   const successModalRef = useModalRef();
 
@@ -240,9 +247,12 @@ export default function SearchPage() {
   };
 
   const handleApply = () => {
-    // // ! REMOVE BEFORE PUSH
-    // openIncomplete();
-    // return;
+    if (
+      !isProfileResume(profile.data) ||
+      !isProfileBaseComplete(profile.data) ||
+      !isProfileVerified(profile.data)
+    )
+      return openIncomplete();
 
     if (!isAuthenticated()) {
       window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
@@ -257,7 +267,6 @@ export default function SearchPage() {
       openGlobalModal(
         "incomplete-profile",
         <IncompleteProfileContent
-          profile={profile}
           handleClose={() => closeGlobalModal("incomplete-profile")}
         />
       );
@@ -960,12 +969,14 @@ export default function SearchPage() {
         </div>
       </MassApplyResultModal>
 
-      {/* <IncompleteModal className="sm:w-[50dvw] h-[100dvh] sm:h-fit overflow-y-auto">
+      <IncompleteModal className="sm:w-[50dvw] h-[100dvh] sm:h-fit overflow-y-auto">
         <IncompleteProfileContent
-          profile={profile}
-          handleClose={closeIncomplete}
+          handleClose={() => (
+            queryClient.invalidateQueries({ queryKey: ["my-profile"] }),
+            closeIncomplete()
+          )}
         />
-      </IncompleteModal> */}
+      </IncompleteModal>
 
       {/* Resume Modal */}
       {resumeURL.length > 0 && <ProfileResumePreview url={resumeURL} />}
