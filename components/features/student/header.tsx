@@ -44,6 +44,7 @@ import { useAuthContext } from "@/lib/ctx-auth";
 import { useProfile } from "@/lib/api/student.api";
 import { cn } from "@/lib/utils";
 import { getFullName, getMissingProfileFields } from "@/lib/utils/user-utils";
+import { Chip } from "@/components/ui/chip-select";
 
 /* =======================================================================================
    Filter State (immutable + typed) 
@@ -216,79 +217,162 @@ const SearchInput = ({
   </div>
 );
 
-const CheckboxRow = ({
-  checked,
-  onChange,
-  label,
-  expandable,
-}: {
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  label: React.ReactNode;
-  expandable?: boolean;
-}) => (
-  <div className="flex items-center gap-1 w-fit select-none">
-    <Checkbox
-      checked={!!checked}
-      className={cn(
-        "flex items-center justify-center w-5 h-5 hover:cursor-pointer rounded border",
-        checked ? "border-blue-500 bg-blue-200" : "border-gray-300 bg-gray-200"
-      )}
-      onCheckedChange={(v) => onChange(!!v)}
-    >
-      {checked ? (
-        <CheckIcon className="text-blue-500 pointer-events-none w-4 h-4" />
-      ) : (
-        <XIcon className="text-gray-400 pointer-events-none w-4 h-4" />
-      )}
-    </Checkbox>
-    <span className="text-sm text-gray-700">{label}</span>
-    {expandable && <ChevronRight className="ml-1 h-4 w-4 text-gray-300" />}
-  </div>
-);
-
 /* =======================================================================================
-   Filter Panels
+   Filter Panels + others
 ======================================================================================= */
+
+function AppliedPills({
+  state,
+  dispatch,
+  onClearAll,
+}: {
+  state: JobFilter;
+  dispatch: React.Dispatch<Action>;
+  onClearAll: () => void;
+}) {
+  const makePill = (label: string, value: string, key: keyof JobFilter) => (
+    <span
+      key={`${key}:${value}`}
+      className="inline-flex items-center gap-1 rounded-full bg-gray-100 text-gray-700 text-xs px-2 py-1"
+    >
+      {label}
+      <button
+        aria-label={`Remove ${label}`}
+        onClick={() => dispatch({ type: "TOGGLE", key, value, on: false })}
+        className="ml-0.5 rounded-full hover:bg-gray-200 p-0.5"
+      >
+        <XIcon className="w-3 h-3" />
+      </button>
+    </span>
+  );
+
+  const labelFrom = (value: string, options: { name: string; value: string }[]) =>
+    options.find((o) => o.value === value)?.name ?? value;
+
+  const pills: React.ReactNode[] = [
+    ...state.position.map((v) => {
+      // resolve across tree (cats + children)
+      const flat = [
+        ...POSITION_TREE.map((c) => ({ name: c.name, value: c.value })),
+        ...POSITION_TREE.flatMap((c) => c.children || []),
+      ];
+      return makePill(labelFrom(v, flat), v, "position");
+    }),
+    ...state.jobMode.map((v) => makePill(labelFrom(v, MODE_OPTIONS), v, "jobMode")),
+    ...state.jobWorkload.map((v) =>
+      makePill(labelFrom(v, WORKLOAD_OPTIONS), v, "jobWorkload")
+    ),
+    ...state.jobAllowance.map((v) =>
+      makePill(labelFrom(v, ALLOWANCE_OPTIONS), v, "jobAllowance")
+    ),
+    ...state.jobMoa.map((v) => makePill(v, v, "jobMoa")),
+  ];
+
+  if (!pills.length) return null;
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {pills}
+      <button
+        type="button"
+        onClick={onClearAll}
+        className="text-xs text-gray-500 underline underline-offset-2 hover:text-gray-700"
+      >
+        Clear all
+      </button>
+    </div>
+  );
+}
+
+function FilterEnvelope({
+  children,
+  state,
+  dispatch,
+  onClearAll,
+  className,
+}: {
+  children: React.ReactNode;
+  state: JobFilter;
+  dispatch: React.Dispatch<Action>;
+  onClearAll: () => void;
+  className?: string;
+}) {
+  // computed count for badge
+  const totalSelected =
+    state.position.length +
+    state.jobMode.length +
+    state.jobWorkload.length +
+    state.jobAllowance.length +
+    state.jobMoa.length;
+
+  return (
+    <div
+      role="region"
+      aria-label="Filters"
+      className={cn(
+        "w-full rounded-lg border bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70",
+        "px-3 py-2 shadow-sm sticky top-[64px] z-[85]", // adjust top to your header height
+        className
+      )}
+    >
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            {children}
+            {totalSelected > 0 && (
+              <span className="inline-flex items-center justify-center text-[10px] leading-none rounded-full bg-primary/10 text-primary px-2 py-1">
+                {totalSelected} selected
+              </span>
+            )}
+          </div>
+        </div>
+
+        <AppliedPills state={state} dispatch={dispatch} onClearAll={onClearAll} />
+      </div>
+    </div>
+  );
+}
+
 const JobPositionPanel: React.FC = () => {
   const { state, dispatch } = useJobFilter();
   const selected = new Set(state.position);
-
   const toggle = (value: string, on?: boolean) =>
     dispatch({ type: "TOGGLE", key: "position", value, on });
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       {POSITION_TREE.map((cat) => {
-        const catSelected = selected.has(cat.value);
         const childSelectedCount =
           cat.children?.filter((c) => selected.has(c.value)).length ?? 0;
-        const isExpanded = catSelected || childSelectedCount > 0; // auto-show when any child selected
+        const isExpanded = selected.has(cat.value) || childSelectedCount > 0;
+
         return (
-          <div key={cat.value} className="">
-            <div className="flex items-center gap-2">
-              <CheckboxRow
-                checked={catSelected}
-                onChange={(v) => toggle(cat.value, v)}
-                label={<span className="font-medium">{cat.name}</span>}
-              />
-              {cat.children?.length ? (
+          <div key={cat.value} className="rounded-md border p-3">
+            <div className="flex items-center justify-between">
+              <Chip
+                selected={selected.has(cat.value)}
+                onClick={() => toggle(cat.value)}
+                className="font-medium"
+              >
+                {cat.name}
+              </Chip>
+              {!!childSelectedCount && (
                 <span className="text-xs text-gray-500">
-                  {childSelectedCount
-                    ? `(${childSelectedCount} selected)`
-                    : null}
+                  {childSelectedCount} sub-role{childSelectedCount > 1 ? "s" : ""} selected
                 </span>
-              ) : null}
+              )}
             </div>
+
             {isExpanded && cat.children?.length ? (
-              <div className="mt-1 ml-6 flex flex-col gap-1 border-l border-gray-200 pl-3">
+              <div className="mt-3 flex flex-wrap gap-2">
                 {cat.children.map((child) => (
-                  <CheckboxRow
+                  <Chip
                     key={child.value}
-                    checked={selected.has(child.value)}
-                    onChange={(v) => toggle(child.value, v)}
-                    label={child.name}
-                  />
+                    selected={selected.has(child.value)}
+                    onClick={() => toggle(child.value)}
+                  >
+                    {child.name}
+                  </Chip>
                 ))}
               </div>
             ) : null}
@@ -301,76 +385,40 @@ const JobPositionPanel: React.FC = () => {
 
 const JobDetailPanel: React.FC = () => {
   const { state, dispatch } = useJobFilter();
-  const togglers = {
-    jobWorkload: (v: string, on?: boolean) =>
-      dispatch({ type: "TOGGLE", key: "jobWorkload", value: v, on }),
-    jobMode: (v: string, on?: boolean) =>
-      dispatch({ type: "TOGGLE", key: "jobMode", value: v, on }),
-    jobAllowance: (v: string, on?: boolean) =>
-      dispatch({ type: "TOGGLE", key: "jobAllowance", value: v, on }),
-    jobMoa: (v: string, on?: boolean) =>
-      dispatch({ type: "TOGGLE", key: "jobMoa", value: v, on }),
-  } as const;
-
-  const has = {
-    jobWorkload: (v: string) => state.jobWorkload.includes(v),
-    jobMode: (v: string) => state.jobMode.includes(v),
-    jobAllowance: (v: string) => state.jobAllowance.includes(v),
-    jobMoa: (v: string) => state.jobMoa.includes(v),
-  } as const;
 
   const Group = ({
     title,
     options,
-    check,
-    toggle,
+    keyName,
   }: {
     title: string;
     options: SubOption[];
-    check: (v: string) => boolean;
-    toggle: (v: string, on?: boolean) => void;
-  }) => (
-    <div>
-      <div className="font-bold tracking-tight mt-2 mb-1">{title}</div>
-      <div className="flex flex-col gap-1">
-        {options.map((o) => (
-          <CheckboxRow
-            key={o.value}
-            checked={check(o.value)}
-            onChange={(v) => toggle(o.value, v)}
-            label={o.name}
-          />
-        ))}
-      </div>
-    </div>
-  );
+    keyName: keyof JobFilter;
+  }) => {
+    const set = new Set(state[keyName]);
+    const toggle = (v: string) =>
+      dispatch({ type: "TOGGLE", key: keyName, value: v });
+
+    return (
+      <section className="rounded-md border p-3">
+        <h4 className="font-semibold text-sm mb-2">{title}</h4>
+        <div className="flex flex-wrap gap-2">
+          {options.map((o) => (
+            <Chip key={o.value} selected={set.has(o.value)} onClick={() => toggle(o.value)}>
+              {o.name}
+            </Chip>
+          ))}
+        </div>
+      </section>
+    );
+  };
 
   return (
     <div className="flex flex-col gap-3">
-      <Group
-        title="Internship Workload"
-        options={WORKLOAD_OPTIONS}
-        check={has.jobWorkload}
-        toggle={togglers.jobWorkload}
-      />
-      <Group
-        title="Internship Mode"
-        options={MODE_OPTIONS}
-        check={has.jobMode}
-        toggle={togglers.jobMode}
-      />
-      <Group
-        title="Internship Allowance"
-        options={ALLOWANCE_OPTIONS}
-        check={has.jobAllowance}
-        toggle={togglers.jobAllowance}
-      />
-      <Group
-        title="Internship MOA"
-        options={MOA_OPTIONS}
-        check={has.jobMoa}
-        toggle={togglers.jobMoa}
-      />
+      <Group title="Internship Workload" options={WORKLOAD_OPTIONS} keyName="jobWorkload" />
+      <Group title="Internship Mode" options={MODE_OPTIONS} keyName="jobMode" />
+      <Group title="Internship Allowance" options={ALLOWANCE_OPTIONS} keyName="jobAllowance" />
+      <Group title="Internship MOA" options={MOA_OPTIONS} keyName="jobMoa" />
     </div>
   );
 };
