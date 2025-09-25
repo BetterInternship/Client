@@ -146,7 +146,10 @@ export default function SearchPage() {
     Modal: IncompleteModal,
     open: openIncomplete,
     close: closeIncomplete,
-  } = useModal("IncompleteProfileModal", { allowBackdropClick: false });
+  } = useModal("IncompleteProfileModal", {
+    allowBackdropClick: false,
+    onClose: () => queryClient.invalidateQueries({ queryKey: ["my-profile"] }),
+  });
 
   const successModalRef = useModalRef();
 
@@ -970,12 +973,7 @@ export default function SearchPage() {
       </MassApplyResultModal>
 
       <IncompleteModal className="sm:w-[50dvw] h-[100dvh] sm:h-fit overflow-y-auto">
-        <IncompleteProfileContent
-          handleClose={() => (
-            queryClient.invalidateQueries({ queryKey: ["my-profile"] }),
-            closeIncomplete()
-          )}
-        />
+        <IncompleteProfileContent handleClose={closeIncomplete} />
       </IncompleteModal>
 
       {/* Resume Modal */}
