@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 04:14:35
- * @ Modified time: 2025-09-25 19:49:03
+ * @ Modified time: 2025-09-25 19:50:16
  * @ Description:
  *
  * What employers see when clicking on an applicant to view.
@@ -10,11 +10,11 @@
 
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { Job, PublicUser } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { Button } from "../ui/button";
-import { Award, ExternalLink, FileText, GraduationCap } from "lucide-react";
+import { Award, FileText } from "lucide-react";
 import { getFullName } from "@/lib/utils/user-utils";
 import { MyUserPfp, UserPfp } from "./pfp";
 import { Divider } from "../ui/divider";
@@ -46,29 +46,7 @@ export const ApplicantModalContent = ({
     job_modes,
     job_types,
     job_categories,
-    to_job_mode_name,
-    to_job_category_name,
   } = useDbRefs();
-
-  // Name mappers
-  const modeName = (id: any) => to_job_mode_name(id);
-
-  const typeName = (id: any) => to_job_type_name(id);
-
-  const categoryName = (id: any) => to_job_category_name(id);
-
-  const jobModeNames = useMemo(
-    () => (applicant.job_mode_ids ?? []).map(modeName).filter(Boolean),
-    [applicant.job_mode_ids, job_modes]
-  );
-  const jobTypeNames = useMemo(
-    () => (applicant.job_type_ids ?? []).map(typeName).filter(Boolean),
-    [applicant.job_type_ids, job_types]
-  );
-  const jobCategoryNames = useMemo(
-    () => (applicant.job_category_ids ?? []).map(categoryName).filter(Boolean),
-    [applicant.job_category_ids, job_categories]
-  );
 
   // actions
   const handleResumeClick = useCallback(async () => {

@@ -96,17 +96,6 @@ export function ApplicationRow({
           >
             Notes
           </Button>
-          {/* // ! uncomment when calendar back */}
-          {/* <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onSchedule();
-            }}
-          >
-            Schedule
-          </Button> */}
           <div>
             <StatusDropdown
               value={application.status ?? 0}
