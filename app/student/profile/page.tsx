@@ -246,12 +246,11 @@ export default function ProfilePage() {
 
           {/* Right column */}
           <aside className="lg:col-span-1 space-y-6">
-
-            <AutoApplyCard 
+            <AutoApplyCard
               initialEnabled={!!(data as any)?.auto_apply_enabled}
-              onSave={() => {}}
+              onSave={async () => {}}
             />
-            
+
             {/* Completion meter */}
             <div className="">
               <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
@@ -296,8 +295,6 @@ export default function ProfilePage() {
                 </ul>
               )}
             </div>
-
-            
           </aside>
         </main>
 
@@ -323,9 +320,9 @@ export default function ProfilePage() {
 }
 
 function HeaderLine({ profile }: { profile: PublicUser }) {
-  const { to_degree_full_name, to_university_name } = useDbRefs();
+  const { to_university_name } = useDbRefs();
 
-  const degree = profile.degree ? to_degree_full_name(profile.degree) : null;
+  const degree = profile.degree ?? null;
   const uni = profile.university
     ? to_university_name(profile.university)
     : null;
@@ -376,13 +373,8 @@ function ProfileReadOnlyTabs({
   profile: PublicUser;
   onEdit: () => void;
 }) {
-  const {
-    to_degree_full_name,
-    to_university_name,
-    job_modes,
-    job_types,
-    job_categories,
-  } = useDbRefs();
+  const { to_university_name, job_modes, job_types, job_categories } =
+    useDbRefs();
 
   type TabKey = "Student Profile" | "Internship Details";
   const [tab, setTab] = useState<TabKey>("Student Profile");
@@ -446,25 +438,10 @@ function ProfileReadOnlyTabs({
                   : "—"
               }
             />
-            {/* <LabeledProperty
-              label="College"
-              value={profile.college ? to_college_name(profile.college) : "—"}
-            />
-            <LabeledProperty
-              label="Department"
-              value={
-                profile.department
-                  ? to_department_name(profile.department)
-                  : "—"
-              }
-            /> */}
-            <LabeledProperty
-              label="Degree"
-              value={profile.degree ? to_degree_full_name(profile.degree) : "—"}
-            />
+            <LabeledProperty label="Degree" value={profile.degree ?? "-"} />
             <LabeledProperty
               label="Expected Graduation Date"
-              value={expectedGraduationDate ?? "-"}
+              value={profile.expected_graduation_date ?? "-"}
             />
           </div>
         </section>
@@ -689,12 +666,10 @@ const ProfileEditor = forwardRef<
     universities,
     colleges,
     departments,
-    degrees,
     job_modes,
     job_types,
     job_categories,
     getUniversityFromDomain: get_universities_from_domain,
-    get_degrees_by_university,
   } = useDbRefs();
 
   type TabKey = "Student Profile" | "Internship Details" | "Calendar";
@@ -786,7 +761,6 @@ const ProfileEditor = forwardRef<
   const [universityOptions, setUniversityOptions] = useState(universities);
   const [collegeOptions, setCollegeOptions] = useState(colleges);
   const [departmentOptions, setDepartmentOptions] = useState(departments);
-  const [degreeOptions, setDegreeOptions] = useState(degrees);
   const [jobModeOptions, setJobModeOptions] = useState(job_modes);
   const [jobTypeOptions, setJobTypeOptions] = useState(job_types);
   const [jobCategoryOptions, setJobCategoryOptions] = useState(job_categories);
@@ -821,12 +795,6 @@ const ProfileEditor = forwardRef<
 
   useEffect(() => {
     setUniversityOptions(universities);
-    setDegreeOptions(
-      degrees.filter((d) =>
-        get_degrees_by_university(formData.university ?? "").includes(d.id)
-      )
-    );
-
     setJobModeOptions((job_modes ?? []).slice());
     setJobTypeOptions((job_types ?? []).slice());
     setJobCategoryOptions((job_categories ?? []).slice());
@@ -838,12 +806,10 @@ const ProfileEditor = forwardRef<
     universities,
     colleges,
     departments,
-    degrees,
     job_modes,
     job_types,
     job_categories,
     get_universities_from_domain,
-    get_degrees_by_university,
   ]);
 
   useEffect(() => {
@@ -881,11 +847,6 @@ const ProfileEditor = forwardRef<
       (id: string) =>
         !universityOptions.some((u) => u.id === id) &&
         "Select a valid university."
-    );
-    addValidator(
-      "degree",
-      (id: string) =>
-        !degreeOptions.some((d) => d.id === id) && "Select a valid degree."
     );
     addValidator("expected_start_date", (v?: string | null) => {
       if (!v) return "Please select an expected start month.";
@@ -928,7 +889,6 @@ const ProfileEditor = forwardRef<
     universityOptions,
     collegeOptions,
     departmentOptions,
-    degreeOptions,
     jobModeOptions,
     jobTypeOptions,
   ]);
@@ -1068,12 +1028,11 @@ const ProfileEditor = forwardRef<
             </div>
             <div>
               <ErrorLabel value={formErrors.degree} />
-              <Autocomplete
+              <FormInput
                 label={"Degree"}
-                options={degreeOptions}
-                value={formData.degree}
+                value={formData.degree ?? undefined}
                 setter={fieldSetter("degree")}
-                placeholder="Select Degree"
+                placeholder="Indicate degree"
               />
             </div>
             <div>
@@ -1085,7 +1044,12 @@ const ProfileEditor = forwardRef<
                     ? Date.parse(formData.expected_graduation_date)
                     : undefined
                 }
-                setter={fieldSetter("expected_graduation_date")}
+                setter={(ms) =>
+                  setField(
+                    "expected_graduation_date",
+                    new Date(ms ?? 0).toISOString()
+                  )
+                }
                 fromYear={2025}
                 toYear={2030}
                 placeholder="Select month"
@@ -1482,15 +1446,6 @@ function computeProfileScore(p?: Partial<PublicUser>): {
 
   return { score, parts, tips };
 }
-
-// Returns the UNIX timestamp of the first day of the current month
-const getNearestMonthTimestamp = () => {
-  const date = new Date();
-  const dateString = `${date.getFullYear()}-${(
-    "0" + (date.getMonth() + 1).toString()
-  ).slice(-2)}-01T00:00:00.000Z`;
-  return Date.parse(dateString);
-};
 
 function ymToFirstDayTs(ym?: string | number | null): number | undefined {
   if (ym == null || ym === "") return undefined;

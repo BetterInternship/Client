@@ -11,7 +11,6 @@ export type JobMode = Tables<"ref_job_modes">;
 export type AppStatus = Tables<"ref_app_statuses">;
 export type Industry = Tables<"ref_industries">;
 export type Department = Tables<"ref_departments">;
-export type Degree = Tables<"ref_degrees">;
 export type Moa = Tables<"moa">;
 export type PrivateUser = Tables<"users">;
 type _PublicUserBase = Omit<Tables<"users">, "verification_hash">;

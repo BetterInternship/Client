@@ -495,13 +495,7 @@ function StepBasicIdentity({
   onChange: (v: ProfileDraft) => void;
 }) {
   const refs = useDbRefs();
-
   const universityOptions = refs.universities;
-  const degreeOptions = useMemo(() => {
-    return refs.degrees.filter((d) =>
-      refs.get_degrees_by_university(value.university ?? "").includes(d.id)
-    );
-  }, [value.university, refs]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -566,9 +560,8 @@ function StepBasicIdentity({
             <label className="text-xs text-gray-600 mb-1 block">
               Degree / Program
             </label>
-            <Autocomplete
+            <FormInput
               value={value.degree ?? ""}
-              options={degreeOptions}
               setter={(val: any) => onChange({ ...value, degree: val })}
               placeholder="Select degree…"
             />

@@ -43,7 +43,6 @@ import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { Toast } from "@/components/landingStudent/ui/toast";
 
 /* =======================================================================================
     tiny helper to keep callback identity stable across renders

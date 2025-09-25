@@ -16,10 +16,6 @@ import { MultiChipSelect } from "@/components/ui/chip-select";
 import { SinglePickerBig } from "@/components/features/student/SinglePickerBig";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useSearchParams } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { Divider } from "/components/ui/divider";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Switch } from "@/components/ui/switch";
 
 interface FormInputs {
   university?: string;

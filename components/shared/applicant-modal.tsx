@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 04:14:35
- * @ Modified time: 2025-09-25 17:41:51
+ * @ Modified time: 2025-09-25 18:18:26
  * @ Description:
  *
  * What employers see when clicking on an applicant to view.
@@ -41,8 +41,6 @@ export const ApplicantModalContent = ({
   resume_url?: string;
 }) => {
   const {
-    to_college_name,
-    to_degree_name,
     to_job_type_name,
     to_university_name,
     job_modes,
@@ -77,12 +75,6 @@ export const ApplicantModalContent = ({
     if (!clickable || !applicant?.resume || !applicant?.id) return;
     open_resume();
   }, [clickable, applicant?.resume, applicant?.id, open_resume]);
-
-  // Handle calendar button click - memoize to prevent re-renders
-  const handleCalendarClick = useCallback(() => {
-    if (!clickable || !applicant?.calendar_link) return;
-    open_calendar();
-  }, [clickable, applicant?.calendar_link]);
 
   // use the presigned URL for embedding
   const resumeSrc = resume_url && resume_url.length ? resume_url : "";
@@ -138,17 +130,6 @@ export const ApplicantModalContent = ({
               <FileText className="h-4 w-4 mr-2" />
               {applicant.resume ? "View Resume" : "No Resume"}
             </Button>
-            {/* // ! uncomment when calendar back */}
-            {/* <Button
-              variant="outline"
-              className="h-10 sm:h-11"
-              size="md"
-              disabled={!clickable || !applicant?.calendar_link}
-              onClick={handleCalendarClick}
-            >
-              <Calendar className="h-4 w-4 mr-2" />
-              {applicant?.calendar_link ? "Schedule" : "No Calendar"}
-            </Button> */}
           </div>
         </div>
 
@@ -168,9 +149,7 @@ export const ApplicantModalContent = ({
             <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
               <div>
                 <p className="text-xs text-gray-500">Program / Degree</p>
-                <p className="font-medium text-gray-900">
-                  {to_degree_name(applicant?.degree)}
-                </p>
+                <p className="font-medium text-gray-900">{applicant?.degree}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Institution</p>
@@ -179,7 +158,9 @@ export const ApplicantModalContent = ({
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500">Expected Graduation Date</p>
+                <p className="text-xs text-gray-500">
+                  Expected Graduation Date
+                </p>
                 <p className="font-medium text-gray-900">
                   {applicant.expected_graduation_date}
                 </p>
