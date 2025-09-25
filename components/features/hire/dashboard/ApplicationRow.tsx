@@ -9,7 +9,7 @@ import { UserPfp } from "@/components/shared/pfp";
 import { StatusDropdown } from "@/components/common/StatusDropdown";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useConversations } from "@/hooks/use-conversation";
-import { cn } from "@/lib/utils";
+import { cn, formatMonth } from "@/lib/utils";
 
 interface ApplicationRowProps {
   application: EmployerApplication;
@@ -48,7 +48,7 @@ export function ApplicationRow({
               {getFullName(application.user)}{" "}
               <span className="opacity-70">
                 — {to_university_name(application.user?.university) || ""} •{" "}
-                {application.user.expected_graduation_date || ""}
+                {formatMonth(application.user?.expected_graduation_date)}
               </span>
             </p>
             <p className="text-sm text-gray-500">

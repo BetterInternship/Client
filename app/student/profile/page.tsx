@@ -29,7 +29,7 @@ import {
 } from "@/lib/utils/url-utils";
 import { Loader } from "@/components/ui/loader";
 import { BoolBadge } from "@/components/ui/badge";
-import { cn, isValidPHNumber, toSafeString } from "@/lib/utils";
+import { cn, formatMonth, isValidPHNumber, toSafeString } from "@/lib/utils";
 import { MyUserPfp } from "@/components/shared/pfp";
 import { useAppContext } from "@/lib/ctx-app";
 import {
@@ -357,7 +357,7 @@ function HeaderLine({ profile }: { profile: PublicUser }) {
 
           {expectedGraduationDate && (
             <div className="py-1 px-2 rounded-[0.33em] border border-gray-300 bg-white flex items-center gap-1 text-sm">
-              {expectedGraduationDate}
+              {formatMonth(expectedGraduationDate)}
             </div>
           )}
         </div>
@@ -441,7 +441,7 @@ function ProfileReadOnlyTabs({
             <LabeledProperty label="Degree" value={profile.degree ?? "-"} />
             <LabeledProperty
               label="Expected Graduation Date"
-              value={profile.expected_graduation_date ?? "-"}
+              value={formatMonth(profile.expected_graduation_date) ?? "-"}
             />
           </div>
         </section>

@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 04:14:35
- * @ Modified time: 2025-09-25 18:18:26
+ * @ Modified time: 2025-09-25 19:49:03
  * @ Description:
  *
  * What employers see when clicking on an applicant to view.
@@ -18,7 +18,7 @@ import { Award, ExternalLink, FileText, GraduationCap } from "lucide-react";
 import { getFullName } from "@/lib/utils/user-utils";
 import { MyUserPfp, UserPfp } from "./pfp";
 import { Divider } from "../ui/divider";
-import { fmtISO } from "@/lib/utils/date-utils";
+import { fmtISO, formatMonth } from "@/lib/utils/date-utils";
 import { Badge } from "../ui/badge";
 
 export const ApplicantModalContent = ({
@@ -162,7 +162,7 @@ export const ApplicantModalContent = ({
                   Expected Graduation Date
                 </p>
                 <p className="font-medium text-gray-900">
-                  {applicant.expected_graduation_date}
+                  {formatMonth(applicant.expected_graduation_date)}
                 </p>
               </div>
               <div>
