@@ -68,6 +68,9 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [autoApplySaving, setAutoApplySaving] = useState(false);
+  const [autoApplyError, setAutoApplyError] = useState<string | null>(null);
+
   const { url: resumeURL, sync: syncResumeURL } = useFile({
     fetcher: UserService.getMyResumeURL,
     route: "/users/me/resume",
@@ -121,6 +124,8 @@ export default function ProfilePage() {
     );
   }
 
+  console.log(profile);
+
   const data = profile.data as PublicUser | undefined;
   const { score, parts, tips } = computeProfileScore(data);
 
@@ -134,6 +139,23 @@ export default function ProfilePage() {
     await syncResumeURL();
     openEmployerModal();
   };
+
+  const handleAutoApplySave = async () => {
+    setAutoApplySaving(true);
+    setAutoApplyError(null);
+    
+    const prev = !!profile.data?.apply_for_me;
+    console.log(prev);
+
+    try {
+      await profile.update({ apply_for_me: !prev });
+    } catch (e: any){
+      setAutoApplyError(e?.message ?? "Failed to update auto-apply");
+    } finally {
+      setAutoApplySaving(false)
+      console.log("AYT")
+    }
+  }
 
   return (
     data && (
@@ -247,8 +269,10 @@ export default function ProfilePage() {
           {/* Right column */}
           <aside className="lg:col-span-1 space-y-6">
             <AutoApplyCard
-              initialEnabled={!!(data as any)?.auto_apply_enabled}
-              onSave={async () => {}}
+              initialEnabled={!!data?.apply_for_me}
+              onSave={handleAutoApplySave}
+              saving={autoApplySaving}
+              error={autoApplyError}
             />
 
             {/* Completion meter */}

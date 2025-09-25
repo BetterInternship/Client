@@ -19,14 +19,21 @@ import {
 
 export function AutoApplyCard({
   initialEnabled,
-  onSave, // async (next: boolean) => Promise<void>
+  onSave,
+  saving,
+  error,
 }: {
   initialEnabled: boolean;
   onSave: (next: boolean) => Promise<void>;
+  saving?: boolean;
+  error?: string | null;
 }) {
   const [enabled, setEnabled] = useState(!!initialEnabled);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pending, setPending] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  const isBusy = pending || !!saving;
 
   const tone = useMemo(
     () =>
@@ -47,27 +54,42 @@ export function AutoApplyCard({
   );
 
   async function handleEnable() {
+    setLocalError(null);
     setPending(true);
+
+    // Optimistic UI
+    const prev = enabled;
+    setEnabled(true);
+
     try {
       await onSave(true);
-      setEnabled(true);
+    } catch (e: any) {
+      // Roll back on failure
+      setEnabled(prev);
+      setLocalError(e?.message ?? "Failed to enable Apply for Me.");
     } finally {
       setPending(false);
     }
   }
 
   function handleRequestDisable() {
+    // Do not flip yet; keep switch ON until confirmed
     setConfirmOpen(true);
   }
 
   async function confirmDisable() {
+    setLocalError(null);
     setPending(true);
+
     try {
       await onSave(false);
       setEnabled(false);
+      setConfirmOpen(false);
+    } catch (e: any) {
+      setLocalError(e?.message ?? "Failed to turn off Apply for Me.");
+      // Keep dialog open so user sees the error; user can dismiss
     } finally {
       setPending(false);
-      setConfirmOpen(false);
     }
   }
 
@@ -91,7 +113,7 @@ export function AutoApplyCard({
           <div className="flex items-center gap-2">
             <Switch
               checked={enabled}
-              disabled={pending}
+              disabled={isBusy}
               aria-label="Apply for Me"
               onCheckedChange={(next) => {
                 if (next) handleEnable();
@@ -101,16 +123,28 @@ export function AutoApplyCard({
           </div>
         </div>
 
-        {/* Longer explanation */}
+        {/* Explanation */}
         <div className={cn("text-xs leading-relaxed text-justify", tone.subtext)}>
-          Automatically send your resume to matching companies. Just wait for the
-          interview. Only companies that fit your profile will see your resume.
+          Automatically send your resume to matching companies. Only companies that fit
+          your profile will see your resume.
         </div>
 
+        {/* Status */}
         {enabled ? (
-          <p className="text-sm text-emerald-800">Apply for Me is currently active.</p>
+          <p className="text-sm text-emerald-800">
+            {isBusy ? "Saving…" : "Apply for Me is currently active."}
+          </p>
         ) : (
-          <p className="text-sm text-red-800">Apply for Me is currently off.</p>
+          <p className="text-sm text-red-800">
+            {isBusy ? "Saving…" : "Apply for Me is currently off."}
+          </p>
+        )}
+
+        {/* Errors */}
+        {(error || localError) && (
+          <p className="text-xs text-red-600" aria-live="polite">
+            {error || localError}
+          </p>
         )}
       </Card>
 
@@ -122,21 +156,24 @@ export function AutoApplyCard({
             <AlertDialogDescription className="space-y-2">
               Don’t worry — we only apply to companies that fit your profile. Keep this on
               to get interviews faster.
+              {(error || localError) && (
+                <div className="text-red-600 text-xs">{error || localError}</div>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2 sm:gap-2">
             {/* Turn off */}
             <AlertDialogAction
               onClick={confirmDisable}
-              disabled={pending}
+              disabled={isBusy}
               className="bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
             >
-              Turn off — I’ll apply manually instead
+              {isBusy ? "Turning off…" : "Turn off — I’ll apply manually instead"}
             </AlertDialogAction>
 
             {/* Keep on */}
             <AlertDialogCancel
-              disabled={pending}
+              disabled={isBusy}
               className="bg-emerald-600 text-white hover:bg-emerald-700"
             >
               Keep it on
