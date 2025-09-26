@@ -238,7 +238,8 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
         degree: profile.degree ?? "",
       }).then(() => {
         setIsUpdating(false);
-        setStep(step + 1);
+        if (step + 1 < steps.length - 1) setStep(step + 1);
+        else onFinish();
       });
     }
   };
