@@ -304,8 +304,11 @@ export default function SearchPage() {
         cover_letter: textarea_ref.current?.value ?? "",
       })
       .then(() => {
-        if (applications.createError) alert(applications.createError.message);
-        else successModalRef.current?.open();
+        if (applications.createError)
+          return alert(applications.createError.message);
+        if (applications.createResult?.message)
+          return alert(applications.createResult.message);
+        successModalRef.current?.open();
       });
   };
 
@@ -421,7 +424,9 @@ export default function SearchPage() {
                 error: applications.createError.message || "Unknown error",
               });
             } else {
-              ok.push(job);
+              const error = applications.createResult?.message;
+              if (error) failed.push({ job, error });
+              else ok.push(job);
             }
           } catch (e: any) {
             failed.push({ job, error: e?.message || "Unknown error" });

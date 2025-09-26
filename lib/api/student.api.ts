@@ -207,6 +207,7 @@ export function useApplications() {
     queryFn: () => ApplicationService.getApplications(),
   });
   const {
+    data: createResult,
     isPending: isCreating,
     error: createError,
     mutateAsync: create,
@@ -237,6 +238,7 @@ export function useApplications() {
   return {
     isPending,
     isCreating,
+    createResult,
     data: data?.applications ?? [],
     create,
     error,

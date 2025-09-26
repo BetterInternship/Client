@@ -71,12 +71,6 @@ export default function JobPage() {
   } = useModal("application-modal");
 
   const {
-    open: openProfilePreviewModal,
-    close: closeProfilePreviewModal,
-    Modal: ProfilePreviewModal,
-  } = useModal("profile-preview-modal");
-
-  const {
     open: open_success_modal,
     close: close_success_modal,
     Modal: SuccessModal,
@@ -152,10 +146,7 @@ export default function JobPage() {
 
   const handleDirectApplication = async () => {
     if (!job.data) return;
-    if (
-      job.data?.require_cover_letter &&
-      !textarea_ref.current?.value.trim()
-    ) {
+    if (job.data?.require_cover_letter && !textarea_ref.current?.value.trim()) {
       alert("A cover letter is required to apply for this job.");
       return;
     }
@@ -165,8 +156,11 @@ export default function JobPage() {
         cover_letter: textarea_ref.current?.value ?? "",
       })
       .then(() => {
-        if (applications.createError) alert(applications.createError.message);
-        else open_success_modal();
+        if (applications.createError)
+          return alert(applications.createError.message);
+        if (applications.createResult?.message)
+          return alert(applications.createResult.message);
+        open_success_modal();
       });
   };
 
