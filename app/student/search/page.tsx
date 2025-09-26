@@ -303,11 +303,10 @@ export default function SearchPage() {
         job_id: selectedJob.id ?? "",
         cover_letter: textarea_ref.current?.value ?? "",
       })
-      .then(() => {
+      .then((response) => {
         if (applications.createError)
           return alert(applications.createError.message);
-        if (applications.createResult?.message)
-          return alert(applications.createResult.message);
+        if (response?.message) return alert(response.message);
         successModalRef.current?.open();
       });
   };
