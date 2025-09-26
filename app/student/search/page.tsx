@@ -42,7 +42,6 @@ import { JobModal } from "@/components/modals/JobModal";
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
-import { toast } from "sonner";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -50,6 +49,7 @@ import {
   isProfileResume,
   isProfileVerified,
 } from "@/lib/profile";
+import { AutoApplyToast } from "@/components/features/student/search/AutoApplyToast";
 
 /* =======================================================================================
     tiny helper to keep callback identity stable across renders
@@ -455,9 +455,16 @@ export default function SearchPage() {
     );
   }
 
-  // toast("Auto-Apply turned off", {
-  //   description: "No applications will be sent automatically.",
-  // });
+  // Forever dismiss auto-apply tip
+  const dismissTip = async () => {
+    try {
+      await profile.update({ acknowledged_auto_apply: true });
+    } catch (e) {
+      console.error("Failed to dismiss auto-apply tip", e);
+    }
+  };
+  console.log("APPLY FOR ME", profile.data?.apply_for_me);
+  console.log("ACKNOWLEDGED", profile.data?.acknowledged_auto_apply);
 
   /* =======================================================================================
       UI
@@ -537,6 +544,12 @@ export default function SearchPage() {
 
   return (
     <>
+      <AutoApplyToast
+        enabled={!!profile.data?.apply_for_me}
+        dismissed={!!profile.data?.acknowledged_auto_apply}
+        onDismissForever={dismissTip}
+      />
+
       {/* In-page toolbar */}
       {!isMobile && PageToolbar}
 
@@ -1012,7 +1025,7 @@ function ProfileResumePreview({ url }: { url: string }) {
 }
 
 /* =======================================================================================
-    Mass Apply Body (memoized, simple)
+    Mass Apply Body 
   ======================================================================================= */
 
 const MassApplyBody = React.memo(function MassApplyBody({
