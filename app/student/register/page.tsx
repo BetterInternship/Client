@@ -114,7 +114,13 @@ export default function RegisterPage() {
         university,
         internship_preferences,
       })
-      .then(() => {
+      .then((response) => {
+        if (response?.message) {
+          setSubmitting(false);
+          alert(response.message);
+          return;
+        }
+
         // We don't use router, because we need the reload for some reason
         location.href = "/search";
       })

@@ -11,7 +11,9 @@ import { usePocketbase } from "./pocketbase";
 interface IAuthContext {
   register: (
     user: Partial<PublicUser>
-  ) => Promise<(Partial<PublicUser> & FetchResponse) | null>;
+  ) => Promise<
+    ({ user: Partial<PublicUser>; message?: string } & FetchResponse) | null
+  >;
   verify: (
     userId: string,
     key: string
@@ -75,9 +77,7 @@ export const AuthContextProvider = ({
   }, [isAuthenticated]);
 
   const register = async (user: Partial<PublicUser>) => {
-    const response = await AuthService.register(user);
-    if (!response.success) return null;
-    return response;
+    return await AuthService.register(user);
   };
 
   const verify = async (userId: string, key: string) => {

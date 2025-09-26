@@ -474,7 +474,13 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
                 type="button"
                 onClick={() => {
                   AuthService.requestActivation(eduEmail)
-                    .then(() => {
+                    .then((response) => {
+                      if (response.message) {
+                        setSending(false);
+                        alert(response.message);
+                        return;
+                      }
+
                       alert("Check your inbox for an email.");
                       setSending(false);
                       setIsCoolingDown(true);
