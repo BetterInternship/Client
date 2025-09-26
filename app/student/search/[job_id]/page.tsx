@@ -1,6 +1,6 @@
 "use client";
 
-import type React from "react";
+import React, { useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -47,6 +47,8 @@ import {
 } from "@/lib/profile";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { IncompleteProfileContent } from "@/components/modals/IncompleteProfileModal";
+import { useQueryClient } from "@tanstack/react-query";
+import { Textarea } from "@/components/ui/textarea";
 
 /**
  * The individual job page.
@@ -58,6 +60,7 @@ export default function JobPage() {
   const { job_id } = params;
   const job = useJob(job_id as string);
   const { isAuthenticated } = useAuthContext();
+  const queryClient = useQueryClient();
 
   const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
 
@@ -68,15 +71,28 @@ export default function JobPage() {
   } = useModal("application-modal");
 
   const {
+    open: openProfilePreviewModal,
+    close: closeProfilePreviewModal,
+    Modal: ProfilePreviewModal,
+  } = useModal("profile-preview-modal");
+
+  const {
     open: open_success_modal,
     close: close_success_modal,
     Modal: SuccessModal,
   } = useModal("success-modal");
 
+  const {
+    open: openApplicationConfirmationModal,
+    close: closeApplicationConfirmationModal,
+    Modal: ApplicationConfirmationModal,
+  } = useModal("application-confirmation-modal");
+
   const profile = useProfile();
   const { universities } = useDbRefs();
   const savedJobs = useSavedJobs();
   const applications = useApplications();
+  const textarea_ref = useRef<HTMLTextAreaElement>(null);
 
   const handleSave = async (job: Job) => {
     if (!isAuthenticated()) {
@@ -101,7 +117,13 @@ export default function JobPage() {
         "incomplete-profile",
         <IncompleteProfileContent
           handleClose={() => closeGlobalModal("incomplete-profile")}
-        />
+        />,
+        {
+          allowBackdropClick: false,
+          onClose: () => {
+            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+          },
+        }
       );
       return;
     }
@@ -125,24 +147,27 @@ export default function JobPage() {
         }
       );
     }
-    open_success_modal();
+    openApplicationConfirmationModal();
   };
 
   const handleDirectApplication = async () => {
     if (!job.data) return;
-
-    try {
-      const { success } = await applications.create({
-        job_id: job.data.id ?? "",
-        cover_letter: "",
-      });
-      if (success) open_success_modal();
-      else alert("Could not apply to job.");
-    } catch (error) {
-      console.error("Failed to submit application:", error);
-      alert("Failed to submit application. Please try again.");
-    } finally {
+    if (
+      job.data?.require_cover_letter &&
+      !textarea_ref.current?.value.trim()
+    ) {
+      alert("A cover letter is required to apply for this job.");
+      return;
     }
+    await applications
+      .create({
+        job_id: job.data.id ?? "",
+        cover_letter: textarea_ref.current?.value ?? "",
+      })
+      .then(() => {
+        if (applications.createError) alert(applications.createError.message);
+        else open_success_modal();
+      });
   };
 
   if (job.error) {
@@ -376,6 +401,134 @@ export default function JobPage() {
           Update Profile
         </Button>
       </ApplicationModal>
+
+      <ApplicationConfirmationModal>
+        <div className="max-w-lg mx-auto p-6 max-h-[60vh] overflow-auto">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+              <Clipboard className="w-8 h-8 text-blue-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">
+              Ready to Apply?
+            </h2>
+            <p className="text-gray-600 leading-relaxed">
+              You're applying for{" "}
+              <span className="font-semibold text-gray-900">
+                {job.data?.title}
+              </span>
+              {job.data?.employer?.name && (
+                <>
+                  {" "}
+                  at{" "}
+                  <span className="font-semibold text-gray-900">
+                    {job.data?.employer.name}
+                  </span>
+                </>
+              )}
+            </p>
+          </div>
+
+          {/* Profile Preview */}
+          {/* <div className="mb-6">
+            <Button
+              variant="outline"
+              onClick={() => {
+                closeApplicationConfirmationModal();
+                openProfilePreviewModal();
+              }}
+              className="w-full h-12 transition-all duration-200"
+            >
+              <div className="flex items-center justify-center gap-3">
+                <span>Preview Your Profile</span>
+              </div>
+            </Button>
+            <p className="text-xs text-gray-500 text-center mt-2">
+              See how employers will view your application
+            </p>
+          </div> */}
+
+          {/* Cover Letter */}
+          <div className="mb-6">
+            {(job.data?.require_cover_letter ?? true) && (
+              <div className="space-y-3">
+                <Textarea
+                  ref={textarea_ref}
+                  placeholder={`Dear Hiring Manager,
+
+  I am excited to apply for this position because...
+
+  Best regards,
+  [Your name]`}
+                  className="w-full h-20 p-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 resize-none text-sm overflow-y-auto"
+                  maxLength={500}
+                />
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-gray-500 flex items-center gap-1">
+                    💡 <span>Mention specific skills and enthusiasm</span>
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => {
+                closeApplicationConfirmationModal();
+              }}
+              className="flex-1 h-12 transition-all duration-200"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                closeApplicationConfirmationModal();
+                handleDirectApplication();
+              }}
+              className="flex-1 h-12 transition-all duration-200"
+            >
+              <div className="flex items-center justify-center gap-2">
+                <CheckCircle className="w-4 h-4" />
+                Submit Application
+              </div>
+            </Button>
+          </div>
+        </div>
+      </ApplicationConfirmationModal>
+
+      {/* Profile Preview Modal */}
+      {/* <ProfilePreviewModal className="max-w-[80vw]">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            closeProfilePreviewModal();
+            openApplicationConfirmationModal();
+          }}
+          className="h-8 w-8 p-0 ml-4 hover:bg-gray-100 rounded-full"
+        >
+          <ArrowLeft className="h-4 w-4 text-gray-500" />
+        </Button>
+
+        {profile.data && (
+          <ApplicantModalContent
+            applicant={profile.data}
+            pfp_fetcher={() => UserService.getUserPfpURL("me")}
+            pfp_route="/users/me/pic"
+            open_resume={async () => {
+              closeProfilePreviewModal();
+              await syncResumeURL();
+              openResumeModal();
+            }}
+            open_calendar={async () => {
+              openURL(profile.data?.calendar_link);
+            }}
+            resume_url={resumeURL}
+          />
+        )}
+      </ProfilePreviewModal> */}
 
       {/* Success Modal */}
       <SuccessModal>
