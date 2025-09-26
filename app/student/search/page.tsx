@@ -259,6 +259,7 @@ export default function SearchPage() {
         {
           allowBackdropClick: false,
           hasClose: false,
+          closeOnEsc: false,
           onClose: () => {
             queryClient.invalidateQueries({ queryKey: ["my-profile"] });
           },
@@ -279,6 +280,7 @@ export default function SearchPage() {
         />,
         {
           hasClose: false,
+          closeOnEsc: false,
           allowBackdropClick: false,
           onClose: () => {
             queryClient.invalidateQueries({ queryKey: ["my-profile"] });
@@ -331,8 +333,9 @@ export default function SearchPage() {
           handleClose={() => closeGlobalModal("incomplete-profile")}
         />,
         {
-          allowBackdropClick: false,
           hasClose: false,
+          closeOnEsc: false,
+          allowBackdropClick: false,
           onClose: () => {
             queryClient.invalidateQueries({ queryKey: ["my-profile"] });
           },
