@@ -95,7 +95,7 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
               }
               onClick={(e) => e.stopPropagation()}
             >
-              {opts.hasClose && (
+              {opts.hasClose !== false && (
                 <button
                   aria-label="Close"
                   onClick={() => close(name)}
