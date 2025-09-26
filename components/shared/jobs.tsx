@@ -815,7 +815,7 @@ function HeaderWithActions({
             <span className="truncate">{job.location}</span>
           </div>
         )}
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-s text-gray-500 mt-1">
           Listed on {formatDate(job.created_at ?? "")}
         </p>
       </div>
@@ -838,7 +838,7 @@ function ReqPill({ ok, label }: { ok: boolean; label: string }) {
   return (
     <div
       className={cn(
-        "flex items-center gap-2 rounded-md px-2 py-0.5 text-sm border",
+        "flex items-center gap-2 rounded-[0.33em] px-2 py-0.5 text-sm border",
         ok
           ? "bg-emerald-50 border-emerald-200 text-emerald-800"
           : "bg-amber-50 border-amber-200 text-amber-900"
@@ -865,7 +865,7 @@ function MissingNotice({
 }) {
   if (!show) return null;
   return (
-    <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 -my-3">
+    <div className="flex items-start gap-2 rounded-[0.33em] border border-amber-200 bg-amber-50 px-3 py-2 -my-3">
       <AlertTriangle className="h-4 w-4 mt-0.5 text-amber-700 shrink-0" />
       <p className="text-sm text-amber-900 leading-snug">
         This job requires{" "}
@@ -935,7 +935,7 @@ export function JobDetails({
     (needsGithub && !hasGithub) || (needsPortfolio && !hasPortfolio);
 
   return (
-    <div className="flex-1 rounded-lg px-8 pt-7 overflow-y-auto space-y-5">
+    <div className="flex-1 px-8 pt-7 overflow-y-auto space-y-5">
       <MissingNotice
         show={missingRequired}
         needsGithub={needsGithub && !hasGithub}
