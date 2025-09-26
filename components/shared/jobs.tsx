@@ -1,6 +1,6 @@
 import { Job } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import {
   Building,
   PhilippinePeso,
@@ -815,6 +815,9 @@ function HeaderWithActions({
             <span className="truncate">{job.location}</span>
           </div>
         )}
+        <p className="text-sm text-gray-500 mt-1">
+          Listed on {formatDate(job.created_at ?? "")}
+        </p>
       </div>
 
       {/* right: CTAs */}
@@ -958,7 +961,9 @@ export function JobDetails({
         <MarkdownBlock text={job.description} />
       </Section>
 
-      {(job.requirements || needsCover || needsGithub || needsPortfolio) && (<Divider />)}
+      {(job.requirements || needsCover || needsGithub || needsPortfolio) && (
+        <Divider />
+      )}
 
       {(job.requirements || needsCover || needsGithub || needsPortfolio) && (
         <Section title="Requirements">
