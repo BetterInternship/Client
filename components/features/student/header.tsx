@@ -43,7 +43,14 @@ import { useConversations } from "@/hooks/use-conversation";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useProfile } from "@/lib/api/student.api";
 import { cn } from "@/lib/utils";
-import { getFullName, getMissingProfileFields } from "@/lib/utils/user-utils";
+import {
+  getFullName,
+  getMissingProfileFields,
+  isCompleteProfile,
+} from "@/lib/utils/user-utils";
+import { useQueryClient } from "@tanstack/react-query";
+import { useGlobalModal } from "@/components/providers/ModalProvider";
+import { IncompleteProfileContent } from "@/components/modals/IncompleteProfileModal";
 
 /* =======================================================================================
    Filter State (immutable + typed) 
