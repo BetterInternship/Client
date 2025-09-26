@@ -445,8 +445,29 @@ function MobileDrawer({
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
+  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
+  const queryClient = useQueryClient();
 
   const handleLogout = () => logout().then(() => router.push("/"));
+
+  const handleProfileClick = () => {
+    if (!isCompleteProfile(profile.data)) {
+      openGlobalModal(
+        "incomplete-profile",
+        <IncompleteProfileContent
+          handleClose={() => closeGlobalModal("incomplete-profile")}
+        />,
+        {
+          allowBackdropClick: false,
+          onClose: () => {
+            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+          },
+        }
+      );
+    } else {
+      router.push("/profile");
+    }
+  };
   useEffect(() => {
     if (open) onClose();
   }, [pathname, params?.toString()]);
@@ -554,15 +575,16 @@ function MobileDrawer({
                   </Link>
                 </li>
                 <li>
-                  <Link href="/profile" className="block w-full">
-                    <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                      <div>
-                        <Settings className="w-4 h-4 inline-block mr-2" />
-                        <span>Profile</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-gray-300" />
-                    </button>
-                  </Link>
+                  <button
+                    onClick={() => handleProfileClick()}
+                    className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary"
+                  >
+                    <div>
+                      <Settings className="w-4 h-4 inline-block mr-2" />
+                      <span>Profile</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-300" />
+                  </button>
                 </li>
                 <li>
                   <Link href="/applications" className="block w-full">
