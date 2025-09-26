@@ -48,6 +48,7 @@ import { Chip } from "@/components/ui/chip-select";
 import { isCompleteProfile } from "@/lib/utils/user-utils";
 import { IncompleteProfileContent } from "@/components/modals/IncompleteProfileModal";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
+import { useQueryClient } from "@tanstack/react-query";
 
 /* =======================================================================================
    Filter State (immutable + typed) 
@@ -693,21 +694,24 @@ export const ProfileButton: React.FC = () => {
   const { isAuthenticated, logout } = useAuthContext();
   const router = useRouter();
   const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
+  const queryClient = useQueryClient();
 
   const handleLogout = () => logout().then(() => router.push("/"));
 
   const handleProfileClick = () => {
     if (!isCompleteProfile(profile.data)) {
-      console.log("INCOMPLETE PROFILE");
-      setTimeout(() => {
-        openGlobalModal(
-          "incomplete-profile",
-          <IncompleteProfileContent
-            profile={profile}
-            handleClose={() => closeGlobalModal("incomplete-profile")}
-          />
-        );
-      }, 3);
+      openGlobalModal(
+        "incomplete-profile",
+        <IncompleteProfileContent
+          handleClose={() => closeGlobalModal("incomplete-profile")}
+        />,
+        {
+          allowBackdropClick: false,
+          onClose: () => {
+            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+          },
+        }
+      );
     } else {
       router.push("/profile");
     }

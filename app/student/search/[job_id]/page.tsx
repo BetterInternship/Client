@@ -40,6 +40,13 @@ import {
   JobApplicationRequirements,
 } from "@/components/shared/jobs";
 import { Card } from "@/components/ui/card";
+import {
+  isProfileBaseComplete,
+  isProfileResume,
+  isProfileVerified,
+} from "@/lib/profile";
+import { useGlobalModal } from "@/components/providers/ModalProvider";
+import { IncompleteProfileContent } from "@/components/modals/IncompleteProfileModal";
 
 /**
  * The individual job page.
@@ -51,21 +58,21 @@ export default function JobPage() {
   const { job_id } = params;
   const job = useJob(job_id as string);
   const { isAuthenticated } = useAuthContext();
+
+  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
+
   const {
     open: open_application_modal,
     close: close_application_modal,
     Modal: ApplicationModal,
   } = useModal("application-modal");
+
   const {
     open: open_success_modal,
     close: close_success_modal,
     Modal: SuccessModal,
   } = useModal("success-modal");
-  const {
-    open: open_incomplete_profile_modal,
-    close: close_incomplete_profile_modal,
-    Modal: IncompleteProfileModal,
-  } = useModal("incomplete-profile-modal");
+
   const profile = useProfile();
   const { universities } = useDbRefs();
   const savedJobs = useSavedJobs();
@@ -85,27 +92,40 @@ export default function JobPage() {
       return;
     }
 
-    // Check if already applied
-    const applicationStatus = applications.appliedJob(job.data?.id ?? "");
-    if (applicationStatus) {
+    if (
+      !isProfileResume(profile.data) ||
+      !isProfileBaseComplete(profile.data) ||
+      !isProfileVerified(profile.data)
+    ) {
+      openGlobalModal(
+        "incomplete-profile",
+        <IncompleteProfileContent
+          handleClose={() => closeGlobalModal("incomplete-profile")}
+        />
+      );
+      return;
+    }
+
+    const applied = applications.appliedJob(job.data?.id ?? "");
+    if (applied) {
       alert("You have already applied to this job!");
       return;
     }
-
-    // Check if profile is complete
     if (!isCompleteProfile(profile.data)) {
-      open_incomplete_profile_modal();
-      return;
+      openGlobalModal(
+        "incomplete-profile",
+        <IncompleteProfileContent
+          handleClose={() => closeGlobalModal("incomplete-profile")}
+        />,
+        {
+          allowBackdropClick: false,
+          onClose: () => {
+            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+          },
+        }
+      );
     }
-
-    // Check if job requirements are met
-    if (!profileQualifiesFor(profile.data, job.data)) {
-      open_incomplete_profile_modal();
-      return;
-    }
-
-    // If everything is complete, apply directly
-    handleDirectApplication();
+    open_success_modal();
   };
 
   const handleDirectApplication = async () => {
@@ -433,100 +453,6 @@ export default function JobPage() {
           </motion.div>
         </div>
       </SuccessModal>
-
-      {/* Incomplete Profile Modal */}
-      <IncompleteProfileModal>
-        <div className="p-6">
-          {(() => {
-            // Get missing fields from profile
-            let { missing, labels } = getMissingProfileFields(
-              profile.data as PublicUser
-            );
-
-            // Add job-specific requirements if needed
-            if (
-              job.data?.require_github &&
-              !profile.data?.github_link?.trim()
-            ) {
-              if (!missing.includes("github_link")) missing.push("github_link");
-              labels.github_link = "GitHub Profile";
-            }
-            if (
-              job.data?.require_portfolio &&
-              !profile.data?.portfolio_link?.trim()
-            ) {
-              if (!missing.includes("portfolio_link"))
-                missing.push("portfolio_link");
-              labels.portfolio_link = "Portfolio Link";
-            }
-
-            const missingCount = missing.length;
-
-            return (
-              <>
-                {/* Header */}
-                <div className="text-center mb-6">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-orange-100 rounded-full flex items-center justify-center">
-                    <AlertTriangle className="w-8 h-8 text-orange-600" />
-                  </div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    Complete Your Profile
-                  </h2>
-                  <p className="text-gray-600 leading-relaxed">
-                    You need to complete your profile before applying to jobs.
-                    {missingCount === 1
-                      ? "There is 1 required field missing."
-                      : `There are ${missingCount} required fields missing.`}
-                  </p>
-                </div>
-
-                {/* Missing Fields List */}
-                <div className="mb-6">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
-                    Missing Information
-                  </h3>
-                  <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
-                    {missing.map((field) => (
-                      <div
-                        key={field}
-                        className="flex items-center gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg"
-                      >
-                        <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0" />
-                        <span className="text-sm font-medium text-orange-800">
-                          {labels[field]}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => close_incomplete_profile_modal()}
-                    className="flex-1 h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-medium transition-all duration-200"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      close_incomplete_profile_modal();
-                      router.push("/profile");
-                    }}
-                    className="flex-1 h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      <User className="w-4 h-4" />
-                      Complete Profile
-                    </div>
-                  </Button>
-                </div>
-              </>
-            );
-          })()}
-        </div>
-      </IncompleteProfileModal>
     </>
   );
 }

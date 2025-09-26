@@ -142,15 +142,6 @@ export default function SearchPage() {
 
   const jobModalRef = useModalRef();
 
-  const {
-    Modal: IncompleteModal,
-    open: openIncomplete,
-    close: closeIncomplete,
-  } = useModal("IncompleteProfileModal", {
-    allowBackdropClick: false,
-    onClose: () => queryClient.invalidateQueries({ queryKey: ["my-profile"] }),
-  });
-
   const successModalRef = useModalRef();
 
   // single-apply cover letter input
@@ -260,9 +251,15 @@ export default function SearchPage() {
       !isProfileBaseComplete(profile.data) ||
       !isProfileVerified(profile.data)
     ) {
-      return openIncomplete();
+      openGlobalModal(
+        "incomplete-profile",
+        <IncompleteProfileContent
+          handleClose={() => closeGlobalModal("incomplete-profile")}
+        />
+      );
+      return;
     }
-    
+
     const applied = applications.appliedJob(selectedJob?.id ?? "");
     if (applied) {
       alert("You have already applied to this job!");
@@ -273,9 +270,14 @@ export default function SearchPage() {
         "incomplete-profile",
         <IncompleteProfileContent
           handleClose={() => closeGlobalModal("incomplete-profile")}
-        />
+        />,
+        {
+          allowBackdropClick: false,
+          onClose: () => {
+            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+          },
+        }
       );
-      return;
     }
     openApplicationConfirmationModal();
   };
@@ -314,8 +316,18 @@ export default function SearchPage() {
       return;
     }
     if (!isCompleteProfile(profile.data)) {
-      openIncomplete();
-      return;
+      openGlobalModal(
+        "incomplete-profile",
+        <IncompleteProfileContent
+          handleClose={() => closeGlobalModal("incomplete-profile")}
+        />,
+        {
+          allowBackdropClick: false,
+          onClose: () => {
+            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+          },
+        }
+      );
     }
     const allApplied =
       selectedJobsList.length > 0 &&
@@ -973,10 +985,6 @@ export default function SearchPage() {
           </div>
         </div>
       </MassApplyResultModal>
-
-      <IncompleteModal className="sm:w-[50dvw] h-[100dvh] sm:h-fit overflow-y-auto">
-        <IncompleteProfileContent handleClose={closeIncomplete} />
-      </IncompleteModal>
 
       {/* Resume Modal */}
       {resumeURL.length > 0 && <ProfileResumePreview url={resumeURL} />}
