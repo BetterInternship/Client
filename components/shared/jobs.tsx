@@ -4,11 +4,12 @@ import { cn } from "@/lib/utils";
 import {
   Building,
   PhilippinePeso,
-  MapPin,
   Monitor,
   Clock,
   EyeOff,
   CheckCircle,
+  CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
 import { Badge, BoolBadge } from "@/components/ui/badge";
 import ReactMarkdown from "react-markdown";
@@ -26,6 +27,7 @@ import { DropdownGroup } from "../ui/dropdown";
 import { useMoa } from "@/lib/db/use-moa";
 import { Toggle } from "../ui/toggle";
 import { Card } from "../ui/card";
+import { Divider } from "../ui/divider";
 
 export const JobHead = ({
   title,
@@ -62,7 +64,7 @@ export const JobLocation = ({
 }) => {
   return location ? (
     <div className="flex items-center text-sm text-gray-500">
-      <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+      <Building className="w-4 h-4 mr-1 flex-shrink-0" />
       <span className="truncate">{location}</span>
     </div>
   ) : (
@@ -228,7 +230,6 @@ export const JobCard = ({
     </Card>
   );
 };
-
 
 /**
  * The scrollable job card component.
@@ -418,7 +419,7 @@ export const EmployerJobDetails = ({
           {/* Location */}
           <div className="flex flex-col items-start gap-3">
             <label className="flex items-center text-sm font-semibold text-gray-700">
-              <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+              <Building className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
               Location:
             </label>
             <EditableInput
@@ -738,114 +739,241 @@ export const EmployerJobDetails = ({
   );
 };
 
-export const JobDetailsSummary = ({
-  job
-}: {
-  job: Job;
-}) => {
+export const JobDetailsSummary = ({ job }: { job: Job }) => {
   const { to_job_mode_name, to_job_type_name, to_job_pay_freq_name } =
     useDbRefs();
 
-  return <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-4">Job Details</h3>
-          <div className="grid grid-cols-3 gap-6">
-            <DropdownGroup>
-              <div className="flex flex-col items-start gap-3">
-                <label className="flex items-center text-sm font-semibold text-gray-700">
-                  <Monitor className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                  Work Mode:
-                </label>
-                <Property value={to_job_mode_name(job.mode)} />
-              </div>
-
-              <div className="flex flex-col items-start gap-3 max-w-prose">
-                <label className="flex items-center text-sm font-semibold text-gray-700">
-                  <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                  Salary:
-                </label>
-                <Property
-                  value={
-                    job.salary
-                      ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
-                      : "None"
-                  }
-                />
-              </div>
-              <div className="flex flex-col items-start gap-3 max-w-prose">
-                <label className="flex items-center text-sm font-semibold text-gray-700">
-                  <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                  Work Load:
-                </label>
-                <Property value={to_job_type_name(job.type)} />
-              </div>
-            </DropdownGroup>
-
-            {/* // ! checkbox labels */}
-          </div>
-        </div>
-}
-
-/**
- * The right panel that describes job details.
- *
- * @component
- */
-export const JobDetails = ({
-  job,
-  actions = [],
-}: {
-  job: Job;
-  actions?: React.ReactNode[];
-}) => {
-  // Returns a non-editable version of it
   return (
-    <div className="flex-1 border-gray-200 rounded-lg ml-4 p-6 pt-10 overflow-y-auto">
-      <div className="mb-6 flex flex-col space-y-2">
-        <div className="max-w-prose">
-          <JobTitleLabel value={job.title} />
-        </div>
-        <div className="flex items-center">
-          <p className="text-gray-600">{job.employer?.name}</p>
-        </div>
-        {job.location && (
-          <>
-            <JobLocation location={job.location} />
-            <br />
-          </>
-        )}
-        <div className="flex space-x-2 mt-4">{actions}</div>
-      </div>
+    <div className="space-y-2">
+      <div className="grid grid-cols-3 gap-6">
+        <DropdownGroup>
+          <div className="flex items-start gap-2">
+            <Monitor className="h-5 w-5 text-gray-400" />
+            <div>
+              <label className="flex items-center text-sm text-gray-700">
+                Work Mode:
+              </label>
+              <Property value={to_job_mode_name(job.mode)} />
+            </div>
+          </div>
 
-      {/* Job Details Grid */}
-      <JobDetailsSummary job={job}></JobDetailsSummary>
-
-      {/* Job Description */}
-      <hr />
-      <div className="mb-6 mt-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          Description
-        </h2>
-        <div className="markdown prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
-          <ReactMarkdown>{job.description}</ReactMarkdown>
-        </div>
-      </div>
-
-      {/* Job Requirements */}
-      <hr />
-      <div className="mb-6 mt-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          Requirements
-        </h2>
-
-        <JobApplicationRequirements job={job} />
-
-        {/* Requirements Content */}
-        <div className="markdown prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
-          {job.requirements && (
-            <ReactMarkdown>{job.requirements}</ReactMarkdown>
-          )}
-        </div>
+          <div className="flex items-start gap-2">
+            <PhilippinePeso className="h-5 w-5 text-gray-400" />
+            <div>
+              <label className="flex items-center text-sm text-gray-700">
+                Salary:
+              </label>
+              <Property
+                value={
+                  job.salary
+                    ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
+                    : "None"
+                }
+              />
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <Clock className="h-5 w-5 text-gray-400" />
+            <div>
+              <label className="flex items-center text-sm text-gray-700">
+                Work Load:
+              </label>
+              <Property value={to_job_type_name(job.type)} />
+            </div>
+          </div>
+        </DropdownGroup>
       </div>
     </div>
   );
 };
+
+/* ──────────────────────────────────────────────
+   Header + Actions (side-by-side)
+   ────────────────────────────────────────────── */
+function HeaderWithActions({
+  job,
+  actions,
+  disabled,
+  reason,
+}: {
+  job: Job;
+  actions: React.ReactNode[];
+  disabled?: boolean;
+  reason?: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      {/* left: title/employer/location */}
+      <div className="min-w-0">
+        <h1 className="text-4xl font-semibold text-gray-900 leading-tight truncate">
+          {job.title}
+        </h1>
+        <p className="text-xl text-gray-600 truncate">{job.employer?.name}</p>
+        {job.location && (
+          <div className="flex items-center gap-1.5 text-gray-600">
+            <Building className="h-4 w-4" />
+            <span className="truncate">{job.location}</span>
+          </div>
+        )}
+      </div>
+
+      {/* right: CTAs */}
+      <div className="shrink-0 sm:mt-1">
+        <div className="flex items-center gap-2">
+          {actions.map((a, i) => (
+            <div key={i} className="inline-flex">
+              {a}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ReqPill({ ok, label }: { ok: boolean; label: string }) {
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-2 rounded-md px-2 py-0.5 text-sm border",
+        ok
+          ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+          : "bg-amber-50 border-amber-200 text-amber-900"
+      )}
+    >
+      {ok ? (
+        <CheckCircle2 className="h-3.5 w-3.5" />
+      ) : (
+        <AlertTriangle className="h-3.5 w-3.5" />
+      )}
+      <span className="font-medium">{label}</span>
+    </div>
+  );
+}
+
+function MissingNotice({
+  show,
+  needsGithub,
+  needsPortfolio,
+}: {
+  show: boolean;
+  needsGithub: boolean;
+  needsPortfolio: boolean;
+}) {
+  if (!show) return null;
+  return (
+    <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 -my-3">
+      <AlertTriangle className="h-4 w-4 mt-0.5 text-amber-700 shrink-0" />
+      <p className="text-sm text-amber-900 leading-snug">
+        This job requires{" "}
+        {needsGithub && needsPortfolio ? (
+          <b>GitHub and Portfolio</b>
+        ) : needsGithub ? (
+          <b>GitHub</b>
+        ) : (
+          <b>Portfolio</b>
+        )}
+        . Update your profile to ensure your application goes through.
+      </p>
+    </div>
+  );
+}
+
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-1">
+      <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+      {children}
+    </div>
+  );
+}
+
+function MarkdownBlock({ text }: { text?: string | null }) {
+  if (!text) return <p className=" text-gray-600">No details provided.</p>;
+  return (
+    <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed">
+      <ReactMarkdown>{text}</ReactMarkdown>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────
+   Main JobDetails
+   ────────────────────────────────────────────── */
+
+export function JobDetails({
+  job,
+  user,
+  actions = [],
+  applyDisabledText = "Complete required items to apply.",
+}: {
+  job: Job;
+  user?: {
+    github_link?: string | null;
+    portfolio_link?: string | null;
+  };
+  actions?: React.ReactNode[];
+  applyDisabledText?: string;
+}) {
+  const hasGithub = !!user?.github_link?.trim();
+  const hasPortfolio = !!user?.portfolio_link?.trim();
+
+  const needsCover = !!job.require_cover_letter;
+  const needsGithub = !!job.require_github;
+  const needsPortfolio = !!job.require_portfolio;
+
+  const missingRequired =
+    (needsGithub && !hasGithub) || (needsPortfolio && !hasPortfolio);
+
+  return (
+    <div className="flex-1 rounded-lg px-8 pt-7 overflow-y-auto space-y-5">
+      <MissingNotice
+        show={missingRequired}
+        needsGithub={needsGithub && !hasGithub}
+        needsPortfolio={needsPortfolio && !hasPortfolio}
+      />
+
+      {/* header + actions */}
+      <HeaderWithActions
+        job={job}
+        actions={actions}
+        disabled={missingRequired}
+        reason={missingRequired && applyDisabledText}
+      />
+
+      {/* your compact summary grid */}
+      <Section title="Job Details">
+        <JobDetailsSummary job={job} />
+      </Section>
+      <Divider />
+
+      {/* sections */}
+      <Section title="Role overview">
+        <MarkdownBlock text={job.description} />
+      </Section>
+
+      {(job.requirements || needsCover || needsGithub || needsPortfolio) && (<Divider />)}
+
+      {(job.requirements || needsCover || needsGithub || needsPortfolio) && (
+        <Section title="Requirements">
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {needsCover && <ReqPill ok={true} label="Cover letter" />}
+              {needsGithub && <ReqPill ok={hasGithub} label="GitHub profile" />}
+              {needsPortfolio && (
+                <ReqPill ok={hasPortfolio} label="Portfolio link" />
+              )}
+            </div>
+            <MarkdownBlock text={job.requirements} />
+          </div>
+        </Section>
+      )}
+    </div>
+  );
+}

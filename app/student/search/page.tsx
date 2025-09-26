@@ -463,8 +463,6 @@ export default function SearchPage() {
       console.error("Failed to dismiss auto-apply tip", e);
     }
   };
-  console.log("APPLY FOR ME", profile.data?.apply_for_me);
-  console.log("ACKNOWLEDGED", profile.data?.acknowledged_auto_apply);
 
   /* =======================================================================================
       UI
@@ -472,7 +470,7 @@ export default function SearchPage() {
 
   // page toolbar (under the global header)
   const PageToolbar = (
-    <div className="border-b bg-white">
+    <div className="border-b bg-white/80">
       <div className="flex items-center justify-between gap-3 px-7 py-2">
         <div className="flex items-center gap-8">
           {(selectMode || selectedIds.size > 0) && (
@@ -564,8 +562,8 @@ export default function SearchPage() {
         ) : isMobile ? (
           // Mobile list
           <div className="w-full flex flex-col h-full">
-            {/* On mobile, put mass-apply as a floating action row */}
-            <div className="px-4 py-2 bg-white/80 backdrop-blur">
+            {/* Mass apply toolbar */}
+            <div className="px-4 py-2 pt-2 border-b bg-white/80">
               <div className="flex items-center justify-between gap-2">
                 <Button
                   variant={selectMode ? "default" : "outline"}
@@ -590,7 +588,7 @@ export default function SearchPage() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 pt-4">
+            <div className="flex-1 overflow-y-auto pt-2 px-3">
               {jobsPage.length ? (
                 <div className="space-y-4">
                   {jobsPage.map((job) => (
@@ -715,23 +713,6 @@ export default function SearchPage() {
                   job={selectedJob}
                   actions={[
                     <Button
-                      key="1"
-                      disabled={applications.appliedJob(selectedJob.id ?? "")}
-                      scheme={
-                        applications.appliedJob(selectedJob.id ?? "")
-                          ? "supportive"
-                          : "primary"
-                      }
-                      onClick={handleApply}
-                    >
-                      {applications.appliedJob(selectedJob.id ?? "") && (
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                      )}
-                      {applications.appliedJob(selectedJob.id ?? "")
-                        ? "Applied"
-                        : "Apply"}
-                    </Button>,
-                    <Button
                       key="2"
                       variant="outline"
                       onClick={() => handleSave(selectedJob)}
@@ -740,6 +721,7 @@ export default function SearchPage() {
                           ? "destructive"
                           : "default"
                       }
+                      size={"md"}
                     >
                       {savedJobs.isJobSaved(selectedJob.id ?? "") && <Heart />}
                       {savedJobs.isJobSaved(selectedJob.id ?? "")
@@ -749,6 +731,24 @@ export default function SearchPage() {
                         : savedJobs.isToggling
                         ? "Saving..."
                         : "Save"}
+                    </Button>,
+                    <Button
+                      key="1"
+                      disabled={applications.appliedJob(selectedJob.id ?? "")}
+                      scheme={
+                        applications.appliedJob(selectedJob.id ?? "")
+                          ? "supportive"
+                          : "primary"
+                      }
+                      onClick={handleApply}
+                      size={"md"}
+                    >
+                      {applications.appliedJob(selectedJob.id ?? "") && (
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                      )}
+                      {applications.appliedJob(selectedJob.id ?? "")
+                        ? "Applied"
+                        : "Apply"}
                     </Button>,
                   ]}
                 />

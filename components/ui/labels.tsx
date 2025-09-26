@@ -74,7 +74,7 @@ export const Property: ValueComponent = ({
   return (
     <div
       className={cn(
-        "text-gray-700 text-sm overflow-hidden text-ellipsis",
+        "text-gray-700 font-semibold overflow-hidden text-ellipsis",
         className
       )}
     >
