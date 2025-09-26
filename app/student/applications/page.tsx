@@ -89,6 +89,8 @@ export default function ApplicationsPage() {
 
 const ApplicationCard = ({ application }: { application: UserApplication }) => {
   const { to_app_status_name } = useDbRefs();
+  console.log("application", application);
+
   return (
     <Card key={application.id} className="hover:shadow-lg transition-all">
       <div className="flex flex-col gap-1">

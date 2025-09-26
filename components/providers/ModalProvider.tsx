@@ -15,6 +15,7 @@ import { X } from "lucide-react";
 type ModalOptions = {
   allowBackdropClick?: boolean; // default: true
   closeOnEsc?: boolean; // default: true
+  hasClose?: boolean;
   onClose?: () => void; // called AFTER the modal is removed
   backdropClassName?: string;
   panelClassName?: string;
@@ -94,13 +95,15 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
               }
               onClick={(e) => e.stopPropagation()}
             >
-              <button
-                aria-label="Close"
-                onClick={() => close(name)}
-                className="absolute right-3 top-3 h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center"
-              >
-                <X className="h-4 w-4 text-gray-500" />
-              </button>
+              {opts.hasClose && (
+                <button
+                  aria-label="Close"
+                  onClick={() => close(name)}
+                  className="absolute right-3 top-3 h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center"
+                >
+                  <X className="h-4 w-4 text-gray-500" />
+                </button>
+              )}
               <div className="p-5">{node}</div>
             </div>
           </div>,
