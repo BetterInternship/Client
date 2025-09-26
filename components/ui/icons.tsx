@@ -18,7 +18,7 @@ import {
   PhilippinePeso,
   CheckCircle,
   XCircle,
-  CircleAlert,
+  CircleCheck,
 } from "lucide-react";
 
 /**
@@ -75,6 +75,6 @@ export const SalaryIcon = () => {
  */
 export const BooleanCheckIcon = ({ checked }: { checked?: boolean | null }) => {
   if (checked)
-    return <CircleAlert className="w-[0.9em] h-[0.9em] mr-1"></CircleAlert>;
+    return <CircleCheck className="w-[1.1em] h-[1.1em] mr-1"></CircleCheck>;
   else return <XCircle className="w-[1.1em] h-[1.1em] mr-1"></XCircle>;
 };

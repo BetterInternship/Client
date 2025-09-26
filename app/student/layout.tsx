@@ -9,6 +9,7 @@ import TanstackProvider from "../tanstack-provider";
 import AllowLanding from "./allowLanding";
 import { ConversationsContextProvider } from "@/hooks/use-conversation";
 import { PocketbaseProvider } from "@/lib/pocketbase";
+import { ModalProvider } from "@/components/providers/ModalProvider"
 
 export const metadata: Metadata = {
   title: "BetterInternship",
@@ -58,13 +59,17 @@ const HTMLContent = ({
             <ConversationsContextProvider type="user">
               <html lang="en">
                 <body className="overflow-x-hidden m-0 p-0">
-                  <AllowLanding>
-                    <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
-                      <div className="flex-grow max-h-[100%] overflow-auto flex flex-col">
-                        {children}
-                      </div>
-                    </div>
-                  </AllowLanding>
+                  <ModalProvider>
+                    <AllowLanding>
+                
+                        <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
+                          <div className="flex-grow max-h-[100dvh] overflow-auto flex flex-col">
+                            {children}
+                          </div>
+                        </div>
+                      
+                    </AllowLanding>
+                  </ModalProvider>
                 </body>
               </html>
             </ConversationsContextProvider>

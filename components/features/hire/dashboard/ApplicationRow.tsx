@@ -9,7 +9,7 @@ import { UserPfp } from "@/components/shared/pfp";
 import { StatusDropdown } from "@/components/common/StatusDropdown";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useConversations } from "@/hooks/use-conversation";
-import { cn } from "@/lib/utils";
+import { cn, formatMonth } from "@/lib/utils";
 
 interface ApplicationRowProps {
   application: EmployerApplication;
@@ -32,7 +32,7 @@ export function ApplicationRow({
   updateConversationId,
   setSelectedApplication,
 }: ApplicationRowProps) {
-  const { to_university_name, to_level_name, to_app_status_name } = useDbRefs();
+  const { to_university_name, to_app_status_name } = useDbRefs();
   const conversations = useConversations();
 
   return (
@@ -48,7 +48,7 @@ export function ApplicationRow({
               {getFullName(application.user)}{" "}
               <span className="opacity-70">
                 — {to_university_name(application.user?.university) || ""} •{" "}
-                {to_level_name(application.user?.year_level) || ""}
+                {formatMonth(application.user?.expected_graduation_date)}
               </span>
             </p>
             <p className="text-sm text-gray-500">
@@ -96,17 +96,6 @@ export function ApplicationRow({
           >
             Notes
           </Button>
-          {/* // ! uncomment when calendar back */}
-          {/* <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onSchedule();
-            }}
-          >
-            Schedule
-          </Button> */}
           <div>
             <StatusDropdown
               value={application.status ?? 0}

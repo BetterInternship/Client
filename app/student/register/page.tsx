@@ -1,316 +1,371 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useDbRefs } from "@/lib/db/use-refs";
-import { useRouter, useSearchParams } from "next/navigation";
-import { PublicUser } from "@/lib/db/db.types";
-import { createEditForm, FormDropdown, FormInput } from "@/components/EditForm";
-import { Card } from "@/components/ui/card";
-import { ErrorLabel, LabeledProperty } from "@/components/ui/labels";
-import { StoryBook } from "@/components/ui/storybook";
+import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { isValidEmail, isValidPHNumber } from "@/lib/utils";
-import { MultipartFormBuilder } from "@/lib/multipart-form";
+import { Card } from "@/components/ui/card";
+import { AutocompleteTreeMulti } from "@/components/ui/autocomplete";
+import { useDbRefs } from "@/lib/db/use-refs";
+import { POSITION_TREE } from "@/lib/consts/positions";
+import {
+  FormDropdown,
+  FormInput,
+  FormMonthPicker,
+} from "@/components/EditForm";
+import { MultiChipSelect } from "@/components/ui/chip-select";
+import { SinglePickerBig } from "@/components/features/student/SinglePickerBig";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 
-const [UserRegisterForm, useUserRegisterForm] = createEditForm<PublicUser>();
+interface FormInputs {
+  university?: string;
+  internship_type?: "credited" | "voluntary";
+  job_setup_ids?: string[];
+  job_commitment_ids?: string[];
+  job_category_ids?: string[];
+  expected_start_date?: number | null;
+  expected_duration_hours?: number | null;
+}
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return <div className="text-xs text-gray-600 mb-1 block">{children}</div>;
+}
+
+// Returns the UNIX timestamp of the first day of the current month
+const getNearestMonthTimestamp = () => {
+  const date = new Date();
+  const dateString = `${date.getFullYear()}-${(
+    "0" + (date.getMonth() + 1).toString()
+  ).slice(-2)}-01T00:00:00.000Z`;
+  return Date.parse(dateString);
+};
 
 export default function RegisterPage() {
-  const { register } = useAuthContext();
-  const [email, setEmail] = useState("");
-  const searchParams = useSearchParams();
-  const dbRefs = useDbRefs();
-  const router = useRouter();
+  const refs = useDbRefs();
+  const auth = useAuthContext();
+  const [submitting, setSubmitting] = useState(false);
+  const regForm = useForm<FormInputs>({
+    defaultValues: {
+      internship_type: undefined,
+      job_setup_ids: [],
+      job_commitment_ids: [],
+      job_category_ids: [],
+      expected_start_date: getNearestMonthTimestamp(),
+      expected_duration_hours: 300,
+    },
+  });
 
+  // Derived state
+  const internshipType = regForm.watch("internship_type");
+  const isCredited = internshipType === "credited";
+  const isVoluntary = internshipType === "voluntary";
+
+  // Build ALL ids for work modes and types
+  const allJobModeIds = useMemo(
+    () => (refs.job_modes ?? []).map((o: any) => String(o.id)),
+    [refs.job_modes]
+  );
+
+  const allJobTypeIds = useMemo(
+    () => (refs.job_types ?? []).map((o: any) => String(o.id)),
+    [refs.job_types]
+  );
+
+  // Helpers to find specific ids
+  const fullTimeJobTypeId = "2";
+  const hybridModeId = "1";
+  const remoteModeId = "2";
+
+  /**
+   * Handle form submit
+   *
+   * @param values
+   */
+  const handleSubmit = (values: FormInputs) => {
+    setSubmitting(true);
+
+    // Check for missing fields
+    if (!values.university?.trim()) {
+      alert("University is required.");
+      setSubmitting(false);
+      return;
+    }
+
+    if (values.job_category_ids?.length === 0) {
+      alert("Desired internship role is required");
+      setSubmitting(false);
+      return;
+    }
+
+    // Cap internship hours
+    if (
+      (values.expected_duration_hours ?? 2000) > 2000 ||
+      (values.expected_duration_hours ?? 100) < 100
+    ) {
+      alert("Duration hours must be between 100-2000..");
+      setSubmitting(false);
+      return;
+    }
+
+    // Extract fields
+    const { university, ...internship_preferences } = values;
+
+    auth
+      .register({
+        university,
+        internship_preferences,
+      })
+      .then((response) => {
+        if (response?.message) {
+          setSubmitting(false);
+          alert(response.message);
+          return;
+        }
+
+        // We don't use router, because we need the reload for some reason
+        location.href = "/search";
+      })
+      .catch((error) => {
+        setSubmitting(false);
+        console.log(error);
+        alert("Something went wrong... Try again later.");
+      });
+  };
+
+  // Auto-select job_commitment_ids per rules
   useEffect(() => {
-    const emailParam = searchParams.get("email");
-    if (!emailParam && !dbRefs.ref_loading) return router.push("/login");
-    if (!emailParam) return;
+    if (!refs.job_types?.length) return;
 
-    setEmail(emailParam);
-    if (!dbRefs.universities.length) return;
+    if (internshipType === "credited") {
+      if (allJobTypeIds.length) {
+        regForm.setValue("job_commitment_ids", allJobTypeIds, {
+          shouldDirty: true,
+        });
+      }
+    } else if (internshipType === "voluntary") {
+      const filtered = fullTimeJobTypeId
+        ? allJobTypeIds.filter((id) => id !== fullTimeJobTypeId)
+        : allJobTypeIds;
+      regForm.setValue("job_commitment_ids", filtered, { shouldDirty: true });
+    } else {
+      regForm.setValue("job_commitment_ids", [], { shouldDirty: true });
+    }
+  }, [
+    internshipType,
+    refs.job_types,
+    allJobTypeIds,
+    fullTimeJobTypeId,
+    regForm,
+  ]);
 
-    const domain = emailParam.split("@")[1];
-    const unis = dbRefs.getUniversityFromDomain(domain);
-    if (!unis.length && !dbRefs.ref_loading) return router.push("/login");
-  }, [searchParams, dbRefs, router]);
+  // Auto-select job_setup_ids per rules
+  useEffect(() => {
+    if (!refs.job_modes?.length) return;
+
+    if (internshipType === "credited") {
+      regForm.setValue("job_setup_ids", allJobModeIds, { shouldDirty: true });
+    } else if (internshipType === "voluntary") {
+      const filtered = [hybridModeId, remoteModeId].filter(Boolean) as string[];
+      regForm.setValue("job_setup_ids", filtered, { shouldDirty: true });
+    } else {
+      regForm.setValue("job_setup_ids", [], { shouldDirty: true });
+    }
+  }, [
+    internshipType,
+    refs.job_modes,
+    allJobModeIds,
+    hybridModeId,
+    remoteModeId,
+    regForm,
+  ]);
+
+  // Keep job_commitment_ids valid when refs load late
+  useEffect(() => {
+    if (!refs.job_types?.length) return;
+    const current = regForm.getValues("job_commitment_ids") || [];
+    if (!current.length) return;
+    const next = current.filter((id) => allJobTypeIds.includes(id));
+    if (next.length !== current.length) {
+      regForm.setValue("job_commitment_ids", next, { shouldDirty: true });
+    }
+  }, [refs.job_types, allJobTypeIds, regForm]);
+
+  // Clear internship hours when switching to voluntary
+  useEffect(() => {
+    if (internshipType === "voluntary") {
+      regForm.setValue("expected_duration_hours", 300, {
+        shouldDirty: true,
+      });
+    }
+  }, [internshipType, regForm]);
 
   return (
-    <div className="flex-1 flex justify-center px-6 py-12 pt-12 overflow-y-auto">
-      <div className="w-full max-w-2xl">
-        <div className="text-center mb-10">
-          <h2 className="text-4xl tracking-tighter font-bold text-gray-700 mb-4">
-            Welcome to BetterInternship!
-          </h2>
+    <div className="min-h-full">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+        {/* Header */}
+        <div className="flex items-center justify-center">
+          <div className="text-center">
+            <img
+              src="/BetterInternshipLogo.png"
+              className="w-36 mx-auto mb-3"
+              alt="BetterInternship"
+            />
+            <h1 className="text-3xl font-bold">Welcome to BetterInternship!</h1>
+          </div>
         </div>
 
-        <UserRegisterForm data={{}}>
-          <UserEditor registerProfile={register} email={email} />
-        </UserRegisterForm>
-      </div>
-      <div className="fixed bottom-0 bg-gray-50 z-[100] h-10 w-full flex flex-row justify-center">
-        <div className="opacity-80 text-sm">
-          Need help? Contact us at{" "}
-          <a href="mailto:hello@betterinternship.com">
-            hello@betterinternship.com
-          </a>
+        <div className="mt-8 flex flex-col items-center gap-2">
+          <div className="lg:col-span-2 space-y-2 max-w-lg w-full">
+            <Card className="p-4 sm:p-6 block">
+              <form
+                className="space-y-6"
+                id="reg-form"
+                onSubmit={() => handleSubmit(regForm.getValues())}
+              >
+                {/* Q1: Voluntary or Credited */}
+                <div className="space-y-2">
+                  <SinglePickerBig
+                    required
+                    autoCollapse={false}
+                    label="Are you looking for internship credit?"
+                    options={[
+                      {
+                        value: "credited",
+                        label: "Credited",
+                        description: "Counts for OJT",
+                      },
+                      {
+                        value: "voluntary",
+                        label: "Voluntary",
+                        description: "Outside practicum",
+                      },
+                    ]}
+                    value={internshipType ?? null}
+                    onClear={() =>
+                      regForm.setValue("internship_type", undefined)
+                    }
+                    onChange={(v) =>
+                      regForm.setValue("internship_type", v ?? undefined, {
+                        shouldDirty: true,
+                        shouldTouch: true,
+                      })
+                    }
+                  />
+                </div>
+
+                {/* Start date + hours (only credited shows hours) */}
+                {(isCredited || isVoluntary) && (
+                  <div className="space-y-5">
+                    <FormMonthPicker
+                      label="Ideal internship start"
+                      date={regForm.watch("expected_start_date") ?? undefined}
+                      setter={(ms) =>
+                        regForm.setValue("expected_start_date", ms ?? null, {
+                          shouldDirty: true,
+                        })
+                      }
+                      fromYear={2025}
+                      toYear={2030}
+                      placeholder="Select month"
+                    />
+
+                    {isCredited && (
+                      <div className="space-y-1">
+                        <FormInput
+                          label="Total internship hours"
+                          inputMode="numeric"
+                          value={regForm.watch("expected_duration_hours") ?? ""}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            const n = v === "" ? null : Number(v);
+                            regForm.setValue(
+                              "expected_duration_hours",
+                              Number.isFinite(n as number)
+                                ? (n as number)
+                                : null,
+                              { shouldDirty: true }
+                            );
+                          }}
+                          required={false}
+                        />
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      <AutocompleteTreeMulti
+                        required
+                        label="Desired internship role"
+                        tree={POSITION_TREE}
+                        value={regForm.watch("job_category_ids") || []}
+                        setter={(vals: string[]) =>
+                          regForm.setValue("job_category_ids", vals)
+                        }
+                        placeholder="Select one or more"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <FieldLabel>Work setup</FieldLabel>
+                      <MultiChipSelect
+                        className="justify-start"
+                        value={regForm.watch("job_setup_ids") || []}
+                        onChange={(vals) =>
+                          regForm.setValue("job_setup_ids", vals)
+                        }
+                        options={(refs.job_modes || []).map((o: any) => ({
+                          value: String(o.id),
+                          label: o.name,
+                        }))}
+                      />
+                    </div>
+
+                    {/* Job types */}
+                    <div className="space-y-2">
+                      <FieldLabel>Work-time commitment</FieldLabel>
+                      <MultiChipSelect
+                        className="justify-start"
+                        value={regForm.watch("job_commitment_ids") || []}
+                        onChange={(vals) =>
+                          regForm.setValue("job_commitment_ids", vals)
+                        }
+                        options={(refs.job_types || []).map((o: any) => ({
+                          value: String(o.id),
+                          label: o.name,
+                        }))}
+                      />
+                    </div>
+
+                    {/* University email */}
+                    <div className="space-y-2">
+                      <FormDropdown
+                        label="Which university are you from?"
+                        options={refs.universities}
+                        setter={(value) =>
+                          regForm.setValue("university", value)
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
+              </form>
+            </Card>
+
+            {/* Submit button*/}
+            {(isCredited || isVoluntary) && (
+              <div className="flex justify-end">
+                <Button
+                  className="w-full sm:w-auto"
+                  type="button"
+                  disabled={submitting}
+                  form="reg-form"
+                  onClick={() => handleSubmit(regForm.getValues())}
+                >
+                  {submitting ? "Creating account..." : "Create account"}
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
-const UserEditor = ({
-  email,
-  registerProfile,
-}: {
-  email: string;
-  registerProfile: (newProfile: Partial<PublicUser>) => Promise<any>;
-}) => {
-  const {
-    formData,
-    formErrors,
-    setField,
-    fieldSetter,
-    addValidator,
-    validateFormData,
-    cleanFormData,
-  } = useUserRegisterForm();
-  const router = useRouter();
-  const dbRefs = useDbRefs();
-  const [isRegistering, setIsRegistering] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false);
-
-  useEffect(() => {
-    setField("email", email);
-  }, [email]);
-
-  const register = async () => {
-    // Validate required fields before submitting
-    const missingFields = [];
-
-    if (!formData.first_name) {
-      missingFields.push("First Name");
-    }
-    if (!formData.last_name) {
-      missingFields.push("Last Name");
-    }
-    if (!formData.edu_verification_email) {
-      missingFields.push("Last Name");
-    }
-    if (!dbRefs.isNotNull(formData.university)) {
-      missingFields.push("University");
-    }
-    if (!dbRefs.isNotNull(formData.year_level)) {
-      missingFields.push("Year Level");
-    }
-
-    if (missingFields.length > 0) {
-      const errorMessage = `Please complete the following required fields:\n\n• ${missingFields.join(
-        "\n• "
-      )}`;
-      alert(errorMessage);
-      return;
-    }
-
-    const multipartForm = MultipartFormBuilder.new();
-    const newProfile = {
-      ...cleanFormData(),
-      email,
-    };
-    multipartForm.from(newProfile);
-    setIsRegistering(true);
-    // @ts-ignore
-    const result = await registerProfile(multipartForm.build());
-    // @ts-ignore
-    if (!result?.success) {
-      const errorMsg =
-        result?.error ||
-        result?.message ||
-        "Registration failed. Please check your information and try again.";
-      alert(`Registration Error: ${errorMsg}`);
-      setIsRegistering(false);
-      return;
-    }
-
-    router.push("/verify");
-    setIsRegistering(false);
-  };
-
-  // Update dropdown options
-  useEffect(() => {
-    const debouncedValidation = setTimeout(() => validateFormData(), 500);
-    return () => clearTimeout(debouncedValidation);
-  }, [formData]);
-
-  // Data validators
-  useEffect(() => {
-    addValidator(
-      "first_name",
-      (name: string) => !name.trim() && `First name is not valid.`
-    );
-    addValidator(
-      "last_name",
-      (name: string) => !name.trim() && `Last name is not valid.`
-    );
-    addValidator(
-      "email",
-      (email: string) => email && !isValidEmail(email) && "Invalid email."
-    );
-    addValidator(
-      "phone_number",
-      (phone: string) =>
-        phone && !isValidPHNumber(phone) && "Invalid PH number."
-    );
-    addValidator(
-      "university",
-      (university: string) =>
-        dbRefs.isNotNull(university) &&
-        !!dbRefs.get_university(university) &&
-        "Invalid university."
-    );
-    addValidator(
-      "year_level",
-      (level: number) =>
-        dbRefs.isNotNull(level) &&
-        !!dbRefs.to_level_name(level) &&
-        "Invalid year level."
-    );
-  }, []);
-
-  return (
-    <>
-      <StoryBook>
-        <Card>
-          <div className="text-2xl tracking-tight font-bold text-gray-700 mb-4">
-            Student Registration Form
-          </div>
-          <div className="mb-4 flex flex-col space-y-3">
-            <Badge>
-              <div className="">
-                An edu.ph is required to register, and is used to verify our
-                users.
-              </div>
-            </Badge>
-            <div>
-              <ErrorLabel value={formErrors.edu_verification_email} />
-              <FormInput
-                label="Edu Email"
-                value={formData.edu_verification_email ?? ""}
-                setter={fieldSetter("edu_verification_email")}
-                maxLength={100}
-              />
-            </div>
-            <div>
-              <ErrorLabel value={formErrors.first_name} />
-              <FormInput
-                label="First Name"
-                value={formData.first_name ?? ""}
-                setter={fieldSetter("first_name")}
-                maxLength={100}
-              />
-            </div>
-            <div>
-              <ErrorLabel value={formErrors.last_name} />
-              <FormInput
-                label="Last Name"
-                value={formData.last_name ?? ""}
-                setter={fieldSetter("last_name")}
-                maxLength={100}
-              />
-            </div>
-            <FormDropdown
-              label="University"
-              options={dbRefs.universities.filter((u) =>
-                dbRefs
-                  .getUniversityFromDomain(email?.split("@")[1])
-                  .includes(u.id)
-              )}
-              value={formData.university ?? ""}
-              setter={fieldSetter("university")}
-            />
-            <FormDropdown
-              label="Year Level"
-              options={dbRefs.levels}
-              value={formData.year_level ?? ""}
-              setter={fieldSetter("year_level")}
-            />
-          </div>
-          <div className="flex flex-col space-y-1 mb-2">
-            <ErrorLabel value={formErrors.taking_for_credit} />
-            <ErrorLabel value={formErrors.email} />
-          </div>
-          <div className="mb-4 flex flex-col space-y-3">
-            <Card className="p-3">
-              <div className="flex items-start gap-3">
-                <Checkbox
-                  id="taking-for-credit"
-                  checked={formData.taking_for_credit}
-                  onCheckedChange={(checked) =>
-                    setField("taking_for_credit", checked)
-                  }
-                  className="mt-1"
-                />
-                <label
-                  htmlFor="taking-for-credit"
-                  className="text-sm text-gray-700 leading-relaxed cursor-pointer flex-1"
-                >
-                  I am taking internships for school credit.
-                </label>
-              </div>
-            </Card>
-
-            <Card className="p-3">
-              <div className="flex items-start gap-3">
-                <Checkbox
-                  id="accept-terms"
-                  checked={termsAccepted}
-                  onCheckedChange={(checked) =>
-                    setTermsAccepted(checked as boolean)
-                  }
-                  className="mt-1"
-                />
-                <label
-                  htmlFor="accept-terms"
-                  className="text-sm text-gray-700 leading-relaxed cursor-pointer flex-1"
-                >
-                  I have read and agree to the{" "}
-                  <a
-                    href="/TermsConditions.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 underline font-medium"
-                  >
-                    Terms & Conditions
-                  </a>{" "}
-                  and{" "}
-                  <a
-                    href="/PrivacyPolicy.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 underline font-medium"
-                  >
-                    Privacy Policy
-                  </a>
-                  .
-                </label>
-              </div>
-            </Card>
-
-            <Button
-              onClick={register}
-              disabled={!termsAccepted || isRegistering}
-              className="w-full h-12 bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
-            >
-              {isRegistering ? "Registering..." : "Register"}
-            </Button>
-          </div>
-        </Card>
-      </StoryBook>
-      <br />
-      <br />
-    </>
-  );
-};

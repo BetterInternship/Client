@@ -39,7 +39,7 @@ export default function VerifyPage() {
         })
         .catch((error) => {
           alert("Verification failed: " + error.message);
-          router.push("/login");
+          router.push(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`);
         })
         .finally(() => setLoading(false));
     } else {

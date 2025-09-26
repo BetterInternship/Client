@@ -43,7 +43,14 @@ import { useConversations } from "@/hooks/use-conversation";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useProfile } from "@/lib/api/student.api";
 import { cn } from "@/lib/utils";
-import { getFullName, getMissingProfileFields } from "@/lib/utils/user-utils";
+import {
+  getFullName,
+  getMissingProfileFields,
+  isCompleteProfile,
+} from "@/lib/utils/user-utils";
+import { useQueryClient } from "@tanstack/react-query";
+import { useGlobalModal } from "@/components/providers/ModalProvider";
+import { IncompleteProfileContent } from "@/components/modals/IncompleteProfileModal";
 
 /* =======================================================================================
    Filter State (immutable + typed) 
@@ -167,7 +174,7 @@ const WORKLOAD_OPTIONS: SubOption[] = [
 ];
 
 const MODE_OPTIONS: SubOption[] = [
-  { name: "Face-to-face", value: "0" },
+  { name: "Onsite", value: "0" },
   { name: "Hybrid", value: "1" },
   { name: "Remote", value: "2" },
 ];
@@ -200,7 +207,7 @@ const SearchInput = ({
 }) => (
   <div
     className={cn(
-      "relative h-10 w-full border border-gray-300 rounded-[0.33em]",
+      "relative w-full border border-gray-300 rounded-[0.33em]",
       className
     )}
   >
@@ -392,27 +399,30 @@ const FilterOverlay = ({
   const outsideClickRef = useDetectClickOutside({ onTriggered: onClose });
   if (!visible) return null;
   return (
-    <div className="relative overflow-visible h-0">
-      <div className="absolute flex flex-col items-center justify-start w-full h-[100vh] z-[100] bg-black/10 backdrop-blur-sm p-5">
-        <div
-          className="max-w-2xl w-full h-fit bg-white rounded-[0.33em] px-5 py-4"
-          ref={outsideClickRef}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {children}
-          <div className="mt-4 flex gap-2">
-            <Button size="md" onClick={onApply}>
-              Apply
-            </Button>
-            <Button
-              variant="outline"
-              scheme="secondary"
-              size="md"
-              onClick={onClose}
-            >
-              Cancel
-            </Button>
-          </div>
+    <div
+      className="fixed inset-0 z-[100] bg-black/10 backdrop-blur-sm flex items0start justify-center p-4 sm:p-5"
+      aria-modal="true"
+      role="dialog"
+    >
+      <div
+        className="max-w-2xl w-full mt-6 sm:mt-10 h-fit bg-white rounded-[0.33em] px-5 py-4 shadow-lg max-h-[min(84dvh,720px)] overflow-y-auto"
+        ref={outsideClickRef}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {children}
+        <div className="mt-4 flex gap-2 justify-between sm:justify-end w-full sm:w-auto">
+          <Button
+            className="w-full sm:w-auto"
+            variant="outline"
+            scheme="secondary"
+            size="md"
+            onClick={onClose}
+          >
+            Cancel
+          </Button>
+          <Button size="md" onClick={onApply} className="w-full sm:w-auto ">
+            Apply
+          </Button>
         </div>
       </div>
     </div>
@@ -435,8 +445,29 @@ function MobileDrawer({
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
+  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
+  const queryClient = useQueryClient();
 
   const handleLogout = () => logout().then(() => router.push("/"));
+
+  const handleProfileClick = () => {
+    if (!isCompleteProfile(profile.data)) {
+      openGlobalModal(
+        "incomplete-profile",
+        <IncompleteProfileContent
+          handleClose={() => closeGlobalModal("incomplete-profile")}
+        />,
+        {
+          allowBackdropClick: false,
+          onClose: () => {
+            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+          },
+        }
+      );
+    } else {
+      router.push("/profile");
+    }
+  };
   useEffect(() => {
     if (open) onClose();
   }, [pathname, params?.toString()]);
@@ -511,13 +542,13 @@ function MobileDrawer({
 
             <Separator className="my-4" />
 
-            {/* Navigation (Chats second, styled as list items) */}
+            {/* Navigation */}
             <nav>
               <ul className="grid gap-1">
                 {isAuthenticated() && (
                   <li>
                     <Link href="/conversations" className="block w-full">
-                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200">
+                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2">
                         <span className="inline-flex items-center gap-2 text-sm">
                           <MessageCircleMore className="w-4 h-4" /> Chats
                         </span>
@@ -535,7 +566,33 @@ function MobileDrawer({
                 <li>
                   <Link href="/search" className="block w-full">
                     <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                      <span>Browse</span>
+                      <div>
+                        <Search className="w-4 h-4 inline-block mr-2" />
+                        <span>Browse</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-gray-300" />
+                    </button>
+                  </Link>
+                </li>
+                <li>
+                  <button
+                    onClick={() => handleProfileClick()}
+                    className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary"
+                  >
+                    <div>
+                      <Settings className="w-4 h-4 inline-block mr-2" />
+                      <span>Profile</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-300" />
+                  </button>
+                </li>
+                <li>
+                  <Link href="/applications" className="block w-full">
+                    <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
+                      <div>
+                        <BookA className="w-4 h-4 inline-block mr-2" />
+                        <span>Applications</span>
+                      </div>
                       <ChevronRight className="w-4 h-4 text-gray-300" />
                     </button>
                   </Link>
@@ -543,23 +600,22 @@ function MobileDrawer({
                 <li>
                   <Link href="/saved" className="block w-full">
                     <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                      <span>Saved Jobs</span>
+                      <div>
+                        <Heart className="w-4 h-4 inline-block mr-2" />
+                        <span>Saved Jobs</span>
+                      </div>
                       <ChevronRight className="w-4 h-4 text-gray-300" />
                     </button>
                   </Link>
                 </li>
-                <li>
-                  <Link href="/applications" className="block w-full">
-                    <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                      <span>Applications</span>
-                      <ChevronRight className="w-4 h-4 text-gray-300" />
-                    </button>
-                  </Link>
-                </li>
+
                 <li>
                   <Link href="/help" className="block w-full">
                     <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                      <span>Help Center</span>
+                      <div>
+                        <HelpCircle className="w-4 h-4 inline-block mr-2" />
+                        <span>Help Center</span>
+                      </div>
                       <ChevronRight className="w-4 h-4 text-gray-300" />
                     </button>
                   </Link>
@@ -593,8 +649,29 @@ export const ProfileButton: React.FC = () => {
   const conversations = useConversations();
   const { isAuthenticated, logout } = useAuthContext();
   const router = useRouter();
+  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
+  const queryClient = useQueryClient();
 
   const handleLogout = () => logout().then(() => router.push("/"));
+
+  const handleProfileClick = () => {
+    if (!isCompleteProfile(profile.data)) {
+      openGlobalModal(
+        "incomplete-profile",
+        <IncompleteProfileContent
+          handleClose={() => closeGlobalModal("incomplete-profile")}
+        />,
+        {
+          allowBackdropClick: false,
+          onClose: () => {
+            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+          },
+        }
+      );
+    } else {
+      router.push("/profile");
+    }
+  };
 
   if (!isAuthenticated()) {
     return (
@@ -615,9 +692,8 @@ export const ProfileButton: React.FC = () => {
   return (
     <div className="relative flex items-center gap-2">
       <Link href="/conversations">
-        <Button variant="outline" className="relative">
-          <span className="text-xs">Chats</span>{" "}
-          <MessageCircleMore className="w-6 h-6" />
+        <Button variant="ghost" className="relative">
+          <MessageCircleMore className="w-7 h-7" />
           {conversations?.unreads?.length ? (
             <div className="absolute w-3 h-3 top-[-0.33em] right-[-0.4em] rounded-full bg-warning opacity-70" />
           ) : null}
@@ -629,7 +705,7 @@ export const ProfileButton: React.FC = () => {
             <div className="overflow-hidden rounded-full flex items-center justify-center">
               <MyUserPfp size="7" />
             </div>
-            {getFullName(profile.data)}
+            {getFullName(profile.data, false)}
           </>
         }
         content={
@@ -639,26 +715,30 @@ export const ProfileButton: React.FC = () => {
             </p>
           </div>
         }
-        className="z-[200]"
+        className="z-[200] w-fit"
       >
-        <DropdownOption href="/profile">
-          <Settings className="w-4 h-4 inline-block m-1 mr-2" />
-          Profile Settings
+        <DropdownOption
+          on_click={() => {
+            handleProfileClick();
+          }}
+        >
+          <Settings className="w-4 h-4 inline-block mr-2 text-primary" />
+          <span className="text-primary">Profile</span>
         </DropdownOption>
         <DropdownOption href="/applications">
-          <BookA className="w-4 h-4 inline-block m-1 mr-2" />
-          Applications
+          <BookA className="w-4 h-4 inline-block mr-2 text-primary" />
+          <span className="text-primary">Applications</span>
         </DropdownOption>
         <DropdownOption href="/saved">
-          <Heart className="w-4 h-4 inline-block m-1 mr-2" />
-          Saved Jobs
+          <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
+          <span className="text-primary">Saved Jobs</span>
         </DropdownOption>
         <DropdownOption href="/help">
-          <HelpCircle className="w-4 h-4 inline-block m-1 mr-2" />
-          Help Center
+          <HelpCircle className="w-4 h-4 inline-block mr-2 text-primary" />
+          <span className="text-primary">Help Center</span>
         </DropdownOption>
-        <DropdownOption href="/login" on_click={handleLogout}>
-          <LogOut className="text-red-500 w-4 h-4 inline-block m-1 mr-2" />
+        <DropdownOption href="/" on_click={handleLogout}>
+          <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />
           <span className="text-red-500">Sign Out</span>
         </DropdownOption>
       </GroupableNavDropdown>
@@ -679,14 +759,14 @@ export const Header: React.FC = () => {
 
   const [state, dispatch] = useReducer(jobFilterReducer, initialFilter);
   const [searchTerm, setSearchTerm] = useState("");
-  const [hasMissing, setHasMissing] = useState(false);
 
   const [showPositions, setShowPositions] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const headerRoutes = ["/login", "/login/otp", "/register", "/otp"];
-  const showHeaderRight = routeExcluded(headerRoutes);
+  const noProfileRoutes = ["/register"];
+  const noHeaderRoutes = ["/register"];
+  const showProfileButton = routeExcluded(noProfileRoutes);
 
   // only show filters on /search (allow subpaths like /search/results)
   const showFilters = pathname?.startsWith("/search") === true;
@@ -716,14 +796,6 @@ export const Header: React.FC = () => {
     });
     setSearchTerm(q);
   }, [searchParams, showFilters]);
-
-  // profile completeness banner
-  useEffect(() => {
-    if (profile.data) {
-      const { missing } = getMissingProfileFields(profile.data);
-      setHasMissing(Array.isArray(missing) && missing.length > 0);
-    }
-  }, [profile.data]);
 
   const doSearch = () => {
     const params = new URLSearchParams();
@@ -767,119 +839,109 @@ export const Header: React.FC = () => {
     </div>
   );
 
-
-
-
   return (
     <JobFilterContext.Provider value={{ state, dispatch }}>
-      <div className="flex flex-col">
-        {/* Top Bar */}
-        <div
-          className={cn(
-            "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
-            isMobile ? "px-4 py-3" : "py-4 px-8"
-          )}
-          style={{ overflow: "visible", position: "relative", zIndex: 100 }}
-        >
-          {/* Left: Brand */}
-          <div className="flex items-center gap-3">
-            <HeaderTitle />
+      {routeExcluded(noHeaderRoutes) ? (
+        <div className="flex flex-col">
+          {/* Top Bar */}
+          <div
+            className={cn(
+              "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
+              isMobile ? "px-4 py-3" : "py-4 px-8"
+            )}
+            style={{ overflow: "visible", position: "relative", zIndex: 100 }}
+          >
+            {/* Left: Brand */}
+            <div className="flex items-center gap-3">
+              <HeaderTitle />
+            </div>
+
+            {/* Center: Desktop search + filters (filters only on /search) */}
+            {!isMobile && showProfileButton && (
+              <div className="flex items-center gap-4 w-full max-w-2xl">
+                {showFilters && (
+                  <SearchInput
+                    value={searchTerm}
+                    onChange={setSearchTerm}
+                    onEnter={doSearch}
+                  />
+                )}
+                {showFilters && FilterButtons}
+              </div>
+            )}
+
+            {/* Right: Desktop profile / Mobile burger */}
+            {showProfileButton ? (
+              isMobile ? (
+                <button
+                  type="button"
+                  aria-label="Open menu"
+                  className="inline-flex items-center justify-center h-10 w-10 rounded-md border border-gray-300 hover:bg-gray-50"
+                  onClick={() => setIsMenuOpen(true)}
+                >
+                  <Menu className="h-5 w-5" />
+                </button>
+              ) : (
+                <div className="flex items-center gap-6">
+                  <ProfileButton />
+                </div>
+              )
+            ) : (
+              <div className="w-1 h-10 bg-transparent" />
+            )}
           </div>
 
-          {/* Center: Desktop search + filters (filters only on /search) */}
-          {!isMobile && showHeaderRight && (
-            <div className="flex items-center gap-4 w-full max-w-2xl">
-              {showFilters && (
-                <SearchInput
-                  value={searchTerm}
-                  onChange={setSearchTerm}
-                  onEnter={doSearch}
-                />
-              )}
+          {/* Mobile: search + (filters only on /search) */}
+          {isMobile && showProfileButton && showFilters && (
+            <div className="flex flex-col max-w-2xl w-full gap-2 items-center px-4 pt-3">
+              <SearchInput
+                value={searchTerm}
+                onChange={setSearchTerm}
+                onEnter={doSearch}
+                className="h-12"
+              />
               {showFilters && FilterButtons}
             </div>
           )}
 
-          {/* Right: Desktop profile / Mobile burger */}
-          {showHeaderRight ? (
-            isMobile ? (
-              <button
-                type="button"
-                aria-label="Open menu"
-                className="inline-flex items-center justify-center h-10 w-10 rounded-md border border-gray-300 hover:bg-gray-50"
-                onClick={() => setIsMenuOpen(true)}
+          {/* Mount filter overlays ONLY on /search */}
+          {showFilters && (
+            <>
+              <FilterOverlay
+                visible={showPositions}
+                onClose={() => setShowPositions(false)}
+                onApply={() => {
+                  setShowPositions(false);
+                  doSearch();
+                }}
               >
-                <Menu className="h-5 w-5" />
-              </button>
-            ) : (
-              <div className="flex items-center gap-6">
-                {pathname === "/search" && hasMissing && (
-                  <button
-                    className="text-base ml-4 text-blue-700 font-medium hover:underline focus:outline-none"
-                    onClick={() => router.push("/profile?edit=true")}
-                  >
-                    Finish your profile to start applying!
-                  </button>
-                )}
-                <ProfileButton />
-              </div>
-            )
-          ) : (
-            <div className="w-1 h-10 bg-transparent" />
+                <JobPositionPanel />
+              </FilterOverlay>
+
+              <FilterOverlay
+                visible={showDetails}
+                onClose={() => setShowDetails(false)}
+                onApply={() => {
+                  setShowDetails(false);
+                  doSearch();
+                }}
+              >
+                <JobDetailPanel />
+              </FilterOverlay>
+            </>
+          )}
+
+          {/* Mobile drawer */}
+          {isMobile && showProfileButton && (
+            <MobileDrawer
+              open={isMenuOpen}
+              onClose={() => setIsMenuOpen(false)}
+            />
           )}
         </div>
-
-        {/* Mobile banner under bar */}
-        {isMobile && pathname === "/search" && <CompleteAccBanner />}
-
-        {/* Mobile: search + (filters only on /search) */}
-        {isMobile && showHeaderRight && showFilters && (
-          <div className="flex flex-col max-w-2xl w-full gap-3 items-center px-4 pt-3">
-            <SearchInput
-              value={searchTerm}
-              onChange={setSearchTerm}
-              onEnter={doSearch}
-              className="h-12"
-            />
-            {showFilters && FilterButtons}
-          </div>
-        )}
-
-        {/* Mount filter overlays ONLY on /search */}
-        {showFilters && (
-          <>
-            <FilterOverlay
-              visible={showPositions}
-              onClose={() => setShowPositions(false)}
-              onApply={() => {
-                setShowPositions(false);
-                doSearch();
-              }}
-            >
-              <JobPositionPanel />
-            </FilterOverlay>
-
-            <FilterOverlay
-              visible={showDetails}
-              onClose={() => setShowDetails(false)}
-              onApply={() => {
-                setShowDetails(false);
-                doSearch();
-              }}
-            >
-              <JobDetailPanel />
-            </FilterOverlay>
-          </>
-        )}
-
-        {/* Mobile drawer */}
-        {isMobile && showHeaderRight && (
-          <MobileDrawer
-            open={isMenuOpen}
-            onClose={() => setIsMenuOpen(false)}
-          />
-        )}
-      </div>
+      ) : (
+        <></>
+      )}
     </JobFilterContext.Provider>
   );
 };

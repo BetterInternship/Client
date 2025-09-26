@@ -7,7 +7,8 @@ import { Job, PublicUser } from "../db/db.types";
  * @returns
  */
 export const getFullName = (
-  user: Partial<PublicUser> | null | undefined
+  user: Partial<PublicUser> | null | undefined,
+  titleCase: boolean = true
 ): string => {
   let name = "";
   if (!user) return name.slice(0, 32);
@@ -16,12 +17,17 @@ export const getFullName = (
   if (user.first_name && !user.last_name) name = user.first_name;
   if (user.first_name && user.last_name)
     name = `${user.first_name ?? ""} ${user.last_name ?? ""}`;
-  return name
-    .replace(
+  name = name.slice(0, 32);
+
+  // Change the case of the name
+  if (titleCase) {
+    name = name.replace(
       /\w\S*/g,
       (text) => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
-    )
-    .slice(0, 32);
+    );
+  }
+
+  return name;
 };
 
 /**
@@ -46,7 +52,7 @@ export const getMissingProfileFields = (
     phone_number: "Phone Number",
     resume: "Resume",
     university: "University",
-    year_level: "Year Level",
+    expected_graduation_date: "Expected Graduation Date",
   };
 
   const not_null = (ref: any) => ref || ref === 0;
@@ -71,7 +77,7 @@ export const getMissingProfileFields = (
     "phone_number",
     "resume",
     "university",
-    "year_level",
+    "expected_graduation_date",
   ] as const;
 
   requiredFields.forEach((field) => {
@@ -103,14 +109,9 @@ export const isCompleteProfile = (user: PublicUser | null): boolean => {
   )
     return false;
 
-  if (
-    nullish(user.university) ||
-    nullish(user.college) ||
-    nullish(user.department) ||
-    nullish(user.degree) ||
-    nullish(user.year_level)
-  )
-    return false;
+  if (nullish(user.university) || nullish(user.degree)) return false;
+
+  if (user.resume?.length === 0) return false;
 
   // ! uncomment when calendar back
   if (/*!user.calendar_link?.trim() || */ !user.resume?.trim()) return false;

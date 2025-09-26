@@ -738,6 +738,53 @@ export const EmployerJobDetails = ({
   );
 };
 
+export const JobDetailsSummary = ({
+  job
+}: {
+  job: Job;
+}) => {
+  const { to_job_mode_name, to_job_type_name, to_job_pay_freq_name } =
+    useDbRefs();
+
+  return <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-4">Job Details</h3>
+          <div className="grid grid-cols-3 gap-6">
+            <DropdownGroup>
+              <div className="flex flex-col items-start gap-3">
+                <label className="flex items-center text-sm font-semibold text-gray-700">
+                  <Monitor className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                  Work Mode:
+                </label>
+                <Property value={to_job_mode_name(job.mode)} />
+              </div>
+
+              <div className="flex flex-col items-start gap-3 max-w-prose">
+                <label className="flex items-center text-sm font-semibold text-gray-700">
+                  <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                  Salary:
+                </label>
+                <Property
+                  value={
+                    job.salary
+                      ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
+                      : "None"
+                  }
+                />
+              </div>
+              <div className="flex flex-col items-start gap-3 max-w-prose">
+                <label className="flex items-center text-sm font-semibold text-gray-700">
+                  <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                  Work Load:
+                </label>
+                <Property value={to_job_type_name(job.type)} />
+              </div>
+            </DropdownGroup>
+
+            {/* // ! checkbox labels */}
+          </div>
+        </div>
+}
+
 /**
  * The right panel that describes job details.
  *
@@ -750,9 +797,6 @@ export const JobDetails = ({
   job: Job;
   actions?: React.ReactNode[];
 }) => {
-  const { to_job_mode_name, to_job_type_name, to_job_pay_freq_name } =
-    useDbRefs();
-
   // Returns a non-editable version of it
   return (
     <div className="flex-1 border-gray-200 rounded-lg ml-4 p-6 pt-10 overflow-y-auto">
@@ -773,43 +817,7 @@ export const JobDetails = ({
       </div>
 
       {/* Job Details Grid */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-4">Job Details</h3>
-        <div className="grid grid-cols-3 gap-6">
-          <DropdownGroup>
-            <div className="flex flex-col items-start gap-3">
-              <label className="flex items-center text-sm font-semibold text-gray-700">
-                <Monitor className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                Work Mode:
-              </label>
-              <Property value={to_job_mode_name(job.mode)} />
-            </div>
-
-            <div className="flex flex-col items-start gap-3 max-w-prose">
-              <label className="flex items-center text-sm font-semibold text-gray-700">
-                <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                Salary:
-              </label>
-              <Property
-                value={
-                  job.salary
-                    ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
-                    : "None"
-                }
-              />
-            </div>
-            <div className="flex flex-col items-start gap-3 max-w-prose">
-              <label className="flex items-center text-sm font-semibold text-gray-700">
-                <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                Work Load:
-              </label>
-              <Property value={to_job_type_name(job.type)} />
-            </div>
-          </DropdownGroup>
-
-          {/* // ! checkbox labels */}
-        </div>
-      </div>
+      <JobDetailsSummary job={job}></JobDetailsSummary>
 
       {/* Job Description */}
       <hr />

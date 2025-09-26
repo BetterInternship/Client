@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useId } from "react";
 import { Input } from "./input";
 import { useDetectClickOutside } from "react-detect-click-outside";
 import { cn } from "@/lib/utils";
@@ -14,24 +14,31 @@ export interface IAutocompleteOption<ID extends number | string> {
  * Base component (array-based). Single uses length 0..1.
  * -----------------------------------------------------*/
 function AutocompleteBase<ID extends number | string>({
+  required,
   options,
   value = [],
   setter,
   placeholder,
   className,
   multiple = true,
+  label,
+  ...props
 }: {
+  required?: boolean
   options: IAutocompleteOption<ID>[];
   value?: ID[]; // single => 0..1 items, multi => any length
   setter: (next: ID[]) => void; // set the whole selection
   placeholder?: string;
   className?: string;
   multiple?: boolean;
+  label?: React.ReactNode;
 }) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const ref = useDetectClickOutside({ onTriggered: () => setIsOpen(false) });
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const inputId = useId();
 
   const selectedSet = useMemo(() => new Set(value ?? []), [value]);
 
@@ -99,6 +106,12 @@ function AutocompleteBase<ID extends number | string>({
 
   return (
     <div className={cn("relative w-full", className)} ref={ref}>
+      {label ? (
+        <label htmlFor={inputId} className="text-xs text-gray-600 mb-1 block">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+      ) : null}
+
       {multiple ? (
         // ---------- MULTI: chips inline inside the box ----------
         <div
@@ -114,7 +127,7 @@ function AutocompleteBase<ID extends number | string>({
             return (
               <span
                 key={String(id)}
-                className="px-2 py-1 text-xs rounded-full bg-gray-100 border border-gray-300 flex items-center gap-1"
+                className="px-2 py-1 text-xs rounded-sm bg-gray-100 border border-gray-300 flex items-center gap-1"
               >
                 {label}
                 <button
@@ -129,6 +142,7 @@ function AutocompleteBase<ID extends number | string>({
             );
           })}
           <input
+            id={inputId}
             ref={inputRef}
             value={query}
             onChange={(e) => {
@@ -142,13 +156,15 @@ function AutocompleteBase<ID extends number | string>({
               "flex-1 min-w-[8ch] h-7 text-sm",
               "bg-transparent outline-none border-none focus:ring-0"
             )}
+            {...props}
           />
         </div>
       ) : (
         // ---------- SINGLE: regular input ----------
         <Input
+          id={inputId}
           value={singleDisplay || query}
-          className="border-gray-300"
+          className="border-gray-200"
           placeholder={placeholder}
           onChange={(e) => {
             // typing starts a new search; selection is set on option click
@@ -208,84 +224,108 @@ function AutocompleteBase<ID extends number | string>({
 }
 
 /* -------------------------------------------------------
- * Public API: single-select (same signature you had)
+ * Public API: single-select (same signature + label)
  * -----------------------------------------------------*/
 export const Autocomplete = <ID extends number | string>({
+  required, 
   options,
   setter,
   placeholder,
   className,
   value,
+  label,
+  props,
 }: {
+  required?: boolean;
   options: IAutocompleteOption<ID>[];
   setter: (value?: ID | null) => void;
   placeholder?: string;
   className?: string;
   value?: ID | null;
+  label?: React.ReactNode;
+  props?: any[];
 }) => {
   return (
     <AutocompleteBase<ID>
+      required={required}
       options={options}
       multiple={false}
       value={value != null ? [value] : []}
       setter={(arr) => setter(arr[0] ?? null)}
       placeholder={placeholder}
       className={className}
+      label={label}
+      {...props}
     />
   );
 };
 
 /* -------------------------------------------------------
- * Public API: multi-select (uuid[] etc.)
+ * Public API: multi-select (uuid[] etc.) + label
  * -----------------------------------------------------*/
 export const AutocompleteMulti = <ID extends number | string>({
+  required,
   options,
   setter,
   placeholder,
   className,
   value,
+  label,
 }: {
+  required?: boolean;
   options: IAutocompleteOption<ID>[];
   setter: (value: ID[]) => void;
   placeholder?: string;
   className?: string;
   value?: ID[];
+  label?: React.ReactNode;
 }) => {
   return (
     <AutocompleteBase<ID>
+      required={required}
       options={options}
       multiple
       value={value ?? []}
       setter={setter}
       placeholder={placeholder}
       className={className}
+      label={label}
     />
   );
 };
 
 /* -------------------------------------------------------
- * Public API: grouped multi-select with tree (uuid[] etc.)
+ * Public API: grouped multi-select with tree + label
  * -----------------------------------------------------*/
 export type SubOption = { name: string; value: string };
-export type PositionCategory = { name: string; value: string; children?: SubOption[] };
+export type PositionCategory = {
+  name: string;
+  value: string;
+  children?: SubOption[];
+};
 
 export function AutocompleteTreeMulti({
+  required,
   tree,
   value = [],
   setter,
   placeholder,
   className,
+  label,
 }: {
+  required?: boolean;
   tree: PositionCategory[];
   value?: string[];
   setter: (next: string[]) => void;
   placeholder?: string;
   className?: string;
+  label?: React.ReactNode;
 }) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const ref = useDetectClickOutside({ onTriggered: () => setIsOpen(false) });
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const inputId = useId();
 
   // Build ID -> label map (child shows "Parent · Child")
   const labelMap = useMemo(() => {
@@ -338,7 +378,8 @@ export function AutocompleteTreeMulti({
     else childIds.forEach((id) => next.add(id));
     setSelected(Array.from(next));
   };
-  const removeAt = (id: string) => setSelected(selected.filter((x) => x !== id));
+  const removeAt = (id: string) =>
+    setSelected(selected.filter((x) => x !== id));
 
   // query filter (keeps parents with any matching child)
   const filteredTree = useMemo(() => {
@@ -414,11 +455,17 @@ export function AutocompleteTreeMulti({
 
   return (
     <div className={cn("relative w-full", className)} ref={ref}>
+      {label ? (
+        <label htmlFor={inputId} className="text-xs text-gray-600 mb-1 block">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+      ) : null}
+
       {/* input + chips (same look/feel as AutocompleteMulti) */}
       <div
         className={cn(
           "min-h-9 w-full rounded-[0.33em] border border-gray-300 bg-white",
-          "px-2 py-1 flex flex-wrap items-center gap-1",
+          "py-1 flex flex-wrap items-center gap-1",
           "focus-within:border-primary focus-within:border-opacity-50"
         )}
         onClick={() => inputRef.current?.focus()}
@@ -426,7 +473,7 @@ export function AutocompleteTreeMulti({
         {chips.map(([id, label]) => (
           <span
             key={id}
-            className="px-2 py-1 text-xs rounded-full bg-gray-100 border border-gray-300 flex items-center gap-1"
+            className="ml-2 mt-[0.25em] px-2 py-1 text-xs rounded-full bg-gray-100 border border-gray-300 flex items-center gap-1"
           >
             {label}
             <button
@@ -440,6 +487,7 @@ export function AutocompleteTreeMulti({
           </span>
         ))}
         <input
+          id={inputId}
           ref={inputRef}
           value={query}
           onChange={(e) => {
@@ -448,7 +496,9 @@ export function AutocompleteTreeMulti({
           }}
           onKeyDown={onKeyDown}
           onFocus={() => setIsOpen(true)}
-          placeholder={selected.length === 0 ? (placeholder ?? "Select one or more") : ""}
+          placeholder={
+            selected.length === 0 ? placeholder ?? "Select one or more" : ""
+          }
           className={cn(
             "flex-1 min-w-[8ch] h-7 text-sm",
             "bg-transparent outline-none border-none focus:ring-0"
@@ -457,7 +507,7 @@ export function AutocompleteTreeMulti({
       </div>
 
       {isOpen && (
-        <ul className="absolute left-0 right-0 z-50 mt-1 max-h-60 overflow-auto rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5">
+        <ul className="absolute left-0 right-0 z-50 mt-1 max-h-40 overflow-auto rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5">
           {filteredTree.length ? (
             filteredTree.map((p) => {
               const info = counts.get(p.value)!;
@@ -514,7 +564,11 @@ export function AutocompleteTreeMulti({
                                 inputRef.current?.focus();
                               }}
                             >
-                              <input type="checkbox" readOnly checked={active} />
+                              <input
+                                type="checkbox"
+                                readOnly
+                                checked={active}
+                              />
                               {c.name}
                             </button>
                           </li>

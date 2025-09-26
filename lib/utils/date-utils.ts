@@ -4,7 +4,8 @@
  * @param dateString
  * @returns
  */
-export const formatDate = (dateString: string) => {
+export const formatDate = (dateString?: string | null) => {
+  if (!dateString) return "-";
   const date = new Date(dateString);
   return (
     date.toLocaleDateString("en-PH", {
@@ -17,6 +18,21 @@ export const formatDate = (dateString: string) => {
     ":" +
     String(date.getMinutes()).padStart(2, "0")
   );
+};
+
+/**
+ * Date formatter.
+ *
+ * @param dateString
+ * @returns
+ */
+export const formatMonth = (dateString?: string | null) => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-PH", {
+    year: "numeric",
+    month: "long",
+  });
 };
 
 /**

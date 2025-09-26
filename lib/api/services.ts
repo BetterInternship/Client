@@ -49,10 +49,6 @@ interface AuthResponse extends FetchResponse {
   user: Partial<PublicUser>;
 }
 
-interface OTPRequestResponse extends FetchResponse {
-  email: string;
-}
-
 interface EmailStatusResponse extends FetchResponse {
   existing_user: boolean;
   verified_user: boolean;
@@ -72,8 +68,7 @@ export const AuthService = {
   async register(user: Partial<PublicUser>) {
     return APIClient.post<AuthResponse>(
       APIRoute("auth").r("register").build(),
-      user,
-      "form-data"
+      user
     );
   },
 
@@ -94,30 +89,16 @@ export const AuthService = {
     );
   },
 
-  async emailStatus(email: string) {
-    return APIClient.post<EmailStatusResponse>(
-      APIRoute("auth").r("email-status").build(),
+  async requestActivation(email: string) {
+    return APIClient.post<ResourceHashResponse>(
+      APIRoute("auth").r("activate").build(),
       { email }
     );
   },
 
-  async sendOtpRequest(email: string) {
-    return APIClient.post<OTPRequestResponse>(
-      APIRoute("auth").r("send-new-otp").build(),
-      { email }
-    );
-  },
-
-  async resendOtpRequest(email: string) {
-    return APIClient.post<OTPRequestResponse>(
-      APIRoute("auth").r("resend-new-otp").build(),
-      { email }
-    );
-  },
-
-  async verifyOtp(email: string, otp: string) {
-    return APIClient.post<AuthResponse>(
-      APIRoute("auth").r("verify-otp").build(),
+  async activate(email: string, otp: string) {
+    return APIClient.post<ResourceHashResponse>(
+      APIRoute("auth").r("activate", "otp").build(),
       { email, otp }
     );
   },
@@ -143,6 +124,14 @@ export const UserService = {
 
   async updateMyProfile(data: Partial<PublicUser>) {
     return APIClient.put<UserResponse>(APIRoute("users").r("me").build(), data);
+  },
+
+  async parseResume(form: FormData) {
+    return APIClient.post<UserResponse>(
+      APIRoute("users").r("me", "extract-resume").build(),
+      form,
+      "form-data"
+    );
   },
 
   async getMyResumeURL() {
@@ -177,10 +166,10 @@ export const UserService = {
     );
   },
 
-  async updateMyResume(file: FormData) {
+  async updateMyResume(form: FormData) {
     return APIClient.put<Response>(
       APIRoute("users").r("me", "resume").build(),
-      file,
+      form,
       "form-data"
     );
   },

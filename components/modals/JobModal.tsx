@@ -1,10 +1,13 @@
 import ReactMarkdown from "react-markdown";
-import { JobApplicationRequirements, JobBadges } from "../shared/jobs";
+import {
+  JobApplicationRequirements,
+  JobBadges,
+  JobDetailsSummary,
+} from "../shared/jobs";
 import { useApplications, useSavedJobs } from "@/lib/api/student.api";
 import { ModalComponent, ModalHandle } from "@/hooks/use-modal";
 import { ArrowLeft, Building, Heart } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
-import { useRouter } from "next/navigation";
 import { RefObject } from "react";
 import { Button } from "../ui/button";
 import { Job } from "@/lib/db/db.types";
@@ -68,6 +71,7 @@ export const JobModal = ({
               </div>
 
               {/* Description */}
+              <JobDetailsSummary job={job}></JobDetailsSummary>
               <div className="mb-6">
                 <h2 className="text-lg font-semibold mb-3 text-gray-900">
                   Description
@@ -131,5 +135,3 @@ export const JobModal = ({
     </ModalComponent>
   );
 };
-
-
