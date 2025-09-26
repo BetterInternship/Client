@@ -251,14 +251,13 @@ export default function SearchPage() {
       !isProfileBaseComplete(profile.data) ||
       !isProfileVerified(profile.data)
     ) {
-      openGlobalModal(
+      return openGlobalModal(
         "incomplete-profile",
         <IncompleteProfileContent
           handleClose={() => closeGlobalModal("incomplete-profile")}
         />,
         {
           allowBackdropClick: false,
-          hasClose: false,
           onClose: () => {
             queryClient.invalidateQueries({ queryKey: ["my-profile"] });
           },
@@ -271,21 +270,7 @@ export default function SearchPage() {
       alert("You have already applied to this job!");
       return;
     }
-    if (!isCompleteProfile(profile.data)) {
-      openGlobalModal(
-        "incomplete-profile",
-        <IncompleteProfileContent
-          handleClose={() => closeGlobalModal("incomplete-profile")}
-        />,
-        {
-          hasClose: false,
-          allowBackdropClick: false,
-          onClose: () => {
-            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-          },
-        }
-      );
-    }
+
     openApplicationConfirmationModal();
   };
 
@@ -332,7 +317,6 @@ export default function SearchPage() {
         />,
         {
           allowBackdropClick: false,
-          hasClose: false,
           onClose: () => {
             queryClient.invalidateQueries({ queryKey: ["my-profile"] });
           },
