@@ -255,9 +255,14 @@ export default function SearchPage() {
         "incomplete-profile",
         <IncompleteProfileContent
           handleClose={() => closeGlobalModal("incomplete-profile")}
-        />
+        />,
+        {
+          allowBackdropClick: false,
+          onClose: () => {
+            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+          },
+        }
       );
-      return;
     }
 
     const applied = applications.appliedJob(selectedJob?.id ?? "");
