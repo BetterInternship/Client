@@ -5,6 +5,8 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 import {
   Check,
+  CheckCheckIcon,
+  CheckCircle2Icon,
   CheckIcon,
   CheckSquare,
   CheckSquare2,
@@ -133,51 +135,3 @@ export function SingleChipSelect({
     </ToggleGroup>
   );
 }
-
-/** Chip-like toggle. Works inside buttons, keyboard/ARIA friendly */
-export function Chip({
-  selected,
-  onClick,
-  children,
-  className,
-  showCheck = true,
-  checkPosition = "start", // "start" | "end"
-}: {
-  selected?: boolean;
-  onClick?: () => void;
-  children: React.ReactNode;
-  className?: string;
-  showCheck?: boolean;
-  checkPosition?: "start" | "end";
-}) {
-  const Check = (
-    <CheckSquare2
-      aria-hidden="true"
-      className={cn(
-        "h-4 w-4 transition duration-150 ease-out",
-        selected ? "opacity-100 scale-100" : "opacity-0 scale-75"
-      )}
-    />
-  );
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={selected}
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition",
-        "focus:outline-none focus:ring-2 focus:ring-offset-0",
-        selected
-          ? "border-primary/30 bg-primary/10 text-primary focus:ring-primary/30"
-          : "border-gray-300 hover:border-gray-400 text-gray-700 focus:ring-gray-300",
-        className
-      )}
-    >
-      {showCheck && checkPosition === "start" ? Check : null}
-      <span className="truncate">{children}</span>
-      {showCheck && checkPosition === "end" ? Check : null}
-    </button>
-  );
-}
-

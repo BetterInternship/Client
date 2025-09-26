@@ -459,9 +459,9 @@ export default function SearchPage() {
     );
   }
 
-  // toast("Auto-Apply turned off", {
-  //   description: "No applications will be sent automatically.",
-  // });
+  toast("Auto-Apply turned off", {
+    description: "No applications will be sent automatically.",
+  });
 
   /* =======================================================================================
       UI
