@@ -11,6 +11,14 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import { useConversations } from "@/hooks/use-conversation";
 import { cn, formatMonth } from "@/lib/utils";
 
+const approximateYearLevel = (timestamp: number) => {
+  const now = Date.now();
+  const year = 31_556_952_000;
+  const delta = timestamp - now;
+  if (delta > 0 && delta < year * 2) return "3rd Year/Above";
+  else return "Freshman/Sophomore" + timestamp;
+};
+
 interface ApplicationRowProps {
   application: EmployerApplication;
   onView: () => void;
@@ -47,8 +55,12 @@ export function ApplicationRow({
             <p className="font-medium text-gray-900">
               {getFullName(application.user)}{" "}
               <span className="opacity-70">
-                — {to_university_name(application.user?.university) || ""} •{" "}
-                {formatMonth(application.user?.expected_graduation_date)}
+                — {to_university_name(application.user?.university) || ""}{" "}
+                {application.user?.expected_graduation_date &&
+                  "• " +
+                    approximateYearLevel(
+                      Date.parse(application.user?.expected_graduation_date)
+                    )}
               </span>
             </p>
             <p className="text-sm text-gray-500">
