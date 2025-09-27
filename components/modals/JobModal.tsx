@@ -192,9 +192,9 @@ function HeaderCompact({ job }: { job: Job }) {
           <span className="truncate">{job.location}</span>
         </div>
       )}
-      <p className="text-[11px] text-gray-500 mt-1">
+      {/* <p className="text-[11px] text-gray-500 mt-1">
         Listed on {formatDate(job.created_at ?? "")}
-      </p>
+      </p> */}
     </div>
   );
 }

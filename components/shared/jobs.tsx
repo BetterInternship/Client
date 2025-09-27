@@ -813,9 +813,9 @@ function HeaderWithActions({
             <span className="truncate">{job.location}</span>
           </div>
         )}
-        <p className="text-s text-gray-500 mt-1">
+        {/* <p className="text-s text-gray-500 mt-1">
           Listed on {formatDate(job.created_at ?? "")}
-        </p>
+        </p> */}
       </div>
 
       {/* right: CTAs */}
