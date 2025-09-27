@@ -2,20 +2,12 @@
 
 import React, { useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { Heart, CheckCircle, Clipboard, User, ArrowLeft } from "lucide-react";
+import { CheckCircle, Clipboard, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  useSavedJobs,
-  useProfile,
-  useApplications,
-  useJob,
-} from "@/lib/api/student.api";
+import { useProfile, useApplications, useJob } from "@/lib/api/student.api";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { Job } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useModal, useModalRef } from "@/hooks/use-modal";
-import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import { Loader } from "@/components/ui/loader";
 import {
@@ -37,6 +29,8 @@ import { IncompleteProfileContent } from "@/components/modals/IncompleteProfileM
 import { useQueryClient } from "@tanstack/react-query";
 import { Textarea } from "@/components/ui/textarea";
 import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
+import { PageError } from "@/components/ui/error";
+import { SaveJobButton } from "@/components/features/student/job/save-job-button";
 
 /**
  * The individual job page.
@@ -61,17 +55,8 @@ export default function JobPage() {
 
   const profile = useProfile();
   const { universities } = useDbRefs();
-  const savedJobs = useSavedJobs();
   const applications = useApplications();
   const textarea_ref = useRef<HTMLTextAreaElement>(null);
-
-  const handleSave = async (job: Job) => {
-    if (!isAuthenticated()) {
-      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
-      return;
-    }
-    await savedJobs.toggle(job.id ?? "");
-  };
 
   const handleApply = () => {
     if (!isAuthenticated()) {
@@ -146,13 +131,7 @@ export default function JobPage() {
 
   if (job.error) {
     return (
-      <div className="h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">
-            Failed to load job: {job.error.message}
-          </p>
-        </div>
-      </div>
+      <PageError title="Failed to load job" description={job.error.message} />
     );
   }
 
@@ -161,6 +140,7 @@ export default function JobPage() {
       <div className="h-screen bg-white flex justify-center py-6">
         <div className="flex flex-col justify-start items-start gap-4">
           <Button
+            size="md"
             variant="ghost"
             onClick={() => router.back()}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 transition-colors"
@@ -205,31 +185,7 @@ export default function JobPage() {
 
                   {job.data && (
                     <div className="flex items-center gap-3">
-                      <Button
-                        variant="outline"
-                        onClick={() => handleSave(job.data!)}
-                        scheme={
-                          savedJobs.isJobSaved(job.data.id ?? "")
-                            ? "destructive"
-                            : "default"
-                        }
-                      >
-                        <Heart
-                          className={cn(
-                            "w-4 h-4",
-                            savedJobs.isJobSaved(job.data.id ?? "")
-                              ? "fill-current"
-                              : ""
-                          )}
-                        />
-                        {savedJobs.isJobSaved(job.data.id ?? "")
-                          ? savedJobs.isToggling
-                            ? "Unsaving..."
-                            : "Saved"
-                          : savedJobs.isToggling
-                          ? "Saving..."
-                          : "Save"}
-                      </Button>
+                      <SaveJobButton job={job.data} />
 
                       <Button
                         disabled={applications.appliedJob(job.data.id ?? "")}
@@ -238,6 +194,7 @@ export default function JobPage() {
                             ? "supportive"
                             : "primary"
                         }
+                        size={"md"}
                         onClick={() =>
                           !applications.appliedJob(job.data?.id ?? "") &&
                           handleApply()

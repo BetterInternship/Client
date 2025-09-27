@@ -9,7 +9,6 @@ import React, {
 } from "react";
 import { useSearchParams } from "next/navigation";
 import {
-  Heart,
   CheckCircle,
   Clipboard,
   ArrowLeft,
@@ -19,12 +18,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  useJobs,
-  useSavedJobs,
-  useProfile,
-  useApplications,
-} from "@/lib/api/student.api";
+import { useJobs, useProfile, useApplications } from "@/lib/api/student.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Job } from "@/lib/db/db.types";
 import { Paginator } from "@/components/ui/paginator";
@@ -50,6 +44,7 @@ import {
 } from "@/lib/profile";
 import { AutoApplyToast } from "@/components/features/student/search/AutoApplyToast";
 import { useRouter } from "next/navigation";
+import { SaveJobButton } from "@/components/features/student/job/save-job-button";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -83,7 +78,6 @@ export default function SearchPage() {
     jobAllowanceFilter,
     jobMoaFilter,
   });
-  const savedJobs = useSavedJobs();
   const applications = useApplications();
 
   const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
@@ -211,21 +205,9 @@ export default function SearchPage() {
     [jobs.filteredJobs, selectedIds]
   );
 
-  const unmetProfileReqs = useMemo(
-    () => getUnmetProfileRequirements(selectedJob, profile.data),
-    [selectedJob, profile.data]
-  );
-
   /* --------------------------------------------
     * Single apply actions
     -------------------------------------------- */
-  const handleSave = async (job: Job) => {
-    if (!isAuthenticated()) {
-      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
-      return;
-    }
-    await savedJobs.toggle(job.id ?? "");
-  };
 
   const handleApply = () => {
     if (!isAuthenticated()) {
@@ -717,26 +699,7 @@ export default function SearchPage() {
                   }}
                   job={selectedJob}
                   actions={[
-                    <Button
-                      key="2"
-                      variant="outline"
-                      onClick={() => handleSave(selectedJob)}
-                      scheme={
-                        savedJobs.isJobSaved(selectedJob.id)
-                          ? "destructive"
-                          : "default"
-                      }
-                      size={"md"}
-                    >
-                      {savedJobs.isJobSaved(selectedJob.id ?? "") && <Heart />}
-                      {savedJobs.isJobSaved(selectedJob.id ?? "")
-                        ? savedJobs.isToggling
-                          ? "Unsaving..."
-                          : "Saved"
-                        : savedJobs.isToggling
-                        ? "Saving..."
-                        : "Save"}
-                    </Button>,
+                    <SaveJobButton job={selectedJob} />,
                     <Button
                       key="1"
                       disabled={applications.appliedJob(selectedJob.id ?? "")}
@@ -1194,17 +1157,6 @@ Best regards,
     );
   }
 );
-
-// Helpers
-function getUnmetProfileRequirements(job?: Job | null, profile?: any) {
-  if (!job) return [];
-  const unmet: string[] = [];
-  if (job.require_github && !profile?.github_link?.trim())
-    unmet.push("GitHub profile link");
-  if (job.require_portfolio && !profile?.portfolio_link?.trim())
-    unmet.push("Portfolio link");
-  return unmet;
-}
 
 function useEvent<T extends (...args: any[]) => any>(fn: T) {
   const ref = React.useRef(fn);
