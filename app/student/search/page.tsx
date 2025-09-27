@@ -69,12 +69,10 @@ export default function SearchPage() {
   const [jobAllowanceFilter, setJobAllowanceFilter] = useState<string[]>([]);
   const [jobMoaFilter, setJobMoaFilter] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [coverText, setCoverText] = useState("");
-  const textarea_ref = useRef<HTMLTextAreaElement>(null);
 
   // page + pagination
-  const jobs_page_size = 10;
-  const [jobs_page, setJobsPage] = useState(1);
+  const jobsPageSize = 10;
+  const [_jobsPage, setJobsPage] = useState(1);
 
   // hooks
   const jobs = useJobs({
@@ -132,7 +130,7 @@ export default function SearchPage() {
   const successModalRef = useModalRef();
 
   // computed pages
-  const jobsPage = jobs.getJobsPage({ page: jobs_page, limit: jobs_page_size });
+  const jobsPage = jobs.getJobsPage({ page: _jobsPage, limit: jobsPageSize });
 
   useEffect(() => {
     if (profile?.data?.resume) {
@@ -637,7 +635,7 @@ export default function SearchPage() {
               <div className="mt-6">
                 <Paginator
                   totalItems={jobs.filteredJobs.length}
-                  itemsPerPage={jobs_page_size}
+                  itemsPerPage={jobsPageSize}
                   onPageChange={(page) => setJobsPage(page)}
                 />
               </div>
@@ -703,7 +701,7 @@ export default function SearchPage() {
               <div className="mt-4">
                 <Paginator
                   totalItems={jobs.filteredJobs.length}
-                  itemsPerPage={jobs_page_size}
+                  itemsPerPage={jobsPageSize}
                   onPageChange={(page) => setJobsPage(page)}
                 />
               </div>

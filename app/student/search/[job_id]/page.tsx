@@ -3,15 +3,7 @@
 import React, { useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import {
-  Heart,
-  CheckCircle,
-  Clipboard,
-  AlertTriangle,
-  User,
-  ArrowLeft,
-  File,
-} from "lucide-react";
+import { Heart, CheckCircle, Clipboard, User, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   useSavedJobs,
@@ -20,11 +12,10 @@ import {
   useJob,
 } from "@/lib/api/student.api";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { Job, PublicUser } from "@/lib/db/db.types";
+import { Job } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useModal } from "@/hooks/use-modal";
 import { cn } from "@/lib/utils";
-import { getMissingProfileFields } from "@/lib/utils/user-utils";
 import ReactMarkdown from "react-markdown";
 import { Loader } from "@/components/ui/loader";
 import {
@@ -358,28 +349,6 @@ export default function JobPage() {
           <h2 className="text-xl font-bold">Apply to {job.data?.title}</h2>
         </div>
 
-        {/* Missing Job Requirements Warning */}
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
-            <div className="flex-1">
-              <h3 className="font-medium text-orange-800 mb-2">
-                Missing Job Requirements
-              </h3>
-              <p className="text-sm text-orange-700 mb-3">
-                This job requires additional profile information:
-              </p>
-              <ul className="text-sm text-orange-700 list-disc list-inside mb-4">
-                {Object.keys(
-                  getMissingProfileFields(profile.data as PublicUser).labels
-                ).map((field, index) => (
-                  <li key={index}>{field}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-
         {/* Update Profile Button */}
         <Button
           onClick={() => {
@@ -420,25 +389,6 @@ export default function JobPage() {
               )}
             </p>
           </div>
-
-          {/* Profile Preview */}
-          {/* <div className="mb-6">
-            <Button
-              variant="outline"
-              onClick={() => {
-                closeApplicationConfirmationModal();
-                openProfilePreviewModal();
-              }}
-              className="w-full h-12 transition-all duration-200"
-            >
-              <div className="flex items-center justify-center gap-3">
-                <span>Preview Your Profile</span>
-              </div>
-            </Button>
-            <p className="text-xs text-gray-500 text-center mt-2">
-              See how employers will view your application
-            </p>
-          </div> */}
 
           {/* Cover Letter */}
           <div className="mb-6">
@@ -490,38 +440,6 @@ export default function JobPage() {
           </div>
         </div>
       </ApplicationConfirmationModal>
-
-      {/* Profile Preview Modal */}
-      {/* <ProfilePreviewModal className="max-w-[80vw]">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            closeProfilePreviewModal();
-            openApplicationConfirmationModal();
-          }}
-          className="h-8 w-8 p-0 ml-4 hover:bg-gray-100 rounded-full"
-        >
-          <ArrowLeft className="h-4 w-4 text-gray-500" />
-        </Button>
-
-        {profile.data && (
-          <ApplicantModalContent
-            applicant={profile.data}
-            pfp_fetcher={() => UserService.getUserPfpURL("me")}
-            pfp_route="/users/me/pic"
-            open_resume={async () => {
-              closeProfilePreviewModal();
-              await syncResumeURL();
-              openResumeModal();
-            }}
-            open_calendar={async () => {
-              openURL(profile.data?.calendar_link);
-            }}
-            resume_url={resumeURL}
-          />
-        )}
-      </ProfilePreviewModal> */}
 
       {/* Success Modal */}
       <SuccessModal>
