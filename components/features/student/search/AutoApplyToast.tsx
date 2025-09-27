@@ -14,12 +14,12 @@ export function AutoApplyToast({
   return (
     <Toast
       visible={enabled && !dismissed}
-      title="Auto-Apply is ON"
+      title="Apply for Me is ON"
       description={
         <>
-          We’ll automatically apply to matching roles using your saved profile.
-          Manage it in <span className="font-medium">Profile</span>
-          .
+          We’ll automatically send your resume to matching companies. Only
+          companies that fit your profile will see your resume. Manage it in{" "}
+          <span className="font-medium">Profile</span>.
         </>
       }
       position="bottom-right"
