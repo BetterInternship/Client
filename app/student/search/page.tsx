@@ -500,9 +500,9 @@ export default function SearchPage() {
       {/* In-page toolbar */}
       {!isMobile && PageToolbar}
 
-      <div className="flex-1 flex overflow-hidden min-h-0 max-h-[100svh]">
+      <div className="flex-1 flex overflow-hidden min-h-0 max-h-100">
         {jobs.isPending ? (
-          <div className="flex-1 flex overflow-hidden min-h-0 max-h-[100svh]">
+          <div className="flex-1 flex overflow-hidden min-h-0 max-h-100">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4" />
               <p className="text-gray-600">Loading jobs...</p>
@@ -537,7 +537,7 @@ export default function SearchPage() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto pt-2 px-3 pb-[env(safe-area-inset-bottom)]">
+            <div className="flex-1 overflow-y-auto pt-2 px-3">
               {jobsPage.length ? (
                 <div className="space-y-4">
                   {jobsPage.map((job) => (
