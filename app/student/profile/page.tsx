@@ -153,7 +153,6 @@ export default function ProfilePage() {
       setAutoApplyError(e?.message ?? "Failed to update auto-apply");
     } finally {
       setAutoApplySaving(false)
-      console.log("AYT")
     }
   }
 

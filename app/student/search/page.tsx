@@ -42,7 +42,6 @@ import { JobModal } from "@/components/modals/JobModal";
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
-import { toast } from "sonner";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -50,21 +49,8 @@ import {
   isProfileResume,
   isProfileVerified,
 } from "@/lib/profile";
-
-/* =======================================================================================
-    tiny helper to keep callback identity stable across renders
-  ======================================================================================= */
-function useEvent<T extends (...args: any[]) => any>(fn: T) {
-  const ref = React.useRef(fn);
-  useEffect(() => {
-    ref.current = fn;
-  }, [fn]);
-  return useCallback((...args: Parameters<T>) => ref.current(...args), []);
-}
-
-/* =======================================================================================
-    Page
-  ======================================================================================= */
+import { AutoApplyToast } from "@/components/features/student/search/AutoApplyToast";
+import { useRouter } from "next/navigation";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -84,6 +70,8 @@ export default function SearchPage() {
   const [jobAllowanceFilter, setJobAllowanceFilter] = useState<string[]>([]);
   const [jobMoaFilter, setJobMoaFilter] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [coverText, setCoverText] = useState("");
+  const textarea_ref = useRef<HTMLTextAreaElement>(null);
 
   // page + pagination
   const jobs_page_size = 10;
@@ -143,9 +131,6 @@ export default function SearchPage() {
   const jobModalRef = useModalRef();
 
   const successModalRef = useModalRef();
-
-  // single-apply cover letter input
-  const textarea_ref = useRef<HTMLTextAreaElement>(null);
 
   // computed pages
   const jobsPage = jobs.getJobsPage({ page: jobs_page, limit: jobs_page_size });
@@ -229,6 +214,11 @@ export default function SearchPage() {
     [jobs.filteredJobs, selectedIds]
   );
 
+  const unmetProfileReqs = useMemo(
+    () => getUnmetProfileRequirements(selectedJob, profile.data),
+    [selectedJob, profile.data]
+  );
+
   /* --------------------------------------------
     * Single apply actions
     -------------------------------------------- */
@@ -274,19 +264,20 @@ export default function SearchPage() {
     openApplicationConfirmationModal();
   };
 
-  const handleDirectApplication = async () => {
+  const handleDirectApplication = async (textFromModal?: string) => {
     if (!selectedJob) return;
-    if (
-      selectedJob?.require_cover_letter &&
-      !textarea_ref.current?.value.trim()
-    ) {
+
+    const text = (textFromModal ?? "").trim();
+
+    if ((selectedJob?.require_cover_letter ?? true) && !text) {
       alert("A cover letter is required to apply for this job.");
       return;
     }
+
     await applications
       .create({
         job_id: selectedJob.id ?? "",
-        cover_letter: textarea_ref.current?.value ?? "",
+        cover_letter: text,
       })
       .then((response) => {
         if (applications.createError)
@@ -443,6 +434,22 @@ export default function SearchPage() {
     await runMassApply(text);
   });
 
+  const router = useRouter();
+
+  const goProfile = useCallback(() => {
+    closeApplicationConfirmationModal();
+    router.push("/profile");
+  }, [closeApplicationConfirmationModal, router]);
+
+  // Forever dismiss auto-apply tip
+  const dismissTip = async () => {
+    try {
+      await profile.update({ acknowledged_auto_apply: true });
+    } catch (e) {
+      console.error("Failed to dismiss auto-apply tip", e);
+    }
+  };
+
   if (jobs.error) {
     return (
       <div className="h-screen bg-white flex items-center justify-center">
@@ -455,17 +462,13 @@ export default function SearchPage() {
     );
   }
 
-  // toast("Auto-Apply turned off", {
-  //   description: "No applications will be sent automatically.",
-  // });
-
   /* =======================================================================================
       UI
     ====================================================================================== */
 
   // page toolbar (under the global header)
   const PageToolbar = (
-    <div className="border-b bg-white">
+    <div className="border-b bg-white/80">
       <div className="flex items-center justify-between gap-3 px-7 py-2">
         <div className="flex items-center gap-8">
           {(selectMode || selectedIds.size > 0) && (
@@ -537,6 +540,14 @@ export default function SearchPage() {
 
   return (
     <>
+      {profile.data?.is_verified && (
+        <AutoApplyToast
+          enabled={!!profile.data?.apply_for_me}
+          dismissed={!!profile.data?.acknowledged_auto_apply}
+          onDismissForever={dismissTip}
+        />
+      )}
+
       {/* In-page toolbar */}
       {!isMobile && PageToolbar}
 
@@ -551,8 +562,8 @@ export default function SearchPage() {
         ) : isMobile ? (
           // Mobile list
           <div className="w-full flex flex-col h-full">
-            {/* On mobile, put mass-apply as a floating action row */}
-            <div className="px-4 py-2 bg-white/80 backdrop-blur">
+            {/* Mass apply toolbar */}
+            <div className="px-4 py-2 pt-2 border-b bg-white/80">
               <div className="flex items-center justify-between gap-2">
                 <Button
                   variant={selectMode ? "default" : "outline"}
@@ -577,7 +588,7 @@ export default function SearchPage() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 pt-4">
+            <div className="flex-1 overflow-y-auto pt-2 px-3">
               {jobsPage.length ? (
                 <div className="space-y-4">
                   {jobsPage.map((job) => (
@@ -699,25 +710,12 @@ export default function SearchPage() {
             <div className="w-2/3 flex flex-col overflow-hidden">
               {selectedJob?.id ? (
                 <JobDetails
+                  user={{
+                    github_link: profile.data?.github_link ?? null,
+                    portfolio_link: profile.data?.portfolio_link ?? null,
+                  }}
                   job={selectedJob}
                   actions={[
-                    <Button
-                      key="1"
-                      disabled={applications.appliedJob(selectedJob.id ?? "")}
-                      scheme={
-                        applications.appliedJob(selectedJob.id ?? "")
-                          ? "supportive"
-                          : "primary"
-                      }
-                      onClick={handleApply}
-                    >
-                      {applications.appliedJob(selectedJob.id ?? "") && (
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                      )}
-                      {applications.appliedJob(selectedJob.id ?? "")
-                        ? "Applied"
-                        : "Apply"}
-                    </Button>,
                     <Button
                       key="2"
                       variant="outline"
@@ -727,6 +725,7 @@ export default function SearchPage() {
                           ? "destructive"
                           : "default"
                       }
+                      size={"md"}
                     >
                       {savedJobs.isJobSaved(selectedJob.id ?? "") && <Heart />}
                       {savedJobs.isJobSaved(selectedJob.id ?? "")
@@ -736,6 +735,24 @@ export default function SearchPage() {
                         : savedJobs.isToggling
                         ? "Saving..."
                         : "Save"}
+                    </Button>,
+                    <Button
+                      key="1"
+                      disabled={applications.appliedJob(selectedJob.id ?? "")}
+                      scheme={
+                        applications.appliedJob(selectedJob.id ?? "")
+                          ? "supportive"
+                          : "primary"
+                      }
+                      onClick={handleApply}
+                      size={"md"}
+                    >
+                      {applications.appliedJob(selectedJob.id ?? "") && (
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                      )}
+                      {applications.appliedJob(selectedJob.id ?? "")
+                        ? "Applied"
+                        : "Apply"}
                     </Button>,
                   ]}
                 />
@@ -774,99 +791,20 @@ export default function SearchPage() {
 
       {/* Single-apply Confirmation Modal */}
       <ApplicationConfirmationModal>
-        <div className="max-w-lg mx-auto p-6 max-h-[60vh] overflow-auto">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-              <Clipboard className="w-8 h-8 text-blue-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-3">
-              Ready to Apply?
-            </h2>
-            <p className="text-gray-600 leading-relaxed">
-              You're applying for{" "}
-              <span className="font-semibold text-gray-900">
-                {selectedJob?.title}
-              </span>
-              {selectedJob?.employer?.name && (
-                <>
-                  {" "}
-                  at{" "}
-                  <span className="font-semibold text-gray-900">
-                    {selectedJob.employer.name}
-                  </span>
-                </>
-              )}
-            </p>
-          </div>
-
-          {/* Profile Preview */}
-          <div className="mb-6">
-            <Button
-              variant="outline"
-              onClick={() => {
-                closeApplicationConfirmationModal();
-                openProfilePreviewModal();
-              }}
-              className="w-full h-12 transition-all duration-200"
-            >
-              <div className="flex items-center justify-center gap-3">
-                <span>Preview Your Profile</span>
-              </div>
-            </Button>
-            <p className="text-xs text-gray-500 text-center mt-2">
-              See how employers will view your application
-            </p>
-          </div>
-
-          {/* Cover Letter */}
-          <div className="mb-6">
-            {(selectedJob?.require_cover_letter ?? true) && (
-              <div className="space-y-3">
-                <Textarea
-                  ref={textarea_ref}
-                  placeholder={`Dear Hiring Manager,
-
-  I am excited to apply for this position because...
-
-  Best regards,
-  [Your name]`}
-                  className="w-full h-20 p-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 resize-none text-sm overflow-y-auto"
-                  maxLength={500}
-                />
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-gray-500 flex items-center gap-1">
-                    💡 <span>Mention specific skills and enthusiasm</span>
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={() => {
-                closeApplicationConfirmationModal();
-              }}
-              className="flex-1 h-12 transition-all duration-200"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => {
-                closeApplicationConfirmationModal();
-                handleDirectApplication();
-              }}
-              className="flex-1 h-12 transition-all duration-200"
-            >
-              <div className="flex items-center justify-center gap-2">
-                <CheckCircle className="w-4 h-4" />
-                Submit Application
-              </div>
-            </Button>
-          </div>
-        </div>
+        <ApplicationConfirmationBody
+          selectedJob={selectedJob}
+          profile={profile.data}
+          onClose={closeApplicationConfirmationModal}
+          onPreview={() => {
+            closeApplicationConfirmationModal();
+            openProfilePreviewModal();
+          }}
+          onAddNow={goProfile}
+          onSubmit={(text) => {
+            closeApplicationConfirmationModal();
+            handleDirectApplication(text);
+          }}
+        />
       </ApplicationConfirmationModal>
 
       {/* Profile Preview Modal */}
@@ -1012,7 +950,7 @@ function ProfileResumePreview({ url }: { url: string }) {
 }
 
 /* =======================================================================================
-    Mass Apply Body (memoized, simple)
+    Memoized bodies
   ======================================================================================= */
 
 const MassApplyBody = React.memo(function MassApplyBody({
@@ -1064,3 +1002,213 @@ const MassApplyBody = React.memo(function MassApplyBody({
     </div>
   );
 });
+
+const ApplicationConfirmationBody = React.memo(
+  function ApplicationConfirmationBody({
+    selectedJob,
+    profile,
+    onClose,
+    onPreview,
+    onAddNow,
+    onSubmit,
+  }: {
+    selectedJob: Job | null;
+    profile: any;
+    onClose: () => void;
+    onPreview: () => void;
+    onAddNow: () => void; // should close modal + router.push("/profile")
+    onSubmit: (text: string) => void;
+  }) {
+    const [text, setText] = useState("");
+
+    const needsGH = !!selectedJob?.require_github;
+    const needsPF = !!selectedJob?.require_portfolio;
+    const needsCL = (selectedJob?.require_cover_letter ?? true) === true;
+
+    const hasGH = !!profile?.github_link?.trim();
+    const hasPF = !!profile?.portfolio_link?.trim();
+    const hasCL = !!text.trim();
+
+    const unmet: string[] = [];
+    if (needsGH && !hasGH) unmet.push("GitHub profile link");
+    if (needsPF && !hasPF) unmet.push("Portfolio link");
+    if (needsCL && !hasCL) unmet.push("Cover letter");
+
+    const submitDisabled = unmet.length > 0;
+
+    return (
+      <div className="max-w-lg mx-auto p-6 pt-0 overflow-auto">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+            <Clipboard className="w-8 h-8 text-blue-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">
+            Ready to Apply?
+          </h2>
+          <p className="text-gray-600 leading-relaxed">
+            You're applying for{" "}
+            <span className="font-semibold text-gray-900">
+              {selectedJob?.title}
+            </span>
+            {selectedJob?.employer?.name && (
+              <>
+                {" "}
+                at{" "}
+                <span className="font-semibold text-gray-900">
+                  {selectedJob.employer.name}
+                </span>
+              </>
+            )}
+          </p>
+        </div>
+
+        {/* Profile Preview */}
+        {/* <div className="mb-6">
+          <Button
+            variant="outline"
+            onClick={onPreview}
+            className="w-full h-12 transition-all duration-200"
+          >
+            <div className="flex items-center justify-center gap-3">
+              <span>Preview Your Profile</span>
+            </div>
+          </Button>
+          <p className="text-xs text-gray-500 text-center mt-2">
+            See how employers will view your application
+          </p>
+        </div> */}
+
+        {/* Cover Letter */}
+        {needsCL && (
+          <div className="mb-6 space-y-3">
+            <Textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder={`Dear Hiring Manager,
+
+I am excited to apply for this position because...
+
+Best regards,
+[Your name]`}
+              className="w-full h-20 p-3 border border-gray-300 rounded-[0.33em] focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 resize-none text-sm overflow-y-auto"
+              maxLength={500}
+            />
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-gray-500 flex items-center gap-1">
+                💡 <span>Mention specific skills and enthusiasm</span>
+              </span>
+              <span className="text-gray-500">{text.length}/500</span>
+            </div>
+          </div>
+        )}
+
+        {/* Requirements checklist */}
+        {(needsCL || needsGH || needsPF) && (
+          <>
+            <div className="text-sm font-medium mb-2">Requirements</div>
+            <div className="mb-6 rounded-[0.33em] border p-4 bg-gray-50">
+              <ul className="space-y-2 text-sm">
+                {needsGH && (
+                  <li className="flex items-center justify-between">
+                    <span>GitHub profile link</span>
+                    {hasGH ? (
+                      <span className="text-green-600 flex items-center gap-1">
+                        <CheckCircle className="w-4 h-4" /> Ready
+                      </span>
+                    ) : (
+                      <Button size="sm" variant="outline" onClick={onAddNow}>
+                        Add now
+                      </Button>
+                    )}
+                  </li>
+                )}
+
+                {needsPF && (
+                  <li className="flex items-center justify-between">
+                    <span>Portfolio link</span>
+                    {hasPF ? (
+                      <span className="text-green-600 flex items-center gap-1">
+                        <CheckCircle className="w-4 h-4" /> Ready
+                      </span>
+                    ) : (
+                      <Button size="sm" variant="outline" onClick={onAddNow}>
+                        Add now
+                      </Button>
+                    )}
+                  </li>
+                )}
+
+                {needsCL && (
+                  <li className="flex items-center justify-between">
+                    <span>Cover letter</span>
+                    {hasCL ? (
+                      <span className="text-green-600 flex items-center gap-1">
+                        <CheckCircle className="w-4 h-4" /> Ready
+                      </span>
+                    ) : (
+                      <span className="text-amber-600">Required</span>
+                    )}
+                  </li>
+                )}
+              </ul>
+            </div>
+          </>
+        )}
+
+        {/* Inline error banner (why it didn't submit) */}
+        {submitDisabled && (
+          <div
+            role="alert"
+            aria-live="polite"
+            className="mb-3 rounded-[0.33em] border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm"
+          >
+            <div className="font-medium mb-1">Incomplete requirements</div>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="flex-1 h-12 transition-all duration-200"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={() => onSubmit(text)}
+            className="flex-1 h-12 transition-all duration-200"
+            disabled={submitDisabled}
+            title={
+              submitDisabled ? "Complete required items to continue" : undefined
+            }
+          >
+            <div className="flex items-center justify-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              Submit Application
+            </div>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+);
+
+// Helpers
+function getUnmetProfileRequirements(job?: Job | null, profile?: any) {
+  if (!job) return [];
+  const unmet: string[] = [];
+  if (job.require_github && !profile?.github_link?.trim())
+    unmet.push("GitHub profile link");
+  if (job.require_portfolio && !profile?.portfolio_link?.trim())
+    unmet.push("Portfolio link");
+  return unmet;
+}
+
+function useEvent<T extends (...args: any[]) => any>(fn: T) {
+  const ref = React.useRef(fn);
+  useEffect(() => {
+    ref.current = fn;
+  }, [fn]);
+  return useCallback((...args: Parameters<T>) => ref.current(...args), []);
+}

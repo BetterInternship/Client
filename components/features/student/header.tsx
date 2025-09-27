@@ -893,12 +893,11 @@ export const Header: React.FC = () => {
 
           {/* Mobile: search + (filters only on /search) */}
           {isMobile && showProfileButton && showFilters && (
-            <div className="flex flex-col max-w-2xl w-full gap-2 items-center px-4 pt-3">
+            <div className="flex flex-col max-w-2xl w-full gap-2 items-center px-4 pt-3 bg-white/80">
               <SearchInput
                 value={searchTerm}
                 onChange={setSearchTerm}
                 onEnter={doSearch}
-                className="h-12"
               />
               {showFilters && FilterButtons}
             </div>
