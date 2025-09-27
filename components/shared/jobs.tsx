@@ -794,12 +794,10 @@ function HeaderWithActions({
   job,
   actions,
   disabled,
-  reason,
 }: {
   job: Job;
   actions: React.ReactNode[];
   disabled?: boolean;
-  reason?: React.ReactNode;
 }) {
   return (
     <div className="flex items-start justify-between gap-3">
@@ -947,7 +945,6 @@ export function JobDetails({
         job={job}
         actions={actions}
         disabled={missingRequired}
-        reason={missingRequired && applyDisabledText}
       />
 
       {/* your compact summary grid */}

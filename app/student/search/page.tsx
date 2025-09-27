@@ -708,6 +708,10 @@ export default function SearchPage() {
             <div className="w-2/3 flex flex-col overflow-hidden">
               {selectedJob?.id ? (
                 <JobDetails
+                  user={{
+                    github_link: profile.data?.github_link ?? null,
+                    portfolio_link: profile.data?.portfolio_link ?? null,
+                  }}
                   job={selectedJob}
                   actions={[
                     <Button
