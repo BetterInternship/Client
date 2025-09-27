@@ -266,6 +266,12 @@ export default function StudentsPage() {
         metas={
           <>
             <BoolBadge
+              state={u.apply_for_me}
+              onValue="Apply for me: ON"
+              offValue="Apply for me: OFF"
+              offScheme="destructive"
+            />
+            <BoolBadge
               state={u.is_verified}
               onValue="verified"
               offValue="not verified"
