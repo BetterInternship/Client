@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-22 19:43:25
- * @ Modified time: 2025-09-19 13:57:56
+ * @ Modified time: 2025-09-27 18:30:55
  * @ Description:
  *
  * Routes used by employers
@@ -32,12 +32,6 @@ interface EmailStatusResponse extends FetchResponse {
 }
 
 export const EmployerAuthService = {
-  async loggedin() {
-    return APIClient.post<AuthResponse>(
-      APIRoute("auth").r("hire", "loggedin").build()
-    );
-  },
-
   async emailStatus(email: string) {
     return APIClient.post<EmailStatusResponse>(
       APIRoute("auth").r("hire", "email-status").build(),

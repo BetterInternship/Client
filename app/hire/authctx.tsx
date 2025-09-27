@@ -8,6 +8,7 @@ import { getFullName } from "@/lib/utils/user-utils";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { useQueryClient } from "@tanstack/react-query";
 import { usePocketbase } from "@/lib/pocketbase";
+import { EmployerService } from "@/lib/api/services";
 
 interface IAuthContext {
   user: Partial<PublicEmployerUser> | null;
@@ -82,7 +83,7 @@ export const AuthContextProvider = ({
 
   const refreshAuthentication =
     async (): Promise<Partial<PublicEmployerUser> | null> => {
-      const response = await EmployerAuthService.loggedin();
+      const response = await EmployerService.getMyProfile();
 
       if (!response.success) {
         setLoading(false);
