@@ -149,12 +149,12 @@ export default function ProfilePage() {
 
     try {
       await profile.update({ apply_for_me: !prev });
-    } catch (e: any){
+    } catch (e: any) {
       setAutoApplyError(e?.message ?? "Failed to update auto-apply");
     } finally {
-      setAutoApplySaving(false)
+      setAutoApplySaving(false);
     }
-  }
+  };
 
   return (
     data && (
