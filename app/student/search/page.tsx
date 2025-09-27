@@ -31,7 +31,6 @@ import { Paginator } from "@/components/ui/paginator";
 import { useModal, useModalRef } from "@/hooks/use-modal";
 import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
-import { isCompleteProfile } from "@/lib/utils/user-utils";
 import { UserService } from "@/lib/api/services";
 import { useFile } from "@/hooks/use-file";
 import { PDFPreview } from "@/components/shared/pdf-preview";
@@ -300,7 +299,11 @@ export default function SearchPage() {
       window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
       return;
     }
-    if (!isCompleteProfile(profile.data)) {
+    if (
+      !isProfileResume(profile.data) ||
+      !isProfileBaseComplete(profile.data) ||
+      !isProfileVerified(profile.data)
+    ) {
       openGlobalModal(
         "incomplete-profile",
         <IncompleteProfileContent

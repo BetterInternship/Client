@@ -4,9 +4,7 @@ import React, {
   createContext,
   useContext,
   useEffect,
-  useMemo,
   useReducer,
-  useRef,
   useState,
 } from "react";
 import Link from "next/link";
@@ -16,7 +14,6 @@ import {
   BookA,
   Heart,
   LogOut,
-  HelpCircle,
   MessageCircleMore,
   Search,
   ChevronRight,
@@ -34,7 +31,6 @@ import { GroupableNavDropdown, DropdownOption } from "@/components/ui/dropdown";
 import { Separator } from "@/components/ui/separator";
 import { HeaderTitle } from "@/components/shared/header";
 import { MyUserPfp } from "@/components/shared/pfp";
-import CompleteAccBanner from "@/components/features/student/CompleteAccBanner";
 
 import { useMobile } from "@/hooks/use-mobile";
 import { useRoute } from "@/hooks/use-route";
@@ -43,14 +39,15 @@ import { useConversations } from "@/hooks/use-conversation";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useProfile } from "@/lib/api/student.api";
 import { cn } from "@/lib/utils";
-import {
-  getFullName,
-  getMissingProfileFields,
-  isCompleteProfile,
-} from "@/lib/utils/user-utils";
+import { getFullName } from "@/lib/utils/user-utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { IncompleteProfileContent } from "@/components/modals/IncompleteProfileModal";
+import {
+  isProfileBaseComplete,
+  isProfileResume,
+  isProfileVerified,
+} from "@/lib/profile";
 
 /* =======================================================================================
    Filter State (immutable + typed) 
@@ -451,7 +448,11 @@ function MobileDrawer({
   const handleLogout = () => logout().then(() => router.push("/"));
 
   const handleProfileClick = () => {
-    if (!isCompleteProfile(profile.data)) {
+    if (
+      !isProfileResume(profile.data) ||
+      !isProfileBaseComplete(profile.data) ||
+      !isProfileVerified(profile.data)
+    ) {
       openGlobalModal(
         "incomplete-profile",
         <IncompleteProfileContent
@@ -643,7 +644,11 @@ export const ProfileButton: React.FC = () => {
   const handleLogout = () => logout().then(() => router.push("/"));
 
   const handleProfileClick = () => {
-    if (!isCompleteProfile(profile.data)) {
+    if (
+      !isProfileResume(profile.data) ||
+      !isProfileBaseComplete(profile.data) ||
+      !isProfileVerified(profile.data)
+    ) {
       openGlobalModal(
         "incomplete-profile",
         <IncompleteProfileContent

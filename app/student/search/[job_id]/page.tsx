@@ -24,11 +24,7 @@ import { Job, PublicUser } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useModal } from "@/hooks/use-modal";
 import { cn } from "@/lib/utils";
-import {
-  getMissingProfileFields,
-  isCompleteProfile,
-  profileQualifiesFor,
-} from "@/lib/utils/user-utils";
+import { getMissingProfileFields } from "@/lib/utils/user-utils";
 import ReactMarkdown from "react-markdown";
 import { Loader } from "@/components/ui/loader";
 import {
@@ -127,7 +123,11 @@ export default function JobPage() {
       alert("You have already applied to this job!");
       return;
     }
-    if (!isCompleteProfile(profile.data)) {
+    if (
+      !isProfileResume(profile.data) ||
+      !isProfileBaseComplete(profile.data) ||
+      !isProfileVerified(profile.data)
+    ) {
       openGlobalModal(
         "incomplete-profile",
         <IncompleteProfileContent
