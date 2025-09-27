@@ -5,44 +5,34 @@ import ReactMarkdown from "react-markdown";
 import {
   ArrowLeft,
   Building,
-  Heart,
   MapPin,
   CheckCircle2,
   AlertTriangle,
 } from "lucide-react";
-import { cn, formatDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Job } from "@/lib/db/db.types";
-import { useAuthContext } from "@/lib/ctx-auth";
-import { useApplications, useSavedJobs } from "@/lib/api/student.api";
+import { useProfile } from "@/lib/api/student.api";
 import { ModalComponent, ModalHandle } from "@/hooks/use-modal";
 import { JobDetailsSummary } from "../shared/jobs";
+import { SaveJobButton } from "../features/student/job/save-job-button";
+import { ApplyToJobButton } from "../features/student/job/apply-to-job-button";
 
 export const JobModal = ({
   job,
-  handleApply,
+  openAppModal,
   ref,
   user,
 }: {
-  job: Job | null;
-  handleApply: () => void;
+  job: Job;
+  openAppModal: () => void;
   ref?: RefObject<ModalHandle | null>;
   user?: {
     github_link?: string | null;
     portfolio_link?: string | null;
   };
 }) => {
-  const savedJobs = useSavedJobs();
-  const applications = useApplications();
-  const auth = useAuthContext();
-
-  const handleSave = async (job: Job) => {
-    if (!auth.isAuthenticated()) {
-      window.location.href = "/login";
-      return;
-    }
-    await savedJobs.toggle(job.id ?? "");
-  };
+  const profile = useProfile();
 
   // Requirement checks (align with desktop)
   const hasGithub = !!user?.github_link?.trim();
@@ -80,7 +70,7 @@ export const JobModal = ({
                 needsGithub={needsGithub && !hasGithub}
                 needsPortfolio={needsPortfolio && !hasPortfolio}
               />
-              
+
               {/* Header (compact; no actions on mobile) */}
               <HeaderCompact job={job} />
 
@@ -139,36 +129,12 @@ export const JobModal = ({
         {/* Bottom action bar — fixed within modal, safe-area aware (UNCHANGED) */}
         <div className="absolute bottom-0 left-0 right-0 z-30 bg-white border-t p-4 pb-[calc(env(safe-area-inset-bottom)+16px)]">
           <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={() => job && handleSave(job)}
-              scheme={
-                savedJobs.isJobSaved(job?.id ?? "") ? "destructive" : "default"
-              }
-              className="h-14 w-14"
-              aria-label={
-                savedJobs.isJobSaved(job?.id ?? "") ? "Unsave" : "Save"
-              }
-            >
-              <Heart
-                className={cn(
-                  "w-6 h-6",
-                  savedJobs.isJobSaved(job?.id ?? "") ? "fill-current" : ""
-                )}
-              />
-            </Button>
-            <Button
-              disabled={applications.appliedJob(job?.id ?? "")}
-              onClick={handleApply}
-              className={cn(
-                "flex-1 h-14 transition-all duration-300",
-                applications.appliedJob(job?.id ?? "")
-                  ? "bg-supportive text-white"
-                  : "bg-primary text-white"
-              )}
-            >
-              {applications.appliedJob(job?.id ?? "") ? "Applied" : "Apply Now"}
-            </Button>
+            <SaveJobButton job={job} />
+            <ApplyToJobButton
+              profile={profile.data}
+              job={job}
+              openAppModal={openAppModal}
+            />
           </div>
         </div>
       </div>

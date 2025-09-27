@@ -45,6 +45,7 @@ import {
 import { AutoApplyToast } from "@/components/features/student/search/AutoApplyToast";
 import { useRouter } from "next/navigation";
 import { SaveJobButton } from "@/components/features/student/job/save-job-button";
+import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job-button";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -208,41 +209,6 @@ export default function SearchPage() {
   /* --------------------------------------------
     * Single apply actions
     -------------------------------------------- */
-
-  const handleApply = () => {
-    if (!isAuthenticated()) {
-      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
-      return;
-    }
-
-    if (
-      !isProfileResume(profile.data) ||
-      !isProfileBaseComplete(profile.data) ||
-      !isProfileVerified(profile.data)
-    ) {
-      return openGlobalModal(
-        "incomplete-profile",
-        <IncompleteProfileContent
-          handleClose={() => closeGlobalModal("incomplete-profile")}
-        />,
-        {
-          allowBackdropClick: false,
-          onClose: () => {
-            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-          },
-        }
-      );
-    }
-
-    const applied = applications.appliedJob(selectedJob?.id ?? "");
-    if (applied) {
-      alert("You have already applied to this job!");
-      return;
-    }
-
-    openApplicationConfirmationModal();
-  };
-
   const handleDirectApplication = async (textFromModal?: string) => {
     if (!selectedJob) return;
 
@@ -700,24 +666,11 @@ export default function SearchPage() {
                   job={selectedJob}
                   actions={[
                     <SaveJobButton job={selectedJob} />,
-                    <Button
-                      key="1"
-                      disabled={applications.appliedJob(selectedJob.id ?? "")}
-                      scheme={
-                        applications.appliedJob(selectedJob.id ?? "")
-                          ? "supportive"
-                          : "primary"
-                      }
-                      onClick={handleApply}
-                      size={"md"}
-                    >
-                      {applications.appliedJob(selectedJob.id ?? "") && (
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                      )}
-                      {applications.appliedJob(selectedJob.id ?? "")
-                        ? "Applied"
-                        : "Apply"}
-                    </Button>,
+                    <ApplyToJobButton
+                      profile={profile.data}
+                      job={selectedJob}
+                      openAppModal={openApplicationConfirmationModal}
+                    />,
                   ]}
                 />
               ) : (
@@ -748,7 +701,13 @@ export default function SearchPage() {
       </div>
 
       {/* Mobile Job Details Modal */}
-      <JobModal job={selectedJob} handleApply={handleApply} ref={jobModalRef} />
+      {selectedJob && (
+        <JobModal
+          job={selectedJob}
+          openAppModal={openApplicationConfirmationModal}
+          ref={jobModalRef}
+        />
+      )}
 
       {/* Success Modal */}
       <ApplySuccessModal job={selectedJob} ref={successModalRef} />

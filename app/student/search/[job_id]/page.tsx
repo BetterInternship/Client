@@ -19,18 +19,13 @@ import {
   JobApplicationRequirements,
 } from "@/components/shared/jobs";
 import { Card } from "@/components/ui/card";
-import {
-  isProfileBaseComplete,
-  isProfileResume,
-  isProfileVerified,
-} from "@/lib/profile";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
-import { IncompleteProfileContent } from "@/components/modals/IncompleteProfileModal";
 import { useQueryClient } from "@tanstack/react-query";
 import { Textarea } from "@/components/ui/textarea";
 import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { PageError } from "@/components/ui/error";
 import { SaveJobButton } from "@/components/features/student/job/save-job-button";
+import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job-button";
 
 /**
  * The individual job page.
@@ -41,11 +36,7 @@ export default function JobPage() {
   const params = useParams();
   const { job_id } = params;
   const job = useJob(job_id as string);
-  const { isAuthenticated } = useAuthContext();
-  const queryClient = useQueryClient();
   const successModalRef = useModalRef();
-
-  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
 
   const {
     open: openApplicationConfirmationModal,
@@ -57,58 +48,6 @@ export default function JobPage() {
   const { universities } = useDbRefs();
   const applications = useApplications();
   const textarea_ref = useRef<HTMLTextAreaElement>(null);
-
-  const handleApply = () => {
-    if (!isAuthenticated()) {
-      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
-      return;
-    }
-
-    if (
-      !isProfileResume(profile.data) ||
-      !isProfileBaseComplete(profile.data) ||
-      !isProfileVerified(profile.data)
-    ) {
-      openGlobalModal(
-        "incomplete-profile",
-        <IncompleteProfileContent
-          handleClose={() => closeGlobalModal("incomplete-profile")}
-        />,
-        {
-          allowBackdropClick: false,
-          onClose: () => {
-            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-          },
-        }
-      );
-      return;
-    }
-
-    const applied = applications.appliedJob(job.data?.id ?? "");
-    if (applied) {
-      alert("You have already applied to this job!");
-      return;
-    }
-    if (
-      !isProfileResume(profile.data) ||
-      !isProfileBaseComplete(profile.data) ||
-      !isProfileVerified(profile.data)
-    ) {
-      openGlobalModal(
-        "incomplete-profile",
-        <IncompleteProfileContent
-          handleClose={() => closeGlobalModal("incomplete-profile")}
-        />,
-        {
-          allowBackdropClick: false,
-          onClose: () => {
-            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-          },
-        }
-      );
-    }
-    openApplicationConfirmationModal();
-  };
 
   const handleDirectApplication = async () => {
     if (!job.data) return;
@@ -186,27 +125,11 @@ export default function JobPage() {
                   {job.data && (
                     <div className="flex items-center gap-3">
                       <SaveJobButton job={job.data} />
-
-                      <Button
-                        disabled={applications.appliedJob(job.data.id ?? "")}
-                        scheme={
-                          applications.appliedJob(job.data.id ?? "")
-                            ? "supportive"
-                            : "primary"
-                        }
-                        size={"md"}
-                        onClick={() =>
-                          !applications.appliedJob(job.data?.id ?? "") &&
-                          handleApply()
-                        }
-                      >
-                        {applications.appliedJob(job.data.id ?? "") && (
-                          <CheckCircle className="w-4 h-4" />
-                        )}
-                        {applications.appliedJob(job.data.id ?? "")
-                          ? "Applied"
-                          : "Apply Now"}
-                      </Button>
+                      <ApplyToJobButton
+                        profile={profile.data}
+                        job={job.data}
+                        openAppModal={openApplicationConfirmationModal}
+                      />
                     </div>
                   )}
                 </div>
