@@ -4,7 +4,7 @@
 import { EmployerApplication } from "@/lib/db/db.types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getFullName } from "@/lib/utils/user-utils";
+import { getFullName } from "@/lib/profile";
 import { UserPfp } from "@/components/shared/pfp";
 import { StatusDropdown } from "@/components/common/StatusDropdown";
 import { useDbRefs } from "@/lib/db/use-refs";

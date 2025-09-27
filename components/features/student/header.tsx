@@ -4,9 +4,7 @@ import React, {
   createContext,
   useContext,
   useEffect,
-  useMemo,
   useReducer,
-  useRef,
   useState,
 } from "react";
 import Link from "next/link";
@@ -16,7 +14,6 @@ import {
   BookA,
   Heart,
   LogOut,
-  HelpCircle,
   MessageCircleMore,
   Search,
   ChevronRight,
@@ -34,7 +31,6 @@ import { GroupableNavDropdown, DropdownOption } from "@/components/ui/dropdown";
 import { Separator } from "@/components/ui/separator";
 import { HeaderTitle } from "@/components/shared/header";
 import { MyUserPfp } from "@/components/shared/pfp";
-import CompleteAccBanner from "@/components/features/student/CompleteAccBanner";
 
 import { useMobile } from "@/hooks/use-mobile";
 import { useRoute } from "@/hooks/use-route";
@@ -43,14 +39,15 @@ import { useConversations } from "@/hooks/use-conversation";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useProfile } from "@/lib/api/student.api";
 import { cn } from "@/lib/utils";
-import {
-  getFullName,
-  getMissingProfileFields,
-  isCompleteProfile,
-} from "@/lib/utils/user-utils";
+import { getFullName } from "@/lib/profile";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { IncompleteProfileContent } from "@/components/modals/IncompleteProfileModal";
+import {
+  isProfileBaseComplete,
+  isProfileResume,
+  isProfileVerified,
+} from "@/lib/profile";
 
 /* =======================================================================================
    Filter State (immutable + typed) 
@@ -451,7 +448,11 @@ function MobileDrawer({
   const handleLogout = () => logout().then(() => router.push("/"));
 
   const handleProfileClick = () => {
-    if (!isCompleteProfile(profile.data)) {
+    if (
+      !isProfileResume(profile.data) ||
+      !isProfileBaseComplete(profile.data) ||
+      !isProfileVerified(profile.data)
+    ) {
       openGlobalModal(
         "incomplete-profile",
         <IncompleteProfileContent
@@ -608,18 +609,6 @@ function MobileDrawer({
                     </button>
                   </Link>
                 </li>
-
-                <li>
-                  <Link href="/help" className="block w-full">
-                    <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                      <div>
-                        <HelpCircle className="w-4 h-4 inline-block mr-2" />
-                        <span>Help Center</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-gray-300" />
-                    </button>
-                  </Link>
-                </li>
               </ul>
             </nav>
           </div>
@@ -655,7 +644,11 @@ export const ProfileButton: React.FC = () => {
   const handleLogout = () => logout().then(() => router.push("/"));
 
   const handleProfileClick = () => {
-    if (!isCompleteProfile(profile.data)) {
+    if (
+      !isProfileResume(profile.data) ||
+      !isProfileBaseComplete(profile.data) ||
+      !isProfileVerified(profile.data)
+    ) {
       openGlobalModal(
         "incomplete-profile",
         <IncompleteProfileContent
@@ -732,10 +725,6 @@ export const ProfileButton: React.FC = () => {
         <DropdownOption href="/saved">
           <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
           <span className="text-primary">Saved Jobs</span>
-        </DropdownOption>
-        <DropdownOption href="/help">
-          <HelpCircle className="w-4 h-4 inline-block mr-2 text-primary" />
-          <span className="text-primary">Help Center</span>
         </DropdownOption>
         <DropdownOption href="/" on_click={handleLogout}>
           <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />

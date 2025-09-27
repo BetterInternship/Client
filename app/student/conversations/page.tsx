@@ -2,7 +2,6 @@
 import { useConversation, useConversations } from "@/hooks/use-conversation";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Card } from "@/components/ui/card";
-import { Employer } from "../../../lib/db/db.types";
 import { EmployerPfp } from "@/components/shared/pfp";
 import { ChevronLeft, ChevronRight, SendHorizonal } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -16,14 +15,6 @@ import { useProfile } from "@/lib/api/student.api";
 import { Loader } from "@/components/ui/loader";
 import { useEmployerName } from "@/hooks/use-employer-api";
 import { Badge } from "@/components/ui/badge";
-
-/**
- * Mobile behavior:
- * - List screen (default)
- * - Chat screen (full screen) with a sticky top bar + Back button
- * Desktop behavior:
- * - 2-column split (left list 25%, right chat 75%)
- */
 
 export default function ConversationsPage() {
   const { isAuthenticated, redirectIfNotLoggedIn } = useAuthContext();

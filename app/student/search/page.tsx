@@ -9,7 +9,6 @@ import React, {
 } from "react";
 import { useSearchParams } from "next/navigation";
 import {
-  Heart,
   CheckCircle,
   Clipboard,
   ArrowLeft,
@@ -19,19 +18,13 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  useJobs,
-  useSavedJobs,
-  useProfile,
-  useApplications,
-} from "@/lib/api/student.api";
+import { useJobs, useProfile, useApplications } from "@/lib/api/student.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Job } from "@/lib/db/db.types";
 import { Paginator } from "@/components/ui/paginator";
 import { useModal, useModalRef } from "@/hooks/use-modal";
 import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
-import { isCompleteProfile } from "@/lib/utils/user-utils";
 import { UserService } from "@/lib/api/services";
 import { useFile } from "@/hooks/use-file";
 import { PDFPreview } from "@/components/shared/pdf-preview";
@@ -51,6 +44,8 @@ import {
 } from "@/lib/profile";
 import { AutoApplyToast } from "@/components/features/student/search/AutoApplyToast";
 import { useRouter } from "next/navigation";
+import { SaveJobButton } from "@/components/features/student/job/save-job-button";
+import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job-button";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -70,12 +65,10 @@ export default function SearchPage() {
   const [jobAllowanceFilter, setJobAllowanceFilter] = useState<string[]>([]);
   const [jobMoaFilter, setJobMoaFilter] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [coverText, setCoverText] = useState("");
-  const textarea_ref = useRef<HTMLTextAreaElement>(null);
 
   // page + pagination
-  const jobs_page_size = 10;
-  const [jobs_page, setJobsPage] = useState(1);
+  const jobsPageSize = 10;
+  const [_jobsPage, setJobsPage] = useState(1);
 
   // hooks
   const jobs = useJobs({
@@ -86,7 +79,6 @@ export default function SearchPage() {
     jobAllowanceFilter,
     jobMoaFilter,
   });
-  const savedJobs = useSavedJobs();
   const applications = useApplications();
 
   const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
@@ -133,7 +125,7 @@ export default function SearchPage() {
   const successModalRef = useModalRef();
 
   // computed pages
-  const jobsPage = jobs.getJobsPage({ page: jobs_page, limit: jobs_page_size });
+  const jobsPage = jobs.getJobsPage({ page: _jobsPage, limit: jobsPageSize });
 
   useEffect(() => {
     if (profile?.data?.resume) {
@@ -214,56 +206,9 @@ export default function SearchPage() {
     [jobs.filteredJobs, selectedIds]
   );
 
-  const unmetProfileReqs = useMemo(
-    () => getUnmetProfileRequirements(selectedJob, profile.data),
-    [selectedJob, profile.data]
-  );
-
   /* --------------------------------------------
     * Single apply actions
     -------------------------------------------- */
-  const handleSave = async (job: Job) => {
-    if (!isAuthenticated()) {
-      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
-      return;
-    }
-    await savedJobs.toggle(job.id ?? "");
-  };
-
-  const handleApply = () => {
-    if (!isAuthenticated()) {
-      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
-      return;
-    }
-
-    if (
-      !isProfileResume(profile.data) ||
-      !isProfileBaseComplete(profile.data) ||
-      !isProfileVerified(profile.data)
-    ) {
-      return openGlobalModal(
-        "incomplete-profile",
-        <IncompleteProfileContent
-          handleClose={() => closeGlobalModal("incomplete-profile")}
-        />,
-        {
-          allowBackdropClick: false,
-          onClose: () => {
-            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-          },
-        }
-      );
-    }
-
-    const applied = applications.appliedJob(selectedJob?.id ?? "");
-    if (applied) {
-      alert("You have already applied to this job!");
-      return;
-    }
-
-    openApplicationConfirmationModal();
-  };
-
   const handleDirectApplication = async (textFromModal?: string) => {
     if (!selectedJob) return;
 
@@ -300,7 +245,11 @@ export default function SearchPage() {
       window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
       return;
     }
-    if (!isCompleteProfile(profile.data)) {
+    if (
+      !isProfileResume(profile.data) ||
+      !isProfileBaseComplete(profile.data) ||
+      !isProfileVerified(profile.data)
+    ) {
       openGlobalModal(
         "incomplete-profile",
         <IncompleteProfileContent
@@ -634,7 +583,7 @@ export default function SearchPage() {
               <div className="mt-6">
                 <Paginator
                   totalItems={jobs.filteredJobs.length}
-                  itemsPerPage={jobs_page_size}
+                  itemsPerPage={jobsPageSize}
                   onPageChange={(page) => setJobsPage(page)}
                 />
               </div>
@@ -700,7 +649,7 @@ export default function SearchPage() {
               <div className="mt-4">
                 <Paginator
                   totalItems={jobs.filteredJobs.length}
-                  itemsPerPage={jobs_page_size}
+                  itemsPerPage={jobsPageSize}
                   onPageChange={(page) => setJobsPage(page)}
                 />
               </div>
@@ -716,44 +665,12 @@ export default function SearchPage() {
                   }}
                   job={selectedJob}
                   actions={[
-                    <Button
-                      key="2"
-                      variant="outline"
-                      onClick={() => handleSave(selectedJob)}
-                      scheme={
-                        savedJobs.isJobSaved(selectedJob.id)
-                          ? "destructive"
-                          : "default"
-                      }
-                      size={"md"}
-                    >
-                      {savedJobs.isJobSaved(selectedJob.id ?? "") && <Heart />}
-                      {savedJobs.isJobSaved(selectedJob.id ?? "")
-                        ? savedJobs.isToggling
-                          ? "Unsaving..."
-                          : "Saved"
-                        : savedJobs.isToggling
-                        ? "Saving..."
-                        : "Save"}
-                    </Button>,
-                    <Button
-                      key="1"
-                      disabled={applications.appliedJob(selectedJob.id ?? "")}
-                      scheme={
-                        applications.appliedJob(selectedJob.id ?? "")
-                          ? "supportive"
-                          : "primary"
-                      }
-                      onClick={handleApply}
-                      size={"md"}
-                    >
-                      {applications.appliedJob(selectedJob.id ?? "") && (
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                      )}
-                      {applications.appliedJob(selectedJob.id ?? "")
-                        ? "Applied"
-                        : "Apply"}
-                    </Button>,
+                    <SaveJobButton job={selectedJob} />,
+                    <ApplyToJobButton
+                      profile={profile.data}
+                      job={selectedJob}
+                      openAppModal={openApplicationConfirmationModal}
+                    />,
                   ]}
                 />
               ) : (
@@ -784,7 +701,13 @@ export default function SearchPage() {
       </div>
 
       {/* Mobile Job Details Modal */}
-      <JobModal job={selectedJob} handleApply={handleApply} ref={jobModalRef} />
+      {selectedJob && (
+        <JobModal
+          job={selectedJob}
+          openAppModal={openApplicationConfirmationModal}
+          ref={jobModalRef}
+        />
+      )}
 
       {/* Success Modal */}
       <ApplySuccessModal job={selectedJob} ref={successModalRef} />
@@ -1193,17 +1116,6 @@ Best regards,
     );
   }
 );
-
-// Helpers
-function getUnmetProfileRequirements(job?: Job | null, profile?: any) {
-  if (!job) return [];
-  const unmet: string[] = [];
-  if (job.require_github && !profile?.github_link?.trim())
-    unmet.push("GitHub profile link");
-  if (job.require_portfolio && !profile?.portfolio_link?.trim())
-    unmet.push("Portfolio link");
-  return unmet;
-}
 
 function useEvent<T extends (...args: any[]) => any>(fn: T) {
   const ref = React.useRef(fn);

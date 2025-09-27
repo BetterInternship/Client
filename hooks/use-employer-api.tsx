@@ -74,7 +74,7 @@ export function useEmployerApplications() {
       }
 
       // Otherwise, pull from server
-      const response = await ApplicationService.get_employer_applications();
+      const response = await ApplicationService.getEmployerApplications();
       if (response.success) {
         setEmployerApplications(response.applications ?? []);
         set_cache(response.applications ?? []);
@@ -92,7 +92,7 @@ export function useEmployerApplications() {
     review_options: { review?: string; notes?: string; status?: number }
   ) => {
     const cache = get_cache() as EmployerApplication[];
-    const response = await ApplicationService.review_application(
+    const response = await ApplicationService.reviewApplication(
       app_id,
       review_options
     );
@@ -160,7 +160,7 @@ export function useOwnedJobs(
       setError(null);
 
       // Otherwise, pull from server
-      const response = await JobService.get_owned_jobs();
+      const response = await JobService.getOwnedJobs();
       if (response.success) {
         setOwnedJobs(response.jobs ?? []);
         set_cache(response.jobs ?? []);
@@ -174,7 +174,7 @@ export function useOwnedJobs(
   }, []);
 
   const update_job = async (job_id: string, job: Partial<Job>) => {
-    const response = await JobService.update_job(job_id, job);
+    const response = await JobService.updateJob(job_id, job);
     if (response.success) {
       // @ts-ignore
       const job = response.job;
@@ -189,7 +189,7 @@ export function useOwnedJobs(
   };
 
   const create_job = async (job: Partial<Job>) => {
-    const response = await JobService.create_job(job);
+    const response = await JobService.createJob(job);
     if (response.success) {
       // @ts-ignore
       const job = response.job;
@@ -200,7 +200,7 @@ export function useOwnedJobs(
   };
 
   const delete_job = async (job_id: string) => {
-    const response = await JobService.delete_job(job_id);
+    const response = await JobService.deleteJob(job_id);
     if (response.success) {
       set_cache(ownedJobs.filter((job) => job.id !== job_id));
       setOwnedJobs(get_cache() ?? []);

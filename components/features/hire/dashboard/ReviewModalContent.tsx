@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { Button } from "@/components/ui/button";
-import { getFullName } from "@/lib/utils/user-utils";
+import { getFullName } from "@/lib/profile";
 import { MDXEditor } from "@/components/MDXEditor";
 import { useQueryClient } from "@tanstack/react-query";
 

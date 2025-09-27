@@ -2,7 +2,7 @@
 
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { PublicUser } from "@/lib/db/db.types";
-import { AuthService } from "@/lib/api/services";
+import { AuthService, UserService } from "@/lib/api/services";
 import { useRouter } from "next/navigation";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { useQueryClient } from "@tanstack/react-query";
@@ -50,7 +50,7 @@ export const AuthContextProvider = ({
   });
 
   const refreshAuthentication = async () => {
-    const response = await AuthService.isLoggedIn();
+    const response = await UserService.getMyProfile();
 
     if (!response.success) {
       setIsLoading(false);

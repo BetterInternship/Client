@@ -18,7 +18,7 @@ import { useModal } from "@/hooks/use-modal";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { ReviewModalContent } from "@/components/features/hire/dashboard/ReviewModalContent";
 import { PDFPreview } from "@/components/shared/pdf-preview";
-import { getFullName } from "@/lib/utils/user-utils";
+import { getFullName } from "@/lib/profile";
 import { Textarea } from "@/components/ui/textarea";
 import { Message } from "@/components/ui/messages";
 import { useFile } from "@/hooks/use-file";
