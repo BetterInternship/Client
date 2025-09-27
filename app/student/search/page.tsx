@@ -1101,53 +1101,57 @@ Best regards,
         )}
 
         {/* Requirements checklist */}
-        <div className="text-sm font-medium mb-2">Requirements</div>
-        <div className="mb-6 rounded-[0.33em] border p-4 bg-gray-50">
-          <ul className="space-y-2 text-sm">
-            {needsGH && (
-              <li className="flex items-center justify-between">
-                <span>GitHub profile link</span>
-                {hasGH ? (
-                  <span className="text-green-600 flex items-center gap-1">
-                    <CheckCircle className="w-4 h-4" /> Ready
-                  </span>
-                ) : (
-                  <Button size="sm" variant="outline" onClick={onAddNow}>
-                    Add now
-                  </Button>
+        {(needsCL || needsGH || needsPF) && (
+          <>
+            <div className="text-sm font-medium mb-2">Requirements</div>
+            <div className="mb-6 rounded-[0.33em] border p-4 bg-gray-50">
+              <ul className="space-y-2 text-sm">
+                {needsGH && (
+                  <li className="flex items-center justify-between">
+                    <span>GitHub profile link</span>
+                    {hasGH ? (
+                      <span className="text-green-600 flex items-center gap-1">
+                        <CheckCircle className="w-4 h-4" /> Ready
+                      </span>
+                    ) : (
+                      <Button size="sm" variant="outline" onClick={onAddNow}>
+                        Add now
+                      </Button>
+                    )}
+                  </li>
                 )}
-              </li>
-            )}
 
-            {needsPF && (
-              <li className="flex items-center justify-between">
-                <span>Portfolio link</span>
-                {hasPF ? (
-                  <span className="text-green-600 flex items-center gap-1">
-                    <CheckCircle className="w-4 h-4" /> Ready
-                  </span>
-                ) : (
-                  <Button size="sm" variant="outline" onClick={onAddNow}>
-                    Add now
-                  </Button>
+                {needsPF && (
+                  <li className="flex items-center justify-between">
+                    <span>Portfolio link</span>
+                    {hasPF ? (
+                      <span className="text-green-600 flex items-center gap-1">
+                        <CheckCircle className="w-4 h-4" /> Ready
+                      </span>
+                    ) : (
+                      <Button size="sm" variant="outline" onClick={onAddNow}>
+                        Add now
+                      </Button>
+                    )}
+                  </li>
                 )}
-              </li>
-            )}
 
-            {needsCL && (
-              <li className="flex items-center justify-between">
-                <span>Cover letter</span>
-                {hasCL ? (
-                  <span className="text-green-600 flex items-center gap-1">
-                    <CheckCircle className="w-4 h-4" /> Ready
-                  </span>
-                ) : (
-                  <span className="text-amber-600">Required</span>
+                {needsCL && (
+                  <li className="flex items-center justify-between">
+                    <span>Cover letter</span>
+                    {hasCL ? (
+                      <span className="text-green-600 flex items-center gap-1">
+                        <CheckCircle className="w-4 h-4" /> Ready
+                      </span>
+                    ) : (
+                      <span className="text-amber-600">Required</span>
+                    )}
+                  </li>
                 )}
-              </li>
-            )}
-          </ul>
-        </div>
+              </ul>
+            </div>
+          </>
+        )}
 
         {/* Inline error banner (why it didn't submit) */}
         {submitDisabled && (
