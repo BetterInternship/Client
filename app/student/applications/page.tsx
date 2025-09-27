@@ -30,7 +30,7 @@ export default function ApplicationsPage() {
   return (
     <div className="container max-w-5xl p-10 pt-16 mx-auto">
       <div className="mb-6 sm:mb-8 animate-fade-in">
-        <div className="flex flex-row items-center gap-3 sm:gap-4 mb-2">
+        <div className="flex flex-row items-center gap-3 mb-2">
           <HeaderIcon icon={BookA}></HeaderIcon>
           <HeaderText>My Applications</HeaderText>
         </div>
