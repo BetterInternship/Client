@@ -127,12 +127,6 @@ const EmployerEditor = ({
     if (!formData.name || formData.name.trim().length < 3) {
       missingFields.push("Company Name (Doing Business As)");
     }
-    if (
-      !formData.legal_entity_name ||
-      formData.legal_entity_name.trim().length < 3
-    ) {
-      missingFields.push("Legal Entity Name");
-    }
     if (!formData.website || !isValidRequiredURL(formData.website)) {
       missingFields.push("Valid Website URL");
     }
@@ -263,11 +257,17 @@ const EmployerEditor = ({
     <>
       <StoryBook>
         <Card>
-          <div className="text-2xl tracking-tight font-bold text-gray-700 mb-4">
-            General Information
-            <div className="text-lg opacity-50 font-normal">Step 1 of 3</div>
+          <div className="text-xl tracking-tight font-bold text-gray-700">
+            <div className="text-base font-normal text-gray-500">Step 1 of 2</div>
+            Company Info
           </div>
-          <div className="mb-4 flex flex-col space-y-3">
+          <div className="mb-8 flex flex-col space-y-3">
+            <div className="text-sm font-normal text-gray-700">
+              Fill out this form to get listed on our website! 
+              To complete your profile, 
+              we’ll also ask you to submit one internship posting— 
+              don’t worry, you can add or update more later.
+            </div>
             <div>
               <ErrorLabel value={formErrors.name} />
               <FormInput
@@ -278,58 +278,34 @@ const EmployerEditor = ({
               />
             </div>
             <div>
-              <ErrorLabel value={formErrors.legal_entity_name} />
               <FormInput
-                label="Legal Entity Name"
+                label="Legal Entity Name (optional)"
                 value={formData.legal_entity_name ?? ""}
                 setter={fieldSetter("legal_entity_name")}
+                required={false}
                 maxLength={100}
               />
             </div>
             <FormInput
-              label="General Office Location"
+              label="Office City"
               value={formData.location ?? ""}
               setter={fieldSetter("location")}
               maxLength={100}
             />
-            <div>
-              <ErrorLabel value={formErrors.website} />
-              <FormInput
-                label="Website"
-                value={formData.website ?? ""}
-                setter={fieldSetter("website")}
-                maxLength={100}
-              />
-            </div>
-            <FormDropdown
-              label="Industry"
-              options={industries}
-              value={formData.industry ?? ""}
-              setter={fieldSetter("industry")}
-            />
-          </div>
-          <label className="text-xs text-gray-400 italic mb-1 block">
-            Description <span className="text-red-500">*</span>
-          </label>
-          <textarea
-            value={formData.description || ""}
-            onChange={(e) => setField("description", e.target.value)}
-            placeholder="Let students know what you're all about..."
-            className="w-full border border-gray-200 rounded-[0.25em] p-3 px-5 text-sm min-h-24 resize-none focus:border-opacity-70 focus:ring-transparent"
-            maxLength={750}
-          />
-          <p className="text-xs text-muted-foreground text-right">
-            {(formData.description || "").length}/750 characters
-          </p>
-        </Card>
-        <Card>
-          <div className="text-2xl tracking-tight font-bold text-gray-700 mb-4">
-            Contact Person Information
-            <div className="text-lg opacity-50 font-normal">Step 2 of 3</div>
           </div>
           <div className="mb-4 flex flex-col space-y-3">
+            <div className="text-xl tracking-tight font-bold text-gray-700">
+              Contact Person Information
+            </div>
+            <Card className="border-warning p-4">
+              <p className="font-normal opacity-80 text-sm italic text-warning">
+                Login details will be sent to the contact's email address upon
+                registration. Additional users can be added later if multiple
+                people plan to be manage this employer account.
+              </p>
+            </Card>
             <FormInput
-              label="Contact Name"
+              label="Name"
               value={additionalFields.contact_name ?? ""}
               maxLength={40}
               setter={(value) =>
@@ -342,7 +318,7 @@ const EmployerEditor = ({
             <div>
               <ErrorLabel value={formErrors.phone_number} />
               <FormInput
-                label="Contact Phone Number"
+                label="Phone Number"
                 value={formData.phone_number ?? ""}
                 setter={fieldSetter("phone_number")}
               />
@@ -350,22 +326,44 @@ const EmployerEditor = ({
             <div>
               <ErrorLabel value={formErrors.email} />
               <FormInput
-                label="Contact Email"
+                label="Email"
                 value={formData.email ?? ""}
                 setter={fieldSetter("email")}
               />
             </div>
+            <div>
+              <FormInput
+                label="Company website/LinkedIn (optional)"
+                value={formData.email ?? ""}
+                required={false}
+                setter={fieldSetter("company_website")} // invalid type
+              />
+            </div>
           </div>
-          <Card className="border-warning p-4">
-            <p className="font-normal opacity-80 text-sm italic text-warning">
-              Login details will be sent to the contact's email address upon
-              registration. Additional users can be added later if multiple
-              people plan to be manage this employer account.
-            </p>
-          </Card>
-          <div className="mt-3 text-xs text-gray-500 italic">
-            Note: You can update all company information later in the Edit
+          <div className="mt-3 text-xs text-gray-500 mb-4">
+            You can update all company information later in the Edit
             Company Profile page.
+          </div>
+          <div className="flex flex-row gap-2 align-middle text-sm text-gray-700">
+            <FormCheckbox
+              checked={additionalFields.has_moa_with_dlsu}
+            />
+            Do you need help securing a MOA (Memorandum of agreement) with DLSU so you can hire practicum students?
+            We will reach out to assist.
+          </div>
+          <div className="flex flex-row items-center justify-start">
+            <FormCheckbox
+              checked={additionalFields.has_moa_with_dlsu}
+              setter={(checked) =>
+                setAdditionalFields({
+                  ...additionalFields,
+                  has_moa_with_dlsu: checked,
+                })
+              }
+            />
+            <div className="text-sm text-gray-500 ml-3">
+              Ongoing MOA with DLSU?
+            </div>
           </div>
         </Card>
         <Card>
@@ -390,20 +388,6 @@ const EmployerEditor = ({
               </div>
             </Card>
             <Card className="p-3">
-              <div className="flex flex-row items-center justify-start">
-                <FormCheckbox
-                  checked={additionalFields.has_moa_with_dlsu}
-                  setter={(checked) =>
-                    setAdditionalFields({
-                      ...additionalFields,
-                      has_moa_with_dlsu: checked,
-                    })
-                  }
-                />
-                <div className="text-sm text-gray-500 ml-3">
-                  Ongoing MOA with DLSU?
-                </div>
-              </div>
               {additionalFields.has_moa_with_dlsu && (
                 <div className="mt-4">
                   {moaValidationError && (
