@@ -258,7 +258,6 @@ const EmployerEditor = ({
       <StoryBook>
         <Card>
           <div className="text-xl tracking-tight font-bold text-gray-700">
-            <div className="text-base font-normal text-gray-500">Step 1 of 2</div>
             Company Info
           </div>
           <div className="mb-8 flex flex-col space-y-3">
@@ -344,15 +343,9 @@ const EmployerEditor = ({
             You can update all company information later in the Edit
             Company Profile page.
           </div>
-          <div className="flex flex-row gap-2 align-middle text-sm text-gray-700">
+          <div className="flex flex-row flex-grow-0 gap-2 text-sm text-gray-700 mb-2">
             <FormCheckbox
-              checked={additionalFields.has_moa_with_dlsu}
-            />
-            Do you need help securing a MOA (Memorandum of agreement) with DLSU so you can hire practicum students?
-            We will reach out to assist.
-          </div>
-          <div className="flex flex-row items-center justify-start">
-            <FormCheckbox
+              id="accept-terms"
               checked={additionalFields.has_moa_with_dlsu}
               setter={(checked) =>
                 setAdditionalFields({
@@ -361,113 +354,54 @@ const EmployerEditor = ({
                 })
               }
             />
-            <div className="text-sm text-gray-500 ml-3">
-              Ongoing MOA with DLSU?
-            </div>
+            Do you need help securing a MOA (Memorandum of agreement) with DLSU so you can hire practicum students?
+            We will reach out to assist.
           </div>
-        </Card>
-        <Card>
-          <div className="text-2xl tracking-tight font-bold text-gray-700 mb-4">
-            Profile Agreements
-            <div className="text-lg opacity-50 font-normal">Step 3 of 3</div>
-          </div>
-          <div className="flex flex-col space-y-1 mb-2">
-            <ErrorLabel value={formErrors.accepts_non_university} />
-            <ErrorLabel value={formErrors.email} />
-          </div>
-          <div className="mb-4 flex flex-col space-y-3">
-            <Card className="p-3">
-              <div className="flex flex-row items-center justify-start">
-                <FormCheckbox
-                  checked={formData.accepts_non_university ?? true}
-                  setter={fieldSetter("accepts_non_university")}
-                />
-                <div className="text-sm text-gray-500 ml-3">
-                  Accept Non-University Interns?
-                </div>
-              </div>
-            </Card>
-            <Card className="p-3">
-              {additionalFields.has_moa_with_dlsu && (
-                <div className="mt-4">
-                  {moaValidationError && (
-                    <ErrorLabel value={moaValidationError} />
-                  )}
-                  <div className="flex flex-row space-x-2">
-                    <FormDatePicker
-                      label={"MOA Start Date"}
-                      date={additionalFields.moa_start_date}
-                      setter={(date) =>
-                        setAdditionalFields({
-                          ...additionalFields,
-                          moa_start_date: date ?? 0,
-                        })
-                      }
-                    />
-                    <FormDatePicker
-                      label={"MOA Expiry Date"}
-                      date={additionalFields.moa_expires_at}
-                      setter={(date) =>
-                        setAdditionalFields({
-                          ...additionalFields,
-                          moa_expires_at: date ?? 0,
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-              )}
-            </Card>
-
-            <Card className="p-3">
-              <div className="flex items-start gap-3">
-                <FormCheckbox
-                  id="accept-terms"
-                  checked={additionalFields.terms_accepted}
-                  setter={(checked) =>
-                    setAdditionalFields({
-                      ...additionalFields,
-                      terms_accepted: checked,
-                    })
-                  }
-                />
-                <label
-                  htmlFor="accept-terms"
-                  className="text-sm text-gray-700 leading-relaxed cursor-pointer flex-1"
-                >
-                  I have read and agree to the{" "}
-                  <a
-                    href="/TermsConditions.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 underline font-medium"
-                  >
-                    Terms & Conditions
-                  </a>{" "}
-                  and{" "}
-                  <a
-                    href="/PrivacyPolicy.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 underline font-medium"
-                  >
-                    Privacy Policy
-                  </a>
-                  .
-                </label>
-              </div>
-            </Card>
-
-            <Button
-              onClick={register}
-              disabled={!additionalFields.terms_accepted || isRegistering}
-              className="w-full h-12 bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+          <div className="flex items-start gap-3">
+            <FormCheckbox
+              id="accept-terms"
+              checked={additionalFields.terms_accepted}
+              setter={(checked) =>
+                setAdditionalFields({
+                  ...additionalFields,
+                  terms_accepted: checked,
+                })
+              }
+            />
+            <label
+              htmlFor="accept-terms"
+              className="text-sm text-gray-700 leading-relaxed cursor-pointer flex-1"
             >
-              {isRegistering ? "Registering..." : "Register"}
-            </Button>
+              I have read and agree to the{" "}
+              <a
+                href="/TermsConditions.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 underline font-medium"
+              >
+                Terms & Conditions
+              </a>{" "}
+              and{" "}
+              <a
+                href="/PrivacyPolicy.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 underline font-medium"
+              >
+                Privacy Policy
+              </a>
+              .
+            </label>
           </div>
         </Card>
       </StoryBook>
+      <Button
+        onClick={register}
+        disabled={!additionalFields.terms_accepted || isRegistering}
+        className="w-full h-12 bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+      >
+        {isRegistering ? "Registering..." : "Register"}
+      </Button>
       <br />
       <br />
     </>
