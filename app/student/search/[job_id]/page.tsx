@@ -14,7 +14,7 @@ import {
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Job } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { useModal } from "@/hooks/use-modal";
+import { useModal, useModalRef } from "@/hooks/use-modal";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import { Loader } from "@/components/ui/loader";
@@ -36,6 +36,7 @@ import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { IncompleteProfileContent } from "@/components/modals/IncompleteProfileModal";
 import { useQueryClient } from "@tanstack/react-query";
 import { Textarea } from "@/components/ui/textarea";
+import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 
 /**
  * The individual job page.
@@ -48,20 +49,9 @@ export default function JobPage() {
   const job = useJob(job_id as string);
   const { isAuthenticated } = useAuthContext();
   const queryClient = useQueryClient();
+  const successModalRef = useModalRef();
 
   const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
-
-  const {
-    open: open_application_modal,
-    close: close_application_modal,
-    Modal: ApplicationModal,
-  } = useModal("application-modal");
-
-  const {
-    open: open_success_modal,
-    close: close_success_modal,
-    Modal: SuccessModal,
-  } = useModal("success-modal");
 
   const {
     open: openApplicationConfirmationModal,
@@ -150,7 +140,7 @@ export default function JobPage() {
         if (applications.createError)
           return alert(applications.createError.message);
         if (response?.message) return alert(response.message);
-        open_success_modal();
+        successModalRef.current?.open();
       });
   };
 
@@ -343,27 +333,6 @@ export default function JobPage() {
         )}
       </div>
 
-      {/* Application Modal - Only for Missing Job Requirements */}
-      <ApplicationModal>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold">Apply to {job.data?.title}</h2>
-        </div>
-
-        {/* Update Profile Button */}
-        <Button
-          onClick={() => {
-            close_application_modal();
-            router.push("/profile");
-          }}
-          size="md"
-          scheme="supportive"
-          className="h-12"
-        >
-          <User className="w-4 h-4 mr-2" />
-          Update Profile
-        </Button>
-      </ApplicationModal>
-
       <ApplicationConfirmationModal>
         <div className="max-w-lg mx-auto p-6 max-h-[60vh] overflow-auto">
           <div className="text-center mb-8">
@@ -441,82 +410,7 @@ export default function JobPage() {
         </div>
       </ApplicationConfirmationModal>
 
-      {/* Success Modal */}
-      <SuccessModal>
-        {/* Header with close button */}
-        <div className="flex justify-between items-center p-6 pb-0"></div>
-
-        {/* Content */}
-        <div className="px-6 pb-8 text-center">
-          {/* Success Animation */}
-          <motion.div
-            className="mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-          >
-            <motion.div
-              className="w-20 h-20 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center"
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{
-                delay: 0.3,
-                duration: 0.6,
-                type: "spring",
-                bounce: 0.5,
-              }}
-            >
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8, duration: 0.3 }}
-              >
-                <CheckCircle className="w-10 h-10 text-green-600" />
-              </motion.div>
-            </motion.div>
-
-            <motion.h2
-              className="text-2xl font-bold text-gray-800 mb-2"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.4 }}
-            >
-              Application Sent!
-            </motion.h2>
-
-            <motion.p
-              className="text-gray-600 mb-6 leading-relaxed"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.4 }}
-            >
-              Your application for{" "}
-              <span className="font-semibold max-w-prose text-gray-800">
-                {job.data?.title}
-              </span>{" "}
-              has been successfully submitted.
-            </motion.p>
-          </motion.div>
-
-          {/* Action Buttons */}
-          <motion.div
-            className="space-y-3"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.4 }}
-          >
-            <Button
-              onClick={() => {
-                close_success_modal();
-                router.push("/applications");
-              }}
-            >
-              <Clipboard className="w-4 h-4 mr-2" />
-              View My Applications
-            </Button>
-          </motion.div>
-        </div>
-      </SuccessModal>
+      <ApplySuccessModal job={job.data} ref={successModalRef} />
     </>
   );
 }
