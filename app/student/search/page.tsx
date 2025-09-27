@@ -540,11 +540,13 @@ export default function SearchPage() {
 
   return (
     <>
-      <AutoApplyToast
-        enabled={!!profile.data?.apply_for_me}
-        dismissed={!!profile.data?.acknowledged_auto_apply}
-        onDismissForever={dismissTip}
-      />
+      {profile.data?.is_verified && (
+        <AutoApplyToast
+          enabled={!!profile.data?.apply_for_me}
+          dismissed={!!profile.data?.acknowledged_auto_apply}
+          onDismissForever={dismissTip}
+        />
+      )}
 
       {/* In-page toolbar */}
       {!isMobile && PageToolbar}
