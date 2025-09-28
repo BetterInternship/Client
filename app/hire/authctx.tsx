@@ -102,10 +102,6 @@ export const AuthContextProvider = ({
 
   const register = async (employer: Partial<Employer>) => {
     const response = await EmployerAuthService.register(employer);
-    if (!response.success) {
-      return null;
-    }
-
     return response;
   };
 
