@@ -16,7 +16,7 @@ const approximateYearLevel = (timestamp: number) => {
   const year = 31_556_952_000;
   const delta = timestamp - now;
   if (delta > 0 && delta < year * 2) return "3rd Year/Above";
-  else return "Freshman/Sophomore" + timestamp;
+  else return "Freshman/Sophomore";
 };
 
 interface ApplicationRowProps {
