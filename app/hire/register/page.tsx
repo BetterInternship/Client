@@ -333,9 +333,9 @@ const EmployerEditor = ({
             <div>
               <FormInput
                 label="Company website/LinkedIn (optional)"
-                value={formData.email ?? ""}
+                value={formData.website ?? ""}
                 required={false}
-                setter={fieldSetter("company_website")} // invalid type
+                setter={fieldSetter("website")} // invalid type
               />
             </div>
           </div>
