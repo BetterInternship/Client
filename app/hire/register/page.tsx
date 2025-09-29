@@ -255,153 +255,152 @@ const EmployerEditor = ({
 
   return (
     <>
-      <StoryBook>
-        <Card>
-          <div className="text-xl tracking-tight font-bold text-gray-700">
-            Company Info
+      <Card className="mb-4">
+        <div className="text-xl tracking-tight font-bold text-gray-700">
+          Company Info
+        </div>
+        <div className="mb-8 flex flex-col space-y-3">
+          <div className="text-sm font-normal text-gray-700">
+            Fill out this form to get listed on our website! 
+            To complete your profile, 
+            we’ll also ask you to submit one internship posting— 
+            don’t worry, you can add or update more later.
           </div>
-          <div className="mb-8 flex flex-col space-y-3">
-            <div className="text-sm font-normal text-gray-700">
-              Fill out this form to get listed on our website! 
-              To complete your profile, 
-              we’ll also ask you to submit one internship posting— 
-              don’t worry, you can add or update more later.
-            </div>
-            <div>
-              <ErrorLabel value={formErrors.name} />
-              <FormInput
-                label="Company Name"
-                value={formData.name ?? ""}
-                setter={fieldSetter("name")}
-                maxLength={100}
-              />
-            </div>
-            <div>
-              <FormInput
-                label="Legal Entity Name (optional)"
-                value={formData.legal_entity_name ?? ""}
-                setter={fieldSetter("legal_entity_name")}
-                required={false}
-                maxLength={100}
-              />
-            </div>
+          <div>
+            <ErrorLabel value={formErrors.name} />
             <FormInput
-              label="Office City"
-              value={formData.location ?? ""}
-              setter={fieldSetter("location")}
+              label="Company Name"
+              value={formData.name ?? ""}
+              setter={fieldSetter("name")}
               maxLength={100}
             />
           </div>
-          <div className="mb-4 flex flex-col space-y-3">
-            <div className="text-xl tracking-tight font-bold text-gray-700">
-              Contact Person Information
-            </div>
-            <Card className="border-warning p-4">
-              <p className="font-normal opacity-80 text-sm italic text-warning">
-                Login details will be sent to the contact's email address upon
-                registration. Additional users can be added later if multiple
-                people plan to be manage this employer account.
-              </p>
-            </Card>
+          <div>
             <FormInput
-              label="Name"
-              value={additionalFields.contact_name ?? ""}
-              maxLength={40}
-              setter={(value) =>
-                setAdditionalFields({
-                  ...additionalFields,
-                  contact_name: value,
-                })
-              }
+              label="Legal Entity Name (optional)"
+              value={formData.legal_entity_name ?? ""}
+              setter={fieldSetter("legal_entity_name")}
+              required={false}
+              maxLength={100}
             />
-            <div>
-              <ErrorLabel value={formErrors.phone_number} />
-              <FormInput
-                label="Phone Number"
-                value={formData.phone_number ?? ""}
-                setter={fieldSetter("phone_number")}
-              />
-            </div>
-            <div>
-              <ErrorLabel value={formErrors.email} />
-              <FormInput
-                label="Email"
-                value={formData.email ?? ""}
-                setter={fieldSetter("email")}
-              />
-            </div>
-            <div>
-              <FormInput
-                label="Company website/LinkedIn (optional)"
-                value={formData.website ?? ""}
-                required={false}
-                setter={fieldSetter("website")} // invalid type
-              />
-            </div>
           </div>
-          <div className="mt-3 text-xs text-gray-500 mb-4">
-            You can update all company information later in the Edit
-            Company Profile page.
+          <FormInput
+            label="Office City"
+            value={formData.location ?? ""}
+            setter={fieldSetter("location")}
+            maxLength={100}
+          />
+        </div>
+        <div className="mb-4 flex flex-col space-y-3">
+          <div className="text-xl tracking-tight font-bold text-gray-700">
+            Contact Person Information
           </div>
-          <div className="flex flex-row flex-grow-0 gap-2 text-sm text-gray-700 mb-2">
-            <FormCheckbox
-              id="accept-terms"
-              checked={additionalFields.has_moa_with_dlsu}
-              setter={(checked) =>
-                setAdditionalFields({
-                  ...additionalFields,
-                  has_moa_with_dlsu: checked,
-                })
-              }
+          <Card className="border-warning p-4">
+            <p className="font-normal opacity-80 text-sm italic text-warning">
+              Login details will be sent to the contact's email address upon
+              registration. Additional users can be added later if multiple
+              people plan to be manage this employer account.
+            </p>
+          </Card>
+          <FormInput
+            label="Name"
+            value={additionalFields.contact_name ?? ""}
+            maxLength={40}
+            setter={(value) =>
+              setAdditionalFields({
+                ...additionalFields,
+                contact_name: value,
+              })
+            }
+          />
+          <div>
+            <ErrorLabel value={formErrors.phone_number} />
+            <FormInput
+              label="Phone Number"
+              value={formData.phone_number ?? ""}
+              setter={fieldSetter("phone_number")}
             />
-            Do you need help securing a MOA (Memorandum of agreement) with DLSU so you can hire practicum students?
-            We will reach out to assist.
           </div>
-          <div className="flex items-start gap-3">
-            <FormCheckbox
-              id="accept-terms"
-              checked={additionalFields.terms_accepted}
-              setter={(checked) =>
-                setAdditionalFields({
-                  ...additionalFields,
-                  terms_accepted: checked,
-                })
-              }
+          <div>
+            <ErrorLabel value={formErrors.email} />
+            <FormInput
+              label="Email"
+              value={formData.email ?? ""}
+              setter={fieldSetter("email")}
             />
-            <label
-              htmlFor="accept-terms"
-              className="text-sm text-gray-700 leading-relaxed cursor-pointer flex-1"
+          </div>
+          <div>
+            <FormInput
+              label="Company website/LinkedIn (optional)"
+              value={formData.website ?? ""}
+              required={false}
+              setter={fieldSetter("website")} // invalid type
+            />
+          </div>
+        </div>
+        <div className="mt-3 text-xs text-gray-500 mb-4">
+          You can update all company information later in the Edit
+          Company Profile page.
+        </div>
+        <div className="flex flex-row flex-grow-0 gap-2 text-sm text-gray-700 mb-2">
+          <FormCheckbox
+            id="accept-terms"
+            checked={additionalFields.has_moa_with_dlsu}
+            setter={(checked) =>
+              setAdditionalFields({
+                ...additionalFields,
+                has_moa_with_dlsu: checked,
+              })
+            }
+          />
+          Do you need help securing a MOA (Memorandum of agreement) with DLSU so you can hire practicum students?
+          We will reach out to assist.
+        </div>
+        <div className="flex items-start gap-3">
+          <FormCheckbox
+            id="accept-terms"
+            checked={additionalFields.terms_accepted}
+            setter={(checked) =>
+              setAdditionalFields({
+                ...additionalFields,
+                terms_accepted: checked,
+              })
+            }
+          />
+          <label
+            htmlFor="accept-terms"
+            className="text-sm text-gray-700 leading-relaxed cursor-pointer flex-1"
+          >
+            I have read and agree to the{" "}
+            <a
+              href="/TermsConditions.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline font-medium"
             >
-              I have read and agree to the{" "}
-              <a
-                href="/TermsConditions.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800 underline font-medium"
-              >
-                Terms & Conditions
-              </a>{" "}
-              and{" "}
-              <a
-                href="/PrivacyPolicy.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800 underline font-medium"
-              >
-                Privacy Policy
-              </a>
-              .
-            </label>
-          </div>
-        </Card>
-      </StoryBook>
-      <Button
-        onClick={register}
-        disabled={!additionalFields.terms_accepted || isRegistering}
-        className="w-full h-12 bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
-      >
-        {isRegistering ? "Registering..." : "Register"}
-      </Button>
+              Terms & Conditions
+            </a>{" "}
+            and{" "}
+            <a
+              href="/PrivacyPolicy.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline font-medium"
+            >
+              Privacy Policy
+            </a>
+            .
+          </label>
+        </div>
+      </Card>
+      <div className="flex justify-end w-[100%]">
+        <Button
+          onClick={register}
+          disabled={!additionalFields.terms_accepted || isRegistering}
+        >
+          {isRegistering ? "Registering..." : "Register"}
+        </Button>
+      </div>
       <br />
       <br />
     </>
