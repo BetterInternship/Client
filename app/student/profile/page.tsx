@@ -54,6 +54,18 @@ import { AutoApplyCard } from "@/components/features/student/profile/AutoApplyCa
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
+type FormsAutofill = {
+  address_line1?: string | null;
+  address_line2?: string | null;
+  city?: string | null;
+  province?: string | null;
+  postal_code?: string | null;
+  student_id?: string | null;
+  birthdate?: string | null; // YYYY-MM-DD
+  guardian_name?: string | null;
+  guardian_phone?: string | null; // PH number
+};
+
 export default function ProfilePage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
   const profile = useProfile();
@@ -133,7 +145,7 @@ export default function ProfilePage() {
   const handleAutoApplySave = async () => {
     setAutoApplySaving(true);
     setAutoApplyError(null);
-    
+
     const prev = !!profile.data?.apply_for_me;
 
     try {
@@ -388,12 +400,13 @@ function ProfileReadOnlyTabs({
   const { to_university_name, job_modes, job_types, job_categories } =
     useDbRefs();
 
-  type TabKey = "Student Profile" | "Internship Details";
+  type TabKey = "Student Profile" | "Internship Details" | "Forms Autofill";
   const [tab, setTab] = useState<TabKey>("Student Profile");
 
   const tabs = [
     { key: "Student Profile", label: "Student Profile" },
     { key: "Internship Details", label: "Internship Details" },
+    { key: "Forms Autofill", label: "Forms Autofill" },
   ] as const;
 
   return (
@@ -652,6 +665,36 @@ function ProfileReadOnlyTabs({
           </div>
         </section>
       </OutsideTabPanel>
+
+      {/* Forms Autofill */}
+      <OutsideTabPanel when="Forms Autofill" activeKey={tab}>
+        <section>
+          <div className="text-xl sm:text-2xl tracking-tight font-semibold">
+            Forms Autofill
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-2">
+            <LabeledProperty label="Student ID" />
+            <LabeledProperty label="Birthdate" />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-2">
+            <LabeledProperty label="Guardian Name" />
+            <LabeledProperty label="Guardian Phone" />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-2">
+            <LabeledProperty label="Address Line 1" />
+            <LabeledProperty label="Address Line 2" />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-2">
+            <LabeledProperty label="City" />
+            <LabeledProperty label="Province" />
+            <LabeledProperty label="Postal Code" />
+          </div>
+        </section>
+      </OutsideTabPanel>
     </OutsideTabs>
   );
 }
@@ -684,7 +727,11 @@ const ProfileEditor = forwardRef<
     getUniversityFromDomain: get_universities_from_domain,
   } = useDbRefs();
 
-  type TabKey = "Student Profile" | "Internship Details" | "Calendar";
+  type TabKey =
+    | "Student Profile"
+    | "Internship Details"
+    | "Calendar"
+    | "Forms Autofill";
   const [tab, setTab] = useState<TabKey>("Student Profile");
 
   const hasProfileErrors = !!(
@@ -779,21 +826,6 @@ const ProfileEditor = forwardRef<
     { value: "credit", label: "Credited" },
     { value: "voluntary", label: "Voluntary" },
   ];
-
-  const creditValue =
-    formData.internship_preferences?.internship_type == null
-      ? null
-      : formData.internship_preferences?.internship_type === "credited"
-      ? "credit"
-      : "voluntary";
-
-  const handleCreditChange = (v: string | null) => {
-    setField("internship_preferences", {
-      ...(formData.internship_preferences ?? {}),
-      internship_type:
-        v === "credit" ? "credited" : v === "voluntary" ? "voluntary" : null,
-    });
-  };
 
   const validIdsFromTree = useMemo(() => {
     const s = new Set<string>();
@@ -946,14 +978,6 @@ const ProfileEditor = forwardRef<
     job_category_ids: [],
   };
 
-  // helper for nested updates
-  const setPrefsField = <K extends keyof typeof prefs>(key: K, val: any) => {
-    setField("internship_preferences", {
-      ...prefs,
-      [key]: Array.isArray(val) ? val : val, // we'll map to strings in setter below
-    });
-  };
-
   return (
     <OutsideTabs
       tabs={[
@@ -965,6 +989,11 @@ const ProfileEditor = forwardRef<
         {
           key: "Internship Details",
           label: "Internship Details",
+          indicator: hasPrefsErrors,
+        },
+        {
+          key: "Form Autofill",
+          label: "Form Autofill",
           indicator: hasPrefsErrors,
         },
         // TODO: Reenable for calendar
@@ -1258,6 +1287,96 @@ const ProfileEditor = forwardRef<
               placeholder="Select one or more"
             />
             <ErrorLabel value={formErrors.job_category_ids} />
+          </div>
+        </section>
+      </OutsideTabPanel>
+
+      {/* Forms Autofill */}
+      {/* Forms Autofill */}
+      <OutsideTabPanel when="Forms Autofill" activeKey={tab}>
+        <section className="space-y-4">
+          <div className="text-xl sm:text-2xl tracking-tight font-semibold">
+            Forms Autofill
+          </div>
+
+          {/* Identity for forms */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <FormInput
+              label="Student ID"
+              value="12141380"
+              required={false}
+              maxLength={64}
+            />
+            <div>
+              <div className="text-xs text-muted-foreground mb-1">
+                Birthdate
+              </div>
+              <input
+                type="date"
+                className="w-full border rounded-[0.33em] p-2 text-sm focus-visible:outline-none focus:ring-2 focus:ring-primary/30"
+                value={formData.forms_autofill?.birthdate ?? ""}
+              />
+              {/* <ErrorLabel value={formErrors["forms_autofill.birthdate"]} /> */}
+            </div>
+          </div>
+
+          {/* Guardian */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <FormInput
+              label="Guardian Name"
+              value={formData.forms_autofill?.guardian_name ?? ""}
+              setter={(v) => setAutofillField("guardian_name", v)}
+              required={false}
+              maxLength={80}
+            />
+            <FormInput
+              label="Guardian Phone"
+              value={formData.forms_autofill?.guardian_phone ?? ""}
+              setter={(v) => setAutofillField("guardian_phone", v)}
+              required={false}
+              placeholder="+63 9xx xxx xxxx"
+            />
+            <ErrorLabel value={formErrors["forms_autofill.guardian_phone"]} />
+          </div>
+
+          {/* Address */}
+          <div className="grid grid-cols-1 gap-3">
+            <FormInput
+              label="Address Line 1"
+              value={formData.forms_autofill?.address_line1 ?? ""}
+              setter={(v) => setAutofillField("address_line1", v)}
+              required={false}
+            />
+            <FormInput
+              label="Address Line 2"
+              value={formData.forms_autofill?.address_line2 ?? ""}
+              setter={(v) => setAutofillField("address_line2", v)}
+              required={false}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <FormInput
+              label="City / Municipality"
+              value={formData.forms_autofill?.city ?? ""}
+              setter={(v) => setAutofillField("city", v)}
+              required={false}
+            />
+            <FormInput
+              label="Province"
+              value={formData.forms_autofill?.province ?? ""}
+              setter={(v) => setAutofillField("province", v)}
+              required={false}
+            />
+            <FormInput
+              label="Postal Code"
+              inputMode="numeric"
+              value={formData.forms_autofill?.postal_code ?? ""}
+              setter={(v) => setAutofillField("postal_code", v)}
+              required={false}
+              maxLength={4}
+            />
+            <ErrorLabel value={formErrors["forms_autofill.postal_code"]} />
           </div>
         </section>
       </OutsideTabPanel>
