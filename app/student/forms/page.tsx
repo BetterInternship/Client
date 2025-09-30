@@ -19,13 +19,32 @@ import {
 } from "@/components/landingHire/ui/alert-dialog";
 import { Newspaper, AlertTriangle } from "lucide-react";
 
-// ──────────────────────────────────────────────
-// Minimal page: tabs + blocking warning + generate modal
-// ──────────────────────────────────────────────
+type TabKey = "Forms Autofill" | "My Forms" | "Past Forms";
 
-type TabKey = "My Forms" | "Past Forms";
+type Values = Record<string, string>;
 
-type FormTemplate = { id: string; name: string; description?: string };
+type SyncValidator = (value: string, allValues: Values) => string | null; // return error string or null
+
+type FieldDef = {
+  key: string;
+  label: string;
+  type: "text" | "number" | "date" | "select";
+  required?: boolean;
+  placeholder?: string;
+  options?: { value: string; label: string }[];
+  maxLength?: number;
+  pattern?: string; // optional regex
+  helper?: string;
+  validators?: SyncValidator[]; // custom validators per field
+};
+
+type FormTemplate = {
+  id: string;
+  name: string;
+  description?: string;
+  customFields?: FieldDef[];
+};
+
 type PastForm = {
   id: string;
   name: string;
@@ -33,26 +52,69 @@ type PastForm = {
   createdAt: string;
 };
 
+function validateField(def: FieldDef, value: string, all: Values): string {
+  if (def.required && (!value || value.trim() === ""))
+    return "This field is required.";
+  if (def.maxLength && value && value.length > def.maxLength)
+    return `Max ${def.maxLength} characters.`;
+  if (def.type === "number" && value && !/^-?\d+(\.\d+)?$/.test(value))
+    return "Enter a valid number.";
+  if (def.type === "date" && value && !/^\d{4}-\d{2}-\d{2}$/.test(value))
+    return "Use YYYY-MM-DD.";
+  if (def.pattern) {
+    try {
+      const re = new RegExp(def.pattern);
+      if (value && !re.test(value)) return "Invalid format.";
+    } catch {
+      /* ignore bad patterns */
+    }
+  }
+
+  // custom
+  for (const fn of def.validators ?? []) {
+    const err = fn(value ?? "", all);
+    if (err) return err;
+  }
+  return "";
+}
+
+function validateMany(
+  schema: FieldDef[],
+  values: Values
+): Record<string, string> {
+  const errs: Record<string, string> = {};
+  for (const def of schema) {
+    const v = values[def.key] ?? "";
+    const e = validateField(def, v, values);
+    if (e) errs[def.key] = e;
+  }
+  return errs;
+}
+
+function isComplete(schema: FieldDef[], values: Values): boolean {
+  for (const def of schema) {
+    if (def.required) {
+      const e = validateField(def, values[def.key] ?? "", values);
+      if (e) return false;
+    }
+  }
+  return true;
+}
+
 export default function FormsPage() {
-  // TODO: Wire this to your real profile state (e.g., from useProfile())
-  // const { data: profile } = useProfile();
-  // const profileComplete = !!profile?.autofillComplete;
-  const [profileComplete, setProfileComplete] = useState<boolean>(false); // <— demo toggle only
+  const [tab, setTab] = useState<TabKey>("Forms Autofill");
 
-  const [tab, setTab] = useState<TabKey>("My Forms");
+  const [autofill, setAutofill] = useState<Values>({});
+  const [autofillErrors, setAutofillErrors] = useState<Record<string, string>>(
+    {}
+  );
+  const autofillComplete = useMemo(
+    () => isComplete(AUTOFILL_SCHEMA, autofill),
+    [autofill]
+  );
 
-  // Mock data (replace with your real lists)
-  const availableForms: FormTemplate[] = [
-    {
-      id: "student-moa",
-      name: "Student MOA",
-      description: "Standard student-company MOA",
-    },
-    { id: "endorsement", name: "Endorsement Letter" },
-    { id: "timesheet", name: "Daily Timesheet" },
-  ];
-
-  const pastForms: PastForm[] = [
+  // Past forms
+  const [pastForms, setPastForms] = useState<PastForm[]>([
     {
       id: "pf-1",
       name: "Student MOA",
@@ -65,15 +127,16 @@ export default function FormsPage() {
       company: "URC",
       createdAt: "2025-09-18",
     },
-  ];
+  ]);
 
-  // Company picker (replace with your real entities)
-  const companies = ["Ardent World Inc.", "URC", "FactSet", "Accenture"];
+  const availableForms = FORM_TEMPLATES;
 
   // Generate modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedFormId, setSelectedFormId] = useState<string | null>(null);
-  const [selectedCompany, setSelectedCompany] = useState<string>("");
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("");
+  const [custom, setCustom] = useState<Values>({});
+  const [customErrors, setCustomErrors] = useState<Record<string, string>>({});
 
   const selectedForm = useMemo(
     () => availableForms.find((f) => f.id === selectedFormId) || null,
@@ -82,23 +145,89 @@ export default function FormsPage() {
 
   function openGenerate(formId: string) {
     setSelectedFormId(formId);
-    setSelectedCompany("");
+    setSelectedCompanyId("");
+    const defs =
+      FORM_TEMPLATES.find((t) => t.id === formId)?.customFields ?? [];
+    const next: Values = {};
+    defs.forEach((d) => (next[d.key] = ""));
+    setCustom(next);
+    setCustomErrors({});
     setModalOpen(true);
   }
 
+  const customDefs: FieldDef[] = selectedForm?.customFields ?? [];
+  const customValid = useMemo(
+    () => isComplete(customDefs, custom),
+    [customDefs, custom]
+  );
+  const canGenerate = !!selectedCompanyId && customValid;
+
   function confirmGenerate() {
-    // TODO: route to your generation endpoint / trigger preview flow
-    console.log("Generate form", {
-      formId: selectedFormId,
-      company: selectedCompany,
-    });
+    const errs = validateMany(customDefs, custom);
+    setCustomErrors(errs);
+    if (Object.keys(errs).length > 0 || !selectedCompanyId) return;
+
+    // Payload ready for backend
+    const payload = {
+      templateId: selectedFormId!,
+      companyId: selectedCompanyId,
+      autofill, // snapshot of user autofill fields
+      custom, // per-template extra fields
+    };
+    console.log("Generate payload:", payload);
+
+    const companyName =
+      COMPANIES.find((c) => c.id === selectedCompanyId)?.name ?? "Company";
+    const formName =
+      FORM_TEMPLATES.find((f) => f.id === selectedFormId)?.name ?? "Form";
+    setPastForms((prev) => [
+      {
+        id: `pf-${Math.random().toString(36).slice(2, 8)}`,
+        name: formName,
+        company: companyName,
+        createdAt: new Date().toISOString().slice(0, 10),
+      },
+      ...prev,
+    ]);
+
     setModalOpen(false);
   }
 
-  const tabsBlocked = !profileComplete;
+  function saveAutofill() {
+    const errs = validateMany(AUTOFILL_SCHEMA, autofill);
+    setAutofillErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+    console.log("Saved Forms Autofill:", autofill);
+  }
+
+  function setAutofillField(key: string, val: string) {
+    setAutofill((prev) => {
+      const next = { ...prev, [key]: val };
+      const def = AUTOFILL_SCHEMA.find((d) => d.key === key);
+      if (def) {
+        const e = validateField(def, val ?? "", next);
+        setAutofillErrors((prevErr) => ({ ...prevErr, [key]: e }));
+      }
+      return next;
+    });
+  }
+
+  function setCustomField(key: string, val: string) {
+    setCustom((prev) => {
+      const next = { ...prev, [key]: val };
+      const def = (selectedForm?.customFields ?? []).find((d) => d.key === key);
+      if (def) {
+        const e = validateField(def, val ?? "", next);
+        setCustomErrors((prevErr) => ({ ...prevErr, [key]: e }));
+      }
+      return next;
+    });
+  }
+
+  const gateMyAndPast = !autofillComplete;
 
   return (
-    <div className="container max-w-5xl p-10 pt-16 mx-auto">
+    <div className="container max-w-5xl sm:p-10 pt-8 sm:pt-16 mx-auto">
       <div className="mb-6 sm:mb-8 animate-fade-in space-y-5">
         {/* Header */}
         <div>
@@ -114,42 +243,69 @@ export default function FormsPage() {
           </div>
         </div>
 
-        {/* Warning (looks like the Apply-for-Me OFF card) */}
-        {tabsBlocked && (
+        {/* Warning: show if not complete */}
+        {gateMyAndPast && (
           <WarningCard
             title="Action needed"
             message={
               <>
                 Please complete your{" "}
-                <span className="font-medium">Autofill profile</span> in{" "}
-                <span className="font-medium">Profiles</span> in order to
-                generate forms.
+                <span className="font-medium">Autofill profile</span> below to
+                generate forms. Your details will be used to prefill documents.
               </>
             }
-            actionLabel="Go to Profiles"
-            onAction={() => {
-              // TODO: push("/profile/autofill") or open modal
-              console.log("Navigate to Profiles → Autofill");
-            }}
+            onAction={() => setTab("Forms Autofill")}
           />
         )}
 
-        {/* Tabs (greys out + blocks interaction when profile is incomplete) */}
-        <div
-          className={cn(
-            tabsBlocked && "opacity-60 pointer-events-none select-none"
-          )}
+        {/* Tabs */}
+        <OutsideTabs
+          value={tab}
+          onChange={(v) => setTab(v as TabKey)}
+          tabs={[
+            { key: "Forms Autofill", label: "Forms Autofill" },
+            { key: "My Forms", label: "My Forms" },
+            { key: "Past Forms", label: "Past Forms" },
+          ]}
         >
-          <OutsideTabs
-            value={tab}
-            onChange={(v) => setTab(v as TabKey)}
-            tabs={[
-              { key: "My Forms", label: "My Forms" },
-              { key: "Past Forms", label: "Past Forms" },
-            ]}
-          >
-            {/* My Forms */}
-            <OutsideTabPanel when="My Forms" activeKey={tab}>
+          {/* Forms Autofill */}
+          <OutsideTabPanel when="Forms Autofill" activeKey={tab}>
+              <div className="text-lg font-semibold mb-3">Autofill Profile</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {AUTOFILL_SCHEMA.map((def) => (
+                  <FieldRenderer
+                    key={def.key}
+                    def={def}
+                    value={autofill[def.key] ?? ""}
+                    onChange={(v) => setAutofillField(def.key, v)}
+                    error={autofillErrors[def.key]}
+                  />
+                ))}
+              </div>
+
+              <div className="mt-4 flex items-center justify-between">
+                <div className="text-xs text-gray-500">
+                  {autofillComplete ? (
+                    <span className="text-emerald-600">
+                      Ready — Autofill complete.
+                    </span>
+                  ) : (
+                    <>Complete all required fields to unlock generation.</>
+                  )}
+                </div>
+                <Button size="sm" onClick={saveAutofill}>
+                  Save
+                </Button>
+              </div>
+          </OutsideTabPanel>
+
+          {/* My Forms */}
+          <OutsideTabPanel when="My Forms" activeKey={tab}>
+            <div
+              className={cn(
+                gateMyAndPast && "opacity-60 pointer-events-none select-none"
+              )}
+            >
               <ul className="space-y-3">
                 {availableForms.map((f) => (
                   <li
@@ -170,10 +326,16 @@ export default function FormsPage() {
                   </li>
                 ))}
               </ul>
-            </OutsideTabPanel>
+            </div>
+          </OutsideTabPanel>
 
-            {/* Past Forms */}
-            <OutsideTabPanel when="Past Forms" activeKey={tab}>
+          {/* Past Forms */}
+          <OutsideTabPanel when="Past Forms" activeKey={tab}>
+            <div
+              className={cn(
+                gateMyAndPast && "opacity-60 pointer-events-none select-none"
+              )}
+            >
               {pastForms.length === 0 ? (
                 <p className="text-sm text-gray-600">No past forms yet.</p>
               ) : (
@@ -199,7 +361,7 @@ export default function FormsPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => console.log("Open", p)}
+                          onClick={() => console.log("Download", p)}
                         >
                           Download
                         </Button>
@@ -208,12 +370,12 @@ export default function FormsPage() {
                   ))}
                 </ul>
               )}
-            </OutsideTabPanel>
-          </OutsideTabs>
-        </div>
+            </div>
+          </OutsideTabPanel>
+        </OutsideTabs>
       </div>
 
-      {/* Generate: choose company */}
+      {/* Generate: per-template custom fields + company */}
       <AlertDialog open={modalOpen} onOpenChange={setModalOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -222,59 +384,117 @@ export default function FormsPage() {
               Generate {selectedForm ? selectedForm.name : "Form"}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Which company should we generate this form for?
+              Choose a company and fill any additional details for this
+              template.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Company</label>
-            <select
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
-              value={selectedCompany}
-              onChange={(e) => setSelectedCompany(e.target.value)}
-            >
-              <option value="" disabled>
-                Select a company…
-              </option>
-              {companies.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+          <div className="space-y-3">
+            {/* Company */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Company</label>
+              <select
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
+                value={selectedCompanyId}
+                onChange={(e) => setSelectedCompanyId(e.target.value)}
+              >
+                <option value="" disabled>
+                  Select a company…
                 </option>
-              ))}
-            </select>
+                {COMPANIES.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Custom fields */}
+            {customDefs.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {customDefs.map((def) => (
+                  <FieldRenderer
+                    key={def.key}
+                    def={def}
+                    value={custom[def.key] ?? ""}
+                    onChange={(v) => setCustomField(def.key, v)}
+                    error={customErrors[def.key]}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           <AlertDialogFooter className="gap-2 sm:gap-2">
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              disabled={!selectedCompany}
+              disabled={!canGenerate}
               onClick={confirmGenerate}
-              className={cn(!selectedCompany && "opacity-60")}
+              className={cn(!canGenerate && "opacity-60")}
             >
               Generate
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Demo only: toggle to see blocked/active states */}
-      <div className="mt-8">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setProfileComplete((s) => !s)}
-          className="text-xs"
-        >
-          Demo toggle: Autofill {profileComplete ? "Complete" : "Incomplete"}
-        </Button>
-      </div>
     </div>
   );
 }
 
-// ──────────────────────────────────────────────
-// Warning card (styled like Apply-for-Me OFF)
-// ──────────────────────────────────────────────
+function FieldRenderer({
+  def,
+  value,
+  onChange,
+  error,
+}: {
+  def: FieldDef;
+  value: string;
+  onChange: (v: string) => void;
+  error?: string;
+}) {
+  const base =
+    "w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200";
+  const label = (
+    <label className="text-sm font-medium">
+      {def.label}
+      {def.required && <span className="ml-1 text-red-500">*</span>}
+    </label>
+  );
+
+  return (
+    <div className="space-y-1.5">
+      {label}
+      {def.type === "select" ? (
+        <select
+          className={base}
+          value={value ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+        >
+          <option value="">{def.placeholder ?? "Select an option…"}</option>
+          {(def.options ?? []).map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <input
+          type={def.type === "number" ? "text" : def.type}
+          inputMode={def.type === "number" ? "numeric" : undefined}
+          className={base}
+          placeholder={def.placeholder}
+          maxLength={def.maxLength}
+          value={value ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      )}
+      {def.helper && <p className="text-xs text-gray-500">{def.helper}</p>}
+      {!!error && <p className="text-xs text-red-600">{error}</p>}
+    </div>
+  );
+}
+
+// Warning card
 function WarningCard({
   title,
   message,
@@ -307,19 +527,130 @@ function WarningCard({
           </h3>
           <Badge className={cn("text-xs", tone.pill)}>Required</Badge>
         </div>
-        {actionLabel && (
-          <Button size="sm" variant="secondary" onClick={onAction}>
-            {actionLabel}
-          </Button>
-        )}
       </div>
 
-      <div className={cn("text-xs sm:text-sm leading-relaxed", tone.subtext)}>
+      <div
+        className={cn(
+          "text-xs sm:text-sm leading-relaxed text-justify",
+          tone.subtext
+        )}
+      >
         {message}
       </div>
-      <p className="text-sm text-red-800">
+      <p className={cn("text-sm font-semibold", tone.heading)}>
         Form generation is currently disabled.
       </p>
     </Card>
   );
 }
+
+/* ──────────────────────────────────────────────
+   Mock Data
+   ────────────────────────────────────────────── */
+
+const AUTOFILL_SCHEMA: FieldDef[] = [
+  {
+    key: "student_id",
+    label: "Student ID",
+    type: "text",
+    required: true,
+    maxLength: 64,
+  },
+  {
+    key: "birthdate",
+    label: "Birthdate",
+    type: "date",
+    required: true,
+    helper: "YYYY-MM-DD",
+  },
+  { key: "guardian_name", label: "Guardian Name", type: "text" },
+  {
+    key: "guardian_phone",
+    label: "Guardian Phone",
+    type: "text",
+    pattern: "^\\+?63\\s?9\\d{2}\\s?\\d{3}\\s?\\d{4}$",
+    placeholder: "+63 9xx xxx xxxx",
+    helper: "Format: +63 9xx xxx xxxx",
+  },
+  {
+    key: "address_line1",
+    label: "Address Line 1",
+    type: "text",
+    required: true,
+  },
+  { key: "address_line2", label: "Address Line 2", type: "text" },
+  { key: "city", label: "City/Municipality", type: "text", required: true },
+  { key: "province", label: "Province", type: "text", required: true },
+  {
+    key: "postal_code",
+    label: "Postal Code",
+    type: "text",
+    required: true,
+    pattern: "^\\d{4}$",
+  },
+];
+
+const FORM_TEMPLATES: FormTemplate[] = [
+  {
+    id: "student-moa",
+    name: "Student MOA",
+    description: "Standard student-company MOA",
+    customFields: [
+      {
+        key: "program",
+        label: "Program",
+        type: "select",
+        required: true,
+        options: [
+          { value: "bs-ece", label: "BS ECE" },
+          { value: "bs-cs", label: "BS CS" },
+          { value: "bs-it", label: "BS IT" },
+        ],
+      },
+      {
+        key: "hours",
+        label: "Required Hours",
+        type: "number",
+        required: true,
+        placeholder: "e.g. 320",
+      },
+    ],
+  },
+  {
+    id: "endorsement",
+    name: "Endorsement Letter",
+    customFields: [
+      {
+        key: "contact_person",
+        label: "Contact Person",
+        type: "text",
+        required: true,
+      },
+      {
+        key: "department",
+        label: "Department",
+        type: "select",
+        options: [
+          { value: "hr", label: "Human Resources" },
+          { value: "it", label: "IT" },
+          { value: "ops", label: "Operations" },
+        ],
+        required: true,
+      },
+    ],
+  },
+  {
+    id: "timesheet",
+    name: "Daily Timesheet",
+    customFields: [
+      { key: "week_start", label: "Week Start", type: "date", required: true },
+    ],
+  },
+];
+
+const COMPANIES = [
+  { id: "ent-ardent", name: "Ardent World Inc." },
+  { id: "ent-urc", name: "URC" },
+  { id: "ent-factset", name: "FactSet" },
+  { id: "ent-accenture", name: "Accenture" },
+];
