@@ -215,7 +215,7 @@ const EmployerEditor = ({
           </div>
           <div>
             <FormInput
-              label="Legal Entity Name (optional)"
+              label="Legal Entity Name"
               value={formData.legal_entity_name ?? ""}
               setter={fieldSetter("legal_entity_name")}
               maxLength={100}
@@ -268,7 +268,7 @@ const EmployerEditor = ({
           </div>
           <div>
             <FormInput
-              label="Company website/LinkedIn (optional)"
+              label="Company website/LinkedIn"
               value={formData.website ?? ""}
               setter={fieldSetter("website")} // invalid type
             />
