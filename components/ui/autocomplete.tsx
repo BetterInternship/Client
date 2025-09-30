@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef, useId } from "react";
+import { useState, useMemo, useRef, useId } from "react";
 import { Input } from "./input";
 import { useDetectClickOutside } from "react-detect-click-outside";
 import { cn } from "@/lib/utils";
-import { Button } from "./button";
-import { PlusCircle, PlusCircleIcon } from "lucide-react";
+import { PlusCircleIcon } from "lucide-react";
 
 export interface IAutocompleteOption<ID extends number | string> {
   id: ID;
