@@ -81,42 +81,8 @@ const EmployerEditor = ({
   const [additionalFields, setAdditionalFields] = useState<AdditionalFields>(
     {} as AdditionalFields
   );
-  const [moaValidationError, setMoaValidationError] = useState<string>("");
-
-  // Function to validate MOA dates
-  const validateMoaDates = () => {
-    if (additionalFields.has_moa_with_dlsu) {
-      const startDate = additionalFields.moa_start_date;
-      const endDate = additionalFields.moa_expires_at;
-
-      if (!startDate || !endDate) {
-        setMoaValidationError("Both MOA start and end dates are required.");
-        return false;
-      }
-
-      if (startDate === endDate) {
-        setMoaValidationError("MOA start and end dates cannot be the same.");
-        return false;
-      }
-
-      if (endDate < startDate) {
-        setMoaValidationError(
-          "MOA end date cannot be earlier than the start date."
-        );
-        return false;
-      }
-    }
-    setMoaValidationError("");
-    return true;
-  };
 
   const register = async () => {
-    // Validate MOA dates if MOA is enabled
-    if (additionalFields.has_moa_with_dlsu && !validateMoaDates()) {
-      alert(moaValidationError);
-      return;
-    }
-
     // Validate required fields before submitting
     const missingFields = [];
 
@@ -150,24 +116,12 @@ const EmployerEditor = ({
     const multipartForm = MultipartFormBuilder.new();
     const newProfile = {
       ...cleanFormData(),
-      website: toURL(formData.website)?.toString(),
+      website: toURL(formData.website)?.toString() ?? null,
       accepts_non_university: formData.accepts_non_university ?? true, // default to true
       accepted_universities: `[${universities
         .map((u) => `"${u.id}"`)
         .join(",")}]`,
       contact_name: additionalFields.contact_name,
-      ...(additionalFields.has_moa_with_dlsu
-        ? {
-            moa: JSON.stringify([
-              {
-                // ! change when unis update
-                university_id: get_university_by_name("DLSU - Manila")?.id,
-                start_date: additionalFields.moa_start_date ?? 0,
-                expires_at: additionalFields.moa_expires_at ?? 0,
-              },
-            ]),
-          }
-        : {}),
     };
     multipartForm.from(newProfile);
     setIsRegistering(true);
@@ -194,15 +148,6 @@ const EmployerEditor = ({
     const debouncedValidation = setTimeout(() => validateFormData(), 500);
     return () => clearTimeout(debouncedValidation);
   }, [formData]);
-
-  // Validate MOA dates when they change
-  useEffect(() => {
-    validateMoaDates();
-  }, [
-    additionalFields.has_moa_with_dlsu,
-    additionalFields.moa_start_date,
-    additionalFields.moa_expires_at,
-  ]);
 
   // Data validators
   useEffect(() => {
