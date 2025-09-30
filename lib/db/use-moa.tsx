@@ -36,4 +36,4 @@ export const MoaContextProvider = ({
   );
 };
 
-export const useMoa = () => useContext(moaContext);
+export const useDbMoa = () => useContext(moaContext);

@@ -3,7 +3,7 @@ import { Clipboard, CheckCircle } from "lucide-react";
 import { Button } from "../ui/button";
 import { Job } from "@/lib/db/db.types";
 import { RefObject, useState } from "react";
-import { useProfile } from "@/lib/api/student.api";
+import { useProfileData } from "@/lib/api/student.data.api";
 import { Textarea } from "../ui/textarea";
 
 export const ApplyConfirmModal = ({
@@ -19,7 +19,7 @@ export const ApplyConfirmModal = ({
   onAddNow: () => void;
   onSubmit: (text: string) => void;
 }) => {
-  const profile = useProfile();
+  const profile = useProfileData();
   const [text, setText] = useState("");
 
   const needsGH = !!job?.require_github;
@@ -49,9 +49,7 @@ export const ApplyConfirmModal = ({
           </h2>
           <p className="text-gray-600 leading-relaxed">
             You're applying for{" "}
-            <span className="font-semibold text-gray-900">
-              {job?.title}
-            </span>
+            <span className="font-semibold text-gray-900">{job?.title}</span>
             {job?.employer?.name && (
               <>
                 {" "}

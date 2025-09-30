@@ -37,7 +37,7 @@ import { useRoute } from "@/hooks/use-route";
 import { useConversations } from "@/hooks/use-conversation";
 
 import { useAuthContext } from "@/lib/ctx-auth";
-import { useProfile } from "@/lib/api/student.api";
+import { useProfileData } from "@/lib/api/student.data.api";
 import { cn } from "@/lib/utils";
 import { getFullName } from "@/lib/profile";
 import { useQueryClient } from "@tanstack/react-query";
@@ -436,7 +436,7 @@ function MobileDrawer({
   open: boolean;
   onClose: () => void;
 }) {
-  const profile = useProfile();
+  const profile = useProfileData();
   const { isAuthenticated, logout } = useAuthContext();
   const conversations = useConversations();
   const router = useRouter();
@@ -634,7 +634,7 @@ function MobileDrawer({
    Profile Button (desktop)
 ======================================================================================= */
 export const ProfileButton: React.FC = () => {
-  const profile = useProfile();
+  const profile = useProfileData();
   const conversations = useConversations();
   const { isAuthenticated, logout } = useAuthContext();
   const router = useRouter();
@@ -802,7 +802,7 @@ export const Header: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const profile = useProfile();
+  const profile = useProfileData();
 
   const [state, dispatch] = useReducer(jobFilterReducer, initialFilter);
   const [searchTerm, setSearchTerm] = useState("");

@@ -12,7 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Job } from "@/lib/db/db.types";
-import { useProfile } from "@/lib/api/student.api";
+import { useProfileData } from "@/lib/api/student.data.api";
 import { ModalComponent, ModalHandle } from "@/hooks/use-modal";
 import { JobDetailsSummary } from "../shared/jobs";
 import { SaveJobButton } from "../features/student/job/save-job-button";
@@ -32,7 +32,7 @@ export const JobModal = ({
     portfolio_link?: string | null;
   };
 }) => {
-  const profile = useProfile();
+  const profile = useProfileData();
 
   // Requirement checks (align with desktop)
   const hasGithub = !!user?.github_link?.trim();

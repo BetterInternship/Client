@@ -1,28 +1,30 @@
-import { useApplications } from "./api/student.api";
+import { useApplicationActions } from "./api/student.actions.api";
 import { Job } from "./db/db.types";
 
 /**
  * Applies to a given job.
- * 
- * @param coverLetter 
- * @returns 
+ *
+ * @param coverLetter
+ * @returns
  */
-export const applyToJob = async (job?: Job | null, coverLetter?: string): Promise<{ success?: true, message?: string }> => {
-  const applications = useApplications();
+export const applyToJob = async (
+  job?: Job | null,
+  coverLetter?: string
+): Promise<{ success?: true; message?: string }> => {
+  const applicationActions = useApplicationActions();
   const text = (coverLetter ?? "").trim();
 
-  if (!job) return { message: 'Job does not exist.' };
+  if (!job) return { message: "Job does not exist." };
   if ((job?.require_cover_letter ?? true) && !text)
-    return { message: 'A cover letter is required for this job.'};
+    return { message: "A cover letter is required for this job." };
 
-  const response = await applications
-    .create({
-      job_id: job.id ?? "",
-      cover_letter: text,
-    })
+  const response = await applicationActions.create.mutateAsync({
+    job_id: job.id ?? "",
+    cover_letter: text,
+  });
 
-  if (response.message) return { message: response.message }
-  if (applications.createError) 
-    return { message: applications.createError?.message }
+  if (response.message) return { message: response.message };
+  if (applicationActions.create.error)
+    return { message: applicationActions.create?.error.message };
   return { success: true };
 };

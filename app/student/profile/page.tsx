@@ -9,7 +9,7 @@ import {
 } from "react";
 import { motion } from "framer-motion";
 import { Edit2, Upload, Eye, Camera, CheckCircle2, Globe2 } from "lucide-react";
-import { useProfile } from "@/lib/api/student.api";
+import { useProfileData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
 import { useDbRefs } from "@/lib/db/use-refs";
@@ -51,6 +51,7 @@ import {
 } from "@/components/ui/chip-select";
 import { Badge } from "@/components/ui/badge";
 import { AutoApplyCard } from "@/components/features/student/profile/AutoApplyCard";
+import { useProfileActions } from "@/lib/api/student.actions.api";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
@@ -64,7 +65,8 @@ const getNearestMonthTimestamp = () => {
 
 export default function ProfilePage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
-  const profile = useProfile();
+  const profile = useProfileData();
+  const profileActions = useProfileActions();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -143,12 +145,12 @@ export default function ProfilePage() {
   const handleAutoApplySave = async () => {
     setAutoApplySaving(true);
     setAutoApplyError(null);
-    
+
     const prev = !!profile.data?.apply_for_me;
     console.log(prev);
 
     try {
-      await profile.update({ apply_for_me: !prev });
+      await profileActions.update.mutateAsync({ apply_for_me: !prev });
     } catch (e: any) {
       setAutoApplyError(e?.message ?? "Failed to update auto-apply");
     } finally {
@@ -238,7 +240,7 @@ export default function ProfilePage() {
             {isEditing && (
               <ProfileEditForm data={data}>
                 <ProfileEditor
-                  updateProfile={profile.update}
+                  updateProfile={profileActions.update.mutateAsync}
                   ref={profileEditorRef}
                   rightSlot={
                     <Button
@@ -888,14 +890,14 @@ const ProfileEditor = forwardRef<
         ? ""
         : "Enter a valid number of hours (0-2000).";
     });
-    addValidator("job_mode_ids", (vals?: string[]) => {
+    addValidator("job_mode_ids", (vals?: number[]) => {
       if (!vals) return "";
       const valid = new Set(jobModeOptions.map((o) => o.id));
       return vals.every((v) => valid.has(v))
         ? ""
         : "Invalid work mode selected.";
     });
-    addValidator("job_type_ids", (vals?: string[]) => {
+    addValidator("job_type_ids", (vals?: number[]) => {
       if (!vals) return "";
       const valid = new Set(jobTypeOptions.map((o) => o.id));
       return vals.every((v) => valid.has(v))

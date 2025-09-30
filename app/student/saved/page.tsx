@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart } from "lucide-react";
-import { useSavedJobs } from "@/lib/api/student.api";
+import { useSavedJobsData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Loader } from "@/components/ui/loader";
 import { Card } from "@/components/ui/card";
@@ -13,10 +13,12 @@ import { Job } from "@/lib/db/db.types";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { Separator } from "@/components/ui/separator";
 import { PageError } from "@/components/ui/error";
+import { useJobActions } from "@/lib/api/student.actions.api";
 
 export default function SavedJobsPage() {
   const { isAuthenticated, redirectIfNotLoggedIn } = useAuthContext();
-  const savedJobs = useSavedJobs();
+  const savedJobs = useSavedJobsData();
+  const jobActions = useJobActions();
 
   redirectIfNotLoggedIn();
 
@@ -63,9 +65,9 @@ export default function SavedJobsPage() {
             <SavedJobCard
               savedJob={savedJob}
               handleUnsaveJob={async () =>
-                await savedJobs.toggle(savedJob.id ?? "")
+                await jobActions.toggleSave.mutateAsync(savedJob.id ?? "")
               }
-              saving={savedJobs.isToggling}
+              saving={jobActions.toggleSave.isPending}
             />
           ))}
         </div>

@@ -4,7 +4,7 @@ import React, { useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useProfile, useJob } from "@/lib/api/student.api";
+import { useProfileData, useJobData } from "@/lib/api/student.data.api";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useModalRef } from "@/hooks/use-modal";
 import ReactMarkdown from "react-markdown";
@@ -33,12 +33,12 @@ export default function JobPage() {
   const router = useRouter();
   const params = useParams();
   const { job_id } = params;
-  const job = useJob(job_id as string);
+  const job = useJobData(job_id as string);
   const applyConfirmModalRef = useModalRef();
   const successModalRef = useModalRef();
   const applySuccessModalRef = useModalRef();
 
-  const profile = useProfile();
+  const profile = useProfileData();
   const { universities } = useDbRefs();
 
   const goProfile = useCallback(() => {

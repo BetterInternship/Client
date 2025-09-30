@@ -10,7 +10,11 @@ import React, {
 import { useSearchParams } from "next/navigation";
 import { CheckSquare, Square, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useJobs, useProfile, useApplications } from "@/lib/api/student.api";
+import {
+  useJobsData,
+  useProfileData,
+  useApplicationsData,
+} from "@/lib/api/student.data.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Job } from "@/lib/db/db.types";
 import { Paginator } from "@/components/ui/paginator";
@@ -37,6 +41,10 @@ import { MassApplyModal } from "@/components/modals/MassApplyModal";
 import { ApplyConfirmModal } from "@/components/modals/ApplyConfirmModal";
 import { applyToJob } from "@/lib/application";
 import { PageError } from "@/components/ui/error";
+import {
+  useApplicationActions,
+  useProfileActions,
+} from "@/lib/api/student.actions.api";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -62,7 +70,7 @@ export default function SearchPage() {
   const [_jobsPage, setJobsPage] = useState(1);
 
   // hooks
-  const jobs = useJobs({
+  const jobs = useJobsData({
     search: searchTerm.trim() || undefined,
     position,
     jobModeFilter,
@@ -70,8 +78,10 @@ export default function SearchPage() {
     jobAllowanceFilter,
     jobMoaFilter,
   });
-  const applications = useApplications();
-  const profile = useProfile();
+  const applicationActions = useApplicationActions();
+  const applications = useApplicationsData();
+  const profile = useProfileData();
+  const profileActions = useProfileActions();
   const queryClient = useQueryClient();
 
   // Modals
@@ -190,7 +200,9 @@ export default function SearchPage() {
     }
     const allApplied =
       selectedJobsList.length > 0 &&
-      selectedJobsList.every((j) => applications.appliedJob(j.id ?? ""));
+      selectedJobsList.every((j) =>
+        jobs.appliedJobs.find((job) => job.id === j.id)
+      );
     if (!selectedJobsList.length || allApplied) {
       alert(
         "No eligible jobs selected. Select jobs you haven’t applied to yet."
@@ -222,7 +234,7 @@ export default function SearchPage() {
         const eligible: Job[] = [];
 
         for (const job of selectedJobsList) {
-          if (applications.appliedJob(job.id ?? "")) {
+          if (jobs.appliedJobs.find((j) => j.id === job.id)) {
             skipped.push({ job, reason: "Already applied" });
             continue;
           }
@@ -262,17 +274,18 @@ export default function SearchPage() {
         // sequential, no setState in the loop
         for (const job of eligible) {
           try {
-            await applications.create({
+            await applicationActions.create.mutateAsync({
               job_id: job.id ?? "",
               cover_letter: coverLetter || "",
             });
-            if (applications.createError) {
+            if (applicationActions.create.error) {
               failed.push({
                 job,
-                error: applications.createError.message || "Unknown error",
+                error:
+                  applicationActions.create.error.message || "Unknown error",
               });
             } else {
-              const error = applications.createResult?.message;
+              const error = applicationActions.create.data?.message;
               if (error) failed.push({ job, error });
               else ok.push(job);
             }
@@ -318,7 +331,9 @@ export default function SearchPage() {
   // Forever dismiss auto-apply tip
   const dismissTip = async () => {
     try {
-      await profile.update({ acknowledged_auto_apply: true });
+      await profileActions.update.mutateAsync({
+        acknowledged_auto_apply: true,
+      });
     } catch (e) {
       console.error("Failed to dismiss auto-apply tip", e);
     }

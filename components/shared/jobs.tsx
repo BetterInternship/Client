@@ -24,7 +24,7 @@ import { useEffect } from "react";
 import { JobBooleanLabel, Property, JobTitleLabel } from "../ui/labels";
 import { MDXEditor } from "../MDXEditor";
 import { DropdownGroup } from "../ui/dropdown";
-import { useMoa } from "@/lib/db/use-moa";
+import { useDbMoa } from "@/lib/db/use-moa";
 import { Toggle } from "../ui/toggle";
 import { Card } from "../ui/card";
 import { Divider } from "../ui/divider";
@@ -181,7 +181,7 @@ export const EmployerMOA = ({
   university_id: string | null | undefined;
   employer_id: string | null | undefined;
 }) => {
-  const { check } = useMoa();
+  const { check } = useDbMoa();
   const { get_university } = useDbRefs();
 
   return check(employer_id ?? "", university_id ?? "") ? (

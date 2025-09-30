@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/input-otp";
 import { AuthService, UserService } from "@/lib/api/services";
 import { Input } from "../ui/input";
-import { useProfile } from "@/lib/api/student.api";
+import { useProfileData } from "@/lib/api/student.data.api";
 import { useQueryClient } from "@tanstack/react-query";
 import { Stepper } from "../stepper/stepper";
 import {
@@ -103,7 +103,7 @@ function profileToDraft(p: any): ProfileDraft {
 
 function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   const queryClient = useQueryClient();
-  const existingProfile = useProfile();
+  const existingProfile = useProfileData();
   const [step, setStep] = useState(0);
 
   // profile being edited
@@ -402,7 +402,7 @@ function StepBasicIdentity({
 /* --------------------------- Step 2: Activate (OTP) --------------------------- */
 
 function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
-  const profile = useProfile();
+  const profile = useProfileData();
   const [otp, setOtp] = useState("");
   const [otpError, setOtpError] = useState("");
   const [sending, setSending] = useState(false);

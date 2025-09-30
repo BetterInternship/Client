@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 // Hooks (preserving existing implementations)
-import { useApplications } from "@/lib/api/student.api";
+import { useApplicationsData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { formatTimeAgo } from "@/lib/utils";
@@ -24,7 +24,7 @@ import { PageError } from "@/components/ui/error";
 
 export default function ApplicationsPage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
-  const applications = useApplications();
+  const applications = useApplicationsData();
   redirectIfNotLoggedIn();
 
   return (
