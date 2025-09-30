@@ -442,8 +442,8 @@ function MobileDrawer({
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
-  const queryClient = useQueryClient();
   const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
+  const queryClient = useQueryClient();
 
   const handleLogout = () => logout().then(() => router.push("/"));
 
@@ -640,7 +640,6 @@ export const ProfileButton: React.FC = () => {
   const router = useRouter();
   const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
   const queryClient = useQueryClient();
-  const [open, setOpen] = useState(false);
 
   const handleLogout = () => logout().then(() => router.push("/"));
 
@@ -693,64 +692,7 @@ export const ProfileButton: React.FC = () => {
           ) : null}
         </Button>
       </Link>
-      <div className="relative z-[100]">
-        <Button
-          type="button"
-          variant="ghost"
-          className="relative flex items-center gap-2 h-12 px-3 z-[1000]"
-          onMouseOver={() => setOpen(true)}
-          onMouseOut={() => setOpen(false)}
-          onTouchEnd={(e) => e.stopPropagation()}
-        >
-          <ChevronDown
-            className={cn(
-              "w-4 h-4 text-gray-600 transition-transform",
-              open ? "rotate-180" : ""
-            )}
-          />
-        </Button>
-
-        {open && (
-          <div
-            className="absolute right-0 mt-2 bg-white border border-gray-200 rounded-[0.33em] shadow-lg z-[1000]"
-            // onClick={handleDropdownInteraction}
-            // onTouchStart={handleDropdownInteraction}
-            // onTouchEnd={handleDropdownInteraction}
-          >
-            <div
-              className={
-                "relative py-1 z-[1000] max-h-64 overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
-              }
-              style={{
-                scrollbarWidth: "thin",
-                scrollbarColor: "#9ca3af #f3f4f6",
-              }}
-            >
-              <DropdownOption
-                on_click={() => {
-                  handleProfileClick();
-                }}
-              >
-                <Settings className="w-4 h-4 inline-block mr-2 text-primary" />
-                <span className="text-primary">Profile</span>
-              </DropdownOption>
-              <DropdownOption href="/applications">
-                <BookA className="w-4 h-4 inline-block mr-2 text-primary" />
-                <span className="text-primary">Applications</span>
-              </DropdownOption>
-              <DropdownOption href="/saved">
-                <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
-                <span className="text-primary">Saved Jobs</span>
-              </DropdownOption>
-              <DropdownOption href="/" on_click={handleLogout}>
-                <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />
-                <span className="text-red-500">Sign Out</span>
-              </DropdownOption>
-            </div>
-          </div>
-        )}
-      </div>
-      {/* <GroupableNavDropdown
+      <GroupableNavDropdown
         display={
           <>
             <div className="overflow-hidden rounded-full flex items-center justify-center">
@@ -788,7 +730,7 @@ export const ProfileButton: React.FC = () => {
           <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />
           <span className="text-red-500">Sign Out</span>
         </DropdownOption>
-      </GroupableNavDropdown> */}
+      </GroupableNavDropdown>
     </div>
   );
 };

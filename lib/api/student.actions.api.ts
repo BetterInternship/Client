@@ -1,3 +1,14 @@
+/**
+ * @ Author: BetterInternship
+ * @ Create Time: 2025-09-30 20:27:33
+ * @ Modified time: 2025-09-30 21:50:16
+ * @ Description:
+ *
+ * This file should contain all actions on the users side of the platform.
+ * Preferable to group these by MAJOR FLOWS.
+ * Keep this file clean!!
+ */
+
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { ApplicationService, UserService } from "./services";
 
@@ -6,8 +17,8 @@ import { ApplicationService, UserService } from "./services";
  * We're going to make one of these per MAJOR FLOW.
  * So something like the apply flow, search flow, user profile flow, intership requirements flow, etc.
  * NOTE that these hooks are meant to do mutations only, no querying from backend
- * 
- * @hook 
+ *
+ * @hook
  */
 export const useApplicationActions = () => {
   const queryClient = useQueryClient();
@@ -30,7 +41,7 @@ export const useApplicationActions = () => {
 /**
  * Actions on jobs, including saving.
  * Not sure what other stuff we might put here, might consider merging with application actions.
- * 
+ *
  * @hook
  */
 export const useJobActions = () => {
@@ -44,11 +55,11 @@ export const useJobActions = () => {
   };
 
   return actions;
-}
+};
 
 /**
  * Actions on a user's profile.
- * 
+ *
  * @hook
  */
 export const useProfileActions = () => {
@@ -62,4 +73,4 @@ export const useProfileActions = () => {
   };
 
   return actions;
-}
+};
