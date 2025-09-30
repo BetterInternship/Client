@@ -54,14 +54,6 @@ import { AutoApplyCard } from "@/components/features/student/profile/AutoApplyCa
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
-const getNearestMonthTimestamp = () => {
-  const date = new Date();
-  const dateString = `${date.getFullYear()}-${(
-    "0" + (date.getMonth() + 1).toString()
-  ).slice(-2)}-01T00:00:00.000Z`;
-  return Date.parse(dateString);
-};
-
 export default function ProfilePage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
   const profile = useProfile();
@@ -124,8 +116,6 @@ export default function ProfilePage() {
     );
   }
 
-  console.log(profile);
-
   const data = profile.data as PublicUser | undefined;
   const { score, parts, tips } = computeProfileScore(data);
 
@@ -145,7 +135,6 @@ export default function ProfilePage() {
     setAutoApplyError(null);
     
     const prev = !!profile.data?.apply_for_me;
-    console.log(prev);
 
     try {
       await profile.update({ apply_for_me: !prev });
@@ -722,7 +711,6 @@ const ProfileEditor = forwardRef<
         if (hasCalendarErrors) setTab("Calendar");
         else if (hasPrefsErrors) setTab("Internship Details");
         else setTab("Student Profile");
-        console.log(hasErrors, formErrors);
         return false;
       }
 
@@ -1393,6 +1381,13 @@ const ProfileLinkBadge = ({
 // ----------------------------
 //  Helpers
 // ----------------------------
+const getNearestMonthTimestamp = () => {
+  const date = new Date();
+  const dateString = `${date.getFullYear()}-${(
+    "0" + (date.getMonth() + 1).toString()
+  ).slice(-2)}-01T00:00:00.000Z`;
+  return Date.parse(dateString);
+};
 
 // For profile score
 function computeProfileScore(p?: Partial<PublicUser>): {
