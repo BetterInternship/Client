@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-16 05:05:48
- * @ Modified time: 2025-10-01 02:08:07
+ * @ Modified time: 2025-10-01 03:33:00
  * @ Description:
  *
  * A collection of the icons we use for different indicators.
@@ -75,8 +75,6 @@ export const SalaryIcon = () => {
  */
 export const BooleanCheckIcon = ({ checked }: { checked?: boolean | null }) => {
   if (checked)
-    return (
-      <CircleCheck className="w-[1.1em] h-[1.1em] mr-1 text-supportive"></CircleCheck>
-    );
+    return <CircleCheck className="w-[1.1em] h-[1.1em] mr-1"></CircleCheck>;
   else return <XCircle className="w-[1.1em] h-[1.1em] mr-1"></XCircle>;
 };

@@ -40,6 +40,14 @@ const getNearestMonthTimestamp = () => {
   return Date.parse(dateString);
 };
 
+const StepCheckIndicator = ({ checked }: { checked: boolean }) => {
+  return (
+    <div className={checked ? "text-supportive" : ""}>
+      <BooleanCheckIcon checked={checked} />
+    </div>
+  );
+};
+
 export default function RegisterPage() {
   const refs = useDbRefs();
   const auth = useAuthContext();
@@ -225,7 +233,7 @@ export default function RegisterPage() {
                 {/* Q1: Voluntary or Credited */}
                 <div className="flex flex-row space-between">
                   {(isCredited || isVoluntary) && (
-                    <BooleanCheckIcon
+                    <StepCheckIndicator
                       checked={!!regForm.watch("internship_type")}
                     />
                   )}
@@ -264,9 +272,17 @@ export default function RegisterPage() {
                 {(isCredited || isVoluntary) && (
                   <div className="space-y-5">
                     <div className="w-full flex flex-row space-between">
-                      <BooleanCheckIcon
-                        checked={!!regForm.watch("expected_start_date")}
-                      />
+                      <div
+                        className={
+                          !!regForm.watch("expected_start_date")
+                            ? "text-supportive"
+                            : ""
+                        }
+                      >
+                        <StepCheckIndicator
+                          checked={!!regForm.watch("expected_start_date")}
+                        />
+                      </div>
                       <FormMonthPicker
                         label="Ideal internship start"
                         date={regForm.watch("expected_start_date") ?? undefined}
@@ -284,7 +300,7 @@ export default function RegisterPage() {
 
                     {isCredited && (
                       <div className="w-full flex flex-row space-between">
-                        <BooleanCheckIcon
+                        <StepCheckIndicator
                           checked={!!regForm.watch("expected_duration_hours")}
                         />
                         <div className="space-y-2 flex-1">
@@ -312,7 +328,7 @@ export default function RegisterPage() {
                     )}
 
                     <div className="w-full flex flex-row space-between">
-                      <BooleanCheckIcon
+                      <StepCheckIndicator
                         checked={!!regForm.watch("job_category_ids")?.length}
                       />
                       <div className="space-y-2 flex-1">
@@ -330,7 +346,7 @@ export default function RegisterPage() {
                     </div>
 
                     <div className="w-full flex flex-row space-between">
-                      <BooleanCheckIcon checked={true} />
+                      <StepCheckIndicator checked={true} />
                       <div className="space-y-2 flex-1">
                         <div>
                           <FieldLabel>Work setup</FieldLabel>
@@ -351,7 +367,7 @@ export default function RegisterPage() {
 
                     {/* Job types */}
                     <div className="w-full flex flex-row space-between">
-                      <BooleanCheckIcon checked={true} />
+                      <StepCheckIndicator checked={true} />
                       <div className="space-y-2 flex-1">
                         <div>
                           <FieldLabel>Work-time commitment</FieldLabel>
@@ -372,7 +388,7 @@ export default function RegisterPage() {
 
                     {/* University email */}
                     <div className="w-full flex flex-row space-between">
-                      <BooleanCheckIcon
+                      <StepCheckIndicator
                         checked={!!regForm.watch("university")}
                       />
                       <div className="space-y-2 flex-1">

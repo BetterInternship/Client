@@ -171,8 +171,8 @@ function ReqPill({ ok, label }: { ok: boolean; label: string }) {
       className={cn(
         "flex items-center gap-2 rounded-[0.33em] px-2 py-0.5 text-sm border",
         ok
-          ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-          : "bg-amber-50 border-amber-200 text-amber-900"
+          ? "bg-supporitve/10 border-supportive/50 text-supprotive"
+          : "bg-warning/10 border-warning/50 text-warning"
       )}
     >
       {ok ? (
@@ -196,9 +196,9 @@ function MissingNotice({
 }) {
   if (!show) return null;
   return (
-    <div className="flex items-start gap-2 rounded-[0.33em] border border-amber-200 bg-amber-50 px-3 py-2">
-      <AlertTriangle className="h-4 w-4 mt-0.5 text-amber-700 shrink-0" />
-      <p className="text-sm text-amber-900 leading-snug">
+    <div className="flex items-start gap-2 rounded-[0.33em] border border-warning/50 bg-warning/10 px-3 py-2">
+      <AlertTriangle className="h-4 w-4 mt-0.5 text-warning shrink-0" />
+      <p className="text-sm text-warning leading-snug">
         This job requires{" "}
         {needsGithub && needsPortfolio ? (
           <b>GitHub and Portfolio</b>
