@@ -18,7 +18,6 @@ import { useModal, useModalRef } from "@/hooks/use-modal";
 import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
 import { UserService } from "@/lib/api/services";
 import { useFile } from "@/hooks/use-file";
-import { PDFPreview } from "@/components/shared/pdf-preview";
 import { IncompleteProfileContent } from "@/components/modals/IncompleteProfileModal";
 import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { JobModal } from "@/components/modals/JobModal";
@@ -73,18 +72,11 @@ export default function SearchPage() {
     jobMoaFilter,
   });
   const applications = useApplications();
-
-  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
-
-  // resume preview (profile modal)
-  const { url: resumeURL, sync: syncResumeURL } = useFile({
-    fetcher: UserService.getMyResumeURL,
-    route: "/users/me/resume",
-  });
-
   const profile = useProfile();
   const queryClient = useQueryClient();
 
+  // Modals
+  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
   const {
     open: openMassApplyResultModal,
     close: closeMassApplyResultModal,
@@ -97,17 +89,6 @@ export default function SearchPage() {
 
   // computed pages
   const jobsPage = jobs.getJobsPage({ page: _jobsPage, limit: jobsPageSize });
-
-  useEffect(() => {
-    if (profile?.data?.resume) {
-      syncResumeURL();
-    }
-  }, [profile?.data?.resume, syncResumeURL]);
-
-  const openStudentPreview = async () => {
-    await syncResumeURL();
-    openStudentPreview();
-  };
 
   /* --------------------------------------------
     * URL → local filter state
@@ -752,9 +733,6 @@ export default function SearchPage() {
         </div>
       </MassApplyResultModal>
 
-      {/* Resume Modal */}
-      {resumeURL.length > 0 && <ProfileResumePreview url={resumeURL} />}
-
       <Toaster
         position={isMobile ? "bottom-center" : "bottom-right"}
         closeButton
@@ -762,22 +740,6 @@ export default function SearchPage() {
         theme="light"
       />
     </>
-  );
-}
-
-/* =======================================================================================
-    Small helper for resume modal
-  ======================================================================================= */
-
-function ProfileResumePreview({ url }: { url: string }) {
-  const { Modal: ResumeModal } = useModal("resume-modal");
-  return (
-    <ResumeModal>
-      <div className="space-y-4">
-        <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
-        <PDFPreview url={url} />
-      </div>
-    </ResumeModal>
   );
 }
 
