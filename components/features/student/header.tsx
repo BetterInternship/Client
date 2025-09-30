@@ -22,6 +22,7 @@ import {
   ChevronDown,
   Menu,
   Check as CheckIcon,
+  Newspaper,
 } from "lucide-react";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { useDetectClickOutside } from "react-detect-click-outside";
@@ -547,6 +548,7 @@ function MobileDrawer({
             <nav>
               <ul className="grid gap-1">
                 {isAuthenticated() && (
+                  // Chats
                   <li>
                     <Link href="/conversations" className="block w-full">
                       <button className="w-full flex items-center justify-between rounded-md px-3 py-2">
@@ -564,6 +566,8 @@ function MobileDrawer({
                     </Link>
                   </li>
                 )}
+
+                {/* Browse */}
                 <li>
                   <Link href="/search" className="block w-full">
                     <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
@@ -575,6 +579,8 @@ function MobileDrawer({
                     </button>
                   </Link>
                 </li>
+
+                {/* Profile */}
                 <li>
                   <button
                     onClick={() => handleProfileClick()}
@@ -587,6 +593,8 @@ function MobileDrawer({
                     <ChevronRight className="w-4 h-4 text-gray-300" />
                   </button>
                 </li>
+
+                {/* Applications */}
                 <li>
                   <Link href="/applications" className="block w-full">
                     <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
@@ -598,12 +606,27 @@ function MobileDrawer({
                     </button>
                   </Link>
                 </li>
+
+                {/* Saved */}
                 <li>
                   <Link href="/saved" className="block w-full">
                     <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
                       <div>
                         <Heart className="w-4 h-4 inline-block mr-2" />
                         <span>Saved Jobs</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-gray-300" />
+                    </button>
+                  </Link>
+                </li>
+
+                {/* Forms */}
+                <li>
+                  <Link href="/forms" className="block w-full">
+                    <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
+                      <div>
+                        <Newspaper className="w-4 h-4 inline-block mr-2" />
+                        <span>Forms</span>
                       </div>
                       <ChevronRight className="w-4 h-4 text-gray-300" />
                     </button>
@@ -725,6 +748,10 @@ export const ProfileButton: React.FC = () => {
         <DropdownOption href="/saved">
           <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
           <span className="text-primary">Saved Jobs</span>
+        </DropdownOption>
+        <DropdownOption href="/forms">
+          <Newspaper className="w-4 h-4 inline-block mr-2 text-primary" />
+          <span className="text-primary">Forms</span>
         </DropdownOption>
         <DropdownOption href="/" on_click={handleLogout}>
           <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />
