@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useCallback, useRef } from "react";
+import React, { useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useProfile, useApplications, useJob } from "@/lib/api/student.api";
+import { useProfile, useJob } from "@/lib/api/student.api";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useModalRef } from "@/hooks/use-modal";
 import ReactMarkdown from "react-markdown";
@@ -23,6 +23,7 @@ import { PageError } from "@/components/ui/error";
 import { SaveJobButton } from "@/components/features/student/job/save-job-button";
 import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job-button";
 import { ApplyConfirmModal } from "@/components/modals/ApplyConfirmModal";
+import { applyToJob } from "@/lib/application";
 
 /**
  * The individual job page.
@@ -39,35 +40,11 @@ export default function JobPage() {
 
   const profile = useProfile();
   const { universities } = useDbRefs();
-  const applications = useApplications();
 
   const goProfile = useCallback(() => {
     applyConfirmModalRef.current?.close();
     router.push("/profile");
   }, [applyConfirmModalRef, router]);
-
-  const handleDirectApplication = async (textFromModal?: string) => {
-    if (!job.data) return;
-
-    const text = (textFromModal ?? "").trim();
-
-    if ((job.data.require_cover_letter ?? true) && !text) {
-      alert("A cover letter is required to apply for this job.");
-      return;
-    }
-
-    await applications
-      .create({
-        job_id: job.data.id ?? "",
-        cover_letter: text,
-      })
-      .then((response) => {
-        if (applications.createError)
-          return alert(applications.createError.message);
-        if (response?.message) return alert(response.message);
-        applySuccessModalRef.current?.open();
-      });
-  };
 
   if (job.error) {
     return (
@@ -223,7 +200,10 @@ export default function JobPage() {
         onAddNow={goProfile}
         onSubmit={(text: string) => {
           applyConfirmModalRef.current?.close();
-          handleDirectApplication(text);
+          applyToJob(job.data, text).then((response) => {
+            if (!response.success) return alert(response.message);
+            applySuccessModalRef.current?.open();
+          });
         }}
       />
 

@@ -8,27 +8,17 @@ import React, {
   useCallback,
 } from "react";
 import { useSearchParams } from "next/navigation";
-import {
-  CheckCircle,
-  Clipboard,
-  ArrowLeft,
-  CheckSquare,
-  Square,
-  Trash2,
-} from "lucide-react";
+import { CheckSquare, Square, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { useJobs, useProfile, useApplications } from "@/lib/api/student.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Job } from "@/lib/db/db.types";
 import { Paginator } from "@/components/ui/paginator";
 import { useModal, useModalRef } from "@/hooks/use-modal";
 import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
-import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { UserService } from "@/lib/api/services";
 import { useFile } from "@/hooks/use-file";
 import { PDFPreview } from "@/components/shared/pdf-preview";
-import { openURL } from "@/lib/utils/url-utils";
 import { IncompleteProfileContent } from "@/components/modals/IncompleteProfileModal";
 import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { JobModal } from "@/components/modals/JobModal";
@@ -48,6 +38,7 @@ import { SaveJobButton } from "@/components/features/student/job/save-job-button
 import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job-button";
 import { MassApplyModal } from "@/components/modals/MassApplyModal";
 import { ApplyConfirmModal } from "@/components/modals/ApplyConfirmModal";
+import { applyToJob } from "@/lib/application";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -91,9 +82,6 @@ export default function SearchPage() {
     route: "/users/me/resume",
   });
 
-  // modals
-  const { open: openResumeModal, Modal: ResumeModal } =
-    useModal("resume-modal");
   const profile = useProfile();
   const queryClient = useQueryClient();
 
@@ -102,7 +90,6 @@ export default function SearchPage() {
     close: closeMassApplyResultModal,
     Modal: MassApplyResultModal,
   } = useModal("mass-apply-result-modal");
-
   const massApplyModalRef = useModalRef();
   const jobModalRef = useModalRef();
   const applySuccessModalRef = useModalRef();
@@ -189,32 +176,6 @@ export default function SearchPage() {
     () => jobs.filteredJobs.filter((j) => j.id && selectedIds.has(j.id)),
     [jobs.filteredJobs, selectedIds]
   );
-
-  /* --------------------------------------------
-    * Single apply actions
-    -------------------------------------------- */
-  const handleDirectApplication = async (textFromModal?: string) => {
-    if (!selectedJob) return;
-
-    const text = (textFromModal ?? "").trim();
-
-    if ((selectedJob?.require_cover_letter ?? true) && !text) {
-      alert("A cover letter is required to apply for this job.");
-      return;
-    }
-
-    await applications
-      .create({
-        job_id: selectedJob.id ?? "",
-        cover_letter: text,
-      })
-      .then((response) => {
-        if (applications.createError)
-          return alert(applications.createError.message);
-        if (response?.message) return alert(response.message);
-        applySuccessModalRef.current?.open();
-      });
-  };
 
   const handleJobCardClick = (job: Job) => {
     setSelectedJob(job);
@@ -704,7 +665,10 @@ export default function SearchPage() {
         onAddNow={goProfile}
         onSubmit={(text: string) => {
           applyConfirmModalRef.current?.close();
-          handleDirectApplication(text);
+          applyToJob(selectedJob, text).then((response) => {
+            if (!response.success) return alert(response.message);
+            applySuccessModalRef.current?.open();
+          });
         }}
       />
 
