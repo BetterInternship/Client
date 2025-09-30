@@ -26,10 +26,7 @@ export const ApplyToJobButton = ({
   const auth = useAuthContext();
   const jobs = useJobsData();
   const queryClient = useQueryClient();
-  const applied = useMemo(
-    () => !!jobs.appliedJobs.find((j) => j.id === job.id),
-    [jobs]
-  );
+  const applied = useMemo(() => !!jobs.isJobApplied(job.id!), [jobs]);
   const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
 
   /**

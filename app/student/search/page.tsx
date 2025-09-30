@@ -200,9 +200,7 @@ export default function SearchPage() {
     }
     const allApplied =
       selectedJobsList.length > 0 &&
-      selectedJobsList.every((j) =>
-        jobs.appliedJobs.find((job) => job.id === j.id)
-      );
+      selectedJobsList.every((j) => jobs.isJobApplied(j.id!));
     if (!selectedJobsList.length || allApplied) {
       alert(
         "No eligible jobs selected. Select jobs you haven’t applied to yet."
@@ -234,7 +232,7 @@ export default function SearchPage() {
         const eligible: Job[] = [];
 
         for (const job of selectedJobsList) {
-          if (jobs.appliedJobs.find((j) => j.id === job.id)) {
+          if (jobs.isJobApplied(job.id!)) {
             skipped.push({ job, reason: "Already applied" });
             continue;
           }

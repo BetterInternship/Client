@@ -1,5 +1,5 @@
 import { useAuthContext } from "@/lib/ctx-auth";
-import { useSavedJobsData } from "@/lib/api/student.data.api";
+import { useJobsData } from "@/lib/api/student.data.api";
 import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
 import { Job } from "@/lib/db/db.types";
@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils";
 import { useJobActions } from "@/lib/api/student.actions.api";
 
 export const SaveJobButton = ({ job }: { job: Job }) => {
+  const jobs = useJobsData();
   const auth = useAuthContext();
-  const savedJobs = useSavedJobsData();
   const jobActions = useJobActions();
 
   const handleSave = async () => {
@@ -25,15 +25,15 @@ export const SaveJobButton = ({ job }: { job: Job }) => {
       onClick={() => handleSave()}
       size={"md"}
       className="text-md"
-      scheme={savedJobs.isJobSaved(job.id ?? "") ? "destructive" : "default"}
+      scheme={jobs.isJobSaved(job.id ?? "") ? "destructive" : "default"}
     >
       <Heart
         className={cn(
           "w-4 h-4",
-          savedJobs.isJobSaved(job.id ?? "") ? "fill-current" : ""
+          jobs.isJobSaved(job.id ?? "") ? "fill-current" : ""
         )}
       />
-      {savedJobs.isJobSaved(job.id ?? "")
+      {jobs.isJobSaved(job.id ?? "")
         ? jobActions.toggleSave.isPending
           ? "Unsaving..."
           : "Saved"

@@ -201,10 +201,8 @@ interface OwnedJobsResponse extends FetchResponse {
 }
 
 export const JobService = {
-  async getAllJobs(params: { last_update: number }) {
-    return APIClient.get<JobsResponse>(
-      APIRouteBuilder("jobs").p(params).build()
-    );
+  async getAllJobs() {
+    return APIClient.get<JobsResponse>(APIRouteBuilder("jobs").build());
   },
 
   async getJobById(jobId: string) {

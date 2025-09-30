@@ -34,12 +34,11 @@ export function useJobsData(
     hashStringToInt((profile.data?.email ?? "") + new Date().getDay())
   );
   const applications = useApplicationsData();
+
   const { isPending, data, error } = useQuery({
     queryKey: ["jobs"],
     queryFn: () =>
-      JobService.getAllJobs({
-        last_update: new Date(0).getTime(),
-      }).then((data) => {
+      JobService.getAllJobs().then((data) => {
         data.jobs = shuffle(data.jobs ?? [], seed.current);
         return data;
       }),
@@ -50,8 +49,20 @@ export function useJobsData(
     const allJobs = data?.jobs ?? [];
     if (!allJobs?.length) return [];
 
-    return allJobs.filter(job => !!applications.data.find(application => application.job_id === job.id))
-  }, [data, applications])
+    return allJobs.filter(
+      (job) =>
+        !!applications.data.find((application) => application.job_id === job.id)
+    );
+  }, [data, applications]);
+
+  const _savedJobs = useQuery({
+    queryKey: ["my-saved-jobs"],
+    queryFn: JobService.getSavedJobs,
+  });
+
+  const savedJobs = useMemo(() => {
+    return _savedJobs.data?.jobs ?? [];
+  }, [_savedJobs]);
 
   // Client-side filtering logic
   const filteredJobs = useMemo(() => {
@@ -122,9 +133,12 @@ export function useJobsData(
   );
 
   return {
-    isPending,
+    isPending: isPending || _savedJobs.isPending,
     jobs: data?.jobs,
-    error,
+    error: error || _savedJobs.error,
+    savedJobs,
+    isJobSaved: (jobId: string) => !!savedJobs.find((j) => j.id === jobId),
+    isJobApplied: (jobId: string) => !!appliedJobs.find((j) => j.id === jobId),
     appliedJobs,
     filteredJobs,
     getJobsPage,
@@ -140,7 +154,9 @@ export function useJobsData(
 export function useJobData(jobId: string) {
   const applications = useApplicationsData();
   const applied = !!useMemo(
-    () => applications.data.find(application => application.job_id === jobId), [applications])
+    () => applications.data.find((application) => application.job_id === jobId),
+    [applications]
+  );
   const { isPending, data, error } = useQuery({
     queryKey: ["jobs", jobId],
     queryFn: async () => await JobService.getJobById(jobId),
@@ -166,30 +182,6 @@ export function useProfileData() {
     isPending,
   };
 }
-
-/**
- * Saved jobs hook
- *
- * @hook
- */
-export const useSavedJobsData = () => {
-  const { isPending, data, error } = useQuery({
-    queryKey: ["my-saved-jobs"],
-    queryFn: JobService.getSavedJobs,
-  });
-
-  // Other utils
-  const isJobSaved = (jobId: string): boolean => {
-    return data?.jobs?.some((savedJob) => savedJob.id === jobId) ?? false;
-  };
-
-  return {
-    data: data?.jobs,
-    error,
-    isPending,
-    isJobSaved,
-  };
-};
 
 /**
  * Hooks for saved jobs.
