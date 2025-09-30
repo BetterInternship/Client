@@ -514,9 +514,9 @@ function MobileDrawer({
           </div>
 
           {/* Scrollable content */}
-          <div className="flex-1 overflow-y-auto p-4">
-            {/* Account (always on top) */}
-            {isAuthenticated() ? (
+          {/* Account (always on top) */}
+          {isAuthenticated() && (
+            <div className="flex-1 overflow-y-auto p-4">
               <div className="flex items-center gap-3">
                 <div className="overflow-hidden rounded-full flex items-center justify-center">
                   <MyUserPfp size="9" />
@@ -530,88 +530,77 @@ function MobileDrawer({
                   </span>
                 </div>
               </div>
-            ) : (
-              <Button
-                variant="outline"
-                onClick={() =>
-                  router.push(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`)
-                }
-              >
-                Sign in
-              </Button>
-            )}
-
-            <Separator className="my-4" />
-
-            {/* Navigation */}
-            <nav>
-              <ul className="grid gap-1">
-                {isAuthenticated() && (
-                  <li>
-                    <Link href="/conversations" className="block w-full">
-                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2">
-                        <span className="inline-flex items-center gap-2 text-sm">
-                          <MessageCircleMore className="w-4 h-4" /> Chats
-                        </span>
-                        {conversations?.unreads?.length ? (
-                          <span className="text-[10px] leading-none bg-warning/80 px-2 py-1 rounded-full">
-                            {conversations.unreads.length}
+              <Separator className="my-4" />
+              {/* Navigation */}
+              <nav>
+                <ul className="grid gap-1">
+                  {isAuthenticated() && (
+                    <li>
+                      <Link href="/conversations" className="block w-full">
+                        <button className="w-full flex items-center justify-between rounded-md px-3 py-2">
+                          <span className="inline-flex items-center gap-2 text-sm">
+                            <MessageCircleMore className="w-4 h-4" /> Chats
                           </span>
-                        ) : (
-                          <ChevronRight className="w-4 h-4 text-gray-300" />
-                        )}
+                          {conversations?.unreads?.length ? (
+                            <span className="text-[10px] leading-none bg-warning/80 px-2 py-1 rounded-full">
+                              {conversations.unreads.length}
+                            </span>
+                          ) : (
+                            <ChevronRight className="w-4 h-4 text-gray-300" />
+                          )}
+                        </button>
+                      </Link>
+                    </li>
+                  )}
+                  <li>
+                    <Link href="/search" className="block w-full">
+                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
+                        <div>
+                          <Search className="w-4 h-4 inline-block mr-2" />
+                          <span>Browse</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-300" />
                       </button>
                     </Link>
                   </li>
-                )}
-                <li>
-                  <Link href="/search" className="block w-full">
-                    <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
+                  <li>
+                    <button
+                      onClick={() => handleProfileClick()}
+                      className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary"
+                    >
                       <div>
-                        <Search className="w-4 h-4 inline-block mr-2" />
-                        <span>Browse</span>
+                        <Settings className="w-4 h-4 inline-block mr-2" />
+                        <span>Profile</span>
                       </div>
                       <ChevronRight className="w-4 h-4 text-gray-300" />
                     </button>
-                  </Link>
-                </li>
-                <li>
-                  <button
-                    onClick={() => handleProfileClick()}
-                    className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary"
-                  >
-                    <div>
-                      <Settings className="w-4 h-4 inline-block mr-2" />
-                      <span>Profile</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-gray-300" />
-                  </button>
-                </li>
-                <li>
-                  <Link href="/applications" className="block w-full">
-                    <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                      <div>
-                        <BookA className="w-4 h-4 inline-block mr-2" />
-                        <span>Applications</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-gray-300" />
-                    </button>
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/saved" className="block w-full">
-                    <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                      <div>
-                        <Heart className="w-4 h-4 inline-block mr-2" />
-                        <span>Saved Jobs</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-gray-300" />
-                    </button>
-                  </Link>
-                </li>
-              </ul>
-            </nav>
-          </div>
+                  </li>
+                  <li>
+                    <Link href="/applications" className="block w-full">
+                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
+                        <div>
+                          <BookA className="w-4 h-4 inline-block mr-2" />
+                          <span>Applications</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-300" />
+                      </button>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/saved" className="block w-full">
+                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
+                        <div>
+                          <Heart className="w-4 h-4 inline-block mr-2" />
+                          <span>Saved Jobs</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-300" />
+                      </button>
+                    </Link>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          )}
 
           {/* Footer pinned to bottom */}
           {isAuthenticated() && (
@@ -744,7 +733,7 @@ export const Header: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const profile = useProfileData();
+  const auth = useAuthContext();
 
   const [state, dispatch] = useReducer(jobFilterReducer, initialFilter);
   const [searchTerm, setSearchTerm] = useState("");
@@ -862,14 +851,27 @@ export const Header: React.FC = () => {
             {/* Right: Desktop profile / Mobile burger */}
             {showProfileButton ? (
               isMobile ? (
-                <button
-                  type="button"
-                  aria-label="Open menu"
-                  className="inline-flex items-center justify-center h-10 w-10 rounded-md border border-gray-300 hover:bg-gray-50"
-                  onClick={() => setIsMenuOpen(true)}
-                >
-                  <Menu className="h-5 w-5" />
-                </button>
+                auth.isAuthenticated() ? (
+                  <button
+                    type="button"
+                    aria-label="Open menu"
+                    className="inline-flex items-center justify-center h-10 w-10 rounded-md border border-gray-300 hover:bg-gray-50"
+                    onClick={() => setIsMenuOpen(true)}
+                  >
+                    <Menu className="h-5 w-5" />
+                  </button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      router.push(
+                        `${process.env.NEXT_PUBLIC_API_URL}/auth/google`
+                      )
+                    }
+                  >
+                    Sign in
+                  </Button>
+                )
               ) : (
                 <div className="flex items-center gap-6">
                   <ProfileButton />
