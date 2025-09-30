@@ -9,7 +9,7 @@
 
 "use client";
 
-import { APIClient, APIRoute } from "@/lib/api/api-client";
+import { APIClient, APIRouteBuilder } from "@/lib/api/api-client";
 import { usePocketbase } from "@/lib/pocketbase";
 import { usePathname } from "next/navigation";
 import {
@@ -47,8 +47,10 @@ export const useConversation = (
     if (!conversationId) return;
     const route =
       type === "employer"
-        ? APIRoute("conversations").r("read", "hire", conversationId).build()
-        : APIRoute("conversations").r("read", conversationId).build();
+        ? APIRouteBuilder("conversations")
+            .r("read", "hire", conversationId)
+            .build()
+        : APIRouteBuilder("conversations").r("read", conversationId).build();
     await APIClient.post(route);
   }, [conversationId]);
 
