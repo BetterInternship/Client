@@ -406,6 +406,7 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
   const [otp, setOtp] = useState("");
   const [otpError, setOtpError] = useState("");
   const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
   const [eduEmail, setEduEmail] = useState(
     profile.data?.edu_verification_email ?? ""
   );
@@ -433,6 +434,25 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
     }
   }, [otp]);
 
+  const requestOTP = () => {
+    AuthService.requestActivation(eduEmail)
+      .then((response) => {
+        if (response.message) {
+          setSending(false);
+          alert(response.message);
+          return;
+        }
+
+        alert("Check your inbox for an email.");
+        setSending(false);
+        setSent(true);
+        setIsCoolingDown(true);
+        setTimeout(() => setIsCoolingDown(false), 60000);
+      })
+      .catch(setOtpError);
+    setSending(true);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -444,21 +464,23 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
           />
 
           <div className="mt-4">
-            <InputOTP
-              maxLength={6}
-              value={otp}
-              onChange={setOtp}
-              containerClassName="justify-center"
-            >
-              <InputOTPGroup>
-                <InputOTPSlot index={0} />
-                <InputOTPSlot index={1} />
-                <InputOTPSlot index={2} />
-                <InputOTPSlot index={3} />
-                <InputOTPSlot index={4} />
-                <InputOTPSlot index={5} />
-              </InputOTPGroup>
-            </InputOTP>
+            {sent && (
+              <InputOTP
+                maxLength={6}
+                value={otp}
+                onChange={setOtp}
+                containerClassName="justify-center"
+              >
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
+            )}
 
             {otpError && (
               <div className="mt-3 flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 p-2 text-amber-900 text-sm">
@@ -473,23 +495,7 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
             <div className="mt-3 flex items-center justify-center gap-2 text-sm">
               <Button
                 type="button"
-                onClick={() => {
-                  AuthService.requestActivation(eduEmail)
-                    .then((response) => {
-                      if (response.message) {
-                        setSending(false);
-                        alert(response.message);
-                        return;
-                      }
-
-                      alert("Check your inbox for an email.");
-                      setSending(false);
-                      setIsCoolingDown(true);
-                      setTimeout(() => setIsCoolingDown(false), 60000);
-                    })
-                    .catch(setOtpError);
-                  setSending(true);
-                }}
+                onClick={requestOTP}
                 disabled={sending || !isEmailValid || isCoolingDown}
               >
                 <Repeat className="h-4 w-4 mr-1" />
