@@ -9,13 +9,10 @@ import { Employer } from "@/lib/db/db.types";
 import {
   createEditForm,
   FormCheckbox,
-  FormDatePicker,
-  FormDropdown,
   FormInput,
 } from "@/components/EditForm";
 import { Card } from "@/components/ui/card";
 import { ErrorLabel } from "@/components/ui/labels";
-import { StoryBook } from "@/components/ui/storybook";
 import { Button } from "@/components/ui/button";
 import { isValidEmail, isValidPHNumber } from "@/lib/utils";
 import { MultipartFormBuilder } from "@/lib/multipart-form";
@@ -66,7 +63,6 @@ const EmployerEditor = ({
   const {
     formData,
     formErrors,
-    setField,
     fieldSetter,
     addValidator,
     validateFormData,
@@ -125,28 +121,19 @@ const EmployerEditor = ({
     const missingFields = [];
 
     if (!formData.name || formData.name.trim().length < 3) {
-      missingFields.push("Company Name (Doing Business As)");
-    }
-    if (!formData.website || !isValidRequiredURL(formData.website)) {
-      missingFields.push("Valid Website URL");
-    }
-    if (!formData.industry) {
-      missingFields.push("Industry");
-    }
-    if (!formData.description || formData.description.trim().length < 10) {
-      missingFields.push("Company Description (minimum 10 characters)");
+      missingFields.push("Company name");
     }
     if (
       !additionalFields.contact_name ||
       additionalFields.contact_name.trim().length === 0
     ) {
-      missingFields.push("Contact Name");
+      missingFields.push("Contact name");
     }
     if (!formData.phone_number || !isValidPHNumber(formData.phone_number)) {
-      missingFields.push("Valid Philippine Phone Number");
+      missingFields.push("Valid contact Philippine phone number");
     }
     if (!formData.email || !isValidEmail(formData.email)) {
-      missingFields.push("Valid Contact Email");
+      missingFields.push("Valid contact email");
     }
     if (!additionalFields.terms_accepted) {
       missingFields.push("Terms & Conditions and Privacy Policy acceptance");
