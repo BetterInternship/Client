@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo, useRef, useId } from "react";
 import { Input } from "./input";
 import { useDetectClickOutside } from "react-detect-click-outside";
 import { cn } from "@/lib/utils";
+import { Button } from "./button";
+import { PlusCircle, PlusCircleIcon } from "lucide-react";
 
 export interface IAutocompleteOption<ID extends number | string> {
   id: ID;
@@ -24,7 +26,7 @@ function AutocompleteBase<ID extends number | string>({
   label,
   ...props
 }: {
-  required?: boolean
+  required?: boolean;
   options: IAutocompleteOption<ID>[];
   value?: ID[]; // single => 0..1 items, multi => any length
   setter: (next: ID[]) => void; // set the whole selection
@@ -227,7 +229,7 @@ function AutocompleteBase<ID extends number | string>({
  * Public API: single-select (same signature + label)
  * -----------------------------------------------------*/
 export const Autocomplete = <ID extends number | string>({
-  required, 
+  required,
   options,
   setter,
   placeholder,
@@ -324,7 +326,7 @@ export function AutocompleteTreeMulti({
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const ref = useDetectClickOutside({ onTriggered: () => setIsOpen(false) });
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const inputRef = useRef<HTMLButtonElement | null>(null);
   const inputId = useId();
 
   // Build ID -> label map (child shows "Parent · Child")
@@ -427,32 +429,6 @@ export function AutocompleteTreeMulti({
     [selected, labelMap]
   );
 
-  // keyboard (enter = take first visible child if any)
-  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace" && query.length === 0 && selected.length > 0) {
-      removeAt(selected[selected.length - 1]);
-      e.preventDefault();
-    }
-    if (e.key === "Enter") {
-      // find first child in filtered tree to toggle
-      outer: for (const p of filteredTree) {
-        if (!p.children?.length) {
-          toggleParent(p);
-          break outer;
-        }
-        for (const c of p.children!) {
-          toggleChild(c.value);
-          break outer;
-        }
-      }
-      setQuery("");
-      setIsOpen(true);
-      e.preventDefault();
-    }
-    if (e.key === "ArrowDown") setIsOpen(true);
-    if (e.key === "Escape") setIsOpen(false);
-  };
-
   return (
     <div className={cn("relative w-full", className)} ref={ref}>
       {label ? (
@@ -464,11 +440,11 @@ export function AutocompleteTreeMulti({
       {/* input + chips (same look/feel as AutocompleteMulti) */}
       <div
         className={cn(
-          "min-h-9 w-full rounded-[0.33em] border border-gray-300 bg-white",
-          "py-1 flex flex-wrap items-center gap-1",
-          "focus-within:border-primary focus-within:border-opacity-50"
+          "min-h-9 w-full rounded-[0.33em] border border-gray-300 bg-white ",
+          "py-1 flex flex-wrap items-center gap-1 hover:bg-gray-50 hover:cursor-pointer",
+          "focus-within:border-primary focus-within:border-opacity-50 transition-all"
         )}
-        onClick={() => inputRef.current?.focus()}
+        onClick={(e) => setIsOpen(true)}
       >
         {chips.map(([id, label]) => (
           <span
@@ -486,24 +462,12 @@ export function AutocompleteTreeMulti({
             </button>
           </span>
         ))}
-        <input
-          id={inputId}
-          ref={inputRef}
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setIsOpen(true);
-          }}
-          onKeyDown={onKeyDown}
-          onFocus={() => setIsOpen(true)}
-          placeholder={
-            selected.length === 0 ? placeholder ?? "Select one or more" : ""
-          }
-          className={cn(
-            "flex-1 min-w-[8ch] h-7 text-sm",
-            "bg-transparent outline-none border-none focus:ring-0"
-          )}
-        />
+        {selected.length === 0 && (
+          <div className="w-full flex flex-row items-center justify-between text-sm text-primary/75 px-3">
+            {placeholder && "Select one or more"}
+            <PlusCircleIcon className="w-4 h-4 text-gray-500" />
+          </div>
+        )}
       </div>
 
       {isOpen && (
