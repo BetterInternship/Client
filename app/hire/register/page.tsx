@@ -101,6 +101,12 @@ const EmployerEditor = ({
     if (!formData.email || !isValidEmail(formData.email)) {
       missingFields.push("Valid contact email");
     }
+    if (!formData.legal_entity_name) {
+      missingFields.push("Legal entity name");
+    }
+    if (!formData.website) {
+      missingFields.push("Company website/LinkedIn");
+    }
     if (!additionalFields.terms_accepted) {
       missingFields.push("Terms & Conditions and Privacy Policy acceptance");
     }
@@ -212,7 +218,6 @@ const EmployerEditor = ({
               label="Legal Entity Name (optional)"
               value={formData.legal_entity_name ?? ""}
               setter={fieldSetter("legal_entity_name")}
-              required={false}
               maxLength={100}
             />
           </div>
@@ -265,7 +270,6 @@ const EmployerEditor = ({
             <FormInput
               label="Company website/LinkedIn (optional)"
               value={formData.website ?? ""}
-              required={false}
               setter={fieldSetter("website")} // invalid type
             />
           </div>
