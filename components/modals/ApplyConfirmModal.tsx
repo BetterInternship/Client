@@ -1,5 +1,5 @@
 import { ModalComponent, ModalHandle } from "@/hooks/use-modal";
-import { Clipboard, CheckCircle } from "lucide-react";
+import { Clipboard, CheckCircle, Loader } from "lucide-react";
 import { Button } from "../ui/button";
 import { Job } from "@/lib/db/db.types";
 import { RefObject, useState } from "react";
@@ -17,10 +17,11 @@ export const ApplyConfirmModal = ({
   ref?: RefObject<ModalHandle | null>;
   onClose: () => void;
   onAddNow: () => void;
-  onSubmit: (text: string) => void;
+  onSubmit: (text: string) => Promise<void>;
 }) => {
   const profile = useProfileData();
   const [text, setText] = useState("");
+  const [applying, setApplying] = useState(false);
 
   const needsGH = !!job?.require_github;
   const needsPF = !!job?.require_portfolio;
@@ -155,22 +156,36 @@ Best regards,
           <Button
             variant="outline"
             onClick={onClose}
+            disabled={applying}
             className="flex-1 h-12 transition-all duration-200"
           >
             Cancel
           </Button>
           <Button
-            onClick={() => onSubmit(text)}
+            onClick={() => {
+              setApplying(true);
+              onSubmit(text)
+                .then(console.log)
+                .then(() => setApplying(false))
+                .catch(console.warn);
+            }}
             className="flex-1 h-12 transition-all duration-200"
-            disabled={submitDisabled}
+            disabled={submitDisabled || applying}
             title={
               submitDisabled ? "Complete required items to continue" : undefined
             }
           >
-            <div className="flex items-center justify-center gap-2">
-              <CheckCircle className="w-4 h-4" />
-              Submit Application
-            </div>
+            {!applying ? (
+              <div className="flex items-center justify-center gap-2">
+                <CheckCircle className="w-5 h-5" />
+                Submit Application
+              </div>
+            ) : (
+              <div className="flex items-center justify-center gap-2">
+                <Loader className="w-5 h-5" />
+                Submitting Application
+              </div>
+            )}
           </Button>
         </div>
       </div>

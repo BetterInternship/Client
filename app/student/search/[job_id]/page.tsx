@@ -24,6 +24,7 @@ import { SaveJobButton } from "@/components/features/student/job/save-job-button
 import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job-button";
 import { ApplyConfirmModal } from "@/components/modals/ApplyConfirmModal";
 import { applyToJob } from "@/lib/application";
+import { useApplicationActions } from "@/lib/api/student.actions.api";
 
 /**
  * The individual job page.
@@ -37,6 +38,7 @@ export default function JobPage() {
   const applyConfirmModalRef = useModalRef();
   const successModalRef = useModalRef();
   const applySuccessModalRef = useModalRef();
+  const applicationActions = useApplicationActions();
 
   const profile = useProfileData();
   const { universities } = useDbRefs();
@@ -199,7 +201,7 @@ export default function JobPage() {
         onAddNow={goProfile}
         onSubmit={(text: string) => {
           applyConfirmModalRef.current?.close();
-          applyToJob(job.data, text).then((response) => {
+          applyToJob(applicationActions, job.data, text).then((response) => {
             if (!response.success) return alert(response.message);
             applySuccessModalRef.current?.open();
           });

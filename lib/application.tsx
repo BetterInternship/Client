@@ -8,10 +8,10 @@ import { Job } from "./db/db.types";
  * @returns
  */
 export const applyToJob = async (
+  applicationActions: any,
   job?: Job | null,
   coverLetter?: string
 ): Promise<{ success?: true; message?: string }> => {
-  const applicationActions = useApplicationActions();
   const text = (coverLetter ?? "").trim();
 
   if (!job) return { message: "Job does not exist." };

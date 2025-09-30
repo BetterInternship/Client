@@ -653,11 +653,14 @@ export default function SearchPage() {
         onClose={() => applyConfirmModalRef.current?.close()}
         onAddNow={goProfile}
         onSubmit={(text: string) => {
-          applyConfirmModalRef.current?.close();
-          applyToJob(selectedJob, text).then((response) => {
-            if (!response.success) return alert(response.message);
-            applySuccessModalRef.current?.open();
-          });
+          return applyToJob(applicationActions, selectedJob, text).then(
+            (response) => {
+              if (!response.success) return alert(response.message);
+              applyConfirmModalRef.current?.close();
+              applySuccessModalRef.current?.open();
+              return;
+            }
+          );
         }}
       />
 
