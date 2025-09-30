@@ -16,8 +16,6 @@ import { Job } from "@/lib/db/db.types";
 import { Paginator } from "@/components/ui/paginator";
 import { useModal, useModalRef } from "@/hooks/use-modal";
 import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
-import { UserService } from "@/lib/api/services";
-import { useFile } from "@/hooks/use-file";
 import { IncompleteProfileContent } from "@/components/modals/IncompleteProfileModal";
 import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { JobModal } from "@/components/modals/JobModal";
@@ -38,6 +36,7 @@ import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job
 import { MassApplyModal } from "@/components/modals/MassApplyModal";
 import { ApplyConfirmModal } from "@/components/modals/ApplyConfirmModal";
 import { applyToJob } from "@/lib/application";
+import { PageError } from "@/components/ui/error";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -325,17 +324,13 @@ export default function SearchPage() {
     }
   };
 
-  if (jobs.error) {
+  if (jobs.error)
     return (
-      <div className="h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">
-            Failed to load jobs: {jobs.error.message}
-          </p>
-        </div>
-      </div>
+      <PageError
+        title="Failed to load jobs."
+        description={jobs.error.message}
+      />
     );
-  }
 
   /* =======================================================================================
       UI

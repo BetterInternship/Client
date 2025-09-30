@@ -46,11 +46,10 @@ export default function JobPage() {
     router.push("/profile");
   }, [applyConfirmModalRef, router]);
 
-  if (job.error) {
+  if (job.error)
     return (
       <PageError title="Failed to load job" description={job.error.message} />
     );
-  }
 
   if (!job.data && !job.isPending) {
     return (
