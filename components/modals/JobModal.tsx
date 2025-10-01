@@ -46,8 +46,7 @@ export const JobModal = ({
 
   return (
     <ModalComponent ref={ref}>
-      {/* Full dynamic viewport height + relative for bottom bar anchoring */}
-      <div className="relative flex h-[100svh] max-h-[100svh] w-full flex-col bg-white">
+      <div className="relative flex h-[100svh] max-h-[100svh] max-w-[100svw] flex-col bg-white">
         {/* Top bar (close only) — sticky and safe-area aware */}
         <div className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b px-4 pb-2 pt-5">
           <Button
@@ -62,7 +61,7 @@ export const JobModal = ({
         </div>
 
         {/* Scrollable content — mirrors desktop layout */}
-        <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="flex-1 overflow-y-auto overscroll-contain max-w-[100svw] ">
           {job && (
             <div className="px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+96px)] space-y-5">
               <MissingNotice
@@ -145,7 +144,8 @@ export const JobModal = ({
 function HeaderCompact({ job }: { job: Job }) {
   return (
     <div className="mb-1">
-      <h1 className="text-3xl font-semibold text-gray-900 leading-tight">
+      {/* Title */}
+      <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 leading-tight max-w-full break-words hyphens-auto line-clamp-2 sm:line-clamp-none">
         {job.title}
       </h1>
       <div className="flex items-center gap-2 text-gray-600">
