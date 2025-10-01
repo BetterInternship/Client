@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,6 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { AlertTriangle, Repeat } from "lucide-react";
-
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { AuthService } from "@/lib/api/services";
@@ -20,7 +19,19 @@ import { AuthService } from "@/lib/api/services";
 export default function VerifyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const nextUrl = searchParams.get("next") || "/search";
+  const nextUrl = "/search";
+  const profile = useProfileData();
+
+  const deciding = profile.data === undefined;
+
+  // Redirect only after we know the profile state
+  useEffect(() => {
+    if (deciding) return;
+    if (profile.data?.is_verified) router.replace(nextUrl);
+  }, [deciding, profile.data?.is_verified, router]);
+
+  // Prevent any flash
+  if (deciding || profile.data?.is_verified) return null;
 
   return (
     <div className="">

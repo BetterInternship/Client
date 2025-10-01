@@ -16,6 +16,8 @@ import { MultiChipSelect } from "@/components/ui/chip-select";
 import { SinglePickerBig } from "@/components/features/student/SinglePickerBig";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { BooleanCheckIcon } from "@/components/ui/icons";
+import { useProfileData } from "@/lib/api/student.data.api";
+import { useRouter } from "next/navigation";
 
 interface FormInputs {
   university?: string;
@@ -52,6 +54,21 @@ export default function RegisterPage() {
   const refs = useDbRefs();
   const auth = useAuthContext();
   const [submitting, setSubmitting] = useState(false);
+  const profile = useProfileData();
+  const router = useRouter();
+
+  const nextUrl = "/search";
+  const deciding = profile.data === undefined;
+
+  // Redirect only after we know the profile state
+  useEffect(() => {
+    if (deciding) return;
+    if (profile.data?.is_verified) router.replace(nextUrl);
+  }, [deciding, profile.data?.is_verified, router]);
+
+  // Prevent any flash
+  if (deciding || profile.data?.is_verified) return null;
+
   const regForm = useForm<FormInputs>({
     defaultValues: {
       internship_type: undefined,
