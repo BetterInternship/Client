@@ -232,7 +232,7 @@ const CheckboxRow = ({
   expandable?: boolean;
 }) => (
   <div
-    className="flex items-center gap-1 w-fit select-none"
+    className="flex items-center gap-1 w-fit select-none p-1"
     onClick={() => onChange(!checked)}
   >
     <Checkbox
@@ -265,14 +265,14 @@ const JobPositionPanel: React.FC = () => {
     dispatch({ type: "TOGGLE", key: "position", value, on });
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-0">
       {POSITION_TREE.map((cat) => {
         const catSelected = selected.has(cat.value);
         const childSelectedCount =
           cat.children?.filter((c) => selected.has(c.value)).length ?? 0;
         const isExpanded = catSelected || childSelectedCount > 0; // auto-show when any child selected
         return (
-          <div key={cat.value} className="">
+          <div key={cat.value}>
             <div className="flex items-center gap-2">
               <CheckboxRow
                 checked={catSelected}
@@ -288,7 +288,7 @@ const JobPositionPanel: React.FC = () => {
               ) : null}
             </div>
             {isExpanded && cat.children?.length ? (
-              <div className="mt-1 ml-6 flex flex-col gap-1 border-l border-gray-200 pl-3">
+              <div className="mt-1 ml-6 flex flex-col gap-0 border-l border-gray-200 pl-3">
                 {cat.children.map((child) => (
                   <CheckboxRow
                     key={child.value}
