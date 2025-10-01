@@ -231,14 +231,17 @@ const CheckboxRow = ({
   label: React.ReactNode;
   expandable?: boolean;
 }) => (
-  <div className="flex items-center gap-1 w-fit select-none">
+  <div
+    className="flex items-center gap-1 w-fit select-none"
+    onClick={() => onChange(!checked)}
+  >
     <Checkbox
       checked={!!checked}
       className={cn(
         "flex items-center justify-center w-5 h-5 hover:cursor-pointer rounded border",
         checked ? "border-blue-500 bg-blue-200" : "border-gray-300 bg-gray-200"
       )}
-      onCheckedChange={(v) => onChange(!!v)}
+      // onCheckedChange={(v) => onChange(!!v)}
     >
       {checked ? (
         <CheckIcon className="text-blue-500 pointer-events-none w-4 h-4" />
