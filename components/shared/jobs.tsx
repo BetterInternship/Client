@@ -1,33 +1,33 @@
-import { Job } from "@/lib/db/db.types";
-import { useDbRefs } from "@/lib/db/use-refs";
-import { cn, formatDate } from "@/lib/utils";
-import {
-  Building,
-  PhilippinePeso,
-  Monitor,
-  Clock,
-  EyeOff,
-  CheckCircle,
-  CheckCircle2,
-  AlertTriangle,
-} from "lucide-react";
 import { Badge, BoolBadge } from "@/components/ui/badge";
-import ReactMarkdown from "react-markdown";
-import { useFormData } from "@/lib/form-data";
 import {
   EditableCheckbox,
   EditableDatePicker,
   EditableGroupableRadioDropdown,
   EditableInput,
 } from "@/components/ui/editable";
-import { useEffect } from "react";
-import { JobBooleanLabel, Property, JobTitleLabel } from "../ui/labels";
-import { MDXEditor } from "../MDXEditor";
-import { DropdownGroup } from "../ui/dropdown";
+import { Job } from "@/lib/db/db.types";
 import { useMoa } from "@/lib/db/use-moa";
-import { Toggle } from "../ui/toggle";
+import { useDbRefs } from "@/lib/db/use-refs";
+import { useFormData } from "@/lib/form-data";
+import { cn } from "@/lib/utils";
+import {
+  AlertTriangle,
+  Building,
+  CheckCircle,
+  CheckCircle2,
+  Clock,
+  EyeOff,
+  Monitor,
+  PhilippinePeso,
+} from "lucide-react";
+import { useEffect } from "react";
+import ReactMarkdown from "react-markdown";
+import { MDXEditor } from "../MDXEditor";
 import { Card } from "../ui/card";
 import { Divider } from "../ui/divider";
+import { DropdownGroup } from "../ui/dropdown";
+import { JobBooleanLabel, JobTitleLabel, Property } from "../ui/labels";
+import { Toggle } from "../ui/toggle";
 
 export const JobHead = ({
   title,
@@ -88,6 +88,13 @@ export const JobMode = ({ mode }: { mode: number | null | undefined }) => {
   ) : (
     <></>
   );
+};
+
+export const JobCategory = ({category}: {category: string | undefined}) => {
+  const {isNotNull: ref_is_not_null, to_job_category_name} = useDbRefs();
+  return ref_is_not_null(category) ? (
+    <Badge>{to_job_category_name(category)}</Badge>
+  ) : (<></>)
 };
 
 export const JobSalary = ({

@@ -58,7 +58,7 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
       category: formData.category,
       description: formData.description ?? "",
       requirements: formData.requirements ?? "",
-      location: formData.location ?? "",
+      location: formData.location ?? profile.data?.location ?? "",
       allowance: formData.allowance,
       mode: formData.mode,
       type: formData.type,
@@ -99,7 +99,6 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
         {/* Header */}
         <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-50 shadow-sm">
           <div className="max-w-5xl mx-auto flex justify-between items-center">
-            {/*edit strong tag !!!*/}
             <h1 className="text-2xl text-gray-800">Create New Job: <span className="font-bold">{formData.title || "Untitled Job"}</span></h1>
             <div className="flex gap-3">
               <Button 
@@ -132,7 +131,8 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
         </div>
 
         {/* Main Content */}
-        <div className="p-6">
+        <div>
+          <div className="p-6">
           <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200">
             {/* Title Section */}
             <div className="px-6 py-5 border-b border-gray-200">
@@ -152,20 +152,19 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                   <p className="text-xs text-gray-500 text-right mt-1">
                     {(formData.title || "").length}/100 characters
                   </p>
-                  <h2 className="text-lg font-bold text-gray-800 mb-2 break-words overflow-wrap-anywhere leading-tight">
+                  {/* <h2 className="text-lg font-bold text-gray-800 mb-2 break-words overflow-wrap-anywhere leading-tight">
                     Category <span className="text-destructive text-sm">*</span>
                   </h2>
                   <DropdownGroup>
                       <div className="space-y-2">
                         <FormDropdown
-                          value={formData.category?.[0] ?? undefined}
-                          options={job_categories.reverse()}
+                          value={formData.category ?? undefined}
+                          options={job_categories}
                           setter={fieldSetter("category")}
                           required={true}
-                          className="text-base font-medium h-10 w-full"
                         />
                       </div>
-                  </DropdownGroup>
+                  </DropdownGroup> */}
                 </div>
               </div>
             </div>
@@ -180,7 +179,9 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                       Are you hiring credited and/or voluntary interns?
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                      <div className="flex items-start gap-4 p-3 border border-gray-200 hover:border-gray-300 rounded-[0.33em] 
+                      <div
+                      onClick={() => null}
+                      className="flex items-start gap-4 p-3 border border-gray-200 hover:border-gray-300 rounded-[0.33em] 
                       cursor-pointer h-fit">
                           <FormCheckbox
                           checked={false}
@@ -485,6 +486,7 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
           </div>
         </div>
       </div>
+        </div>
       </div>
     </>
   );

@@ -175,7 +175,7 @@ interface FormDropdownProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   options: { id: number | string; name: string }[];
   label?: string;
-  value?: string | number;
+  value?: string | number | string[];
   required?: boolean;
   setter?: (value: any) => void;
   className?: string;
