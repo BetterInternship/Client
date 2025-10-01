@@ -38,10 +38,14 @@ export const ApplyToJobButton = ({
     openGlobalModal(
       "incomplete-profile",
       <IncompleteProfileContent
-        handleClose={() => closeGlobalModal("incomplete-profile")}
+        onFinish={() => {
+          closeGlobalModal("incomplete-profile");
+          openAppModal();
+        }}
       />,
       {
         allowBackdropClick: false,
+        panelClassName: "border-4 border-primary/50 bg-primary/5",
         onClose: () => {
           queryClient.invalidateQueries({ queryKey: ["my-profile"] });
         },

@@ -459,10 +459,11 @@ function MobileDrawer({
       openGlobalModal(
         "incomplete-profile",
         <IncompleteProfileContent
-          handleClose={() => closeGlobalModal("incomplete-profile")}
+          onFinish={() => closeGlobalModal("incomplete-profile")}
         />,
         {
           allowBackdropClick: false,
+          panelClassName: "border-4 border-primary/50 bg-primary/5",
           onClose: () => {
             queryClient.invalidateQueries({ queryKey: ["my-profile"] });
           },
@@ -644,10 +645,11 @@ export const ProfileButton: React.FC = () => {
       openGlobalModal(
         "incomplete-profile",
         <IncompleteProfileContent
-          handleClose={() => closeGlobalModal("incomplete-profile")}
+          onFinish={() => closeGlobalModal("incomplete-profile")}
         />,
         {
           allowBackdropClick: false,
+          panelClassName: "border-4 border-primary/50 bg-primary/5",
           onClose: () => {
             queryClient.invalidateQueries({ queryKey: ["my-profile"] });
           },
