@@ -742,8 +742,8 @@ export const Header: React.FC = () => {
   const [showDetails, setShowDetails] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const noProfileRoutes = ["/register"];
-  const noHeaderRoutes = ["/register"];
+  const noProfileRoutes = ["/register", "/register/verify"];
+  const noHeaderRoutes = ["/register", "/register/verify"];
   const showProfileButton = routeExcluded(noProfileRoutes);
 
   // only show filters on /search (allow subpaths like /search/results)

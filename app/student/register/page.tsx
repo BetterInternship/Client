@@ -130,8 +130,7 @@ export default function RegisterPage() {
           return;
         }
 
-        // We don't use router, because we need the reload for some reason
-        location.href = "/search";
+        location.href = "/register/verify?next=/search"; // go to OTP verification page (next step)
       })
       .catch((error) => {
         setSubmitting(false);
