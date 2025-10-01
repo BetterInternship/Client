@@ -18,7 +18,6 @@ import { AuthService } from "@/lib/api/services";
 
 export default function VerifyPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const nextUrl = "/search";
   const profile = useProfileData();
 
