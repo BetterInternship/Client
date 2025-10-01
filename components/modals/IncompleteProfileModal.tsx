@@ -89,18 +89,6 @@ function snakeToDraft(u: ResumeParsedUserSnake): Partial<ProfileDraft> {
   };
 }
 
-function profileToDraft(p: any): ProfileDraft {
-  if (!p) return {};
-  return {
-    firstName: p.first_name ?? p.firstName ?? "",
-    middleName: p.middle_name ?? p.middleName ?? "",
-    lastName: p.last_name ?? p.lastName ?? "",
-    phone: p.phone_number ?? p.phone ?? "",
-    university: p.university ?? "",
-    degree: p.program ?? p.degree ?? "",
-  };
-}
-
 function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   const queryClient = useQueryClient();
   const existingProfile = useProfileData();
