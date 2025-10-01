@@ -33,7 +33,6 @@ import {
   isProfileResume,
   isProfileVerified,
 } from "@/lib/profile";
-import { AutoApplyToast } from "@/components/features/student/search/AutoApplyToast";
 import { useRouter } from "next/navigation";
 import { SaveJobButton } from "@/components/features/student/job/save-job-button";
 import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job-button";
@@ -422,14 +421,6 @@ export default function SearchPage() {
 
   return (
     <>
-      {profile.data?.is_verified && (
-        <AutoApplyToast
-          enabled={!!profile.data?.apply_for_me}
-          dismissed={!!profile.data?.acknowledged_auto_apply}
-          onDismissForever={dismissTip}
-        />
-      )}
-
       {/* In-page toolbar */}
       {!isMobile && PageToolbar}
 
