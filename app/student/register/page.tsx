@@ -208,7 +208,7 @@ export default function RegisterPage() {
   }, [internshipType, regForm.getValues()]);
 
   return (
-    <div className="min-h-fit bg-white">
+    <div className="">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
         {/* Header */}
         <div className="flex items-center justify-center">
