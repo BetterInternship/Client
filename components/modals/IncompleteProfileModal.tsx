@@ -186,7 +186,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
         id: "base",
         title: "Basic details",
         icon: UserCheck,
-        canNext: () => !!profile.firstName && !!profile.lastName && !isUpdating,
+        canNext: () => !!profile.firstName && !!profile.lastName && !isUpdating && !!profile.phone,
         component: <StepBasicIdentity value={profile} onChange={setProfile} />,
       });
     }
