@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart } from "lucide-react";
-import { useSavedJobs } from "@/lib/api/student.api";
+import { useJobsData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Loader } from "@/components/ui/loader";
 import { Card } from "@/components/ui/card";
@@ -13,10 +13,12 @@ import { Job } from "@/lib/db/db.types";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { Separator } from "@/components/ui/separator";
 import { PageError } from "@/components/ui/error";
+import { useJobActions } from "@/lib/api/student.actions.api";
 
 export default function SavedJobsPage() {
   const { isAuthenticated, redirectIfNotLoggedIn } = useAuthContext();
-  const savedJobs = useSavedJobs();
+  const jobs = useJobsData();
+  const jobActions = useJobActions();
 
   redirectIfNotLoggedIn();
 
@@ -28,19 +30,19 @@ export default function SavedJobsPage() {
             <HeaderIcon icon={Heart} />
             <HeaderText>Saved Jobs</HeaderText>
           </div>
-          <Badge>{savedJobs.data?.length} saved</Badge>
+          <Badge>{jobs.savedJobs?.length} saved</Badge>
         </div>
       </div>
       <Separator className="mt-4 mb-8" />
 
-      {savedJobs.isPending || !isAuthenticated() ? (
+      {jobs.isPending || !isAuthenticated() ? (
         <Loader>Loading saved jobs...</Loader>
-      ) : savedJobs.error ? (
+      ) : jobs.error ? (
         <PageError
           title="Failed to load saved jobs."
-          description={savedJobs.error.message}
+          description={jobs.error.message}
         />
-      ) : savedJobs.data?.length === 0 ? (
+      ) : jobs.savedJobs.length === 0 ? (
         <div className="text-center py-16 animate-fade-in">
           <Card className="max-w-md m-auto">
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -59,13 +61,13 @@ export default function SavedJobsPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {savedJobs.data?.map((savedJob) => (
+          {jobs.savedJobs.map((savedJob) => (
             <SavedJobCard
               savedJob={savedJob}
               handleUnsaveJob={async () =>
-                await savedJobs.toggle(savedJob.id ?? "")
+                await jobActions.toggleSave.mutateAsync(savedJob.id ?? "")
               }
-              saving={savedJobs.isToggling}
+              saving={jobActions.toggleSave.isPending}
             />
           ))}
         </div>

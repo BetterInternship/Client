@@ -9,14 +9,14 @@ import {
 import { Employer, EmployerApplication, Job } from "@/lib/db/db.types";
 import { useCache } from "./use-cache";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { APIClient, APIRoute } from "@/lib/api/api-client";
+import { APIClient, APIRouteBuilder } from "@/lib/api/api-client";
 
 export const useEmployerName = (id: string) => {
   const [employerName, setEmployerName] = useState("");
   useEffect(() => {
     if (id.trim() === "") return;
     // ! refactor lol
-    APIClient.get<any>(APIRoute("employer").r(id).build()).then(
+    APIClient.get<any>(APIRouteBuilder("employer").r(id).build()).then(
       ({ employer }: { employer: Employer }) => {
         setEmployerName(employer?.name ?? "");
       }

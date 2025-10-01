@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/input-otp";
 import { AuthService, UserService } from "@/lib/api/services";
 import { Input } from "../ui/input";
-import { useProfile } from "@/lib/api/student.api";
+import { useProfileData } from "@/lib/api/student.data.api";
 import { useQueryClient } from "@tanstack/react-query";
 import { Stepper } from "../stepper/stepper";
 import {
@@ -41,6 +41,7 @@ export function IncompleteProfileContent({
 }: {
   handleClose: () => void;
 }) {
+
   return (
     <div className="p-6 h-full overflow-y-auto pt-0">
       {/* Modal title */}
@@ -89,21 +90,9 @@ function snakeToDraft(u: ResumeParsedUserSnake): Partial<ProfileDraft> {
   };
 }
 
-function profileToDraft(p: any): ProfileDraft {
-  if (!p) return {};
-  return {
-    firstName: p.first_name ?? p.firstName ?? "",
-    middleName: p.middle_name ?? p.middleName ?? "",
-    lastName: p.last_name ?? p.lastName ?? "",
-    phone: p.phone_number ?? p.phone ?? "",
-    university: p.university ?? "",
-    degree: p.program ?? p.degree ?? "",
-  };
-}
-
 function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   const queryClient = useQueryClient();
-  const existingProfile = useProfile();
+  const existingProfile = useProfileData();
   const [step, setStep] = useState(0);
 
   // profile being edited
@@ -199,25 +188,6 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
         icon: UserCheck,
         canNext: () => !!profile.firstName && !!profile.lastName && !isUpdating,
         component: <StepBasicIdentity value={profile} onChange={setProfile} />,
-      });
-    }
-
-    // Not verified
-    if (!isProfileVerified(existingProfile.data)) {
-      s.push({
-        id: "activation",
-        title: "Activate your account",
-        subtitle: "Verify your university email and start applying now!",
-        icon: MailCheck,
-        hideNext: true,
-        component: (
-          <StepActivateOTP
-            onFinish={() => {
-              queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-              onFinish();
-            }}
-          />
-        ),
       });
     }
 
@@ -392,114 +362,6 @@ function StepBasicIdentity({
               setter={(val: any) => onChange({ ...value, degree: val })}
               placeholder="Select degree…"
             />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* --------------------------- Step 2: Activate (OTP) --------------------------- */
-
-function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
-  const profile = useProfile();
-  const [otp, setOtp] = useState("");
-  const [otpError, setOtpError] = useState("");
-  const [sending, setSending] = useState(false);
-  const [eduEmail, setEduEmail] = useState(
-    profile.data?.edu_verification_email ?? ""
-  );
-  const [isEmailValid, setIsEmailValid] = useState(false);
-  const [isCoolingDown, setIsCoolingDown] = useState(false);
-  const [activating, setActivating] = useState(false);
-
-  useEffect(() => {
-    if (!eduEmail.trim()) return setIsEmailValid(false);
-    if (!eduEmail.endsWith(".edu.ph")) return setIsEmailValid(false);
-    setIsEmailValid(true);
-  }, [eduEmail]);
-
-  useEffect(() => {
-    if (otp.length === 6) {
-      setActivating(true);
-      AuthService.activate(eduEmail, otp).then((response) => {
-        if (response.success) {
-          onFinish();
-        } else {
-          alert(response.message ?? "OTP not valid.");
-        }
-        setActivating(false);
-      });
-    }
-  }, [otp]);
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <div className="mt-3">
-          <Input
-            placeholder="email@uni.edu.ph"
-            defaultValue={profile.data?.edu_verification_email ?? ""}
-            onChange={(e) => setEduEmail(e.currentTarget.value)}
-          />
-
-          <div className="mt-4">
-            <InputOTP
-              maxLength={6}
-              value={otp}
-              onChange={setOtp}
-              containerClassName="justify-center"
-            >
-              <InputOTPGroup>
-                <InputOTPSlot index={0} />
-                <InputOTPSlot index={1} />
-                <InputOTPSlot index={2} />
-                <InputOTPSlot index={3} />
-                <InputOTPSlot index={4} />
-                <InputOTPSlot index={5} />
-              </InputOTPGroup>
-            </InputOTP>
-
-            {otpError && (
-              <div className="mt-3 flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 p-2 text-amber-900 text-sm">
-                <AlertTriangle className="h-4 w-4" />
-                <span>{otpError}</span>
-              </div>
-            )}
-
-            <div className="text-sm text-gray-600 text-center">
-              {activating && <Badge type="accent">Activating account...</Badge>}
-            </div>
-            <div className="mt-3 flex items-center justify-center gap-2 text-sm">
-              <Button
-                type="button"
-                onClick={() => {
-                  AuthService.requestActivation(eduEmail)
-                    .then((response) => {
-                      if (response.message) {
-                        setSending(false);
-                        alert(response.message);
-                        return;
-                      }
-
-                      alert("Check your inbox for an email.");
-                      setSending(false);
-                      setIsCoolingDown(true);
-                      setTimeout(() => setIsCoolingDown(false), 60000);
-                    })
-                    .catch(setOtpError);
-                  setSending(true);
-                }}
-                disabled={sending || !isEmailValid || isCoolingDown}
-              >
-                <Repeat className="h-4 w-4 mr-1" />
-                {!isCoolingDown
-                  ? sending
-                    ? "Sending..."
-                    : "Send me an OTP"
-                  : `Resend`}
-              </Button>
-            </div>
           </div>
         </div>
       </div>

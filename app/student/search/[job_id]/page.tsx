@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { CheckCircle, Clipboard, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useProfile, useApplications, useJob } from "@/lib/api/student.api";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { useProfileData, useJobData } from "@/lib/api/student.data.api";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { useModal, useModalRef } from "@/hooks/use-modal";
+import { useModalRef } from "@/hooks/use-modal";
 import ReactMarkdown from "react-markdown";
 import { Loader } from "@/components/ui/loader";
 import {
@@ -19,13 +18,13 @@ import {
   JobApplicationRequirements,
 } from "@/components/shared/jobs";
 import { Card } from "@/components/ui/card";
-import { useGlobalModal } from "@/components/providers/ModalProvider";
-import { useQueryClient } from "@tanstack/react-query";
-import { Textarea } from "@/components/ui/textarea";
 import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { PageError } from "@/components/ui/error";
 import { SaveJobButton } from "@/components/features/student/job/save-job-button";
 import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job-button";
+import { ApplyConfirmModal } from "@/components/modals/ApplyConfirmModal";
+import { applyToJob } from "@/lib/application";
+import { useApplicationActions } from "@/lib/api/student.actions.api";
 
 /**
  * The individual job page.
@@ -35,44 +34,24 @@ export default function JobPage() {
   const router = useRouter();
   const params = useParams();
   const { job_id } = params;
-  const job = useJob(job_id as string);
+  const job = useJobData(job_id as string);
+  const applyConfirmModalRef = useModalRef();
   const successModalRef = useModalRef();
+  const applySuccessModalRef = useModalRef();
+  const applicationActions = useApplicationActions();
 
-  const {
-    open: openApplicationConfirmationModal,
-    close: closeApplicationConfirmationModal,
-    Modal: ApplicationConfirmationModal,
-  } = useModal("application-confirmation-modal");
-
-  const profile = useProfile();
+  const profile = useProfileData();
   const { universities } = useDbRefs();
-  const applications = useApplications();
-  const textarea_ref = useRef<HTMLTextAreaElement>(null);
 
-  const handleDirectApplication = async () => {
-    if (!job.data) return;
-    if (job.data?.require_cover_letter && !textarea_ref.current?.value.trim()) {
-      alert("A cover letter is required to apply for this job.");
-      return;
-    }
-    await applications
-      .create({
-        job_id: job.data.id ?? "",
-        cover_letter: textarea_ref.current?.value ?? "",
-      })
-      .then((response) => {
-        if (applications.createError)
-          return alert(applications.createError.message);
-        if (response?.message) return alert(response.message);
-        successModalRef.current?.open();
-      });
-  };
+  const goProfile = useCallback(() => {
+    applyConfirmModalRef.current?.close();
+    router.push("/profile");
+  }, [applyConfirmModalRef, router]);
 
-  if (job.error) {
+  if (job.error)
     return (
       <PageError title="Failed to load job" description={job.error.message} />
     );
-  }
 
   if (!job.data && !job.isPending) {
     return (
@@ -128,7 +107,9 @@ export default function JobPage() {
                       <ApplyToJobButton
                         profile={profile.data}
                         job={job.data}
-                        openAppModal={openApplicationConfirmationModal}
+                        openAppModal={() =>
+                          applyConfirmModalRef.current?.open()
+                        }
                       />
                     </div>
                   )}
@@ -213,82 +194,19 @@ export default function JobPage() {
         )}
       </div>
 
-      <ApplicationConfirmationModal>
-        <div className="max-w-lg mx-auto p-6 max-h-[60vh] overflow-auto">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-              <Clipboard className="w-8 h-8 text-blue-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-3">
-              Ready to Apply?
-            </h2>
-            <p className="text-gray-600 leading-relaxed">
-              You're applying for{" "}
-              <span className="font-semibold text-gray-900">
-                {job.data?.title}
-              </span>
-              {job.data?.employer?.name && (
-                <>
-                  {" "}
-                  at{" "}
-                  <span className="font-semibold text-gray-900">
-                    {job.data?.employer.name}
-                  </span>
-                </>
-              )}
-            </p>
-          </div>
-
-          {/* Cover Letter */}
-          <div className="mb-6">
-            {(job.data?.require_cover_letter ?? true) && (
-              <div className="space-y-3">
-                <Textarea
-                  ref={textarea_ref}
-                  placeholder={`Dear Hiring Manager,
-
-  I am excited to apply for this position because...
-
-  Best regards,
-  [Your name]`}
-                  className="w-full h-20 p-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 resize-none text-sm overflow-y-auto"
-                  maxLength={500}
-                />
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-gray-500 flex items-center gap-1">
-                    💡 <span>Mention specific skills and enthusiasm</span>
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={() => {
-                closeApplicationConfirmationModal();
-              }}
-              className="flex-1 h-12 transition-all duration-200"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => {
-                closeApplicationConfirmationModal();
-                handleDirectApplication();
-              }}
-              className="flex-1 h-12 transition-all duration-200"
-            >
-              <div className="flex items-center justify-center gap-2">
-                <CheckCircle className="w-4 h-4" />
-                Submit Application
-              </div>
-            </Button>
-          </div>
-        </div>
-      </ApplicationConfirmationModal>
+      <ApplySuccessModal job={job.data} ref={applySuccessModalRef} />
+      <ApplyConfirmModal
+        job={job.data}
+        onClose={() => applyConfirmModalRef.current?.close()}
+        onAddNow={goProfile}
+        onSubmit={(text: string) => {
+          applyConfirmModalRef.current?.close();
+          applyToJob(applicationActions, job.data, text).then((response) => {
+            if (!response.success) return alert(response.message);
+            applySuccessModalRef.current?.open();
+          });
+        }}
+      />
 
       <ApplySuccessModal job={job.data} ref={successModalRef} />
     </>

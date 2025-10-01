@@ -9,7 +9,7 @@ export function AutoApplyToast({
 }: {
   enabled: boolean; // profile.data?.auto_apply
   dismissed: boolean; // profile.data?.acknowledged_auto_apply
-  onDismissForever: () => Promise<void>; // profile.update({ acknowledged_auto_apply: true })
+  onDismissForever: () => Promise<void>;
 }) {
   return (
     <Toast
