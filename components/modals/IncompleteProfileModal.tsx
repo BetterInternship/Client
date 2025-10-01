@@ -218,7 +218,7 @@ function CompleteProfileStepper({
         id: "apply",
         title: "Additional job requirements",
         icon: Mail,
-        canNext: () => true,
+        canNext: () => !isUpdating,
         component: (
           <StepApply
             job={job}
@@ -253,25 +253,29 @@ function CompleteProfileStepper({
         university: profile.university ?? "",
         degree: profile.degree ?? "",
       }).then(() => {
-        setIsUpdating(false);
         if (step + 1 < steps.length) {
+          setIsUpdating(false);
           setStep(step + 1);
-        } else {
-          if (job)
-            applyToJob(applicationActions, job, coverLetterRef.current).then(
-              (response) => {
-                if (!response.success) return alert(response.message);
-                applySuccessModalRef?.current?.open();
-                onFinish();
-              }
-            );
+          return;
         }
+
+        if (job)
+          applyToJob(applicationActions, job, coverLetterRef.current).then(
+            (response) => {
+              if (!response.success) return alert(response.message);
+              applySuccessModalRef?.current?.open();
+              setIsUpdating(false);
+              onFinish();
+            }
+          );
       });
     } else if (steps[step].id === "apply") {
+      setIsUpdating(true);
       applyToJob(applicationActions, job, coverLetterRef.current).then(
         (response) => {
           if (!response.success) return alert(response.message);
           applySuccessModalRef?.current?.open();
+          setIsUpdating(false);
           onFinish();
         }
       );
