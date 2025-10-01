@@ -11,17 +11,20 @@ import {
   isProfileResume,
   isProfileVerified,
 } from "@/lib/profile";
-import { useMemo } from "react";
+import { RefObject, useMemo } from "react";
+import { ModalHandle } from "@/hooks/use-modal";
 
 // ! todo: rmove openAppModal and use openGlobalModal instead
 export const ApplyToJobButton = ({
   profile,
   job,
   openAppModal,
+  applySuccessModalRef,
 }: {
   profile: PublicUser | null;
   job: Job;
   openAppModal: () => void;
+  applySuccessModalRef?: RefObject<ModalHandle | null>;
 }) => {
   const auth = useAuthContext();
   const jobs = useJobsData();
@@ -38,7 +41,11 @@ export const ApplyToJobButton = ({
     openGlobalModal(
       "incomplete-profile",
       <IncompleteProfileContent
-        handleClose={() => closeGlobalModal("incomplete-profile")}
+        job={job}
+        applySuccessModalRef={applySuccessModalRef}
+        onFinish={() => {
+          closeGlobalModal("incomplete-profile");
+        }}
       />,
       {
         allowBackdropClick: false,

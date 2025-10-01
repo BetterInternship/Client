@@ -1,7 +1,6 @@
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
 import { Button } from "../ui/button";
 
 interface Step {

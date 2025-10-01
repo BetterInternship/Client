@@ -110,6 +110,7 @@ export default function JobPage() {
                         openAppModal={() =>
                           applyConfirmModalRef.current?.open()
                         }
+                        applySuccessModalRef={applySuccessModalRef}
                       />
                     </div>
                   )}
@@ -199,12 +200,14 @@ export default function JobPage() {
         job={job.data}
         onClose={() => applyConfirmModalRef.current?.close()}
         onAddNow={goProfile}
-        onSubmit={(text: string) => {
+        onSubmit={async (text: string) => {
           applyConfirmModalRef.current?.close();
-          applyToJob(applicationActions, job.data, text).then((response) => {
-            if (!response.success) return alert(response.message);
-            applySuccessModalRef.current?.open();
-          });
+          await applyToJob(applicationActions, job.data, text).then(
+            (response) => {
+              if (!response.success) return alert(response.message);
+              applySuccessModalRef.current?.open();
+            }
+          );
         }}
       />
 

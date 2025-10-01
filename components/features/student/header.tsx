@@ -459,7 +459,9 @@ function MobileDrawer({
       openGlobalModal(
         "incomplete-profile",
         <IncompleteProfileContent
-          handleClose={() => closeGlobalModal("incomplete-profile")}
+          onFinish={() => {
+            closeGlobalModal("incomplete-profile");
+          }}
         />,
         {
           allowBackdropClick: false,
@@ -644,7 +646,7 @@ export const ProfileButton: React.FC = () => {
       openGlobalModal(
         "incomplete-profile",
         <IncompleteProfileContent
-          handleClose={() => closeGlobalModal("incomplete-profile")}
+          onFinish={() => closeGlobalModal("incomplete-profile")}
         />,
         {
           allowBackdropClick: false,

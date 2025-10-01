@@ -21,12 +21,14 @@ import { ApplyToJobButton } from "../features/student/job/apply-to-job-button";
 export const JobModal = ({
   job,
   openAppModal,
+  applySuccessModalRef,
   ref,
   user,
 }: {
   job: Job;
   openAppModal: () => void;
   ref?: RefObject<ModalHandle | null>;
+  applySuccessModalRef?: RefObject<ModalHandle | null>;
   user?: {
     github_link?: string | null;
     portfolio_link?: string | null;
@@ -133,6 +135,7 @@ export const JobModal = ({
               profile={profile.data}
               job={job}
               openAppModal={openAppModal}
+              applySuccessModalRef={applySuccessModalRef}
             />
           </div>
         </div>

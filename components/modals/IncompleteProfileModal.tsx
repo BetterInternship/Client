@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { RefObject, useEffect, useMemo, useRef, useState } from "react";
 import {
   Upload,
   UserCheck,
-  MailCheck,
   FileText,
   AlertTriangle,
   Repeat,
   User,
   Sparkles,
+  Mail,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,26 +21,24 @@ import { useDbRefs } from "@/lib/db/use-refs";
 
 import ResumeUpload from "@/components/features/student/resume-parser/ResumeUpload";
 import { FormInput } from "@/components/EditForm";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
-import { AuthService, UserService } from "@/lib/api/services";
-import { Input } from "../ui/input";
+import { UserService } from "@/lib/api/services";
 import { useProfileData } from "@/lib/api/student.data.api";
-import { useQueryClient } from "@tanstack/react-query";
 import { Stepper } from "../stepper/stepper";
-import {
-  isProfileResume,
-  isProfileBaseComplete,
-  isProfileVerified,
-} from "../../lib/profile";
+import { isProfileResume, isProfileBaseComplete } from "../../lib/profile";
+import { Textarea } from "../ui/textarea";
+import { Job } from "@/lib/db/db.types";
+import { applyToJob } from "@/lib/application";
+import { useApplicationActions } from "@/lib/api/student.actions.api";
+import { ModalHandle } from "@/hooks/use-modal";
 
 export function IncompleteProfileContent({
-  handleClose,
+  job,
+  onFinish,
+  applySuccessModalRef,
 }: {
-  handleClose: () => void;
+  job?: Job | null;
+  onFinish: () => void;
+  applySuccessModalRef?: RefObject<ModalHandle | null>;
 }) {
   return (
     <div className="p-6 h-full overflow-y-auto pt-0">
@@ -54,7 +52,11 @@ export function IncompleteProfileContent({
         </h2>
       </div>
 
-      <CompleteProfileStepper onFinish={handleClose} />
+      <CompleteProfileStepper
+        job={job}
+        applySuccessModalRef={applySuccessModalRef}
+        onFinish={onFinish}
+      />
     </div>
   );
 }
@@ -90,8 +92,15 @@ function snakeToDraft(u: ResumeParsedUserSnake): Partial<ProfileDraft> {
   };
 }
 
-function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
-  const queryClient = useQueryClient();
+function CompleteProfileStepper({
+  job,
+  onFinish,
+  applySuccessModalRef,
+}: {
+  job?: Job | null;
+  onFinish: () => void;
+  applySuccessModalRef?: RefObject<ModalHandle | null>;
+}) {
   const existingProfile = useProfileData();
   const [step, setStep] = useState(0);
 
@@ -115,6 +124,8 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   // analyze
   const { upload, fileInputRef, response } = useAnalyzeResume(file);
   const handledResponseRef = useRef<Promise<any> | null>(null);
+  const coverLetterRef = useRef<string>("");
+  const applicationActions = useApplicationActions();
 
   // upload on file
   useEffect(() => {
@@ -194,11 +205,26 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     // Auto apply not ackowledged
     if (existingProfile.data?.acknowledged_auto_apply === false) {
       s.push({
-        id: "auto_apply",
+        id: "auto-apply",
         title: "Auto-apply settings",
         icon: Repeat,
         canNext: () => true,
         component: <StepAutoApply />,
+      });
+    }
+
+    if (job && job.require_cover_letter) {
+      s.push({
+        id: "apply",
+        title: "Additional job requirements",
+        icon: Mail,
+        canNext: () => true,
+        component: (
+          <StepApply
+            job={job}
+            setText={(text) => (coverLetterRef.current = text)}
+          />
+        ),
       });
     }
 
@@ -228,9 +254,27 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
         degree: profile.degree ?? "",
       }).then(() => {
         setIsUpdating(false);
-        if (step + 1 < steps.length) setStep(step + 1);
-        else onFinish();
+        if (step + 1 < steps.length) {
+          setStep(step + 1);
+        } else {
+          if (job)
+            applyToJob(applicationActions, job, coverLetterRef.current).then(
+              (response) => {
+                if (!response.success) return alert(response.message);
+                applySuccessModalRef?.current?.open();
+                onFinish();
+              }
+            );
+        }
       });
+    } else if (steps[step].id === "apply") {
+      applyToJob(applicationActions, job, coverLetterRef.current).then(
+        (response) => {
+          if (!response.success) return alert(response.message);
+          applySuccessModalRef?.current?.open();
+          onFinish();
+        }
+      );
     }
   };
 
@@ -403,7 +447,7 @@ function StepAutoApply() {
           <div className="flex-1 space-y-1">
             <div className="flex items-center gap-2">
               <h3 className="font-semibold leading-none">Auto-Apply is ON</h3>
-              <Badge variant="success">New</Badge>
+              <Badge type="supportive">New</Badge>
             </div>
             <p className="text-sm text-muted-foreground">
               We’ll automatically submit applications for matching roles using
@@ -420,10 +464,7 @@ function StepAutoApply() {
           </ul>
 
           <div className="mt-3">
-            <Button
-              variant="outline"
-              onClick={() => router.push("/profile")}
-            >
+            <Button variant="outline" onClick={() => router.push("/profile")}>
               Manage Auto-Apply
             </Button>
           </div>
@@ -432,6 +473,40 @@ function StepAutoApply() {
     </div>
   );
 }
+
+const StepApply = ({
+  job,
+  setText: _setText,
+}: {
+  job?: Job | null;
+  setText: (text: string) => void;
+}) => {
+  const [text, setText] = useState("");
+  return (
+    <div className="mb-6 space-y-3">
+      <Textarea
+        value={text}
+        onChange={(e) => (
+          setText(e.currentTarget.value), _setText(e.currentTarget.value)
+        )}
+        placeholder={`Dear Hiring Manager,
+
+I am excited to apply for this position because...
+
+Best regards,
+[Your name]`}
+        className="w-full h-20 p-3 border border-gray-300 rounded-[0.33em] focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 resize-none text-sm overflow-y-auto"
+        maxLength={500}
+      />
+      <div className="flex justify-between items-center text-xs">
+        <span className="text-gray-500 flex items-center gap-1">
+          💡 <span>Mention specific skills and enthusiasm</span>
+        </span>
+        <span className="text-gray-500">{text.length}/500</span>
+      </div>
+    </div>
+  );
+};
 
 /* ============================== Exports ============================== */
 

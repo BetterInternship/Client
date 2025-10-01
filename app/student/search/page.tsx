@@ -188,7 +188,7 @@ export default function SearchPage() {
       openGlobalModal(
         "incomplete-profile",
         <IncompleteProfileContent
-          handleClose={() => closeGlobalModal("incomplete-profile")}
+          onFinish={() => closeGlobalModal("incomplete-profile")}
         />,
         {
           allowBackdropClick: false,
@@ -604,6 +604,7 @@ export default function SearchPage() {
                       profile={profile.data}
                       job={selectedJob}
                       openAppModal={() => applyConfirmModalRef.current?.open()}
+                      applySuccessModalRef={applySuccessModalRef}
                     />,
                   ]}
                 />
@@ -639,6 +640,7 @@ export default function SearchPage() {
         <JobModal
           job={selectedJob}
           openAppModal={() => applyConfirmModalRef.current?.open()}
+          applySuccessModalRef={applySuccessModalRef}
           ref={jobModalRef}
         />
       )}
