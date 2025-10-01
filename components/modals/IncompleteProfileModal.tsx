@@ -9,12 +9,13 @@ import {
   AlertTriangle,
   Repeat,
   User,
+  Sparkles,
 } from "lucide-react";
-
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAnalyzeResume } from "@/hooks/use-register";
-
+import { useRouter } from "next/navigation";
 import { Autocomplete } from "@/components/ui/autocomplete";
 import { useDbRefs } from "@/lib/db/use-refs";
 
@@ -41,7 +42,6 @@ export function IncompleteProfileContent({
 }: {
   handleClose: () => void;
 }) {
-
   return (
     <div className="p-6 h-full overflow-y-auto pt-0">
       {/* Modal title */}
@@ -191,8 +191,28 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
       });
     }
 
+    // Auto apply not ackowledged
+    if (existingProfile.data?.acknowledged_auto_apply === false) {
+      s.push({
+        id: "auto_apply",
+        title: "Auto-apply settings",
+        icon: Repeat,
+        canNext: () => true,
+        component: <StepAutoApply />,
+      });
+    }
+
     return s;
-  }, [file, profile, isParsing, isUpdating]);
+  }, [
+    file,
+    profile,
+    isParsing,
+    isUpdating,
+    parsedReady,
+    parseError,
+    response,
+    existingProfile.data,
+  ]);
 
   const onNext = async () => {
     if (steps[step].id === "resume") {
@@ -365,6 +385,50 @@ function StepBasicIdentity({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function StepAutoApply() {
+  const router = useRouter();
+
+  return (
+    <div className="flex flex-col gap-4">
+      <Card className="border-emerald-300/60 bg-emerald-50 dark:bg-emerald-900/20">
+        <div className="flex flex-row items-start gap-3">
+          <div className="rounded-full p-2 bg-emerald-100 dark:bg-emerald-800/60">
+            <Sparkles className="h-4 w-4 text-emerald-700 dark:text-emerald-200" />
+          </div>
+
+          <div className="flex-1 space-y-1">
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold leading-none">Auto-Apply is ON</h3>
+              <Badge variant="success">New</Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              We’ll automatically submit applications for matching roles using
+              your saved details. You can turn this off anytime in your profile.
+            </p>
+          </div>
+        </div>
+
+        <div className="pt-0">
+          <ul className="list-disc pl-5 text-sm leading-6 text-emerald-900/80 dark:text-emerald-100/80">
+            <li>Uses your saved profile info to apply to matching roles.</li>
+            <li>Respects your filters and preferences.</li>
+            <li>Pause or disable anytime from your Profile.</li>
+          </ul>
+
+          <div className="mt-3">
+            <Button
+              variant="outline"
+              onClick={() => router.push("/profile")}
+            >
+              Manage Auto-Apply
+            </Button>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }
