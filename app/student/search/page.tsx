@@ -133,7 +133,6 @@ export default function SearchPage() {
     } else if (jobsPage.length > 0 && !selectedJob?.id) {
       setSelectedJob(jobsPage[0]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobsPage.length, searchParams]);
 
   /* --------------------------------------------
@@ -183,7 +182,7 @@ export default function SearchPage() {
     if (
       !isProfileResume(profile.data) ||
       !isProfileBaseComplete(profile.data) ||
-      !isProfileVerified(profile.data)
+      profile.data?.acknowledged_auto_apply === false
     ) {
       openGlobalModal(
         "incomplete-profile",

@@ -69,7 +69,7 @@ export const ApplyToJobButton = ({
     if (
       !isProfileResume(profile) ||
       !isProfileBaseComplete(profile) ||
-      !isProfileVerified(profile)
+      profile.acknowledged_auto_apply === false
     ) {
       return openIncompleteProfileModal();
     }
@@ -94,4 +94,3 @@ export const ApplyToJobButton = ({
     </Button>
   );
 };
-

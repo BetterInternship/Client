@@ -240,9 +240,13 @@ function CompleteProfileStepper({
     existingProfile.data,
   ]);
 
+  // On next behavior
   const onNext = async () => {
+    // Next for step 1
     if (steps[step].id === "resume") {
       setStep(step + 1);
+
+      // Next for step 2
     } else if (steps[step].id === "base") {
       setIsUpdating(true);
       UserService.updateMyProfile({
@@ -269,6 +273,34 @@ function CompleteProfileStepper({
             }
           );
       });
+
+      // Next for step 4
+    }
+
+    if (steps[step].id === "auto-apply") {
+      setIsUpdating(true);
+      UserService.updateMyProfile({ acknowledged_auto_apply: true }).then(
+        async () => {
+          setIsUpdating(false);
+
+          if (step + 1 < steps.length) {
+            setStep(step + 1);
+            return;
+          }
+
+          if (job) {
+            setIsUpdating(true);
+            applyToJob(applicationActions, job, coverLetterRef.current).then(
+              (response) => {
+                if (!response.success) return alert(response.message);
+                applySuccessModalRef?.current?.open();
+                setIsUpdating(false);
+                onFinish();
+              }
+            );
+          }
+        }
+      );
     } else if (steps[step].id === "apply") {
       setIsUpdating(true);
       applyToJob(applicationActions, job, coverLetterRef.current).then(
@@ -438,8 +470,6 @@ function StepBasicIdentity({
 }
 
 function StepAutoApply() {
-  const router = useRouter();
-
   return (
     <div className="flex flex-col gap-4">
       <Card className="border-emerald-300/60 bg-emerald-50 dark:bg-emerald-900/20">
@@ -451,28 +481,13 @@ function StepAutoApply() {
           <div className="flex-1 space-y-1">
             <div className="flex items-center gap-2">
               <h3 className="font-semibold leading-none">Auto-Apply is ON</h3>
-              <Badge type="supportive">New</Badge>
             </div>
-            <p className="text-sm text-muted-foreground">
-              We’ll automatically submit applications for matching roles using
-              your saved details. You can turn this off anytime in your profile.
-            </p>
           </div>
         </div>
-
-        <div className="pt-0">
-          <ul className="list-disc pl-5 text-sm leading-6 text-emerald-900/80 dark:text-emerald-100/80">
-            <li>Uses your saved profile info to apply to matching roles.</li>
-            <li>Respects your filters and preferences.</li>
-            <li>Pause or disable anytime from your Profile.</li>
-          </ul>
-
-          <div className="mt-3">
-            <Button variant="outline" onClick={() => router.push("/profile")}>
-              Manage Auto-Apply
-            </Button>
-          </div>
-        </div>
+        <p className="text-sm text-muted-foreground p-1 mt-2 text-justify">
+          We’ll automatically submit applications for matching roles using your
+          saved details. You can turn this off anytime in your profile.
+        </p>
       </Card>
     </div>
   );
