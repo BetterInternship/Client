@@ -11,6 +11,7 @@ import {
   User,
 } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAnalyzeResume } from "@/hooks/use-register";
 
@@ -19,13 +20,28 @@ import { useDbRefs } from "@/lib/db/use-refs";
 
 import ResumeUpload from "@/components/features/student/resume-parser/ResumeUpload";
 import { FormInput } from "@/components/EditForm";
-import { UserService } from "@/lib/api/services";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import { AuthService, UserService } from "@/lib/api/services";
+import { Input } from "../ui/input";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useQueryClient } from "@tanstack/react-query";
 import { Stepper } from "../stepper/stepper";
-import { isProfileResume, isProfileBaseComplete } from "../../lib/profile";
+import {
+  isProfileResume,
+  isProfileBaseComplete,
+  isProfileVerified,
+} from "../../lib/profile";
 
-export function IncompleteProfileContent({ onFinish }: { onFinish: () => void }) {
+export function IncompleteProfileContent({
+  handleClose,
+}: {
+  handleClose: () => void;
+}) {
+
   return (
     <div className="p-6 h-full overflow-y-auto pt-0">
       {/* Modal title */}
@@ -38,7 +54,7 @@ export function IncompleteProfileContent({ onFinish }: { onFinish: () => void })
         </h2>
       </div>
 
-      <CompleteProfileStepper onFinish={onFinish} />
+      <CompleteProfileStepper onFinish={handleClose} />
     </div>
   );
 }

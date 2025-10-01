@@ -185,17 +185,13 @@ export default function SearchPage() {
       !isProfileBaseComplete(profile.data) ||
       !isProfileVerified(profile.data)
     ) {
-      return openGlobalModal(
+      openGlobalModal(
         "incomplete-profile",
         <IncompleteProfileContent
-          onFinish={() => {
-            closeGlobalModal("incomplete-profile");
-            massApplyModalRef.current?.open();
-          }}
+          handleClose={() => closeGlobalModal("incomplete-profile")}
         />,
         {
           allowBackdropClick: false,
-          panelClassName: "border-4 border-primary/50 bg-primary/5",
           onClose: () => {
             queryClient.invalidateQueries({ queryKey: ["my-profile"] });
           },

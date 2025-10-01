@@ -11,7 +11,6 @@ import React, {
 } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 type ModalOptions = {
   allowBackdropClick?: boolean; // default: true
@@ -89,25 +88,23 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
             role="dialog"
             aria-modal="true"
           >
-            <div className="bg-white max-w-3xl max-h-[95vh] p-0 rounded-[0.33em]">
-              <div
-                className={cn(
-                  `mx-auto w-fit border bg-white shadow-xl rounded-[0.33em] relative pt-6 overflow-auto`,
-                  opts.panelClassName ?? ""
-                )}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {opts.hasClose !== false && (
-                  <button
-                    aria-label="Close"
-                    onClick={() => close(name)}
-                    className="absolute right-3 top-3 h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center"
-                  >
-                    <X className="h-4 w-4 text-gray-500" />
-                  </button>
-                )}
-                <div className="p-5">{node}</div>
-              </div>
+            <div
+              className={
+                `mx-auto w-fit max-w-3xl max-h-[95vh] rounded-md border bg-white shadow-xl relative pt-6 overflow-auto` +
+                (opts.panelClassName ?? "")
+              }
+              onClick={(e) => e.stopPropagation()}
+            >
+              {opts.hasClose !== false && (
+                <button
+                  aria-label="Close"
+                  onClick={() => close(name)}
+                  className="absolute right-3 top-3 h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center"
+                >
+                  <X className="h-4 w-4 text-gray-500" />
+                </button>
+              )}
+              <div className="p-5">{node}</div>
             </div>
           </div>,
           document.body
