@@ -11,8 +11,6 @@ import React, {
 import {
   Filter as FilterIcon,
   ChevronDown,
-  ChevronRight,
-  X,
   Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -326,7 +324,7 @@ function PositionPanel() {
                 {hasChildren && (
                   <button
                     type="button"
-                    className="text-[11px] underline text-gray-600 hover:text-gray-800"
+                    className="text-sm hover:underline transition-all text-gray-600 hover:text-gray-800"
                     onClick={(e) => {
                       e.stopPropagation();
                       const turnOn = !(headerChecked || headerIndeterminate);
@@ -343,12 +341,6 @@ function PositionPanel() {
                       : "Select all"}
                   </button>
                 )}
-                <ChevronRight
-                  className={cn(
-                    "w-4 h-4 text-gray-400 transition-transform",
-                    expanded && "rotate-90"
-                  )}
-                />
               </div>
             </div>
 
@@ -500,8 +492,6 @@ export function JobFilters({
     setOpen(false);
   };
   const clearAll = () => dispatch({ type: "CLEAR" });
-  const removeOne = (key: keyof JobFilter, value: string) =>
-    dispatch({ type: "TOGGLE", key, value, on: false });
 
   /* ----- Desktop: compact single button in the bar ----- */
   if (isDesktop) {
@@ -522,16 +512,15 @@ export function JobFilters({
 
         {open && (
           <div
-            className="absolute z-[60] mt-2 w-[560px] max-h-[72vh] bg-white border rounded-md shadow-lg
+            className="absolute z-[60] mt-2 w-[35vw] max-h-[72vh] bg-white border rounded-md shadow-lg
                      flex flex-col"
-            onMouseLeave={() => setOpen(false)}
           >
             {/* Tabs Header */}
-            <div className="px-3 pt-2 pb-1 border-b flex items-center justify-between">
+            <div className="px-3 py-2 border-b flex items-center justify-between">
               <div className="flex gap-2">
                 <button
                   className={cn(
-                    "text-xs px-3 py-1 rounded-full",
+                    "text-sm px-3 py-1 rounded-full",
                     tab === "category"
                       ? "bg-gray-900 text-white"
                       : "bg-gray-100"
@@ -542,7 +531,7 @@ export function JobFilters({
                 </button>
                 <button
                   className={cn(
-                    "text-xs px-3 py-1 rounded-full",
+                    "text-sm  px-3 py-1 rounded-full",
                     tab === "details" ? "bg-gray-900 text-white" : "bg-gray-100"
                   )}
                   onClick={() => setTab("details")}
@@ -552,7 +541,7 @@ export function JobFilters({
               </div>
               <button
                 onClick={clearAll}
-                className="text-[11px] underline text-gray-600"
+                className="text-sm hover:underline transition-all text-gray-600"
               >
                 Clear all
               </button>
@@ -578,7 +567,7 @@ export function JobFilters({
     );
   }
 
-  /* ----- Mobile: bottom sheet (unchanged layout, no count text) ----- */
+  /* ----- Mobile: bottom sheet ----- */
   return (
     <>
       <Button
@@ -606,7 +595,7 @@ export function JobFilters({
             <div className="px-4 pt-3 pb-2 border-b flex items-center justify-between">
               <div className="font-semibold">Filters</div>
               <button
-                className="text-xs underline text-gray-600"
+                className="text-sm hover:underline transition-all text-gray-600"
                 onClick={clearAll}
               >
                 Clear all
