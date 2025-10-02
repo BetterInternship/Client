@@ -9,40 +9,31 @@ import {
   Repeat,
   User,
   Sparkles,
-  Mail,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAnalyzeResume } from "@/hooks/use-register";
-import { useRouter } from "next/navigation";
-import { Autocomplete } from "@/components/ui/autocomplete";
 import { useDbRefs } from "@/lib/db/use-refs";
-
 import ResumeUpload from "@/components/features/student/resume-parser/ResumeUpload";
 import { FormDropdown, FormInput } from "@/components/EditForm";
 import { UserService } from "@/lib/api/services";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { Stepper } from "../stepper/stepper";
 import { isProfileResume, isProfileBaseComplete } from "../../lib/profile";
-import { Textarea } from "../ui/textarea";
-import { Job } from "@/lib/db/db.types";
-import { applyToJob } from "@/lib/application";
-import { useApplicationActions } from "@/lib/api/student.actions.api";
 import { ModalHandle } from "@/hooks/use-modal";
 
+/* ============================== Modal shell ============================== */
+
 export function IncompleteProfileContent({
-  job,
   onFinish,
-  applySuccessModalRef,
 }: {
-  job?: Job | null;
   onFinish: () => void;
   applySuccessModalRef?: RefObject<ModalHandle | null>;
+  job?: unknown | null;
 }) {
   return (
     <div className="p-6 h-full overflow-y-auto pt-0">
-      {/* Modal title */}
       <div className="text-center mb-6">
         <div className="w-16 h-16 mx-auto mb-4 bg-primary/15 rounded-full flex items-center justify-center">
           <User className="w-8 h-8 text-primary" />
@@ -52,11 +43,7 @@ export function IncompleteProfileContent({
         </h2>
       </div>
 
-      <CompleteProfileStepper
-        job={job}
-        applySuccessModalRef={applySuccessModalRef}
-        onFinish={onFinish}
-      />
+      <CompleteProfileStepper onFinish={onFinish} />
     </div>
   );
 }
@@ -92,17 +79,12 @@ function snakeToDraft(u: ResumeParsedUserSnake): Partial<ProfileDraft> {
   };
 }
 
-function CompleteProfileStepper({
-  job,
-  onFinish,
-  applySuccessModalRef,
-}: {
-  job?: Job | null;
-  onFinish: () => void;
-  applySuccessModalRef?: RefObject<ModalHandle | null>;
-}) {
+/* ============================== Main Stepper ============================== */
+
+function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   const existingProfile = useProfileData();
   const [step, setStep] = useState(0);
+  const [showComplete, setShowComplete] = useState(false);
 
   // profile being edited
   const [profile, setProfile] = useState<ProfileDraft>({
@@ -124,8 +106,6 @@ function CompleteProfileStepper({
   // analyze
   const { upload, fileInputRef, response } = useAnalyzeResume(file);
   const handledResponseRef = useRef<Promise<any> | null>(null);
-  const coverLetterRef = useRef<string>("");
-  const applicationActions = useApplicationActions();
 
   // upload on file
   useEffect(() => {
@@ -134,7 +114,7 @@ function CompleteProfileStepper({
     setParsedReady(false);
     setIsParsing(true);
     upload(file);
-  }, [file]);
+  }, [file, upload]);
 
   // hydrate once per promise
   useEffect(() => {
@@ -166,10 +146,17 @@ function CompleteProfileStepper({
     };
   }, [response]);
 
+  // Build REAL steps (completion is NOT part of this array)
   const steps = useMemo(() => {
-    const s = [];
+    const s: Array<{
+      id: "resume" | "base" | "auto-apply";
+      title: string;
+      subtitle?: string;
+      icon: any;
+      canNext: () => boolean;
+      component: React.ReactNode;
+    }> = [];
 
-    // No resume
     if (!isProfileResume(existingProfile.data)) {
       s.push({
         id: "resume",
@@ -191,7 +178,6 @@ function CompleteProfileStepper({
       });
     }
 
-    // Not complete
     if (!isProfileBaseComplete(existingProfile.data)) {
       s.push({
         id: "base",
@@ -202,52 +188,48 @@ function CompleteProfileStepper({
       });
     }
 
-    // Auto apply not ackowledged
     if (existingProfile.data?.acknowledged_auto_apply === false) {
       s.push({
         id: "auto-apply",
         title: "Auto-apply settings",
         icon: Repeat,
-        canNext: () => true,
-        component: <StepAutoApply />,
-      });
-    }
-
-    if (job && job.require_cover_letter) {
-      s.push({
-        id: "apply",
-        title: "Additional job requirements",
-        icon: Mail,
         canNext: () => !isUpdating,
-        component: (
-          <StepApply
-            job={job}
-            setText={(text) => (coverLetterRef.current = text)}
-          />
-        ),
+        component: <StepAutoApply />,
       });
     }
 
     return s;
   }, [
     file,
-    profile,
     isParsing,
-    isUpdating,
     parsedReady,
     parseError,
     response,
     existingProfile.data,
+    profile,
+    isUpdating,
   ]);
 
-  // On next behavior
-  const onNext = async () => {
-    // Next for step 1
-    if (steps[step].id === "resume") {
-      setStep(step + 1);
+  // Edge case: nothing to show? go straight to complete
+  useEffect(() => {
+    if (steps.length === 0) {
+      setShowComplete(true);
+    }
+  }, [steps.length]);
 
-      // Next for step 2
-    } else if (steps[step].id === "base") {
+  // Next behavior
+  const onNext = async () => {
+    const current = steps[step];
+
+    if (!current) return;
+
+    if (current.id === "resume") {
+      // purely client transition
+      setStep(step + 1);
+      return;
+    }
+
+    if (current.id === "base") {
       setIsUpdating(true);
       UserService.updateMyProfile({
         first_name: profile.firstName ?? "",
@@ -257,74 +239,44 @@ function CompleteProfileStepper({
         university: profile.university ?? "",
         degree: profile.degree ?? "",
       }).then(() => {
-        if (step + 1 < steps.length) {
-          setIsUpdating(false);
-          setStep(step + 1);
-          return;
-        }
-
-        if (job)
-          applyToJob(applicationActions, job, coverLetterRef.current).then(
-            (response) => {
-              if (!response.success) return alert(response.message);
-              applySuccessModalRef?.current?.open();
-              setIsUpdating(false);
-              onFinish();
-            }
-          );
+        setIsUpdating(false);
+        const isLast = step + 1 >= steps.length;
+        if (isLast) setShowComplete(true);
+        else setStep(step + 1);
       });
-
-      // Next for step 4
+      return;
     }
 
-    if (steps[step].id === "auto-apply") {
+    if (current.id === "auto-apply") {
       setIsUpdating(true);
       UserService.updateMyProfile({ acknowledged_auto_apply: true }).then(
-        async () => {
+        () => {
           setIsUpdating(false);
-
-          if (step + 1 < steps.length) {
-            setStep(step + 1);
-            return;
-          }
-
-          if (job) {
-            setIsUpdating(true);
-            applyToJob(applicationActions, job, coverLetterRef.current).then(
-              (response) => {
-                if (!response.success) return alert(response.message);
-                applySuccessModalRef?.current?.open();
-                setIsUpdating(false);
-                onFinish();
-              }
-            );
-          }
+          const isLast = step + 1 >= steps.length;
+          if (isLast) setShowComplete(true);
+          else setStep(step + 1);
         }
       );
-    } else if (steps[step].id === "apply") {
-      setIsUpdating(true);
-      applyToJob(applicationActions, job, coverLetterRef.current).then(
-        (response) => {
-          if (!response.success) return alert(response.message);
-          applySuccessModalRef?.current?.open();
-          setIsUpdating(false);
-          onFinish();
-        }
-      );
+      return;
     }
   };
+
+  // Render completion screen OUTSIDE the stepper
+  if (showComplete) {
+    return <StepComplete onDone={onFinish} />;
+  }
 
   return (
     <Stepper
       step={step}
       steps={steps}
       onNext={onNext}
-      onBack={() => setStep(step - 1)}
-    ></Stepper>
+      onBack={() => setStep(Math.max(0, step - 1))}
+    />
   );
 }
 
-/* ---------------------- Step 0: Resume Upload ---------------------- */
+/* ---------------------- Step: Resume Upload ---------------------- */
 
 function StepResume({
   file,
@@ -384,6 +336,8 @@ function StepResume({
   );
 }
 
+/* ---------------------- Step: Basic Identity ---------------------- */
+
 function StepBasicIdentity({
   value,
   onChange,
@@ -396,7 +350,7 @@ function StepBasicIdentity({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Section: Personal */}
+      {/* Personal */}
       <div>
         <h4 className="text-sm font-medium text-muted-foreground">
           Personal information
@@ -429,7 +383,7 @@ function StepBasicIdentity({
         </div>
       </div>
 
-      {/* Section: Education */}
+      {/* Education */}
       <div>
         <h4 className="text-sm font-medium text-muted-foreground">
           Educational background
@@ -468,6 +422,8 @@ function StepBasicIdentity({
   );
 }
 
+/* ---------------------- Step: Auto-Apply Acknowledge ---------------------- */
+
 function StepAutoApply() {
   return (
     <div className="flex flex-col gap-4">
@@ -492,40 +448,76 @@ function StepAutoApply() {
   );
 }
 
-const StepApply = ({
-  job,
-  setText: _setText,
-}: {
-  job?: Job | null;
-  setText: (text: string) => void;
-}) => {
-  const [text, setText] = useState("");
+/* ---------------------- Completion (rendered OUTSIDE stepper) ---------------------- */
+
+function StepComplete({ onDone }: { onDone: () => void }) {
+  useEffect(() => {
+    const t = setTimeout(() => onDone(), 1400);
+    return () => clearTimeout(t);
+  }, [onDone]);
+
   return (
-    <div className="mb-6 space-y-3">
-      <Textarea
-        value={text}
-        onChange={(e) => (
-          setText(e.currentTarget.value), _setText(e.currentTarget.value)
-        )}
-        placeholder={`Dear Hiring Manager,
-
-I am excited to apply for this position because...
-
-Best regards,
-[Your name]`}
-        className="w-full h-20 p-3 border border-gray-300 rounded-[0.33em] focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 resize-none text-sm overflow-y-auto"
-        maxLength={500}
-      />
-      <div className="flex justify-between items-center text-xs">
-        <span className="text-gray-500 flex items-center gap-1">
-          💡 <span>Mention specific skills and enthusiasm</span>
-        </span>
-        <span className="text-gray-500">{text.length}/500</span>
+    <div className="flex flex-col items-center justify-center py-8">
+      {/* Check animation */}
+      <div className="relative mt-2">
+        <div className="w-20 h-20 rounded-full border-4 border-emerald-200 grid place-items-center animate-[pop_420ms_ease-out]">
+          <svg
+            className="w-10 h-10 text-emerald-600"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path
+              d="M20 6L9 17l-5-5"
+              className="animate-[draw_420ms_ease-out_120ms_forwards] opacity-0"
+            />
+          </svg>
+        </div>
       </div>
+
+      <h3 className="text-xl font-semibold mt-4">Profile complete</h3>
+      <p className="text-sm text-muted-foreground mt-1">
+        You’re all set. Nice work!
+      </p>
+
+      <style jsx>{`
+        @keyframes pop {
+          0% {
+            transform: scale(0.8);
+            opacity: 0.2;
+          }
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+        @keyframes draw {
+          0% {
+            stroke-dasharray: 0 32;
+            opacity: 1;
+          }
+          100% {
+            stroke-dasharray: 32 0;
+            opacity: 1;
+          }
+        }
+        @keyframes fall {
+          0% {
+            transform: translateY(-12px) rotate(0deg);
+            opacity: 0.9;
+          }
+          100% {
+            transform: translateY(32px) rotate(280deg);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </div>
   );
-};
+}
 
 /* ============================== Exports ============================== */
-
 export { CompleteProfileStepper };
