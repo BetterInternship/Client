@@ -20,7 +20,7 @@ import { Autocomplete } from "@/components/ui/autocomplete";
 import { useDbRefs } from "@/lib/db/use-refs";
 
 import ResumeUpload from "@/components/features/student/resume-parser/ResumeUpload";
-import { FormInput } from "@/components/EditForm";
+import { FormDropdown, FormInput } from "@/components/EditForm";
 import { UserService } from "@/lib/api/services";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { Stepper } from "../stepper/stepper";
@@ -436,10 +436,9 @@ function StepBasicIdentity({
         </h4>
         <div className="mt-3 grid grid-cols-1 gap-4">
           <div>
-            <label className="text-xs text-gray-600 mb-1 block">
-              University
-            </label>
-            <Autocomplete
+            <FormDropdown
+              label="University"
+              required
               value={value.university ?? ""}
               options={universityOptions}
               setter={(val: any) =>

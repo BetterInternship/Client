@@ -606,6 +606,49 @@ button[role="checkbox"]:checked {
   }
 }
 
+.input-wrap {
+  height: 40px; /* lock height so font-size change won't jump */
+  display: flex;
+  align-items: center;
+}
+
+.input-wrap input {
+  font-size: 14px; /* your preferred size */
+}
+
+.input-wrap input:focus {
+  font-size: 16px; /* prevents iOS zoom */
+}
+
+@layer base {
+  input,
+  textarea,
+  select {
+    @apply text-base; /* 1rem on mobile */
+  }
+  @screen sm {
+    input,
+    textarea,
+    select {
+      @apply text-sm; /* smaller on ≥640px if you prefer */
+    }
+  }
+}
+
+/* base size anywhere */
+input,
+textarea,
+select {
+  font-size: 0.875rem;
+}
+
+/* on focus, prevent zoom */
+input:focus,
+textarea:focus,
+select:focus {
+  font-size: 1rem;
+}
+
 .shiny-text {
   color: #b5b5b5a4; /* Adjust this color to change intensity/style */
   background: linear-gradient(
