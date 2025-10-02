@@ -46,7 +46,7 @@ export const ApplyToJobButton = ({
         onFinish={() => {
           closeGlobalModal("incomplete-profile");
           queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-          openAppModal();
+          // openAppModal();
         }}
       />,
       {
@@ -81,14 +81,7 @@ export const ApplyToJobButton = ({
       return;
     }
 
-    // TEMP FIX: This prevents the double flicker
-    if (
-      isProfileResume(profile) ||
-      isProfileBaseComplete(profile) ||
-      profile.acknowledged_auto_apply === true
-    ) {
-      openAppModal();
-    }
+    openAppModal();
   };
 
   return (
