@@ -193,52 +193,7 @@ const MOA_OPTIONS: SubOption[] = [
   { name: "No MOA", value: "No MOA" },
 ];
 
-/* ================= Label lookup (ID -> Name) ================= */
-
-const POSITION_NAME_BY_ID: Record<string, string> = (() => {
-  const map: Record<string, string> = {};
-  for (const cat of POSITION_TREE) {
-    map[cat.value] = cat.name;
-    for (const c of cat.children ?? []) map[c.value] = c.name;
-  }
-  return map;
-})();
-
-const toLookup = (arr: SubOption[]) =>
-  Object.fromEntries(arr.map((o) => [o.value, o.name]));
-
-const LOOKUP = {
-  position: POSITION_NAME_BY_ID,
-  jobMode: toLookup(MODE_OPTIONS),
-  jobWorkload: toLookup(WORKLOAD_OPTIONS),
-  jobAllowance: toLookup(ALLOWANCE_OPTIONS),
-  jobMoa: toLookup(MOA_OPTIONS),
-} as const;
-
 /* ================= UI primitives ================= */
-
-function Chip({
-  children,
-  onRemove,
-}: {
-  children: React.ReactNode;
-  onRemove?: () => void;
-}) {
-  return (
-    <span className="inline-flex items-center gap-1 text-xs bg-gray-100 border border-gray-200 rounded-full px-2 py-1">
-      {children}
-      {onRemove && (
-        <button
-          onClick={onRemove}
-          aria-label="Remove filter"
-          className="ml-1 rounded hover:bg-gray-200"
-        >
-          <X className="w-3 h-3" />
-        </button>
-      )}
-    </span>
-  );
-}
 
 function CheckboxRow({
   checked,
@@ -282,50 +237,84 @@ function PositionPanel() {
   const bulkChildren = (cat: PositionCategory) =>
     (cat.children ?? []).map((c) => c.value);
 
+  const MasterCheckbox = ({
+    checked,
+    indeterminate,
+  }: {
+    checked: boolean;
+    indeterminate?: boolean;
+  }) => (
+    <span
+      className={cn(
+        "inline-flex items-center justify-center w-4.5 h-4.5 rounded border text-[10px]",
+        checked ? "border-blue-500 bg-blue-100" : "border-gray-300 bg-white"
+      )}
+      aria-hidden="true"
+    >
+      {indeterminate ? (
+        <span className="w-2.5 h-0.5 bg-blue-600 rounded-sm" />
+      ) : checked ? (
+        <Check className="w-3 h-3 text-blue-600" />
+      ) : null}
+    </span>
+  );
+
   return (
     <div className="space-y-2">
       {POSITION_TREE.map((cat) => {
-        const catSelected = selected.has(cat.value);
         const childIds = bulkChildren(cat);
-        const selectedChildren = childIds.filter((id) => selected.has(id));
         const hasChildren = childIds.length > 0;
-        const expanded =
-          catSelected || selectedChildren.length > 0 || hasChildren;
 
-        const allChildrenSelected =
-          hasChildren &&
-          selectedChildren.length === childIds.length &&
-          catSelected;
+        const catChecked = selected.has(cat.value);
+        const selectedChildren = childIds.filter((id) => selected.has(id));
+        const allChildrenChecked =
+          hasChildren && selectedChildren.length === childIds.length;
+        const headerChecked =
+          catChecked && (allChildrenChecked || !hasChildren);
+        const headerIndeterminate =
+          (catChecked && hasChildren && !allChildrenChecked) ||
+          (!catChecked && selectedChildren.length > 0);
+
+        const expanded = headerChecked || headerIndeterminate || hasChildren;
+
+        const handleHeaderToggle = () => {
+          const turnOn = !(headerChecked || headerIndeterminate);
+          // toggle parent + all children
+          dispatch({
+            type: "BULK_SET",
+            key: "position",
+            values: [cat.value, ...childIds],
+            on: turnOn,
+          });
+        };
 
         return (
           <div key={cat.value} className="border rounded-md overflow-hidden">
-            {/* Clickable header row */}
+            {/* Header row is clickable */}
             <div
               role="button"
               tabIndex={0}
-              aria-pressed={catSelected}
+              aria-pressed={headerChecked}
               aria-expanded={expanded}
+              aria-checked={headerIndeterminate ? "mixed" : headerChecked}
               className={cn(
                 "flex items-center justify-between px-3 py-2 gap-2 cursor-pointer",
                 "bg-white hover:bg-gray-50 active:bg-gray-100"
               )}
-              onClick={() => toggle(cat.value, !catSelected)}
+              onClick={handleHeaderToggle}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
-                  toggle(cat.value, !catSelected);
+                  handleHeaderToggle();
                 }
               }}
             >
               <div className="flex items-center gap-2">
-                <span
-                  className={cn(
-                    "font-medium text-sm",
-                    catSelected && "text-gray-900"
-                  )}
-                >
-                  {cat.name}
-                </span>
+                <MasterCheckbox
+                  checked={headerChecked}
+                  indeterminate={headerIndeterminate}
+                />
+                <span className="font-medium text-sm">{cat.name}</span>
                 {hasChildren && selectedChildren.length > 0 && (
                   <span className="text-[11px] text-gray-500">
                     ({selectedChildren.length} selected)
@@ -340,15 +329,18 @@ function PositionPanel() {
                     className="text-[11px] underline text-gray-600 hover:text-gray-800"
                     onClick={(e) => {
                       e.stopPropagation();
+                      const turnOn = !(headerChecked || headerIndeterminate);
                       dispatch({
                         type: "BULK_SET",
                         key: "position",
                         values: [cat.value, ...childIds],
-                        on: !allChildrenSelected,
+                        on: turnOn,
                       });
                     }}
                   >
-                    {allChildrenSelected ? "Clear" : "Select all"}
+                    {headerChecked || headerIndeterminate
+                      ? "Clear"
+                      : "Select all"}
                   </button>
                 )}
                 <ChevronRight
@@ -382,24 +374,89 @@ function PositionPanel() {
 
 function DetailsPanel() {
   const { state, dispatch } = useJobFilter();
-  const makeGroup = (
-    title: string,
-    key: keyof JobFilter,
-    options: SubOption[]
-  ) => {
-    const has = (v: string) => (state[key] as string[]).includes(v);
-    const toggle = (v: string, on?: boolean) =>
-      dispatch({ type: "TOGGLE", key, value: v, on });
+
+  const Group = ({
+    title,
+    keyName,
+    options,
+  }: {
+    title: string;
+    keyName: keyof JobFilter;
+    options: SubOption[];
+  }) => {
+    const selected = new Set(state[keyName] as string[]);
+    const allIds = options.map((o) => o.value);
+    const selectedCount = allIds.filter((id) => selected.has(id)).length;
+
+    const checked = selectedCount === allIds.length && allIds.length > 0;
+    const indeterminate = selectedCount > 0 && selectedCount < allIds.length;
+
+    const toggleOne = (id: string, on?: boolean) =>
+      dispatch({ type: "TOGGLE", key: keyName, value: id, on });
+
+    const toggleAll = (on: boolean) =>
+      dispatch({ type: "BULK_SET", key: keyName, values: allIds, on });
 
     return (
-      <div key={title} className="border rounded-md">
-        <div className="px-3 py-2 font-medium text-sm">{title}</div>
+      <div className="border rounded-md overflow-hidden">
+        {/* Group header with master checkbox */}
+        <div
+          role="button"
+          tabIndex={0}
+          aria-checked={indeterminate ? "mixed" : checked}
+          className="flex items-center justify-between px-3 py-2 cursor-pointer bg-white hover:bg-gray-50 active:bg-gray-100"
+          onClick={() => toggleAll(!(checked || indeterminate))}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              toggleAll(!(checked || indeterminate));
+            }
+          }}
+        >
+          <div className="flex items-center gap-2">
+            {/* master checkbox visual */}
+            <span
+              className={cn(
+                "inline-flex items-center justify-center w-4.5 h-4.5 rounded border text-[10px]",
+                checked
+                  ? "border-blue-500 bg-blue-100"
+                  : "border-gray-300 bg-white"
+              )}
+              aria-hidden="true"
+            >
+              {indeterminate ? (
+                <span className="w-2.5 h-0.5 bg-blue-600 rounded-sm" />
+              ) : checked ? (
+                <Check className="w-3 h-3 text-blue-600" />
+              ) : null}
+            </span>
+            <span className="font-medium text-sm">{title}</span>
+            {selectedCount > 0 && (
+              <span className="text-[11px] text-gray-500">
+                ({selectedCount})
+              </span>
+            )}
+          </div>
+
+          <button
+            type="button"
+            className="text-[11px] underline text-gray-600 hover:text-gray-800"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleAll(!(checked || indeterminate));
+            }}
+          >
+            {checked || indeterminate ? "Clear" : "Select all"}
+          </button>
+        </div>
+
+        {/* Options */}
         <div className="border-t px-2 py-1">
           {options.map((o) => (
             <CheckboxRow
               key={o.value}
-              checked={has(o.value)}
-              onChange={(v) => toggle(o.value, v)}
+              checked={selected.has(o.value)}
+              onChange={(v) => toggleOne(o.value, v)}
               label={o.name}
             />
           ))}
@@ -410,55 +467,22 @@ function DetailsPanel() {
 
   return (
     <div className="space-y-2">
-      {makeGroup("Internship Workload", "jobWorkload", WORKLOAD_OPTIONS)}
-      {makeGroup("Internship Mode", "jobMode", MODE_OPTIONS)}
-      {makeGroup("Internship Allowance", "jobAllowance", ALLOWANCE_OPTIONS)}
-      {makeGroup("Internship MOA", "jobMoa", MOA_OPTIONS)}
+      <Group
+        title="Internship Workload"
+        keyName="jobWorkload"
+        options={WORKLOAD_OPTIONS}
+      />
+      <Group title="Internship Mode" keyName="jobMode" options={MODE_OPTIONS} />
+      <Group
+        title="Internship Allowance"
+        keyName="jobAllowance"
+        options={ALLOWANCE_OPTIONS}
+      />
+      <Group title="Internship MOA" keyName="jobMoa" options={MOA_OPTIONS} />
     </div>
   );
 }
 
-/* ================= Chips (names, not IDs) ================= */
-
-function ActiveChips({
-  onRemove,
-}: {
-  onRemove: (key: keyof JobFilter, value: string) => void;
-}) {
-  const { state } = useJobFilter();
-
-  const entries: { key: keyof JobFilter; id: string; label: string }[] = [];
-
-  const pushWithLookup = (
-    key: keyof JobFilter,
-    ids: string[],
-    map: Record<string, string>
-  ) => {
-    ids.forEach((id) => {
-      entries.push({ key, id, label: map[id] ?? id });
-    });
-  };
-
-  pushWithLookup("position", state.position, LOOKUP.position);
-  pushWithLookup("jobMode", state.jobMode, LOOKUP.jobMode);
-  pushWithLookup("jobMoa", state.jobMoa, LOOKUP.jobMoa);
-  pushWithLookup("jobWorkload", state.jobWorkload, LOOKUP.jobWorkload);
-  pushWithLookup("jobAllowance", state.jobAllowance, LOOKUP.jobAllowance);
-
-  if (!entries.length) return null;
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      {entries.map(({ key, id, label }) => (
-        <Chip key={`${key}:${id}`} onRemove={() => onRemove(key, id)}>
-          {label}
-        </Chip>
-      ))}
-    </div>
-  );
-}
-
-/* ================= Wrapper (Desktop popover / Mobile sheet) ================= */
 
 export function JobFilters({
   onApply,
@@ -532,11 +556,6 @@ export function JobFilters({
               >
                 Clear all
               </button>
-            </div>
-
-            {/* Chips */}
-            <div className="px-3 py-2 border-b">
-              <ActiveChips onRemove={removeOne} />
             </div>
 
             {/* Scrollable content */}
@@ -614,11 +633,6 @@ export function JobFilters({
               >
                 Details
               </button>
-            </div>
-
-            {/* Chips */}
-            <div className="px-4 pb-2">
-              <ActiveChips onRemove={removeOne} />
             </div>
 
             {/* Content */}
