@@ -11,6 +11,7 @@ import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { Newspaper, AlertTriangle } from "lucide-react";
 import { EmployerAuthService } from "@/lib/api/hire.api";
 import { FormInput, FormDropdown, FormDatePicker } from "@/components/EditForm";
+import { useProfileData } from "@/lib/api/student.data.api";
 
 type TabKey = "Forms Autofill" | "My Forms" | "Past Forms";
 
@@ -95,6 +96,7 @@ function isComplete(schema: FieldDef[], values: Values): boolean {
 }
 
 export default function FormsPage() {
+  const profile = useProfileData();
   const [tab, setTab] = useState<TabKey>("Forms Autofill");
 
   const [autofill, setAutofill] = useState<Values>({});
@@ -138,14 +140,11 @@ export default function FormsPage() {
 
   function openGenerate(formId: string) {
     setSelectedFormId(formId);
-    setSelectedCompanyId("");
 
     const defs =
       FORM_TEMPLATES.find((t) => t.id === formId)?.customFields ?? [];
-    const next: Values = {};
-    defs.forEach((d) => (next[d.key] = ""));
-    setCustom(next);
-    setCustomErrors({});
+    const initialCustom: Values = {};
+    defs.forEach((d) => (initialCustom[d.key] = ""));
 
     openGlobalModal(
       "generate-form",
@@ -153,33 +152,29 @@ export default function FormsPage() {
         title={FORM_TEMPLATES.find((t) => t.id === formId)?.name ?? "Form"}
         description={FORM_TEMPLATES.find((t) => t.id === formId)?.description}
         companies={COMPANIES}
-        selectedCompanyId={selectedCompanyId}
-        setSelectedCompanyId={setSelectedCompanyId}
         customDefs={defs}
-        custom={
-          next /* initial snapshot; the component reads current state from closures */
-        }
-        setCustomField={setCustomField}
-        customErrors={customErrors}
-        canGenerate={!!selectedCompanyId && isComplete(defs, custom)}
+        /** only initial values */
+        initialCompanyId=""
+        initialCustom={initialCustom}
+        /** callbacks */
         onCancel={() => closeGlobalModal("generate-form")}
-        onGenerate={() => {
-          // run the same confirm flow, then close
-          const errs = validateMany(defs, custom);
-          setCustomErrors(errs);
-          if (Object.keys(errs).length > 0 || !selectedCompanyId) return;
+        onGenerate={(companyId, customValues) => {
+          // validate
+          const errs = validateMany(defs, customValues);
+          if (Object.keys(errs).length > 0 || !companyId) return;
 
+          // do your thing
           const payload = {
             templateId: formId,
-            companyId: selectedCompanyId,
+            companyId,
             autofill,
-            custom,
+            custom: customValues,
+            profile: profile.data,
           };
           console.log("Generate payload:", payload);
 
           const companyName =
-            COMPANIES.find((c) => c.id === selectedCompanyId)?.name ??
-            "Company";
+            COMPANIES.find((c) => c.id === companyId)?.name ?? "Company";
           const formName =
             FORM_TEMPLATES.find((f) => f.id === formId)?.name ?? "Form";
           setPastForms((prev) => [
@@ -198,7 +193,7 @@ export default function FormsPage() {
       {
         allowBackdropClick: false,
         closeOnEsc: true,
-        panelClassName: "w-[min(92vw,680px)]",
+        panelClassName: "max-w-none w-[98vw] sm:w-[min(96vw,900px)]",
       }
     );
   }
@@ -219,8 +214,9 @@ export default function FormsPage() {
     const payload = {
       templateId: selectedFormId!,
       companyId: selectedCompanyId,
-      autofill, // snapshot of user autofill fields
-      custom, // per-template extra fields
+      autofill,
+      custom,
+      profile: profile.data,
     };
     console.log("Generate payload:", payload);
 
@@ -433,31 +429,49 @@ function GenerateFormModal({
   title,
   description,
   companies,
-  selectedCompanyId,
-  setSelectedCompanyId,
   customDefs,
-  custom,
-  setCustomField,
-  customErrors,
-  canGenerate,
+  initialCompanyId,
+  initialCustom,
   onCancel,
   onGenerate,
 }: {
   title: string;
   description?: string;
   companies: { id: string; name: string }[];
-  selectedCompanyId: string;
-  setSelectedCompanyId: (v: string) => void;
   customDefs: FieldDef[];
-  custom: Values;
-  setCustomField: (key: string, val: string) => void;
-  customErrors: Record<string, string>;
-  canGenerate: boolean;
+  initialCompanyId: string;
+  initialCustom: Values;
   onCancel: () => void;
-  onGenerate: () => void;
+  onGenerate: (companyId: string, customValues: Values) => void;
 }) {
+  // local, editable state (this is the key change)
+  const [companyId, setCompanyId] = useState<string>(initialCompanyId);
+  const [custom, setCustom] = useState<Values>(initialCustom);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const hasErrors = Object.values(errors).some(Boolean);
+  const canGenerate =
+    !!companyId && isComplete(customDefs, custom) && !hasErrors;
+
+  const setCustomField = (k: string, v: string) => {
+    setCustom((prev) => {
+      const next = { ...prev, [k]: v };
+      const def = customDefs.find((d) => d.key === k);
+      if (def) {
+        const e = validateField(def, v ?? "", next);
+        setErrors((prevErr) => {
+          const ne = { ...prevErr };
+          if (e) ne[k] = e; // keep only real errors
+          else delete ne[k]; // remove key when valid
+          return ne;
+        });
+      }
+      return next;
+    });
+  };
+
   return (
-    <div className="w-[100svw] h-[100svh] sm:w-auto sm:h-auto overflow-auto">
+    <div className="overflow-auto">
       <div className="mb-3">
         <div className="flex items-center gap-2 mb-1">
           <AlertTriangle className="size-4 text-gray-400" />
@@ -475,8 +489,8 @@ function GenerateFormModal({
           <label className="text-sm font-medium">Company</label>
           <select
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
-            value={selectedCompanyId}
-            onChange={(e) => setSelectedCompanyId(e.target.value)}
+            value={companyId}
+            onChange={(e) => setCompanyId(e.target.value)}
           >
             <option value="" disabled>
               Select a company…
@@ -498,7 +512,7 @@ function GenerateFormModal({
                 def={def}
                 value={custom[def.key] ?? ""}
                 onChange={(v) => setCustomField(def.key, v)}
-                error={customErrors[def.key]}
+                error={errors[def.key]}
               />
             ))}
           </div>
@@ -511,7 +525,7 @@ function GenerateFormModal({
           Cancel
         </Button>
         <Button
-          onClick={onGenerate}
+          onClick={() => onGenerate(companyId, custom)}
           disabled={!canGenerate}
           className={!canGenerate ? "opacity-60" : ""}
         >
@@ -567,6 +581,7 @@ function FieldRenderer({
           date={ms}
           setter={(nextMs) => onChange(msToDateStr(nextMs))}
           className="w-full"
+          contentClassName="z-[1100]"
           placeholder="Select date"
           autoClose
           // optional: format button text nicely
