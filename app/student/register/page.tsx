@@ -287,6 +287,23 @@ export default function RegisterPage() {
                 {/* Start date + hours (only credited shows hours) */}
                 {(isCredited || isVoluntary) && (
                   <div className="space-y-5">
+                    {/* University email */}
+                    <div className="w-full flex flex-row space-between">
+                      <StepCheckIndicator
+                        checked={!!regForm.watch("university")}
+                      />
+                      <div className="space-y-2 flex-1">
+                        <FormDropdown
+                          label="Which university are you from?"
+                          options={refs.universities}
+                          setter={(value) =>
+                            regForm.setValue("university", value)
+                          }
+                          className="flex-1"
+                        />
+                      </div>
+                    </div>
+
                     <div className="w-full flex flex-row space-between">
                       <div
                         className={
@@ -399,23 +416,6 @@ export default function RegisterPage() {
                             }))}
                           />
                         </div>
-                      </div>
-                    </div>
-
-                    {/* University email */}
-                    <div className="w-full flex flex-row space-between">
-                      <StepCheckIndicator
-                        checked={!!regForm.watch("university")}
-                      />
-                      <div className="space-y-2 flex-1">
-                        <FormDropdown
-                          label="Which university are you from?"
-                          options={refs.universities}
-                          setter={(value) =>
-                            regForm.setValue("university", value)
-                          }
-                          className="flex-1"
-                        />
                       </div>
                     </div>
                   </div>
