@@ -9,15 +9,18 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { Newspaper, AlertTriangle } from "lucide-react";
-import { EmployerAuthService } from "@/lib/api/hire.api";
-import { FormInput, FormDropdown, FormDatePicker } from "@/components/EditForm";
+import {
+  FormInput,
+  FormDropdown,
+  FormDatePicker,
+  TimeInputNative,
+} from "@/components/EditForm";
 import { useProfileData } from "@/lib/api/student.data.api";
+import { useDbRefs } from "@/lib/db/use-refs";
 
 type TabKey = "Forms Autofill" | "My Forms" | "Past Forms";
-
 type Values = Record<string, string>;
-
-type SyncValidator = (value: string, allValues: Values) => string | null; // return error string or null
+type SyncValidator = (value: string, allValues: Values) => string | null;
 
 type FieldDef = {
   key: string;
@@ -27,9 +30,9 @@ type FieldDef = {
   placeholder?: string;
   options?: { value: string; label: string }[];
   maxLength?: number;
-  pattern?: string; // optional regex
+  pattern?: string;
   helper?: string;
-  validators?: SyncValidator[]; // custom validators per field
+  validators?: SyncValidator[];
 };
 
 type FormTemplate = {
@@ -63,8 +66,6 @@ function validateField(def: FieldDef, value: string, all: Values): string {
       if (value && !re.test(value)) return "Invalid format.";
     } catch {}
   }
-
-  // Custom validators
   for (const fn of def.validators ?? []) {
     const err = fn(value ?? "", all);
     if (err) return err;
@@ -97,14 +98,29 @@ function isComplete(schema: FieldDef[], values: Values): boolean {
 
 export default function FormsPage() {
   const profile = useProfileData();
+  const { colleges } = useDbRefs();
+
   const [tab, setTab] = useState<TabKey>("Forms Autofill");
 
   const [autofill, setAutofill] = useState<Values>({});
   const [autofillErrors, setAutofillErrors] = useState<Record<string, string>>(
     {}
   );
+
+  const collegeOptions = useMemo(
+    () => (colleges ?? []).map((c) => ({ value: String(c.id), label: c.name })),
+    [colleges]
+  );
+
+  const requiredAutofillKeys = [
+    "student_id",
+    "guardian_name",
+    "address",
+    "college",
+  ] as const;
+
   const autofillComplete = useMemo(
-    () => isComplete(AUTOFILL_SCHEMA, autofill),
+    () => requiredAutofillKeys.every((k) => (autofill[k] ?? "").trim() !== ""),
     [autofill]
   );
 
@@ -129,9 +145,6 @@ export default function FormsPage() {
   // Generate modal state
   const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
   const [selectedFormId, setSelectedFormId] = useState<string | null>(null);
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("");
-  const [custom, setCustom] = useState<Values>({});
-  const [customErrors, setCustomErrors] = useState<Record<string, string>>({});
 
   const selectedForm = useMemo(
     () => availableForms.find((f) => f.id === selectedFormId) || null,
@@ -153,17 +166,14 @@ export default function FormsPage() {
         description={FORM_TEMPLATES.find((t) => t.id === formId)?.description}
         companies={COMPANIES}
         customDefs={defs}
-        /** only initial values */
         initialCompanyId=""
         initialCustom={initialCustom}
-        /** callbacks */
         onCancel={() => closeGlobalModal("generate-form")}
         onGenerate={(companyId, customValues) => {
-          // validate
+          // validate before submit
           const errs = validateMany(defs, customValues);
           if (Object.keys(errs).length > 0 || !companyId) return;
 
-          // do your thing
           const payload = {
             templateId: formId,
             companyId,
@@ -177,6 +187,7 @@ export default function FormsPage() {
             COMPANIES.find((c) => c.id === companyId)?.name ?? "Company";
           const formName =
             FORM_TEMPLATES.find((f) => f.id === formId)?.name ?? "Form";
+
           setPastForms((prev) => [
             {
               id: `pf-${Math.random().toString(36).slice(2, 8)}`,
@@ -198,72 +209,26 @@ export default function FormsPage() {
     );
   }
 
-  const customDefs: FieldDef[] = selectedForm?.customFields ?? [];
-  const customValid = useMemo(
-    () => isComplete(customDefs, custom),
-    [customDefs, custom]
-  );
-  const canGenerate = !!selectedCompanyId && customValid;
-
-  function confirmGenerate() {
-    const errs = validateMany(customDefs, custom);
-    setCustomErrors(errs);
-    if (Object.keys(errs).length > 0 || !selectedCompanyId) return;
-
-    // Payload ready for backend
-    const payload = {
-      templateId: selectedFormId!,
-      companyId: selectedCompanyId,
-      autofill,
-      custom,
-      profile: profile.data,
-    };
-    console.log("Generate payload:", payload);
-
-    const companyName =
-      COMPANIES.find((c) => c.id === selectedCompanyId)?.name ?? "Company";
-    const formName =
-      FORM_TEMPLATES.find((f) => f.id === selectedFormId)?.name ?? "Form";
-    setPastForms((prev) => [
-      {
-        id: `pf-${Math.random().toString(36).slice(2, 8)}`,
-        name: formName,
-        company: companyName,
-        createdAt: new Date().toISOString().slice(0, 10),
-      },
-      ...prev,
-    ]);
-  }
-
   function saveAutofill() {
-    const errs = validateMany(AUTOFILL_SCHEMA, autofill);
-    setAutofillErrors(errs);
-    if (Object.keys(errs).length > 0) return;
+    const nextErrors: Record<string, string> = {};
+    requiredAutofillKeys.forEach((k) => {
+      if (!autofill[k] || !autofill[k].trim())
+        nextErrors[k] = "This field is required.";
+    });
+    setAutofillErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+
     console.log("Saved Forms Autofill:", autofill);
   }
 
   function setAutofillField(key: string, val: string) {
-    setAutofill((prev) => {
-      const next = { ...prev, [key]: val };
-      const def = AUTOFILL_SCHEMA.find((d) => d.key === key);
-      if (def) {
-        const e = validateField(def, val ?? "", next);
-        setAutofillErrors((prevErr) => ({ ...prevErr, [key]: e }));
-      }
-      return next;
-    });
-  }
-
-  function setCustomField(key: string, val: string) {
-    setCustom((prev) => {
-      const next = { ...prev, [key]: val };
-      const def = (selectedForm?.customFields ?? []).find((d) => d.key === key);
-      if (def) {
-        const e = validateField(def, val ?? "", next);
-        setCustomErrors((prevErr) => ({ ...prevErr, [key]: e }));
-      }
-      return next;
-    });
+    setAutofill((prev) => ({ ...prev, [key]: val }));
+    if (requiredAutofillKeys.includes(key as any)) {
+      setAutofillErrors((e) => ({
+        ...e,
+        [key]: val?.trim() ? "" : "This field is required.",
+      }));
+    }
   }
 
   const gateMyAndPast = !autofillComplete;
@@ -285,7 +250,7 @@ export default function FormsPage() {
           </div>
         </div>
 
-        {/* Warning: show if not complete */}
+        {/* Warning */}
         {gateMyAndPast && (
           <WarningCard
             title="Action needed"
@@ -296,7 +261,6 @@ export default function FormsPage() {
                 generate forms. Your details will be used to prefill documents.
               </>
             }
-            onAction={() => setTab("Forms Autofill")}
           />
         )}
 
@@ -313,16 +277,76 @@ export default function FormsPage() {
           {/* Forms Autofill */}
           <OutsideTabPanel when="Forms Autofill" activeKey={tab}>
             <div className="text-lg font-semibold mb-3">Autofill Profile</div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {AUTOFILL_SCHEMA.map((def) => (
-                <FieldRenderer
-                  key={def.key}
-                  def={def}
-                  value={autofill[def.key] ?? ""}
-                  onChange={(v) => setAutofillField(def.key, v)}
-                  error={autofillErrors[def.key]}
+              {/* Student ID */}
+              <div className="space-y-1.5">
+                <FormInput
+                  label="Student ID"
+                  required
+                  value={autofill.student_id ?? ""}
+                  setter={(v) => setAutofillField("student_id", v)}
+                  className="w-full"
+                  maxLength={64}
                 />
-              ))}
+                {!!autofillErrors.student_id && (
+                  <p className="text-xs text-red-600">
+                    {autofillErrors.student_id}
+                  </p>
+                )}
+              </div>
+
+              {/* Guardian Name */}
+              <div className="space-y-1.5">
+                <FormInput
+                  label="Guardian Name"
+                  required
+                  value={autofill.guardian_name ?? ""}
+                  setter={(v) => setAutofillField("guardian_name", v)}
+                  className="w-full"
+                />
+                {!!autofillErrors.guardian_name && (
+                  <p className="text-xs text-red-600">
+                    {autofillErrors.guardian_name}
+                  </p>
+                )}
+              </div>
+
+              {/* Address */}
+              <div className="space-y-1.5">
+                <FormInput
+                  label="Address"
+                  required
+                  value={autofill.address ?? ""}
+                  setter={(v) => setAutofillField("address", v)}
+                  className="w-full"
+                />
+                {!!autofillErrors.address && (
+                  <p className="text-xs text-red-600">
+                    {autofillErrors.address}
+                  </p>
+                )}
+              </div>
+
+              {/* College */}
+              <div className="space-y-1.5">
+                <FormDropdown
+                  label="College"
+                  required
+                  value={autofill.college ?? ""}
+                  options={collegeOptions.map((o) => ({
+                    id: o.value,
+                    name: o.label,
+                  }))}
+                  setter={(v) => setAutofillField("college", String(v ?? ""))}
+                  className="w-full"
+                />
+                {!!autofillErrors.college && (
+                  <p className="text-xs text-red-600">
+                    {autofillErrors.college}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="mt-4 flex items-center justify-between">
@@ -403,7 +427,7 @@ export default function FormsPage() {
                       <div className="flex items-center gap-2 justify-between sm:justify-end">
                         <Badge variant="outline" className="text-xs">
                           PDF
-                        </Badge>{" "}
+                        </Badge>
                         <Button
                           size="sm"
                           variant="outline"
@@ -444,7 +468,6 @@ function GenerateFormModal({
   onCancel: () => void;
   onGenerate: (companyId: string, customValues: Values) => void;
 }) {
-  // local, editable state (this is the key change)
   const [companyId, setCompanyId] = useState<string>(initialCompanyId);
   const [custom, setCustom] = useState<Values>(initialCustom);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -461,8 +484,8 @@ function GenerateFormModal({
         const e = validateField(def, v ?? "", next);
         setErrors((prevErr) => {
           const ne = { ...prevErr };
-          if (e) ne[k] = e; // keep only real errors
-          else delete ne[k]; // remove key when valid
+          if (e) ne[k] = e;
+          else delete ne[k];
           return ne;
         });
       }
@@ -485,23 +508,12 @@ function GenerateFormModal({
 
       <div className="space-y-3">
         {/* Company */}
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">Company</label>
-          <select
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
-            value={companyId}
-            onChange={(e) => setCompanyId(e.target.value)}
-          >
-            <option value="" disabled>
-              Select a company…
-            </option>
-            {companies.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        <FormDropdown
+          label="Company"
+          value={companyId}
+          options={companies.map((c) => ({ id: c.id, name: c.name }))}
+          setter={(v) => setCompanyId(String(v ?? ""))}
+        />
 
         {/* Custom fields */}
         {customDefs.length > 0 && (
@@ -549,11 +561,9 @@ function FieldRenderer({
 }) {
   const required = def.required ?? false;
 
-  // SELECT -> use FormDropdown (expects {id,name})
   if (def.type === "select") {
     const options =
       (def.options ?? []).map((o) => ({ id: o.value, name: o.label })) ?? [];
-
     return (
       <div className="space-y-1.5">
         <FormDropdown
@@ -570,9 +580,25 @@ function FieldRenderer({
     );
   }
 
-  // DATE -> use FormDatePicker (works with ms, so adapt)
   if (def.type === "date") {
     const ms = dateStrToMs(value);
+
+    // Disable dates before today+7
+    let disabledDays: any | undefined;
+    if (def.key === "internship_start_date") {
+      const t = new Date();
+      const min = new Date(
+        t.getFullYear(),
+        t.getMonth(),
+        t.getDate(),
+        0,
+        0,
+        0,
+        0
+      );
+      min.setDate(min.getDate() + 7);
+      disabledDays = { before: min };
+    }
 
     return (
       <div className="space-y-1.5">
@@ -584,7 +610,7 @@ function FieldRenderer({
           contentClassName="z-[1100]"
           placeholder="Select date"
           autoClose
-          // optional: format button text nicely
+          disabledDays={disabledDays}
           format={(d) =>
             d.toLocaleDateString(undefined, {
               year: "numeric",
@@ -599,9 +625,23 @@ function FieldRenderer({
     );
   }
 
-  // TIME / TEXT / NUMBER -> use FormInput (lets native time picker render on mobile)
+  if (def.type === "time") {
+    return (
+      <div className="space-y-1.5">
+        <TimeInputNative
+          label={def.label}
+          value={value} // "HH:MM"
+          onChange={(v) => onChange(v ?? "")}
+          helper={def.helper}
+        />
+        {!!error && <p className="text-xs text-red-600">{error}</p>}
+      </div>
+    );
+  }
+
+  // others
   const inputType =
-    def.type === "number" ? "text" : def.type === "time" ? "time" : "text";
+    def.type === "number" ? "text" : def.type === "text" ? "text" : "text";
   const inputMode = def.type === "number" ? "numeric" : undefined;
 
   return (
@@ -623,7 +663,6 @@ function FieldRenderer({
   );
 }
 
-// Warning card
 function WarningCard({
   title,
   message,
@@ -673,8 +712,10 @@ function WarningCard({
   );
 }
 
-// Helpers
-// utils to convert between "YYYY-MM-DD" <-> ms (local)
+/* ──────────────────────────────────────────────
+   Date helpers
+   ────────────────────────────────────────────── */
+
 const dateStrToMs = (s?: string) => {
   if (!s) return undefined;
   const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -682,6 +723,7 @@ const dateStrToMs = (s?: string) => {
   const [_, y, mo, d] = m;
   return new Date(Number(y), Number(mo) - 1, Number(d), 0, 0, 0, 0).getTime();
 };
+
 const msToDateStr = (ms?: number) => {
   if (ms == null) return "";
   const d = new Date(ms);
@@ -693,29 +735,6 @@ const msToDateStr = (ms?: number) => {
    Mock Data
    ────────────────────────────────────────────── */
 
-const AUTOFILL_SCHEMA: FieldDef[] = [
-  {
-    key: "student_id",
-    label: "Student ID",
-    type: "text",
-    required: true,
-    maxLength: 64,
-  },
-  { key: "guardian_name", label: "Guardian Name", type: "text" },
-  {
-    key: "address",
-    label: "Address",
-    type: "text",
-    required: true,
-  },
-  {
-    key: "college",
-    label: "College",
-    type: "text",
-    required: true,
-  },
-];
-
 const FORM_TEMPLATES: FormTemplate[] = [
   {
     id: "student-moa",
@@ -725,19 +744,6 @@ const FORM_TEMPLATES: FormTemplate[] = [
       {
         key: "dlsu_coordinator_name",
         label: "DLSU Coordinator Name",
-        type: "text",
-        required: true,
-      },
-      {
-        key: "hte_location",
-        label: "HTE Location",
-        type: "text",
-        required: true,
-        placeholder: "Host Training Establishment location",
-      },
-      {
-        key: "office_location",
-        label: "Office Location",
         type: "text",
         required: true,
       },
@@ -753,6 +759,33 @@ const FORM_TEMPLATES: FormTemplate[] = [
         label: "Internship Start Date",
         type: "date",
         required: true,
+        validators: [
+          (start) => {
+            if (!start) return null;
+            // parse "YYYY-MM-DD" to local midnight
+            const [y, m, d] = start.split("-").map(Number);
+            const startDate = new Date(y, (m ?? 1) - 1, d ?? 1, 0, 0, 0, 0);
+
+            // today at local midnight + 7 days
+            const today = new Date();
+            const min = new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              0,
+              0,
+              0,
+              0
+            );
+            min.setDate(min.getDate() + 7);
+
+            // must be >= min (i.e., at least 7 days out)
+            if (startDate < min) {
+              return "Start date must be at least 7 days from today.";
+            }
+            return null;
+          },
+        ],
       },
       {
         key: "internship_end_date",
@@ -773,14 +806,12 @@ const FORM_TEMPLATES: FormTemplate[] = [
         label: "Internship Clock In Time",
         type: "time",
         required: true,
-        helper: "Use HH:MM (24-hour)",
       },
       {
         key: "internship_clock_out_time",
         label: "Internship Clock Out Time",
         type: "time",
         required: true,
-        helper: "Use HH:MM (24-hour)",
         validators: [
           (out, all) => {
             const inn = all["internship_clock_in_time"];
@@ -799,4 +830,6 @@ const COMPANIES = [
   { id: "ent-urc", name: "URC" },
   { id: "ent-factset", name: "FactSet" },
   { id: "ent-accenture", name: "Accenture" },
+  { id: "ent-better-internship", name: "BetterInternship" },
+  { id: "ent-leapfroggr", name: "LeapFroggr" },
 ];
