@@ -127,7 +127,6 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
           <Input
             type="email"
             placeholder="email@uni.edu.ph"
-            defaultValue={profile.data?.edu_verification_email ?? ""}
             onChange={(e) => setEduEmail(e.currentTarget.value)}
           />
 
