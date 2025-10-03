@@ -127,9 +127,6 @@ export default function ProfilePage() {
     );
   }
 
-  const data = profile.data as PublicUser | undefined;
-  const { score, parts, tips } = computeProfileScore(data);
-
   useEffect(() => {
     if (data?.resume) {
       syncResumeURL();
