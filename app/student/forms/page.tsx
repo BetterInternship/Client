@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
-import { Newspaper, AlertTriangle } from "lucide-react";
+import { Newspaper, AlertTriangle, Loader2, CheckCircle } from "lucide-react";
 import {
   FormInput,
   FormDropdown,
@@ -17,6 +17,10 @@ import {
 } from "@/components/EditForm";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useDbRefs } from "@/lib/db/use-refs";
+
+/* ──────────────────────────────────────────────
+   Types
+   ────────────────────────────────────────────── */
 
 type TabKey = "Forms Autofill" | "My Forms" | "Past Forms";
 type Values = Record<string, string>;
@@ -47,7 +51,12 @@ type PastForm = {
   name: string;
   company: string;
   createdAt: string;
+  fileUrl?: string; // downloadable URL when ready
 };
+
+/* ──────────────────────────────────────────────
+   Validation helpers
+   ────────────────────────────────────────────── */
 
 function validateField(def: FieldDef, value: string, all: Values): string {
   if (def.required && (!value || value.trim() === ""))
@@ -96,16 +105,57 @@ function isComplete(schema: FieldDef[], values: Values): boolean {
   return true;
 }
 
+/* ──────────────────────────────────────────────
+   Mock “backend”
+   ────────────────────────────────────────────── */
+
+async function mockGenerateFormAPI(payload: {
+  templateId: string;
+  companyId: string;
+  autofill: Values;
+  custom: Values;
+  profile: any;
+}): Promise<{ fileUrl: string }> {
+  // Simulate network + server processing time
+  const delay = Math.floor(1200 + Math.random() * 1200);
+  await new Promise((r) => setTimeout(r, delay));
+
+  // In a real API, fileUrl would be returned by the server after rendering.
+  const fileUrl =
+    payload.templateId === "student-moa"
+      ? "../YAUN_Student_MOA.pdf"
+      : "../YAUN_Student_MOA.pdf"; // fallback demo file too
+
+  // Optional: simulate occasional server-side validation
+  // if (!payload.companyId) throw new Error("Missing company");
+
+  return { fileUrl };
+}
+
+/* ──────────────────────────────────────────────
+   Page
+   ────────────────────────────────────────────── */
+
 export default function FormsPage() {
   const profile = useProfileData();
   const { colleges } = useDbRefs();
 
   const [tab, setTab] = useState<TabKey>("Forms Autofill");
-
   const [autofill, setAutofill] = useState<Values>({});
   const [autofillErrors, setAutofillErrors] = useState<Record<string, string>>(
     {}
   );
+  const [lastSavedAutofill, setLastSavedAutofill] = useState<Values>({});
+  const [isSavingAutofill, setIsSavingAutofill] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
+
+  const isAutofillDirty = useMemo(
+    () => JSON.stringify(autofill) !== JSON.stringify(lastSavedAutofill),
+    [autofill, lastSavedAutofill]
+  );
+
+  // tiny mock “API” delay to make it believable
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
   const collegeOptions = useMemo(
     () => (colleges ?? []).map((c) => ({ value: String(c.id), label: c.name })),
@@ -126,23 +176,11 @@ export default function FormsPage() {
 
   // Past forms
   const [pastForms, setPastForms] = useState<PastForm[]>([
-    {
-      id: "pf-1",
-      name: "Student MOA",
-      company: "Ardent World Inc.",
-      createdAt: "2025-09-24",
-    },
-    {
-      id: "pf-2",
-      name: "Endorsement Letter",
-      company: "URC",
-      createdAt: "2025-09-18",
-    },
   ]);
 
   const availableForms = FORM_TEMPLATES;
 
-  // Generate modal state
+  // Modal state
   const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
   const [selectedFormId, setSelectedFormId] = useState<string | null>(null);
 
@@ -150,6 +188,9 @@ export default function FormsPage() {
     () => availableForms.find((f) => f.id === selectedFormId) || null,
     [selectedFormId, availableForms]
   );
+
+  // Demo: global banner while generating (adds realism)
+  const [isGeneratingGlobal, setIsGeneratingGlobal] = useState(false);
 
   function openGenerate(formId: string) {
     setSelectedFormId(formId);
@@ -169,7 +210,7 @@ export default function FormsPage() {
         initialCompanyId=""
         initialCustom={initialCustom}
         onCancel={() => closeGlobalModal("generate-form")}
-        onGenerate={(companyId, customValues) => {
+        onGenerate={async (companyId, customValues) => {
           // validate before submit
           const errs = validateMany(defs, customValues);
           if (Object.keys(errs).length > 0 || !companyId) return;
@@ -181,24 +222,41 @@ export default function FormsPage() {
             custom: customValues,
             profile: profile.data,
           };
-          console.log("Generate payload:", payload);
 
-          const companyName =
-            COMPANIES.find((c) => c.id === companyId)?.name ?? "Company";
-          const formName =
-            FORM_TEMPLATES.find((f) => f.id === formId)?.name ?? "Form";
+          try {
+            setIsGeneratingGlobal(true);
+            const { fileUrl } = await mockGenerateFormAPI(payload);
 
-          setPastForms((prev) => [
-            {
-              id: `pf-${Math.random().toString(36).slice(2, 8)}`,
-              name: formName,
-              company: companyName,
-              createdAt: new Date().toISOString().slice(0, 10),
-            },
-            ...prev,
-          ]);
+            const companyName =
+              COMPANIES.find((c) => c.id === companyId)?.name ?? "Company";
+            const formName =
+              FORM_TEMPLATES.find((f) => f.id === formId)?.name ?? "Form";
 
-          closeGlobalModal("generate-form");
+            setPastForms((prev) => [
+              {
+                id: `pf-${Math.random().toString(36).slice(2, 8)}`,
+                name: formName,
+                company: companyName,
+                createdAt: new Date().toISOString().slice(0, 10),
+                fileUrl,
+              },
+              ...prev,
+            ]);
+
+            closeGlobalModal("generate-form");
+
+            // 👉 auto-download right after generation
+            if (fileUrl) {
+              const a = document.createElement("a");
+              a.href = fileUrl;
+              a.download = fileUrl.split("/").pop() || "document.pdf";
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+            }
+          } finally {
+            setIsGeneratingGlobal(false);
+          }
         }}
       />,
       {
@@ -209,7 +267,8 @@ export default function FormsPage() {
     );
   }
 
-  function saveAutofill() {
+  async function saveAutofill() {
+    // client-side validation first
     const nextErrors: Record<string, string> = {};
     requiredAutofillKeys.forEach((k) => {
       if (!autofill[k] || !autofill[k].trim())
@@ -218,7 +277,21 @@ export default function FormsPage() {
     setAutofillErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
-    console.log("Saved Forms Autofill:", autofill);
+    // nothing to save
+    if (!isAutofillDirty) return;
+
+    try {
+      setIsSavingAutofill(true);
+      // simulate network + write time
+      await wait(900 + Math.random() * 600);
+
+      // success
+      setLastSavedAutofill(autofill);
+      setLastSavedAt(Date.now());
+      // console.log("Saved Forms Autofill:", autofill);
+    } finally {
+      setIsSavingAutofill(false);
+    }
   }
 
   function setAutofillField(key: string, val: string) {
@@ -232,6 +305,16 @@ export default function FormsPage() {
   }
 
   const gateMyAndPast = !autofillComplete;
+
+  /* Download */
+  function handleDownload(p: PastForm) {
+    if (p.fileUrl) {
+      window.open(p.fileUrl, "_blank", "noopener,noreferrer");
+    } else {
+      // toast.info("This file is not available yet.");
+      console.log("No file yet for", p);
+    }
+  }
 
   return (
     <div className="container max-w-6xl px-4 sm:px-10 pt-6 sm:pt-16 mx-auto">
@@ -249,6 +332,16 @@ export default function FormsPage() {
             </p>
           </div>
         </div>
+
+        {/* Global generating banner */}
+        {isGeneratingGlobal && (
+          <Card className="p-3 border-emerald-200 bg-emerald-50 flex items-center gap-2">
+            <Loader2 className="size-4 animate-spin text-emerald-600" />
+            <span className="text-sm text-emerald-800">
+              Building your PDF… This may take a moment.
+            </span>
+          </Card>
+        )}
 
         {/* Warning */}
         {gateMyAndPast && (
@@ -350,17 +443,49 @@ export default function FormsPage() {
             </div>
 
             <div className="mt-4 flex items-center justify-between">
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-gray-500 flex items-center gap-2">
                 {autofillComplete ? (
-                  <span className="text-emerald-600">
-                    Ready — Autofill complete.
-                  </span>
+                  isAutofillDirty ? (
+                    <span>Unsaved changes</span>
+                  ) : lastSavedAt ? (
+                    <span className="inline-flex items-center gap-1 text-emerald-600">
+                      <CheckCircle className="h-3.5 w-3.5" />
+                      Saved{" "}
+                      {new Date(lastSavedAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  ) : (
+                    <span className="text-emerald-600">
+                      Ready — Autofill complete.
+                    </span>
+                  )
                 ) : (
                   <>Complete all required fields to unlock generation.</>
                 )}
               </div>
-              <Button size="sm" onClick={saveAutofill}>
-                Save
+
+              <Button
+                size="sm"
+                onClick={saveAutofill}
+                disabled={
+                  !autofillComplete || !isAutofillDirty || isSavingAutofill
+                }
+                className={
+                  !autofillComplete || !isAutofillDirty ? "opacity-60" : ""
+                }
+              >
+                {isSavingAutofill ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Saving…
+                  </span>
+                ) : isAutofillDirty ? (
+                  "Save changes"
+                ) : (
+                  "Saved"
+                )}
               </Button>
             </div>
           </OutsideTabPanel>
@@ -432,9 +557,10 @@ export default function FormsPage() {
                           size="sm"
                           variant="outline"
                           className="w-full sm:w-auto"
-                          onClick={() => console.log("Download", p)}
+                          onClick={() => handleDownload(p)}
+                          disabled={!p.fileUrl}
                         >
-                          Download
+                          {p.fileUrl ? "Download" : "Processing…"}
                         </Button>
                       </div>
                     </li>
@@ -448,6 +574,10 @@ export default function FormsPage() {
     </div>
   );
 }
+
+/* ──────────────────────────────────────────────
+   Generate Modal
+   ────────────────────────────────────────────── */
 
 function GenerateFormModal({
   title,
@@ -466,19 +596,23 @@ function GenerateFormModal({
   initialCompanyId: string;
   initialCustom: Values;
   onCancel: () => void;
-  onGenerate: (companyId: string, customValues: Values) => void;
+  onGenerate: (companyId: string, customValues: Values) => Promise<void> | void;
 }) {
   const [companyId, setCompanyId] = useState<string>(initialCompanyId);
   const [custom, setCustom] = useState<Values>(initialCustom);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const hasErrors = Object.values(errors).some(Boolean);
   const canGenerate =
-    !!companyId && isComplete(customDefs, custom) && !hasErrors;
+    !!companyId &&
+    isComplete(customDefs, custom) &&
+    !hasErrors &&
+    !isSubmitting;
 
   const setCustomField = (k: string, v: string) => {
     setCustom((prev) => {
-      const next = { ...prev, [k]: v };
+      const next = { ...prev, [k]: v } as any;
       const def = customDefs.find((d) => d.key === k);
       if (def) {
         const e = validateField(def, v ?? "", next);
@@ -491,6 +625,16 @@ function GenerateFormModal({
       }
       return next;
     });
+  };
+
+  const handleGenerate = async () => {
+    if (!canGenerate) return;
+    try {
+      setIsSubmitting(true);
+      await onGenerate(companyId, custom);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -533,20 +677,27 @@ function GenerateFormModal({
 
       {/* Footer */}
       <div className="mt-5 flex justify-end gap-2">
-        <Button variant="outline" onClick={onCancel}>
+        <Button variant="outline" onClick={onCancel} disabled={isSubmitting}>
           Cancel
         </Button>
-        <Button
-          onClick={() => onGenerate(companyId, custom)}
-          disabled={!canGenerate}
-          className={!canGenerate ? "opacity-60" : ""}
-        >
-          Generate
+        <Button onClick={handleGenerate} disabled={!canGenerate}>
+          {isSubmitting ? (
+            <span className="inline-flex items-center gap-2">
+              <Loader2 className="size-4 animate-spin" />
+              Generating…
+            </span>
+          ) : (
+            "Generate"
+          )}
         </Button>
       </div>
     </div>
   );
 }
+
+/* ──────────────────────────────────────────────
+   Field renderer
+   ────────────────────────────────────────────── */
 
 function FieldRenderer({
   def,
@@ -639,7 +790,7 @@ function FieldRenderer({
     );
   }
 
-  // others
+  // Text/number as plain input
   const inputType =
     def.type === "number" ? "text" : def.type === "text" ? "text" : "text";
   const inputMode = def.type === "number" ? "numeric" : undefined;
@@ -663,16 +814,16 @@ function FieldRenderer({
   );
 }
 
+/* ──────────────────────────────────────────────
+   UI bits
+   ────────────────────────────────────────────── */
+
 function WarningCard({
   title,
   message,
-  actionLabel,
-  onAction,
 }: {
   title: string;
   message: React.ReactNode;
-  actionLabel?: string;
-  onAction?: () => void;
 }) {
   const tone = {
     card: "bg-red-50 border-red-200",
@@ -759,6 +910,7 @@ const FORM_TEMPLATES: FormTemplate[] = [
         label: "Internship Start Date",
         type: "date",
         required: true,
+        helper: "Must be at least 7 days from today.",
         validators: [
           (start) => {
             if (!start) return null;
@@ -779,7 +931,6 @@ const FORM_TEMPLATES: FormTemplate[] = [
             );
             min.setDate(min.getDate() + 7);
 
-            // must be >= min (i.e., at least 7 days out)
             if (startDate < min) {
               return "Start date must be at least 7 days from today.";
             }
@@ -826,10 +977,42 @@ const FORM_TEMPLATES: FormTemplate[] = [
 ];
 
 const COMPANIES = [
-  { id: "ent-ardent", name: "Ardent World Inc." },
   { id: "ent-urc", name: "URC" },
   { id: "ent-factset", name: "FactSet" },
-  { id: "ent-accenture", name: "Accenture" },
   { id: "ent-better-internship", name: "BetterInternship" },
-  { id: "ent-leapfroggr", name: "LeapFroggr" },
+  { id: "ent-evident", name: "Evident Integrated Marketing & PR" },
+  { id: "ent-bounty-fresh", name: "Bounty Fresh Group" },
+  { id: "ent-smarter-good", name: "Smarter Good" },
+  { id: "ent-masat", name: "MASAT" },
+  { id: "ent-dice205", name: "DICE205 Digital" },
+  { id: "ent-lobien", name: "Lobien Realty Group" },
+  { id: "ent-intelligent-skin", name: "Intelligent Skin Care" },
+  { id: "ent-hikvision", name: "HIKVISION Singapore Pte. Philippines" },
+  { id: "ent-smx", name: "SMX Convention Center" },
+  { id: "ent-markenburg", name: "Markenburg International Foods" },
+  { id: "ent-enshored", name: "Enshored" },
+  { id: "ent-world-youth", name: "World Youth Alliance Asia Pacific" },
+  { id: "ent-valiant", name: "Valiant Advanced Systems and Devices" },
+  { id: "ent-romega", name: "Romega Solutions" },
+  { id: "ent-1export", name: "1Export Trade and Services Inc" },
+  { id: "ent-willis", name: "Willis Towers Watson" },
+  { id: "ent-firstgen", name: "First Gen" },
+  { id: "ent-amg", name: "AMG Systemtechnik Inc" },
+  { id: "ent-stratpoint", name: "Stratpoint Global Outsourcing" },
+  { id: "ent-sunlife", name: "Sun Life Philippines" },
+  { id: "ent-offshorebp", name: "Offshore Business Processing" },
+  { id: "ent-giftaway", name: "Giftaway" },
+  { id: "ent-jollibee", name: "Jollibee" },
+  { id: "ent-generationhope", name: "GenerationHope" },
+  { id: "ent-stafford", name: "Stafford Paper" },
+  { id: "ent-alaska", name: "Alaska Milk Corporation" },
+  { id: "ent-3e-hitech", name: "3E Hitech Solutions, Inc." },
+  { id: "ent-aim", name: "Asian Institute of Management" },
+  { id: "ent-osave", name: "OSAVE Trading Philippines" },
+  { id: "ent-home-depot", name: "World Home Depot" },
+  { id: "ent-autokid", name: "Autokid Subic Trading Corporation" },
+  { id: "ent-convey", name: "Convey Health Solutions" },
+  { id: "ent-greenfield", name: "Greenfield Marketers One" },
+  { id: "ent-safeway", name: "Safeway Philtech" },
+  { id: "ent-hashcompany", name: "HashCompany" },
 ];
