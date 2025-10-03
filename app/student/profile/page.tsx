@@ -55,14 +55,6 @@ import { useProfileActions } from "@/lib/api/student.actions.api";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
-const getNearestMonthTimestamp = () => {
-  const date = new Date();
-  const dateString = `${date.getFullYear()}-${(
-    "0" + (date.getMonth() + 1).toString()
-  ).slice(-2)}-01T00:00:00.000Z`;
-  return Date.parse(dateString);
-};
-
 export default function ProfilePage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
   const profile = useProfileData();
@@ -135,6 +127,15 @@ export default function ProfilePage() {
     );
   }
 
+  const data = profile.data as PublicUser | undefined;
+  const { score, parts, tips } = computeProfileScore(data);
+
+  useEffect(() => {
+    if (data?.resume) {
+      syncResumeURL();
+    }
+  }, [data?.resume, syncResumeURL]);
+
   const openEmployerWithResume = async () => {
     await syncResumeURL();
     openEmployerModal();
@@ -145,7 +146,6 @@ export default function ProfilePage() {
     setAutoApplyError(null);
 
     const prev = !!profile.data?.apply_for_me;
-    console.log(prev);
 
     try {
       await profileActions.update.mutateAsync({ apply_for_me: !prev });
@@ -722,7 +722,6 @@ const ProfileEditor = forwardRef<
         if (hasCalendarErrors) setTab("Calendar");
         else if (hasPrefsErrors) setTab("Internship Details");
         else setTab("Student Profile");
-        console.log(hasErrors, formErrors);
         return false;
       }
 
@@ -1393,6 +1392,13 @@ const ProfileLinkBadge = ({
 // ----------------------------
 //  Helpers
 // ----------------------------
+const getNearestMonthTimestamp = () => {
+  const date = new Date();
+  const dateString = `${date.getFullYear()}-${(
+    "0" + (date.getMonth() + 1).toString()
+  ).slice(-2)}-01T00:00:00.000Z`;
+  return Date.parse(dateString);
+};
 
 // For profile score
 function computeProfileScore(p?: Partial<PublicUser>): {

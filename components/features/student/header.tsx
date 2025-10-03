@@ -22,6 +22,7 @@ import {
   ChevronDown,
   Menu,
   Check as CheckIcon,
+  Newspaper,
 } from "lucide-react";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { useDetectClickOutside } from "react-detect-click-outside";
@@ -378,6 +379,10 @@ export const ProfileButton: React.FC = () => {
         <DropdownOption href="/saved">
           <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
           <span className="text-primary">Saved Jobs</span>
+        </DropdownOption>
+        <DropdownOption href="/forms">
+          <Newspaper className="w-4 h-4 inline-block mr-2 text-primary" />
+          <span className="text-primary">Forms</span>
         </DropdownOption>
         <DropdownOption href="/" on_click={handleLogout}>
           <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />
