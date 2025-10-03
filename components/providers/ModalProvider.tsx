@@ -89,7 +89,7 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
           >
             <div
               className={
-                `mx-auto w-fit max-w-[100svw] max-h-[90svh] rounded-md border bg-white shadow-xl relative pt-6 overflow-auto` +
+                `mx-auto max-w-[100svw] max-h-[100svh] h-[100svh] w-[100svw] sm:w-auto sm:h-auto rounded-md border bg-white shadow-xl relative pt-6 overflow-auto` +
                 (opts.panelClassName ?? "")
               }
               onClick={(e) => e.stopPropagation()}
