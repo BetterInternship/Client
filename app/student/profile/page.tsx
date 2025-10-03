@@ -1308,6 +1308,7 @@ const ResumeBox = ({
               variant="outline"
               onClick={openResumeModal}
               disabled={resumeIsUploading}
+              className="hidden sm:inline-flex"
             >
               <Eye className="h-4 w-4" />
             </Button>
