@@ -1,10 +1,11 @@
 "use client";
 
-import React, { RefObject, useEffect, useMemo, useState } from "react";
+import React, { RefObject, useEffect, useMemo, useRef, useState } from "react";
 import {
   Upload,
   UserCheck,
   FileText,
+  AlertTriangle,
   Repeat,
   User,
   Sparkles,
@@ -12,13 +13,15 @@ import {
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FormInput } from "@/components/EditForm";
+import { useAnalyzeResume } from "@/hooks/use-register";
+import { useDbRefs } from "@/lib/db/use-refs";
+import ResumeUpload from "@/components/features/student/resume-parser/ResumeUpload";
+import { FormDropdown, FormInput } from "@/components/EditForm";
 import { UserService } from "@/lib/api/services";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { Stepper } from "../stepper/stepper";
 import { isProfileResume, isProfileBaseComplete } from "../../lib/profile";
 import { ModalHandle } from "@/hooks/use-modal";
-import ResumeUploadSimple from "@/components/features/student/resume-parser/ResumeUploadSimple";
 
 /* ============================== Modal shell ============================== */
 
@@ -36,7 +39,7 @@ export function IncompleteProfileContent({
           <User className="w-8 h-8 text-primary" />
         </div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          Let&apos;s finish setting up your profile
+          Let's finish setting up your profile
         </h2>
       </div>
 
@@ -56,6 +59,26 @@ type ProfileDraft = {
   degree?: string;
 };
 
+type ResumeParsedUserSnake = {
+  first_name?: string;
+  middle_name?: string;
+  last_name?: string;
+  phone_number?: string;
+  university?: string;
+  degree?: string;
+};
+
+function snakeToDraft(u: ResumeParsedUserSnake): Partial<ProfileDraft> {
+  return {
+    firstName: u.first_name,
+    middleName: u.middle_name,
+    lastName: u.last_name,
+    phone: u.phone_number,
+    university: u.university,
+    degree: u.degree,
+  };
+}
+
 /* ============================== Main Stepper ============================== */
 
 function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
@@ -73,11 +96,55 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     degree: existingProfile.data?.degree ?? "",
   });
 
-  // upload-only state (no parsing)
-  const [pickedFile, setPickedFile] = useState<File | null>(null);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [uploaded, setUploaded] = useState(false);
+  // parsing/upload states
+  const [file, setFile] = useState<File | null>(null);
+  const [isParsing, setIsParsing] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [parsedReady, setParsedReady] = useState(false);
+  const [parseError, setParseError] = useState<string | null>(null);
+
+  // analyze
+  const { upload, fileInputRef, response } = useAnalyzeResume(file);
+  const handledResponseRef = useRef<Promise<any> | null>(null);
+
+  // upload on file
+  useEffect(() => {
+    if (!file) return;
+    setParseError(null);
+    setParsedReady(false);
+    setIsParsing(true);
+    upload(file);
+  }, [file, upload]);
+
+  // hydrate once per promise
+  useEffect(() => {
+    if (!response || handledResponseRef.current === response) return;
+    handledResponseRef.current = response;
+
+    let cancelled = false;
+    response
+      .then(({ extractedUser }: { extractedUser?: ResumeParsedUserSnake }) => {
+        if (cancelled) return;
+        if (extractedUser) {
+          const patch = snakeToDraft(extractedUser);
+          setProfile((p) => ({ ...p, ...patch }));
+        }
+        setParsedReady(true);
+        setIsParsing(false);
+        setStep(1);
+      })
+      .catch((e: any) => {
+        if (!cancelled) {
+          setParseError(e?.message || "Failed to analyze resume.");
+          setIsParsing(false);
+          setParsedReady(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [response]);
 
   const steps = useMemo(() => {
     const s: Array<{
@@ -89,34 +156,27 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
       component: React.ReactNode;
     }> = [];
 
-    // Step 1: Resume upload (manual upload-only)
     if (!isProfileResume(existingProfile.data)) {
       s.push({
         id: "resume",
         title: "Upload your resume",
-        subtitle: "Upload a PDF copy of your resume.",
+        subtitle: "Upload a PDF and we'll auto-fill what we can.",
         icon: Upload,
-        canNext: () => uploaded, // unlock Next only after successful upload
+        canNext: () => !!file && !isParsing,
         component: (
           <StepResume
-            file={pickedFile}
-            uploaded={uploaded}
-            error={uploadError}
-            onPick={setPickedFile}
-            onUploaded={() => {
-              setUploaded(true);
-              setUploadError(null);
-            }}
-            onError={(msg) => {
-              setUploaded(false);
-              setUploadError(msg);
-            }}
+            file={file}
+            isParsing={isParsing}
+            parsedReady={parsedReady}
+            parseError={parseError}
+            onPick={(f) => setFile(f)}
+            fileInputRef={fileInputRef}
+            response={response}
           />
         ),
       });
     }
 
-    // Step 2: Basic details
     if (!isProfileBaseComplete(existingProfile.data)) {
       s.push({
         id: "base",
@@ -132,7 +192,6 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
       });
     }
 
-    // Step 3: Acknowledge auto-apply
     if (existingProfile.data?.acknowledged_auto_apply === false) {
       s.push({
         id: "auto-apply",
@@ -145,12 +204,14 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
 
     return s;
   }, [
+    file,
+    isParsing,
+    parsedReady,
+    parseError,
+    response,
     existingProfile.data,
     profile,
     isUpdating,
-    pickedFile,
-    uploaded,
-    uploadError,
   ]);
 
   useEffect(() => {
@@ -162,11 +223,10 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   // Next behavior
   const onNext = async () => {
     const current = steps[step];
+
     if (!current) return;
 
     if (current.id === "resume") {
-      // upload-only step is already handled by the inner component,
-      // so we just go next here.
       setStep(step + 1);
       return;
     }
@@ -217,33 +277,37 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   );
 }
 
-/* ---------------------- Step: Resume Upload (upload-only) ---------------------- */
+/* ---------------------- Step: Resume Upload ---------------------- */
 
 function StepResume({
   file,
-  uploaded,
-  error,
+  isParsing,
+  parsedReady,
+  parseError,
   onPick,
-  onUploaded,
-  onError,
+  fileInputRef,
+  response,
 }: {
   file: File | null;
-  uploaded: boolean;
-  error: string | null;
-  onPick: (file: File | null) => void;
-  onUploaded: () => void;
-  onError: (msg: string) => void;
+  isParsing: boolean;
+  parsedReady: boolean;
+  parseError: string | null;
+  onPick: (file: File) => void;
+  fileInputRef: React.RefObject<HTMLInputElement>;
+  response: Promise<any> | null;
 }) {
   return (
-    <div className="space-y-3">
-      <ResumeUploadSimple
-        onSelected={(f) => onPick(f)}
-        onUploaded={onUploaded}
-        onError={onError}
+    <div>
+      <ResumeUpload
+        ref={fileInputRef}
+        promise={response ?? undefined}
+        isParsing={isParsing}
+        onSelect={(f) => onPick(f)}
+        onComplete={() => {}}
       />
 
       {file && (
-        <div className="mt-2 flex items-center justify-between rounded-[0.33em] border bg-background p-3">
+        <div className="mt-4 flex items-center justify-between rounded-[0.33em] border bg-background p-3">
           <div className="flex items-center gap-3">
             <FileText className="h-5 w-5 text-primary" />
             <div className="text-sm">
@@ -253,15 +317,22 @@ function StepResume({
               </div>
             </div>
           </div>
-          {uploaded ? (
-            <Badge type="supportive">Uploaded</Badge>
+          {parsedReady ? (
+            <Badge type="supportive">Parsed</Badge>
+          ) : isParsing ? (
+            <Badge type="warning">Parsing...</Badge>
           ) : (
-            <Badge type="warning">Waiting…</Badge>
+            <Badge type="warning">Waiting...</Badge>
           )}
         </div>
       )}
 
-      {error && <div className="mt-2 text-sm text-red-600">{error}</div>}
+      {parseError && (
+        <div className="mt-3 flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 p-2 text-amber-900 text-sm">
+          <AlertTriangle className="h-4 w-4" />
+          <span>{parseError}</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -275,6 +346,7 @@ function StepBasicIdentity({
   value: ProfileDraft;
   onChange: (v: ProfileDraft) => void;
 }) {
+
   return (
     <div className="flex flex-col gap-6">
       {/* Personal */}
@@ -411,6 +483,16 @@ function StepComplete({ onDone }: { onDone: () => void }) {
           100% {
             stroke-dasharray: 32 0;
             opacity: 1;
+          }
+        }
+        @keyframes fall {
+          0% {
+            transform: translateY(-12px) rotate(0deg);
+            opacity: 0.9;
+          }
+          100% {
+            transform: translateY(32px) rotate(280deg);
+            opacity: 0;
           }
         }
       `}</style>
