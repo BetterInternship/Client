@@ -262,7 +262,7 @@ export default function FormsPage() {
       {
         allowBackdropClick: false,
         closeOnEsc: true,
-        panelClassName: "max-w-none w-[98vw] sm:w-[min(96vw,900px)]",
+        panelClassName: "max-w-none w-[98vw] sm:w-[50svw]",
       }
     );
   }
