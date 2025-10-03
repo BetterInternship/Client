@@ -14,7 +14,7 @@ jobs:
           -X POST \
           -d "{\"content\": \"✅ [PROD] Deployment *${{ github.event.deployment_status.environment }}* succeeded for commit [${{ github.sha }}](${{ github.event.repository.html_url }}/commit/${{ github.sha }})\"}" \
           ${{ secrets.DISCORD_WEBHOOK }}
-            - name: Notify Discord of failure
+
       - name: Notify Discord of failure
         if: github.event.deployment_status.state == 'failure' && github.event.deployment.ref == 'refs/heads/main'
         run: |
