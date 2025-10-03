@@ -5,44 +5,36 @@ import ReactMarkdown from "react-markdown";
 import {
   ArrowLeft,
   Building,
-  Heart,
   MapPin,
   CheckCircle2,
   AlertTriangle,
 } from "lucide-react";
-import { cn, formatDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Job } from "@/lib/db/db.types";
-import { useAuthContext } from "@/lib/ctx-auth";
-import { useApplications, useSavedJobs } from "@/lib/api/student.api";
+import { useProfileData } from "@/lib/api/student.data.api";
 import { ModalComponent, ModalHandle } from "@/hooks/use-modal";
 import { JobDetailsSummary } from "../shared/jobs";
+import { SaveJobButton } from "../features/student/job/save-job-button";
+import { ApplyToJobButton } from "../features/student/job/apply-to-job-button";
 
 export const JobModal = ({
   job,
-  handleApply,
+  openAppModal,
+  applySuccessModalRef,
   ref,
   user,
 }: {
-  job: Job | null;
-  handleApply: () => void;
+  job: Job;
+  openAppModal: () => void;
   ref?: RefObject<ModalHandle | null>;
+  applySuccessModalRef?: RefObject<ModalHandle | null>;
   user?: {
     github_link?: string | null;
     portfolio_link?: string | null;
   };
 }) => {
-  const savedJobs = useSavedJobs();
-  const applications = useApplications();
-  const auth = useAuthContext();
-
-  const handleSave = async (job: Job) => {
-    if (!auth.isAuthenticated()) {
-      window.location.href = "/login";
-      return;
-    }
-    await savedJobs.toggle(job.id ?? "");
-  };
+  const profile = useProfileData();
 
   // Requirement checks (align with desktop)
   const hasGithub = !!user?.github_link?.trim();
@@ -56,8 +48,7 @@ export const JobModal = ({
 
   return (
     <ModalComponent ref={ref}>
-      {/* Full dynamic viewport height + relative for bottom bar anchoring */}
-      <div className="relative flex h-[100svh] max-h-[100svh] w-full flex-col bg-white">
+      <div className="relative flex h-[100svh] max-h-[100svh] max-w-[100svw] flex-col bg-white">
         {/* Top bar (close only) — sticky and safe-area aware */}
         <div className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b px-4 pb-2 pt-5">
           <Button
@@ -72,7 +63,7 @@ export const JobModal = ({
         </div>
 
         {/* Scrollable content — mirrors desktop layout */}
-        <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="flex-1 overflow-y-auto overscroll-contain max-w-[100svw] ">
           {job && (
             <div className="px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+96px)] space-y-5">
               <MissingNotice
@@ -80,7 +71,7 @@ export const JobModal = ({
                 needsGithub={needsGithub && !hasGithub}
                 needsPortfolio={needsPortfolio && !hasPortfolio}
               />
-              
+
               {/* Header (compact; no actions on mobile) */}
               <HeaderCompact job={job} />
 
@@ -139,36 +130,13 @@ export const JobModal = ({
         {/* Bottom action bar — fixed within modal, safe-area aware (UNCHANGED) */}
         <div className="absolute bottom-0 left-0 right-0 z-30 bg-white border-t p-4 pb-[calc(env(safe-area-inset-bottom)+16px)]">
           <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={() => job && handleSave(job)}
-              scheme={
-                savedJobs.isJobSaved(job?.id ?? "") ? "destructive" : "default"
-              }
-              className="h-14 w-14"
-              aria-label={
-                savedJobs.isJobSaved(job?.id ?? "") ? "Unsave" : "Save"
-              }
-            >
-              <Heart
-                className={cn(
-                  "w-6 h-6",
-                  savedJobs.isJobSaved(job?.id ?? "") ? "fill-current" : ""
-                )}
-              />
-            </Button>
-            <Button
-              disabled={applications.appliedJob(job?.id ?? "")}
-              onClick={handleApply}
-              className={cn(
-                "flex-1 h-14 transition-all duration-300",
-                applications.appliedJob(job?.id ?? "")
-                  ? "bg-supportive text-white"
-                  : "bg-primary text-white"
-              )}
-            >
-              {applications.appliedJob(job?.id ?? "") ? "Applied" : "Apply Now"}
-            </Button>
+            <SaveJobButton job={job} />
+            <ApplyToJobButton
+              profile={profile.data}
+              job={job}
+              openAppModal={openAppModal}
+              applySuccessModalRef={applySuccessModalRef}
+            />
           </div>
         </div>
       </div>
@@ -179,7 +147,8 @@ export const JobModal = ({
 function HeaderCompact({ job }: { job: Job }) {
   return (
     <div className="mb-1">
-      <h1 className="text-3xl font-semibold text-gray-900 leading-tight">
+      {/* Title */}
+      <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 leading-tight max-w-full break-words hyphens-auto line-clamp-2 sm:line-clamp-none">
         {job.title}
       </h1>
       <div className="flex items-center gap-2 text-gray-600">
@@ -205,8 +174,8 @@ function ReqPill({ ok, label }: { ok: boolean; label: string }) {
       className={cn(
         "flex items-center gap-2 rounded-[0.33em] px-2 py-0.5 text-sm border",
         ok
-          ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-          : "bg-amber-50 border-amber-200 text-amber-900"
+          ? "bg-supporitve/10 border-supportive/50 text-supprotive"
+          : "bg-warning/10 border-warning/50 text-warning"
       )}
     >
       {ok ? (
@@ -230,9 +199,9 @@ function MissingNotice({
 }) {
   if (!show) return null;
   return (
-    <div className="flex items-start gap-2 rounded-[0.33em] border border-amber-200 bg-amber-50 px-3 py-2">
-      <AlertTriangle className="h-4 w-4 mt-0.5 text-amber-700 shrink-0" />
-      <p className="text-sm text-amber-900 leading-snug">
+    <div className="flex items-start gap-2 rounded-[0.33em] border border-warning/50 bg-warning/10 px-3 py-2">
+      <AlertTriangle className="h-4 w-4 mt-0.5 text-warning shrink-0" />
+      <p className="text-sm text-warning leading-snug">
         This job requires{" "}
         {needsGithub && needsPortfolio ? (
           <b>GitHub and Portfolio</b>

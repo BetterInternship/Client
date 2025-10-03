@@ -1,5 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -59,9 +59,12 @@
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1),
+      0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+      0 8px 10px -6px rgb(0 0 0 / 0.1);
   }
 
   .dark {
@@ -101,46 +104,53 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     @apply text-base leading-normal;
-    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     font-variation-settings: normal;
     overflow: hidden;
   }
 
   /* Enhanced typography scale */
-  h1, .text-h1 {
+  h1,
+  .text-h1 {
     @apply text-4xl md:text-5xl font-bold tracking-tight text-gray-900;
     @apply leading-tight font-heading;
     line-height: var(--line-height-tight);
   }
 
-  h2, .text-h2 {
+  h2,
+  .text-h2 {
     @apply text-3xl md:text-4xl font-bold tracking-tight text-gray-900;
     @apply leading-tight font-heading;
     line-height: var(--line-height-tight);
   }
 
-  h3, .text-h3 {
+  h3,
+  .text-h3 {
     @apply text-2xl md:text-3xl font-semibold tracking-tight text-gray-900;
     @apply leading-snug font-heading;
     line-height: var(--line-height-normal);
   }
 
-  h4, .text-h4 {
+  h4,
+  .text-h4 {
     @apply text-xl md:text-2xl font-semibold tracking-tight text-gray-900;
     @apply leading-snug;
   }
 
-  h5, .text-h5 {
+  h5,
+  .text-h5 {
     @apply text-lg md:text-xl font-semibold text-gray-900;
     @apply leading-normal;
   }
 
-  h6, .text-h6 {
+  h6,
+  .text-h6 {
     @apply text-base md:text-lg font-semibold text-gray-900;
     @apply leading-normal;
   }
 
-  p, .text-body {
+  p,
+  .text-body {
     @apply text-base text-gray-700 leading-relaxed;
     line-height: var(--line-height-relaxed);
   }
@@ -154,7 +164,8 @@
   }
 
   /* Button and interactive elements */
-  button, .btn {
+  button,
+  .btn {
     @apply font-medium transition-all duration-200;
     @apply focus:outline-none;
   }
@@ -166,7 +177,9 @@
   }
 
   /* Form elements */
-  input, textarea, select {
+  input,
+  textarea,
+  select {
     @apply border border-gray-300 rounded-lg px-3 py-2;
     @apply text-gray-900 placeholder-gray-500;
     @apply transition-colors duration-200;
@@ -404,21 +417,34 @@
     box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4), 0 4px 12px rgba(0, 0, 0, 0.15);
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.2),
+      0 4px 12px rgba(0, 0, 0, 0.15);
   }
   100% {
     box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4), 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 }
 
+/* Prevent unexpected iOS text auto-zooming and scaling jumps */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Make images naturally responsive (if not already via Tailwind classes) */
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
 /* Enhanced component specific styles */
 div[data-radix-select-viewport=""],
 .mdxeditor-select-content,
-.mdxeditor-popup-container>* {
+.mdxeditor-popup-container > * {
   z-index: 50 !important;
 }
 
-div[data-radix-select-viewport=""]>*:hover {
+div[data-radix-select-viewport=""] > *:hover {
   background-color: rgba(59, 130, 246, 0.1);
   cursor: pointer;
   transition: all 300ms ease;
@@ -545,9 +571,16 @@ button[role="checkbox"]:checked {
 }
 
 @keyframes sidebounce {
-  0%, 100% { transform: translateX(0);       }
-  50%      { transform: translateX(-25%);    }  /* move left */
-  75%      { transform: translateX(25%);     }  /* move right */
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-25%);
+  } /* move left */
+  75% {
+    transform: translateX(25%);
+  } /* move right */
 }
 
 /* Mobile-specific utilities */
@@ -573,6 +606,49 @@ button[role="checkbox"]:checked {
   }
 }
 
+.input-wrap {
+  height: 40px; /* lock height so font-size change won't jump */
+  display: flex;
+  align-items: center;
+}
+
+.input-wrap input {
+  font-size: 14px; /* your preferred size */
+}
+
+.input-wrap input:focus {
+  font-size: 16px; /* prevents iOS zoom */
+}
+
+@layer base {
+  input,
+  textarea,
+  select {
+    @apply text-base; /* 1rem on mobile */
+  }
+  @screen sm {
+    input,
+    textarea,
+    select {
+      @apply text-sm; /* smaller on ≥640px if you prefer */
+    }
+  }
+}
+
+/* base size anywhere */
+input,
+textarea,
+select {
+  font-size: 0.875rem;
+}
+
+/* on focus, prevent zoom */
+input:focus,
+textarea:focus,
+select:focus {
+  font-size: 1rem;
+}
+
 .shiny-text {
   color: #b5b5b5a4; /* Adjust this color to change intensity/style */
   background: linear-gradient(
@@ -590,8 +666,12 @@ button[role="checkbox"]:checked {
 
 /* Shiny text sweep (react-bits–style) */
 @keyframes shine {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* Mostly dark text with a moving light band */
@@ -599,16 +679,18 @@ button[role="checkbox"]:checked {
   /* adjust dark tone to match your gray/900 if you want */
   background-image: linear-gradient(
     110deg,
-      rgba(15, 23, 42, 0.9) 0%,
-      rgba(15, 23, 42, 0.9) 42%,
-      rgba(255, 255, 255, 0.75) 50%,
-      rgba(15, 23, 42, 0.9) 58%,
-      rgba(15, 23, 42, 0.9) 100%
+    rgba(15, 23, 42, 0.9) 0%,
+    rgba(15, 23, 42, 0.9) 42%,
+    rgba(255, 255, 255, 0.75) 50%,
+    rgba(15, 23, 42, 0.9) 58%,
+    rgba(15, 23, 42, 0.9) 100%
   );
   background-size: 200% 100%;
   animation: shine 2.25s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .shiny-text { animation: none; }
+  .shiny-text {
+    animation: none;
+  }
 }

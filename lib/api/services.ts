@@ -7,7 +7,7 @@ import {
   Employer,
   Conversation,
 } from "@/lib/db/db.types";
-import { APIClient, APIRoute } from "./api-client";
+import { APIClient, APIRouteBuilder } from "./api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
 
 interface EmployerResponse extends FetchResponse {
@@ -17,26 +17,26 @@ interface EmployerResponse extends FetchResponse {
 export const EmployerService = {
   async getMyProfile() {
     return APIClient.get<EmployerResponse>(
-      APIRoute("employer").r("me").build()
+      APIRouteBuilder("employer").r("me").build()
     );
   },
 
-  async getEmployerPfpURL(employer_id: string) {
+  async getEmployerPfpURL(employerId: string) {
     return APIClient.get<EmployerResponse>(
-      APIRoute("employer").r(employer_id, "pic").build()
+      APIRouteBuilder("employer").r(employerId, "pic").build()
     );
   },
 
   async updateMyProfile(data: Partial<Employer>) {
     return APIClient.put<EmployerResponse>(
-      APIRoute("employer").r("me").build(),
+      APIRouteBuilder("employer").r("me").build(),
       data
     );
   },
 
   async updateMyPfp(file: Blob | null) {
     return APIClient.put<ResourceHashResponse>(
-      APIRoute("employer").r("me", "pic").build(),
+      APIRouteBuilder("employer").r("me", "pic").build(),
       file,
       "form-data"
     );
@@ -49,11 +49,6 @@ interface AuthResponse extends FetchResponse {
   user: Partial<PublicUser>;
 }
 
-interface EmailStatusResponse extends FetchResponse {
-  existing_user: boolean;
-  verified_user: boolean;
-}
-
 interface ResourceHashResponse {
   success?: boolean;
   message?: string;
@@ -61,29 +56,28 @@ interface ResourceHashResponse {
 }
 
 export const AuthService = {
-  async isLoggedIn() {
-    return APIClient.post<AuthResponse>(APIRoute("auth").r("loggedin").build());
-  },
-
   async register(user: Partial<PublicUser>) {
     return APIClient.post<AuthResponse>(
-      APIRoute("auth").r("register").build(),
+      APIRouteBuilder("auth").r("register").build(),
       user
     );
   },
 
   async login(email: string, password: string = "") {
-    return APIClient.post<AuthResponse>(APIRoute("auth").r("login").build(), {
-      email,
-      password,
-    });
+    return APIClient.post<AuthResponse>(
+      APIRouteBuilder("auth").r("login").build(),
+      {
+        email,
+        password,
+      }
+    );
   },
 
-  async verify(user_id: string, key: string) {
+  async verify(userId: string, key: string) {
     return APIClient.post<AuthResponse>(
-      APIRoute("auth").r("verify-email").build(),
+      APIRouteBuilder("auth").r("verify-email").build(),
       {
-        user_id,
+        user_id: userId,
         key,
       }
     );
@@ -91,20 +85,22 @@ export const AuthService = {
 
   async requestActivation(email: string) {
     return APIClient.post<ResourceHashResponse>(
-      APIRoute("auth").r("activate").build(),
+      APIRouteBuilder("auth").r("activate").build(),
       { email }
     );
   },
 
   async activate(email: string, otp: string) {
     return APIClient.post<ResourceHashResponse>(
-      APIRoute("auth").r("activate", "otp").build(),
+      APIRouteBuilder("auth").r("activate", "otp").build(),
       { email, otp }
     );
   },
 
   async logout() {
-    await APIClient.post<FetchResponse>(APIRoute("auth").r("logout").build());
+    await APIClient.post<FetchResponse>(
+      APIRouteBuilder("auth").r("logout").build()
+    );
   },
 };
 interface UserResponse extends FetchResponse {
@@ -119,16 +115,21 @@ interface SaveJobResponse extends FetchResponse {
 
 export const UserService = {
   async getMyProfile() {
-    return APIClient.get<UserResponse>(APIRoute("users").r("me").build());
+    return APIClient.get<UserResponse>(
+      APIRouteBuilder("users").r("me").build()
+    );
   },
 
   async updateMyProfile(data: Partial<PublicUser>) {
-    return APIClient.put<UserResponse>(APIRoute("users").r("me").build(), data);
+    return APIClient.put<UserResponse>(
+      APIRouteBuilder("users").r("me").build(),
+      data
+    );
   },
 
   async parseResume(form: FormData) {
     return APIClient.post<UserResponse>(
-      APIRoute("users").r("me", "extract-resume").build(),
+      APIRouteBuilder("users").r("me", "extract-resume").build(),
       form,
       "form-data"
     );
@@ -136,48 +137,48 @@ export const UserService = {
 
   async getMyResumeURL() {
     return APIClient.get<ResourceHashResponse>(
-      APIRoute("users").r("me", "resume").build()
+      APIRouteBuilder("users").r("me", "resume").build()
     );
   },
 
   async getMyPfpURL() {
     return APIClient.get<ResourceHashResponse>(
-      APIRoute("users").r("me", "pic").build()
+      APIRouteBuilder("users").r("me", "pic").build()
     );
   },
 
-  async getUserPfpURL(user_id: string) {
+  async getUserPfpURL(userId: string) {
     return APIClient.get<ResourceHashResponse>(
-      APIRoute("users").r(user_id, "pic").build()
+      APIRouteBuilder("users").r(userId, "pic").build()
     );
   },
 
   async updateMyPfp(file: FormData) {
     return APIClient.put<ResourceHashResponse>(
-      APIRoute("users").r("me", "pic").build(),
+      APIRouteBuilder("users").r("me", "pic").build(),
       file,
       "form-data"
     );
   },
 
-  async getUserResumeURL(user_id: string) {
+  async getUserResumeURL(userId: string) {
     return APIClient.get<ResourceHashResponse>(
-      APIRoute("users").r(user_id, "resume").build()
+      APIRouteBuilder("users").r(userId, "resume").build()
     );
   },
 
   async updateMyResume(form: FormData) {
     return APIClient.put<Response>(
-      APIRoute("users").r("me", "resume").build(),
+      APIRouteBuilder("users").r("me", "resume").build(),
       form,
       "form-data"
     );
   },
 
-  async saveJob(job_id: string) {
+  async saveJob(jobId: string) {
     return APIClient.post<SaveJobResponse>(
-      APIRoute("users").r("save-job").build(),
-      { id: job_id }
+      APIRouteBuilder("users").r("save-job").build(),
+      { id: jobId }
     );
   },
 };
@@ -200,42 +201,44 @@ interface OwnedJobsResponse extends FetchResponse {
 }
 
 export const JobService = {
-  async getAllJobs(params: { last_update: number }) {
-    return APIClient.get<JobsResponse>(APIRoute("jobs").p(params).build());
+  async getAllJobs() {
+    return APIClient.get<JobsResponse>(APIRouteBuilder("jobs").build());
   },
 
-  async getJobById(job_id: string) {
-    return APIClient.get<JobResponse>(APIRoute("jobs").r(job_id).build());
+  async getJobById(jobId: string) {
+    return APIClient.get<JobResponse>(APIRouteBuilder("jobs").r(jobId).build());
   },
 
   async getSavedJobs() {
     return APIClient.get<SavedJobsResponse>(
-      APIRoute("jobs").r("saved").build()
+      APIRouteBuilder("jobs").r("saved").build()
     );
   },
 
-  async get_owned_jobs() {
+  async getOwnedJobs() {
     return APIClient.get<OwnedJobsResponse>(
-      APIRoute("jobs").r("owned").build()
+      APIRouteBuilder("jobs").r("owned").build()
     );
   },
 
-  async create_job(job: Partial<Job>) {
+  async createJob(job: Partial<Job>) {
     return APIClient.post<FetchResponse>(
-      APIRoute("jobs").r("create").build(),
+      APIRouteBuilder("jobs").r("create").build(),
       job
     );
   },
 
-  async update_job(job_id: string, job: Partial<Job>) {
+  async updateJob(jobId: string, job: Partial<Job>) {
     return APIClient.put<FetchResponse>(
-      APIRoute("jobs").r(job_id).build(),
+      APIRouteBuilder("jobs").r(jobId).build(),
       job
     );
   },
 
-  async delete_job(job_id: string) {
-    return APIClient.delete<FetchResponse>(APIRoute("jobs").r(job_id).build());
+  async deleteJob(jobId: string) {
+    return APIClient.delete<FetchResponse>(
+      APIRouteBuilder("jobs").r(jobId).build()
+    );
   },
 };
 
@@ -250,7 +253,7 @@ interface ConversationsResponse extends FetchResponse {
 export const EmployerConversationService = {
   async sendToUser(conversationId: string, message: string) {
     return APIClient.post<any>(
-      APIRoute("conversations").r("send-to-user").build(),
+      APIRouteBuilder("conversations").r("send-to-user").build(),
       {
         conversation_id: conversationId,
         message,
@@ -260,7 +263,7 @@ export const EmployerConversationService = {
 
   async createConversation(userId: string) {
     return APIClient.post<ConversationResponse>(
-      APIRoute("conversations").r("create").build(),
+      APIRouteBuilder("conversations").r("create").build(),
       { user_id: userId }
     );
   },
@@ -269,7 +272,7 @@ export const EmployerConversationService = {
 export const UserConversationService = {
   async sendToEmployer(conversationId: string, message: string) {
     return APIClient.post<any>(
-      APIRoute("conversations").r("send-to-employer").build(),
+      APIRouteBuilder("conversations").r("send-to-employer").build(),
       {
         conversation_id: conversationId,
         message,
@@ -291,10 +294,6 @@ interface UserApplicationResponse extends FetchResponse {
   application: UserApplication;
 }
 
-interface EmployerApplicationResponse extends FetchResponse {
-  application: EmployerApplication;
-}
-
 interface CreateApplicationResponse extends FetchResponse {
   application: UserApplication;
 }
@@ -308,30 +307,30 @@ export const ApplicationService = {
     } = {}
   ) {
     return APIClient.get<UserApplicationsResponse>(
-      APIRoute("applications").p(params).build()
+      APIRouteBuilder("applications").p(params).build()
     );
   },
 
   async createApplication(data: { job_id: string; cover_letter?: string }) {
     return APIClient.post<CreateApplicationResponse>(
-      APIRoute("applications").r("create").build(),
+      APIRouteBuilder("applications").r("create").build(),
       data
     );
   },
 
-  async get_application_by_id(id: string): Promise<UserApplicationResponse> {
+  async getApplicationById(id: string): Promise<UserApplicationResponse> {
     return APIClient.get<UserApplicationResponse>(
-      APIRoute("applications").r(id).build()
+      APIRouteBuilder("applications").r(id).build()
     );
   },
 
-  async get_employer_applications(): Promise<EmployerApplicationsResponse> {
+  async getEmployerApplications(): Promise<EmployerApplicationsResponse> {
     return APIClient.get<EmployerApplicationsResponse>(
-      APIRoute("employer").r("applications").build()
+      APIRouteBuilder("employer").r("applications").build()
     );
   },
 
-  async update_application(
+  async updateApplication(
     id: string,
     data: {
       coverLetter?: string;
@@ -341,23 +340,23 @@ export const ApplicationService = {
     }
   ) {
     return APIClient.put<UserApplicationResponse>(
-      APIRoute("applications").r(id).build(),
+      APIRouteBuilder("applications").r(id).build(),
       data
     );
   },
 
-  async withdraw_application(id: string) {
+  async withdrawApplication(id: string) {
     return APIClient.delete<FetchResponse>(
-      APIRoute("applications").r(id).build()
+      APIRouteBuilder("applications").r(id).build()
     );
   },
 
-  async review_application(
+  async reviewApplication(
     id: string,
     review_options: { review?: string; notes?: string; status?: number }
   ) {
     return APIClient.post<FetchResponse>(
-      APIRoute("applications").r(id, "review").build(),
+      APIRouteBuilder("applications").r(id, "review").build(),
       review_options
     );
   },
@@ -372,8 +371,6 @@ export const handleApiError = (error: any) => {
     return;
   }
 
-  // You can add more specific error handling here
-  // For example, show toast notifications
-
+  // ! Show toast notifications here
   return error.message || "An unexpected error occurred";
 };
