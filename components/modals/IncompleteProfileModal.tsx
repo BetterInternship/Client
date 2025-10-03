@@ -33,7 +33,7 @@ export function IncompleteProfileContent({
   job?: unknown | null;
 }) {
   return (
-    <div className="p-6 h-full overflow-y-auto pt-0">
+    <div className="p-6 h-full overflow-y-auto pt-0 sm:max-w-2xl">
       <div className="text-center mb-6">
         <div className="w-16 h-16 mx-auto mb-4 bg-primary/15 rounded-full flex items-center justify-center">
           <User className="w-8 h-8 text-primary" />
@@ -146,7 +146,6 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     };
   }, [response]);
 
-  // Build REAL steps (completion is NOT part of this array)
   const steps = useMemo(() => {
     const s: Array<{
       id: "resume" | "base" | "auto-apply";
@@ -183,7 +182,12 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
         id: "base",
         title: "Basic details",
         icon: UserCheck,
-        canNext: () => !!profile.firstName && !!profile.lastName && !isUpdating && !!profile.phone,
+        canNext: () =>
+          !!profile.firstName &&
+          !!profile.lastName &&
+          !isUpdating &&
+          !!profile.phone &&
+          !!profile.degree,
         component: <StepBasicIdentity value={profile} onChange={setProfile} />,
       });
     }
@@ -210,7 +214,6 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     isUpdating,
   ]);
 
-  // Edge case: nothing to show? go straight to complete
   useEffect(() => {
     if (steps.length === 0) {
       setShowComplete(true);
@@ -224,7 +227,6 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     if (!current) return;
 
     if (current.id === "resume") {
-      // purely client transition
       setStep(step + 1);
       return;
     }
@@ -261,7 +263,6 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     }
   };
 
-  // Render completion screen OUTSIDE the stepper
   if (showComplete) {
     return <StepComplete onDone={onFinish} />;
   }
@@ -345,8 +346,6 @@ function StepBasicIdentity({
   value: ProfileDraft;
   onChange: (v: ProfileDraft) => void;
 }) {
-  const refs = useDbRefs();
-  const universityOptions = refs.universities;
 
   return (
     <div className="flex flex-col gap-6">
@@ -390,27 +389,9 @@ function StepBasicIdentity({
         </h4>
         <div className="mt-3 grid grid-cols-1 gap-4">
           <div>
-            <FormDropdown
-              label="University"
-              required
-              value={value.university ?? ""}
-              options={universityOptions}
-              setter={(val: any) =>
-                onChange({
-                  ...value,
-                  university: val,
-                  degree: "",
-                })
-              }
-              placeholder="Select university…"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs text-gray-600 mb-1 block">
-              Degree / Program
-            </label>
             <FormInput
+              required
+              label="Degree / Program"
               value={value.degree ?? ""}
               setter={(val: any) => onChange({ ...value, degree: val })}
               placeholder="Select degree…"

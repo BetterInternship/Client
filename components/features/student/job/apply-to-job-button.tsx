@@ -46,7 +46,6 @@ export const ApplyToJobButton = ({
         onFinish={() => {
           closeGlobalModal("incomplete-profile");
           queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-          // openAppModal();
         }}
       />,
       {
