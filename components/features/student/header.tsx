@@ -380,10 +380,10 @@ export const ProfileButton: React.FC = () => {
           <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
           <span className="text-primary">Saved Jobs</span>
         </DropdownOption>
-        <DropdownOption href="/forms">
+        {/* <DropdownOption href="/forms">
           <Newspaper className="w-4 h-4 inline-block mr-2 text-primary" />
           <span className="text-primary">Forms</span>
-        </DropdownOption>
+        </DropdownOption> */}
         <DropdownOption href="/" on_click={handleLogout}>
           <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />
           <span className="text-red-500">Sign Out</span>
