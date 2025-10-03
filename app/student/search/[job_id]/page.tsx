@@ -197,6 +197,7 @@ export default function JobPage() {
 
       <ApplySuccessModal job={job.data} ref={applySuccessModalRef} />
       <ApplyConfirmModal
+        ref={applyConfirmModalRef}
         job={job.data}
         onClose={() => applyConfirmModalRef.current?.close()}
         onAddNow={goProfile}
