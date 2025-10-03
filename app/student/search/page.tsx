@@ -33,7 +33,6 @@ import {
   isProfileResume,
   isProfileVerified,
 } from "@/lib/profile";
-import { AutoApplyToast } from "@/components/features/student/search/AutoApplyToast";
 import { useRouter } from "next/navigation";
 import { SaveJobButton } from "@/components/features/student/job/save-job-button";
 import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job-button";
@@ -133,7 +132,6 @@ export default function SearchPage() {
     } else if (jobsPage.length > 0 && !selectedJob?.id) {
       setSelectedJob(jobsPage[0]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobsPage.length, searchParams]);
 
   /* --------------------------------------------
@@ -183,12 +181,12 @@ export default function SearchPage() {
     if (
       !isProfileResume(profile.data) ||
       !isProfileBaseComplete(profile.data) ||
-      !isProfileVerified(profile.data)
+      profile.data?.acknowledged_auto_apply === false
     ) {
       openGlobalModal(
         "incomplete-profile",
         <IncompleteProfileContent
-          handleClose={() => closeGlobalModal("incomplete-profile")}
+          onFinish={() => closeGlobalModal("incomplete-profile")}
         />,
         {
           allowBackdropClick: false,
@@ -423,14 +421,6 @@ export default function SearchPage() {
 
   return (
     <>
-      {profile.data?.is_verified && (
-        <AutoApplyToast
-          enabled={!!profile.data?.apply_for_me}
-          dismissed={!!profile.data?.acknowledged_auto_apply}
-          onDismissForever={dismissTip}
-        />
-      )}
-
       {/* In-page toolbar */}
       {!isMobile && PageToolbar}
 
@@ -604,6 +594,7 @@ export default function SearchPage() {
                       profile={profile.data}
                       job={selectedJob}
                       openAppModal={() => applyConfirmModalRef.current?.open()}
+                      applySuccessModalRef={applySuccessModalRef}
                     />,
                   ]}
                 />
@@ -639,6 +630,7 @@ export default function SearchPage() {
         <JobModal
           job={selectedJob}
           openAppModal={() => applyConfirmModalRef.current?.open()}
+          applySuccessModalRef={applySuccessModalRef}
           ref={jobModalRef}
         />
       )}

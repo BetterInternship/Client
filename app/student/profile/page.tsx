@@ -95,9 +95,18 @@ export default function ProfilePage() {
     filename: "pfp",
   });
 
+  const data = profile.data as PublicUser | undefined;
+  const { score, parts, tips } = computeProfileScore(data);
+
   useEffect(() => {
     if (searchParams.get("edit") === "true") setIsEditing(true);
   }, [searchParams]);
+
+  useEffect(() => {
+    if (data?.resume) {
+      syncResumeURL();
+    }
+  }, [data?.resume, syncResumeURL]);
 
   if (profile.isPending) {
     return (

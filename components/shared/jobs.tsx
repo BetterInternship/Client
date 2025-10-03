@@ -861,11 +861,12 @@ function MissingNotice({
         )}
         . Update your profile to meet these requirements.
       </p>
-      <a href="/profile">
+      {/* ! i think this shudnt be here, because it bypasses the incomplete profile modal if they havent done that */}
+      {/* <a href="/profile">
         <Button scheme="secondary" variant="ghost" size="xs">
           Update profile
         </Button>
-      </a>
+      </a> */}
     </div>
   );
 }
