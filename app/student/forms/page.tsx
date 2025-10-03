@@ -638,7 +638,7 @@ function GenerateFormModal({
   };
 
   return (
-    <div className="overflow-auto">
+    <div className="overflow-auto w-[100svw] sm:w-[50svw]">
       <div className="mb-3">
         <div className="flex items-center gap-2 mb-1">
           <AlertTriangle className="size-4 text-gray-400" />
