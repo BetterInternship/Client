@@ -405,7 +405,7 @@ export const Header: React.FC = () => {
     const q = override?.q ?? searchTerm;
     const moa = override?.moa ?? moaOnly;
     if (q) params.set("query", q);
-    if (moa) params.set("moa", "Has+MOA");
+    if (moa) params.set("moa", "Has MOA");
     router.push(`/search/?${params.toString()}`);
   };
 
