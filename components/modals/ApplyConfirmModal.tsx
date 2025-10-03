@@ -67,8 +67,8 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
 
   return (
     <ModalComponent ref={ref}>
-      <div className="max-w-lg mx-auto p-6 pt-0 overflow-auto">
-        <div className="text-center mb-8">
+      <div className="max-w-lg mx-auto p-6 pt-0 overflow-auto space-y-4">
+        <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
             <Clipboard className="w-8 h-8 text-blue-600" />
           </div>
@@ -92,9 +92,9 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
 
         {/* Cover Letter */}
         {needsCL && (
-          <div className="mb-6">
+          <div className="space-y-3">
             <div
-              className="mb-3 rounded-[0.33em] border border-amber-200 bg-amber-50 
+              className="rounded-[0.33em] border border-amber-200 bg-amber-50 
                  text-amber-800 px-3 py-2 text-sm"
             >
               <span className="font-medium">Note:</span> A cover letter is
@@ -104,7 +104,6 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
               ref={coverRef}
               defaultValue=""
               error={coverError}
-              helper="We only check this on Submit."
               maxLength={500}
             />
           </div>
@@ -202,7 +201,7 @@ const CoverLetterInput = React.memo(
     );
 
     return (
-      <div className="mb-6 space-y-2">
+      <div className="space-y-2">
         <Textarea
           ref={taRef}
           defaultValue={defaultValue}
@@ -280,9 +279,9 @@ const RequirementsChecklist = React.memo(function RequirementsChecklist({
 
   return (
     <>
-      <div className="text-sm font-medium mb-2">Requirements</div>
-      <div className="mb-6 rounded-[0.33em] border p-4 bg-gray-50">
-        <ul className="space-y-2 text-sm">
+      <div className="text-sm font-medium mb-1">Requirements</div>
+      <div className="rounded-[0.33em] border p-1 bg-gray-50">
+        <ul className=" text-sm">
           {needsGH && (
             <Row
               label="GitHub profile link"
