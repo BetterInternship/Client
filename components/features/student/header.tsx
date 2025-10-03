@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useReducer,
-  useState,
-} from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -18,14 +12,9 @@ import {
   Search,
   ChevronRight,
   X as XIcon,
-  Filter as FilterIcon,
-  ChevronDown,
   Menu,
   Check as CheckIcon,
-  Newspaper,
 } from "lucide-react";
-import { Checkbox } from "@radix-ui/react-checkbox";
-import { useDetectClickOutside } from "react-detect-click-outside";
 
 import { Button } from "@/components/ui/button";
 import { GroupableNavDropdown, DropdownOption } from "@/components/ui/dropdown";
@@ -36,7 +25,6 @@ import { MyUserPfp } from "@/components/shared/pfp";
 import { useMobile } from "@/hooks/use-mobile";
 import { useRoute } from "@/hooks/use-route";
 import { useConversations } from "@/hooks/use-conversation";
-
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { cn } from "@/lib/utils";
@@ -56,7 +44,7 @@ import {
 } from "@/components/features/student/search/JobFilters";
 
 /* =======================================================================================
-   Small UI Primitives
+   Compact Search input with inline MOA toggle
 ======================================================================================= */
 const SearchInput = ({
   value,
@@ -64,33 +52,80 @@ const SearchInput = ({
   onEnter,
   placeholder = "Search Internship Listings",
   className = "",
+  moaOnly,
+  onToggleMoa,
 }: {
   value: string;
   onChange: (v: string) => void;
   onEnter?: () => void;
   placeholder?: string;
   className?: string;
-}) => (
-  <div
-    className={cn(
-      "relative w-full border border-gray-300 rounded-[0.33em]",
-      className
-    )}
-  >
-    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-    <input
-      type="text"
-      value={value}
-      onKeyDown={(e) => e.key === "Enter" && onEnter?.()}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      className="w-full h-10 pl-12 pr-4 bg-transparent border-0 outline-none focus:ring-0 text-gray-900 text-sm hover:bg-gray-100 focus:bg-gray-100 duration-150 placeholder:text-gray-500"
-    />
-  </div>
-);
+  moaOnly: boolean;
+  onToggleMoa: (v: boolean) => void;
+}) => {
+  return (
+    <div
+      className={cn(
+        "relative w-full border border-gray-300 rounded-[0.33em] overflow-hidden",
+        "focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/40",
+        className
+      )}
+    >
+      {/* Left icon */}
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-gray-400 pointer-events-none" />
+
+      {/* Text input */}
+      <input
+        type="text"
+        value={value}
+        onKeyDown={(e) => e.key === "Enter" && onEnter?.()}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={cn(
+          "w-full h-10 pl-10 pr-24",
+          "bg-transparent border-0 outline-none focus:ring-0 text-gray-900 text-sm",
+          "placeholder:text-gray-500"
+        )}
+      />
+
+      {/* Right inline MOA toggle (compact pill) */}
+      <button
+        type="button"
+        onClick={() => onToggleMoa(!moaOnly)}
+        className={cn(
+          "absolute right-1 top-1/2 -translate-y-1/2",
+          "inline-flex items-center gap-1.5 h-7 px-2 rounded-md border text-xs",
+          "transition-colors",
+          moaOnly
+            ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
+            : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
+        )}
+        aria-pressed={moaOnly}
+        aria-label="Filter: DLSU MOA"
+      >
+        <span
+          className={cn(
+            "inline-flex items-center justify-center rounded-full border h-3.5 w-3.5",
+            moaOnly
+              ? "border-emerald-400 bg-emerald-100"
+              : "border-gray-300 bg-white"
+          )}
+        >
+          <CheckIcon
+            className={cn(
+              "h-3 w-3",
+              moaOnly ? "text-emerald-600" : "text-transparent"
+            )}
+          />
+        </span>
+        <span className="leading-none">DLSU&nbsp;MOA</span>
+      </button>
+    </div>
+  );
+};
 
 /* =======================================================================================
-   Mobile Drawer (account on top → chats → links → bottom sign out)
+   Mobile Drawer
 ======================================================================================= */
 function MobileDrawer({
   open,
@@ -119,21 +154,19 @@ function MobileDrawer({
       openGlobalModal(
         "incomplete-profile",
         <IncompleteProfileContent
-          onFinish={() => {
-            closeGlobalModal("incomplete-profile");
-          }}
+          onFinish={() => closeGlobalModal("incomplete-profile")}
         />,
         {
           allowBackdropClick: false,
-          onClose: () => {
-            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-          },
+          onClose: () =>
+            queryClient.invalidateQueries({ queryKey: ["my-profile"] }),
         }
       );
     } else {
       router.push("/profile");
     }
   };
+
   useEffect(() => {
     if (open) onClose();
   }, [pathname, params?.toString()]);
@@ -149,9 +182,7 @@ function MobileDrawer({
             : "opacity-0 pointer-events-none"
         )}
         onClick={onClose}
-        aria-hidden={!open}
       />
-
       {/* Drawer */}
       <aside
         className={cn(
@@ -159,18 +190,12 @@ function MobileDrawer({
           "transition-transform duration-250 ease-out",
           open ? "translate-x-0" : "translate-x-full"
         )}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Mobile menu"
       >
-        {/* Shell uses column layout so footer can pin to bottom */}
         <div className="flex h-full flex-col">
-          {/* Header */}
           <div className="flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-3 border-b">
             <div className="font-semibold">Menu</div>
             <button
               type="button"
-              aria-label="Close menu"
               className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-gray-100"
               onClick={onClose}
             >
@@ -178,12 +203,10 @@ function MobileDrawer({
             </button>
           </div>
 
-          {/* Scrollable content */}
-          {/* Account (always on top) */}
           {isAuthenticated() && (
             <div className="flex-1 overflow-y-auto p-4">
               <div className="flex items-center gap-3">
-                <div className="overflow-hidden rounded-full flex items-center justify-center">
+                <div className="overflow-hidden rounded-full">
                   <MyUserPfp size="9" />
                 </div>
                 <div className="flex flex-col leading-tight">
@@ -196,69 +219,38 @@ function MobileDrawer({
                 </div>
               </div>
               <Separator className="my-4" />
-              {/* Navigation */}
               <nav>
                 <ul className="grid gap-1">
-                  {isAuthenticated() && (
-                    <li>
-                      <Link href="/conversations" className="block w-full">
-                        <button className="w-full flex items-center justify-between rounded-md px-3 py-2">
-                          <span className="inline-flex items-center gap-2 text-sm">
-                            <MessageCircleMore className="w-4 h-4" /> Chats
-                          </span>
-                          {conversations?.unreads?.length ? (
-                            <span className="text-[10px] leading-none bg-warning/80 px-2 py-1 rounded-full">
-                              {conversations.unreads.length}
-                            </span>
-                          ) : (
-                            <ChevronRight className="w-4 h-4 text-gray-300" />
-                          )}
-                        </button>
-                      </Link>
-                    </li>
-                  )}
                   <li>
                     <Link href="/search" className="block w-full">
-                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                        <div>
-                          <Search className="w-4 h-4 inline-block mr-2" />
-                          <span>Browse</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-gray-300" />
+                      <button className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-md text-sm">
+                        <Search className="w-4 h-4 mr-2" /> Browse
+                        <ChevronRight className="w-4 h-4 ml-auto text-gray-300" />
                       </button>
                     </Link>
                   </li>
                   <li>
                     <button
-                      onClick={() => handleProfileClick()}
-                      className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary"
+                      onClick={handleProfileClick}
+                      className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-md text-sm text-primary"
                     >
-                      <div>
-                        <Settings className="w-4 h-4 inline-block mr-2" />
-                        <span>Profile</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-gray-300" />
+                      <Settings className="w-4 h-4 mr-2" /> Profile
+                      <ChevronRight className="w-4 h-4 ml-auto text-gray-300" />
                     </button>
                   </li>
                   <li>
                     <Link href="/applications" className="block w-full">
-                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                        <div>
-                          <BookA className="w-4 h-4 inline-block mr-2" />
-                          <span>Applications</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-gray-300" />
+                      <button className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-md text-sm">
+                        <BookA className="w-4 h-4 mr-2" /> Applications
+                        <ChevronRight className="w-4 h-4 ml-auto text-gray-300" />
                       </button>
                     </Link>
                   </li>
                   <li>
                     <Link href="/saved" className="block w-full">
-                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                        <div>
-                          <Heart className="w-4 h-4 inline-block mr-2" />
-                          <span>Saved Jobs</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-gray-300" />
+                      <button className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-md text-sm">
+                        <Heart className="w-4 h-4 mr-2" /> Saved
+                        <ChevronRight className="w-4 h-4 ml-auto text-gray-300" />
                       </button>
                     </Link>
                   </li>
@@ -267,7 +259,6 @@ function MobileDrawer({
             </div>
           )}
 
-          {/* Footer pinned to bottom */}
           {isAuthenticated() && (
             <div className="mt-auto border-t px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3">
               <button
@@ -285,40 +276,15 @@ function MobileDrawer({
 }
 
 /* =======================================================================================
-   Profile Button (desktop)
+   ProfileButton
 ======================================================================================= */
-export const ProfileButton: React.FC = () => {
+export const ProfileButton = () => {
   const profile = useProfileData();
   const conversations = useConversations();
   const { isAuthenticated, logout } = useAuthContext();
   const router = useRouter();
-  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
-  const queryClient = useQueryClient();
 
   const handleLogout = () => logout().then(() => router.push("/"));
-
-  const handleProfileClick = () => {
-    if (
-      !isProfileResume(profile.data) ||
-      !isProfileBaseComplete(profile.data) ||
-      !isProfileVerified(profile.data)
-    ) {
-      openGlobalModal(
-        "incomplete-profile",
-        <IncompleteProfileContent
-          onFinish={() => closeGlobalModal("incomplete-profile")}
-        />,
-        {
-          allowBackdropClick: false,
-          onClose: () => {
-            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-          },
-        }
-      );
-    } else {
-      router.push("/profile");
-    }
-  };
 
   if (!isAuthenticated()) {
     return (
@@ -364,11 +330,7 @@ export const ProfileButton: React.FC = () => {
         }
         className="z-[200] w-fit"
       >
-        <DropdownOption
-          on_click={() => {
-            handleProfileClick();
-          }}
-        >
+        <DropdownOption href="/profile">
           <Settings className="w-4 h-4 inline-block mr-2 text-primary" />
           <span className="text-primary">Profile</span>
         </DropdownOption>
@@ -380,10 +342,6 @@ export const ProfileButton: React.FC = () => {
           <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
           <span className="text-primary">Saved Jobs</span>
         </DropdownOption>
-        {/* <DropdownOption href="/forms">
-          <Newspaper className="w-4 h-4 inline-block mr-2 text-primary" />
-          <span className="text-primary">Forms</span>
-        </DropdownOption> */}
         <DropdownOption href="/" on_click={handleLogout}>
           <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />
           <span className="text-red-500">Sign Out</span>
@@ -405,14 +363,14 @@ export const Header: React.FC = () => {
   const auth = useAuthContext();
 
   const [searchTerm, setSearchTerm] = useState("");
-
+  const [moaOnly, setMoaOnly] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const noProfileRoutes = ["/register", "/register/verify"];
   const noHeaderRoutes = ["/register", "/register/verify"];
   const showProfileButton = routeExcluded(noProfileRoutes);
 
-  // only show filters on /search (allow subpaths like /search/results)
+  // show filters on /search (allow subpaths)
   const showFilters = pathname?.startsWith("/search") === true;
 
   // lock body scroll when drawer open
@@ -423,9 +381,11 @@ export const Header: React.FC = () => {
     };
   }, [isMenuOpen]);
 
+  // hydrate search input + moa from URL
   useEffect(() => {
     if (!showFilters) return;
     setSearchTerm(searchParams.get("query") || "");
+    setMoaOnly(searchParams.get("moa") === "Has+MOA");
   }, [searchParams, showFilters]);
 
   const initialFromUrl: Partial<JobFilter> = {
@@ -440,11 +400,16 @@ export const Header: React.FC = () => {
     jobMoa: (searchParams.get("moa") || "").split(",").filter(Boolean),
   };
 
-  const doSearch = () => {
+  const pushSearch = (override?: { moa?: boolean; q?: string }) => {
     const params = new URLSearchParams();
-    if (searchTerm) params.set("query", searchTerm);
-    router.push(`/search/?${params.toString()}`); // Filter params come from JobFilters onApply
+    const q = override?.q ?? searchTerm;
+    const moa = override?.moa ?? moaOnly;
+    if (q) params.set("query", q);
+    if (moa) params.set("moa", "Has+MOA");
+    router.push(`/search/?${params.toString()}`);
   };
+
+  const doSearch = () => pushSearch();
 
   const onApplyFilters = (f: JobFilter) => {
     const params = new URLSearchParams();
@@ -481,6 +446,11 @@ export const Header: React.FC = () => {
                 value={searchTerm}
                 onChange={setSearchTerm}
                 onEnter={doSearch}
+                moaOnly={moaOnly}
+                onToggleMoa={(v) => {
+                  setMoaOnly(v);
+                  pushSearch({ moa: v });
+                }}
               />
             )}
 
@@ -508,9 +478,7 @@ export const Header: React.FC = () => {
               <Button
                 variant="outline"
                 onClick={() =>
-                  router.push(
-                    `${process.env.NEXT_PUBLIC_API_URL}/auth/google`
-                  )
+                  router.push(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`)
                 }
               >
                 Sign in
@@ -534,6 +502,11 @@ export const Header: React.FC = () => {
               value={searchTerm}
               onChange={setSearchTerm}
               onEnter={doSearch}
+              moaOnly={moaOnly}
+              onToggleMoa={(v) => {
+                setMoaOnly(v);
+                pushSearch({ moa: v });
+              }}
             />
             {/* Mobile button opening bottom sheet */}
             <JobFilters onApply={onApplyFilters} />
