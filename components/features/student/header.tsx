@@ -385,7 +385,7 @@ export const Header: React.FC = () => {
   useEffect(() => {
     if (!showFilters) return;
     setSearchTerm(searchParams.get("query") || "");
-    setMoaOnly(searchParams.get("moa") === "Has+MOA");
+    setMoaOnly(searchParams.get("moa") === "Has MOA");
   }, [searchParams, showFilters]);
 
   const initialFromUrl: Partial<JobFilter> = {
