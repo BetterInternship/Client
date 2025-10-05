@@ -109,12 +109,13 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
 
   // upload on file
   useEffect(() => {
+    console.log(file);
     if (!file) return;
     setParseError(null);
     setParsedReady(false);
     setIsParsing(true);
     upload(file);
-  }, [file, upload]);
+  }, [file]);
 
   // hydrate once per promise
   useEffect(() => {
@@ -204,7 +205,6 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
 
     return s;
   }, [
-    file,
     isParsing,
     parsedReady,
     parseError,
