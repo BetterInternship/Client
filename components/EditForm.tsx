@@ -7,6 +7,7 @@ import {
 } from "@/components/landingStudent/ui/select";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
@@ -245,6 +246,75 @@ export const FormCheckbox = ({
       >
         {checked && <Check className="text-primary opacity-75" />}
       </Checkbox>
+    </div>
+  );
+};
+
+interface FormCheckBoxGroupProps
+extends React.InputHTMLAttributes<HTMLInputElement> {
+  options: { value: string | number; label: string; description?: string }[];
+  values: (string | number)[];
+  setter: (value: any) => void;
+  label?: string;
+  required?: boolean;
+  className?: string;
+}
+
+export const FormCheckBoxGroup = ({
+  options,
+  values, 
+  setter,
+  label,
+  required = false,
+  className,
+  ...props
+
+}: FormCheckBoxGroupProps) => {
+  const handleValueChange = (optionValue: string | number) => {
+    console.log('checkbox changed:', optionValue, 'current values:', values);
+    if (values.includes(optionValue)) {
+      setter(values.filter(v => v !== optionValue));
+    } else {
+      setter([...values, optionValue]);
+    }
+  };
+
+  return(
+    <div className="space-y-3">
+      {label && (
+        <label className="text-lg tracking-tight font-medium text-gray-700 mb-1 block">
+          {label} {required && <span className="text-destructive">*</span>}
+        </label>
+      )}
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {options.map((option) => {
+          const isChecked = values.includes(option.value);
+          
+          return (
+            <div
+              key={option.value}
+              onClick={() => handleValueChange(option.value)}
+              className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors cursor-pointer h-fit
+                ${isChecked ? 'border-primary border-opacity-85' : 'border-gray-200 hover:border-gray-300'}`}
+            >
+              <FormCheckbox
+                checked={isChecked ?? false}
+              />
+              <div className="grid grid-rows-1 md:grid-rows-2">
+                <Label className="text-xs font-medium text-gray-900">
+                  {option.label}
+                </Label>
+                {option.description && (
+                  <p className="text-xs text-gray-500">
+                    {option.description}
+                  </p>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };

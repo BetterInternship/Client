@@ -2,8 +2,8 @@
 
 import {
   FormCheckbox,
+  FormCheckBoxGroup,
   FormDatePicker,
-  FormDropdown,
   FormInput,
   FormRadio,
 } from "@/components/EditForm";
@@ -11,8 +11,7 @@ import { MDXEditor } from "@/components/MDXEditor";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
-  DropdownGroup,
-  GroupableRadioDropdown,
+  GroupableRadioDropdown
 } from "@/components/ui/dropdown";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,15 +41,20 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
       return;
     }
 
-    if (formData.allowance === 0) {
-      if (!formData.salary) {
-        alert("Salary is required when compensation is set to salary");
-        return;
-      }
-      if (!formData.salary_freq) {
-        alert("Pay frequency is required when compensation is set to salary");
-        return;
-      }
+    // if (formData.allowance === 0) {
+    //   if (!formData.salary) {
+    //     alert("Salary is required when compensation is set to salary");
+    //     return;
+    //   }
+    //   if (!formData.salary_freq) {
+    //     alert("Pay frequency is required when compensation is set to salary");
+    //     return;
+    //   }
+    // }
+
+    if (!formData.location?.trim()) {
+      alert("Job location is required");
+      return;
     }
 
     const job: Partial<Job> = {
@@ -97,7 +101,7 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
       
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-50 shadow-sm">
+        <div className="bg-white border-b border-gray-200 px-6 py-4 fixed top-0 right-0 left-0 z-50 shadow-sm pt-20">
           <div className="max-w-5xl mx-auto flex justify-between items-center">
             <h1 className="text-2xl text-gray-800">Create New Job: <span className="font-bold">{formData.title || "Untitled Job"}</span></h1>
             <div className="flex gap-3">
@@ -132,7 +136,7 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
 
         {/* Main Content */}
         <div>
-          <div className="p-6">
+          <div className="p-6 mt-20">
           <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200">
             {/* Title Section */}
             <div className="px-6 py-5 border-b border-gray-200">
@@ -176,7 +180,7 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                   {/* Credit Boxes */}
                   <div>
                     <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
-                      Are you hiring credited and/or voluntary interns?
+                      Are you hiring credited and/or voluntary interns? <span className="text-destructive">*</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                       <div
@@ -214,7 +218,7 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                   
                   {/*Location Input */}
                     <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
-                      Job Location
+                      Job Location <span className="text-destructive text-sm">*</span>
                     </div>
                     <div className="w-full mb-6">
                       <div className="space-y-2 w-full">
@@ -227,36 +231,88 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                           className="h-10"
                         />
                       </div>
-                  </div>
-
-                    <div className="mb-8">
-                      <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
-                      Work Types
                     </div>
-                    <div className="grid grid cols-1 md:grid-cols-2 gap-x-4">
-                      <DropdownGroup>
-                      <div className="space-y-2">
-                        <FormDropdown
+
+                    {/* Work types */}
+                    <div className="mb-8">
+                      <div className="grid grid cols-1 md:grid-cols-1 gap-x-4">
+                        {/* Old dropdowns */}
+                        {/* <DropdownGroup>
+                          <div className="space-y-2">
+                          <FormDropdown
                           label="Work Load"
                           value={formData.type ?? undefined}
                           options={job_types}
                           setter={fieldSetter("type")}
-                        />
+                          />
+                          </div>
+                          <div className="space-y-2">
+                          <FormDropdown
+                            label="Work Mode"
+                            value={formData.mode ?? undefined}
+                            options={job_modes}
+                            setter={fieldSetter("mode")}
+                          />
+                          </div>
+                        </DropdownGroup> */}
+                        <div>
+                          <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
+                            Work Load <span className="text-destructive">*</span>
+                          </div>
+                          <FormCheckBoxGroup 
+                            required={true}
+                            values={Array.isArray(formData.type) ? formData.type : []}
+                            options={[
+                              {
+                                value: 1,
+                                label: "Part-time",
+                                description: "(Approx 20 hours/week)"
+                              },
+                              {
+                                value: 2,
+                                label: "Full-time",
+                                description: "(Approx 40 hours/week)"
+                              },
+                              {
+                                value: 3,
+                                label: "Flexible/Project-based"
+                              },
+                            ]}
+                            setter={fieldSetter("type")}
+                          />
+                        </div>
+
+                        <div>
+                          <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
+                            Work Mode <span className="text-destructive">*</span>
+                          </div>
+                          <FormCheckBoxGroup 
+                            required={true}
+                            values={Array.isArray(formData.mode) ? formData.mode : []}
+                            options={[
+                              {
+                                value: 0,
+                                label: "On-site"
+                              },
+                              {
+                                value: 1,
+                                label: "Hybrid"
+                              },
+                              {
+                                value: 2,
+                                label: "Remote"
+                              },
+                            ]}
+                            setter={fieldSetter("mode")}
+                          />
+                          
+                        </div>
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <FormDropdown
-                          label="Work Mode"
-                          value={formData.mode ?? undefined}
-                          options={job_modes}
-                          setter={fieldSetter("mode")}
-                        />
-                      </div>
-                    </DropdownGroup>
-                    </div>
-                    </div>
+                      
                       <div className="mb-6">
                         <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
-                          Is the internship paid?
+                          Is the internship paid? <span className="text-destructive">*</span>
                         </div>
                           <Card
                             className={`${formData.allowance === undefined ? 'border-gray-200' : 'border-primary border-opacity-85'}`}
@@ -281,7 +337,7 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                               <div className="flex flex-row gap-4 m-4">
                                 <div className="space-y-2 border-l-2 border-gray-300 pl-4">
                                   <Label className="text-sm font-medium text-gray-700">
-                                    Salary <span className="text-destructive">*</span>
+                                    Salary <span className="text-sm text-gray-300">(Optional)</span>
                                   </Label>
                                   <Input
                                     value={formData.salary ?? ""}
@@ -293,8 +349,7 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
 
                               <div className="space-y-2">
                                 <Label className="text-sm font-medium text-gray-700">
-                                  Pay Frequency{" "}
-                                  <span className="text-destructive">*</span>
+                                  Pay Frequency{" "} <span className="text-sm text-gray-300">(Optional)</span>
                                 </Label>
                                 <GroupableRadioDropdown
                                   name="pay_freq"
@@ -308,8 +363,8 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                         </div>
                         </Card>
                           
-                        <div className="text-lg tracking-tight font-medium text-gray-700 mb-1 mt-4">
-                          Is the internship available year-round?
+                        <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
+                          When are you accepting interns for this listing? <span className="text-destructive">*</span>
                         </div>
                         <Card
                           className={`${formData.is_year_round === undefined ? 'border-gray-200' : 'border-primary border-opacity-85'}`}
@@ -319,11 +374,11 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                           options = {[
                             {
                               value: "true",
-                              label: "Yes",
+                              label: "As soon as possible",
                             },
                             {
                               value: "false",
-                              label: "No",
+                              label: "I have a future date in mind",
                             },
                           ]}
                           value ={formData.is_year_round?.toString() ?? undefined}
@@ -344,8 +399,8 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                             {/* <span className="text-gray-500 self-center"> — </span> */}
                             <div className="space-y-2">
                               <Label className="text-sm font-medium text-gray-700">
-                                  End Date{" "}
-                                  <span className="text-destructive">*</span>
+                                  End Date{" "} <span className="text-sm text-gray-300">(Optional)</span>
+                                  {/* <span className="text-destructive">*</span> */}
                               </Label>
                               <FormDatePicker
                                 date={formData.end_date ?? undefined}
@@ -378,9 +433,9 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                     <div className="text-xl tracking-tight font-medium text-gray-700 my-4">
                       Requirements
                     </div>
-                    <p className="text-gray-500 text-xs mb-3">*Note that resumes are already a given requirement for applicants</p>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                      <div className="flex items-start gap-4 p-3 border border-primary border-opacity-85 rounded-[0.33em] h-fit">
+                    {/* <p className="text-gray-500 text-xs mb-3">*Note that resumes are already a given requirement for applicants</p> */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                      {/* <div className="flex items-start gap-4 p-3 border border-primary border-opacity-85 rounded-[0.33em] h-fit">
                           <FormCheckbox
                           checked={true}
                           />
@@ -393,7 +448,7 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                             </p>
                           </div>
                         
-                      </div>
+                      </div> */}
                       <div
                       onClick={() => setField("require_github", !formData.require_github)}
                       className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors cursor-pointer h-fit
@@ -451,14 +506,14 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                     <p className="text-gray-500 text-sm mb-3">List any preferred courses, skills, and qualifications from applicants</p>
                     <div className="relative">
                       <MDXEditor
-                        className="min-h-[250px] w-full border border-gray-200 rounded-[0.33em] overflow-y-auto"
+                        className="min-h-[200px] w-full border border-gray-200 rounded-[0.33em] overflow-y-auto"
                         markdown={formData.requirements ?? ""}
                         onChange={(value) => setField("requirements", value)}
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-3">
+                  {/* <div className="space-y-3">
                     <div className="text-xl tracking-tight font-medium text-gray-700 my-4">
                       Job Settings
                     </div>
@@ -479,7 +534,7 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                         setter={fieldSetter("is_unlisted")}
                       />
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
