@@ -1,0 +1,25 @@
+name: Notify Discord on DEV Vercel Deployment
+
+on:
+  repository_dispatch:
+    types: [vercel_deployment]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Success message
+        if: github.event.client_payload.status == 'succeeded'
+        run: |
+          curl -H "Content-Type: application/json" \
+          -X POST \
+          -d "{\"content\": \"# [PROD] Deployment succeeded on Vercel ✅\"}" \
+          ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Failure message
+        if: github.event.client_payload.status == 'error'
+        run: |
+          curl -H "Content-Type: application/json" \
+          -X POST \
+          -d "{\"content\": \"# [DEV] Deployment failed on Vercel ❌\"}" \
+          ${{ secrets.DISCORD_WEBHOOK }}

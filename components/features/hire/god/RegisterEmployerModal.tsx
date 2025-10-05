@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/EditForm";
 import { isValidEmail } from "@/lib/utils";
-import { APIClient, APIRoute } from "@/lib/api/api-client";
+import { APIClient, APIRouteBuilder } from "@/lib/api/api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
 
 export type ModalRendererProps = {
@@ -64,7 +64,7 @@ export function RegisterEmployerModal({
 
     setLoading(true);
     try {
-      const url = APIRoute("employer").r("god", "register").build();
+      const url = APIRouteBuilder("employer").r("god", "register").build();
       console.debug("[RegisterEmployerModal] POST", url, {
         name: dba,
         user_email: email,

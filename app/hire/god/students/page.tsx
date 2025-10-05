@@ -14,7 +14,7 @@ import {
   ListSummary,
 } from "@/components/features/hire/god/ui";
 import { BoolBadge } from "@/components/ui/badge";
-import { getFullName } from "@/lib/utils/user-utils";
+import { getFullName } from "@/lib/profile";
 import { formatDate } from "@/lib/utils";
 import {
   useUsers,

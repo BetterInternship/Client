@@ -2,7 +2,6 @@
 import { useConversation, useConversations } from "@/hooks/use-conversation";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Card } from "@/components/ui/card";
-import { Employer } from "../../../lib/db/db.types";
 import { EmployerPfp } from "@/components/shared/pfp";
 import { ChevronLeft, ChevronRight, SendHorizonal } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -12,22 +11,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Message } from "@/components/ui/messages";
 import { Button } from "@/components/ui/button";
 import { UserConversationService } from "@/lib/api/services";
-import { useProfile } from "@/lib/api/student.api";
+import { useProfileData } from "@/lib/api/student.data.api";
 import { Loader } from "@/components/ui/loader";
 import { useEmployerName } from "@/hooks/use-employer-api";
 import { Badge } from "@/components/ui/badge";
 
-/**
- * Mobile behavior:
- * - List screen (default)
- * - Chat screen (full screen) with a sticky top bar + Back button
- * Desktop behavior:
- * - 2-column split (left list 25%, right chat 75%)
- */
-
 export default function ConversationsPage() {
-  const { isAuthenticated, redirectIfNotLoggedIn } = useAuthContext();
-  const profile = useProfile();
+  const { redirectIfNotLoggedIn } = useAuthContext();
+  const profile = useProfileData();
   const conversations = useConversations();
   const { isMobile } = useAppContext();
 
@@ -58,7 +49,8 @@ export default function ConversationsPage() {
   const sortedConvos = useMemo(
     () =>
       (conversations.data ?? []).toSorted(
-        (a, b) => (b.last_unread?.timestamp ?? 0) - (a.last_unread?.timestamp ?? 0)
+        (a, b) =>
+          (b.last_unread?.timestamp ?? 0) - (a.last_unread?.timestamp ?? 0)
       ),
     [conversations.data]
   );
@@ -79,9 +71,10 @@ export default function ConversationsPage() {
 
     if (!employerConversation) return endSend();
 
-    await UserConversationService.sendToEmployer(employerConversation.id, msg).catch(
-      endSend
-    );
+    await UserConversationService.sendToEmployer(
+      employerConversation.id,
+      msg
+    ).catch(endSend);
 
     endSend();
   };
@@ -148,7 +141,10 @@ export default function ConversationsPage() {
               </div>
             ) : conversationId ? (
               <>
-                <ConversationPane conversation={conversation} chatAnchorRef={chatAnchorRef} />
+                <ConversationPane
+                  conversation={conversation}
+                  chatAnchorRef={chatAnchorRef}
+                />
                 <ComposerBar
                   disabled={sending}
                   value={message}
@@ -206,7 +202,9 @@ function ChatHeaderTitle({ conversationId }: { conversationId?: string }) {
   const { employerName } = useEmployerName(senderId || "");
   return (
     <div className="min-w-0">
-      <div className="font-medium truncate">{employerName || "Conversations"}</div>
+      <div className="font-medium truncate">
+        {employerName || "Conversations"}
+      </div>
       <div className="text-[11px] text-gray-500 -mt-[2px]">Chat</div>
     </div>
   );
@@ -245,7 +243,11 @@ function ComposerBar({
           maxLength={1000}
         />
         <div className="flex justify-end">
-          <Button size="md" disabled={disabled || !value.trim()} onClick={onSend}>
+          <Button
+            size="md"
+            disabled={disabled || !value.trim()}
+            onClick={onSend}
+          >
             {disabled ? "Sending..." : "Send Message"}
             <SendHorizonal className="w-5 h-5" />
           </Button>
@@ -260,7 +262,9 @@ function EmptyChatHint() {
     <div className="flex-1 flex flex-col items-center justify-center p-6">
       <Card className="flex flex-col items-start mx-auto max-w-prose">
         <div className="font-bold mb-1">Welcome to your conversations!</div>
-        <div className="text-xs opacity-70">Click on a conversation to start chatting.</div>
+        <div className="text-xs opacity-70">
+          Click on a conversation to start chatting.
+        </div>
       </Card>
     </div>
   );
@@ -280,7 +284,9 @@ function NoConversationsEmptyState() {
           >
             BetterInternship
           </h1>
-          <p className="mt-3 text-2xl tracking-tight">Better Internships Start Here</p>
+          <p className="mt-3 text-2xl tracking-tight">
+            Better Internships Start Here
+          </p>
         </div>
         <div className="text-center border border-primary/50 text-primary shadow-sm rounded-[0.33em] opacity-85 p-4 bg-white w-full">
           You currently don't have any conversations.
@@ -298,7 +304,7 @@ const ConversationPane = ({
   conversation: any;
   chatAnchorRef: Ref<HTMLDivElement>;
 }) => {
-  const profile = useProfile();
+  const profile = useProfileData();
   const { employerName } = useEmployerName(conversation.senderId);
   let lastSelf = false;
 
@@ -345,7 +351,7 @@ const ConversationCard = ({
   setConversationId: (id: string) => void;
   isUnread?: boolean;
 }) => {
-  const profile = useProfile();
+  const profile = useProfileData();
   const [employerId, setEmployerId] = useState("");
 
   useEffect(() => {
@@ -372,7 +378,10 @@ const ConversationCard = ({
           <div className="flex flex-col min-w-0">
             <span className="font-medium flex items-center gap-2 truncate">
               {employerName ?? "Conversation"}
-              <Badge type="warning" className={cn(isUnread ? "inline-flex" : "hidden")}>
+              <Badge
+                type="warning"
+                className={cn(isUnread ? "inline-flex" : "hidden")}
+              >
                 Unread
               </Badge>
             </span>

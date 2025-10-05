@@ -15,7 +15,7 @@ import { Job, PublicUser } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { Button } from "../ui/button";
 import { Award, FileText } from "lucide-react";
-import { getFullName } from "@/lib/utils/user-utils";
+import { getFullName } from "@/lib/profile";
 import { MyUserPfp, UserPfp } from "./pfp";
 import { Divider } from "../ui/divider";
 import { fmtISO, formatMonth } from "@/lib/utils/date-utils";

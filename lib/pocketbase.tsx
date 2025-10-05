@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { APIClient, APIRoute } from "./api/api-client";
+import { APIClient, APIRouteBuilder } from "./api/api-client";
 import PocketBase, { AuthRecord } from "pocketbase";
 
 const pb = new PocketBase(process.env.NEXT_PUBLIC_CHAT_URL as string);
@@ -36,8 +36,8 @@ export const PocketbaseProvider = ({
     // Request token
     const route =
       type === "employer"
-        ? APIRoute("conversations").r("auth/hire").build()
-        : APIRoute("conversations").r("auth").build();
+        ? APIRouteBuilder("conversations").r("auth/hire").build()
+        : APIRouteBuilder("conversations").r("auth").build();
     const { token: newToken, user } = await APIClient.post<{
       token: string;
       user: AuthRecord;

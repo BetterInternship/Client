@@ -28,6 +28,7 @@ import { X } from "lucide-react";
 import { useAppContext } from "@/lib/ctx-app"; // should expose { isMobile }
 import { useMobile } from "./use-mobile"; // touch helpers
 import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
 
 /** Exposed for optional imperative usage */
 export type ModalHandle = { open: () => void; close: () => void };
@@ -42,6 +43,7 @@ export const useModal = (
   }
 ) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
   const { showCloseButton = true, allowBackdropClick = true } = options || {};
   const { isMobile } = useAppContext();
   const { isTouchOnSingleElement, isTouchEndOnElement, isSwipe } = useMobile();
@@ -131,10 +133,11 @@ export const useModal = (
     className?: string; // e.g. "max-w-7xl w-full"
     backdropClassName?: string;
   }) => {
+    useEffect(() => {
+      if (!isOpen) setHasMounted(isOpen);
+    }, [isOpen]);
+
     if (!isOpen) return null;
-
-    console.debug(`[useModal:${name}] render <Modal>`);
-
     return (
       <div
         ref={backdropRef}
@@ -162,54 +165,64 @@ export const useModal = (
         role="dialog"
         aria-modal="true"
       >
-        <div
-          ref={panelRef}
-          className={cn(
-            "bg-white overflow-hidden shadow-2xl flex flex-col",
-            isMobile
-              ? "w-full max-w-full mx-0 rounded-t-sm rounded-b-none h-fit min-h-[200px] animate-in slide-in-from-bottom duration-300"
-              : "w-full max-w-2xl rounded-sm h-fit animate-in fade-in zoom-in-95 duration-200",
-            className
-          )}
-        >
-          {showCloseButton && (
-            <div className={cn("flex justify-end p-4", isMobile && "pb-2")}>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  console.debug(`[useModal:${name}] close button click`);
-                  setIsOpen(false);
-                }}
-                onTouchEnd={(e) => {
-                  e.stopPropagation();
-                  console.debug(`[useModal:${name}] close button touch`);
-                  setIsOpen(false);
-                }}
-                className={cn(
-                  "h-8 w-8 p-0 hover:bg-gray-100 rounded-full transition-colors",
-                  isMobile && "active:bg-gray-200"
-                )}
-                aria-label="Close modal"
-              >
-                <X className="h-5 w-5 text-gray-500" />
-              </Button>
-            </div>
-          )}
-
-          {/* content scroll area */}
-          <div
-            className={cn(
-              showCloseButton && isMobile ? "pt-0" : "",
-              "flex-1 overflow-hidden h-full min-h-0"
-            )}
+        <AnimatePresence initial={!hasMounted}>
+          <motion.div
+            key={name}
+            initial={{ opacity: 0, y: 25, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0 }}
+            onAnimationComplete={() => setHasMounted(true)}
           >
-            {children}
-          </div>
+            <div
+              ref={panelRef}
+              className={cn(
+                "bg-white overflow-hidden shadow-2xl flex flex-col w-full h-fit",
+                isMobile
+                  ? "max-w-full min-w-[100svw] mx-0 rounded-t-[0.33em] rounded-b-none min-h-[200px]"
+                  : "max-w-2xl rounded-[0.33em]",
+                className
+              )}
+            >
+              {showCloseButton && (
+                <div className={cn("flex justify-end p-4", isMobile && "pb-2")}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      console.debug(`[useModal:${name}] close button click`);
+                      setIsOpen(false);
+                    }}
+                    onTouchEnd={(e) => {
+                      e.stopPropagation();
+                      console.debug(`[useModal:${name}] close button touch`);
+                      setIsOpen(false);
+                    }}
+                    className={cn(
+                      "h-8 w-8 p-0 hover:bg-gray-100 rounded-full transition-colors",
+                      isMobile && "active:bg-gray-200"
+                    )}
+                    aria-label="Close modal"
+                  >
+                    <X className="h-5 w-5 text-gray-500" />
+                  </Button>
+                </div>
+              )}
 
-          {/* mobile safe area */}
-          {isMobile && <div className="pb-safe h-4" />}
-        </div>
+              {/* content scroll area */}
+              <div
+                className={cn(
+                  showCloseButton && isMobile ? "pt-0" : "",
+                  "flex-1 overflow-hidden h-full min-h-0"
+                )}
+              >
+                {children}
+              </div>
+
+              {/* mobile safe area */}
+              {isMobile && <div className="pb-safe h-4" />}
+            </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
     );
   };

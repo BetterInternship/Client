@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "../globals.css";
 import { AuthContextProvider } from "@/lib/ctx-auth";
 import { RefsContextProvider } from "@/lib/db/use-refs";
@@ -9,7 +9,7 @@ import TanstackProvider from "../tanstack-provider";
 import AllowLanding from "./allowLanding";
 import { ConversationsContextProvider } from "@/hooks/use-conversation";
 import { PocketbaseProvider } from "@/lib/pocketbase";
-import { ModalProvider } from "@/components/providers/ModalProvider"
+import { ModalProvider } from "@/components/providers/ModalProvider";
 
 export const metadata: Metadata = {
   title: "BetterInternship",
@@ -17,6 +17,12 @@ export const metadata: Metadata = {
   icons: {
     icon: "/BetterInternshipLogo.ico",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 /**
@@ -57,13 +63,13 @@ const HTMLContent = ({
         <AppContextProvider>
           <AuthContextProvider>
             <ConversationsContextProvider type="user">
-              <html lang="en">
-                <body className="overflow-x-hidden m-0 p-0">
+              <html lang="en" className="h-full">
+                <body className="h-full overflow-x-hidden m-0 p-0 antialiased">
                   <ModalProvider>
                     <AllowLanding>
                 
                         <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
-                          <div className="flex-grow max-h-[100dvh] overflow-auto flex flex-col">
+                          <div className="flex-grow max-h-[100svh] max-w-[100svw] overflow-auto flex flex-col">
                             {children}
                           </div>
                         </div>

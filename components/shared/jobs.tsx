@@ -6,7 +6,7 @@ import {
   EditableInput,
 } from "@/components/ui/editable";
 import { Job } from "@/lib/db/db.types";
-import { useMoa } from "@/lib/db/use-moa";
+import { useDbMoa } from "@/lib/db/use-moa";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useFormData } from "@/lib/form-data";
 import { cn } from "@/lib/utils";
@@ -14,11 +14,10 @@ import {
   AlertTriangle,
   Building,
   CheckCircle,
-  CheckCircle2,
   Clock,
   EyeOff,
   Monitor,
-  PhilippinePeso,
+  PhilippinePeso
 } from "lucide-react";
 import { useEffect } from "react";
 import ReactMarkdown from "react-markdown";
@@ -188,7 +187,7 @@ export const EmployerMOA = ({
   university_id: string | null | undefined;
   employer_id: string | null | undefined;
 }) => {
-  const { check } = useMoa();
+  const { check } = useDbMoa();
   const { get_university } = useDbRefs();
 
   return check(employer_id ?? "", university_id ?? "") ? (
@@ -840,23 +839,7 @@ function HeaderWithActions({
 }
 
 function ReqPill({ ok, label }: { ok: boolean; label: string }) {
-  return (
-    <div
-      className={cn(
-        "flex items-center gap-2 rounded-[0.33em] px-2 py-0.5 text-sm border",
-        ok
-          ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-          : "bg-amber-50 border-amber-200 text-amber-900"
-      )}
-    >
-      {ok ? (
-        <CheckCircle2 className="h-3.5 w-3.5" />
-      ) : (
-        <AlertTriangle className="h-3.5 w-3.5" />
-      )}
-      <span className="font-medium">{label}</span>
-    </div>
-  );
+  return <BoolBadge state={ok} onValue={label} offValue={label} />;
 }
 
 function MissingNotice({
@@ -870,9 +853,9 @@ function MissingNotice({
 }) {
   if (!show) return null;
   return (
-    <div className="flex items-start gap-2 rounded-[0.33em] border border-amber-200 bg-amber-50 px-3 py-2 -my-3">
-      <AlertTriangle className="h-4 w-4 mt-0.5 text-amber-700 shrink-0" />
-      <p className="text-sm text-amber-900 leading-snug">
+    <div className="flex items-center gap-2 border-b border-gray-400 bg-warning px-5 py-3">
+      <AlertTriangle className="h-4 w-4 text-warning-foreground/90" />
+      <p className="text-sm text-warning-foreground/90 leading-snug">
         This job requires{" "}
         {needsGithub && needsPortfolio ? (
           <b>GitHub and Portfolio</b>
@@ -881,8 +864,14 @@ function MissingNotice({
         ) : (
           <b>Portfolio</b>
         )}
-        . Update your profile to ensure your application goes through.
+        . Update your profile to meet these requirements.
       </p>
+      {/* ! i think this shudnt be here, because it bypasses the incomplete profile modal if they havent done that */}
+      {/* <a href="/profile">
+        <Button scheme="secondary" variant="ghost" size="xs">
+          Update profile
+        </Button>
+      </a> */}
     </div>
   );
 }
@@ -940,49 +929,53 @@ export function JobDetails({
     (needsGithub && !hasGithub) || (needsPortfolio && !hasPortfolio);
 
   return (
-    <div className="flex-1 px-8 pt-7 overflow-y-auto space-y-5">
+    <>
       <MissingNotice
         show={missingRequired}
         needsGithub={needsGithub && !hasGithub}
         needsPortfolio={needsPortfolio && !hasPortfolio}
       />
+      <div className="flex-1 px-8 pt-7 overflow-y-auto space-y-5">
+        <HeaderWithActions
+          job={job}
+          actions={actions}
+          disabled={missingRequired}
+        />
 
-      {/* header + actions */}
-      <HeaderWithActions
-        job={job}
-        actions={actions}
-        disabled={missingRequired}
-      />
-
-      {/* your compact summary grid */}
-      <Section title="Job Details">
-        <JobDetailsSummary job={job} />
-      </Section>
-      <Divider />
-
-      {/* sections */}
-      <Section title="Role overview">
-        <MarkdownBlock text={job.description} />
-      </Section>
-
-      {(job.requirements || needsCover || needsGithub || needsPortfolio) && (
-        <Divider />
-      )}
-
-      {(job.requirements || needsCover || needsGithub || needsPortfolio) && (
-        <Section title="Requirements">
-          <div className="space-y-2">
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {needsCover && <ReqPill ok={true} label="Cover letter" />}
-              {needsGithub && <ReqPill ok={hasGithub} label="GitHub profile" />}
-              {needsPortfolio && (
-                <ReqPill ok={hasPortfolio} label="Portfolio link" />
-              )}
-            </div>
-            <MarkdownBlock text={job.requirements} />
-          </div>
+        <Section title="Job Details">
+          <JobDetailsSummary job={job} />
         </Section>
-      )}
-    </div>
+        <Divider />
+
+        {/* sections */}
+        <Section title="Role overview">
+          <MarkdownBlock text={job.description} />
+        </Section>
+
+        {(job.requirements || needsCover || needsGithub || needsPortfolio) && (
+          <Divider />
+        )}
+
+        {(job.requirements || needsCover || needsGithub || needsPortfolio) && (
+          <Section title="Requirements">
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {needsCover && <ReqPill ok={true} label="Cover letter" />}
+                {needsGithub && (
+                  <ReqPill ok={hasGithub} label="GitHub profile" />
+                )}
+                {needsPortfolio && (
+                  <ReqPill ok={hasPortfolio} label="Portfolio link" />
+                )}
+              </div>
+              <MarkdownBlock text={job.requirements} />
+            </div>
+          </Section>
+        )}
+
+        {/* Space */}
+        <div className="h-16"></div>
+      </div>
+    </>
   );
 }

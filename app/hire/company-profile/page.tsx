@@ -11,7 +11,7 @@ import { Camera, Edit2 } from "lucide-react";
 import ContentLayout from "@/components/features/hire/content-layout";
 import { useProfile } from "@/hooks/use-employer-api";
 import { Button } from "@/components/ui/button";
-import { useMoa } from "@/lib/db/use-moa";
+import { useDbMoa } from "@/lib/db/use-moa";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { Badge, BoolBadge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -38,7 +38,7 @@ export default function CompanyProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const { check } = useMoa();
+  const { check } = useDbMoa();
   const { get_university_by_name } = useDbRefs();
   const { to_industry_name } = useDbRefs();
   const profileEditorRef = useRef<{ save: () => Promise<boolean> }>(null);
