@@ -201,61 +201,44 @@ export default function FormsPage() {
 
     openGlobalModal(
       "generate-form",
-      <GenerateFormModal
-        title={FORM_TEMPLATES.find((t) => t.id === formId)?.name ?? "Form"}
-        description={FORM_TEMPLATES.find((t) => t.id === formId)?.description}
+      <GenerateMoaFlowModal
+        title="Student MOA"
+        description="Choose your company or invite them to complete and sign."
         companies={COMPANIES}
-        customDefs={defs}
-        initialCompanyId=""
-        initialCustom={initialCustom}
+        customDefs={
+          FORM_TEMPLATES.find((t) => t.id === formId)?.customFields ?? []
+        }
+        initialCustom={(
+          FORM_TEMPLATES.find((t) => t.id === formId)?.customFields ?? []
+        ).reduce((acc, f) => ({ ...acc, [f.key]: "" }), {})}
         onCancel={() => closeGlobalModal("generate-form")}
-        onGenerate={async (companyId, customValues) => {
-          // validate before submit
-          const errs = validateMany(defs, customValues);
-          if (Object.keys(errs).length > 0 || !companyId) return;
-
-          const payload = {
+        onInviteEmployer={async (invite) => {
+          // TODO: call your API to send invite and create a “pending” record
+          // await EmployerService.invite(invite)
+        }}
+        onGeneratePdf={async (manualCompanyValues, formValues) => {
+          // Merge payload → call your generate API
+          const { fileUrl } = await mockGenerateFormAPI({
             templateId: formId,
-            companyId,
-            autofill,
-            custom: customValues,
+            companyId: "", // manual path; not using a companyId
+            autofill, // from your page state
+            custom: { ...formValues, ...manualCompanyValues },
             profile: profile.data,
-          };
+          });
 
-          try {
-            setIsGeneratingGlobal(true);
-            const { fileUrl } = await mockGenerateFormAPI(payload);
+          // Add to Past Forms
+          setPastForms((prev) => [
+            {
+              id: `pf-${Math.random().toString(36).slice(2, 8)}`,
+              name: "Student MOA",
+              company: manualCompanyValues?.legalName || "Company",
+              createdAt: new Date().toISOString().slice(0, 10),
+              fileUrl,
+            },
+            ...prev,
+          ]);
 
-            const companyName =
-              COMPANIES.find((c) => c.id === companyId)?.name ?? "Company";
-            const formName =
-              FORM_TEMPLATES.find((f) => f.id === formId)?.name ?? "Form";
-
-            setPastForms((prev) => [
-              {
-                id: `pf-${Math.random().toString(36).slice(2, 8)}`,
-                name: formName,
-                company: companyName,
-                createdAt: new Date().toISOString().slice(0, 10),
-                fileUrl,
-              },
-              ...prev,
-            ]);
-
-            closeGlobalModal("generate-form");
-
-            // 👉 auto-download right after generation
-            if (fileUrl) {
-              const a = document.createElement("a");
-              a.href = fileUrl;
-              a.download = fileUrl.split("/").pop() || "document.pdf";
-              document.body.appendChild(a);
-              a.click();
-              a.remove();
-            }
-          } finally {
-            setIsGeneratingGlobal(false);
-          }
+          return { fileUrl };
         }}
       />,
       {
@@ -578,118 +561,358 @@ export default function FormsPage() {
    Generate Modal
    ────────────────────────────────────────────── */
 
-function GenerateFormModal({
+function GenerateMoaFlowModal({
   title,
   description,
   companies,
   customDefs,
-  initialCompanyId,
   initialCustom,
   onCancel,
-  onGenerate,
+  onGeneratePdf,
+  onInviteEmployer,
 }: {
   title: string;
   description?: string;
   companies: { id: string; name: string }[];
   customDefs: FieldDef[];
-  initialCompanyId: string;
   initialCustom: Values;
   onCancel: () => void;
-  onGenerate: (companyId: string, customValues: Values) => Promise<void> | void;
+  onGeneratePdf: (
+    manualCompanyValues: Values,
+    formValues: Values
+  ) => Promise<{ fileUrl: string }>;
+  onInviteEmployer: (invite: {
+    legalName: string;
+    contactPerson: string;
+    contactNumber: string;
+    contactEmail: string;
+  }) => Promise<void>;
 }) {
-  const [companyId, setCompanyId] = useState<string>(initialCompanyId);
-  const [custom, setCustom] = useState<Values>(initialCustom);
+  type Step =
+    | "companySelect"
+    | "employerAssist"
+    | "manualDetails"
+    | "generating"
+    | "assistDone"
+    | "done";
+
+  const [step, setStep] = useState<Step>("companySelect");
+
+  // form values (already filled earlier in page; passed here)
+  const [formValues, setFormValues] = useState<Values>(initialCustom);
+
+  // Step 2: company select
+  const [companyId, setCompanyId] = useState<string>("");
+
+  // Step 3: employer assist fields (Flow A)
+  const [invite, setInvite] = useState({
+    legalName: "",
+    contactPerson: "",
+    contactNumber: "",
+    contactEmail: "",
+  });
+
+  // Flow B: manual company details
+  const [manualCompany, setManualCompany] = useState({
+    companyAddress: "",
+    contactPosition: "",
+    companyType: "",
+  });
+
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [busy, setBusy] = useState(false);
 
-  const hasErrors = Object.values(errors).some(Boolean);
-  const canGenerate =
-    !!companyId &&
-    isComplete(customDefs, custom) &&
-    !hasErrors &&
-    !isSubmitting;
+  const setInviteField = (k: keyof typeof invite, v: string) =>
+    setInvite((prev) => ({ ...prev, [k]: v }));
 
-  const setCustomField = (k: string, v: string) => {
-    setCustom((prev) => {
-      const next = { ...prev, [k]: v } as any;
-      const def = customDefs.find((d) => d.key === k);
-      if (def) {
-        const e = validateField(def, v ?? "", next);
-        setErrors((prevErr) => {
-          const ne = { ...prevErr };
-          if (e) ne[k] = e;
-          else delete ne[k];
-          return ne;
-        });
-      }
-      return next;
-    });
+  const setManualField = (k: keyof typeof manualCompany, v: string) =>
+    setManualCompany((prev) => ({ ...prev, [k]: v }));
+
+  // Helpers
+  const require = (k: string, val: string) => {
+    if (!val?.trim()) return "This field is required.";
+    return "";
   };
 
-  const handleGenerate = async () => {
-    if (!canGenerate) return;
+  const validateInvite = () => {
+    const e: Record<string, string> = {};
+    e.legalName = require("legalName", invite.legalName);
+    e.contactPerson = require("contactPerson", invite.contactPerson);
+    e.contactNumber = require("contactNumber", invite.contactNumber);
+    e.contactEmail = /\S+@\S+\.\S+/.test(invite.contactEmail)
+      ? ""
+      : "Enter a valid email.";
+    Object.keys(e).forEach((k) => {
+      if (!e[k]) delete e[k];
+    });
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const validateManual = () => {
+    const e: Record<string, string> = {};
+    e.companyAddress = require("companyAddress", manualCompany.companyAddress);
+    e.contactPosition = require("contactPosition", manualCompany.contactPosition);
+    e.companyType = require("companyType", manualCompany.companyType);
+    Object.keys(e).forEach((k) => {
+      if (!e[k]) delete e[k];
+    });
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  // Actions
+  const handleCompanyNext = () => {
+    if (companyId) {
+      // If company is found → continue to PDF with selected company (keeps your previous behavior)
+      // Option A: prefill + generate immediately OR show your template’s remaining fields screen.
+      // For now we branch into employer assist entry to keep new flow consistent:
+      setStep("employerAssist");
+    } else {
+      // nudge to assist path (user can still go manual inside next step)
+      setStep("employerAssist");
+    }
+  };
+
+  const submitEmployerAssist = async () => {
+    if (!validateInvite()) return;
     try {
-      setIsSubmitting(true);
-      await onGenerate(companyId, custom);
+      setBusy(true);
+      await onInviteEmployer(invite);
+      setStep("assistDone");
     } finally {
-      setIsSubmitting(false);
+      setBusy(false);
+    }
+  };
+
+  const submitManualDetails = async () => {
+    if (!validateManual()) return;
+    try {
+      setBusy(true);
+      setStep("generating");
+      const { fileUrl } = await onGeneratePdf(
+        {
+          companyAddress: manualCompany.companyAddress,
+          contactPosition: manualCompany.contactPosition,
+          companyType: manualCompany.companyType,
+        },
+        formValues
+      );
+      // auto download
+      if (fileUrl) {
+        const a = document.createElement("a");
+        a.href = fileUrl;
+        a.download = fileUrl.split("/").pop() || "document.pdf";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+      setStep("done");
+    } finally {
+      setBusy(false);
     }
   };
 
   return (
-    <div className="overflow-auto">
-      <div className="mb-3">
-        <div className="flex items-center gap-2 mb-1">
-          <AlertTriangle className="size-4 text-gray-400" />
-          <h3 className="text-lg font-semibold">Generate {title}</h3>
-        </div>
-        <p className="text-sm text-gray-600">
-          {description ??
-            "Choose a company and fill any additional details for this template."}
-        </p>
+    <div className="overflow-auto space-y-4">
+      {/* Header */}
+      <div className="flex items-center gap-2">
+        <AlertTriangle className="size-4 text-gray-400" />
+        <h3 className="text-lg font-semibold">
+          {step === "companySelect" && `Find your company`}
+          {step === "employerAssist" &&
+            `Let’s help your employer fill it out for you`}
+          {step === "assistDone" && `We’ll handle this for you`}
+          {step === "manualDetails" && `Enter your company’s details manually`}
+          {step === "generating" && `Preparing your Student MOA`}
+          {step === "done" && `Your Student MOA is ready`}
+        </h3>
       </div>
+      <p className="text-sm text-gray-600">
+        {step === "companySelect" &&
+          (description ?? "Search your company from our list.")}
+        {step === "employerAssist" &&
+          "We’ll reach out to your employer on your behalf so they can complete and sign your Student MOA."}
+        {step === "assistDone" &&
+          "We’ll reach out to your company and guide them through the signing process. You’ll be notified as soon as your employer has approved your Student MOA. You can track the status in your My Forms tab."}
+        {step === "manualDetails" &&
+          "Provide the company details so we can generate your MOA now."}
+        {step === "generating" &&
+          "We’re generating your PDF. The download will start automatically."}
+        {step === "done" &&
+          "Download started. You can also find the document under My Forms."}
+      </p>
 
-      <div className="space-y-3">
-        {/* Company */}
-        <FormDropdown
-          label="Company"
-          value={companyId}
-          options={companies.map((c) => ({ id: c.id, name: c.name }))}
-          setter={(v) => setCompanyId(String(v ?? ""))}
-        />
-
-        {/* Custom fields */}
-        {customDefs.length > 0 && (
-          <div className="grid grid-cols-1 gap-3">
-            {customDefs.map((def) => (
-              <FieldRenderer
-                key={def.key}
-                def={def}
-                value={custom[def.key] ?? ""}
-                onChange={(v) => setCustomField(def.key, v)}
-                error={errors[def.key]}
-              />
-            ))}
+      {/* STEP CONTENTS */}
+      {step === "companySelect" && (
+        <div className="space-y-3">
+          <FormDropdown
+            label="Company"
+            value={companyId}
+            options={companies.map((c) => ({ id: c.id, name: c.name }))}
+            setter={(v) => setCompanyId(String(v ?? ""))}
+          />
+          <div className="flex justify-between items-center pt-2">
+            <Button variant="outline" onClick={onCancel}>
+              Cancel
+            </Button>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-gray-500">
+                Can’t find your company?{" "}
+                <button
+                  className="underline"
+                  onClick={() => setStep("employerAssist")}
+                >
+                  Let’s help your employer fill it out for you
+                </button>
+              </span>
+              <Button onClick={handleCompanyNext}>Next</Button>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Footer */}
-      <div className="mt-5 flex justify-end gap-2">
-        <Button variant="outline" onClick={onCancel} disabled={isSubmitting}>
-          Cancel
-        </Button>
-        <Button onClick={handleGenerate} disabled={!canGenerate}>
-          {isSubmitting ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="size-4 animate-spin" />
-              Generating…
-            </span>
-          ) : (
-            "Generate"
+      {step === "employerAssist" && (
+        <div className="space-y-3">
+          <FormInput
+            label="Company Legal Name"
+            value={invite.legalName}
+            setter={(v) => setInviteField("legalName", v)}
+          />
+          {!!errors.legalName && (
+            <p className="text-xs text-red-600">{errors.legalName}</p>
           )}
-        </Button>
-      </div>
+
+          <FormInput
+            label="Contact Person"
+            value={invite.contactPerson}
+            setter={(v) => setInviteField("contactPerson", v)}
+          />
+          {!!errors.contactPerson && (
+            <p className="text-xs text-red-600">{errors.contactPerson}</p>
+          )}
+
+          <FormInput
+            label="Contact Number"
+            value={invite.contactNumber}
+            setter={(v) => setInviteField("contactNumber", v)}
+          />
+          {!!errors.contactNumber && (
+            <p className="text-xs text-red-600">{errors.contactNumber}</p>
+          )}
+
+          <FormInput
+            label="Contact Email"
+            value={invite.contactEmail}
+            setter={(v) => setInviteField("contactEmail", v)}
+          />
+          {!!errors.contactEmail && (
+            <p className="text-xs text-red-600">{errors.contactEmail}</p>
+          )}
+
+          <div className="flex justify-between items-center pt-2">
+            <Button variant="outline" onClick={() => setStep("companySelect")}>
+              Back
+            </Button>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-gray-500">
+                or{" "}
+                <button
+                  className="underline"
+                  onClick={() => setStep("manualDetails")}
+                >
+                  fill out details manually
+                </button>
+              </span>
+              <Button onClick={submitEmployerAssist} disabled={busy}>
+                {busy ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="size-4 animate-spin" /> Sending…
+                  </span>
+                ) : (
+                  "Submit"
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {step === "assistDone" && (
+        <div className="flex justify-end">
+          <Button onClick={onCancel}>Done</Button>
+        </div>
+      )}
+
+      {step === "manualDetails" && (
+        <div className="space-y-3">
+          <FormInput
+            label="Company Address"
+            value={manualCompany.companyAddress}
+            setter={(v) => setManualField("companyAddress", v)}
+          />
+          {!!errors.companyAddress && (
+            <p className="text-xs text-red-600">{errors.companyAddress}</p>
+          )}
+
+          <FormInput
+            label="Contact Position"
+            value={manualCompany.contactPosition}
+            setter={(v) => setManualField("contactPosition", v)}
+          />
+          {!!errors.contactPosition && (
+            <p className="text-xs text-red-600">{errors.contactPosition}</p>
+          )}
+
+          <FormDropdown
+            label="Company Type"
+            value={manualCompany.companyType}
+            options={[
+              { id: "private", name: "Private" },
+              { id: "government", name: "Government" },
+              { id: "ngo", name: "NGO" },
+              { id: "other", name: "Other" },
+            ]}
+            setter={(v) => setManualField("companyType", String(v ?? ""))}
+          />
+          {!!errors.companyType && (
+            <p className="text-xs text-red-600">{errors.companyType}</p>
+          )}
+
+          <div className="flex justify-between items-center pt-2">
+            <Button variant="outline" onClick={() => setStep("employerAssist")}>
+              Back
+            </Button>
+            <Button onClick={submitManualDetails} disabled={busy}>
+              {busy ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="size-4 animate-spin" /> Generating…
+                </span>
+              ) : (
+                "Next"
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {step === "generating" && (
+        <div className="flex items-center justify-between">
+          <span className="inline-flex items-center gap-2 text-sm">
+            <Loader2 className="size-4 animate-spin" />
+            We’re generating your PDF. The download will start automatically.
+          </span>
+          <Button variant="outline" onClick={onCancel}>
+            Close
+          </Button>
+        </div>
+      )}
+
+      {step === "done" && (
+        <div className="flex justify-end">
+          <Button onClick={onCancel}>Done</Button>
+        </div>
+      )}
     </div>
   );
 }
