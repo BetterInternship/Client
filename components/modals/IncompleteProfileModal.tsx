@@ -11,17 +11,16 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAnalyzeResume } from "@/hooks/use-register";
-import { useDbRefs } from "@/lib/db/use-refs";
 import ResumeUpload from "@/components/features/student/resume-parser/ResumeUpload";
-import { FormDropdown, FormInput } from "@/components/EditForm";
+import { FormInput } from "@/components/EditForm";
 import { UserService } from "@/lib/api/services";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { Stepper } from "../stepper/stepper";
 import { isProfileResume, isProfileBaseComplete } from "../../lib/profile";
 import { ModalHandle } from "@/hooks/use-modal";
+import { isValidPHNumber } from "@/lib/utils";
 
 /* ============================== Modal shell ============================== */
 
@@ -183,12 +182,16 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
         id: "base",
         title: "Basic details",
         icon: UserCheck,
-        canNext: () =>
-          !!profile.firstName &&
-          !!profile.lastName &&
-          !isUpdating &&
-          !!profile.phone &&
-          !!profile.degree,
+        canNext: () => {
+          const phoneValid = isValidPHNumber(profile.phone);
+          return (
+            !!profile.firstName &&
+            !!profile.lastName &&
+            !isUpdating &&
+            phoneValid &&
+            !!profile.degree
+          );
+        },
         component: <StepBasicIdentity value={profile} onChange={setProfile} />,
       });
     }
@@ -346,6 +349,10 @@ function StepBasicIdentity({
   value: ProfileDraft;
   onChange: (v: ProfileDraft) => void;
 }) {
+  const phoneInvalid = useMemo(
+    () => !!value.phone && !isValidPHNumber(value.phone),
+    [value.phone]
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -379,6 +386,11 @@ function StepBasicIdentity({
             value={value.phone}
             setter={(v) => onChange({ ...value, phone: v })}
           />
+          {phoneInvalid && (
+            <p className="text-xs text-destructive -mt-2">
+              Please enter a valid mobile number (e.g., 639XXXXXXXXX).
+            </p>
+          )}
         </div>
       </div>
 
