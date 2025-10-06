@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card";
 import {
   GroupableRadioDropdown
 } from "@/components/ui/dropdown";
+import { BooleanCheckIcon } from "@/components/ui/icons";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useProfile } from "@/hooks/use-employer-api";
@@ -26,6 +27,14 @@ import { useState } from "react";
 interface CreateJobPageProps {
   createJob: (job: Partial<Job>) => Promise<any>;
 }
+
+const StepCheckIndicator = ({ checked }: { checked: boolean }) => {
+  return (
+    <div className={checked ? "text-supportive" : ""}>
+      <BooleanCheckIcon checked={checked} />
+    </div>
+  );
+};
 
 const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
   const [creating, set_creating] = useState(false);
@@ -142,7 +151,10 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
             <div className="px-6 py-5 border-b border-gray-200">
               <div className="flex flex-col gap-4">
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-lg font-bold text-gray-800 mb-2 break-words overflow-wrap-anywhere leading-tight">
+                  <h2 className="flex flex-row text-lg font-bold text-gray-800 mb-2 break-words overflow-wrap-anywhere leading-tight">
+                    <StepCheckIndicator
+                        checked={formData.title !== ""}
+                      />
                     Job Title/Role <span className="text-destructive text-sm">*</span>
                   </h2>
                   <Input
@@ -179,7 +191,10 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                 <div>
                   {/* Credit Boxes */}
                   <div>
-                    <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
+                    <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
+                      <StepCheckIndicator
+                        checked={false}
+                      />
                       Are you hiring credited and/or voluntary interns? <span className="text-destructive">*</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
@@ -217,7 +232,10 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                   </div>
                   
                   {/*Location Input */}
-                    <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
+                    <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
+                      <StepCheckIndicator
+                        checked={formData.location !== ""}
+                      />
                       Job Location <span className="text-destructive text-sm">*</span>
                     </div>
                     <div className="w-full mb-6">
@@ -256,7 +274,10 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                           </div>
                         </DropdownGroup> */}
                         <div>
-                          <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
+                          <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
+                            <StepCheckIndicator
+                              checked={formData.type !== undefined}
+                            />
                             Work Load <span className="text-destructive">*</span>
                           </div>
                           <FormCheckBoxGroup 
@@ -283,7 +304,10 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                         </div>
 
                         <div>
-                          <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
+                          <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
+                            <StepCheckIndicator
+                              checked={formData.mode !== undefined}
+                            />
                             Work Mode <span className="text-destructive">*</span>
                           </div>
                           <FormCheckBoxGroup 
@@ -311,7 +335,10 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                       </div>
                       
                       <div className="mb-6">
-                        <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
+                        <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
+                          <StepCheckIndicator
+                            checked={formData.allowance !== undefined}
+                          />
                           Is the internship paid? <span className="text-destructive">*</span>
                         </div>
                           <Card
@@ -363,7 +390,10 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                         </div>
                         </Card>
                           
-                        <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
+                        <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
+                          <StepCheckIndicator
+                            checked={formData.is_year_round !== undefined}
+                          />
                           When are you accepting interns for this listing? <span className="text-destructive">*</span>
                         </div>
                         <Card
@@ -387,7 +417,10 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                         {formData.is_year_round === false && (
                           <div className="flex flex-row gap-4 m-4 border-l-2 border-gray-300 pl-4">
                             <div className="space-y-2">
-                              <Label className="text-sm font-medium text-gray-700">
+                              <Label className="flex flex-row text-sm font-medium text-gray-700">
+                                  <StepCheckIndicator
+                                    checked={formData.start_date !== undefined}
+                                  />
                                   Start Date{" "}
                                   <span className="text-destructive">*</span>
                               </Label>
