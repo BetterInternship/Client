@@ -1,3 +1,19 @@
+export const formatTimestampDate = (timestamp?: number | null) => {
+  if (!timestamp) return "-";
+  const date = new Date(timestamp);
+  return (
+    date.toLocaleDateString("en-PH", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }) +
+    ", " +
+    String(date.getHours()).padStart(2, "0") +
+    ":" +
+    String(date.getMinutes()).padStart(2, "0")
+  );
+};
+
 /**
  * Date formatter.
  *

@@ -1,4 +1,4 @@
-import { Database as _Database, Tables } from "@betterinternship/schema.base";
+import { Database as _Database, Json, Tables } from "@betterinternship/schema.base";
 
 export type Database = _Database;
 export type College = Tables<"ref_colleges">;
@@ -55,11 +55,21 @@ export interface SavedJob extends Partial<Tables<"saved_jobs">> {
   jobs?: Partial<Job>;
 }
 
+// Preferences set by student accounts for which listings they'd prefer
 export type InternshipPreferences = {
   job_setup_ids?: string[];
   internship_type?: "credited" | "voluntary";
   job_category_ids?: string[];
   job_commitment_ids?: string[];
-  expected_start_date?: number | null; // ms timestamp (from your JSON)
+  expected_start_date?: number | null;
   expected_duration_hours?: number | null;
+};
+
+// These are preferences set by the employer for which applicants jobs are tailored for
+export type ListingInternshipPreferences = {
+  internship_types?: ("credited" | "voluntary")[];
+  job_setup_ids?: string[];
+  job_category_ids?: string[];
+  job_commitment_ids?: string[];
+  expected_start_date?: number | null; // If this is null, it means as soon as possible
 };

@@ -13,7 +13,7 @@ import { useProfileData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { PublicUser } from "@/lib/db/db.types";
+import { InternshipPreferences, PublicUser } from "@/lib/db/db.types";
 import { ErrorLabel, LabeledProperty } from "@/components/ui/labels";
 import { UserService } from "@/lib/api/services";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
@@ -341,25 +341,26 @@ export default function ProfilePage() {
 
 function HeaderLine({ profile }: { profile: PublicUser }) {
   const { to_university_name } = useDbRefs();
+  const internshipPreferences = profile.internship_preferences;
 
   const degree = profile.degree ?? null;
   const uni = profile.university
     ? to_university_name(profile.university)
     : null;
   const expectedGraduationDate = profile.expected_graduation_date ?? null;
-
   const chips: string[] = [];
-  if (profile.expected_start_date || profile.expected_end_date) {
-    const start = profile.expected_start_date ?? "—";
-    const end = profile.expected_end_date ?? "—";
-    chips.push(`Availability: ${start} → ${end}`);
+
+  if (internshipPreferences?.expected_start_date) {
+    const start = internshipPreferences.expected_start_date;
+    chips.push(`Availability: ${start ? "from " + start : "—"}`);
   }
-  if (profile.job_mode_ids?.length)
-    chips.push(`Modes: ${profile.job_mode_ids.length}`);
-  if (profile.job_type_ids?.length)
-    chips.push(`Types: ${profile.job_type_ids.length}`);
-  if (profile.job_category_ids?.length)
-    chips.push(`Roles: ${profile.job_category_ids.length}`);
+
+  if (internshipPreferences?.job_setup_ids?.length)
+    chips.push(`Setups: ${internshipPreferences?.job_setup_ids.length}`);
+  if (internshipPreferences?.job_commitment_ids?.length)
+    chips.push(`Commitment: ${internshipPreferences?.job_commitment_ids?.length}`);
+  if (internshipPreferences?.job_category_ids?.length)
+    chips.push(`Roles: ${internshipPreferences?.job_category_ids?.length}`);
 
   return (
     <div className="flex flex-col gap-1">
@@ -393,6 +394,7 @@ function ProfileReadOnlyTabs({
   profile: PublicUser;
   onEdit: () => void;
 }) {
+  const internshipPreferences = profile.internship_preferences;
   const { to_university_name, job_modes, job_types, job_categories } =
     useDbRefs();
 
@@ -488,11 +490,6 @@ function ProfileReadOnlyTabs({
               // icon={<LinkedinLogo />}
               link={profile.linkedin_link}
             />
-            {/* <ProfileLinkBadge
-              title="Calendar"
-              icon={<CalendarDays />}
-              link={profile.calendar_link}
-            /> */}
           </div>
         </section>
 
@@ -518,43 +515,22 @@ function ProfileReadOnlyTabs({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-2">
             <LabeledProperty
               label="Type of internship"
-              value={
-                profile.internship_preferences?.internship_type
-                  ? profile.internship_preferences.internship_type ===
-                    "credited"
-                    ? "Credited"
-                    : "Voluntary"
-                  : profile.taking_for_credit != null
-                  ? profile.taking_for_credit
-                    ? "Credited"
-                    : "Voluntary"
-                  : "—"
-              }
+              value={internshipPreferences?.internship_type ?? "—"}
             />
-            {/* TODO: Remove this when we removed the columns */}
             <LabeledProperty
               label="Ideal internship start"
               value={
-                toYYYYMM(
-                  profile.internship_preferences?.expected_start_date ??
-                    profile.expected_start_date
-                ) ?? "—"
+                internshipPreferences?.expected_start_date ? toYYYYMM(
+                  internshipPreferences.expected_start_date
+                ) : "—"
               }
             />
-            {/* TODO: Remove this when we removed the columns */}
-            {(profile.internship_preferences?.internship_type
-              ? profile.internship_preferences.internship_type === "credited"
-              : profile.taking_for_credit === true) && (
+            {internshipPreferences?.internship_type === "credited" && (
               <LabeledProperty
                 label="Expected Duration (hours)"
                 value={
-                  typeof profile.expected_duration_hours === "number"
-                    ? String(profile.expected_duration_hours)
-                    : typeof profile.internship_preferences
-                        ?.expected_duration_hours === "number"
-                    ? String(
-                        profile.internship_preferences.expected_duration_hours
-                      )
+                  typeof internshipPreferences?.expected_duration_hours === "number"
+                    ? String(internshipPreferences?.expected_duration_hours)
                     : "—"
                 }
               />
@@ -575,9 +551,7 @@ function ProfileReadOnlyTabs({
                 Work Modes
               </div>
               {(() => {
-                const ids = (profile.internship_preferences?.job_setup_ids ??
-                  profile.job_mode_ids ??
-                  []) as (string | number)[];
+                const ids = (internshipPreferences?.job_setup_ids ?? []) as (string | number)[];
                 const items = ids
                   .map((id) => {
                     const m = job_modes.find(
@@ -607,7 +581,7 @@ function ProfileReadOnlyTabs({
               {(() => {
                 const ids = (profile.internship_preferences
                   ?.job_commitment_ids ??
-                  profile.job_type_ids ??
+                  internshipPreferences?.job_commitment_ids ??
                   []) as (string | number)[];
                 const items = ids
                   .map((id) => {
@@ -636,9 +610,7 @@ function ProfileReadOnlyTabs({
                 Positions / Categories
               </div>
               {(() => {
-                const ids = (profile.internship_preferences?.job_category_ids ??
-                  profile.job_category_ids ??
-                  []) as string[];
+                const ids = (internshipPreferences?.job_category_ids ?? []) as string[];
                 const items = ids
                   .map((id) => {
                     const c = job_categories.find((x) => x.id === id);
@@ -702,13 +674,7 @@ const ProfileEditor = forwardRef<
     formErrors.university ||
     formErrors.degree
   );
-  const hasPrefsErrors = !!(
-    formErrors.expected_start_date ||
-    formErrors.expected_duration_hours ||
-    formErrors.job_mode_ids ||
-    formErrors.job_type_ids ||
-    formErrors.job_category_ids
-  );
+  const hasPrefsErrors = !!formErrors.internship_preferences;
   const hasCalendarErrors = !!formErrors.calendar_link;
 
   useImperativeHandle(ref, () => ({
@@ -722,43 +688,12 @@ const ProfileEditor = forwardRef<
         return false;
       }
 
-      const prefs = {
-        internship_type: formData.taking_for_credit ? "credited" : "voluntary",
-        expected_start_date:
-          ymToFirstDayTs(formData.expected_start_date) ?? null,
-        expected_duration_hours:
-          formData.taking_for_credit === true
-            ? typeof formData.expected_duration_hours === "number"
-              ? formData.expected_duration_hours
-              : null
-            : null,
-        job_setup_ids: toStrArr(formData.job_mode_ids),
-        job_commitment_ids: toStrArr(formData.job_type_ids),
-        job_category_ids: toStrArr(formData.job_category_ids),
-      } as const;
-
       const updatedProfile = {
         ...cleanFormData(),
         portfolio_link: toURL(formData.portfolio_link)?.toString(),
         github_link: toURL(formData.github_link)?.toString(),
         linkedin_link: toURL(formData.linkedin_link)?.toString(),
         calendar_link: toURL(formData.calendar_link)?.toString(),
-        taking_for_credit:
-          typeof formData.taking_for_credit === "boolean"
-            ? formData.taking_for_credit
-            : false,
-        expected_start_date: formData.expected_start_date
-          ? /^\d{4}-\d{2}$/.test(formData.expected_start_date)
-            ? `${formData.expected_start_date}-01` // store as YYYY-MM-DD
-            : formData.expected_start_date // already a full date
-          : null,
-        expected_duration_hours:
-          typeof formData.expected_duration_hours === "number"
-            ? formData.expected_duration_hours
-            : null,
-        // job_mode_ids: formData.job_mode_ids ?? null,
-        // job_type_ids: formData.job_type_ids ?? null,
-        // job_category_ids: formData.job_category_ids ?? null,
         internship_preferences: {
           ...(formData.internship_preferences ?? {}),
           job_setup_ids: (
@@ -778,8 +713,6 @@ const ProfileEditor = forwardRef<
   }));
 
   const [universityOptions, setUniversityOptions] = useState(universities);
-  const [collegeOptions, setCollegeOptions] = useState(colleges);
-  const [departmentOptions, setDepartmentOptions] = useState(departments);
   const [jobModeOptions, setJobModeOptions] = useState(job_modes);
   const [jobTypeOptions, setJobTypeOptions] = useState(job_types);
   const [jobCategoryOptions, setJobCategoryOptions] = useState(job_categories);
@@ -787,30 +720,6 @@ const ProfileEditor = forwardRef<
     { value: "credit", label: "Credited" },
     { value: "voluntary", label: "Voluntary" },
   ];
-
-  const creditValue =
-    formData.internship_preferences?.internship_type == null
-      ? null
-      : formData.internship_preferences?.internship_type === "credited"
-      ? "credit"
-      : "voluntary";
-
-  const handleCreditChange = (v: string | null) => {
-    setField("internship_preferences", {
-      ...(formData.internship_preferences ?? {}),
-      internship_type:
-        v === "credit" ? "credited" : v === "voluntary" ? "voluntary" : null,
-    });
-  };
-
-  const validIdsFromTree = useMemo(() => {
-    const s = new Set<string>();
-    POSITION_TREE.forEach((p) => {
-      if (!p.children?.length) s.add(p.value);
-      p.children?.forEach((c) => s.add(c.value));
-    });
-    return s;
-  }, []);
 
   useEffect(() => {
     setUniversityOptions(universities);
@@ -867,47 +776,45 @@ const ProfileEditor = forwardRef<
         !universityOptions.some((u) => u.id === id) &&
         "Select a valid university."
     );
-    addValidator("expected_start_date", (v?: string | null) => {
-      if (!v) return "Please select an expected start month.";
-      const ym = /^\d{4}-\d{2}$/;
-      const ymd = /^\d{4}-\d{2}-\d{2}$/;
-      return ym.test(v) || ymd.test(v)
-        ? ""
-        : "Invalid date format (use YYYY-MM).";
-    });
-    addValidator("expected_duration_hours", (n?: number | null) => {
-      if (formData.taking_for_credit === false) return "";
-      if (n == null) return "Please enter expected duration.";
-      return Number.isFinite(n as number) &&
-        (n as number) >= 0 &&
-        (n as number) <= 2000
-        ? ""
-        : "Enter a valid number of hours (0-2000).";
-    });
-    addValidator("job_mode_ids", (vals?: number[]) => {
-      if (!vals) return "";
-      const valid = new Set(jobModeOptions.map((o) => o.id));
-      return vals.every((v) => valid.has(v))
-        ? ""
-        : "Invalid work mode selected.";
-    });
-    addValidator("job_type_ids", (vals?: number[]) => {
-      if (!vals) return "";
-      const valid = new Set(jobTypeOptions.map((o) => o.id));
-      return vals.every((v) => valid.has(v))
-        ? ""
-        : "Invalid workload type selected.";
-    });
-    addValidator("job_category_ids", (vals?: string[]) => {
-      if (!vals) return "";
-      return vals.every((v) => validIdsFromTree.has(v))
-        ? ""
-        : "Invalid job category selected.";
+    addValidator("internship_preferences", (i: InternshipPreferences) => {
+
+      // Specify start month
+      if (!i.expected_start_date)
+        return "Please select an expected start month.";
+
+      // If credited, check if number of hours are valid
+      if (i?.internship_type !== "credited") {
+        if (!i.expected_duration_hours)
+          return "Please enter expected duration.";
+        if (!Number.isFinite(i.expected_duration_hours as number) || i.expected_duration_hours < 100 || i.expected_duration_hours > 2000)
+          return "Enter a valid number of hours (0-2000)"
+      }
+
+      // If job setup ids were specified, check that all are valid
+      if (i.job_setup_ids) {
+        const valid = new Set(jobModeOptions.map((o) => o.id.toString()));
+        if (!i.job_setup_ids.every((v) => valid.has(v)))
+          return "Invalid work setup selected.";
+      }
+
+      // If job commitment ids were specified, check that all are valid
+      if (i.job_commitment_ids) {
+        const valid = new Set(jobTypeOptions.map((o) => o.id.toString()));
+        if (!i.job_commitment_ids.every((v) => valid.has(v)))
+          return "Invalid work commitment selected.";
+      }
+
+      // If job categories selected, check that they're valid
+      if (i.job_category_ids) {
+        const valid = new Set(jobCategoryOptions.map((o) => o.id.toString()));
+        if (!i.job_category_ids.every((v) => valid.has(v)))
+          return "Invalid work category selected.";
+      }
+
+      return "";
     });
   }, [
     universityOptions,
-    collegeOptions,
-    departmentOptions,
     jobModeOptions,
     jobTypeOptions,
   ]);
@@ -935,32 +842,18 @@ const ProfileEditor = forwardRef<
     if (didInitNormalize.current) return;
     didInitNormalize.current = true;
 
-    const current = formData.expected_start_date;
-    let next = toYYYYMM(current);
+    const current = formData.internship_preferences?.expected_start_date;
+    let next = current;
 
     // If you want a default only when credited:
-    if (!next) {
-      next = monthFromMs(getNearestMonthTimestamp());
-    }
-
+    if (!next) next = getNearestMonthTimestamp();
     if (next && next !== current) {
-      setField("expected_start_date", next);
+      setField("internship_preferences", {
+        ...formData.internship_preferences,
+        expected_start_date: next,
+      });
     }
   }, []);
-
-  const prefs = formData.internship_preferences ?? {
-    job_setup_ids: [],
-    job_commitment_ids: [],
-    job_category_ids: [],
-  };
-
-  // helper for nested updates
-  const setPrefsField = <K extends keyof typeof prefs>(key: K, val: any) => {
-    setField("internship_preferences", {
-      ...prefs,
-      [key]: Array.isArray(val) ? val : val, // we'll map to strings in setter below
-    });
-  };
 
   return (
     <OutsideTabs
@@ -1146,10 +1039,7 @@ const ProfileEditor = forwardRef<
               value={
                 formData.internship_preferences?.internship_type === "credited"
                   ? "credit"
-                  : formData.internship_preferences?.internship_type ===
-                    "voluntary"
-                  ? "voluntary"
-                  : null
+                  : "voluntary"
               }
               onChange={(v) =>
                 setField("internship_preferences", {
@@ -1165,8 +1055,7 @@ const ProfileEditor = forwardRef<
             className="w-full"
             label="Ideal internship start"
             date={
-              formData.internship_preferences?.expected_start_date ??
-              ymToFirstDayTs(formData.expected_start_date)
+              formData.internship_preferences?.expected_start_date ?? 0
             }
             setter={(ms?: number) => {
               setField("internship_preferences", {
@@ -1180,7 +1069,7 @@ const ProfileEditor = forwardRef<
             placeholder="Select month"
           />
 
-          <ErrorLabel value={formErrors.expected_start_date} />
+          <ErrorLabel value={formErrors.internship_preferences} />
 
           {/* TODO: CHECK LEGACY CODE THEN INTERNSHIP PREF */}
           {formData.internship_preferences?.internship_type === "credited" && (
@@ -1204,7 +1093,6 @@ const ProfileEditor = forwardRef<
                 }
                 required={false}
               />
-              <ErrorLabel value={formErrors.expected_duration_hours} />
             </div>
           )}
         </section>
@@ -1249,7 +1137,6 @@ const ProfileEditor = forwardRef<
               }
               placeholder="Select one or more"
             />
-            <ErrorLabel value={formErrors.job_type_ids} />
           </div>
 
           <div className="mt-2">
@@ -1265,7 +1152,6 @@ const ProfileEditor = forwardRef<
               }
               placeholder="Select one or more"
             />
-            <ErrorLabel value={formErrors.job_category_ids} />
           </div>
         </section>
       </OutsideTabPanel>
@@ -1416,7 +1302,7 @@ function computeProfileScore(p?: Partial<PublicUser>): {
       u.internship_preferences?.job_commitment_ids?.length ||
       u.internship_preferences?.job_setup_ids?.length
     ),
-    dates: !!(u.expected_start_date || u.expected_end_date),
+    dates: !!(u.internship_preferences?.expected_start_date),
     resume: !!u.resume,
   };
 
@@ -1499,4 +1385,3 @@ function toYYYYMM(input?: string | number | null): string | null {
   return null;
 }
 
-const toStrArr = (a?: unknown[] | null) => (a ?? []).map(String);

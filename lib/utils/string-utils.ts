@@ -4,6 +4,9 @@ import { twMerge } from "tailwind-merge";
 export const generateMemberId = () =>
   `MEM-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
 
+export const titleCase = (s: string) => 
+  s.split(" ").map(s => `${s.charAt(0).toUpperCase()}${s.slice(1)}`).join(" ")
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
