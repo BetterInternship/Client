@@ -106,7 +106,7 @@ const SearchInput = ({
         onClick={() => onToggleMoa(!moaOnly)}
         className={cn(
           "absolute right-1 top-1/2 -translate-y-1/2",
-          "inline-flex items-center gap-1.5 h-7 px-2 rounded-md border text-xs",
+          "inline-flex items-center gap-1.5 h-7 px-2 rounded-[0.33em] border text-xs",
           "transition-colors",
           moaOnly
             ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
