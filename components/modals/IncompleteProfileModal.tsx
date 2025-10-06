@@ -95,6 +95,8 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     degree: existingProfile.data?.degree ?? "",
   });
 
+  const [autoApply, setAutoApply] = useState<boolean | null>(true);
+
   // parsing/upload states
   const [file, setFile] = useState<File | null>(null);
   const [isParsing, setIsParsing] = useState(false);
@@ -201,8 +203,8 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
         id: "auto-apply",
         title: "Auto-apply settings",
         icon: Repeat,
-        canNext: () => !isUpdating,
-        component: <StepAutoApply />,
+        canNext: () => autoApply !== null && !isUpdating,
+        component: <StepAutoApply value={autoApply} onChange={setAutoApply} />,
       });
     }
 
@@ -215,6 +217,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     existingProfile.data,
     profile,
     isUpdating,
+    autoApply,
   ]);
 
   useEffect(() => {
@@ -253,15 +256,18 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     }
 
     if (current.id === "auto-apply") {
+      if (autoApply === null) return;
+
       setIsUpdating(true);
-      UserService.updateMyProfile({ acknowledged_auto_apply: true }).then(
-        () => {
-          setIsUpdating(false);
-          const isLast = step + 1 >= steps.length;
-          if (isLast) setShowComplete(true);
-          else setStep(step + 1);
-        }
-      );
+      UserService.updateMyProfile({
+        acknowledged_auto_apply: true,
+        apply_for_me: autoApply,
+      }).then(() => {
+        setIsUpdating(false);
+        const isLast = step + 1 >= steps.length;
+        if (isLast) setShowComplete(true);
+        else setStep(step + 1);
+      });
       return;
     }
   };
@@ -417,25 +423,44 @@ function StepBasicIdentity({
 
 /* ---------------------- Step: Auto-Apply Acknowledge ---------------------- */
 
-function StepAutoApply() {
+function StepAutoApply({
+  value,
+  onChange,
+}: {
+  value: boolean | null;
+  onChange: (v: boolean) => void;
+}) {
   return (
     <div className="flex flex-col gap-4">
       <Card className="border-emerald-300/60 bg-emerald-50 dark:bg-emerald-900/20">
-        <div className="flex flex-row items-start gap-3">
-          <div className="rounded-full p-2 bg-emerald-100 dark:bg-emerald-800/60">
-            <Sparkles className="h-4 w-4 text-emerald-700 dark:text-emerald-200" />
+        <div className="p-3">
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold">Turn on Auto-Apply?</h3>
+            <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] border border-emerald-300 bg-emerald-100/70">
+              Recommended
+            </span>
           </div>
 
-          <div className="flex-1 space-y-1">
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold leading-none">Auto-Apply is ON</h3>
-            </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            We’ll auto-submit matching roles using your saved details.{" "}
+          </p>
+
+          {/* Native select to avoid extra deps; replace with shadcn Select if you prefer */}
+          <div className="mt-3">
+            <label className="text-sm block mb-1">Auto-Apply preference</label>
+            <select
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+              value={value === null ? "" : value ? "yes" : "no"}
+              onChange={(e) => onChange(e.target.value === "yes")}
+            >
+              <option value="yes">Yes, enable</option>
+              <option value="no">No, not now</option>
+            </select>
+            <p className="text-xs text-muted-foreground mt-2">
+              You can change this anytime in your profile.
+            </p>
           </div>
         </div>
-        <p className="text-sm text-muted-foreground p-1 mt-2 text-justify">
-          We’ll automatically submit applications for matching roles using your
-          saved details. You can turn this off anytime in your profile.
-        </p>
       </Card>
     </div>
   );
