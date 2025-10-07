@@ -27,6 +27,8 @@ import { Divider } from "../ui/divider";
 import { DropdownGroup } from "../ui/dropdown";
 import { JobBooleanLabel, JobTitleLabel, Property } from "../ui/labels";
 import { Toggle } from "../ui/toggle";
+import { FormDatePicker, FormRadio } from "../EditForm";
+import { Label } from "../ui/label";
 
 export const JobHead = ({
   title,
@@ -127,19 +129,19 @@ export const JobApplicationRequirements = ({ job }: { job: Job }) => {
           offValue="Resume"
         />
         <BoolBadge
-          state={job.require_github}
+          state={job.internship_preferences?.require_github}
           onScheme="primary"
           onValue="Github Profile"
           offValue="Github Profile"
         />
         <BoolBadge
-          state={job.require_portfolio}
+          state={job.internship_preferences?.require_portfolio}
           onScheme="primary"
           onValue="Portfolio"
           offValue="Portfolio"
         />
         <BoolBadge
-          state={job.require_cover_letter}
+          state={job.internship_preferences?.require_cover_letter}
           onScheme="primary"
           onValue="Cover Letter"
           offValue="Cover Letter"
@@ -171,11 +173,11 @@ export const JobBadges = ({
           Unlisted
         </Badge>
       )}
-      {!excludes.includes("type") && <JobType type={job.type} />}
+      {!excludes.includes("type") && <JobType type={job.internship_preferences?.job_commitment_ids?.[0]} />}
       {!excludes.includes("salary") && (
         <JobSalary salary={job.salary} salary_freq={job.salary_freq} />
       )}
-      {!excludes.includes("mode") && <JobMode mode={job.mode} />}
+      {!excludes.includes("mode") && <JobMode mode={job.internship_preferences?.job_setup_ids?.[0]} />}
     </div>
   );
 };
@@ -375,18 +377,11 @@ export const EmployerJobDetails = ({
         description: formData.description ?? "",
         requirements: formData.requirements ?? "",
         location: formData.location ?? "",
-        mode: formData.mode ?? undefined,
-        type: formData.type ?? undefined,
         allowance: formData.allowance ?? undefined,
         salary: formData.salary ?? null,
         salary_freq: formData.salary_freq ?? undefined,
-        require_github: formData.require_github,
-        require_portfolio: formData.require_portfolio,
-        require_cover_letter: formData.require_cover_letter,
         is_unlisted: formData.is_unlisted,
-        start_date: formData.start_date,
-        end_date: formData.end_date,
-        is_year_round: formData.is_year_round,
+        internship_preferences: formData.internship_preferences ?? {},
       };
 
       update_job(edited_job.id ?? "", edited_job).then(
@@ -439,6 +434,8 @@ export const EmployerJobDetails = ({
           </div>
 
           {/* Mode */}
+          {
+            formData.internship_preferences?.job_setup_ids?.[0] && 
           <div className="flex flex-col items-start gap-3">
             <label className="flex items-center text-sm font-semibold text-gray-700">
               <Monitor className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
@@ -447,30 +444,40 @@ export const EmployerJobDetails = ({
             <EditableGroupableRadioDropdown
               is_editing={is_editing}
               name={"job_mode"}
-              value={formData.mode}
-              setter={fieldSetter("mode")}
+              value={formData.internship_preferences?.job_setup_ids?.[0]}
+              setter={(v) => setField("internship_preferences", {
+                ...formData.internship_preferences,
+                job_setup_ids: [v],
+              })}
               options={job_modes}
             >
               <Property />
             </EditableGroupableRadioDropdown>
           </div>
+          }
 
           {/* Work Schedule */}
-          <div className="flex flex-col items-start gap-3 max-w-prose">
-            <label className="flex items-center text-sm font-semibold text-gray-700">
-              <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-              Work Load:
-            </label>
-            <EditableGroupableRadioDropdown
-              is_editing={is_editing}
-              value={formData.type}
-              setter={fieldSetter("type")}
-              name={"job_type"}
-              options={job_types}
-            >
-              <Property />
-            </EditableGroupableRadioDropdown>
-          </div>
+          {
+            formData.internship_preferences?.job_commitment_ids?.[0] && 
+            <div className="flex flex-col items-start gap-3 max-w-prose">
+              <label className="flex items-center text-sm font-semibold text-gray-700">
+                <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                Work Load:
+              </label>
+              <EditableGroupableRadioDropdown
+                is_editing={is_editing}
+                value={formData.internship_preferences?.job_commitment_ids?.[0]}
+                setter={(v) => setField("internship_preferences", {
+                  ...formData.internship_preferences,
+                  job_commitment_ids: [v],
+                })}
+                name={"job_type"}
+                options={job_types}
+              >
+                <Property />
+              </EditableGroupableRadioDropdown>
+            </div>
+          }
 
           {/* Salary Section */}
           {is_editing ? (
@@ -572,60 +579,44 @@ export const EmployerJobDetails = ({
               {/* Year Round */}
               <div className="flex flex-col space-y-2 border border-gray-200 rounded-md p-4">
                 <div className="flex items-center space-x-2">
-                  <EditableCheckbox
-                    is_editing={is_editing}
-                    value={formData.is_year_round ?? false}
-                    setter={fieldSetter("is_year_round")}
-                  >
-                    <JobBooleanLabel />
-                  </EditableCheckbox>
+                  <FormRadio
+                    required={true}
+                    options = {[
+                      {
+                        value: "true",
+                        label: "As soon as possible",
+                      },
+                      {
+                        value: "false",
+                        label: "I have a future date in mind",
+                      },
+                    ]}
+                    value ={!formData.internship_preferences?.expected_start_date + ""}
+                    setter={(v) => setField("internship_preferences", {
+                      ...formData.internship_preferences,
+                      expected_start_date: v === "true" ? 0 : undefined,
+                    })}
+                    />
                   <label className="flex items-center text-sm font-semibold text-gray-700">
-                    Year Round?
+                    When do you need applicants?
                   </label>
                 </div>
-                {/* Dates (when not year round) */}
-                {!formData.is_year_round && (
-                  <>
-                    <br />
-                    <div className="col-span-1 md:col-span-2 lg:col-span-1">
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-sm font-medium text-gray-700 mb-1 block">
-                            Start Date
-                          </label>
-                          <EditableDatePicker
-                            is_editing={is_editing}
-                            value={
-                              formData.start_date
-                                ? new Date(formData.start_date)
-                                : new Date()
-                            }
-                            // @ts-ignore
-                            setter={fieldSetter("start_date")}
-                          >
-                            <Property />
-                          </EditableDatePicker>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-700 mb-1 block">
-                            End Date
-                          </label>
-                          <EditableDatePicker
-                            is_editing={is_editing}
-                            value={
-                              formData.end_date
-                                ? new Date(formData.end_date)
-                                : new Date()
-                            }
-                            // @ts-ignore
-                            setter={fieldSetter("end_date")}
-                          >
-                            <Property />
-                          </EditableDatePicker>
-                        </div>
-                      </div>
+                {formData.internship_preferences?.expected_start_date !== 0 && (
+                  <div className="flex flex-row gap-4 m-4 border-l-2 border-gray-300 pl-4">
+                    <div className="space-y-2">
+                      <Label className="flex flex-row text-sm font-medium text-gray-700">
+                          Start Date{" "}
+                          <span className="text-destructive">*</span>
+                      </Label>
+                      <FormDatePicker
+                        date={formData.internship_preferences?.expected_start_date ?? undefined}
+                        setter={(v) => setField("internship_preferences", {
+                          ...formData.internship_preferences,
+                          expected_start_date: v,
+                        })}
+                      />
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             </div>
@@ -685,8 +676,11 @@ export const EmployerJobDetails = ({
             <div className="flex flex-row items-start gap-3 max-w-prose">
               <EditableCheckbox
                 is_editing={is_editing}
-                value={formData.require_github}
-                setter={fieldSetter("require_github")}
+                value={formData.internship_preferences?.require_github}
+                setter={(v) => setField("internship_preferences", {
+                  ...formData.internship_preferences,
+                  require_github: v
+                })}
               >
                 <JobBooleanLabel />
               </EditableCheckbox>
@@ -697,8 +691,11 @@ export const EmployerJobDetails = ({
             <div className="flex flex-row items-start gap-3 max-w-prose">
               <EditableCheckbox
                 is_editing={is_editing}
-                value={formData.require_portfolio}
-                setter={fieldSetter("require_portfolio")}
+                value={formData.internship_preferences?.require_portfolio}
+                setter={(v) => setField("internship_preferences", {
+                  ...formData.internship_preferences,
+                  require_portfolio: v
+                })}
               >
                 <JobBooleanLabel />
               </EditableCheckbox>
@@ -709,8 +706,11 @@ export const EmployerJobDetails = ({
             <div className="flex flex-row items-start gap-3 max-w-prose">
               <EditableCheckbox
                 is_editing={is_editing}
-                value={formData.require_cover_letter}
-                setter={fieldSetter("require_cover_letter")}
+                value={formData.internship_preferences?.require_cover_letter}
+                setter={(v) => setField("internship_preferences", {
+                  ...formData.internship_preferences,
+                  require_cover_letter: v
+                })}
               >
                 <JobBooleanLabel />
               </EditableCheckbox>
@@ -759,7 +759,7 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
               <label className="flex items-center text-sm text-gray-700">
                 Work Mode:
               </label>
-              <Property value={to_job_mode_name(job.mode)} />
+              <Property value={to_job_mode_name(job.internship_preferences?.job_setup_ids?.[0])} />
             </div>
           </div>
 
@@ -784,7 +784,7 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
               <label className="flex items-center text-sm text-gray-700">
                 Work Load:
               </label>
-              <Property value={to_job_type_name(job.type)} />
+              <Property value={to_job_type_name(job.internship_preferences?.job_commitment_ids?.[0])} />
             </div>
           </div>
         </DropdownGroup>
@@ -921,9 +921,9 @@ export function JobDetails({
   const hasGithub = !!user?.github_link?.trim();
   const hasPortfolio = !!user?.portfolio_link?.trim();
 
-  const needsCover = !!job.require_cover_letter;
-  const needsGithub = !!job.require_github;
-  const needsPortfolio = !!job.require_portfolio;
+  const needsCover = !!job.internship_preferences?.require_cover_letter;
+  const needsGithub = !!job.internship_preferences?.require_github;
+  const needsPortfolio = !!job.internship_preferences?.require_portfolio;
 
   const missingRequired =
     (needsGithub && !hasGithub) || (needsPortfolio && !hasPortfolio);

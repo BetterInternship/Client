@@ -31,9 +31,10 @@ export type PublicEmployerUser = Omit<
 >;
 export interface MoA extends Partial<Tables<"moa">> {}
 
-export interface Job extends Partial<Tables<"jobs">> {
+export interface Job extends Omit<Partial<Tables<"jobs">>, "internship_preferences"> {
   employer?: Partial<Employer>;
   employers?: Partial<Employer>;
+  internship_preferences?: ListingInternshipPreferences;
 }
 
 export interface UserApplication extends Partial<Tables<"applications">> {
@@ -68,8 +69,11 @@ export type InternshipPreferences = {
 // These are preferences set by the employer for which applicants jobs are tailored for
 export type ListingInternshipPreferences = {
   internship_types?: ("credited" | "voluntary")[];
-  job_setup_ids?: string[];
+  job_setup_ids?: number[];
   job_category_ids?: string[];
-  job_commitment_ids?: string[];
+  job_commitment_ids?: number[];
   expected_start_date?: number | null; // If this is null, it means as soon as possible
+  require_github?: boolean | null;
+  require_portfolio?: boolean | null;
+  require_cover_letter?: boolean | null;
 };

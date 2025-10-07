@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 04:14:35
- * @ Modified time: 2025-10-06 19:58:05
+ * @ Modified time: 2025-10-07 08:12:26
  * @ Description:
  *
  * What employers see when clicking on an applicant to view.
@@ -83,8 +83,8 @@ export const ApplicantModalContent = ({
               </h1>
               <p className="text-gray-600 text-xs sm:text-sm md:text-base leading-relaxed mb-2 sm:mb-3 md:mb-4">
                 Applying for {job?.title ?? "Sample Position"}{" "}
-                {job?.type !== undefined && job?.type !== null
-                  ? `• ${to_job_type_name(job.type)}`
+                {job?.internship_preferences?.job_commitment_ids?.[0] !== undefined
+                  ? `• ${to_job_type_name(job?.internship_preferences?.job_commitment_ids?.[0])}`
                   : ""}
               </p>
 
