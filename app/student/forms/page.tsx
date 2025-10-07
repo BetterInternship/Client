@@ -18,6 +18,7 @@ import {
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { UserService } from "@/lib/api/services";
+import { DropdownGroup } from "@/components/ui/dropdown";
 
 /* ──────────────────────────────────────────────
    Types
@@ -244,12 +245,15 @@ export default function FormsPage() {
               ...prev,
             ]);
 
-            window.open(fileUrl, "_blank");
+            window.open(fileUrl, "_blank", "noopener,noreferrer");
             closeGlobalModal("generate-form");
           } finally {
             setIsGeneratingGlobal(false);
           }
-        } } initialCustom={{}} onCancel={() => closeGlobalModal("generate-form")}      />,
+        } } initialCustom={{ 
+          internship_clock_in_time: "08:00",
+          internship_clock_out_time: "17:00",
+        }} onCancel={() => closeGlobalModal("generate-form")}      />,
       {
         allowBackdropClick: false,
         closeOnEsc: true,
@@ -865,12 +869,14 @@ function GenerateMoaFlowModal({
       {/* Step 2: Company Select */}
       {step === "companySelect" && (
         <div className="space-y-4 min-h-[35vh] overflow-auto">
+          <DropdownGroup>
           <FormDropdown
             label="Company"
             value={companyId}
             options={entities.map((c) => ({ id: c.id, name: c.display_name }))}
             setter={(v) => setCompanyId(String(v ?? ""))}
           />
+          </DropdownGroup>
 
           {/* toggles */}
           <div className="text-xs text-gray-500">
