@@ -828,7 +828,13 @@ function GenerateMoaFlowModal({
     try {
       setBusy(true);
       setStep("generating");
-      mockGenerateFormAPI();
+
+      const { fileUrl } = mockGenerateFormAPI();
+
+      if (fileUrl) {
+        window.open(fileUrl, "_blank", "noopener,noreferrer");
+      }
+
       setDoneKind("generated");
       setStep("done");
     } finally {
