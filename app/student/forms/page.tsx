@@ -116,18 +116,11 @@ async function mockGenerateFormAPI(payload: {
   custom: Values;
   profile: any;
 }): Promise<{ fileUrl: string }> {
-  // Simulate network + server processing time
-  const delay = Math.floor(1200 + Math.random() * 1200);
-  await new Promise((r) => setTimeout(r, delay));
-
   // In a real API, fileUrl would be returned by the server after rendering.
   const fileUrl =
     payload.templateId === "student-moa"
       ? "../YAUN_Student_MOA.pdf"
       : "../YAUN_Student_MOA.pdf"; // fallback demo file too
-
-  // Optional: simulate occasional server-side validation
-  // if (!payload.companyId) throw new Error("Missing company");
 
   return { fileUrl };
 }
@@ -201,50 +194,68 @@ export default function FormsPage() {
 
     openGlobalModal(
       "generate-form",
-      <GenerateMoaFlowModal
-        title="Student MOA"
-        description="Choose your company or invite them to complete and sign."
+      <GenerateFormModal
+        description={FORM_TEMPLATES.find((t) => t.id === formId)?.description}
         companies={COMPANIES}
-        customDefs={
-          FORM_TEMPLATES.find((t) => t.id === formId)?.customFields ?? []
-        }
-        initialCustom={(
-          FORM_TEMPLATES.find((t) => t.id === formId)?.customFields ?? []
-        ).reduce((acc, f) => ({ ...acc, [f.key]: "" }), {})}
+        customDefs={defs}
+        initialCompanyId=""
+        initialCustom={initialCustom}
         onCancel={() => closeGlobalModal("generate-form")}
-        onInviteEmployer={async (invite) => {
-          // TODO: call your API to send invite and create a “pending” record
-          // await EmployerService.invite(invite)
-        }}
-        onGeneratePdf={async (manualCompanyValues, formValues) => {
-          // Merge payload → call your generate API
-          const { fileUrl } = await mockGenerateFormAPI({
+        onGenerate={async (companyId, customValues) => {
+          // validate before submit
+          const errs = validateMany(defs, customValues);
+          if (Object.keys(errs).length > 0 || !companyId) return;
+
+          const payload = {
             templateId: formId,
-            companyId: "", // manual path; not using a companyId
-            autofill, // from your page state
-            custom: { ...formValues, ...manualCompanyValues },
+            companyId,
+            autofill,
+            custom: customValues,
             profile: profile.data,
-          });
+          };
 
-          // Add to Past Forms
-          setPastForms((prev) => [
-            {
-              id: `pf-${Math.random().toString(36).slice(2, 8)}`,
-              name: "Student MOA",
-              company: manualCompanyValues?.legalName || "Company",
-              createdAt: new Date().toISOString().slice(0, 10),
-              fileUrl,
-            },
-            ...prev,
-          ]);
+          try {
+            setIsGeneratingGlobal(true);
+            const { fileUrl } = await mockGenerateFormAPI(payload);
 
-          return { fileUrl };
+            const companyName =
+              COMPANIES.find((c) => c.id === companyId)?.name ?? "Company";
+            const formName =
+              FORM_TEMPLATES.find((f) => f.id === formId)?.name ?? "Form";
+
+            setPastForms((prev) => [
+              {
+                id: `pf-${Math.random().toString(36).slice(2, 8)}`,
+                name: formName,
+                company: companyName,
+                createdAt: new Date().toISOString().slice(0, 10),
+                fileUrl,
+              },
+              ...prev,
+            ]);
+
+            closeGlobalModal("generate-form");
+
+            if (fileUrl) {
+              const a = document.createElement("a");
+              a.href = fileUrl;
+              a.download = fileUrl.split("/").pop() || "document.pdf";
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+            }
+          } finally {
+            setIsGeneratingGlobal(false);
+          }
         }}
       />,
       {
         allowBackdropClick: false,
         closeOnEsc: true,
-        panelClassName: "max-w-none w-[98vw] sm:w-[min(96vw,900px)]",
+        panelClassName: "w-[98vw] sm:min-w-[50svw]",
+        title:
+          "Generate " +
+          (FORM_TEMPLATES.find((t) => t.id === formId)?.name ?? "Form"),
       }
     );
   }
@@ -255,12 +266,21 @@ export default function FormsPage() {
     requiredAutofillKeys.forEach((k) => {
       if (!autofill[k] || !autofill[k].trim())
         nextErrors[k] = "This field is required.";
+
+      if (k === "student_id" && autofill[k]?.trim()) {
+        nextErrors[k] = validateDlsuId(autofill[k]) ?? "";
+      }
     });
     setAutofillErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
+    if (Object.values(nextErrors).some(Boolean)) return;
 
     // nothing to save
     if (!isAutofillDirty) return;
+
+    if (!nextErrors.student_id) {
+      const msg = validateDlsuId(autofill.student_id ?? "");
+      if (msg) nextErrors.student_id = msg;
+    }
 
     try {
       setIsSavingAutofill(true);
@@ -277,12 +297,21 @@ export default function FormsPage() {
   }
 
   function setAutofillField(key: string, val: string) {
+    if (key === "student_id") {
+      val = normalizeDlsuId(val);
+    }
+
     setAutofill((prev) => ({ ...prev, [key]: val }));
+
     if (requiredAutofillKeys.includes(key as any)) {
-      setAutofillErrors((e) => ({
-        ...e,
-        [key]: val?.trim() ? "" : "This field is required.",
-      }));
+      setAutofillErrors((e) => {
+        const trimmed = val?.trim() ?? "";
+        let msg = trimmed ? "" : "This field is required.";
+        if (!msg && key === "student_id") {
+          msg = validateDlsuId(trimmed) ?? "";
+        }
+        return { ...e, [key]: msg };
+      });
     }
   }
 
@@ -362,11 +391,18 @@ export default function FormsPage() {
                   value={autofill.student_id ?? ""}
                   setter={(v) => setAutofillField("student_id", v)}
                   className="w-full"
-                  maxLength={64}
+                  maxLength={8}
+                  placeholder="e.g., 12141380"
                 />
                 {!!autofillErrors.student_id && (
                   <p className="text-xs text-red-600">
                     {autofillErrors.student_id}
+                  </p>
+                )}
+                {!autofillErrors.student_id && (
+                  <p className="text-xs text-gray-500">
+                    Format: 8 digits + optional letter (e.g., 24123456 or
+                    24123456A)
                   </p>
                 )}
               </div>
@@ -483,7 +519,7 @@ export default function FormsPage() {
                 {availableForms.map((f) => (
                   <li
                     key={f.id}
-                    className="rounded-lg border p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                    className="rounded-[0.33em] border p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
                   >
                     <div className="min-w-0">
                       <div className="font-medium truncate">{f.name}</div>
@@ -493,13 +529,25 @@ export default function FormsPage() {
                         </div>
                       )}
                     </div>
-                    <Button
-                      size="sm"
-                      className="w-full sm:w-auto"
-                      onClick={() => openGenerate(f.id)}
-                    >
-                      Generate
-                    </Button>
+                    <div className="sm:space-x-2">
+                      <Button
+                        size="sm"
+                        className="w-full sm:w-auto"
+                        variant="outline"
+                        asChild
+                      >
+                        <a href="Student_MOA.pdf" download>
+                          View Template
+                        </a>
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="w-full sm:w-auto"
+                        onClick={() => openGenerate(f.id)}
+                      >
+                        Generate
+                      </Button>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -561,358 +609,112 @@ export default function FormsPage() {
    Generate Modal
    ────────────────────────────────────────────── */
 
-function GenerateMoaFlowModal({
-  title,
+function GenerateFormModal({
   description,
   companies,
   customDefs,
+  initialCompanyId,
   initialCustom,
   onCancel,
-  onGeneratePdf,
-  onInviteEmployer,
+  onGenerate,
 }: {
-  title: string;
   description?: string;
   companies: { id: string; name: string }[];
   customDefs: FieldDef[];
+  initialCompanyId: string;
   initialCustom: Values;
   onCancel: () => void;
-  onGeneratePdf: (
-    manualCompanyValues: Values,
-    formValues: Values
-  ) => Promise<{ fileUrl: string }>;
-  onInviteEmployer: (invite: {
-    legalName: string;
-    contactPerson: string;
-    contactNumber: string;
-    contactEmail: string;
-  }) => Promise<void>;
+  onGenerate: (companyId: string, customValues: Values) => Promise<void> | void;
 }) {
-  type Step =
-    | "companySelect"
-    | "employerAssist"
-    | "manualDetails"
-    | "generating"
-    | "assistDone"
-    | "done";
-
-  const [step, setStep] = useState<Step>("companySelect");
-
-  // form values (already filled earlier in page; passed here)
-  const [formValues, setFormValues] = useState<Values>(initialCustom);
-
-  // Step 2: company select
-  const [companyId, setCompanyId] = useState<string>("");
-
-  // Step 3: employer assist fields (Flow A)
-  const [invite, setInvite] = useState({
-    legalName: "",
-    contactPerson: "",
-    contactNumber: "",
-    contactEmail: "",
-  });
-
-  // Flow B: manual company details
-  const [manualCompany, setManualCompany] = useState({
-    companyAddress: "",
-    contactPosition: "",
-    companyType: "",
-  });
-
+  const [companyId, setCompanyId] = useState<string>(initialCompanyId);
+  const [custom, setCustom] = useState<Values>(initialCustom);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [busy, setBusy] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const setInviteField = (k: keyof typeof invite, v: string) =>
-    setInvite((prev) => ({ ...prev, [k]: v }));
+  const hasErrors = Object.values(errors).some(Boolean);
+  const canGenerate =
+    !!companyId &&
+    isComplete(customDefs, custom) &&
+    !hasErrors &&
+    !isSubmitting;
 
-  const setManualField = (k: keyof typeof manualCompany, v: string) =>
-    setManualCompany((prev) => ({ ...prev, [k]: v }));
-
-  // Helpers
-  const require = (k: string, val: string) => {
-    if (!val?.trim()) return "This field is required.";
-    return "";
-  };
-
-  const validateInvite = () => {
-    const e: Record<string, string> = {};
-    e.legalName = require("legalName", invite.legalName);
-    e.contactPerson = require("contactPerson", invite.contactPerson);
-    e.contactNumber = require("contactNumber", invite.contactNumber);
-    e.contactEmail = /\S+@\S+\.\S+/.test(invite.contactEmail)
-      ? ""
-      : "Enter a valid email.";
-    Object.keys(e).forEach((k) => {
-      if (!e[k]) delete e[k];
-    });
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
-
-  const validateManual = () => {
-    const e: Record<string, string> = {};
-    e.companyAddress = require("companyAddress", manualCompany.companyAddress);
-    e.contactPosition = require("contactPosition", manualCompany.contactPosition);
-    e.companyType = require("companyType", manualCompany.companyType);
-    Object.keys(e).forEach((k) => {
-      if (!e[k]) delete e[k];
-    });
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
-
-  // Actions
-  const handleCompanyNext = () => {
-    if (companyId) {
-      // If company is found → continue to PDF with selected company (keeps your previous behavior)
-      // Option A: prefill + generate immediately OR show your template’s remaining fields screen.
-      // For now we branch into employer assist entry to keep new flow consistent:
-      setStep("employerAssist");
-    } else {
-      // nudge to assist path (user can still go manual inside next step)
-      setStep("employerAssist");
-    }
-  };
-
-  const submitEmployerAssist = async () => {
-    if (!validateInvite()) return;
-    try {
-      setBusy(true);
-      await onInviteEmployer(invite);
-      setStep("assistDone");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const submitManualDetails = async () => {
-    if (!validateManual()) return;
-    try {
-      setBusy(true);
-      setStep("generating");
-      const { fileUrl } = await onGeneratePdf(
-        {
-          companyAddress: manualCompany.companyAddress,
-          contactPosition: manualCompany.contactPosition,
-          companyType: manualCompany.companyType,
-        },
-        formValues
-      );
-      // auto download
-      if (fileUrl) {
-        const a = document.createElement("a");
-        a.href = fileUrl;
-        a.download = fileUrl.split("/").pop() || "document.pdf";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+  const setCustomField = (k: string, v: string) => {
+    setCustom((prev) => {
+      const next = { ...prev, [k]: v } as any;
+      const def = customDefs.find((d) => d.key === k);
+      if (def) {
+        const e = validateField(def, v ?? "", next);
+        setErrors((prevErr) => {
+          const ne = { ...prevErr };
+          if (e) ne[k] = e;
+          else delete ne[k];
+          return ne;
+        });
       }
-      setStep("done");
+      return next;
+    });
+  };
+
+  const handleGenerate = async () => {
+    if (!canGenerate) return;
+    try {
+      setIsSubmitting(true);
+      await onGenerate(companyId, custom);
     } finally {
-      setBusy(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="overflow-auto space-y-4">
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        <AlertTriangle className="size-4 text-gray-400" />
-        <h3 className="text-lg font-semibold">
-          {step === "companySelect" && `Find your company`}
-          {step === "employerAssist" &&
-            `Let’s help your employer fill it out for you`}
-          {step === "assistDone" && `We’ll handle this for you`}
-          {step === "manualDetails" && `Enter your company’s details manually`}
-          {step === "generating" && `Preparing your Student MOA`}
-          {step === "done" && `Your Student MOA is ready`}
-        </h3>
+    <div className="overflow-auto">
+      <div className="mb-3">
+        <p className="text-sm text-gray-600">
+          {description ??
+            "Choose a company and fill any additional details for this template."}
+        </p>
       </div>
-      <p className="text-sm text-gray-600">
-        {step === "companySelect" &&
-          (description ?? "Search your company from our list.")}
-        {step === "employerAssist" &&
-          "We’ll reach out to your employer on your behalf so they can complete and sign your Student MOA."}
-        {step === "assistDone" &&
-          "We’ll reach out to your company and guide them through the signing process. You’ll be notified as soon as your employer has approved your Student MOA. You can track the status in your My Forms tab."}
-        {step === "manualDetails" &&
-          "Provide the company details so we can generate your MOA now."}
-        {step === "generating" &&
-          "We’re generating your PDF. The download will start automatically."}
-        {step === "done" &&
-          "Download started. You can also find the document under My Forms."}
-      </p>
 
-      {/* STEP CONTENTS */}
-      {step === "companySelect" && (
-        <div className="space-y-3">
-          <FormDropdown
-            label="Company"
-            value={companyId}
-            options={companies.map((c) => ({ id: c.id, name: c.name }))}
-            setter={(v) => setCompanyId(String(v ?? ""))}
-          />
-          <div className="flex justify-between items-center pt-2">
-            <Button variant="outline" onClick={onCancel}>
-              Cancel
-            </Button>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-gray-500">
-                Can’t find your company?{" "}
-                <button
-                  className="underline"
-                  onClick={() => setStep("employerAssist")}
-                >
-                  Let’s help your employer fill it out for you
-                </button>
-              </span>
-              <Button onClick={handleCompanyNext}>Next</Button>
-            </div>
+      <div className="space-y-3">
+        {/* Company */}
+        <FormDropdown
+          label="Company"
+          value={companyId}
+          options={companies.map((c) => ({ id: c.id, name: c.name }))}
+          setter={(v) => setCompanyId(String(v ?? ""))}
+        />
+
+        {/* Custom fields */}
+        {customDefs.length > 0 && (
+          <div className="grid grid-cols-1 gap-3">
+            {customDefs.map((def) => (
+              <FieldRenderer
+                key={def.key}
+                def={def}
+                value={custom[def.key] ?? ""}
+                onChange={(v) => setCustomField(def.key, v)}
+                error={errors[def.key]}
+              />
+            ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {step === "employerAssist" && (
-        <div className="space-y-3">
-          <FormInput
-            label="Company Legal Name"
-            value={invite.legalName}
-            setter={(v) => setInviteField("legalName", v)}
-          />
-          {!!errors.legalName && (
-            <p className="text-xs text-red-600">{errors.legalName}</p>
+      {/* Footer */}
+      <div className="mt-5 flex justify-end gap-2">
+        <Button variant="outline" onClick={onCancel} disabled={isSubmitting}>
+          Cancel
+        </Button>
+        <Button onClick={handleGenerate} disabled={!canGenerate}>
+          {isSubmitting ? (
+            <span className="inline-flex items-center gap-2">
+              <Loader2 className="size-4 animate-spin" />
+              Generating…
+            </span>
+          ) : (
+            "Generate"
           )}
-
-          <FormInput
-            label="Contact Person"
-            value={invite.contactPerson}
-            setter={(v) => setInviteField("contactPerson", v)}
-          />
-          {!!errors.contactPerson && (
-            <p className="text-xs text-red-600">{errors.contactPerson}</p>
-          )}
-
-          <FormInput
-            label="Contact Number"
-            value={invite.contactNumber}
-            setter={(v) => setInviteField("contactNumber", v)}
-          />
-          {!!errors.contactNumber && (
-            <p className="text-xs text-red-600">{errors.contactNumber}</p>
-          )}
-
-          <FormInput
-            label="Contact Email"
-            value={invite.contactEmail}
-            setter={(v) => setInviteField("contactEmail", v)}
-          />
-          {!!errors.contactEmail && (
-            <p className="text-xs text-red-600">{errors.contactEmail}</p>
-          )}
-
-          <div className="flex justify-between items-center pt-2">
-            <Button variant="outline" onClick={() => setStep("companySelect")}>
-              Back
-            </Button>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-gray-500">
-                or{" "}
-                <button
-                  className="underline"
-                  onClick={() => setStep("manualDetails")}
-                >
-                  fill out details manually
-                </button>
-              </span>
-              <Button onClick={submitEmployerAssist} disabled={busy}>
-                {busy ? (
-                  <span className="inline-flex items-center gap-2">
-                    <Loader2 className="size-4 animate-spin" /> Sending…
-                  </span>
-                ) : (
-                  "Submit"
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {step === "assistDone" && (
-        <div className="flex justify-end">
-          <Button onClick={onCancel}>Done</Button>
-        </div>
-      )}
-
-      {step === "manualDetails" && (
-        <div className="space-y-3">
-          <FormInput
-            label="Company Address"
-            value={manualCompany.companyAddress}
-            setter={(v) => setManualField("companyAddress", v)}
-          />
-          {!!errors.companyAddress && (
-            <p className="text-xs text-red-600">{errors.companyAddress}</p>
-          )}
-
-          <FormInput
-            label="Contact Position"
-            value={manualCompany.contactPosition}
-            setter={(v) => setManualField("contactPosition", v)}
-          />
-          {!!errors.contactPosition && (
-            <p className="text-xs text-red-600">{errors.contactPosition}</p>
-          )}
-
-          <FormDropdown
-            label="Company Type"
-            value={manualCompany.companyType}
-            options={[
-              { id: "private", name: "Private" },
-              { id: "government", name: "Government" },
-              { id: "ngo", name: "NGO" },
-              { id: "other", name: "Other" },
-            ]}
-            setter={(v) => setManualField("companyType", String(v ?? ""))}
-          />
-          {!!errors.companyType && (
-            <p className="text-xs text-red-600">{errors.companyType}</p>
-          )}
-
-          <div className="flex justify-between items-center pt-2">
-            <Button variant="outline" onClick={() => setStep("employerAssist")}>
-              Back
-            </Button>
-            <Button onClick={submitManualDetails} disabled={busy}>
-              {busy ? (
-                <span className="inline-flex items-center gap-2">
-                  <Loader2 className="size-4 animate-spin" /> Generating…
-                </span>
-              ) : (
-                "Next"
-              )}
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {step === "generating" && (
-        <div className="flex items-center justify-between">
-          <span className="inline-flex items-center gap-2 text-sm">
-            <Loader2 className="size-4 animate-spin" />
-            We’re generating your PDF. The download will start automatically.
-          </span>
-          <Button variant="outline" onClick={onCancel}>
-            Close
-          </Button>
-        </div>
-      )}
-
-      {step === "done" && (
-        <div className="flex justify-end">
-          <Button onClick={onCancel}>Done</Button>
-        </div>
-      )}
+        </Button>
+      </div>
     </div>
   );
 }
@@ -958,7 +760,10 @@ function FieldRenderer({
 
     // Disable dates before today+7
     let disabledDays: any | undefined;
-    if (def.key === "internship_start_date") {
+    if (
+      def.key === "internship_start_date" ||
+      def.key === "internship_end_date"
+    ) {
       const t = new Date();
       const min = new Date(
         t.getFullYear(),
@@ -1126,6 +931,18 @@ const FORM_TEMPLATES: FormTemplate[] = [
         type: "number",
         required: true,
         placeholder: "e.g., 320",
+        validators: [
+          (value) => {
+            if (value === null || value === undefined || value === "")
+              return null;
+
+            const n = typeof value === "string" ? Number(value) : value;
+            if (Number.isNaN(n)) return "Enter a valid number.";
+            if (n < 0) return "Total hours must be positive.";
+            if (n > 2000) return "Maximum allowed is 2000 hours.";
+            return null;
+          },
+        ],
       },
       {
         key: "internship_start_date",
@@ -1136,7 +953,6 @@ const FORM_TEMPLATES: FormTemplate[] = [
         validators: [
           (start) => {
             if (!start) return null;
-            // parse "YYYY-MM-DD" to local midnight
             const [y, m, d] = start.split("-").map(Number);
             const startDate = new Date(y, (m ?? 1) - 1, d ?? 1, 0, 0, 0, 0);
 
@@ -1238,3 +1054,18 @@ const COMPANIES = [
   { id: "ent-safeway", name: "Safeway Philtech" },
   { id: "ent-hashcompany", name: "HashCompany" },
 ];
+
+/* ──────────────────────────────────────────────
+   DLSU ID helpers
+   ────────────────────────────────────────────── */
+const DLSU_ID_RE = /^(?:0[0-9]|1[0-9]|2[0-9])\d{6}[A-Z]?$/;
+
+function normalizeDlsuId(raw: string) {
+  return (raw || "").replace(/[\s-]/g, "").toUpperCase();
+}
+
+function validateDlsuId(id: string): string | null {
+  if (!id) return "This field is required.";
+  const v = normalizeDlsuId(id);
+  return DLSU_ID_RE.test(v) ? null : "Invalid DLSU ID (e.g., 12141380).";
+}

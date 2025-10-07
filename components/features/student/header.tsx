@@ -196,7 +196,6 @@ function MobileDrawer({
             : "opacity-0 pointer-events-none"
         )}
         onClick={onClose}
-        aria-hidden={!open}
       />
 
       {/* Drawer */}
@@ -225,8 +224,6 @@ function MobileDrawer({
             </button>
           </div>
 
-          {/* Scrollable content */}
-          {/* Account (always on top) */}
           {isAuthenticated() && (
             <div className="flex-1 overflow-y-auto p-4">
               <div className="flex items-center gap-3">

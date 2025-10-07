@@ -4,5 +4,4 @@
 export { ListingsSearchBar } from './listings-search-bar';
 export { ListingsJobPanel } from './listings-job-panel';
 export { ListingsDetailsPanel } from './listings-details-panel';
-export { ListingsCreateJobModal } from './listings-createjob-modal';
 export { ListingsDeleteModal } from './listings-delete-modal';

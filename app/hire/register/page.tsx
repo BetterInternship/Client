@@ -9,13 +9,10 @@ import { Employer } from "@/lib/db/db.types";
 import {
   createEditForm,
   FormCheckbox,
-  FormDatePicker,
-  FormDropdown,
   FormInput,
 } from "@/components/EditForm";
 import { Card } from "@/components/ui/card";
 import { ErrorLabel } from "@/components/ui/labels";
-import { StoryBook } from "@/components/ui/storybook";
 import { Button } from "@/components/ui/button";
 import { isValidEmail, isValidPHNumber } from "@/lib/utils";
 import { MultipartFormBuilder } from "@/lib/multipart-form";
@@ -66,7 +63,6 @@ const EmployerEditor = ({
   const {
     formData,
     formErrors,
-    setField,
     fieldSetter,
     addValidator,
     validateFormData,
@@ -85,74 +81,31 @@ const EmployerEditor = ({
   const [additionalFields, setAdditionalFields] = useState<AdditionalFields>(
     {} as AdditionalFields
   );
-  const [moaValidationError, setMoaValidationError] = useState<string>("");
-
-  // Function to validate MOA dates
-  const validateMoaDates = () => {
-    if (additionalFields.has_moa_with_dlsu) {
-      const startDate = additionalFields.moa_start_date;
-      const endDate = additionalFields.moa_expires_at;
-
-      if (!startDate || !endDate) {
-        setMoaValidationError("Both MOA start and end dates are required.");
-        return false;
-      }
-
-      if (startDate === endDate) {
-        setMoaValidationError("MOA start and end dates cannot be the same.");
-        return false;
-      }
-
-      if (endDate < startDate) {
-        setMoaValidationError(
-          "MOA end date cannot be earlier than the start date."
-        );
-        return false;
-      }
-    }
-    setMoaValidationError("");
-    return true;
-  };
 
   const register = async () => {
-    // Validate MOA dates if MOA is enabled
-    if (additionalFields.has_moa_with_dlsu && !validateMoaDates()) {
-      alert(moaValidationError);
-      return;
-    }
-
     // Validate required fields before submitting
     const missingFields = [];
 
     if (!formData.name || formData.name.trim().length < 3) {
-      missingFields.push("Company Name (Doing Business As)");
-    }
-    if (
-      !formData.legal_entity_name ||
-      formData.legal_entity_name.trim().length < 3
-    ) {
-      missingFields.push("Legal Entity Name");
-    }
-    if (!formData.website || !isValidRequiredURL(formData.website)) {
-      missingFields.push("Valid Website URL");
-    }
-    if (!formData.industry) {
-      missingFields.push("Industry");
-    }
-    if (!formData.description || formData.description.trim().length < 10) {
-      missingFields.push("Company Description (minimum 10 characters)");
+      missingFields.push("Company name");
     }
     if (
       !additionalFields.contact_name ||
       additionalFields.contact_name.trim().length === 0
     ) {
-      missingFields.push("Contact Name");
+      missingFields.push("Contact name");
     }
     if (!formData.phone_number || !isValidPHNumber(formData.phone_number)) {
-      missingFields.push("Valid Philippine Phone Number");
+      missingFields.push("Valid contact Philippine phone number");
     }
     if (!formData.email || !isValidEmail(formData.email)) {
-      missingFields.push("Valid Contact Email");
+      missingFields.push("Valid contact email");
+    }
+    if (!formData.legal_entity_name) {
+      missingFields.push("Legal entity name");
+    }
+    if (!formData.website) {
+      missingFields.push("Company website/LinkedIn");
     }
     if (!additionalFields.terms_accepted) {
       missingFields.push("Terms & Conditions and Privacy Policy acceptance");
@@ -169,24 +122,12 @@ const EmployerEditor = ({
     const multipartForm = MultipartFormBuilder.new();
     const newProfile = {
       ...cleanFormData(),
-      website: toURL(formData.website)?.toString(),
+      website: toURL(formData.website)?.toString() ?? null,
       accepts_non_university: formData.accepts_non_university ?? true, // default to true
       accepted_universities: `[${universities
         .map((u) => `"${u.id}"`)
         .join(",")}]`,
       contact_name: additionalFields.contact_name,
-      ...(additionalFields.has_moa_with_dlsu
-        ? {
-            moa: JSON.stringify([
-              {
-                // ! change when unis update
-                university_id: get_university_by_name("DLSU - Manila")?.id,
-                start_date: additionalFields.moa_start_date ?? 0,
-                expires_at: additionalFields.moa_expires_at ?? 0,
-              },
-            ]),
-          }
-        : {}),
     };
     multipartForm.from(newProfile);
     setIsRegistering(true);
@@ -213,15 +154,6 @@ const EmployerEditor = ({
     const debouncedValidation = setTimeout(() => validateFormData(), 500);
     return () => clearTimeout(debouncedValidation);
   }, [formData]);
-
-  // Validate MOA dates when they change
-  useEffect(() => {
-    validateMoaDates();
-  }, [
-    additionalFields.has_moa_with_dlsu,
-    additionalFields.moa_start_date,
-    additionalFields.moa_expires_at,
-  ]);
 
   // Data validators
   useEffect(() => {
@@ -261,100 +193,44 @@ const EmployerEditor = ({
 
   return (
     <>
-      <StoryBook>
-        <Card>
-          <div className="text-2xl tracking-tight font-bold text-gray-700 mb-4">
-            General Information
-            <div className="text-lg opacity-50 font-normal">Step 1 of 3</div>
+      <Card className="mb-4">
+        <div className="text-xl tracking-tight font-bold text-gray-700">
+          Company Info
+        </div>
+        <div className="mb-8 flex flex-col space-y-3">
+          <div className="text-sm font-normal text-gray-700">
+            Fill out this form to get listed on our website! 
+            To complete your profile, 
+            we’ll also ask you to submit one internship posting— 
+            don’t worry, you can add or update more later.
           </div>
-          <div className="mb-4 flex flex-col space-y-3">
-            <div>
-              <ErrorLabel value={formErrors.name} />
-              <FormInput
-                label="Company Name"
-                value={formData.name ?? ""}
-                setter={fieldSetter("name")}
-                maxLength={100}
-              />
-            </div>
-            <div>
-              <ErrorLabel value={formErrors.legal_entity_name} />
-              <FormInput
-                label="Legal Entity Name"
-                value={formData.legal_entity_name ?? ""}
-                setter={fieldSetter("legal_entity_name")}
-                maxLength={100}
-              />
-            </div>
+          <div>
+            <ErrorLabel value={formErrors.name} />
             <FormInput
-              label="General Office Location"
-              value={formData.location ?? ""}
-              setter={fieldSetter("location")}
+              label="Company Name"
+              value={formData.name ?? ""}
+              setter={fieldSetter("name")}
               maxLength={100}
             />
-            <div>
-              <ErrorLabel value={formErrors.website} />
-              <FormInput
-                label="Website"
-                value={formData.website ?? ""}
-                setter={fieldSetter("website")}
-                maxLength={100}
-              />
-            </div>
-            <FormDropdown
-              label="Industry"
-              options={industries}
-              value={formData.industry ?? ""}
-              setter={fieldSetter("industry")}
-            />
           </div>
-          <label className="text-xs text-gray-400 italic mb-1 block">
-            Description <span className="text-red-500">*</span>
-          </label>
-          <textarea
-            value={formData.description || ""}
-            onChange={(e) => setField("description", e.target.value)}
-            placeholder="Let students know what you're all about..."
-            className="w-full border border-gray-200 rounded-[0.25em] p-3 px-5 text-sm min-h-24 resize-none focus:border-opacity-70 focus:ring-transparent"
-            maxLength={750}
-          />
-          <p className="text-xs text-muted-foreground text-right">
-            {(formData.description || "").length}/750 characters
-          </p>
-        </Card>
-        <Card>
-          <div className="text-2xl tracking-tight font-bold text-gray-700 mb-4">
-            Contact Person Information
-            <div className="text-lg opacity-50 font-normal">Step 2 of 3</div>
-          </div>
-          <div className="mb-4 flex flex-col space-y-3">
+          <div>
             <FormInput
-              label="Contact Name"
-              value={additionalFields.contact_name ?? ""}
-              maxLength={40}
-              setter={(value) =>
-                setAdditionalFields({
-                  ...additionalFields,
-                  contact_name: value,
-                })
-              }
+              label="Legal Entity Name"
+              value={formData.legal_entity_name ?? ""}
+              setter={fieldSetter("legal_entity_name")}
+              maxLength={100}
             />
-            <div>
-              <ErrorLabel value={formErrors.phone_number} />
-              <FormInput
-                label="Contact Phone Number"
-                value={formData.phone_number ?? ""}
-                setter={fieldSetter("phone_number")}
-              />
-            </div>
-            <div>
-              <ErrorLabel value={formErrors.email} />
-              <FormInput
-                label="Contact Email"
-                value={formData.email ?? ""}
-                setter={fieldSetter("email")}
-              />
-            </div>
+          </div>
+          <FormInput
+            label="Office City"
+            value={formData.location ?? ""}
+            setter={fieldSetter("location")}
+            maxLength={100}
+          />
+        </div>
+        <div className="mb-4 flex flex-col space-y-3">
+          <div className="text-xl tracking-tight font-bold text-gray-700">
+            Contact Person Information
           </div>
           <Card className="border-warning p-4">
             <p className="font-normal opacity-80 text-sm italic text-warning">
@@ -363,127 +239,104 @@ const EmployerEditor = ({
               people plan to be manage this employer account.
             </p>
           </Card>
-          <div className="mt-3 text-xs text-gray-500 italic">
-            Note: You can update all company information later in the Edit
-            Company Profile page.
+          <FormInput
+            label="Name"
+            value={additionalFields.contact_name ?? ""}
+            maxLength={40}
+            setter={(value) =>
+              setAdditionalFields({
+                ...additionalFields,
+                contact_name: value,
+              })
+            }
+          />
+          <div>
+            <ErrorLabel value={formErrors.phone_number} />
+            <FormInput
+              label="Phone Number"
+              value={formData.phone_number ?? ""}
+              setter={fieldSetter("phone_number")}
+            />
           </div>
-        </Card>
-        <Card>
-          <div className="text-2xl tracking-tight font-bold text-gray-700 mb-4">
-            Profile Agreements
-            <div className="text-lg opacity-50 font-normal">Step 3 of 3</div>
-          </div>
-          <div className="flex flex-col space-y-1 mb-2">
-            <ErrorLabel value={formErrors.accepts_non_university} />
+          <div>
             <ErrorLabel value={formErrors.email} />
+            <FormInput
+              label="Email"
+              value={formData.email ?? ""}
+              setter={fieldSetter("email")}
+            />
           </div>
-          <div className="mb-4 flex flex-col space-y-3">
-            <Card className="p-3">
-              <div className="flex flex-row items-center justify-start">
-                <FormCheckbox
-                  checked={formData.accepts_non_university ?? true}
-                  setter={fieldSetter("accepts_non_university")}
-                />
-                <div className="text-sm text-gray-500 ml-3">
-                  Accept Non-University Interns?
-                </div>
-              </div>
-            </Card>
-            <Card className="p-3">
-              <div className="flex flex-row items-center justify-start">
-                <FormCheckbox
-                  checked={additionalFields.has_moa_with_dlsu}
-                  setter={(checked) =>
-                    setAdditionalFields({
-                      ...additionalFields,
-                      has_moa_with_dlsu: checked,
-                    })
-                  }
-                />
-                <div className="text-sm text-gray-500 ml-3">
-                  Ongoing MOA with DLSU?
-                </div>
-              </div>
-              {additionalFields.has_moa_with_dlsu && (
-                <div className="mt-4">
-                  {moaValidationError && (
-                    <ErrorLabel value={moaValidationError} />
-                  )}
-                  <div className="flex flex-row space-x-2">
-                    <FormDatePicker
-                      label={"MOA Start Date"}
-                      date={additionalFields.moa_start_date}
-                      setter={(date) =>
-                        setAdditionalFields({
-                          ...additionalFields,
-                          moa_start_date: date ?? 0,
-                        })
-                      }
-                    />
-                    <FormDatePicker
-                      label={"MOA Expiry Date"}
-                      date={additionalFields.moa_expires_at}
-                      setter={(date) =>
-                        setAdditionalFields({
-                          ...additionalFields,
-                          moa_expires_at: date ?? 0,
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-              )}
-            </Card>
-
-            <Card className="p-3">
-              <div className="flex items-start gap-3">
-                <FormCheckbox
-                  id="accept-terms"
-                  checked={additionalFields.terms_accepted}
-                  setter={(checked) =>
-                    setAdditionalFields({
-                      ...additionalFields,
-                      terms_accepted: checked,
-                    })
-                  }
-                />
-                <label
-                  htmlFor="accept-terms"
-                  className="text-sm text-gray-700 leading-relaxed cursor-pointer flex-1"
-                >
-                  I have read and agree to the{" "}
-                  <a
-                    href="/TermsConditions.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 underline font-medium"
-                  >
-                    Terms & Conditions
-                  </a>{" "}
-                  and{" "}
-                  <a
-                    href="/PrivacyPolicy.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 underline font-medium"
-                  >
-                    Privacy Policy
-                  </a>
-                  .
-                </label>
-              </div>
-            </Card>
-
-            <Button
-              onClick={register}
-              disabled={!additionalFields.terms_accepted || isRegistering}
-              className="w-full h-12 bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+          <div>
+            <FormInput
+              label="Company website/LinkedIn"
+              value={formData.website ?? ""}
+              setter={fieldSetter("website")} // invalid type
+            />
+          </div>
+        </div>
+        <div className="mt-3 text-xs text-gray-500 mb-4">
+          You can update all company information later in the Edit
+          Company Profile page.
+        </div>
+        <div className="flex flex-row flex-grow-0 gap-2 text-sm text-gray-700 mb-2">
+          <FormCheckbox
+            id="accept-terms"
+            checked={additionalFields.has_moa_with_dlsu}
+            setter={(checked) =>
+              setAdditionalFields({
+                ...additionalFields,
+                has_moa_with_dlsu: checked,
+              })
+            }
+          />
+          Do you need help securing a MOA (Memorandum of agreement) with DLSU so you can hire practicum students?
+          We will reach out to assist.
+        </div>
+        <div className="flex items-start gap-3">
+          <FormCheckbox
+            id="accept-terms"
+            checked={additionalFields.terms_accepted}
+            setter={(checked) =>
+              setAdditionalFields({
+                ...additionalFields,
+                terms_accepted: checked,
+              })
+            }
+          />
+          <label
+            htmlFor="accept-terms"
+            className="text-sm text-gray-700 leading-relaxed cursor-pointer flex-1"
+          >
+            I have read and agree to the{" "}
+            <a
+              href="/TermsConditions.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline font-medium"
             >
-              {isRegistering ? "Registering..." : "Register"}
-            </Button>
-          </div>
-        </Card>
-      </StoryBook>
+              Terms & Conditions
+            </a>{" "}
+            and{" "}
+            <a
+              href="/PrivacyPolicy.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline font-medium"
+            >
+              Privacy Policy
+            </a>
+            .
+          </label>
+        </div>
+      </Card>
+      <div className="flex justify-end w-[100%]">
+        <Button
+          onClick={register}
+          disabled={!additionalFields.terms_accepted || isRegistering}
+        >
+          {isRegistering ? "Registering..." : "Register"}
+        </Button>
+      </div>
       <br />
       <br />
     </>

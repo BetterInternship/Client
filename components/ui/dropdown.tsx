@@ -7,20 +7,20 @@
  * Stateful dropdown group component.
  */
 
-import React, {
-  useEffect,
-  createContext,
-  useContext,
-  useState,
-  useRef,
-  useCallback,
-  Children,
-} from "react";
-import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppContext } from "@/lib/ctx-app";
 import { cn } from "@/lib/utils";
+import { ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
+import React, {
+  Children,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useDetectClickOutside } from "react-detect-click-outside";
 
 /**
@@ -173,7 +173,7 @@ export const GroupableRadioDropdown = <ID extends number | string>({
   name: string;
   options: IRadioDropdownOption<ID>[];
   onChange: (option: ID) => void;
-  defaultValue?: ID | null;
+  defaultValue?: ID | ID[] | null;
   disabled?: boolean | undefined;
   size?: "xs" | "sm" | "md" | "lg";
   className?: string;

@@ -7,8 +7,8 @@ import { PublicUser } from "./db/db.types";
  * @param user
  * @returns
  */
-export const getFullName = (
-  user: Partial<PublicUser> | null | undefined,
+export const getFullName = <T extends { first_name?: string | null, last_name?: string | null }>(
+  user?: T,
   titleCase: boolean = true
 ): string => {
   let name = "";
