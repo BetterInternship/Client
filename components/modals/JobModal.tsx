@@ -127,7 +127,7 @@ export const JobModal = ({
           )}
         </div>
 
-        {/* Bottom action bar — fixed within modal, safe-area aware (UNCHANGED) */}
+        {/* Bottom action bar — fixed within modal*/}
         <div className="absolute bottom-0 left-0 right-0 z-30 bg-white border-t p-4 pb-[calc(env(safe-area-inset-bottom)+16px)]">
           <div className="flex gap-3">
             <SaveJobButton job={job} />
@@ -136,6 +136,7 @@ export const JobModal = ({
               job={job}
               openAppModal={openAppModal}
               applySuccessModalRef={applySuccessModalRef}
+              className="w-full"
             />
           </div>
         </div>
