@@ -261,7 +261,7 @@ export default function FormsPage() {
       {
         allowBackdropClick: false,
         closeOnEsc: true,
-        panelClassName: "max-w-none w-[98vw] sm:w-[50svw]",
+        panelClassName: "w-[98vw] sm:min-w-[50svw]",
       }
     );
   }
@@ -735,7 +735,7 @@ function FieldRenderer({
 
     // Disable dates before today+7
     let disabledDays: any | undefined;
-    if (def.key === "internship_start_date") {
+    if (def.key === "internship_start_date" || def.key === "internship_end_date") {
       const t = new Date();
       const min = new Date(
         t.getFullYear(),
@@ -903,6 +903,18 @@ const FORM_TEMPLATES: FormTemplate[] = [
         type: "number",
         required: true,
         placeholder: "e.g., 320",
+        validators: [
+          (value) => {
+            if (value === null || value === undefined || value === "")
+              return null;
+
+            const n = typeof value === "string" ? Number(value) : value;
+            if (Number.isNaN(n)) return "Enter a valid number.";
+            if (n < 0) return "Total hours must be positive.";
+            if (n > 2000) return "Maximum allowed is 2000 hours.";
+            return null;
+          },
+        ],
       },
       {
         key: "internship_start_date",
