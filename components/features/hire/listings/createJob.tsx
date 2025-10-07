@@ -22,7 +22,7 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import { useFormData } from "@/lib/form-data";
 import Head from "next/head";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface CreateJobPageProps {
   createJob: (job: Partial<Job>) => Promise<any>;
@@ -36,7 +36,7 @@ const StepCheckIndicator = ({ checked }: { checked: boolean }) => {
   );
 };
 
-const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
+const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
   const [creating, set_creating] = useState(false);
   const { formData, setField, fieldSetter } = useFormData<Job>();
   const { job_pay_freq } = useDbRefs();
@@ -69,7 +69,7 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
 
     set_creating(true);
     try {
-      const response = await create_job(job);
+      const response = await createJob(job);
       if (!response?.success) {
         alert(response?.error || "Could not create job");
         set_creating(false);
@@ -82,6 +82,10 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
       alert("Error creating job");
     }
   };
+
+  useEffect(() => {
+    setField("location", profile.data?.location)
+  }, [])
 
   return (
     <>
@@ -149,19 +153,6 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                   <p className="text-xs text-gray-500 text-right mt-1">
                     {(formData.title || "").length}/100 characters
                   </p>
-                  {/* <h2 className="text-lg font-bold text-gray-800 mb-2 break-words overflow-wrap-anywhere leading-tight">
-                    Category <span className="text-destructive text-sm">*</span>
-                  </h2>
-                  <DropdownGroup>
-                      <div className="space-y-2">
-                        <FormDropdown
-                          value={formData.category ?? undefined}
-                          options={job_categories}
-                          setter={fieldSetter("category")}
-                          required={true}
-                        />
-                      </div>
-                  </DropdownGroup> */}
                 </div>
               </div>
             </div>
@@ -174,15 +165,19 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                   <div>
                     <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
                       <StepCheckIndicator
-                        checked={false}
+                        checked={!!formData.internship_preferences?.internship_types?.length}
                       />
                       Are you hiring credited and/or voluntary interns? <span className="text-destructive">*</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                       <div
-                      onClick={() => null}
-                      className="flex items-start gap-4 p-3 border border-gray-200 hover:border-gray-300 rounded-[0.33em] 
-                      cursor-pointer h-fit">
+                        onClick={() => setField("internship_preferences", {
+                          ...formData.internship_preferences,
+                          internship_types: formData.internship_preferences?.internship_types?.includes("credited") 
+                            ? [...formData.internship_preferences?.internship_types.filter(it => it !== "credited")]
+                            : [...(formData.internship_preferences?.internship_types ?? []), "credited"]
+                        })}
+                        className="flex items-start gap-4 p-3 border border-gray-200 hover:border-gray-300 rounded-[0.33em] cursor-pointer h-fit">
                           <FormCheckbox
                             checked={formData.internship_preferences?.internship_types?.includes("credited")}
                           />
@@ -195,8 +190,15 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                             </p>
                           </div>
                       </div>
-                      <div className="flex items-start gap-4 p-3 border border-gray-200 hover:border-gray-300 rounded-[0.33em] 
-                      cursor-pointer h-fit">
+                      <div 
+                        onClick={() => setField("internship_preferences", {
+                          ...formData.internship_preferences,
+                          internship_types: formData.internship_preferences?.internship_types?.includes("voluntary") 
+                            ? [...formData.internship_preferences?.internship_types.filter(it => it !== "voluntary")]
+                            : [...(formData.internship_preferences?.internship_types ?? []), "voluntary"]
+                        })}
+                        className="flex items-start gap-4 p-3 border border-gray-200 hover:border-gray-300 rounded-[0.33em] cursor-pointer h-fit"
+                        >
                           <FormCheckbox
                             checked={formData.internship_preferences?.internship_types?.includes("voluntary")}
                           />
@@ -222,8 +224,7 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                     <div className="w-full mb-6">
                       <div className="space-y-2 w-full">
                         <FormInput
-                          //label="Location"
-                          value={formData.location ?? profile.data?.location ?? ""}
+                          value={formData.location ?? ""}
                           maxLength={100}
                           setter={fieldSetter("location")}
                           required={false}
@@ -335,8 +336,9 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                                     Salary <span className="text-sm text-gray-300">(Optional)</span>
                                   </Label>
                                   <Input
+                                    type="number"
                                     value={formData.salary ?? ""}
-                                    onChange={(e) => setField("salary", e.target.value)}
+                                    onChange={(e) => setField("salary", parseInt(e.target.value))}
                                     placeholder="Enter salary amount"
                                     className="text-sm"
                                   />
@@ -360,7 +362,8 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                           
                         <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
                           <StepCheckIndicator
-                            checked={formData.internship_preferences?.expected_start_date !== undefined}
+                            checked={formData.internship_preferences?.expected_start_date === undefined || 
+                              formData.internship_preferences?.expected_start_date! > 0}
                           />
                           When are you accepting interns for this listing? <span className="text-destructive">*</span>
                         </div>
@@ -379,21 +382,18 @@ const CreateJobPage = ({ createJob: create_job }: CreateJobPageProps) => {
                               label: "I have a future date in mind",
                             },
                           ]}
-                          value ={!formData.internship_preferences?.expected_start_date + ""}
+                          value ={(formData.internship_preferences?.expected_start_date === undefined) + ""}
                           setter={(v) => setField("internship_preferences", {
                             ...formData.internship_preferences,
-                            expected_start_date: v === "true" ? 0 : undefined,
+                            expected_start_date: v === "true" ? undefined : 0,
                           })}
                           />
-                        {formData.internship_preferences?.expected_start_date !== 0 && (
+                        {formData.internship_preferences?.expected_start_date !== undefined && (
                           <div className="flex flex-row gap-4 m-4 border-l-2 border-gray-300 pl-4">
                             <div className="space-y-2">
                               <Label className="flex flex-row text-sm font-medium text-gray-700">
-                                  <StepCheckIndicator
-                                    checked={formData.internship_preferences?.expected_start_date !== undefined}
-                                  />
-                                  Start Date{" "}
-                                  <span className="text-destructive">*</span>
+                                Start Date{" "}
+                                <span className="text-destructive">*</span>
                               </Label>
                               <FormDatePicker
                                 date={formData.internship_preferences?.expected_start_date ?? undefined}
