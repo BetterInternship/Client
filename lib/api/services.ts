@@ -127,6 +127,39 @@ export const UserService = {
     );
   },
 
+  async updateMyDocData(data: Partial<PublicUser>) {
+    return APIClient.put<UserResponse>(
+      APIRouteBuilder("users").r("my-doc-data").build(),
+      data
+    );
+  },
+
+  async generateStudentMoa(data: {
+    employer_id: string;
+    user_id: string;
+    user_address: string;
+    user_degree: string;
+    user_college: string;
+    user_full_name: string;
+    user_id_number: string;
+    student_guardian_name: string;
+    internship_hours: number;
+    internship_start_date: number;
+    internship_start_time: string;
+    internship_end_date: number;
+    internship_end_time: string;
+    internship_coordinator_name: string;
+  }) {
+    return APIClient.post<{
+      moaRequestId: string,
+      signedDocumentId: string,
+      verificationCode: string,
+    }>(
+      APIRouteBuilder("student").r("moa", "request").build({ moaServer: true }),
+      data
+    );
+  },
+
   async parseResume(form: FormData) {
     return APIClient.post<UserResponse>(
       APIRouteBuilder("users").r("me", "extract-resume").build(),
@@ -138,6 +171,12 @@ export const UserService = {
   async getMyResumeURL() {
     return APIClient.get<ResourceHashResponse>(
       APIRouteBuilder("users").r("me", "resume").build()
+    );
+  },
+
+  async getEntityList() {
+    return APIClient.get<ResourceHashResponse>(
+      APIRouteBuilder("entities").r("list").build({ moaServer: true })
     );
   },
 
