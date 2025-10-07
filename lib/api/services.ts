@@ -137,7 +137,17 @@ export const UserService = {
   async generateStudentMoa(data: {
     employer_id: string;
     user_id: string;
-    student_signatory_name: string;
+    user_address: string;
+    user_degree: string;
+    user_college: string;
+    user_full_name: string;
+    user_id_number: string;
+    student_guardian_name: string;
+    internship_hours: number;
+    internship_start_date: number;
+    internship_start_time: string;
+    internship_end_date: number;
+    internship_end_time: string;
   }) {
     return APIClient.post<{
       moaRequestId: string,

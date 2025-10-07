@@ -59,25 +59,26 @@ type PastForm = {
    Validation helpers
    ────────────────────────────────────────────── */
 
-function validateField(def: FieldDef, value: string, all: Values): string {
-  if (def.required && (!value || value.trim() === ""))
+function validateField(def: FieldDef, value: string | number, all: Values): string {
+  const valueStringified = value.toString();
+  if (def.required && (!valueStringified || valueStringified.trim() === ""))
     return "This field is required.";
-  if (def.maxLength && value && value.length > def.maxLength)
+  if (def.maxLength && valueStringified && valueStringified.length > def.maxLength)
     return `Max ${def.maxLength} characters.`;
-  if (def.type === "number" && value && !/^-?\d+(\.\d+)?$/.test(value))
+  if (def.type === "number" && valueStringified && !/^-?\d+(\.\d+)?$/.test(valueStringified))
     return "Enter a valid number.";
-  if (def.type === "date" && value && !/^\d{4}-\d{2}-\d{2}$/.test(value))
+  if (def.type === "date" && typeof value === 'number' && !/^\d{4}-\d{2}-\d{2}$/.test(msToDateStr(value)))
     return "Use YYYY-MM-DD.";
-  if (def.type === "time" && value && !/^\d{2}:\d{2}$/.test(value))
+  if (def.type === "time" && typeof value === 'number' && !/^\d{2}:\d{2}$/.test(msToDateStr(value)))
     return "Use HH:MM (24-hour).";
   if (def.pattern) {
     try {
       const re = new RegExp(def.pattern);
-      if (value && !re.test(value)) return "Invalid format.";
+      if (valueStringified && !re.test(valueStringified)) return "Invalid format.";
     } catch {}
   }
   for (const fn of def.validators ?? []) {
-    const err = fn(value ?? "", all);
+    const err = fn(valueStringified ?? "", all);
     if (err) return err;
   }
   return "";
@@ -163,6 +164,7 @@ export default function FormsPage() {
   // Modal state
   const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
   const [selectedFormId, setSelectedFormId] = useState<string | null>(null);
+  const refs = useDbRefs();
 
   // Demo: global banner while generating (adds realism)
   const [isGeneratingGlobal, setIsGeneratingGlobal] = useState(false);
@@ -174,6 +176,8 @@ export default function FormsPage() {
       FORM_TEMPLATES.find((t) => t.id === formId)?.customFields ?? [];
     const initialCustom: Values = {};
     defs.forEach((d) => (initialCustom[d.key] = ""));
+    initialCustom["internship_clock_in_time"] = "08:00"
+    initialCustom["internship_clock_out_time"] = "17:00"
 
     openGlobalModal(
       "generate-form",
@@ -192,11 +196,25 @@ export default function FormsPage() {
 
           try {
             setIsGeneratingGlobal(true);
-            const response = await UserService.generateStudentMoa({
+            const payload = {
               employer_id: companyId,
               user_id: profile.data?.id,
-              student_signatory_name: `${profile.data?.first_name} ${profile.data?.last_name}`
-            });
+              user_address: autofill.address,
+              // ! remove hardcodes for degree and college
+              user_degree: profile.data.degree ?? "BSCS Software Technology",
+              user_college: autofill.college ? refs.to_college_name(autofill.college!) ?? "College of Computer Studies" : "College of Computer Studies",
+              user_full_name: `${profile.data?.first_name} ${profile.data?.last_name}`,
+              user_id_number: autofill.student_id,
+              student_guardian_name: autofill.guardian_name,
+              internship_hours: parseInt(customValues.internship_total_hours),
+              internship_start_date: parseInt(customValues.internship_start_date),
+              internship_start_time: customValues.internship_clock_in_time,
+              internship_end_date: parseInt(customValues.internship_end_date),
+              internship_end_time: customValues.internship_clock_out_time,
+            }
+            console.log(payload)
+
+            const response = await UserService.generateStudentMoa(payload);
             const fileUrl = `https://storage.googleapis.com/better-internship-public-bucket/${response.verificationCode}.pdf`;
             const entityName =
               entities?.find((c) => c.id === companyId)?.display_name ?? "Company";
@@ -610,7 +628,7 @@ function GenerateFormModal({
     !hasErrors &&
     !isSubmitting;
 
-  const setCustomField = (k: string, v: string) => {
+  const setCustomField = (k: string, v: string | number) => {
     setCustom((prev) => {
       const next = { ...prev, [k]: v } as any;
       const def = customDefs.find((d) => d.key === k);
@@ -703,7 +721,7 @@ function FieldRenderer({
 }: {
   def: FieldDef;
   value: string;
-  onChange: (v: string) => void;
+  onChange: (v: string | number) => void;
   error?: string;
 }) {
   const required = def.required ?? false;
@@ -728,7 +746,6 @@ function FieldRenderer({
   }
 
   if (def.type === "date") {
-    const ms = dateStrToMs(value);
 
     // Disable dates before today+7
     let disabledDays: any | undefined;
@@ -754,8 +771,8 @@ function FieldRenderer({
       <div className="space-y-1.5">
         <FormDatePicker
           label={def.label}
-          date={ms}
-          setter={(nextMs) => onChange(msToDateStr(nextMs))}
+          date={parseInt(value)}
+          setter={(nextMs) => onChange(nextMs ?? 0)}
           className="w-full"
           contentClassName="z-[1100]"
           placeholder="Select date"
