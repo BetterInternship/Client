@@ -199,7 +199,6 @@ export default function FormsPage() {
               student_signatory_name: `${profile.data?.first_name} ${profile.data?.last_name}`
             });
             const fileUrl = `https://storage.googleapis.com/better-internship-public-bucket/${response.verificationCode}.pdf`;
-
             const entityName =
               entities?.find((c) => c.id === companyId)?.display_name ?? "Company";
             const formName =
@@ -216,17 +215,8 @@ export default function FormsPage() {
               ...prev,
             ]);
 
+            window.open(fileUrl, "_blank")
             closeGlobalModal("generate-form");
-
-            // auto-download right after generation
-            if (fileUrl) {
-              const a = document.createElement("a");
-              a.href = fileUrl;
-              a.download = fileUrl.split("/").pop() || "document.pdf";
-              document.body.appendChild(a);
-              a.click();
-              a.remove();
-            }
           } finally {
             setIsGeneratingGlobal(false);
           }
