@@ -202,7 +202,6 @@ export default function FormsPage() {
     openGlobalModal(
       "generate-form",
       <GenerateFormModal
-        title={FORM_TEMPLATES.find((t) => t.id === formId)?.name ?? "Form"}
         description={FORM_TEMPLATES.find((t) => t.id === formId)?.description}
         companies={COMPANIES}
         customDefs={defs}
@@ -262,6 +261,9 @@ export default function FormsPage() {
         allowBackdropClick: false,
         closeOnEsc: true,
         panelClassName: "w-[98vw] sm:min-w-[50svw]",
+        title:
+          "Generate " +
+          (FORM_TEMPLATES.find((t) => t.id === formId)?.name ?? "Form"),
       }
     );
   }
@@ -579,7 +581,6 @@ export default function FormsPage() {
    ────────────────────────────────────────────── */
 
 function GenerateFormModal({
-  title,
   description,
   companies,
   customDefs,
@@ -588,7 +589,6 @@ function GenerateFormModal({
   onCancel,
   onGenerate,
 }: {
-  title: string;
   description?: string;
   companies: { id: string; name: string }[];
   customDefs: FieldDef[];
@@ -639,10 +639,6 @@ function GenerateFormModal({
   return (
     <div className="overflow-auto">
       <div className="mb-3">
-        <div className="flex items-center gap-2 mb-1">
-          <AlertTriangle className="size-4 text-gray-400" />
-          <h3 className="text-lg font-semibold">Generate {title}</h3>
-        </div>
         <p className="text-sm text-gray-600">
           {description ??
             "Choose a company and fill any additional details for this template."}
@@ -735,7 +731,10 @@ function FieldRenderer({
 
     // Disable dates before today+7
     let disabledDays: any | undefined;
-    if (def.key === "internship_start_date" || def.key === "internship_end_date") {
+    if (
+      def.key === "internship_start_date" ||
+      def.key === "internship_end_date"
+    ) {
       const t = new Date();
       const min = new Date(
         t.getFullYear(),
