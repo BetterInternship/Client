@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { OutsideTabPanel, OutsideTabs } from "@/components/ui/outside-tabs";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { Card } from "@/components/ui/card";
@@ -17,6 +17,7 @@ import {
 } from "@/components/EditForm";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useDbRefs } from "@/lib/db/use-refs";
+import { UserService } from "@/lib/api/services";
 
 /* ──────────────────────────────────────────────
    Types
@@ -106,40 +107,20 @@ function isComplete(schema: FieldDef[], values: Values): boolean {
 }
 
 /* ──────────────────────────────────────────────
-   Mock “backend”
-   ────────────────────────────────────────────── */
-
-async function mockGenerateFormAPI(payload: {
-  templateId: string;
-  companyId: string;
-  autofill: Values;
-  custom: Values;
-  profile: any;
-}): Promise<{ fileUrl: string }> {
-  // Simulate network + server processing time
-  const delay = Math.floor(1200 + Math.random() * 1200);
-  await new Promise((r) => setTimeout(r, delay));
-
-  // In a real API, fileUrl would be returned by the server after rendering.
-  const fileUrl =
-    payload.templateId === "student-moa"
-      ? "../YAUN_Student_MOA.pdf"
-      : "../YAUN_Student_MOA.pdf"; // fallback demo file too
-
-  // Optional: simulate occasional server-side validation
-  // if (!payload.companyId) throw new Error("Missing company");
-
-  return { fileUrl };
-}
-
-/* ──────────────────────────────────────────────
    Page
    ────────────────────────────────────────────── */
-
 export default function FormsPage() {
   const profile = useProfileData();
   const { colleges } = useDbRefs();
+  const [entities, setEntities] = useState<{ id: string, display_name: string }[]>([]);
 
+  useEffect(() => {
+    UserService.getEntityList().then(response => {
+      // @ts-ignore
+      setEntities(response.entities)
+    })
+  }, [])
+  
   const [tab, setTab] = useState<TabKey>("Forms Autofill");
   const [autofill, setAutofill] = useState<Values>({});
   const [autofillErrors, setAutofillErrors] = useState<Record<string, string>>(
@@ -183,11 +164,6 @@ export default function FormsPage() {
   const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
   const [selectedFormId, setSelectedFormId] = useState<string | null>(null);
 
-  const selectedForm = useMemo(
-    () => availableForms.find((f) => f.id === selectedFormId) || null,
-    [selectedFormId, availableForms]
-  );
-
   // Demo: global banner while generating (adds realism)
   const [isGeneratingGlobal, setIsGeneratingGlobal] = useState(false);
 
@@ -204,30 +180,28 @@ export default function FormsPage() {
       <GenerateFormModal
         title={FORM_TEMPLATES.find((t) => t.id === formId)?.name ?? "Form"}
         description={FORM_TEMPLATES.find((t) => t.id === formId)?.description}
-        companies={COMPANIES}
+        entities={entities}
         customDefs={defs}
-        initialCompanyId=""
+        initialEntityId=""
         initialCustom={initialCustom}
         onCancel={() => closeGlobalModal("generate-form")}
         onGenerate={async (companyId, customValues) => {
           // validate before submit
           const errs = validateMany(defs, customValues);
           if (Object.keys(errs).length > 0 || !companyId) return;
-
-          const payload = {
-            templateId: formId,
-            companyId,
-            autofill,
-            custom: customValues,
-            profile: profile.data,
-          };
+          if (!profile.data?.id) return alert("Not logged in.");
 
           try {
             setIsGeneratingGlobal(true);
-            const { fileUrl } = await mockGenerateFormAPI(payload);
+            const fileUrl = `https://storage.googleapis.com/better-internship-public-bucket/${response.verificationCode}.pdf`;
+            const response = await UserService.generateStudentMoa({
+              employer_id: companyId,
+              user_id: profile.data?.id,
+              student_signatory_name: `${profile.data?.first_name} ${profile.data?.last_name}`
+            });
 
-            const companyName =
-              COMPANIES.find((c) => c.id === companyId)?.name ?? "Company";
+            const entityName =
+              entities?.find((c) => c.id === companyId)?.display_name ?? "Company";
             const formName =
               FORM_TEMPLATES.find((f) => f.id === formId)?.name ?? "Form";
 
@@ -235,7 +209,7 @@ export default function FormsPage() {
               {
                 id: `pf-${Math.random().toString(36).slice(2, 8)}`,
                 name: formName,
-                company: companyName,
+                company: entityName,
                 createdAt: new Date().toISOString().slice(0, 10),
                 fileUrl,
               },
@@ -244,7 +218,7 @@ export default function FormsPage() {
 
             closeGlobalModal("generate-form");
 
-            // 👉 auto-download right after generation
+            // auto-download right after generation
             if (fileUrl) {
               const a = document.createElement("a");
               a.href = fileUrl;
@@ -549,7 +523,7 @@ export default function FormsPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2 justify-between sm:justify-end">
-                        <Badge variant="outline" className="text-xs">
+                        <Badge className="text-xs">
                           PDF
                         </Badge>
                         <Button
@@ -581,30 +555,30 @@ export default function FormsPage() {
 function GenerateFormModal({
   title,
   description,
-  companies,
+  entities,
   customDefs,
-  initialCompanyId,
+  initialEntityId,
   initialCustom,
   onCancel,
   onGenerate,
 }: {
   title: string;
   description?: string;
-  companies: { id: string; name: string }[];
+  entities: { id: string; display_name: string }[];
   customDefs: FieldDef[];
-  initialCompanyId: string;
+  initialEntityId: string;
   initialCustom: Values;
   onCancel: () => void;
   onGenerate: (companyId: string, customValues: Values) => Promise<void> | void;
 }) {
-  const [companyId, setCompanyId] = useState<string>(initialCompanyId);
+  const [entityId, setEntityId] = useState<string>(initialEntityId);
   const [custom, setCustom] = useState<Values>(initialCustom);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const hasErrors = Object.values(errors).some(Boolean);
   const canGenerate =
-    !!companyId &&
+    !!entityId &&
     isComplete(customDefs, custom) &&
     !hasErrors &&
     !isSubmitting;
@@ -630,7 +604,7 @@ function GenerateFormModal({
     if (!canGenerate) return;
     try {
       setIsSubmitting(true);
-      await onGenerate(companyId, custom);
+      await onGenerate(entityId, custom);
     } finally {
       setIsSubmitting(false);
     }
@@ -653,9 +627,9 @@ function GenerateFormModal({
         {/* Company */}
         <FormDropdown
           label="Company"
-          value={companyId}
-          options={companies.map((c) => ({ id: c.id, name: c.name }))}
-          setter={(v) => setCompanyId(String(v ?? ""))}
+          value={entityId}
+          options={entities.map((c) => ({ id: c.id, name: c.display_name }))}
+          setter={(v) => setEntityId(String(v ?? ""))}
         />
 
         {/* Custom fields */}
@@ -683,7 +657,7 @@ function GenerateFormModal({
           {isSubmitting ? (
             <span className="inline-flex items-center gap-2">
               <Loader2 className="size-4 animate-spin" />
-              Generating…
+              Generating...
             </span>
           ) : (
             "Generate"
@@ -781,7 +755,7 @@ function FieldRenderer({
         <TimeInputNative
           label={def.label}
           value={value} // "HH:MM"
-          onChange={(v) => onChange(v ?? "")}
+          onChange={(v) => onChange(v?.toString() ?? "")}
           helper={def.helper}
         />
         {!!error && <p className="text-xs text-red-600">{error}</p>}
@@ -975,43 +949,3 @@ const FORM_TEMPLATES: FormTemplate[] = [
   },
 ];
 
-const COMPANIES = [
-  { id: "ent-urc", name: "URC" },
-  { id: "ent-factset", name: "FactSet" },
-  { id: "ent-better-internship", name: "BetterInternship" },
-  { id: "ent-evident", name: "Evident Integrated Marketing & PR" },
-  { id: "ent-bounty-fresh", name: "Bounty Fresh Group" },
-  { id: "ent-smarter-good", name: "Smarter Good" },
-  { id: "ent-masat", name: "MASAT" },
-  { id: "ent-dice205", name: "DICE205 Digital" },
-  { id: "ent-lobien", name: "Lobien Realty Group" },
-  { id: "ent-intelligent-skin", name: "Intelligent Skin Care" },
-  { id: "ent-hikvision", name: "HIKVISION Singapore Pte. Philippines" },
-  { id: "ent-smx", name: "SMX Convention Center" },
-  { id: "ent-markenburg", name: "Markenburg International Foods" },
-  { id: "ent-enshored", name: "Enshored" },
-  { id: "ent-world-youth", name: "World Youth Alliance Asia Pacific" },
-  { id: "ent-valiant", name: "Valiant Advanced Systems and Devices" },
-  { id: "ent-romega", name: "Romega Solutions" },
-  { id: "ent-1export", name: "1Export Trade and Services Inc" },
-  { id: "ent-willis", name: "Willis Towers Watson" },
-  { id: "ent-firstgen", name: "First Gen" },
-  { id: "ent-amg", name: "AMG Systemtechnik Inc" },
-  { id: "ent-stratpoint", name: "Stratpoint Global Outsourcing" },
-  { id: "ent-sunlife", name: "Sun Life Philippines" },
-  { id: "ent-offshorebp", name: "Offshore Business Processing" },
-  { id: "ent-giftaway", name: "Giftaway" },
-  { id: "ent-jollibee", name: "Jollibee" },
-  { id: "ent-generationhope", name: "GenerationHope" },
-  { id: "ent-stafford", name: "Stafford Paper" },
-  { id: "ent-alaska", name: "Alaska Milk Corporation" },
-  { id: "ent-3e-hitech", name: "3E Hitech Solutions, Inc." },
-  { id: "ent-aim", name: "Asian Institute of Management" },
-  { id: "ent-osave", name: "OSAVE Trading Philippines" },
-  { id: "ent-home-depot", name: "World Home Depot" },
-  { id: "ent-autokid", name: "Autokid Subic Trading Corporation" },
-  { id: "ent-convey", name: "Convey Health Solutions" },
-  { id: "ent-greenfield", name: "Greenfield Marketers One" },
-  { id: "ent-safeway", name: "Safeway Philtech" },
-  { id: "ent-hashcompany", name: "HashCompany" },
-];

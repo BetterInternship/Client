@@ -139,7 +139,11 @@ export const UserService = {
     user_id: string;
     student_signatory_name: string;
   }) {
-    return APIClient.post<UserResponse>(
+    return APIClient.post<{
+      moaRequestId: string,
+      signedDocumentId: string,
+      verificationCode: string,
+    }>(
       APIRouteBuilder("student").r("moa", "request").build({ moaServer: true }),
       data
     );
