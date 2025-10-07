@@ -148,6 +148,7 @@ export const UserService = {
     internship_start_time: string;
     internship_end_date: number;
     internship_end_time: string;
+    internship_coordinator_name: string;
   }) {
     return APIClient.post<{
       moaRequestId: string,

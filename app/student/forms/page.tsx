@@ -211,8 +211,8 @@ export default function FormsPage() {
               internship_start_time: customValues.internship_clock_in_time,
               internship_end_date: parseInt(customValues.internship_end_date),
               internship_end_time: customValues.internship_clock_out_time,
+              internship_coordinator_name: customValues.dlsu_coordinator_name,
             }
-            console.log(payload)
 
             const response = await UserService.generateStudentMoa(payload);
             const fileUrl = `https://storage.googleapis.com/better-internship-public-bucket/${response.verificationCode}.pdf`;
