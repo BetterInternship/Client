@@ -116,9 +116,6 @@ async function mockGenerateFormAPI(payload: {
   custom: Values;
   profile: any;
 }): Promise<{ fileUrl: string }> {
-  // Simulate network + server processing time
-  const delay = Math.floor(1200 + Math.random() * 1200);
-  await new Promise((r) => setTimeout(r, delay));
 
   // In a real API, fileUrl would be returned by the server after rendering.
   const fileUrl =
@@ -126,8 +123,6 @@ async function mockGenerateFormAPI(payload: {
       ? "../YAUN_Student_MOA.pdf"
       : "../YAUN_Student_MOA.pdf"; // fallback demo file too
 
-  // Optional: simulate occasional server-side validation
-  // if (!payload.companyId) throw new Error("Missing company");
 
   return { fileUrl };
 }
@@ -243,7 +238,6 @@ export default function FormsPage() {
 
             closeGlobalModal("generate-form");
 
-            // 👉 auto-download right after generation
             if (fileUrl) {
               const a = document.createElement("a");
               a.href = fileUrl;
@@ -502,7 +496,7 @@ export default function FormsPage() {
                 {availableForms.map((f) => (
                   <li
                     key={f.id}
-                    className="rounded-lg border p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                    className="rounded-[0.33em] border p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
                   >
                     <div className="min-w-0">
                       <div className="font-medium truncate">{f.name}</div>
@@ -512,13 +506,25 @@ export default function FormsPage() {
                         </div>
                       )}
                     </div>
-                    <Button
-                      size="sm"
-                      className="w-full sm:w-auto"
-                      onClick={() => openGenerate(f.id)}
-                    >
-                      Generate
-                    </Button>
+                    <div className="sm:space-x-2">
+                      <Button
+                        size="sm"
+                        className="w-full sm:w-auto"
+                        variant="outline"
+                        asChild
+                      >
+                        <a href="Student_MOA.pdf" download>
+                          View Template
+                        </a>
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="w-full sm:w-auto"
+                        onClick={() => openGenerate(f.id)}
+                      >
+                        Generate
+                      </Button>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -924,7 +930,6 @@ const FORM_TEMPLATES: FormTemplate[] = [
         validators: [
           (start) => {
             if (!start) return null;
-            // parse "YYYY-MM-DD" to local midnight
             const [y, m, d] = start.split("-").map(Number);
             const startDate = new Date(y, (m ?? 1) - 1, d ?? 1, 0, 0, 0, 0);
 
