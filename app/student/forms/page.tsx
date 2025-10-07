@@ -986,3 +986,17 @@ const FORM_TEMPLATES: FormTemplate[] = [
   },
 ];
 
+/* ──────────────────────────────────────────────
+   DLSU ID helpers
+   ────────────────────────────────────────────── */
+const DLSU_ID_RE = /^(?:0[0-9]|1[0-9]|2[0-9])\d{6}[A-Z]?$/;
+
+function normalizeDlsuId(raw: string) {
+  return (raw || "").replace(/[\s-]/g, "").toUpperCase();
+}
+
+function validateDlsuId(id: string): string | null {
+  if (!id) return "This field is required.";
+  const v = normalizeDlsuId(id);
+  return DLSU_ID_RE.test(v) ? null : "Invalid DLSU ID (e.g., 12141380).";
+}
