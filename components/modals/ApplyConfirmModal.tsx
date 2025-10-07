@@ -30,9 +30,9 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
   const [applying, setApplying] = useState(false);
   const [coverError, setCoverError] = useState<string | null>(null);
 
-  const needsGH = !!job?.require_github;
-  const needsPF = !!job?.require_portfolio;
-  const needsCL = (job?.require_cover_letter ?? true) === true;
+  const needsGH = !!job?.internship_preferences?.require_github;
+  const needsPF = !!job?.internship_preferences?.require_portfolio;
+  const needsCL = (job?.internship_preferences?.require_cover_letter ?? true) === true;
 
   const hasGH = !!profile.data?.github_link?.trim();
   const hasPF = !!profile.data?.portfolio_link?.trim();

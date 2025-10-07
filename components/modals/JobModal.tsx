@@ -39,12 +39,12 @@ export const JobModal = ({
   // Requirement checks (align with desktop)
   const hasGithub = !!user?.github_link?.trim();
   const hasPortfolio = !!user?.portfolio_link?.trim();
-  const needsCover = !!job?.require_cover_letter;
-  const needsGithub = !!job?.require_github;
-  const needsPortfolio = !!job?.require_portfolio;
+  const needsCover = !!job?.internship_preferences?.require_cover_letter;
+  const needsGithub = !!job?.internship_preferences?.require_github;
+  const needsPortfolio = !!job?.internship_preferences?.require_portfolio;
   const missingRequired =
-    (!!job?.require_github && !hasGithub) ||
-    (!!job?.require_portfolio && !hasPortfolio);
+    (!!job?.internship_preferences?.require_github && !hasGithub) ||
+    (!!job?.internship_preferences?.require_portfolio && !hasPortfolio);
 
   return (
     <ModalComponent ref={ref}>

@@ -234,11 +234,12 @@ export default function SearchPage() {
             skipped.push({ job, reason: "Already applied" });
             continue;
           }
+          const internshipPreferences = job.internship_preferences;
           const needsGithub =
-            job.require_github && !profile.data?.github_link?.trim();
+            internshipPreferences?.require_github && !profile.data?.github_link?.trim();
           const needsPortfolio =
-            job.require_portfolio && !profile.data?.portfolio_link?.trim();
-          const needsCover = job.require_cover_letter && !coverLetter.trim();
+            internshipPreferences?.require_portfolio && !profile.data?.portfolio_link?.trim();
+          const needsCover = internshipPreferences?.require_cover_letter && !coverLetter.trim();
 
           if (needsGithub) {
             skipped.push({ job, reason: "Requires GitHub profile" });
