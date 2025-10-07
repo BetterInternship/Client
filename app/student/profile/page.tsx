@@ -9,7 +9,7 @@ import {
 } from "react";
 import { motion } from "framer-motion";
 import { Edit2, Upload, Eye, Camera, CheckCircle2, Globe2 } from "lucide-react";
-import { useProfile } from "@/lib/api/student.api";
+import { useProfileData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
 import { useDbRefs } from "@/lib/db/use-refs";
@@ -20,7 +20,7 @@ import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { Button } from "@/components/ui/button";
 import { FileUploadInput, useFile, useFileUpload } from "@/hooks/use-file";
 import { Card } from "@/components/ui/card";
-import { getFullName } from "@/lib/utils/user-utils";
+import { getFullName } from "@/lib/profile";
 import { toURL, openURL } from "@/lib/utils/url-utils";
 import {
   isValidOptionalGitHubURL,
@@ -51,20 +51,14 @@ import {
 } from "@/components/ui/chip-select";
 import { Badge } from "@/components/ui/badge";
 import { AutoApplyCard } from "@/components/features/student/profile/AutoApplyCard";
+import { useProfileActions } from "@/lib/api/student.actions.api";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
-const getNearestMonthTimestamp = () => {
-  const date = new Date();
-  const dateString = `${date.getFullYear()}-${(
-    "0" + (date.getMonth() + 1).toString()
-  ).slice(-2)}-01T00:00:00.000Z`;
-  return Date.parse(dateString);
-};
-
 export default function ProfilePage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
-  const profile = useProfile();
+  const profile = useProfileData();
+  const profileActions = useProfileActions();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -101,9 +95,18 @@ export default function ProfilePage() {
     filename: "pfp",
   });
 
+  const data = profile.data as PublicUser | undefined;
+  const { score, parts, tips } = computeProfileScore(data);
+
   useEffect(() => {
     if (searchParams.get("edit") === "true") setIsEditing(true);
   }, [searchParams]);
+
+  useEffect(() => {
+    if (data?.resume) {
+      syncResumeURL();
+    }
+  }, [data?.resume, syncResumeURL]);
 
   if (profile.isPending) {
     return (
@@ -124,11 +127,6 @@ export default function ProfilePage() {
     );
   }
 
-  console.log(profile);
-
-  const data = profile.data as PublicUser | undefined;
-  const { score, parts, tips } = computeProfileScore(data);
-
   useEffect(() => {
     if (data?.resume) {
       syncResumeURL();
@@ -143,18 +141,17 @@ export default function ProfilePage() {
   const handleAutoApplySave = async () => {
     setAutoApplySaving(true);
     setAutoApplyError(null);
-    
+
     const prev = !!profile.data?.apply_for_me;
-    console.log(prev);
 
     try {
-      await profile.update({ apply_for_me: !prev });
-    } catch (e: any){
+      await profileActions.update.mutateAsync({ apply_for_me: !prev });
+    } catch (e: any) {
       setAutoApplyError(e?.message ?? "Failed to update auto-apply");
     } finally {
-      setAutoApplySaving(false)
+      setAutoApplySaving(false);
     }
-  }
+  };
 
   return (
     data && (
@@ -238,7 +235,7 @@ export default function ProfilePage() {
             {isEditing && (
               <ProfileEditForm data={data}>
                 <ProfileEditor
-                  updateProfile={profile.update}
+                  updateProfile={profileActions.update.mutateAsync}
                   ref={profileEditorRef}
                   rightSlot={
                     <Button
@@ -722,7 +719,6 @@ const ProfileEditor = forwardRef<
         if (hasCalendarErrors) setTab("Calendar");
         else if (hasPrefsErrors) setTab("Internship Details");
         else setTab("Student Profile");
-        console.log(hasErrors, formErrors);
         return false;
       }
 
@@ -888,14 +884,14 @@ const ProfileEditor = forwardRef<
         ? ""
         : "Enter a valid number of hours (0-2000).";
     });
-    addValidator("job_mode_ids", (vals?: string[]) => {
+    addValidator("job_mode_ids", (vals?: number[]) => {
       if (!vals) return "";
       const valid = new Set(jobModeOptions.map((o) => o.id));
       return vals.every((v) => valid.has(v))
         ? ""
         : "Invalid work mode selected.";
     });
-    addValidator("job_type_ids", (vals?: string[]) => {
+    addValidator("job_type_ids", (vals?: number[]) => {
       if (!vals) return "";
       const valid = new Set(jobTypeOptions.map((o) => o.id));
       return vals.every((v) => valid.has(v))
@@ -1312,6 +1308,7 @@ const ResumeBox = ({
               variant="outline"
               onClick={openResumeModal}
               disabled={resumeIsUploading}
+              className="hidden sm:inline-flex"
             >
               <Eye className="h-4 w-4" />
             </Button>
@@ -1393,6 +1390,13 @@ const ProfileLinkBadge = ({
 // ----------------------------
 //  Helpers
 // ----------------------------
+const getNearestMonthTimestamp = () => {
+  const date = new Date();
+  const dateString = `${date.getFullYear()}-${(
+    "0" + (date.getMonth() + 1).toString()
+  ).slice(-2)}-01T00:00:00.000Z`;
+  return Date.parse(dateString);
+};
 
 // For profile score
 function computeProfileScore(p?: Partial<PublicUser>): {

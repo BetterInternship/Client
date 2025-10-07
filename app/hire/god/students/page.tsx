@@ -14,7 +14,7 @@ import {
   ListSummary,
 } from "@/components/features/hire/god/ui";
 import { BoolBadge } from "@/components/ui/badge";
-import { getFullName } from "@/lib/utils/user-utils";
+import { getFullName } from "@/lib/profile";
 import { formatDate } from "@/lib/utils";
 import {
   useUsers,
@@ -265,6 +265,12 @@ export default function StudentsPage() {
         subtitle={<span className="text-xs text-slate-500">{u.email}</span>}
         metas={
           <>
+            <BoolBadge
+              state={u.apply_for_me}
+              onValue="Apply for me: ON"
+              offValue="Apply for me: OFF"
+              offScheme="destructive"
+            />
             <BoolBadge
               state={u.is_verified}
               onValue="verified"

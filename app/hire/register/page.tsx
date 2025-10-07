@@ -138,7 +138,7 @@ const EmployerEditor = ({
       const errorMsg =
         result?.error ||
         result?.message ||
-        "Registration failed. Please check your information and try again.";
+        "Please check your information and try again.";
       alert(`Registration Error: ${errorMsg}`);
       setIsRegistering(false);
       return;

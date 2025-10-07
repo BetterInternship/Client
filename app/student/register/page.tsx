@@ -15,6 +15,9 @@ import {
 import { MultiChipSelect } from "@/components/ui/chip-select";
 import { SinglePickerBig } from "@/components/features/student/SinglePickerBig";
 import { useAuthContext } from "@/lib/ctx-auth";
+import { BooleanCheckIcon } from "@/components/ui/icons";
+import { useProfileData } from "@/lib/api/student.data.api";
+import { useRouter } from "next/navigation";
 
 interface FormInputs {
   university?: string;
@@ -39,10 +42,33 @@ const getNearestMonthTimestamp = () => {
   return Date.parse(dateString);
 };
 
+const StepCheckIndicator = ({ checked }: { checked: boolean }) => {
+  return (
+    <div className={checked ? "text-supportive" : ""}>
+      <BooleanCheckIcon checked={checked} />
+    </div>
+  );
+};
+
 export default function RegisterPage() {
   const refs = useDbRefs();
   const auth = useAuthContext();
   const [submitting, setSubmitting] = useState(false);
+  const profile = useProfileData();
+  const router = useRouter();
+
+  const nextUrl = "/search";
+  const deciding = profile.data === undefined;
+
+  // Redirect only after we know the profile state
+  useEffect(() => {
+    if (deciding) return;
+    if (profile.data?.is_verified) router.replace(nextUrl);
+  }, [deciding, profile.data?.is_verified, router]);
+
+  // Prevent any flash
+  if (deciding || profile.data?.is_verified) return null;
+
   const regForm = useForm<FormInputs>({
     defaultValues: {
       internship_type: undefined,
@@ -121,8 +147,7 @@ export default function RegisterPage() {
           return;
         }
 
-        // We don't use router, because we need the reload for some reason
-        location.href = "/search";
+        location.href = "/register/verify?next=/search"; // go to OTP verification page (next step)
       })
       .catch((error) => {
         setSubmitting(false);
@@ -196,10 +221,10 @@ export default function RegisterPage() {
         shouldDirty: true,
       });
     }
-  }, [internshipType, regForm]);
+  }, [internshipType, regForm.getValues()]);
 
   return (
-    <div className="min-h-full">
+    <div className="">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
         {/* Header */}
         <div className="flex items-center justify-center">
@@ -214,135 +239,184 @@ export default function RegisterPage() {
         </div>
 
         <div className="mt-8 flex flex-col items-center gap-2">
-          <div className="lg:col-span-2 space-y-2 max-w-lg w-full">
-            <Card className="p-4 sm:p-6 block">
+          <div className="lg:col-span-2 space-y-2 max-w-lg w-full ">
+            <Card className="p-4 sm:p-6 block bg-transparent border-0">
               <form
                 className="space-y-6"
                 id="reg-form"
                 onSubmit={() => handleSubmit(regForm.getValues())}
               >
                 {/* Q1: Voluntary or Credited */}
-                <div className="space-y-2">
-                  <SinglePickerBig
-                    required
-                    autoCollapse={false}
-                    label="Are you looking for internship credit?"
-                    options={[
-                      {
-                        value: "credited",
-                        label: "Credited",
-                        description: "Counts for OJT",
-                      },
-                      {
-                        value: "voluntary",
-                        label: "Voluntary",
-                        description: "Outside practicum",
-                      },
-                    ]}
-                    value={internshipType ?? null}
-                    onClear={() =>
-                      regForm.setValue("internship_type", undefined)
-                    }
-                    onChange={(v) =>
-                      regForm.setValue("internship_type", v ?? undefined, {
-                        shouldDirty: true,
-                        shouldTouch: true,
-                      })
-                    }
-                  />
+                <div className="flex flex-row space-between">
+                  {(isCredited || isVoluntary) && (
+                    <StepCheckIndicator
+                      checked={!!regForm.watch("internship_type")}
+                    />
+                  )}
+                  <div className="flex-1 space-y-2">
+                    <SinglePickerBig
+                      required
+                      autoCollapse={false}
+                      label="Are you looking for internship credit?"
+                      options={[
+                        {
+                          value: "credited",
+                          label: "Credited",
+                          description: "Counts for OJT",
+                        },
+                        {
+                          value: "voluntary",
+                          label: "Voluntary",
+                          description: "Outside practicum",
+                        },
+                      ]}
+                      value={internshipType ?? null}
+                      onClear={() =>
+                        regForm.setValue("internship_type", undefined)
+                      }
+                      onChange={(v) =>
+                        regForm.setValue("internship_type", v ?? undefined, {
+                          shouldDirty: true,
+                          shouldTouch: true,
+                        })
+                      }
+                    />
+                  </div>
                 </div>
 
                 {/* Start date + hours (only credited shows hours) */}
                 {(isCredited || isVoluntary) && (
                   <div className="space-y-5">
-                    <FormMonthPicker
-                      label="Ideal internship start"
-                      date={regForm.watch("expected_start_date") ?? undefined}
-                      setter={(ms) =>
-                        regForm.setValue("expected_start_date", ms ?? null, {
-                          shouldDirty: true,
-                        })
-                      }
-                      fromYear={2025}
-                      toYear={2030}
-                      placeholder="Select month"
-                    />
+                    {/* University email */}
+                    <div className="w-full flex flex-row space-between">
+                      <StepCheckIndicator
+                        checked={!!regForm.watch("university")}
+                      />
+                      <div className="space-y-2 flex-1">
+                        <FormDropdown
+                          label="Which university are you from?"
+                          options={refs.universities}
+                          setter={(value) =>
+                            regForm.setValue("university", value)
+                          }
+                          className="flex-1"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="w-full flex flex-row space-between">
+                      <div
+                        className={
+                          !!regForm.watch("expected_start_date")
+                            ? "text-supportive"
+                            : ""
+                        }
+                      >
+                        <StepCheckIndicator
+                          checked={!!regForm.watch("expected_start_date")}
+                        />
+                      </div>
+                      <FormMonthPicker
+                        label="Ideal internship start"
+                        date={regForm.watch("expected_start_date") ?? undefined}
+                        setter={(ms) =>
+                          regForm.setValue("expected_start_date", ms ?? null, {
+                            shouldDirty: true,
+                          })
+                        }
+                        fromYear={2025}
+                        toYear={2030}
+                        placeholder="Select month"
+                        className="flex-1"
+                      />
+                    </div>
 
                     {isCredited && (
-                      <div className="space-y-1">
-                        <FormInput
-                          label="Total internship hours"
-                          inputMode="numeric"
-                          value={regForm.watch("expected_duration_hours") ?? ""}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            const n = v === "" ? null : Number(v);
-                            regForm.setValue(
-                              "expected_duration_hours",
-                              Number.isFinite(n as number)
-                                ? (n as number)
-                                : null,
-                              { shouldDirty: true }
-                            );
-                          }}
-                          required={false}
+                      <div className="w-full flex flex-row space-between">
+                        <StepCheckIndicator
+                          checked={!!regForm.watch("expected_duration_hours")}
                         />
+                        <div className="space-y-2 flex-1">
+                          <FormInput
+                            label="Total internship hours"
+                            inputMode="numeric"
+                            value={
+                              regForm.watch("expected_duration_hours") ?? ""
+                            }
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              const n = v === "" ? null : Number(v);
+                              regForm.setValue(
+                                "expected_duration_hours",
+                                Number.isFinite(n as number)
+                                  ? (n as number)
+                                  : null,
+                                { shouldDirty: true }
+                              );
+                            }}
+                            className="flex-1"
+                          />
+                        </div>
                       </div>
                     )}
 
-                    <div className="space-y-2">
-                      <AutocompleteTreeMulti
-                        required
-                        label="Desired internship role"
-                        tree={POSITION_TREE}
-                        value={regForm.watch("job_category_ids") || []}
-                        setter={(vals: string[]) =>
-                          regForm.setValue("job_category_ids", vals)
-                        }
-                        placeholder="Select one or more"
+                    <div className="w-full flex flex-row space-between">
+                      <StepCheckIndicator
+                        checked={!!regForm.watch("job_category_ids")?.length}
                       />
+                      <div className="space-y-2 flex-1">
+                        <AutocompleteTreeMulti
+                          required
+                          label="Desired internship role"
+                          tree={POSITION_TREE}
+                          value={regForm.watch("job_category_ids") || []}
+                          setter={(vals: string[]) =>
+                            regForm.setValue("job_category_ids", vals)
+                          }
+                          placeholder="Select one or more"
+                        />
+                      </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <FieldLabel>Work setup</FieldLabel>
-                      <MultiChipSelect
-                        className="justify-start"
-                        value={regForm.watch("job_setup_ids") || []}
-                        onChange={(vals) =>
-                          regForm.setValue("job_setup_ids", vals)
-                        }
-                        options={(refs.job_modes || []).map((o: any) => ({
-                          value: String(o.id),
-                          label: o.name,
-                        }))}
-                      />
+                    <div className="w-full flex flex-row space-between">
+                      <StepCheckIndicator checked={true} />
+                      <div className="space-y-2 flex-1">
+                        <div>
+                          <FieldLabel>Work setup</FieldLabel>
+                          <MultiChipSelect
+                            className="justify-start"
+                            value={regForm.watch("job_setup_ids") || []}
+                            onChange={(vals) =>
+                              regForm.setValue("job_setup_ids", vals)
+                            }
+                            options={(refs.job_modes || []).map((o: any) => ({
+                              value: String(o.id),
+                              label: o.name,
+                            }))}
+                          />
+                        </div>
+                      </div>
                     </div>
 
                     {/* Job types */}
-                    <div className="space-y-2">
-                      <FieldLabel>Work-time commitment</FieldLabel>
-                      <MultiChipSelect
-                        className="justify-start"
-                        value={regForm.watch("job_commitment_ids") || []}
-                        onChange={(vals) =>
-                          regForm.setValue("job_commitment_ids", vals)
-                        }
-                        options={(refs.job_types || []).map((o: any) => ({
-                          value: String(o.id),
-                          label: o.name,
-                        }))}
-                      />
-                    </div>
-
-                    {/* University email */}
-                    <div className="space-y-2">
-                      <FormDropdown
-                        label="Which university are you from?"
-                        options={refs.universities}
-                        setter={(value) =>
-                          regForm.setValue("university", value)
-                        }
-                      />
+                    <div className="w-full flex flex-row space-between">
+                      <StepCheckIndicator checked={true} />
+                      <div className="space-y-2 flex-1">
+                        <div>
+                          <FieldLabel>Work-time commitment</FieldLabel>
+                          <MultiChipSelect
+                            className="justify-start"
+                            value={regForm.watch("job_commitment_ids") || []}
+                            onChange={(vals) =>
+                              regForm.setValue("job_commitment_ids", vals)
+                            }
+                            options={(refs.job_types || []).map((o: any) => ({
+                              value: String(o.id),
+                              label: o.name,
+                            }))}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -351,7 +425,7 @@ export default function RegisterPage() {
 
             {/* Submit button*/}
             {(isCredited || isVoluntary) && (
-              <div className="flex justify-end">
+              <div className="flex justify-end px-6">
                 <Button
                   className="w-full sm:w-auto"
                   type="button"

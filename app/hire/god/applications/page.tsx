@@ -9,7 +9,7 @@ import {
   ListSummary,
 } from "@/components/features/hire/god/ui";
 import { useEmployers } from "@/lib/api/god.api";
-import { getFullName } from "@/lib/utils/user-utils";
+import { getFullName } from "@/lib/profile";
 import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useDbRefs } from "@/lib/db/use-refs";

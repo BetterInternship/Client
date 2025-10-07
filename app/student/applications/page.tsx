@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 // Hooks (preserving existing implementations)
-import { useApplications } from "@/lib/api/student.api";
+import { useApplicationsData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { formatTimeAgo } from "@/lib/utils";
@@ -18,47 +18,41 @@ import { Loader } from "@/components/ui/loader";
 import { Card } from "@/components/ui/card";
 import { JobHead } from "@/components/shared/jobs";
 import { UserApplication } from "@/lib/db/db.types";
+import { HeaderText, HeaderIcon } from "@/components/ui/text";
+import { Separator } from "@/components/ui/separator";
+import { PageError } from "@/components/ui/error";
 
 export default function ApplicationsPage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
-  const applications = useApplications();
+  const applications = useApplicationsData();
   redirectIfNotLoggedIn();
 
   return (
     <div className="container max-w-5xl p-10 pt-16 mx-auto">
       <div className="mb-6 sm:mb-8 animate-fade-in">
-        <div className="flex flex-row items-start gap-3 sm:gap-4 mb-2">
-          <div className="w-8 h-8 mt-1 bg-primary rounded-[0.25em] flex items-center justify-center flex-shrink-0">
-            <BookA className="w-4 h-4 text-white" />
-          </div>
-          <div className="flex-1">
-            <h1 className="text-4xl font-bold tracking-tight">
-              My Applications
-            </h1>
-            <p className="text-gray-600 text-sm sm:text-base mb-2">
-              Track your internship applications and their status
-            </p>
-            <Badge>
-              {applications.data.length}{" "}
-              {applications.data.length === 1 ? "application" : "applications"}
-            </Badge>
-          </div>
+        <div className="flex flex-row items-center gap-3 mb-2">
+          <HeaderIcon icon={BookA}></HeaderIcon>
+          <HeaderText>My Applications</HeaderText>
+        </div>
+        <div className="flex-1 flex-row">
+          <p className="text-gray-600 text-sm sm:text-base mb-2">
+            Track your internship applications and their status
+          </p>
+          <Badge>
+            {applications.data.length}{" "}
+            {applications.data.length === 1 ? "application" : "applications"}
+          </Badge>
         </div>
       </div>
-      <hr />
-      <br />
+      <Separator className="mt-4 mb-8" />
 
       {applications.isPending ? (
         <Loader>Loading your applications...</Loader>
       ) : applications.error ? (
-        <div className="text-center py-16 animate-fade-in">
-          <Card className="max-w-md m-auto">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Failed to load applications
-            </h3>
-            <p className="text-red-600 mb-4">{applications.error.message}</p>
-          </Card>
-        </div>
+        <PageError
+          title="Failed to load applications"
+          description={applications.error.message}
+        />
       ) : applications.data.length === 0 ? (
         <div className="text-center py-16 animate-fade-in">
           <Card className="max-w-md m-auto">

@@ -9,17 +9,17 @@ export function AutoApplyToast({
 }: {
   enabled: boolean; // profile.data?.auto_apply
   dismissed: boolean; // profile.data?.acknowledged_auto_apply
-  onDismissForever: () => Promise<void>; // profile.update({ acknowledged_auto_apply: true })
+  onDismissForever: () => Promise<void>;
 }) {
   return (
     <Toast
       visible={enabled && !dismissed}
-      title="Auto-Apply is ON"
+      title="Apply for Me is ON"
       description={
         <>
-          We’ll automatically apply to matching roles using your saved profile.
-          Manage it in <span className="font-medium">Profile</span>
-          .
+          We’ll automatically send your resume to matching companies. Only
+          companies that fit your profile will see your resume. Manage it in{" "}
+          <span className="font-medium">Profile</span>.
         </>
       }
       position="bottom-right"

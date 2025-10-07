@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 06:01:21
- * @ Modified time: 2025-09-18 01:33:05
+ * @ Modified time: 2025-10-05 11:54:22
  * @ Description:
  *
  * Properly handles dealing with files stored in GCS and their local state.
@@ -197,6 +197,7 @@ export const useFileUpload = ({
     let result = uploader(form.build());
     setResponse(result);
     result = await result;
+    console.log(result);
 
     if (!result.success) {
       alert("Could not upload file.");

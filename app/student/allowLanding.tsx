@@ -14,7 +14,7 @@ export default function AllowLanding({
   const isStudentLanding = pathname === "/";
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col">
+    <div className="h-[100svh] bg-gray-50 flex flex-col overflow-y-auto">
       <Suspense>{!isStudentLanding && <Header />}</Suspense>
       <div className="flex-grow overflow-auto flex flex-col">{children}</div>
       {!isStudentLanding && <Footer />}

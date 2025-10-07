@@ -1,49 +1,39 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { RefObject, useEffect, useMemo, useRef, useState } from "react";
 import {
   Upload,
   UserCheck,
-  MailCheck,
   FileText,
   AlertTriangle,
   Repeat,
   User,
+  Sparkles,
 } from "lucide-react";
-
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAnalyzeResume } from "@/hooks/use-register";
-
-import { Autocomplete } from "@/components/ui/autocomplete";
 import { useDbRefs } from "@/lib/db/use-refs";
-
 import ResumeUpload from "@/components/features/student/resume-parser/ResumeUpload";
-import { FormInput } from "@/components/EditForm";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
-import { AuthService, UserService } from "@/lib/api/services";
-import { Input } from "../ui/input";
-import { useProfile } from "@/lib/api/student.api";
-import { useQueryClient } from "@tanstack/react-query";
+import { FormDropdown, FormInput } from "@/components/EditForm";
+import { UserService } from "@/lib/api/services";
+import { useProfileData } from "@/lib/api/student.data.api";
 import { Stepper } from "../stepper/stepper";
-import {
-  isProfileResume,
-  isProfileBaseComplete,
-  isProfileVerified,
-} from "../../lib/profile";
+import { isProfileResume, isProfileBaseComplete } from "../../lib/profile";
+import { ModalHandle } from "@/hooks/use-modal";
+
+/* ============================== Modal shell ============================== */
 
 export function IncompleteProfileContent({
-  handleClose,
+  onFinish,
 }: {
-  handleClose: () => void;
+  onFinish: () => void;
+  applySuccessModalRef?: RefObject<ModalHandle | null>;
+  job?: unknown | null;
 }) {
   return (
-    <div className="p-6 h-full overflow-y-auto pt-0">
-      {/* Modal title */}
+    <div className="p-6 h-full overflow-y-auto pt-0 sm:max-w-2xl">
       <div className="text-center mb-6">
         <div className="w-16 h-16 mx-auto mb-4 bg-primary/15 rounded-full flex items-center justify-center">
           <User className="w-8 h-8 text-primary" />
@@ -53,7 +43,7 @@ export function IncompleteProfileContent({
         </h2>
       </div>
 
-      <CompleteProfileStepper onFinish={handleClose} />
+      <CompleteProfileStepper onFinish={onFinish} />
     </div>
   );
 }
@@ -89,22 +79,12 @@ function snakeToDraft(u: ResumeParsedUserSnake): Partial<ProfileDraft> {
   };
 }
 
-function profileToDraft(p: any): ProfileDraft {
-  if (!p) return {};
-  return {
-    firstName: p.first_name ?? p.firstName ?? "",
-    middleName: p.middle_name ?? p.middleName ?? "",
-    lastName: p.last_name ?? p.lastName ?? "",
-    phone: p.phone_number ?? p.phone ?? "",
-    university: p.university ?? "",
-    degree: p.program ?? p.degree ?? "",
-  };
-}
+/* ============================== Main Stepper ============================== */
 
 function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
-  const queryClient = useQueryClient();
-  const existingProfile = useProfile();
+  const existingProfile = useProfileData();
   const [step, setStep] = useState(0);
+  const [showComplete, setShowComplete] = useState(false);
 
   // profile being edited
   const [profile, setProfile] = useState<ProfileDraft>({
@@ -129,6 +109,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
 
   // upload on file
   useEffect(() => {
+    console.log(file);
     if (!file) return;
     setParseError(null);
     setParsedReady(false);
@@ -167,9 +148,15 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   }, [response]);
 
   const steps = useMemo(() => {
-    const s = [];
+    const s: Array<{
+      id: "resume" | "base" | "auto-apply";
+      title: string;
+      subtitle?: string;
+      icon: any;
+      canNext: () => boolean;
+      component: React.ReactNode;
+    }> = [];
 
-    // No resume
     if (!isProfileResume(existingProfile.data)) {
       s.push({
         id: "resume",
@@ -191,43 +178,60 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
       });
     }
 
-    // Not complete
     if (!isProfileBaseComplete(existingProfile.data)) {
       s.push({
         id: "base",
         title: "Basic details",
         icon: UserCheck,
-        canNext: () => !!profile.firstName && !!profile.lastName && !isUpdating,
+        canNext: () =>
+          !!profile.firstName &&
+          !!profile.lastName &&
+          !isUpdating &&
+          !!profile.phone &&
+          !!profile.degree,
         component: <StepBasicIdentity value={profile} onChange={setProfile} />,
       });
     }
 
-    // Not verified
-    if (!isProfileVerified(existingProfile.data)) {
+    if (existingProfile.data?.acknowledged_auto_apply === false) {
       s.push({
-        id: "activation",
-        title: "Activate your account",
-        subtitle: "Verify your university email and start applying now!",
-        icon: MailCheck,
-        hideNext: true,
-        component: (
-          <StepActivateOTP
-            onFinish={() => {
-              queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-              onFinish();
-            }}
-          />
-        ),
+        id: "auto-apply",
+        title: "Auto-apply settings",
+        icon: Repeat,
+        canNext: () => !isUpdating,
+        component: <StepAutoApply />,
       });
     }
 
     return s;
-  }, [file, profile, isParsing, isUpdating]);
+  }, [
+    isParsing,
+    parsedReady,
+    parseError,
+    response,
+    existingProfile.data,
+    profile,
+    isUpdating,
+  ]);
 
+  useEffect(() => {
+    if (steps.length === 0) {
+      setShowComplete(true);
+    }
+  }, [steps.length]);
+
+  // Next behavior
   const onNext = async () => {
-    if (steps[step].id === "resume") {
+    const current = steps[step];
+
+    if (!current) return;
+
+    if (current.id === "resume") {
       setStep(step + 1);
-    } else if (steps[step].id === "base") {
+      return;
+    }
+
+    if (current.id === "base") {
       setIsUpdating(true);
       UserService.updateMyProfile({
         first_name: profile.firstName ?? "",
@@ -238,23 +242,42 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
         degree: profile.degree ?? "",
       }).then(() => {
         setIsUpdating(false);
-        if (step + 1 < steps.length) setStep(step + 1);
-        else onFinish();
+        const isLast = step + 1 >= steps.length;
+        if (isLast) setShowComplete(true);
+        else setStep(step + 1);
       });
+      return;
+    }
+
+    if (current.id === "auto-apply") {
+      setIsUpdating(true);
+      UserService.updateMyProfile({ acknowledged_auto_apply: true }).then(
+        () => {
+          setIsUpdating(false);
+          const isLast = step + 1 >= steps.length;
+          if (isLast) setShowComplete(true);
+          else setStep(step + 1);
+        }
+      );
+      return;
     }
   };
+
+  if (showComplete) {
+    return <StepComplete onDone={onFinish} />;
+  }
 
   return (
     <Stepper
       step={step}
       steps={steps}
       onNext={onNext}
-      onBack={() => setStep(step - 1)}
-    ></Stepper>
+      onBack={() => setStep(Math.max(0, step - 1))}
+    />
   );
 }
 
-/* ---------------------- Step 0: Resume Upload ---------------------- */
+/* ---------------------- Step: Resume Upload ---------------------- */
 
 function StepResume({
   file,
@@ -314,6 +337,8 @@ function StepResume({
   );
 }
 
+/* ---------------------- Step: Basic Identity ---------------------- */
+
 function StepBasicIdentity({
   value,
   onChange,
@@ -321,12 +346,10 @@ function StepBasicIdentity({
   value: ProfileDraft;
   onChange: (v: ProfileDraft) => void;
 }) {
-  const refs = useDbRefs();
-  const universityOptions = refs.universities;
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Section: Personal */}
+      {/* Personal */}
       <div>
         <h4 className="text-sm font-medium text-muted-foreground">
           Personal information
@@ -359,35 +382,16 @@ function StepBasicIdentity({
         </div>
       </div>
 
-      {/* Section: Education */}
+      {/* Education */}
       <div>
         <h4 className="text-sm font-medium text-muted-foreground">
           Educational background
         </h4>
         <div className="mt-3 grid grid-cols-1 gap-4">
           <div>
-            <label className="text-xs text-gray-600 mb-1 block">
-              University
-            </label>
-            <Autocomplete
-              value={value.university ?? ""}
-              options={universityOptions}
-              setter={(val: any) =>
-                onChange({
-                  ...value,
-                  university: val,
-                  degree: "",
-                })
-              }
-              placeholder="Select university…"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs text-gray-600 mb-1 block">
-              Degree / Program
-            </label>
             <FormInput
+              required
+              label="Degree / Program"
               value={value.degree ?? ""}
               setter={(val: any) => onChange({ ...value, degree: val })}
               placeholder="Select degree…"
@@ -399,114 +403,102 @@ function StepBasicIdentity({
   );
 }
 
-/* --------------------------- Step 2: Activate (OTP) --------------------------- */
+/* ---------------------- Step: Auto-Apply Acknowledge ---------------------- */
 
-function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
-  const profile = useProfile();
-  const [otp, setOtp] = useState("");
-  const [otpError, setOtpError] = useState("");
-  const [sending, setSending] = useState(false);
-  const [eduEmail, setEduEmail] = useState(
-    profile.data?.edu_verification_email ?? ""
-  );
-  const [isEmailValid, setIsEmailValid] = useState(false);
-  const [isCoolingDown, setIsCoolingDown] = useState(false);
-  const [activating, setActivating] = useState(false);
-
-  useEffect(() => {
-    if (!eduEmail.trim()) return setIsEmailValid(false);
-    if (!eduEmail.endsWith(".edu.ph")) return setIsEmailValid(false);
-    setIsEmailValid(true);
-  }, [eduEmail]);
-
-  useEffect(() => {
-    if (otp.length === 6) {
-      setActivating(true);
-      AuthService.activate(eduEmail, otp).then((response) => {
-        if (response.success) {
-          onFinish();
-        } else {
-          alert(response.message ?? "OTP not valid.");
-        }
-        setActivating(false);
-      });
-    }
-  }, [otp]);
-
+function StepAutoApply() {
   return (
-    <div className="space-y-6">
-      <div>
-        <div className="mt-3">
-          <Input
-            placeholder="email@uni.edu.ph"
-            defaultValue={profile.data?.edu_verification_email ?? ""}
-            onChange={(e) => setEduEmail(e.currentTarget.value)}
-          />
+    <div className="flex flex-col gap-4">
+      <Card className="border-emerald-300/60 bg-emerald-50 dark:bg-emerald-900/20">
+        <div className="flex flex-row items-start gap-3">
+          <div className="rounded-full p-2 bg-emerald-100 dark:bg-emerald-800/60">
+            <Sparkles className="h-4 w-4 text-emerald-700 dark:text-emerald-200" />
+          </div>
 
-          <div className="mt-4">
-            <InputOTP
-              maxLength={6}
-              value={otp}
-              onChange={setOtp}
-              containerClassName="justify-center"
-            >
-              <InputOTPGroup>
-                <InputOTPSlot index={0} />
-                <InputOTPSlot index={1} />
-                <InputOTPSlot index={2} />
-                <InputOTPSlot index={3} />
-                <InputOTPSlot index={4} />
-                <InputOTPSlot index={5} />
-              </InputOTPGroup>
-            </InputOTP>
-
-            {otpError && (
-              <div className="mt-3 flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 p-2 text-amber-900 text-sm">
-                <AlertTriangle className="h-4 w-4" />
-                <span>{otpError}</span>
-              </div>
-            )}
-
-            <div className="text-sm text-gray-600 text-center">
-              {activating && <Badge type="accent">Activating account...</Badge>}
-            </div>
-            <div className="mt-3 flex items-center justify-center gap-2 text-sm">
-              <Button
-                type="button"
-                onClick={() => {
-                  AuthService.requestActivation(eduEmail)
-                    .then((response) => {
-                      if (response.message) {
-                        setSending(false);
-                        alert(response.message);
-                        return;
-                      }
-
-                      alert("Check your inbox for an email.");
-                      setSending(false);
-                      setIsCoolingDown(true);
-                      setTimeout(() => setIsCoolingDown(false), 60000);
-                    })
-                    .catch(setOtpError);
-                  setSending(true);
-                }}
-                disabled={sending || !isEmailValid || isCoolingDown}
-              >
-                <Repeat className="h-4 w-4 mr-1" />
-                {!isCoolingDown
-                  ? sending
-                    ? "Sending..."
-                    : "Send me an OTP"
-                  : `Resend`}
-              </Button>
+          <div className="flex-1 space-y-1">
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold leading-none">Auto-Apply is ON</h3>
             </div>
           </div>
         </div>
+        <p className="text-sm text-muted-foreground p-1 mt-2 text-justify">
+          We’ll automatically submit applications for matching roles using your
+          saved details. You can turn this off anytime in your profile.
+        </p>
+      </Card>
+    </div>
+  );
+}
+
+/* ---------------------- Completion (rendered OUTSIDE stepper) ---------------------- */
+
+function StepComplete({ onDone }: { onDone: () => void }) {
+  useEffect(() => {
+    const t = setTimeout(() => onDone(), 1400);
+    return () => clearTimeout(t);
+  }, [onDone]);
+
+  return (
+    <div className="flex flex-col items-center justify-center py-8">
+      {/* Check animation */}
+      <div className="relative mt-2">
+        <div className="w-20 h-20 rounded-full border-4 border-emerald-200 grid place-items-center animate-[pop_420ms_ease-out]">
+          <svg
+            className="w-10 h-10 text-emerald-600"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path
+              d="M20 6L9 17l-5-5"
+              className="animate-[draw_420ms_ease-out_120ms_forwards] opacity-0"
+            />
+          </svg>
+        </div>
       </div>
+
+      <h3 className="text-xl font-semibold mt-4">Profile complete</h3>
+      <p className="text-sm text-muted-foreground mt-1">
+        You’re all set. Nice work!
+      </p>
+
+      <style jsx>{`
+        @keyframes pop {
+          0% {
+            transform: scale(0.8);
+            opacity: 0.2;
+          }
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+        @keyframes draw {
+          0% {
+            stroke-dasharray: 0 32;
+            opacity: 1;
+          }
+          100% {
+            stroke-dasharray: 32 0;
+            opacity: 1;
+          }
+        }
+        @keyframes fall {
+          0% {
+            transform: translateY(-12px) rotate(0deg);
+            opacity: 0.9;
+          }
+          100% {
+            transform: translateY(32px) rotate(280deg);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </div>
   );
 }
 
 /* ============================== Exports ============================== */
-
 export { CompleteProfileStepper };

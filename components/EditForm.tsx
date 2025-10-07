@@ -13,7 +13,6 @@ import { Check, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import "react-datepicker/dist/react-datepicker.css";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -565,3 +564,42 @@ export const FormMonthPicker = ({
     </div>
   );
 };
+
+
+export function TimeInputNative({
+  label,
+  value,            // "HH:MM"
+  onChange,          // (next?: string) => void
+  required = true,
+  helper,
+  className,
+  ...props
+}: {
+  label: string;
+  value?: string;
+  onChange?: (v?: string) => void;
+  required?: boolean;
+  helper?: string;
+  className?: string;
+} & React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <div className={className}>
+      {label && (
+        <label className="text-xs text-gray-600 mb-1 block">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+      )}
+      <Input
+        type="time"
+        value={value ?? ""}
+        onChange={(e) => onChange?.(e.target.value || undefined)}
+        // step controls minute granularity; 300 = 5 min
+        step={300}
+        {...props}
+      />
+      {helper && <p className="text-xs text-gray-500 mt-1">{helper}</p>}
+    </div>
+  );
+}
+
+

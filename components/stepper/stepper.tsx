@@ -1,7 +1,6 @@
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
 import { Button } from "../ui/button";
 
 interface Step {
@@ -23,7 +22,14 @@ interface Step {
  */
 function StepperHeader({ step, steps }: { step: number; steps: Step[] }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
+    <div
+      className={cn(
+        // mobile: one per row
+        "grid grid-cols-1 gap-2 sm:gap-3",
+        // desktop+: each child becomes a column with equal width
+        "md:grid-flow-col md:auto-cols-fr"
+      )}
+    >
       {steps.map((s, idx) => {
         const Icon = s.icon;
         const active = idx === step;

@@ -10,7 +10,7 @@ export default function CreateJobPageRoute() {
   const createJob = async (job: Partial<Job>) => {
     
     try {
-      const response = await JobService.create_job(job);
+      const response = await JobService.createJob(job);
       return response;
     } catch (error: any) {
       console.error('Server action error:', error);

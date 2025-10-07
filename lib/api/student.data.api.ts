@@ -1,18 +1,23 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import {
   JobService,
   UserService,
   ApplicationService,
 } from "@/lib/api/services";
-import { Job } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMoa as usDbMoa } from "../db/use-moa";
-import shuffle from "knuth-shuffle-seeded";
+import { useQuery } from "@tanstack/react-query";
+import { useDbMoa } from "../db/use-moa";
 import { hashStringToInt } from "../utils";
+import shuffle from "knuth-shuffle-seeded";
 
-// Jobs Hook with Client-Side Filtering
-export function useJobs(
+/**
+ * From now on, all hooks that query data are meant to do just that.
+ * Not allowed to have mutations + will be suffixed with "Data".
+ * 
+ * @param params 
+ * @returns 
+ */
+export function useJobsData(
   params: {
     search?: string;
     jobMoaFilter?: string[];
@@ -22,23 +27,42 @@ export function useJobs(
     position?: string[];
   } = {}
 ) {
-  const dbMoas = usDbMoa();
+  const dbMoas = useDbMoa();
   const dbRefs = useDbRefs();
-  const profile = useProfile();
+  const profile = useProfileData();
   const seed = useRef<number>(
     hashStringToInt((profile.data?.email ?? "") + new Date().getDay())
   );
+  const applications = useApplicationsData();
+
   const { isPending, data, error } = useQuery({
     queryKey: ["jobs"],
     queryFn: () =>
-      JobService.getAllJobs({
-        last_update: new Date(0).getTime(),
-      }).then((data) => {
+      JobService.getAllJobs().then((data) => {
         data.jobs = shuffle(data.jobs ?? [], seed.current);
         return data;
       }),
     staleTime: 60 * 60 * 1000,
   });
+
+  const appliedJobs = useMemo(() => {
+    const allJobs = data?.jobs ?? [];
+    if (!allJobs?.length) return [];
+
+    return allJobs.filter(
+      (job) =>
+        !!applications.data.find((application) => application.job_id === job.id)
+    );
+  }, [data, applications]);
+
+  const _savedJobs = useQuery({
+    queryKey: ["my-saved-jobs"],
+    queryFn: JobService.getSavedJobs,
+  });
+
+  const savedJobs = useMemo(() => {
+    return _savedJobs.data?.jobs ?? [];
+  }, [_savedJobs]);
 
   // Client-side filtering logic
   const filteredJobs = useMemo(() => {
@@ -109,9 +133,13 @@ export function useJobs(
   );
 
   return {
-    isPending,
+    isPending: isPending || _savedJobs.isPending,
     jobs: data?.jobs,
-    error,
+    error: error || _savedJobs.error,
+    savedJobs,
+    isJobSaved: (jobId: string) => !!savedJobs.find((j) => j.id === jobId),
+    isJobApplied: (jobId: string) => !!appliedJobs.find((j) => j.id === jobId),
+    appliedJobs,
     filteredJobs,
     getJobsPage,
   };
@@ -123,13 +151,18 @@ export function useJobs(
  * @hook
  * @param jobId
  */
-export function useJob(jobId: string) {
+export function useJobData(jobId: string) {
+  const applications = useApplicationsData();
+  const applied = !!useMemo(
+    () => applications.data.find((application) => application.job_id === jobId),
+    [applications]
+  );
   const { isPending, data, error } = useQuery({
     queryKey: ["jobs", jobId],
     queryFn: async () => await JobService.getJobById(jobId),
   });
 
-  return { isPending, data: data?.job ?? null, error };
+  return { isPending, data: data?.job ?? null, applied, error };
 }
 
 /**
@@ -137,115 +170,33 @@ export function useJob(jobId: string) {
  *
  * @hook
  */
-export function useProfile() {
-  const queryClient = useQueryClient();
+export function useProfileData() {
   const { isPending, data, error } = useQuery({
     queryKey: ["my-profile"],
     queryFn: UserService.getMyProfile,
-  });
-  const {
-    isPending: isUpdating,
-    error: updateError,
-    mutateAsync: update,
-  } = useMutation({
-    mutationFn: UserService.updateMyProfile,
-    onSettled: () =>
-      queryClient.invalidateQueries({ queryKey: ["my-profile"] }),
   });
 
   return {
     data: data?.user ?? null,
     error,
-    update,
-    updateError,
     isPending,
-    isUpdating,
   };
 }
-
-/**
- * Saved jobs hook
- *
- * @hook
- */
-export const useSavedJobs = () => {
-  const queryClient = useQueryClient();
-  const { isPending, data, error } = useQuery({
-    queryKey: ["my-saved-jobs"],
-    queryFn: JobService.getSavedJobs,
-  });
-  const { isPending: isToggling, mutate: toggle } = useMutation({
-    mutationFn: UserService.saveJob,
-    onSettled: () =>
-      queryClient.invalidateQueries({ queryKey: ["my-saved-jobs"] }),
-  });
-
-  // Other utils
-  const isJobSaved = (jobId: string): boolean => {
-    return data?.jobs?.some((savedJob) => savedJob.id === jobId) ?? false;
-  };
-
-  return {
-    data: data?.jobs,
-    error,
-    toggle,
-    isPending,
-    isToggling,
-    isJobSaved,
-  };
-};
 
 /**
  * Hooks for saved jobs.
  *
  * @hook
  */
-export function useApplications() {
-  const queryClient = useQueryClient();
-  const { isPending, data, error } = useQuery({
+export function useApplicationsData() {
+  const applications = useQuery({
     queryKey: ["my-applications"],
     queryFn: () => ApplicationService.getApplications(),
   });
-  const {
-    data: createResult,
-    isPending: isCreating,
-    error: createError,
-    mutateAsync: create,
-  } = useMutation({
-    mutationFn: ApplicationService.createApplication,
-    onSettled: () =>
-      queryClient.invalidateQueries({ queryKey: ["my-applications"] }),
-  });
-
-  // Save appliedJobs independently
-  const [appliedJobs, setAppliedJobs] = useState<Partial<Job>[]>([]);
-  useEffect(() => {
-    setAppliedJobs(
-      data?.applications?.map((application) => ({
-        id: application.job_id ?? "",
-      })) ?? []
-    );
-  }, [data]);
-
-  // Checks if user has applied to job
-  const hasAppliedToJob = (jobId: string): boolean => {
-    return (
-      data?.applications.some((application) => application.id === jobId) ??
-      false
-    );
-  };
 
   return {
-    isPending,
-    isCreating,
-    createResult,
-    data: data?.applications ?? [],
-    create,
-    error,
-    createError,
-    hasAppliedToJob,
-    appliedJobs,
-    appliedJob: (job_id: string) =>
-      appliedJobs.map((aj) => aj.id).includes(job_id),
+    isPending: applications.isPending,
+    error: applications.error,
+    data: applications.data?.applications ?? [],
   };
 }

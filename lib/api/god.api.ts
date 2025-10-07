@@ -3,7 +3,7 @@ import { Employer, PrivateUser } from "@/lib/db/db.types";
 import { handleApiError } from "./services";
 import { EmployerAuthService } from "./hire.api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { APIClient, APIRoute } from "@/lib/api/api-client";
+import { APIClient, APIRouteBuilder } from "@/lib/api/api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
 
 /**
@@ -140,14 +140,14 @@ export function useUsers() {
 export const StudentGodAPI = {
   impersonate: async (studentId: string, reason?: string) =>
     APIClient.post<FetchResponse>(
-      APIRoute("student-god")
+      APIRouteBuilder("student-god")
         .r("students", studentId, "impersonations")
         .build(),
       reason ? { reason } : {}
     ),
   stop: async () =>
     APIClient.post<FetchResponse>(
-      APIRoute("student-god").r("impersonations", "stop").build(),
+      APIRouteBuilder("student-god").r("impersonations", "stop").build(),
       {}
     ),
 };
