@@ -22,7 +22,7 @@ import { useDbRefs } from "@/lib/db/use-refs";
    Types
    ────────────────────────────────────────────── */
 
-type TabKey = "Forms Autofill" | "My Forms" | "Past Forms";
+type TabKey = "Forms Autofill" | "Form Generator" | "My Forms";
 type Values = Record<string, string>;
 type SyncValidator = (value: string, allValues: Values) => string | null;
 
@@ -51,7 +51,7 @@ type PastForm = {
   name: string;
   company: string;
   createdAt: string;
-  fileUrl?: string; // downloadable URL when ready
+  status?: "pending" | "ready";
 };
 
 /* ──────────────────────────────────────────────
@@ -194,59 +194,59 @@ export default function FormsPage() {
 
     openGlobalModal(
       "generate-form",
-      <GenerateFormModal
+      <GenerateMoaFlowModal
         description={FORM_TEMPLATES.find((t) => t.id === formId)?.description}
         companies={COMPANIES}
         customDefs={defs}
-        initialCompanyId=""
         initialCustom={initialCustom}
         onCancel={() => closeGlobalModal("generate-form")}
-        onGenerate={async (companyId, customValues) => {
-          // validate before submit
-          const errs = validateMany(defs, customValues);
-          if (Object.keys(errs).length > 0 || !companyId) return;
+        onInviteEmployer={async (_invite) => {
+          // fake
+          const formName =
+            FORM_TEMPLATES.find((f) => f.id === formId)?.name ?? "Form";
 
+          setPastForms((prev) => [
+            {
+              id: `pf-${Math.random().toString(36).slice(2, 8)}`,
+              name: formName,
+              company: _invite.legalName || "Company",
+              createdAt: new Date().toISOString().slice(0, 10),
+              status: "pending",
+            },
+            ...prev,
+          ]);
+        }}
+        onGeneratePdf={async (manualCompanyValues, formValues) => {
+          // merge for your payload if needed
           const payload = {
             templateId: formId,
-            companyId,
+            companyId: "", // when picking company directly you can bake it into onGeneratePdf if you want
             autofill,
-            custom: customValues,
+            custom: { ...formValues, ...manualCompanyValues },
             profile: profile.data,
           };
+          const { fileUrl } = await mockGenerateFormAPI(payload);
 
-          try {
-            setIsGeneratingGlobal(true);
-            const { fileUrl } = await mockGenerateFormAPI(payload);
+          const companyName =
+            COMPANIES.find((c) => c.id === payload.companyId)?.name ??
+            (manualCompanyValues.companyAddress ? "Manual Company" : "Company");
 
-            const companyName =
-              COMPANIES.find((c) => c.id === companyId)?.name ?? "Company";
-            const formName =
-              FORM_TEMPLATES.find((f) => f.id === formId)?.name ?? "Form";
+          const formName =
+            FORM_TEMPLATES.find((f) => f.id === formId)?.name ?? "Form";
 
-            setPastForms((prev) => [
-              {
-                id: `pf-${Math.random().toString(36).slice(2, 8)}`,
-                name: formName,
-                company: companyName,
-                createdAt: new Date().toISOString().slice(0, 10),
-                fileUrl,
-              },
-              ...prev,
-            ]);
+          setPastForms((prev) => [
+            {
+              id: `pf-${Math.random().toString(36).slice(2, 8)}`,
+              name: formName,
+              company: companyName,
+              createdAt: new Date().toISOString().slice(0, 10),
+              fileUrl,
+              status: "ready",
+            },
+            ...prev,
+          ]);
 
-            closeGlobalModal("generate-form");
-
-            if (fileUrl) {
-              const a = document.createElement("a");
-              a.href = fileUrl;
-              a.download = fileUrl.split("/").pop() || "document.pdf";
-              document.body.appendChild(a);
-              a.click();
-              a.remove();
-            }
-          } finally {
-            setIsGeneratingGlobal(false);
-          }
+          return { fileUrl };
         }}
       />,
       {
@@ -374,8 +374,8 @@ export default function FormsPage() {
           onChange={(v) => setTab(v as TabKey)}
           tabs={[
             { key: "Forms Autofill", label: "Forms Autofill" },
+            { key: "Form Generator", label: "Form Generator" },
             { key: "My Forms", label: "My Forms" },
-            { key: "Past Forms", label: "Past Forms" },
           ]}
         >
           {/* Forms Autofill */}
@@ -401,8 +401,7 @@ export default function FormsPage() {
                 )}
                 {!autofillErrors.student_id && (
                   <p className="text-xs text-gray-500">
-                    Format: 8 digits + optional letter (e.g., 24123456 or
-                    24123456A)
+                    Format: 8 digits + optional letter (e.g., 12141380)
                   </p>
                 )}
               </div>
@@ -508,8 +507,8 @@ export default function FormsPage() {
             </div>
           </OutsideTabPanel>
 
-          {/* My Forms */}
-          <OutsideTabPanel when="My Forms" activeKey={tab}>
+          {/* Form Generator */}
+          <OutsideTabPanel when="Form Generator" activeKey={tab}>
             <div
               className={cn(
                 gateMyAndPast && "opacity-60 pointer-events-none select-none"
@@ -555,7 +554,7 @@ export default function FormsPage() {
           </OutsideTabPanel>
 
           {/* Past Forms */}
-          <OutsideTabPanel when="Past Forms" activeKey={tab}>
+          <OutsideTabPanel when="My Forms" activeKey={tab}>
             <div
               className={cn(
                 gateMyAndPast && "opacity-60 pointer-events-none select-none"
@@ -579,18 +578,35 @@ export default function FormsPage() {
                           Generated on {p.createdAt}
                         </div>
                       </div>
+
+                      {/* Right side */}
                       <div className="flex items-center gap-2 justify-between sm:justify-end">
-                        <Badge variant="outline" className="text-xs">
-                          PDF
+                        <Badge
+                          variant={
+                            p.status === "pending" ? "secondary" : "outline"
+                          }
+                          className={cn(
+                            "text-xs",
+                            p.status === "pending"
+                              ? "bg-amber-100 text-amber-800 border-amber-200"
+                              : ""
+                          )}
+                        >
+                          {p.status === "pending" ? "Pending" : "Ready"}
                         </Badge>
+
                         <Button
                           size="sm"
                           variant="outline"
                           className="w-full sm:w-auto"
                           onClick={() => handleDownload(p)}
-                          disabled={!p.fileUrl}
+                          disabled={p.status === "pending" || !p.fileUrl}
                         >
-                          {p.fileUrl ? "Download" : "Processing…"}
+                          {p.status === "pending"
+                            ? "Waiting…"
+                            : p.fileUrl
+                            ? "Download"
+                            : "Processing…"}
                         </Button>
                       </div>
                     </li>
@@ -608,40 +624,47 @@ export default function FormsPage() {
 /* ──────────────────────────────────────────────
    Generate Modal
    ────────────────────────────────────────────── */
-
-function GenerateFormModal({
+function GenerateMoaFlowModal({
   description,
   companies,
   customDefs,
-  initialCompanyId,
   initialCustom,
   onCancel,
-  onGenerate,
+  onGeneratePdf,
+  onInviteEmployer,
 }: {
   description?: string;
   companies: { id: string; name: string }[];
   customDefs: FieldDef[];
-  initialCompanyId: string;
   initialCustom: Values;
   onCancel: () => void;
-  onGenerate: (companyId: string, customValues: Values) => Promise<void> | void;
+  onGeneratePdf: (
+    manualCompanyValues: Values,
+    formValues: Values
+  ) => Promise<{ fileUrl: string }>;
+  onInviteEmployer: (invite: {
+    legalName: string;
+    contactPerson: string;
+    contactNumber: string;
+    contactEmail: string;
+  }) => Promise<void>;
 }) {
-  const [companyId, setCompanyId] = useState<string>(initialCompanyId);
-  const [custom, setCustom] = useState<Values>(initialCustom);
+  type Step = "formFields" | "companySelect" | "generating" | "done";
+
+  const [step, setStep] = useState<Step>("formFields");
+  const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [doneKind, setDoneKind] = useState<"assist" | "generated">("generated"); // ← drives success copy
 
-  const hasErrors = Object.values(errors).some(Boolean);
-  const canGenerate =
-    !!companyId &&
-    isComplete(customDefs, custom) &&
-    !hasErrors &&
-    !isSubmitting;
+  // Keep original template order
+  const orderedDefs = customDefs;
 
-  const setCustomField = (k: string, v: string) => {
-    setCustom((prev) => {
-      const next = { ...prev, [k]: v } as any;
-      const def = customDefs.find((d) => d.key === k);
+  const [formValues, setFormValues] = useState<Values>(initialCustom);
+
+  const setFormField = (k: string, v: string) => {
+    setFormValues((prev) => {
+      const next = { ...prev, [k]: v };
+      const def = orderedDefs.find((d) => d.key === k);
       if (def) {
         const e = validateField(def, v ?? "", next);
         setErrors((prevErr) => {
@@ -655,66 +678,402 @@ function GenerateFormModal({
     });
   };
 
-  const handleGenerate = async () => {
-    if (!canGenerate) return;
+  const formValid =
+    orderedDefs.length > 0 &&
+    orderedDefs.every(
+      (d) => !validateField(d, formValues[d.key] ?? "", formValues)
+    ) &&
+    Object.values(errors).length === 0;
+
+  // Company select
+  const [companyId, setCompanyId] = useState<string>("");
+
+  // Inline toggles (only show sections when clicked)
+  const [showAssist, setShowAssist] = useState(false);
+  const [showManual, setShowManual] = useState(false);
+
+  // Employer assist
+  const [invite, setInvite] = useState({
+    legalName: "",
+    contactPerson: "",
+    contactNumber: "",
+    contactEmail: "",
+  });
+  const setInviteField = (k: keyof typeof invite, v: string) =>
+    setInvite((p) => ({ ...p, [k]: v }));
+
+  // Manual details
+  const [manualCompany, setManualCompany] = useState({
+    legalName: "",
+    companyAddress: "",
+    contactPerson: "",
+    contactPosition: "",
+    companyType: "",
+  });
+  const setManualField = (k: keyof typeof manualCompany, v: string) =>
+    setManualCompany((p) => ({ ...p, [k]: v }));
+
+  // validators
+  const require = (val: string) =>
+    !!val?.trim() ? "" : "This field is required.";
+
+  const validateInvite = () => {
+    const e: Record<string, string> = {};
+    if (require(invite.legalName)) e.legalName = "This field is required.";
+    if (require(invite.contactPerson))
+      e.contactPerson = "This field is required.";
+    if (require(invite.contactNumber))
+      e.contactNumber = "This field is required.";
+    if (!/\S+@\S+\.\S+/.test(invite.contactEmail))
+      e.contactEmail = "Enter a valid email.";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const validateManual = () => {
+    const e: Record<string, string> = {};
+    if (require(manualCompany.companyAddress))
+      e.companyAddress = "This field is required.";
+    if (require(manualCompany.contactPosition))
+      e.contactPosition = "This field is required.";
+    if (require(manualCompany.companyType))
+      e.companyType = "This field is required.";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  // actions
+  const goFromFormToCompany = () => {
+    if (!formValid) {
+      const e: Record<string, string> = {};
+      for (const d of orderedDefs) {
+        const msg = validateField(d, formValues[d.key] ?? "", formValues);
+        if (msg) e[d.key] = msg;
+      }
+      setErrors(e);
+      return;
+    }
+    setStep("companySelect");
+  };
+
+  const tryGenerateWithPickedCompany = async () => {
+    if (!companyId) return;
     try {
-      setIsSubmitting(true);
-      await onGenerate(companyId, custom);
+      setBusy(true);
+      setStep("generating");
+      const { fileUrl } = await onGeneratePdf({}, formValues);
+      if (fileUrl) {
+        const a = document.createElement("a");
+        a.href = fileUrl;
+        a.download = fileUrl.split("/").pop() || "document.pdf";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+      setDoneKind("generated");
+      setStep("done");
     } finally {
-      setIsSubmitting(false);
+      setBusy(false);
+    }
+  };
+
+  const submitEmployerAssist = async () => {
+    if (!validateInvite()) return;
+    try {
+      setBusy(true);
+      await onInviteEmployer(invite); // parent fakes pending Past Form
+      setDoneKind("assist");
+      setStep("done");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const submitManualDetails = async () => {
+    if (!validateManual()) return;
+    try {
+      setBusy(true);
+      setStep("generating");
+      const { fileUrl } = await onGeneratePdf(
+        {
+          companyAddress: manualCompany.companyAddress,
+          contactPosition: manualCompany.contactPosition,
+          companyType: manualCompany.companyType,
+        },
+        formValues
+      );
+      if (fileUrl) {
+        const a = document.createElement("a");
+        a.href = fileUrl;
+        a.download = fileUrl.split("/").pop() || "document.pdf";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+      setDoneKind("generated");
+      setStep("done");
+    } finally {
+      setBusy(false);
     }
   };
 
   return (
-    <div className="overflow-auto">
-      <div className="mb-3">
-        <p className="text-sm text-gray-600">
-          {description ??
-            "Choose a company and fill any additional details for this template."}
-        </p>
+    <div className="overflow-auto space-y-4">
+      {/* title */}
+      <div className="flex items-center gap-2">
+        <h3 className="text-lg font-semibold">
+          {step === "formFields" && "Fill in your details"}
+          {step === "companySelect" && "Find your company"}
+          {step === "generating" && "Preparing your Student MOA"}
+          {step === "done" &&
+            (doneKind === "assist"
+              ? "Request sent to your company"
+              : "Your Student MOA is ready")}
+        </h3>
       </div>
 
-      <div className="space-y-3">
-        {/* Company */}
-        <FormDropdown
-          label="Company"
-          value={companyId}
-          options={companies.map((c) => ({ id: c.id, name: c.name }))}
-          setter={(v) => setCompanyId(String(v ?? ""))}
-        />
+      {/* subtitle */}
+      <p className="text-sm text-gray-600">
+        {step === "formFields" &&
+          (description ?? "Fill in the details below to generate your MOA.")}
+        {step === "companySelect" &&
+          "Select your company. If it’s not listed, we can reach out on your behalf or you can enter details manually."}
+        {step === "generating" &&
+          "We’re generating your PDF. The download will start automatically."}
+        {step === "done" &&
+          (doneKind === "assist"
+            ? "We sent the MOA to your company. You can track the status in Past Forms."
+            : "Download started. You can also find the document under My Forms.")}
+      </p>
 
-        {/* Custom fields */}
-        {customDefs.length > 0 && (
+      {/* STEP CONTENTS */}
+      {step === "formFields" && (
+        <div className="space-y-3">
           <div className="grid grid-cols-1 gap-3">
-            {customDefs.map((def) => (
+            {orderedDefs.map((def) => (
               <FieldRenderer
                 key={def.key}
                 def={def}
-                value={custom[def.key] ?? ""}
-                onChange={(v) => setCustomField(def.key, v)}
+                value={formValues[def.key] ?? ""}
+                onChange={(v) => setFormField(def.key, v)}
                 error={errors[def.key]}
               />
             ))}
           </div>
-        )}
-      </div>
 
-      {/* Footer */}
-      <div className="mt-5 flex justify-end gap-2">
-        <Button variant="outline" onClick={onCancel} disabled={isSubmitting}>
-          Cancel
-        </Button>
-        <Button onClick={handleGenerate} disabled={!canGenerate}>
-          {isSubmitting ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="size-4 animate-spin" />
-              Generating…
-            </span>
-          ) : (
-            "Generate"
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={onCancel}>
+              Cancel
+            </Button>
+            <Button onClick={goFromFormToCompany} disabled={!formValid}>
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {step === "companySelect" && (
+        <div className="space-y-4">
+          <FormDropdown
+            label="Company"
+            value={companyId}
+            options={companies.map((c) => ({ id: c.id, name: c.name }))}
+            setter={(v) => setCompanyId(String(v ?? ""))}
+          />
+
+          {/* toggles */}
+          <div className="text-xs text-gray-500">
+            Can’t find your company?{" "}
+            <button
+              className="underline"
+              onClick={() => {
+                setShowAssist((s) => !s);
+                if (!showAssist) setShowManual(false);
+              }}
+            >
+              Let’s help your employer fill it out for you
+            </button>{" "}
+            or{" "}
+            <button
+              className="underline"
+              onClick={() => {
+                setShowManual((s) => !s);
+                if (!showManual) setShowAssist(false);
+              }}
+            >
+              fill out details manually
+            </button>
+            .
+          </div>
+
+          {/* Inline Employer Assist */}
+          {showAssist && (
+            <div className="rounded-md border p-3 space-y-3">
+              <FormInput
+                label="Company Legal Name"
+                value={invite.legalName}
+                setter={(v) => setInviteField("legalName", v)}
+              />
+              {!!errors.legalName && (
+                <p className="text-xs text-red-600">{errors.legalName}</p>
+              )}
+
+              <FormInput
+                label="Company Representative / Contact Person"
+                value={invite.contactPerson}
+                setter={(v) => setInviteField("contactPerson", v)}
+              />
+              {!!errors.contactPerson && (
+                <p className="text-xs text-red-600">{errors.contactPerson}</p>
+              )}
+
+              <FormInput
+                label="Contact Number"
+                value={invite.contactNumber}
+                setter={(v) => setInviteField("contactNumber", v)}
+              />
+              {!!errors.contactNumber && (
+                <p className="text-xs text-red-600">{errors.contactNumber}</p>
+              )}
+
+              <FormInput
+                label="Contact Email"
+                value={invite.contactEmail}
+                setter={(v) => setInviteField("contactEmail", v)}
+              />
+              {!!errors.contactEmail && (
+                <p className="text-xs text-red-600">{errors.contactEmail}</p>
+              )}
+
+              <div className="flex justify-end">
+                <Button onClick={submitEmployerAssist} disabled={busy}>
+                  {busy ? (
+                    <span className="inline-flex items-center gap-2">
+                      <Loader2 className="size-4 animate-spin" /> Sending…
+                    </span>
+                  ) : (
+                    "Send request"
+                  )}
+                </Button>
+              </div>
+            </div>
           )}
-        </Button>
-      </div>
+
+          {/* Inline Manual Details */}
+          {showManual && (
+            <div className="rounded-md border p-3 space-y-3">
+              <FormInput
+                label="Company Legal Name"
+                value={manualCompany.legalName}
+                setter={(v) => setManualField("legalName", v)}
+              />
+              {!!errors.legalName && (
+                <p className="text-xs text-red-600">{errors.legalName}</p>
+              )}
+
+              <FormInput
+                label="Company Address"
+                value={manualCompany.companyAddress}
+                setter={(v) => setManualField("companyAddress", v)}
+              />
+              {!!errors.companyAddress && (
+                <p className="text-xs text-red-600">{errors.companyAddress}</p>
+              )}
+
+              <FormInput
+                label="Company Representative / Contact Person"
+                value={manualCompany.contactPerson}
+                setter={(v) => setManualField("contactPerson", v)}
+              />
+              {!!errors.contactPerson && (
+                <p className="text-xs text-red-600">{errors.contactPerson}</p>
+              )}
+
+              <FormInput
+                label="Contact Position"
+                value={manualCompany.contactPosition}
+                setter={(v) => setManualField("contactPosition", v)}
+              />
+              {!!errors.contactPosition && (
+                <p className="text-xs text-red-600">{errors.contactPosition}</p>
+              )}
+
+              <FormDropdown
+                label="Company Type"
+                value={manualCompany.companyType}
+                options={[
+                  { id: "partnership", name: "Partnership" },
+                  { id: "corporation", name: "Corporation" },
+                  { id: "government-agency", name: "Government Agency" },
+                ]}
+                setter={(v) => setManualField("companyType", String(v ?? ""))}
+              />
+              {!!errors.companyType && (
+                <p className="text-xs text-red-600">{errors.companyType}</p>
+              )}
+
+              <div className="flex justify-end">
+                <Button onClick={submitManualDetails} disabled={busy}>
+                  {busy ? (
+                    <span className="inline-flex items-center gap-2">
+                      <Loader2 className="size-4 animate-spin" /> Generating…
+                    </span>
+                  ) : (
+                    "Generate with manual details"
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* footer */}
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3">
+            <Button variant="outline" onClick={() => setStep("formFields")}>
+              Back
+            </Button>
+            <Button
+              onClick={tryGenerateWithPickedCompany}
+              disabled={!companyId || busy}
+            >
+              {busy ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="size-4 animate-spin" /> Generating…
+                </span>
+              ) : (
+                "Generate with selected company"
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {step === "generating" && (
+        <div className="flex items-center justify-between">
+          <span className="inline-flex items-center gap-2 text-sm">
+            <Loader2 className="size-4 animate-spin" />
+            We’re generating your PDF. The download will start automatically.
+          </span>
+          <Button variant="outline" onClick={onCancel}>
+            Close
+          </Button>
+        </div>
+      )}
+
+      {step === "done" && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-700">
+              {doneKind === "assist"
+                ? "Request sent! Track it under My Forms → Pending."
+                : "All set! Your download should have started."}
+            </span>
+          </div>
+
+          <Button variant="outline" onClick={onCancel}>
+            Close
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
