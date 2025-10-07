@@ -217,10 +217,10 @@ export default function FormsPage() {
           ]);
         }}
         onGeneratePdf={async (manualCompanyValues, formValues) => {
-          // merge for your payload if needed
+
           const payload = {
             templateId: formId,
-            companyId: "", // when picking company directly you can bake it into onGeneratePdf if you want
+            companyId: "",
             autofill,
             custom: { ...formValues, ...manualCompanyValues },
             profile: profile.data,
@@ -846,7 +846,7 @@ function GenerateMoaFlowModal({
             : "Download started. You can also find the document under My Forms.")}
       </p>
 
-      {/* STEP CONTENTS */}
+      {/* Step 1: Internship Fields */}
       {step === "formFields" && (
         <div className="space-y-3">
           <div className="grid grid-cols-1 gap-3">
@@ -872,8 +872,9 @@ function GenerateMoaFlowModal({
         </div>
       )}
 
+      {/* Step 2: Company Select */}
       {step === "companySelect" && (
-        <div className="space-y-4">
+        <div className="space-y-4 min-h-[35vh] overflow-auto">
           <FormDropdown
             label="Company"
             value={companyId}
@@ -885,17 +886,17 @@ function GenerateMoaFlowModal({
           <div className="text-xs text-gray-500">
             Can’t find your company?{" "}
             <button
-              className="underline"
+              className="underline hover:text-primary transition-all"
               onClick={() => {
                 setShowAssist((s) => !s);
                 if (!showAssist) setShowManual(false);
               }}
             >
-              Let’s help your employer fill it out for you
+              Let your employer fill it out for you
             </button>{" "}
             or{" "}
             <button
-              className="underline"
+              className="underline hover:text-primary transition-all"
               onClick={() => {
                 setShowManual((s) => !s);
                 if (!showManual) setShowAssist(false);
