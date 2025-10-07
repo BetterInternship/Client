@@ -116,13 +116,11 @@ async function mockGenerateFormAPI(payload: {
   custom: Values;
   profile: any;
 }): Promise<{ fileUrl: string }> {
-
   // In a real API, fileUrl would be returned by the server after rendering.
   const fileUrl =
     payload.templateId === "student-moa"
       ? "../YAUN_Student_MOA.pdf"
       : "../YAUN_Student_MOA.pdf"; // fallback demo file too
-
 
   return { fileUrl };
 }
@@ -268,12 +266,21 @@ export default function FormsPage() {
     requiredAutofillKeys.forEach((k) => {
       if (!autofill[k] || !autofill[k].trim())
         nextErrors[k] = "This field is required.";
+
+      if (k === "student_id" && autofill[k]?.trim()) {
+        nextErrors[k] = validateDlsuId(autofill[k]) ?? "";
+      }
     });
     setAutofillErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
+    if (Object.values(nextErrors).some(Boolean)) return;
 
     // nothing to save
     if (!isAutofillDirty) return;
+
+    if (!nextErrors.student_id) {
+      const msg = validateDlsuId(autofill.student_id ?? "");
+      if (msg) nextErrors.student_id = msg;
+    }
 
     try {
       setIsSavingAutofill(true);
@@ -290,12 +297,21 @@ export default function FormsPage() {
   }
 
   function setAutofillField(key: string, val: string) {
+    if (key === "student_id") {
+      val = normalizeDlsuId(val);
+    }
+
     setAutofill((prev) => ({ ...prev, [key]: val }));
+
     if (requiredAutofillKeys.includes(key as any)) {
-      setAutofillErrors((e) => ({
-        ...e,
-        [key]: val?.trim() ? "" : "This field is required.",
-      }));
+      setAutofillErrors((e) => {
+        const trimmed = val?.trim() ?? "";
+        let msg = trimmed ? "" : "This field is required.";
+        if (!msg && key === "student_id") {
+          msg = validateDlsuId(trimmed) ?? "";
+        }
+        return { ...e, [key]: msg };
+      });
     }
   }
 
@@ -375,11 +391,18 @@ export default function FormsPage() {
                   value={autofill.student_id ?? ""}
                   setter={(v) => setAutofillField("student_id", v)}
                   className="w-full"
-                  maxLength={64}
+                  maxLength={8}
+                  placeholder="e.g., 12141380"
                 />
                 {!!autofillErrors.student_id && (
                   <p className="text-xs text-red-600">
                     {autofillErrors.student_id}
+                  </p>
+                )}
+                {!autofillErrors.student_id && (
+                  <p className="text-xs text-gray-500">
+                    Format: 8 digits + optional letter (e.g., 24123456 or
+                    24123456A)
                   </p>
                 )}
               </div>
@@ -1031,3 +1054,18 @@ const COMPANIES = [
   { id: "ent-safeway", name: "Safeway Philtech" },
   { id: "ent-hashcompany", name: "HashCompany" },
 ];
+
+/* ──────────────────────────────────────────────
+   DLSU ID helpers
+   ────────────────────────────────────────────── */
+const DLSU_ID_RE = /^(?:0[0-9]|1[0-9]|2[0-9])\d{6}[A-Z]?$/;
+
+function normalizeDlsuId(raw: string) {
+  return (raw || "").replace(/[\s-]/g, "").toUpperCase();
+}
+
+function validateDlsuId(id: string): string | null {
+  if (!id) return "This field is required.";
+  const v = normalizeDlsuId(id);
+  return DLSU_ID_RE.test(v) ? null : "Invalid DLSU ID (e.g., 12141380).";
+}
