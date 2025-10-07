@@ -842,7 +842,7 @@ function ReqPill({ ok, label }: { ok: boolean; label: string }) {
   return <BoolBadge state={ok} onValue={label} offValue={label} />;
 }
 
-function MissingNotice({
+export function MissingNotice({
   show,
   needsGithub,
   needsPortfolio,
@@ -853,8 +853,8 @@ function MissingNotice({
 }) {
   if (!show) return null;
   return (
-    <div className="flex items-center gap-2 border-b border-gray-400 bg-warning px-5 py-3">
-      <AlertTriangle className="h-4 w-4 text-warning-foreground/90" />
+    <div className="flex items-start md:items-center gap-2 border-b border-gray-400 bg-warning px-5 py-3">
+      <AlertTriangle className="h-5 w-5 text-warning-foreground/90" />
       <p className="text-sm text-warning-foreground/90 leading-snug">
         This job requires{" "}
         {needsGithub && needsPortfolio ? (
@@ -866,12 +866,6 @@ function MissingNotice({
         )}
         . Update your profile to meet these requirements.
       </p>
-      {/* ! i think this shudnt be here, because it bypasses the incomplete profile modal if they havent done that */}
-      {/* <a href="/profile">
-        <Button scheme="secondary" variant="ghost" size="xs">
-          Update profile
-        </Button>
-      </a> */}
     </div>
   );
 }

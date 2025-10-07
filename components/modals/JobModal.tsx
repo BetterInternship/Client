@@ -17,6 +17,7 @@ import { ModalComponent, ModalHandle } from "@/hooks/use-modal";
 import { JobDetailsSummary } from "../shared/jobs";
 import { SaveJobButton } from "../features/student/job/save-job-button";
 import { ApplyToJobButton } from "../features/student/job/apply-to-job-button";
+import { MissingNotice } from "../shared/jobs";
 
 export const JobModal = ({
   job,
@@ -36,7 +37,6 @@ export const JobModal = ({
 }) => {
   const profile = useProfileData();
 
-  // Requirement checks (align with desktop)
   const hasGithub = !!user?.github_link?.trim();
   const hasPortfolio = !!user?.portfolio_link?.trim();
   const needsCover = !!job?.internship_preferences?.require_cover_letter;
@@ -65,65 +65,66 @@ export const JobModal = ({
         {/* Scrollable content — mirrors desktop layout */}
         <div className="flex-1 overflow-y-auto overscroll-contain max-w-[100svw] ">
           {job && (
-            <div className="px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+96px)] space-y-5">
+            <>
               <MissingNotice
                 show={missingRequired}
                 needsGithub={needsGithub && !hasGithub}
                 needsPortfolio={needsPortfolio && !hasPortfolio}
               />
+              <div className="px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+96px)] space-y-5">
+                {/* Header (compact; no actions on mobile) */}
+                <HeaderCompact job={job} />
 
-              {/* Header (compact; no actions on mobile) */}
-              <HeaderCompact job={job} />
+                {/* Requirement chips + notice (like desktop) */}
+                <div className="flex flex-wrap gap-1.5">
+                  {needsCover && <ReqPill ok label="Cover letter required" />}
+                  {needsGithub && (
+                    <ReqPill ok={hasGithub} label="GitHub linked" />
+                  )}
+                  {needsPortfolio && (
+                    <ReqPill ok={hasPortfolio} label="Portfolio linked" />
+                  )}
+                </div>
 
-              {/* Requirement chips + notice (like desktop) */}
-              <div className="flex flex-wrap gap-1.5">
-                {needsCover && <ReqPill ok label="Cover letter required" />}
-                {needsGithub && (
-                  <ReqPill ok={hasGithub} label="GitHub linked" />
-                )}
-                {needsPortfolio && (
-                  <ReqPill ok={hasPortfolio} label="Portfolio linked" />
+                {/* Job Details (grid) */}
+                <Section title="Job Details">
+                  <JobDetailsSummary job={job} />
+                </Section>
+
+                <Divider />
+
+                {/* Role overview */}
+                <Section title="Role overview">
+                  <MarkdownBlock text={job.description} />
+                </Section>
+
+                {(job.requirements ||
+                  needsCover ||
+                  needsGithub ||
+                  needsPortfolio) && <Divider />}
+
+                {/* Requirements */}
+                {(job.requirements ||
+                  needsCover ||
+                  needsGithub ||
+                  needsPortfolio) && (
+                  <Section title="Requirements">
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {needsCover && <ReqPill ok label="Cover letter" />}
+                        {needsGithub && (
+                          <ReqPill ok={hasGithub} label="GitHub profile" />
+                        )}
+                        {needsPortfolio && (
+                          <ReqPill ok={hasPortfolio} label="Portfolio link" />
+                        )}
+                      </div>
+                      <MarkdownBlock text={job.requirements} />
+                    </div>
+                  </Section>
                 )}
               </div>
-
-              {/* Job Details (grid) */}
-              <Section title="Job Details">
-                <JobDetailsSummary job={job} />
-              </Section>
-
-              <Divider />
-
-              {/* Role overview */}
-              <Section title="Role overview">
-                <MarkdownBlock text={job.description} />
-              </Section>
-
-              {(job.requirements ||
-                needsCover ||
-                needsGithub ||
-                needsPortfolio) && <Divider />}
-
-              {/* Requirements */}
-              {(job.requirements ||
-                needsCover ||
-                needsGithub ||
-                needsPortfolio) && (
-                <Section title="Requirements">
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap gap-1.5 mt-2">
-                      {needsCover && <ReqPill ok label="Cover letter" />}
-                      {needsGithub && (
-                        <ReqPill ok={hasGithub} label="GitHub profile" />
-                      )}
-                      {needsPortfolio && (
-                        <ReqPill ok={hasPortfolio} label="Portfolio link" />
-                      )}
-                    </div>
-                    <MarkdownBlock text={job.requirements} />
-                  </div>
-                </Section>
-              )}
-            </div>
+            </>
           )}
         </div>
 
@@ -185,34 +186,6 @@ function ReqPill({ ok, label }: { ok: boolean; label: string }) {
         <AlertTriangle className="h-3.5 w-3.5" />
       )}
       <span className="font-medium">{label}</span>
-    </div>
-  );
-}
-
-function MissingNotice({
-  show,
-  needsGithub,
-  needsPortfolio,
-}: {
-  show: boolean;
-  needsGithub: boolean;
-  needsPortfolio: boolean;
-}) {
-  if (!show) return null;
-  return (
-    <div className="flex items-start gap-2 rounded-[0.33em] border border-warning/50 bg-warning/10 px-3 py-2">
-      <AlertTriangle className="h-4 w-4 mt-0.5 text-warning shrink-0" />
-      <p className="text-sm text-warning leading-snug">
-        This job requires{" "}
-        {needsGithub && needsPortfolio ? (
-          <b>GitHub and Portfolio</b>
-        ) : needsGithub ? (
-          <b>GitHub</b>
-        ) : (
-          <b>Portfolio</b>
-        )}
-        . Update your profile to apply.
-      </p>
     </div>
   );
 }
