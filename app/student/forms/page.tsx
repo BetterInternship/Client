@@ -61,22 +61,43 @@ type PastForm = {
    Validation helpers
    ────────────────────────────────────────────── */
 
-function validateField(def: FieldDef, value: string | number, all: Values): string {
+function validateField(
+  def: FieldDef,
+  value: string | number,
+  all: Values
+): string {
   const valueStringified = value.toString();
   if (def.required && (!valueStringified || valueStringified.trim() === ""))
     return "This field is required.";
-  if (def.maxLength && valueStringified && valueStringified.length > def.maxLength)
+  if (
+    def.maxLength &&
+    valueStringified &&
+    valueStringified.length > def.maxLength
+  )
     return `Max ${def.maxLength} characters.`;
-  if (def.type === "number" && valueStringified && !/^-?\d+(\.\d+)?$/.test(valueStringified))
+  if (
+    def.type === "number" &&
+    valueStringified &&
+    !/^-?\d+(\.\d+)?$/.test(valueStringified)
+  )
     return "Enter a valid number.";
-  if (def.type === "date" && typeof value === 'number' && !/^\d{4}-\d{2}-\d{2}$/.test(msToDateStr(value)))
+  if (
+    def.type === "date" &&
+    typeof value === "number" &&
+    !/^\d{4}-\d{2}-\d{2}$/.test(msToDateStr(value))
+  )
     return "Use YYYY-MM-DD.";
-  if (def.type === "time" && typeof value === 'number' && !/^\d{2}:\d{2}$/.test(msToDateStr(value)))
+  if (
+    def.type === "time" &&
+    typeof value === "number" &&
+    !/^\d{2}:\d{2}$/.test(msToDateStr(value))
+  )
     return "Use HH:MM (24-hour).";
   if (def.pattern) {
     try {
       const re = new RegExp(def.pattern);
-      if (valueStringified && !re.test(valueStringified)) return "Invalid format.";
+      if (valueStringified && !re.test(valueStringified))
+        return "Invalid format.";
     } catch {}
   }
   for (const fn of def.validators ?? []) {
@@ -115,15 +136,17 @@ function isComplete(schema: FieldDef[], values: Values): boolean {
 export default function FormsPage() {
   const profile = useProfileData();
   const { colleges } = useDbRefs();
-  const [entities, setEntities] = useState<{ id: string, display_name: string }[]>([]);
+  const [entities, setEntities] = useState<
+    { id: string; display_name: string }[]
+  >([]);
 
   useEffect(() => {
-    UserService.getEntityList().then(response => {
+    UserService.getEntityList().then((response) => {
       // @ts-ignore
-      setEntities(response.entities)
-    })
-  }, [])
-  
+      setEntities(response.entities);
+    });
+  }, []);
+
   const [tab, setTab] = useState<TabKey>("Forms Autofill");
   const [autofill, setAutofill] = useState<Values>({});
   const [autofillErrors, setAutofillErrors] = useState<Record<string, string>>(
@@ -178,8 +201,8 @@ export default function FormsPage() {
       FORM_TEMPLATES.find((t) => t.id === formId)?.customFields ?? [];
     const initialCustom: Values = {};
     defs.forEach((d) => (initialCustom[d.key] = ""));
-    initialCustom["internship_clock_in_time"] = "08:00"
-    initialCustom["internship_clock_out_time"] = "17:00"
+    initialCustom["internship_clock_in_time"] = "08:00";
+    initialCustom["internship_clock_out_time"] = "17:00";
 
     openGlobalModal(
       "generate-form",
@@ -189,7 +212,8 @@ export default function FormsPage() {
         customDefs={defs}
         onInviteEmployer={async (_invite) => {
           // fake
-          const formName = FORM_TEMPLATES.find((f) => f.id === formId)?.name ?? "Form";
+          const formName =
+            FORM_TEMPLATES.find((f) => f.id === formId)?.name ?? "Form";
 
           setPastForms((prev) => [
             {
@@ -202,7 +226,7 @@ export default function FormsPage() {
             },
             ...prev,
           ]);
-        } }
+        }}
         initialEntityId={""}
         onGeneratePdf={async (entity, customValues) => {
           const errs = validateMany(defs, customValues);
@@ -217,12 +241,17 @@ export default function FormsPage() {
               user_address: autofill.address,
               // ! remove hardcodes for degree and college
               user_degree: profile.data.degree ?? "BSCS Software Technology",
-              user_college: autofill.college ? refs.to_college_name(autofill.college!) ?? "College of Computer Studies" : "College of Computer Studies",
+              user_college: autofill.college
+                ? refs.to_college_name(autofill.college!) ??
+                  "College of Computer Studies"
+                : "College of Computer Studies",
               user_full_name: `${profile.data?.first_name} ${profile.data?.last_name}`,
               user_id_number: autofill.student_id,
               student_guardian_name: autofill.guardian_name,
               internship_hours: parseInt(customValues.internship_total_hours),
-              internship_start_date: parseInt(customValues.internship_start_date),
+              internship_start_date: parseInt(
+                customValues.internship_start_date
+              ),
               internship_start_time: customValues.internship_clock_in_time,
               internship_end_date: parseInt(customValues.internship_end_date),
               internship_end_time: customValues.internship_clock_out_time,
@@ -231,8 +260,11 @@ export default function FormsPage() {
 
             const response = await UserService.generateStudentMoa(payload);
             const fileUrl = `https://storage.googleapis.com/better-internship-public-bucket/${response.verificationCode}.pdf`;
-            const entityName = entities?.find((c) => c.id === entity.companyId)?.display_name ?? "Company";
-            const formName = FORM_TEMPLATES.find((f) => f.id === formId)?.name ?? "Form";
+            const entityName =
+              entities?.find((c) => c.id === entity.companyId)?.display_name ??
+              "Company";
+            const formName =
+              FORM_TEMPLATES.find((f) => f.id === formId)?.name ?? "Form";
 
             setPastForms((prev) => [
               {
@@ -250,10 +282,13 @@ export default function FormsPage() {
           } finally {
             setIsGeneratingGlobal(false);
           }
-        } } initialCustom={{ 
+        }}
+        initialCustom={{
           internship_clock_in_time: "08:00",
           internship_clock_out_time: "17:00",
-        }} onCancel={() => closeGlobalModal("generate-form")}      />,
+        }}
+        onCancel={() => closeGlobalModal("generate-form")}
+      />,
       {
         allowBackdropClick: false,
         closeOnEsc: true,
@@ -587,9 +622,7 @@ export default function FormsPage() {
                       {/* Right side */}
                       <div className="flex items-center gap-2 justify-between sm:justify-end">
                         <Badge
-                          type={
-                            p.status === "pending" ? "warning" : "primary"
-                          }
+                          type={p.status === "pending" ? "warning" : "primary"}
                           className={cn(
                             "text-xs",
                             p.status === "pending"
@@ -795,15 +828,7 @@ function GenerateMoaFlowModal({
     try {
       setBusy(true);
       setStep("generating");
-      await onGeneratePdf(
-        {
-          companyId,
-          companyAddress: manualCompany.companyAddress,
-          contactPosition: manualCompany.contactPosition,
-          companyType: manualCompany.companyType,
-        },
-        formValues
-      );
+      mockGenerateFormAPI();
       setDoneKind("generated");
       setStep("done");
     } finally {
@@ -870,12 +895,15 @@ function GenerateMoaFlowModal({
       {step === "companySelect" && (
         <div className="space-y-4 min-h-[35vh] overflow-auto">
           <DropdownGroup>
-          <FormDropdown
-            label="Company"
-            value={companyId}
-            options={entities.map((c) => ({ id: c.id, name: c.display_name }))}
-            setter={(v) => setCompanyId(String(v ?? ""))}
-          />
+            <FormDropdown
+              label="Company"
+              value={companyId}
+              options={entities.map((c) => ({
+                id: c.id,
+                name: c.display_name,
+              }))}
+              setter={(v) => setCompanyId(String(v ?? ""))}
+            />
           </DropdownGroup>
 
           {/* toggles */}
@@ -1075,6 +1103,13 @@ function GenerateMoaFlowModal({
   );
 }
 
+function mockGenerateFormAPI() {
+  // In a real API, fileUrl would be returned by the server after rendering.
+  const fileUrl = "../YAUN_Student_MOA.pdf";
+
+  return { fileUrl };
+}
+
 /* ──────────────────────────────────────────────
    Field renderer
    ────────────────────────────────────────────── */
@@ -1112,7 +1147,6 @@ function FieldRenderer({
   }
 
   if (def.type === "date") {
-
     // Disable dates before today+7
     let disabledDays: any | undefined;
     if (
