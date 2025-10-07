@@ -20,6 +20,9 @@ type ModalOptions = {
   onClose?: () => void; // called AFTER the modal is removed
   backdropClassName?: string;
   panelClassName?: string;
+  title?: React.ReactNode;
+  headerClassName?: string;
+  showHeaderDivider?: boolean;
 };
 
 type RegistryEntry = { node: React.ReactNode; opts: ModalOptions };
@@ -153,19 +156,48 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
                   // Let content grow but cap height properly
                   "max-h-[calc(var(--vh,1vh)*100)]",
                   // Desktop+: classic centered card
-                  "sm:rounded-[0.33em] sm:w-auto sm:max-w-2xl sm:max-h-[90vh]",
+                  "sm:rounded-[0.33em] sm:w-auto sm:max-w-2xl sm:min-w-0 sm:max-h-[90vh]",
                   opts.panelClassName ?? "",
                 ].join(" ")}
                 onClick={(e) => e.stopPropagation()}
               >
-                {opts.hasClose !== false && (
-                  <button
-                    aria-label="Close"
-                    onClick={() => close(name)}
-                    className="absolute right-3 top-3 h-8 w-8 rounded-full hover:bg-gray-100 active:bg-gray-200 flex items-center justify-center"
+                {/* Header row: title (left) + close (right) */}
+                {(opts.title || opts.hasClose !== false) && (
+                  <div
+                    className={[
+                      "flex items-center justify-between gap-3 px-4 py-3",
+                      opts.showHeaderDivider ? "border-b" : "",
+                      opts.headerClassName ?? "",
+                    ].join(" ")}
                   >
-                    <X className="h-4 w-4 text-gray-500" />
-                  </button>
+                    {/* Title (optional) */}
+                    {opts.title ? (
+                      typeof opts.title === "string" ? (
+                        <h2
+                          className="text-base font-semibold truncate"
+                        >
+                          {opts.title}
+                        </h2>
+                      ) : (
+                        <div className="flex-1 min-w-0">
+                          {opts.title}
+                        </div>
+                      )
+                    ) : (
+                      <div className="flex-1" />
+                    )}
+
+                    {/* Close button (optional) */}
+                    {opts.hasClose !== false && (
+                      <button
+                        aria-label="Close"
+                        onClick={() => close(name)}
+                        className="h-8 w-8 rounded-full hover:bg-gray-100 active:bg-gray-200 flex items-center justify-center shrink-0"
+                      >
+                        <X className="h-4 w-4 text-gray-500" />
+                      </button>
+                    )}
+                  </div>
                 )}
 
                 {/* Content area */}
