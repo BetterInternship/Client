@@ -193,12 +193,12 @@ export default function FormsPage() {
 
           try {
             setIsGeneratingGlobal(true);
-            const fileUrl = `https://storage.googleapis.com/better-internship-public-bucket/${response.verificationCode}.pdf`;
             const response = await UserService.generateStudentMoa({
               employer_id: companyId,
               user_id: profile.data?.id,
               student_signatory_name: `${profile.data?.first_name} ${profile.data?.last_name}`
             });
+            const fileUrl = `https://storage.googleapis.com/better-internship-public-bucket/${response.verificationCode}.pdf`;
 
             const entityName =
               entities?.find((c) => c.id === companyId)?.display_name ?? "Company";
