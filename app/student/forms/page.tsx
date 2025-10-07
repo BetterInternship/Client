@@ -829,11 +829,23 @@ function GenerateMoaFlowModal({
       setBusy(true);
       setStep("generating");
 
+      // TODO: i am the one
+      // await onGeneratePdf(
+      //   {
+      //     companyId,
+      //     companyAddress: manualCompany.companyAddress,
+      //     contactPosition: manualCompany.contactPosition,
+      //     companyType: manualCompany.companyType,
+      //   },
+      //   formValues
+      // );
+      // TODO: for realsies comment this out
       const { fileUrl } = mockGenerateFormAPI();
 
       if (fileUrl) {
         window.open(fileUrl, "_blank", "noopener,noreferrer");
       }
+      // TODO: till this
 
       setDoneKind("generated");
       setStep("done");
