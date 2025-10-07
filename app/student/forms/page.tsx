@@ -178,7 +178,6 @@ export default function FormsPage() {
     openGlobalModal(
       "generate-form",
       <GenerateFormModal
-        title={FORM_TEMPLATES.find((t) => t.id === formId)?.name ?? "Form"}
         description={FORM_TEMPLATES.find((t) => t.id === formId)?.description}
         entities={entities}
         customDefs={defs}
@@ -225,7 +224,10 @@ export default function FormsPage() {
       {
         allowBackdropClick: false,
         closeOnEsc: true,
-        panelClassName: "max-w-none w-[98vw] sm:w-[50svw]",
+        panelClassName: "w-[98vw] sm:min-w-[50svw]",
+        title:
+          "Generate " +
+          (FORM_TEMPLATES.find((t) => t.id === formId)?.name ?? "Form"),
       }
     );
   }
@@ -236,12 +238,21 @@ export default function FormsPage() {
     requiredAutofillKeys.forEach((k) => {
       if (!autofill[k] || !autofill[k].trim())
         nextErrors[k] = "This field is required.";
+
+      if (k === "student_id" && autofill[k]?.trim()) {
+        nextErrors[k] = validateDlsuId(autofill[k]) ?? "";
+      }
     });
     setAutofillErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
+    if (Object.values(nextErrors).some(Boolean)) return;
 
     // nothing to save
     if (!isAutofillDirty) return;
+
+    if (!nextErrors.student_id) {
+      const msg = validateDlsuId(autofill.student_id ?? "");
+      if (msg) nextErrors.student_id = msg;
+    }
 
     try {
       setIsSavingAutofill(true);
@@ -258,12 +269,21 @@ export default function FormsPage() {
   }
 
   function setAutofillField(key: string, val: string) {
+    if (key === "student_id") {
+      val = normalizeDlsuId(val);
+    }
+
     setAutofill((prev) => ({ ...prev, [key]: val }));
+
     if (requiredAutofillKeys.includes(key as any)) {
-      setAutofillErrors((e) => ({
-        ...e,
-        [key]: val?.trim() ? "" : "This field is required.",
-      }));
+      setAutofillErrors((e) => {
+        const trimmed = val?.trim() ?? "";
+        let msg = trimmed ? "" : "This field is required.";
+        if (!msg && key === "student_id") {
+          msg = validateDlsuId(trimmed) ?? "";
+        }
+        return { ...e, [key]: msg };
+      });
     }
   }
 
@@ -343,11 +363,18 @@ export default function FormsPage() {
                   value={autofill.student_id ?? ""}
                   setter={(v) => setAutofillField("student_id", v)}
                   className="w-full"
-                  maxLength={64}
+                  maxLength={8}
+                  placeholder="e.g., 12141380"
                 />
                 {!!autofillErrors.student_id && (
                   <p className="text-xs text-red-600">
                     {autofillErrors.student_id}
+                  </p>
+                )}
+                {!autofillErrors.student_id && (
+                  <p className="text-xs text-gray-500">
+                    Format: 8 digits + optional letter (e.g., 24123456 or
+                    24123456A)
                   </p>
                 )}
               </div>
@@ -464,7 +491,7 @@ export default function FormsPage() {
                 {availableForms.map((f) => (
                   <li
                     key={f.id}
-                    className="rounded-lg border p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                    className="rounded-[0.33em] border p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
                   >
                     <div className="min-w-0">
                       <div className="font-medium truncate">{f.name}</div>
@@ -474,13 +501,25 @@ export default function FormsPage() {
                         </div>
                       )}
                     </div>
-                    <Button
-                      size="sm"
-                      className="w-full sm:w-auto"
-                      onClick={() => openGenerate(f.id)}
-                    >
-                      Generate
-                    </Button>
+                    <div className="sm:space-x-2">
+                      <Button
+                        size="sm"
+                        className="w-full sm:w-auto"
+                        variant="outline"
+                        asChild
+                      >
+                        <a href="Student_MOA.pdf" download>
+                          View Template
+                        </a>
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="w-full sm:w-auto"
+                        onClick={() => openGenerate(f.id)}
+                      >
+                        Generate
+                      </Button>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -543,7 +582,6 @@ export default function FormsPage() {
    ────────────────────────────────────────────── */
 
 function GenerateFormModal({
-  title,
   description,
   entities,
   customDefs,
@@ -552,7 +590,6 @@ function GenerateFormModal({
   onCancel,
   onGenerate,
 }: {
-  title: string;
   description?: string;
   entities: { id: string; display_name: string }[];
   customDefs: FieldDef[];
@@ -603,10 +640,6 @@ function GenerateFormModal({
   return (
     <div className="overflow-auto">
       <div className="mb-3">
-        <div className="flex items-center gap-2 mb-1">
-          <AlertTriangle className="size-4 text-gray-400" />
-          <h3 className="text-lg font-semibold">Generate {title}</h3>
-        </div>
         <p className="text-sm text-gray-600">
           {description ??
             "Choose a company and fill any additional details for this template."}
@@ -699,7 +732,10 @@ function FieldRenderer({
 
     // Disable dates before today+7
     let disabledDays: any | undefined;
-    if (def.key === "internship_start_date") {
+    if (
+      def.key === "internship_start_date" ||
+      def.key === "internship_end_date"
+    ) {
       const t = new Date();
       const min = new Date(
         t.getFullYear(),
@@ -867,6 +903,18 @@ const FORM_TEMPLATES: FormTemplate[] = [
         type: "number",
         required: true,
         placeholder: "e.g., 320",
+        validators: [
+          (value) => {
+            if (value === null || value === undefined || value === "")
+              return null;
+
+            const n = typeof value === "string" ? Number(value) : value;
+            if (Number.isNaN(n)) return "Enter a valid number.";
+            if (n < 0) return "Total hours must be positive.";
+            if (n > 2000) return "Maximum allowed is 2000 hours.";
+            return null;
+          },
+        ],
       },
       {
         key: "internship_start_date",
@@ -877,7 +925,6 @@ const FORM_TEMPLATES: FormTemplate[] = [
         validators: [
           (start) => {
             if (!start) return null;
-            // parse "YYYY-MM-DD" to local midnight
             const [y, m, d] = start.split("-").map(Number);
             const startDate = new Date(y, (m ?? 1) - 1, d ?? 1, 0, 0, 0, 0);
 

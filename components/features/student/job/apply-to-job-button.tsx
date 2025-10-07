@@ -20,11 +20,13 @@ export const ApplyToJobButton = ({
   job,
   openAppModal,
   applySuccessModalRef,
+  className,
 }: {
   profile: PublicUser | null;
   job: Job;
   openAppModal: () => void;
   applySuccessModalRef?: RefObject<ModalHandle | null>;
+  className?: string;
 }) => {
   const auth = useAuthContext();
   const jobs = useJobsData();
@@ -89,6 +91,7 @@ export const ApplyToJobButton = ({
       scheme={applied ? "supportive" : "primary"}
       size={"md"}
       onClick={() => !applied && handleApply()}
+      className={className}
     >
       {applied && <CheckCircle className="w-4 h-4" />}
       {applied ? "Applied" : "Apply Now"}
