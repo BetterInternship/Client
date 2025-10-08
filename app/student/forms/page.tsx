@@ -143,7 +143,7 @@ export default function FormsPage() {
   useEffect(() => {
     UserService.getEntityList().then((response) => {
       // @ts-ignore
-      console.log("Got entities:", response.employers);
+      console.log("Got entities:", response);
       // @ts-ignore
       setEntities(response.employers);
     });

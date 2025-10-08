@@ -203,6 +203,13 @@ export const UserService = {
     );
   },
 
+  async requestEmployerAssist(id: string, recipient: string) {
+    return APIClient.post<{}>(
+      APIRouteBuilder("student").r("moa", "request", "partial", id).build({ moaServer: true }),
+      { recipient }
+    );
+  },
+
   async parseResume(form: FormData) {
     return APIClient.post<UserResponse>(
       APIRouteBuilder("users").r("me", "extract-resume").build(),
