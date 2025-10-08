@@ -14,6 +14,7 @@ import Head from "next/head";
 import AllowLanding from "./allowLanding";
 import { ConversationsContextProvider } from "@/hooks/use-conversation";
 import { PocketbaseProvider } from "@/lib/pocketbase";
+import { ModalProvider } from "@/components/providers/ModalProvider";
 
 export const metadata: Metadata = {
   title: "Recruiter Dashboard - BetterInternship",
@@ -74,7 +75,9 @@ const HTMLContent = ({
                       />
                     </Head>
                     <body className="h-full overflow-hidden">
-                      <AllowLanding>{children}</AllowLanding>
+                      <ModalProvider>
+                        <AllowLanding>{children}</AllowLanding>
+                      </ModalProvider>
                     </body>
                   </html>
                 </ConversationsContextProvider>
