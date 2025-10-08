@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
@@ -40,10 +40,16 @@ const defaultValues: Values = {
   companyType: "",
 };
 
+export default function CompanyMoaRequestPage() {
+  return <Suspense>
+    <CompanyMoaRequestPageContent />
+  </Suspense>
+}
+
 // ──────────────────────────────────────────────
 // Page
 // ──────────────────────────────────────────────
-export default function CompanyMoaRequestPage() {
+function CompanyMoaRequestPageContent() {
   const router = useRouter();
   const params = useSearchParams();
 
