@@ -176,7 +176,7 @@ export const UserService = {
 
   async getEntityList() {
     return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("entities").r("list").build({ moaServer: true })
+      APIRouteBuilder("employer").r("list").build()
     );
   },
 

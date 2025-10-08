@@ -137,13 +137,15 @@ export default function FormsPage() {
   const profile = useProfileData();
   const { colleges } = useDbRefs();
   const [entities, setEntities] = useState<
-    { id: string; display_name: string }[]
+    { id: string; legal_entity_name: string }[]
   >([]);
 
   useEffect(() => {
     UserService.getEntityList().then((response) => {
       // @ts-ignore
-      setEntities(response.entities);
+      console.log("Got entities:", response.employers);
+      // @ts-ignore
+      setEntities(response.employers);
     });
   }, []);
 
@@ -160,9 +162,6 @@ export default function FormsPage() {
     () => JSON.stringify(autofill) !== JSON.stringify(lastSavedAutofill),
     [autofill, lastSavedAutofill]
   );
-
-  // tiny mock “API” delay to make it believable
-  const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
   const collegeOptions = useMemo(
     () => (colleges ?? []).map((c) => ({ value: String(c.id), label: c.name })),
@@ -261,7 +260,7 @@ export default function FormsPage() {
             const response = await UserService.generateStudentMoa(payload);
             const fileUrl = `https://storage.googleapis.com/better-internship-public-bucket/${response.verificationCode}.pdf`;
             const entityName =
-              entities?.find((c) => c.id === entity.companyId)?.display_name ??
+              entities?.find((c) => c.id === entity.companyId)?.legal_entity_name ??
               "Company";
             const formName =
               FORM_TEMPLATES.find((f) => f.id === formId)?.name ?? "Form";
@@ -324,8 +323,6 @@ export default function FormsPage() {
 
     try {
       setIsSavingAutofill(true);
-      // simulate network + write time
-      await wait(900 + Math.random() * 600);
 
       // success
       setLastSavedAutofill(autofill);
@@ -673,7 +670,7 @@ function GenerateMoaFlowModal({
   onInviteEmployer,
 }: {
   description?: string;
-  entities: { id: string; display_name: string }[];
+  entities: { id: string; legal_entity_name: string }[];
   customDefs: FieldDef[];
   initialEntityId: string;
   initialCustom: Values;
@@ -918,7 +915,7 @@ function GenerateMoaFlowModal({
               value={companyId}
               options={entities.map((c) => ({
                 id: c.id,
-                name: c.display_name,
+                name: c.legal_entity_name,
               }))}
               setter={(v) => setCompanyId(String(v ?? ""))}
             />

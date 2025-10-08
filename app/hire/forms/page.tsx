@@ -58,6 +58,8 @@ export default function CompanyMoaRequestPage() {
   const router = useRouter();
   const params = useSearchParams();
 
+  // TODO: On mount, fetch the details of student in body, then generate PDF. Append to the hyperlink or button
+
   // From URL (you can pass these via invite link): ?student=Juan%20Dela%20Cruz&template=/Student_MOA.pdf
   const studentName = params.get("student") || "The student";
   const templateHref = params.get("template") || "/Student_MOA.pdf";
@@ -109,9 +111,10 @@ export default function CompanyMoaRequestPage() {
           <div>
             <h3 className="text-base font-semibold">You’re good to go!</h3>
             <p className="text-sm text-gray-600 mt-1">
-              We’ve recorded your details{signedPdfUrl ? " and signed the document" : ""}.
-              {` `}
-              {true && "We also created an account for you in BetterInternship."}
+              We’ve recorded your details
+              {signedPdfUrl ? " and signed the document" : ""}.{` `}
+              {true &&
+                "We also created an account for you in BetterInternship."}
             </p>
           </div>
         </div>
@@ -171,7 +174,9 @@ export default function CompanyMoaRequestPage() {
             />
             <span>
               I am authorized to sign the{" "}
-              <span className="font-medium">standard template student internship</span>{" "}
+              <span className="font-medium">
+                standard template student internship
+              </span>{" "}
               document requested by the school.
             </span>
           </label>
@@ -184,13 +189,17 @@ export default function CompanyMoaRequestPage() {
               onChange={(e) => setB(e.target.checked)}
             />
             <span>
-              Auto-sign other school-templated internship documents in the future.
-              I’ll be sent a copy anytime a templated document is signed.
+              Auto-sign other school-templated internship documents in the
+              future. I’ll be sent a copy anytime a templated document is
+              signed.
             </span>
           </label>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={() => closeModal("esign-confirm")}>
+            <Button
+              variant="outline"
+              onClick={() => closeModal("esign-confirm")}
+            >
               Back
             </Button>
             <Button
