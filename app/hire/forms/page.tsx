@@ -10,6 +10,7 @@ import { FormInput, FormDropdown } from "@/components/EditForm";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { CheckCircle, FileSignature, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { EmployerService } from "@/lib/api/services";
 
 // ──────────────────────────────────────────────
 // Replace with your real service calls
@@ -19,16 +20,6 @@ const CompanyService = {
     // TODO: call your API to save details (no e-sign)
     await new Promise((r) => setTimeout(r, 600));
     return { ok: true };
-  },
-  submitAndSignCompanyDetails: async (payload: any) => {
-    // TODO: call your API to save + e-sign; return a signed file URL and maybe an account bootstrap
-    await new Promise((r) => setTimeout(r, 1000));
-    return {
-      ok: true,
-      signedPdfUrl: "/Student_MOA.pdf", // replace with real returned URL
-      createdAccount: true,
-      dashboardUrl: "/employer", // or /company/dashboard
-    };
   },
 };
 
@@ -245,14 +236,39 @@ export default function CompanyMoaRequestPage() {
     if (!validate()) return;
     try {
       setBusy("esign");
-      const res = await CompanyService.submitAndSignCompanyDetails({
-        ...v,
-        esign: true,
-        autoSignFuture: opts.autoOptIn,
-      });
-      if (res.ok) {
-        openSuccessModal(res.signedPdfUrl, res.dashboardUrl);
+      const payload = {
+        companyLegalName: v.legalName,
+        companyAddress: v.companyAddress,
+        companyRepresentative: v.contactPerson,
+        companyRepresentativePosition: v.contactPosition,
+        companyType: v.companyType,
+      };
+
+      const res = await EmployerService.signMoaWithSignature(payload);
+
+      const ok = Boolean(
+        res?.ok ??
+          res?.success ??
+          res?.result ??
+          res?.verificationCode ??
+          res?.signedPdfUrl
+      );
+
+      const signedPdfUrl =
+        res?.signedPdfUrl ??
+        (res?.verificationCode
+          ? `https://storage.googleapis.com/better-internship-public-bucket/${res.verificationCode}.pdf`
+          : undefined);
+
+      if (ok) {
+        openSuccessModal(signedPdfUrl, dashboardUrl);
+      } else {
+        console.error("signMoaWithSignature returned non-ok:", res);
+        alert("Could not e-sign. Please try again.");
       }
+    } catch (err) {
+      console.error("signMoaWithSignature threw:", err);
+      alert("Something went wrong. Please try again.");
     } finally {
       setBusy(null);
     }

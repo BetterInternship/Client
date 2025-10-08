@@ -41,6 +41,20 @@ export const EmployerService = {
       "form-data"
     );
   },
+
+  async signMoaWithSignature(data: {
+    moaFieldsId: "f41d1354-cf00-4abc-bc1b-3b0eeb6001cc";
+    companyLegalName: string;
+    companyAddress: string;
+    companyRepresentative: string;
+    companyRepresentativePosition: string;
+    companyType: string;
+  }) {
+    return APIClient.post<{ success: boolean; message?: string }>(
+      APIRouteBuilder("student/moa").r("sign").build({ moaServer: true }),
+      data
+    );
+  },
 };
 
 // Auth Services
@@ -151,9 +165,9 @@ export const UserService = {
     internship_coordinator_name: string;
   }) {
     return APIClient.post<{
-      moaRequestId: string,
-      signedDocumentId: string,
-      verificationCode: string,
+      moaRequestId: string;
+      signedDocumentId: string;
+      verificationCode: string;
     }>(
       APIRouteBuilder("student").r("moa", "request").build({ moaServer: true }),
       data
@@ -180,9 +194,9 @@ export const UserService = {
     StudentIDNumber: string;
     InternshipCoordinatorName: string;
   }) {
-    return APIClient.post<{ 
-      success: boolean,
-      message?: string 
+    return APIClient.post<{
+      success: boolean;
+      message?: string;
     }>(
       APIRouteBuilder("docs").r("student-moa").build({ moaServer: true }),
       data
