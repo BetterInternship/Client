@@ -254,7 +254,7 @@ export default function CompanyMoaRequestPage() {
       <div className="space-y-6">
         {/* Header */}
         <div className="space-y-2">
-          <h1 className="text-xl sm:text-2xl font-semibold">
+          <h1 className="text-xl sm:text-2xl font-semibold text-justify">
             {studentName} is requesting the following details for{" "}
             <Link
               href={templateHref}
@@ -265,8 +265,7 @@ export default function CompanyMoaRequestPage() {
             </Link>
           </h1>
           <p className="text-gray-600 text-sm">
-            Please provide the basic company details below. This page is
-            intentionally minimal.
+            Please provide the basic company details below.
           </p>
         </div>
 
