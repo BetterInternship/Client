@@ -1024,7 +1024,7 @@ function GenerateMoaFlowModal({
               )}
 
               <FormInput
-                label="Company Representative / Contact Person"
+                label="Company Representative"
                 value={manualCompany.contactPerson}
                 setter={(v) => setManualField("contactPerson", v)}
               />
@@ -1033,7 +1033,7 @@ function GenerateMoaFlowModal({
               )}
 
               <FormInput
-                label="Contact Position"
+                label="Company Representative's Position"
                 value={manualCompany.contactPosition}
                 setter={(v) => setManualField("contactPosition", v)}
               />
