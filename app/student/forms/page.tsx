@@ -120,16 +120,6 @@ function validateMany(
   return errs;
 }
 
-function isComplete(schema: FieldDef[], values: Values): boolean {
-  for (const def of schema) {
-    if (def.required) {
-      const e = validateField(def, values[def.key] ?? "", values);
-      if (e) return false;
-    }
-  }
-  return true;
-}
-
 /* ──────────────────────────────────────────────
    Page
    ────────────────────────────────────────────── */
@@ -211,8 +201,8 @@ export default function FormsPage() {
         customDefs={defs}
         student={{
           name: `${profile.data?.first_name} ${profile.data?.last_name}`.trim(),
-          program: profile.data?.degree,
-          college: refs.to_college_name(autofill.college),
+          program: profile.data?.degree ?? '',
+          college: refs.to_college_name(autofill.college) ?? '',
           address: autofill.address,
           guardianName: autofill.guardian_name,
           idNumber: autofill.student_id,
@@ -228,13 +218,64 @@ export default function FormsPage() {
               name: formName,
               company: _invite.legalName || "Company",
               createdAt: new Date().toISOString().slice(0, 10),
-              status: "pending",
+              status: "ready",
               fileUrl: "",
             },
             ...prev,
           ]);
         }}
         initialEntityId={""}
+        onManualGeneratePdf={async (entity: any, customValues: any) => {
+          const errs = validateMany(defs, customValues);
+          if (Object.keys(errs).length > 0 || !entity) return;
+          if (!profile.data?.id) return alert("Not logged in.");
+
+          try {
+            setIsGeneratingGlobal(true);
+            const payload = {
+              user_address: autofill.address,
+              // ! remove hardcodes for degree and college
+              user_degree: profile.data.degree ?? "BSCS Software Technology",
+              user_college: autofill.college
+                ? refs.to_college_name(autofill.college!) ??
+                  "College of Computer Studies"
+                : "College of Computer Studies",
+              user_full_name: `${profile.data?.first_name} ${profile.data?.last_name}`,
+              user_id_number: autofill.student_id,
+              student_guardian_name: autofill.guardian_name,
+              internship_hours: parseInt(customValues.internship_total_hours),
+              internship_start_date: parseInt(
+                customValues.internship_start_date
+              ),
+              internship_start_time: customValues.internship_clock_in_time,
+              internship_end_date: parseInt(customValues.internship_end_date),
+              internship_end_time: customValues.internship_clock_out_time,
+              internship_coordinator_name: customValues.dlsu_coordinator_name,
+              ...entity,
+            };
+
+            const response = await UserService.generateManualStudentMoa(payload);
+            const fileUrl = `https://storage.googleapis.com/better-internship-public-bucket/${response.verificationCode}.pdf`;
+            const formName =
+              FORM_TEMPLATES.find((f) => f.id === formId)?.name ?? "Form";
+
+            setPastForms((prev) => [
+              {
+                id: `pf-${Math.random().toString(36).slice(2, 8)}`,
+                name: formName,
+                company: entity.companyLegalName,
+                createdAt: new Date().toISOString().slice(0, 10),
+                fileUrl,
+              },
+              ...prev,
+            ]);
+
+            window.open(fileUrl, "_blank", "noopener,noreferrer");
+            closeGlobalModal("generate-form");
+          } finally {
+            setIsGeneratingGlobal(false);
+          }
+        }}
         onGeneratePdf={async (entity, customValues) => {
           const errs = validateMany(defs, customValues);
           if (Object.keys(errs).length > 0 || !entity) return;
@@ -643,13 +684,8 @@ export default function FormsPage() {
                           variant="outline"
                           className="w-full sm:w-auto"
                           onClick={() => handleDownload(p)}
-                          disabled={p.status === "pending" || !p.fileUrl}
                         >
-                          {p.status === "pending"
-                            ? "Waiting…"
-                            : p.fileUrl
-                            ? "Download"
-                            : "Processing…"}
+                          {"Download"}
                         </Button>
                       </div>
                     </li>
@@ -675,6 +711,7 @@ function GenerateMoaFlowModal({
   initialCustom,
   onCancel,
   onGeneratePdf,
+  onManualGeneratePdf,
   onInviteEmployer,
   student,
 }: {
@@ -685,6 +722,10 @@ function GenerateMoaFlowModal({
   initialCustom: Values;
   onCancel: () => void;
   onGeneratePdf: (
+    manualCompanyValues: Values,
+    formValues: Values
+  ) => Promise<void>;
+  onManualGeneratePdf: (
     manualCompanyValues: Values,
     formValues: Values
   ) => Promise<void>;
@@ -859,7 +900,8 @@ function GenerateMoaFlowModal({
       };
 
       // @ts-ignore
-      await UserService.createStudentMoaRow(payload);
+      const { id: moaFieldsId } = await UserService.createStudentMoaRow(payload)
+      await UserService.requestEmployerAssist(moaFieldsId, invite.contactEmail);
 
       await onInviteEmployer(invite);
       setDoneKind("assist");
@@ -875,24 +917,18 @@ function GenerateMoaFlowModal({
       setBusy(true);
       setStep("generating");
 
-      // TODO: i am the one
-      // await onGeneratePdf(
-      //   {
-      //     companyId,
-      //     companyAddress: manualCompany.companyAddress,
-      //     contactPosition: manualCompany.contactPosition,
-      //     companyType: manualCompany.companyType,
-      //   },
-      //   formValues
-      // );
-      // TODO: for realsies comment this out
-      const { fileUrl } = mockGenerateFormAPI();
-
-      if (fileUrl) {
-        window.open(fileUrl, "_blank", "noopener,noreferrer");
-      }
-      // TODO: till this
-
+      await onManualGeneratePdf(
+        {
+          companyId,
+          companyLegalName: manualCompany.legalName,
+          companyAddress: manualCompany.companyAddress,
+          companyRepresentative: manualCompany.contactPerson,
+          companyRepresentativePosition: manualCompany.contactPosition,
+          companyType: manualCompany.companyType,
+        },
+        formValues,
+      );
+    
       setDoneKind("generated");
       setStep("done");
     } finally {

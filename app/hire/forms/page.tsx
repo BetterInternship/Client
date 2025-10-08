@@ -5,11 +5,9 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { FormInput, FormDropdown } from "@/components/EditForm";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { CheckCircle, FileSignature, ShieldCheck } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { EmployerService } from "@/lib/api/services";
 
 // ──────────────────────────────────────────────
@@ -54,6 +52,7 @@ export default function CompanyMoaRequestPage() {
   // From URL (you can pass these via invite link): ?student=Juan%20Dela%20Cruz&template=/Student_MOA.pdf
   const studentName = params.get("student") || "The student";
   const templateHref = params.get("template") || "/Student_MOA.pdf";
+  const moaFieldsId = params.get("moaFieldsId") || "f41d1354-cf00-4abc-bc1b-3b0eeb6001cc";
 
   // Form state
   const [v, setV] = useState<Values>(defaultValues);
@@ -237,6 +236,7 @@ export default function CompanyMoaRequestPage() {
     try {
       setBusy("esign");
       const payload = {
+        moaFieldsId: moaFieldsId,
         companyLegalName: v.legalName,
         companyAddress: v.companyAddress,
         companyRepresentative: v.contactPerson,
@@ -247,21 +247,17 @@ export default function CompanyMoaRequestPage() {
       const res = await EmployerService.signMoaWithSignature(payload);
 
       const ok = Boolean(
-        res?.ok ??
-          res?.success ??
-          res?.result ??
-          res?.verificationCode ??
-          res?.signedPdfUrl
+        res?.success ??
+        res?.result
       );
 
       const signedPdfUrl =
-        res?.signedPdfUrl ??
         (res?.verificationCode
           ? `https://storage.googleapis.com/better-internship-public-bucket/${res.verificationCode}.pdf`
           : undefined);
 
       if (ok) {
-        openSuccessModal(signedPdfUrl, dashboardUrl);
+        openSuccessModal(signedPdfUrl, `${process.env.NEXT_PUBLIC_CLIENT_HIRE_URL}/login`);
       } else {
         console.error("signMoaWithSignature returned non-ok:", res);
         alert("Could not e-sign. Please try again.");
@@ -355,13 +351,13 @@ export default function CompanyMoaRequestPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2 sm:justify-end pt-2">
-            <Button
+            {/* <Button
               variant="outline"
               onClick={handleSubmitPlain}
               disabled={!valid || busy === "plain" || busy === "esign"}
             >
               {busy === "plain" ? "Submitting…" : "Submit without e-sign"}
-            </Button>
+            </Button> */}
 
             <Button
               onClick={openEsignModal}

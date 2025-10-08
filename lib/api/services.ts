@@ -43,7 +43,7 @@ export const EmployerService = {
   },
 
   async signMoaWithSignature(data: {
-    moaFieldsId: "f41d1354-cf00-4abc-bc1b-3b0eeb6001cc";
+    moaFieldsId: string;
     companyLegalName: string;
     companyAddress: string;
     companyRepresentative: string;
@@ -174,6 +174,37 @@ export const UserService = {
     );
   },
 
+  async generateManualStudentMoa(data: {
+    employer_id: string;
+    user_id: string;
+    user_address: string;
+    user_degree: string;
+    user_college: string;
+    user_full_name: string;
+    user_id_number: string;
+    student_guardian_name: string;
+    internship_hours: number;
+    internship_start_date: number;
+    internship_start_time: string;
+    internship_end_date: number;
+    internship_end_time: string;
+    internship_coordinator_name: string;
+    companyLegalName: string;
+    companyAddress: string;
+    companyRepresentative: string;
+    companyRepresentativePosition: string;
+    companyType: string;
+  }) {
+    return APIClient.post<{
+      moaRequestId: string;
+      signedDocumentId: string;
+      verificationCode: string;
+    }>(
+      APIRouteBuilder("student").r("moa", "request", "manual").build({ moaServer: true }),
+      data
+    );
+  },
+
   async createStudentMoaRow(data: {
     MOAAgreementDate?: number;
     CompanyLegalName?: string;
@@ -224,10 +255,13 @@ export const UserService = {
     );
   },
 
+  // ! remove hardcoded mapping
   async getEntityList() {
-    return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("employer").r("list").build()
+    const response = await APIClient.get<{ entities: { id: string, display_name: string }[] }>(
+      APIRouteBuilder("entities").r("list").build({ moaServer: true })
     );
+
+    return { employers: response.entities.map(e => ({ id: e.id, legal_entity_name: e.display_name })) }
   },
 
   async getMyPfpURL() {
