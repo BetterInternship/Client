@@ -160,6 +160,35 @@ export const UserService = {
     );
   },
 
+  async createStudentMoaRow(data: {
+    MOAAgreementDate?: number;
+    CompanyLegalName?: string;
+    CompanyType?: string;
+    CompanyAddress: string;
+    CompanyRepresentative: string;
+    CompanyRepresentativePosition: string;
+    Studentname: string;
+    StudentProgram: string;
+    StudentCollege: string;
+    StudentAddress: string;
+    InternshipHours: number;
+    InternshipStartDate: number;
+    InternshipEndDate: number;
+    InternshipStartTime: string;
+    InternshipEndTime: string;
+    StudentGuardianName: string;
+    StudentIDNumber: string;
+    InternshipCoordinatorName: string;
+  }) {
+    return APIClient.post<{ 
+      success: boolean,
+      message?: string 
+    }>(
+      APIRouteBuilder("docs").r("student-moa").build({ moaServer: true }),
+      data
+    );
+  },
+
   async parseResume(form: FormData) {
     return APIClient.post<UserResponse>(
       APIRouteBuilder("users").r("me", "extract-resume").build(),

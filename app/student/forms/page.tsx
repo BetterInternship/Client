@@ -209,6 +209,14 @@ export default function FormsPage() {
         description={FORM_TEMPLATES.find((t) => t.id === formId)?.description}
         entities={entities}
         customDefs={defs}
+        student={{
+          name: `${profile.data?.first_name} ${profile.data?.last_name}`.trim(),
+          program: profile.data?.degree,
+          college: refs.to_college_name(autofill.college),
+          address: autofill.address,
+          guardianName: autofill.guardian_name,
+          idNumber: autofill.student_id,
+        }}
         onInviteEmployer={async (_invite) => {
           // fake
           const formName =
@@ -260,8 +268,8 @@ export default function FormsPage() {
             const response = await UserService.generateStudentMoa(payload);
             const fileUrl = `https://storage.googleapis.com/better-internship-public-bucket/${response.verificationCode}.pdf`;
             const entityName =
-              entities?.find((c) => c.id === entity.companyId)?.legal_entity_name ??
-              "Company";
+              entities?.find((c) => c.id === entity.companyId)
+                ?.legal_entity_name ?? "Company";
             const formName =
               FORM_TEMPLATES.find((f) => f.id === formId)?.name ?? "Form";
 
@@ -668,6 +676,7 @@ function GenerateMoaFlowModal({
   onCancel,
   onGeneratePdf,
   onInviteEmployer,
+  student,
 }: {
   description?: string;
   entities: { id: string; legal_entity_name: string }[];
@@ -685,6 +694,14 @@ function GenerateMoaFlowModal({
     contactNumber: string;
     contactEmail: string;
   }) => Promise<void>;
+  student: {
+    name: string;
+    program: string;
+    college: string;
+    address: string;
+    guardianName: string;
+    idNumber: string;
+  };
 }) {
   type Step = "formFields" | "companySelect" | "generating" | "done";
 
@@ -812,7 +829,39 @@ function GenerateMoaFlowModal({
     if (!validateInvite()) return;
     try {
       setBusy(true);
-      await onInviteEmployer(invite); // parent fakes pending Past Form
+
+      const hours = parseInt(formValues.internship_total_hours || "0", 10);
+      const startDateMs = parseInt(formValues.internship_start_date || "0", 10);
+      const endDateMs = parseInt(formValues.internship_end_date || "0", 10);
+      const startTime = formValues.internship_clock_in_time || "";
+      const endTime = formValues.internship_clock_out_time || "";
+      const coordinator = formValues.dlsu_coordinator_name || "";
+
+      const payload = {
+        MOAAgreementDate: Date.now(),
+        CompanyLegalName: invite.legalName,
+        CompanyRepresentative: invite.contactPerson,
+
+        Studentname: student.name,
+        StudentProgram: student.program,
+        StudentCollege: student.college,
+        StudentAddress: student.address,
+
+        InternshipHours: Number.isFinite(hours) ? hours : 0,
+        InternshipStartDate: Number.isFinite(startDateMs) ? startDateMs : 0,
+        InternshipEndDate: Number.isFinite(endDateMs) ? endDateMs : 0,
+        InternshipStartTime: startTime,
+        InternshipEndTime: endTime,
+
+        StudentGuardianName: student.guardianName,
+        StudentIDNumber: student.idNumber,
+        InternshipCoordinatorName: coordinator,
+      };
+
+      // @ts-ignore
+      await UserService.createStudentMoaRow(payload);
+
+      await onInviteEmployer(invite);
       setDoneKind("assist");
       setStep("done");
     } finally {
