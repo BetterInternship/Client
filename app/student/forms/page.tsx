@@ -1156,7 +1156,7 @@ function GenerateMoaFlowModal({
             <Button variant="outline" onClick={() => setStep("formFields")}>
               Back
             </Button>
-            <Button
+            {!(showAssist || showManual) && <Button
               onClick={tryGenerateWithPickedCompany}
               disabled={!companyId || busy}
             >
@@ -1167,7 +1167,7 @@ function GenerateMoaFlowModal({
               ) : (
                 "Generate with selected company"
               )}
-            </Button>
+            </Button>}
           </div>
         </div>
       )}
