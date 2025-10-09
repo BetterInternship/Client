@@ -994,7 +994,7 @@ function GenerateMoaFlowModal({
       {/* Step 2: Company Select */}
       {step === "companySelect" && (
         <div className="space-y-4 min-h-[35vh] overflow-auto">
-          <DropdownGroup>
+          {!(showAssist || showManual) && <DropdownGroup>
             <FormDropdown
               label="Company"
               value={companyId}
@@ -1004,7 +1004,7 @@ function GenerateMoaFlowModal({
               }))}
               setter={(v) => setCompanyId(String(v ?? ""))}
             />
-          </DropdownGroup>
+          </DropdownGroup>}
 
           {/* toggles */}
           <div className="text-xs text-gray-500">
