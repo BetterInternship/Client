@@ -161,6 +161,10 @@ export const JobBadges = ({
   excludes?: string[];
 }) => {
   const { universities } = useDbRefs();
+
+  const workModes = job.internship_preferences?.job_setup_ids ?? [];
+  const workLoads = job.internship_preferences?.job_commitment_ids ?? [];
+
   return (
     <div className="flex flex-wrap gap-2 mb-4">
       {!excludes.includes("moa") && (
@@ -175,15 +179,14 @@ export const JobBadges = ({
           Unlisted
         </Badge>
       )}
-      {!excludes.includes("type") && (
-        <JobType type={job.internship_preferences?.job_commitment_ids?.[0]} />
-      )}
+      {!excludes.includes("type") &&
+        workModes.map((mode) => <JobType type={mode} />)}
+
       {!excludes.includes("salary") && (
         <JobSalary salary={job.salary} salary_freq={job.salary_freq} />
       )}
-      {!excludes.includes("mode") && (
-        <JobMode mode={job.internship_preferences?.job_setup_ids?.[0]} />
-      )}
+      {!excludes.includes("mode") &&
+        workLoads.map((load) => <JobMode mode={load} />)}
     </div>
   );
 };
