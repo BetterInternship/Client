@@ -786,9 +786,15 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
       .filter(Boolean)
       .join(", ") || "None";
 
+  const internshipTypes =
+    (job.internship_preferences?.internship_types ?? [])
+      .filter(Boolean)
+      .map((type) => type.charAt(0).toUpperCase() + type.slice(1).toLowerCase())
+      .join(", ") || "None";
+
   return (
     <div className="space-y-2">
-      <div className="space-y-2 sm:grid sm:grid-cols-3">
+      <div className="space-y-2 sm:grid sm:grid-cols-4 gap-2">
         <DropdownGroup>
           <div className="flex items-start gap-2">
             <Monitor className="h-5 w-5 text-gray-400" />
@@ -823,6 +829,16 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
                     : "None"
                 }
               />
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2">
+            <PhilippinePeso className="h-5 w-5 text-gray-400" />
+            <div>
+              <label className="flex items-center text-sm text-gray-700">
+                Type:
+              </label>
+              <Property value={internshipTypes} />
             </div>
           </div>
         </DropdownGroup>
