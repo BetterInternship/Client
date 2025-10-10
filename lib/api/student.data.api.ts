@@ -68,6 +68,7 @@ export function useJobsData(
   const filteredJobs = useMemo(() => {
     const allJobs = data?.jobs ?? [];
     if (!allJobs?.length) return [];
+    console.log(allJobs)
 
     return allJobs.filter((job) => {
       // Search filter
