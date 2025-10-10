@@ -444,12 +444,13 @@ export const FormDatePicker = ({
   captionLayout = "dropdown",
   disabledDays,
   autoClose = true,
-  placeholder = "Select date",
+  // placeholder = "Select date",
+  placeholder = new Date().toLocaleDateString(),
   format = (d) => d.toLocaleDateString(),
   ...props
 }: FormDatePickerProps) => {
   const [open, setOpen] = React.useState(false);
-  const selected = date != null ? new Date(date) : undefined;
+  const selected = date != null && date > 86400000 ? new Date(date) : undefined;
 
   return (
     <div className={cn("flex flex-col", className)}>
