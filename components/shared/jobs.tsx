@@ -5,7 +5,7 @@ import {
   EditableInput,
 } from "@/components/ui/editable";
 import { Job } from "@/lib/db/db.types";
-import { useDbMoa } from "@/lib/db/use-moa";
+import { useDbMoa } from "@/lib/db/use-bi-moa";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useFormData } from "@/lib/form-data";
 import { cn } from "@/lib/utils";

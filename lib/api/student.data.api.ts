@@ -6,7 +6,7 @@ import {
 } from "@/lib/api/services";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useQuery } from "@tanstack/react-query";
-import { useDbMoa } from "../db/use-moa";
+import { useDbMoa } from "../db/use-bi-moa";
 import { hashStringToInt } from "../utils";
 import shuffle from "knuth-shuffle-seeded";
 
