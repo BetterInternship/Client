@@ -444,8 +444,7 @@ export const FormDatePicker = ({
   captionLayout = "dropdown",
   disabledDays,
   autoClose = true,
-  // placeholder = "Select date",
-  placeholder = new Date().toLocaleDateString(),
+  placeholder = "Select date",
   format = (d) => d.toLocaleDateString(),
   ...props
 }: FormDatePickerProps) => {
