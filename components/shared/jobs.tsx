@@ -18,6 +18,7 @@ import {
   EyeOff,
   Monitor,
   PhilippinePeso,
+  UserCheck,
 } from "lucide-react";
 import { useEffect } from "react";
 import ReactMarkdown from "react-markdown";
@@ -833,7 +834,7 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
           </div>
 
           <div className="flex items-start gap-2">
-            <PhilippinePeso className="h-5 w-5 text-gray-400" />
+            <UserCheck className="h-5 w-5 text-gray-400" />
             <div>
               <label className="flex items-center text-sm text-gray-700">
                 Type:
