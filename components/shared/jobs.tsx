@@ -44,7 +44,7 @@ export const JobHead = ({
       <h1
         className={cn(
           "text-" + size + "xl",
-          "font-semibold text-gray-800 leading-tight line-clamp-2 transition-colors"
+          "font-semibold text-gray-800 leading-tight transition-colors line-clamp-2 truncate break-words whitespace-pre-wrap"
         )}
       >
         {title}
@@ -91,8 +91,8 @@ export const JobMode = ({ mode }: { mode: number | null | undefined }) => {
   );
 };
 
-export const JobCategory = ({category}: {category: string | undefined}) => {
-  const {isNotNull: ref_is_not_null, to_job_category_name} = useDbRefs();
+export const JobCategory = ({ category }: { category: string | undefined }) => {
+  const { isNotNull: ref_is_not_null, to_job_category_name } = useDbRefs();
   return ref_is_not_null(category) ? (
     <Badge>{to_job_category_name(category)}</Badge>
   ) : (<></>)
@@ -328,7 +328,7 @@ export const MobileJobCard = ({
   );
 };
 
-export const MobileJobDetails = ({}) => {};
+export const MobileJobDetails = ({ }) => { };
 
 /**
  * The right panel that describes job details.
@@ -338,7 +338,7 @@ export const MobileJobDetails = ({}) => {};
 export const EmployerJobDetails = ({
   job,
   is_editing = false,
-  set_is_editing = () => {},
+  set_is_editing = () => { },
   saving = false,
   update_job,
   actions = [],
@@ -435,30 +435,30 @@ export const EmployerJobDetails = ({
 
           {/* Mode */}
           {
-            formData.internship_preferences?.job_setup_ids?.[0] && 
-          <div className="flex flex-col items-start gap-3">
-            <label className="flex items-center text-sm font-semibold text-gray-700">
-              <Monitor className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-              Work Mode:
-            </label>
-            <EditableGroupableRadioDropdown
-              is_editing={is_editing}
-              name={"job_mode"}
-              value={formData.internship_preferences?.job_setup_ids?.[0]}
-              setter={(v) => setField("internship_preferences", {
-                ...formData.internship_preferences,
-                job_setup_ids: [v],
-              })}
-              options={job_modes}
-            >
-              <Property />
-            </EditableGroupableRadioDropdown>
-          </div>
+            formData.internship_preferences?.job_setup_ids?.[0] &&
+            <div className="flex flex-col items-start gap-3">
+              <label className="flex items-center text-sm font-semibold text-gray-700">
+                <Monitor className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                Work Mode:
+              </label>
+              <EditableGroupableRadioDropdown
+                is_editing={is_editing}
+                name={"job_mode"}
+                value={formData.internship_preferences?.job_setup_ids?.[0]}
+                setter={(v) => setField("internship_preferences", {
+                  ...formData.internship_preferences,
+                  job_setup_ids: [v],
+                })}
+                options={job_modes}
+              >
+                <Property />
+              </EditableGroupableRadioDropdown>
+            </div>
           }
 
           {/* Work Schedule */}
           {
-            formData.internship_preferences?.job_commitment_ids?.[0] && 
+            formData.internship_preferences?.job_commitment_ids?.[0] &&
             <div className="flex flex-col items-start gap-3 max-w-prose">
               <label className="flex items-center text-sm font-semibold text-gray-700">
                 <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
@@ -543,10 +543,10 @@ export const EmployerJobDetails = ({
                   formData.allowance
                     ? to_job_allowance_name(formData.allowance)
                     : formData.salary
-                    ? `${formData.salary}/${to_job_pay_freq_name(
+                      ? `${formData.salary}/${to_job_pay_freq_name(
                         formData.salary_freq
                       )}`
-                    : "Paid (Amount not specified)"
+                      : "Paid (Amount not specified)"
                 }
               />
             </div>
@@ -581,7 +581,7 @@ export const EmployerJobDetails = ({
                 <div className="flex items-center space-x-2">
                   <FormRadio
                     required={true}
-                    options = {[
+                    options={[
                       {
                         value: "true",
                         label: "As soon as possible",
@@ -591,12 +591,12 @@ export const EmployerJobDetails = ({
                         label: "I have a future date in mind",
                       },
                     ]}
-                    value ={!formData.internship_preferences?.expected_start_date + ""}
+                    value={!formData.internship_preferences?.expected_start_date + ""}
                     setter={(v) => setField("internship_preferences", {
                       ...formData.internship_preferences,
                       expected_start_date: v === "true" ? 0 : undefined,
                     })}
-                    />
+                  />
                   <label className="flex items-center text-sm font-semibold text-gray-700">
                     When do you need applicants?
                   </label>
@@ -605,8 +605,8 @@ export const EmployerJobDetails = ({
                   <div className="flex flex-row gap-4 m-4 border-l-2 border-gray-300 pl-4">
                     <div className="space-y-2">
                       <Label className="flex flex-row text-sm font-medium text-gray-700">
-                          Start Date{" "}
-                          <span className="text-destructive">*</span>
+                        Start Date{" "}
+                        <span className="text-destructive">*</span>
                       </Label>
                       <FormDatePicker
                         date={formData.internship_preferences?.expected_start_date ?? undefined}
@@ -665,7 +665,7 @@ export const EmployerJobDetails = ({
               <EditableCheckbox
                 is_editing={is_editing}
                 value={true}
-                setter={() => {}}
+                setter={() => { }}
               >
                 <JobBooleanLabel />
               </EditableCheckbox>
