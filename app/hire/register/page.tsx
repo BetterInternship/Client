@@ -172,13 +172,13 @@ const EmployerEditor = ({
 
   return (
     <>
-      <Card className="mb-4">
-      <div className="mb-4">
-        <h2 className="text-3xl tracking-tighter font-bold text-gray-700">
-          Employer Registration
-        </h2>
-      </div>
-      <div className="mb-4 flex flex-col space-y-3">
+      <Card>
+        <div className="mb-4">
+          <h2 className="text-3xl tracking-tighter font-bold text-gray-700">
+            Employer Registration
+          </h2>
+        </div>
+        <div className="mb-4 flex flex-col space-y-3">
           <div className="text-xl tracking-tight font-bold text-gray-700">
             Contact Person Information
           </div>
@@ -282,7 +282,7 @@ const EmployerEditor = ({
             .
           </label>
         </div>
-        <div className="flex justify-between items-center w-[100%]">
+        <div className="flex justify-between items-center w-full">
           <p className="text-sm text-gray-500">
             Already have an account? <a className="text-blue-600 hover:text-blue-800 underline font-medium" href="/login">Login here.</a>
           </p>
