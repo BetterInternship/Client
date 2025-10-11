@@ -82,7 +82,7 @@ export function HeroSection() {
                   size="lg"
                   className="bg-gray-100 hover:bg-gray-300 text-gray-800 py-4 text-lg tracking-tight"
                 >
-                  Login
+                  Log in
                 </Button>
               </Link>
             </motion.div>
