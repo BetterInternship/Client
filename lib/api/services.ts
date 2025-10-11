@@ -41,6 +41,20 @@ export const EmployerService = {
       "form-data"
     );
   },
+
+  async signMoaWithSignature(data: {
+    moaFieldsId: string;
+    companyLegalName: string;
+    companyAddress: string;
+    companyRepresentative: string;
+    companyRepresentativePosition: string;
+    companyType: string;
+  }) {
+    return APIClient.post<{ success: boolean; message?: string }>(
+      APIRouteBuilder("student/moa").r("sign").build({ moaServer: true }),
+      data
+    );
+  },
 };
 
 // Auth Services
@@ -127,6 +141,106 @@ export const UserService = {
     );
   },
 
+  async updateMyDocData(data: Partial<PublicUser>) {
+    return APIClient.put<UserResponse>(
+      APIRouteBuilder("users").r("my-doc-data").build(),
+      data
+    );
+  },
+
+  async generateStudentMoa(data: {
+    employer_id: string;
+    user_id: string;
+    user_address: string;
+    user_degree: string;
+    user_college: string;
+    user_full_name: string;
+    user_id_number: string;
+    student_guardian_name: string;
+    internship_hours: number;
+    internship_start_date: number;
+    internship_start_time: string;
+    internship_end_date: number;
+    internship_end_time: string;
+    internship_coordinator_name: string;
+  }) {
+    return APIClient.post<{
+      moaRequestId: string;
+      signedDocumentId: string;
+      verificationCode: string;
+    }>(
+      APIRouteBuilder("student").r("moa", "request").build({ moaServer: true }),
+      data
+    );
+  },
+
+  async generateManualStudentMoa(data: {
+    employer_id: string;
+    user_id: string;
+    user_address: string;
+    user_degree: string;
+    user_college: string;
+    user_full_name: string;
+    user_id_number: string;
+    student_guardian_name: string;
+    internship_hours: number;
+    internship_start_date: number;
+    internship_start_time: string;
+    internship_end_date: number;
+    internship_end_time: string;
+    internship_coordinator_name: string;
+    companyLegalName: string;
+    companyAddress: string;
+    companyRepresentative: string;
+    companyRepresentativePosition: string;
+    companyType: string;
+  }) {
+    return APIClient.post<{
+      moaRequestId: string;
+      signedDocumentId: string;
+      verificationCode: string;
+    }>(
+      APIRouteBuilder("student").r("moa", "request", "manual").build({ moaServer: true }),
+      data
+    );
+  },
+
+  async createStudentMoaRow(data: {
+    MOAAgreementDate?: number;
+    CompanyLegalName?: string;
+    CompanyType?: string;
+    CompanyAddress: string;
+    CompanyRepresentative: string;
+    CompanyRepresentativePosition: string;
+    Studentname: string;
+    StudentProgram: string;
+    StudentCollege: string;
+    StudentAddress: string;
+    InternshipHours: number;
+    InternshipStartDate: number;
+    InternshipEndDate: number;
+    InternshipStartTime: string;
+    InternshipEndTime: string;
+    StudentGuardianName: string;
+    StudentIDNumber: string;
+    InternshipCoordinatorName: string;
+  }) {
+    return APIClient.post<{
+      success: boolean;
+      message?: string;
+    }>(
+      APIRouteBuilder("docs").r("student-moa").build({ moaServer: true }),
+      data
+    );
+  },
+
+  async requestEmployerAssist(id: string, recipient: string) {
+    return APIClient.post<{}>(
+      APIRouteBuilder("student").r("moa", "request", "partial", id).build({ moaServer: true }),
+      { recipient }
+    );
+  },
+
   async parseResume(form: FormData) {
     return APIClient.post<UserResponse>(
       APIRouteBuilder("users").r("me", "extract-resume").build(),
@@ -139,6 +253,15 @@ export const UserService = {
     return APIClient.get<ResourceHashResponse>(
       APIRouteBuilder("users").r("me", "resume").build()
     );
+  },
+
+  // ! remove hardcoded mapping
+  async getEntityList() {
+    const response = await APIClient.get<{ entities: { id: string, display_name: string }[] }>(
+      APIRouteBuilder("entities").r("list").build({ moaServer: true })
+    );
+
+    return { employers: response.entities.map(e => ({ id: e.id, legal_entity_name: e.display_name })) }
   },
 
   async getMyPfpURL() {

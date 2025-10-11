@@ -11,7 +11,7 @@ import { Camera, Edit2 } from "lucide-react";
 import ContentLayout from "@/components/features/hire/content-layout";
 import { useProfile } from "@/hooks/use-employer-api";
 import { Button } from "@/components/ui/button";
-import { useDbMoa } from "@/lib/db/use-moa";
+import { useDbMoa } from "@/lib/db/use-bi-moa";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { Badge, BoolBadge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
