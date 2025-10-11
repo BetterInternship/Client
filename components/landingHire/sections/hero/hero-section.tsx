@@ -87,9 +87,6 @@ export function HeroSection() {
               </Link>
             </motion.div>
           </div>
-
-          
-
         </div>
       </div>
 

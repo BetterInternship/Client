@@ -101,9 +101,6 @@ const EmployerEditor = ({
     if (!formData.email || !isValidEmail(formData.email)) {
       missingFields.push("Valid contact email");
     }
-    if (!formData.legal_entity_name) {
-      missingFields.push("Legal entity name");
-    }
     if (!formData.website) {
       missingFields.push("Company website/LinkedIn");
     }
@@ -124,6 +121,7 @@ const EmployerEditor = ({
       ...cleanFormData(),
       website: toURL(formData.website)?.toString() ?? null,
       accepts_non_university: formData.accepts_non_university ?? true, // default to true
+      legal_entity_name: formData.legal_entity_name ?? formData.name,
       accepted_universities: `[${universities
         .map((u) => `"${u.id}"`)
         .join(",")}]`,
@@ -171,11 +169,6 @@ const EmployerEditor = ({
         description && description.length < 10 && `Description is too short.`
     );
     addValidator(
-      "legal_entity_name",
-      (name: string) =>
-        name && name.length < 3 && `Legal Entity Name is not valid.`
-    );
-    addValidator(
       "website",
       (link: string) =>
         link && !isValidRequiredURL(link) && "Invalid website link."
@@ -194,51 +187,10 @@ const EmployerEditor = ({
   return (
     <>
       <Card className="mb-4">
-        <div className="text-xl tracking-tight font-bold text-gray-700">
-          Company Info
-        </div>
-        <div className="mb-8 flex flex-col space-y-3">
-          <div className="text-sm font-normal text-gray-700">
-            Fill out this form to get listed on our website! 
-            To complete your profile, 
-            we’ll also ask you to submit one internship posting— 
-            don’t worry, you can add or update more later.
-          </div>
-          <div>
-            <ErrorLabel value={formErrors.name} />
-            <FormInput
-              label="Company Name"
-              value={formData.name ?? ""}
-              setter={fieldSetter("name")}
-              maxLength={100}
-            />
-          </div>
-          <div>
-            <FormInput
-              label="Legal Entity Name"
-              value={formData.legal_entity_name ?? ""}
-              setter={fieldSetter("legal_entity_name")}
-              maxLength={100}
-            />
-          </div>
-          <FormInput
-            label="Office City"
-            value={formData.location ?? ""}
-            setter={fieldSetter("location")}
-            maxLength={100}
-          />
-        </div>
-        <div className="mb-4 flex flex-col space-y-3">
+      <div className="mb-4 flex flex-col space-y-3">
           <div className="text-xl tracking-tight font-bold text-gray-700">
             Contact Person Information
           </div>
-          <Card className="border-warning p-4">
-            <p className="font-normal opacity-80 text-sm italic text-warning">
-              Login details will be sent to the contact's email address upon
-              registration. Additional users can be added later if multiple
-              people plan to be manage this employer account.
-            </p>
-          </Card>
           <FormInput
             label="Name"
             value={additionalFields.contact_name ?? ""}
@@ -274,23 +226,34 @@ const EmployerEditor = ({
             />
           </div>
         </div>
-        <div className="mt-3 text-xs text-gray-500 mb-4">
-          You can update all company information later in the Edit
-          Company Profile page.
+        <div className="mb-2 text-xl tracking-tight font-bold text-gray-700">
+          Company Info
         </div>
-        <div className="flex flex-row flex-grow-0 gap-2 text-sm text-gray-700 mb-2">
-          <FormCheckbox
-            id="accept-terms"
-            checked={additionalFields.has_moa_with_dlsu}
-            setter={(checked) =>
-              setAdditionalFields({
-                ...additionalFields,
-                has_moa_with_dlsu: checked,
-              })
-            }
+        <div className="mb-4 flex flex-col space-y-3">
+          <div>
+            <ErrorLabel value={formErrors.name} />
+            <FormInput
+              label="Company Name"
+              value={formData.name ?? ""}
+              setter={fieldSetter("name")}
+              maxLength={100}
+            />
+          </div>
+          <div>
+            <FormInput
+              label="Legal Entity Name (optional)"
+              value={formData.legal_entity_name ?? ""}
+              setter={fieldSetter("legal_entity_name")}
+              required={false}
+              maxLength={100}
+            />
+          </div>
+          <FormInput
+            label="Office City"
+            value={formData.location ?? ""}
+            setter={fieldSetter("location")}
+            maxLength={100}
           />
-          Do you need help securing a MOA (Memorandum of agreement) with DLSU so you can hire practicum students?
-          We will reach out to assist.
         </div>
         <div className="flex items-start gap-3">
           <FormCheckbox
