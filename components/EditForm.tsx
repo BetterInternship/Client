@@ -449,7 +449,7 @@ export const FormDatePicker = ({
   ...props
 }: FormDatePickerProps) => {
   const [open, setOpen] = React.useState(false);
-  const selected = date != null ? new Date(date) : undefined;
+  const selected = date != null && date > 86400000 ? new Date(date) : undefined;
 
   return (
     <div className={cn("flex flex-col", className)}>

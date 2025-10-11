@@ -44,7 +44,7 @@ export const JobHead = ({
       <h1
         className={cn(
           "text-" + size + "xl",
-          "font-semibold text-gray-800 leading-tight line-clamp-2 transition-colors"
+          "font-semibold text-gray-800 leading-tight transition-colors line-clamp-2 truncate break-words whitespace-pre-wrap"
         )}
       >
         {title}
@@ -337,7 +337,7 @@ export const MobileJobCard = ({
   );
 };
 
-export const MobileJobDetails = ({}) => {};
+export const MobileJobDetails = ({ }) => { };
 
 /**
  * The right panel that describes job details.
@@ -347,7 +347,7 @@ export const MobileJobDetails = ({}) => {};
 export const EmployerJobDetails = ({
   job,
   is_editing = false,
-  set_is_editing = () => {},
+  set_is_editing = () => { },
   saving = false,
   update_job,
   actions = [],
@@ -443,7 +443,8 @@ export const EmployerJobDetails = ({
           </div>
 
           {/* Mode */}
-          {formData.internship_preferences?.job_setup_ids?.[0] && (
+          {
+            formData.internship_preferences?.job_setup_ids?.[0] &&
             <div className="flex flex-col items-start gap-3">
               <label className="flex items-center text-sm font-semibold text-gray-700">
                 <Monitor className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
@@ -554,10 +555,10 @@ export const EmployerJobDetails = ({
                   formData.allowance
                     ? to_job_allowance_name(formData.allowance)
                     : formData.salary
-                    ? `${formData.salary}/${to_job_pay_freq_name(
+                      ? `${formData.salary}/${to_job_pay_freq_name(
                         formData.salary_freq
                       )}`
-                    : "Paid (Amount not specified)"
+                      : "Paid (Amount not specified)"
                 }
               />
             </div>
@@ -684,7 +685,7 @@ export const EmployerJobDetails = ({
               <EditableCheckbox
                 is_editing={is_editing}
                 value={true}
-                setter={() => {}}
+                setter={() => { }}
               >
                 <JobBooleanLabel />
               </EditableCheckbox>

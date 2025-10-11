@@ -55,6 +55,16 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
       return;
     }
 
+    if (!formData.description?.trim()) {
+      alert("Job description is required");
+      return;
+    }
+
+    if (!formData.requirements?.trim()) {
+      alert("Job requirements is required");
+      return;
+    }
+
     const job: Partial<Job> = {
       title: formData.title,
       description: formData.description ?? "",
@@ -138,7 +148,7 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                 <div className="flex-1 min-w-0">
                   <h2 className="flex flex-row text-lg font-bold text-gray-800 mb-2 break-words overflow-wrap-anywhere leading-tight">
                     <StepCheckIndicator
-                        checked={formData.title !== ""}
+                        checked={formData.title !== "" && formData.title !== undefined && formData.title !== null}
                       />
                     Job Title/Role <span className="text-destructive text-sm">*</span>
                   </h2>
@@ -217,7 +227,7 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                   {/*Location Input */}
                     <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
                       <StepCheckIndicator
-                        checked={formData.location !== ""}
+                        checked={formData.location !== "" && formData.location !== undefined && formData.location !== null}
                       />
                       Job Location <span className="text-destructive text-sm">*</span>
                     </div>
@@ -239,7 +249,9 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                         <div>
                           <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
                             <StepCheckIndicator
-                              checked={formData.internship_preferences?.job_commitment_ids !== undefined}
+                              checked={formData.internship_preferences?.job_commitment_ids !== undefined
+                                && formData.internship_preferences?.job_commitment_ids !== null
+                                && formData.internship_preferences?.job_commitment_ids.length !== 0}
                             />
                             Work Load <span className="text-destructive">*</span>
                           </div>
@@ -272,7 +284,10 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                         <div>
                           <div className="flex flex-row text-lg leading-tight font-medium text-gray-700 my-4">
                             <StepCheckIndicator
-                              checked={formData.internship_preferences?.job_setup_ids !== undefined}
+                              checked={formData.internship_preferences?.job_setup_ids !== undefined
+                                && formData.internship_preferences?.job_setup_ids !== null
+                                && formData.internship_preferences?.job_setup_ids.length !== 0
+                              }
                             />
                             Work Mode <span className="text-destructive">*</span>
                           </div>
@@ -318,12 +333,12 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                             required={true}
                             options = {[
                               {
-                                value: "0",
-                                label: "Yes",
-                              },
-                              {
                                 value: "1",
                                 label: "No",
+                              },
+                              {
+                                value: "0",
+                                label: "Yes",
                               },
                             ]}
                             value={formData.allowance?.toString() ?? undefined}
@@ -401,6 +416,7 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                                   ...formData.internship_preferences,
                                   expected_start_date: v,
                                 })}
+                                disabledDays={{before: new Date()}}
                               />
                             </div>
                           </div>
@@ -412,7 +428,7 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                   <div>
                     <div className="text-xl tracking-tight font-medium my-4">
                       <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
-                          Description
+                          Description<span className="text-destructive">*</span>
                       </div>
                       <p className="text-gray-500 text-sm font-normal">What will the intern do? Briefly describe their tasks, projects, or roles in your company</p>
                     </div>
@@ -427,9 +443,18 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
 
                   <div>
                     <div className="text-xl tracking-tight font-medium text-gray-700 my-4">
-                      Requirements
+                      Requirements<span className="text-destructive">*</span>
                     </div>
                     {/* <p className="text-gray-500 text-xs mb-3">*Note that resumes are already a given requirement for applicants</p> */}
+                    <p className="text-gray-500 text-sm mb-3">List preferred courses, skills, and qualifications from applicants</p>
+                    <div className="relative mb-4">
+                      <MDXEditor
+                        className="min-h-[200px] w-full border border-gray-200 rounded-[0.33em] overflow-y-auto"
+                        markdown={formData.requirements ?? ""}
+                        onChange={(value) => setField("requirements", value)}
+                      />
+                    </div>
+                    <p className="text-sm text-gray-300 mb-1">(Optional)</p>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                       {/* <div className="flex items-start gap-4 p-3 border border-primary border-opacity-85 rounded-[0.33em] h-fit">
                           <FormCheckbox
@@ -450,80 +475,72 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                           ...formData.internship_preferences,
                           require_github: !formData.internship_preferences?.require_github,
                         })}
-                      className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors cursor-pointer h-fit
-                      ${formData.internship_preferences?.require_github ? 'border-primary border-opacity-85': 'border-gray-200 hover:border-gray-300'}`}>
-                          <FormCheckbox
-                          checked={formData.internship_preferences?.require_github ?? false}
-                          setter={(v) => setField("internship_preferences", {
-                            ...formData.internship_preferences,
-                            require_github: v,
-                          })}
-                          />
-                          <div className="grid grid-rows-1 md:grid-rows-2">
-                            <Label className="text-xs font-medium text-gray-900">
-                              GitHub Repository
-                            </Label>
-                            <p className="text-xs text-gray-500">
-                              Require GitHub link
-                            </p>
-                          </div>
-                      </div>
+                        className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors cursor-pointer h-fit
+                        ${formData.internship_preferences?.require_github ? 'border-primary border-opacity-85': 'border-gray-200 hover:border-gray-300'}`}>
+                            <FormCheckbox
+                            checked={formData.internship_preferences?.require_github ?? false}
+                            setter={(v) => setField("internship_preferences", {
+                              ...formData.internship_preferences,
+                              require_github: v,
+                            })}
+                            />
+                            <div className="grid grid-rows-1 md:grid-rows-2">
+                              <Label className="text-xs font-medium text-gray-900">
+                                GitHub Repository
+                              </Label>
+                              <p className="text-xs text-gray-500">
+                                Require GitHub link
+                              </p>
+                            </div>
+                        </div>
 
-                      <div 
-                      onClick={() => setField("internship_preferences", {
-                        ...formData.internship_preferences,
-                        require_portfolio: !formData.internship_preferences?.require_portfolio,
-                      })}
-                      className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors cursor-pointer h-fit
-                      ${formData.internship_preferences?.require_portfolio ? 'border-primary border-opacity-85': 'border-gray-200 hover:border-gray-300'}`}>
-                          <FormCheckbox
-                          checked={formData.internship_preferences?.require_portfolio ?? false}
-                          setter={(v) => setField("internship_preferences", {
-                            ...formData.internship_preferences,
-                            require_portfolio: v,
-                          })}
-                          />
-                          <div className="grid grid-rows-1 md:grid-rows-2">
-                            <Label className="text-xs font-medium text-gray-900">
-                              Portfolio
-                            </Label>
-                            <p className="text-xs text-gray-500">
-                              Require portfolio link
-                            </p>
-                          </div>
-                      </div>
+                        <div 
+                        onClick={() => setField("internship_preferences", {
+                          ...formData.internship_preferences,
+                          require_portfolio: !formData.internship_preferences?.require_portfolio,
+                        })}
+                        className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors cursor-pointer h-fit
+                        ${formData.internship_preferences?.require_portfolio ? 'border-primary border-opacity-85': 'border-gray-200 hover:border-gray-300'}`}>
+                            <FormCheckbox
+                            checked={formData.internship_preferences?.require_portfolio ?? false}
+                            setter={(v) => setField("internship_preferences", {
+                              ...formData.internship_preferences,
+                              require_portfolio: v,
+                            })}
+                            />
+                            <div className="grid grid-rows-1 md:grid-rows-2">
+                              <Label className="text-xs font-medium text-gray-900">
+                                Portfolio
+                              </Label>
+                              <p className="text-xs text-gray-500">
+                                Require portfolio link
+                              </p>
+                            </div>
+                        </div>
 
-                      <div 
-                      onClick={() => setField("internship_preferences", {
-                        ...formData.internship_preferences,
-                        require_cover_letter: !formData.internship_preferences?.require_cover_letter,
-                      })}
-                      className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors cursor-pointer h-fit
-                      ${formData.internship_preferences?.require_cover_letter ? 'border-primary border-opacity-85': 'border-gray-200 hover:border-gray-300'}`}>
-                          <FormCheckbox
-                          checked={formData.internship_preferences?.require_cover_letter ?? false}
-                          setter={() => setField("internship_preferences", {
-                            ...formData.internship_preferences,
-                            require_cover_letter: !formData.internship_preferences?.require_cover_letter,
-                          })}
-                          />
-                          <div className="grid grid-rows-1 md:grid-rows-2">
-                            <Label className="text-xs font-medium text-gray-900">
-                              Cover Letter
-                            </Label>
+                        <div 
+                        onClick={() => setField("internship_preferences", {
+                          ...formData.internship_preferences,
+                          require_cover_letter: !formData.internship_preferences?.require_cover_letter,
+                        })}
+                        className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors cursor-pointer h-fit
+                        ${formData.internship_preferences?.require_cover_letter ? 'border-primary border-opacity-85': 'border-gray-200 hover:border-gray-300'}`}>
+                            <FormCheckbox
+                            checked={formData.internship_preferences?.require_cover_letter ?? false}
+                            setter={() => setField("internship_preferences", {
+                              ...formData.internship_preferences,
+                              require_cover_letter: !formData.internship_preferences?.require_cover_letter,
+                            })}
+                            />
+                            <div className="grid grid-rows-1 md:grid-rows-2">
+                              <Label className="text-xs font-medium text-gray-900">
+                                Cover Letter
+                              </Label>
                             <p className="text-xs text-gray-500">
                               Require cover letter
                             </p>
                           </div>
                       </div>
-                    </div>
-                    <p className="text-gray-500 text-sm mb-3">List any preferred courses, skills, and qualifications from applicants</p>
-                    <div className="relative">
-                      <MDXEditor
-                        className="min-h-[200px] w-full border border-gray-200 rounded-[0.33em] overflow-y-auto"
-                        markdown={formData.requirements ?? ""}
-                        onChange={(value) => setField("requirements", value)}
-                      />
                     </div>
                   </div>
                 </div>
