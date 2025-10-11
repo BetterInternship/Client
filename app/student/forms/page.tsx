@@ -24,7 +24,7 @@ import { DropdownGroup } from "@/components/ui/dropdown";
    Types
    ────────────────────────────────────────────── */
 
-type TabKey = "Forms Autofill" | "Form Generator" | "My Forms";
+type TabKey = "Form Generator" | "My Forms";
 type Values = Record<string, string>;
 type SyncValidator = (value: string, allValues: Values) => string | null;
 
@@ -139,7 +139,7 @@ export default function FormsPage() {
     });
   }, []);
 
-  const [tab, setTab] = useState<TabKey>("Forms Autofill");
+  const [tab, setTab] = useState<TabKey>("Form Generator");
   const [autofill, setAutofill] = useState<Values>({});
   const [autofillErrors, setAutofillErrors] = useState<Record<string, string>>(
     {}
@@ -382,25 +382,6 @@ export default function FormsPage() {
     }
   }
 
-  function setAutofillField(key: string, val: string) {
-    if (key === "student_id") {
-      val = normalizeDlsuId(val);
-    }
-
-    setAutofill((prev) => ({ ...prev, [key]: val }));
-
-    if (requiredAutofillKeys.includes(key as any)) {
-      setAutofillErrors((e) => {
-        const trimmed = val?.trim() ?? "";
-        let msg = trimmed ? "" : "This field is required.";
-        if (!msg && key === "student_id") {
-          msg = validateDlsuId(trimmed) ?? "";
-        }
-        return { ...e, [key]: msg };
-      });
-    }
-  }
-
   const gateMyAndPast = !autofillComplete;
 
   /* Download */
@@ -440,166 +421,19 @@ export default function FormsPage() {
           </Card>
         )}
 
-        {/* Warning */}
-        {gateMyAndPast && (
-          <WarningCard
-            title="Action needed"
-            message={
-              <>
-                Please complete your{" "}
-                <span className="font-medium">Autofill profile</span> below to
-                generate forms. Your details will be used to prefill documents.
-              </>
-            }
-          />
-        )}
-
         {/* Tabs */}
         <OutsideTabs
           value={tab}
           onChange={(v) => setTab(v as TabKey)}
           tabs={[
-            { key: "Forms Autofill", label: "Forms Autofill" },
             { key: "Form Generator", label: "Form Generator" },
             { key: "My Forms", label: "My Forms" },
           ]}
         >
-          {/* Forms Autofill */}
-          <OutsideTabPanel when="Forms Autofill" activeKey={tab}>
-            <div className="text-lg font-semibold mb-3">Autofill Profile</div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Student ID */}
-              <div className="space-y-1.5">
-                <FormInput
-                  label="Student ID"
-                  required
-                  value={autofill.student_id ?? ""}
-                  setter={(v) => setAutofillField("student_id", v)}
-                  className="w-full"
-                  maxLength={8}
-                  placeholder="e.g., 12141380"
-                />
-                {!!autofillErrors.student_id && (
-                  <p className="text-xs text-red-600">
-                    {autofillErrors.student_id}
-                  </p>
-                )}
-                {!autofillErrors.student_id && (
-                  <p className="text-xs text-gray-500">
-                    Format: 8 digits + optional letter (e.g., 12141380)
-                  </p>
-                )}
-              </div>
-
-              {/* Guardian Name */}
-              <div className="space-y-1.5">
-                <FormInput
-                  label="Guardian Name"
-                  required
-                  value={autofill.guardian_name ?? ""}
-                  setter={(v) => setAutofillField("guardian_name", v)}
-                  className="w-full"
-                />
-                {!!autofillErrors.guardian_name && (
-                  <p className="text-xs text-red-600">
-                    {autofillErrors.guardian_name}
-                  </p>
-                )}
-              </div>
-
-              {/* Address */}
-              <div className="space-y-1.5">
-                <FormInput
-                  label="Address"
-                  required
-                  value={autofill.address ?? ""}
-                  setter={(v) => setAutofillField("address", v)}
-                  className="w-full"
-                />
-                {!!autofillErrors.address && (
-                  <p className="text-xs text-red-600">
-                    {autofillErrors.address}
-                  </p>
-                )}
-              </div>
-
-              {/* College */}
-              <div className="space-y-1.5">
-                <FormDropdown
-                  label="College"
-                  required
-                  value={autofill.college ?? ""}
-                  options={collegeOptions.map((o) => ({
-                    id: o.value,
-                    name: o.label,
-                  }))}
-                  setter={(v) => setAutofillField("college", String(v ?? ""))}
-                  className="w-full"
-                />
-                {!!autofillErrors.college && (
-                  <p className="text-xs text-red-600">
-                    {autofillErrors.college}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between">
-              <div className="text-xs text-gray-500 flex items-center gap-2">
-                {autofillComplete ? (
-                  isAutofillDirty ? (
-                    <span>Unsaved changes</span>
-                  ) : lastSavedAt ? (
-                    <span className="inline-flex items-center gap-1 text-emerald-600">
-                      <CheckCircle className="h-3.5 w-3.5" />
-                      Saved{" "}
-                      {new Date(lastSavedAt).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  ) : (
-                    <span className="text-emerald-600">
-                      Ready — Autofill complete.
-                    </span>
-                  )
-                ) : (
-                  <>Complete all required fields to unlock generation.</>
-                )}
-              </div>
-
-              <Button
-                size="sm"
-                onClick={saveAutofill}
-                disabled={
-                  !autofillComplete || !isAutofillDirty || isSavingAutofill
-                }
-                className={
-                  !autofillComplete || !isAutofillDirty ? "opacity-60" : ""
-                }
-              >
-                {isSavingAutofill ? (
-                  <span className="inline-flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Saving…
-                  </span>
-                ) : isAutofillDirty ? (
-                  "Save changes"
-                ) : (
-                  "Saved"
-                )}
-              </Button>
-            </div>
-          </OutsideTabPanel>
 
           {/* Form Generator */}
           <OutsideTabPanel when="Form Generator" activeKey={tab}>
-            <div
-              className={cn(
-                gateMyAndPast && "opacity-60 pointer-events-none select-none"
-              )}
-            >
+            <div>
               <ul className="grid grid-cols-1 gap-3">
                 {availableForms.map((f) => (
                   <li
@@ -641,11 +475,7 @@ export default function FormsPage() {
 
           {/* Past Forms */}
           <OutsideTabPanel when="My Forms" activeKey={tab}>
-            <div
-              className={cn(
-                gateMyAndPast && "opacity-60 pointer-events-none select-none"
-              )}
-            >
+            <div>
               {pastForms.length === 0 ? (
                 <p className="text-sm text-gray-600">No past forms yet.</p>
               ) : (
@@ -1327,55 +1157,6 @@ function FieldRenderer({
       {def.helper && <p className="text-xs text-gray-500">{def.helper}</p>}
       {!!error && <p className="text-xs text-red-600">{error}</p>}
     </div>
-  );
-}
-
-/* ──────────────────────────────────────────────
-   UI bits
-   ────────────────────────────────────────────── */
-
-function WarningCard({
-  title,
-  message,
-}: {
-  title: string;
-  message: React.ReactNode;
-}) {
-  const tone = {
-    card: "bg-red-50 border-red-200",
-    heading: "text-red-900",
-    subtext: "text-red-700",
-    pill: "bg-transparent border-red-700 text-red-700",
-  };
-
-  return (
-    <Card
-      className={cn(
-        "p-4 space-y-3 border transition-colors duration-300 ease-out",
-        tone.card
-      )}
-    >
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <h3 className={cn("text-base font-semibold", tone.heading)}>
-            {title}
-          </h3>
-          <Badge className={cn("text-xs", tone.pill)}>Required</Badge>
-        </div>
-      </div>
-
-      <div
-        className={cn(
-          "text-xs sm:text-sm leading-relaxed text-justify",
-          tone.subtext
-        )}
-      >
-        {message}
-      </div>
-      <p className={cn("text-sm font-semibold", tone.heading)}>
-        Form generation is currently disabled.
-      </p>
-    </Card>
   );
 }
 
