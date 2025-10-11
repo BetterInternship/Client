@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { OutsideTabPanel, OutsideTabs } from '@/components/ui/outside-tabs';
 import { HeaderIcon, HeaderText } from '@/components/ui/text';
 import { Newspaper } from 'lucide-react';
-import { z, ZodType } from 'zod';
+import { z } from 'zod';
 import { useDynamicFormSchema } from '@/lib/db/use-moa-backend';
 
 /**
