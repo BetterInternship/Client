@@ -1,8 +1,6 @@
 import { Badge, BoolBadge } from "@/components/ui/badge";
 import {
-  EditableCheckbox,
-  EditableGroupableRadioDropdown,
-  EditableInput,
+  EditableCheckbox
 } from "@/components/ui/editable";
 import { Job } from "@/lib/db/db.types";
 import { useDbMoa } from "@/lib/db/use-bi-moa";
@@ -25,10 +23,8 @@ import { MDXEditor } from "../MDXEditor";
 import { Card } from "../ui/card";
 import { Divider } from "../ui/divider";
 import { DropdownGroup } from "../ui/dropdown";
-import { JobBooleanLabel, JobTitleLabel, Property } from "../ui/labels";
+import { JobBooleanLabel, Property } from "../ui/labels";
 import { Toggle } from "../ui/toggle";
-import { FormDatePicker, FormRadio } from "../EditForm";
-import { Label } from "../ui/label";
 
 export const JobHead = ({
   title,
@@ -339,6 +335,128 @@ export const MobileJobCard = ({
 
 export const MobileJobDetails = ({}) => {};
 
+/* ──────────────────────────────────────────────
+   Header + Actions (side-by-side)
+   ────────────────────────────────────────────── */
+function HeaderWithActions({
+  job,
+  actions,
+  disabled,
+}: {
+  job: Job;
+  actions: React.ReactNode[];
+  disabled?: boolean;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      {/* left: title/employer/location */}
+      <div className="min-w-0">
+        <h1 className="text-4xl font-semibold text-gray-900 leading-tight truncate">
+          {job.title}
+        </h1>
+        <p className="text-xl text-gray-600 truncate">{job.employer?.name}</p>
+        {job.location && (
+          <div className="flex items-center gap-1.5 text-gray-600">
+            <Building className="h-4 w-4" />
+            <span className="truncate">{job.location}</span>
+          </div>
+        )}
+        {/* <p className="text-s text-gray-500 mt-1">
+          Listed on {formatDate(job.created_at ?? "")}
+        </p> */}
+      </div>
+
+      {/* right: CTAs */}
+      <div className="shrink-0 sm:mt-1">
+        <div className="flex items-center gap-2">
+          {actions.map((a, i) => (
+            <div key={i} className="inline-flex">
+              {a}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export const JobDetailsSummary = ({ job }: { job: Job }) => {
+  const { to_job_mode_name, to_job_type_name, to_job_pay_freq_name } =
+    useDbRefs();
+
+  const workModes =
+    (job.internship_preferences?.job_setup_ids ?? [])
+      .map((id) => to_job_mode_name(id))
+      .filter(Boolean)
+      .join(", ") || "None";
+
+  const workLoads =
+    (job.internship_preferences?.job_commitment_ids ?? [])
+      .map((id) => to_job_type_name(id))
+      .filter(Boolean)
+      .join(", ") || "None";
+
+  const internshipTypes =
+    (job.internship_preferences?.internship_types ?? [])
+      .filter(Boolean)
+      .map((type) => type.charAt(0).toUpperCase() + type.slice(1).toLowerCase())
+      .join(", ") || "None";
+
+  return (
+    <div className="space-y-2">
+      <div className="grid sm:grid-cols-4 gap-2">
+        <DropdownGroup>
+          <div className="flex items-start gap-2">
+            <Monitor className="h-5 w-5 text-gray-400" />
+            <div>
+              <label className="flex items-center text-sm text-gray-700">
+                Work Mode:
+              </label>
+              <Property value={workModes} />
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2">
+            <Clock className="h-5 w-5 text-gray-400" />
+            <div>
+              <label className="flex items-center text-sm text-gray-700">
+                Work Load:
+              </label>
+              <Property value={workLoads} />
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2">
+            <PhilippinePeso className="h-5 w-5 text-gray-400" />
+            <div>
+              <label className="flex items-center text-sm text-gray-700">
+                Salary:
+              </label>
+              <Property
+                value={
+                  job.salary
+                    ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
+                    : "None"
+                }
+              />
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2">
+            <UserCheck className="h-5 w-5 text-gray-400" />
+            <div>
+              <label className="flex items-center text-sm text-gray-700">
+                Accepting:
+              </label>
+              <Property value={internshipTypes} />
+            </div>
+          </div>
+        </DropdownGroup>
+      </div>
+    </div>
+  );
+};
+
 /**
  * The right panel that describes job details.
  *
@@ -369,8 +487,26 @@ export const EmployerJobDetails = ({
     job_pay_freq,
     to_job_pay_freq_name,
     to_job_allowance_name,
+    to_job_mode_name, to_job_type_name
   } = useDbRefs();
   const { formData, setField, setFields, fieldSetter } = useFormData<Job>();
+  const workModes =
+    (job.internship_preferences?.job_setup_ids ?? [])
+      .map((id) => to_job_mode_name(id))
+      .filter(Boolean)
+      .join(", ") || "None";
+
+  const workLoads =
+    (job.internship_preferences?.job_commitment_ids ?? [])
+      .map((id) => to_job_type_name(id))
+      .filter(Boolean)
+      .join(", ") || "None";
+
+  const internshipTypes =
+    (job.internship_preferences?.internship_types ?? [])
+      .filter(Boolean)
+      .map((type) => type.charAt(0).toUpperCase() + type.slice(1).toLowerCase())
+      .join(", ") || "None";
 
   useEffect(() => {
     if (job) {
@@ -405,28 +541,20 @@ export const EmployerJobDetails = ({
 
   return (
     <div className="flex-1 border-gray-200 rounded-lg ml-4 p-6 pt-10 overflow-y-auto overflow-x-hidden">
-      <div className="mb-6">
-        <div className="max-w-prose">
-          <EditableInput
-            is_editing={is_editing}
-            value={formData.title ?? "Not specified"}
-            setter={fieldSetter("title")}
-            maxLength={100}
-          >
-            <JobTitleLabel />
-          </EditableInput>
-        </div>
-        <div className="flex items-center gap-2">
-          <p className="text-gray-600 mb-4 mt-2">{job.employer?.name}</p>
-        </div>
-        <div className="flex gap-2">{actions}</div>
-      </div>
+      <div className="flex-1 px-8 pt-7 overflow-y-auto space-y-5">
+        <HeaderWithActions
+          job={job}
+          actions={actions}
+        />
+
+        <Section title="Job Details">
+          <JobDetailsSummary job={job} />
+        </Section>
 
       {/* Job Details Grid */}
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <h3 className="text-lg font-semibold mb-4">Job Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Location */}
           <div className="flex flex-col items-start gap-3">
             <label className="flex items-center text-sm font-semibold text-gray-700">
               <Building className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
@@ -442,7 +570,6 @@ export const EmployerJobDetails = ({
             </EditableInput>
           </div>
 
-          {/* Mode */}
           {formData.internship_preferences?.job_setup_ids?.[0] && (
             <div className="flex flex-col items-start gap-3">
               <label className="flex items-center text-sm font-semibold text-gray-700">
@@ -466,7 +593,6 @@ export const EmployerJobDetails = ({
             </div>
           )}
 
-          {/* Work Schedule */}
           {formData.internship_preferences?.job_commitment_ids?.[0] && (
             <div className="flex flex-col items-start gap-3 max-w-prose">
               <label className="flex items-center text-sm font-semibold text-gray-700">
@@ -490,7 +616,6 @@ export const EmployerJobDetails = ({
             </div>
           )}
 
-          {/* Salary Section */}
           {is_editing ? (
             <div className="col-span-1 md:col-span-2 lg:col-span-3">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -563,10 +688,8 @@ export const EmployerJobDetails = ({
             </div>
           )}
 
-          {/* Settings Section */}
           <div className="col-span-1 md:col-span-2 lg:col-span-3">
             <div className="grid grid-cols-1 gap-6">
-              {/* Unlisted */}
               <div className="flex flex-col space-y-2 border border-gray-200 rounded-md p-4">
                 <div className="flex flex-row items-start gap-3">
                   <EditableCheckbox
@@ -587,7 +710,6 @@ export const EmployerJobDetails = ({
                 </p>
               </div>
 
-              {/* Year Round */}
               <div className="flex flex-col space-y-2 border border-gray-200 rounded-md p-4">
                 <div className="flex items-center space-x-2">
                   <FormRadio
@@ -641,13 +763,13 @@ export const EmployerJobDetails = ({
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Job Description and Requirements - Side by Side */}
       <hr />
-      <div className="mb-6 mt-8">
+      {/* <div className="mb-6 mt-8">
         <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
-          Description
+          Role overview
         </h1>
         {!is_editing ? (
           <div className="markdown">
@@ -660,7 +782,11 @@ export const EmployerJobDetails = ({
             onChange={(value) => setField("description", value)}
           />
         )}
-      </div>
+      </div> */}
+
+      <Section title="Role overview">
+          <MarkdownBlock text={job.description} />
+      </Section>
 
       {/* Job Requirements */}
       <hr />
@@ -767,130 +893,9 @@ export const EmployerJobDetails = ({
         )}
       </div>
     </div>
-  );
-};
-
-export const JobDetailsSummary = ({ job }: { job: Job }) => {
-  const { to_job_mode_name, to_job_type_name, to_job_pay_freq_name } =
-    useDbRefs();
-
-  const workModes =
-    (job.internship_preferences?.job_setup_ids ?? [])
-      .map((id) => to_job_mode_name(id))
-      .filter(Boolean)
-      .join(", ") || "None";
-
-  const workLoads =
-    (job.internship_preferences?.job_commitment_ids ?? [])
-      .map((id) => to_job_type_name(id))
-      .filter(Boolean)
-      .join(", ") || "None";
-
-  const internshipTypes =
-    (job.internship_preferences?.internship_types ?? [])
-      .filter(Boolean)
-      .map((type) => type.charAt(0).toUpperCase() + type.slice(1).toLowerCase())
-      .join(", ") || "None";
-
-  return (
-    <div className="space-y-2">
-      <div className="grid sm:grid-cols-4 gap-2">
-        <DropdownGroup>
-          <div className="flex items-start gap-2">
-            <Monitor className="h-5 w-5 text-gray-400" />
-            <div>
-              <label className="flex items-center text-sm text-gray-700">
-                Work Mode:
-              </label>
-              <Property value={workModes} />
-            </div>
-          </div>
-
-          <div className="flex items-start gap-2">
-            <Clock className="h-5 w-5 text-gray-400" />
-            <div>
-              <label className="flex items-center text-sm text-gray-700">
-                Work Load:
-              </label>
-              <Property value={workLoads} />
-            </div>
-          </div>
-
-          <div className="flex items-start gap-2">
-            <PhilippinePeso className="h-5 w-5 text-gray-400" />
-            <div>
-              <label className="flex items-center text-sm text-gray-700">
-                Salary:
-              </label>
-              <Property
-                value={
-                  job.salary
-                    ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
-                    : "None"
-                }
-              />
-            </div>
-          </div>
-
-          <div className="flex items-start gap-2">
-            <UserCheck className="h-5 w-5 text-gray-400" />
-            <div>
-              <label className="flex items-center text-sm text-gray-700">
-                Type:
-              </label>
-              <Property value={internshipTypes} />
-            </div>
-          </div>
-        </DropdownGroup>
-      </div>
     </div>
   );
 };
-
-/* ──────────────────────────────────────────────
-   Header + Actions (side-by-side)
-   ────────────────────────────────────────────── */
-function HeaderWithActions({
-  job,
-  actions,
-  disabled,
-}: {
-  job: Job;
-  actions: React.ReactNode[];
-  disabled?: boolean;
-}) {
-  return (
-    <div className="flex items-start justify-between gap-3">
-      {/* left: title/employer/location */}
-      <div className="min-w-0">
-        <h1 className="text-4xl font-semibold text-gray-900 leading-tight truncate">
-          {job.title}
-        </h1>
-        <p className="text-xl text-gray-600 truncate">{job.employer?.name}</p>
-        {job.location && (
-          <div className="flex items-center gap-1.5 text-gray-600">
-            <Building className="h-4 w-4" />
-            <span className="truncate">{job.location}</span>
-          </div>
-        )}
-        {/* <p className="text-s text-gray-500 mt-1">
-          Listed on {formatDate(job.created_at ?? "")}
-        </p> */}
-      </div>
-
-      {/* right: CTAs */}
-      <div className="shrink-0 sm:mt-1">
-        <div className="flex items-center gap-2">
-          {actions.map((a, i) => (
-            <div key={i} className="inline-flex">
-              {a}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function ReqPill({ ok, label }: { ok: boolean; label: string }) {
   return <BoolBadge state={ok} onValue={label} offValue={label} />;
@@ -978,11 +983,14 @@ export function JobDetails({
 
   return (
     <>
-      <MissingNotice
-        show={missingRequired}
-        needsGithub={needsGithub && !hasGithub}
-        needsPortfolio={needsPortfolio && !hasPortfolio}
-      />
+      
+      {user !== undefined &&
+        <MissingNotice
+          show={missingRequired}
+          needsGithub={needsGithub && !hasGithub}
+          needsPortfolio={needsPortfolio && !hasPortfolio}
+        />
+      }
       <div className="flex-1 px-8 pt-7 overflow-y-auto space-y-5">
         <HeaderWithActions
           job={job}
@@ -1010,10 +1018,10 @@ export function JobDetails({
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {needsCover && <ReqPill ok={true} label="Cover letter" />}
                 {needsGithub && (
-                  <ReqPill ok={hasGithub} label="GitHub profile" />
+                  <ReqPill ok={true} label="GitHub profile" />
                 )}
                 {needsPortfolio && (
-                  <ReqPill ok={hasPortfolio} label="Portfolio link" />
+                  <ReqPill ok={true} label="Portfolio link" />
                 )}
               </div>
               <MarkdownBlock text={job.requirements} />

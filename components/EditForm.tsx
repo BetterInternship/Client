@@ -137,7 +137,7 @@ export const createEditForm = <T extends IFormData>(): [
  */
 interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
-  setter?: (value: any) => void;
+  setter?: (value: string) => void;
   required?: boolean;
   className?: string;
 }

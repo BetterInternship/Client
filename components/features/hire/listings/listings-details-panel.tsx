@@ -1,6 +1,7 @@
+import { JobDetails } from "@/components/shared/jobs";
 import { Button } from "@/components/ui/button";
 import { Job } from "@/lib/db/db.types";
-import { EmployerJobDetails } from "@/components/shared/jobs";
+import Link from "next/link";
 
 interface ListingsDetailsPanelProps {
   selectedJob: Job | null;
@@ -53,11 +54,8 @@ export function ListingsDetailsPanel({
 
   return (
     <div className="max-w-[1024px] mx-auto">
-      <EmployerJobDetails
-        is_editing={isEditing}
-        set_is_editing={setIsEditing} // This will be handled by the parent component
+      <JobDetails
         job={selectedJob}
-        saving={saving}
         // @ts-ignore
         update_job={updateJob}
         actions={
@@ -82,22 +80,27 @@ export function ListingsDetailsPanel({
                 </Button>,
               ]
             : [
+              <Link href={{
+                pathname:"/listings/edit",
+                query: {jobId: selectedJob.id}
+                }}>
                 <Button
                   key="edit"
                   variant="outline"
                   disabled={saving}
-                  onClick={onEdit}
+                  // onClick={onEdit}
                 >
                   Edit
-                </Button>,
-                <Button
-                  key="share"
-                  variant="outline"
-                  disabled={saving}
-                  onClick={onShare}
-                >
-                  Share
-                </Button>,
+                </Button>
+              </Link>,
+                // <Button
+                //   key="share"
+                //   variant="outline"
+                //   disabled={saving}
+                //   onClick={onShare}
+                // >
+                //   Share
+                // </Button>,
                 <Button
                   key="delete"
                   variant="outline"
