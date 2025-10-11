@@ -29,8 +29,11 @@ export function ListingsDeleteModal({
   return (
     <div className="p-8 pt-0 h-full">
       <div className="text-lg mb-4">
-        Are you sure you want to delete <br />
-        <span className="font-bold">"{job.title}"</span>?
+        Are you sure you want to delete{" "}
+        <span className="font-bold line-clamp-2 truncate break-words whitespace-pre-wrap">
+          "{job.title}"
+        </span>
+        ?
       </div>
       <div className="w-full flex flex-row items-end justify-end space-x-2">
         <Button

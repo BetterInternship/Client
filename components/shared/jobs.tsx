@@ -40,7 +40,7 @@ export const JobHead = ({
       <h1
         className={cn(
           "text-" + size + "xl",
-          "font-semibold text-gray-800 leading-tight line-clamp-2 transition-colors"
+          "font-semibold text-gray-800 leading-tight transition-colors line-clamp-2 truncate break-words whitespace-pre-wrap"
         )}
       >
         {title}
@@ -87,6 +87,8 @@ export const JobMode = ({ mode }: { mode: number | null | undefined }) => {
   );
 };
 
+export const JobCategory = ({ category }: { category: string | undefined }) => {
+  const { isNotNull: ref_is_not_null, to_job_category_name } = useDbRefs();
 export const JobCategory = ({ category }: { category: string | undefined }) => {
   const { isNotNull: ref_is_not_null, to_job_category_name } = useDbRefs();
   return ref_is_not_null(category) ? (
@@ -465,7 +467,7 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
 export const EmployerJobDetails = ({
   job,
   is_editing = false,
-  set_is_editing = () => {},
+  set_is_editing = () => { },
   saving = false,
   update_job,
   actions = [],
@@ -679,10 +681,10 @@ export const EmployerJobDetails = ({
                   formData.allowance
                     ? to_job_allowance_name(formData.allowance)
                     : formData.salary
-                    ? `${formData.salary}/${to_job_pay_freq_name(
+                      ? `${formData.salary}/${to_job_pay_freq_name(
                         formData.salary_freq
                       )}`
-                    : "Paid (Amount not specified)"
+                      : "Paid (Amount not specified)"
                 }
               />
             </div>
@@ -810,7 +812,7 @@ export const EmployerJobDetails = ({
               <EditableCheckbox
                 is_editing={is_editing}
                 value={true}
-                setter={() => {}}
+                setter={() => { }}
               >
                 <JobBooleanLabel />
               </EditableCheckbox>
