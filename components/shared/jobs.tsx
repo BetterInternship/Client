@@ -794,7 +794,7 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
 
   return (
     <div className="space-y-2">
-      <div className="space-y-2 sm:grid sm:grid-cols-4 gap-2">
+      <div className="grid sm:grid-cols-4 gap-2">
         <DropdownGroup>
           <div className="flex items-start gap-2">
             <Monitor className="h-5 w-5 text-gray-400" />
