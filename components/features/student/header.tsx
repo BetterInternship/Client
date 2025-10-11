@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+  useState,
+} from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -12,9 +18,14 @@ import {
   Search,
   ChevronRight,
   X as XIcon,
+  Filter as FilterIcon,
+  ChevronDown,
   Menu,
   Check as CheckIcon,
+  Newspaper,
 } from "lucide-react";
+import { Checkbox } from "@radix-ui/react-checkbox";
+import { useDetectClickOutside } from "react-detect-click-outside";
 
 import { Button } from "@/components/ui/button";
 import { GroupableNavDropdown, DropdownOption } from "@/components/ui/dropdown";
@@ -25,6 +36,7 @@ import { MyUserPfp } from "@/components/shared/pfp";
 import { useMobile } from "@/hooks/use-mobile";
 import { useRoute } from "@/hooks/use-route";
 import { useConversations } from "@/hooks/use-conversation";
+
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { cn } from "@/lib/utils";
@@ -44,7 +56,7 @@ import {
 } from "@/components/features/student/search/JobFilters";
 
 /* =======================================================================================
-   Compact Search input with inline MOA toggle
+   Small UI Primitives
 ======================================================================================= */
 const SearchInput = ({
   value,
@@ -94,7 +106,7 @@ const SearchInput = ({
         onClick={() => onToggleMoa(!moaOnly)}
         className={cn(
           "absolute right-1 top-1/2 -translate-y-1/2",
-          "inline-flex items-center gap-1.5 h-7 px-2 rounded-md border text-xs",
+          "inline-flex items-center gap-1.5 h-7 px-2 rounded-[0.33em] border text-xs",
           "transition-colors",
           moaOnly
             ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
@@ -118,14 +130,14 @@ const SearchInput = ({
             )}
           />
         </span>
-        <span className="leading-none">DLSU&nbsp;MOA</span>
+        <span className="leading-none">FOR CREDIT</span>
       </button>
     </div>
   );
 };
 
 /* =======================================================================================
-   Mobile Drawer
+   Mobile Drawer (account on top → chats → links → bottom sign out)
 ======================================================================================= */
 function MobileDrawer({
   open,
@@ -145,7 +157,7 @@ function MobileDrawer({
 
   const handleLogout = () => logout().then(() => router.push("/"));
 
-  const handleProfileClick = () => {
+  const handleIncompleteProfileClick = (link: string) => {
     if (
       !isProfileResume(profile.data) ||
       !isProfileBaseComplete(profile.data) ||
@@ -154,19 +166,21 @@ function MobileDrawer({
       openGlobalModal(
         "incomplete-profile",
         <IncompleteProfileContent
-          onFinish={() => closeGlobalModal("incomplete-profile")}
+          onFinish={() => {
+            closeGlobalModal("incomplete-profile");
+          }}
         />,
         {
           allowBackdropClick: false,
-          onClose: () =>
-            queryClient.invalidateQueries({ queryKey: ["my-profile"] }),
+          onClose: () => {
+            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+          },
         }
       );
     } else {
-      router.push("/profile");
+      router.push(`/${link}`);
     }
   };
-
   useEffect(() => {
     if (open) onClose();
   }, [pathname, params?.toString()]);
@@ -183,6 +197,7 @@ function MobileDrawer({
         )}
         onClick={onClose}
       />
+
       {/* Drawer */}
       <aside
         className={cn(
@@ -190,12 +205,18 @@ function MobileDrawer({
           "transition-transform duration-250 ease-out",
           open ? "translate-x-0" : "translate-x-full"
         )}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mobile menu"
       >
+        {/* Shell uses column layout so footer can pin to bottom */}
         <div className="flex h-full flex-col">
+          {/* Header */}
           <div className="flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-3 border-b">
             <div className="font-semibold">Menu</div>
             <button
               type="button"
+              aria-label="Close menu"
               className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-gray-100"
               onClick={onClose}
             >
@@ -206,7 +227,7 @@ function MobileDrawer({
           {isAuthenticated() && (
             <div className="flex-1 overflow-y-auto p-4">
               <div className="flex items-center gap-3">
-                <div className="overflow-hidden rounded-full">
+                <div className="overflow-hidden rounded-full flex items-center justify-center">
                   <MyUserPfp size="9" />
                 </div>
                 <div className="flex flex-col leading-tight">
@@ -219,46 +240,90 @@ function MobileDrawer({
                 </div>
               </div>
               <Separator className="my-4" />
+              {/* Navigation */}
               <nav>
                 <ul className="grid gap-1">
+                  {isAuthenticated() && (
+                    <li>
+                      <Link href="/conversations" className="block w-full">
+                        <button className="w-full flex items-center justify-between rounded-md px-3 py-2">
+                          <span className="inline-flex items-center gap-2 text-sm">
+                            <MessageCircleMore className="w-4 h-4" /> Chats
+                          </span>
+                          {conversations?.unreads?.length ? (
+                            <span className="text-[10px] leading-none bg-warning/80 px-2 py-1 rounded-full">
+                              {conversations.unreads.length}
+                            </span>
+                          ) : (
+                            <ChevronRight className="w-4 h-4 text-gray-300" />
+                          )}
+                        </button>
+                      </Link>
+                    </li>
+                  )}
                   <li>
                     <Link href="/search" className="block w-full">
-                      <button className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-md text-sm">
-                        <Search className="w-4 h-4 mr-2" /> Browse
-                        <ChevronRight className="w-4 h-4 ml-auto text-gray-300" />
+                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
+                        <div>
+                          <Search className="w-4 h-4 inline-block mr-2" />
+                          <span>Browse</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-300" />
                       </button>
                     </Link>
                   </li>
                   <li>
                     <button
-                      onClick={handleProfileClick}
-                      className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-md text-sm text-primary"
+                      onClick={() => handleIncompleteProfileClick("profile")}
+                      className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary"
                     >
-                      <Settings className="w-4 h-4 mr-2" /> Profile
-                      <ChevronRight className="w-4 h-4 ml-auto text-gray-300" />
+                      <div>
+                        <Settings className="w-4 h-4 inline-block mr-2" />
+                        <span>Profile</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-gray-300" />
                     </button>
                   </li>
                   <li>
                     <Link href="/applications" className="block w-full">
-                      <button className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-md text-sm">
-                        <BookA className="w-4 h-4 mr-2" /> Applications
-                        <ChevronRight className="w-4 h-4 ml-auto text-gray-300" />
+                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
+                        <div>
+                          <BookA className="w-4 h-4 inline-block mr-2" />
+                          <span>Applications</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-300" />
                       </button>
                     </Link>
                   </li>
                   <li>
                     <Link href="/saved" className="block w-full">
-                      <button className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-md text-sm">
-                        <Heart className="w-4 h-4 mr-2" /> Saved
-                        <ChevronRight className="w-4 h-4 ml-auto text-gray-300" />
+                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
+                        <div>
+                          <Heart className="w-4 h-4 inline-block mr-2" />
+                          <span>Saved Jobs</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-300" />
                       </button>
                     </Link>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => handleIncompleteProfileClick("forms")}
+                      className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary"
+                    >
+                      <div>
+                        <Newspaper className="w-4 h-4 inline-block mr-2" />
+                        <span>Forms</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-gray-300" />
+                    </button>
                   </li>
                 </ul>
               </nav>
             </div>
           )}
 
+          {/* Footer pinned to bottom */}
           {isAuthenticated() && (
             <div className="mt-auto border-t px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3">
               <button
@@ -276,15 +341,40 @@ function MobileDrawer({
 }
 
 /* =======================================================================================
-   ProfileButton
+   Profile Button (desktop)
 ======================================================================================= */
-export const ProfileButton = () => {
+export const ProfileButton: React.FC = () => {
   const profile = useProfileData();
   const conversations = useConversations();
   const { isAuthenticated, logout } = useAuthContext();
   const router = useRouter();
+  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
+  const queryClient = useQueryClient();
 
   const handleLogout = () => logout().then(() => router.push("/"));
+
+  const handleIncompleteProfileClick = (link: string) => {
+    if (
+      !isProfileResume(profile.data) ||
+      !isProfileBaseComplete(profile.data) ||
+      !isProfileVerified(profile.data)
+    ) {
+      openGlobalModal(
+        "incomplete-profile",
+        <IncompleteProfileContent
+          onFinish={() => closeGlobalModal("incomplete-profile")}
+        />,
+        {
+          allowBackdropClick: false,
+          onClose: () => {
+            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+          },
+        }
+      );
+    } else {
+      router.push(`/${link}`);
+    }
+  };
 
   if (!isAuthenticated()) {
     return (
@@ -330,7 +420,11 @@ export const ProfileButton = () => {
         }
         className="z-[200] w-fit"
       >
-        <DropdownOption href="/profile">
+        <DropdownOption
+          on_click={() => {
+            handleIncompleteProfileClick("profile");
+          }}
+        >
           <Settings className="w-4 h-4 inline-block mr-2 text-primary" />
           <span className="text-primary">Profile</span>
         </DropdownOption>
@@ -341,6 +435,12 @@ export const ProfileButton = () => {
         <DropdownOption href="/saved">
           <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
           <span className="text-primary">Saved Jobs</span>
+        </DropdownOption>
+        <DropdownOption on_click={() => {
+            handleIncompleteProfileClick("forms");
+          }}>
+          <Newspaper className="w-4 h-4 inline-block mr-2 text-primary" />
+          <span className="text-primary">Forms</span>
         </DropdownOption>
         <DropdownOption href="/" on_click={handleLogout}>
           <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />
@@ -370,7 +470,7 @@ export const Header: React.FC = () => {
   const noHeaderRoutes = ["/register", "/register/verify"];
   const showProfileButton = routeExcluded(noProfileRoutes);
 
-  // show filters on /search (allow subpaths)
+  // only show filters on /search (allow subpaths like /search/results)
   const showFilters = pathname?.startsWith("/search") === true;
 
   // lock body scroll when drawer open
@@ -381,7 +481,6 @@ export const Header: React.FC = () => {
     };
   }, [isMenuOpen]);
 
-  // hydrate search input + moa from URL
   useEffect(() => {
     if (!showFilters) return;
     setSearchTerm(searchParams.get("query") || "");

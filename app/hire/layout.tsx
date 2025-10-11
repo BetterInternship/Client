@@ -7,13 +7,14 @@ import Header from "@/components/features/hire/header";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Footer } from "@/components/shared/footer";
-import { MoaContextProvider } from "@/lib/db/use-moa";
+import { BIMoaContextProvider } from "@/lib/db/use-bi-moa";
 import { PostHogProvider } from "../posthog-provider";
 import TanstackProvider from "../tanstack-provider";
 import Head from "next/head";
 import AllowLanding from "./allowLanding";
 import { ConversationsContextProvider } from "@/hooks/use-conversation";
 import { PocketbaseProvider } from "@/lib/pocketbase";
+import { ModalProvider } from "@/components/providers/ModalProvider";
 
 export const metadata: Metadata = {
   title: "Recruiter Dashboard - BetterInternship",
@@ -35,9 +36,9 @@ export default function RootLayout({
 }) {
   return (
     <RefsContextProvider>
-      <MoaContextProvider>
+      <BIMoaContextProvider>
         <HTMLContent>{children}</HTMLContent>
-      </MoaContextProvider>
+      </BIMoaContextProvider>
     </RefsContextProvider>
   );
 }
@@ -74,7 +75,9 @@ const HTMLContent = ({
                       />
                     </Head>
                     <body className="h-full overflow-hidden">
-                      <AllowLanding>{children}</AllowLanding>
+                      <ModalProvider>
+                        <AllowLanding>{children}</AllowLanding>
+                      </ModalProvider>
                     </body>
                   </html>
                 </ConversationsContextProvider>
