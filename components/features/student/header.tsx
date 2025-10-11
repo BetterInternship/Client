@@ -130,7 +130,7 @@ const SearchInput = ({
             )}
           />
         </span>
-        <span className="leading-none">DLSU&nbsp;MOA</span>
+        <span className="leading-none">FOR CREDIT</span>
       </button>
     </div>
   );
