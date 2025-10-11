@@ -71,38 +71,22 @@ export function HeroSection() {
               <Link href="/register">
                 <Button
                   size="lg"
-                  className="bg-white hover:bg-gray-100 text-gray-800 py-4 text-lg tracking-tight"
+                  className="hover:bg-blue-600 text-white py-4 text-lg tracking-tight"
                 >
-                  Post An Internship
+                  Register
                 </Button>
               </Link>
 
-              {/* <Link href="/login">
+              <Link href="/login">
                 <Button
                   size="lg"
-                  variant="secondary"
-                  className="bg-white/10 text-white hover:bg-white/15 border border-white/20 backdrop-blur-sm px-6 py-4 text-lg inline-flex items-center gap-2"
-                  aria-label="Log in to your employer account"
+                  className="bg-gray-100 hover:bg-gray-300 text-gray-800 py-4 text-lg tracking-tight"
                 >
-                  Login
+                  Log In
                 </Button>
-              </Link> */}
-
-              {/* Helper hint (mobile-first clarity) */}
-              <p className="text-white/70 mt-2">
-                Already have an account?{" "}
-                <Link
-                  href="/login"
-                  className="text-white font-medium hover:underline underline-offset-4 decoration-white/40 hover:text-white hover:decoration-white transition-colors"
-                >
-                  Log in
-                </Link>
-              </p>
+              </Link>
             </motion.div>
           </div>
-
-          
-
         </div>
       </div>
 
