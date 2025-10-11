@@ -32,24 +32,10 @@ export default function RegisterPage() {
 
   return (
     <div className="flex-1 flex justify-center px-6 py-12 pt-12 overflow-y-auto">
-      <div className="w-full max-w-2xl">
-        <div className="text-center mb-10">
-          <h2 className="text-4xl tracking-tighter font-bold text-gray-700 mb-4">
-            Employer Registration
-          </h2>
-        </div>
-
+      <div className="w-full max-w-2xl h-full">
         <EmployerRegisterForm data={{}}>
           <EmployerEditor registerProfile={register} />
         </EmployerRegisterForm>
-      </div>
-      <div className="fixed bottom-0 bg-gray-50 z-[100] h-16 w-full flex flex-row justify-center">
-        <div className="opacity-80 text-sm">
-          Need help? Contact us at{" "}
-          <a href="mailto:hello@betterinternship.com">
-            hello@betterinternship.com
-          </a>
-        </div>
       </div>
     </div>
   );
@@ -187,6 +173,11 @@ const EmployerEditor = ({
   return (
     <>
       <Card className="mb-4">
+      <div className="mb-4">
+        <h2 className="text-3xl tracking-tighter font-bold text-gray-700">
+          Employer Registration
+        </h2>
+      </div>
       <div className="mb-4 flex flex-col space-y-3">
           <div className="text-xl tracking-tight font-bold text-gray-700">
             Contact Person Information
@@ -255,7 +246,7 @@ const EmployerEditor = ({
             maxLength={100}
           />
         </div>
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-3 mb-8">
           <FormCheckbox
             id="accept-terms"
             checked={additionalFields.terms_accepted}
@@ -291,20 +282,18 @@ const EmployerEditor = ({
             .
           </label>
         </div>
+        <div className="flex justify-between items-center w-[100%]">
+          <p className="text-sm text-gray-500">
+            Already have an account? <a className="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200" href="/login">Login here.</a>
+          </p>
+          <Button
+            onClick={register}
+            disabled={!additionalFields.terms_accepted || isRegistering}
+          >
+            {isRegistering ? "Registering..." : "Register"}
+          </Button>
+        </div>
       </Card>
-      <div className="flex justify-between items-center w-[100%]">
-        <p className="text-sm text-gray-500">
-          Already have an account? <a className="text-primary hover:underline transition-colors duration-200" href="/login">Login here.</a>
-        </p>
-        <Button
-          onClick={register}
-          disabled={!additionalFields.terms_accepted || isRegistering}
-        >
-          {isRegistering ? "Registering..." : "Register"}
-        </Button>
-      </div>
-      <br />
-      <br />
     </>
   );
 };
