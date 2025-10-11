@@ -292,7 +292,10 @@ const EmployerEditor = ({
           </label>
         </div>
       </Card>
-      <div className="flex justify-end w-[100%]">
+      <div className="flex justify-between items-center w-[100%]">
+        <p className="text-sm text-gray-500">
+          Already have an account? <a className="text-primary hover:underline transition-colors duration-200" href="/login">Login here.</a>
+        </p>
         <Button
           onClick={register}
           disabled={!additionalFields.terms_accepted || isRegistering}
