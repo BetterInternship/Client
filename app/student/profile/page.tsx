@@ -8,7 +8,7 @@ import {
   useMemo,
 } from "react";
 import { motion } from "framer-motion";
-import { Edit2, Upload, Eye, Camera, CheckCircle2, Globe2 } from "lucide-react";
+import { Edit2, Upload, Eye, Camera, CheckCircle2, Globe2, Loader2 } from "lucide-react";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
@@ -254,7 +254,15 @@ export default function ProfilePage() {
                       disabled={saving}
                     >
                       <CheckCircle2 className="h-4 w-4 mr-1" />
-                      {saving ? "Saving…" : "Save changes"}
+                      {saving ? (
+                        <>
+                        <Loader2 className="h-4 w-4 animate-spin"></Loader2>
+                        </>
+                      ) : (
+                      <>
+                        Save
+                      </>
+                      )}
                     </Button>
                   }
                 />
@@ -413,8 +421,8 @@ function ProfileReadOnlyTabs({
       onChange={(v) => setTab(v as TabKey)}
       rightSlot={
         <div>
-          <Button variant="outline" onClick={onEdit} className="text-xs">
-            <Edit2 className="h-3 w-3" /> Edit profile
+          <Button onClick={onEdit} className="text-xs">
+            <Edit2 className="h-3 w-3" /> Edit
           </Button>
         </div>
       }
@@ -460,7 +468,9 @@ function ProfileReadOnlyTabs({
                   : "—"
               }
             />
-            <LabeledProperty label="Degree" value={profile.degree ?? "-"} />
+            <LabeledProperty label="Degree / Program" value={profile.degree ?? "-"} />
+            <LabeledProperty label="College / School" value={profile.college ?? "-"} />
+            <LabeledProperty label="Department" value={profile.department ?? "-"} />
             <LabeledProperty
               label="Expected Graduation Date"
               value={formatMonth(profile.expected_graduation_date) ?? "-"}
@@ -941,10 +951,28 @@ const ProfileEditor = forwardRef<
             <div>
               <ErrorLabel value={formErrors.degree} />
               <FormInput
-                label={"Degree"}
+                label={"Degree / Program"}
                 value={formData.degree ?? undefined}
                 setter={fieldSetter("degree")}
                 placeholder="Indicate degree"
+              />
+            </div>
+            <div>
+              <ErrorLabel value={formErrors.degree} />
+              <FormInput
+                label={"College"}
+                // value={formData.degree ?? undefined} // TODO: add college to db
+                // setter={fieldSetter("degree")}
+                placeholder="Indicate college"
+              />
+            </div>
+            <div>
+              <ErrorLabel value={formErrors.department} />
+              <FormInput
+                label={"Department"}
+                // value={formData.degree ?? undefined} // TODO: add department to db
+                // setter={fieldSetter("degree")}
+                placeholder="Indicate department"
               />
             </div>
             <div>
