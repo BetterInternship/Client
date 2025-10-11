@@ -635,19 +635,18 @@ button[role="checkbox"]:checked {
   }
 }
 
-/* base size anywhere */
-input,
-textarea,
-select {
-  font-size: 0.875rem;
+/* --- unified input sizing: 1rem on focus only on mobile --- */
+@layer base {
+  /* Mobile: bump to 1rem (16px) on focus to avoid iOS zoom */
+  @media (max-width: 639.98px) {
+    input:focus,
+    textarea:focus,
+    select:focus {
+      font-size: 1rem; /* 16px on focus ONLY on mobile */
+    }
+  }
 }
 
-/* on focus, prevent zoom */
-input:focus,
-textarea:focus,
-select:focus {
-  font-size: 1rem;
-}
 
 .shiny-text {
   color: #b5b5b5a4; /* Adjust this color to change intensity/style */

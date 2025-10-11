@@ -4,6 +4,9 @@ import { twMerge } from "tailwind-merge";
 export const generateMemberId = () =>
   `MEM-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
 
+export const titleCase = (s: string) => 
+  s.split(" ").map(s => `${s.charAt(0).toUpperCase()}${s.slice(1)}`).join(" ")
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -55,8 +58,8 @@ export function isValidPHNumber(phone_num?: string | null) {
     /^09\d{9}$/.test(phone_num) ||
     /^639\d{9}$/.test(phone_num) ||
     /^\+639\d{9}$/.test(phone_num) ||
-    /^\(\+63\)\s?\d{3}\s?\d{3}\s?\d{4}$/ || 
-    /^(\+63|0)9\d{9}$/
+    /^\(\+63\)\s?\d{3}\s?\d{3}\s?\d{4}$/.test(phone_num) ||
+    /^(\+63|0)9\d{9}$/.test(phone_num)
   );
 }
 

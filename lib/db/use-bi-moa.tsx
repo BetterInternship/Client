@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-22 13:40:54
- * @ Modified time: 2025-06-22 14:40:01
+ * @ Modified time: 2025-10-11 00:00:11
  * @ Description:
  *
  * Gives us utils to check if company has moa.
@@ -10,30 +10,30 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import { createMoaContext } from "./use-moa-backend";
+import { createBiMoaContext } from "./use-bi-moa-backend";
 
 // The IMoa context should only be loaded once
-interface IMoa {
+interface IBIMoa {
   check: (employer_id: string, university_id: string) => boolean;
 }
 
-const moaContext = createContext<IMoa>({} as IMoa);
+const biMoaContext = createContext<IBIMoa>({} as IBIMoa);
 
 /**
  * Gives our component access to moa info.
  *
  * @context
  */
-export const MoaContextProvider = ({
+export const BIMoaContextProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
-  const moa_context = createMoaContext();
+  const biMoaContextValue = createBiMoaContext();
 
   return (
-    <moaContext.Provider value={moa_context}>{children}</moaContext.Provider>
+    <biMoaContext.Provider value={biMoaContextValue}>{children}</biMoaContext.Provider>
   );
 };
 
-export const useDbMoa = () => useContext(moaContext);
+export const useDbMoa = () => useContext(biMoaContext);

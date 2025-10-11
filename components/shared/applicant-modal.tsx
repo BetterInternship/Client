@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 04:14:35
- * @ Modified time: 2025-09-25 19:50:16
+ * @ Modified time: 2025-10-07 08:12:26
  * @ Description:
  *
  * What employers see when clicking on an applicant to view.
@@ -18,8 +18,9 @@ import { Award, FileText } from "lucide-react";
 import { getFullName } from "@/lib/profile";
 import { MyUserPfp, UserPfp } from "./pfp";
 import { Divider } from "../ui/divider";
-import { fmtISO, formatMonth } from "@/lib/utils/date-utils";
+import { fmtISO, formatMonth, formatTimestampDate } from "@/lib/utils/date-utils";
 import { Badge } from "../ui/badge";
+import { formatDate } from "date-fns";
 
 export const ApplicantModalContent = ({
   applicant = {} as Partial<PublicUser>,
@@ -47,6 +48,8 @@ export const ApplicantModalContent = ({
     job_types,
     job_categories,
   } = useDbRefs();
+
+  const internshipPreferences = applicant.internship_preferences;
 
   // actions
   const handleResumeClick = useCallback(async () => {
@@ -80,8 +83,8 @@ export const ApplicantModalContent = ({
               </h1>
               <p className="text-gray-600 text-xs sm:text-sm md:text-base leading-relaxed mb-2 sm:mb-3 md:mb-4">
                 Applying for {job?.title ?? "Sample Position"}{" "}
-                {job?.type !== undefined && job?.type !== null
-                  ? `• ${to_job_type_name(job.type)}`
+                {job?.internship_preferences?.job_commitment_ids?.[0] !== undefined
+                  ? `• ${to_job_type_name(job?.internship_preferences?.job_commitment_ids?.[0])}`
                   : ""}
               </p>
 
@@ -245,7 +248,9 @@ export const ApplicantModalContent = ({
               <div>
                 <p className="text-xs text-gray-500">Expected Start Date</p>
                 <p className="font-medium text-gray-900">
-                  {fmtISO(applicant?.expected_start_date)}
+                  {applicant.internship_preferences?.expected_start_date 
+                    ? formatTimestampDate(applicant.internship_preferences?.expected_start_date) 
+                    : "-"}
                 </p>
               </div>
               <div>
@@ -268,10 +273,7 @@ export const ApplicantModalContent = ({
                 <p className="text-xs text-gray-500 mb-2">Work Modes</p>
                 <div className="font-medium text-gray-900">
                   {(() => {
-                    const ids = (applicant?.internship_preferences
-                      ?.job_setup_ids ??
-                      applicant?.job_mode_ids ??
-                      []) as (string | number)[];
+                    const ids = (internshipPreferences?.job_setup_ids ?? []) as (string | number)[];
                     const items = ids
                       .map((id) => {
                         const m = job_modes.find(
@@ -298,10 +300,7 @@ export const ApplicantModalContent = ({
                 <p className="text-xs text-gray-500 mb-2">Workload Types</p>
                 <div className="font-medium text-gray-900 text-sm sm:text-base">
                   {(() => {
-                    const ids = (applicant?.internship_preferences
-                      ?.job_commitment_ids ??
-                      applicant?.job_type_ids ??
-                      []) as (string | number)[];
+                    const ids = (internshipPreferences?.job_commitment_ids ?? []) as (string | number)[];
                     const items = ids
                       .map((id) => {
                         const t = job_types.find(
@@ -330,10 +329,7 @@ export const ApplicantModalContent = ({
                 </p>
                 <div className="font-medium text-gray-900 text-sm sm:text-base">
                   {(() => {
-                    const ids = (applicant?.internship_preferences
-                      ?.job_category_ids ??
-                      applicant?.job_category_ids ??
-                      []) as string[];
+                    const ids = (internshipPreferences?.job_category_ids ?? []) as string[];
                     const items = ids
                       .map((id) => {
                         const c = job_categories.find((x) => x.id === id);

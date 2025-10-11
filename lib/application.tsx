@@ -15,7 +15,7 @@ export const applyToJob = async (
   const text = (coverLetter ?? "").trim();
 
   if (!job) return { message: "Job does not exist." };
-  if ((job?.require_cover_letter ?? true) && !text)
+  if ((job?.internship_preferences?.require_cover_letter ?? true) && !text)
     return { message: "A cover letter is required for this job." };
 
   const response = await applicationActions.create.mutateAsync({

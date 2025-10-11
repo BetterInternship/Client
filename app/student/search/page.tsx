@@ -44,6 +44,8 @@ import {
   useApplicationActions,
   useProfileActions,
 } from "@/lib/api/student.actions.api";
+import { MassApplyComposer } from "@/components/features/student/mass-apply/MassApplyComposer";
+import { MassApplyResults } from "@/components/features/student/mass-apply/MassApplyResults";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -85,12 +87,6 @@ export default function SearchPage() {
 
   // Modals
   const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
-  const {
-    open: openMassApplyResultModal,
-    close: closeMassApplyResultModal,
-    Modal: MassApplyResultModal,
-  } = useModal("mass-apply-result-modal");
-  const massApplyModalRef = useModalRef();
   const jobModalRef = useModalRef();
   const applySuccessModalRef = useModalRef();
   const applyConfirmModalRef = useModalRef();
@@ -132,7 +128,7 @@ export default function SearchPage() {
     } else if (jobsPage.length > 0 && !selectedJob?.id) {
       setSelectedJob(jobsPage[0]);
     }
-  }, [jobsPage.length, searchParams]);
+  }, [jobsPage.length, searchParams, selectedJob]);
 
   /* --------------------------------------------
     * Selection helpers
@@ -178,6 +174,7 @@ export default function SearchPage() {
       window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
       return;
     }
+
     if (
       !isProfileResume(profile.data) ||
       !isProfileBaseComplete(profile.data) ||
@@ -190,12 +187,13 @@ export default function SearchPage() {
         />,
         {
           allowBackdropClick: false,
-          onClose: () => {
-            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-          },
-        }
+          title: "Complete your profile",
+          showHeaderDivider: true,
+        } as any
       );
+      return; 
     }
+
     const allApplied =
       selectedJobsList.length > 0 &&
       selectedJobsList.every((j) => jobs.isJobApplied(j.id!));
@@ -205,7 +203,26 @@ export default function SearchPage() {
       );
       return;
     }
-    massApplyModalRef.current?.open();
+
+    openGlobalModal(
+      "mass-apply-compose",
+      <MassApplyComposer
+        initialText={bulkCoverLetter}
+        disabled={massApplying}
+        minChars={0}
+        maxChars={500}
+        onCancel={() => closeGlobalModal("mass-apply-compose")}
+        onSubmit={async (text) => {
+          setBulkCoverLetter(text);
+          await runMassApply(text);
+          closeGlobalModal("mass-apply-compose");
+        }}
+      />,
+      {
+        title: `Apply to ${selectedIds.size} selected`,
+        allowBackdropClick: false,
+      } as any
+    );
   };
 
   const [massApplying, setMassApplying] = useState(false);
@@ -234,11 +251,15 @@ export default function SearchPage() {
             skipped.push({ job, reason: "Already applied" });
             continue;
           }
+          const internshipPreferences = job.internship_preferences;
           const needsGithub =
-            job.require_github && !profile.data?.github_link?.trim();
+            internshipPreferences?.require_github &&
+            !profile.data?.github_link?.trim();
           const needsPortfolio =
-            job.require_portfolio && !profile.data?.portfolio_link?.trim();
-          const needsCover = job.require_cover_letter && !coverLetter.trim();
+            internshipPreferences?.require_portfolio &&
+            !profile.data?.portfolio_link?.trim();
+          const needsCover =
+            internshipPreferences?.require_cover_letter && !coverLetter.trim();
 
           if (needsGithub) {
             skipped.push({ job, reason: "Requires GitHub profile" });
@@ -256,18 +277,37 @@ export default function SearchPage() {
         }
 
         if (!eligible.length) {
-          setMassResult({ ok: [], skipped, failed: [] });
-          massApplyModalRef.current?.close();
-          openMassApplyResultModal();
+          const data = {
+            ok: [],
+            skipped,
+            failed: [] as { job: Job; error: string }[],
+          };
+          setMassResult(data);
+          closeGlobalModal("mass-apply-compose");
+          openGlobalModal(
+            "mass-apply-results",
+            <MassApplyResults
+              data={data}
+              onClose={() => closeGlobalModal("mass-apply-results")}
+              onClearSelection={() => {
+                clearSelection();
+                setSelectMode(false);
+                closeGlobalModal("mass-apply-results");
+              }}
+            />,
+            {
+              title: "Bulk application summary",
+              showHeaderDivider: true,
+            } as any
+          );
           return;
         }
 
-        setMassApplying(true); // 1 render
+        setMassApplying(true);
 
         const ok: Job[] = [];
         const failed: { job: Job; error: string }[] = [];
 
-        // sequential, no setState in the loop
         for (const job of eligible) {
           try {
             await applicationActions.create.mutateAsync({
@@ -290,50 +330,42 @@ export default function SearchPage() {
           }
         }
 
-        // publish results once (another render)
         setMassApplying(false);
-        setMassResult({ ok, skipped, failed });
-        massApplyModalRef.current?.close();
-        openMassApplyResultModal();
+        const data = { ok, skipped, failed };
+        setMassResult(data);
+        closeGlobalModal("mass-apply-compose");
+        openGlobalModal(
+          "mass-apply-results",
+          <MassApplyResults
+            data={data}
+            onClose={() => closeGlobalModal("mass-apply-results")}
+            onClearSelection={() => {
+              clearSelection();
+              setSelectMode(false);
+              closeGlobalModal("mass-apply-results");
+            }}
+          />,
+          { title: "Bulk application summary", showHeaderDivider: true } as any
+        );
       } finally {
         isSubmittingRef.current = false;
       }
     },
     [
-      applications,
       profile.data,
-      selectedJobsList,
-      massApplyModalRef,
-      openMassApplyResultModal,
+      openGlobalModal,
+      closeGlobalModal,
+      applicationActions,
+      clearSelection,
+      setSelectMode,
     ]
   );
-
-  // stable handlers for modal child (no inline lambdas)
-  const onCancelCompose = useEvent(() => {
-    massApplyModalRef.current?.close();
-  });
-  const onSubmitCompose = useEvent(async (text: string) => {
-    setBulkCoverLetter(text); // optional: keep for later reuse
-    await runMassApply(text);
-  });
-
   const router = useRouter();
 
   const goProfile = useCallback(() => {
     applyConfirmModalRef.current?.close();
     router.push("/profile");
   }, [applyConfirmModalRef, router]);
-
-  // Forever dismiss auto-apply tip
-  const dismissTip = async () => {
-    try {
-      await profileActions.update.mutateAsync({
-        acknowledged_auto_apply: true,
-      });
-    } catch (e) {
-      console.error("Failed to dismiss auto-apply tip", e);
-    }
-  };
 
   if (jobs.error)
     return (
@@ -475,7 +507,7 @@ export default function SearchPage() {
                         <button
                           type="button"
                           className={cn(
-                            "absolute right-2 top-2 z-10 rounded-md bg-white shadow-sm p-1",
+                            "absolute right-3 top-3 z-10 bg-white p-1",
                             "hover:shadow transition"
                           )}
                           onClick={(e) => {
@@ -484,9 +516,9 @@ export default function SearchPage() {
                           }}
                         >
                           {isSelected(job.id) ? (
-                            <CheckSquare className="w-4 h-4 text-blue-600" />
+                            <CheckSquare className="w-5 h-5 text-blue-600" />
                           ) : (
-                            <Square className="w-4 h-4 text-gray-400" />
+                            <Square className="w-5 h-5 text-gray-400" />
                           )}
                         </button>
                       )}
@@ -514,6 +546,7 @@ export default function SearchPage() {
             </div>
           </div>
         ) : (
+
           // Desktop split view
           <>
             {/* Left: List */}
@@ -522,7 +555,6 @@ export default function SearchPage() {
                 <div className="space-y-3">
                   {jobsPage.map((job) => (
                     <div key={job.id} className="relative group">
-                      {/* Embedded select control on the card (shows on hover / select mode) */}
                       <button
                         type="button"
                         aria-label={
@@ -542,9 +574,9 @@ export default function SearchPage() {
                         }}
                       >
                         {isSelected(job.id) ? (
-                          <CheckSquare className="w-4 h-4 text-blue-600" />
+                          <CheckSquare className="w-5 h-5 text-blue-600" />
                         ) : (
-                          <Square className="w-4 h-4 text-gray-400" />
+                          <Square className="w-5 h-5 text-gray-400" />
                         )}
                       </button>
 
@@ -654,93 +686,6 @@ export default function SearchPage() {
             }
           );
         }}
-      />
-
-      {/* Mass Apply — Compose */}
-      <MassApplyModal
-        ref={massApplyModalRef}
-        initialText={bulkCoverLetter}
-        onCancel={onCancelCompose}
-        onSubmit={onSubmitCompose}
-        disabled={massApplying}
-      />
-
-      {/* Mass Apply — Results */}
-      <MassApplyResultModal>
-        <div className="max-w-lg mx-auto p-6 space-y-4">
-          <h2 className="text-xl font-semibold">Bulk application summary</h2>
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-green-700">Applied</span>
-              <span className="font-medium">{massResult.ok.length}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-amber-700">Skipped</span>
-              <span className="font-medium">{massResult.skipped.length}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-red-700">Failed</span>
-              <span className="font-medium">{massResult.failed.length}</span>
-            </div>
-          </div>
-
-          {massResult.skipped.length > 0 && (
-            <div className="border rounded-md p-3">
-              <div className="text-sm font-medium mb-2">Skipped</div>
-              <ul className="space-y-1 text-sm text-gray-700 max-h-40 overflow-auto">
-                {massResult.skipped.map(({ job, reason }) => (
-                  <li key={`skip-${job.id}`}>
-                    <span className="font-medium">{job.title}</span>{" "}
-                    <span className="text-gray-500">— {reason}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {massResult.failed.length > 0 && (
-            <div className="border rounded-md p-3">
-              <div className="text-sm font-medium mb-2">Failed</div>
-              <ul className="space-y-1 text-sm text-gray-700 max-h-40 overflow-auto">
-                {massResult.failed.map(({ job, error }) => (
-                  <li key={`fail-${job.id}`}>
-                    <span className="font-medium">{job.title}</span>{" "}
-                    <span className="text-gray-500">— {error}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <div className="flex justify-between">
-            <Button
-              variant="outline"
-              onClick={() => {
-                closeMassApplyResultModal();
-              }}
-            >
-              Close
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                clearSelection();
-                setSelectMode(false);
-                closeMassApplyResultModal();
-              }}
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Clear selection
-            </Button>
-          </div>
-        </div>
-      </MassApplyResultModal>
-
-      <Toaster
-        position={isMobile ? "bottom-center" : "bottom-right"}
-        closeButton
-        richColors
-        theme="light"
       />
     </>
   );

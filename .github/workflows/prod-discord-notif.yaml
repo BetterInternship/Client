@@ -1,26 +1,25 @@
-name: Notify Discord on Vercel Deploy
+name: Notify Discord on PROD Vercel Deployment
 
 on:
-  deployment_status:
+  repository_dispatch:
+    types: [vercel_deployment]
 
 jobs:
-  notify-discord:
+  notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Send Discord notification
-        if: github.event.deployment_status.state == 'success' && github.event.deployment.ref == 'refs/heads/main'
+      - name: Success message
+        if: github.event.client_payload.status == 'succeeded'
         run: |
           curl -H "Content-Type: application/json" \
           -X POST \
-          -d "{\"content\": \"✅ [PROD] Deployment *${{ github.event.deployment_status.environment }}* succeeded for commit [${{ github.sha }}](${{ github.event.repository.html_url }}/commit/${{ github.sha }})\"}" \
+          -d "{\"content\": \"# [PROD] Deployment succeeded on Vercel ✅\"}" \
           ${{ secrets.DISCORD_WEBHOOK }}
-            - name: Notify Discord of failure
-      - name: Notify Discord of failure
-        if: github.event.deployment_status.state == 'failure' && github.event.deployment.ref == 'refs/heads/main'
+
+      - name: Failure message
+        if: github.event.client_payload.status == 'error'
         run: |
           curl -H "Content-Type: application/json" \
           -X POST \
-          -d "{\"content\": \"❌ [PROD] Deployment *${{ github.event.deployment_status.environment }}* FAILED for commit [${{ github.sha }}](${{ github.event.repository.html_url }}/commit/${{ github.sha }})\"}" \
+          -d "{\"content\": \"# [DEV] Deployment failed on Vercel ❌\"}" \
           ${{ secrets.DISCORD_WEBHOOK }}
-
-

@@ -133,7 +133,7 @@ export const JobTitleLabel: ValueComponent = ({
   fallback,
 }: ValueComponentProps) => {
   return (
-    <p className="text-gray-900 font-heading font-bold text-4xl">
+    <p className="text-gray-900 font-heading font-bold text-4xl line-clamp-2 truncate break-words whitespace-pre-wrap">
       {value || (
         <span className="text-gray-400 italic">
           {fallback ?? DEFAULT_LABEL}

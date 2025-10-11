@@ -1,39 +1,39 @@
-import { Job } from "@/lib/db/db.types";
-import { useDbRefs } from "@/lib/db/use-refs";
-import { cn, formatDate } from "@/lib/utils";
-import {
-  Building,
-  PhilippinePeso,
-  Monitor,
-  Clock,
-  EyeOff,
-  CheckCircle,
-  CheckCircle2,
-  AlertTriangle,
-} from "lucide-react";
-import { Badge, BoolBadge } from "@/components/ui/badge";
-import ReactMarkdown from "react-markdown";
-import { useFormData } from "@/lib/form-data";
+import { Badge, BoolBadge } from '@/components/ui/badge';
 import {
   EditableCheckbox,
-  EditableDatePicker,
   EditableGroupableRadioDropdown,
   EditableInput,
-} from "@/components/ui/editable";
-import { useEffect } from "react";
-import { JobBooleanLabel, Property, JobTitleLabel } from "../ui/labels";
-import { MDXEditor } from "../MDXEditor";
-import { DropdownGroup } from "../ui/dropdown";
-import { useDbMoa } from "@/lib/db/use-moa";
-import { Toggle } from "../ui/toggle";
-import { Card } from "../ui/card";
-import { Divider } from "../ui/divider";
-import { Button } from "../ui/button";
+} from '@/components/ui/editable';
+import { Job } from '@/lib/db/db.types';
+import { useDbMoa } from '@/lib/db/use-bi-moa';
+import { useDbRefs } from '@/lib/db/use-refs';
+import { useFormData } from '@/lib/form-data';
+import { cn } from '@/lib/utils';
+import {
+  AlertTriangle,
+  Building,
+  CheckCircle,
+  Clock,
+  EyeOff,
+  Monitor,
+  PhilippinePeso,
+  UserCheck,
+} from 'lucide-react';
+import { useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import { MDXEditor } from '../MDXEditor';
+import { Card } from '../ui/card';
+import { Divider } from '../ui/divider';
+import { DropdownGroup } from '../ui/dropdown';
+import { JobBooleanLabel, JobTitleLabel, Property } from '../ui/labels';
+import { Toggle } from '../ui/toggle';
+import { FormDatePicker, FormRadio } from '../EditForm';
+import { Label } from '../ui/label';
 
 export const JobHead = ({
   title,
   employer,
-  size = "",
+  size = '',
 }: {
   title: string | null | undefined;
   employer: string | null | undefined;
@@ -43,15 +43,15 @@ export const JobHead = ({
     <div className="flex-1 min-w-0 text-wrap">
       <h1
         className={cn(
-          "text-" + size + "xl",
-          "font-semibold text-gray-800 leading-tight line-clamp-2 transition-colors"
+          'text-' + size + 'xl',
+          'font-semibold text-gray-800 leading-tight transition-colors line-clamp-2 truncate break-words whitespace-pre-wrap',
         )}
       >
         {title}
       </h1>
       <div className="flex items-center gap-2 text-gray-700 mb-2 sm:mb-3 mt-1">
         <p className="text-sm text-gray-600 font-medium">
-          {employer ?? "Unknown"}
+          {employer ?? 'Unknown'}
         </p>
       </div>
     </div>
@@ -91,6 +91,15 @@ export const JobMode = ({ mode }: { mode: number | null | undefined }) => {
   );
 };
 
+export const JobCategory = ({ category }: { category: string | undefined }) => {
+  const { isNotNull: ref_is_not_null, to_job_category_name } = useDbRefs();
+  return ref_is_not_null(category) ? (
+    <Badge>{to_job_category_name(category)}</Badge>
+  ) : (
+    <></>
+  );
+};
+
 export const JobSalary = ({
   salary,
   salary_freq,
@@ -122,19 +131,19 @@ export const JobApplicationRequirements = ({ job }: { job: Job }) => {
           offValue="Resume"
         />
         <BoolBadge
-          state={job.require_github}
+          state={job.internship_preferences?.require_github}
           onScheme="primary"
           onValue="Github Profile"
           offValue="Github Profile"
         />
         <BoolBadge
-          state={job.require_portfolio}
+          state={job.internship_preferences?.require_portfolio}
           onScheme="primary"
           onValue="Portfolio"
           offValue="Portfolio"
         />
         <BoolBadge
-          state={job.require_cover_letter}
+          state={job.internship_preferences?.require_cover_letter}
           onScheme="primary"
           onValue="Cover Letter"
           offValue="Cover Letter"
@@ -152,25 +161,32 @@ export const JobBadges = ({
   excludes?: string[];
 }) => {
   const { universities } = useDbRefs();
+
+  const workModes = job.internship_preferences?.job_setup_ids ?? [];
+  const workLoads = job.internship_preferences?.job_commitment_ids ?? [];
+
   return (
     <div className="flex flex-wrap gap-2 mb-4">
-      {!excludes.includes("moa") && (
+      {!excludes.includes('moa') && (
         <EmployerMOA
           employer_id={job.employer_id}
           university_id={universities[0]?.id}
         />
       )}
-      {!excludes.includes("unlisted") && job.is_unlisted && (
+      {!excludes.includes('unlisted') && job.is_unlisted && (
         <Badge type="warning">
           <EyeOff className="w-3 h-3 mr-1" />
           Unlisted
         </Badge>
       )}
-      {!excludes.includes("type") && <JobType type={job.type} />}
-      {!excludes.includes("salary") && (
+      {!excludes.includes('type') &&
+        workModes.map((mode) => <JobType type={mode} />)}
+
+      {!excludes.includes('salary') && (
         <JobSalary salary={job.salary} salary_freq={job.salary_freq} />
       )}
-      {!excludes.includes("mode") && <JobMode mode={job.mode} />}
+      {!excludes.includes('mode') &&
+        workLoads.map((load) => <JobMode mode={load} />)}
     </div>
   );
 };
@@ -185,10 +201,10 @@ export const EmployerMOA = ({
   const { check } = useDbMoa();
   const { get_university } = useDbRefs();
 
-  return check(employer_id ?? "", university_id ?? "") ? (
+  return check(employer_id ?? '', university_id ?? '') ? (
     <Badge type="supportive">
       <CheckCircle className="w-3 h-3 mr-1" />
-      {get_university(university_id)?.name?.split(" ")[0]} MOA
+      {get_university(university_id)?.name?.split(' ')[0]} MOA
     </Badge>
   ) : (
     <></>
@@ -215,10 +231,10 @@ export const JobCard = ({
       key={job.id}
       onClick={() => on_click && on_click(job)}
       className={cn(
-        "group relative overflow-hidden",
+        'group relative overflow-hidden',
         selected
-          ? "ring-1 ring-primary ring-offset-1"
-          : "hover:shadow-sm hover:border-gray-300 cursor-pointer"
+          ? 'ring-1 ring-primary ring-offset-1'
+          : 'hover:shadow-sm hover:border-gray-300 cursor-pointer',
       )}
     >
       <div className="space-y-3">
@@ -250,7 +266,7 @@ export const EmployerJobCard = ({
   on_click?: (job: Job) => void;
   update_job: (
     job_id: string,
-    job: Partial<Job>
+    job: Partial<Job>,
   ) => Promise<{ success: boolean }>;
   set_is_editing: (is_editing: boolean) => void;
 }) => {
@@ -259,8 +275,8 @@ export const EmployerJobCard = ({
       key={job.id}
       onClick={() => on_click && on_click(job)}
       className={cn(
-        selected ? "selected ring-1 ring-primary ring-offset-1" : "",
-        !job.is_active ? "opacity-50" : "cursor-pointer"
+        selected ? 'selected ring-1 ring-primary ring-offset-1' : '',
+        !job.is_active ? 'opacity-50' : 'cursor-pointer',
       )}
     >
       <div className="space-y-3">
@@ -269,9 +285,9 @@ export const EmployerJobCard = ({
           <div className="flex items-center gap-2 relative z-20">
             <Toggle
               state={job.is_active}
-              onClick={async () => {
+              onClick={() => {
                 if (!job.id) return;
-                await update_job(job.id, {
+                void update_job(job.id, {
                   is_active: !job.is_active,
                 });
               }}
@@ -279,7 +295,7 @@ export const EmployerJobCard = ({
           </div>
         </div>
         <JobLocation location={job.location} />
-        <JobBadges job={job} excludes={["moa"]} />
+        <JobBadges job={job} excludes={['moa']} />
       </div>
     </Card>
   );
@@ -312,16 +328,14 @@ export const MobileJobCard = ({
       </div>
       <JobBadges job={job} />
       <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
-        {job.description || "No description available."}
+        {job.description || 'No description available.'}
       </p>
       <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-        <JobLocation location={job.location} />{" "}
+        <JobLocation location={job.location} />{' '}
       </div>
     </div>
   );
 };
-
-export const MobileJobDetails = ({}) => {};
 
 /**
  * The right panel that describes job details.
@@ -342,7 +356,7 @@ export const EmployerJobDetails = ({
   saving?: boolean;
   update_job: (
     job_id: string,
-    job: Partial<Job>
+    job: Partial<Job>,
   ) => Promise<{ success: boolean }>;
   actions?: React.ReactNode[];
 }) => {
@@ -366,30 +380,24 @@ export const EmployerJobDetails = ({
     if (job && saving) {
       const edited_job: Partial<Job> = {
         id: formData.id,
-        title: formData.title ?? "",
-        description: formData.description ?? "",
-        requirements: formData.requirements ?? "",
-        location: formData.location ?? "",
-        mode: formData.mode ?? undefined,
-        type: formData.type ?? undefined,
+        title: formData.title ?? '',
+        description: formData.description ?? '',
+        requirements: formData.requirements ?? '',
+        location: formData.location ?? '',
         allowance: formData.allowance ?? undefined,
         salary: formData.salary ?? null,
         salary_freq: formData.salary_freq ?? undefined,
-        require_github: formData.require_github,
-        require_portfolio: formData.require_portfolio,
-        require_cover_letter: formData.require_cover_letter,
         is_unlisted: formData.is_unlisted,
-        start_date: formData.start_date,
-        end_date: formData.end_date,
-        is_year_round: formData.is_year_round,
+        internship_preferences: formData.internship_preferences ?? {},
       };
 
-      update_job(edited_job.id ?? "", edited_job).then(
-        // @ts-ignore
+      void update_job(edited_job.id ?? '', edited_job).then(
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
         ({ job: updated_job }) => {
-          if (!updated_job) alert("Invalid input provided for job update.");
+          if (!updated_job) alert('Invalid input provided for job update.');
           set_is_editing(false);
-        }
+        },
       );
     }
   }, [saving]);
@@ -400,8 +408,8 @@ export const EmployerJobDetails = ({
         <div className="max-w-prose">
           <EditableInput
             is_editing={is_editing}
-            value={formData.title ?? "Not specified"}
-            setter={fieldSetter("title")}
+            value={formData.title ?? 'Not specified'}
+            setter={fieldSetter('title')}
             maxLength={100}
           >
             <JobTitleLabel />
@@ -425,8 +433,8 @@ export const EmployerJobDetails = ({
             </label>
             <EditableInput
               is_editing={is_editing}
-              value={formData.location ?? "Not specified"}
-              setter={fieldSetter("location")}
+              value={formData.location ?? 'Not specified'}
+              setter={fieldSetter('location')}
               maxLength={100}
             >
               <Property className="line-clamp-2 break-words max-w-[100%]" />
@@ -434,38 +442,52 @@ export const EmployerJobDetails = ({
           </div>
 
           {/* Mode */}
-          <div className="flex flex-col items-start gap-3">
-            <label className="flex items-center text-sm font-semibold text-gray-700">
-              <Monitor className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-              Work Mode:
-            </label>
-            <EditableGroupableRadioDropdown
-              is_editing={is_editing}
-              name={"job_mode"}
-              value={formData.mode}
-              setter={fieldSetter("mode")}
-              options={job_modes}
-            >
-              <Property />
-            </EditableGroupableRadioDropdown>
-          </div>
+          {formData.internship_preferences?.job_setup_ids?.[0] && (
+            <div className="flex flex-col items-start gap-3">
+              <label className="flex items-center text-sm font-semibold text-gray-700">
+                <Monitor className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                Work Mode:
+              </label>
+              <EditableGroupableRadioDropdown
+                is_editing={is_editing}
+                name={'job_mode'}
+                value={formData.internship_preferences?.job_setup_ids?.[0]}
+                setter={(v) =>
+                  setField('internship_preferences', {
+                    ...formData.internship_preferences,
+                    job_setup_ids: [v],
+                  })
+                }
+                options={job_modes}
+              >
+                <Property />
+              </EditableGroupableRadioDropdown>
+            </div>
+          )}
 
           {/* Work Schedule */}
-          <div className="flex flex-col items-start gap-3 max-w-prose">
-            <label className="flex items-center text-sm font-semibold text-gray-700">
-              <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-              Work Load:
-            </label>
-            <EditableGroupableRadioDropdown
-              is_editing={is_editing}
-              value={formData.type}
-              setter={fieldSetter("type")}
-              name={"job_type"}
-              options={job_types}
-            >
-              <Property />
-            </EditableGroupableRadioDropdown>
-          </div>
+          {formData.internship_preferences?.job_commitment_ids?.[0] && (
+            <div className="flex flex-col items-start gap-3 max-w-prose">
+              <label className="flex items-center text-sm font-semibold text-gray-700">
+                <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                Work Load:
+              </label>
+              <EditableGroupableRadioDropdown
+                is_editing={is_editing}
+                value={formData.internship_preferences?.job_commitment_ids?.[0]}
+                setter={(v) =>
+                  setField('internship_preferences', {
+                    ...formData.internship_preferences,
+                    job_commitment_ids: [v],
+                  })
+                }
+                name={'job_type'}
+                options={job_types}
+              >
+                <Property />
+              </EditableGroupableRadioDropdown>
+            </div>
+          )}
 
           {/* Salary Section */}
           {is_editing ? (
@@ -481,7 +503,7 @@ export const EmployerJobDetails = ({
                     name="allowance"
                     value={formData.allowance}
                     options={job_allowances}
-                    setter={fieldSetter("allowance")}
+                    setter={fieldSetter('allowance')}
                   >
                     <Property />
                   </EditableGroupableRadioDropdown>
@@ -496,8 +518,8 @@ export const EmployerJobDetails = ({
                       </label>
                       <EditableInput
                         is_editing={is_editing}
-                        value={formData.salary?.toString() ?? "Not specified"}
-                        setter={fieldSetter("salary")}
+                        value={formData.salary?.toString() ?? 'Not specified'}
+                        setter={fieldSetter('salary')}
                       >
                         <Property />
                       </EditableInput>
@@ -511,7 +533,7 @@ export const EmployerJobDetails = ({
                         is_editing={is_editing}
                         value={formData.salary_freq}
                         options={job_pay_freq}
-                        setter={fieldSetter("salary_freq")}
+                        setter={fieldSetter('salary_freq')}
                       >
                         <Property fallback="" />
                       </EditableGroupableRadioDropdown>
@@ -524,17 +546,17 @@ export const EmployerJobDetails = ({
             <div className="space-y-2">
               <label className="flex items-center text-sm font-semibold text-gray-700">
                 <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                {formData.allowance ? "Allowance:" : "Salary:"}
+                {formData.allowance ? 'Allowance:' : 'Salary:'}
               </label>
               <Property
                 value={
                   formData.allowance
                     ? to_job_allowance_name(formData.allowance)
                     : formData.salary
-                    ? `${formData.salary}/${to_job_pay_freq_name(
-                        formData.salary_freq
-                      )}`
-                    : "Paid (Amount not specified)"
+                      ? `${formData.salary}/${to_job_pay_freq_name(
+                          formData.salary_freq,
+                        )}`
+                      : 'Paid (Amount not specified)'
                 }
               />
             </div>
@@ -549,7 +571,7 @@ export const EmployerJobDetails = ({
                   <EditableCheckbox
                     is_editing={is_editing}
                     value={formData.is_unlisted}
-                    setter={fieldSetter("is_unlisted")}
+                    setter={fieldSetter('is_unlisted')}
                   >
                     <JobBooleanLabel />
                   </EditableCheckbox>
@@ -567,60 +589,52 @@ export const EmployerJobDetails = ({
               {/* Year Round */}
               <div className="flex flex-col space-y-2 border border-gray-200 rounded-md p-4">
                 <div className="flex items-center space-x-2">
-                  <EditableCheckbox
-                    is_editing={is_editing}
-                    value={formData.is_year_round ?? false}
-                    setter={fieldSetter("is_year_round")}
-                  >
-                    <JobBooleanLabel />
-                  </EditableCheckbox>
+                  <FormRadio
+                    required={true}
+                    options={[
+                      {
+                        value: 'true',
+                        label: 'As soon as possible',
+                      },
+                      {
+                        value: 'false',
+                        label: 'I have a future date in mind',
+                      },
+                    ]}
+                    value={
+                      !formData.internship_preferences?.expected_start_date + ''
+                    }
+                    setter={(v) =>
+                      setField('internship_preferences', {
+                        ...formData.internship_preferences,
+                        expected_start_date: v === 'true' ? 0 : undefined,
+                      })
+                    }
+                  />
                   <label className="flex items-center text-sm font-semibold text-gray-700">
-                    Year Round?
+                    When do you need applicants?
                   </label>
                 </div>
-                {/* Dates (when not year round) */}
-                {!formData.is_year_round && (
-                  <>
-                    <br />
-                    <div className="col-span-1 md:col-span-2 lg:col-span-1">
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-sm font-medium text-gray-700 mb-1 block">
-                            Start Date
-                          </label>
-                          <EditableDatePicker
-                            is_editing={is_editing}
-                            value={
-                              formData.start_date
-                                ? new Date(formData.start_date)
-                                : new Date()
-                            }
-                            // @ts-ignore
-                            setter={fieldSetter("start_date")}
-                          >
-                            <Property />
-                          </EditableDatePicker>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-700 mb-1 block">
-                            End Date
-                          </label>
-                          <EditableDatePicker
-                            is_editing={is_editing}
-                            value={
-                              formData.end_date
-                                ? new Date(formData.end_date)
-                                : new Date()
-                            }
-                            // @ts-ignore
-                            setter={fieldSetter("end_date")}
-                          >
-                            <Property />
-                          </EditableDatePicker>
-                        </div>
-                      </div>
+                {formData.internship_preferences?.expected_start_date !== 0 && (
+                  <div className="flex flex-row gap-4 m-4 border-l-2 border-gray-300 pl-4">
+                    <div className="space-y-2">
+                      <Label className="flex flex-row text-sm font-medium text-gray-700">
+                        Start Date <span className="text-destructive">*</span>
+                      </Label>
+                      <FormDatePicker
+                        date={
+                          formData.internship_preferences
+                            ?.expected_start_date ?? undefined
+                        }
+                        setter={(v) =>
+                          setField('internship_preferences', {
+                            ...formData.internship_preferences,
+                            expected_start_date: v,
+                          })
+                        }
+                      />
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             </div>
@@ -636,13 +650,13 @@ export const EmployerJobDetails = ({
         </h1>
         {!is_editing ? (
           <div className="markdown">
-            <ReactMarkdown>{job.description?.replace("/", ";")}</ReactMarkdown>
+            <ReactMarkdown>{job.description?.replace('/', ';')}</ReactMarkdown>
           </div>
         ) : (
           <MDXEditor
             className="min-h-[300px] border border-gray-200 rounded-lg overflow-y-scroll"
-            markdown={formData.description ?? ""}
-            onChange={(value) => setField("description", value)}
+            markdown={formData.description ?? ''}
+            onChange={(value) => setField('description', value)}
           />
         )}
       </div>
@@ -662,8 +676,8 @@ export const EmployerJobDetails = ({
           <div className="flex flex-wrap gap-4">
             <div
               className={cn(
-                "flex flex-row items-start gap-3 max-w-prose",
-                is_editing ? "opacity-50" : ""
+                'flex flex-row items-start gap-3 max-w-prose',
+                is_editing ? 'opacity-50' : '',
               )}
             >
               <EditableCheckbox
@@ -680,8 +694,13 @@ export const EmployerJobDetails = ({
             <div className="flex flex-row items-start gap-3 max-w-prose">
               <EditableCheckbox
                 is_editing={is_editing}
-                value={formData.require_github}
-                setter={fieldSetter("require_github")}
+                value={formData.internship_preferences?.require_github}
+                setter={(v) =>
+                  setField('internship_preferences', {
+                    ...formData.internship_preferences,
+                    require_github: v,
+                  })
+                }
               >
                 <JobBooleanLabel />
               </EditableCheckbox>
@@ -692,8 +711,13 @@ export const EmployerJobDetails = ({
             <div className="flex flex-row items-start gap-3 max-w-prose">
               <EditableCheckbox
                 is_editing={is_editing}
-                value={formData.require_portfolio}
-                setter={fieldSetter("require_portfolio")}
+                value={formData.internship_preferences?.require_portfolio}
+                setter={(v) =>
+                  setField('internship_preferences', {
+                    ...formData.internship_preferences,
+                    require_portfolio: v,
+                  })
+                }
               >
                 <JobBooleanLabel />
               </EditableCheckbox>
@@ -704,8 +728,13 @@ export const EmployerJobDetails = ({
             <div className="flex flex-row items-start gap-3 max-w-prose">
               <EditableCheckbox
                 is_editing={is_editing}
-                value={formData.require_cover_letter}
-                setter={fieldSetter("require_cover_letter")}
+                value={formData.internship_preferences?.require_cover_letter}
+                setter={(v) =>
+                  setField('internship_preferences', {
+                    ...formData.internship_preferences,
+                    require_cover_letter: v,
+                  })
+                }
               >
                 <JobBooleanLabel />
               </EditableCheckbox>
@@ -731,8 +760,8 @@ export const EmployerJobDetails = ({
         ) : (
           <MDXEditor
             className="min-h-[300px] border border-gray-200 rounded-lg overflow-y-scroll"
-            markdown={formData.requirements ?? ""}
-            onChange={(value) => setField("requirements", value)}
+            markdown={formData.requirements ?? ''}
+            onChange={(value) => setField('requirements', value)}
           />
         )}
       </div>
@@ -744,9 +773,27 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
   const { to_job_mode_name, to_job_type_name, to_job_pay_freq_name } =
     useDbRefs();
 
+  const workModes =
+    (job.internship_preferences?.job_setup_ids ?? [])
+      .map((id) => to_job_mode_name(id))
+      .filter(Boolean)
+      .join(', ') || 'None';
+
+  const workLoads =
+    (job.internship_preferences?.job_commitment_ids ?? [])
+      .map((id) => to_job_type_name(id))
+      .filter(Boolean)
+      .join(', ') || 'None';
+
+  const internshipTypes =
+    (job.internship_preferences?.internship_types ?? [])
+      .filter(Boolean)
+      .map((type) => type.charAt(0).toUpperCase() + type.slice(1).toLowerCase())
+      .join(', ') || 'None';
+
   return (
     <div className="space-y-2">
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid sm:grid-cols-4 gap-2">
         <DropdownGroup>
           <div className="flex items-start gap-2">
             <Monitor className="h-5 w-5 text-gray-400" />
@@ -754,7 +801,17 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
               <label className="flex items-center text-sm text-gray-700">
                 Work Mode:
               </label>
-              <Property value={to_job_mode_name(job.mode)} />
+              <Property value={workModes} />
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2">
+            <Clock className="h-5 w-5 text-gray-400" />
+            <div>
+              <label className="flex items-center text-sm text-gray-700">
+                Work Load:
+              </label>
+              <Property value={workLoads} />
             </div>
           </div>
 
@@ -768,18 +825,19 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
                 value={
                   job.salary
                     ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
-                    : "None"
+                    : 'None'
                 }
               />
             </div>
           </div>
+
           <div className="flex items-start gap-2">
-            <Clock className="h-5 w-5 text-gray-400" />
+            <UserCheck className="h-5 w-5 text-gray-400" />
             <div>
               <label className="flex items-center text-sm text-gray-700">
-                Work Load:
+                Type:
               </label>
-              <Property value={to_job_type_name(job.type)} />
+              <Property value={internshipTypes} />
             </div>
           </div>
         </DropdownGroup>
@@ -837,7 +895,7 @@ function ReqPill({ ok, label }: { ok: boolean; label: string }) {
   return <BoolBadge state={ok} onValue={label} offValue={label} />;
 }
 
-function MissingNotice({
+export function MissingNotice({
   show,
   needsGithub,
   needsPortfolio,
@@ -848,10 +906,10 @@ function MissingNotice({
 }) {
   if (!show) return null;
   return (
-    <div className="flex items-center gap-2 border-b border-gray-400 bg-warning px-5 py-3">
-      <AlertTriangle className="h-4 w-4 text-warning-foreground/90" />
+    <div className="flex items-start md:items-center gap-2 border-b border-gray-400 bg-warning px-5 py-3">
+      <AlertTriangle className="h-5 w-5 text-warning-foreground/90" />
       <p className="text-sm text-warning-foreground/90 leading-snug">
-        This job requires{" "}
+        This job requires{' '}
         {needsGithub && needsPortfolio ? (
           <b>GitHub and Portfolio</b>
         ) : needsGithub ? (
@@ -861,12 +919,6 @@ function MissingNotice({
         )}
         . Update your profile to meet these requirements.
       </p>
-      {/* ! i think this shudnt be here, because it bypasses the incomplete profile modal if they havent done that */}
-      {/* <a href="/profile">
-        <Button scheme="secondary" variant="ghost" size="xs">
-          Update profile
-        </Button>
-      </a> */}
     </div>
   );
 }
@@ -903,7 +955,7 @@ export function JobDetails({
   job,
   user,
   actions = [],
-  applyDisabledText = "Complete required items to apply.",
+  applyDisabledText = 'Complete required items to apply.',
 }: {
   job: Job;
   user?: {
@@ -916,9 +968,9 @@ export function JobDetails({
   const hasGithub = !!user?.github_link?.trim();
   const hasPortfolio = !!user?.portfolio_link?.trim();
 
-  const needsCover = !!job.require_cover_letter;
-  const needsGithub = !!job.require_github;
-  const needsPortfolio = !!job.require_portfolio;
+  const needsCover = !!job.internship_preferences?.require_cover_letter;
+  const needsGithub = !!job.internship_preferences?.require_github;
+  const needsPortfolio = !!job.internship_preferences?.require_portfolio;
 
   const missingRequired =
     (needsGithub && !hasGithub) || (needsPortfolio && !hasPortfolio);

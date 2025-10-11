@@ -214,64 +214,7 @@ export function useOwnedJobs(
 
   // Client-side filtering
   const filteredJobs = useMemo(() => {
-    let filtered = [...ownedJobs];
-    const { type, mode, search, location, industry } = params;
-
-    // Apply type filter
-    if (type && type !== "All types") {
-      filtered = filtered.filter((job) => {
-        if (type === "Internships") return job.type === 0;
-        if (type === "Full-time") return job.type === 1;
-        if (type === "Part-time") return job.type === 2;
-        return false;
-      });
-    }
-
-    // Apply mode filter
-    if (mode && mode !== "Any location") {
-      filtered = filtered.filter((job) => {
-        if (mode === "In-Person") return job.mode === 0;
-        return job.mode === 1 || job.mode === 2;
-      });
-    }
-
-    // Apply industry filter
-    if (industry && industry !== "All industries") {
-      filtered = filtered.filter((job) => {
-        return job.employer?.industry
-          ?.toLowerCase()
-          .includes(industry.toLowerCase());
-      });
-    }
-
-    // Apply search filter
-    if (search && search.trim()) {
-      const searchLower = search.toLowerCase().trim();
-      filtered = filtered.filter((job) => {
-        // Search in multiple fields
-        const searchableText = [
-          job.title,
-          job.description,
-          job.employer?.name,
-          job.employer?.industry,
-          job.location,
-          ...(job.requirements || []),
-        ]
-          .join(" ")
-          .toLowerCase();
-
-        return searchableText.includes(searchLower);
-      });
-    }
-
-    // Apply location filter
-    if (location && location.trim()) {
-      filtered = filtered.filter((job) =>
-        job.location?.toLowerCase().includes(location.toLowerCase())
-      );
-    }
-
-    return filtered;
+    return ownedJobs;
   }, [ownedJobs, params]);
 
   return {

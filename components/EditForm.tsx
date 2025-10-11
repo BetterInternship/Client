@@ -1,31 +1,33 @@
 import {
-  useFormData,
-  IFormData,
-  IFormErrors,
-  useFormErrors,
-} from "@/lib/form-data";
-import { createContext, useContext, useRef } from "react";
-import { Input } from "./ui/input";
-import { GroupableRadioDropdown } from "./ui/dropdown";
-import { Checkbox } from "@radix-ui/react-checkbox";
-import { cn } from "@/lib/utils";
-import { Check, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
-import "react-datepicker/dist/react-datepicker.css";
-import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/landingStudent/ui/select";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  IFormData,
+  IFormErrors,
+  useFormData,
+  useFormErrors,
+} from "@/lib/form-data";
+import { cn } from "@/lib/utils";
+import { Checkbox } from "@radix-ui/react-checkbox";
+import * as RadioGroup from "@radix-ui/react-radio-group";
+import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import * as React from "react";
+import { createContext, useContext, useRef } from "react";
+import "react-datepicker/dist/react-datepicker.css";
+import { GroupableRadioDropdown } from "./ui/dropdown";
+import { Input } from "./ui/input";
 
 interface EditFormContext<T extends IFormData> {
   formData: T;
@@ -174,7 +176,7 @@ interface FormDropdownProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   options: { id: number | string; name: string }[];
   label?: string;
-  value?: string | number;
+  value?: string | number | string[];
   required?: boolean;
   setter?: (value: any) => void;
   className?: string;
@@ -248,6 +250,150 @@ export const FormCheckbox = ({
   );
 };
 
+interface FormCheckBoxGroupProps
+extends React.InputHTMLAttributes<HTMLInputElement> {
+  options: { value: string | number; label: string; description?: string }[];
+  values: (string | number)[];
+  setter: (value: any) => void;
+  label?: string;
+  required?: boolean;
+  className?: string;
+}
+
+export const FormCheckBoxGroup = ({
+  options,
+  values, 
+  setter,
+  label,
+  required = false,
+  className,
+  ...props
+
+}: FormCheckBoxGroupProps) => {
+  const handleValueChange = (optionValue: string | number) => {
+    console.log('checkbox changed:', optionValue, 'current values:', values);
+    if (values.includes(optionValue)) {
+      setter(values.filter(v => v !== optionValue));
+    } else {
+      setter([...values, optionValue]);
+    }
+  };
+
+  return(
+    <div className="space-y-3">
+      {label && (
+        <label className="text-lg tracking-tight font-medium text-gray-700 mb-1 block">
+          {label} {required && <span className="text-destructive">*</span>}
+        </label>
+      )}
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {options.map((option) => {
+          const isChecked = values.includes(option.value);
+          
+          return (
+            <div
+              key={option.value}
+              onClick={() => handleValueChange(option.value)}
+              className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors cursor-pointer h-fit
+                ${isChecked ? 'border-primary border-opacity-85' : 'border-gray-200 hover:border-gray-300'}`}
+            >
+              <FormCheckbox
+                checked={isChecked ?? false}
+              />
+              <div className="grid grid-rows-1 md:grid-rows-2">
+                <Label className="text-xs font-medium text-gray-900">
+                  {option.label}
+                </Label>
+                {option.description && (
+                  <p className="text-xs text-gray-500">
+                    {option.description}
+                  </p>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+interface FormRadioProps<T extends string | boolean = string> {
+  options: { value: T; label: string }[];
+  value?: T;
+  setter?: (value: T) => void;
+  label?: string;
+  required?: boolean;
+  className?: string;
+  name?: string;
+}
+
+export const FormRadio = <T extends string | boolean = string>({
+  label,
+  value,
+  options,
+  setter,
+  required = false,
+  className,
+  name,
+}: FormRadioProps<T>) => {
+    const stringValue = value?.toString() || "";
+
+  const handleValueChange = (stringValue: string) => {
+    if (!setter) return;
+
+    // Find the original option to get the correct type
+    const selectedOption = options.find(option => option.value.toString() === stringValue);
+    if (selectedOption) {
+      setter(selectedOption.value);
+    }
+  };
+
+  return (
+    <div className={cn("space-y-3", className)}>
+      {label && (
+        <label className="text-xs text-gray-600 mb-1 block">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+      )}
+      
+      <RadioGroup.Root
+        value={stringValue}
+        onValueChange={handleValueChange}
+        className="space-y-2"
+        name={name}
+      >
+        {options.map((option) => (
+          <div key={option.value.toString()} className="flex items-center space-x-3">
+            <RadioGroup.Item
+              value={option.value.toString()}
+              id={`${name}-${option.value.toString()}`}
+              className={cn(
+                "w-4 h-4 rounded-full border-2 border-gray-300",
+                "focus:outline-none focus:ring-2 focus:ring-primary/50",
+                "data-[state=checked]:border-primary data-[state=checked]:bg-primary",
+                "transition-colors duration-200"
+              )}
+            >
+              <RadioGroup.Indicator className="flex items-center justify-center w-full h-full relative">
+                <div className="w-2 h-2 rounded-full bg-white" />
+              </RadioGroup.Indicator>
+            </RadioGroup.Item>
+            
+            <label 
+              htmlFor={`${name}-${option.value.toString()}`}
+              className="text-sm font-medium cursor-pointer flex-1"
+            >
+              {option.label}
+            </label>
+          </div>
+        ))}
+      </RadioGroup.Root>
+    </div>
+  );
+};
+
 /**
  * Datepicker.
  *
@@ -260,7 +406,7 @@ export const FormCheckbox = ({
  */
 interface FormDatePickerProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: string;
+  label?: string;
   date?: number;
   setter?: (value?: number) => void;
   className?: string;
@@ -303,7 +449,7 @@ export const FormDatePicker = ({
   ...props
 }: FormDatePickerProps) => {
   const [open, setOpen] = React.useState(false);
-  const selected = date != null ? new Date(date) : undefined;
+  const selected = date != null && date > 86400000 ? new Date(date) : undefined;
 
   return (
     <div className={cn("flex flex-col", className)}>
@@ -324,7 +470,7 @@ export const FormDatePicker = ({
             className="justify-between font-normal"
           >
             {selected ? format(selected) : placeholder}
-            <ChevronDown className="h-4 w-4 opacity-70" />
+            <CalendarDays className="h-4 w-4 opacity-70" />
           </Button>
         </PopoverTrigger>
 
