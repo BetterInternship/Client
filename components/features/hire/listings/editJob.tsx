@@ -25,8 +25,15 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface EditJobPageProps {
-    editJob: (job: Partial<Job>) => Promise<any>;
-    currJobData?: Job | null;
+    job: Job;
+    is_editing: boolean;
+    set_is_editing: (is_editing: boolean) => void;
+    saving?: boolean;
+    update_job: (
+        job_id: string,
+        job: Partial<Job>
+    ) => Promise<{ success: boolean }>;
+    actions?: React.ReactNode[];
 }
 
 const StepCheckIndicator = ({ checked }: { checked: boolean }) => {
@@ -37,26 +44,46 @@ const StepCheckIndicator = ({ checked }: { checked: boolean }) => {
     );
 };
 
-const EditJobPage = ({ editJob, currJobData }: EditJobPageProps) => {
+const EditJobPage = ({ 
+    job,
+    is_editing = false,
+    set_is_editing = () => { },
+    saving = false,
+    update_job,
+    actions = [],
+ }: EditJobPageProps) => {
+    const {
+    job_modes,
+    job_types,
+    job_allowances,
+    job_pay_freq,
+    to_job_pay_freq_name,
+    to_job_allowance_name,
+    to_job_mode_name,
+    to_job_type_name
+    } = useDbRefs();
     const [editing, set_editing] = useState(false);
-    const { formData, setField, fieldSetter } = useFormData<Job>();
-    const { job_pay_freq } = useDbRefs();
+    const { formData, setField, setFields, fieldSetter } = useFormData<Job>();
     const router = useRouter();
     const profile = useProfile();
 
-    useEffect(() => {
-        if(currJobData) {
-            setField("title", currJobData.title);
-            setField("description", currJobData.description);
-            setField("requirements", currJobData.requirements);
-            setField("location", currJobData.location);
-            setField("allowance", currJobData.allowance);
-            setField("salary", currJobData.salary);
-            setField("salary_freq", currJobData.salary_freq);
-            setField("is_unlisted", currJobData.is_unlisted);
-            setField("internship_preferences", currJobData.internship_preferences);
-        }
-    }, [currJobData, setField])
+    const workModes =
+    (job.internship_preferences?.job_setup_ids ?? [])
+    .map((id) => to_job_mode_name(id))
+    .filter(Boolean)
+    .join(", ") || "None";
+
+    const workLoads =
+    (job.internship_preferences?.job_commitment_ids ?? [])
+    .map((id) => to_job_type_name(id))
+    .filter(Boolean)
+    .join(", ") || "None";
+
+    const internshipTypes =
+    (job.internship_preferences?.internship_types ?? [])
+    .filter(Boolean)
+    .map((type) => type.charAt(0).toUpperCase() + type.slice(1).toLowerCase())
+    .join(", ") || "None";
 
     const handleSaveEdit = async () => {
     // Validate required fields
@@ -80,7 +107,7 @@ const EditJobPage = ({ editJob, currJobData }: EditJobPageProps) => {
         return;
     }
 
-    const job: Partial<Job> = {
+    const edited_job: Partial<Job> = {
         title: formData.title,
         description: formData.description ?? "",
         requirements: formData.requirements ?? "",
@@ -93,32 +120,66 @@ const EditJobPage = ({ editJob, currJobData }: EditJobPageProps) => {
     };
 
     set_editing(true);
-    try {
-      const response = await editJob(job);
-      if (!response?.success) {
-        alert(response?.error || "Could not edit job");
-        set_editing(false);
-        return;
-      }
-      set_editing(false);
-      router.push("/listings"); // Redirect to jobs listing page
-    } catch (error) {
-      set_editing(false);
-      alert("Error editing job");
-    }
+
+    if (job.id) {
+            const result = await update_job(job.id, edited_job);
+            if (result.success) {
+                router.push("/listings"); 
+            }
+        }
+    // try {
+    //   const response = await editJob(edited_job);
+    //   if (!response?.success) {
+    //     alert(response?.error || "Could not edit job");
+    //     set_editing(false);
+    //     return;
+    //   }
+    //   set_editing(false);
+    //   router.push("/listings"); // Redirect to jobs listing page
+    // } catch (error) {
+    //   set_editing(false);
+    //   alert("Error editing job");
+    // }
   };
 
-  useEffect(() => {
-    setField("location", profile.data?.location)
-  }, [])
+    useEffect(() => {
+    if (job) {
+        setFields(job);
+    }
+    }, [job, is_editing]);
 
-  return (
+    useEffect(() => {
+    if (job && saving) {
+        const edited_job: Partial<Job> = {
+        id: formData.id,
+        title: formData.title ?? "",
+        description: formData.description ?? "",
+        requirements: formData.requirements ?? "",
+        location: formData.location ?? "",
+        allowance: formData.allowance ?? undefined,
+        salary: formData.salary ?? null,
+        salary_freq: formData.salary_freq ?? undefined,
+        is_unlisted: formData.is_unlisted,
+        internship_preferences: formData.internship_preferences ?? {},
+        };
+
+    update_job(edited_job.id ?? "", edited_job).then(
+        // @ts-ignore
+        ({ job: updated_job }) => {
+        // if (!updated_job) alert("Invalid input provided for job update.");
+        set_is_editing(false);
+        }
+    );
+    }
+    }, [saving]);
+
+    return (
     <>
-      <Head>
-        <title>Create New Job | Your App</title>
-      </Head>
-      
-      <div className="min-h-screen bg-gray-50">
+        <Head>
+            <title>Edit Job | Your App</title>
+        </Head>
+
+        <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <div className="bg-white border-b border-gray-200 px-6 py-4 fixed top-0 right-0 left-0 z-50 shadow-sm pt-20">
           <div className="max-w-5xl mx-auto flex justify-between items-center">
@@ -131,16 +192,16 @@ const EditJobPage = ({ editJob, currJobData }: EditJobPageProps) => {
                     router.push("/listings");
                   }
                 }}
-                disabled={editing}
+                disabled={saving}
               >
                 Cancel
               </Button>
               <Button 
-                disabled={editing} 
+                disabled={saving} 
                 onClick={handleSaveEdit}
                 className="flex items-center"
               >
-                {editing ? (
+                {saving ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                     Editing...
@@ -168,7 +229,7 @@ const EditJobPage = ({ editJob, currJobData }: EditJobPageProps) => {
                     Job Title/Role <span className="text-destructive text-sm">*</span>
                   </h2>
                   <FormInput
-                    value={formData.title || "Not Specified"}
+                    value={formData.title ?? ""}
                     onChange={(e) => setField("title", e.target.value)}
                     className="text-base font-medium h-10"
                     placeholder="Enter job title here..."
@@ -472,20 +533,6 @@ const EditJobPage = ({ editJob, currJobData }: EditJobPageProps) => {
                     </div>
                     <p className="text-sm text-gray-300 mb-1">(Optional)</p>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                      {/* <div className="flex items-start gap-4 p-3 border border-primary border-opacity-85 rounded-[0.33em] h-fit">
-                          <FormCheckbox
-                          checked={true}
-                          />
-                          <div className="grid grid-rows-1 md:grid-rows-2">
-                            <Label className="text-xs font-medium text-gray-900">
-                              Resume
-                            </Label>
-                            <p className="text-xs text-gray-500">
-                              Require resume
-                            </p>
-                          </div>
-                        
-                      </div> */}
                       <div
                         onClick={() => setField("internship_preferences", {
                           ...formData.internship_preferences,

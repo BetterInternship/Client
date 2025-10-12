@@ -12,23 +12,23 @@ export default function EditJobPageRoute() {
     const jobId = searchParams.get('jobId');
     const [jobData, setJobData] = useState<Job | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isEditing, setIsEditing] = useState(false);
+    const [saving, setSaving] = useState(false);
 
-    const editJob = async (job: Partial<Job>) => {
+    const updateJob = async (job_id: string, job: Partial<Job>): Promise<{ success: boolean }> => {
         try {
-        console.log('Sending job data:', JSON.stringify(job, null, 2));
-        if (job.id !== undefined){
-            const response = await JobService.updateJob(job.id, job);
+            setSaving(true);
+            console.log('Sending job data:', JSON.stringify(job, null, 2));
+            const response = await JobService.updateJob(job_id, job);
             console.log('API response:', response);
-
-            if (!response?.success) {
-                console.error('API error details:', response);
-                return { success: false, error: response?.message || 'Could not edit job' };
-            }
-            return response;
-            }
+        return { 
+                success: response?.success || false
+            };
         } catch (error: any) {
-        console.error('Server action error details:', error);
-        return { success: false, error: error.message || 'Failed to edit job' };
+            console.error('Server action error details:', error);
+            return { success: false };
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -40,24 +40,32 @@ export default function EditJobPageRoute() {
             }
 
             try {
-                setLoading(true)
-                if (jobId !== null) {
-                    const response = await JobService.getJobById(jobId)
-                    if(response?.success && response.job) {
-                        setJobData(response.job)
-                    } else {
-                        console.error('failed to load job data');
-                    }
+                setLoading(true);
+                const response = await JobService.getJobById(jobId);
+                if(response?.success && response.job) {
+                    setJobData(response.job);
+                } else {
+                    console.error('failed to load job data');
                 }
             } catch (error) {
-                console.error(error)
+                console.error(error);
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
-        }
+        };
         fetchJobData()
     }, [jobId])
 
-    return <EditJobPage editJob={editJob} currJobData={jobData} />;
+    if (!jobData) {
+        return;
+    }
+
+    return <EditJobPage
+            job={jobData}
+            is_editing={isEditing}
+            set_is_editing={setIsEditing}
+            saving={saving}
+            update_job={updateJob}
+            />;
 }
 

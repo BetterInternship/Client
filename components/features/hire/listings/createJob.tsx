@@ -348,7 +348,7 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                               <div className="flex flex-row gap-4 m-4">
                                 <div className="space-y-2 border-l-2 border-gray-300 pl-4">
                                   <Label className="text-sm font-medium text-gray-700">
-                                    Salary <span className="text-sm text-gray-300">(Optional)</span>
+                                    Allowance <span className="text-sm text-gray-300">(Optional)</span>
                                   </Label>
                                   <Input
                                     type="number"
