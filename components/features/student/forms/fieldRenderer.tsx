@@ -27,13 +27,23 @@ export function FieldRenderer({
   value,
   onChange,
   error,
+  showError,
 }: {
   def: FieldDef;
   value: string;
   onChange: (v: string | number) => void;
   error?: string;
+  showError?: boolean;
 }) {
-  const required = !!def.required;
+  const Note = () => {
+    if (showError && !!error) {
+      return <p className="text-xs text-rose-600 mt-1">{error}</p>;
+    }
+    if (def.helper) {
+      return <p className="text-xs text-muted-foreground mt-1">{def.helper}</p>;
+    }
+    return null;
+  };
 
   if (def.type === "select") {
     const options = (def.options ?? []).map((o) => ({
@@ -44,14 +54,13 @@ export function FieldRenderer({
       <div className="space-y-1.5">
         <FormDropdown
           label={def.label}
-          required={required}
+          required
           value={value}
           options={options}
           setter={(v) => onChange(String(v ?? ""))}
           className="w-full"
         />
-        {def.helper && <p className="text-xs text-gray-500">{def.helper}</p>}
-        {!!error && <p className="text-xs text-red-600">{error}</p>}
+        <Note />
       </div>
     );
   }
@@ -73,6 +82,7 @@ export function FieldRenderer({
       <div className="space-y-1.5">
         <FormDatePicker
           label={def.label}
+          required
           date={Number.isFinite(+value) ? parseInt(value) : undefined}
           setter={(nextMs) => onChange(nextMs ?? 0)}
           className="w-full"
@@ -88,8 +98,7 @@ export function FieldRenderer({
             })
           }
         />
-        {def.helper && <p className="text-xs text-gray-500">{def.helper}</p>}
-        {!!error && <p className="text-xs text-red-600">{error}</p>}
+        <Note />
       </div>
     );
   }
@@ -101,9 +110,10 @@ export function FieldRenderer({
           label={def.label}
           value={value} // "HH:MM"
           onChange={(v) => onChange(v?.toString() ?? "")}
+          required
           helper={def.helper}
         />
-        {!!error && <p className="text-xs text-red-600">{error}</p>}
+        <Note />
       </div>
     );
   }
@@ -119,7 +129,7 @@ export function FieldRenderer({
     <div className="space-y-1.5">
       <FormInput
         label={def.label}
-        required={required}
+        required
         value={value ?? ""}
         setter={(v) => {
           if (def.type === "number") {
@@ -135,8 +145,7 @@ export function FieldRenderer({
         maxLength={def.maxLength}
         className="w-full"
       />
-      {def.helper && <p className="text-xs text-gray-500">{def.helper}</p>}
-      {!!error && <p className="text-xs text-red-600">{error}</p>}
+      <Note />
     </div>
   );
 }

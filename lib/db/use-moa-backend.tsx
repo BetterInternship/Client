@@ -46,6 +46,17 @@ type IJoinedField = {
   validators: ZodType[];
   type: "text" | "number" | "date" | "select" | "time";
   options?: string;
+  label: string;
+};
+
+export const fetchForms = async (): Promise<IFieldCollection[]> => {
+  const { data, error } = await db.from("form_field_collections").select("*");
+  if (error) {
+    throw new Error(
+      `[form_field_collections/select] ${error.code ?? ""} ${error.message}`,
+    );
+  }
+  return data ?? [];
 };
 
 /**
@@ -149,6 +160,8 @@ export const useDynamicFormSchema = (name: string) => {
           await fieldFetcher.fetch(f).then(async (field: IField | null) => ({
             ...(field ?? ({} as IField)),
             type: field?.type ?? "text",
+            label: field?.label ?? "",
+            options: field?.options,
             validators: await mapValidators(field?.validators),
           })),
       ),
