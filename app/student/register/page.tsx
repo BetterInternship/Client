@@ -13,7 +13,7 @@ import {
   FormMonthPicker,
 } from "@/components/EditForm";
 import { MultiChipSelect } from "@/components/ui/chip-select";
-import { SinglePickerBig } from "@/components/features/student/SinglePickerBig";
+import { SinglePickerBig } from "@/components/shared/SinglePickerBig";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { BooleanCheckIcon } from "@/components/ui/icons";
 import { useProfileData } from "@/lib/api/student.data.api";
