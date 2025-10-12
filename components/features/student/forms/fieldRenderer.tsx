@@ -6,6 +6,7 @@ import {
 } from "@/components/EditForm";
 
 type FieldType = "text" | "number" | "select" | "date" | "time";
+export type FilledBy = "student" | "entity" | "university" | null;
 
 type Option = { value: string; label: string };
 
@@ -20,6 +21,7 @@ export type FieldDef = {
   maxLength?: number;
   options?: Option[]; // for select
   validators: z.ZodTypeAny[];
+  filledBy?: FilledBy;
 };
 
 export function FieldRenderer({

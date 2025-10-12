@@ -56,6 +56,7 @@ export const fetchForms = async (): Promise<IFieldCollection[]> => {
       `[form_field_collections/select] ${error.code ?? ""} ${error.message}`,
     );
   }
+  // @/ts-ignore
   return data ?? [];
 };
 
@@ -162,6 +163,8 @@ export const useDynamicFormSchema = (name: string) => {
             type: field?.type ?? "text",
             label: field?.label ?? "",
             options: field?.options,
+            prefill: field?.prefill,
+            filled_by: field?.filled_by,
             validators: await mapValidators(field?.validators),
           })),
       ),

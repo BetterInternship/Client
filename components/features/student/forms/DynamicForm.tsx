@@ -7,6 +7,7 @@ import { useFormData } from "@/lib/form-data";
 import {
   FieldRenderer,
   FieldDef,
+  FilledBy,
 } from "@/components/features/student/forms/FieldRenderer";
 import { Button } from "@/components/ui/button";
 
@@ -31,6 +32,7 @@ export const DynamicForm = ({ form }: { form: string }) => {
         maxLength: f.max_length,
         options: f.options,
         validators: (f.validators ?? []) as z.ZodTypeAny[],
+        filledBy: f.filled_by as FilledBy,
       })),
     [rawFields],
   );
@@ -53,6 +55,28 @@ export const DynamicForm = ({ form }: { form: string }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defs]);
 
+  const Section = ({ title, items }: { title: string; items: FieldDef[] }) => {
+    if (!items.length) return null;
+    return (
+      <div className="space-y-3">
+        <div className="pt-2 pb-1">
+          <h3 className="text-sm font-semibold text-gray-700">{title}</h3>
+        </div>
+        {items.map((def) => (
+          <div key={def.id}>
+            <FieldRenderer
+              def={def}
+              value={String(formData[def.key] ?? "")}
+              onChange={(v) => setField(def.key, v)}
+              error={errors[def.key]}
+              showError={submitted}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const handleSubmit = async () => {
     const next = validateAll(defs, formData, validatorFns);
     setErrors(next);
@@ -72,17 +96,18 @@ export const DynamicForm = ({ form }: { form: string }) => {
         </p>
       )}
 
-      {defs.map((def) => (
-        <div key={def.id}>
-          <FieldRenderer
-            def={def}
-            value={String(formData[def.key] ?? "")}
-            onChange={(v) => setField(def.key, v)}
-            error={errors[def.key]}
-            showError={submitted}
-          />
-        </div>
-      ))}
+      <Section
+        title="Student (You)"
+        items={defs.filter((d) => d.filledBy === "student")}
+      />
+      <Section
+        title="Employer"
+        items={defs.filter((d) => d.filledBy === "entity")}
+      />
+      <Section
+        title="University"
+        items={defs.filter((d) => d.filledBy === "university")}
+      />
 
       <div className="pt-2 flex justify-end">
         <Button onClick={handleSubmit} className="w-full sm:w-auto">
