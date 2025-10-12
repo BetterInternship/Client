@@ -405,7 +405,7 @@ function StepBasicIdentity({
         <h4 className="text-sm font-medium text-muted-foreground">
           Educational background
         </h4>
-        <div className="mt-3 grid grid-cols-1 gap-4">
+        <div className="mt-3 grid grid-cols-1 gap-3">
           <div>
             <FormInput
               required
@@ -413,6 +413,26 @@ function StepBasicIdentity({
               value={value.degree ?? ""}
               setter={(val: any) => onChange({ ...value, degree: val })}
               placeholder="Select degree…"
+            />
+          </div>
+
+          <div>
+            <FormInput
+              required
+              label="College"
+              // value={value.college ?? ""} // TODO: add college to profile
+              // setter={(val: any) => onChange({ ...value, college: val })}
+              placeholder="Select college…"
+            />
+          </div>
+
+          <div>
+            <FormInput
+              required
+              label="Department"
+              // value={value.department ?? ""} // TODO: add department to profile
+              // setter={(val: any) => onChange({ ...value, department: val })}
+              placeholder="Select department…"
             />
           </div>
         </div>
