@@ -8,6 +8,8 @@ import { JobsContent } from "@/components/features/hire/dashboard/JobsContent";
 import { ReviewModalContent } from "@/components/features/hire/dashboard/ReviewModalContent";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { PDFPreview } from "@/components/shared/pdf-preview";
+import { ShowUnverifiedBanner } from "@/components/ui/banner";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
 import { Message } from "@/components/ui/messages";

@@ -58,11 +58,9 @@ export function ApplicationRow({
               {getFullName(application.user)}{" "}
               <span className="opacity-70">
                 — {to_university_name(application.user?.university) || ""}{" "}
-                {application.user?.expected_graduation_date &&
+                {application.user?.expected_start_date &&
                   "• " +
-                    approximateYearLevel(
-                      Date.parse(application.user?.expected_graduation_date)
-                    )}
+                    application.user?.year_level}
               </span>
             </p>
             <p className="text-xs text-gray-500 space-x-1">
