@@ -22,7 +22,13 @@ import {
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import * as RadioGroup from "@radix-ui/react-radio-group";
-import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  CalendarDays,
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import * as React from "react";
 import { createContext, useContext, useRef } from "react";
 import "react-datepicker/dist/react-datepicker.css";
@@ -49,11 +55,11 @@ export const createEditForm = <T extends IFormData>(): [
     data: Partial<T>;
     children: React.ReactNode;
   }>,
-  () => EditFormContext<T>
+  () => EditFormContext<T>,
 ] => {
   // Provides us with funcs to manipulate form
   const EditFormContext = createContext<EditFormContext<T>>(
-    {} as EditFormContext<T>
+    {} as EditFormContext<T>,
   );
 
   // The use hook
@@ -75,7 +81,7 @@ export const createEditForm = <T extends IFormData>(): [
     // Validates a field; callback returns false when nothing is wrong.
     const addValidator = (
       field: keyof T,
-      hasError: (value: any) => string | false
+      hasError: (value: any) => string | false,
     ) => {
       validators.current.push((data: T) => {
         const error = hasError(data[field]);
@@ -137,7 +143,7 @@ export const createEditForm = <T extends IFormData>(): [
  */
 interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
-  setter?: (value: any) => void;
+  setter?: (value: string) => void;
   required?: boolean;
   className?: string;
 }
@@ -240,7 +246,7 @@ export const FormCheckbox = ({
           "flex flex-row items-center justify-center border rounded-[0.33em] w-4 h-4",
           checked
             ? "border-primary border-opacity-85 bg-blue-200"
-            : "border-gray-300 bg-gray-50"
+            : "border-gray-300 bg-gray-50",
         )}
         onCheckedChange={(checked) => setter && setter(checked)}
       >
@@ -251,7 +257,7 @@ export const FormCheckbox = ({
 };
 
 interface FormCheckBoxGroupProps
-extends React.InputHTMLAttributes<HTMLInputElement> {
+  extends React.InputHTMLAttributes<HTMLInputElement> {
   options: { value: string | number; label: string; description?: string }[];
   values: (string | number)[];
   setter: (value: any) => void;
@@ -262,53 +268,48 @@ extends React.InputHTMLAttributes<HTMLInputElement> {
 
 export const FormCheckBoxGroup = ({
   options,
-  values, 
+  values,
   setter,
   label,
   required = false,
   className,
   ...props
-
 }: FormCheckBoxGroupProps) => {
   const handleValueChange = (optionValue: string | number) => {
-    console.log('checkbox changed:', optionValue, 'current values:', values);
+    console.log("checkbox changed:", optionValue, "current values:", values);
     if (values.includes(optionValue)) {
-      setter(values.filter(v => v !== optionValue));
+      setter(values.filter((v) => v !== optionValue));
     } else {
       setter([...values, optionValue]);
     }
   };
 
-  return(
+  return (
     <div className="space-y-3">
       {label && (
         <label className="text-lg tracking-tight font-medium text-gray-700 mb-1 block">
           {label} {required && <span className="text-destructive">*</span>}
         </label>
       )}
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {options.map((option) => {
           const isChecked = values.includes(option.value);
-          
+
           return (
             <div
               key={option.value}
               onClick={() => handleValueChange(option.value)}
               className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors cursor-pointer h-fit
-                ${isChecked ? 'border-primary border-opacity-85' : 'border-gray-200 hover:border-gray-300'}`}
+                ${isChecked ? "border-primary border-opacity-85" : "border-gray-200 hover:border-gray-300"}`}
             >
-              <FormCheckbox
-                checked={isChecked ?? false}
-              />
+              <FormCheckbox checked={isChecked ?? false} />
               <div className="grid grid-rows-1 md:grid-rows-2">
                 <Label className="text-xs font-medium text-gray-900">
                   {option.label}
                 </Label>
                 {option.description && (
-                  <p className="text-xs text-gray-500">
-                    {option.description}
-                  </p>
+                  <p className="text-xs text-gray-500">{option.description}</p>
                 )}
               </div>
             </div>
@@ -338,13 +339,15 @@ export const FormRadio = <T extends string | boolean = string>({
   className,
   name,
 }: FormRadioProps<T>) => {
-    const stringValue = value?.toString() || "";
+  const stringValue = value?.toString() || "";
 
   const handleValueChange = (stringValue: string) => {
     if (!setter) return;
 
     // Find the original option to get the correct type
-    const selectedOption = options.find(option => option.value.toString() === stringValue);
+    const selectedOption = options.find(
+      (option) => option.value.toString() === stringValue,
+    );
     if (selectedOption) {
       setter(selectedOption.value);
     }
@@ -357,7 +360,7 @@ export const FormRadio = <T extends string | boolean = string>({
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
-      
+
       <RadioGroup.Root
         value={stringValue}
         onValueChange={handleValueChange}
@@ -365,7 +368,10 @@ export const FormRadio = <T extends string | boolean = string>({
         name={name}
       >
         {options.map((option) => (
-          <div key={option.value.toString()} className="flex items-center space-x-3">
+          <div
+            key={option.value.toString()}
+            className="flex items-center space-x-3"
+          >
             <RadioGroup.Item
               value={option.value.toString()}
               id={`${name}-${option.value.toString()}`}
@@ -373,15 +379,15 @@ export const FormRadio = <T extends string | boolean = string>({
                 "w-4 h-4 rounded-full border-2 border-gray-300",
                 "focus:outline-none focus:ring-2 focus:ring-primary/50",
                 "data-[state=checked]:border-primary data-[state=checked]:bg-primary",
-                "transition-colors duration-200"
+                "transition-colors duration-200",
               )}
             >
               <RadioGroup.Indicator className="flex items-center justify-center w-full h-full relative">
                 <div className="w-2 h-2 rounded-full bg-white" />
               </RadioGroup.Indicator>
             </RadioGroup.Item>
-            
-            <label 
+
+            <label
               htmlFor={`${name}-${option.value.toString()}`}
               className="text-sm font-medium cursor-pointer flex-1"
             >
@@ -560,7 +566,7 @@ export const FormMonthPicker = ({
   }, [date]);
 
   const [viewYear, setViewYear] = React.useState<number>(
-    selected?.getFullYear() ?? new Date().getFullYear()
+    selected?.getFullYear() ?? new Date().getFullYear(),
   );
 
   React.useEffect(() => {
@@ -575,7 +581,7 @@ export const FormMonthPicker = ({
           month: "short",
         }),
       })),
-    []
+    [],
   );
 
   const clampYear = (y: number) => Math.min(Math.max(y, fromYear), toYear);
@@ -645,7 +651,7 @@ export const FormMonthPicker = ({
               <SelectContent className="h-fit">
                 {Array.from(
                   { length: toYear - fromYear + 1 },
-                  (_, i) => fromYear + i
+                  (_, i) => fromYear + i,
                 ).map((y) => (
                   <SelectItem key={y} value={String(y)}>
                     {y}
@@ -681,7 +687,7 @@ export const FormMonthPicker = ({
                   variant={isActive ? "default" : "outline"}
                   className={cn(
                     "h-9 justify-center rounded-[0.33em]",
-                    isActive ? "" : "bg-background"
+                    isActive ? "" : "bg-background",
                   )}
                   onClick={() => selectMonth(m)}
                 >
@@ -711,11 +717,10 @@ export const FormMonthPicker = ({
   );
 };
 
-
 export function TimeInputNative({
   label,
-  value,            // "HH:MM"
-  onChange,          // (next?: string) => void
+  value, // "HH:MM"
+  onChange, // (next?: string) => void
   required = true,
   helper,
   className,
@@ -747,5 +752,3 @@ export function TimeInputNative({
     </div>
   );
 }
-
-

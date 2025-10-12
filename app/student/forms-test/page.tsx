@@ -1,11 +1,14 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { OutsideTabPanel, OutsideTabs } from '@/components/ui/outside-tabs';
-import { HeaderIcon, HeaderText } from '@/components/ui/text';
-import { Newspaper } from 'lucide-react';
-import { z } from 'zod';
-import { useDynamicFormSchema } from '@/lib/db/use-moa-backend';
+import { useEffect, useState } from "react";
+import { OutsideTabPanel, OutsideTabs } from "@/components/ui/outside-tabs";
+import { HeaderIcon, HeaderText } from "@/components/ui/text";
+import { Newspaper } from "lucide-react";
+import { safeParse, z, ZodSafeParseResult } from "zod";
+import { useDynamicFormSchema } from "@/lib/db/use-moa-backend";
+import { useFormData } from "@/lib/form-data";
+import { FormInput } from "@/components/EditForm";
+import { ErrorLabel } from "@/components/ui/labels";
 
 /**
  * The form builder.
@@ -15,9 +18,84 @@ import { useDynamicFormSchema } from '@/lib/db/use-moa-backend';
  */
 const DynamicForm = ({ form }: { form: string }) => {
   const dynamicForm = useDynamicFormSchema(form);
-  console.log(dynamicForm.error);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [validators, setValidators] = useState<
+    Record<string, ((value: any) => ZodSafeParseResult<unknown>)[]>
+  >({});
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const { formData, setField } = useFormData<any>({});
 
-  return <></>;
+  // Reset all fields first
+  useEffect(() => {
+    const validators: Record<
+      string,
+      ((value: any) => ZodSafeParseResult<unknown>)[]
+    > = {};
+
+    // Save the fields
+    for (const field of dynamicForm.fields) {
+      setField(field.name, "");
+      validators[field.name] = [];
+
+      // Push the validators per field
+      for (const validator of field.validators)
+        validators[field.name].push((value) => validator.safeParse(value));
+    }
+
+    // Save the validators
+    setValidators(validators);
+  }, [dynamicForm.fields]);
+
+  // Debounced validation
+  useEffect(() => {
+    const debouncedValidation = setTimeout(() => {
+      for (const field of dynamicForm.fields) {
+        for (const validator of validators[field.name]) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          const result = validator(formData[field.name]);
+          if (result.success) {
+            setErrors({
+              ...errors,
+              [field.name]: "",
+            });
+            continue;
+          }
+
+          const error = JSON.parse(result.error.message) as {
+            message: string;
+          }[];
+          const message = error.map((e) => e.message).join("\n");
+          setErrors({
+            ...errors,
+            [field.name]: message,
+          });
+        }
+      }
+    }, 500);
+    return () => clearTimeout(debouncedValidation);
+  }, [formData]);
+
+  return (
+    <div>
+      {dynamicForm.fields.map((field) => (
+        <>
+          <ErrorLabel value={errors[field.name]}></ErrorLabel>
+          <FormInput
+            // ! create a display_name row in the database
+
+            label={field.name}
+            required
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            value={formData[field.name] as string}
+            setter={(v) => {
+              setField(field.name, v);
+            }}
+            className="w-full"
+          />
+        </>
+      ))}
+    </div>
+  );
 };
 
 /**
@@ -25,17 +103,9 @@ const DynamicForm = ({ form }: { form: string }) => {
  *
  * @component
  */
-type TabKey = 'Form Generator' | 'My Forms';
+type TabKey = "Form Generator" | "My Forms";
 export default function FormsPage() {
-  const [tab, setTab] = useState<TabKey>('Form Generator');
-
-  const origZodSchema = z
-    .string()
-    .refine((s) => s.split(' ').every((word) => /^[A-Z][a-z]*$/.test(word)), {
-      message: 'Value must be in title case',
-    });
-
-  console.log('orig', origZodSchema.safeParse('Hello World Tur'));
+  const [tab, setTab] = useState<TabKey>("Form Generator");
 
   return (
     <div className="container max-w-6xl px-4 sm:px-10 pt-6 sm:pt-16 mx-auto">
@@ -60,8 +130,8 @@ export default function FormsPage() {
           value={tab}
           onChange={(v) => setTab(v as TabKey)}
           tabs={[
-            { key: 'Form Generator', label: 'Form Generator' },
-            { key: 'My Forms', label: 'My Forms' },
+            { key: "Form Generator", label: "Form Generator" },
+            { key: "My Forms", label: "My Forms" },
           ]}
         >
           {/* Form Generator */}
