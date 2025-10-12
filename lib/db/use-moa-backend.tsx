@@ -44,6 +44,8 @@ type IJoinedField = {
   id: string;
   name: string;
   validators: ZodType[];
+  type: "text" | "number" | "date" | "select" | "time";
+  options?: string;
 };
 
 /**
@@ -146,6 +148,7 @@ export const useDynamicFormSchema = (name: string) => {
         async (f) =>
           await fieldFetcher.fetch(f).then(async (field: IField | null) => ({
             ...(field ?? ({} as IField)),
+            type: field?.type ?? "text",
             validators: await mapValidators(field?.validators),
           })),
       ),
@@ -155,6 +158,7 @@ export const useDynamicFormSchema = (name: string) => {
     if (!data?.fields) return;
     const fieldList = data.fields as string[];
     const fields = mapFields(fieldList);
+    console.log("Fields", fields);
 
     void fields.then((f) => setFields(f));
   }, [data?.fields]);

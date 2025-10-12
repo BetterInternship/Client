@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { OutsideTabPanel, OutsideTabs } from "@/components/ui/outside-tabs";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { Newspaper } from "lucide-react";
-import { safeParse, z, ZodSafeParseResult } from "zod";
+import { z } from "zod";
 import { useDynamicFormSchema } from "@/lib/db/use-moa-backend";
 import { useFormData } from "@/lib/form-data";
-import { FormInput } from "@/components/EditForm";
-import { ErrorLabel } from "@/components/ui/labels";
+import {
+  FieldRenderer,
+  FieldDef,
+} from "@/components/features/student/forms/fieldRenderer";
 
 /**
  * The form builder.
@@ -17,86 +19,108 @@ import { ErrorLabel } from "@/components/ui/labels";
  * @component
  */
 const DynamicForm = ({ form }: { form: string }) => {
-  const dynamicForm = useDynamicFormSchema(form);
+  const { fields: rawFields, error: loadError } = useDynamicFormSchema(form);
+
+  // Map DB fields → renderer defs (memoized for clean deps)
+  const defs: FieldDef[] = useMemo(
+    () =>
+      (rawFields ?? []).map((f) => ({
+        id: f.id,
+        key: f.name,
+        label: f.label ?? f.name,
+        type: f.type, // "text" | "number" | "select" | "date" | "time"
+        required: f.required ?? true,
+        placeholder: f.placeholder,
+        helper: f.helper,
+        maxLength: f.max_length,
+        options: f.options,
+        validators: (f.validators ?? []) as z.ZodTypeAny[],
+      })),
+    [rawFields],
+  );
+
+  // Form data & validation state (keep same pattern as your original)
+  const { formData, setField } = useFormData<Record<string, any>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [validators, setValidators] = useState<
-    Record<string, ((value: any) => ZodSafeParseResult<unknown>)[]>
+  const [validatorFns, setValidatorFns] = useState<
+    Record<string, ((v: any) => string | null)[]>
   >({});
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const { formData, setField } = useFormData<any>({});
 
-  // Reset all fields first
+  // Initialize fields and compile validators when defs change
   useEffect(() => {
-    const validators: Record<
-      string,
-      ((value: any) => ZodSafeParseResult<unknown>)[]
-    > = {};
+    if (!defs.length) return;
 
-    // Save the fields
-    for (const field of dynamicForm.fields) {
-      setField(field.name, "");
-      validators[field.name] = [];
+    // Initialize values as empty strings (consistent with original)
+    for (const d of defs) setField(d.key, "");
 
-      // Push the validators per field
-      for (const validator of field.validators)
-        validators[field.name].push((value) => validator.safeParse(value));
-    }
-
-    // Save the validators
-    setValidators(validators);
-  }, [dynamicForm.fields]);
+    setValidatorFns(compileValidators(defs));
+    setErrors({});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defs]);
 
   // Debounced validation
   useEffect(() => {
-    const debouncedValidation = setTimeout(() => {
-      for (const field of dynamicForm.fields) {
-        for (const validator of validators[field.name]) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          const result = validator(formData[field.name]);
-          if (result.success) {
-            setErrors({
-              ...errors,
-              [field.name]: "",
-            });
-            continue;
-          }
-
-          const error = JSON.parse(result.error.message) as {
-            message: string;
-          }[];
-          const message = error.map((e) => e.message).join("\n");
-          setErrors({
-            ...errors,
-            [field.name]: message,
-          });
-        }
-      }
-    }, 500);
-    return () => clearTimeout(debouncedValidation);
-  }, [formData]);
+    const id = setTimeout(() => {
+      setErrors(validateAll(defs, formData, validatorFns));
+    }, 400);
+    return () => clearTimeout(id);
+  }, [defs, formData, validatorFns]);
 
   return (
-    <div>
-      {dynamicForm.fields.map((field) => (
-        <>
-          <ErrorLabel value={errors[field.name]}></ErrorLabel>
-          <FormInput
-            // ! create a display_name row in the database
+    <div className="space-y-4">
+      {loadError && (
+        <p className="text-sm text-red-600">
+          Failed to load form: {String(loadError)}
+        </p>
+      )}
 
-            label={field.name}
-            required
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            value={formData[field.name] as string}
-            setter={(v) => {
-              setField(field.name, v);
-            }}
-            className="w-full"
+      {defs.map((def) => (
+        <div key={def.id}>
+          <FieldRenderer
+            def={def}
+            value={String(formData[def.key] ?? "")}
+            onChange={(v) => setField(def.key, v)}
+            error={errors[def.key]}
           />
-        </>
+        </div>
       ))}
     </div>
   );
 };
+
+/* Helpers */
+
+function compileValidators(defs: FieldDef[]) {
+  const map: Record<string, ((v: any) => string | null)[]> = {};
+  for (const d of defs) {
+    const schemas = (d.validators ?? []) as z.ZodTypeAny[];
+    map[d.key] = schemas.map((schema) => (value: any) => {
+      const res = schema.safeParse(value);
+      if (res.success) return null;
+      // Prefer Zod issues; fallback to error message
+      const issues = (res.error as any)?.issues as
+        | { message: string }[]
+        | undefined;
+      return issues?.map((i) => i.message).join("\n") ?? res.error.message;
+    });
+  }
+  return map;
+}
+
+function validateAll(
+  defs: FieldDef[],
+  formData: Record<string, any>,
+  validatorFns: Record<string, ((v: any) => string | null)[]>,
+) {
+  const next: Record<string, string> = {};
+  for (const d of defs) {
+    const fns = validatorFns[d.key] ?? [];
+    const val = formData[d.key];
+    const firstErr = fns.map((fn) => fn(val)).find(Boolean) ?? "";
+    next[d.key] = firstErr || "";
+  }
+  return next;
+}
 
 /**
  * The forms page component
@@ -111,7 +135,8 @@ export default function FormsPage() {
     <div className="container max-w-6xl px-4 sm:px-10 pt-6 sm:pt-16 mx-auto">
       <div className="mb-6 sm:mb-8 animate-fade-in space-y-5">
         {/* Header */}
-        <DynamicForm form="student-moa" />
+        <DynamicForm form="it-endorsement-letter" />
+
         <div>
           <div className="flex flex-row items-center gap-3 mb-2">
             <HeaderIcon icon={Newspaper} />
@@ -134,12 +159,10 @@ export default function FormsPage() {
             { key: "My Forms", label: "My Forms" },
           ]}
         >
-          {/* Form Generator */}
           <OutsideTabPanel when="Form Generator" activeKey={tab}>
             <div>Panel 1</div>
           </OutsideTabPanel>
 
-          {/* Past Forms */}
           <OutsideTabPanel when="My Forms" activeKey={tab}>
             <div>Panel 2</div>
           </OutsideTabPanel>
