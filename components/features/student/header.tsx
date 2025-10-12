@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+  useState,
+} from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -8,7 +14,6 @@ import {
   BookA,
   Heart,
   LogOut,
-  HelpCircle,
   MessageCircleMore,
   Search,
   ChevronRight,
@@ -17,6 +22,7 @@ import {
   ChevronDown,
   Menu,
   Check as CheckIcon,
+  Newspaper,
 } from "lucide-react";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { useDetectClickOutside } from "react-detect-click-outside";
@@ -26,270 +32,106 @@ import { GroupableNavDropdown, DropdownOption } from "@/components/ui/dropdown";
 import { Separator } from "@/components/ui/separator";
 import { HeaderTitle } from "@/components/shared/header";
 import { MyUserPfp } from "@/components/shared/pfp";
-import CompleteAccBanner from "@/components/features/student/CompleteAccBanner";
 
 import { useMobile } from "@/hooks/use-mobile";
 import { useRoute } from "@/hooks/use-route";
 import { useConversations } from "@/hooks/use-conversation";
 
 import { useAuthContext } from "@/lib/ctx-auth";
-import { useProfile } from "@/lib/api/student.api";
+import { useProfileData } from "@/lib/api/student.data.api";
 import { cn } from "@/lib/utils";
-import { getFullName, getMissingProfileFields } from "@/lib/utils/user-utils";
-
-/* =======================================================================================
-   Filter State (immutable + typed) 
-======================================================================================= */
-export type JobFilter = {
-  position: string[];
-  jobMode: string[];
-  jobMoa: string[];
-  jobWorkload: string[];
-  jobAllowance: string[];
-};
-
-const initialFilter: JobFilter = {
-  position: [],
-  jobMode: [],
-  jobMoa: [],
-  jobWorkload: [],
-  jobAllowance: [],
-};
-
-type Action =
-  | { type: "SET_ALL"; payload: Partial<JobFilter> }
-  | { type: "TOGGLE"; key: keyof JobFilter; value: string; on?: boolean }
-  | { type: "CLEAR" };
-
-function jobFilterReducer(state: JobFilter, action: Action): JobFilter {
-  switch (action.type) {
-    case "SET_ALL": {
-      return {
-        position: action.payload.position ?? state.position,
-        jobMode: action.payload.jobMode ?? state.jobMode,
-        jobMoa: action.payload.jobMoa ?? state.jobMoa,
-        jobWorkload: action.payload.jobWorkload ?? state.jobWorkload,
-        jobAllowance: action.payload.jobAllowance ?? state.jobAllowance,
-      };
-    }
-    case "TOGGLE": {
-      const set = new Set(state[action.key]);
-      const shouldAdd = action.on ?? !set.has(action.value);
-      if (shouldAdd) set.add(action.value);
-      else set.delete(action.value);
-      return { ...state, [action.key]: Array.from(set) } as JobFilter;
-    }
-    case "CLEAR":
-      return initialFilter;
-    default:
-      return state;
-  }
-}
-
-const JobFilterContext = createContext<{
-  state: JobFilter;
-  dispatch: React.Dispatch<Action>;
-}>({ state: initialFilter, dispatch: () => {} });
-
-const useJobFilter = () => useContext(JobFilterContext);
-
-/* =======================================================================================
-   Static Option Data (DRY)
-======================================================================================= */
-type SubOption = { name: string; value: string };
-
-type PositionCategory = { name: string; value: string; children?: SubOption[] };
-
-const POSITION_TREE: PositionCategory[] = [
-  {
-    name: "Computer Science",
-    value: "1e3b7585-293b-430a-a5cb-c773e0639bb0",
-    children: [
-      { name: "Data Science/AI", value: "dc3780b4-b9c0-4294-a035-faa4e2086611" },
-      { name: "Cybersecurity", value: "ca8ae32d-55a8-4ded-9cfe-1582d72cbaf1" },
-      { name: "Full Stack", value: "381239bf-7c82-4f87-a1b8-39d952f8876b" },
-      { name: "Backend", value: "e5a73819-ee90-43fb-b71b-7ba12f0a4dbf" },
-      { name: "Frontend", value: "8b323584-9340-41e8-928e-f9345f1ad59e" },
-      { name: "QA", value: "91b180be-3d23-4f0a-bd64-c82cef9d3ae5" },
-    ],
-  },
-  {
-    name: "Business",
-    value: "0fb4328b-4163-458b-8ac7-8ab3861e1ad6",
-    children: [
-      { name: "Accounting/Finance", value: "6506ab1d-f1a6-4c6f-a917-474a96e6d2bb" },
-      { name: "HR/Administrative", value: "976d7433-8297-4f8d-950d-3392682dadbb" },
-      { name: "Marketing/Sales", value: "1f6ab152-9754-4082-9fc2-4b276f5a9ef9" },
-      { name: "Business Development", value: "25bce220-1927-48c0-8e81-6be4af64d9b9" },
-      { name: "Operations", value: "61727f3b-dc36-458c-a487-5c44b5cd83a5" },
-    ],
-  },
-  { name: "Engineering", value: "ab93abaf-c117-4482-9594-8bfecec44f69" },
-  {
-    name: "Others",
-    value: "0debeda8-f257-49a6-881f-11a6b8eb560b",
-    children: [
-      { name: "Legal", value: "79161041-5009-4e66-84d2-a88357301427" },
-      { name: "Research", value: "31a39059-1050-4f22-8875-5b903b7db3bf" },
-      { name: "Graphic Design", value: "f50b009d-5ed7-4ef1-851a-3fcf5d6572aa" },
-    ],
-  },
-];
-
-const WORKLOAD_OPTIONS: SubOption[] = [
-  { name: "Part-time", value: "1" },
-  { name: "Full-time", value: "2" },
-  { name: "Project-based", value: "3" },
-  { name: "Flexible", value: "4" },
-];
-
-const MODE_OPTIONS: SubOption[] = [
-  { name: "Face-to-face", value: "0" },
-  { name: "Hybrid", value: "1" },
-  { name: "Remote", value: "2" },
-];
-
-const ALLOWANCE_OPTIONS: SubOption[] = [
-  { name: "Paid", value: "0" },
-  { name: "Non-paid", value: "1" },
-];
-
-const MOA_OPTIONS: SubOption[] = [
-  { name: "Has MOA", value: "Has MOA" },
-  { name: "No MOA", value: "No MOA" },
-];
+import { getFullName } from "@/lib/profile";
+import { useQueryClient } from "@tanstack/react-query";
+import { useGlobalModal } from "@/components/providers/ModalProvider";
+import { IncompleteProfileContent } from "@/components/modals/IncompleteProfileModal";
+import {
+  isProfileBaseComplete,
+  isProfileResume,
+  isProfileVerified,
+} from "@/lib/profile";
+import {
+  JobFilterProvider,
+  JobFilters,
+  JobFilter,
+} from "@/components/features/student/search/JobFilters";
 
 /* =======================================================================================
    Small UI Primitives
 ======================================================================================= */
-const SearchInput = ({ value, onChange, onEnter, placeholder = "Search Internship Listings", className = "" }: { value: string; onChange: (v: string) => void; onEnter?: () => void; placeholder?: string; className?: string; }) => (
-  <div className={cn("relative h-10 w-full border border-gray-300 rounded-[0.33em]", className)}>
-    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-    <input
-      type="text"
-      value={value}
-      onKeyDown={(e) => e.key === "Enter" && onEnter?.()}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      className="w-full h-10 pl-12 pr-4 bg-transparent border-0 outline-none focus:ring-0 text-gray-900 text-sm hover:bg-gray-100 focus:bg-gray-100 duration-150 placeholder:text-gray-500"
-    />
-  </div>
-);
-
-const CheckboxRow = ({ checked, onChange, label, expandable }: { checked: boolean; onChange: (v: boolean) => void; label: React.ReactNode; expandable?: boolean }) => (
-  <div className="flex items-center gap-1 w-fit select-none">
-    <Checkbox
-      checked={!!checked}
+const SearchInput = ({
+  value,
+  onChange,
+  onEnter,
+  placeholder = "Search Internship Listings",
+  className = "",
+  moaOnly,
+  onToggleMoa,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onEnter?: () => void;
+  placeholder?: string;
+  className?: string;
+  moaOnly: boolean;
+  onToggleMoa: (v: boolean) => void;
+}) => {
+  return (
+    <div
       className={cn(
-        "flex items-center justify-center w-5 h-5 hover:cursor-pointer rounded border",
-        checked ? "border-blue-500 bg-blue-200" : "border-gray-300 bg-gray-200"
+        "relative w-full border border-gray-300 rounded-[0.33em] overflow-hidden",
+        "focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/40",
+        className
       )}
-      onCheckedChange={(v) => onChange(!!v)}
     >
-      {checked ? <CheckIcon className="text-blue-500 pointer-events-none w-4 h-4" /> : <XIcon className="text-gray-400 pointer-events-none w-4 h-4" />}
-    </Checkbox>
-    <span className="text-sm text-gray-700">{label}</span>
-    {expandable && (<ChevronRight className="ml-1 h-4 w-4 text-gray-300" />)}
-  </div>
-);
+      {/* Left icon */}
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-gray-400 pointer-events-none" />
 
-/* =======================================================================================
-   Filter Panels
-======================================================================================= */
-const JobPositionPanel: React.FC = () => {
-  const { state, dispatch } = useJobFilter();
-  const selected = new Set(state.position);
+      {/* Text input */}
+      <input
+        type="text"
+        value={value}
+        onKeyDown={(e) => e.key === "Enter" && onEnter?.()}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={cn(
+          "w-full h-10 pl-10 pr-24",
+          "bg-transparent border-0 outline-none focus:ring-0 text-gray-900 text-sm",
+          "placeholder:text-gray-500"
+        )}
+      />
 
-  const toggle = (value: string, on?: boolean) =>
-    dispatch({ type: "TOGGLE", key: "position", value, on });
-
-  return (
-    <div className="flex flex-col gap-2">
-      {POSITION_TREE.map((cat) => {
-        const catSelected = selected.has(cat.value);
-        const childSelectedCount = (cat.children?.filter((c) => selected.has(c.value)).length ?? 0);
-        const isExpanded = catSelected || childSelectedCount > 0; // auto-show when any child selected
-        return (
-          <div key={cat.value} className="">
-            <div className="flex items-center gap-2">
-              <CheckboxRow checked={catSelected} onChange={(v) => toggle(cat.value, v)} label={<span className="font-medium">{cat.name}</span>} />
-              {cat.children?.length ? (
-                <span className="text-xs text-gray-500">{childSelectedCount ? `(${childSelectedCount} selected)` : null}</span>
-              ) : null}
-            </div>
-            {isExpanded && cat.children?.length ? (
-              <div className="mt-1 ml-6 flex flex-col gap-1 border-l border-gray-200 pl-3">
-                {cat.children.map((child) => (
-                  <CheckboxRow
-                    key={child.value}
-                    checked={selected.has(child.value)}
-                    onChange={(v) => toggle(child.value, v)}
-                    label={child.name}
-                  />
-                ))}
-              </div>
-            ) : null}
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
-const JobDetailPanel: React.FC = () => {
-  const { state, dispatch } = useJobFilter();
-  const togglers = {
-    jobWorkload: (v: string, on?: boolean) => dispatch({ type: "TOGGLE", key: "jobWorkload", value: v, on }),
-    jobMode: (v: string, on?: boolean) => dispatch({ type: "TOGGLE", key: "jobMode", value: v, on }),
-    jobAllowance: (v: string, on?: boolean) => dispatch({ type: "TOGGLE", key: "jobAllowance", value: v, on }),
-    jobMoa: (v: string, on?: boolean) => dispatch({ type: "TOGGLE", key: "jobMoa", value: v, on }),
-  } as const;
-
-  const has = {
-    jobWorkload: (v: string) => state.jobWorkload.includes(v),
-    jobMode: (v: string) => state.jobMode.includes(v),
-    jobAllowance: (v: string) => state.jobAllowance.includes(v),
-    jobMoa: (v: string) => state.jobMoa.includes(v),
-  } as const;
-
-  const Group = ({ title, options, check, toggle }: { title: string; options: SubOption[]; check: (v: string) => boolean; toggle: (v: string, on?: boolean) => void }) => (
-    <div>
-      <div className="font-bold tracking-tight mt-2 mb-1">{title}</div>
-      <div className="flex flex-col gap-1">
-        {options.map((o) => (
-          <CheckboxRow key={o.value} checked={check(o.value)} onChange={(v) => toggle(o.value, v)} label={o.name} />
-        ))}
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="flex flex-col gap-3">
-      <Group title="Internship Workload" options={WORKLOAD_OPTIONS} check={has.jobWorkload} toggle={togglers.jobWorkload} />
-      <Group title="Internship Mode" options={MODE_OPTIONS} check={has.jobMode} toggle={togglers.jobMode} />
-      <Group title="Internship Allowance" options={ALLOWANCE_OPTIONS} check={has.jobAllowance} toggle={togglers.jobAllowance} />
-      <Group title="Internship MOA" options={MOA_OPTIONS} check={has.jobMoa} toggle={togglers.jobMoa} />
-    </div>
-  );
-};
-
-/* =======================================================================================
-   Filter Overlay (shared for desktop & mobile)
-======================================================================================= */
-const FilterOverlay = ({ visible, onClose, children, onApply }: { visible: boolean; onClose: () => void; onApply: () => void; children: React.ReactNode; }) => {
-  const outsideClickRef = useDetectClickOutside({ onTriggered: onClose });
-  if (!visible) return null;
-  return (
-    <div className="relative overflow-visible h-0">
-      <div className="absolute flex flex-col items-center justify-start w-full h-[100vh] z-[100] bg-black/10 backdrop-blur-sm p-5">
-        <div className="max-w-2xl w-full h-fit bg-white rounded-[0.33em] px-5 py-4" ref={outsideClickRef} onClick={(e) => e.stopPropagation()}>
-          {children}
-          <div className="mt-4 flex gap-2">
-            <Button size="md" onClick={onApply}>Apply</Button>
-            <Button variant="outline" scheme="secondary" size="md" onClick={onClose}>Cancel</Button>
-          </div>
-        </div>
-      </div>
+      {/* Right inline MOA toggle (compact pill) */}
+      <button
+        type="button"
+        onClick={() => onToggleMoa(!moaOnly)}
+        className={cn(
+          "absolute right-1 top-1/2 -translate-y-1/2",
+          "inline-flex items-center gap-1.5 h-7 px-2 rounded-[0.33em] border text-xs",
+          "transition-colors",
+          moaOnly
+            ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
+            : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
+        )}
+        aria-pressed={moaOnly}
+        aria-label="Filter: DLSU MOA"
+      >
+        <span
+          className={cn(
+            "inline-flex items-center justify-center rounded-full border h-3.5 w-3.5",
+            moaOnly
+              ? "border-emerald-400 bg-emerald-100"
+              : "border-gray-300 bg-white"
+          )}
+        >
+          <CheckIcon
+            className={cn(
+              "h-3 w-3",
+              moaOnly ? "text-emerald-600" : "text-transparent"
+            )}
+          />
+        </span>
+        <span className="leading-none">FOR CREDIT</span>
+      </button>
     </div>
   );
 };
@@ -297,15 +139,48 @@ const FilterOverlay = ({ visible, onClose, children, onApply }: { visible: boole
 /* =======================================================================================
    Mobile Drawer (account on top → chats → links → bottom sign out)
 ======================================================================================= */
-function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const profile = useProfile();
+function MobileDrawer({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const profile = useProfileData();
   const { isAuthenticated, logout } = useAuthContext();
   const conversations = useConversations();
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
+  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
+  const queryClient = useQueryClient();
 
   const handleLogout = () => logout().then(() => router.push("/"));
+
+  const handleIncompleteProfileClick = (link: string) => {
+    if (
+      !isProfileResume(profile.data) ||
+      !isProfileBaseComplete(profile.data) ||
+      !isProfileVerified(profile.data)
+    ) {
+      openGlobalModal(
+        "incomplete-profile",
+        <IncompleteProfileContent
+          onFinish={() => {
+            closeGlobalModal("incomplete-profile");
+          }}
+        />,
+        {
+          allowBackdropClick: false,
+          onClose: () => {
+            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+          },
+        }
+      );
+    } else {
+      router.push(`/${link}`);
+    }
+  };
   useEffect(() => {
     if (open) onClose();
   }, [pathname, params?.toString()]);
@@ -316,10 +191,11 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
       <div
         className={cn(
           "fixed inset-0 z-[120] bg-black/30 backdrop-blur-[2px] transition-opacity duration-200",
-          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          open
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
         )}
         onClick={onClose}
-        aria-hidden={!open}
       />
 
       {/* Drawer */}
@@ -348,81 +224,104 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
             </button>
           </div>
 
-          {/* Scrollable content */}
-          <div className="flex-1 overflow-y-auto p-4">
-            {/* Account (always on top) */}
-            {isAuthenticated() ? (
+          {isAuthenticated() && (
+            <div className="flex-1 overflow-y-auto p-4">
               <div className="flex items-center gap-3">
                 <div className="overflow-hidden rounded-full flex items-center justify-center">
                   <MyUserPfp size="9" />
                 </div>
                 <div className="flex flex-col leading-tight">
-                  <span className="font-medium">{getFullName(profile.data)}</span>
-                  <span className="text-xs text-gray-500">{profile.data?.email}</span>
+                  <span className="font-medium">
+                    {getFullName(profile.data)}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {profile.data?.email}
+                  </span>
                 </div>
               </div>
-            ) : (
-              <Button variant="outline" onClick={() => router.push("/login")}>Sign in</Button>
-            )}
-
-            <Separator className="my-4" />
-
-            {/* Navigation (Chats second, styled as list items) */}
-            <nav>
-              <ul className="grid gap-1">
-                {isAuthenticated() && (
-                  <li>
-                    <Link href="/conversations" className="block w-full">
-                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200">
-                        <span className="inline-flex items-center gap-2 text-sm">
-                          <MessageCircleMore className="w-4 h-4" /> Chats
-                        </span>
-                        {conversations?.unreads?.length ? (
-                          <span className="text-[10px] leading-none bg-warning/80 px-2 py-1 rounded-full">
-                            {conversations.unreads.length}
+              <Separator className="my-4" />
+              {/* Navigation */}
+              <nav>
+                <ul className="grid gap-1">
+                  {isAuthenticated() && (
+                    <li>
+                      <Link href="/conversations" className="block w-full">
+                        <button className="w-full flex items-center justify-between rounded-md px-3 py-2">
+                          <span className="inline-flex items-center gap-2 text-sm">
+                            <MessageCircleMore className="w-4 h-4" /> Chats
                           </span>
-                        ) : (
-                          <ChevronRight className="w-4 h-4 text-gray-300" />
-                        )}
+                          {conversations?.unreads?.length ? (
+                            <span className="text-[10px] leading-none bg-warning/80 px-2 py-1 rounded-full">
+                              {conversations.unreads.length}
+                            </span>
+                          ) : (
+                            <ChevronRight className="w-4 h-4 text-gray-300" />
+                          )}
+                        </button>
+                      </Link>
+                    </li>
+                  )}
+                  <li>
+                    <Link href="/search" className="block w-full">
+                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
+                        <div>
+                          <Search className="w-4 h-4 inline-block mr-2" />
+                          <span>Browse</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-300" />
                       </button>
                     </Link>
                   </li>
-                )}
-                <li>
-                  <Link href="/search" className="block w-full">
-                    <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                      <span>Browse</span>
+                  <li>
+                    <button
+                      onClick={() => handleIncompleteProfileClick("profile")}
+                      className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary"
+                    >
+                      <div>
+                        <Settings className="w-4 h-4 inline-block mr-2" />
+                        <span>Profile</span>
+                      </div>
                       <ChevronRight className="w-4 h-4 text-gray-300" />
                     </button>
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/saved" className="block w-full">
-                    <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                      <span>Saved Jobs</span>
+                  </li>
+                  <li>
+                    <Link href="/applications" className="block w-full">
+                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
+                        <div>
+                          <BookA className="w-4 h-4 inline-block mr-2" />
+                          <span>Applications</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-300" />
+                      </button>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/saved" className="block w-full">
+                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
+                        <div>
+                          <Heart className="w-4 h-4 inline-block mr-2" />
+                          <span>Saved Jobs</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-300" />
+                      </button>
+                    </Link>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => handleIncompleteProfileClick("forms")}
+                      className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary"
+                    >
+                      <div>
+                        <Newspaper className="w-4 h-4 inline-block mr-2" />
+                        <span>Forms</span>
+                      </div>
                       <ChevronRight className="w-4 h-4 text-gray-300" />
                     </button>
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/applications" className="block w-full">
-                    <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                      <span>Applications</span>
-                      <ChevronRight className="w-4 h-4 text-gray-300" />
-                    </button>
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/help" className="block w-full">
-                    <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                      <span>Help Center</span>
-                      <ChevronRight className="w-4 h-4 text-gray-300" />
-                    </button>
-                  </Link>
-                </li>
-              </ul>
-            </nav>
-          </div>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          )}
 
           {/* Footer pinned to bottom */}
           {isAuthenticated() && (
@@ -445,16 +344,49 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
    Profile Button (desktop)
 ======================================================================================= */
 export const ProfileButton: React.FC = () => {
-  const profile = useProfile();
+  const profile = useProfileData();
   const conversations = useConversations();
   const { isAuthenticated, logout } = useAuthContext();
   const router = useRouter();
+  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
+  const queryClient = useQueryClient();
 
   const handleLogout = () => logout().then(() => router.push("/"));
 
+  const handleIncompleteProfileClick = (link: string) => {
+    if (
+      !isProfileResume(profile.data) ||
+      !isProfileBaseComplete(profile.data) ||
+      !isProfileVerified(profile.data)
+    ) {
+      openGlobalModal(
+        "incomplete-profile",
+        <IncompleteProfileContent
+          onFinish={() => closeGlobalModal("incomplete-profile")}
+        />,
+        {
+          allowBackdropClick: false,
+          onClose: () => {
+            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+          },
+        }
+      );
+    } else {
+      router.push(`/${link}`);
+    }
+  };
+
   if (!isAuthenticated()) {
     return (
-      <Button type="button" variant="outline" size="md" className="h-10 border-gray-300 hover:bg-gray-50" onClick={() => router.push("/login")}>
+      <Button
+        type="button"
+        variant="outline"
+        size="md"
+        className="h-10 border-gray-300 hover:bg-gray-50"
+        onClick={() =>
+          router.push(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`)
+        }
+      >
         Sign in
       </Button>
     );
@@ -463,8 +395,8 @@ export const ProfileButton: React.FC = () => {
   return (
     <div className="relative flex items-center gap-2">
       <Link href="/conversations">
-        <Button variant="outline" className="relative">
-          <span className="text-xs">Chats</span> <MessageCircleMore className="w-6 h-6" />
+        <Button variant="ghost" className="relative">
+          <MessageCircleMore className="w-7 h-7" />
           {conversations?.unreads?.length ? (
             <div className="absolute w-3 h-3 top-[-0.33em] right-[-0.4em] rounded-full bg-warning opacity-70" />
           ) : null}
@@ -473,18 +405,47 @@ export const ProfileButton: React.FC = () => {
       <GroupableNavDropdown
         display={
           <>
-            <div className="overflow-hidden rounded-full flex items-center justify-center"><MyUserPfp size="7" /></div>
-            {getFullName(profile.data)}
+            <div className="overflow-hidden rounded-full flex items-center justify-center">
+              <MyUserPfp size="7" />
+            </div>
+            {getFullName(profile.data, false)}
           </>
         }
-        content={<div className="px-4 py-3 border-b border-gray-200"><p className="text-xs text-gray-500 text-ellipsis overflow-hidden">{profile.data?.email}</p></div>}
-        className="z-[200]"
+        content={
+          <div className="px-4 py-3 border-b border-gray-200">
+            <p className="text-xs text-gray-500 text-ellipsis overflow-hidden">
+              {profile.data?.email}
+            </p>
+          </div>
+        }
+        className="z-[200] w-fit"
       >
-        <DropdownOption href="/profile"><Settings className="w-4 h-4 inline-block m-1 mr-2" />Profile Settings</DropdownOption>
-        <DropdownOption href="/applications"><BookA className="w-4 h-4 inline-block m-1 mr-2" />Applications</DropdownOption>
-        <DropdownOption href="/saved"><Heart className="w-4 h-4 inline-block m-1 mr-2" />Saved Jobs</DropdownOption>
-        <DropdownOption href="/help"><HelpCircle className="w-4 h-4 inline-block m-1 mr-2" />Help Center</DropdownOption>
-        <DropdownOption href="/login" on_click={handleLogout}><LogOut className="text-red-500 w-4 h-4 inline-block m-1 mr-2" /><span className="text-red-500">Sign Out</span></DropdownOption>
+        <DropdownOption
+          on_click={() => {
+            handleIncompleteProfileClick("profile");
+          }}
+        >
+          <Settings className="w-4 h-4 inline-block mr-2 text-primary" />
+          <span className="text-primary">Profile</span>
+        </DropdownOption>
+        <DropdownOption href="/applications">
+          <BookA className="w-4 h-4 inline-block mr-2 text-primary" />
+          <span className="text-primary">Applications</span>
+        </DropdownOption>
+        <DropdownOption href="/saved">
+          <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
+          <span className="text-primary">Saved Jobs</span>
+        </DropdownOption>
+        <DropdownOption on_click={() => {
+            handleIncompleteProfileClick("forms");
+          }}>
+          <Newspaper className="w-4 h-4 inline-block mr-2 text-primary" />
+          <span className="text-primary">Forms</span>
+        </DropdownOption>
+        <DropdownOption href="/" on_click={handleLogout}>
+          <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />
+          <span className="text-red-500">Sign Out</span>
+        </DropdownOption>
       </GroupableNavDropdown>
     </div>
   );
@@ -499,136 +460,166 @@ export const Header: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const profile = useProfile();
+  const auth = useAuthContext();
 
-  const [state, dispatch] = useReducer(jobFilterReducer, initialFilter);
   const [searchTerm, setSearchTerm] = useState("");
-  const [hasMissing, setHasMissing] = useState(false);
-
-  const [showPositions, setShowPositions] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
+  const [moaOnly, setMoaOnly] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const headerRoutes = ["/login", "/login/otp", "/register", "/otp"];
-  const showHeaderRight = routeExcluded(headerRoutes);
+  const noProfileRoutes = ["/register", "/register/verify"];
+  const noHeaderRoutes = ["/register", "/register/verify"];
+  const showProfileButton = routeExcluded(noProfileRoutes);
+
+  // only show filters on /search (allow subpaths like /search/results)
+  const showFilters = pathname?.startsWith("/search") === true;
 
   // lock body scroll when drawer open
   useEffect(() => {
     document.body.style.overflow = isMenuOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [isMenuOpen]);
 
-  // init from URL
   useEffect(() => {
-    const q = searchParams.get("query") || "";
-    const fromCSV = (key: string) => searchParams.get(key)?.split(",").filter(Boolean) || [];
-    dispatch({
-      type: "SET_ALL",
-      payload: {
-        position: fromCSV("position"),
-        jobAllowance: fromCSV("allowance"),
-        jobWorkload: fromCSV("workload"),
-        jobMode: fromCSV("mode"),
-        jobMoa: fromCSV("moa"),
-      },
-    });
-    setSearchTerm(q);
-  }, [searchParams]);
+    if (!showFilters) return;
+    setSearchTerm(searchParams.get("query") || "");
+    setMoaOnly(searchParams.get("moa") === "Has MOA");
+  }, [searchParams, showFilters]);
 
-  // profile completeness banner
-  useEffect(() => {
-    if (profile.data) {
-      const { missing } = getMissingProfileFields(profile.data);
-      setHasMissing(Array.isArray(missing) && missing.length > 0);
-    }
-  }, [profile.data]);
+  const initialFromUrl: Partial<JobFilter> = {
+    position: (searchParams.get("position") || "").split(",").filter(Boolean),
+    jobMode: (searchParams.get("mode") || "").split(",").filter(Boolean),
+    jobWorkload: (searchParams.get("workload") || "")
+      .split(",")
+      .filter(Boolean),
+    jobAllowance: (searchParams.get("allowance") || "")
+      .split(",")
+      .filter(Boolean),
+    jobMoa: (searchParams.get("moa") || "").split(",").filter(Boolean),
+  };
 
-  const doSearch = () => {
+  const pushSearch = (override?: { moa?: boolean; q?: string }) => {
     const params = new URLSearchParams();
-    if (searchTerm) params.set("query", searchTerm);
-    if (state.position.length) params.set("position", state.position.join(","));
-    if (state.jobMode.length) params.set("mode", state.jobMode.join(","));
-    if (state.jobWorkload.length) params.set("workload", state.jobWorkload.join(","));
-    if (state.jobAllowance.length) params.set("allowance", state.jobAllowance.join(","));
-    if (state.jobMoa.length) params.set("moa", state.jobMoa.join(","));
+    const q = override?.q ?? searchTerm;
+    const moa = override?.moa ?? moaOnly;
+    if (q) params.set("query", q);
+    if (moa) params.set("moa", "Has MOA");
     router.push(`/search/?${params.toString()}`);
   };
 
-  const FilterButtons = (
-    <div className="flex gap-2">
-      <Button scheme="primary" variant="outline" size="md" onClick={() => { setShowPositions(true); setShowDetails(false); }}>
-        <FilterIcon /> Category <ChevronDown />
-      </Button>
-      <Button scheme="primary" variant="outline" size="md" onClick={() => { setShowDetails(true); setShowPositions(false); }}>
-        <FilterIcon /> Details <ChevronDown />
-      </Button>
-    </div>
-  );
+  const doSearch = () => pushSearch();
 
-  return (
-    <JobFilterContext.Provider value={{ state, dispatch }}>
-      <div className="flex flex-col">
-        {/* Top Bar */}
-        <div className={cn("flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]", isMobile ? "px-4 py-3" : "py-4 px-8")}
-             style={{ overflow: "visible", position: "relative", zIndex: 100 }}>
-          {/* Left: Brand */}
-          <div className="flex items-center gap-3"><HeaderTitle /></div>
+  const onApplyFilters = (f: JobFilter) => {
+    const params = new URLSearchParams();
+    if (searchTerm) params.set("query", searchTerm);
+    if (f.position.length) params.set("position", f.position.join(","));
+    if (f.jobMode.length) params.set("mode", f.jobMode.join(","));
+    if (f.jobWorkload.length) params.set("workload", f.jobWorkload.join(","));
+    if (f.jobAllowance.length)
+      params.set("allowance", f.jobAllowance.join(","));
+    if (f.jobMoa.length) params.set("moa", f.jobMoa.join(","));
+    router.push(`/search/?${params.toString()}`);
+  };
 
-          {/* Center: Desktop search + filters */}
-          {!isMobile && showHeaderRight && (
-            <div className="flex items-center gap-4 w-full max-w-2xl">
-              <SearchInput value={searchTerm} onChange={setSearchTerm} onEnter={doSearch} />
-              {FilterButtons}
-            </div>
-          )}
-
-          {/* Right: Desktop profile / Mobile burger */}
-          {showHeaderRight ? (
-            isMobile ? (
-              <button type="button" aria-label="Open menu" className="inline-flex items-center justify-center h-10 w-10 rounded-md border border-gray-300 hover:bg-gray-50" onClick={() => setIsMenuOpen(true)}>
-                <Menu className="h-5 w-5" />
-              </button>
-            ) : (
-              <div className="flex items-center gap-6">
-                {pathname === "/search" && hasMissing && (
-                  <button className="text-base ml-4 text-blue-700 font-medium hover:underline focus:outline-none" onClick={() => router.push("/profile?edit=true")}>
-                    Finish your profile to start applying!
-                  </button>
-                )}
-                <ProfileButton />
-              </div>
-            )
-          ) : (
-            <div className="w-1 h-10 bg-transparent" />
-          )}
+  return routeExcluded(noHeaderRoutes) ? (
+    <div className="flex flex-col">
+      {/* Top Bar */}
+      <div
+        className={cn(
+          "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
+          isMobile ? "px-4 py-3" : "py-4 px-8"
+        )}
+        style={{ overflow: "visible", position: "relative", zIndex: 100 }}
+      >
+        {/* Left: Brand */}
+        <div className="flex items-center gap-3">
+          <HeaderTitle />
         </div>
 
-        {/* Mobile banner under bar */}
-        {isMobile && pathname === "/search" && <CompleteAccBanner />}
+        {/* Center: Desktop search + filters (only on /search) */}
+        {!isMobile && showProfileButton && (
+          <div className="flex items-center gap-4 w-full max-w-2xl">
+            {showFilters && (
+              <SearchInput
+                value={searchTerm}
+                onChange={setSearchTerm}
+                onEnter={doSearch}
+                moaOnly={moaOnly}
+                onToggleMoa={(v) => {
+                  setMoaOnly(v);
+                  pushSearch({ moa: v });
+                }}
+              />
+            )}
 
-        {/* Mobile: search + filter buttons */}
-        {isMobile && showHeaderRight && (
-          <div className="flex flex-col max-w-2xl w-full gap-3 items-center px-4 pt-3">
-            <SearchInput value={searchTerm} onChange={setSearchTerm} onEnter={doSearch} className="h-12" />
-            {FilterButtons}
+            {showFilters && (
+              <JobFilterProvider initial={initialFromUrl}>
+                <JobFilters isDesktop onApply={onApplyFilters} />
+              </JobFilterProvider>
+            )}
           </div>
         )}
 
-        {/* Filter overlays */}
-        <FilterOverlay visible={showPositions} onClose={() => setShowPositions(false)} onApply={() => { setShowPositions(false); doSearch(); }}>
-          <JobPositionPanel />
-        </FilterOverlay>
-
-        <FilterOverlay visible={showDetails} onClose={() => setShowDetails(false)} onApply={() => { setShowDetails(false); doSearch(); }}>
-          <JobDetailPanel />
-        </FilterOverlay>
-
-        {/* Mobile drawer */}
-        {isMobile && showHeaderRight && (
-          <MobileDrawer open={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+        {/* Right: Desktop profile / Mobile burger */}
+        {showProfileButton ? (
+          isMobile ? (
+            auth.isAuthenticated() ? (
+              <button
+                type="button"
+                aria-label="Open menu"
+                className="inline-flex items-center justify-center h-10 w-10 rounded-md border border-gray-300 hover:bg-gray-50"
+                onClick={() => setIsMenuOpen(true)}
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() =>
+                  router.push(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`)
+                }
+              >
+                Sign in
+              </Button>
+            )
+          ) : (
+            <div className="flex items-center gap-6">
+              <ProfileButton />
+            </div>
+          )
+        ) : (
+          <div className="w-1 h-10 bg-transparent" />
         )}
       </div>
-    </JobFilterContext.Provider>
+
+      {/* Mobile: search + (filters only on /search) */}
+      {isMobile && showProfileButton && showFilters && (
+        <JobFilterProvider initial={initialFromUrl}>
+          <div className="flex flex-col max-w-2xl w-full gap-2 items-center px-4 pt-3 bg-white/80">
+            <SearchInput
+              value={searchTerm}
+              onChange={setSearchTerm}
+              onEnter={doSearch}
+              moaOnly={moaOnly}
+              onToggleMoa={(v) => {
+                setMoaOnly(v);
+                pushSearch({ moa: v });
+              }}
+            />
+            {/* Mobile button opening bottom sheet */}
+            <JobFilters onApply={onApplyFilters} />
+          </div>
+        </JobFilterProvider>
+      )}
+
+      {/* Mobile drawer */}
+      {isMobile && showProfileButton && (
+        <MobileDrawer open={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+      )}
+    </div>
+  ) : (
+    <></>
   );
 };
 

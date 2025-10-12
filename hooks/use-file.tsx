@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 06:01:21
- * @ Modified time: 2025-07-06 02:57:40
+ * @ Modified time: 2025-10-05 11:54:22
  * @ Description:
  *
  * Properly handles dealing with files stored in GCS and their local state.
@@ -169,11 +169,14 @@ export const FileUploadInput = ({
 export const useFileUpload = ({
   uploader,
   filename,
+  silent,
 }: {
   uploader: (formData: FormData) => Promise<any>;
   filename: string;
+  silent?: boolean;
 }) => {
   const [isUploading, setIsUploading] = useState(false);
+  const [response, setResponse] = useState<Promise<any>>();
   const fileInputRef = useRef<IFileUploadRef>(null);
 
   /**
@@ -191,18 +194,23 @@ export const useFileUpload = ({
     form.file(file);
 
     // Check for success
-    const result = await uploader(form.build());
+    let result = uploader(form.build());
+    setResponse(result);
+    result = await result;
+    console.log(result);
+
     if (!result.success) {
       alert("Could not upload file.");
       return;
     }
 
-    alert("File uploaded successfully!");
+    if (!silent) alert("File uploaded successfully!");
     setIsUploading(false);
   };
 
   return {
     upload,
+    response,
     isUploading,
     fileInputRef,
   };

@@ -1,14 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "../globals.css";
 import { AuthContextProvider } from "@/lib/ctx-auth";
 import { RefsContextProvider } from "@/lib/db/use-refs";
 import { AppContextProvider } from "@/lib/ctx-app";
-import { MoaContextProvider } from "@/lib/db/use-moa";
+import { BIMoaContextProvider } from "@/lib/db/use-bi-moa";
 import { PostHogProvider } from "../posthog-provider";
 import TanstackProvider from "../tanstack-provider";
 import AllowLanding from "./allowLanding";
 import { ConversationsContextProvider } from "@/hooks/use-conversation";
 import { PocketbaseProvider } from "@/lib/pocketbase";
+import { ModalProvider } from "@/components/providers/ModalProvider";
 
 export const metadata: Metadata = {
   title: "BetterInternship",
@@ -16,6 +17,12 @@ export const metadata: Metadata = {
   icons: {
     icon: "/BetterInternshipLogo.ico",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 /**
@@ -30,11 +37,11 @@ export const RootLayout = ({
 }>) => {
   return (
     <RefsContextProvider>
-      <MoaContextProvider>
+      <BIMoaContextProvider>
         <PostHogProvider>
           <HTMLContent>{children}</HTMLContent>
         </PostHogProvider>
-      </MoaContextProvider>
+      </BIMoaContextProvider>
     </RefsContextProvider>
   );
 };
@@ -56,15 +63,19 @@ const HTMLContent = ({
         <AppContextProvider>
           <AuthContextProvider>
             <ConversationsContextProvider type="user">
-              <html lang="en">
-                <body className="overflow-x-hidden m-0 p-0">
-                  <AllowLanding>
-                    <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
-                      <div className="flex-grow max-h-[100%] overflow-auto flex flex-col">
-                        {children}
-                      </div>
-                    </div>
-                  </AllowLanding>
+              <html lang="en" className="h-full">
+                <body className="h-full overflow-x-hidden m-0 p-0 antialiased">
+                  <ModalProvider>
+                    <AllowLanding>
+                
+                        <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
+                          <div className="flex-grow max-h-[100svh] max-w-[100svw] overflow-auto flex flex-col">
+                            {children}
+                          </div>
+                        </div>
+                      
+                    </AllowLanding>
+                  </ModalProvider>
                 </body>
               </html>
             </ConversationsContextProvider>

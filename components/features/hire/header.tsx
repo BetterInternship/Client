@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { HeaderTitle } from "@/components/shared/header";
 import { useRoute } from "@/hooks/use-route";
 import Link from "next/link";
-import { getFullName } from "@/lib/utils/user-utils";
+import { getFullName } from "@/lib/profile";
 import { MyEmployerPfp } from "@/components/shared/pfp";
 import { useProfile } from "@/hooks/use-employer-api";
 
@@ -22,10 +22,11 @@ import { useProfile } from "@/hooks/use-employer-api";
  */
 export const Header = () => {
   const { god } = useAuthContext();
-  const headerRoutes = ["/login", "/register", "/otp"];
-  const { routeExcluded: route_excluded } = useRoute();
+  const { routeExcluded } = useRoute();
+  const noProfileRoutes = ["/login", "/register"];
+  const noHeaderRoutes: string[] = [];
 
-  return (
+  return routeExcluded(noHeaderRoutes) ? (
     <div className="relative flex py-3 px-6 justify-between items-center bg-white backdrop-blur-md border-b border-gray-100 z-[100]">
       <HeaderTitle />
       {god && (
@@ -37,12 +38,14 @@ export const Header = () => {
           </Link>
         </div>
       )}
-      {route_excluded(headerRoutes) ? (
+      {routeExcluded(noProfileRoutes) ? (
         <ProfileButton />
       ) : (
         <div className="w-1 h-10 bg-transparent"></div>
       )}
     </div>
+  ) : (
+    <></>
   );
 };
 
@@ -112,7 +115,7 @@ export const ProfileButton = () => {
       className="h-10 border-gray-300 hover:bg-gray-50 "
       onClick={() => router.push("/login")}
     >
-      Sign in to Existing Account.
+      Sign in 
     </Button>
   );
 };

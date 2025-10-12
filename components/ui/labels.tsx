@@ -72,9 +72,9 @@ export const Property: ValueComponent = ({
   className = "",
 }: ValueComponentProps) => {
   return (
-    <p
+    <div
       className={cn(
-        "text-gray-700 text-sm overflow-hidden text-ellipsis",
+        "text-gray-700 font-semibold overflow-hidden text-ellipsis",
         className
       )}
     >
@@ -83,7 +83,7 @@ export const Property: ValueComponent = ({
           {fallback ?? DEFAULT_LABEL}
         </span>
       )}
-    </p>
+    </div>
   );
 };
 
@@ -94,7 +94,7 @@ export const LabeledProperty: LabeledComponent = ({
 }: LabeledComponentProps) => {
   return (
     <div>
-      <label className="text-xs text-gray-400 italic mb-1 block">{label}</label>
+      <label className="text-xs text-gray-600  mb-1 block">{label}</label>
       <Property value={value} fallback={fallback} />
     </div>
   );
@@ -133,7 +133,7 @@ export const JobTitleLabel: ValueComponent = ({
   fallback,
 }: ValueComponentProps) => {
   return (
-    <p className="text-gray-900 font-heading font-bold text-4xl">
+    <p className="text-gray-900 font-heading font-bold text-4xl line-clamp-2 truncate break-words whitespace-pre-wrap">
       {value || (
         <span className="text-gray-400 italic">
           {fallback ?? DEFAULT_LABEL}

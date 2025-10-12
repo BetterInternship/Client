@@ -24,10 +24,12 @@ import {
 import { BoolBadge } from "@/components/ui/badge";
 import { useEmployers } from "@/lib/api/god.api";
 import { useModal } from "@/hooks/use-modal";
+import { useAuthContext } from "@/app/hire/authctx";
 
 export default function VerifiedEmployersPage() {
   const router = useRouter();
   const employers = useEmployers();
+  const { loginAs: login_as } = useAuthContext();
 
   const {
     Modal: RegisterModal,
@@ -37,6 +39,7 @@ export default function VerifiedEmployersPage() {
 
   const [search, setSearch] = useState<string | null>(null);
   const [hideNoApps, setHideNoApps] = useState(false);
+  const [authorizingId, setAuthorizingId] = useState<string | null>(null);
 
   const setSearchQuery = (id?: number | string | null) =>
     setSearch(id?.toString() ?? null);
@@ -51,8 +54,15 @@ export default function VerifiedEmployersPage() {
   );
 
   const authorizeAs = async (employer_id: string) => {
-    console.debug("[VerifiedEmployersPage] authorizeAs()", employer_id);
-    router.push("/dashboard");
+    try {
+      setAuthorizingId(employer_id);
+      await login_as(employer_id);
+      router.push("/dashboard");
+    } catch (err) {
+      console.error("[authorizeAs] failed:", err);
+    } finally {
+      setAuthorizingId(null);
+    }
   };
 
   const verifiedOnly = useMemo(
@@ -99,8 +109,9 @@ export default function VerifiedEmployersPage() {
               ev.stopPropagation();
               authorizeAs(e.id ?? "");
             }}
+            disabled={authorizingId === (e.id ?? "")}
           >
-            View
+            {authorizingId === (e.id ?? "") ? "Opening…" : "View"}
           </Button>
         }
         more={

@@ -8,10 +8,18 @@ import { Button } from "@/components/ui/button";
 import { useConversations } from "@/hooks/use-conversation";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
+import { getFullName } from "@/lib/profile";
 import { cn } from "@/lib/utils";
 import { fmtISO } from "@/lib/utils/date-utils";
-import { getFullName } from "@/lib/utils/user-utils";
 import { CalendarClock, MessageCircle } from "lucide-react";
+
+const approximateYearLevel = (timestamp: number) => {
+  const now = Date.now();
+  const year = 31_556_952_000;
+  const delta = timestamp - now;
+  if (delta > 0 && delta < year * 2) return "3rd Year/Above";
+  else return "Freshman/Sophomore";
+};
 
 interface ApplicationRowProps {
   application: EmployerApplication;
@@ -34,7 +42,7 @@ export function ApplicationRow({
   updateConversationId,
   setSelectedApplication,
 }: ApplicationRowProps) {
-  const { to_university_name, to_level_name, to_app_status_name } = useDbRefs();
+  const { to_university_name, to_app_status_name } = useDbRefs();
   const conversations = useConversations();
 
   return (
@@ -48,9 +56,13 @@ export function ApplicationRow({
           <div>
             <p className="font-medium text-gray-900">
               {getFullName(application.user)}{" "}
-              <span className="opacity-70 text-sm">
-                — {to_level_name(application.user?.year_level) || ""}
-                {/* {to_university_name(application.user?.university) || ""} •{" "} */}
+              <span className="opacity-70">
+                — {to_university_name(application.user?.university) || ""}{" "}
+                {application.user?.expected_graduation_date &&
+                  "• " +
+                    approximateYearLevel(
+                      Date.parse(application.user?.expected_graduation_date)
+                    )}
               </span>
             </p>
             <p className="text-xs text-gray-500 space-x-1">

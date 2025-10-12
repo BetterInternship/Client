@@ -1,21 +1,21 @@
 "use client";
 
-import { useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
 import ContentLayout from "@/components/features/hire/content-layout";
+import {
+  ListingsDeleteModal,
+  ListingsDetailsPanel,
+  ListingsJobPanel,
+  ListingsSearchBar,
+} from "@/components/features/hire/listings";
 import { ShowUnverifiedBanner } from "@/components/ui/banner";
 import { useListingsBusinessLogic } from "@/hooks/hire/listings/use-listings-business-logic";
-import {
-  ListingsSearchBar,
-  ListingsJobPanel,
-  ListingsDetailsPanel,
-  ListingsCreateJobModal,
-  ListingsDeleteModal,
-} from "@/components/features/hire/listings";
+import { useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
+
 
 export default function MyListings() {
   // Get data from employer API hooks
   const { data: profile, loading: profileLoading } = useProfile();
-  const { ownedJobs, create_job, update_job, delete_job } = useOwnedJobs();
+  const { ownedJobs, update_job, delete_job } = useOwnedJobs();
 
   // Business logic hook
   const {
@@ -35,9 +35,6 @@ export default function MyListings() {
     handleShare,
     clearSelectedJob,
     handlePageChange,
-    openCreateModal,
-    closeCreateModal,
-    CreateModal,
     openDeleteModal,
     closeDeleteModal,
     DeleteModal,
@@ -64,7 +61,7 @@ export default function MyListings() {
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
                 onKeyPress={handleKeyPress}
-                onCreateJob={openCreateModal}
+                //onCreateJob={openCreateModal}
               />
 
               {/* Job Panel */}
@@ -98,14 +95,6 @@ export default function MyListings() {
             </div>
           </div>
         </div>
-
-        {/* Create Job Modal */}
-        <CreateModal>
-          <ListingsCreateJobModal
-            createJob={create_job}
-            close={closeCreateModal}
-          />
-        </CreateModal>
 
         {/* Delete Job Modal */}
         <DeleteModal>

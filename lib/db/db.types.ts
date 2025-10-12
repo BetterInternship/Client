@@ -1,7 +1,6 @@
-import { Database as _Database, Tables } from "@betterinternship/schema.base";
+import { Database as _Database, Json, Tables } from "@betterinternship/schema.base";
 
 export type Database = _Database;
-export type Level = Tables<"ref_levels">;
 export type College = Tables<"ref_colleges">;
 export type University = Tables<"ref_universities">;
 export type JobType = Tables<"ref_job_types">;
@@ -12,10 +11,12 @@ export type JobMode = Tables<"ref_job_modes">;
 export type AppStatus = Tables<"ref_app_statuses">;
 export type Industry = Tables<"ref_industries">;
 export type Department = Tables<"ref_departments">;
-export type Degree = Tables<"ref_degrees">;
 export type Moa = Tables<"moa">;
 export type PrivateUser = Tables<"users">;
-export type PublicUser = Omit<Tables<"users">, "verification_hash">;
+type _PublicUserBase = Omit<Tables<"users">, "verification_hash">;
+export type PublicUser = Omit<_PublicUserBase, "internship_preferences"> & {
+  internship_preferences?: InternshipPreferences;
+};
 export type Employer = Partial<Tables<"employers">>;
 export interface Conversation extends Tables<"conversations"> {
   employers?: Partial<Employer>;
@@ -30,9 +31,10 @@ export type PublicEmployerUser = Omit<
 >;
 export interface MoA extends Partial<Tables<"moa">> {}
 
-export interface Job extends Partial<Tables<"jobs">> {
+export interface Job extends Omit<Partial<Tables<"jobs">>, "internship_preferences"> {
   employer?: Partial<Employer>;
   employers?: Partial<Employer>;
+  internship_preferences?: ListingInternshipPreferences;
 }
 
 export interface UserApplication extends Partial<Tables<"applications">> {
@@ -53,3 +55,25 @@ export interface SavedJob extends Partial<Tables<"saved_jobs">> {
   job?: Partial<Job>;
   jobs?: Partial<Job>;
 }
+
+// Preferences set by student accounts for which listings they'd prefer
+export type InternshipPreferences = {
+  job_setup_ids?: string[];
+  internship_type?: "credited" | "voluntary";
+  job_category_ids?: string[];
+  job_commitment_ids?: string[];
+  expected_start_date?: number | null;
+  expected_duration_hours?: number | null;
+};
+
+// These are preferences set by the employer for which applicants jobs are tailored for
+export type ListingInternshipPreferences = {
+  internship_types?: ("credited" | "voluntary")[];
+  job_setup_ids?: number[];
+  job_category_ids?: string[];
+  job_commitment_ids?: number[];
+  expected_start_date?: number | null; // If this is null, it means as soon as possible
+  require_github?: boolean | null;
+  require_portfolio?: boolean | null;
+  require_cover_letter?: boolean | null;
+};

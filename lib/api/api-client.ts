@@ -2,22 +2,33 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 if (!API_BASE_URL) console.warn("[WARNING]: Base API URL is not set.");
 
-// Helper function for api routes
-export const APIRoute = (() => {
-  interface Params {
-    [key: string]: any;
-  }
+// API configuration and helper funcs
+const MOA_API_BASE_URL = process.env.NEXT_PUBLIC_MOA_API_URL;
+if (!MOA_API_BASE_URL) console.warn("[WARNING]: Base MOA API URL is not set.");
 
-  // Generates a parameter string for query urls
-  const search_params = (params: Params) => {
-    const search_params = new URLSearchParams();
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== "")
-        search_params.append(key, value.toString());
-    });
-    return search_params.toString();
-  };
+interface Params {
+  [key: string]: any;
+}
 
+/**
+ * Creates parameter strings from param object
+ *
+ * @param params
+ * @returns
+ */
+const createParameterString = (params: Params) => {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "")
+      searchParams.append(key, value.toString());
+  });
+  return searchParams.toString();
+};
+
+/**
+ * Builder class for routes.
+ */
+export const APIRouteBuilder = (() => {
   class APIRouteClass {
     routes: string[];
     params: Params | null;
@@ -39,9 +50,10 @@ export const APIRoute = (() => {
       return this;
     }
 
-    build() {
-      if (!this.params) return `${API_BASE_URL}/${this.routes.join("/")}`;
-      return `${API_BASE_URL}/${this.routes.join("/")}?${search_params(
+    build(opts?: { moaServer?: boolean }) {
+      const base = opts?.moaServer ? MOA_API_BASE_URL : API_BASE_URL;
+      if (!this.params) return `${base}/${this.routes.join("/")}`;
+      return `${base}/${this.routes.join("/")}?${createParameterString(
         this.params
       )}`;
     }
@@ -50,16 +62,10 @@ export const APIRoute = (() => {
   return (route: string) => new APIRouteClass(route);
 })();
 
-// HTTP client with auth handling
+/**
+ * Utility we can use for making server requests.
+ */
 class FetchClient {
-  /**
-   * Request utility we can reuse
-   *
-   * @param url
-   * @param options
-   * @param type
-   * @returns
-   */
   private async request<T>(
     url: string,
     options: RequestInit = {},
@@ -135,58 +141,6 @@ class FetchClient {
   async delete<T>(url: string): Promise<T> {
     return this.request<T>(url, { method: "DELETE" });
   }
-
-  async uploadFile<T>(url: string, formData: FormData): Promise<T> {
-    const headers: HeadersInit = {};
-    const config: RequestInit = {
-      method: "POST",
-      headers,
-      body: formData,
-    };
-
-    try {
-      const response = await fetch(url, config);
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.message || `HTTP error! status: ${response.status}`
-        );
-      }
-
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
-        return await response.json();
-      }
-
-      return (await response.text()) as unknown as T;
-    } catch (error) {
-      console.error("File upload failed:", error);
-      throw error;
-    }
-  }
 }
 
 export const APIClient = new FetchClient();
-
-// API response types
-export interface ApiResponse<T> {
-  data?: T;
-  message?: string;
-  error?: string;
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  totalPages: number;
-  currentPage: number;
-  total: number;
-}
-
-// Error handling
-export class ApiError extends Error {
-  constructor(message: string, public status?: number, public code?: string) {
-    super(message);
-    this.name = "ApiError";
-  }
-}

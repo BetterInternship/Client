@@ -1,131 +1,220 @@
-import ReactMarkdown from "react-markdown";
-import { JobApplicationRequirements, JobBadges } from "../shared/jobs";
-import { useApplications, useSavedJobs } from "@/lib/api/student.api";
-import { ModalComponent, ModalHandle } from "@/hooks/use-modal";
-import { ArrowLeft, Building, Heart } from "lucide-react";
-import { cn, formatDate } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+"use client";
+
 import { RefObject } from "react";
+import ReactMarkdown from "react-markdown";
+import {
+  ArrowLeft,
+  Building,
+  MapPin,
+  CheckCircle2,
+  AlertTriangle,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Job } from "@/lib/db/db.types";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { useProfileData } from "@/lib/api/student.data.api";
+import { ModalComponent, ModalHandle } from "@/hooks/use-modal";
+import { JobDetailsSummary } from "../shared/jobs";
+import { SaveJobButton } from "../features/student/job/save-job-button";
+import { ApplyToJobButton } from "../features/student/job/apply-to-job-button";
+import { MissingNotice } from "../shared/jobs";
 
 export const JobModal = ({
   job,
-  handleApply,
+  openAppModal,
+  applySuccessModalRef,
   ref,
+  user,
 }: {
-  job: Job | null;
-  handleApply: () => void;
+  job: Job;
+  openAppModal: () => void;
   ref?: RefObject<ModalHandle | null>;
-}) => {
-  const router = useRouter();
-  const savedJobs = useSavedJobs();
-  const applications = useApplications();
-  const auth = useAuthContext();
-
-  const handleSave = async (job: Job) => {
-    if (!auth.isAuthenticated()) {
-      window.location.href = "/login";
-      return;
-    }
-    await savedJobs.toggle(job.id ?? "");
+  applySuccessModalRef?: RefObject<ModalHandle | null>;
+  user?: {
+    github_link?: string | null;
+    portfolio_link?: string | null;
   };
+}) => {
+  const profile = useProfileData();
+
+  const hasGithub = !!user?.github_link?.trim();
+  const hasPortfolio = !!user?.portfolio_link?.trim();
+  const needsCover = !!job?.internship_preferences?.require_cover_letter;
+  const needsGithub = !!job?.internship_preferences?.require_github;
+  const needsPortfolio = !!job?.internship_preferences?.require_portfolio;
+  const missingRequired =
+    (!!job?.internship_preferences?.require_github && !hasGithub) ||
+    (!!job?.internship_preferences?.require_portfolio && !hasPortfolio);
 
   return (
     <ModalComponent ref={ref}>
-      <div className="h-full flex flex-col bg-white overflow-hidden">
-        {/* Fixed Header with Close Button */}
-        <div className="flex flex-col justify-start items-start p-4 border-b bg-white flex-shrink-0">
+      <div className="relative flex h-[100svh] max-h-[100svh] max-w-[100svw] flex-col bg-white">
+        {/* Top bar (close only) — sticky and safe-area aware */}
+        <div className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b px-4 pb-2 pt-5">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => ref?.current?.close()}
-            className="h-8 w-8 p-0 ml-[-8px] mb-2 hover:bg-gray-100 rounded-full"
+            className="h-8 w-8 p-0 -ml-2 hover:bg-gray-100 rounded-full"
+            aria-label="Close"
           >
             <ArrowLeft className="h-5 w-5 text-gray-500" />
           </Button>
-          {/* Fixed Job Header - Non-scrollable */}
-          {job && (
-            <div className=" bg-white flex-shrink-0">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2">
-                {job.title}
-              </h1>
-              <div className="flex items-center gap-2 text-gray-600 mb-1">
-                <Building className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate text-sm">{job.employer?.name}</span>
-              </div>
-              <p className="text-xs text-gray-500 mb-3">
-                Listed on {formatDate(job.created_at ?? "")}
-              </p>
-              <JobBadges job={job} />
-            </div>
-          )}
         </div>
 
-        {/* Scrollable Content Area - MUST be properly configured */}
-        <div
-          className="flex-1 overflow-y-scroll overscroll-contain pb-32"
-          style={{ maxHeight: "calc(100vh - 200px)" }}
-        >
+        {/* Scrollable content — mirrors desktop layout */}
+        <div className="flex-1 overflow-y-auto overscroll-contain max-w-[100svw] ">
           {job && (
-            <div className="p-4">
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold mb-3 text-gray-900">
-                  Description
-                </h2>
-                <div className="prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
-                  <ReactMarkdown>{job.description}</ReactMarkdown>
-                </div>
-              </div>
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold mb-3 text-gray-900">
-                  Requirements
-                </h2>
-                <JobApplicationRequirements job={job} />
-                <div className="prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
-                  <ReactMarkdown>{job.requirements}</ReactMarkdown>
-                </div>
-              </div>
-              <div className="pb-20"></div>
-            </div>
-          )}
-        </div>
-
-        {/* Fixed Action Buttons at Bottom - Always Visible and Prominent */}
-        <div className="absolute bottom-0 left-0 right-0 bg-white border-t-2 p-4">
-          <div className="flex gap-3">
-            <Button
-              disabled={applications.appliedJob(job?.id ?? "")}
-              onClick={handleApply}
-              className={cn(
-                "flex-1 h-14 transition-all duration-300",
-                applications.appliedJob(job?.id ?? "")
-                  ? "bg-supportive text-white"
-                  : "bg-primary  text-white"
-              )}
-            >
-              {applications.appliedJob(job?.id ?? "") ? "Applied" : "Apply Now"}
-            </Button>
-
-            <Button
-              variant="outline"
-              onClick={() => job && handleSave(job)}
-              scheme={
-                savedJobs.isJobSaved(job?.id ?? "") ? "destructive" : "default"
-              }
-              className="h-14 w-14"
-            >
-              <Heart
-                className={cn(
-                  "w-6 h-6",
-                  savedJobs.isJobSaved(job?.id ?? "") ? "fill-current" : ""
-                )}
+            <>
+              <MissingNotice
+                show={missingRequired}
+                needsGithub={needsGithub && !hasGithub}
+                needsPortfolio={needsPortfolio && !hasPortfolio}
               />
-            </Button>
+              <div className="px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+96px)] space-y-5">
+                {/* Header (compact; no actions on mobile) */}
+                <HeaderCompact job={job} />
+
+                {/* Requirement chips + notice (like desktop) */}
+                <div className="flex flex-wrap gap-1.5">
+                  {needsCover && <ReqPill ok label="Cover letter required" />}
+                  {needsGithub && (
+                    <ReqPill ok={hasGithub} label="GitHub linked" />
+                  )}
+                  {needsPortfolio && (
+                    <ReqPill ok={hasPortfolio} label="Portfolio linked" />
+                  )}
+                </div>
+
+                {/* Job Details (grid) */}
+                <Section title="Job Details">
+                  <JobDetailsSummary job={job} />
+                </Section>
+
+                <Divider />
+
+                {/* Role overview */}
+                <Section title="Role overview">
+                  <MarkdownBlock text={job.description} />
+                </Section>
+
+                {(job.requirements ||
+                  needsCover ||
+                  needsGithub ||
+                  needsPortfolio) && <Divider />}
+
+                {/* Requirements */}
+                {(job.requirements ||
+                  needsCover ||
+                  needsGithub ||
+                  needsPortfolio) && (
+                  <Section title="Requirements">
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {needsCover && <ReqPill ok label="Cover letter" />}
+                        {needsGithub && (
+                          <ReqPill ok={hasGithub} label="GitHub profile" />
+                        )}
+                        {needsPortfolio && (
+                          <ReqPill ok={hasPortfolio} label="Portfolio link" />
+                        )}
+                      </div>
+                      <MarkdownBlock text={job.requirements} />
+                    </div>
+                  </Section>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Bottom action bar — fixed within modal*/}
+        <div className="absolute bottom-0 left-0 right-0 z-30 bg-white border-t p-4 pb-[calc(env(safe-area-inset-bottom)+16px)]">
+          <div className="flex gap-3">
+            <SaveJobButton job={job} />
+            <ApplyToJobButton
+              profile={profile.data}
+              job={job}
+              openAppModal={openAppModal}
+              applySuccessModalRef={applySuccessModalRef}
+              className="w-full"
+            />
           </div>
         </div>
       </div>
     </ModalComponent>
   );
 };
+
+function HeaderCompact({ job }: { job: Job }) {
+  return (
+    <div className="mb-1">
+      {/* Title */}
+      <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 leading-tight max-w-full break-words hyphens-auto line-clamp-2 sm:line-clamp-none">
+        {job.title}
+      </h1>
+      <div className="flex items-center gap-2 text-gray-600">
+        <Building className="w-4 h-4 flex-shrink-0" />
+        <span className="truncate">{job.employer?.name}</span>
+      </div>
+      {job.location && (
+        <div className="flex items-center gap-1.5 text-gray-600">
+          <MapPin className="h-3.5 w-3.5" />
+          <span className="truncate">{job.location}</span>
+        </div>
+      )}
+      {/* <p className="text-[11px] text-gray-500 mt-1">
+        Listed on {formatDate(job.created_at ?? "")}
+      </p> */}
+    </div>
+  );
+}
+
+function ReqPill({ ok, label }: { ok: boolean; label: string }) {
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-2 rounded-[0.33em] px-2 py-0.5 text-sm border",
+        ok
+          ? "bg-supporitve/10 border-supportive/50 text-supprotive"
+          : "bg-warning/10 border-warning/50 text-warning"
+      )}
+    >
+      {ok ? (
+        <CheckCircle2 className="h-3.5 w-3.5" />
+      ) : (
+        <AlertTriangle className="h-3.5 w-3.5" />
+      )}
+      <span className="font-medium">{label}</span>
+    </div>
+  );
+}
+
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section>
+      <h2 className="text-base font-semibold text-gray-900 mb-2">{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+function Divider() {
+  return <hr className="border-gray-200" />;
+}
+
+function MarkdownBlock({ text }: { text?: string | null }) {
+  if (!text)
+    return <p className="text-[13px] text-gray-600">No details provided.</p>;
+  return (
+    <div className="prose prose-sm max-w-none text-gray-700 text-[13px] leading-relaxed">
+      <ReactMarkdown>{text}</ReactMarkdown>
+    </div>
+  );
+}

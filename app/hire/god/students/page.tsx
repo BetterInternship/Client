@@ -14,7 +14,7 @@ import {
   ListSummary,
 } from "@/components/features/hire/god/ui";
 import { BoolBadge } from "@/components/ui/badge";
-import { getFullName } from "@/lib/utils/user-utils";
+import { getFullName } from "@/lib/profile";
 import { formatDate } from "@/lib/utils";
 import {
   useUsers,
@@ -165,11 +165,6 @@ export default function StudentsPage() {
 
   /* ---------- Options for dropdowns ---------- */
 
-  const courseOptions = useMemo(
-    () => refs.degrees.map((c) => ({ id: c.id, label: c.name })),
-    [refs.colleges]
-  );
-
   const positionOptions = useMemo(
     () => refs.job_categories.map((c) => ({ id: c.id, label: c.name })),
     [refs.job_categories]
@@ -184,9 +179,6 @@ export default function StudentsPage() {
       ? activeTags.some((t) => tags.includes(t))
       : activeTags.every((t) => tags.includes(t));
   };
-
-  const matchesCourse = (u: any) =>
-    activeCourses.length === 0 || activeCourses.includes(u.degree);
 
   const matchesPosition = (u: any) => {
     if (activePositions.length === 0) return true;
@@ -208,14 +200,13 @@ export default function StudentsPage() {
         u.id === search
     )
     .filter((u: any) =>
-      `${getFullName(u)} ${u.email} ${refs.to_college_name(
-        u.college
-      )} ${refs.to_degree_full_name(u.degree)}`
+      `${getFullName(u)} ${u.email} ${refs.to_college_name(u.college)} ${
+        u.degree
+      }`
         ?.toLowerCase()
         .includes(search?.toLowerCase() ?? "")
     )
     .filter((u: any) => matchesTagFilter(u.id))
-    .filter(matchesCourse)
     .filter(matchesPosition)
     .toSorted(
       (a: any, b: any) =>
@@ -275,6 +266,12 @@ export default function StudentsPage() {
         metas={
           <>
             <BoolBadge
+              state={u.apply_for_me}
+              onValue="Apply for me: ON"
+              offValue="Apply for me: OFF"
+              offScheme="destructive"
+            />
+            <BoolBadge
               state={u.is_verified}
               onValue="verified"
               offValue="not verified"
@@ -283,7 +280,7 @@ export default function StudentsPage() {
             <Meta>created: {formatDate(u.created_at ?? "")}</Meta>
 
             <Separator orientation="vertical" className="h-6" />
-            <Meta>{refs.to_degree_full_name(u.degree)}</Meta>
+            <Meta>{u.degree}</Meta>
             <Meta>{userApplications.length ?? 0} applications</Meta>
 
             {(modeTxt || typeTxt || posTxt) && (
@@ -295,14 +292,14 @@ export default function StudentsPage() {
           </>
         }
         footer={
-            <EditableTags
-              id={u.id}
-              tags={rowTags}
-              onAdd={addTag}
-              onRemove={removeTag}
-              suggestions={allTags}
-              placeholder="tag student…"
-            />
+          <EditableTags
+            id={u.id}
+            tags={rowTags}
+            onAdd={addTag}
+            onRemove={removeTag}
+            suggestions={allTags}
+            placeholder="tag student…"
+          />
         }
         leftActions={
           <Button
@@ -416,8 +413,13 @@ export default function StudentsPage() {
           {/* Quick */}
           <div className="px-4 py-3 border-b">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-700">Hide without applications</span>
-              <Switch checked={hideNoApps} onCheckedChange={(v) => setHideNoApps(Boolean(v))} />
+              <span className="text-sm text-slate-700">
+                Hide without applications
+              </span>
+              <Switch
+                checked={hideNoApps}
+                onCheckedChange={(v) => setHideNoApps(Boolean(v))}
+              />
             </div>
           </div>
 
@@ -434,34 +436,6 @@ export default function StudentsPage() {
                 </button>
               )}
             </div>
-
-            <Command>
-              <CommandInput placeholder="Search course..." />
-              <CommandList className="max-h-40 overflow-auto">
-                <CommandEmpty className="px-2 py-1 text-xs text-slate-400">
-                  No matches
-                </CommandEmpty>
-                <CommandGroup>
-                  {courseOptions.map((c) => {
-                    const on = activeCourses.includes(c.id);
-                    return (
-                      <CommandItem
-                        key={c.id}
-                        onSelect={() =>
-                          setActiveCourses((prev) =>
-                            on ? prev.filter((x) => x !== c.id) : [...prev, c.id]
-                          )
-                        }
-                        className="cursor-pointer"
-                      >
-                        <span className="truncate">{c.label}</span>
-                        <RowCheck visible={on} />
-                      </CommandItem>
-                    );
-                  })}
-                </CommandGroup>
-              </CommandList>
-            </Command>
           </div>
 
           {/* Position */}
@@ -492,7 +466,9 @@ export default function StudentsPage() {
                         key={p.id}
                         onSelect={() =>
                           setActivePositions((prev) =>
-                            on ? prev.filter((x) => x !== p.id) : [...prev, p.id]
+                            on
+                              ? prev.filter((x) => x !== p.id)
+                              : [...prev, p.id]
                           )
                         }
                         className="cursor-pointer"
@@ -505,9 +481,11 @@ export default function StudentsPage() {
                 </CommandGroup>
               </CommandList>
             </Command>
-          </div>
+          </div>;
 
-          {/* Tags */}
+          {
+            /* Tags */
+          }
           <div className="px-4 py-3">
             <div className="mb-2 flex items-center justify-between">
               <div className="text-sm font-medium">Tags</div>
@@ -541,7 +519,9 @@ export default function StudentsPage() {
                       key={t}
                       active={on}
                       onClick={() =>
-                        setActiveTags((prev) => (on ? prev.filter((x) => x !== t) : [...prev, t]))
+                        setActiveTags((prev) =>
+                          on ? prev.filter((x) => x !== t) : [...prev, t]
+                        )
                       }
                     >
                       {t}
@@ -550,12 +530,14 @@ export default function StudentsPage() {
                 })
               )}
             </div>
-          </div>
+          </div>;
 
           {/* Footer */}
           <div className="px-4 py-3 border-t bg-gray-50 flex items-center justify-between">
             <div className="text-xs text-slate-500">
-              {filtersActiveCount > 0 ? `${filtersActiveCount} active` : "No filters applied"}
+              {filtersActiveCount > 0
+                ? `${filtersActiveCount} active`
+                : "No filters applied"}
             </div>
             <div className="flex items-center gap-2">
               {filtersActiveCount > 0 && (
