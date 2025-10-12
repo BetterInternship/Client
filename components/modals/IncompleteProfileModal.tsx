@@ -14,13 +14,14 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAnalyzeResume } from "@/hooks/use-register";
 import ResumeUpload from "@/components/features/student/resume-parser/ResumeUpload";
-import { FormInput } from "@/components/EditForm";
+import { FormDropdown, FormInput } from "@/components/EditForm";
 import { UserService } from "@/lib/api/services";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { Stepper } from "../stepper/stepper";
 import { isProfileResume, isProfileBaseComplete } from "../../lib/profile";
 import { ModalHandle } from "@/hooks/use-modal";
 import { isValidPHNumber } from "@/lib/utils";
+import { useDbRefs } from "@/lib/db/use-refs";
 
 /* ============================== Modal shell ============================== */
 
@@ -55,6 +56,8 @@ type ProfileDraft = {
   lastName?: string;
   phone?: string;
   university?: string;
+  college?: string;
+  department?: string;
   degree?: string;
 };
 
@@ -92,6 +95,8 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     lastName: existingProfile.data?.last_name ?? "",
     phone: existingProfile.data?.phone_number ?? "",
     university: existingProfile.data?.university ?? "",
+    college: existingProfile.data?.college ?? "",
+    department: existingProfile.data?.department ?? "",
     degree: existingProfile.data?.degree ?? "",
   });
 
@@ -191,7 +196,9 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
             !!profile.lastName &&
             !isUpdating &&
             phoneValid &&
-            !!profile.degree
+            !!profile.degree &&
+            !!profile.college &&
+            !!profile.department
           );
         },
         component: <StepBasicIdentity value={profile} onChange={setProfile} />,
@@ -246,6 +253,8 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
         phone_number: profile.phone ?? "",
         university: profile.university ?? "",
         degree: profile.degree ?? "",
+        college: profile.college ?? "",
+        department: profile.department ?? "",
       }).then(() => {
         setIsUpdating(false);
         const isLast = step + 1 >= steps.length;
@@ -355,6 +364,9 @@ function StepBasicIdentity({
   value: ProfileDraft;
   onChange: (v: ProfileDraft) => void;
 }) {
+
+  const { colleges, departments } = useDbRefs();
+
   const phoneInvalid = useMemo(
     () => !!value.phone && !isValidPHNumber(value.phone),
     [value.phone]
@@ -412,26 +424,28 @@ function StepBasicIdentity({
               label="Degree / Program"
               value={value.degree ?? ""}
               setter={(val: any) => onChange({ ...value, degree: val })}
-              placeholder="Select degree…"
+              placeholder="Select degree / program…"
             />
           </div>
 
           <div>
-            <FormInput
+            <FormDropdown
               required
               label="College"
-              // value={value.college ?? ""} // TODO: add college to profile
-              // setter={(val: any) => onChange({ ...value, college: val })}
+              value={value.college ?? ""} 
+              setter={(val: any) => onChange({ ...value, college: val })}
+              options={colleges}
               placeholder="Select college…"
             />
           </div>
 
           <div>
-            <FormInput
+            <FormDropdown
               required
               label="Department"
-              // value={value.department ?? ""} // TODO: add department to profile
-              // setter={(val: any) => onChange({ ...value, department: val })}
+              value={value.department ?? ""}
+              setter={(val: any) => onChange({ ...value, department: val })}
+              options={departments}
               placeholder="Select department…"
             />
           </div>

@@ -36,6 +36,7 @@ import {
   createEditForm,
   FormMonthPicker,
   FormInput,
+  FormDropdown,
 } from "@/components/EditForm";
 import { Divider } from "@/components/ui/divider";
 import { isValidRequiredUserName } from "@/lib/utils/name-utils";
@@ -403,7 +404,7 @@ function ProfileReadOnlyTabs({
   onEdit: () => void;
 }) {
   const internshipPreferences = profile.internship_preferences;
-  const { to_university_name, job_modes, job_types, job_categories } =
+  const { to_university_name, to_college_name, to_department_name, job_modes, job_types, job_categories } =
     useDbRefs();
 
   type TabKey = "Student Profile" | "Internship Details";
@@ -469,8 +470,8 @@ function ProfileReadOnlyTabs({
               }
             />
             <LabeledProperty label="Degree / Program" value={profile.degree ?? "-"} />
-            <LabeledProperty label="College / School" value={profile.college ?? "-"} />
-            <LabeledProperty label="Department" value={profile.department ?? "-"} />
+            <LabeledProperty label="College / School" value={profile.college ? to_college_name(profile.college) : "-"} />
+            <LabeledProperty label="Department" value={profile.department ? to_department_name(profile.department) : "-"} />
             <LabeledProperty
               label="Expected Graduation Date"
               value={formatMonth(profile.expected_graduation_date) ?? "-"}
@@ -555,7 +556,6 @@ function ProfileReadOnlyTabs({
             Preferences
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-2">
-            {/* TODO: Remove this when we removed the columns */}
             <div>
               <div className="text-xs text-muted-foreground mb-1">
                 Work Modes
@@ -583,7 +583,6 @@ function ProfileReadOnlyTabs({
               })()}
             </div>
 
-            {/* TODO: Remove this when we removed the columns */}
             <div>
               <div className="text-xs text-muted-foreground mb-1">
                 Workload Types
@@ -614,7 +613,6 @@ function ProfileReadOnlyTabs({
               })()}
             </div>
 
-            {/* TODO: Remove this when we removed the columns */}
             <div className="sm:col-span-2">
               <div className="text-xs text-muted-foreground mb-1">
                 Positions / Categories
@@ -785,6 +783,18 @@ const ProfileEditor = forwardRef<
       (id: string) =>
         !universityOptions.some((u) => u.id === id) &&
         "Select a valid university."
+    );
+    addValidator(
+      "college",
+      (id: string) =>
+        !colleges.some((c) => c.id === id) &&
+        "Select a valid college."
+    );
+    addValidator(
+      "department",
+      (id: string) =>
+        !departments.some((u) => u.id === id) &&
+        "Select a valid department."
     );
     addValidator("internship_preferences", (i: InternshipPreferences) => {
 
@@ -959,19 +969,21 @@ const ProfileEditor = forwardRef<
             </div>
             <div>
               <ErrorLabel value={formErrors.degree} />
-              <FormInput
+              <FormDropdown
                 label={"College"}
-                // value={formData.degree ?? undefined} // TODO: add college to db
-                // setter={fieldSetter("degree")}
+                value={formData.college ?? undefined}
+                setter={fieldSetter("college")}
+                options={colleges.map(c => ({id: c.id, name: c.name}))}
                 placeholder="Indicate college"
               />
             </div>
             <div>
               <ErrorLabel value={formErrors.department} />
-              <FormInput
+              <FormDropdown
                 label={"Department"}
-                // value={formData.degree ?? undefined} // TODO: add department to db
-                // setter={fieldSetter("degree")}
+                value={formData.department ?? undefined}
+                setter={fieldSetter("department")}
+                options={departments.map(d => ({id: d.id, name: d.name}))}
                 placeholder="Indicate department"
               />
             </div>
