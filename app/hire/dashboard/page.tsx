@@ -10,7 +10,6 @@ import { useSideModal } from "@/hooks/use-side-modal";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useConversation, useConversations } from "@/hooks/use-conversation";
 import { useEmployerApplications, useProfile } from "@/hooks/use-employer-api";
-import { Button } from "@/components/ui/button";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { FileText, MessageCircle, SendHorizonal } from "lucide-react";
 import { EmployerConversationService, UserService } from "@/lib/api/services";
@@ -19,12 +18,8 @@ import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { ReviewModalContent } from "@/components/features/hire/dashboard/ReviewModalContent";
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import { getFullName } from "@/lib/profile";
-import { Textarea } from "@/components/ui/textarea";
-import { Message } from "@/components/ui/messages";
 import { useFile } from "@/hooks/use-file";
-import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
-import { motion } from "framer-motion";
 
 function DashboardContent() {
   const { isAuthenticated, redirectIfNotLoggedIn, loading } = useAuthContext();
@@ -284,100 +279,6 @@ function DashboardContent() {
           </div>
         )}
       </ResumeModal>
-
-      <ChatModal>
-        <div className="relative p-6 pt-6 pb-20 h-full w-full">
-          <div className="flex flex-col h-[100%] w-full gap-6">
-            <div className="text-4xl font-bold tracking-tight">
-              {getFullName(selectedApplication?.user)}
-            </div>
-            <div className="overflow-y-hidden flex-1 border border-gray-300 rounded-[0.33em] max-h-[75%]">
-              <div className="flex flex-col-reverse max-h-full min-h-full overflow-y-scroll p-2 gap-1">
-                <div ref={chatAnchorRef} />
-                {conversation?.loading ?? true ? (
-                  <div className="flex-1 flex flex-col items-center justify-center">
-                    <Loader>Loading conversation...</Loader>
-                  </div>
-                ) : conversation?.messages?.length ? (
-                  conversation.messages
-                    ?.map((message: any, idx: number) => {
-                      if (!idx) lastSelf = false;
-                      const oldLastSelf = lastSelf;
-                      lastSelf = message.sender_id === profile.data?.id;
-                      return {
-                        key: idx,
-                        message: message.message,
-                        self: message.sender_id === profile.data?.id,
-                        prevSelf: oldLastSelf,
-                        them: getFullName(selectedApplication?.user),
-                      };
-                    })
-                    ?.toReversed()
-                    ?.map((d: any) => (
-                      <Message
-                        key={d.key}
-                        message={d.message}
-                        self={d.self}
-                        prevSelf={d.prevSelf}
-                        them={d.them}
-                      />
-                    ))
-                ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center">
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <Card className="flex flex-col text-left gap-1 p-4 px-6 border-transparent">
-                        <MessageCircle className="w-16 h-16 my-4 opacity-50" />
-                        <div className="text-xl font-bold">
-                          Send a Message Now!
-                        </div>
-                        You don't have any messages with this applicant yet.
-                      </Card>
-                    </motion.div>
-                  </div>
-                )}
-              </div>
-            </div>
-            <Textarea
-              ref={messageInputRef}
-              placeholder="Send a message here..."
-              className="w-full h-20 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  if (!selectedApplication?.user_id) return;
-                  if (messageInputRef.current?.value) {
-                    handleMessage(
-                      selectedApplication.user_id,
-                      messageInputRef.current.value
-                    );
-                  }
-                }
-              }}
-              maxLength={1000}
-            />
-            <Button
-              size="md"
-              disabled={sending}
-              onClick={() => {
-                if (!selectedApplication?.user_id) return;
-                if (messageInputRef.current?.value) {
-                  handleMessage(
-                    selectedApplication?.user_id,
-                    messageInputRef.current?.value
-                  );
-                }
-              }}
-            >
-              {sending ? "Sending..." : "Send Message"}
-              <SendHorizonal className="w-5 h-5" />
-            </Button>
-          </div>
-        </div>
-      </ChatModal>
     </ContentLayout>
   );
 }
