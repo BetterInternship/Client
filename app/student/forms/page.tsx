@@ -8,6 +8,7 @@ import { Newspaper } from "lucide-react";
 import { fetchForms } from "@/lib/db/use-moa-backend";
 import { DynamicForm } from "@/components/features/student/forms/DynamicForm";
 import FormGenerateCard from "@/components/features/student/forms/FormGenerateCard";
+import { useGlobalModal } from "@/components/providers/ModalProvider";
 
 /**
  * The forms page component
@@ -16,6 +17,8 @@ import FormGenerateCard from "@/components/features/student/forms/FormGenerateCa
  */
 type TabKey = "Form Generator" | "My Forms";
 export default function FormsPage() {
+  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
+
   const [tab, setTab] = useState<TabKey>("Form Generator");
   const {
     data: formList = [],
@@ -28,14 +31,19 @@ export default function FormsPage() {
     gcTime: 10_000,
   });
 
-  console.log("forms", formList);
+  const openFormModal = (formName: string, formLabel: string) => {
+    openGlobalModal("form-generator-form", <DynamicForm form={formName} />, {
+      title: `Generate ${formLabel}`,
+      hasClose: true,
+      onClose: () => closeGlobalModal("form-generator-form"),
+      allowBackdropClick: true,
+      panelClassName: "sm:w-full sm:max-w-2xl",
+    });
+  };
 
   return (
     <div className="container max-w-6xl px-4 sm:px-10 pt-6 sm:pt-16 mx-auto">
       <div className="mb-6 sm:mb-8 animate-fade-in space-y-5">
-        {/* Header */}
-        <DynamicForm form="it-endorsement-letter" />
-
         <div>
           <div className="flex flex-row items-center gap-3 mb-2">
             <HeaderIcon icon={Newspaper} />
@@ -65,7 +73,11 @@ export default function FormsPage() {
               {!isLoading &&
                 !error &&
                 formList.map((form) => (
-                  <FormGenerateCard key={form.id} formTitle={form.label} />
+                  <FormGenerateCard
+                    key={form.id}
+                    formTitle={form.label}
+                    onGenerate={() => openFormModal(form.name, form.label)}
+                  />
                 ))}
             </div>
           </OutsideTabPanel>
