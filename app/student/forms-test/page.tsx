@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { OutsideTabPanel, OutsideTabs } from '@/components/ui/outside-tabs';
-import { HeaderIcon, HeaderText } from '@/components/ui/text';
-import { Newspaper } from 'lucide-react';
-import { z } from 'zod';
-import { useDynamicFormSchema } from '@/lib/db/use-moa-backend';
+import { useState } from "react";
+import { OutsideTabPanel, OutsideTabs } from "@/components/ui/outside-tabs";
+import { HeaderIcon, HeaderText } from "@/components/ui/text";
+import { Newspaper } from "lucide-react";
+import { z } from "zod";
+import { useDynamicFormSchema } from "@/lib/db/use-moa-backend";
 
 /**
  * The form builder.
@@ -19,6 +19,7 @@ const DynamicForm = ({ form }: { form: string }) => {
   return (
     <div>
       {dynamicForm.fields.map((field) => {
+        // return <Input className=""></Input>;
         return <div>{field.name}</div>;
       })}
     </div>
@@ -30,9 +31,9 @@ const DynamicForm = ({ form }: { form: string }) => {
  *
  * @component
  */
-type TabKey = 'Form Generator' | 'My Forms';
+type TabKey = "Form Generator" | "My Forms";
 export default function FormsPage() {
-  const [tab, setTab] = useState<TabKey>('Form Generator');
+  const [tab, setTab] = useState<TabKey>("Form Generator");
 
   return (
     <div className="container max-w-6xl px-4 sm:px-10 pt-6 sm:pt-16 mx-auto">
@@ -57,8 +58,8 @@ export default function FormsPage() {
           value={tab}
           onChange={(v) => setTab(v as TabKey)}
           tabs={[
-            { key: 'Form Generator', label: 'Form Generator' },
-            { key: 'My Forms', label: 'My Forms' },
+            { key: "Form Generator", label: "Form Generator" },
+            { key: "My Forms", label: "My Forms" },
           ]}
         >
           {/* Form Generator */}
