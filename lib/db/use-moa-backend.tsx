@@ -1,15 +1,15 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-10-12 07:40:24
+ * @ Modified time: 2025-10-12 09:57:39
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DocumentDatabase, DocumentTables } from '@betterinternship/schema.moa';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@supabase/supabase-js';
 import {
   create as createBatchedFetcher,
@@ -37,6 +37,16 @@ type IField = DocumentTables<'field_repository'>;
 type IFieldCollection = DocumentTables<'form_field_collections'>;
 
 /**
+ * Joined field.
+ * All validators are included.
+ */
+type IJoinedField = {
+  id: string;
+  name: string;
+  validators: ZodType[];
+};
+
+/**
  * Allows us to batch requests to the endpoint.
  * Fetches field validstors.
  */
@@ -50,7 +60,7 @@ const fieldValidatorFetcher = createBatchedFetcher({
       throw new Error(`Could not find at least one of the field validators.`);
     return data as FieldValidator[];
   },
-  resolver: keyResolver('name'),
+  resolver: keyResolver('id'),
   scheduler: windowScheduler(100),
 });
 
@@ -110,7 +120,7 @@ function evalZodSchema(schema: string) {
  * @hook
  */
 export const useDynamicFormSchema = (name: string) => {
-  const [fields, setFields] = useState([]);
+  const [fields, setFields] = useState<IJoinedField[]>([]);
   const { data, error } = useQuery({
     queryKey: ['field-collections'],
     queryFn: () => fetchFieldCollection(name),
@@ -134,8 +144,8 @@ export const useDynamicFormSchema = (name: string) => {
     await Promise.all(
       fields.map(
         async (f) =>
-          await fieldFetcher.fetch(f).then(async (field) => ({
-            ...(field ?? {}),
+          await fieldFetcher.fetch(f).then(async (field: IField | null) => ({
+            ...(field ?? ({} as IField)),
             validators: await mapValidators(field?.validators),
           })),
       ),
@@ -145,11 +155,12 @@ export const useDynamicFormSchema = (name: string) => {
     if (!data?.fields) return;
     const fieldList = data.fields as string[];
     const fields = mapFields(fieldList);
-    void fields.then((r) => console.log('FFAKDH', r));
+
+    void fields.then((f) => setFields(f));
   }, [data?.fields]);
 
   return {
-    data,
+    fields,
     error,
   };
 };

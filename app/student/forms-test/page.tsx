@@ -15,9 +15,14 @@ import { useDynamicFormSchema } from '@/lib/db/use-moa-backend';
  */
 const DynamicForm = ({ form }: { form: string }) => {
   const dynamicForm = useDynamicFormSchema(form);
-  console.log(dynamicForm.error);
 
-  return <></>;
+  return (
+    <div>
+      {dynamicForm.fields.map((field) => {
+        return <div>{field.name}</div>;
+      })}
+    </div>
+  );
 };
 
 /**
@@ -28,14 +33,6 @@ const DynamicForm = ({ form }: { form: string }) => {
 type TabKey = 'Form Generator' | 'My Forms';
 export default function FormsPage() {
   const [tab, setTab] = useState<TabKey>('Form Generator');
-
-  const origZodSchema = z
-    .string()
-    .refine((s) => s.split(' ').every((word) => /^[A-Z][a-z]*$/.test(word)), {
-      message: 'Value must be in title case',
-    });
-
-  console.log('orig', origZodSchema.safeParse('Hello World Tur'));
 
   return (
     <div className="container max-w-6xl px-4 sm:px-10 pt-6 sm:pt-16 mx-auto">

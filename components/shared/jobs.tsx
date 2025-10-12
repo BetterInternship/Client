@@ -180,13 +180,13 @@ export const JobBadges = ({
         </Badge>
       )}
       {!excludes.includes('type') &&
-        workModes.map((mode) => <JobType type={mode} />)}
+        workModes.map((mode) => <JobMode mode={mode} />)}
 
       {!excludes.includes('salary') && (
         <JobSalary salary={job.salary} salary_freq={job.salary_freq} />
       )}
       {!excludes.includes('mode') &&
-        workLoads.map((load) => <JobMode mode={load} />)}
+        workLoads.map((load) => <JobType type={load} />)}
     </div>
   );
 };
