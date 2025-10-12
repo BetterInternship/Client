@@ -44,7 +44,9 @@ export const isProfileBaseComplete = (profile?: PublicUser | null) => {
 		profile.last_name?.trim() && 
 		profile.university?.trim() && 
 		profile.phone_number?.trim() && 
-		profile.degree?.trim()
+		profile.degree?.trim() &&
+		profile?.college?.trim() &&
+		profile?.department?.trim()
 	)
 }
 
