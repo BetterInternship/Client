@@ -24,9 +24,7 @@ export function FormFlowRouter({ baseForm }: { baseForm: string }) {
   const companies: Array<{ id: string; name: string }> = companiesRaw.map(
     (c) => ({
       id: String(c.id),
-      name: String(
-        (c as any).legal_entity_name ?? (c as any).display_name ?? "Unnamed",
-      ),
+      name: c.legal_entity_name,
     }),
   );
 
@@ -40,47 +38,83 @@ export function FormFlowRouter({ baseForm }: { baseForm: string }) {
 
   return (
     <div className="space-y-4">
-      <FormDropdown
-        label="Select your company"
-        required
-        value={selection}
-        options={companies.map((c) => ({ id: c.id, name: c.name }))}
-        setter={(v: string | number | null) => {
-          const val = String(v ?? "");
-          setSelection(val);
-          if (val) setMode("select"); // choosing a company forces 'select' mode
-        }}
-        className="w-full"
-      />
+      <h3 className="text-sm font-semibold text-gray-700">Employer</h3>
 
-      <p className="text-xs text-muted-foreground">
-        Company not in our list?{" "}
-        <button
-          type="button"
-          className="underline underline-offset-4 hover:no-underline mr-2"
-          onClick={() => {
-            setMode("invite");
-            setSelection(""); // ensure no company_id
-          }}
-        >
-          Invite them to fill it in
-        </button>
-        or{" "}
-        <button
-          type="button"
-          className="underline underline-offset-4 hover:no-underline"
-          onClick={() => {
-            setMode("manual");
-            setSelection("");
-          }}
-        >
-          I’ll fill details manually
-        </button>
-        .
-      </p>
+      {/* SELECT MODE: show dropdown + actions */}
+      {mode === "select" ? (
+        <>
+          <FormDropdown
+            label="Select your company"
+            required
+            value={selection}
+            options={companies.map((c) => ({ id: c.id, name: c.name }))}
+            setter={(v: string | number | null) => {
+              const val = String(v ?? "");
+              setSelection(val);
+              if (val) setMode("select");
+            }}
+            className="w-full"
+          />
 
-      {mode === "invite" && <EntityFieldsOnly form={`${baseForm}-invite`} />}
-      {mode === "manual" && <EntityFieldsOnly form={`${baseForm}-manual`} />}
+          <p className="text-xs text-muted-foreground">
+            Company not in our list?{" "}
+            <button
+              type="button"
+              className="underline underline-offset-4 hover:no-underline mr-2"
+              onClick={() => {
+                setMode("invite");
+                setSelection(""); // ensure no company_id
+              }}
+              disabled={isLoading || !!error}
+            >
+              Invite them to fill it in
+            </button>
+            or{" "}
+            <button
+              type="button"
+              className="underline underline-offset-4 hover:no-underline"
+              onClick={() => {
+                setMode("manual");
+                setSelection("");
+              }}
+              disabled={isLoading || !!error}
+            >
+              I’ll fill details manually
+            </button>
+            .
+          </p>
+        </>
+      ) : (
+        /* INVITE/MANUAL MODE: hide dropdown, show back-to-select */
+        <div className="flex items-center justify-between rounded-[0.33em] border bg-card px-3 py-2 bg-gray-200">
+          <div className="text-sm">
+            {mode === "invite"
+              ? "Invite the company to complete details"
+              : "Fill company details manually"}
+          </div>
+          <button
+            type="button"
+            className="text-xs underline underline-offset-4 hover:no-underline"
+            onClick={() => {
+              setMode("select");
+              setSelection("");
+            }}
+          >
+            Back to company picker
+          </button>
+        </div>
+      )}
+
+      {mode === "invite" && (
+        <>
+          <EntityFieldsOnly form={`${baseForm}-invite`} />
+        </>
+      )}
+      {mode === "manual" && (
+        <>
+          <EntityFieldsOnly form={`${baseForm}-manual`} />
+        </>
+      )}
 
       {/* Main form */}
       <DynamicForm form={formName} />

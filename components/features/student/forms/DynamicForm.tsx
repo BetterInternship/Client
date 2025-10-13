@@ -18,13 +18,7 @@ import { Loader2 } from "lucide-react";
  *
  * @component
  */
-export const DynamicForm = ({
-  form,
-  hideSections = [],
-}: {
-  form: string;
-  hideSection?: FilledBy[];
-}) => {
+export const DynamicForm = ({ form }: { form: string }) => {
   const {
     fields: rawFields,
     error: loadError,
@@ -45,13 +39,13 @@ export const DynamicForm = ({
         id: f.id,
         key: f.name,
         label: f.label ?? f.name,
-        type: f.type, // "text" | "number" | "select" | "date" | "time"
+        type: f.type,
         placeholder: f.placeholder,
         helper: f.helper,
         maxLength: f.max_length,
         options: f.options,
         validators: (f.validators ?? []) as z.ZodTypeAny[],
-        filledBy: f.section as FilledBy,
+        section: f.section as FilledBy,
       })),
     [rawFields],
   );
@@ -120,12 +114,12 @@ export const DynamicForm = ({
       {!isLoading && defs.length > 0 && (
         <>
           <Section
-            title="Student (You)"
-            items={defs.filter((d) => d.filledBy === "student")}
+            title="Student Information"
+            items={defs.filter((d) => d.section === "student")}
           />
           <Section
-            title="University"
-            items={defs.filter((d) => d.filledBy === "university")}
+            title="University / Internship Information"
+            items={defs.filter((d) => d.section === "university")}
           />
         </>
       )}

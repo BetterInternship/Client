@@ -72,7 +72,6 @@ export function EntityFieldsOnly({ form }: { form: string }) {
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-semibold text-gray-700">Employer</h3>
       {entityDefs.map((def) => (
         <div key={def.id}>
           <FieldRenderer
