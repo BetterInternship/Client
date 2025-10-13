@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-10-12 10:05:36
+ * @ Modified time: 2025-10-12 11:05:55
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
@@ -138,8 +138,8 @@ export const useDynamicFormSchema = (name: string) => {
   const { data, error } = useQuery({
     queryKey: ["field-collections"],
     queryFn: () => fetchFieldCollection(name),
-    staleTime: 10000,
-    gcTime: 10000,
+    staleTime: 1000,
+    gcTime: 1000,
   });
 
   // Maps validators to their db fetches
