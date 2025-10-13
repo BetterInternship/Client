@@ -1,14 +1,32 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { z } from "zod";
 import { useDynamicFormSchema } from "@/lib/db/use-moa-backend";
-import { useFormData } from "@/lib/form-data";
-import { FieldRenderer, type FieldDef, type FilledBy } from "./FieldRenderer";
+import {
+  FieldRenderer,
+  type FieldDef as RendererFieldDef,
+  type FilledBy,
+} from "./FieldRenderer";
 import { Loader2 } from "lucide-react";
+import type { FieldDef } from "./FormFlowRouter";
 
 /** Renders only fields that belong to the employer side. */
-export function EntityFieldsOnly({ form }: { form: string }) {
+export function EntityFieldsOnly({
+  form,
+  values,
+  onChange,
+  onSchema,
+  errors = {},
+  showErrors = false,
+}: {
+  form: string;
+  values: Record<string, any>;
+  onChange: (key: string, value: any) => void;
+  onSchema: (defs: FieldDef[]) => void;
+  errors?: Record<string, string>;
+  showErrors?: boolean;
+}) {
   const { fields: rawFields, isLoading, error } = useDynamicFormSchema(form);
 
   const defs: FieldDef[] = useMemo(
@@ -28,24 +46,14 @@ export function EntityFieldsOnly({ form }: { form: string }) {
     [rawFields],
   );
 
-  // keep only "entity" fields (by section or label/key prefix)
-  const entityDefs = useMemo(
+  useEffect(() => {
+    onSchema(defs.filter((d) => d.section === "entity"));
+  }, [defs, onSchema]);
+
+  const entityDefs: RendererFieldDef[] = useMemo(
     () => defs.filter((d) => d.section === "entity"),
     [defs],
   );
-
-  // local form state (same pattern as DynamicForm)
-  const { formData, setField } = useFormData<Record<string, any>>({});
-  const [submitted, setSubmitted] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    if (!entityDefs.length) return;
-    for (const d of entityDefs) setField(d.key, "");
-    setErrors({});
-    setSubmitted(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entityDefs]);
 
   if (isLoading) {
     return (
@@ -76,10 +84,10 @@ export function EntityFieldsOnly({ form }: { form: string }) {
         <div key={def.id}>
           <FieldRenderer
             def={def}
-            value={String(formData[def.key] ?? "")}
-            onChange={(v) => setField(def.key, v)}
+            value={String(values[def.key] ?? "")}
+            onChange={(v) => onChange(def.key, v)}
             error={errors[def.key]}
-            showError={submitted}
+            showError={showErrors}
           />
         </div>
       ))}

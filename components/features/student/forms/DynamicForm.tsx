@@ -1,16 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { z, ZodType } from "zod";
+import { useEffect, useMemo } from "react";
+import { z } from "zod";
 import { useDynamicFormSchema } from "@/lib/db/use-moa-backend";
-import { useFormData } from "@/lib/form-data";
 import {
   FieldRenderer,
-  FieldDef,
-  FilledBy,
+  type FieldDef as RendererFieldDef,
+  type FilledBy,
 } from "@/components/features/student/forms/FieldRenderer";
-import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import type { FieldDef } from "./FormFlowRouter";
 
 /**
  * The form builder.
@@ -18,20 +17,26 @@ import { Loader2 } from "lucide-react";
  *
  * @component
  */
-export const DynamicForm = ({ form }: { form: string }) => {
+export function DynamicForm({
+  form,
+  values,
+  onChange,
+  onSchema,
+  errors = {},
+  showErrors = false,
+}: {
+  form: string;
+  values: Record<string, any>;
+  onChange: (key: string, value: any) => void;
+  onSchema: (defs: FieldDef[]) => void;
+  errors?: Record<string, string>;
+  showErrors?: boolean;
+}) {
   const {
     fields: rawFields,
     error: loadError,
     isLoading,
   } = useDynamicFormSchema(form);
-
-  // Form data & validation state
-  const { formData, setField } = useFormData<Record<string, any>>({});
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [validatorFns, setValidatorFns] = useState<
-    Record<string, ((v: any) => string | null)[]>
-  >({});
-  const [submitted, setSubmitted] = useState(false);
 
   const defs: FieldDef[] = useMemo(
     () =>
@@ -50,17 +55,17 @@ export const DynamicForm = ({ form }: { form: string }) => {
     [rawFields],
   );
 
-  // Initialize fields and compile validators when defs change
   useEffect(() => {
-    if (!defs.length) return;
-    for (const d of defs) setField(d.key, "");
-    setValidatorFns(compileValidators(defs));
-    setErrors({});
-    setSubmitted(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defs]);
+    onSchema(defs);
+  }, [defs, onSchema]);
 
-  const Section = ({ title, items }: { title: string; items: FieldDef[] }) => {
+  const Section = ({
+    title,
+    items,
+  }: {
+    title: string;
+    items: RendererFieldDef[];
+  }) => {
     if (!items.length) return null;
     return (
       <div className="space-y-3">
@@ -71,26 +76,15 @@ export const DynamicForm = ({ form }: { form: string }) => {
           <div key={def.id}>
             <FieldRenderer
               def={def}
-              value={String(formData[def.key] ?? "")}
-              onChange={(v) => setField(def.key, v)}
+              value={String(values[def.key] ?? "")}
+              onChange={(v) => onChange(def.key, v)}
               error={errors[def.key]}
-              showError={submitted}
+              showError={showErrors}
             />
           </div>
         ))}
       </div>
     );
-  };
-
-  const handleSubmit = async () => {
-    const next = validateAll(defs, formData, validatorFns);
-    setErrors(next);
-    setSubmitted(true);
-
-    const hasErrors = Object.values(next).some(Boolean);
-    if (hasErrors) return;
-
-    console.log("Submitting", formData);
   };
 
   return (
@@ -123,57 +117,6 @@ export const DynamicForm = ({ form }: { form: string }) => {
           />
         </>
       )}
-
-      <div className="pt-2 flex justify-end">
-        <Button
-          onClick={handleSubmit}
-          className="w-full sm:w-auto"
-          disabled={isLoading}
-          aria-busy={isLoading}
-        >
-          {isLoading ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Preparing…
-            </span>
-          ) : (
-            "Submit"
-          )}
-        </Button>
-      </div>
     </div>
   );
-};
-
-/* Helpers */
-function compileValidators(defs: FieldDef[]) {
-  const map: Record<string, ((v: any) => string | null)[]> = {};
-  for (const d of defs) {
-    const schemas = (d.validators ?? []) as z.ZodTypeAny[];
-    map[d.key] = schemas.map((schema) => (value: any) => {
-      const res = schema.safeParse(value);
-      if (res.success) return null;
-      // Prefer Zod issues; fallback to error message
-      const issues = (res.error as any)?.issues as
-        | { message: string }[]
-        | undefined;
-      return issues?.map((i) => i.message).join("\n") ?? res.error.message;
-    });
-  }
-  return map;
-}
-
-function validateAll(
-  defs: FieldDef[],
-  formData: Record<string, any>,
-  validatorFns: Record<string, ((v: any) => string | null)[]>,
-) {
-  const next: Record<string, string> = {};
-  for (const d of defs) {
-    const fns = validatorFns[d.key] ?? [];
-    const val = formData[d.key];
-    const firstErr = fns.map((fn) => fn(val)).find(Boolean) ?? "";
-    next[d.key] = firstErr || "";
-  }
-  return next;
 }
