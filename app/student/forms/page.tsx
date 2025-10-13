@@ -9,6 +9,7 @@ import { fetchForms } from "@/lib/db/use-moa-backend";
 import { DynamicForm } from "@/components/features/student/forms/DynamicForm";
 import FormGenerateCard from "@/components/features/student/forms/FormGenerateCard";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
+import { FormFlowRouter } from "@/components/features/student/forms/FormFlowRouter";
 
 /**
  * The forms page component
@@ -31,14 +32,22 @@ export default function FormsPage() {
     gcTime: 10_000,
   });
 
+  const generatorForms = (formList ?? []).filter(
+    (f) => !/-invite$|-manual$/i.test(f.name),
+  );
+
   const openFormModal = (formName: string, formLabel: string) => {
-    openGlobalModal("form-generator-form", <DynamicForm form={formName} />, {
-      title: `Generate ${formLabel}`,
-      hasClose: true,
-      onClose: () => closeGlobalModal("form-generator-form"),
-      allowBackdropClick: true,
-      panelClassName: "sm:w-full sm:max-w-2xl",
-    });
+    openGlobalModal(
+      "form-generator-form",
+      <FormFlowRouter baseForm={formName} />,
+      {
+        title: `Generate ${formLabel}`,
+        hasClose: true,
+        onClose: () => closeGlobalModal("form-generator-form"),
+        allowBackdropClick: true,
+        panelClassName: "sm:w-full sm:max-w-2xl",
+      },
+    );
   };
 
   return (
@@ -72,7 +81,7 @@ export default function FormsPage() {
               {error && <p className="text-red-600">Failed to load forms</p>}
               {!isLoading &&
                 !error &&
-                formList.map((form) => (
+                generatorForms.map((form) => (
                   <FormGenerateCard
                     key={form.id}
                     formTitle={form.label}

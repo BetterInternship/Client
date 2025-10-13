@@ -18,12 +18,26 @@ import { Loader2 } from "lucide-react";
  *
  * @component
  */
-export const DynamicForm = ({ form }: { form: string }) => {
+export const DynamicForm = ({
+  form,
+  hideSections = [],
+}: {
+  form: string;
+  hideSection?: FilledBy[];
+}) => {
   const {
     fields: rawFields,
     error: loadError,
     isLoading,
   } = useDynamicFormSchema(form);
+
+  // Form data & validation state
+  const { formData, setField } = useFormData<Record<string, any>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [validatorFns, setValidatorFns] = useState<
+    Record<string, ((v: any) => string | null)[]>
+  >({});
+  const [submitted, setSubmitted] = useState(false);
 
   const defs: FieldDef[] = useMemo(
     () =>
@@ -37,18 +51,10 @@ export const DynamicForm = ({ form }: { form: string }) => {
         maxLength: f.max_length,
         options: f.options,
         validators: (f.validators ?? []) as z.ZodTypeAny[],
-        filledBy: f.filled_by as FilledBy,
+        filledBy: f.section as FilledBy,
       })),
     [rawFields],
   );
-
-  // Form data & validation state
-  const { formData, setField } = useFormData<Record<string, any>>({});
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [validatorFns, setValidatorFns] = useState<
-    Record<string, ((v: any) => string | null)[]>
-  >({});
-  const [submitted, setSubmitted] = useState(false);
 
   // Initialize fields and compile validators when defs change
   useEffect(() => {
@@ -118,10 +124,6 @@ export const DynamicForm = ({ form }: { form: string }) => {
             items={defs.filter((d) => d.filledBy === "student")}
           />
           <Section
-            title="Employer"
-            items={defs.filter((d) => d.filledBy === "entity")}
-          />
-          <Section
             title="University"
             items={defs.filter((d) => d.filledBy === "university")}
           />
@@ -150,7 +152,6 @@ export const DynamicForm = ({ form }: { form: string }) => {
 };
 
 /* Helpers */
-
 function compileValidators(defs: FieldDef[]) {
   const map: Record<string, ((v: any) => string | null)[]> = {};
   for (const d of defs) {

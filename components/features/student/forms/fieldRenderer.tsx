@@ -23,7 +23,7 @@ export type FieldDef = {
   maxLength?: number;
   options?: Option[]; // for select
   validators: z.ZodTypeAny[];
-  filledBy?: FilledBy;
+  section?: FilledBy;
 };
 
 export function FieldRenderer({

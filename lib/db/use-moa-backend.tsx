@@ -47,6 +47,7 @@ type IJoinedField = {
   type: "text" | "number" | "date" | "select" | "time";
   options?: string;
   label: string;
+  section?: string;
 };
 
 export const fetchForms = async (): Promise<IFieldCollection[]> => {
@@ -141,7 +142,7 @@ export const useDynamicFormSchema = (name: string) => {
     error,
     isLoading: collectionLoading,
   } = useQuery({
-    queryKey: ["field-collections"],
+    queryKey: ["field-collections", name],
     queryFn: () => fetchFieldCollection(name),
     staleTime: 10000,
     gcTime: 10000,
@@ -168,27 +169,47 @@ export const useDynamicFormSchema = (name: string) => {
             type: field?.type ?? "text",
             label: field?.label ?? "",
             options: field?.options,
-            prefill: field?.prefill,
-            filled_by: field?.filled_by,
+            section: field?.section,
             validators: await mapValidators(field?.validators),
           })),
       ),
     );
 
   useEffect(() => {
-    if (!data?.fields) return;
-    setMappingLoading(true);
-    const fieldList = data.fields as string[];
-    const fieldsPromise = mapFields(fieldList);
+    const list =
+      safeToArray((data as any)?.fields_filled_by_user) ||
+      safeToArray((data as any)?.fields);
 
-    void fieldsPromise
-      .then((f) => setFields(f))
+    if (list.length === 0) {
+      setFields([]);
+      setMappingLoading(false);
+      return;
+    }
+
+    setMappingLoading(true);
+    void mapFields(list)
+      .then(setFields)
       .finally(() => setMappingLoading(false));
-  }, [data?.fields]);
+  }, [data?.fields_filled_by_user, data?.fields]);
 
   return {
     fields,
     error,
     isLoading: collectionLoading || mappingLoading,
   };
+};
+
+// Helpers
+const safeToArray = (val: unknown): string[] => {
+  if (!val) return [];
+  if (Array.isArray(val)) return val as string[];
+  if (typeof val === "string") {
+    try {
+      const parsed = JSON.parse(val);
+      return Array.isArray(parsed) ? (parsed as string[]) : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
 };
