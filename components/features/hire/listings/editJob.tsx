@@ -21,7 +21,7 @@ import { Job } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useFormData } from "@/lib/form-data";
 import Head from "next/head";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface EditJobPageProps {
@@ -58,6 +58,18 @@ const EditJobPage = ({
     const { formData, setField, setFields, fieldSetter } = useFormData<Job>();
     const router = useRouter();
     const profile = useProfile();
+    const searchParams = useSearchParams();
+
+    const refreshFlag = searchParams.get('refresh');
+
+    useEffect(() => {
+        if (refreshFlag === 'true') {
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.delete('refresh');
+            window.history.replaceState({}, '', newUrl.toString());
+            window.location.reload();
+        }
+    }, [refreshFlag]);
 
     const handleSaveEdit = async () => {
     // Validate required fields
@@ -107,7 +119,7 @@ const EditJobPage = ({
     if (job) {
         setFields(job);
     }
-    }, [job, is_editing]);
+    }, [job]);
 
     useEffect(() => {
     if (job && saving) {
@@ -491,7 +503,7 @@ const EditJobPage = ({
                             onChange={(value) => setField("requirements", value)}
                         />
                         </div>
-                        <p className="text-sm text-gray-300 mb-1">(Optional)</p>
+                        <p className="text-sm text-gray-400 mb-1">(Optional)</p>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div
                             onClick={() => setField("internship_preferences", {
