@@ -15,7 +15,6 @@ import { useProfileData } from "@/lib/api/student.data.api";
 
 type Mode = "select" | "manual" | "invite";
 type SectionKey = "student" | "university" | "entity";
-type Sectioned = Record<SectionKey, Record<string, any>>;
 
 export type FieldDef = {
   id: string | number;
@@ -381,9 +380,9 @@ function groupBySectionUsingNames(
   };
 
   for (const d of defs) {
-    const val = (values as any)[d.key] ?? (values as any)[d.id as any];
+    const val = values[d.key] ?? values[d.id];
     if (val === undefined) continue;
-    (out as any)[d.section][d.key] = val;
+    out[d.section][d.key] = val;
   }
   return out;
 }
