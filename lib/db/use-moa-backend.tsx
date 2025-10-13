@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-10-12 11:05:55
+ * @ Modified time: 2025-10-12 10:05:36
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
@@ -135,11 +135,16 @@ function evalZodSchema(schema: string) {
  */
 export const useDynamicFormSchema = (name: string) => {
   const [fields, setFields] = useState<IJoinedField[]>([]);
-  const { data, error } = useQuery({
+  const [mappingLoading, setMappingLoading] = useState(false);
+  const {
+    data,
+    error,
+    isLoading: collectionLoading,
+  } = useQuery({
     queryKey: ["field-collections"],
     queryFn: () => fetchFieldCollection(name),
-    staleTime: 1000,
-    gcTime: 1000,
+    staleTime: 10000,
+    gcTime: 10000,
   });
 
   // Maps validators to their db fetches
@@ -172,15 +177,18 @@ export const useDynamicFormSchema = (name: string) => {
 
   useEffect(() => {
     if (!data?.fields) return;
+    setMappingLoading(true);
     const fieldList = data.fields as string[];
-    const fields = mapFields(fieldList);
-    console.log("Fields", fields);
+    const fieldsPromise = mapFields(fieldList);
 
-    void fields.then((f) => setFields(f));
+    void fieldsPromise
+      .then((f) => setFields(f))
+      .finally(() => setMappingLoading(false));
   }, [data?.fields]);
 
   return {
     fields,
     error,
+    isLoading: collectionLoading || mappingLoading,
   };
 };

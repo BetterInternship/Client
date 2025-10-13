@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { z } from "zod";
+import { z, ZodType } from "zod";
 import { useDynamicFormSchema } from "@/lib/db/use-moa-backend";
 import { useFormData } from "@/lib/form-data";
 import {
@@ -10,6 +10,7 @@ import {
   FilledBy,
 } from "@/components/features/student/forms/FieldRenderer";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 /**
  * The form builder.
@@ -18,7 +19,11 @@ import { Button } from "@/components/ui/button";
  * @component
  */
 export const DynamicForm = ({ form }: { form: string }) => {
-  const { fields: rawFields, error: loadError } = useDynamicFormSchema(form);
+  const {
+    fields: rawFields,
+    error: loadError,
+    isLoading,
+  } = useDynamicFormSchema(form);
 
   const defs: FieldDef[] = useMemo(
     () =>
@@ -90,28 +95,54 @@ export const DynamicForm = ({ form }: { form: string }) => {
 
   return (
     <div className="space-y-4">
+      {isLoading && (
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>Loading form…</span>
+        </div>
+      )}
+
       {loadError && (
         <p className="text-sm text-red-600">
-          Failed to load form: {String(loadError)}
+          Failed to load form:{" "}
+          {loadError instanceof Error
+            ? loadError.message
+            : JSON.stringify(loadError)}
         </p>
       )}
 
-      <Section
-        title="Student (You)"
-        items={defs.filter((d) => d.filledBy === "student")}
-      />
-      <Section
-        title="Employer"
-        items={defs.filter((d) => d.filledBy === "entity")}
-      />
-      <Section
-        title="University"
-        items={defs.filter((d) => d.filledBy === "university")}
-      />
+      {!isLoading && defs.length > 0 && (
+        <>
+          <Section
+            title="Student (You)"
+            items={defs.filter((d) => d.filledBy === "student")}
+          />
+          <Section
+            title="Employer"
+            items={defs.filter((d) => d.filledBy === "entity")}
+          />
+          <Section
+            title="University"
+            items={defs.filter((d) => d.filledBy === "university")}
+          />
+        </>
+      )}
 
       <div className="pt-2 flex justify-end">
-        <Button onClick={handleSubmit} className="w-full sm:w-auto">
-          Submit
+        <Button
+          onClick={handleSubmit}
+          className="w-full sm:w-auto"
+          disabled={isLoading}
+          aria-busy={isLoading}
+        >
+          {isLoading ? (
+            <span className="inline-flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Preparing…
+            </span>
+          ) : (
+            "Submit"
+          )}
         </Button>
       </div>
     </div>
