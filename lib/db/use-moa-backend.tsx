@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-10-12 10:05:36
+ * @ Modified time: 2025-10-12 11:05:55
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
@@ -44,6 +44,20 @@ type IJoinedField = {
   id: string;
   name: string;
   validators: ZodType[];
+  type: "text" | "number" | "date" | "select" | "time";
+  options?: string;
+  label: string;
+};
+
+export const fetchForms = async (): Promise<IFieldCollection[]> => {
+  const { data, error } = await db.from("form_field_collections").select("*");
+  if (error) {
+    throw new Error(
+      `[form_field_collections/select] ${error.code ?? ""} ${error.message}`,
+    );
+  }
+  // @/ts-ignore
+  return data ?? [];
 };
 
 /**
@@ -124,8 +138,8 @@ export const useDynamicFormSchema = (name: string) => {
   const { data, error } = useQuery({
     queryKey: ["field-collections"],
     queryFn: () => fetchFieldCollection(name),
-    staleTime: 10000,
-    gcTime: 10000,
+    staleTime: 1000,
+    gcTime: 1000,
   });
 
   // Maps validators to their db fetches
@@ -146,6 +160,11 @@ export const useDynamicFormSchema = (name: string) => {
         async (f) =>
           await fieldFetcher.fetch(f).then(async (field: IField | null) => ({
             ...(field ?? ({} as IField)),
+            type: field?.type ?? "text",
+            label: field?.label ?? "",
+            options: field?.options,
+            prefill: field?.prefill,
+            filled_by: field?.filled_by,
             validators: await mapValidators(field?.validators),
           })),
       ),
@@ -155,6 +174,7 @@ export const useDynamicFormSchema = (name: string) => {
     if (!data?.fields) return;
     const fieldList = data.fields as string[];
     const fields = mapFields(fieldList);
+    console.log("Fields", fields);
 
     void fields.then((f) => setFields(f));
   }, [data?.fields]);
