@@ -194,6 +194,14 @@ export default function LoginPage() {
 
         <div className="flex flex-col gap-2 self-center items-center w-[80vw] lg:w-[30vw]">
           <p className="text-gray-500">
+            <a
+              className="text-primary hover:underline transition-colors duration-200"
+              href="/forgot-password"
+            >
+              Forgot your password?
+            </a>
+          </p>
+          <p className="text-gray-500">
             Don't have an account?{" "}
             <a
               className="text-primary hover:underline transition-colors duration-200"
