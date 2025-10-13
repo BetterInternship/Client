@@ -39,7 +39,13 @@ export default function FormsPage() {
   const openFormModal = (formName: string, formLabel: string) => {
     openGlobalModal(
       "form-generator-form",
-      <FormFlowRouter baseForm={formName} />,
+      <FormFlowRouter
+        baseForm={formName}
+        onGoToMyForms={() => {
+          setTab("My Forms");
+          closeGlobalModal("form-generator-form");
+        }}
+      />,
       {
         title: `Generate ${formLabel}`,
         hasClose: true,

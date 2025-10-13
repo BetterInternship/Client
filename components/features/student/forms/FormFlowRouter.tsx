@@ -9,6 +9,8 @@ import { FormDropdown } from "@/components/EditForm";
 import { EntityFieldsOnly } from "./EntityFieldsOnly";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { useProfileActions } from "@/lib/api/student.actions.api";
+import { StepComplete } from "./StepComplete";
 
 type Mode = "select" | "manual" | "invite";
 type SectionKey = "student" | "university" | "entity";
@@ -33,6 +35,7 @@ type FormValues = Record<string, any>;
 export function FormFlowRouter({
   baseForm,
   onSubmit,
+  onGoToMyForms,
 }: {
   baseForm: string;
   onSubmit?: (payload: {
@@ -42,9 +45,13 @@ export function FormFlowRouter({
     university: Record<string, any>;
     entity: Record<string, any>;
   }) => Promise<void> | void;
+  onGoToMyForms?: () => void;
 }) {
+  const { update } = useProfileActions();
+
   const [selection, setSelection] = useState<string>(""); // company id only
   const [mode, setMode] = useState<Mode>("select");
+  const [done, setDone] = useState(false);
 
   // centralized form state
   const [values, setValues] = useState<FormValues>({});
@@ -79,7 +86,6 @@ export function FormFlowRouter({
     (c: any) => ({ id: String(c.id), name: c.legal_entity_name }),
   );
 
-  /* ---------------- helpers: validators & validation ---------------- */
   const allDefs = useMemo(() => {
     // only include Entity fields if we are in invite/manual modes
     if (mode === "select") return mainDefs;
@@ -98,7 +104,6 @@ export function FormFlowRouter({
     return next;
   }, [allDefs, values, validatorFns]);
 
-  /* ---------------- submit ---------------- */
   const handleSubmit = useCallback(async () => {
     setSubmitted(true);
 
@@ -115,7 +120,7 @@ export function FormFlowRouter({
     const defsToUse =
       mode === "select" ? mainDefs : [...mainDefs, ...entityDefs]; // this merges schemas depending on mode
 
-    const { student, university, entity } = groupValuesBySection(
+    const { student, university, entity } = groupBySectionUsingNames(
       defsToUse,
       values,
     ); // split values by section
@@ -124,13 +129,11 @@ export function FormFlowRouter({
     const selected = companies.find((c) => c.id === selection);
     const entityPatched = {
       ...entity,
-      company_id: selection,
-      company_name: selected?.name,
+      entity_id: selection,
+      entity_legal_name: selected?.name,
     };
 
     const payload = {
-      formName,
-      values,
       student,
       university,
       entity: entityPatched,
@@ -138,17 +141,37 @@ export function FormFlowRouter({
 
     try {
       setBusy(true);
-      if (onSubmit) {
-        await onSubmit(payload);
-      } else {
-        // default behavior if no callback provided: just log
-        // eslint-disable-next-line no-console
-        console.log("FormFlowRouter submit payload →", payload);
-      }
+      await update.mutateAsync({ internship_moa_fields: payload });
+      setDone(true);
+      setSubmitted(false);
+      console.log("submitted", payload);
+    } catch (e) {
+      console.error("Submission error", e);
     } finally {
       setBusy(false);
     }
-  }, [mode, selection, entityDefs, values, formName, onSubmit, validateNow]);
+  }, [
+    mode,
+    selection,
+    mainDefs,
+    entityDefs,
+    values,
+    formName,
+    onSubmit,
+    validateNow,
+    update,
+    companies,
+  ]);
+
+  if (done) {
+    return (
+      <StepComplete
+        onMyForms={() => {
+          onGoToMyForms?.();
+        }}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -296,15 +319,20 @@ function validateAll(
   return next;
 }
 
-function groupValuesBySection(
+function groupBySectionUsingNames(
   defs: FieldDef[],
   values: Record<string, any>,
-): Sectioned {
-  const out: Sectioned = { student: {}, university: {}, entity: {} };
+) {
+  const out = {
+    student: {} as Record<string, any>,
+    university: {},
+    entity: {},
+  };
+
   for (const d of defs) {
-    // d.section is "student" | "university" | "entity"
-    const sec = (d.section ?? "student") as SectionKey;
-    if (d.key in values) out[sec][d.key] = values[d.key];
+    const val = (values as any)[d.key] ?? (values as any)[d.id as any];
+    if (val === undefined) continue;
+    (out as any)[d.section][d.key] = val;
   }
   return out;
 }
