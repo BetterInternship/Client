@@ -86,7 +86,7 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
         return;
       }
       set_creating(false);
-      router.push("/listings"); // Redirect to jobs listing page
+      router.push("/dashboard"); // Redirect to dashboard
     } catch (error) {
       set_creating(false);
       alert("Error creating job");
@@ -113,7 +113,7 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                 variant="outline" 
                 onClick={() => {
                   if (window.confirm("Are you sure you want to cancel? All unsaved changes will be lost.")) {
-                    router.push("/listings");
+                    router.push("/dashboard");
                   }
                 }}
                 disabled={creating}

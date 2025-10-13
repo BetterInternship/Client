@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { EmployerApplication, Job } from "@/lib/db/db.types";
+import Link from "next/link";
 
 
 interface JobListingProps {
@@ -26,16 +27,21 @@ export function JobListingsBox ({
         };
 
     return(
-        <Card className="m-4 hover:bg-primary/25 hover:cursor-pointer justify-between"
-        onClick={handleClick}
-        >
-            <h1 className="font-bold text-gray-900 text-base">{job.title}</h1>
-            <p className="text-sm text-gray-500">
-                {/* <Badge strength="medium" className="bg-white">
-                    Applicants: {statusFilteredApplicants.length}
-                </Badge> */}
-                Applicants: {applicants.length}
-            </p>
-        </Card>
+        <Link href={{
+            pathname:"/dashboard/manage",
+            query: {jobId: job.id}
+        }}>
+            <Card className="m-4 hover:bg-primary/25 hover:cursor-pointer justify-between"
+            onClick={handleClick}
+            >
+                <h1 className="font-bold text-gray-900 text-base">{job.title}</h1>
+                <p className="text-sm text-gray-500">
+                    Applicants: {applicants.length}
+                    {/* <Badge strength="medium" className="bg-white">
+                        Applicants: {statusFilteredApplicants.length}
+                    </Badge> */}
+                </p>
+            </Card>
+        </Link>
     );
 }
