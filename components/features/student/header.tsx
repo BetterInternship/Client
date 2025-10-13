@@ -306,18 +306,6 @@ function MobileDrawer({
                       </button>
                     </Link>
                   </li>
-                  <li>
-                    <button
-                      onClick={() => handleIncompleteProfileClick("forms")}
-                      className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary"
-                    >
-                      <div>
-                        <Newspaper className="w-4 h-4 inline-block mr-2" />
-                        <span>Forms</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-gray-300" />
-                    </button>
-                  </li>
                 </ul>
               </nav>
             </div>
@@ -435,12 +423,6 @@ export const ProfileButton: React.FC = () => {
         <DropdownOption href="/saved">
           <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
           <span className="text-primary">Saved Jobs</span>
-        </DropdownOption>
-        <DropdownOption on_click={() => {
-            handleIncompleteProfileClick("forms");
-          }}>
-          <Newspaper className="w-4 h-4 inline-block mr-2 text-primary" />
-          <span className="text-primary">Forms</span>
         </DropdownOption>
         <DropdownOption href="/" on_click={handleLogout}>
           <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />
