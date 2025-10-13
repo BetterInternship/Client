@@ -76,76 +76,14 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
-
-  const handle_email_submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-
-    const normalized = normalize(email);
-    if (!normalized) {
-      setIsLoading(false);
-      setError("Email is required.");
-      return;
-    }
-
-    setEmailNorm(normalized);
-
-    try {
-      const r = await email_status(normalized);
-      if (!r?.success) {
-        setIsLoading(false);
-        alert(r?.message ?? "Unknown error");
-        return;
-      }
-
-      if (!r.existing_user) {
-        setIsLoading(false);
-        set_new_account(true);
-        return;
-      }
-
-      setIsLoading(false);
-    } catch (err: any) {
-      setIsLoading(false);
-      setError(err?.message ?? "Something went wrong.");
-    }
-  };
-
-  const handle_password_submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-
-    // Use the normalized value if we have it; else normalize on the fly
-    const normalized = emailNorm || normalize(email);
-
-    try {
-      const r = await login(normalized, password); // ✅ login with normalized
-      // @ts-ignore
-      if (r?.success) {
-        // @ts-ignore
-        if (r.god) {
-          router.push("/god");
-        }
-        router.push("/dashboard");
-      } else {
-        setError("Invalid password.");
-        setIsLoading(false);
-      }
-    } catch (err: any) {
-      setError(err?.message ?? "Something went wrong.");
-      setIsLoading(false);
-    }
-  };
-
+  
   return (
-    <div className="flex-1 flex items-center justify-center px-6 py-12 h-[80vh]">
-      <div className="flex flex-col gap-12 w-full">
-        <Card className="w-[70vw] lg:w-[50vw] self-center">
+    <div className="flex-1 flex items-center justify-center px-6 py-12 h-full">
+      <div className="flex items-center w-full max-w-2xl h-full">
+        <Card className="w-full">
           {/* Welcome Message */}
           <div className="text-3xl tracking-tighter font-bold text-gray-700 mb-4">
-            Employer Log in
+            Employer Login
           </div>
           {/* Error Message */}
           {error && (
@@ -172,6 +110,9 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              <p className="text-sm text-gray-500">
+                <a className="text-blue-600 hover:text-blue-800 underline font-medium" href="/forgot-password">Forgot password?</a>
+              </p>
               <div className="flex justify-between items-center w-full">
                 <p className="text-sm text-gray-500">
                   Don't have an account? <a className="text-blue-600 hover:text-blue-800 underline font-medium" href="/register">Register here.</a>
