@@ -39,7 +39,6 @@ export function FormFlowRouter({
 }: {
   baseForm: string;
   onSubmit?: (payload: {
-    mode: Mode;
     formName: string;
     student: Record<string, any>;
     university: Record<string, any>;
@@ -157,25 +156,22 @@ export function FormFlowRouter({
   const handleSubmit = useCallback(async () => {
     setSubmitted(true);
 
-    // require a company when in "select" mode
     if (mode === "select" && !selection) {
       setErrors((e) => ({ ...e, __company__: "Please select a company." }));
       return;
     }
 
     const next = validateNow();
-    const hasErrors = Object.values(next).some(Boolean);
-    if (hasErrors) return;
+    if (Object.values(next).some(Boolean)) return;
 
     const defsToUse =
-      mode === "select" ? mainDefs : [...mainDefs, ...entityDefs]; // this merges schemas depending on mode
+      mode === "select" ? mainDefs : [...mainDefs, ...entityDefs];
 
     const { student, university, entity } = groupBySectionUsingNames(
       defsToUse,
       values,
-    ); // split values by section
+    );
 
-    // insert when on select mode
     const selected = companies.find((c) => c.id === selection);
     const entityPatched = {
       ...entity,
@@ -183,7 +179,7 @@ export function FormFlowRouter({
       entity_legal_name: selected?.name,
     };
 
-    const payload = {
+    const profilePayload = {
       student,
       university,
       entity: entityPatched,
@@ -191,11 +187,25 @@ export function FormFlowRouter({
 
     try {
       setBusy(true);
-      await update.mutateAsync({ internship_moa_fields: payload }); // TODO: prolly make a hook to do erthing
+
+      const updateRes = await update.mutateAsync({
+        internship_moa_fields: profilePayload,
+      });
+
+      const mergedFromServer = readMoaFieldsFromResponse(
+        updateRes,
+        profilePayload,
+      );
+
+      const submitPayload = {
+        formName,
+        ...mergedFromServer, // { student, university, entity } from server
+      };
+
+      await UserService.submitForm(submitPayload);
+      console.log("submitted", submitPayload);
       setDone(true);
       setSubmitted(false);
-
-      console.log("submitted", payload);
     } catch (e) {
       console.error("Submission error", e);
     } finally {
@@ -208,7 +218,6 @@ export function FormFlowRouter({
     entityDefs,
     values,
     formName,
-    onSubmit,
     validateNow,
     update,
     companies,
@@ -391,4 +400,25 @@ function groupBySectionUsingNames(
 // only seed when empty/undefined
 function shouldSeed(current: unknown) {
   return current === undefined || current === "";
+}
+
+function toFieldsArray(defs: FieldDef[], values: Record<string, any>) {
+  return defs.map((d) => ({
+    id: String(d.id),
+    key: d.key,
+    section: d.section,
+    type: d.type,
+    label: d.label,
+    value: values[d.key] ?? "",
+  }));
+}
+
+// helper: grab internship_moa_fields from whatever your API returns
+function readMoaFieldsFromResponse(res: any, fallback: any) {
+  return (
+    res?.internship_moa_fields ??
+    res?.user?.internship_moa_fields ??
+    res?.data?.user?.internship_moa_fields ??
+    fallback
+  );
 }

@@ -148,6 +148,15 @@ export const UserService = {
     );
   },
 
+  async submitForm(data: any) {
+    return APIClient.post<{ payload: any }>(
+      APIRouteBuilder("student")
+        .r("moa", "submit-form")
+        .build({ moaServer: true }),
+      data,
+    );
+  },
+
   async generateStudentMoa(data: {
     employer_id: string;
     user_id: string;
