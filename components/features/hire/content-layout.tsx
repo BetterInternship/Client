@@ -1,14 +1,13 @@
 "use client";
 
-import React from "react";
+import { FileText, FileUser, LayoutDashboard, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, FileText, FileUser } from "lucide-react";
+import React from "react";
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { useProfile } from "@/hooks/use-employer-api";
 import { useAuthContext } from "@/app/hire/authctx";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type NavItem = {
   href: string;
@@ -18,9 +17,14 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   {
+    href: "/listings/create",
+    icon: <Plus className="h-5 w-5" />,
+    label: "Add Listing",
+  },
+  {
     href: "/dashboard",
-    icon: <BarChart3 className="h-5 w-5" />,
-    label: "My Applications",
+    icon: <LayoutDashboard className="h-5 w-5" />,
+    label: "Dashboard",
   },
   {
     href: "/listings",
@@ -40,7 +44,7 @@ function SideNav({ items }: { items: NavItem[] }) {
 
   return (
     <nav className="flex flex-col">
-      {items.map(({ href, label, icon }) => (
+      {items.map(({ href, label, icon}) => (
         <Link
           key={label}
           href={label !== "Forms Automation" || god ? href : "#"}
@@ -53,7 +57,8 @@ function SideNav({ items }: { items: NavItem[] }) {
             }
             className={cn(
               "w-full h-10 px-8 flex flex-row justify-start border-0 rounded-none",
-              pathname === href ? "text-primary bg-gray-200" : "font-normal"
+              pathname === href ? "text-primary bg-gray-200" : "font-normal",
+              label === "Add Listing" ? "bg-primary text-white hover:bg-primary-300" : ""
             )}
           >
             {icon}

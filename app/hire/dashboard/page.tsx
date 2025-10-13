@@ -3,7 +3,6 @@
 "use client";
 
 import ContentLayout from "@/components/features/hire/content-layout";
-import { ApplicationsContent } from "@/components/features/hire/dashboard/ApplicationsContent";
 import { JobsContent } from "@/components/features/hire/dashboard/JobsContent";
 import { ReviewModalContent } from "@/components/features/hire/dashboard/ReviewModalContent";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
@@ -13,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
 import { Message } from "@/components/ui/messages";
-import { Tab, TabGroup } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useConversation, useConversations } from "@/hooks/use-conversation";
 import { useEmployerApplications, useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
@@ -23,9 +21,8 @@ import { useSideModal } from "@/hooks/use-side-modal";
 import { EmployerConversationService, UserService } from "@/lib/api/services";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { getFullName } from "@/lib/profile";
-import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { ArrowDownWideNarrow, ArrowLeft, ChevronDown, FileText, FilterIcon, MessageCircle, Search, SendHorizonal } from "lucide-react";
+import { FileText, MessageCircle, SendHorizonal } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthContext } from "../authctx";
 
@@ -49,24 +46,6 @@ function DashboardContent() {
     setConversationId(userConversation?.id);
   };
 
-  const SearchInput = (
-    // { value, onChange, onEnter, placeholder = "Search Internship Listings", className = "" }: { value: string; onChange: (v: string) => void; onEnter?: () => void; placeholder?: string; className?: string; }
-  ) => (
-    <div className={cn("relative h-10 w-full border border-gray-300 rounded-[0.33em]", 
-    // className
-    )}>
-      <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-      <input
-        type="text"
-        // value={value}
-        // onKeyDown={(e) => e.key === "Enter" && onEnter?.()}
-        // onChange={(e) => onChange(e.target.value)}
-        // placeholder={placeholder}
-        className="w-full h-10 pl-12 pr-4 bg-transparent border-0 outline-none focus:ring-0 text-gray-900 text-sm hover:bg-gray-100 focus:bg-gray-100 duration-150 placeholder:text-gray-500"
-      />
-    </div>
-  );
-
   const [viewMode, setViewMode] = useState<'jobs' | 'applications'>('jobs');
   const [selectedJobId, setSelectedJobId] =
     useState<string | null>(null);
@@ -74,19 +53,6 @@ function DashboardContent() {
     useState<number[]>([]);
   const [jobName, setJobName] =
     useState<string>("");
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // const [state, dispatch] = useReducer(jobFilterReducer, initialFilter);
-  // const doSearch = () => {
-  //   const params = new URLSearchParams();
-  //   if (searchTerm) params.set("query", searchTerm);
-  //   if (state.position.length) params.set("position", state.position.join(","));
-  //   if (state.jobMode.length) params.set("mode", state.jobMode.join(","));
-  //   if (state.jobWorkload.length) params.set("workload", state.jobWorkload.join(","));
-  //   if (state.jobAllowance.length) params.set("allowance", state.jobAllowance.join(","));
-  //   if (state.jobMoa.length) params.set("moa", state.jobMoa.join(","));
-  //   router.push(`/search/?${params.toString()}`);
-  // };
 
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const chatAnchorRef = useRef<HTMLDivElement>(null);
@@ -233,11 +199,10 @@ function DashboardContent() {
   };
 
   //shows applications when job listing is clicked
-  const handleJobListingClick = (jobId: string, statusId: number[], jobTitle: string) => {
+  const handleJobListingClick = (jobId: string, jobTitle: string) => {
     setSelectedJobId(jobId);
-    setFilteredStatus(statusId);
     setJobName(jobTitle);
-    setViewMode('applications');
+    window.location.href=`/hire/jobs/${jobId}`
   };
 
   //sets the job list
@@ -246,74 +211,6 @@ function DashboardContent() {
     setSelectedJobId(null);
     setFilteredStatus([]);
     setJobName("");
-  };
-
-  const handleStatusChange = (
-    application: EmployerApplication,
-    status: number
-  ) => {
-    applications.review(application.id ?? "", { status });
-  };
-
-  const tabContents = (status: number[]) => {
-    return viewMode === 'jobs' ? (
-        <>
-          <div className="flex items-center gap-4 w-full max-w-2xl m-4">
-              <SearchInput />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={(e) => {
-                    e.stopPropagation();
-                }}
-              >
-                <ArrowDownWideNarrow /> Sort By
-              </Button>
-          </div>
-          <JobsContent
-            applications={applications.employer_applications}
-            jobs={jobs.ownedJobs}
-            statusId={status}
-            employerId={profile.data?.id || ""}
-            onJobListingClick={handleJobListingClick}
-          />
-        </>
-      ) : (
-        <div>
-          <div className="flex items-center bg-white">
-              <button
-                onClick={handleJobBack}
-                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors m-4"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <h2 className="font-medium text-gray-900 text-base truncate">
-                Applications for: <strong>{jobName}</strong>
-              </h2>
-              <Button
-                variant="outline"
-                size="md"
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-                className="m-4 p-4"
-              >
-                <FilterIcon /> Filter <ChevronDown />
-              </Button>
-        </div>
-        <ApplicationsContent
-          applications={filteredApplications}
-          statusId={status}
-          openChatModal={openChatModal}
-          updateConversationId={updateConversationId}
-          onApplicationClick={handleApplicationClick}
-          onNotesClick={handleNotesClick}
-          onScheduleClick={handleScheduleClick}
-          onStatusChange={handleStatusChange}
-          setSelectedApplication={setSelectedApplication}
-        ></ApplicationsContent>
-      </div>
-    );
   };
 
   if (applications.loading) {
@@ -334,9 +231,9 @@ function DashboardContent() {
   let lastSelf = false;
 
   return (
-    //! big change is moving the tab group from ApplicationsTable to the page here for both access to jobs and applications
     <ContentLayout>
       <div className="flex-1 flex flex-col w-full">
+        <h3 className="p-4 m-4 text-primary">Welcome {profile.data?.name}</h3>
         <div className="p-6 flex flex-col h-0 flex-1 space-y-6">
           {!profile.loading && !profile.data?.is_verified ? (
             <ShowUnverifiedBanner />
@@ -344,7 +241,8 @@ function DashboardContent() {
             <>
               <Card className="overflow-auto h-full max-h-full border-none p-0 pt-2">
                 <>
-                <TabGroup>
+                <p className="m-4 text-gary-500">Current Jobs ({jobs.ownedJobs.length}): </p>
+                {/* <TabGroup>
                   <Tab
                     onTabChange={handleJobBack}
                     indicator={applications.employer_applications
@@ -400,7 +298,13 @@ function DashboardContent() {
                   >
                     {tabContents([0, 1, 4, 6])}
                   </Tab>
-                </TabGroup>
+                </TabGroup> */}
+                <JobsContent
+                  applications={applications.employer_applications}
+                  jobs={jobs.ownedJobs}
+                  employerId={profile.data?.id || ""}
+                  onJobListingClick={handleJobListingClick}
+                />
                 </>
               </Card>
             </>

@@ -10,19 +10,16 @@ import { JobListingsBox } from "./JobListingsBox";
 interface JobsContentProps {
     applications: EmployerApplication[];
     jobs: Job[];
-    statusId: number[];
     employerId: string;
-    onJobListingClick: (jobId: string, statusId: number[], jobTitle: string) => void;
+    onJobListingClick: (jobId: string, jobTitle: string) => void;
 }
 
 export function JobsContent({
     applications,
     jobs,
-    statusId,
     employerId,
     onJobListingClick
 }: JobsContentProps) {
-    
     return (
         <table className="relative table-auto border-separate border-spacing-0 w-full h-full max-h-full">
             <tbody className="w-full h-full max-h-full ">
@@ -36,7 +33,6 @@ export function JobsContent({
                             job={job}
                             applications={applications}
                             onJobListingClick={onJobListingClick}
-                            statusId={statusId}
                         />
                     ))
                 ) : (
