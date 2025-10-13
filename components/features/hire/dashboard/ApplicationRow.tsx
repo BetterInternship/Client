@@ -90,19 +90,6 @@ export function ApplicationRow({
             size="sm"
             onClick={(e) => {
               e.stopPropagation();
-              openChatModal();
-              setSelectedApplication(application);
-              updateConversationId(application.user_id ?? "");
-            }}
-            className="relative"
-          >
-            Message
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
               onNotes();
             }}
           >

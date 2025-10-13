@@ -7,7 +7,7 @@ import Header from "@/components/features/hire/header";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Footer } from "@/components/shared/footer";
-import { MoaContextProvider } from "@/lib/db/use-moa";
+import { BIMoaContextProvider } from "@/lib/db/use-bi-moa";
 import { PostHogProvider } from "../posthog-provider";
 import TanstackProvider from "../tanstack-provider";
 import Head from "next/head";
@@ -36,9 +36,9 @@ export default function RootLayout({
 }) {
   return (
     <RefsContextProvider>
-      <MoaContextProvider>
+      <BIMoaContextProvider>
         <HTMLContent>{children}</HTMLContent>
-      </MoaContextProvider>
+      </BIMoaContextProvider>
     </RefsContextProvider>
   );
 }

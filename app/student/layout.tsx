@@ -3,7 +3,7 @@ import "../globals.css";
 import { AuthContextProvider } from "@/lib/ctx-auth";
 import { RefsContextProvider } from "@/lib/db/use-refs";
 import { AppContextProvider } from "@/lib/ctx-app";
-import { MoaContextProvider } from "@/lib/db/use-moa";
+import { BIMoaContextProvider } from "@/lib/db/use-bi-moa";
 import { PostHogProvider } from "../posthog-provider";
 import TanstackProvider from "../tanstack-provider";
 import AllowLanding from "./allowLanding";
@@ -37,11 +37,11 @@ export const RootLayout = ({
 }>) => {
   return (
     <RefsContextProvider>
-      <MoaContextProvider>
+      <BIMoaContextProvider>
         <PostHogProvider>
           <HTMLContent>{children}</HTMLContent>
         </PostHogProvider>
-      </MoaContextProvider>
+      </BIMoaContextProvider>
     </RefsContextProvider>
   );
 };

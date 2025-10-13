@@ -158,7 +158,7 @@ export default function SearchPage() {
 
   const selectedJobsList = useMemo(
     () => jobs.filteredJobs.filter((j) => j.id && selectedIds.has(j.id)),
-    [jobs.filteredJobs, selectedIds]
+    [jobs.filteredJobs, selectedIds],
   );
 
   const handleJobCardClick = (job: Job) => {
@@ -189,9 +189,9 @@ export default function SearchPage() {
           allowBackdropClick: false,
           title: "Complete your profile",
           showHeaderDivider: true,
-        } as any
+        } as any,
       );
-      return; 
+      return;
     }
 
     const allApplied =
@@ -199,7 +199,7 @@ export default function SearchPage() {
       selectedJobsList.every((j) => jobs.isJobApplied(j.id!));
     if (!selectedJobsList.length || allApplied) {
       alert(
-        "No eligible jobs selected. Select jobs you haven’t applied to yet."
+        "No eligible jobs selected. Select jobs you haven’t applied to yet.",
       );
       return;
     }
@@ -221,7 +221,7 @@ export default function SearchPage() {
       {
         title: `Apply to ${selectedIds.size} selected`,
         allowBackdropClick: false,
-      } as any
+      } as any,
     );
   };
 
@@ -298,7 +298,7 @@ export default function SearchPage() {
             {
               title: "Bulk application summary",
               showHeaderDivider: true,
-            } as any
+            } as any,
           );
           return;
         }
@@ -345,7 +345,7 @@ export default function SearchPage() {
               closeGlobalModal("mass-apply-results");
             }}
           />,
-          { title: "Bulk application summary", showHeaderDivider: true } as any
+          { title: "Bulk application summary", showHeaderDivider: true } as any,
         );
       } finally {
         isSubmittingRef.current = false;
@@ -358,7 +358,7 @@ export default function SearchPage() {
       applicationActions,
       clearSelection,
       setSelectMode,
-    ]
+    ],
   );
   const router = useRouter();
 
@@ -508,7 +508,7 @@ export default function SearchPage() {
                           type="button"
                           className={cn(
                             "absolute right-3 top-3 z-10 bg-white p-1",
-                            "hover:shadow transition"
+                            "hover:shadow transition",
                           )}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -546,7 +546,6 @@ export default function SearchPage() {
             </div>
           </div>
         ) : (
-
           // Desktop split view
           <>
             {/* Left: List */}
@@ -565,7 +564,7 @@ export default function SearchPage() {
                           "flex items-center justify-center shadow-sm transition-opacity",
                           selectMode
                             ? "opacity-100"
-                            : "opacity-0 group-hover:opacity-100"
+                            : "opacity-0 group-hover:opacity-100",
                         )}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -583,7 +582,7 @@ export default function SearchPage() {
                       <div
                         className={cn(
                           isSelected(job.id) &&
-                            "ring-1 ring-primary ring-offset-[2px] rounded-[0.4em]"
+                            "ring-1 ring-primary ring-offset-[2px] rounded-[0.4em]",
                         )}
                         onClick={() => handleJobCardClick(job)}
                       >
@@ -683,7 +682,7 @@ export default function SearchPage() {
               applyConfirmModalRef.current?.close();
               applySuccessModalRef.current?.open();
               return;
-            }
+            },
           );
         }}
       />

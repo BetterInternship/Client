@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-22 14:37:59
- * @ Modified time: 2025-06-23 06:22:08
+ * @ Modified time: 2025-10-11 00:03:47
  * @ Description:
  *
  * Separates out the server component of the context.
@@ -12,30 +12,30 @@ import { Moa } from "./db.types";
 import { createClient } from "@supabase/supabase-js";
 
 // Environment setup
-const db_url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const db_anon_key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const DB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const DB_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!db_url || !db_anon_key)
+if (!DB_URL || !DB_ANON_KEY)
   throw new Error("[ERROR:ENV] Missing supabase configuration.");
-const db = createClient(db_url ?? "", db_anon_key ?? "");
+const db = createClient(DB_URL ?? "", DB_ANON_KEY ?? "");
 
 /**
  * Fetches actual data from db.
  *
  * @returns
  */
-export const createMoaContext = () => {
-  const [moa, set_moa] = useState<Moa[]>([]);
-  const [loading, set_loading] = useState(true);
+export const createBiMoaContext = () => {
+  const [moa, setMoa] = useState<Moa[]>([]);
+  const [loading, setLoading] = useState(true);
 
   /**
    * Fetch the entire moa table.
    */
-  const fetch_moa = async () => {
+  const fetchMoaRefTable = async () => {
     const { data, error } = await db.from("moa").select("*");
     if (error) console.error(error);
-    else set_moa(data);
-    set_loading(false);
+    else setMoa(data);
+    setLoading(false);
   };
 
   /**
@@ -58,7 +58,7 @@ export const createMoaContext = () => {
   );
 
   useEffect(() => {
-    fetch_moa();
+    fetchMoaRefTable();
   }, []);
 
   return {

@@ -75,7 +75,7 @@ export const Property: ValueComponent = ({
     <div
       className={cn(
         "text-gray-700 font-semibold overflow-hidden text-ellipsis",
-        className
+        className,
       )}
     >
       {value?.split("\n")?.map((v) => <div>{v}</div>) || (
@@ -113,7 +113,7 @@ export const JobBooleanLabel: ValueComponent = ({
   return (
     <p className="text-gray-500 font-medium text-sm">
       {!["", "false", "null", "undefined"].includes(
-        value?.toString().trim() ?? ""
+        value?.toString().trim() ?? "",
       ) ? (
         <CheckCircle className="w-5 h-5 text-blue-500"></CheckCircle>
       ) : (
@@ -133,7 +133,7 @@ export const JobTitleLabel: ValueComponent = ({
   fallback,
 }: ValueComponentProps) => {
   return (
-    <p className="text-gray-900 font-heading font-bold text-4xl">
+    <p className="text-gray-900 font-heading font-bold text-4xl line-clamp-2 truncate break-words whitespace-pre-wrap">
       {value || (
         <span className="text-gray-400 italic">
           {fallback ?? DEFAULT_LABEL}

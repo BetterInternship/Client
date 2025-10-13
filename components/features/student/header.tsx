@@ -130,7 +130,7 @@ const SearchInput = ({
             )}
           />
         </span>
-        <span className="leading-none">DLSU&nbsp;MOA</span>
+        <span className="leading-none">FOR CREDIT</span>
       </button>
     </div>
   );
@@ -157,7 +157,7 @@ function MobileDrawer({
 
   const handleLogout = () => logout().then(() => router.push("/"));
 
-  const handleProfileClick = () => {
+  const handleIncompleteProfileClick = (link: string) => {
     if (
       !isProfileResume(profile.data) ||
       !isProfileBaseComplete(profile.data) ||
@@ -178,7 +178,7 @@ function MobileDrawer({
         }
       );
     } else {
-      router.push("/profile");
+      router.push(`/${link}`);
     }
   };
   useEffect(() => {
@@ -274,7 +274,7 @@ function MobileDrawer({
                   </li>
                   <li>
                     <button
-                      onClick={() => handleProfileClick()}
+                      onClick={() => handleIncompleteProfileClick("profile")}
                       className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary"
                     >
                       <div>
@@ -341,7 +341,7 @@ export const ProfileButton: React.FC = () => {
 
   const handleLogout = () => logout().then(() => router.push("/"));
 
-  const handleProfileClick = () => {
+  const handleIncompleteProfileClick = (link: string) => {
     if (
       !isProfileResume(profile.data) ||
       !isProfileBaseComplete(profile.data) ||
@@ -360,7 +360,7 @@ export const ProfileButton: React.FC = () => {
         }
       );
     } else {
-      router.push("/profile");
+      router.push(`/${link}`);
     }
   };
 
@@ -410,7 +410,7 @@ export const ProfileButton: React.FC = () => {
       >
         <DropdownOption
           on_click={() => {
-            handleProfileClick();
+            handleIncompleteProfileClick("profile");
           }}
         >
           <Settings className="w-4 h-4 inline-block mr-2 text-primary" />
@@ -423,10 +423,6 @@ export const ProfileButton: React.FC = () => {
         <DropdownOption href="/saved">
           <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
           <span className="text-primary">Saved Jobs</span>
-        </DropdownOption>
-        <DropdownOption href="/forms">
-          <Newspaper className="w-4 h-4 inline-block mr-2 text-primary" />
-          <span className="text-primary">Forms</span>
         </DropdownOption>
         <DropdownOption href="/" on_click={handleLogout}>
           <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />

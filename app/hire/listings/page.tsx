@@ -1,15 +1,16 @@
 "use client";
 
-import { useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
 import ContentLayout from "@/components/features/hire/content-layout";
+import {
+  ListingsDeleteModal,
+  ListingsDetailsPanel,
+  ListingsJobPanel,
+  ListingsSearchBar,
+} from "@/components/features/hire/listings";
 import { ShowUnverifiedBanner } from "@/components/ui/banner";
 import { useListingsBusinessLogic } from "@/hooks/hire/listings/use-listings-business-logic";
-import {
-  ListingsSearchBar,
-  ListingsJobPanel,
-  ListingsDetailsPanel,
-  ListingsDeleteModal,
-} from "@/components/features/hire/listings";
+import { useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
+
 
 export default function MyListings() {
   // Get data from employer API hooks
