@@ -5,9 +5,10 @@ import {
   FormDatePicker,
   TimeInputNative,
   FormInput,
+  FormCheckbox,
 } from "@/components/EditForm";
 
-type FieldType = "text" | "number" | "select" | "date" | "time";
+type FieldType = "text" | "number" | "select" | "date" | "time" | "signature";
 export type FilledBy = "student" | "entity" | "university" | null;
 
 type Option = { value: string; label: string };
@@ -34,8 +35,8 @@ export function FieldRenderer({
   showError,
 }: {
   def: FieldDef;
-  value: string;
-  onChange: (v: string | number) => void;
+  value: any;
+  onChange: (v: any) => void;
   error?: string;
   showError?: boolean;
 }) {
@@ -118,6 +119,23 @@ export function FieldRenderer({
           helper={def.helper}
         />
         <Note />
+      </div>
+    );
+  }
+
+  const asBool = (v: any) => v === true;
+
+  if (def.type === "signature") {
+    const checked = asBool(value);
+    return (
+      <div className="space-y-1.5">
+        <FormCheckbox
+          label={def.label}
+          checked={checked}
+          setter={(c) => onChange(Boolean(c))}
+          sentence={def.helper}
+          required
+        />
       </div>
     );
   }

@@ -191,9 +191,10 @@ export function FormFlowRouter({
 
     try {
       setBusy(true);
-      await update.mutateAsync({ internship_moa_fields: payload });
+      await update.mutateAsync({ internship_moa_fields: payload }); // TODO: prolly make a hook to do erthing
       setDone(true);
       setSubmitted(false);
+
       console.log("submitted", payload);
     } catch (e) {
       console.error("Submission error", e);

@@ -76,7 +76,7 @@ export function DynamicForm({
           <div key={def.id}>
             <FieldRenderer
               def={def}
-              value={String(values[def.key] ?? "")}
+              value={values[def.key]}
               onChange={(v) => onChange(def.key, v)}
               error={errors[def.key]}
               showError={showErrors}

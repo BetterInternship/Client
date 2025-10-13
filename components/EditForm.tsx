@@ -225,6 +225,8 @@ interface FormCheckboxProps
   label?: string;
   setter?: (value: any) => void;
   className?: string;
+  sentence?: React.ReactNode;
+  required?: boolean;
 }
 
 export const FormCheckbox = ({
@@ -232,26 +234,31 @@ export const FormCheckbox = ({
   checked,
   setter,
   className,
+  sentence,
+  required,
   ...props
 }: FormCheckboxProps) => {
   return (
     <div>
       {label && (
-        <label className="text-xs text-gray-600 mb-1 block">{label}</label>
+        <label className="text-xs text-gray-600 mb-1 block">{label} {required && <span className="text-red-500">*</span>}</label> 
       )}
-      <Checkbox
-        name={label ?? ""}
-        checked={checked}
-        className={cn(
-          "flex flex-row items-center justify-center border rounded-[0.33em] w-4 h-4",
-          checked
-            ? "border-primary border-opacity-85 bg-blue-200"
-            : "border-gray-300 bg-gray-50",
-        )}
-        onCheckedChange={(checked) => setter && setter(checked)}
-      >
-        {checked && <Check className="text-primary opacity-75" />}
-      </Checkbox>
+      <div className="flex gap-2 items-center">
+        <Checkbox
+          name={label ?? ""}
+          checked={checked}
+          className={cn(
+            "flex flex-row items-center justify-center border rounded-[0.33em] w-7 h-7",
+            checked
+              ? "border-primary border-opacity-85 bg-blue-200"
+              : "border-gray-300 bg-gray-50",
+          )}
+          onCheckedChange={(checked) => setter && setter(checked)}
+        >
+          {checked && <Check className="text-primary opacity-75" />}
+        </Checkbox>
+        {sentence && <div className="text-xs text-gray-500">{sentence}</div>}
+      </div>
     </div>
   );
 };
