@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { UserService } from "@/lib/api/services";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useProfileActions } from "@/lib/api/student.actions.api";
 import { StepComplete } from "./StepComplete";
+import { useProfileData } from "@/lib/api/student.data.api";
 
 type Mode = "select" | "manual" | "invite";
 type SectionKey = "student" | "university" | "entity";
@@ -48,6 +49,7 @@ export function FormFlowRouter({
   onGoToMyForms?: () => void;
 }) {
   const { update } = useProfileActions();
+  const { data: profileData } = useProfileData();
 
   const [selection, setSelection] = useState<string>(""); // company id only
   const [mode, setMode] = useState<Mode>("select");
@@ -62,6 +64,55 @@ export function FormFlowRouter({
   // children will report their field defs so we can validate in one place
   const [mainDefs, setMainDefs] = useState<FieldDef[]>([]);
   const [entityDefs, setEntityDefs] = useState<FieldDef[]>([]);
+
+  // i am thou profile
+  const savedFields = profileData?.internship_moa_fields as
+    | {
+        student?: Record<string, any>;
+        university?: Record<string, any>;
+        entity?: Record<string, any>;
+      }
+    | undefined;
+
+  // i fill up the forms AUTOMATICALLY
+  useEffect(() => {
+    if (!savedFields) return;
+
+    const defsToUse =
+      mode === "select" ? mainDefs : [...mainDefs, ...entityDefs];
+    if (!defsToUse.length) return;
+
+    setValues((prev) => {
+      const next = { ...prev };
+      let changed = false;
+
+      for (const d of defsToUse) {
+        const sec = d.section; // "student" | "university" | "entity"
+        const fromSaved = savedFields?.[sec]?.[d.key];
+        if (fromSaved !== undefined && shouldSeed(prev[d.key])) {
+          next[d.key] = fromSaved;
+          changed = true;
+        }
+      }
+
+      return changed ? next : prev;
+    });
+
+    // preselect company for select mode if not chosen yet
+    if (mode === "select" && !selection) {
+      const maybeId =
+        savedFields?.entity?.entity_id ?? savedFields?.entity?.company_id; // legacy fallback
+      if (maybeId) setSelection(String(maybeId));
+    }
+  }, [
+    mode,
+    mainDefs,
+    entityDefs,
+    savedFields,
+    selection,
+    setValues,
+    setSelection,
+  ]);
 
   const formName =
     mode === "select"
@@ -335,4 +386,9 @@ function groupBySectionUsingNames(
     (out as any)[d.section][d.key] = val;
   }
   return out;
+}
+
+// only seed when empty/undefined
+function shouldSeed(current: unknown) {
+  return current === undefined || current === "";
 }
