@@ -28,7 +28,7 @@ export function DynamicForm({
   form: string;
   values: Record<string, any>;
   onChange: (key: string, value: any) => void;
-  onSchema: (defs: FieldDef[]) => void;
+  onSchema: (defs: RendererFieldDef[]) => void;
   errors?: Record<string, string>;
   showErrors?: boolean;
 }) {
@@ -38,17 +38,14 @@ export function DynamicForm({
     isLoading,
   } = useDynamicFormSchema(form);
 
-  const defs: FieldDef[] = useMemo(
+  const defs: RendererFieldDef[] = useMemo(
     () =>
       (rawFields ?? []).map((f) => ({
         id: f.id,
         key: f.name,
         label: f.label ?? f.name,
-        type: f.type,
-        placeholder: f.placeholder,
-        helper: f.helper,
-        maxLength: f.max_length,
-        options: f.options,
+        type: f.type ?? "text",
+        helper: f.helper ?? undefined,
         validators: f.validators ?? [],
         section: f.section as FilledBy,
       })),
@@ -75,6 +72,7 @@ export function DynamicForm({
     () => defs.filter((d) => d.section === "student"),
     [defs],
   );
+
   const universityDefs: RendererFieldDef[] = useMemo(
     () => defs.filter((d) => d.section === "university"),
     [defs],
@@ -156,6 +154,7 @@ const FormSection = memo(function FormSection({
         <div key={`${formKey}:${def.section}:${String(def.id)}`}>
           <FieldRenderer
             def={def}
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             value={values[def.key]}
             onChange={(v) => onChange(def.key, v)}
             error={errors[def.key]}

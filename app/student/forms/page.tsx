@@ -5,11 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { OutsideTabPanel, OutsideTabs } from "@/components/ui/outside-tabs";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { Newspaper } from "lucide-react";
-import {
-  fetchForms,
-  fetchAllUserForms,
-  type IUserForm,
-} from "@/lib/db/use-moa-backend";
+import { fetchForms, fetchAllUserForms } from "@/lib/db/use-moa-backend";
 import FormGenerateCard from "@/components/features/student/forms/FormGenerateCard";
 import MyFormCard from "@/components/features/student/forms/MyFormCard";
 import { useGlobalModal } from "@/components/providers/ModalProvider";

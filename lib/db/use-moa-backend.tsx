@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-10-14 20:38:41
+ * @ Modified time: 2025-10-14 20:50:52
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
@@ -68,7 +68,6 @@ export const fetchForms = async (): Promise<IFormSchema[]> => {
       `[form_schemas/select] ${error.code ?? ""} ${error.message}`,
     );
   }
-  // @/ts-ignore
   return data ?? [];
 };
 
