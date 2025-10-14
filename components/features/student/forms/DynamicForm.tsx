@@ -48,6 +48,7 @@ export function DynamicForm({
         helper: f.helper ?? undefined,
         validators: f.validators ?? [],
         section: f.section as FilledBy,
+        options: f.options,
       })),
     [rawFields],
   );

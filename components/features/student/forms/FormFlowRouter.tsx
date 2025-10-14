@@ -44,6 +44,7 @@ export function FormFlowRouter({
     formName: string;
     student: Record<string, any>;
     university: Record<string, any>;
+    internship: Record<string, any>;
     entity: Record<string, any>;
   }) => Promise<void> | void;
   onGoToMyForms?: () => void;
@@ -171,7 +172,7 @@ export function FormFlowRouter({
     const defsToUse =
       mode === "select" ? mainDefs : [...mainDefs, ...entityDefs];
 
-    const { student, university, entity } = groupBySectionUsingNames(
+    const { student, university, internship, entity } = groupBySectionUsingNames(
       defsToUse,
       values,
     );
@@ -186,6 +187,7 @@ export function FormFlowRouter({
     const profilePayload = {
       student,
       university,
+      internship,
       entity: entityPatched,
     };
 
@@ -203,7 +205,7 @@ export function FormFlowRouter({
 
       const submitPayload = {
         formName,
-        ...mergedFromServer, // { student, university, entity } from server
+        ...mergedFromServer, // { student, university, entity, internship } from server
       };
 
       await UserService.submitForm(submitPayload);
@@ -402,6 +404,7 @@ function groupBySectionUsingNames(
 ) {
   const out = {
     student: {} as Record<string, any>,
+    internship: {},
     university: {},
     entity: {},
   };
