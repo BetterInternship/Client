@@ -30,8 +30,8 @@ function DashboardContent() {
   const { isAuthenticated, redirectIfNotLoggedIn, loading } = useAuthContext();
   const profile = useProfile();
   const applications = useEmployerApplications();
-  const jobs = useOwnedJobs();
-  const archivedJobs = jobs.ownedJobs.filter((job) => job.is_active === false ||
+  const { ownedJobs, update_job }= useOwnedJobs();
+  const archivedJobs = ownedJobs.filter((job) => job.is_active === false ||
     job.is_deleted === true || job.is_unlisted === true);
 
   const [selectedJobId, setSelectedJobId] =
@@ -77,7 +77,7 @@ function DashboardContent() {
             <>
               <Card className="h-full max-h-full border-none p-0 pt-2">
                 <>
-                <p className="m-4 text-gary-500">Current Jobs ({jobs.ownedJobs.length}): </p>
+                <p className="m-4 text-gary-500">Current Jobs ({ownedJobs.length}): </p>
                 {/* the commented out tab group is from the old tabs thing */}
                 {/* <TabGroup>
                   <Tab
@@ -138,9 +138,10 @@ function DashboardContent() {
                 </TabGroup> */}
                 <JobsContent
                   applications={applications.employer_applications}
-                  jobs={jobs.ownedJobs}
+                  jobs={ownedJobs}
                   employerId={profile.data?.id || ""}
                   onJobListingClick={handleJobListingClick}
+                  updateJob={update_job}
                 />
                 </>
               </Card>

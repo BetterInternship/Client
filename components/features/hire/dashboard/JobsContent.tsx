@@ -12,13 +12,15 @@ interface JobsContentProps {
     jobs: Job[];
     employerId: string;
     onJobListingClick: (jobId: string, jobTitle: string) => void;
+    updateJob: (jobId: string, job: Partial<Job>) => Promise<any>;
 }
 
 export function JobsContent({
     applications,
     jobs,
     employerId,
-    onJobListingClick
+    onJobListingClick,
+    updateJob
 }: JobsContentProps) {
     return (
         <table className="relative table-auto border-separate border-spacing-0 w-full h-full max-h-full">
@@ -33,6 +35,7 @@ export function JobsContent({
                             job={job}
                             applications={applications}
                             onJobListingClick={onJobListingClick}
+                            update_job={updateJob}
                         />
                     ))
                 ) : (
