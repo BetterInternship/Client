@@ -79,14 +79,14 @@ export default function FormsPage() {
 
   const { data: employersData } = useQuery({
     queryKey: ["companies:list"],
-    queryFn: UserService.getEntityList,
+    queryFn: async () => await UserService.getEntityList(),
     staleTime: 60_000,
   });
 
   const companyMap: Record<string, string> = useMemo(
     () =>
       Object.fromEntries(
-        (employersData?.employers ?? []).map((e: any) => [
+        (employersData?.employers ?? []).map((e) => [
           String(e.id),
           e.legal_entity_name,
         ]),
