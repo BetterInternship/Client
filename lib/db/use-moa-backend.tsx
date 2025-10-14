@@ -8,7 +8,12 @@
  */
 
 import { useEffect, useState } from "react";
-import { DocumentDatabase, DocumentTables } from "@betterinternship/schema.moa";
+import {
+  DocumentDatabase,
+  DocumentTables,
+  EntityDatabase,
+  EntityTables,
+} from "@betterinternship/schema.moa";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@supabase/supabase-js";
 import {
@@ -21,6 +26,8 @@ import z, { ZodType } from "zod";
 // Environment setup
 const DB_URL = process.env.NEXT_PUBLIC_MOA_DOCS_SUPABASE_URL;
 const DB_ANON_KEY = process.env.NEXT_PUBLIC_MOA_DOCS_SUPABASE_ANON_KEY;
+const DB_URL_ENT = process.env.NEXT_PUBLIC_MOA_ENTITY_SUPABASE_URL;
+const DB_ANON_KEY_ENT = process.env.NEXT_PUBLIC_MOA_ENTITY_SUPABASE_ANON_KEY;
 
 if (!DB_URL || !DB_ANON_KEY) {
   console.warn("Missing supabase configuration for MOA docs backend.");
@@ -28,6 +35,10 @@ if (!DB_URL || !DB_ANON_KEY) {
   // throw new Error("[ERROR:ENV] Missing supabase configuration (for MOA docs backend).");
 }
 const db = createClient<DocumentDatabase>(DB_URL ?? "", DB_ANON_KEY ?? "");
+const db_ent = createClient<EntityDatabase>(
+  DB_URL_ENT ?? "",
+  DB_ANON_KEY_ENT ?? "",
+);
 
 /**
  * Moa backend types.
@@ -36,6 +47,7 @@ type FieldValidator = DocumentTables<"field_validators">;
 type FieldTransformer = DocumentTables<"field_transformers">;
 type IField = DocumentTables<"field_repository">;
 type IFieldCollection = DocumentTables<"form_field_collections">;
+export type IUserForm = EntityTables<"student_internship_forms">;
 
 /**
  * Joined field.
@@ -227,6 +239,19 @@ export const useDynamicFormSchema = (name: string) => {
     error,
     isLoading: collectionLoading || mappingLoading,
   };
+};
+
+export const fetchAllUserForms = async (userId: string) => {
+  console.log(userId, "im in");
+  if (!userId) return;
+
+  const { data, error } = await db_ent
+    .from("student_internship_forms")
+    .select("*")
+    .eq("user_id", userId);
+
+  if (error) throw new Error(`Could not fetch user forms: ${error.message}`);
+  return data as IUserForm[];
 };
 
 // Helpers
