@@ -150,9 +150,7 @@ export const UserService = {
 
   async submitForm(data: any) {
     return APIClient.post<{ payload: any }>(
-      APIRouteBuilder("student")
-        .r("moa", "submit-form")
-        .build({ moaServer: true }),
+      APIRouteBuilder("forms").r("initiate-moa").build({ moaServer: true }),
       data,
     );
   },
@@ -173,14 +171,8 @@ export const UserService = {
     internship_end_time: string;
     internship_coordinator_name: string;
   }) {
-    return APIClient.post<{
-      moaRequestId: string;
-      signedDocumentId: string;
-      verificationCode: string;
-    }>(
-      APIRouteBuilder("student").r("moa", "request").build({ moaServer: true }),
-      data,
-    );
+    alert("this route isnt implemented yet");
+    return Promise.resolve({});
   },
 
   async generateManualStudentMoa(data: {
@@ -204,16 +196,8 @@ export const UserService = {
     companyRepresentativePosition: string;
     companyType: string;
   }) {
-    return APIClient.post<{
-      moaRequestId: string;
-      signedDocumentId: string;
-      verificationCode: string;
-    }>(
-      APIRouteBuilder("student")
-        .r("moa", "request", "manual")
-        .build({ moaServer: true }),
-      data,
-    );
+    alert("this route isnt implemented yet");
+    return Promise.resolve({});
   },
 
   async createStudentMoaRow(data: {
@@ -246,12 +230,8 @@ export const UserService = {
   },
 
   async requestEmployerAssist(id: string, recipient: string) {
-    return APIClient.post<{}>(
-      APIRouteBuilder("student")
-        .r("moa", "request", "partial", id)
-        .build({ moaServer: true }),
-      { recipient },
-    );
+    alert("this route isnt implemented yet");
+    return Promise.resolve({});
   },
 
   async parseResume(form: FormData) {

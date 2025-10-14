@@ -7,7 +7,7 @@ import {
   FieldRenderer,
   type FieldDef as RendererFieldDef,
   type FilledBy,
-} from "./FieldRenderer";
+} from "./fieldRenderer";
 import { Loader2 } from "lucide-react";
 import type { FieldDef } from "./FormFlowRouter";
 
@@ -40,7 +40,7 @@ export function EntityFieldsOnly({
         helper: f.helper,
         maxLength: f.max_length,
         options: f.options,
-        validators: (f.validators ?? []) as z.ZodTypeAny[],
+        validators: f.validators ?? [],
         section: f.section as FilledBy,
       })),
     [rawFields],

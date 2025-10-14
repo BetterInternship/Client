@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-10-14 18:07:30
+ * @ Modified time: 2025-10-14 20:38:41
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
@@ -46,8 +46,8 @@ const db_ent = createClient<EntityDatabase>(
 type FieldValidator = DocumentTables<"field_validators">;
 type FieldTransformer = DocumentTables<"field_transformers">;
 type IField = DocumentTables<"field_repository">;
-type IFieldCollection = DocumentTables<"form_field_collections">;
 export type IUserForm = EntityTables<"student_internship_forms">;
+type IFormSchema = DocumentTables<"form_schemas">;
 
 /**
  * Joined field.
@@ -58,11 +58,14 @@ interface IJoinedField extends Omit<IField, "validators" | "transformers"> {
   transformers: ZodType[];
 }
 
-export const fetchForms = async (): Promise<IFieldCollection[]> => {
-  const { data, error } = await db.from("form_field_collections").select("*");
+export const fetchForms = async (): Promise<IFormSchema[]> => {
+  const { data, error } = await db
+    .from("form_schemas")
+    .select("*")
+    .contains("initiators", ["student"]);
   if (error) {
     throw new Error(
-      `[form_field_collections/select] ${error.code ?? ""} ${error.message}`,
+      `[form_schemas/select] ${error.code ?? ""} ${error.message}`,
     );
   }
   // @/ts-ignore
@@ -131,12 +134,12 @@ const fieldFetcher = createBatchedFetcher({
  */
 const fetchFieldCollection = async (name: string) => {
   const { data, error } = await db
-    .from("form_field_collections")
+    .from("form_schemas")
     .select("*")
     .eq("name", name)
     .single();
   if (error) throw new Error(`Could not find the field collections "${name}".`);
-  return data as IFieldCollection;
+  return data as IFormSchema;
 };
 
 /**
