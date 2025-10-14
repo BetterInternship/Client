@@ -166,7 +166,7 @@ export default function FormsPage() {
                   const title = `${formName} | ${companyName}`;
                   const status: "Pending" | "Signed" = row.signed_document_id
                     ? "Signed"
-                    : "Pending";
+                    : "Waiting for signature/s";
                   return (
                     <MyFormCard
                       title={title}
