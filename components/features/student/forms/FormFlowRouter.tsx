@@ -258,34 +258,36 @@ export function FormFlowRouter({
           {submitted && errors.__company__ && (
             <p className="text-xs text-rose-600 mt-1">{errors.__company__}</p>
           )}
-          <p className="text-xs text-muted-foreground">
-            Company not in our list?{" "}
-            {allowInvite && (
-              <button
-                type="button"
-                className="underline underline-offset-4 hover:no-underline mr-2"
-                onClick={() => {
-                  setMode("invite");
-                  setSelection("");
-                }}
-              >
-                Invite them to fill it in
-              </button>
-            )}
-            {allowInvite && allowManual && "or "}
-            {allowManual && (
-              <button
-                type="button"
-                className="underline underline-offset-4 hover:no-underline"
-                onClick={() => {
-                  setMode("manual");
-                  setSelection("");
-                }}
-              >
-                I’ll fill details manually
-              </button>
-            )}
-          </p>
+          {allowInvite || allowManual ? (
+            <p className="text-xs text-muted-foreground">
+              Company not in our list?{" "}
+              {allowInvite && (
+                <button
+                  type="button"
+                  className="underline underline-offset-4 hover:no-underline mr-2"
+                  onClick={() => {
+                    setMode("invite");
+                    setSelection("");
+                  }}
+                >
+                  Invite them to fill it in
+                </button>
+              )}
+              {allowInvite && allowManual && "or "}
+              {allowManual && (
+                <button
+                  type="button"
+                  className="underline underline-offset-4 hover:no-underline"
+                  onClick={() => {
+                    setMode("manual");
+                    setSelection("");
+                  }}
+                >
+                  I’ll fill details manually
+                </button>
+              )}
+            </p>
+          ) : null}
         </>
       ) : (
         /* INVITE/MANUAL MODE: hide dropdown, show back-to-select */
