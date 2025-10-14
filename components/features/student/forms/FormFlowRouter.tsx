@@ -104,7 +104,7 @@ export function FormFlowRouter({
     // preselect company for select mode if not chosen yet
     if (mode === "select" && !selection) {
       const maybeId =
-        savedFields?.entity?.entity_id ?? savedFields?.entity?.company_id; // legacy fallback
+        savedFields?.entity?.employer_id ?? savedFields?.entity?.company_id; // legacy fallback
       if (maybeId) setSelection(String(maybeId));
     }
   }, [
@@ -172,16 +172,14 @@ export function FormFlowRouter({
     const defsToUse =
       mode === "select" ? mainDefs : [...mainDefs, ...entityDefs];
 
-    const { student, university, internship, entity } = groupBySectionUsingNames(
-      defsToUse,
-      values,
-    );
+    const { student, university, internship, entity } =
+      groupBySectionUsingNames(defsToUse, values);
 
     const selected = companies.find((c) => c.id === selection);
     const entityPatched = {
       ...entity,
-      entity_id: selection,
-      entity_legal_name: selected?.name,
+      employer_id: selection,
+      employer_legal_name: selected?.name,
     };
 
     const profilePayload = {
@@ -370,7 +368,7 @@ export function FormFlowRouter({
 function compileValidators(defs: FieldDef[]) {
   const map: Record<string, ((v: any) => string | null)[]> = {};
   for (const d of defs) {
-    const schemas = (d.validators ?? []) as z.ZodTypeAny[];
+    const schemas = d.validators ?? [];
     map[d.key] = schemas.map((schema) => (value: any) => {
       const res = schema.safeParse(value);
       if (res.success) return null;

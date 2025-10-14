@@ -158,7 +158,7 @@ export default function FormsPage() {
                 !myFormsError &&
                 myForms.map((row) => {
                   const formName = row.form_name;
-                  const companyName = companyMap[row.entity_id];
+                  const companyName = companyMap[row.employer_id];
                   const title = `${formName} | ${companyName}`;
                   const status: "Pending" | "Signed" = row.signed_document_id
                     ? "Signed"

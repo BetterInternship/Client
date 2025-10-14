@@ -52,7 +52,7 @@ export function RecipientFlowRouter({
   }) => Promise<void> | void;
 }) {
   // company-only state
-  const [selection, setSelection] = useState<string>(""); // entity_id
+  const [selection, setSelection] = useState<string>("");
   const [mode, setMode] = useState<Mode>("select");
 
   const [done, setDone] = useState(false);
@@ -151,8 +151,8 @@ export function RecipientFlowRouter({
       if (selected || selection) {
         entityPatched = {
           ...(entity ?? {}),
-          entity_id: selection || entity?.entity_id,
-          entity_legal_name: selected?.name || entity?.entity_legal_name,
+          employer_id: selection || entity?.employer_id,
+          employer_legal_name: selected?.name || entity?.employer_legal_name,
         };
       }
     }
@@ -318,7 +318,7 @@ export function RecipientFlowRouter({
 function compileValidators(defs: FieldDef[]) {
   const map: Record<string, ((v: any) => string | null)[]> = {};
   for (const d of defs) {
-    const schemas = (d.validators ?? []) as z.ZodTypeAny[];
+    const schemas = d.validators ?? [];
     map[d.key] = schemas.map((schema) => (value: any) => {
       const res = schema.safeParse(value);
       if (res.success) return null;

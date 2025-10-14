@@ -146,7 +146,7 @@ export default function Page() {
 function compileValidators(defs: RecipientFieldDef[]) {
   const map: Record<string, ((v: any) => string | null)[]> = {};
   for (const d of defs) {
-    const schemas = (d.validators ?? []) as z.ZodTypeAny[];
+    const schemas = d.validators ?? [];
     map[d.key] = schemas.map((schema) => (value: any) => {
       const res = schema.safeParse(value);
       if (res.success) return null;
@@ -224,7 +224,7 @@ function buildFakeFields(
   return [
     {
       id: "e1",
-      key: "entity_legal_name",
+      key: "employer_legal_name",
       label: "Company Legal Name",
       type: "text",
       section: "entity",
@@ -232,7 +232,7 @@ function buildFakeFields(
     },
     {
       id: "e2",
-      key: "entity_address",
+      key: "employer_address",
       label: "Company Address",
       type: "text",
       section: "entity",
@@ -240,7 +240,7 @@ function buildFakeFields(
     },
     {
       id: "e3",
-      key: "entity_representative",
+      key: "employer_representative",
       label: "Company Representative",
       type: "text",
       section: "entity",
@@ -248,7 +248,7 @@ function buildFakeFields(
     },
     {
       id: "e4",
-      key: "entity_rep_position",
+      key: "employer_rep_position",
       label: "Representative Position",
       type: "text",
       section: "entity",
@@ -256,7 +256,7 @@ function buildFakeFields(
     },
     {
       id: "e5",
-      key: "entity_type",
+      key: "employer_type",
       label: "Company Type",
       type: "select",
       section: "entity",
