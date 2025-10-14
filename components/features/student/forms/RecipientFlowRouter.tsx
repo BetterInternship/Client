@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { StepComplete } from "./StepComplete";
 
-type Mode = "select" | "manual" | "invite";
+type Mode = "select" | "invite";
 type Audience = "company" | "guardian";
 type SectionKey = "student" | "university" | "entity" | "guardian";
 
@@ -66,9 +66,7 @@ export function RecipientFlowRouter({
     audience === "company"
       ? mode === "select"
         ? `${baseForm}`
-        : mode === "invite"
-          ? `${baseForm}-invite`
-          : `${baseForm}-manual`
+        : `${baseForm}-${mode}`
       : `${baseForm}`;
 
   const {
@@ -247,9 +245,7 @@ export function RecipientFlowRouter({
       ) : showEmployerBlock ? (
         <div className="flex items-center justify-between rounded-[0.33em] border bg-card px-3 py-2 bg-gray-200">
           <div className="text-sm">
-            {mode === "invite"
-              ? "Invite the company to complete details"
-              : "Fill company details manually"}
+            "Invite the company to complete details"
           </div>
           <button
             type="button"

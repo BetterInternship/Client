@@ -12,6 +12,7 @@ import { Loader2 } from "lucide-react";
 import { useProfileActions } from "@/lib/api/student.actions.api";
 import { StepComplete } from "./StepComplete";
 import { useProfileData } from "@/lib/api/student.data.api";
+import { PublicUser } from "@/lib/db/db.types";
 
 type Mode = "select" | "manual" | "invite";
 type SectionKey = "student" | "university" | "entity";
@@ -34,19 +35,11 @@ type FormValues = Record<string, any>;
 
 export function FormFlowRouter({
   baseForm,
-  onSubmit,
   onGoToMyForms,
   allowInvite = false,
   allowManual = false,
 }: {
   baseForm: string;
-  onSubmit?: (payload: {
-    formName: string;
-    student: Record<string, any>;
-    university: Record<string, any>;
-    internship: Record<string, any>;
-    entity: Record<string, any>;
-  }) => Promise<void> | void;
   onGoToMyForms?: () => void;
   allowInvite?: boolean;
   allowManual?: boolean;
@@ -125,19 +118,15 @@ export function FormFlowRouter({
         : `${baseForm}-manual`;
 
   // fetch companies
-  const {
-    data,
-    isLoading: loadingCompanies,
-    error: companiesError,
-  } = useQuery({
+  const { data } = useQuery({
     queryKey: ["companies:list"],
-    queryFn: UserService.getEntityList,
+    queryFn: async () => await UserService.getEntityList(),
     staleTime: 60_000,
   });
 
   const companiesRaw = data?.employers ?? [];
   const companies: Array<{ id: string; name: string }> = companiesRaw.map(
-    (c: any) => ({ id: String(c.id), name: c.legal_entity_name }),
+    (c) => ({ id: String(c.id), name: c.legal_entity_name }),
   );
 
   const allDefs = useMemo(() => {
@@ -148,7 +137,7 @@ export function FormFlowRouter({
 
   const validatorFns = useMemo(() => compileValidators(allDefs), [allDefs]);
 
-  const setField = useCallback((key: string, v: any) => {
+  const setField = useCallback((key: string, v: string) => {
     setValues((prev) => ({ ...prev, [key]: v }));
   }, []);
 
@@ -196,10 +185,7 @@ export function FormFlowRouter({
         internship_moa_fields: profilePayload,
       });
 
-      const mergedFromServer = readMoaFieldsFromResponse(
-        updateRes,
-        profilePayload,
-      );
+      const mergedFromServer = updateRes.user;
 
       const submitPayload = {
         formName,
@@ -258,7 +244,7 @@ export function FormFlowRouter({
           {submitted && errors.__company__ && (
             <p className="text-xs text-rose-600 mt-1">{errors.__company__}</p>
           )}
-          {allowInvite || allowManual ? (
+          {allowInvite ? (
             <p className="text-xs text-muted-foreground">
               Company not in our list?{" "}
               {allowInvite && (
@@ -273,19 +259,7 @@ export function FormFlowRouter({
                   Invite them to fill it in
                 </button>
               )}
-              {allowInvite && allowManual && "or "}
-              {allowManual && (
-                <button
-                  type="button"
-                  className="underline underline-offset-4 hover:no-underline"
-                  onClick={() => {
-                    setMode("manual");
-                    setSelection("");
-                  }}
-                >
-                  I’ll fill details manually
-                </button>
-              )}
+              {allowInvite}
             </p>
           ) : null}
         </>
@@ -321,16 +295,6 @@ export function FormFlowRouter({
           errors={errors}
         />
       )}
-      {mode === "manual" && allowManual && (
-        <EntityFieldsOnly
-          form={`${baseForm}-manual`}
-          values={values}
-          onChange={setField}
-          onSchema={setEntityDefs}
-          showErrors={submitted}
-          errors={errors}
-        />
-      )}
 
       {/* main form always shown; its schema changes with mode */}
       <DynamicForm
@@ -344,7 +308,9 @@ export function FormFlowRouter({
 
       <div className="pt-2 flex justify-end">
         <Button
-          onClick={handleSubmit}
+          onClick={() => {
+            void handleSubmit();
+          }}
           className="w-full sm:w-auto"
           disabled={busy}
           aria-busy={busy}
@@ -383,7 +349,7 @@ function compileValidators(defs: FieldDef[]) {
 
 function validateAll(
   defs: FieldDef[],
-  values: Record<string, any>,
+  values: Record<string, string>,
   validatorFns: Record<string, ((v: any) => string | null)[]>,
 ) {
   const next: Record<string, string> = {};
@@ -398,10 +364,10 @@ function validateAll(
 
 function groupBySectionUsingNames(
   defs: FieldDef[],
-  values: Record<string, any>,
+  values: Record<string, string>,
 ) {
   const out = {
-    student: {} as Record<string, any>,
+    student: {} as Record<string, string>,
     internship: {},
     university: {},
     entity: {},
@@ -418,25 +384,4 @@ function groupBySectionUsingNames(
 // only seed when empty/undefined
 function shouldSeed(current: unknown) {
   return current === undefined || current === "";
-}
-
-function toFieldsArray(defs: FieldDef[], values: Record<string, any>) {
-  return defs.map((d) => ({
-    id: String(d.id),
-    key: d.key,
-    section: d.section,
-    type: d.type,
-    label: d.label,
-    value: values[d.key] ?? "",
-  }));
-}
-
-// helper: grab internship_moa_fields from whatever your API returns
-function readMoaFieldsFromResponse(res: any, fallback: any) {
-  return (
-    res?.internship_moa_fields ??
-    res?.user?.internship_moa_fields ??
-    res?.data?.user?.internship_moa_fields ??
-    fallback
-  );
 }
