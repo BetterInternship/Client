@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-10-14 16:01:58
+ * @ Modified time: 2025-10-14 18:07:30
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
@@ -53,15 +53,10 @@ export type IUserForm = EntityTables<"student_internship_forms">;
  * Joined field.
  * All validators are included.
  */
-type IJoinedField = {
-  id: string;
-  name: string;
+interface IJoinedField extends Omit<IField, "validators" | "transformers"> {
   validators: ZodType[];
-  type: "text" | "number" | "date" | "select" | "time";
-  options?: string;
-  label: string;
-  section?: string;
-};
+  transformers: ZodType[];
+}
 
 export const fetchForms = async (): Promise<IFieldCollection[]> => {
   const { data, error } = await db.from("form_field_collections").select("*");
@@ -151,13 +146,13 @@ const fetchFieldCollection = async (name: string) => {
  * @param schema
  * @returns
  */
-function evalZodSchema(schema: string) {
+function evalZodSchema(schema: string, params?: any) {
   // ? Gotta be careful with this shit
   const ret = `return ${schema}`;
   // eslint-disable-next-line @typescript-eslint/no-implied-eval
-  const evaluator = new Function("z", ret);
+  const evaluator = new Function("z", "params", ret);
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-  return evaluator(z) as ZodType;
+  return evaluator(z, params ?? {}) as ZodType;
 }
 
 /**
@@ -209,9 +204,8 @@ export const useDynamicFormSchema = (name: string) => {
             ...(field ?? ({} as IField)),
             type: field?.type ?? "text",
             label: field?.label ?? "",
-            options: field?.options,
             section: field?.section,
-            validators: await mapValidators(field?.validators),
+            validators: await mapValidators(field?.validators ?? undefined),
             transformers: await mapTransformers(field?.transformers),
           })),
       ),
@@ -219,8 +213,7 @@ export const useDynamicFormSchema = (name: string) => {
 
   useEffect(() => {
     const list =
-      safeToArray((data as any)?.fields_filled_by_user) ||
-      safeToArray((data as any)?.fields);
+      safeToArray(data?.fields_filled_by_user) || safeToArray(data?.fields);
 
     if (list.length === 0) {
       setFields([]);
@@ -230,7 +223,14 @@ export const useDynamicFormSchema = (name: string) => {
 
     setMappingLoading(true);
     void mapFields(list)
-      .then(setFields)
+      .then((fields) =>
+        setFields(
+          fields.map((f) => ({
+            ...f,
+            section: f.section ?? null,
+          })),
+        ),
+      )
       .finally(() => setMappingLoading(false));
   }, [data?.fields_filled_by_user, data?.fields]);
 
@@ -260,6 +260,7 @@ const safeToArray = (val: unknown): string[] => {
   if (Array.isArray(val)) return val as string[];
   if (typeof val === "string") {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const parsed = JSON.parse(val);
       return Array.isArray(parsed) ? (parsed as string[]) : [];
     } catch {
