@@ -10,7 +10,7 @@ import {
 import z from "zod";
 
 type FieldType = "text" | "number" | "select" | "date" | "time" | "signature";
-export type FilledBy = "student" | "entity" | "university" | null;
+export type Section = "student" | "entity" | "university" | "internship" | null;
 
 type Option = { value: string; label: string };
 
@@ -25,7 +25,7 @@ export type FieldDef = {
   maxLength?: number;
   options?: Option[]; // for select
   validators: z.ZodTypeAny[];
-  section?: FilledBy;
+  section?: Section;
 };
 
 export function FieldRenderer({
@@ -36,7 +36,7 @@ export function FieldRenderer({
   showError,
 }: {
   def: FieldDef;
-  value: any;
+  value: string;
   onChange: (v: any) => void;
   error?: string;
   showError?: boolean;
@@ -73,7 +73,7 @@ export function FieldRenderer({
 
   if (def.type === "date") {
     // Example: disable dates before today+7 for specific keys
-    let disabledDays: any | undefined;
+    let disabledDays: { before?: Date } | null = null;
     if (
       def.key === "internship_start_date" ||
       def.key === "internship_end_date"
@@ -95,7 +95,7 @@ export function FieldRenderer({
           contentClassName="z-[1100]"
           placeholder="Select date"
           autoClose
-          disabledDays={disabledDays}
+          disabledDays={disabledDays ?? []}
           format={(d) =>
             d.toLocaleDateString(undefined, {
               year: "numeric",
@@ -115,6 +115,7 @@ export function FieldRenderer({
         <TimeInputNative
           label={def.label}
           value={value} // "HH:MM"
+          // eslint-disable-next-line @typescript-eslint/no-base-to-string
           onChange={(v) => onChange(v?.toString() ?? "")}
           required
           helper={def.helper}
@@ -163,7 +164,7 @@ export function FieldRenderer({
           }
         }}
         type="text"
-        inputMode={inputMode as any}
+        inputMode={inputMode}
         placeholder={def.placeholder}
         maxLength={def.maxLength}
         className="w-full"

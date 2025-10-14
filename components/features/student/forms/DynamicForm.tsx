@@ -1,15 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, memo } from "react";
-import { z } from "zod";
 import { useDynamicFormSchema } from "@/lib/db/use-moa-backend";
 import {
   FieldRenderer,
   type FieldDef as RendererFieldDef,
-  type FilledBy,
+  type Section,
 } from "@/components/features/student/forms/FieldRenderer";
 import { Loader2 } from "lucide-react";
-import type { FieldDef } from "./FormFlowRouter";
 
 /**
  * The form builder.
@@ -47,7 +45,7 @@ export function DynamicForm({
         type: f.type ?? "text",
         helper: f.helper ?? undefined,
         validators: f.validators ?? [],
-        section: f.section as FilledBy,
+        section: f.section as Section,
         options: f.options,
       })),
     [rawFields],

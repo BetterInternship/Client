@@ -278,7 +278,9 @@ export function FormFlowRouter({
         form={formName}
         values={values}
         onChange={setField}
-        onSchema={setMainDefs}
+        onSchema={(defs) => {
+          setMainDefs(defs as FieldDef[]);
+        }}
         showErrors={submitted}
         errors={errors}
       />
@@ -315,9 +317,7 @@ function compileValidators(defs: FieldDef[]) {
     map[d.key] = schemas.map((schema) => (value: any) => {
       const res = schema.safeParse(value);
       if (res.success) return null;
-      const issues = (res.error as any)?.issues as
-        | { message: string }[]
-        | undefined;
+      const issues = res.error.issues as { message: string }[] | undefined;
       return issues?.map((i) => i.message).join("\n") ?? res.error.message;
     });
   }
@@ -345,9 +345,9 @@ function groupBySectionUsingNames(
 ) {
   const out = {
     student: {} as Record<string, string>,
-    internship: {},
-    university: {},
-    entity: {},
+    internship: {} as Record<string, string>,
+    university: {} as Record<string, string>,
+    entity: {} as Record<string, string>,
   };
 
   for (const d of defs) {
