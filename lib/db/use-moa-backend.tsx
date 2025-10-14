@@ -1,13 +1,13 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-10-14 20:50:52
+ * @ Modified time: 2025-10-14 21:51:18
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   DocumentDatabase,
   DocumentTables,
@@ -214,8 +214,11 @@ export const useDynamicFormSchema = (name: string) => {
     );
 
   useEffect(() => {
+    const schema = (data?.schema ?? []) as { field: string }[];
+    const fields = schema.map((s) => s.field);
+
     const list =
-      safeToArray(data?.fields_filled_by_user) || safeToArray(data?.fields);
+      safeToArray(data?.fields_filled_by_user) || safeToArray(fields);
 
     if (list.length === 0) {
       setFields([]);
@@ -234,7 +237,7 @@ export const useDynamicFormSchema = (name: string) => {
         ),
       )
       .finally(() => setMappingLoading(false));
-  }, [data?.fields_filled_by_user, data?.fields]);
+  }, [data?.fields_filled_by_user, data?.schema]);
 
   return {
     fields,
