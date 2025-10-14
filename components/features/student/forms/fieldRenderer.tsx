@@ -7,6 +7,7 @@ import {
   FormInput,
   FormCheckbox,
 } from "@/components/EditForm";
+import z from "zod";
 
 type FieldType = "text" | "number" | "select" | "date" | "time" | "signature";
 export type FilledBy = "student" | "entity" | "university" | null;
