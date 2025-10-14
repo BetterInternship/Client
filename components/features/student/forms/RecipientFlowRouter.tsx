@@ -33,15 +33,13 @@ type FormValues = Record<string, any>;
 export function RecipientFlowRouter({
   baseForm,
   audience = "company",
-  allowInvite = false,
-  allowManual = false,
+  allowInvite = true,
   onGoToMyForms,
   onSubmit,
 }: {
   baseForm: string;
   audience?: Audience;
   allowInvite?: boolean;
-  allowManual?: boolean;
   onGoToMyForms?: () => void;
   onSubmit?: (payload: {
     formName: string;
@@ -79,14 +77,14 @@ export function RecipientFlowRouter({
     error: companiesError,
   } = useQuery({
     queryKey: ["companies:list"],
-    queryFn: UserService.getEntityList,
+    queryFn: async () => await UserService.getEntityList(),
     staleTime: 60_000,
     enabled: audience === "company",
   });
 
-  const companiesRaw = (companiesData as any)?.employers ?? [];
+  const companiesRaw = companiesData?.employers ?? [];
   const companies: Array<{ id: string; name: string }> = companiesRaw.map(
-    (c: any) => ({ id: String(c.id), name: c.legal_entity_name }),
+    (c) => ({ id: String(c.id), name: c.legal_entity_name }),
   );
 
   // Filter: only show relevant sections
@@ -120,7 +118,7 @@ export function RecipientFlowRouter({
 
   // validation
   const validatorFns = useMemo(() => compileValidators(mainDefs), [mainDefs]);
-  const setField = useCallback((key: string, v: any) => {
+  const setField = useCallback((key: string, v: string) => {
     setValues((prev) => ({ ...prev, [key]: v }));
   }, []);
   const validateNow = useCallback(() => {
@@ -142,7 +140,7 @@ export function RecipientFlowRouter({
     if (Object.values(next).some(Boolean)) return;
 
     const grouped = groupBySectionUsingNames(mainDefs, values);
-    const { student, university, entity, guardian } = grouped as any;
+    const { student, university, entity, guardian } = grouped;
 
     // Patch entity identity from picker (if present)
     let entityPatched = entity;
@@ -226,7 +224,7 @@ export function RecipientFlowRouter({
             <p className="text-xs text-rose-600 mt-1">{errors.__company__}</p>
           )}
 
-          {(allowInvite || allowManual) && (
+          {allowInvite && (
             <p className="text-xs text-muted-foreground">
               Company not in our list?{" "}
               {allowInvite && (
@@ -240,20 +238,6 @@ export function RecipientFlowRouter({
                   disabled={loadingCompanies || !!companiesError}
                 >
                   Invite them to fill it in
-                </button>
-              )}
-              {allowInvite && allowManual && "or "}
-              {allowManual && (
-                <button
-                  type="button"
-                  className="underline underline-offset-4 hover:no-underline"
-                  onClick={() => {
-                    setMode("manual");
-                    setSelection("");
-                  }}
-                  disabled={loadingCompanies || !!companiesError}
-                >
-                  I’ll fill details manually
                 </button>
               )}
               .
@@ -287,14 +271,16 @@ export function RecipientFlowRouter({
         onSchema={(defs) => setMainDefs(defs as FieldDef[])}
         errors={errors}
         showErrors={submitted}
-        fieldFilter={(d) => fieldFilter(d as FieldDef)}
+        fieldFilter={(d: FieldDef) => fieldFilter(d)}
         sectionTitleMap={sectionTitleMap}
         emptyHint="All required fields for you have been completed."
       />
 
       <div className="pt-2 flex justify-end">
         <Button
-          onClick={handleSubmit}
+          onClick={() => {
+            void handleSubmit();
+          }}
           className="w-full sm:w-auto"
           disabled={busy}
           aria-busy={busy}
@@ -322,9 +308,7 @@ function compileValidators(defs: FieldDef[]) {
     map[d.key] = schemas.map((schema) => (value: any) => {
       const res = schema.safeParse(value);
       if (res.success) return null;
-      const issues = (res.error as any)?.issues as
-        | { message: string }[]
-        | undefined;
+      const issues = res.error?.issues as { message: string }[] | undefined;
       return issues?.map((i) => i.message).join("\n") ?? res.error.message;
     });
   }
@@ -333,7 +317,7 @@ function compileValidators(defs: FieldDef[]) {
 
 function validateAll(
   defs: FieldDef[],
-  values: Record<string, any>,
+  values: Record<string, string>,
   validatorFns: Record<string, ((v: any) => string | null)[]>,
 ) {
   const next: Record<string, string> = {};
@@ -348,11 +332,11 @@ function validateAll(
 
 function groupBySectionUsingNames(
   defs: FieldDef[],
-  values: Record<string, any>,
+  values: Record<string, string>,
 ) {
-  const out: Record<string, Record<string, any>> = {};
+  const out: Record<string, Record<string, string>> = {};
   for (const d of defs) {
-    const val = values[d.key] ?? (values as any)[d.id];
+    const val = values[d.key] ?? values[d.id];
     if (val === undefined) continue;
     if (!out[d.section]) out[d.section] = {};
     out[d.section][d.key] = val;
