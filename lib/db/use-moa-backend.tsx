@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-10-12 10:05:36
+ * @ Modified time: 2025-10-14 16:01:58
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
@@ -33,6 +33,7 @@ const db = createClient<DocumentDatabase>(DB_URL ?? "", DB_ANON_KEY ?? "");
  * Moa backend types.
  */
 type FieldValidator = DocumentTables<"field_validators">;
+type FieldTransformer = DocumentTables<"field_transformers">;
 type IField = DocumentTables<"field_repository">;
 type IFieldCollection = DocumentTables<"form_field_collections">;
 
@@ -60,6 +61,24 @@ export const fetchForms = async (): Promise<IFieldCollection[]> => {
   // @/ts-ignore
   return data ?? [];
 };
+
+/**
+ * Allows us to batch requests to the endpoint.
+ * Fetches field transformer.
+ */
+const fieldTransformerFetcher = createBatchedFetcher({
+  fetcher: async (ids: string[]): Promise<FieldTransformer[]> => {
+    const { data, error } = await db
+      .from("field_transformers")
+      .select("*")
+      .in("id", ids);
+    if (error)
+      throw new Error(`Could not find at least one of the field transformers.`);
+    return data as FieldTransformer[];
+  },
+  resolver: keyResolver("id"),
+  scheduler: windowScheduler(100),
+});
 
 /**
  * Allows us to batch requests to the endpoint.
@@ -159,6 +178,16 @@ export const useDynamicFormSchema = (name: string) => {
       ) ?? [],
     );
 
+  const mapTransformers = async (transformers?: string[]) =>
+    await Promise.all(
+      transformers?.map(
+        async (t) =>
+          await fieldTransformerFetcher
+            .fetch(t)
+            .then((t) => (t?.rule ? evalZodSchema(t.rule) : z.any())),
+      ) ?? [],
+    );
+
   // Maps fields to their db fetches
   const mapFields = async (fields: string[]) =>
     await Promise.all(
@@ -171,6 +200,7 @@ export const useDynamicFormSchema = (name: string) => {
             options: field?.options,
             section: field?.section,
             validators: await mapValidators(field?.validators),
+            transformers: await mapTransformers(field?.transformers),
           })),
       ),
     );
