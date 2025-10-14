@@ -7,7 +7,7 @@ import {
   FieldRenderer,
   type FieldDef as RendererFieldDef,
   type FilledBy,
-} from "./fieldRenderer";
+} from "@/components/features/student/forms/FieldRenderer";
 import { Loader2 } from "lucide-react";
 import type { FieldDef } from "./FormFlowRouter";
 

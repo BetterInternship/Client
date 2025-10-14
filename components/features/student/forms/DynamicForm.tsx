@@ -7,7 +7,7 @@ import {
   FieldRenderer,
   type FieldDef as RendererFieldDef,
   type FilledBy,
-} from "@/components/features/student/forms/fieldRenderer";
+} from "@/components/features/student/forms/FieldRenderer";
 import { Loader2 } from "lucide-react";
 import type { FieldDef } from "./FormFlowRouter";
 
@@ -75,6 +75,10 @@ export function DynamicForm({
     () => defs.filter((d) => d.section === "student"),
     [defs],
   );
+  const internshipDefs: RendererFieldDef[] = useMemo(
+    () => defs.filter((d) => d.section === "internship"),
+    [defs],
+  );
   const universityDefs: RendererFieldDef[] = useMemo(
     () => defs.filter((d) => d.section === "university"),
     [defs],
@@ -114,7 +118,17 @@ export function DynamicForm({
 
           <FormSection
             formKey={form}
-            title="University / Internship Information"
+            title="Internship Information"
+            defs={internshipDefs}
+            values={values}
+            onChange={onChange}
+            errors={errors}
+            showErrors={showErrors}
+          />
+
+          <FormSection
+            formKey={form}
+            title="University Information"
             defs={universityDefs}
             values={values}
             onChange={onChange}

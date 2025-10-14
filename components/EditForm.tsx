@@ -241,7 +241,9 @@ export const FormCheckbox = ({
   return (
     <div>
       {label && (
-        <label className="text-xs text-gray-600 mb-1 block">{label} {required && <span className="text-red-500">*</span>}</label> 
+        <label className="text-xs text-gray-600 mb-1 block">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
       )}
       <div className="flex gap-2 items-center">
         <Checkbox
@@ -428,6 +430,7 @@ interface FormDatePickerProps
   sideOffset?: number;
   contentClassName?: string;
   captionLayout?: "buttons" | "dropdown";
+  required?: boolean;
 
   /** Optional: disable dates (react-day-picker style) */
   disabledDays?:
@@ -459,6 +462,7 @@ export const FormDatePicker = ({
   autoClose = true,
   placeholder = "Select date",
   format = (d) => d.toLocaleDateString(),
+  required = false,
   ...props
 }: FormDatePickerProps) => {
   const [open, setOpen] = React.useState(false);
@@ -471,7 +475,7 @@ export const FormDatePicker = ({
           htmlFor={props.id ?? "date"}
           className="text-xs text-gray-600 mb-1 block"
         >
-          {label}
+          {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
 
