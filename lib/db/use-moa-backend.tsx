@@ -1,18 +1,17 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-10-15 00:45:13
+ * @ Modified time: 2025-10-15 01:40:22
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DocumentDatabase,
   DocumentTables,
   EntityDatabase,
-  EntityTables,
 } from "@betterinternship/schema.moa";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@supabase/supabase-js";

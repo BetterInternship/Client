@@ -42,17 +42,14 @@ export default function FormsPage() {
   const generatorForms = (formList ?? []).filter(
     (f) => !/-invite$|-manual$/i.test(f.name),
   );
-  const formNameSet = new Set(formList.map((f) => f.name)); // maps if there is invite or manual forms of a form
 
   const openFormModal = (formName: string, formLabel: string) => {
-    const hasInvite = formNameSet.has(`${formName}-invite`);
-    const hasManual = formNameSet.has(`${formName}-manual`);
     openGlobalModal(
       "form-generator-form",
       <FormFlowRouter
         baseForm={formName}
-        allowInvite={hasInvite}
-        allowManual={hasManual}
+        // ! remove hard code,
+        allowInvite={true}
         onGoToMyForms={() => {
           setTab("My Forms");
           closeGlobalModal("form-generator-form");

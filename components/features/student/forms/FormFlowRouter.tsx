@@ -5,14 +5,12 @@ import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { UserService } from "@/lib/api/services";
 import { DynamicForm } from "./DynamicForm";
-import { FormDropdown } from "@/components/EditForm";
-import { EntityFieldsOnly } from "./EntityFieldsOnly";
+import { FormDropdown, FormInput } from "@/components/EditForm";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useProfileActions } from "@/lib/api/student.actions.api";
 import { StepComplete } from "./StepComplete";
 import { useProfileData } from "@/lib/api/student.data.api";
-import { PublicUser } from "@/lib/db/db.types";
 
 type Mode = "select" | "manual" | "invite";
 type SectionKey = "student" | "university" | "entity";
@@ -30,19 +28,21 @@ export type FieldDef = {
   section: SectionKey;
 };
 
+export const FormFieldMappings = {
+  employer_id: "",
+};
+
 type Errors = Record<string, string>;
 type FormValues = Record<string, any>;
 
 export function FormFlowRouter({
   baseForm,
   onGoToMyForms,
-  allowInvite = false,
-  allowManual = false,
+  allowInvite = true,
 }: {
   baseForm: string;
   onGoToMyForms?: () => void;
   allowInvite?: boolean;
-  allowManual?: boolean;
 }) {
   const { update } = useProfileActions();
   const { data: profileData } = useProfileData();
@@ -59,30 +59,26 @@ export function FormFlowRouter({
 
   // children will report their field defs so we can validate in one place
   const [mainDefs, setMainDefs] = useState<FieldDef[]>([]);
-  const [entityDefs, setEntityDefs] = useState<FieldDef[]>([]);
 
   // i am thou profile
   const savedFields = profileData?.internship_moa_fields as
     | {
-        student?: Record<string, any>;
-        university?: Record<string, any>;
-        entity?: Record<string, any>;
+        student?: Record<string, string>;
+        university?: Record<string, string>;
+        entity?: Record<string, string>;
       }
     | undefined;
 
   // i fill up the forms AUTOMATICALLY
   useEffect(() => {
     if (!savedFields) return;
-
-    const defsToUse =
-      mode === "select" ? mainDefs : [...mainDefs, ...entityDefs];
-    if (!defsToUse.length) return;
+    if (!mainDefs.length) return;
 
     setValues((prev) => {
       const next = { ...prev };
       let changed = false;
 
-      for (const d of defsToUse) {
+      for (const d of mainDefs) {
         const sec = d.section; // "student" | "university" | "entity"
         const fromSaved = savedFields?.[sec]?.[d.key];
         if (fromSaved !== undefined && shouldSeed(prev[d.key])) {
@@ -100,22 +96,9 @@ export function FormFlowRouter({
         savedFields?.entity?.employer_id ?? savedFields?.entity?.company_id; // legacy fallback
       if (maybeId) setSelection(String(maybeId));
     }
-  }, [
-    mode,
-    mainDefs,
-    entityDefs,
-    savedFields,
-    selection,
-    setValues,
-    setSelection,
-  ]);
+  }, [mode, mainDefs, savedFields, selection, setValues, setSelection]);
 
-  const formName =
-    mode === "select"
-      ? `${baseForm}`
-      : mode === "invite"
-        ? `${baseForm}-invite`
-        : `${baseForm}-manual`;
+  const formName = baseForm;
 
   // fetch companies
   const { data } = useQuery({
@@ -129,23 +112,17 @@ export function FormFlowRouter({
     (c) => ({ id: String(c.id), name: c.legal_entity_name }),
   );
 
-  const allDefs = useMemo(() => {
-    // only include Entity fields if we are in invite/manual modes
-    if (mode === "select") return mainDefs;
-    return [...mainDefs, ...entityDefs];
-  }, [mainDefs, entityDefs, mode]);
-
-  const validatorFns = useMemo(() => compileValidators(allDefs), [allDefs]);
+  const validatorFns = useMemo(() => compileValidators(mainDefs), [mainDefs]);
 
   const setField = useCallback((key: string, v: string) => {
     setValues((prev) => ({ ...prev, [key]: v }));
   }, []);
 
   const validateNow = useCallback(() => {
-    const next = validateAll(allDefs, values, validatorFns);
+    const next = validateAll(mainDefs, values, validatorFns);
     setErrors(next);
     return next;
-  }, [allDefs, values, validatorFns]);
+  }, [mainDefs, values, validatorFns]);
 
   const handleSubmit = useCallback(async () => {
     setSubmitted(true);
@@ -157,12 +134,8 @@ export function FormFlowRouter({
 
     const next = validateNow();
     if (Object.values(next).some(Boolean)) return;
-
-    const defsToUse =
-      mode === "select" ? mainDefs : [...mainDefs, ...entityDefs];
-
     const { student, university, internship, entity } =
-      groupBySectionUsingNames(defsToUse, values);
+      groupBySectionUsingNames(mainDefs, values);
 
     const selected = companies.find((c) => c.id === selection);
     const entityPatched = {
@@ -205,7 +178,6 @@ export function FormFlowRouter({
     mode,
     selection,
     mainDefs,
-    entityDefs,
     values,
     formName,
     validateNow,
@@ -286,14 +258,19 @@ export function FormFlowRouter({
 
       {/* show employer only fields only when mode is allowed */}
       {mode === "invite" && allowInvite && (
-        <EntityFieldsOnly
-          form={`${baseForm}-invite`}
-          values={values}
-          onChange={setField}
-          onSchema={setEntityDefs}
-          showErrors={submitted}
-          errors={errors}
-        />
+        <>
+          {/* // ! todo: these should set state; they shud be saved in user as well */}
+          <FormInput
+            label="Company representative email"
+            value={""}
+            setter={() => {}}
+          />
+          <FormInput
+            label="Company legal entity name"
+            value={""}
+            setter={() => {}}
+          />
+        </>
       )}
 
       {/* main form always shown; its schema changes with mode */}
