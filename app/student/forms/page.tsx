@@ -6,7 +6,6 @@ import { OutsideTabPanel, OutsideTabs } from "@/components/ui/outside-tabs";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { Newspaper } from "lucide-react";
 import { fetchForms } from "@/lib/db/use-moa-backend";
-import { DynamicForm } from "@/components/features/student/forms/DynamicForm";
 import FormGenerateCard from "@/components/features/student/forms/FormGenerateCard";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { FormFlowRouter } from "@/components/features/student/forms/FormFlowRouter";
@@ -35,12 +34,17 @@ export default function FormsPage() {
   const generatorForms = (formList ?? []).filter(
     (f) => !/-invite$|-manual$/i.test(f.name),
   );
+  const formNameSet = new Set(formList.map((f) => f.name)); // maps if there is invite or manual forms of a form
 
   const openFormModal = (formName: string, formLabel: string) => {
+    const hasInvite = formNameSet.has(`${formName}-invite`);
+    const hasManual = formNameSet.has(`${formName}-manual`);
     openGlobalModal(
       "form-generator-form",
       <FormFlowRouter
         baseForm={formName}
+        allowInvite={hasInvite}
+        allowManual={hasManual}
         onGoToMyForms={() => {
           setTab("My Forms");
           closeGlobalModal("form-generator-form");

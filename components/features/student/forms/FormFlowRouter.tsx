@@ -36,6 +36,8 @@ export function FormFlowRouter({
   baseForm,
   onSubmit,
   onGoToMyForms,
+  allowInvite = false,
+  allowManual = false,
 }: {
   baseForm: string;
   onSubmit?: (payload: {
@@ -45,6 +47,8 @@ export function FormFlowRouter({
     entity: Record<string, any>;
   }) => Promise<void> | void;
   onGoToMyForms?: () => void;
+  allowInvite?: boolean;
+  allowManual?: boolean;
 }) {
   const { update } = useProfileActions();
   const { data: profileData } = useProfileData();
@@ -256,30 +260,31 @@ export function FormFlowRouter({
           )}
           <p className="text-xs text-muted-foreground">
             Company not in our list?{" "}
-            <button
-              type="button"
-              className="underline underline-offset-4 hover:no-underline mr-2"
-              onClick={() => {
-                setMode("invite");
-                setSelection("");
-              }}
-              disabled={loadingCompanies || !!companiesError}
-            >
-              Invite them to fill it in
-            </button>
-            or{" "}
-            <button
-              type="button"
-              className="underline underline-offset-4 hover:no-underline"
-              onClick={() => {
-                setMode("manual");
-                setSelection("");
-              }}
-              disabled={loadingCompanies || !!companiesError}
-            >
-              I’ll fill details manually
-            </button>
-            .
+            {allowInvite && (
+              <button
+                type="button"
+                className="underline underline-offset-4 hover:no-underline mr-2"
+                onClick={() => {
+                  setMode("invite");
+                  setSelection("");
+                }}
+              >
+                Invite them to fill it in
+              </button>
+            )}
+            {allowInvite && allowManual && "or "}
+            {allowManual && (
+              <button
+                type="button"
+                className="underline underline-offset-4 hover:no-underline"
+                onClick={() => {
+                  setMode("manual");
+                  setSelection("");
+                }}
+              >
+                I’ll fill details manually
+              </button>
+            )}
           </p>
         </>
       ) : (
@@ -303,10 +308,20 @@ export function FormFlowRouter({
         </div>
       )}
 
-      {/* employer-only fields appear for invite/manual */}
-      {mode !== "select" && (
+      {/* show employer only fields only when mode is allowed */}
+      {mode === "invite" && allowInvite && (
         <EntityFieldsOnly
-          form={`${baseForm}-${mode}`}
+          form={`${baseForm}-invite`}
+          values={values}
+          onChange={setField}
+          onSchema={setEntityDefs}
+          showErrors={submitted}
+          errors={errors}
+        />
+      )}
+      {mode === "manual" && allowManual && (
+        <EntityFieldsOnly
+          form={`${baseForm}-manual`}
           values={values}
           onChange={setField}
           onSchema={setEntityDefs}
