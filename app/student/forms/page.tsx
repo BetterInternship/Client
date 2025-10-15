@@ -96,6 +96,14 @@ export default function FormsPage() {
     gcTime: 10_000,
   });
 
+  const myFormsSorted = useMemo(
+    () =>
+      (myForms ?? [])
+        .slice()
+        .sort((a, b) => parseTsToMs(b.timestamp) - parseTsToMs(a.timestamp)),
+    [myForms],
+  );
+
   const { data: employersData } = useQuery({
     queryKey: ["companies:list"],
     queryFn: async () => await UserService.getEntityList(),
@@ -248,7 +256,7 @@ export default function FormsPage() {
               {userId &&
                 !loadingMyForms &&
                 !myFormsError &&
-                myForms.map((row, i) => {
+                myFormsSorted.map((row, i) => {
                   const formName = row.form_name;
                   const companyName = companyMap[row.employer_id];
                   const title = `${formName} | ${companyName}`;
@@ -311,3 +319,15 @@ const UPCOMING_FORMS: Array<{ label: string }> = [
   },
 ];
 /* ──────────────────────────────────────────────────────────────────────────────── */
+
+function parseTsToMs(ts?: string | Date) {
+  if (!ts) return 0;
+  if (ts instanceof Date) return ts.getTime();
+  if (typeof ts === "string") {
+    // keep only the first 3 fractional digits (ms) so Date can parse it
+    const normalized = ts.replace(/\.(\d{3})\d+/, ".$1");
+    const t = new Date(normalized).getTime();
+    return Number.isNaN(t) ? 0 : t;
+  }
+  return 0;
+}
