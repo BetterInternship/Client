@@ -1,11 +1,16 @@
+"use client";
+
 import {
   FormDropdown,
   FormDatePicker,
   TimeInputNative,
   FormInput,
+  FormCheckbox,
 } from "@/components/EditForm";
+import z from "zod";
 
-type FieldType = "text" | "number" | "select" | "date" | "time";
+type FieldType = "text" | "number" | "select" | "date" | "time" | "signature";
+export type Section = "student" | "entity" | "university" | "internship" | null;
 
 type Option = { value: string; label: string };
 
@@ -20,6 +25,7 @@ export type FieldDef = {
   maxLength?: number;
   options?: Option[]; // for select
   validators: z.ZodTypeAny[];
+  section?: Section;
 };
 
 export function FieldRenderer({
@@ -27,13 +33,23 @@ export function FieldRenderer({
   value,
   onChange,
   error,
+  showError,
 }: {
   def: FieldDef;
   value: string;
-  onChange: (v: string | number) => void;
+  onChange: (v: any) => void;
   error?: string;
+  showError?: boolean;
 }) {
-  const required = !!def.required;
+  const Note = () => {
+    if (showError && !!error) {
+      return <p className="text-xs text-rose-600 mt-1">{error}</p>;
+    }
+    if (def.helper) {
+      return <p className="text-xs text-muted-foreground mt-1">{def.helper}</p>;
+    }
+    return null;
+  };
 
   if (def.type === "select") {
     const options = (def.options ?? []).map((o) => ({
@@ -44,21 +60,20 @@ export function FieldRenderer({
       <div className="space-y-1.5">
         <FormDropdown
           label={def.label}
-          required={required}
+          required
           value={value}
           options={options}
           setter={(v) => onChange(String(v ?? ""))}
           className="w-full"
         />
-        {def.helper && <p className="text-xs text-gray-500">{def.helper}</p>}
-        {!!error && <p className="text-xs text-red-600">{error}</p>}
+        <Note />
       </div>
     );
   }
 
   if (def.type === "date") {
     // Example: disable dates before today+7 for specific keys
-    let disabledDays: any | undefined;
+    let disabledDays: { before?: Date } | null = null;
     if (
       def.key === "internship_start_date" ||
       def.key === "internship_end_date"
@@ -73,13 +88,14 @@ export function FieldRenderer({
       <div className="space-y-1.5">
         <FormDatePicker
           label={def.label}
+          required
           date={Number.isFinite(+value) ? parseInt(value) : undefined}
           setter={(nextMs) => onChange(nextMs ?? 0)}
           className="w-full"
           contentClassName="z-[1100]"
           placeholder="Select date"
           autoClose
-          disabledDays={disabledDays}
+          disabledDays={disabledDays ?? []}
           format={(d) =>
             d.toLocaleDateString(undefined, {
               year: "numeric",
@@ -88,8 +104,7 @@ export function FieldRenderer({
             })
           }
         />
-        {def.helper && <p className="text-xs text-gray-500">{def.helper}</p>}
-        {!!error && <p className="text-xs text-red-600">{error}</p>}
+        <Note />
       </div>
     );
   }
@@ -100,10 +115,29 @@ export function FieldRenderer({
         <TimeInputNative
           label={def.label}
           value={value} // "HH:MM"
+          // eslint-disable-next-line @typescript-eslint/no-base-to-string
           onChange={(v) => onChange(v?.toString() ?? "")}
+          required
           helper={def.helper}
         />
-        {!!error && <p className="text-xs text-red-600">{error}</p>}
+        <Note />
+      </div>
+    );
+  }
+
+  const asBool = (v: any) => v === true;
+
+  if (def.type === "signature") {
+    const checked = asBool(value);
+    return (
+      <div className="space-y-1.5">
+        <FormCheckbox
+          label={def.label}
+          checked={checked}
+          setter={(c) => onChange(Boolean(c))}
+          sentence={def.helper}
+          required
+        />
       </div>
     );
   }
@@ -119,7 +153,7 @@ export function FieldRenderer({
     <div className="space-y-1.5">
       <FormInput
         label={def.label}
-        required={required}
+        required
         value={value ?? ""}
         setter={(v) => {
           if (def.type === "number") {
@@ -130,13 +164,12 @@ export function FieldRenderer({
           }
         }}
         type="text"
-        inputMode={inputMode as any}
+        inputMode={inputMode}
         placeholder={def.placeholder}
         maxLength={def.maxLength}
         className="w-full"
       />
-      {def.helper && <p className="text-xs text-gray-500">{def.helper}</p>}
-      {!!error && <p className="text-xs text-red-600">{error}</p>}
+      <Note />
     </div>
   );
 }

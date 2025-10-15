@@ -8,6 +8,7 @@ import {
   ListingsSearchBar,
 } from "@/components/features/hire/listings";
 import { ShowUnverifiedBanner } from "@/components/ui/banner";
+import { Scrollbar } from "@/components/ui/scroll-area";
 import { useListingsBusinessLogic } from "@/hooks/hire/listings/use-listings-business-logic";
 import { useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
 
@@ -55,43 +56,48 @@ export default function MyListings() {
           {/* Content Area */}
           <div className="flex-1 p-6 flex gap-6 overflow-hidden">
             {/* Left Panel - Job List */}
-            <div className="w-96 flex flex-col">
-              {/* Search Bar */}
-              <ListingsSearchBar
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-                onKeyPress={handleKeyPress}
-                //onCreateJob={openCreateModal}
-              />
+            <Scrollbar>
+              <div className="w-96 flex flex-col">
+                  {/* Search Bar */}
+                  <ListingsSearchBar
+                    searchTerm={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    onKeyPress={handleKeyPress}
+                    //onCreateJob={openCreateModal}
+                  />
 
-              {/* Job Panel */}
-              <ListingsJobPanel
-                jobs={filteredJobs}
-                selectedJobId={selectedJob?.id}
-                isEditing={isEditing}
-                jobsPage={jobsPage}
-                jobsPageSize={jobsPageSize}
-                onJobSelect={handleJobSelect}
-                onPageChange={handlePageChange}
-                updateJob={update_job}
-                set_is_editing={setIsEditing}
-              />
-            </div>
+                  {/* Job Panel */}
+                  <ListingsJobPanel
+                    jobs={filteredJobs}
+                    selectedJobId={selectedJob?.id}
+                    isEditing={isEditing}
+                    jobsPage={jobsPage}
+                    jobsPageSize={jobsPageSize}
+                    onJobSelect={handleJobSelect}
+                    onPageChange={handlePageChange}
+                    updateJob={update_job}
+                    set_is_editing={setIsEditing}
+                  />
+              </div>
+            </Scrollbar>
 
             {/* Right Panel - Job Details */}
-            <div className="flex-1 overflow-y-auto">
-              <ListingsDetailsPanel
-                selectedJob={selectedJob}
-                isEditing={isEditing}
-                saving={saving}
-                onEdit={handleEditStart}
-                onSave={handleSave}
-                onCancel={handleCancel}
-                onShare={handleShare}
-                onDelete={openDeleteModal}
-                updateJob={update_job}
-                setIsEditing={setIsEditing}
-              />
+            
+            <div className="flex-1 min-w-0">
+              <Scrollbar>
+                <ListingsDetailsPanel
+                  selectedJob={selectedJob}
+                  isEditing={isEditing}
+                  saving={saving}
+                  onEdit={handleEditStart}
+                  onSave={handleSave}
+                  onCancel={handleCancel}
+                  onShare={handleShare}
+                  onDelete={openDeleteModal}
+                  updateJob={update_job}
+                  setIsEditing={setIsEditing}
+                />
+              </Scrollbar>
             </div>
           </div>
         </div>

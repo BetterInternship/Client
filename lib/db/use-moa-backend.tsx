@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-10-12 10:05:36
+ * @ Modified time: 2025-10-15 11:56:51
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
@@ -17,8 +17,12 @@ import {
   windowScheduler,
 } from "@yornaath/batshit";
 import z, { ZodType } from "zod";
+import { Database, Tables } from "@betterinternship/schema.base";
+import { PublicUser } from "./db.types";
 
 // Environment setup
+const DB_URL_BASE = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const DB_ANON_KEY_BASE = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const DB_URL = process.env.NEXT_PUBLIC_MOA_DOCS_SUPABASE_URL;
 const DB_ANON_KEY = process.env.NEXT_PUBLIC_MOA_DOCS_SUPABASE_ANON_KEY;
 
@@ -28,25 +32,101 @@ if (!DB_URL || !DB_ANON_KEY) {
   // throw new Error("[ERROR:ENV] Missing supabase configuration (for MOA docs backend).");
 }
 const db = createClient<DocumentDatabase>(DB_URL ?? "", DB_ANON_KEY ?? "");
+const db_base = createClient<Database>(
+  DB_URL_BASE ?? "",
+  DB_ANON_KEY_BASE ?? "",
+);
 
 /**
  * Moa backend types.
  */
 type FieldValidator = DocumentTables<"field_validators">;
+type FieldTransformer = DocumentTables<"field_transformers">;
 type IField = DocumentTables<"field_repository">;
-type IFieldCollection = DocumentTables<"form_field_collections">;
+export type IUserForm = Tables<"user_internship_forms">;
+type IFormSchema = DocumentTables<"form_schemas">;
 
 /**
  * Joined field.
  * All validators are included.
  */
-type IJoinedField = {
-  id: string;
-  name: string;
+interface IJoinedField extends Omit<IField, "validators" | "transformers"> {
   validators: ZodType[];
-  type: "text" | "number" | "date" | "select" | "time";
-  options?: string;
+  transformers: ZodType[];
+}
+
+/**
+ * Fetches all forms from the database given the user's department.
+ *
+ * @returns
+ */
+export const fetchForms = async (user: PublicUser): Promise<IFormSchema[]> => {
+  if (!user.department) {
+    console.log("Department required to lookup forms.");
+    return [];
+  }
+  console.log("dept", user.department);
+
+  // Pull mapping for user department
+  const { data: internshipFormMapping, error: internshipFormMappingError } =
+    await db_base
+      .from("internship_form_mappings")
+      .select("*")
+      .eq("department_id", user.department)
+      .single();
+  console.log("ifm", internshipFormMapping);
+
+  // Handle error or nonexistent mapping
+  if (!internshipFormMapping?.form_group_id) {
+    console.log("Could not find mapping for department.");
+    if (internshipFormMappingError)
+      console.log(
+        "Actually, something went wrong: " +
+          internshipFormMappingError?.message,
+      );
+    return [];
+  }
+
+  // Get form group
+  const { data: formGroup, error: formGroupError } = await db
+    .from("form_groups")
+    .select("*")
+    .eq("id", internshipFormMapping.form_group_id)
+    .single();
+
+  // Fetch all forms for user
+  const { data: forms, error: formsError } = await db
+    .from("form_schemas")
+    .select("*")
+    .contains("initiators", ["student"])
+    .in("id", formGroup?.forms ?? []);
+
+  if (formsError) {
+    console.log("Could not fetch user forms.");
+    console.log("Actually, something went wrong: " + formsError?.message);
+    return [];
+  }
+
+  return forms ?? [];
 };
+
+/**
+ * Allows us to batch requests to the endpoint.
+ * Fetches field transformer.
+ */
+const fieldTransformerFetcher = createBatchedFetcher({
+  fetcher: async (ids: string[]): Promise<FieldTransformer[]> => {
+    const { data, error } = await db
+      .from("field_transformers")
+      .select("*")
+      .in("id", ids);
+    if (error)
+      throw new Error(`Could not find at least one of the field transformers.`);
+    return data as FieldTransformer[];
+  },
+  resolver: keyResolver("id"),
+  scheduler: windowScheduler(100),
+});
 
 /**
  * Allows us to batch requests to the endpoint.
@@ -92,12 +172,12 @@ const fieldFetcher = createBatchedFetcher({
  */
 const fetchFieldCollection = async (name: string) => {
   const { data, error } = await db
-    .from("form_field_collections")
+    .from("form_schemas")
     .select("*")
     .eq("name", name)
     .single();
   if (error) throw new Error(`Could not find the field collections "${name}".`);
-  return data as IFieldCollection;
+  return data as IFormSchema;
 };
 
 /**
@@ -107,13 +187,13 @@ const fetchFieldCollection = async (name: string) => {
  * @param schema
  * @returns
  */
-function evalZodSchema(schema: string) {
+function evalZodSchema(schema: string, params?: any) {
   // ? Gotta be careful with this shit
   const ret = `return ${schema}`;
   // eslint-disable-next-line @typescript-eslint/no-implied-eval
-  const evaluator = new Function("z", ret);
+  const evaluator = new Function("z", "params", ret);
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-  return evaluator(z) as ZodType;
+  return evaluator(z, params ?? {}) as ZodType;
 }
 
 /**
@@ -123,8 +203,13 @@ function evalZodSchema(schema: string) {
  */
 export const useDynamicFormSchema = (name: string) => {
   const [fields, setFields] = useState<IJoinedField[]>([]);
-  const { data, error } = useQuery({
-    queryKey: ["field-collections"],
+  const [mappingLoading, setMappingLoading] = useState(false);
+  const {
+    data,
+    error,
+    isLoading: collectionLoading,
+  } = useQuery({
+    queryKey: ["field-collections", name],
     queryFn: () => fetchFieldCollection(name),
     staleTime: 10000,
     gcTime: 10000,
@@ -141,6 +226,16 @@ export const useDynamicFormSchema = (name: string) => {
       ) ?? [],
     );
 
+  const mapTransformers = async (transformers?: string[]) =>
+    await Promise.all(
+      transformers?.map(
+        async (t) =>
+          await fieldTransformerFetcher
+            .fetch(t)
+            .then((t) => (t?.rule ? evalZodSchema(t.rule) : z.any())),
+      ) ?? [],
+    );
+
   // Maps fields to their db fetches
   const mapFields = async (fields: string[]) =>
     await Promise.all(
@@ -149,22 +244,80 @@ export const useDynamicFormSchema = (name: string) => {
           await fieldFetcher.fetch(f).then(async (field: IField | null) => ({
             ...(field ?? ({} as IField)),
             type: field?.type ?? "text",
-            validators: await mapValidators(field?.validators),
+            label: field?.label ?? "",
+            section: field?.section,
+            validators: await mapValidators(field?.validators ?? undefined),
+            transformers: await mapTransformers(field?.transformers),
           })),
       ),
     );
 
   useEffect(() => {
-    if (!data?.fields) return;
-    const fieldList = data.fields as string[];
-    const fields = mapFields(fieldList);
-    console.log("Fields", fields);
+    const schema = (data?.schema ?? []) as { field: string }[];
+    const fields = schema.map((s) => s.field);
 
-    void fields.then((f) => setFields(f));
-  }, [data?.fields]);
+    const list = data?.fields_filled_by_user || fields;
+
+    if (list.length === 0) {
+      setFields([]);
+      setMappingLoading(false);
+      return;
+    }
+
+    setMappingLoading(true);
+    void mapFields(list)
+      .then((fields) =>
+        setFields(
+          fields.map((f) => ({
+            ...f,
+            section: f.section ?? null,
+          })),
+        ),
+      )
+      .finally(() => setMappingLoading(false));
+  }, [data?.fields_filled_by_user, data?.schema]);
 
   return {
     fields,
     error,
+    isLoading: collectionLoading || mappingLoading,
   };
+};
+
+/**
+ * Fetches all past user-filled forms.
+ *
+ * @param userId
+ * @returns
+ */
+export const fetchAllUserForms = async (userId: string) => {
+  if (!userId) return;
+
+  const { data, error } = await db_base
+    .from("user_internship_forms")
+    .select("*")
+    .eq("user_id", userId);
+
+  if (error) throw new Error(`Could not fetch user forms: ${error.message}`);
+  return data as IUserForm[];
+};
+
+export const fetchSignedDocument = async (signedDocumentId: string) => {
+  const signedDocument = await db
+    .from("signed_documents")
+    .select("*")
+    .eq("id", signedDocumentId)
+    .single();
+
+  return signedDocument;
+};
+
+export const fetchPendingDocument = async (pendingDocumentId: string) => {
+  const pendingDocument = await db
+    .from("pending_documents")
+    .select("*")
+    .eq("id", pendingDocumentId)
+    .single();
+
+  return pendingDocument;
 };
