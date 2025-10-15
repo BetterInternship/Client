@@ -18,6 +18,7 @@ import { FormFlowRouter } from "@/components/features/student/forms/FormFlowRout
 import { useProfileData } from "@/lib/api/student.data.api";
 import { UserService } from "@/lib/api/services";
 import { useRouter } from "next/navigation";
+import ComingSoonCard from "@/components/features/student/forms/ComingSoonCard";
 
 /**
  * The forms page component
@@ -48,6 +49,18 @@ export default function FormsPage() {
   });
 
   const generatorForms = formList;
+
+  const comingSoon = useMemo(() => {
+    const available = new Set(
+      (generatorForms ?? [])
+        .map((f: any) => (f.label ?? f.name ?? "").toLowerCase().trim())
+        .filter(Boolean),
+    );
+    return UPCOMING_FORMS.filter(
+      (f) => !available.has(f.label.toLowerCase().trim()),
+    );
+  }, [generatorForms]);
+
   const openFormModal = (formName: string, formLabel: string) => {
     openGlobalModal(
       "form-generator-form",
@@ -161,6 +174,36 @@ export default function FormsPage() {
                     }
                   />
                 ))}
+
+              {/* coming soon, hard coded for now */}
+              {!error &&
+                !(isLoading || isPending || isFetching) &&
+                (comingSoon?.length ?? 0) > 0 && (
+                  <div className="mt-6 space-y-2">
+                    <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                      Coming Soon
+                    </div>
+                    <div className="space-y-3">
+                      {comingSoon.map((f) => (
+                        <ComingSoonCard
+                          key={f.label}
+                          title={f.label}
+                          blurb={f.blurb}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Want early access or have a suggestion? Email{" "}
+                      <a
+                        href="mailto:hello@betterinternship.com"
+                        className="underline underline-offset-4"
+                      >
+                        hello@betterinternship.com
+                      </a>
+                      .
+                    </p>
+                  </div>
+                )}
             </div>
           </OutsideTabPanel>
 
@@ -226,3 +269,28 @@ export default function FormsPage() {
     </div>
   );
 }
+
+/* ───────────────────────── Additions: Coming Soon config ───────────────────────── */
+const UPCOMING_FORMS: Array<{ label: string; blurb?: string }> = [
+  {
+    label: "Student MOA",
+    blurb: "Auto-filled with your saved profile details.",
+  },
+  {
+    label: "Company Evaluation Form",
+    blurb: "Let your employer evaluate your internship.",
+  },
+  {
+    label: "Company and Project Info",
+    blurb: "Capture host company and project specifics.",
+  },
+  {
+    label: "Progress Report",
+    blurb: "Track your weekly/monthly internship progress.",
+  },
+  {
+    label: "Annex A Internship Plan",
+    blurb: "Outline your learning goals and tasks.",
+  },
+];
+/* ──────────────────────────────────────────────────────────────────────────────── */
