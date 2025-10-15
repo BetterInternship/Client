@@ -321,7 +321,7 @@ export function FormFlowRouter({
         </Button>
         <Button
           onClick={() => {
-            void handleSubmit();
+            void handleSubmit(true);
           }}
           className="w-full sm:w-auto"
           disabled={busy}
