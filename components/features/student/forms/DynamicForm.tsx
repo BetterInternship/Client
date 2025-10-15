@@ -67,6 +67,10 @@ export function DynamicForm({
     if (!bootstrapped && defs.length > 0) setBootstrapped(true);
   }, [bootstrapped, defs.length]);
 
+  const companyDefs: RendererFieldDef[] = useMemo(
+    () => defs.filter((d) => d.section === "entity"),
+    [defs],
+  );
   const studentDefs: RendererFieldDef[] = useMemo(
     () => defs.filter((d) => d.section === "student"),
     [defs],
@@ -102,6 +106,16 @@ export function DynamicForm({
 
       {bootstrapped && (
         <>
+          <FormSection
+            formKey={form}
+            title="Company Information"
+            defs={companyDefs}
+            values={values}
+            onChange={onChange}
+            errors={errors}
+            showErrors={showErrors}
+          />
+
           <FormSection
             formKey={form}
             title="Student Information"

@@ -198,9 +198,8 @@ export function FormFlowRouter({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-gray-700">Employer</h3>
+      {/* <h3 className="text-sm font-semibold text-gray-700">Company Information</h3>
 
-      {/* SELECT MODE: show dropdown + actions */}
       {mode === "select" ? (
         <>
           <FormDropdown
@@ -229,7 +228,7 @@ export function FormFlowRouter({
                     setSelection("");
                   }}
                 >
-                  Invite them to fill it in
+                  Fill out their details manually
                 </button>
               )}
               {allowInvite}
@@ -237,11 +236,10 @@ export function FormFlowRouter({
           ) : null}
         </>
       ) : (
-        /* INVITE/MANUAL MODE: hide dropdown, show back-to-select */
         <div className="flex items-center justify-between rounded-[0.33em] border bg-card px-3 py-2 bg-gray-200">
           <div className="text-sm">
             {mode === "invite"
-              ? "Invite the company to complete details"
+              ? "Fill company details manually"
               : "Fill company details manually"}
           </div>
           <button
@@ -255,24 +253,12 @@ export function FormFlowRouter({
             Back to company picker
           </button>
         </div>
-      )}
+      )} */}
 
-      {/* show employer only fields only when mode is allowed */}
-      {mode === "invite" && allowInvite && (
+      {/* {mode === "invite" && allowInvite && (
         <>
-          {/* // ! todo: these should set state; they shud be saved in user as well */}
-          <FormInput
-            label="Company representative email"
-            value={""}
-            setter={() => {}}
-          />
-          <FormInput
-            label="Company legal entity name"
-            value={""}
-            setter={() => {}}
-          />
         </>
-      )}
+      )} */}
 
       {/* main form always shown; its schema changes with mode */}
       <DynamicForm

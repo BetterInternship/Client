@@ -270,27 +270,22 @@ export default function FormsPage() {
   );
 }
 
-/* ───────────────────────── Additions: Coming Soon config ───────────────────────── */
-const UPCOMING_FORMS: Array<{ label: string; blurb?: string }> = [
+/* Coming Soon config ───────────────────────── */
+const UPCOMING_FORMS: Array<{ label: string }> = [
   {
     label: "Student MOA",
-    blurb: "Auto-filled with your saved profile details.",
   },
   {
     label: "Company Evaluation Form",
-    blurb: "Let your employer evaluate your internship.",
   },
   {
     label: "Company and Project Info",
-    blurb: "Capture host company and project specifics.",
   },
   {
     label: "Progress Report",
-    blurb: "Track your weekly/monthly internship progress.",
   },
   {
     label: "Annex A Internship Plan",
-    blurb: "Outline your learning goals and tasks.",
   },
 ];
 /* ──────────────────────────────────────────────────────────────────────────────── */
