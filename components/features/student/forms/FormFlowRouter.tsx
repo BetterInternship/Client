@@ -140,74 +140,79 @@ export function FormFlowRouter({
     return next;
   }, [mainDefs, values, validatorFns]);
 
-  const handleSubmit = useCallback(async () => {
-    setSubmitted(true);
+  const handleSubmit = useCallback(
+    async (withEsign?: boolean) => {
+      setSubmitted(true);
 
-    if (!profileData?.id) return;
-    console.log("values", values);
+      if (!profileData?.id) return;
+      console.log("values", values);
 
-    const next = validateNow();
-    if (Object.values(next).some(Boolean)) return;
-    const { student, university, internship, entity } =
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      groupBySectionUsingNames(mainDefs, {
-        ...values,
-        ...(profileData.internship_moa_fields as any),
-      });
+      const next = validateNow();
+      if (Object.values(next).some(Boolean)) return;
+      const { student, university, internship, entity } =
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        groupBySectionUsingNames(mainDefs, {
+          ...values,
+          ...(profileData.internship_moa_fields as any),
+        });
 
-    const selected = companies.find((c) => c.id === selection);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const entityPatched = {
-      ...entity,
-      employer_id: selection,
-      employer_legal_name: selected?.name,
-    };
+      const selected = companies.find((c) => c.id === selection);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const entityPatched = {
+        ...entity,
+        employer_id: selection,
+        employer_legal_name: selected?.name,
+      };
 
-    const profilePayload = {
-      student,
-      university,
-      internship,
-      entity: entityPatched,
-    };
+      const profilePayload = {
+        student,
+        university,
+        internship,
+        entity: entityPatched,
+      };
 
-    try {
-      setBusy(true);
+      try {
+        setBusy(true);
 
-      // Update server-side internship fields
-      await update.mutateAsync({
-        internship_moa_fields: profilePayload,
-      });
+        // Update server-side internship fields
+        await update.mutateAsync({
+          internship_moa_fields: profilePayload,
+        });
 
-      await UserService.submitSignedForm({
-        formName: formName,
-        values: {
-          ...student,
-          ...university,
-          ...internship,
-          ...entityPatched,
-        },
-        parties: {
-          userId: profileData.id,
-          employerId: selection,
-        },
-      });
-      setDone(true);
-      setSubmitted(false);
-    } catch (e) {
-      console.error("Submission error", e);
-    } finally {
-      setBusy(false);
-    }
-  }, [
-    mode,
-    selection,
-    mainDefs,
-    values,
-    formName,
-    validateNow,
-    update,
-    companies,
-  ]);
+        const route = withEsign ? "submitSignedForm" : "submitPendingForm";
+
+        await UserService[route]({
+          formName: formName,
+          values: {
+            ...student,
+            ...university,
+            ...internship,
+            ...entityPatched,
+          },
+          parties: {
+            userId: profileData.id,
+            employerId: selection,
+          },
+        });
+        setDone(true);
+        setSubmitted(false);
+      } catch (e) {
+        console.error("Submission error", e);
+      } finally {
+        setBusy(false);
+      }
+    },
+    [
+      mode,
+      selection,
+      mainDefs,
+      values,
+      formName,
+      validateNow,
+      update,
+      companies,
+    ],
+  );
 
   if (done) {
     return (
