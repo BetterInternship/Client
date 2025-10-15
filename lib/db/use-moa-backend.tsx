@@ -74,7 +74,6 @@ export const fetchForms = async (user: PublicUser): Promise<IFormSchema[]> => {
       .select("*")
       .eq("department_id", user.department)
       .single();
-  console.log("ifm", internshipFormMapping);
 
   // Handle error or nonexistent mapping
   if (!internshipFormMapping?.form_group_id) {
@@ -320,4 +319,17 @@ export const fetchPendingDocument = async (pendingDocumentId: string) => {
     .single();
 
   return pendingDocument;
+};
+
+export const fetchTemplateDocument = async (baseDocumentId: string) => {
+  console.log("id", baseDocumentId)
+  if (!baseDocumentId) return;
+  const baseDocument = await db
+    .from("base_documents")
+    .select("url")
+    .eq("id", baseDocumentId)
+    .single();
+
+  console.log("baseDoc", baseDocument);
+  return baseDocument;
 };

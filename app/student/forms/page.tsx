@@ -10,6 +10,7 @@ import {
   fetchAllUserForms,
   fetchSignedDocument,
   fetchPendingDocument,
+  fetchTemplateDocument,
 } from "@/lib/db/use-moa-backend";
 import FormGenerateCard from "@/components/features/student/forms/FormGenerateCard";
 import MyFormCard from "@/components/features/student/forms/MyFormCard";
@@ -169,6 +170,27 @@ export default function FormsPage() {
                   <FormGenerateCard
                     key={form.id}
                     formTitle={form.label ?? ""}
+                    onViewTemplate={() => {
+                      if (!form.base_document_id) {
+                        alert("No template available for this form.");
+                        return;
+                      }
+
+                      fetchTemplateDocument(form.base_document_id)
+                        .then((res) => {
+                          const link = res?.data?.url;
+                          if (link) {
+                            window.open(link, "noopener,noreferrer");
+                          } else {
+                            alert("Template not available.");
+                          }
+                        })
+                        .catch((e) => {
+                          console.error(e);
+                          w?.close();
+                          alert("Failed to load template.");
+                        });
+                    }}
                     onGenerate={() =>
                       openFormModal(form.name, form.label ?? "")
                     }
