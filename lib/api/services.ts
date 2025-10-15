@@ -155,7 +155,7 @@ export const UserService = {
     values: Record<string, string>;
     parties?: {
       userId?: string;
-      entityId?: string;
+      employerId?: string;
       universityId?: string;
     };
   }) {
@@ -172,7 +172,7 @@ export const UserService = {
     values: Record<string, string>;
     parties?: {
       userId?: string;
-      entityId?: string;
+      employerId?: string;
       universityId?: string;
     };
   }) {
