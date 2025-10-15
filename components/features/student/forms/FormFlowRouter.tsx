@@ -128,10 +128,6 @@ export function FormFlowRouter({
     setSubmitted(true);
 
     if (!profileData?.id) return;
-    if (mode === "select" && !selection) {
-      setErrors((e) => ({ ...e, __company__: "Please select a company." }));
-      return;
-    }
 
     const next = validateNow();
     if (Object.values(next).some(Boolean)) return;
@@ -151,6 +147,7 @@ export function FormFlowRouter({
       internship,
       entity: entityPatched,
     };
+    console.log("ProfilePayload", profilePayload);
 
     try {
       setBusy(true);
