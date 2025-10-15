@@ -71,14 +71,15 @@ export default function MyFormCard({
   };
 
   return (
-    <Card className="sm:flex sm:justify-between sm:items-center">
-      <div className="space-y-1">
-        <div className="flex gap-3">
-          <Badge type={badgeType} className="pointer-events-none">
+    <Card className="sm:flex sm:items-center sm:justify-between">
+      <div className="space-y-1 sm:space-y-0 min-w-0">
+        <div className="sm:flex gap-3">
+          <Badge type={badgeType} className="pointer-events-none shrink-0">
             {badgeText}
           </Badge>
-
-          <div className="font-medium">{title}</div>
+          <div className="font-medium" title={title}>
+            {title}
+          </div>
         </div>
 
         {requested && (
@@ -88,7 +89,7 @@ export default function MyFormCard({
         )}
       </div>
 
-      <div className="flex gap-2 w-full sm:w-auto p-3 sm:p-0">
+      <div className="flex gap-2 w-full sm:w-auto">
         <Button
           className="w-full sm:w-auto"
           onClick={() => void handleDownload()}
