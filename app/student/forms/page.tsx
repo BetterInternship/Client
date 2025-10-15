@@ -4,8 +4,13 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { OutsideTabPanel, OutsideTabs } from "@/components/ui/outside-tabs";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
-import { Newspaper } from "lucide-react";
-import { fetchForms, fetchAllUserForms } from "@/lib/db/use-moa-backend";
+import { Newspaper, Rows2 } from "lucide-react";
+import {
+  fetchForms,
+  fetchAllUserForms,
+  fetchSignedDocument,
+  fetchPendingDocument,
+} from "@/lib/db/use-moa-backend";
 import FormGenerateCard from "@/components/features/student/forms/FormGenerateCard";
 import MyFormCard from "@/components/features/student/forms/MyFormCard";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
@@ -37,15 +42,12 @@ export default function FormsPage() {
     error,
   } = useQuery({
     queryKey: ["forms:list"],
-    queryFn: async () => (profile.data ? await fetchForms(profile.data) : {}),
+    queryFn: async () => (profile.data ? await fetchForms(profile.data) : []),
     staleTime: 10_000,
     gcTime: 10_000,
   });
 
-  const generatorForms = (formList ?? []).filter(
-    (f) => !/-invite$|-manual$/i.test(f.name),
-  );
-
+  const generatorForms = formList;
   const openFormModal = (formName: string, formLabel: string) => {
     openGlobalModal(
       "form-generator-form",
@@ -69,13 +71,13 @@ export default function FormsPage() {
   };
 
   const {
-    data: myForms = [],
+    data: myForms,
     isLoading: loadingMyForms,
     error: myFormsError,
   } = useQuery({
     queryKey: ["my_forms", userId],
     enabled: !!userId,
-    queryFn: () => (userId ? fetchAllUserForms(userId) : {}),
+    queryFn: () => (userId ? fetchAllUserForms(userId) : []),
     staleTime: 10_000,
     gcTime: 10_000,
   });
@@ -135,8 +137,10 @@ export default function FormsPage() {
                 generatorForms.map((form) => (
                   <FormGenerateCard
                     key={form.id}
-                    formTitle={form.label}
-                    onGenerate={() => openFormModal(form.name, form.label)}
+                    formTitle={form.label ?? ""}
+                    onGenerate={() =>
+                      openFormModal(form.name, form.label ?? "")
+                    }
                   />
                 ))}
             </div>
@@ -152,7 +156,7 @@ export default function FormsPage() {
               {userId &&
                 !loadingMyForms &&
                 !myFormsError &&
-                myForms.length === 0 && (
+                !myForms?.length && (
                   <p className="text-muted-foreground text-sm">
                     You haven’t generated any forms yet.
                   </p>
@@ -161,7 +165,7 @@ export default function FormsPage() {
               {userId &&
                 !loadingMyForms &&
                 !myFormsError &&
-                myForms.map((row) => {
+                myForms.map((row, i) => {
                   const formName = row.form_name;
                   const companyName = companyMap[row.employer_id];
                   const title = `${formName} | ${companyName}`;
@@ -170,10 +174,29 @@ export default function FormsPage() {
                     : "Waiting for signature/s";
                   return (
                     <MyFormCard
+                      key={i}
                       title={title}
                       requestedAt={row.timestamp}
                       status={status}
-                      onDownload={() => {}}
+                      getDownloadUrl={async () => {
+                        if (row.signed_document_id) {
+                          const signedDocument = await fetchSignedDocument(
+                            row.signed_document_id,
+                          );
+
+                          return `https://storage.googleapis.com/better-internship-public-bucket/${signedDocument.data?.verification_code}.pdf`;
+                        }
+
+                        if (row.pending_document_id) {
+                          const pendingDocument = await fetchPendingDocument(
+                            row.pending_document_id,
+                          );
+
+                          return `https://storage.googleapis.com/better-internship-public-bucket/${pendingDocument.data?.verification_code}.pdf`;
+                        }
+
+                        alert("No document associated with request.");
+                      }}
                       downloading={false}
                     />
                   );

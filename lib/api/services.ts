@@ -148,85 +148,40 @@ export const UserService = {
     );
   },
 
-  async submitForm(data: any) {
-    return APIClient.post<{ payload: any }>(
-      APIRouteBuilder("forms").r("initiate-moa").build({ moaServer: true }),
-      data,
-    );
-  },
-
-  async generateStudentMoa(data: {
-    employer_id: string;
-    user_id: string;
-    user_address: string;
-    user_degree: string;
-    user_college: string;
-    user_full_name: string;
-    user_id_number: string;
-    student_guardian_name: string;
-    internship_hours: number;
-    internship_start_date: number;
-    internship_start_time: string;
-    internship_end_date: number;
-    internship_end_time: string;
-    internship_coordinator_name: string;
-  }) {
-    alert("this route isnt implemented yet");
-    return Promise.resolve({});
-  },
-
-  async generateManualStudentMoa(data: {
-    employer_id: string;
-    user_id: string;
-    user_address: string;
-    user_degree: string;
-    user_college: string;
-    user_full_name: string;
-    user_id_number: string;
-    student_guardian_name: string;
-    internship_hours: number;
-    internship_start_date: number;
-    internship_start_time: string;
-    internship_end_date: number;
-    internship_end_time: string;
-    internship_coordinator_name: string;
-    companyLegalName: string;
-    companyAddress: string;
-    companyRepresentative: string;
-    companyRepresentativePosition: string;
-    companyType: string;
-  }) {
-    alert("this route isnt implemented yet");
-    return Promise.resolve({});
-  },
-
-  async createStudentMoaRow(data: {
-    MOAAgreementDate?: number;
-    CompanyLegalName?: string;
-    CompanyType?: string;
-    CompanyAddress: string;
-    CompanyRepresentative: string;
-    CompanyRepresentativePosition: string;
-    Studentname: string;
-    StudentProgram: string;
-    StudentCollege: string;
-    StudentAddress: string;
-    InternshipHours: number;
-    InternshipStartDate: number;
-    InternshipEndDate: number;
-    InternshipStartTime: string;
-    InternshipEndTime: string;
-    StudentGuardianName: string;
-    StudentIDNumber: string;
-    InternshipCoordinatorName: string;
+  // ! todo, add a way for the route to be able to tell if request is valid or not
+  // ! we can't generate signed forms out of nowhere
+  async submitSignedForm(data: {
+    formName: string;
+    values: Record<string, string>;
+    parties?: {
+      userId?: string;
+      entityId?: string;
+      universityId?: string;
+    };
   }) {
     return APIClient.post<{
-      success: boolean;
-      message?: string;
-    }>(
-      APIRouteBuilder("docs").r("student-moa").build({ moaServer: true }),
-      data,
-    );
+      success?: boolean;
+      pendingDocumentUrl: string;
+      pendingDocumentId: string;
+      internshipFormId: string;
+    }>(APIRouteBuilder("forms").r("signed").build({ moaServer: true }), data);
+  },
+
+  async submitPendingForm(data: {
+    formName: string;
+    values: Record<string, string>;
+    parties?: {
+      userId?: string;
+      entityId?: string;
+      universityId?: string;
+    };
+  }) {
+    return APIClient.post<{
+      success?: boolean;
+      pendingDocumentUrl: string;
+      pendingDocumentId: string;
+      internshipFormId: string;
+    }>(APIRouteBuilder("forms").r("pending").build({ moaServer: true }), data);
   },
 
   async requestEmployerAssist(id: string, recipient: string) {

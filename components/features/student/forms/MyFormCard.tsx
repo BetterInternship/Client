@@ -12,12 +12,14 @@ export default function MyFormCard({
   status, // "Pending" | "Signed"
   pendingUrl,
   signedUrl,
+  getDownloadUrl,
 }: {
   title: string;
   requestedAt?: string;
   status: "Pending" | "Signed";
   pendingUrl?: string | null;
   signedUrl?: string | null;
+  getDownloadUrl?: () => Promise<string>;
 }) {
   const [downloading, setDownloading] = useState(false);
 
@@ -53,6 +55,7 @@ export default function MyFormCard({
   const disabled = downloading;
 
   const handleDownload = async () => {
+    const targetUrl = await getDownloadUrl?.();
     if (!targetUrl) return;
     try {
       setDownloading(true);
@@ -88,7 +91,7 @@ export default function MyFormCard({
       <div className="flex gap-2 w-full sm:w-auto p-3 sm:p-0">
         <Button
           className="w-full sm:w-auto"
-          onClick={handleDownload}
+          onClick={() => void handleDownload()}
           disabled={disabled}
           aria-busy={downloading}
         >

@@ -166,7 +166,7 @@ export function RecipientFlowRouter({
       if (onSubmit) {
         await onSubmit(submitPayload);
       } else {
-        await UserService.submitForm(submitPayload);
+        await UserService.submitSignedForm(submitPayload);
       }
       setDone(true);
       setSubmitted(false);

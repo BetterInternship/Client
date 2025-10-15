@@ -127,6 +127,7 @@ export function FormFlowRouter({
   const handleSubmit = useCallback(async () => {
     setSubmitted(true);
 
+    if (!profileData?.id) return;
     if (mode === "select" && !selection) {
       setErrors((e) => ({ ...e, __company__: "Please select a company." }));
       return;
@@ -158,14 +159,21 @@ export function FormFlowRouter({
         internship_moa_fields: profilePayload,
       });
 
-      const mergedFromServer = updateRes.user;
+      const mergedFromServer = updateRes.user.internship_moa_fields;
 
       const submitPayload = {
         formName,
-        ...mergedFromServer, // { student, university, entity, internship } from server
+        ...(mergedFromServer as Record<string, any>),
       };
 
-      await UserService.submitForm(submitPayload);
+      await UserService.submitSignedForm({
+        formName: formName,
+        values: values,
+        parties: {
+          userId: profileData.id,
+          entityId: selection,
+        },
+      });
       console.log("submitted", submitPayload);
       setDone(true);
       setSubmitted(false);
