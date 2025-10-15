@@ -291,7 +291,7 @@ export default function FormsPage() {
                             row.pending_document_id,
                           );
 
-                          return `https://storage.googleapis.com/better-internship-public-bucket/${pendingDocument.data?.verification_code}.pdf`;
+                          return pendingDocument.data?.latest_document_url;
                         }
 
                         alert("No document associated with request.");
