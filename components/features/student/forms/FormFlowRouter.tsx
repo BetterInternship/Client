@@ -47,7 +47,7 @@ export function FormFlowRouter({
   const { update } = useProfileActions();
   const { data: profileData } = useProfileData();
 
-  const [selection, setSelection] = useState<string>(""); // company id only
+  const [selection, setSelection] = useState<string | null>(); // company id only
   const [mode, setMode] = useState<Mode>("select");
   const [done, setDone] = useState(false);
 
@@ -68,6 +68,22 @@ export function FormFlowRouter({
         entity?: Record<string, string>;
       }
     | undefined;
+
+  useEffect(() => {
+    const { student, university, internship, entity } =
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      groupBySectionUsingNames(mainDefs, {
+        ...values,
+        ...(profileData?.internship_moa_fields as any),
+      });
+
+    console.log("INIT", {
+      ...values,
+      ...(profileData?.internship_moa_fields as any),
+    });
+
+    setValues({ student, university, internship, entity });
+  }, [profileData?.internship_moa_fields]);
 
   // i fill up the forms AUTOMATICALLY
   useEffect(() => {
@@ -128,13 +144,19 @@ export function FormFlowRouter({
     setSubmitted(true);
 
     if (!profileData?.id) return;
+    console.log("values", values);
 
     const next = validateNow();
     if (Object.values(next).some(Boolean)) return;
     const { student, university, internship, entity } =
-      groupBySectionUsingNames(mainDefs, values);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      groupBySectionUsingNames(mainDefs, {
+        ...values,
+        ...(profileData.internship_moa_fields as any),
+      });
 
     const selected = companies.find((c) => c.id === selection);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const entityPatched = {
       ...entity,
       employer_id: selection,
@@ -145,7 +167,7 @@ export function FormFlowRouter({
       student,
       university,
       internship,
-      entity: entityPatched,
+      entityPatched,
     };
 
     try {
@@ -158,7 +180,12 @@ export function FormFlowRouter({
 
       await UserService.submitSignedForm({
         formName: formName,
-        values: values,
+        values: {
+          ...student,
+          ...university,
+          ...internship,
+          ...entityPatched,
+        },
         parties: {
           userId: profileData.id,
           employerId: selection,
@@ -345,10 +372,10 @@ function groupBySectionUsingNames(
   values: Record<string, string>,
 ) {
   const out = {
-    student: {} as Record<string, string>,
-    internship: {} as Record<string, string>,
-    university: {} as Record<string, string>,
-    entity: {} as Record<string, string>,
+    student: values.student ?? ({} as Record<string, string>),
+    internship: values.internship ?? ({} as Record<string, string>),
+    university: values.university ?? ({} as Record<string, string>),
+    entity: values.entity ?? ({} as Record<string, string>),
   };
 
   for (const d of defs) {

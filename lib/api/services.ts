@@ -154,9 +154,9 @@ export const UserService = {
     formName: string;
     values: Record<string, string>;
     parties?: {
-      userId?: string;
-      employerId?: string;
-      universityId?: string;
+      userId?: string | null;
+      employerId?: string | null;
+      universityId?: string | null;
     };
   }) {
     return APIClient.post<{
@@ -171,9 +171,9 @@ export const UserService = {
     formName: string;
     values: Record<string, string>;
     parties?: {
-      userId?: string;
-      employerId?: string;
-      universityId?: string;
+      userId?: string | null;
+      employerId?: string | null;
+      universityId?: string | null;
     };
   }) {
     return APIClient.post<{
