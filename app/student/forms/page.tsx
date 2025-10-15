@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { OutsideTabPanel, OutsideTabs } from "@/components/ui/outside-tabs";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { Newspaper, Rows2 } from "lucide-react";
@@ -29,6 +29,7 @@ import ComingSoonCard from "@/components/features/student/forms/ComingSoonCard";
 type TabKey = "Form Generator" | "My Forms";
 
 export default function FormsPage() {
+  const queryClient = useQueryClient();
   const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
   const profile = useProfileData();
   const router = useRouter();
@@ -125,6 +126,13 @@ export default function FormsPage() {
     alert("Profile not yet complete.");
     router.push("/profile");
   }
+
+  // refresh on my forms
+  useEffect(() => {
+    if (tab === "My Forms" && userId) {
+      queryClient.invalidateQueries({ queryKey: ["my_forms", userId] });
+    }
+  }, [tab, userId, queryClient]);
 
   return (
     <div className="container max-w-6xl px-4 sm:px-10 pt-6 sm:pt-16 mx-auto">
