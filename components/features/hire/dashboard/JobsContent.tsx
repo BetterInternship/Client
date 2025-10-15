@@ -23,10 +23,14 @@ export function JobsContent({
     updateJob
 }: JobsContentProps) {
     return (
-        <table className="relative table-auto border-separate border-spacing-0 w-full h-full max-h-full">
-            <tbody className="w-full h-full max-h-full ">
-                {jobs.length > 0 
-                ? 
+        // <table className="relative table-auto border-separate border-spacing-0 w-full h-full max-h-full">
+        //     <tbody className="w-full h-full max-h-full ">
+
+        //     </tbody>
+        // </table>
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2">
+            {jobs.length > 0
+                ?
                 (
                     jobs.filter(job => job.employer_id === employerId
                     ).map((job) => (
@@ -43,7 +47,6 @@ export function JobsContent({
                         <Badge>No job listings currently.</Badge>
                     </div>
                 )}
-            </tbody>
-        </table>
+        </div>
     );
 }

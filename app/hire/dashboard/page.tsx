@@ -30,7 +30,7 @@ function DashboardContent() {
   const { isAuthenticated, redirectIfNotLoggedIn, loading } = useAuthContext();
   const profile = useProfile();
   const applications = useEmployerApplications();
-  const { ownedJobs, update_job }= useOwnedJobs();
+  const { ownedJobs, update_job } = useOwnedJobs();
   const archivedJobs = ownedJobs.filter((job) => job.is_active === false ||
     job.is_deleted === true || job.is_unlisted === true);
 
@@ -68,81 +68,27 @@ function DashboardContent() {
 
   return (
     <ContentLayout>
-      <div className="flex-1 flex flex-col w-full">
-        <h3 className="p-4 m-4 text-primary">Welcome {profile.data?.name}</h3>
-        <div className="p-6 flex flex-col h-0 flex-1 space-y-6">
+      <div className="flex-1 flex flex-col w-full px-6 py-4 gap-4 mt-4">
+        <h3 className="text-primary tracking-tighter">Welcome back, {profile.data?.name}</h3>
+        <div className="flex flex-col flex-1">
           {!profile.loading && !profile.data?.is_verified ? (
             <ShowUnverifiedBanner />
           ) : (
             <>
-              <Card className="h-full max-h-full border-none p-0 pt-2">
+              <Card className="h-full max-h-full border-none">
+                {ownedJobs.length === 1 ? (
+                  <p className="text-gray-500 pb-2">{ownedJobs.length} job listing </p>
+                ) : (
+                  <p className="text-gray-500 pb-2">{ownedJobs.length} job listings </p>
+                )}
                 <>
-                <p className="m-4 text-gary-500">Current Jobs ({ownedJobs.length}): </p>
-                {/* the commented out tab group is from the old tabs thing */}
-                {/* <TabGroup>
-                  <Tab
-                    onTabChange={handleJobBack}
-                    indicator={applications.employer_applications
-                      .filter((application) => application.status === 0)
-                      .some((application) =>
-                        conversations.unreads.some((unread) =>
-                          unread.subscribers.includes(application.user_id)
-                        )
-                      )}
-                    name="New Applications"
-                  >
-                    {tabContents([0])}
-                  </Tab>
-                  
-                  <Tab
-                    onTabChange={handleJobBack}
-                    name="Ongoing Applications"
-                    indicator={applications.employer_applications
-                      .filter((application) => application.status === 1)
-                      .some((application) =>
-                        conversations.unreads.some((unread) =>
-                          unread.subscribers.includes(application.user_id)
-                        )
-                      )}
-                  >
-                    {tabContents([1])}
-                  </Tab>
-                  
-                  <Tab
-                    onTabChange={handleJobBack}
-                    name="Finalized Applications"
-                    indicator={applications.employer_applications
-                      .filter((application) => application.status === 4 || application.status === 6)
-                      .some((application) =>
-                        conversations.unreads.some((unread) =>
-                          unread.subscribers.includes(application.user_id)
-                        )
-                      )}
-                  >
-                    {tabContents([4, 6])}
-                  </Tab>
-                  <Tab
-                    onTabChange={handleJobBack}
-                    name="Archived Applications"
-                    indicator={applications.employer_applications
-                      .filter((application) => application.status === 0 || application.status === 1 ||
-                      application.status === 4 || application.status === 6)
-                      .some((application) =>
-                        conversations.unreads.some((unread) =>
-                          unread.subscribers.includes(application.user_id)
-                        )
-                      )}
-                  >
-                    {tabContents([0, 1, 4, 6])}
-                  </Tab>
-                </TabGroup> */}
-                <JobsContent
-                  applications={applications.employer_applications}
-                  jobs={ownedJobs}
-                  employerId={profile.data?.id || ""}
-                  onJobListingClick={handleJobListingClick}
-                  updateJob={update_job}
-                />
+                  <JobsContent
+                    applications={applications.employer_applications}
+                    jobs={ownedJobs}
+                    employerId={profile.data?.id || ""}
+                    onJobListingClick={handleJobListingClick}
+                    updateJob={update_job}
+                  />
                 </>
               </Card>
             </>
