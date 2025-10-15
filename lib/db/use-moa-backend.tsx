@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-10-16 02:35:31
+ * @ Modified time: 2025-10-16 02:50:30
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
@@ -51,6 +51,7 @@ type IFormSchema = DocumentTables<"form_schemas">;
  * All validators are included.
  */
 interface IJoinedField extends Omit<IField, "validators" | "transformers"> {
+  value: undefined;
   validators: ZodType[];
   transformers: ZodType[];
 }

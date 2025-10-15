@@ -26,11 +26,12 @@ export type FieldDef = {
   options?: Option[]; // for select
   validators: z.ZodTypeAny[];
   section?: Section;
+  value?: string;
 };
 
 export function FieldRenderer({
   def,
-  value,
+  value = def.value ?? "",
   onChange,
   error,
   showError,

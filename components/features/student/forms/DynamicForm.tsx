@@ -41,12 +41,13 @@ export function DynamicForm({
       (rawFields ?? []).map((f) => ({
         id: f.id,
         key: f.name,
+        value: f?.value ?? undefined,
         label: f.label ?? f.name,
         type: f.type ?? "text",
         helper: f.helper ?? undefined,
         validators: f.validators ?? [],
         section: f.section as Section,
-        options: f.options,
+        options: f.options as { value: string; label: string }[],
       })),
     [rawFields],
   );
