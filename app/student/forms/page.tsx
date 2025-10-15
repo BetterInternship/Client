@@ -12,6 +12,7 @@ import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { FormFlowRouter } from "@/components/features/student/forms/FormFlowRouter";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { UserService } from "@/lib/api/services";
+import { useRouter } from "next/navigation";
 
 /**
  * The forms page component
@@ -22,19 +23,21 @@ type TabKey = "Form Generator" | "My Forms";
 
 export default function FormsPage() {
   const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
-  const { data: profile } = useProfileData();
-  const userId = profile?.id;
-
+  const profile = useProfileData();
+  const router = useRouter();
+  const userId = profile.data?.id;
   const [tab, setTab] = useState<TabKey>("Form Generator");
 
   // All form templates
   const {
     data: formList = [],
     isLoading,
+    isPending,
+    isFetching,
     error,
   } = useQuery({
     queryKey: ["forms:list"],
-    queryFn: fetchForms,
+    queryFn: async () => (profile.data ? await fetchForms(profile.data) : {}),
     staleTime: 10_000,
     gcTime: 10_000,
   });
@@ -72,7 +75,7 @@ export default function FormsPage() {
   } = useQuery({
     queryKey: ["my_forms", userId],
     enabled: !!userId,
-    queryFn: () => fetchAllUserForms(userId!),
+    queryFn: () => (userId ? fetchAllUserForms(userId) : {}),
     staleTime: 10_000,
     gcTime: 10_000,
   });
@@ -93,6 +96,11 @@ export default function FormsPage() {
       ),
     [employersData],
   );
+
+  if (!profile.data?.department && !profile.isPending) {
+    alert("Profile not yet complete.");
+    router.push("/profile");
+  }
 
   return (
     <div className="container max-w-6xl px-4 sm:px-10 pt-6 sm:pt-16 mx-auto">
@@ -120,7 +128,7 @@ export default function FormsPage() {
         >
           <OutsideTabPanel when="Form Generator" activeKey={tab}>
             <div className="space-y-3">
-              {isLoading && <div>Loading...</div>}
+              {(isLoading || isPending || isFetching) && <div>Loading...</div>}
               {error && <p className="text-red-600">Failed to load forms</p>}
               {!isLoading &&
                 !error &&

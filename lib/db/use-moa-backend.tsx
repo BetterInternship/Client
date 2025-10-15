@@ -1,18 +1,14 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-10-15 01:40:22
+ * @ Modified time: 2025-10-15 08:28:33
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
  */
 
 import { useEffect, useState } from "react";
-import {
-  DocumentDatabase,
-  DocumentTables,
-  EntityDatabase,
-} from "@betterinternship/schema.moa";
+import { DocumentDatabase, DocumentTables } from "@betterinternship/schema.moa";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@supabase/supabase-js";
 import {
@@ -22,14 +18,13 @@ import {
 } from "@yornaath/batshit";
 import z, { ZodType } from "zod";
 import { Database, Tables } from "@betterinternship/schema.base";
+import { PublicUser } from "./db.types";
 
 // Environment setup
 const DB_URL_BASE = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const DB_ANON_KEY_BASE = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const DB_URL = process.env.NEXT_PUBLIC_MOA_DOCS_SUPABASE_URL;
 const DB_ANON_KEY = process.env.NEXT_PUBLIC_MOA_DOCS_SUPABASE_ANON_KEY;
-const DB_URL_ENT = process.env.NEXT_PUBLIC_MOA_ENTITY_SUPABASE_URL;
-const DB_ANON_KEY_ENT = process.env.NEXT_PUBLIC_MOA_ENTITY_SUPABASE_ANON_KEY;
 
 if (!DB_URL || !DB_ANON_KEY) {
   console.warn("Missing supabase configuration for MOA docs backend.");
@@ -40,10 +35,6 @@ const db = createClient<DocumentDatabase>(DB_URL ?? "", DB_ANON_KEY ?? "");
 const db_base = createClient<Database>(
   DB_URL_BASE ?? "",
   DB_ANON_KEY_BASE ?? "",
-);
-const db_ent = createClient<EntityDatabase>(
-  DB_URL_ENT ?? "",
-  DB_ANON_KEY_ENT ?? "",
 );
 
 /**
@@ -64,17 +55,59 @@ interface IJoinedField extends Omit<IField, "validators" | "transformers"> {
   transformers: ZodType[];
 }
 
-export const fetchForms = async (): Promise<IFormSchema[]> => {
-  const { data, error } = await db
+/**
+ * Fetches all forms from the database given the user's department.
+ *
+ * @returns
+ */
+export const fetchForms = async (user: PublicUser): Promise<IFormSchema[]> => {
+  if (!user.department) {
+    console.log("Department required to lookup forms.");
+    return [];
+  }
+  console.log("dept", user.department);
+
+  // Pull mapping for user department
+  const { data: internshipFormMapping, error: internshipFormMappingError } =
+    await db_base
+      .from("internship_form_mappings")
+      .select("*")
+      .eq("department_id", user.department)
+      .single();
+  console.log("ifm", internshipFormMapping);
+
+  // Handle error or nonexistent mapping
+  if (!internshipFormMapping?.form_group_id) {
+    console.log("Could not find mapping for department.");
+    if (internshipFormMappingError)
+      console.log(
+        "Actually, something went wrong: " +
+          internshipFormMappingError?.message,
+      );
+    return [];
+  }
+
+  // Get form group
+  const { data: formGroup, error: formGroupError } = await db
+    .from("form_groups")
+    .select("*")
+    .eq("id", internshipFormMapping.form_group_id)
+    .single();
+
+  // Fetch all forms for user
+  const { data: forms, error: formsError } = await db
     .from("form_schemas")
     .select("*")
-    .contains("initiators", ["student"]);
-  if (error) {
-    throw new Error(
-      `[form_schemas/select] ${error.code ?? ""} ${error.message}`,
-    );
+    .contains("initiators", ["student"])
+    .in("id", formGroup?.forms ?? []);
+
+  if (formsError) {
+    console.log("Could not fetch user forms.");
+    console.log("Actually, something went wrong: " + formsError?.message);
+    return [];
   }
-  return data ?? [];
+
+  return forms ?? [];
 };
 
 /**
@@ -223,8 +256,7 @@ export const useDynamicFormSchema = (name: string) => {
     const schema = (data?.schema ?? []) as { field: string }[];
     const fields = schema.map((s) => s.field);
 
-    const list =
-      safeToArray(data?.fields_filled_by_user) || safeToArray(fields);
+    const list = data?.fields_filled_by_user || fields;
 
     if (list.length === 0) {
       setFields([]);
@@ -252,8 +284,13 @@ export const useDynamicFormSchema = (name: string) => {
   };
 };
 
+/**
+ * Fetches all past user-filled forms.
+ *
+ * @param userId
+ * @returns
+ */
 export const fetchAllUserForms = async (userId: string) => {
-  console.log(userId, "im in");
   if (!userId) return;
 
   const { data, error } = await db_base
@@ -263,20 +300,4 @@ export const fetchAllUserForms = async (userId: string) => {
 
   if (error) throw new Error(`Could not fetch user forms: ${error.message}`);
   return data as IUserForm[];
-};
-
-// Helpers
-const safeToArray = (val: unknown): string[] => {
-  if (!val) return [];
-  if (Array.isArray(val)) return val as string[];
-  if (typeof val === "string") {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const parsed = JSON.parse(val);
-      return Array.isArray(parsed) ? (parsed as string[]) : [];
-    } catch {
-      return [];
-    }
-  }
-  return [];
 };

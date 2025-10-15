@@ -246,7 +246,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
 
     if (current.id === "base") {
       setIsUpdating(true);
-      UserService.updateMyProfile({
+      await UserService.updateMyProfile({
         first_name: profile.firstName ?? "",
         middle_name: profile.middleName ?? "",
         last_name: profile.lastName ?? "",
@@ -364,12 +364,11 @@ function StepBasicIdentity({
   value: ProfileDraft;
   onChange: (v: ProfileDraft) => void;
 }) {
-
   const { colleges, departments } = useDbRefs();
 
   const phoneInvalid = useMemo(
     () => !!value.phone && !isValidPHNumber(value.phone),
-    [value.phone]
+    [value.phone],
   );
 
   return (
@@ -432,7 +431,7 @@ function StepBasicIdentity({
             <FormDropdown
               required
               label="College"
-              value={value.college ?? ""} 
+              value={value.college ?? ""}
               setter={(val: any) => onChange({ ...value, college: val })}
               options={colleges}
               placeholder="Select college…"
