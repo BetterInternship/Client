@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-10-15 11:56:51
+ * @ Modified time: 2025-10-16 02:35:31
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
@@ -213,41 +213,57 @@ export const useDynamicFormSchema = (name: string) => {
     staleTime: 10000,
     gcTime: 10000,
   });
+  const formParams = (data?.params ?? {}) as Record<string, any>;
 
   // Maps validators to their db fetches
-  const mapValidators = async (validators?: string[]) =>
+  const mapValidators = async (validators?: string[], params?: any) =>
     await Promise.all(
       validators?.map(
         async (v) =>
           await fieldValidatorFetcher
             .fetch(v)
-            .then((v) => (v?.rule ? evalZodSchema(v.rule) : z.any())),
+            .then((v) => (v?.rule ? evalZodSchema(v.rule, params) : z.any())),
       ) ?? [],
     );
 
-  const mapTransformers = async (transformers?: string[]) =>
+  const mapTransformers = async (transformers?: string[], params?: any) =>
     await Promise.all(
       transformers?.map(
         async (t) =>
           await fieldTransformerFetcher
             .fetch(t)
-            .then((t) => (t?.rule ? evalZodSchema(t.rule) : z.any())),
+            .then((t) => (t?.rule ? evalZodSchema(t.rule, params) : z.any())),
       ) ?? [],
     );
 
   // Maps fields to their db fetches
-  const mapFields = async (fields: string[]) =>
+  const mapFields = async (fields: string[], formParams?: any) =>
     await Promise.all(
       fields.map(
         async (f) =>
-          await fieldFetcher.fetch(f).then(async (field: IField | null) => ({
-            ...(field ?? ({} as IField)),
-            type: field?.type ?? "text",
-            label: field?.label ?? "",
-            section: field?.section,
-            validators: await mapValidators(field?.validators ?? undefined),
-            transformers: await mapTransformers(field?.transformers),
-          })),
+          await fieldFetcher.fetch(f).then(async (field: IField | null) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+            const fieldParams = formParams?.[field?.name ?? ""];
+
+            return {
+              ...(field ?? ({} as IField)),
+              type: field?.type ?? "text",
+              label: field?.label ?? "",
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+              value: fieldParams?.value ?? undefined,
+              section: field?.section,
+              validators: await mapValidators(
+                field?.validators ?? undefined,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                fieldParams?.params,
+              ),
+              transformers: await mapTransformers(
+                field?.transformers,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                fieldParams?.params,
+              ),
+            };
+          }),
       ),
     );
 
@@ -264,7 +280,7 @@ export const useDynamicFormSchema = (name: string) => {
     }
 
     setMappingLoading(true);
-    void mapFields(list)
+    void mapFields(list, formParams)
       .then((fields) =>
         setFields(
           fields.map((f) => ({
@@ -274,7 +290,7 @@ export const useDynamicFormSchema = (name: string) => {
         ),
       )
       .finally(() => setMappingLoading(false));
-  }, [data?.fields_filled_by_user, data?.schema]);
+  }, [data?.fields_filled_by_user, data?.schema, formParams]);
 
   return {
     fields,
@@ -322,7 +338,7 @@ export const fetchPendingDocument = async (pendingDocumentId: string) => {
 };
 
 export const fetchTemplateDocument = async (baseDocumentId: string) => {
-  console.log("id", baseDocumentId)
+  console.log("id", baseDocumentId);
   if (!baseDocumentId) return;
   const baseDocument = await db
     .from("base_documents")

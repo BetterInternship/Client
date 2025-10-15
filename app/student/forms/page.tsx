@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { OutsideTabPanel, OutsideTabs } from "@/components/ui/outside-tabs";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
-import { Newspaper, Rows2 } from "lucide-react";
+import { Newspaper } from "lucide-react";
 import {
   fetchForms,
   fetchAllUserForms,
@@ -266,11 +266,10 @@ export default function FormsPage() {
                 !myFormsError &&
                 myFormsSorted.map((row, i) => {
                   const formName = row.form_name;
-                  const companyName = companyMap[row.employer_id];
-                  const title = `${formName} | ${companyName}`;
-                  const status: "Pending" | "Signed" = row.signed_document_id
+                  const title = `${formName}`;
+                  const status = row.signed_document_id
                     ? "Signed"
-                    : "Waiting for signature/s";
+                    : "Needs signature/s";
                   return (
                     <MyFormCard
                       key={i}

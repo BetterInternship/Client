@@ -10,13 +10,11 @@ export default function MyFormCard({
   title,
   requestedAt,
   status, // "Pending" | "Signed"
-  pendingUrl,
-  signedUrl,
   getDownloadUrl,
 }: {
   title: string;
   requestedAt?: string;
-  status: "Pending" | "Signed";
+  status: string;
   pendingUrl?: string | null;
   signedUrl?: string | null;
   getDownloadUrl?: () => Promise<string>;
@@ -34,7 +32,6 @@ export default function MyFormCard({
     : "";
 
   const isSigned = status === "Signed";
-  const targetUrl = isSigned ? signedUrl : pendingUrl;
 
   // Badge style + text based on status
   const { badgeText, badgeType, downloadLabel } = useMemo(() => {
