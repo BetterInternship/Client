@@ -7,11 +7,19 @@ export default function ComingSoonCard({ title }: { title: string }) {
       <div>
         <div className="">{title}</div>
       </div>
-      <div className="flex gap-2 w-full sm:w-auto mt-3 sm:mt-0">
-        <Button variant="outline" className="w-full sm:w-auto" disabled>
+      <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto">
+        <Button
+          variant="outline"
+          className="w-full sm:w-auto sm:shrink-0"
+          disabled
+        >
           View template
         </Button>
-        <Button className="w-full sm:w-auto" disabled aria-disabled="true">
+        <Button
+          className="w-full sm:w-auto sm:shrink-0"
+          disabled
+          aria-disabled="true"
+        >
           Coming soon
         </Button>
       </div>
