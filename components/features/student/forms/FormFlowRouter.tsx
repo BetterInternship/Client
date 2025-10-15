@@ -155,16 +155,10 @@ export function FormFlowRouter({
     try {
       setBusy(true);
 
-      const updateRes = await update.mutateAsync({
+      // Update server-side internship fields
+      await update.mutateAsync({
         internship_moa_fields: profilePayload,
       });
-
-      const mergedFromServer = updateRes.user.internship_moa_fields;
-
-      const submitPayload = {
-        formName,
-        ...(mergedFromServer as Record<string, any>),
-      };
 
       await UserService.submitSignedForm({
         formName: formName,
@@ -174,7 +168,6 @@ export function FormFlowRouter({
           entityId: selection,
         },
       });
-      console.log("submitted", submitPayload);
       setDone(true);
       setSubmitted(false);
     } catch (e) {
