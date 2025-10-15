@@ -269,7 +269,25 @@ export function FormFlowRouter({
         errors={errors}
       />
 
-      <div className="pt-2 flex justify-end">
+      <div className="pt-2 flex justify-end gap-2 flex-wrap ">
+        <Button
+          onClick={() => {
+            void handleSubmit();
+          }}
+          variant="outline"
+          className="w-full sm:w-auto"
+          disabled={busy}
+          aria-busy={busy}
+        >
+          {busy ? (
+            <span className="inline-flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Generating
+            </span>
+          ) : (
+            "Generate without e-sign"
+          )}
+        </Button>
         <Button
           onClick={() => {
             void handleSubmit();
@@ -281,10 +299,10 @@ export function FormFlowRouter({
           {busy ? (
             <span className="inline-flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Submitting...
+              Generating...
             </span>
           ) : (
-            "Submit"
+            "Generate with e-sign"
           )}
         </Button>
       </div>
