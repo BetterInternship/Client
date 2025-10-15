@@ -115,7 +115,6 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
 
   // upload on file
   useEffect(() => {
-    console.log(file);
     if (!file) return;
     setParseError(null);
     setParsedReady(false);

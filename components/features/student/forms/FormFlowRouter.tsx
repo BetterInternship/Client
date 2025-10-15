@@ -147,7 +147,6 @@ export function FormFlowRouter({
       internship,
       entity: entityPatched,
     };
-    console.log("ProfilePayload", profilePayload);
 
     try {
       setBusy(true);
