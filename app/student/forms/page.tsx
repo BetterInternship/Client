@@ -132,8 +132,26 @@ export default function FormsPage() {
             <div className="space-y-3">
               {(isLoading || isPending || isFetching) && <div>Loading...</div>}
               {error && <p className="text-red-600">Failed to load forms</p>}
+              {!error &&
+                !(isLoading || isPending || isFetching) &&
+                (generatorForms?.length ?? 0) === 0 && (
+                  <div className="text-sm text-gray-600">
+                    <p>There are no forms available yet for your department.</p>
+                    <p className="mt-1 text-muted-foreground">
+                      Need help? Email{" "}
+                      <a
+                        href="mailto:hello@betterinternship.com"
+                        className="underline"
+                      >
+                        hello@betterinternship.com
+                      </a>
+                      .
+                    </p>
+                  </div>
+                )}
               {!isLoading &&
                 !error &&
+                generatorForms?.length !== 0 &&
                 generatorForms.map((form) => (
                   <FormGenerateCard
                     key={form.id}
