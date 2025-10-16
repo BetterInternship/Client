@@ -148,10 +148,11 @@ function MobileDrawer({
   const handleLogout = () => logout().then(() => router.push("/"));
 
   const handleIncompleteProfileClick = (link: string) => {
-    if (
+    if (!isProfileVerified(profile.data)) {
+      router.push(`/register/verify`);
+    } else if (
       !isProfileResume(profile.data) ||
-      !isProfileBaseComplete(profile.data) ||
-      !isProfileVerified(profile.data)
+      !isProfileBaseComplete(profile.data)
     ) {
       openGlobalModal(
         "incomplete-profile",
