@@ -68,6 +68,59 @@ export function DynamicForm({
     if (!bootstrapped && defs.length > 0) setBootstrapped(true);
   }, [bootstrapped, defs.length]);
 
+  // seeds initial values from defs
+  useEffect(() => {
+    if (!bootstrapped || !defs.length) return;
+
+    const toInit = defs.filter(
+      (d) =>
+        values[d.key] === undefined &&
+        d.value !== undefined &&
+        d.value !== null,
+    );
+
+    if (!toInit.length) return;
+
+    for (const d of toInit) {
+      let v: any = d.value;
+
+      // normalize by type
+      switch (d.type) {
+        case "number":
+          // keep as string for your text input; sanitize later on input
+          v = String(d.value);
+          break;
+        case "date":
+          // support ISO/string → ms
+          if (typeof d.value === "string") {
+            const ms = Date.parse(d.value);
+            v = Number.isFinite(ms) ? ms : 0;
+          } else if (typeof d.value === "number") {
+            v = d.value; // assume ms
+          } else {
+            v = 0;
+          }
+          break;
+        case "time":
+          // expect "HH:MM"
+          v = String(d.value ?? "");
+          break;
+        case "signature":
+          v = Boolean(d.value);
+          break;
+        case "select":
+          // ensure it's the option value id (string)
+          v = String(d.value);
+          break;
+        default:
+          v = String(d.value ?? "");
+      }
+
+      onChange(d.key, v);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bootstrapped, defs]); // don't include values or you'll loop
+
   const companyDefs: RendererFieldDef[] = useMemo(
     () => defs.filter((d) => d.section === "entity"),
     [defs],
