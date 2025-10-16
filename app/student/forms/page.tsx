@@ -50,7 +50,16 @@ export default function FormsPage() {
     gcTime: 10_000,
   });
 
-  const generatorForms = formList;
+  const generatorForms = useMemo(() => {
+    const list = formList ?? [];
+    return list.slice().sort((a: any, b: any) => {
+      const aa = (a.label ?? a.name ?? "").toLowerCase().trim();
+      const bb = (b.label ?? b.name ?? "").toLowerCase().trim();
+      if (aa < bb) return -1;
+      if (aa > bb) return 1;
+      return 0;
+    });
+  }, [formList]);
 
   const comingSoon = useMemo(() => {
     const available = new Set(
