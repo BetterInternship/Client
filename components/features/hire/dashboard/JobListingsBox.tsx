@@ -60,14 +60,17 @@ export function JobListingsBox({
                 <div className="flex flex-row justify-between">
                     <div className="min-w-0">
                         <h1 className="font-bold text-primary text-base truncate">{job.title}</h1>
-                        {job.location &&
+                        {(job.location) ?
                             <div className="flex items-center text-sm text-gray-500 mt-2">
                                 <Building className="w-4 h-4 mr-1 flex-shrink-0" />
                                 <span className="truncate">{job.location}</span>
-                            </div>
+                            </div> :
+                            <br/>
                         }
-                        {job.salary !== undefined && job.allowance === 0 &&
-                            <span className="text-sm mt-2">₱{job.salary}/{to_job_pay_freq_name(job.salary_freq)}</span>
+                        {(job.salary !== undefined && job.allowance === 0) ?
+                            <span className="text-sm mt-2">₱{job.salary}/{to_job_pay_freq_name(job.salary_freq)}</span> :
+                            // <span className="text-sm mt-2">Unpaid</span>
+                            <br/>
                         }
                     </div>
                     <div className="justify-self-end">

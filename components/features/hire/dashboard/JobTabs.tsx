@@ -31,6 +31,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { getFullName } from "@/lib/profile";
 import { motion } from "framer-motion";
 import { FileText, MessageCircle, SendHorizonal } from "lucide-react";
+import { useListingsBusinessLogic } from "@/hooks/hire/listings/use-listings-business-logic";
+import { Scrollbar } from "@/components/ui/scroll-area";
 
 
 interface JobTabsProps {
@@ -38,6 +40,30 @@ interface JobTabsProps {
 }
 
 export default function JobTabs({selectedJob}: JobTabsProps) {
+    const { ownedJobs, update_job, delete_job } = useOwnedJobs();
+  
+    // Business logic hook
+    const {
+      searchTerm,
+      saving,
+      isEditing,
+      jobsPage,
+      jobsPageSize,
+      filteredJobs,
+      setSearchTerm,
+      handleKeyPress,
+      handleJobSelect,
+      handleEditStart,
+      handleSave,
+      handleCancel,
+      handleShare,
+      clearSelectedJob,
+      handlePageChange,
+      openDeleteModal,
+      closeDeleteModal,
+      DeleteModal,
+      setIsEditing,
+    } = useListingsBusinessLogic(ownedJobs);
     const { isAuthenticated, redirectIfNotLoggedIn, loading } = useAuthContext();
     const profile = useProfile();
     const applications = useEmployerApplications();
@@ -250,6 +276,23 @@ export default function JobTabs({selectedJob}: JobTabsProps) {
       //   ListingsDetailsPanel,
       // } from "@/components/features/hire/listings";
       // ^^^ from here i thibk :D
+
+      <div className="flex-1 min-w-0">
+              <Scrollbar>
+                <ListingsDetailsPanel
+                  selectedJob={selectedJob}
+                  isEditing={isEditing}
+                  saving={saving}
+                  onEdit={handleEditStart}
+                  onSave={handleSave}
+                  onCancel={handleCancel}
+                  onShare={handleShare}
+                  onDelete={openDeleteModal}
+                  updateJob={update_job}
+                  setIsEditing={setIsEditing}
+                />
+              </Scrollbar>
+            </div>
     }
 
     if (applications.loading) {
@@ -310,6 +353,22 @@ export default function JobTabs({selectedJob}: JobTabsProps) {
                                     name="Preview Listing"
                                     >
                                         <p>peanuts</p>
+                                        <Card className="flex-1 min-w-0">
+                                          <Scrollbar>
+                                            <ListingsDetailsPanel
+                                              selectedJob={selectedJob}
+                                              isEditing={isEditing}
+                                              saving={saving}
+                                              onEdit={handleEditStart}
+                                              onSave={handleSave}
+                                              onCancel={handleJobBack}
+                                              onShare={handleShare}
+                                              onDelete={openDeleteModal}
+                                              updateJob={update_job}
+                                              setIsEditing={setIsEditing}
+                                            />
+                                          </Scrollbar>
+                                        </Card>
                                     </Tab>
                                   </TabGroup>
                                 </>
