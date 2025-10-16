@@ -115,7 +115,6 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
 
   // upload on file
   useEffect(() => {
-    console.log(file);
     if (!file) return;
     setParseError(null);
     setParsedReady(false);
@@ -246,7 +245,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
 
     if (current.id === "base") {
       setIsUpdating(true);
-      UserService.updateMyProfile({
+      await UserService.updateMyProfile({
         first_name: profile.firstName ?? "",
         middle_name: profile.middleName ?? "",
         last_name: profile.lastName ?? "",
@@ -364,13 +363,47 @@ function StepBasicIdentity({
   value: ProfileDraft;
   onChange: (v: ProfileDraft) => void;
 }) {
-
-  const { colleges, departments } = useDbRefs();
+  const {
+    colleges,
+    departments,
+    get_departments_by_college,
+    to_department_name,
+  } = useDbRefs();
 
   const phoneInvalid = useMemo(
     () => !!value.phone && !isValidPHNumber(value.phone),
-    [value.phone]
+    [value.phone],
   );
+
+  const [departmentOptions, setDepartmentOptions] = useState(departments);
+  // for realtime updating the department based on the college
+  useEffect(() => {
+    const collegeId = value.college;
+
+    if (collegeId) {
+      const list = get_departments_by_college?.(collegeId);
+      setDepartmentOptions(
+        list.map((d) => ({
+          id: d,
+          name: to_department_name(d),
+        })),
+      );
+    } else {
+      // no college selected -> empty department options
+      setDepartmentOptions(
+        departments.map((d) => ({ id: d.id, name: d.name })),
+      );
+      if (value.department) {
+        value.department = undefined;
+      }
+    }
+  }, [
+    value.college,
+    value.department,
+    departments,
+    get_departments_by_college,
+    to_department_name,
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -419,20 +452,10 @@ function StepBasicIdentity({
         </h4>
         <div className="mt-3 grid grid-cols-1 gap-3">
           <div>
-            <FormInput
-              required
-              label="Degree / Program"
-              value={value.degree ?? ""}
-              setter={(val: any) => onChange({ ...value, degree: val })}
-              placeholder="Select degree / program…"
-            />
-          </div>
-
-          <div>
             <FormDropdown
               required
               label="College"
-              value={value.college ?? ""} 
+              value={value.college ?? ""}
               setter={(val: any) => onChange({ ...value, college: val })}
               options={colleges}
               placeholder="Select college…"
@@ -445,8 +468,17 @@ function StepBasicIdentity({
               label="Department"
               value={value.department ?? ""}
               setter={(val: any) => onChange({ ...value, department: val })}
-              options={departments}
+              options={departmentOptions}
               placeholder="Select department…"
+            />
+          </div>
+          <div>
+            <FormInput
+              required
+              label="Degree / Program"
+              value={value.degree ?? ""}
+              setter={(val: any) => onChange({ ...value, degree: val })}
+              placeholder="Select degree / program…"
             />
           </div>
         </div>

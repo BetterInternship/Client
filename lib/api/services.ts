@@ -17,20 +17,20 @@ interface EmployerResponse extends FetchResponse {
 export const EmployerService = {
   async getMyProfile() {
     return APIClient.get<EmployerResponse>(
-      APIRouteBuilder("employer").r("me").build()
+      APIRouteBuilder("employer").r("me").build(),
     );
   },
 
   async getEmployerPfpURL(employerId: string) {
     return APIClient.get<EmployerResponse>(
-      APIRouteBuilder("employer").r(employerId, "pic").build()
+      APIRouteBuilder("employer").r(employerId, "pic").build(),
     );
   },
 
   async updateMyProfile(data: Partial<Employer>) {
     return APIClient.put<EmployerResponse>(
       APIRouteBuilder("employer").r("me").build(),
-      data
+      data,
     );
   },
 
@@ -38,7 +38,7 @@ export const EmployerService = {
     return APIClient.put<ResourceHashResponse>(
       APIRouteBuilder("employer").r("me", "pic").build(),
       file,
-      "form-data"
+      "form-data",
     );
   },
 
@@ -52,7 +52,7 @@ export const EmployerService = {
   }) {
     return APIClient.post<{ success: boolean; message?: string }>(
       APIRouteBuilder("student/moa").r("sign").build({ moaServer: true }),
-      data
+      data,
     );
   },
 };
@@ -73,7 +73,7 @@ export const AuthService = {
   async register(user: Partial<PublicUser>) {
     return APIClient.post<AuthResponse>(
       APIRouteBuilder("auth").r("register").build(),
-      user
+      user,
     );
   },
 
@@ -83,7 +83,7 @@ export const AuthService = {
       {
         email,
         password,
-      }
+      },
     );
   },
 
@@ -93,27 +93,27 @@ export const AuthService = {
       {
         user_id: userId,
         key,
-      }
+      },
     );
   },
 
   async requestActivation(email: string) {
     return APIClient.post<ResourceHashResponse>(
       APIRouteBuilder("auth").r("activate").build(),
-      { email }
+      { email },
     );
   },
 
   async activate(email: string, otp: string) {
     return APIClient.post<ResourceHashResponse>(
       APIRouteBuilder("auth").r("activate", "otp").build(),
-      { email, otp }
+      { email, otp },
     );
   },
 
   async logout() {
     await APIClient.post<FetchResponse>(
-      APIRouteBuilder("auth").r("logout").build()
+      APIRouteBuilder("auth").r("logout").build(),
     );
   },
 };
@@ -130,149 +130,102 @@ interface SaveJobResponse extends FetchResponse {
 export const UserService = {
   async getMyProfile() {
     return APIClient.get<UserResponse>(
-      APIRouteBuilder("users").r("me").build()
+      APIRouteBuilder("users").r("me").build(),
     );
   },
 
   async updateMyProfile(data: Partial<PublicUser>) {
     return APIClient.put<UserResponse>(
       APIRouteBuilder("users").r("me").build(),
-      data
+      data,
     );
   },
 
   async updateMyDocData(data: Partial<PublicUser>) {
     return APIClient.put<UserResponse>(
       APIRouteBuilder("users").r("my-doc-data").build(),
-      data
+      data,
     );
   },
 
-  async generateStudentMoa(data: {
-    employer_id: string;
-    user_id: string;
-    user_address: string;
-    user_degree: string;
-    user_college: string;
-    user_full_name: string;
-    user_id_number: string;
-    student_guardian_name: string;
-    internship_hours: number;
-    internship_start_date: number;
-    internship_start_time: string;
-    internship_end_date: number;
-    internship_end_time: string;
-    internship_coordinator_name: string;
+  // ! todo, add a way for the route to be able to tell if request is valid or not
+  // ! we can't generate signed forms out of nowhere
+  async submitSignedForm(data: {
+    formName: string;
+    values: Record<string, string>;
+    parties?: {
+      userId?: string | null;
+      employerId?: string | null;
+      universityId?: string | null;
+    };
   }) {
     return APIClient.post<{
-      moaRequestId: string;
-      signedDocumentId: string;
-      verificationCode: string;
-    }>(
-      APIRouteBuilder("student").r("moa", "request").build({ moaServer: true }),
-      data
-    );
+      success?: boolean;
+      pendingDocumentUrl: string;
+      pendingDocumentId: string;
+      internshipFormId: string;
+    }>(APIRouteBuilder("forms").r("signed").build({ moaServer: true }), data);
   },
 
-  async generateManualStudentMoa(data: {
-    employer_id: string;
-    user_id: string;
-    user_address: string;
-    user_degree: string;
-    user_college: string;
-    user_full_name: string;
-    user_id_number: string;
-    student_guardian_name: string;
-    internship_hours: number;
-    internship_start_date: number;
-    internship_start_time: string;
-    internship_end_date: number;
-    internship_end_time: string;
-    internship_coordinator_name: string;
-    companyLegalName: string;
-    companyAddress: string;
-    companyRepresentative: string;
-    companyRepresentativePosition: string;
-    companyType: string;
+  async submitPendingForm(data: {
+    formName: string;
+    values: Record<string, string>;
+    parties?: {
+      userId?: string | null;
+      employerId?: string | null;
+      universityId?: string | null;
+    };
   }) {
     return APIClient.post<{
-      moaRequestId: string;
-      signedDocumentId: string;
-      verificationCode: string;
-    }>(
-      APIRouteBuilder("student").r("moa", "request", "manual").build({ moaServer: true }),
-      data
-    );
-  },
-
-  async createStudentMoaRow(data: {
-    MOAAgreementDate?: number;
-    CompanyLegalName?: string;
-    CompanyType?: string;
-    CompanyAddress: string;
-    CompanyRepresentative: string;
-    CompanyRepresentativePosition: string;
-    Studentname: string;
-    StudentProgram: string;
-    StudentCollege: string;
-    StudentAddress: string;
-    InternshipHours: number;
-    InternshipStartDate: number;
-    InternshipEndDate: number;
-    InternshipStartTime: string;
-    InternshipEndTime: string;
-    StudentGuardianName: string;
-    StudentIDNumber: string;
-    InternshipCoordinatorName: string;
-  }) {
-    return APIClient.post<{
-      success: boolean;
-      message?: string;
-    }>(
-      APIRouteBuilder("docs").r("student-moa").build({ moaServer: true }),
-      data
-    );
+      success?: boolean;
+      pendingDocumentUrl: string;
+      pendingDocumentId: string;
+      internshipFormId: string;
+    }>(APIRouteBuilder("forms").r("pending").build({ moaServer: true }), data);
   },
 
   async requestEmployerAssist(id: string, recipient: string) {
-    return APIClient.post<{}>(
-      APIRouteBuilder("student").r("moa", "request", "partial", id).build({ moaServer: true }),
-      { recipient }
-    );
+    alert("this route isnt implemented yet");
+    return Promise.resolve({});
   },
 
   async parseResume(form: FormData) {
     return APIClient.post<UserResponse>(
       APIRouteBuilder("users").r("me", "extract-resume").build(),
       form,
-      "form-data"
+      "form-data",
     );
   },
 
   async getMyResumeURL() {
     return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("users").r("me", "resume").build()
+      APIRouteBuilder("users").r("me", "resume").build(),
     );
   },
 
   // ! remove hardcoded mapping
   async getEntityList() {
-    const response = await APIClient.get<{ entities: { id: string, display_name: string }[] }>(
-      APIRouteBuilder("entities").r("list").build({ moaServer: true })
-    );
+    const response = await APIClient.get<{
+      entities: { id: string; display_name: string }[];
+    }>(APIRouteBuilder("entities").r("list").build({ moaServer: true }));
 
-    return { employers: response.entities.map(e => ({ id: e.id, legal_entity_name: e.display_name })) }
+    return {
+      employers: response.entities.map((e) => ({
+        id: e.id,
+        legal_entity_name: e.display_name,
+      })),
+    };
   },
 
   async getMyPfpURL() {
     return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("users").r("me", "pic").build()
+      APIRouteBuilder("users").r("me", "pic").build(),
     );
   },
 
   async getUserPfpURL(userId: string) {
     return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("users").r(userId, "pic").build()
+      APIRouteBuilder("users").r(userId, "pic").build(),
     );
   },
 
@@ -280,13 +233,13 @@ export const UserService = {
     return APIClient.put<ResourceHashResponse>(
       APIRouteBuilder("users").r("me", "pic").build(),
       file,
-      "form-data"
+      "form-data",
     );
   },
 
   async getUserResumeURL(userId: string) {
     return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("users").r(userId, "resume").build()
+      APIRouteBuilder("users").r(userId, "resume").build(),
     );
   },
 
@@ -294,14 +247,14 @@ export const UserService = {
     return APIClient.put<Response>(
       APIRouteBuilder("users").r("me", "resume").build(),
       form,
-      "form-data"
+      "form-data",
     );
   },
 
   async saveJob(jobId: string) {
     return APIClient.post<SaveJobResponse>(
       APIRouteBuilder("users").r("save-job").build(),
-      { id: jobId }
+      { id: jobId },
     );
   },
 };
@@ -334,33 +287,33 @@ export const JobService = {
 
   async getSavedJobs() {
     return APIClient.get<SavedJobsResponse>(
-      APIRouteBuilder("jobs").r("saved").build()
+      APIRouteBuilder("jobs").r("saved").build(),
     );
   },
 
   async getOwnedJobs() {
     return APIClient.get<OwnedJobsResponse>(
-      APIRouteBuilder("jobs").r("owned").build()
+      APIRouteBuilder("jobs").r("owned").build(),
     );
   },
 
   async createJob(job: Partial<Job>) {
     return APIClient.post<FetchResponse>(
       APIRouteBuilder("jobs").r("create").build(),
-      job
+      job,
     );
   },
 
   async updateJob(jobId: string, job: Partial<Job>) {
     return APIClient.put<FetchResponse>(
       APIRouteBuilder("jobs").r(jobId).build(),
-      job
+      job,
     );
   },
 
   async deleteJob(jobId: string) {
     return APIClient.delete<FetchResponse>(
-      APIRouteBuilder("jobs").r(jobId).build()
+      APIRouteBuilder("jobs").r(jobId).build(),
     );
   },
 };
@@ -380,14 +333,14 @@ export const EmployerConversationService = {
       {
         conversation_id: conversationId,
         message,
-      }
+      },
     );
   },
 
   async createConversation(userId: string) {
     return APIClient.post<ConversationResponse>(
       APIRouteBuilder("conversations").r("create").build(),
-      { user_id: userId }
+      { user_id: userId },
     );
   },
 };
@@ -399,7 +352,7 @@ export const UserConversationService = {
       {
         conversation_id: conversationId,
         message,
-      }
+      },
     );
   },
 };
@@ -427,29 +380,29 @@ export const ApplicationService = {
       page?: number;
       limit?: number;
       status?: string;
-    } = {}
+    } = {},
   ) {
     return APIClient.get<UserApplicationsResponse>(
-      APIRouteBuilder("applications").p(params).build()
+      APIRouteBuilder("applications").p(params).build(),
     );
   },
 
   async createApplication(data: { job_id: string; cover_letter?: string }) {
     return APIClient.post<CreateApplicationResponse>(
       APIRouteBuilder("applications").r("create").build(),
-      data
+      data,
     );
   },
 
   async getApplicationById(id: string): Promise<UserApplicationResponse> {
     return APIClient.get<UserApplicationResponse>(
-      APIRouteBuilder("applications").r(id).build()
+      APIRouteBuilder("applications").r(id).build(),
     );
   },
 
   async getEmployerApplications(): Promise<EmployerApplicationsResponse> {
     return APIClient.get<EmployerApplicationsResponse>(
-      APIRouteBuilder("employer").r("applications").build()
+      APIRouteBuilder("employer").r("applications").build(),
     );
   },
 
@@ -460,27 +413,27 @@ export const ApplicationService = {
       githubLink?: string;
       portfolioLink?: string;
       resumeFilename?: string;
-    }
+    },
   ) {
     return APIClient.put<UserApplicationResponse>(
       APIRouteBuilder("applications").r(id).build(),
-      data
+      data,
     );
   },
 
   async withdrawApplication(id: string) {
     return APIClient.delete<FetchResponse>(
-      APIRouteBuilder("applications").r(id).build()
+      APIRouteBuilder("applications").r(id).build(),
     );
   },
 
   async reviewApplication(
     id: string,
-    review_options: { review?: string; notes?: string; status?: number }
+    review_options: { review?: string; notes?: string; status?: number },
   ) {
     return APIClient.post<FetchResponse>(
       APIRouteBuilder("applications").r(id, "review").build(),
-      review_options
+      review_options,
     );
   },
 };

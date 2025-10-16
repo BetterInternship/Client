@@ -75,7 +75,7 @@ export const Property: ValueComponent = ({
     <div
       className={cn(
         "text-gray-700 font-semibold overflow-hidden text-ellipsis",
-        className
+        className,
       )}
     >
       {value?.split("\n")?.map((v) => <div>{v}</div>) || (
@@ -113,7 +113,7 @@ export const JobBooleanLabel: ValueComponent = ({
   return (
     <p className="text-gray-500 font-medium text-sm">
       {!["", "false", "null", "undefined"].includes(
-        value?.toString().trim() ?? ""
+        value?.toString().trim() ?? "",
       ) ? (
         <CheckCircle className="w-5 h-5 text-blue-500"></CheckCircle>
       ) : (

@@ -394,7 +394,7 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
     (job.internship_preferences?.internship_types ?? [])
       .filter(Boolean)
       .map((type) => type.charAt(0).toUpperCase() + type.slice(1).toLowerCase())
-      .join(", ") || "None";
+      .join(", ") || "-";
 
   return (
     <div className="space-y-2">
@@ -430,7 +430,7 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
                 value={
                   job.salary
                     ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
-                    : "None"
+                    : "-"
                 }
               />
             </div>

@@ -1,12 +1,16 @@
+"use client";
+
 import {
   FormDropdown,
   FormDatePicker,
   TimeInputNative,
   FormInput,
+  FormCheckbox,
 } from "@/components/EditForm";
+import z from "zod";
 
-type FieldType = "text" | "number" | "select" | "date" | "time";
-export type FilledBy = "student" | "entity" | "university" | null;
+type FieldType = "text" | "number" | "select" | "date" | "time" | "signature";
+export type Section = "student" | "entity" | "university" | "internship" | null;
 
 type Option = { value: string; label: string };
 
@@ -21,19 +25,20 @@ export type FieldDef = {
   maxLength?: number;
   options?: Option[]; // for select
   validators: z.ZodTypeAny[];
-  filledBy?: FilledBy;
+  section?: Section;
+  value?: string;
 };
 
 export function FieldRenderer({
   def,
-  value,
+  value = def.value ?? "",
   onChange,
   error,
   showError,
 }: {
   def: FieldDef;
   value: string;
-  onChange: (v: string | number) => void;
+  onChange: (v: any) => void;
   error?: string;
   showError?: boolean;
 }) {
@@ -69,7 +74,7 @@ export function FieldRenderer({
 
   if (def.type === "date") {
     // Example: disable dates before today+7 for specific keys
-    let disabledDays: any | undefined;
+    let disabledDays: { before?: Date } | null = null;
     if (
       def.key === "internship_start_date" ||
       def.key === "internship_end_date"
@@ -91,7 +96,7 @@ export function FieldRenderer({
           contentClassName="z-[1100]"
           placeholder="Select date"
           autoClose
-          disabledDays={disabledDays}
+          disabledDays={disabledDays ?? []}
           format={(d) =>
             d.toLocaleDateString(undefined, {
               year: "numeric",
@@ -111,11 +116,29 @@ export function FieldRenderer({
         <TimeInputNative
           label={def.label}
           value={value} // "HH:MM"
+          // eslint-disable-next-line @typescript-eslint/no-base-to-string
           onChange={(v) => onChange(v?.toString() ?? "")}
           required
           helper={def.helper}
         />
         <Note />
+      </div>
+    );
+  }
+
+  const asBool = (v: any) => v === true;
+
+  if (def.type === "signature") {
+    const checked = asBool(value);
+    return (
+      <div className="space-y-1.5">
+        <FormCheckbox
+          label={def.label}
+          checked={checked}
+          setter={(c) => onChange(Boolean(c))}
+          sentence={def.helper}
+          required
+        />
       </div>
     );
   }
@@ -142,7 +165,7 @@ export function FieldRenderer({
           }
         }}
         type="text"
-        inputMode={inputMode as any}
+        inputMode={inputMode}
         placeholder={def.placeholder}
         maxLength={def.maxLength}
         className="w-full"
