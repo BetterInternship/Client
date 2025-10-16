@@ -5,7 +5,7 @@ import { useAuthContext } from "@/app/hire/authctx";
 
 export const HeaderTitle = () => {
   const { isMobile, view } = useAppContext();
-  const { isAuthenticated } = useAuthContext()!;
+  const { isAuthenticated } = useAuthContext();
 
   return (
     <Link
@@ -13,15 +13,15 @@ export const HeaderTitle = () => {
         view === "student"
           ? "/search"
           : isAuthenticated && isAuthenticated()
-          ? "/dashboard"
-          : "/"
+            ? "/dashboard"
+            : "/"
       }
       className="block outline-none focus:outline-none border-none"
     >
       <h1
         className={cn(
           "font-display font-bold text-gray-900 flex flex-row space-x-2 items-center",
-          isMobile ? "text-lg" : "text-2xl"
+          isMobile ? "text-lg" : "text-2xl",
         )}
       >
         <img
