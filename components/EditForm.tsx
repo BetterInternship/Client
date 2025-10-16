@@ -184,7 +184,7 @@ interface FormDropdownProps
   label?: string;
   value?: string | number | string[];
   required?: boolean;
-  setter?: (value: any) => void;
+  setter?: (value: string | number) => void;
   className?: string;
 }
 

@@ -8,7 +8,6 @@ import {
   AlertTriangle,
   Repeat,
   User,
-  Sparkles,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +21,7 @@ import { isProfileResume, isProfileBaseComplete } from "../../lib/profile";
 import { ModalHandle } from "@/hooks/use-modal";
 import { isValidPHNumber } from "@/lib/utils";
 import { useDbRefs } from "@/lib/db/use-refs";
+import { Job } from "@/lib/db/db.types";
 
 /* ============================== Modal shell ============================== */
 
@@ -30,7 +30,7 @@ export function IncompleteProfileContent({
 }: {
   onFinish: () => void;
   applySuccessModalRef?: RefObject<ModalHandle | null>;
-  job?: unknown | null;
+  job?: Job | null;
 }) {
   return (
     <div className="p-6 h-full overflow-y-auto pt-0 sm:max-w-2xl">
@@ -139,7 +139,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
         setIsParsing(false);
         setStep(1);
       })
-      .catch((e: any) => {
+      .catch((e: Error) => {
         if (!cancelled) {
           setParseError(e?.message || "Failed to analyze resume.");
           setIsParsing(false);
@@ -176,8 +176,10 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
             parsedReady={parsedReady}
             parseError={parseError}
             onPick={(f) => setFile(f)}
-            fileInputRef={fileInputRef}
-            response={response}
+            fileInputRef={
+              fileInputRef as unknown as RefObject<HTMLInputElement>
+            }
+            response={response ?? null}
           />
         ),
       });
@@ -309,7 +311,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     <Stepper
       step={step}
       steps={steps}
-      onNext={onNext}
+      onNext={() => void onNext()}
       onBack={() => setStep(Math.max(0, step - 1))}
     />
   );
@@ -396,7 +398,9 @@ function StepBasicIdentity({
     [value.phone],
   );
 
-  const [departmentOptions, setDepartmentOptions] = useState(departments);
+  const [departmentOptions, setDepartmentOptions] =
+    useState<{ id: string; name: string }[]>(departments);
+
   // for realtime updating the department based on the college
   useEffect(() => {
     const collegeId = value.college;
@@ -406,7 +410,7 @@ function StepBasicIdentity({
       setDepartmentOptions(
         list.map((d) => ({
           id: d,
-          name: to_department_name(d),
+          name: to_department_name(d) ?? "",
         })),
       );
     } else {
@@ -477,7 +481,7 @@ function StepBasicIdentity({
               required
               label="College"
               value={value.college ?? ""}
-              setter={(val: any) => onChange({ ...value, college: val })}
+              setter={(val) => onChange({ ...value, college: val.toString() })}
               options={colleges}
               placeholder="Select college…"
             />
@@ -488,7 +492,9 @@ function StepBasicIdentity({
               required
               label="Department"
               value={value.department ?? ""}
-              setter={(val: any) => onChange({ ...value, department: val })}
+              setter={(val) =>
+                onChange({ ...value, department: val.toString() })
+              }
               options={departmentOptions}
               placeholder="Select department…"
             />
@@ -498,7 +504,7 @@ function StepBasicIdentity({
               required
               label="Degree / Program"
               value={value.degree ?? ""}
-              setter={(val: any) => onChange({ ...value, degree: val })}
+              setter={(val) => onChange({ ...value, degree: val.toString() })}
               placeholder="Select degree / program…"
             />
           </div>
