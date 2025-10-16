@@ -243,8 +243,16 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
       return;
     }
 
+    // {
     if (current.id === "base") {
       setIsUpdating(true);
+      const fullName = [
+        profile?.firstName ?? "",
+        profile?.middleName ?? "",
+        profile?.lastName ?? "",
+      ]
+        .filter(Boolean)
+        .join(" ");
       await UserService.updateMyProfile({
         first_name: profile.firstName ?? "",
         middle_name: profile.middleName ?? "",
@@ -254,6 +262,19 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
         degree: profile.degree ?? "",
         college: profile.college ?? "",
         department: profile.department ?? "",
+        internship_moa_fields: {
+          student: {
+            "student-degree": profile.degree ?? "",
+            "student-college": profile.college ?? "",
+            "student-full-name": fullName,
+            "student-first-name": profile.firstName ?? "",
+            "student-middle-name": profile.middleName ?? "",
+            "student-last-name": profile.lastName ?? "",
+            "student-department": profile.department ?? "",
+            "student-university": profile.university ?? "",
+            "student-phone-number": profile.phone ?? "",
+          },
+        },
       }).then(() => {
         setIsUpdating(false);
         const isLast = step + 1 >= steps.length;
