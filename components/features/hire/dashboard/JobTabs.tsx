@@ -337,6 +337,7 @@ export default function JobTabs({selectedJob}: JobTabsProps) {
                                     name="Applicants"
                                     >
                                         <p>peanits</p>
+                                        {/* we need to add filtering here :D */}
                                         <ApplicationsContent
                                           applications={filteredApplications}
                                           statusId={[0, 1, 2, 3, 4, 5, 6]}

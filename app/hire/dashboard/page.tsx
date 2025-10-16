@@ -33,6 +33,8 @@ function DashboardContent() {
   const { ownedJobs, update_job } = useOwnedJobs();
   const archivedJobs = ownedJobs.filter((job) => job.is_active === false ||
     job.is_deleted === true || job.is_unlisted === true);
+  const activeJobs = ownedJobs.filter((job) => job.is_active)
+  const inactiveJobs = ownedJobs.filter((job) => !job.is_active)
 
   const [selectedJobId, setSelectedJobId] =
     useState<string | null>(null);
@@ -76,11 +78,15 @@ function DashboardContent() {
           ) : (
             <>
               <Card className="h-full max-h-full border-none">
-                {ownedJobs.length === 1 ? (
+                {/* {ownedJobs.length === 1 ? (
                   <p className="text-gray-500 pb-2">{ownedJobs.length} job listing </p>
                 ) : (
                   <p className="text-gray-500 pb-2">{ownedJobs.length} job listings </p>
-                )}
+                )} */}
+                <div className="flex gap-4 mb-4">
+                  <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{activeJobs.length}</span> active listings</span>
+                  <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{inactiveJobs.length}</span> inactive listings</span>
+                </div>
                 <>
                   <JobsContent
                     applications={applications.employer_applications}
