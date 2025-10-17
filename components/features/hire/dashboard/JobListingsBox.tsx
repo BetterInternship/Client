@@ -22,7 +22,6 @@ interface JobListingProps {
 export function JobListingsBox({
     job,
     applications,
-    onJobListingClick,
     update_job
 }: JobListingProps) {
     const { to_job_pay_freq_name } = useDbRefs();
@@ -31,20 +30,12 @@ export function JobListingsBox({
     );
 
     const handleClick = () => {
-        if (job.id && job.title !== undefined && job.is_active) {
+        if (job.id && job.title !== undefined) {
             router.push(`/dashboard/manage?jobId=${job.id}`)
         } else {
             return;
         }
     };
-
-    const pathName = () => {
-        if (job.is_active) {
-            return "/dashboard/manage";
-        } else {
-            return "/dashboard"
-        }
-    }
 
     const router = useRouter();
 
