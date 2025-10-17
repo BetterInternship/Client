@@ -1,13 +1,12 @@
 // ui for the job box or card
 
 import { Card } from "@/components/ui/card";
-import { EmployerApplication, Job } from "@/lib/db/db.types";
-import { cn } from "@/lib/utils";
 import { Toggle } from "@/components/ui/toggle";
-import { Badge } from "@/components/ui/badge";
-import { MapPin, Building, } from 'lucide-react';
-import Link from "next/link";
+import { EmployerApplication, Job } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
+import { cn } from "@/lib/utils";
+import { Building } from 'lucide-react';
+import { useRouter } from "next/navigation";
 
 
 interface JobListingProps {
@@ -33,7 +32,7 @@ export function JobListingsBox({
 
     const handleClick = () => {
         if (job.id && job.title !== undefined && job.is_active) {
-            onJobListingClick(job.id, job.title);
+            router.push(`/dashboard/manage?jobId=${job.id}`)
         } else {
             return;
         }
@@ -47,11 +46,13 @@ export function JobListingsBox({
         }
     }
 
+    const router = useRouter();
+
     return (
-        <Link href={{
-            pathname: pathName(),
-            query: { jobId: job.id }
-        }}>
+        // <Link href={{
+        //     pathname: pathName(),
+        //     query: { jobId: job.id }
+        // }}>
             <Card className={cn("flex flex-col hover:bg-primary/25 hover:cursor-pointer gap-4",
                 !job.is_active ? "opacity-50" : "cursor-pointer",
             )}
@@ -97,6 +98,6 @@ export function JobListingsBox({
                 </div>
 
             </Card>
-        </Link>
+        // </Link>
     );
 }

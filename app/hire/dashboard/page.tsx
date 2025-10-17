@@ -4,26 +4,11 @@
 
 import ContentLayout from "@/components/features/hire/content-layout";
 import { JobsContent } from "@/components/features/hire/dashboard/JobsContent";
-import { ReviewModalContent } from "@/components/features/hire/dashboard/ReviewModalContent";
-import { ApplicantModalContent } from "@/components/shared/applicant-modal";
-import { PDFPreview } from "@/components/shared/pdf-preview";
 import { ShowUnverifiedBanner } from "@/components/ui/banner";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
-import { Message } from "@/components/ui/messages";
-import { Textarea } from "@/components/ui/textarea";
-import { useConversation, useConversations } from "@/hooks/use-conversation";
 import { useEmployerApplications, useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
-import { useFile } from "@/hooks/use-file";
-import { useModal } from "@/hooks/use-modal";
-import { useSideModal } from "@/hooks/use-side-modal";
-import { EmployerConversationService, UserService } from "@/lib/api/services";
-import { EmployerApplication } from "@/lib/db/db.types";
-import { getFullName } from "@/lib/profile";
-import { motion } from "framer-motion";
-import { FileText, MessageCircle, SendHorizonal } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useAuthContext } from "../authctx";
 
 function DashboardContent() {
@@ -84,8 +69,8 @@ function DashboardContent() {
                   <p className="text-gray-500 pb-2">{ownedJobs.length} job listings </p>
                 )} */}
                 <div className="flex gap-4 mb-4">
-                  <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{activeJobs.length}</span> active listings</span>
-                  <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{inactiveJobs.length}</span> inactive listings</span>
+                  <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{activeJobs.length}</span> active listing/s</span>
+                  <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{inactiveJobs.length}</span> inactive listing/s</span>
                 </div>
                 <>
                   <JobsContent
