@@ -22,17 +22,17 @@ export function JobsContent({
     onJobListingClick,
     updateJob
 }: JobsContentProps) {
-    return (
-        // <table className="relative table-auto border-separate border-spacing-0 w-full h-full max-h-full">
-        //     <tbody className="w-full h-full max-h-full ">
+    const sortedJobs = jobs.sort(
+        (a,b) => 
+       ((b.created_at ?? "") > (a.created_at ?? "")) ? 1 : -1
+    );
 
-        //     </tbody>
-        // </table>
+    return (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2">
             {jobs.length > 0
                 ?
                 (
-                    jobs.filter(job => job.employer_id === employerId
+                    sortedJobs.filter(job => job.employer_id === employerId
                     ).map((job) => (
                         <JobListingsBox
                             key={job.id}

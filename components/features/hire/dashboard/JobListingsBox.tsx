@@ -83,7 +83,7 @@ export function JobListingsBox({
                         <p className="text-sm text-gray-500">Total Applicants</p>
                     </div>
                     <div>
-                        <h3 className="text-lg text-primary">0</h3> {/* TODO: query database for this information */}
+                        <h3 className="text-lg text-primary">{applicants.filter((applicant) => applicant.status === 0).length}</h3>
                         <p className="text-sm text-gray-500">New Applicants</p>
                     </div>
                 </div>

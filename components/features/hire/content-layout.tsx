@@ -57,7 +57,7 @@ function SideNav({ items }: { items: NavItem[] }) {
             }
             className={cn(
               "w-full h-10 px-8 flex flex-row justify-start border-0 rounded-none",
-              pathname === href ? "text-primary bg-gray-200" : "font-normal",
+              pathname.includes(href) ? "text-primary bg-gray-200" : "font-normal",
               label === "Add Listing" ? "bg-primary text-white hover:bg-primary-300" : ""
             )}
           >
