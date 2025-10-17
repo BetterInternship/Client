@@ -13,20 +13,22 @@ export const Footer = ({ content }: { content?: string }) => {
   const footerRoutes = ["/login", "/register", "/register/verify"];
   const { routeExcluded } = useRoute();
 
-  // If on mobile or on a page with no footer
-  if (isMobile || routeExcluded(footerRoutes)) {
-    return <></>;
-  }
+  // // If on mobile or on a page with no footer
+  // if (isMobile || routeExcluded(footerRoutes)) {
+  //   return <></>;
+  // }
 
   return (
-    <div className="bg-transparent dark:bg-black px-8 py-8 opacity-70 dark:opacity-100 dark:border-t dark:border-gray-900/50">
+    <div className="bg-white dark:bg-black px-8 py-8 opacity-70 dark:opacity-100 dark:border-t dark:border-gray-900/50">
       <div className="text-center max-w-4xl mx-auto">
         <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
           {content ?? (
             <>
               <div>
                 BetterInternship hotline: {""}
-                <a className="text-primary hover:underline transition-colors duration-200">09276604999</a>
+                <a className="text-primary hover:underline transition-colors duration-200">
+                  09276604999
+                </a>
               </div>
               <div>
                 © 2025 BetterInternship. All rights reserved.{" "}
