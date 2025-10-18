@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-10-16 02:50:30
+ * @ Modified time: 2025-10-18 14:22:39
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
@@ -98,7 +98,6 @@ export const fetchForms = async (user: PublicUser): Promise<IFormSchema[]> => {
   const { data: forms, error: formsError } = await db
     .from("form_schemas")
     .select("*")
-    .contains("initiators", ["student"])
     .in("id", formGroup?.forms ?? []);
 
   if (formsError) {

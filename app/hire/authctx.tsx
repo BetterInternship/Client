@@ -16,16 +16,16 @@ interface IAuthContext {
   proxy: string;
   loading: boolean;
   register: (
-    employer: Partial<Employer>
+    employer: Partial<Employer>,
   ) => Promise<Partial<PublicEmployerUser> | null>;
   verify: (user_id: string, key: string) => Promise<FetchResponse | null>;
   login: (
     email: string,
-    password: string
+    password: string,
   ) => Promise<Partial<PublicEmployerUser> | null>;
   loginAs: (employer_id: string) => Promise<Partial<PublicEmployerUser> | null>;
   emailStatus: (
-    email: string
+    email: string,
   ) => Promise<{ existing_user: boolean; verified_user: boolean }>;
   logout: () => Promise<void>;
   isAuthenticated: () => boolean;
@@ -75,12 +75,6 @@ export const AuthContextProvider = ({
     else sessionStorage.removeItem("isAuthenticated");
   }, [user, isAuthenticated]);
 
-  useEffect(() => {
-    queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] });
-    queryClient.invalidateQueries({ queryKey: ["my-employer-conversations"] });
-    queryClient.invalidateQueries({ queryKey: ["god-employers"] });
-  }, [isAuthenticated]);
-
   const refreshAuthentication =
     async (): Promise<Partial<PublicEmployerUser> | null> => {
       const response = await EmployerService.getMyProfile();
@@ -109,10 +103,16 @@ export const AuthContextProvider = ({
     const response = await EmployerAuthService.login(email, password);
     if (!response.success) return null;
 
+    await queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] });
+    await queryClient.invalidateQueries({
+      queryKey: ["my-employer-conversations"],
+    });
+    await queryClient.invalidateQueries({ queryKey: ["god-employers"] });
+
     setUser(response.user as PublicEmployerUser);
     setIsAuthenticated(true);
 
-    // @ts-ignore
+    // @ts-expect-error
     if (response.god) setGod(true);
 
     return response;
@@ -125,8 +125,8 @@ export const AuthContextProvider = ({
       return null;
     }
 
-    pocketbase.refresh();
-    queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] });
+    await pocketbase.refresh();
+    await queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] });
     setProxy(getFullName(response.user));
     setUser(response.user);
     return response.user;
@@ -138,8 +138,14 @@ export const AuthContextProvider = ({
   };
 
   const logout = async () => {
-    pocketbase.logout();
+    await pocketbase.logout();
     await EmployerAuthService.logout();
+
+    await queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] });
+    await queryClient.invalidateQueries({
+      queryKey: ["my-employer-conversations"],
+    });
+    await queryClient.invalidateQueries({ queryKey: ["god-employers"] });
 
     router.push("/login");
     setUser(null);

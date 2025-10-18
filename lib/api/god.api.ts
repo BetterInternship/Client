@@ -12,7 +12,7 @@ import { FetchResponse } from "@/lib/api/use-fetch";
  */
 export function useEmployers() {
   const queryClient = useQueryClient();
-  const { isPending, error } = useQuery({
+  const { isPending, isFetching, error } = useQuery({
     queryKey: ["god-employers"],
     queryFn: async () => {
       const { success, employers } =
@@ -20,12 +20,13 @@ export function useEmployers() {
       if (!success) return {};
       await Promise.all(
         employers.map((employer) =>
-          queryClient.setQueryData(["god-employers", employer.id], employer)
-        )
+          queryClient.setQueryData(["god-employers", employer.id], employer),
+        ),
       );
       updateEmployers();
       return {};
     },
+    staleTime: Infinity,
   });
   const [employers, setEmployers] = useState<Employer[]>([]);
   const { isPending: isVerifying, mutate: verify } = useMutation({
@@ -44,7 +45,7 @@ export function useEmployers() {
         {
           ...oldEmployer,
           ...response?.employer,
-        }
+        },
       );
       updateEmployers();
       return result;
@@ -66,7 +67,7 @@ export function useEmployers() {
         {
           ...oldEmployer,
           ...response?.employer,
-        }
+        },
       );
       updateEmployers();
       return result;
@@ -81,8 +82,8 @@ export function useEmployers() {
             queryKey: ["god-employers"],
           })
           .map((e) => e[1] as Employer)
-          .filter((e) => e?.id)
-      )
+          .filter((e) => e?.id),
+      ),
     );
   };
 
@@ -92,6 +93,7 @@ export function useEmployers() {
 
   return {
     isPending,
+    isFetching,
     isVerifying,
     isUnverifying,
     data: employers,
@@ -110,6 +112,7 @@ export function useUsers() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // ! TODO, USE TANSTACK QUERY HERE SO U CAN SET STALE TIME, THEN GO BACK TO USING IT IN STUDENTS PAGE
   const fetchUsers = async () => {
     try {
       setLoading(true);
@@ -143,12 +146,12 @@ export const StudentGodAPI = {
       APIRouteBuilder("student-god")
         .r("students", studentId, "impersonations")
         .build(),
-      reason ? { reason } : {}
+      reason ? { reason } : {},
     ),
   stop: async () =>
     APIClient.post<FetchResponse>(
       APIRouteBuilder("student-god").r("impersonations", "stop").build(),
-      {}
+      {},
     ),
 };
 
