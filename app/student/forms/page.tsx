@@ -52,7 +52,7 @@ export default function FormsPage() {
 
   const generatorForms = useMemo(() => {
     const list = formList ?? [];
-    return list.slice().sort((a: any, b: any) => {
+    return list.slice().sort((a, b) => {
       const aa = (a.label ?? a.name ?? "").toLowerCase().trim();
       const bb = (b.label ?? b.name ?? "").toLowerCase().trim();
       if (aa < bb) return -1;
@@ -64,7 +64,7 @@ export default function FormsPage() {
   const comingSoon = useMemo(() => {
     const available = new Set(
       (generatorForms ?? [])
-        .map((f: any) => (f.label ?? f.name ?? "").toLowerCase().trim())
+        .map((f) => (f.label ?? f.name ?? "").toLowerCase().trim())
         .filter(Boolean),
     );
     return UPCOMING_FORMS.filter(
@@ -212,7 +212,7 @@ export default function FormsPage() {
                         })
                         .catch((e) => {
                           console.error(e);
-                          w?.close();
+                          w.close();
                           alert("Failed to load template.");
                         });
                     }}
@@ -232,11 +232,7 @@ export default function FormsPage() {
                     </div>
                     <div className="space-y-3">
                       {comingSoon.map((f) => (
-                        <ComingSoonCard
-                          key={f.label}
-                          title={f.label}
-                          blurb={f.blurb}
-                        />
+                        <ComingSoonCard key={f.label} title={f.label} />
                       ))}
                     </div>
                     <p className="text-[11px] text-muted-foreground">
