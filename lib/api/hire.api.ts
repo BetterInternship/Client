@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-22 19:43:25
- * @ Modified time: 2025-09-27 18:30:55
+ * @ Modified time: 2025-10-19 07:02:48
  * @ Description:
  *
  * Routes used by employers
@@ -35,7 +35,7 @@ export const EmployerAuthService = {
   async emailStatus(email: string) {
     return APIClient.post<EmailStatusResponse>(
       APIRouteBuilder("auth").r("hire", "email-status").build(),
-      { email }
+      { email },
     );
   },
 
@@ -43,50 +43,50 @@ export const EmployerAuthService = {
     return APIClient.post<AuthResponse>(
       APIRouteBuilder("auth").r("hire", "register").build(),
       employer,
-      "form-data"
+      "form-data",
     );
   },
 
   async login(email: string, password: string) {
     return APIClient.post<AuthResponse>(
       APIRouteBuilder("auth").r("hire", "login").build(),
-      { email, password }
+      { email, password },
     );
   },
 
   async loginAsEmployer(employer_id: string) {
     return APIClient.post<AuthResponse>(
-      APIRouteBuilder("employer").r("proxy", employer_id).build()
+      APIRouteBuilder("employer").r("proxy", employer_id).build(),
     );
   },
 
   async getAllUsers() {
     return APIClient.get<AuthResponse>(
-      APIRouteBuilder("employer").r("all-users").build()
+      APIRouteBuilder("employer").r("all-users").build(),
     );
   },
 
   async getAllEmployers() {
     return APIClient.get<EmployersResponse>(
-      APIRouteBuilder("employer").r("all").build()
+      APIRouteBuilder("employer").r("all").build(),
     );
   },
 
   async logout() {
     await APIClient.post<FetchResponse>(
-      APIRouteBuilder("auth").r("hire", "logout").build()
+      APIRouteBuilder("auth").r("hire", "logout").build(),
     );
   },
 
   async verifyEmployer(employer_id: string): Promise<EmployerResponse> {
     return APIClient.post<EmployerResponse>(
-      APIRouteBuilder("employer").r("verify", employer_id).build()
+      APIRouteBuilder("employer").r("verify", employer_id).build(),
     );
   },
 
   async unverifyEmployer(employer_id: string): Promise<EmployerResponse> {
     return APIClient.post<EmployerResponse>(
-      APIRouteBuilder("employer").r("unverify", employer_id).build()
+      APIRouteBuilder("employer").r("unverify", employer_id).build(),
     );
   },
 };

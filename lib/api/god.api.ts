@@ -108,34 +108,16 @@ export function useEmployers() {
  * @returns
  */
 export function useUsers() {
-  const [users, set_users] = useState<PrivateUser[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // ! TODO, USE TANSTACK QUERY HERE SO U CAN SET STALE TIME, THEN GO BACK TO USING IT IN STUDENTS PAGE
-  const fetchUsers = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await EmployerAuthService.getAllUsers();
-      if (response.success)
-        // @ts-ignore
-        set_users(response.users ?? []);
-    } catch (err) {
-      const errorMessage = handleApiError(err);
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  const { data, isFetching, isPending, error } = useQuery({
+    queryKey: ["god-students"],
+    queryFn: () => EmployerAuthService.getAllUsers(),
+    staleTime: Infinity,
+  });
 
   return {
-    users,
-    loading,
+    users: (data?.users as PrivateUser[]) ?? [],
+    isPending,
+    isFetching,
     error,
   };
 }

@@ -94,7 +94,7 @@ const Chip = ({
 /* ---------- Page ---------- */
 
 export default function StudentsPage() {
-  const { users } = useUsers();
+  const { users, isFetching } = useUsers();
   const queryClient = useQueryClient();
   const employers = useEmployers();
   const refs = useDbRefs();
@@ -203,7 +203,6 @@ export default function StudentsPage() {
   };
 
   /* ---------- Main filtered list ---------- */
-
   const filtered = users
     .filter(
       (u: any) =>
@@ -576,12 +575,12 @@ export default function StudentsPage() {
       <div className="px-2">
         <Button
           className="bg-warning hover:bg-warning/80"
-          disabled={employers.isFetching}
+          disabled={isFetching}
           onClick={() =>
-            void queryClient.invalidateQueries({ queryKey: ["god-employers"] })
+            void queryClient.invalidateQueries({ queryKey: ["god-students"] })
           }
         >
-          {employers.isFetching ? "Refreshing Cache..." : "Refresh Cache"}
+          {isFetching ? "Refreshing Cache..." : "Refresh Cache"}
         </Button>
       </div>
     </div>

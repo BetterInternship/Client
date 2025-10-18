@@ -107,7 +107,6 @@ export const AuthContextProvider = ({
     await queryClient.invalidateQueries({
       queryKey: ["my-employer-conversations"],
     });
-    await queryClient.invalidateQueries({ queryKey: ["god-employers"] });
 
     setUser(response.user as PublicEmployerUser);
     setIsAuthenticated(true);
@@ -145,7 +144,6 @@ export const AuthContextProvider = ({
     await queryClient.invalidateQueries({
       queryKey: ["my-employer-conversations"],
     });
-    await queryClient.invalidateQueries({ queryKey: ["god-employers"] });
 
     router.push("/login");
     setUser(null);
