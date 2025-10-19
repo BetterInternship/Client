@@ -8,9 +8,23 @@ import {
   FormCheckbox,
 } from "@/components/EditForm";
 import z from "zod";
+import { UserService } from "@/lib/api/services";
+import { useQuery } from "@tanstack/react-query";
 
-type FieldType = "text" | "number" | "select" | "date" | "time" | "signature";
-export type Section = "student" | "entity" | "university" | "internship" | null;
+type FieldType =
+  | "text"
+  | "number"
+  | "select"
+  | "date"
+  | "time"
+  | "signature"
+  | "reference";
+export type Section =
+  | "student"
+  | "entity"
+  | "university"
+  | "internship"
+  | "student-guardian";
 
 type Option = { value: string; label: string };
 
@@ -42,6 +56,7 @@ export function FieldRenderer({
   error?: string;
   showError?: boolean;
 }) {
+  // placeholder and error
   const Note = () => {
     if (showError && !!error) {
       return <p className="text-xs text-rose-600 mt-1">{error}</p>;
@@ -52,6 +67,39 @@ export function FieldRenderer({
     return null;
   };
 
+  // [custom] for items that need to be queried from backend
+  if (def.type === "reference") {
+    if (def.key === "entity-id") {
+      const { data } = useQuery({
+        queryKey: ["entities", "list"],
+        queryFn: async () => await UserService.getEntityList(),
+        refetchOnMount: "always",
+      });
+
+      const companies: Array<{ id: string; name: string }> = (
+        data?.employers ?? []
+      ).map((c) => ({
+        id: String(c.id),
+        name: c.display_name,
+      }));
+
+      return (
+        <div className="space-y-1.5">
+          <FormDropdown
+            label={def.label}
+            required
+            value={value}
+            options={companies}
+            setter={(v) => onChange(String(v ?? ""))}
+            className="w-full"
+          />
+          <Note />
+        </div>
+      );
+    }
+  }
+
+  // dropdown
   if (def.type === "select") {
     const options = (def.options ?? []).map((o) => ({
       id: o.value,
@@ -72,6 +120,7 @@ export function FieldRenderer({
     );
   }
 
+  // date
   if (def.type === "date") {
     // Example: disable dates before today+7 for specific keys
     let disabledDays: { before?: Date } | null = null;
@@ -110,6 +159,7 @@ export function FieldRenderer({
     );
   }
 
+  // time
   if (def.type === "time") {
     return (
       <div className="space-y-1.5">
@@ -126,6 +176,7 @@ export function FieldRenderer({
     );
   }
 
+  // signature (checkbox)
   const asBool = (v: any) => v === true;
 
   if (def.type === "signature") {
@@ -143,7 +194,7 @@ export function FieldRenderer({
     );
   }
 
-  // Text & Number (sanitize number but keep type="text" to avoid 'e', '-', etc.)
+  // input
   const inputMode = def.type === "number" ? "numeric" : undefined;
   const sanitizeNumber = (s: string) =>
     s

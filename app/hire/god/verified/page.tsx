@@ -25,10 +25,12 @@ import { BoolBadge } from "@/components/ui/badge";
 import { useEmployers } from "@/lib/api/god.api";
 import { useModal } from "@/hooks/use-modal";
 import { useAuthContext } from "@/app/hire/authctx";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function VerifiedEmployersPage() {
   const router = useRouter();
   const employers = useEmployers();
+  const queryClient = useQueryClient();
   const { loginAs: login_as } = useAuthContext();
 
   const {
@@ -50,7 +52,7 @@ export default function VerifiedEmployersPage() {
         id: e.id ?? "",
         name: e.name ?? "",
       })),
-    [employers.data]
+    [employers.data],
   );
 
   const authorizeAs = async (employer_id: string) => {
@@ -67,7 +69,7 @@ export default function VerifiedEmployersPage() {
 
   const verifiedOnly = useMemo(
     () => employers.data.filter((e: any) => e.is_verified),
-    [employers.data]
+    [employers.data],
   );
 
   const filtered = verifiedOnly
@@ -131,29 +133,42 @@ export default function VerifiedEmployersPage() {
   });
 
   const toolbar = (
-    <div className="flex flex-wrap items-center gap-3">
-      <ListSummary
-        label="Verified employers"
-        total={verifiedOnly.length}
-        visible={filtered.length}
-      />
-      <Autocomplete
-        setter={setSearchQuery}
-        options={options}
-        className="w-80"
-        placeholder="Search employer..."
-      />
-      {/* Button gets the owner’s open() via props */}
-      <RegisterEmployerButton onOpen={openRegister} />
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          className="h-4 w-4"
-          checked={hideNoApps}
-          onChange={(e) => setHideNoApps(e.target.checked)}
+    <div className="flex justify-between">
+      <div className="flex flex-wrap items-center gap-3">
+        <ListSummary
+          label="Verified employers"
+          total={verifiedOnly.length}
+          visible={filtered.length}
         />
-        Hide without applications
-      </label>
+        <Autocomplete
+          setter={setSearchQuery}
+          options={options}
+          className="w-80"
+          placeholder="Search employer..."
+        />
+        {/* Button gets the owner’s open() via props */}
+        <RegisterEmployerButton onOpen={openRegister} />
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            className="h-4 w-4"
+            checked={hideNoApps}
+            onChange={(e) => setHideNoApps(e.target.checked)}
+          />
+          Hide without applications
+        </label>
+      </div>
+      <div className="px-2">
+        <Button
+          className="bg-warning hover:bg-warning/80"
+          disabled={employers.isFetching}
+          onClick={() =>
+            void queryClient.invalidateQueries({ queryKey: ["god-employers"] })
+          }
+        >
+          {employers.isFetching ? "Refreshing Cache..." : "Refresh Cache"}
+        </Button>
+      </div>
     </div>
   );
 

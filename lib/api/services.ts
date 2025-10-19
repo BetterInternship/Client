@@ -206,13 +206,24 @@ export const UserService = {
   // ! remove hardcoded mapping
   async getEntityList() {
     const response = await APIClient.get<{
-      entities: { id: string; display_name: string }[];
+      entities: {
+        id: string;
+        display_name: string;
+        legal_identifier: string;
+        contact_name: string;
+        contact_email: string;
+        address: string;
+      }[];
     }>(APIRouteBuilder("entities").r("list").build({ moaServer: true }));
 
     return {
       employers: response.entities.map((e) => ({
         id: e.id,
-        legal_entity_name: e.display_name,
+        display_name: e.display_name,
+        legal_entity_name: e.legal_identifier,
+        contact_name: e.contact_name,
+        contact_email: e.contact_email,
+        address: e.address,
       })),
     };
   },
