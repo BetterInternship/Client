@@ -9,12 +9,8 @@ import {
 } from "@/components/features/student/forms/FieldRenderer";
 import { Loader2 } from "lucide-react";
 
-/**
- * The form builder.
- * Changes based on field inputs.
- *
- * @component
- */
+type Mode = "select" | "invite" | "manual";
+
 export function DynamicForm({
   form,
   values,
@@ -22,6 +18,9 @@ export function DynamicForm({
   onSchema,
   errors = {},
   showErrors = false,
+  entityMode,
+  onEntityModeChange,
+  entityModeSupport,
 }: {
   form: string;
   values: Record<string, any>;
@@ -29,6 +28,9 @@ export function DynamicForm({
   onSchema: (defs: RendererFieldDef[]) => void;
   errors?: Record<string, string>;
   showErrors?: boolean;
+  entityMode: Mode;
+  onEntityModeChange: (m: Mode) => void;
+  entityModeSupport: { invite: boolean; manual: boolean };
 }) {
   const {
     fields: rawFields,
@@ -68,7 +70,7 @@ export function DynamicForm({
     if (!bootstrapped && defs.length > 0) setBootstrapped(true);
   }, [bootstrapped, defs.length]);
 
-  // seeds initial values from defs
+  // seed initial values from defs
   useEffect(() => {
     if (!bootstrapped || !defs.length) return;
 
@@ -84,32 +86,27 @@ export function DynamicForm({
     for (const d of toInit) {
       let v: any = d.value;
 
-      // normalize by type
       switch (d.type) {
         case "number":
-          // keep as string for your text input; sanitize later on input
           v = String(d.value);
           break;
         case "date":
-          // support ISO/string → ms
           if (typeof d.value === "string") {
             const ms = Date.parse(d.value);
             v = Number.isFinite(ms) ? ms : 0;
           } else if (typeof d.value === "number") {
-            v = d.value; // assume ms
+            v = d.value;
           } else {
             v = 0;
           }
           break;
         case "time":
-          // expect "HH:MM"
           v = String(d.value ?? "");
           break;
         case "signature":
           v = Boolean(d.value);
           break;
         case "select":
-          // ensure it's the option value id (string)
           v = String(d.value);
           break;
         default:
@@ -118,8 +115,7 @@ export function DynamicForm({
 
       onChange(d.key, v);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bootstrapped, defs]); // don't include values or you'll loop
+  }, [bootstrapped, defs]);
 
   const companyDefs: RendererFieldDef[] = useMemo(
     () => defs.filter((d) => d.section === "entity"),
@@ -160,14 +156,16 @@ export function DynamicForm({
 
       {bootstrapped && (
         <>
-          <FormSection
+          <CompanySectionWithEntityMode
             formKey={form}
-            title="Company Information"
             defs={companyDefs}
             values={values}
             onChange={onChange}
             errors={errors}
             showErrors={showErrors}
+            entityMode={entityMode}
+            onEntityModeChange={onEntityModeChange}
+            entityModeSupport={entityModeSupport}
           />
 
           <FormSection
@@ -205,6 +203,137 @@ export function DynamicForm({
   );
 }
 
+const CompanySectionWithEntityMode = memo(
+  function CompanySectionWithEntityMode({
+    formKey,
+    defs,
+    values,
+    onChange,
+    errors,
+    showErrors,
+    entityMode,
+    onEntityModeChange,
+    entityModeSupport,
+  }: {
+    formKey: string;
+    defs: RendererFieldDef[];
+    values: Record<string, any>;
+    onChange: (key: string, value: any) => void;
+    errors: Record<string, string>;
+    showErrors: boolean;
+    entityMode: Mode;
+    onEntityModeChange: (m: Mode) => void;
+    entityModeSupport: { invite: boolean; manual: boolean };
+  }) {
+    if (!defs.length) return null;
+
+    return (
+      <div className="space-y-3">
+        <div className="pt-2 pb-1">
+          <h3 className="text-sm font-semibold text-gray-700">
+            Company Information
+          </h3>
+        </div>
+
+        {defs.map((def) => {
+          const isEntityId = def.key === "entity-id";
+          if (!isEntityId) {
+            return (
+              <div key={`${formKey}:${def.section}:${String(def.id)}`}>
+                <FieldRenderer
+                  def={def}
+                  value={values[def.key]}
+                  onChange={(v) => onChange(def.key, v)}
+                  error={errors[def.key]}
+                  showError={showErrors}
+                />
+              </div>
+            );
+          }
+
+          const canInvite = entityModeSupport.invite;
+          const canManual = entityModeSupport.manual;
+          const showFriendlyHelper = canInvite || canManual;
+
+          return (
+            <div
+              key={`${formKey}:${def.section}:${String(def.id)}`}
+              className="space-y-2"
+            >
+              <FieldRenderer
+                def={def}
+                value={values[def.key]}
+                onChange={(v) => onChange(def.key, v)}
+                error={errors[def.key]}
+                showError={showErrors}
+              />
+
+              {showFriendlyHelper && (
+                <EntityModeHelper
+                  value={entityMode}
+                  onChange={onEntityModeChange}
+                  allowInvite={canInvite}
+                  allowManual={canManual}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  },
+);
+
+const EntityModeHelper = ({
+  onChange,
+  allowInvite,
+  allowManual,
+}: {
+  onChange: (m: Mode) => void;
+  allowInvite: boolean;
+  allowManual: boolean;
+}) => {
+  // minimal, sentence-only, link-like buttons
+  const LinkBtn = ({
+    children,
+    onClick,
+    disabled,
+  }: {
+    children: React.ReactNode;
+    onClick: () => void;
+    disabled?: boolean;
+  }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      role="link"
+      className={[
+        "underline underline-offset-4",
+        "text-primary",
+        disabled ? "opacity-50 cursor-not-allowed" : "hover:opacity-80",
+      ].join(" ")}
+    >
+      {children}
+    </button>
+  );
+
+  return (
+    <p className="text-xs text-muted-foreground">
+      Can’t find the company?{" "}
+      <LinkBtn onClick={() => onChange("invite")} disabled={!allowInvite}>
+        Invite them
+      </LinkBtn>{" "}
+      or{" "}
+      <LinkBtn onClick={() => onChange("manual")} disabled={!allowManual}>
+        fill in manually
+      </LinkBtn>
+      .
+    </p>
+  );
+};
+
+
 const FormSection = memo(function FormSection({
   formKey,
   title,
@@ -234,7 +363,6 @@ const FormSection = memo(function FormSection({
         <div key={`${formKey}:${def.section}:${String(def.id)}`}>
           <FieldRenderer
             def={def}
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             value={values[def.key]}
             onChange={(v) => onChange(def.key, v)}
             error={errors[def.key]}

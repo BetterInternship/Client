@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { OutsideTabPanel, OutsideTabs } from "@/components/ui/outside-tabs";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
@@ -17,7 +17,6 @@ import MyFormCard from "@/components/features/student/forms/MyFormCard";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { FormFlowRouter } from "@/components/features/student/forms/FormFlowRouter";
 import { useProfileData } from "@/lib/api/student.data.api";
-import { UserService } from "@/lib/api/services";
 import { useRouter } from "next/navigation";
 import ComingSoonCard from "@/components/features/student/forms/ComingSoonCard";
 
@@ -50,35 +49,60 @@ export default function FormsPage() {
     gcTime: 10_000,
   });
 
+  const norm = (s?: string) => (s ?? "").trim().toLowerCase();
+
   const generatorForms = useMemo(() => {
-    const list = formList ?? [];
+    const list = (formList ?? []).filter((f) => {
+      const name = norm(f.name);
+      return !/-\s*(invite|manual)$/.test(name); // hide variants
+    });
+
     return list.slice().sort((a, b) => {
-      const aa = (a.label ?? a.name ?? "").toLowerCase().trim();
-      const bb = (b.label ?? b.name ?? "").toLowerCase().trim();
+      const aa = norm(a.label ?? a.name);
+      const bb = norm(b.label ?? b.name);
       if (aa < bb) return -1;
       if (aa > bb) return 1;
       return 0;
     });
   }, [formList]);
 
+  const formNameSet = useMemo(() => {
+    const s = new Set<string>();
+    for (const f of formList ?? []) {
+      if (!f?.name) continue;
+      s.add(norm(f.name));
+    }
+    return s;
+  }, [formList]);
+
+  const hasVariant = useCallback(
+    (base: string, suffix: "invite" | "manual") => {
+      const key = `${norm(base)}-${suffix}`;
+      return formNameSet.has(key);
+    },
+    [formNameSet],
+  );
+
   const comingSoon = useMemo(() => {
     const available = new Set(
       (generatorForms ?? [])
-        .map((f) => (f.label ?? f.name ?? "").toLowerCase().trim())
+        .map((f) => norm(f.label ?? f.name))
         .filter(Boolean),
     );
-    return UPCOMING_FORMS.filter(
-      (f) => !available.has(f.label.toLowerCase().trim()),
-    );
+    return UPCOMING_FORMS.filter((f) => !available.has(norm(f.label)));
   }, [generatorForms]);
 
   const openFormModal = (formName: string, formLabel: string) => {
+    const supportsInvite = hasVariant(formName, "invite");
+    const supportsManual = hasVariant(formName, "manual");
+    console.log("supportsInvite", supportsInvite);
+    console.log("supportsManual", supportsManual);
     openGlobalModal(
       "form-generator-form",
       <FormFlowRouter
         baseForm={formName}
-        // ! remove hard code,
-        allowInvite={true}
+        supportsInvite={supportsInvite}
+        supportsManual={supportsManual}
         onGoToMyForms={() => {
           setTab("My Forms");
           closeGlobalModal("form-generator-form");
@@ -112,23 +136,6 @@ export default function FormsPage() {
         .slice()
         .sort((a, b) => parseTsToMs(b.timestamp) - parseTsToMs(a.timestamp)),
     [myForms],
-  );
-
-  const { data: employersData } = useQuery({
-    queryKey: ["companies:list"],
-    queryFn: async () => await UserService.getEntityList(),
-    staleTime: 60_000,
-  });
-
-  const companyMap: Record<string, string> = useMemo(
-    () =>
-      Object.fromEntries(
-        (employersData?.employers ?? []).map((e) => [
-          String(e.id),
-          e.legal_entity_name,
-        ]),
-      ),
-    [employersData],
   );
 
   if (!profile.data?.department && !profile.isPending) {
@@ -212,7 +219,7 @@ export default function FormsPage() {
                         })
                         .catch((e) => {
                           console.error(e);
-                          w.close();
+                          window.close();
                           alert("Failed to load template.");
                         });
                     }}
@@ -287,7 +294,11 @@ export default function FormsPage() {
                             row.signed_document_id,
                           );
 
-                          return `https://storage.googleapis.com/better-internship-public-bucket/${signedDocument.data?.verification_code}.pdf`;
+                          const url = signedDocument.data?.verification_code
+                            ? `https://storage.googleapis.com/better-internship-public-bucket/${signedDocument.data.verification_code}.pdf`
+                            : null;
+
+                          if (url) return url;
                         }
 
                         if (row.pending_document_id) {
@@ -295,10 +306,12 @@ export default function FormsPage() {
                             row.pending_document_id,
                           );
 
-                          return pendingDocument.data?.latest_document_url;
+                          const url = pendingDocument.data?.latest_document_url;
+                          if (url) return url;
                         }
 
                         alert("No document associated with request.");
+                        throw new Error("No document URL available");
                       }}
                       downloading={false}
                     />

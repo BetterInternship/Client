@@ -12,6 +12,7 @@ import { StepComplete } from "./StepComplete";
 import { useProfileData } from "@/lib/api/student.data.api";
 
 type SectionKey = "student" | "university" | "entity" | "internship";
+type Mode = "select" | "invite" | "manual";
 
 export type FieldDef = {
   id: string | number;
@@ -29,7 +30,7 @@ export type FieldDef = {
 type Errors = Record<string, string>;
 type FormValues = Record<string, unknown>;
 
-type Employer = {
+type Entity = {
   id: string | number;
   display_name?: string;
   legal_entity_name?: string;
@@ -40,22 +41,25 @@ type Employer = {
 };
 
 type EntitiesListResponse = {
-  employers: Employer[];
+  employers: Entity[];
 };
 
 export function FormFlowRouter({
   baseForm,
   onGoToMyForms,
+  supportsInvite = false,
+  supportsManual = false,
 }: {
   baseForm: string;
   onGoToMyForms?: () => void;
+  supportsInvite?: boolean;
+  supportsManual?: boolean;
 }) {
-  const formName = baseForm;
-
   const { update } = useProfileActions();
   const { data: profileData } = useProfileData();
 
   const [done, setDone] = useState(false);
+  const [mode, setMode] = useState<Mode>("select");
 
   const [values, setValues] = useState<FormValues>({});
   const [errors, setErrors] = useState<Errors>({});
@@ -63,6 +67,19 @@ export function FormFlowRouter({
   const [busy, setBusy] = useState(false);
 
   const [mainDefs, setMainDefs] = useState<FieldDef[]>([]);
+
+  useEffect(() => {
+    if (mode !== "select") {
+      setSelection("");
+      setValues((prev) => ({ ...prev, "entity-id": "" }));
+    }
+  }, [mode]);
+
+  const formName = useMemo(() => {
+    if (mode === "invite") return `${baseForm}-invite`;
+    if (mode === "manual") return `${baseForm}-manual`;
+    return baseForm;
+  }, [baseForm, mode]);
 
   // saved autofill
   const savedFlat =
@@ -92,16 +109,16 @@ export function FormFlowRouter({
   // fetch companies
   const { data } = useQuery<EntitiesListResponse>({
     queryKey: ["entities", "list"],
-    queryFn: UserService.getEntityList,
+    queryFn: () => UserService.getEntityList(),
     refetchOnMount: "always",
     staleTime: 60_000,
   });
-  const companiesRaw: Employer[] = data?.employers ?? [];
+  const companiesRaw: Entity[] = data?.employers ?? [];
 
   // sync local selection with "entity-id" written by FieldRenderer
   const [selection, setSelection] = useState<string>("");
   useEffect(() => {
-    const id = String(values["entity-id"] ?? "");
+    const id = String(values["entity-id"]);
     if (id && id !== selection) setSelection(id);
   }, [values["entity-id"]]);
 
@@ -109,7 +126,7 @@ export function FormFlowRouter({
 
   const setField = useCallback((key: string, v: unknown) => {
     setValues((prev) => ({ ...prev, [key]: v }));
-    if (key === "entity-id") setSelection(String(v ?? ""));
+    if (key === "entity-id") setSelection(String(v));
   }, []);
 
   const validateNow = useCallback(() => {
@@ -139,13 +156,14 @@ export function FormFlowRouter({
         ...fromFormNow,
       };
 
-      // if an entity is selected, replace entity fields with its data
-      const entityId = String(values["entity-id"] ?? selection ?? "");
-      const selectedFull = entityId
-        ? companiesRaw.find((c) => String(c.id) === entityId)
-        : undefined;
+      // If SELECT mode and an entity is chosen, enrich with entity info
+      const entityId = mode === "select" ? String(selection || "") : "";
+      const selectedFull =
+        mode === "select" && entityId
+          ? companiesRaw.find((c) => String(c.id) === entityId)
+          : undefined;
 
-      if (entityId) {
+      if (mode === "select" && entityId) {
         const supplements: Record<string, string> = {
           "entity-id": entityId,
           "entity-legal-name": selectedFull?.legal_entity_name ?? "",
@@ -154,8 +172,6 @@ export function FormFlowRouter({
           "entity-representative-name": selectedFull?.contact_name ?? "",
           "entity-representative-email": selectedFull?.contact_email ?? "",
         };
-
-        // apply supplements only when non-empty, so we don't wipe user edits
         for (const [k, v] of Object.entries(supplements)) {
           const trimmed = (v ?? "").trim();
           if (trimmed !== "") finalFlat[k] = trimmed;
@@ -174,7 +190,7 @@ export function FormFlowRouter({
         await update.mutateAsync({ internship_moa_fields: finalFlat });
 
         const route = withEsign ? "submitSignedForm" : "submitPendingForm";
-        await (UserService as any)[route]({
+        await UserService[route]({
           formName,
           values: finalFlat,
           parties: {
@@ -209,12 +225,16 @@ export function FormFlowRouter({
   return (
     <div className="space-y-4">
       <DynamicForm
+        key={formName}
         form={formName}
         values={values}
         onChange={setField}
         onSchema={(defs) => setMainDefs(defs as FieldDef[])}
         showErrors={submitted}
         errors={errors}
+        entityMode={mode}
+        onEntityModeChange={(m) => setMode(m)}
+        entityModeSupport={{ invite: supportsInvite, manual: supportsManual }}
       />
 
       <div className="pt-2 flex justify-end gap-2 flex-wrap ">
