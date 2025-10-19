@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, FileText, FileUser } from "lucide-react";
+import { BarChart3, FileText, FileUser, Users } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,11 @@ const navItems: NavItem[] = [
     href: "/forms-management",
     icon: <FileUser className="h-5 w-5" />,
     label: "Forms Automation",
+  },
+  {
+    href: "/company-users",
+    icon: <Users className="h-5 w-5" />,
+    label: "Company Sub-accounts",
   },
 ];
 
