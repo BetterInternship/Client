@@ -14,8 +14,8 @@ export function Footer({ links = LINKS }: { links?: FooterLink[] }) {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="py-1 px-4">
-      <div className="mx-auto max-w-7xl">
+    <footer className="py-1 px-5">
+      <div className="mx-auto">
         <div className="flex gap-2 justify-center md:flex-row md:items-center md:justify-between">
           <p className="text-xs text-muted-foreground text-center md:text-left">
             © {year} BetterInternship Inc.
