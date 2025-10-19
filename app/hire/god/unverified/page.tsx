@@ -12,9 +12,11 @@ import {
 } from "@/components/features/hire/god/ui";
 import { BoolBadge } from "@/components/ui/badge";
 import { useEmployers } from "@/lib/api/god.api";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function UnverifiedEmployersPage() {
   const employers = useEmployers();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState<string | null>(null);
   const [hideNoApps, setHideNoApps] = useState(false);
   const [selected, setSelected] = useState("");
@@ -28,12 +30,12 @@ export default function UnverifiedEmployersPage() {
         id: e.id ?? "",
         name: e.name ?? "",
       })),
-    [employers.data]
+    [employers.data],
   );
 
   const totalUnverified = useMemo(
     () => employers.data.filter((x: any) => !x.is_verified).length,
-    [employers.data]
+    [employers.data],
   );
 
   const filtered = employers.data
@@ -100,27 +102,40 @@ export default function UnverifiedEmployersPage() {
   });
 
   const toolbar = (
-    <div className="flex flex-wrap items-center gap-3">
-      <ListSummary
-        label="Unverified employers"
-        total={totalUnverified}
-        visible={filtered.length}
-      />
-      <Autocomplete
-        setter={setSearchQuery}
-        options={options}
-        className="w-80"
-        placeholder="Search employer..."
-      />
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          className="h-4 w-4"
-          checked={hideNoApps}
-          onChange={(e) => setHideNoApps(e.target.checked)}
+    <div className="flex justify-between">
+      <div className="flex flex-wrap items-center gap-3">
+        <ListSummary
+          label="Unverified employers"
+          total={totalUnverified}
+          visible={filtered.length}
         />
-        Hide without applications
-      </label>
+        <Autocomplete
+          setter={setSearchQuery}
+          options={options}
+          className="w-80"
+          placeholder="Search employer..."
+        />
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            className="h-4 w-4"
+            checked={hideNoApps}
+            onChange={(e) => setHideNoApps(e.target.checked)}
+          />
+          Hide without applications
+        </label>
+      </div>
+      <div className="px-2">
+        <Button
+          className="bg-warning hover:bg-warning/80"
+          disabled={employers.isFetching}
+          onClick={() =>
+            void queryClient.invalidateQueries({ queryKey: ["god-employers"] })
+          }
+        >
+          {employers.isFetching ? "Refreshing Cache..." : "Refresh Cache"}
+        </Button>
+      </div>
     </div>
   );
 
