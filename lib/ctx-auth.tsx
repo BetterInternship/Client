@@ -68,6 +68,11 @@ export const AuthContextProvider = ({
   }, []);
 
   const register = async (user: Partial<PublicUser>) => {
+    await queryClient.invalidateQueries({ queryKey: ["jobs"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-applications"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-saved-jobs"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-conversations"] });
     return await AuthService.register(user);
   };
 

@@ -129,9 +129,12 @@ interface SaveJobResponse extends FetchResponse {
 
 export const UserService = {
   async getMyProfile() {
-    return APIClient.get<UserResponse>(
+    console.log("helloo??");
+    const result = APIClient.get<UserResponse>(
       APIRouteBuilder("users").r("me").build(),
     );
+    console.log("result", result);
+    return result;
   },
 
   async updateMyProfile(data: Partial<PublicUser>) {
