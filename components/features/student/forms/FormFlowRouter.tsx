@@ -121,6 +121,10 @@ export function FormFlowRouter({
 
     if (id && id !== selection) setSelection(id);
   }, [values["entity-id"]]);
+  useEffect(() => {
+    const id = values["entity-id"] ? String(values["entity-id"]) : undefined;
+    if (id && id !== selection) setSelection(id);
+  }, [values["entity-id"]]);
 
   const validatorFns = useMemo(() => compileValidators(mainDefs), [mainDefs]);
 

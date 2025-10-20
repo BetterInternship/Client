@@ -178,6 +178,8 @@ export function useProfileData() {
     queryFn: () => UserService.getMyProfile(),
   });
 
+  console.log("PROFILE", data);
+
   return {
     data: data?.user ?? null,
     error,
