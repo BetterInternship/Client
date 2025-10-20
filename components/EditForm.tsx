@@ -285,7 +285,6 @@ export const FormCheckBoxGroup = ({
   ...props
 }: FormCheckBoxGroupProps) => {
   const handleValueChange = (optionValue: string | number) => {
-    console.log("checkbox changed:", optionValue, "current values:", values);
     if (values.includes(optionValue)) {
       setter(values.filter((v) => v !== optionValue));
     } else {

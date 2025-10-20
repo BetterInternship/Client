@@ -87,8 +87,6 @@ export const fetchForms = async (user: PublicUser): Promise<IFormSchema[]> => {
   if (!user.department) {
     return [];
   }
-  console.log("dept", user.department);
-
   // Pull mapping for user department
   const { data: internshipFormMapping, error: internshipFormMappingError } =
     await db_base
