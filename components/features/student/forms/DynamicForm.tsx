@@ -54,6 +54,8 @@ export function DynamicForm({
     [rawFields],
   );
 
+  console.log("DynamicForm defs:", defs);
+
   const lastSigRef = useRef("");
   useEffect(() => {
     const sig = JSON.stringify(
@@ -332,7 +334,6 @@ const EntityModeHelper = ({
     </p>
   );
 };
-
 
 const FormSection = memo(function FormSection({
   formKey,

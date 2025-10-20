@@ -7,7 +7,7 @@
  * This handles interactions with our MOA Api server.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { DocumentDatabase, DocumentTables } from "@betterinternship/schema.moa";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@supabase/supabase-js";
@@ -46,6 +46,15 @@ type IField = DocumentTables<"field_repository">;
 export type IUserForm = Tables<"user_internship_forms">;
 type IFormSchema = DocumentTables<"form_schemas">;
 
+type FilledBy =
+  | "student"
+  | "entity"
+  | "university"
+  | "system"
+  | "student-guardian";
+
+type FieldRoles = Record<string, { for?: FilledBy }>;
+
 /**
  * Joined field.
  * All validators are included.
@@ -56,6 +65,19 @@ interface IJoinedField extends Omit<IField, "validators" | "transformers"> {
   transformers: ZodType[];
 }
 
+// Gets field keys by role
+function fieldKeysByRole(
+  data?: IFormSchema,
+  role?: FilledBy | "all",
+): string[] {
+  const roles = (data?.fields ?? {}) as FieldRoles;
+  if (!roles) return [];
+  if (!role || role === "all") return Object.keys(roles);
+  return Object.entries(roles)
+    .filter(([, meta]) => meta?.for === role)
+    .map(([k]) => k);
+}
+
 /**
  * Fetches all forms from the database given the user's department.
  *
@@ -63,7 +85,6 @@ interface IJoinedField extends Omit<IField, "validators" | "transformers"> {
  */
 export const fetchForms = async (user: PublicUser): Promise<IFormSchema[]> => {
   if (!user.department) {
-    console.log("Department required to lookup forms.");
     return [];
   }
   console.log("dept", user.department);
@@ -179,6 +200,68 @@ const fetchFieldCollection = async (name: string) => {
   return data as IFormSchema;
 };
 
+// Maps validators to Zod schemas (always returns ZodType[])
+const mapValidators = async (
+  validators?: string[] | null,
+  params?: any,
+): Promise<ZodType[]> => {
+  if (!validators || validators.length === 0) return [];
+  const rows = await Promise.all(
+    validators.map((id) => fieldValidatorFetcher.fetch(id)),
+  );
+  return rows.map((row) =>
+    row?.rule ? evalZodSchema(row.rule, params) : z.any(),
+  );
+};
+
+// Maps transformers to Zod schemas (always returns ZodType[])
+// If a transformer row has no rule, default to z.any()
+const mapTransformers = async (
+  transformers?: string[] | null,
+  params?: any,
+): Promise<ZodType[]> => {
+  if (!transformers || transformers.length === 0) return [];
+  const rows = await Promise.all(
+    transformers.map((id) => fieldTransformerFetcher.fetch(id)),
+  );
+  return rows.map((row) =>
+    row?.rule ? evalZodSchema(row.rule, params) : z.any(),
+  );
+};
+
+async function fetchFieldDefs(
+  keys: string[],
+  formParams?: Record<string, any>,
+) {
+  if (keys.length === 0) return [];
+  return Promise.all(
+    keys.map(async (k) => {
+      const field = await fieldFetcher.fetch(k); // IField | null
+      const name = field?.name ?? k;
+      const fp = formParams?.[name];
+
+      const validators = await mapValidators(
+        field?.validators ?? undefined,
+        fp?.params,
+      );
+      const transformers = await mapTransformers(
+        field?.transformers ?? undefined,
+        fp?.params,
+      );
+
+      return {
+        ...(field ?? ({} as IField)),
+        name, // ensure name exists
+        type: field?.type ?? "text",
+        label: field?.label ?? "",
+        value: fp?.value ?? undefined, // seed value if provided
+        validators, // <- ZodType[]
+        transformers, // <- ZodType[]
+      };
+    }),
+  );
+}
+
 /**
  * Has an implied eval, hence the name.
  * Only ever evaluates zod schemas, so we're fine.
@@ -200,9 +283,14 @@ function evalZodSchema(schema: string, params?: any) {
  *
  * @hook
  */
-export const useDynamicFormSchema = (name: string) => {
+export const useDynamicFormSchema = (
+  name: string,
+  opts?: { role?: FilledBy | "all" },
+) => {
+  const role = opts?.role ?? "student";
   const [fields, setFields] = useState<IJoinedField[]>([]);
   const [mappingLoading, setMappingLoading] = useState(false);
+
   const {
     data,
     error,
@@ -213,87 +301,39 @@ export const useDynamicFormSchema = (name: string) => {
     staleTime: 10000,
     gcTime: 10000,
   });
-  const formParams = (data?.params ?? {}) as Record<string, any>;
 
-  // Maps validators to their db fetches
-  const mapValidators = async (validators?: string[], params?: any) =>
-    await Promise.all(
-      validators?.map(
-        async (v) =>
-          await fieldValidatorFetcher
-            .fetch(v)
-            .then((v) => (v?.rule ? evalZodSchema(v.rule, params) : z.any())),
-      ) ?? [],
-    );
-
-  const mapTransformers = async (transformers?: string[], params?: any) =>
-    await Promise.all(
-      transformers?.map(
-        async (t) =>
-          await fieldTransformerFetcher
-            .fetch(t)
-            .then((t) => (t?.rule ? evalZodSchema(t.rule, params) : z.any())),
-      ) ?? [],
-    );
-
-  // Maps fields to their db fetches
-  const mapFields = async (fields: string[], formParams?: any) =>
-    await Promise.all(
-      fields.map(
-        async (f) =>
-          await fieldFetcher.fetch(f).then(async (field: IField | null) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-            const fieldParams = formParams?.[field?.name ?? ""];
-
-            return {
-              ...(field ?? ({} as IField)),
-              type: field?.type ?? "text",
-              label: field?.label ?? "",
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-              value: fieldParams?.value ?? undefined,
-              section: field?.section,
-              validators: await mapValidators(
-                field?.validators ?? undefined,
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                fieldParams?.params,
-              ),
-              transformers: await mapTransformers(
-                field?.transformers,
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                fieldParams?.params,
-              ),
-            };
-          }),
-      ),
-    );
+  const formParams = useMemo(
+    () => (data?.params ?? {}) as Record<string, any>,
+    [data?.params],
+  );
 
   useEffect(() => {
-    const schema = (data?.schema ?? []) as { field: string }[];
-    const fields = schema.map((s) => s.field);
+    const run = async () => {
+      setMappingLoading(true);
+      try {
+        // get keys by role (student-only by default)
+        const keys = fieldKeysByRole(data, role);
 
-    const list = data?.fields_filled_by_user || fields;
+        // fetch minimal defs
+        const defs = await fetchFieldDefs(keys, formParams);
 
-    if (list.length === 0) {
-      setFields([]);
-      setMappingLoading(false);
-      return;
-    }
+        // attach filledBy if you want it on the object
+        const roles = (data?.fields ?? {}) as FieldRoles;
+        const joined = defs.map((f: any) => ({
+          ...f,
+          filledBy: roles[f?.name ?? ""]?.for,
+        })) as IJoinedField[];
 
-    setMappingLoading(true);
-    void mapFields(list, formParams)
-      .then((fields) =>
-        setFields(
-          fields.map((f) => ({
-            ...f,
-            section: f.section ?? null,
-          })),
-        ),
-      )
-      .finally(() => setMappingLoading(false));
-  }, [data?.fields_filled_by_user, data?.schema, formParams]);
+        setFields(joined);
+      } finally {
+        setMappingLoading(false);
+      }
+    };
+    run();
+  }, [data?.fields, data?.schema, data?.params]);
 
   return {
-    fields,
+    fields, // student fields only by default
     error,
     isLoading: collectionLoading || mappingLoading,
   };
@@ -338,7 +378,6 @@ export const fetchPendingDocument = async (pendingDocumentId: string) => {
 };
 
 export const fetchTemplateDocument = async (baseDocumentId: string) => {
-  console.log("id", baseDocumentId);
   if (!baseDocumentId) return;
   const baseDocument = await db
     .from("base_documents")
@@ -346,6 +385,5 @@ export const fetchTemplateDocument = async (baseDocumentId: string) => {
     .eq("id", baseDocumentId)
     .single();
 
-  console.log("baseDoc", baseDocument);
   return baseDocument;
 };

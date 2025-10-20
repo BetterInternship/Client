@@ -23,7 +23,7 @@ export type FieldDef = {
   helper?: string;
   maxLength?: number;
   options?: Array<{ id: string | number; name: string }>;
-  validators?: z.ZodTypeAny[];
+  validators?: Array<z.ZodTypeAny | RegExp | ((v: unknown) => unknown)>;
   section: SectionKey;
 };
 
@@ -288,15 +288,59 @@ export function FormFlowRouter({
 
 function compileValidators(defs: FieldDef[]) {
   const map: Record<string, ((v: unknown) => string | null)[]> = {};
+
   for (const d of defs) {
-    const schemas = d.validators ?? [];
-    map[d.key] = schemas.map((schema) => (value: unknown) => {
-      const res = schema.safeParse(value);
-      if (res.success) return null;
-      const issues = res.error.issues as { message: string }[] | undefined;
-      return issues?.map((i) => i.message).join("\n") ?? res.error.message;
+    const schemas = Array.isArray(d.validators) ? d.validators : [];
+    map[d.key] = schemas.map((schema) => {
+      // Case A: Zod schema (has safeParse)
+      if (schema && typeof (schema as any).safeParse === "function") {
+        const zschema = schema as z.ZodTypeAny;
+        return (value: unknown) => {
+          const res = zschema.safeParse(value);
+          if (res.success) return null;
+          const issues = res.error.issues as { message: string }[] | undefined;
+          return issues?.map((i) => i.message).join("\n") ?? res.error.message;
+        };
+      }
+
+      // Case B: RegExp
+      if (schema instanceof RegExp) {
+        const rx = schema;
+        return (value: unknown) => {
+          const s = value == null ? "" : String(value);
+          return rx.test(s) ? null : "Invalid format.";
+        };
+      }
+
+      // Case C: Generic function
+      if (typeof schema === "function") {
+        const fn = schema as (v: unknown) => unknown;
+        return (value: unknown) => {
+          try {
+            const out = fn(value);
+            // Interpret common returns
+            if (out === true || out == null) return null; // ok
+            if (out === false) return "Invalid value.";
+            if (typeof out === "string") return out || "Invalid value.";
+            // If they returned a ZodResult by accident, try to read it
+            if (out && typeof (out as any).success === "boolean") {
+              const ok = (out as any).success;
+              if (ok) return null;
+              const err = (out as any).error;
+              return err?.message ?? "Invalid value.";
+            }
+            return null; // treat anything else as pass
+          } catch {
+            return "Invalid value.";
+          }
+        };
+      }
+
+      // Unknown validator type -> no-op
+      return () => null;
     });
   }
+
   return map;
 }
 

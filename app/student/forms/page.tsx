@@ -95,8 +95,6 @@ export default function FormsPage() {
   const openFormModal = (formName: string, formLabel: string) => {
     const supportsInvite = hasVariant(formName, "invite");
     const supportsManual = hasVariant(formName, "manual");
-    console.log("supportsInvite", supportsInvite);
-    console.log("supportsManual", supportsManual);
     openGlobalModal(
       "form-generator-form",
       <FormFlowRouter
