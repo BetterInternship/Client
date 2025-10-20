@@ -118,7 +118,9 @@ export function FormFlowRouter({
   // sync local selection with "entity-id" written by FieldRenderer
   const [selection, setSelection] = useState<string>("");
   useEffect(() => {
-    const id = String(values["entity-id"]);
+    const raw = values["entity-id"];
+    const id = typeof raw === "string" ? raw : raw == null ? "" : String(raw);
+
     if (id && id !== selection) setSelection(id);
   }, [values["entity-id"]]);
 
@@ -126,7 +128,10 @@ export function FormFlowRouter({
 
   const setField = useCallback((key: string, v: unknown) => {
     setValues((prev) => ({ ...prev, [key]: v }));
-    if (key === "entity-id") setSelection(String(v));
+    if (key === "entity-id") {
+      const id = typeof v === "string" ? v : v == null ? "" : String(v);
+      setSelection(id);
+    }
   }, []);
 
   const validateNow = useCallback(() => {
@@ -149,8 +154,11 @@ export function FormFlowRouter({
       const fromFormNow: Record<string, string> = {};
       for (const d of mainDefs) {
         const v = values[d.key];
-        fromFormNow[d.key] = v === undefined || v === null ? "" : String(v);
+        let s = v == null ? "" : String(v);
+        if (s === "undefined") s = "";
+        fromFormNow[d.key] = s;
       }
+
       let finalFlat: Record<string, string> = {
         ...baseFromAutofill,
         ...fromFormNow,
@@ -176,6 +184,10 @@ export function FormFlowRouter({
           const trimmed = (v ?? "").trim();
           if (trimmed !== "") finalFlat[k] = trimmed;
         }
+      }
+
+      if (finalFlat["entity-id"] === "undefined") {
+        finalFlat["entity-id"] = "";
       }
 
       finalFlat = {
