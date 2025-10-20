@@ -110,8 +110,6 @@ export function FormFlowRouter({
   const { data } = useQuery<EntitiesListResponse>({
     queryKey: ["entities", "list"],
     queryFn: () => UserService.getEntityList(),
-    refetchOnMount: "always",
-    staleTime: 60_000,
   });
   const companiesRaw: Entity[] = data?.employers ?? [];
 
