@@ -127,13 +127,26 @@ interface SaveJobResponse extends FetchResponse {
   message: string;
 }
 
+export type ApproveSignatoryRequest = {
+  pendingDocumentId: string;
+  signatoryName: string;
+  signatoryTitle: string;
+  party: "student" | "entity" | "student-guardian" | "university";
+  values?: Record<string, string>;
+};
+
+export type ApproveSignatoryResponse = {
+  message?: string;
+  signedDocumentId?: string;
+  signedDocumentUrl?: string;
+  [k: string]: any;
+};
+
 export const UserService = {
   async getMyProfile() {
-    console.log("helloo??");
     const result = APIClient.get<UserResponse>(
       APIRouteBuilder("users").r("me").build(),
     );
-    console.log("result", result);
     return result;
   },
 
@@ -187,9 +200,19 @@ export const UserService = {
     }>(APIRouteBuilder("forms").r("pending").build({ moaServer: true }), data);
   },
 
-  async requestEmployerAssist(id: string, recipient: string) {
-    alert("this route isnt implemented yet");
-    return Promise.resolve({});
+  async approveSignatory(payload: ApproveSignatoryRequest) {
+    return APIClient.post<ApproveSignatoryResponse & FetchResponse>(
+      APIRouteBuilder("forms").r("approve").build({ moaServer: true }),
+      payload,
+    );
+  },
+
+  // TODO: Do submit prefilled form
+
+  async getOutsideEntityFormFields(data: { formName: string; party: string }) {
+    return APIClient.get<{ fields?: any[] } & FetchResponse>(
+      APIRouteBuilder("forms").r("fields").p(data).build({ moaServer: true }),
+    );
   },
 
   async parseResume(form: FormData) {
