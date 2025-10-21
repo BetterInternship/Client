@@ -20,7 +20,7 @@ jobs:
       - name: Notify Discord of Success
         if: ${{ success() }}
         run: |
-          curl -H "Content-Type: application/json" -d '{"content":"# Dev\n ✅ Deployment succeeded: dev.betterinternship.com"}' ${{ secrets.DISCORD_WEBHOOK_URL }}
+          curl -H "Content-Type: application/json" -d '{"content":"# Dev\n ✅ Deployment succeeded: https://dev.betterinternship.com"}' ${{ secrets.DISCORD_WEBHOOK_URL }}
 
       - name: Notify Discord of Failure
         if: ${{ failure() }}
