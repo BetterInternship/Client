@@ -97,9 +97,12 @@ export function FormFlowRouter({
       let changed = false;
       for (const d of mainDefs) {
         const fromSaved = savedFlat[d.key];
-        if (fromSaved !== undefined && shouldSeed(prev[d.key])) {
-          next[d.key] = fromSaved;
-          changed = true;
+        if (fromSaved !== undefined && isEmptyFor(d, prev[d.key])) {
+          const coerced = coerceForDef(d, fromSaved);
+          if (coerced !== undefined) {
+            next[d.key] = coerced;
+            changed = true;
+          }
         }
       }
       return changed ? next : prev;
@@ -286,59 +289,149 @@ export function FormFlowRouter({
 
 /* ───────── helpers ───────── */
 
+function isEmptyFor(def: FieldDef, v: unknown) {
+  switch (def.type) {
+    case "date":
+      return !(typeof v === "number" && v > 0); // 0/undefined = empty
+    case "signature":
+      return v !== true;
+    case "number":
+      return v === undefined || v === "";
+    case "time":
+    case "select":
+    case "reference":
+    case "text":
+    default:
+      return v === undefined || v === "";
+  }
+}
+
+function coerceForDef(def: FieldDef, raw: unknown) {
+  switch (def.type) {
+    case "number":
+      return raw == null ? "" : String(raw);
+    case "date":
+      return coerceAnyDate(raw); // <— simplified
+    case "time":
+      return raw == null ? "" : String(raw);
+    case "signature":
+      return raw === true;
+    case "select":
+    case "reference":
+    case "text":
+    default:
+      return raw == null ? "" : String(raw);
+  }
+}
+
+function coerceAnyDate(raw: unknown): number | undefined {
+  if (typeof raw === "number") return raw > 0 ? raw : undefined;
+  if (typeof raw !== "string") return undefined;
+  const s = raw.trim();
+  if (!s) return undefined;
+
+  // numeric string (ms epoch)
+  if (/^\d{6,}$/.test(s)) {
+    const n = Number(s);
+    return Number.isFinite(n) && n > 0 ? n : undefined;
+  }
+
+  // ISO/date-like string
+  const ms = Date.parse(s);
+  return Number.isFinite(ms) && ms > 0 ? ms : undefined;
+}
+
 function compileValidators(defs: FieldDef[]) {
+  const isEmpty = (v: unknown) =>
+    v === undefined ||
+    v === null ||
+    (typeof v === "string" && v.trim() === "") ||
+    (Array.isArray(v) && v.length === 0);
+
+  const requiredCheckFor = (d: FieldDef) => {
+    switch (d.type) {
+      case "signature":
+        return (v: unknown) => (v === true ? null : "This field is required.");
+      case "number":
+        return (v: unknown) => {
+          const s = v == null ? "" : String(v).trim();
+          if (s === "") return "This field is required.";
+          const n = Number(s);
+          return Number.isFinite(n) ? null : "Enter a valid number.";
+        };
+      case "date":
+        // you store dates as ms epoch; initial 0 == not set
+        return (v: unknown) =>
+          typeof v === "number" && v > 0 ? null : "Please select a date.";
+      case "time":
+        return (v: unknown) => {
+          const s = v == null ? "" : String(v).trim();
+          return s ? null : "Please select a time.";
+        };
+      case "select":
+      case "reference":
+        return (v: unknown) => {
+          const s = v == null ? "" : String(v).trim();
+          return s ? null : "Please choose an option.";
+        };
+      default: // "text" and anything else -> non-empty string
+        return (v: unknown) => (!isEmpty(v) ? null : "This field is required.");
+    }
+  };
+
   const map: Record<string, ((v: unknown) => string | null)[]> = {};
 
   for (const d of defs) {
-    const schemas = Array.isArray(d.validators) ? d.validators : [];
-    map[d.key] = schemas.map((schema) => {
-      // Case A: Zod schema (has safeParse)
+    const raw = Array.isArray(d.validators) ? d.validators : [];
+    const fns: ((v: unknown) => string | null)[] = [];
+
+    // 1) Always add the default required validator first
+    fns.push(requiredCheckFor(d));
+
+    // 2) Then append any custom validators (Zod | RegExp | function)
+    for (const schema of raw) {
       if (schema && typeof (schema as any).safeParse === "function") {
         const zschema = schema as z.ZodTypeAny;
-        return (value: unknown) => {
+        fns.push((value: unknown) => {
           const res = zschema.safeParse(value);
           if (res.success) return null;
           const issues = res.error.issues as { message: string }[] | undefined;
           return issues?.map((i) => i.message).join("\n") ?? res.error.message;
-        };
+        });
+        continue;
       }
-
-      // Case B: RegExp
       if (schema instanceof RegExp) {
         const rx = schema;
-        return (value: unknown) => {
+        fns.push((value: unknown) => {
           const s = value == null ? "" : String(value);
           return rx.test(s) ? null : "Invalid format.";
-        };
+        });
+        continue;
       }
-
-      // Case C: Generic function
       if (typeof schema === "function") {
         const fn = schema as (v: unknown) => unknown;
-        return (value: unknown) => {
+        fns.push((value: unknown) => {
           try {
             const out = fn(value);
-            // Interpret common returns
-            if (out === true || out == null) return null; // ok
+            if (out === true || out == null) return null;
             if (out === false) return "Invalid value.";
             if (typeof out === "string") return out || "Invalid value.";
-            // If they returned a ZodResult by accident, try to read it
             if (out && typeof (out as any).success === "boolean") {
-              const ok = (out as any).success;
-              if (ok) return null;
-              const err = (out as any).error;
-              return err?.message ?? "Invalid value.";
+              return (out as any).success
+                ? null
+                : ((out as any).error?.message ?? "Invalid value.");
             }
-            return null; // treat anything else as pass
+            return null;
           } catch {
             return "Invalid value.";
           }
-        };
+        });
+        continue;
       }
+      // Unknown validator type -> ignore
+    }
 
-      // Unknown validator type -> no-op
-      return () => null;
-    });
+    map[d.key] = fns;
   }
 
   return map;

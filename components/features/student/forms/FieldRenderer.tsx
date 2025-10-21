@@ -134,12 +134,19 @@ export function FieldRenderer({
       disabledDays = { before: min };
     }
 
+    const dateMs =
+      typeof value === "number"
+        ? value
+        : typeof value === "string"
+          ? coerceAnyDate(value)
+          : undefined;
+
     return (
       <div className="space-y-1.5">
         <FormDatePicker
           label={def.label}
           required
-          date={Number.isFinite(+value) ? parseInt(value) : undefined}
+          date={dateMs}
           setter={(nextMs) => onChange(nextMs ?? 0)}
           className="w-full"
           contentClassName="z-[1100]"
@@ -224,4 +231,22 @@ export function FieldRenderer({
       <Note />
     </div>
   );
+}
+
+// helpers
+function coerceAnyDate(raw: unknown): number | undefined {
+  if (typeof raw === "number") return raw > 0 ? raw : undefined;
+  if (typeof raw !== "string") return undefined;
+  const s = raw.trim();
+  if (!s) return undefined;
+
+  // numeric string (ms epoch)
+  if (/^\d{6,}$/.test(s)) {
+    const n = Number(s);
+    return Number.isFinite(n) && n > 0 ? n : undefined;
+  }
+
+  // ISO/date-like string
+  const ms = Date.parse(s);
+  return Number.isFinite(ms) && ms > 0 ? ms : undefined;
 }

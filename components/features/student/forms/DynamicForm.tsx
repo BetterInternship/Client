@@ -86,36 +86,48 @@ export function DynamicForm({
     if (!toInit.length) return;
 
     for (const d of toInit) {
+      // default to not changing anything
+      let shouldSet = true;
       let v: any = d.value;
 
       switch (d.type) {
         case "number":
           v = String(d.value);
           break;
+
         case "date":
           if (typeof d.value === "string") {
             const ms = Date.parse(d.value);
-            v = Number.isFinite(ms) ? ms : 0;
+            v = Number.isFinite(ms) ? ms : undefined;
           } else if (typeof d.value === "number") {
             v = d.value;
           } else {
-            v = 0;
+            // ⛔️ don’t seed 0 – leave it undefined so autofill can win
+            shouldSet = false;
           }
           break;
+
         case "time":
-          v = String(d.value ?? "");
+          if (d.value == null) {
+            shouldSet = false; // let autofill win
+          } else {
+            v = String(d.value ?? "");
+          }
           break;
+
         case "signature":
           v = Boolean(d.value);
           break;
+
         case "select":
           v = String(d.value);
           break;
+
         default:
           v = String(d.value ?? "");
       }
 
-      onChange(d.key, v);
+      if (shouldSet) onChange(d.key, v);
     }
   }, [bootstrapped, defs]);
 
