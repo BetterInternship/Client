@@ -21,7 +21,7 @@ jobs:
 
       - name: Notify Discord of Initiation
         run: |
-          curl -H "Content-Type: application/json" -d '{"content":"# Prod\n Initiating Deployment..."}' ${{ secrets.DISCORD_WEBHOOK_URL }}
+          curl -H "Content-Type: application/json" -d '{"content":"**Prod** Initiating..."}' ${{ secrets.DISCORD_WEBHOOK_URL }}
 
       - name: Add upstream and fetch
         run: |
@@ -36,16 +36,37 @@ jobs:
       - name: Deploy to Vercel
         id: vercel
         run: |
-          URL=$(npx vercel --prod --token="${{ secrets.VERCEL_TOKEN }}" --name=better-internship-client --confirm)
+          URL=$(npx vercel --prod --token="${{ secrets.VERCEL_TOKEN }}" --name=better-internships-client --confirm)
           echo "url=$URL" >> $GITHUB_OUTPUT
 
       - name: Notify Discord of Success
         if: ${{ success() }}
         run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           COMMIT_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
-          curl -H "Content-Type: application/json" -d '{"content":"# Prod\n✅ Deployment Success\n[${{ github.sha::0:7 }}](${COMMIT_URL})\nhttps://betterinternship.com"}' ${{ secrets.DISCORD_WEBHOOK_URL }}
+          ROLE_ID="1430152257072271376"
+          TIMESTAMP=$(date +%s)
+          MESSAGE="✅ **PROD** Client: [${SHORT_SHA}](${COMMIT_URL}) <t:${TIMESTAMP}:f> <@&${ROLE_ID}>"
 
+          curl -H "Content-Type: application/json" \
+            -d '{
+              "content": "'"$MESSAGE"'",
+              "allowed_mentions": { "roles": ["'"$ROLE_ID"'"] }
+            }' \
+            ${{ secrets.DISCORD_WEBHOOK_URL }}
+        
       - name: Notify Discord of Failure
         if: ${{ failure() }}
         run: |
-          curl -H "Content-Type: application/json" -d '{"content":"# Prod\n❌ Deployment failed\ncommit [${{ github.sha::0:7 }}](${COMMIT_URL})\n@BetterInternship"}' ${{ secrets.DISCORD_WEBHOOK_URL }}
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          COMMIT_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+          ROLE_ID="1430152257072271376"
+          TIMESTAMP=$(date +%s)
+          MESSAGE="❌ **PROD** Client: [${SHORT_SHA}](${COMMIT_URL}) <t:${TIMESTAMP}:f> <@&${ROLE_ID}>"
+
+          curl -H "Content-Type: application/json" \
+            -d '{
+              "content": "'"$MESSAGE"'",
+              "allowed_mentions": { "roles": ["'"$ROLE_ID"'"] }
+            }' \
+            ${{ secrets.DISCORD_WEBHOOK_URL }}
