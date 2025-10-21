@@ -37,7 +37,7 @@ function LogoCarouselBasic() {
       </div>
       <LogoCarousel logos={demoLogos} />
       <div></div>
-    </div
+    </div>
   );
 }
 
