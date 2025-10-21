@@ -1,0 +1,27 @@
+name: Deploy to Vercel + Discord Notification
+
+on:
+  push:
+    branches: [ develop ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Deploy to Vercel
+        id: vercel
+        run: |
+          URL=$(npx vercel --prod --token="${{ secrets.VERCEL_TOKEN }}" --confirm)
+          echo "url=$URL" >> $GITHUB_OUTPUT
+
+      - name: Notify Discord of Success
+        if: ${{ success() }}
+        run: |
+          curl -H "Content-Type: application/json" -d '{"content":"✅ Deployment succeeded: ${{ steps.vercel.outputs.url }}"}' ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+      - name: Notify Discord of Failure
+        if: ${{ failure() }}
+        run: |
+          curl -H "Content-Type: application/json" -d '{"content":"❌ Deployment failed"}' ${{ secrets.DISCORD_WEBHOOK_URL }}
