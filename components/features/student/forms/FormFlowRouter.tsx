@@ -66,6 +66,7 @@ export function FormFlowRouter({
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
 
+  const [selection, setSelection] = useState<string>("");
   const [mainDefs, setMainDefs] = useState<FieldDef[]>([]);
 
   useEffect(() => {
@@ -311,7 +312,7 @@ function coerceForDef(def: FieldDef, raw: unknown) {
     case "number":
       return raw == null ? "" : String(raw);
     case "date":
-      return coerceAnyDate(raw); // <— simplified
+      return coerceAnyDate(raw);
     case "time":
       return raw == null ? "" : String(raw);
     case "signature":
@@ -340,6 +341,7 @@ function coerceAnyDate(raw: unknown): number | undefined {
   const ms = Date.parse(s);
   return Number.isFinite(ms) && ms > 0 ? ms : undefined;
 }
+
 
 function compileValidators(defs: FieldDef[]) {
   const isEmpty = (v: unknown) =>
