@@ -123,19 +123,15 @@ export function FormFlowRouter({
     staleTime: 60_000,
   });
 
-<<<<<<< Updated upstream
   const companiesRaw = data?.employers ?? [];
   const companies: Array<{ id: string; name: string }> = companiesRaw.map(
     (c) => ({ id: String(c.id), name: c.legal_entity_name }),
   );
-=======
   // sync local selection with "entity-id" written by FieldRenderer
-  const [selection, setSelection] = useState<string>("");
   useEffect(() => {
     const id = values["entity-id"] ? String(values["entity-id"]) : undefined;
     if (id && id !== selection) setSelection(id);
   }, [values["entity-id"]]);
->>>>>>> Stashed changes
 
   const validatorFns = useMemo(() => compileValidators(mainDefs), [mainDefs]);
 
