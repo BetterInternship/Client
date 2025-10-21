@@ -117,11 +117,14 @@ export function FormFlowRouter({
   const companiesRaw: Entity[] = data?.employers ?? [];
 
   // sync local selection with "entity-id" written by FieldRenderer
-  const [selection, setSelection] = useState<string>("");
   useEffect(() => {
     const raw = values["entity-id"];
     const id = typeof raw === "string" ? raw : raw == null ? "" : String(raw);
 
+    if (id && id !== selection) setSelection(id);
+  }, [values["entity-id"]]);
+  useEffect(() => {
+    const id = values["entity-id"] ? String(values["entity-id"]) : undefined;
     if (id && id !== selection) setSelection(id);
   }, [values["entity-id"]]);
 
