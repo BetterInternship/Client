@@ -32,7 +32,7 @@ function LogoCarouselBasic() {
     <div className="mt-10">
       <div className="text-center justify-center">
         <h2 className="text-xl font-light tracking-tight leading-none">
-          The best are already here
+          The best are already here.
         </h2>
       </div>
       <LogoCarousel logos={demoLogos} />
