@@ -114,7 +114,6 @@ export function FormFlowRouter({
   const companiesRaw: Entity[] = data?.employers ?? [];
 
   // sync local selection with "entity-id" written by FieldRenderer
-  const [selection, setSelection] = useState<string>("");
   useEffect(() => {
     const raw = values["entity-id"];
     const id = typeof raw === "string" ? raw : raw == null ? "" : String(raw);
