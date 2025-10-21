@@ -43,10 +43,10 @@ jobs:
         if: ${{ success() }}
         run: |
           COMMIT_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
-          curl -H "Content-Type: application/json" -d '{"content":"# Dev\n✅ Deployment Success\n[${{ github.sha::0:7 }}](${COMMIT_URL})\nhttps://dev.betterinternship.com"}' ${{ secrets.DISCORD_WEBHOOK_URL }}
+          curl -H "Content-Type: application/json" -d '{"content":"# Dev\n✅ Deployment Success\n[${{ github.sha }}](${COMMIT_URL})\nhttps://dev.betterinternship.com"}' ${{ secrets.DISCORD_WEBHOOK_URL }}
 
       - name: Notify Discord of Failure
         if: ${{ failure() }}
         run: |
           COMMIT_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
-          curl -H "Content-Type: application/json" -d '{"content":"# Dev\n❌ Deployment Failure\n[${{ github.sha::0:7 }}](${COMMIT_URL})\n@BetterInternship"}' ${{ secrets.DISCORD_WEBHOOK_URL }}
+          curl -H "Content-Type: application/json" -d '{"content":"# Dev\n❌ Deployment Failure\n[${{ github.sha }}](${COMMIT_URL})\n@BetterInternship"}' ${{ secrets.DISCORD_WEBHOOK_URL }}
