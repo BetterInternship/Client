@@ -10,6 +10,8 @@ import { Loader2 } from "lucide-react";
 import { useProfileActions } from "@/lib/api/student.actions.api";
 import { StepComplete } from "./StepComplete";
 import { useProfileData } from "@/lib/api/student.data.api";
+import { buildDerivedValues } from "@/lib/utils/form-utils";
+import { useDbRefs } from "@/lib/db/use-refs";
 
 type SectionKey = "student" | "university" | "entity" | "internship";
 type Mode = "select" | "invite" | "manual";
@@ -55,6 +57,8 @@ export function FormFlowRouter({
   supportsInvite?: boolean;
   supportsManual?: boolean;
 }) {
+  const { to_college_name } = useDbRefs(); // TODO: Remove if hard coded derivations not needed anymore
+
   const { update } = useProfileActions();
   const { data: profileData } = useProfileData();
 
@@ -195,7 +199,14 @@ export function FormFlowRouter({
         ...flattenProfileShape(finalFlat),
       };
 
-      console.log("🧾 Submitting flat payload:", finalFlat);
+      // TODO: Remove if hard coded derivations not needed anymore
+      const collegeName =
+        to_college_name(finalFlat["student-college"] ?? null, null) ??
+        undefined;
+
+      const finalWithDerived = buildDerivedValues(finalFlat, { collegeName });
+
+      console.log("🧾 Submitting flat payload:", finalWithDerived);
 
       try {
         setBusy(true);
@@ -205,7 +216,7 @@ export function FormFlowRouter({
         const route = withEsign ? "submitSignedForm" : "submitPendingForm";
         await UserService[route]({
           formName,
-          values: finalFlat,
+          values: finalWithDerived, // TODO: switch to `finalFlat` if derivations not needed anymore
           parties: {
             userId: profileData.id,
             employerId: entityId || undefined,
@@ -340,7 +351,6 @@ function coerceAnyDate(raw: unknown): number | undefined {
   const ms = Date.parse(s);
   return Number.isFinite(ms) && ms > 0 ? ms : undefined;
 }
-
 
 function compileValidators(defs: FieldDef[]) {
   const isEmpty = (v: unknown) =>
