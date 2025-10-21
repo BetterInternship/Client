@@ -19,6 +19,10 @@ jobs:
           ref: develop
           fetch-depth: 0
 
+      - name: Notify Discord of Initiation
+        run: |
+          curl -H "Content-Type: application/json" -d '{"content":"# Dev\n Initiating Deployment..."}' ${{ secrets.DISCORD_WEBHOOK_URL }}
+
       - name: Add upstream and fetch
         run: |
           git remote add upstream https://github.com/BetterInternship/Client.git
@@ -43,4 +47,4 @@ jobs:
       - name: Notify Discord of Failure
         if: ${{ failure() }}
         run: |
-          curl -H "Content-Type: application/json" -d '{"content":"# Dev\n ❌ Deployment failed"}' ${{ secrets.DISCORD_WEBHOOK_URL }}
+          curl -H "Content-Type: application/json" -d '{"content":"# Dev\n ❌ Deployment failed @BetterInternship"}' ${{ secrets.DISCORD_WEBHOOK_URL }}
