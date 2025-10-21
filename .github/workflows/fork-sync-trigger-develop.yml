@@ -21,7 +21,7 @@ jobs:
 
       - name: Notify Discord of Initiation
         run: |
-          curl -H "Content-Type: application/json" -d '{"content":"**Dev** Initiating..."}' ${{ secrets.DISCORD_WEBHOOK_URL }}
+          curl -H "Content-Type: application/json" -d '{"content":"**DEV** Initiating..."}' ${{ secrets.DISCORD_WEBHOOK_URL }}
 
       - name: Add upstream and fetch
         run: |
@@ -46,7 +46,7 @@ jobs:
           COMMIT_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
           ROLE_ID="1430152257072271376"
           TIMESTAMP=$(date +%s)
-          MESSAGE="✅ **DEV** Client: [${SHORT_SHA}](${COMMIT_URL}) <t:${TIMESTAMP}:f> <@&${ROLE_ID}>"
+          MESSAGE="✅ **DEV** Client: [${SHORT_SHA}](${COMMIT_URL}) <t:${TIMESTAMP}:R> <@&${ROLE_ID}>"
 
           curl -H "Content-Type: application/json" \
             -d '{
@@ -62,7 +62,7 @@ jobs:
           COMMIT_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
           ROLE_ID="1430152257072271376"
           TIMESTAMP=$(date +%s)
-          MESSAGE="❌ **DEV** Client: [${SHORT_SHA}](${COMMIT_URL}) <t:${TIMESTAMP}:f> <@&${ROLE_ID}>"
+          MESSAGE="❌ **DEV** Client: [${SHORT_SHA}](${COMMIT_URL}) <t:${TIMESTAMP}:R> <@&${ROLE_ID}>"
 
           curl -H "Content-Type: application/json" \
             -d '{
