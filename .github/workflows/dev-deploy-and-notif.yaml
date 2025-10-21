@@ -3,6 +3,7 @@ name: Deploy to Vercel + Discord Notification
 on:
   push:
     branches: [ develop ]
+  workflow_dispatch:
 
 jobs:
   deploy:
