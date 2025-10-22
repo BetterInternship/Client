@@ -27,7 +27,9 @@ export function GenerateButtons({
   const withEsignLabel = isStudentMoa
     ? "Generate & request e-sign"
     : "Generate with e-sign";
-  const withoutEsignLabel = "Generate without e-sign";
+  const withoutEsignLabel = isStudentMoa
+    ? "Generate form with student information"
+    : "Generate without e-sign";
 
   const withEsignLoading = "Requesting e-sign...";
   const withoutEsignLoading = "Generating...";
