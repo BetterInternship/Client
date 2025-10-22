@@ -60,10 +60,12 @@ type FieldRoles = Record<string, { for?: FilledBy }>;
  * All validators are included.
  */
 interface IJoinedField extends Omit<IField, "validators" | "transformers"> {
-  value: undefined;
+  value?: any;
+  params?: Record<string, any>;
   validators: ZodType[];
   transformers: ZodType[];
 }
+
 
 // Gets field keys by role
 function fieldKeysByRole(
@@ -236,7 +238,7 @@ async function fetchFieldDefs(
     keys.map(async (k) => {
       const field = await fieldFetcher.fetch(k); // IField | null
       const name = field?.name ?? k;
-      const fp = formParams?.[name];
+      const fp = formParams?.[name]; // per-form overrides
 
       const validators = await mapValidators(
         field?.validators ?? undefined,
@@ -253,12 +255,14 @@ async function fetchFieldDefs(
         type: field?.type ?? "text",
         label: field?.label ?? "",
         value: fp?.value ?? undefined, // seed value if provided
-        validators, // <- ZodType[]
-        transformers, // <- ZodType[]
-      };
+        params: fp?.params ?? undefined, // <- **attach params here**
+        validators,
+        transformers,
+      } as IJoinedField;
     }),
   );
 }
+
 
 /**
  * Has an implied eval, hence the name.

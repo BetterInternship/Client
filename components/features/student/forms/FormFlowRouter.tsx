@@ -11,6 +11,7 @@ import { useProfileData } from "@/lib/api/student.data.api";
 import { buildDerivedValues } from "@/lib/utils/form-utils";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { GenerateButtons } from "./GenerateFormButtons";
+import { addDays } from "date-fns";
 
 type SectionKey = "student" | "university" | "entity" | "internship";
 type Mode = "select" | "invite" | "manual";
@@ -26,6 +27,7 @@ export type FieldDef = {
   options?: Array<{ id: string | number; name: string }>;
   validators?: Array<z.ZodTypeAny | RegExp | ((v: unknown) => unknown)>;
   section: SectionKey;
+  params?: Record<string, any>;
 };
 
 type Errors = Record<string, string>;
@@ -138,11 +140,123 @@ export function FormFlowRouter({
     }
   }, []);
 
+  // TODO: UGH REFACTOR SOON
   const validateNow = useCallback(() => {
     const next = validateAll(mainDefs, values, validatorFns);
+
+    const getValMs = (key: string) =>
+      coerceAnyDate(values[key] ?? values[key.replace(/-/g, "_")]);
+
+    const coerceISOms = (s?: string) => {
+      if (!s) return undefined;
+      const ms = Date.parse(s);
+      return Number.isFinite(ms) ? ms : undefined;
+    };
+
+    const setErr = (key: string, msg: string) => {
+      next[key] = msg;
+      next[key.replace(/-/g, "_")] = msg; // ensure renderer sees it either way
+    };
+
+    // global min (today + 7)
+    const todayMid = new Date();
+    todayMid.setHours(0, 0, 0, 0);
+    const globalMinMs = addDays(todayMid, 7).getTime();
+
+    // defs (support dash/underscore)
+    const startDef = mainDefs.find(
+      (d) =>
+        d.key === "internship-start-date" || d.key === "internship_start_date",
+    );
+    const endDef = mainDefs.find(
+      (d) => d.key === "internship-end-date" || d.key === "internship_end_date",
+    );
+
+    const buildBounds = (def?: FieldDef) => {
+      const p = def?.params ?? {};
+      const minOffset = Number.isFinite(p.minOffsetDays) ? p.minOffsetDays : 7;
+      const maxOffset = Number.isFinite(p.maxOffsetDays)
+        ? p.maxOffsetDays
+        : undefined;
+
+      const minFromOffsetMs = addDays(todayMid, minOffset).getTime();
+      const maxFromOffsetMs =
+        maxOffset != null ? addDays(todayMid, maxOffset).getTime() : undefined;
+
+      const minFromISOms = coerceISOms(p.minDateISO);
+      const maxFromISOms = coerceISOms(p.maxDateISO);
+
+      // final min = most restrictive (largest)
+      const minMs = Math.max(
+        ...[globalMinMs, minFromOffsetMs, minFromISOms].filter(
+          (n): n is number => typeof n === "number" && Number.isFinite(n),
+        ),
+      );
+
+      // final max = most restrictive (smallest)
+      const maxCandidates = [maxFromOffsetMs, maxFromISOms].filter(
+        (n): n is number => typeof n === "number" && Number.isFinite(n),
+      );
+      const maxMs = maxCandidates.length
+        ? Math.min(...maxCandidates)
+        : undefined;
+
+      return { minMs, maxMs };
+    };
+
+    // START
+    if (startDef) {
+      const startKey = startDef.key;
+      const startMs = getValMs(startKey);
+      const { minMs: startMinMs, maxMs: startMaxMs } = buildBounds(startDef);
+
+      if (startMs != null) {
+        if (startMs < startMinMs) {
+          setErr(
+            startKey,
+            `Start date must be on or after ${new Date(startMinMs).toLocaleDateString()}.`,
+          );
+        }
+        if (startMaxMs != null && startMs > startMaxMs) {
+          setErr(
+            startKey,
+            `Start date must be on or before ${new Date(startMaxMs).toLocaleDateString()}.`,
+          );
+        }
+      }
+    }
+
+    // END
+    if (endDef) {
+      const endKey = endDef.key;
+      const endMs = getValMs(endKey);
+      const { minMs: endMinMs, maxMs: endMaxMs } = buildBounds(endDef);
+
+      if (endMs != null) {
+        if (endMs < endMinMs) {
+          setErr(
+            endKey,
+            `End date must be on or after ${new Date(endMinMs).toLocaleDateString()}.`,
+          );
+        }
+        if (endMaxMs != null && endMs > endMaxMs) {
+          setErr(
+            endKey,
+            `End date must be on or before ${new Date(endMaxMs).toLocaleDateString()}.`,
+          );
+        }
+      }
+
+      // cross-field end ≥ start
+      const startMs = startDef ? getValMs(startDef.key) : undefined;
+      if (startMs != null && endMs != null && endMs < startMs) {
+        setErr(endKey, "End date must be on or after your start date.");
+      }
+    }
     setErrors(next);
     return next;
   }, [mainDefs, values, validatorFns]);
+  console.log("MainDefs", mainDefs);
 
   const handleSubmit = useCallback(
     async (withEsign?: boolean) => {
@@ -265,11 +379,6 @@ export function FormFlowRouter({
           formKey={formName}
           handleSubmit={handleSubmit}
           busy={busy}
-          esignPreferredForms={[
-            "it-student-moa",
-            "ct-student-moa",
-            "st-student-moa",
-          ]}
         />
       </div>
     </div>
@@ -439,11 +548,6 @@ function validateAll(
     next[d.key] = firstErr || "";
   }
   return next;
-}
-
-// only seed when empty/undefined
-function shouldSeed(current: unknown) {
-  return current === undefined || current === "";
 }
 
 // Flatten a possibly sectioned shape into a plain flat map of strings

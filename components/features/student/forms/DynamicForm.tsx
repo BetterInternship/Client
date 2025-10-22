@@ -50,6 +50,7 @@ export function DynamicForm({
         validators: f.validators ?? [],
         section: f.section as Section,
         options: f.options as { value: string; label: string }[],
+        params: f.params ?? undefined,
       })),
     [rawFields],
   );
@@ -260,6 +261,7 @@ const CompanySectionWithEntityMode = memo(
                   onChange={(v) => onChange(def.key, v)}
                   error={errors[def.key]}
                   showError={showErrors}
+                  allValues={values}
                 />
               </div>
             );
@@ -280,6 +282,7 @@ const CompanySectionWithEntityMode = memo(
                 onChange={(v) => onChange(def.key, v)}
                 error={errors[def.key]}
                 showError={showErrors}
+                allValues={values}
               />
 
               {showFriendlyHelper && (
@@ -380,6 +383,7 @@ const FormSection = memo(function FormSection({
             onChange={(v) => onChange(def.key, v)}
             error={errors[def.key]}
             showError={showErrors}
+            allValues={values}
           />
         </div>
       ))}

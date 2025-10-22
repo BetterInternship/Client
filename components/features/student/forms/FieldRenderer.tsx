@@ -41,6 +41,7 @@ export type FieldDef = {
   validators: z.ZodTypeAny[];
   section?: Section;
   value?: string;
+  params?: Record<string, any>;
 };
 
 export function FieldRenderer({
@@ -49,12 +50,14 @@ export function FieldRenderer({
   onChange,
   error,
   showError,
+  allValues,
 }: {
   def: FieldDef;
   value: string;
   onChange: (v: any) => void;
   error?: string;
   showError?: boolean;
+  allValues?: Record<string, any>;
 }) {
   // placeholder and error
   const Note = () => {
@@ -122,16 +125,77 @@ export function FieldRenderer({
 
   // date
   if (def.type === "date") {
-    // Example: disable dates before today+7 for specific keys
-    let disabledDays: { before?: Date } | null = null;
-    if (
-      def.key === "internship_start_date" ||
-      def.key === "internship_end_date"
-    ) {
-      const t = new Date();
-      const min = new Date(t.getFullYear(), t.getMonth(), t.getDate());
-      min.setDate(min.getDate() + 7);
-      disabledDays = { before: min };
+    // Normalize keys (your DB sometimes uses dashes; code often uses underscores)
+    const key = String(def.key);
+    const isStart =
+      key === "internship-start-date" || key === "internship_start_date";
+    const isEnd =
+      key === "internship-end-date" || key === "internship_end_date";
+
+    // ——— Params you can set in DB ———
+    // params example (any subset is fine):
+    // {
+    //   "minOffsetDays": 7,             // earliest = today + 7
+    //   "maxOffsetDays": 180,           // latest  = today + 180
+    //   "minDateISO": "2026-01-05",     // absolute earliest
+    //   "maxDateISO": "2026-04-11",     // absolute latest
+    //   "notBeforeField": "internship-start-date" // end >= start
+    // }
+    const p = def.params ?? {};
+
+    // Defaults: if you don't set anything, start/end both default to +7 days
+    const defaultMinOffset = isStart || isEnd ? 7 : undefined;
+
+    // Build min/max from params
+    const today = new Date();
+    const todayMid = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+    );
+
+    const minFromOffset =
+      (Number.isFinite(p.minOffsetDays) ? p.minOffsetDays : defaultMinOffset) !=
+      null
+        ? addDays(todayMid, (p.minOffsetDays ?? defaultMinOffset) as number)
+        : undefined;
+
+    const maxFromOffset = Number.isFinite(p.maxOffsetDays)
+      ? addDays(todayMid, p.maxOffsetDays)
+      : undefined;
+
+    const minFromISO = coerceISO(p.minDateISO);
+    const maxFromISO = coerceISO(p.maxDateISO);
+
+    // Cross-field: notBeforeField (e.g., end >= start)
+    const notBeforeKey: string | undefined =
+      p.notBeforeField ?? (isEnd ? "internship-start-date" : undefined); // sensible default for end-date
+    const otherValMs =
+      notBeforeKey && allValues
+        ? coerceAnyDate(
+            allValues[notBeforeKey] ??
+              allValues[notBeforeKey.replace(/-/g, "_")],
+          )
+        : undefined;
+    const minFromOther = otherValMs ? new Date(otherValMs) : undefined;
+
+    // Final min/max (take the most restrictive min and most restrictive max)
+    const minDate = [minFromOffset, minFromISO, minFromOther]
+      .filter(Boolean)
+      .sort((a: Date, b: Date) => a.getTime() - b.getTime())[0] as
+      | Date
+      | undefined;
+
+    const maxDate = [maxFromOffset, maxFromISO]
+      .filter(Boolean)
+      .sort((a: Date, b: Date) => b.getTime() - a.getTime())[0] as
+      | Date
+      | undefined;
+
+    // Build disabledDays for your FormDatePicker
+    const disabledDays: Array<{ before?: Date; after?: Date }> = [];
+    if (minDate || maxDate) {
+      disabledDays.push({ before: minDate, after: maxDate });
     }
 
     const dateMs =
@@ -141,18 +205,24 @@ export function FieldRenderer({
           ? coerceAnyDate(value)
           : undefined;
 
+    // Optional: clamp bad seeded values (keeps UX clean if saved value violates new rules)
+    const clampedMs =
+      dateMs != null ? clampDateMs(dateMs, minDate, maxDate) : undefined;
+
+    const displayMs = clampedMs ?? dateMs;
+
     return (
       <div className="space-y-1.5">
         <FormDatePicker
           label={def.label}
           required
-          date={dateMs}
+          date={displayMs}
           setter={(nextMs) => onChange(nextMs ?? 0)}
           className="w-full"
           contentClassName="z-[1100]"
           placeholder="Select date"
           autoClose
-          disabledDays={disabledDays ?? []}
+          disabledDays={disabledDays}
           format={(d) =>
             d.toLocaleDateString(undefined, {
               year: "numeric",
@@ -186,7 +256,7 @@ export function FieldRenderer({
   // signature (checkbox)
   const asBool = (v: any) => v === true;
 
-  if (def.type === "signature") {
+  if (def.type === "signature" || def.type === "checkbox") {
     const checked = asBool(value);
     return (
       <div className="space-y-1.5">
@@ -249,4 +319,20 @@ function coerceAnyDate(raw: unknown): number | undefined {
   // ISO/date-like string
   const ms = Date.parse(s);
   return Number.isFinite(ms) && ms > 0 ? ms : undefined;
+}
+
+function addDays(d: Date, n: number) {
+  const x = new Date(d);
+  x.setDate(x.getDate() + n);
+  return x;
+}
+function coerceISO(s?: string) {
+  if (!s) return undefined;
+  const ms = Date.parse(s);
+  return Number.isFinite(ms) ? new Date(ms) : undefined;
+}
+function clampDateMs(ms: number, min?: Date, max?: Date) {
+  if (min && ms < min.getTime()) return min.getTime();
+  if (max && ms > max.getTime()) return max.getTime();
+  return ms;
 }
