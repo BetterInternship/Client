@@ -250,16 +250,24 @@ export const FormCheckbox = ({
           name={label ?? ""}
           checked={checked}
           className={cn(
-            "flex flex-row items-center justify-center border rounded-[0.33em] w-7 h-7",
+            "inline-flex items-center justify-center rounded-[0.33em] border aspect-square w-6 h-6 sm:w-5 sm:h-5",
             checked
               ? "border-primary border-opacity-85 bg-blue-200"
               : "border-gray-300 bg-gray-50",
           )}
           onCheckedChange={(checked) => setter && setter(checked)}
         >
-          {checked && <Check className="text-primary opacity-75" />}
+          {checked && <Check className="text-primary opacity-75 h-4 w-4" />}
         </Checkbox>
-        {sentence && <div className="text-xs text-gray-500">{sentence}</div>}
+        {sentence && (
+          <div
+            className="text-xs text-gray-500 cursor-pointer select-none"
+            onClick={() => setter?.(!checked)}
+            role="button"
+          >
+            {sentence}
+          </div>
+        )}
       </div>
     </div>
   );
