@@ -184,16 +184,6 @@ export function DynamicForm({
 
           <FormSection
             formKey={form}
-            title="Student Information"
-            defs={studentDefs}
-            values={values}
-            onChange={onChange}
-            errors={errors}
-            showErrors={showErrors}
-          />
-
-          <FormSection
-            formKey={form}
             title="Internship Information"
             defs={internshipDefs}
             values={values}
@@ -206,6 +196,16 @@ export function DynamicForm({
             formKey={form}
             title="University Information"
             defs={universityDefs}
+            values={values}
+            onChange={onChange}
+            errors={errors}
+            showErrors={showErrors}
+          />
+
+          <FormSection
+            formKey={form}
+            title="Student Information"
+            defs={studentDefs}
             values={values}
             onChange={onChange}
             errors={errors}
