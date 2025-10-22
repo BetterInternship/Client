@@ -67,22 +67,22 @@ export default function Page() {
   const fields: RecipientFieldDef[] = useMemo(
     () =>
       (defs ?? []).map((f) => ({
-        id: (f as any).id ?? f.name ?? crypto.randomUUID(),
+        id: f.id ?? f.name ?? crypto.randomUUID(),
         key: f.name ?? f.label ?? "",
         label: f.label ?? f.name ?? "",
         type: f.type ?? "text",
-        section: (f.section ?? null) as any,
-        placeholder: (f as any).placeholder,
-        helper: (f as any).helper,
-        maxLength: (f as any).maxLength,
-        options: Array.isArray((f as any).options)
-          ? (f as any).options.map((o: any) => ({
-              id: o?.id ?? o?.value ?? String(o),
-              name: o?.name ?? o?.label ?? String(o),
+        section: f.section ?? null,
+        placeholder: f.placeholder,
+        helper: f.helper,
+        maxLength: f.maxLength,
+        options: Array.isArray(f.options)
+          ? f.options.map((o) => ({
+              value: o?.value,
+              label: o?.label,
             }))
           : undefined,
         validators: (f.validators as unknown as ZodTypeAny[]) ?? [],
-        params: (f as any).params ?? undefined,
+        params: f.params ?? undefined,
       })),
     [defs],
   );
@@ -109,21 +109,22 @@ export default function Page() {
   const sectionTitleMap =
     audience === "company"
       ? {
-          entity: "Company Details",
+          entity: "Company Information",
           student: null,
           guardian: null,
           university: null,
+          internship: "Internship Information",
         }
       : audience === "student-guardian"
         ? {
-            student: "Applicant Details",
-            guardian: "Guardian Details",
+            student: "Applicant Information",
+            guardian: "Guardian Information",
             entity: null,
             university: null,
           }
         : {
             // university
-            university: "University Details",
+            university: "University Information",
             student: null,
             guardian: null,
             entity: null,

@@ -18,6 +18,7 @@ export type RecipientFieldDef = {
   options?: Array<{ id: string | number; name: string }>;
   validators?: z.ZodTypeAny[];
   section?: string;
+  params?: Record<string, any>;
 };
 
 export function RecipientDynamicForm({
@@ -51,16 +52,24 @@ export function RecipientDynamicForm({
         type: f.type as any,
         placeholder: f.placeholder,
         helper: f.helper,
-        max_length: f.maxLength,
-        options: f.options,
-        validators: (f.validators ?? []) as any,
-        section: sec as any,
+        maxLength: f.maxLength,
+        options: f.options as any,
+        validators: f.validators ?? [],
+        params: f.params,
+        section: sec,
       });
     }
     return by;
   }, [fields]);
 
-  const order = ["guardian", "entity", "student", "university", "details"];
+  const order = [
+    "internship",
+    "guardian",
+    "entity",
+    "student",
+    "university",
+    "details",
+  ];
   const orderedKeys = useMemo(() => {
     const keys = Object.keys(grouped);
     const known = order.filter((k) => keys.includes(k));
