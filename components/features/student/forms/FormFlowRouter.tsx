@@ -164,13 +164,8 @@ export function FormFlowRouter({
     const globalMinMs = addDays(todayMid, 7).getTime();
 
     // defs (support dash/underscore)
-    const startDef = mainDefs.find(
-      (d) =>
-        d.key === "internship-start-date" || d.key === "internship_start_date",
-    );
-    const endDef = mainDefs.find(
-      (d) => d.key === "internship-end-date" || d.key === "internship_end_date",
-    );
+    const startDef = mainDefs.find((d) => d.key === "internship-start-date");
+    const endDef = mainDefs.find((d) => d.key === "internship-end-date");
 
     const buildBounds = (def?: FieldDef) => {
       const p = def?.params ?? {};
@@ -252,7 +247,107 @@ export function FormFlowRouter({
       if (startMs != null && endMs != null && endMs < startMs) {
         setErr(endKey, "End date must be on or after your start date.");
       }
+
+      // ---- HOURS MINIMUM (blocking) ----
+      const hoursRaw = values["internship-hours"];
+      const hoursNum = Number(hoursRaw);
+
+      if (Number.isFinite(hoursNum)) {
+        if (hoursNum < 8) {
+          const msg = "Internship hours must be at least 8.";
+          next["internship-hours"] = msg;
+        }
+      }
+
+      // ---- HOURS vs DATE RANGE (blocking) ----
+      const startMsFinal = startDef ? getValMs(startDef.key) : undefined;
+      const endMsFinal = endDef ? getValMs(endDef.key) : undefined;
+
+      if (
+        Number.isFinite(hoursNum) &&
+        hoursNum > 0 &&
+        startMsFinal != null &&
+        endMsFinal != null
+      ) {
+        const weekdays = countWeekdaysInclusive(startMsFinal, endMsFinal);
+        const maxPossibleHours = weekdays * 8; // 8h/day, Mon–Fri
+
+        if (hoursNum > maxPossibleHours) {
+          const msg = `With your selected dates, you can complete at most ${maxPossibleHours} hours (8h/day, Mon–Fri). Reduce hours or extend your date range.`;
+          next["internship-hours"] = msg;
+        }
+      }
     }
+
+    // ---- TIME PARSE + DAILY 8H MIN (blocking) ----
+    const parseHHMM = (s?: unknown): number | undefined => {
+      if (typeof s !== "string") return undefined;
+      const m = s.trim().match(/^(\d{1,2}):(\d{2})$/);
+      if (!m) return undefined;
+      const hh = Number(m[1]),
+        mm = Number(m[2]);
+      if (
+        !Number.isFinite(hh) ||
+        !Number.isFinite(mm) ||
+        hh < 0 ||
+        hh > 23 ||
+        mm < 0 ||
+        mm > 59
+      ) {
+        return undefined;
+      }
+      return hh * 60 + mm; // minutes since midnight
+    };
+
+    // support dash/underscore keys
+    const startTimeRaw = values["internship-start-time"];
+    const endTimeRaw = values["internship-end-time"];
+
+    const startMin = parseHHMM(startTimeRaw);
+    const endMin = parseHHMM(endTimeRaw);
+
+    // only validate if both times present & valid
+    if (startMin != null && endMin != null) {
+      if (endMin <= startMin) {
+        const msg = "End time must be after start time.";
+        next["internship-end-time"] = msg;
+      } else {
+        const minutes = endMin - startMin;
+        const hours = minutes / 60;
+        if (hours < 8) {
+          const msg = "Daily schedule must be at least 8 hours.";
+          next["internship-end-time"] = msg;
+        }
+      }
+    }
+
+    // ---- HOURS vs DATE RANGE (blocking) ----
+    const hoursRaw = values["internship-hours"];
+    const hoursNum = Number(hoursRaw);
+
+    const startMsFinal = startDef ? getValMs(startDef.key) : undefined;
+    const endMsFinal = endDef ? getValMs(endDef.key) : undefined;
+
+    if (
+      Number.isFinite(hoursNum) &&
+      hoursNum > 0 &&
+      startMsFinal != null &&
+      endMsFinal != null &&
+      startMin != null &&
+      endMin != null &&
+      endMin > startMin
+    ) {
+      // compute daily hours from time range, then cap to 8 because the policy is "assume 8 hours/day"
+      const dailyHours = Math.min(8, (endMin - startMin) / 60);
+      const weekdays = countWeekdaysInclusive(startMsFinal, endMsFinal);
+      const maxPossibleHours = weekdays * dailyHours;
+
+      if (hoursNum > maxPossibleHours) {
+        const msg = `With your selected dates and daily schedule, you can complete at most ${Math.floor(maxPossibleHours)} hours. Reduce hours or extend your date range.`;
+        next["internship-hours"] = msg;
+      }
+    }
+
     setErrors(next);
     return next;
   }, [mainDefs, values, validatorFns]);
@@ -588,4 +683,19 @@ function flattenProfileShape(input: unknown): Record<string, string> {
   }
 
   return out;
+}
+
+function countWeekdaysInclusive(startMs: number, endMs: number): number {
+  if (endMs < startMs) return 0;
+  let d = new Date(startMs);
+  d.setHours(0, 0, 0, 0);
+  const end = new Date(endMs);
+  end.setHours(0, 0, 0, 0);
+  let count = 0;
+  while (d.getTime() <= end.getTime()) {
+    const day = d.getDay(); // 0=Sun .. 6=Sat
+    if (day !== 0 && day !== 6) count++;
+    d.setDate(d.getDate() + 1);
+  }
+  return count;
 }
