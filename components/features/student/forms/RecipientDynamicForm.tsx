@@ -64,7 +64,7 @@ export function RecipientDynamicForm({
 
   const order = [
     "internship",
-    "guardian",
+    "student-guardian",
     "entity",
     "student",
     "university",

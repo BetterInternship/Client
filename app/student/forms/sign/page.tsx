@@ -14,7 +14,7 @@ import {
 import { useDynamicFormSchema } from "@/lib/db/use-moa-backend";
 import { UserService } from "@/lib/api/services";
 
-type Audience = "company" | "student-guardian" | "university";
+type Audience = "entity" | "student-guardian" | "university";
 type Party = "entity" | "student-guardian" | "university";
 type Role = "entity" | "student-guardian" | "university";
 
@@ -22,8 +22,8 @@ function normalizeAudience(raw: string | null): Audience {
   const s = (raw || "").trim().toLowerCase();
   if (s === "guardian" || s === "student-guardian") return "student-guardian";
   if (s === "university" || s === "uni" || s === "college") return "university";
-  // default to company
-  return "company";
+  // default to entity
+  return "entity";
 }
 
 function mapAudienceToRoleAndParty(aud: Audience): {
@@ -31,7 +31,7 @@ function mapAudienceToRoleAndParty(aud: Audience): {
   party: Party;
 } {
   switch (aud) {
-    case "company":
+    case "entity":
       return { role: "entity", party: "entity" };
     case "student-guardian":
       return { role: "student-guardian", party: "student-guardian" };
@@ -106,29 +106,13 @@ export default function Page() {
   };
 
   // Section titles per audience
-  const sectionTitleMap =
-    audience === "company"
-      ? {
-          entity: "Company Information",
-          student: null,
-          guardian: null,
-          university: null,
-          internship: "Internship Information",
-        }
-      : audience === "student-guardian"
-        ? {
-            student: "Applicant Information",
-            guardian: "Guardian Information",
-            entity: null,
-            university: null,
-          }
-        : {
-            // university
-            university: "University Information",
-            student: null,
-            guardian: null,
-            entity: null,
-          };
+  const sectionTitleMap = {
+    "entity": "Entity Information",
+    "university": "University Information",
+    "student": "Student Information",
+    "student-guardian": "Guardian Information",
+    "internship": "Internship Information",
+  };
 
   async function handleSubmit() {
     setSubmitted(true);
@@ -212,8 +196,8 @@ export default function Page() {
           </h1>
           <p className="text-gray-600 text-sm">
             Please provide the required{" "}
-            {audience === "company"
-              ? "company"
+            {audience === "entity"
+              ? "entity"
               : audience === "student-guardian"
                 ? "guardian"
                 : "university"}{" "}
