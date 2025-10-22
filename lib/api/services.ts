@@ -207,6 +207,16 @@ export const UserService = {
     );
   },
 
+  async getPendingInformation(pendingDocumentId: string) {
+    const res = await APIClient.get<{ pendingInfo?: any } & FetchResponse>(
+      APIRouteBuilder("forms")
+        .r("pending")
+        .p({ pendingDocumentId })
+        .build({ moaServer: true }),
+    );
+    return { ...res, data: res.pendingInfo };
+  },
+
   // TODO: Do submit prefilled form
 
   async getOutsideEntityFormFields(data: { formName: string; party: string }) {

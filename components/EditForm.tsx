@@ -245,7 +245,7 @@ export const FormCheckbox = ({
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
-      <div className="flex gap-2 items-center">
+      <div className="flex gap-2 sm:items-center">
         <Checkbox
           name={label ?? ""}
           checked={checked}

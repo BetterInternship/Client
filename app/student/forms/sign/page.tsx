@@ -6,13 +6,22 @@ import { useSearchParams } from "next/navigation";
 import { z, ZodTypeAny } from "zod";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, ShieldCheck } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { CheckCircle2, Loader2, ShieldCheck } from "lucide-react";
 import {
   RecipientDynamicForm,
   type RecipientFieldDef,
 } from "@/components/features/student/forms/RecipientDynamicForm";
 import { useDynamicFormSchema } from "@/lib/db/use-moa-backend";
 import { UserService } from "@/lib/api/services";
+import { useQuery } from "@tanstack/react-query";
 
 type Audience = "entity" | "student-guardian" | "university";
 type Party = "entity" | "student-guardian" | "university";
@@ -22,7 +31,6 @@ function normalizeAudience(raw: string | null): Audience {
   const s = (raw || "").trim().toLowerCase();
   if (s === "guardian" || s === "student-guardian") return "student-guardian";
   if (s === "university" || s === "uni" || s === "college") return "university";
-  // default to entity
   return "entity";
 }
 
@@ -48,7 +56,7 @@ export default function Page() {
   const { role, party } = mapAudienceToRoleAndParty(audience);
 
   const formName = (params.get("form") || "").trim();
-  const pendingDocumentId = (params.get("pending") || "").trim(); // required to submit
+  const pendingDocumentId = (params.get("pending") || "").trim();
   const signatoryName = (params.get("name") || "").trim();
   const signatoryTitle = (params.get("title") || "").trim();
 
@@ -56,7 +64,22 @@ export default function Page() {
   const studentName = params.get("student") || "The student";
   const templateHref = params.get("template") || "";
 
-  // Pull defs (evaluated validators already included)
+  // Pending document preview
+  const {
+    data: pendingRes,
+    isLoading: loadingPending,
+    error: pendingErr,
+  } = useQuery({
+    queryKey: ["pending-info", pendingDocumentId],
+    queryFn: () => UserService.getPendingInformation(pendingDocumentId),
+    staleTime: 60_000,
+    enabled: !!pendingDocumentId,
+  });
+
+  const pendingInfo = (pendingRes as any)?.pendingInfo ?? null;
+  const pendingUrl = pendingInfo?.latest_document_url;
+
+  // Pull defs (validators already evaluated on backend)
   const {
     fields: defs,
     isLoading,
@@ -92,8 +115,14 @@ export default function Page() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [serverMsg, setServerMsg] = useState<string | null>(null);
-  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+
+  // success modal state (forms-style)
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [success, setSuccess] = useState<{
+    title: string;
+    body: string;
+    href?: string;
+  } | null>(null);
 
   const setField = (k: string, v: any) => setValues((p) => ({ ...p, [k]: v }));
 
@@ -107,29 +136,20 @@ export default function Page() {
 
   // Section titles per audience
   const sectionTitleMap = {
-    "entity": "Entity Information",
-    "university": "University Information",
-    "student": "Student Information",
+    entity: "Entity Information",
+    university: "University Information",
+    student: "Student Information",
     "student-guardian": "Guardian Information",
-    "internship": "Internship Information",
+    internship: "Internship Information",
   };
 
   async function handleSubmit() {
     setSubmitted(true);
-    setServerMsg(null);
-    setSignedUrl(null);
 
-    if (!formName) {
-      setServerMsg("Missing form name.");
-      return;
-    }
-    if (!pendingDocumentId) {
-      setServerMsg("Missing pending document id.");
-      return;
-    }
+    if (!formName || !pendingDocumentId) return;
     if (!validateNow()) return;
 
-    // Flatten only the fields present on this page to strings
+    // Flatten the fields present on this page
     const flatValues: Record<string, string> = {};
     for (const f of fields) {
       const v = values[f.key];
@@ -144,21 +164,35 @@ export default function Page() {
         pendingDocumentId,
         signatoryName,
         signatoryTitle,
-        party, // "entity" | "student-guardian" | "university"
+        party,
         values: flatValues,
       });
 
       const data = (res as any)?.data ?? res;
+
       if (data?.signedDocumentUrl) {
-        setSignedUrl(data.signedDocumentUrl);
-        setServerMsg("Document fully signed. You can download it below.");
-      } else if (data?.message) {
-        setServerMsg(data.message);
+        setSuccess({
+          title: "Submitted & Signed",
+          body: "This document is now fully signed. You can download the signed copy below.",
+          href: data.signedDocumentUrl,
+        });
       } else {
-        setServerMsg("Submitted successfully.");
+        setSuccess({
+          title: "Details Submitted",
+          body:
+            data?.message ??
+            "Thanks! Your details were submitted. We’ll notify you when the document is ready.",
+        });
       }
+      setSuccessOpen(true);
     } catch (e: any) {
-      setServerMsg(e?.message ?? "Submission failed.");
+      // Error as a blocking alert-style modal to keep UX consistent
+      setSuccess({
+        title: "Submission Failed",
+        body:
+          e?.message ?? "Something went wrong while submitting your details.",
+      });
+      setSuccessOpen(true);
     } finally {
       setBusy(false);
     }
@@ -194,36 +228,58 @@ export default function Page() {
             )}
             .
           </h1>
-          <p className="text-gray-600 text-sm">
-            Please provide the required{" "}
-            {audience === "entity"
-              ? "entity"
-              : audience === "student-guardian"
-                ? "guardian"
-                : "university"}{" "}
-            details below.
-          </p>
         </div>
 
-        {/* notices */}
-        {serverMsg && (
+        {/* pending document preview */}
+        {pendingDocumentId && (
           <Card className="p-4 text-sm">
-            <div className="space-y-1">
-              <div>{serverMsg}</div>
-              {signedUrl && (
-                <div className="pt-1">
-                  <Link
-                    href={signedUrl}
-                    target="_blank"
-                    className="underline underline-offset-2 text-primary"
-                  >
-                    Open signed document
-                  </Link>
+            {loadingPending ? (
+              <div className="inline-flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading pending document…
+              </div>
+            ) : pendingErr ? (
+              <div className="text-rose-600">
+                Failed to load pending document.
+              </div>
+            ) : !pendingInfo ? (
+              <div className="text-gray-600">
+                No pending document data found.
+              </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div className="text-sm truncate">
+                  Form name:{" "}
+                  <span className="font-semibold">{pendingInfo.form_name}</span>
                 </div>
-              )}
-            </div>
+
+                {pendingUrl ? (
+                  <Button
+                    className="w-full sm:w-auto"
+                    onClick={() => window.open(pendingUrl, "_blank")}
+                    aria-label="Open pending document"
+                  >
+                    Preview document
+                  </Button>
+                ) : (
+                  <div className="text-gray-500 text-sm">
+                    A preview link isn’t available for this document.
+                  </div>
+                )}
+              </div>
+            )}
           </Card>
         )}
+
+        <p className="text-gray-600 text-sm">
+          Please provide the required{" "}
+          {audience === "entity"
+            ? "entity"
+            : audience === "student-guardian"
+              ? "guardian"
+              : "university"}{" "}
+          details below.
+        </p>
 
         {/* loading / error / empty / form */}
         {isLoading ? (
@@ -234,7 +290,7 @@ export default function Page() {
             </span>
           </Card>
         ) : error ? (
-          <Card className="p-6 text-sm text-red-600">
+          <Card className="p-6 text-sm text-rose-600">
             Failed to load fields.
           </Card>
         ) : fields.length === 0 ? (
@@ -274,6 +330,42 @@ export default function Page() {
           Your information is used only for internship documentation.
         </div>
       </div>
+
+      <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="items-center text-center">
+            <div className="mb-2">
+              <CheckCircle2 className="mx-auto h-16 w-16 text-emerald-500" />
+            </div>
+            <DialogTitle className="text-lg">
+              {success?.title ?? "Success"}
+            </DialogTitle>
+            <DialogDescription className="text-sm">
+              {success?.body ?? "Your submission was successful."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="flex w-full gap-2 sm:justify-center">
+            {success?.href && (
+              <Button asChild>
+                <Link
+                  href={success.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Open signed document
+                </Link>
+              </Button>
+            )}
+            <Button
+              variant={success?.href ? "outline" : "default"}
+              onClick={() => setSuccessOpen(false)}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -288,7 +380,6 @@ function compileValidators(defs: RecipientFieldDef[]) {
     (Array.isArray(v) && v.length === 0);
 
   const requiredCheckFor = (d: RecipientFieldDef) => {
-    // Treat everything as required for recipients unless validators explicitly allow empty.
     switch ((d.type || "text").toLowerCase()) {
       case "signature":
       case "checkbox":
@@ -301,7 +392,6 @@ function compileValidators(defs: RecipientFieldDef[]) {
           return Number.isFinite(n) ? null : "Enter a valid number.";
         };
       case "date":
-        // we store dates as ms; 0/undefined = empty
         return (v: any) =>
           typeof v === "number" && v > 0 ? null : "Please select a date.";
       case "time":
@@ -324,11 +414,8 @@ function compileValidators(defs: RecipientFieldDef[]) {
 
   for (const d of defs) {
     const fns: ((v: any) => string | null)[] = [];
-
-    // 1) Default required check
     fns.push(requiredCheckFor(d));
 
-    // 2) Zod validators from backend
     for (const schema of d.validators ?? []) {
       const zschema = schema as ZodTypeAny;
       fns.push((value: any) => {
