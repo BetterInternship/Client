@@ -25,10 +25,10 @@ export function GenerateButtons({
     key === "st-student-moa";
 
   const withEsignLabel = isStudentMoa
-    ? "Generate & request e-sign"
+    ? "Generate & initiate e-sign"
     : "Generate with e-sign";
   const withoutEsignLabel = isStudentMoa
-    ? "Generate form with student information"
+    ? "Generate form (no e-sign)"
     : "Generate without e-sign";
 
   const withEsignLoading = "Requesting e-sign...";
