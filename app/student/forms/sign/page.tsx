@@ -22,6 +22,7 @@ import {
 import { useDynamicFormSchema } from "@/lib/db/use-moa-backend";
 import { UserService } from "@/lib/api/services";
 import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 type Audience = "entity" | "student-guardian" | "university";
 type Party = "entity" | "student-guardian" | "university";
@@ -50,6 +51,7 @@ function mapAudienceToRoleAndParty(aud: Audience): {
 
 export default function Page() {
   const params = useSearchParams();
+  const router = useRouter();
 
   // URL params
   const audience = normalizeAudience(params.get("for"));
@@ -198,15 +200,11 @@ export default function Page() {
     }
   }
 
-  // optional: scroll to first error
-  useEffect(() => {
-    if (!submitted) return;
-    const first = Object.entries(errors).find(([, msg]) => !!msg)?.[0];
-    if (first)
-      document
-        .querySelector(`[data-field="${first}"]`)
-        ?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [submitted, errors]);
+  const goHome = () => router.push("/");
+  const onDialogOpenChange = (open: boolean) => {
+    setSuccessOpen(open);
+    if (!open) goHome();
+  };
 
   return (
     <div className="container max-w-3xl px-4 sm:px-10 pt-8 sm:pt-16 mx-auto">
@@ -359,7 +357,7 @@ export default function Page() {
             )}
             <Button
               variant={success?.href ? "outline" : "default"}
-              onClick={() => setSuccessOpen(false)}
+              onClick={() => onDialogOpenChange(false)}
             >
               Close
             </Button>
