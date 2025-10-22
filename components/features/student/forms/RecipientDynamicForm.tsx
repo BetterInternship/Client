@@ -11,7 +11,7 @@ export type RecipientFieldDef = {
   id: string | number;
   key: string;
   label: string;
-  type: string; 
+  type: string;
   placeholder?: string;
   helper?: string;
   maxLength?: number;

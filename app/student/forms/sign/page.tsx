@@ -82,6 +82,7 @@ export default function Page() {
             }))
           : undefined,
         validators: (f.validators as unknown as ZodTypeAny[]) ?? [],
+        params: (f as any).params ?? undefined,
       })),
     [defs],
   );
@@ -295,18 +296,69 @@ export default function Page() {
 /* ───────── helpers ───────── */
 
 function compileValidators(defs: RecipientFieldDef[]) {
+  const isEmpty = (v: any) =>
+    v === undefined ||
+    v === null ||
+    (typeof v === "string" && v.trim() === "") ||
+    (Array.isArray(v) && v.length === 0);
+
+  const requiredCheckFor = (d: RecipientFieldDef) => {
+    // Treat everything as required for recipients unless validators explicitly allow empty.
+    switch ((d.type || "text").toLowerCase()) {
+      case "signature":
+      case "checkbox":
+        return (v: any) => (v === true ? null : "This field is required.");
+      case "number":
+        return (v: any) => {
+          const s = v == null ? "" : String(v).trim();
+          if (s === "") return "This field is required.";
+          const n = Number(s);
+          return Number.isFinite(n) ? null : "Enter a valid number.";
+        };
+      case "date":
+        // we store dates as ms; 0/undefined = empty
+        return (v: any) =>
+          typeof v === "number" && v > 0 ? null : "Please select a date.";
+      case "time":
+        return (v: any) => {
+          const s = v == null ? "" : String(v).trim();
+          return s ? null : "Please select a time.";
+        };
+      case "select":
+      case "reference":
+        return (v: any) => {
+          const s = v == null ? "" : String(v).trim();
+          return s ? null : "Please choose an option.";
+        };
+      default:
+        return (v: any) => (!isEmpty(v) ? null : "This field is required.");
+    }
+  };
+
   const map: Record<string, ((v: any) => string | null)[]> = {};
+
   for (const d of defs) {
-    const schemas = d.validators ?? [];
-    map[d.key] = schemas.map((schema) => (value: any) => {
-      const res = (schema as ZodTypeAny).safeParse(value);
-      if (res.success) return null;
-      const issues = (res.error as any)?.issues as
-        | { message: string }[]
-        | undefined;
-      return issues?.map((i) => i.message).join("\n") ?? res.error.message;
-    });
+    const fns: ((v: any) => string | null)[] = [];
+
+    // 1) Default required check
+    fns.push(requiredCheckFor(d));
+
+    // 2) Zod validators from backend
+    for (const schema of d.validators ?? []) {
+      const zschema = schema as ZodTypeAny;
+      fns.push((value: any) => {
+        const res = zschema.safeParse(value);
+        if (res.success) return null;
+        const issues = (res.error as any)?.issues as
+          | { message: string }[]
+          | undefined;
+        return issues?.map((i) => i.message).join("\n") ?? res.error.message;
+      });
+    }
+
+    map[d.key] = fns;
   }
+
   return map;
 }
 
