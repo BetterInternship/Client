@@ -278,8 +278,8 @@ export default function FormsPage() {
                   const formName = row.form_name;
                   const title = `${formName}`;
                   const status = row.signed_document_id
-                    ? "Signed"
-                    : "Needs signature/s";
+                    ? "Complete"
+                    : "Pending action";
                   return (
                     <MyFormCard
                       key={i}

@@ -5,13 +5,12 @@ import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { UserService } from "@/lib/api/services";
 import { DynamicForm } from "./DynamicForm";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
 import { useProfileActions } from "@/lib/api/student.actions.api";
 import { StepComplete } from "./StepComplete";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { buildDerivedValues } from "@/lib/utils/form-utils";
 import { useDbRefs } from "@/lib/db/use-refs";
+import { GenerateButtons } from "./GenerateFormButtons";
 
 type SectionKey = "student" | "university" | "entity" | "internship";
 type Mode = "select" | "invite" | "manual";
@@ -262,37 +261,16 @@ export function FormFlowRouter({
       />
 
       <div className="pt-2 flex justify-end gap-2 flex-wrap ">
-        <Button
-          onClick={() => void handleSubmit()}
-          variant="outline"
-          className="w-full sm:w-auto"
-          disabled={busy}
-          aria-busy={busy}
-        >
-          {busy ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Generating
-            </span>
-          ) : (
-            "Generate without e-sign"
-          )}
-        </Button>
-        <Button
-          onClick={() => void handleSubmit(true)}
-          className="w-full sm:w-auto"
-          disabled={busy}
-          aria-busy={busy}
-        >
-          {busy ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Generating...
-            </span>
-          ) : (
-            "Generate with e-sign"
-          )}
-        </Button>
+        <GenerateButtons
+          formKey={formName}
+          handleSubmit={handleSubmit}
+          busy={busy}
+          esignPreferredForms={[
+            "it-student-moa",
+            "ct-student-moa",
+            "st-student-moa",
+          ]}
+        />
       </div>
     </div>
   );

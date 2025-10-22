@@ -31,23 +31,23 @@ export default function MyFormCard({
       })
     : "";
 
-  const isSigned = status === "Signed";
+  const isComplete = status === "Complete";
 
   // Badge style + text based on status
   const { badgeText, badgeType, downloadLabel } = useMemo(() => {
-    if (isSigned) {
+    if (isComplete) {
       return {
-        badgeText: "Signed",
+        badgeText: "Complete",
         badgeType: "supportive" as const,
-        downloadLabel: "Download signed form",
+        downloadLabel: "Download form",
       };
     }
     return {
-      badgeText: "Waiting for signature/s",
+      badgeText: "Pending action",
       badgeType: "warning" as const,
-      downloadLabel: "Download unsigned form",
+      downloadLabel: "Download form",
     };
-  }, [isSigned]);
+  }, [isComplete]);
 
   const disabled = downloading;
 
