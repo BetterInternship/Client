@@ -5,7 +5,8 @@
 import { Badge } from "@/components/ui/badge";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { ApplicationRow } from "./ApplicationRow";
-import { Checkbox } from "@/components/ui/checkbox";
+import { useAppContext } from "@/lib/ctx-app";
+import { Card } from "@/components/ui/card";
 
 interface ApplicationsContentProps {
     applications: EmployerApplication[];
@@ -30,23 +31,28 @@ export function ApplicationsContent({
     onStatusChange,
     setSelectedApplication
 }: ApplicationsContentProps) {
-    
+    const { isMobile } = useAppContext();
     const sortedApplications = applications.toSorted(
         (a, b) =>
             new Date(b.applied_at ?? "").getTime() -
             new Date(a.applied_at ?? "").getTime()
     );
 
-    return (
-        <table className="relative table-auto border-separate border-spacing-0 w-full">
+    return isMobile ? (
+        <>
+            <Card>
+
+            </Card>
+        </>
+    ) : (
+        <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-300 border-2 p-2 rounded-md">
             <thead className="bg-gray-100">
                 <tr className="text-left">
-                    <th>Applicant</th>
-                    <th>University</th>
-                    <th>Program</th>
-                    <th>Crediting</th>
-                    <th>Preferred start</th>
-                    <th></th>
+                    <th className="p-2">Applicant</th>
+                    <th className="p-2">Education</th>
+                    <th className="p-2">Crediting</th>
+                    <th className="p-2">Preferred start</th>
+                    <th className="p-2"></th>
                 </tr>
             </thead>
             <tbody>

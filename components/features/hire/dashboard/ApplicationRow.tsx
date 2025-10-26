@@ -48,25 +48,25 @@ export function ApplicationRow({
 
   return (
     <tr
-      className="hover:bg-primary/25 bg-white hover:cursor-pointer transition-colors"
+      className="hover:bg-primary/25 odd:bg-white even:bg-gray-50 hover:cursor-pointer transition-colors"
       onClick={onView}
     >
-      <td>
+      <td className="p-2">
         {getFullName(application.user)}{" "}
       </td>
-      <td>
-        {to_university_name(application.user?.university) || ""}{" "}
-        {application.user?.expected_start_date &&
-          "• " +
+      <td className="p-2">
+        <span>
+          {to_university_name(application.user?.university) || ""}{" "}
+          {application.user?.expected_start_date &&
+            "• " +
             application.user?.year_level}
+        </span>
+        <span className="text-gray-500">{application.user?.degree}</span>
       </td>
-      <td>
-        {application.user?.degree}
-      </td>
-      <td>
+      <td className="p-2">
         {application.user?.taking_for_credit ? "For Credit" : "Voluntary"}
       </td>
-      <td>
+      <td className="p-2">
         {application.user?.expected_start_date || application.user?.expected_end_date ? (
           <> {fmtISO(application.user?.expected_start_date)} — {fmtISO(application.user?.expected_end_date)}</>
         ) : <p className="text-gray-500"> No dates provided</p>}
@@ -97,31 +97,8 @@ export function ApplicationRow({
             className="relative"
           >
             <MessageCircle
-            className="h-6 w-6"
+              className="h-6 w-6"
             />
-          </Button>
-          {/* // ! uncomment when calendar back */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              // onSchedule();
-            }}
-          >
-            <CalendarClock
-            className="h-6 w-6"
-            />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              // onNotes();
-            }}
-          >
-            Send Survey
           </Button>
           <div>
             <StatusDropdown
