@@ -23,6 +23,7 @@ import { useFormData } from "@/lib/form-data";
 import Head from "next/head";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useMobile } from "@/hooks/use-mobile";
 
 interface CreateJobPageProps {
   createJob: (job: Partial<Job>) => Promise<any>;
@@ -42,6 +43,7 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
   const { job_pay_freq } = useDbRefs();
   const router = useRouter();
   const profile = useProfile();
+  const { isMobile } = useMobile();
 
   const handleSaveEdit = async () => {
     // Validate required fields
@@ -109,31 +111,67 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
           <div className="max-w-5xl mx-auto flex justify-between items-center">
             <h1 className="text-2xl text-gray-800">Create New Job: <span className="font-bold">{formData.title || "Untitled Job"}</span></h1>
             <div className="flex gap-3">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  if (window.confirm("Are you sure you want to cancel? All unsaved changes will be lost.")) {
-                    router.push("/dashboard");
-                  }
-                }}
-                disabled={creating}
-              >
-                Cancel
-              </Button>
-              <Button 
-                disabled={creating} 
-                onClick={handleSaveEdit}
-                className="flex items-center"
-              >
-                {creating ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Publishing...
-                  </>
-                ) : (
-                  "Publish Listing"
-                )}
-              </Button>
+              {!isMobile ? (
+                <>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      if (window.confirm("Are you sure you want to cancel? All unsaved changes will be lost.")) {
+                        router.push("/dashboard");
+                      }
+                    }}
+                    disabled={creating}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    disabled={creating} 
+                    onClick={handleSaveEdit}
+                    className="flex items-center"
+                  >
+                    {creating ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Publishing...
+                      </>
+                    ) : (
+                      "Publish Listing"
+                    )}
+                  </Button>
+                </>
+              ) : (
+                // Fixed footer
+                <div className="bg-white border border-gray-200 shadow-md px-6 py-4 fixed bottom-0 right-0 left-0 z-50 p-6">
+                  <div className="max-w-5xl mx-auto flex justify-end items-end gap-4">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        if (window.confirm("Are you sure you want to cancel? All unsaved changes will be lost.")) {
+                          router.push("/dashboard");
+                        }
+                      }}
+                      disabled={creating}
+                      className="h-10"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      disabled={creating} 
+                      onClick={handleSaveEdit}
+                      className="flex items-center h-10"
+                    >
+                      {creating ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Publishing...
+                        </>
+                      ) : (
+                        "Publish Listing"
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
