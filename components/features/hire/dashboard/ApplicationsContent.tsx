@@ -39,11 +39,33 @@ export function ApplicationsContent({
     );
 
     return isMobile ? (
-        <>
-            <Card>
-
-            </Card>
-        </>
+        <div className="flex flex-col gap-2">
+            {sortedApplications.some(
+                (application) => application.status !== undefined && statusId.includes(application.status)
+            ) ? (
+                sortedApplications
+                    .filter((application) => application.status !== undefined && statusId.includes(application.status))
+                    .map((application) => (
+                        <ApplicationRow
+                            key={application.id}
+                            application={application}
+                            onView={() => onApplicationClick(application)}
+                            onNotes={() => onNotesClick(application)}
+                            onSchedule={() => onScheduleClick(application)}
+                            onStatusChange={(status) =>
+                                onStatusChange(application, status)
+                            }
+                            openChatModal={openChatModal}
+                            setSelectedApplication={setSelectedApplication}
+                            updateConversationId={updateConversationId}
+                        />
+                    ))
+            ) : (
+                <div className="p-2">
+                    <Badge>No applications under this category.</Badge>
+                </div>
+            )}
+        </div>
     ) : (
         <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-300 border-2 p-2 rounded-md">
             <thead className="bg-gray-100">
