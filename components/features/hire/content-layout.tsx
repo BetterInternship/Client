@@ -4,6 +4,7 @@ import { FileText, FileUser, LayoutDashboard, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
+import { useMobile } from "@/hooks/use-mobile";
 
 import { useAuthContext } from "@/app/hire/authctx";
 import { Button } from "@/components/ui/button";
@@ -75,17 +76,33 @@ interface ContentLayoutProps {
 }
 
 const ContentLayout: React.FC<ContentLayoutProps> = ({ children }) => {
+  const { isMobile } = useMobile();
+  
   return (
-    <div className="w-full flex flex-row space-x-0 ">
-      <aside className="absolute top-18 left-0 z-[100] h-screen border-r bg-muted">
-        <SideNav items={navItems} />
-      </aside>
-      {/* This is only here so the main tag below is offset */}
-      <aside className="h-screen w-fit invisible">
-        <SideNav items={navItems} />
-      </aside>
-
-      <main className="flex-1 flex overflow-auto justify-center  mb-20 h-[100%] ">
+    <div className="w-full flex flex-row space-x-0">
+      {!isMobile ? (
+        <>
+          <aside className="absolute top-18 left-0 z-[100] h-screen border-r bg-muted">
+            <SideNav items={navItems} />
+          </aside>
+          {/* This is only here so the main tag below is offset */}
+          <aside className="h-screen w-fit invisible">
+            <SideNav items={navItems} />
+          </aside>
+        </>
+      ) : (
+        <></>
+      )} 
+      {isMobile && (
+        <Link href="listings/create">
+          <button
+            className="fixed bottom-8 right-8 bg-primary rounded-full p-6 z-10 shadow-lg"
+          >
+            <Plus className="h-5 w-5 text-white"/>
+          </button>
+        </Link>
+      )}
+      <main className="flex-1 flex overflow-auto justify-center mb-20 h-[100%] ">
         {children}
       </main>
     </div>
