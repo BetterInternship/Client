@@ -92,7 +92,7 @@ export default function CompanyProfile() {
     profile && (
       <ContentLayout>
         <div className="mx-auto min-h-screen bg-background p-6 py-12 max-w-6xl">
-          <div className="flex items-start gap-8 flex-1 w-full max-w-[600px] m-auto">
+          <header className="flex items-start gap-8 flex-1 w-full max-w-[600px] m-auto ">
             <div className="relative flex-shrink-0">
               <MyEmployerPfp size="36" />
               <Button
@@ -176,7 +176,7 @@ export default function CompanyProfile() {
                 )}
               </div>
             </div>
-          </div>
+          </header>
 
           <div className="w-full max-w-[600px] m-auto space-y-2 mt-8 ">
             {!isEditing && <ProfileDetails profile={profile} />}
