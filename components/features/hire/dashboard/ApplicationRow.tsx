@@ -5,6 +5,7 @@ import { StatusDropdown } from "@/components/common/StatusDropdown";
 import { UserPfp } from "@/components/shared/pfp";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useConversations } from "@/hooks/use-conversation";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
@@ -47,39 +48,31 @@ export function ApplicationRow({
 
   return (
     <tr
-      className="w-full hover:bg-primary/25 odd:bg-gray-100 hover:cursor-pointer transition-colors flex flex-row items-center justify-between p-1"
+      className="hover:bg-primary/25 bg-white hover:cursor-pointer transition-colors"
       onClick={onView}
     >
-      <td className="w-full px-4 p-1">
-        <div className="flex items-center gap-3">
-          {application.user?.id && <UserPfp user_id={application.user.id} />}
-          <div>
-            <p className="font-medium text-gray-900">
-              {getFullName(application.user)}{" "}
-              <span className="opacity-70">
-                — {to_university_name(application.user?.university) || ""}{" "}
-                {application.user?.expected_start_date &&
-                  "• " +
-                    application.user?.year_level}
-              </span>
-            </p>
-            <p className="text-xs text-gray-500 space-x-1">
-              <Badge strength="medium" className="bg-white">
-                {/* {application.job?.title} */}
-                {to_university_name(application.user?.university) || ""}
-              </Badge>
-              <Badge strength="medium" className="bg-white">
-                {application.user?.taking_for_credit ? "For Credit" : "Voluntary"}
-              </Badge> 
-              {application.user?.expected_start_date || application.user?.expected_end_date ? (
-                <> • {fmtISO(application.user?.expected_start_date)} — {fmtISO(application.user?.expected_end_date)}</>
-              ) : <> • No dates provided</>}
-            </p>
-          </div>
-        </div>
+      <td>
+        {getFullName(application.user)}{" "}
       </td>
-      <td className="text-center px-6">
-        <div className="flex items-center space-x-2 flex-row justify-end">
+      <td>
+        {to_university_name(application.user?.university) || ""}{" "}
+        {application.user?.expected_start_date &&
+          "• " +
+            application.user?.year_level}
+      </td>
+      <td>
+        {application.user?.degree}
+      </td>
+      <td>
+        {application.user?.taking_for_credit ? "For Credit" : "Voluntary"}
+      </td>
+      <td>
+        {application.user?.expected_start_date || application.user?.expected_end_date ? (
+          <> {fmtISO(application.user?.expected_start_date)} — {fmtISO(application.user?.expected_end_date)}</>
+        ) : <p className="text-gray-500"> No dates provided</p>}
+      </td>
+      <td>
+        <div className="flex items-center gap-2 pr-2 flex-row justify-end">
           <Badge
             type="warning"
             className={cn(

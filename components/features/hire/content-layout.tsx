@@ -82,7 +82,7 @@ const ContentLayout: React.FC<ContentLayoutProps> = ({ children }) => {
     <div className="w-full flex flex-row space-x-0">
       {!isMobile ? (
         <>
-          <aside className="absolute top-18 left-0 z-[100] h-screen border-r bg-muted">
+          <aside className="absolute top-20 left-0 z-[100] h-screen border-r bg-muted">
             <SideNav items={navItems} />
           </aside>
           {/* This is only here so the main tag below is offset */}
