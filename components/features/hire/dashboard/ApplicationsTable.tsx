@@ -53,7 +53,7 @@ export function ApplicationsTable({
           name="New Applications"
         >
           <table className="relative table-auto border-separate border-spacing-0 w-full h-full max-h-full">
-            <tbody className="w-full h-full max-h-full ">
+            <tbody className="w-full h-full max-h-full">
               {sortedApplications.some(
                 (application) => application.status === 0
               ) ? (
@@ -75,21 +75,21 @@ export function ApplicationsTable({
                     />
                   ))
               ) : (
-              // {jobs.length > 0 ? (
-              //   jobs
-              //     .filter(job =>
-              //       applications.some(app => app.job_id === job.id && app.status === 0)
-              //     )
-              //     .map((job) => (
-              //       <JobListingsBox
-              //         key={job.id}
-              //         job={job}
-              //         applications={applications}
-              //         onJobListingClick={() => onJobListingClick}
-              //         statusID={0}
-              //       />
-              //     ))
-              // ) : (
+                // {jobs.length > 0 ? (
+                //   jobs
+                //     .filter(job =>
+                //       applications.some(app => app.job_id === job.id && app.status === 0)
+                //     )
+                //     .map((job) => (
+                //       <JobListingsBox
+                //         key={job.id}
+                //         job={job}
+                //         applications={applications}
+                //         onJobListingClick={() => onJobListingClick}
+                //         statusID={0}
+                //       />
+                //     ))
+                // ) : (
                 <div className="p-2">
                   <Badge>No applications under this category.</Badge>
                 </div>
