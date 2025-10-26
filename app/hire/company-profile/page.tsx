@@ -91,7 +91,7 @@ export default function CompanyProfile() {
   return (
     profile && (
       <ContentLayout>
-        <div className="h-fit min-h-screen bg-background p-6 py-12 w-full">
+        <div className="mx-auto min-h-screen bg-background p-6 py-12 max-w-6xl">
           <div className="flex items-start gap-8 flex-1 w-full max-w-[600px] m-auto">
             <div className="relative flex-shrink-0">
               <MyEmployerPfp size="36" />

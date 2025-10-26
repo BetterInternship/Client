@@ -39,14 +39,22 @@ import { Separator } from "@/components/ui/separator";
  * @component
  */
 export const Header: React.FC = () => {
+  const { isMobile } = useMobile();
   const { god } = useAuthContext();
   const { routeExcluded } = useRoute();
-  const noProfileRoutes = ["/login", "/register"];
-  const noHeaderRoutes: string[] = [];
-  const { isMobile } = useMobile();
-  const showProfileButton = routeExcluded(noProfileRoutes);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const noProfileRoutes = ["/login", "/register"];
+  const noHeaderRoutes: string[] = [];
+  const showProfileButton = routeExcluded(noProfileRoutes);
+
+  useEffect(() => {
+      document.body.style.overflow = isMenuOpen ? "hidden" : "";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }, [isMenuOpen]);
 
   return routeExcluded(noHeaderRoutes) ? (
     <div className={cn(

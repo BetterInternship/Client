@@ -110,7 +110,7 @@ const EditJobPage = ({
     if (job.id) {
             const result = await update_job(job.id, edited_job);
             if (result.success) {
-                router.push("/listings"); 
+                router.push(`/dashboard/manage?jobId=${job.id}`); 
             }
         }
     };
