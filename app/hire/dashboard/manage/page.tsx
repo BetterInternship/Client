@@ -44,7 +44,7 @@ function ManageContent() {
 
     return(
         <ContentLayout>
-            <div>
+            <div className="w-full h-full">
                 <JobTabs
                 selectedJob={jobData}/>
             </div>

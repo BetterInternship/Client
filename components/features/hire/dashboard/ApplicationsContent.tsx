@@ -5,6 +5,7 @@
 import { Badge } from "@/components/ui/badge";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { ApplicationRow } from "./ApplicationRow";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ApplicationsContentProps {
     applications: EmployerApplication[];
@@ -37,8 +38,18 @@ export function ApplicationsContent({
     );
 
     return (
-        <table className="relative table-auto border-separate border-spacing-0 w-full h-full max-h-full">
-            <tbody className="w-full h-full max-h-full">
+        <table className="relative table-auto border-separate border-spacing-0 w-full">
+            <thead className="bg-gray-100">
+                <tr className="text-left">
+                    <th>Applicant</th>
+                    <th>University</th>
+                    <th>Program</th>
+                    <th>Crediting</th>
+                    <th>Preferred start</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
                 {sortedApplications.some(
                     (application) => application.status !== undefined && statusId.includes(application.status)
                 ) ? (

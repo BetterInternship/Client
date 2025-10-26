@@ -313,227 +313,220 @@ export default function JobTabs({selectedJob}: JobTabsProps) {
     let lastSelf = false;
 
     return (
-        <ContentLayout>
-            <div className="flex-1 flex flex-col w-full">
-                <div className="flex items-center">
-                  <button
-                  onClick={handleJobBack}
-                  className="flex items-center text-gray-600 hover:text-gray-900 transition-colors m-4"
-                  >
-                      <ArrowLeft className="h-10 w-10" />
-                  </button>
-                  <h3 className="text-gray-500 font-medium">Listing: </h3>
-                  <h3 className="p-4 m-3 text-primary">{selectedJob?.title}</h3>
-                </div>
-                <div className="p-6 flex flex-col h-0 flex-1 space-y-6">
-                    {!profile.loading && !profile.data?.is_verified ? (
-                        <ShowUnverifiedBanner />
-                    ) : (
-                        <>
-                            <Card className="overflow-auto h-full max-h-full border-none p-0 pt-2">
-                                <>
-                                  <TabGroup>
-                                    <Tab
-                                    name="Applicants"
-                                    >
-                                        <p>peanits</p>
-                                        {/* we need to add filtering here :D */}
-                                        <ApplicationsContent
-                                          applications={filteredApplications}
-                                          statusId={[0, 1, 2, 3, 4, 5, 6]}
-                                          openChatModal={openChatModal}
-                                          updateConversationId={updateConversationId}
-                                          onApplicationClick={handleApplicationClick}
-                                          onNotesClick={handleNotesClick}
-                                          onScheduleClick={handleScheduleClick}
-                                          onStatusChange={handleStatusChange}
-                                          setSelectedApplication={setSelectedApplication}
-                                        ></ApplicationsContent>
-                                    </Tab>
-                                    <Tab
-                                    name="Preview Listing"
-                                    >
-                                        <p>peanuts</p>
-                                        <Card className="flex-1 min-w-0">
-                                          <Scrollbar>
-                                            <ListingsDetailsPanel
-                                              selectedJob={selectedJob}
-                                              isEditing={isEditing}
-                                              saving={saving}
-                                              onEdit={handleEditStart}
-                                              onSave={handleSave}
-                                              onCancel={handleJobBack}
-                                              onShare={handleShare}
-                                              onDelete={openDeleteModal}
-                                              updateJob={update_job}
-                                              setIsEditing={setIsEditing}
-                                            />
-                                          </Scrollbar>
-                                        </Card>
-                                    </Tab>
-                                  </TabGroup>
-                                </>
-                            </Card>
-                        </>
-                    )}
-                </div>
+        <>
+          <div className="flex-1 flex flex-col w-full">
+            <div className="flex items-center pl-4 pt-2">
+              <button
+              onClick={handleJobBack}
+              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors m-4"
+              >
+                  <ArrowLeft className="s-8" />
+              </button>
+              <h3 className="m-3">{selectedJob?.title}</h3>
             </div>
-
-            <ApplicantModal className="max-w-7xl w-full">
-        <ApplicantModalContent
-          is_employer={true}
-          clickable={true}
-          pfp_fetcher={async () =>
-            UserService.getUserPfpURL(selectedApplication?.user?.id ?? "")
-          }
-          pfp_route={`/users/${selectedApplication?.user_id}/pic`}
-          applicant={selectedApplication?.user}
-          open_calendar={async () => {
-            closeApplicantModal();
-            window
-              ?.open(selectedApplication?.user?.calendar_link ?? "", "_blank")
-              ?.focus();
-          }}
-          open_resume={async () => {
-            closeApplicantModal();
-            await syncResumeURL();
-            openResumeModal();
-          }}
-          job={selectedApplication?.job}
-          resume_url={resumeURL}
-        />
-      </ApplicantModal>
-
-      <ReviewModal>
-        {selectedApplication && (
-          <ReviewModalContent
-            application={selectedApplication}
-            reviewApp={async (id, reviewOptions) => {
-              await reviewApp(id, reviewOptions);
-              // ! lol remove this later on
-              selectedApplication.notes = reviewOptions.notes;
-            }}
-            onClose={closeReviewModal}
-          />
-        )}
-      </ReviewModal>
-
-      <ResumeModal>
-        {selectedApplication?.user?.resume ? (
-          <div className="h-full flex flex-col">
-            <h1 className="font-bold font-heading text-2xl px-6 py-4 text-gray-900">
-              {getFullName(selectedApplication?.user)} - Resume
-            </h1>
-            <PDFPreview url={resumeURL} />
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center h-96 px-8">
-            <div className="text-center">
-              <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">
-                No Resume Available
-              </h1>
-              <div className="max-w-md text-center border border-red-200 text-red-600 bg-red-50 rounded-lg p-4">
-                This applicant has not uploaded a resume yet.
-              </div>
-            </div>
-          </div>
-        )}
-      </ResumeModal>
-
-      <ChatModal>
-        <div className="relative p-6 pt-6 pb-20 h-full w-full">
-          <div className="flex flex-col h-[100%] w-full gap-6">
-            <div className="text-4xl font-bold tracking-tight">
-              {getFullName(selectedApplication?.user)}
-            </div>
-            <div className="overflow-y-hidden flex-1 border border-gray-300 rounded-[0.33em] max-h-[75%]">
-              <div className="flex flex-col-reverse max-h-full min-h-full overflow-y-scroll p-2 gap-1">
-                <div ref={chatAnchorRef} />
-                {conversation?.loading ?? true ? (
-                  <div className="flex-1 flex flex-col items-center justify-center">
-                    <Loader>Loading conversation...</Loader>
-                  </div>
-                ) : conversation?.messages?.length ? (
-                  conversation.messages
-                    ?.map((message: any, idx: number) => {
-                      if (!idx) lastSelf = false;
-                      const oldLastSelf = lastSelf;
-                      lastSelf = message.sender_id === profile.data?.id;
-                      return {
-                        key: idx,
-                        message: message.message,
-                        self: message.sender_id === profile.data?.id,
-                        prevSelf: oldLastSelf,
-                        them: getFullName(selectedApplication?.user),
-                      };
-                    })
-                    ?.toReversed()
-                    ?.map((d: any) => (
-                      <Message
-                        key={d.key}
-                        message={d.message}
-                        self={d.self}
-                        prevSelf={d.prevSelf}
-                        them={d.them}
-                      />
-                    ))
+            <div className="px-8 flex flex-col flex-1 space-y-6">
+                {!profile.loading && !profile.data?.is_verified ? (
+                    <ShowUnverifiedBanner />
                 ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center">
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <Card className="flex flex-col text-left gap-1 p-4 px-6 border-transparent">
-                        <MessageCircle className="w-16 h-16 my-4 opacity-50" />
-                        <div className="text-xl font-bold">
-                          Send a Message Now!
-                        </div>
-                        You don't have any messages with this applicant yet.
-                      </Card>
-                    </motion.div>
-                  </div>
+                    <>
+                      <TabGroup>
+                        <Tab
+                        name="Applicants"
+                        >
+                            {/* we need to add filtering here :D */}
+                            <ApplicationsContent
+                              applications={filteredApplications}
+                              statusId={[0, 1, 2, 3, 4, 5, 6]}
+                              openChatModal={openChatModal}
+                              updateConversationId={updateConversationId}
+                              onApplicationClick={handleApplicationClick}
+                              onNotesClick={handleNotesClick}
+                              onScheduleClick={handleScheduleClick}
+                              onStatusChange={handleStatusChange}
+                              setSelectedApplication={setSelectedApplication}
+                            ></ApplicationsContent>
+                        </Tab>
+                        <Tab
+                        name="Preview Listing"
+                        >
+                            <Card className="flex-1 min-w-0">
+                              <Scrollbar>
+                                <ListingsDetailsPanel
+                                  selectedJob={selectedJob}
+                                  isEditing={isEditing}
+                                  saving={saving}
+                                  onEdit={handleEditStart}
+                                  onSave={handleSave}
+                                  onCancel={handleJobBack}
+                                  onShare={handleShare}
+                                  onDelete={openDeleteModal}
+                                  updateJob={update_job}
+                                  setIsEditing={setIsEditing}
+                                />
+                              </Scrollbar>
+                            </Card>
+                        </Tab>
+                      </TabGroup>
+                    </>
                 )}
+            </div>
+          </div>
+
+        <ApplicantModal className="max-w-7xl w-full">
+          <ApplicantModalContent
+            is_employer={true}
+            clickable={true}
+            pfp_fetcher={async () =>
+              UserService.getUserPfpURL(selectedApplication?.user?.id ?? "")
+            }
+            pfp_route={`/users/${selectedApplication?.user_id}/pic`}
+            applicant={selectedApplication?.user}
+            open_calendar={async () => {
+              closeApplicantModal();
+              window
+                ?.open(selectedApplication?.user?.calendar_link ?? "", "_blank")
+                ?.focus();
+            }}
+            open_resume={async () => {
+              closeApplicantModal();
+              await syncResumeURL();
+              openResumeModal();
+            }}
+            job={selectedApplication?.job}
+            resume_url={resumeURL}
+          />
+        </ApplicantModal>
+
+        <ReviewModal>
+          {selectedApplication && (
+            <ReviewModalContent
+              application={selectedApplication}
+              reviewApp={async (id, reviewOptions) => {
+                await reviewApp(id, reviewOptions);
+                // ! lol remove this later on
+                selectedApplication.notes = reviewOptions.notes;
+              }}
+              onClose={closeReviewModal}
+            />
+          )}
+        </ReviewModal>
+
+        <ResumeModal>
+          {selectedApplication?.user?.resume ? (
+            <div className="h-full flex flex-col">
+              <h1 className="font-bold font-heading text-2xl px-6 py-4 text-gray-900">
+                {getFullName(selectedApplication?.user)} - Resume
+              </h1>
+              <PDFPreview url={resumeURL} />
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-96 px-8">
+              <div className="text-center">
+                <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">
+                  No Resume Available
+                </h1>
+                <div className="max-w-md text-center border border-red-200 text-red-600 bg-red-50 rounded-lg p-4">
+                  This applicant has not uploaded a resume yet.
+                </div>
               </div>
             </div>
-            <Textarea
-              ref={messageInputRef}
-              placeholder="Send a message here..."
-              className="w-full h-20 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
+          )}
+        </ResumeModal>
+
+        <ChatModal>
+          <div className="relative p-6 pt-6 pb-20 h-full w-full">
+            <div className="flex flex-col h-[100%] w-full gap-6">
+              <div className="text-4xl font-bold tracking-tight">
+                {getFullName(selectedApplication?.user)}
+              </div>
+              <div className="overflow-y-hidden flex-1 border border-gray-300 rounded-[0.33em] max-h-[75%]">
+                <div className="flex flex-col-reverse max-h-full min-h-full overflow-y-scroll p-2 gap-1">
+                  <div ref={chatAnchorRef} />
+                  {conversation?.loading ?? true ? (
+                    <div className="flex-1 flex flex-col items-center justify-center">
+                      <Loader>Loading conversation...</Loader>
+                    </div>
+                  ) : conversation?.messages?.length ? (
+                    conversation.messages
+                      ?.map((message: any, idx: number) => {
+                        if (!idx) lastSelf = false;
+                        const oldLastSelf = lastSelf;
+                        lastSelf = message.sender_id === profile.data?.id;
+                        return {
+                          key: idx,
+                          message: message.message,
+                          self: message.sender_id === profile.data?.id,
+                          prevSelf: oldLastSelf,
+                          them: getFullName(selectedApplication?.user),
+                        };
+                      })
+                      ?.toReversed()
+                      ?.map((d: any) => (
+                        <Message
+                          key={d.key}
+                          message={d.message}
+                          self={d.self}
+                          prevSelf={d.prevSelf}
+                          them={d.them}
+                        />
+                      ))
+                  ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center">
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <Card className="flex flex-col text-left gap-1 p-4 px-6 border-transparent">
+                          <MessageCircle className="w-16 h-16 my-4 opacity-50" />
+                          <div className="text-xl font-bold">
+                            Send a Message Now!
+                          </div>
+                          You don't have any messages with this applicant yet.
+                        </Card>
+                      </motion.div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <Textarea
+                ref={messageInputRef}
+                placeholder="Send a message here..."
+                className="w-full h-20 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (!selectedApplication?.user_id) return;
+                    if (messageInputRef.current?.value) {
+                      handleMessage(
+                        selectedApplication.user_id,
+                        messageInputRef.current.value
+                      );
+                    }
+                  }
+                }}
+                maxLength={1000}
+              />
+              <Button
+                size="md"
+                disabled={sending}
+                onClick={() => {
                   if (!selectedApplication?.user_id) return;
                   if (messageInputRef.current?.value) {
                     handleMessage(
-                      selectedApplication.user_id,
-                      messageInputRef.current.value
+                      selectedApplication?.user_id,
+                      messageInputRef.current?.value
                     );
                   }
-                }
-              }}
-              maxLength={1000}
-            />
-            <Button
-              size="md"
-              disabled={sending}
-              onClick={() => {
-                if (!selectedApplication?.user_id) return;
-                if (messageInputRef.current?.value) {
-                  handleMessage(
-                    selectedApplication?.user_id,
-                    messageInputRef.current?.value
-                  );
-                }
-              }}
-            >
-              {sending ? "Sending..." : "Send Message"}
-              <SendHorizonal className="w-5 h-5" />
-            </Button>
+                }}
+              >
+                {sending ? "Sending..." : "Send Message"}
+                <SendHorizonal className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
-        </div>
-      </ChatModal>
-        </ContentLayout>
+        </ChatModal>
+      </>
     )
 }
