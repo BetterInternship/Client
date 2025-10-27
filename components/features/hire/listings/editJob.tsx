@@ -23,6 +23,7 @@ import { useFormData } from "@/lib/form-data";
 import Head from "next/head";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useMobile } from "@/hooks/use-mobile";
 
 interface EditJobPageProps {
     job: Job;
@@ -54,6 +55,7 @@ const EditJobPage = ({
     }: EditJobPageProps) => {
 
     const { job_pay_freq } = useDbRefs();
+    const { isMobile } = useMobile();
     const [editing, set_editing] = useState(false);
     const { formData, setField, setFields, fieldSetter } = useFormData<Job>();
     const router = useRouter();
@@ -157,33 +159,66 @@ const EditJobPage = ({
         <div className="bg-white border-b border-gray-200 px-6 py-4 fixed top-0 right-0 left-0 z-50 shadow-sm pt-20">
             <div className="max-w-5xl mx-auto flex justify-between items-center">
             <h1 className="text-2xl text-gray-800">Edit Job: <span className="font-bold">{formData.title || "Untitled Job"}</span></h1>
-            <div className="flex gap-3">
-                <Button 
-                variant="outline" 
-                onClick={() => {
-                    if (window.confirm("Are you sure you want to cancel? All unsaved changes will be lost.")) {
-                    router.push("/listings");
-                    }
-                }}
-                disabled={saving}
+            {!isMobile ? (
+                <div className="flex gap-3">
+                    <Button 
+                    variant="outline" 
+                    onClick={() => {
+                        if (window.confirm("Are you sure you want to cancel? All unsaved changes will be lost.")) {
+                        router.push("/listings");
+                        }
+                    }}
+                    disabled={saving}
+                    >
+                    Cancel
+                    </Button>
+                    <Button 
+                    disabled={saving} 
+                    onClick={handleSaveEdit}
+                    className="flex items-center"
                 >
-                Cancel
-                </Button>
-                <Button 
-                disabled={saving} 
-                onClick={handleSaveEdit}
-                className="flex items-center"
-            >
-                {saving ? (
-                    <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Editing...
-                    </>
-                ) : (
-                    "Save Edits"
-                )}
-                </Button>
-            </div>
+                    {saving ? (
+                        <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Editing...
+                        </>
+                    ) : (
+                        "Save Edits"
+                    )}
+                    </Button>
+                </div>
+            ) : (
+                <div className="bg-white border border-gray-200 shadow-md px-6 py-4 fixed bottom-0 right-0 left-0 z-50 p-6">
+                    <div className="max-w-5xl mx-auto flex justify-end items-end gap-4">
+                        <Button 
+                        variant="outline" 
+                        onClick={() => {
+                            if (window.confirm("Are you sure you want to cancel? All unsaved changes will be lost.")) {
+                            router.push("/listings");
+                            }
+                        }}
+                        disabled={saving}
+                        className="h-10"
+                        >
+                        Cancel
+                        </Button>
+                        <Button 
+                        disabled={saving} 
+                        onClick={handleSaveEdit}
+                        className="flex items-center h-10"
+                    >
+                        {saving ? (
+                            <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Editing...
+                            </>
+                        ) : (
+                            "Save Edits"
+                        )}
+                        </Button>
+                    </div>
+                </div>
+            )}
             </div>
         </div>
 
