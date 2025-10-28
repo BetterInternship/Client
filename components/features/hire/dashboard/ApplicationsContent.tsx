@@ -134,7 +134,9 @@ export function ApplicationsContent({
                         icon: SquareCheck,
                         onClick: selectAll
                     },
-                    `Applicants selected: ${selectedApplications.size}`,
+                    selectedApplications.size > 1 ?
+                        `${selectedApplications.size} applicants selected` :
+                        `${selectedApplications.size} applicant selected`,
                     {
                         id: "cancel",
                         label: "Cancel",

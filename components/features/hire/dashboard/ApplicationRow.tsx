@@ -10,7 +10,7 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import { getFullName } from "@/lib/profile";
 import { cn } from "@/lib/utils";
 import { fmtISO } from "@/lib/utils/date-utils";
-import { CalendarClock, MessageCircle } from "lucide-react";
+import { Calendar, CalendarClock, ContactRound, GraduationCap, MessageCircle, School } from "lucide-react";
 import { useAppContext } from "@/lib/ctx-app";
 import { Card } from "@/components/ui/card";
 
@@ -53,21 +53,33 @@ export function ApplicationRow({
             onCheckedChange={(v) => onToggleSelect?.(!!v)}
           />
         </div>
-        <div className="flex flex-col">
-          <h4>{getFullName(application.user)}</h4>
-          <span className="text-gray-500">
-            {to_university_name(application.user?.university) || ""}{" "}
-            {application.user?.expected_start_date &&
-              "• " +
-              application.user?.year_level}
-          </span>
-          <span className="text-gray-500">{application.user?.degree}</span>
-          <span className="text-gray-500">{application.user?.taking_for_credit ? "For Credit" : "Voluntary"}</span>
-          <span className="text-gray-500">
-            {application.user?.expected_start_date || application.user?.expected_end_date ? (
-              <> {fmtISO(application.user?.expected_start_date)} — {fmtISO(application.user?.expected_end_date)}</>
-            ) : <span className="text-gray-500"> No preferred dates provided</span>}
-          </span>
+        <div className="flex flex-col text-gray-500">
+          <h4 className="text-gray-900">{getFullName(application.user)}</h4>
+          <div className="flex items-center gap-2">
+            <School size={20} />
+            <span>
+              {to_university_name(application.user?.university) || ""}{" "}
+              {application.user?.expected_start_date &&
+                "• " +
+                application.user?.year_level}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <GraduationCap size={20} />
+            <span>{application.user?.degree}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <ContactRound size={20} />
+            <span>{application.user?.taking_for_credit ? "For Credit" : "Voluntary"}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Calendar size={20} />
+            <span>
+              {application.user?.expected_start_date || application.user?.expected_end_date ? (
+                <> {fmtISO(application.user?.expected_start_date)} — {fmtISO(application.user?.expected_end_date)}</>
+              ) : <span> No preferred dates provided</span>}
+            </span>
+          </div>
         </div>
       </Card>
     </>

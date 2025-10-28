@@ -48,12 +48,12 @@ export const CommandMenu = ({
             role="toolbar"
             aria-hidden={!visible}
             className={cn(
-                "flex p-2 gap-4 justify-center items-stretch bg-white border-gray-300 z-1000",
-                position?.position === 'top' || position?.position === 'bottom' ? "flex-row inset-x-0" : "flex-col inset-y-0",
-                position?.position === 'top' ? "fixed top-16 border-b-2" : "",
-                position?.position === 'bottom' ? "fixed bottom-0 border-t-2" : "",
-                position?.position === 'left' ? "fixed left-0 border-r-2" : "",
-                position?.position === 'right' ? "fixed right-0 border-l-2" : "",
+                "flex p-2 gap-4 justify-center items-stretch bg-white/75 backdrop-blur-md border-gray-300 z-[100]",
+                position?.position === 'top' || position?.position === 'bottom' ? "flex-row inset-x-0 border-y-2" : "flex-col inset-y-0 border-x-2",
+                position?.position === 'top' ? "fixed top-16" : "",
+                position?.position === 'bottom' ? "fixed bottom-0" : "",
+                position?.position === 'left' ? "fixed left-0" : "",
+                position?.position === 'right' ? "fixed right-0" : "",
                 position?.position === null ? "rounded-sm" : "",
                 className
             )}
@@ -66,8 +66,8 @@ export const CommandMenu = ({
                         onClick={item.onClick}
                         disabled={item.disabled}
                         className={cn(
-                            "flex flex-col justify-center items-center px-6 py-4 w-36 rounded-sm text-xs gap-2",
-                            item.destructive ? "text-red-900 hover:bg-red-300 bg-red-100" : "bg-white hover:bg-gray-300 text-gray-700"
+                            "flex flex-col justify-center items-center px-6 py-4 w-36 rounded-sm text-sm gap-2",
+                            item.destructive ? "text-red-700 hover:bg-red-300/50" : "hover:bg-gray-300/50 text-gray-700"
                         )}
                     >
                         {item.icon && <item.icon size={20} />}
