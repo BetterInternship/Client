@@ -1,6 +1,17 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
+/**
+ * A button that can be set to filter a list by a given criteria on click.
+ * @param name Name of filter displayed in the button.
+ * @param itemCount (optional) Number of items that match the filtering criteria in the list.
+ * @param className (optional) Custom styling.
+ * @param isActive Boolean that controls the button's active state.
+ * @param defaultActive The button's default state on load. This is false if not set.
+ * @param onToggle A function that performs some action on the filter being toggled. 
+ * As an example, you might want to create a function to filter a list by some criteria and
+ * use this button to trigger that.
+ */
 export const FilterButton = ({
     name,
     itemCount,
@@ -12,7 +23,7 @@ export const FilterButton = ({
     name: string;
     itemCount?: number;
     className?: string;
-    isActive?: boolean;
+    isActive: boolean;
     defaultActive?: boolean;
     onToggle: (active: boolean) => void;
 }) => {
@@ -40,6 +51,7 @@ export const FilterButton = ({
             onClick={handleClick}
         >
             <span>{name}</span>
+            {/* Display the item count badge if one is given. */}
             {typeof itemCount === "number" && (
                 <span className={cn(
                     "px-2 py-1 text-sm rounded-sm",

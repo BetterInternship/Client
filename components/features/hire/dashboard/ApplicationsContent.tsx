@@ -10,6 +10,9 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ApplicationsHeader } from "./ApplicationsHeader";
 import { useState } from "react";
+import { CommandMenu } from "@/components/ui/command-menu";
+import { Check, SquareCheck, Star, Trash, X } from "lucide-react";
+import { useEffect } from "react";
 
 interface ApplicationsContentProps {
     applications: EmployerApplication[];
@@ -37,14 +40,48 @@ export function ApplicationsContent({
     const { to_app_status_name } = useDbRefs();
     const { isMobile } = useAppContext();
     const [selectedApplications, setSelectedApplications] = useState<Set<string>>(new Set());
+    const [commandBarsVisible, setCommandBarsVisible] = useState(false);
     const sortedApplications = applications.toSorted(
         (a, b) =>
             new Date(b.applied_at ?? "").getTime() -
             new Date(a.applied_at ?? "").getTime()
     );
 
-    const test = (on: boolean) => {
-        console.log(test, on);
+    // make command bars visible when an applicant is selected.
+    useEffect(() => {
+        setCommandBarsVisible(selectedApplications.size > 0);
+    }, [selectedApplications.size]);
+
+    const statuses = [
+        {
+            id: "4",
+            label: "Accept",
+            icon: Check,
+            onClick: () => console.log("Set applicant to accepted"),
+        },
+        {
+            id: "1",
+            label: "Star",
+            icon: Star,
+            onClick: () => console.log("Set applicant to starred"),
+        },
+        {
+            id: "6",
+            label: "Reject",
+            icon: X,
+            onClick: () => console.log("Set applicant to rejected"),
+        },
+        {
+            id: "7",
+            label: "Delete",
+            icon: Trash,
+            onClick: () => console.log("Set applicant to deleted"),
+            destructive: true
+        }
+    ]
+
+    const filterByStatus = (status?: string) => {
+        console.log("Filtering by applicants with status: " + status);
     }
 
     const toggleSelect = (id: string, next?: boolean) => {
@@ -60,6 +97,12 @@ export function ApplicationsContent({
         });
     }
 
+    const selectAll = () => {
+        setSelectedApplications(new Set(
+            sortedApplications.map((application) => application.id!)
+        ))
+    }
+
     const unselectAll = () => {
         setSelectedApplications(new Set());
     }
@@ -68,7 +111,33 @@ export function ApplicationsContent({
         <div className="flex flex-col gap-4">
             <ApplicationsHeader
                 selectedCount={sortedApplications.length}
-                onStatusChange={test}
+                onStatusChange={(status) => console.log(status)}
+            />
+            <CommandMenu
+                items={statuses}
+                isVisible={commandBarsVisible}
+                defaultVisible={true}
+                position={{ position: 'bottom' }}
+            />
+            <CommandMenu
+                items={[
+                    {
+                        id: "select",
+                        label: "Select all",
+                        icon: SquareCheck,
+                        onClick: selectAll
+                    },
+                    `Applicants selected: ${selectedApplications.size}`,
+                    {
+                        id: "cancel",
+                        label: "Cancel",
+                        icon: X,
+                        onClick: unselectAll
+                    }
+                ]}
+                isVisible={commandBarsVisible}
+                defaultVisible={true}
+                position={{ position: 'top' }}
             />
             <div className="flex flex-col gap-2">
                 {sortedApplications.some(
@@ -104,11 +173,9 @@ export function ApplicationsContent({
         <>
             <ApplicationsHeader
                 selectedCount={sortedApplications.length}
-                onStatusChange={test}
+                onStatusChange={(status) => console.log(status)}
             />
             <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-300 border-2 text-sm rounded-md overflow-hidden">
-                <div>
-                </div>
                 <thead className="bg-gray-100">
                     <tr className="text-left">
                         <th className="p-4">
