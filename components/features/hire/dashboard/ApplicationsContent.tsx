@@ -41,6 +41,7 @@ export function ApplicationsContent({
     const { isMobile } = useAppContext();
     const [selectedApplications, setSelectedApplications] = useState<Set<string>>(new Set());
     const [commandBarsVisible, setCommandBarsVisible] = useState(false);
+    const [allSelected, setAllSelected] = useState(false);
     const sortedApplications = applications.toSorted(
         (a, b) =>
             new Date(b.applied_at ?? "").getTime() -
@@ -101,10 +102,16 @@ export function ApplicationsContent({
         setSelectedApplications(new Set(
             sortedApplications.map((application) => application.id!)
         ))
+        setAllSelected(true);
     }
 
     const unselectAll = () => {
         setSelectedApplications(new Set());
+        setAllSelected(false);
+    }
+
+    const toggleSelectAll = () => {
+        allSelected ? unselectAll() : selectAll();
     }
 
     return isMobile ? (
@@ -179,7 +186,7 @@ export function ApplicationsContent({
                 <thead className="bg-gray-100">
                     <tr className="text-left">
                         <th className="p-4">
-                            <Checkbox></Checkbox>
+                            <Checkbox onClick={toggleSelectAll}></Checkbox>
                         </th>
                         <th className="p-4">Applicant</th>
                         <th className="p-4">Education</th>
