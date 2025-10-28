@@ -12,14 +12,7 @@ import { cn } from "@/lib/utils";
 import { fmtISO } from "@/lib/utils/date-utils";
 import { CalendarClock, MessageCircle } from "lucide-react";
 import { useAppContext } from "@/lib/ctx-app";
-
-const approximateYearLevel = (timestamp: number) => {
-  const now = Date.now();
-  const year = 31_556_952_000;
-  const delta = timestamp - now;
-  if (delta > 0 && delta < year * 2) return "3rd Year/Above";
-  else return "Freshman/Sophomore";
-};
+import { Card } from "@/components/ui/card";
 
 interface ApplicationRowProps {
   application: EmployerApplication;
@@ -30,17 +23,19 @@ interface ApplicationRowProps {
   openChatModal: () => void;
   updateConversationId: (conversationId: string) => void;
   setSelectedApplication: (application: EmployerApplication) => void;
+  checkboxSelected?: boolean;
+  onToggleSelect?: (next: boolean) => void;
 }
 
 export function ApplicationRow({
   application,
   onView,
-  onNotes,
   onSchedule,
-  onStatusChange,
   openChatModal,
   updateConversationId,
   setSelectedApplication,
+  checkboxSelected = false,
+  onToggleSelect
 }: ApplicationRowProps) {
   const { to_university_name, to_app_status_name } = useDbRefs();
   const conversations = useConversations();
@@ -48,6 +43,33 @@ export function ApplicationRow({
 
   return isMobile ? (
     <>
+      <Card
+        className="flex flex-col gap-4 hover:cursor-pointer hover:bg-primary/25 transition-colors"
+        onClick={onView}
+      >
+        <div onClick={(e) => e.stopPropagation()}>
+          <Checkbox
+            checked={checkboxSelected}
+            onCheckedChange={(v) => onToggleSelect?.(!!v)}
+          />
+        </div>
+        <div className="flex flex-col">
+          <h4>{getFullName(application.user)}</h4>
+          <span className="text-gray-500">
+            {to_university_name(application.user?.university) || ""}{" "}
+            {application.user?.expected_start_date &&
+              "• " +
+              application.user?.year_level}
+          </span>
+          <span className="text-gray-500">{application.user?.degree}</span>
+          <span className="text-gray-500">{application.user?.taking_for_credit ? "For Credit" : "Voluntary"}</span>
+          <span className="text-gray-500">
+            {application.user?.expected_start_date || application.user?.expected_end_date ? (
+              <> {fmtISO(application.user?.expected_start_date)} — {fmtISO(application.user?.expected_end_date)}</>
+            ) : <span className="text-gray-500"> No preferred dates provided</span>}
+          </span>
+        </div>
+      </Card>
     </>
   ) : (
     <tr
@@ -55,7 +77,10 @@ export function ApplicationRow({
       onClick={onView}
     >
       <td className="px-4 py-2">
-        <Checkbox></Checkbox >
+        <Checkbox
+          checked={checkboxSelected}
+          onCheckedChange={(v) => onToggleSelect?.(!!v)}
+        />
       </td >
       <td className="px-4 py-2">
         {getFullName(application.user)}{" "}

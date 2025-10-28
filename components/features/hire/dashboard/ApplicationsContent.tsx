@@ -7,7 +7,6 @@ import { EmployerApplication } from "@/lib/db/db.types";
 import { ApplicationRow } from "./ApplicationRow";
 import { useAppContext } from "@/lib/ctx-app";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ApplicationsHeader } from "./ApplicationsHeader";
 import { useState } from "react";
@@ -48,33 +47,58 @@ export function ApplicationsContent({
         console.log(test, on);
     }
 
+    const toggleSelect = (id: string, next?: boolean) => {
+        setSelectedApplications((prev) => {
+            const nextSet = new Set(prev);
+            if (typeof next === "boolean") {
+                next ? nextSet.add(id) : nextSet.delete(id);
+            } else {
+                nextSet.has(id) ? nextSet.delete(id) : nextSet.add(id);
+            }
+
+            return nextSet;
+        });
+    }
+
+    const unselectAll = () => {
+        setSelectedApplications(new Set());
+    }
+
     return isMobile ? (
-        <div className="flex flex-col gap-2">
-            {sortedApplications.some(
-                (application) => application.status !== undefined && statusId.includes(application.status)
-            ) ? (
-                sortedApplications
-                    .filter((application) => application.status !== undefined && statusId.includes(application.status))
-                    .map((application) => (
-                        <ApplicationRow
-                            key={application.id}
-                            application={application}
-                            onView={() => onApplicationClick(application)}
-                            onNotes={() => onNotesClick(application)}
-                            onSchedule={() => onScheduleClick(application)}
-                            onStatusChange={(status) =>
-                                onStatusChange(application, status)
-                            }
-                            openChatModal={openChatModal}
-                            setSelectedApplication={setSelectedApplication}
-                            updateConversationId={updateConversationId}
-                        />
-                    ))
-            ) : (
-                <div className="p-2">
-                    <Badge>No applications under this category.</Badge>
-                </div>
-            )}
+        <div className="flex flex-col gap-4">
+            <ApplicationsHeader
+                selectedCount={sortedApplications.length}
+                onStatusChange={test}
+            />
+            <div className="flex flex-col gap-2">
+                {sortedApplications.some(
+                    (application) => application.status !== undefined && statusId.includes(application.status)
+                ) ? (
+                    sortedApplications
+                        .filter((application) => application.status !== undefined && statusId.includes(application.status))
+                        .map((application) => (
+                            <ApplicationRow
+                                key={application.id}
+                                application={application}
+                                onView={() => onApplicationClick(application)}
+                                onNotes={() => onNotesClick(application)}
+                                onSchedule={() => onScheduleClick(application)}
+                                onStatusChange={(status) =>
+                                    onStatusChange(application, status)
+                                }
+                                openChatModal={openChatModal}
+                                setSelectedApplication={setSelectedApplication}
+                                updateConversationId={updateConversationId}
+                                checkboxSelected={selectedApplications.has(application.id!)}
+                                onToggleSelect={(v) => toggleSelect(application.id!, !!v)}
+                            />
+                        ))
+                ) : (
+                    <div className="p-2">
+                        <Badge>No applications under this category.</Badge>
+                    </div>
+                )}
+            </div>
         </div>
     ) : (
         <>
@@ -116,6 +140,8 @@ export function ApplicationsContent({
                                     openChatModal={openChatModal}
                                     setSelectedApplication={setSelectedApplication}
                                     updateConversationId={updateConversationId}
+                                    checkboxSelected={selectedApplications.has(application.id!)}
+                                    onToggleSelect={(v) => toggleSelect(application.id!, !!v)}
                                 />
                             ))
                     ) : (

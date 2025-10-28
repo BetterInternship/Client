@@ -11,6 +11,10 @@ interface ApplicationsHeaderProps {
     onStatusChange: (active: boolean) => void;
 }
 
+const test = (on: number) => {
+    console.log(test, on);
+}
+
 export function ApplicationsHeader({
     selectedCount,
     onStatusChange
@@ -19,7 +23,13 @@ export function ApplicationsHeader({
     const { isMobile } = useAppContext();
 
     return isMobile ? (
-        <></>
+        <>
+            <StatusDropdown
+                value={1}
+                onChange={test}
+                className="w-full"
+            ></StatusDropdown>
+        </>
     ) : (
         <div className="flex gap-2 pb-4">
             <FilterButton
@@ -29,7 +39,7 @@ export function ApplicationsHeader({
                 onToggle={onStatusChange}
             />
             <FilterButton
-                name="Shortlisted"
+                name="Starred"
                 itemCount={selectedCount}
                 isActive={false}
                 onToggle={onStatusChange}
@@ -42,6 +52,12 @@ export function ApplicationsHeader({
             />
             <FilterButton
                 name="Rejected"
+                itemCount={selectedCount}
+                isActive={false}
+                onToggle={onStatusChange}
+            />
+            <FilterButton
+                name="Deleted"
                 itemCount={selectedCount}
                 isActive={false}
                 onToggle={onStatusChange}
