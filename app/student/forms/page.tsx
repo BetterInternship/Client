@@ -168,8 +168,8 @@ export default function FormsPage() {
                 generatorForms?.length !== 0 &&
                 generatorForms.map((form) => (
                   <FormGenerateCard
-                    key={form.id}
-                    formTitle={`${form.name} (${form.version})`}
+                    key={form.name}
+                    formTitle={`${form.label ?? form.name}`}
                     onViewTemplate={() => {
                       if (!form.base_document_id) {
                         alert("No template available for this form.");

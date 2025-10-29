@@ -42,13 +42,11 @@ export function FormFlowRouter({
     staleTime: 60_000,
   });
 
-  // Loader
-  if (!form.data?.formMetadata || form.isLoading)
-    return <Loader>Loading form...</Loader>;
-
   // Get interface to form
-  const formMetdata = new FormMetadata(form.data.formMetadata);
-  const fields = formMetdata.getFieldsForClient();
+  const formMetdata = form.data?.formMetadata
+    ? new FormMetadata(form.data.formMetadata)
+    : null;
+  const fields = formMetdata?.getFieldsForClient() ?? [];
 
   // Saved autofill
   const autofillValues = useMemo(
@@ -93,8 +91,8 @@ export function FormFlowRouter({
     }
 
     // If any errors, disallow proceed
+    setErrors(errors);
     if (Object.keys(errors).length) {
-      setErrors(errors);
       console.log("er", errors);
       return;
     }
@@ -123,6 +121,10 @@ export function FormFlowRouter({
   };
 
   if (done) return <StepComplete onMyForms={() => onGoToMyForms?.()} />;
+
+  // Loader
+  if (!form.data?.formMetadata || form.isLoading)
+    return <Loader>Loading form...</Loader>;
 
   return (
     <div className="space-y-4">

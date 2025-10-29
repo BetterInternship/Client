@@ -237,7 +237,17 @@ export const UserService = {
   },
 
   async getForm(formName: string) {
-    return APIClient.get<{ formMetadata: IFormMetadata } & FetchResponse>(
+    return APIClient.get<
+      {
+        formDocument: {
+          name: string;
+          label: string;
+          version: number;
+          base_document_id: string;
+        };
+        formMetadata: IFormMetadata;
+      } & FetchResponse
+    >(
       APIRouteBuilder("forms")
         .r("form-latest")
         .p({ name: formName })

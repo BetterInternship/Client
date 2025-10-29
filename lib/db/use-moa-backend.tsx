@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-10-29 16:45:16
+ * @ Modified time: 2025-10-29 22:11:27
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
@@ -19,6 +19,8 @@ import {
 import z, { ZodType } from "zod";
 import { Database, Tables } from "@betterinternship/schema.base";
 import { PublicUser } from "./db.types";
+import { UserService } from "../api/services";
+import { IFormMetadata } from "@betterinternship/core/forms";
 
 // Environment setup
 const DB_URL_BASE = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -84,7 +86,15 @@ function fieldKeysByRole(
  *
  * @returns
  */
-export const fetchForms = async (user: PublicUser): Promise<IFormSchema[]> => {
+export const fetchForms = async (
+  user: PublicUser,
+): Promise<
+  (IFormMetadata & {
+    name: string;
+    version: number;
+    base_document_id: string;
+  })[]
+> => {
   if (!user.department) {
     return [];
   }
@@ -114,19 +124,13 @@ export const fetchForms = async (user: PublicUser): Promise<IFormSchema[]> => {
     .eq("id", internshipFormMapping.form_group_id)
     .single();
 
-  // Fetch all forms for user
-  const { data: forms, error: formsError } = await db
-    .from("form_schemas")
-    .select("*")
-    .in("name", formGroup?.forms ?? []);
-
-  console.log(formGroup?.forms);
-
-  if (formsError) {
-    console.log("Could not fetch user forms.");
-    console.log("Actually, something went wrong: " + formsError?.message);
-    return [];
-  }
+  const forms = await Promise.all(
+    formGroup?.forms.map(async (formName: string) => {
+      const { formMetadata, formDocument } =
+        await UserService.getForm(formName);
+      return { ...formMetadata, ...formDocument };
+    }) ?? [],
+  );
 
   return forms ?? [];
 };
