@@ -59,6 +59,8 @@ export function DynamicForm({
     staleTime: 60_000,
   });
 
+  console.log("metadata", data);
+
   const moldedClientFields: IFormField[] = useMemo(() => {
     if (overrideFields) return []; // not used when overrideFields supplied
 

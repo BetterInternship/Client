@@ -74,12 +74,12 @@ export function FormFlowRouter({
   const [selection, setSelection] = useState<string>("");
   const [mainDefs, setMainDefs] = useState<FieldDef[]>([]);
 
-  useEffect(() => {
-    if (mode !== "select") {
-      setSelection("");
-      setValues((prev) => ({ ...prev, "entity-id": "" }));
-    }
-  }, [mode]);
+  // useEffect(() => {
+  //   if (mode !== "select") {
+  //     setSelection("");
+  //     setValues((prev) => ({ ...prev, "entity-id": "" }));
+  //   }
+  // }, [mode]);
 
   const formName = useMemo(() => {
     if (mode === "invite") return `${baseForm}-invite`;
@@ -116,18 +116,18 @@ export function FormFlowRouter({
   }, [mainDefs, savedFlat]);
 
   // fetch companies
-  const { data } = useQuery<EntitiesListResponse>({
-    queryKey: ["entities", "list"],
-    queryFn: () => UserService.getEntityList(),
-  });
-  const companiesRaw: Entity[] = data?.employers ?? [];
+  // const { data } = useQuery<EntitiesListResponse>({
+  //   queryKey: ["entities", "list"],
+  //   queryFn: () => UserService.getEntityList(),
+  // });
+  // const companiesRaw: Entity[] = data?.employers ?? [];
 
   // sync local selection with "entity-id" written by FieldRenderer
-  useEffect(() => {
-    const raw = values["entity-id"];
-    const id = typeof raw === "string" ? raw : raw == null ? "" : String(raw);
-    if (id && id !== selection) setSelection(id);
-  }, [values["entity-id"]]);
+  // useEffect(() => {
+  //   const raw = values["entity-id"];
+  //   const id = typeof raw === "string" ? raw : raw == null ? "" : String(raw);
+  //   if (id && id !== selection) setSelection(id);
+  // }, [values["entity-id"]]);
 
   const validatorFns = useMemo(() => compileValidators(mainDefs), [mainDefs]);
 
@@ -376,26 +376,26 @@ export function FormFlowRouter({
       };
 
       // If SELECT mode and an entity is chosen, enrich with entity info
-      const entityId = mode === "select" ? String(selection || "") : "";
-      const selectedFull =
-        mode === "select" && entityId
-          ? companiesRaw.find((c) => String(c.id) === entityId)
-          : undefined;
+      // const entityId = mode === "select" ? String(selection || "") : "";
+      // const selectedFull =
+      //   mode === "select" && entityId
+      //     ? companiesRaw.find((c) => String(c.id) === entityId)
+      //     : undefined;
 
-      if (mode === "select" && entityId) {
-        const supplements: Record<string, string> = {
-          "entity-id": entityId,
-          "entity-legal-name": selectedFull?.legal_entity_name ?? "",
-          "entity-legal-identifier": selectedFull?.legal_identifier ?? "",
-          "entity-address": selectedFull?.address ?? "",
-          "entity-representative-name": selectedFull?.contact_name ?? "",
-          "entity-representative-email": selectedFull?.contact_email ?? "",
-        };
-        for (const [k, v] of Object.entries(supplements)) {
-          const trimmed = (v ?? "").trim();
-          if (trimmed !== "") finalFlat[k] = trimmed;
-        }
-      }
+      // if (mode === "select" && entityId) {
+      //   const supplements: Record<string, string> = {
+      //     "entity-id": entityId,
+      //     "entity-legal-name": selectedFull?.legal_entity_name ?? "",
+      //     "entity-legal-identifier": selectedFull?.legal_identifier ?? "",
+      //     "entity-address": selectedFull?.address ?? "",
+      //     "entity-representative-name": selectedFull?.contact_name ?? "",
+      //     "entity-representative-email": selectedFull?.contact_email ?? "",
+      //   };
+      //   for (const [k, v] of Object.entries(supplements)) {
+      //     const trimmed = (v ?? "").trim();
+      //     if (trimmed !== "") finalFlat[k] = trimmed;
+      //   }
+      // }
 
       if (finalFlat["entity-id"] === "undefined") {
         finalFlat["entity-id"] = "";
@@ -423,10 +423,6 @@ export function FormFlowRouter({
         await UserService[route]({
           formName,
           values: finalWithDerived, // TODO: switch to `finalFlat` if derivations not needed anymore
-          parties: {
-            userId: profileData.id,
-            employerId: entityId || undefined,
-          },
         });
 
         setDone(true);
@@ -442,7 +438,6 @@ export function FormFlowRouter({
       values,
       validateNow,
       update,
-      companiesRaw,
       profileData?.id,
       formName,
       selection,
