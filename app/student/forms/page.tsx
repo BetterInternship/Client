@@ -51,21 +51,7 @@ export default function FormsPage() {
 
   const norm = (s?: string) => (s ?? "").trim().toLowerCase();
 
-  const generatorForms = useMemo(() => {
-    const list = (formList ?? []).filter((f) => {
-      const name = norm(f.name);
-      return !/-\s*(invite|manual)$/.test(name); // hide variants
-    });
-
-    return list.slice().sort((a, b) => {
-      const aa = norm(a.label ?? a.name);
-      const bb = norm(b.label ?? b.name);
-      if (aa < bb) return -1;
-      if (aa > bb) return 1;
-      return 0;
-    });
-  }, [formList]);
-
+  const generatorForms = formList;
   const formNameSet = useMemo(() => {
     const s = new Set<string>();
     for (const f of formList ?? []) {
@@ -74,14 +60,6 @@ export default function FormsPage() {
     }
     return s;
   }, [formList]);
-
-  const hasVariant = useCallback(
-    (base: string, suffix: "invite" | "manual") => {
-      const key = `${norm(base)}-${suffix}`;
-      return formNameSet.has(key);
-    },
-    [formNameSet],
-  );
 
   const comingSoon = useMemo(() => {
     const available = new Set(
@@ -93,14 +71,10 @@ export default function FormsPage() {
   }, [generatorForms]);
 
   const openFormModal = (formName: string, formLabel: string) => {
-    const supportsInvite = hasVariant(formName, "invite");
-    const supportsManual = hasVariant(formName, "manual");
     openGlobalModal(
       "form-generator-form",
       <FormFlowRouter
         baseForm={formName}
-        supportsInvite={supportsInvite}
-        supportsManual={supportsManual}
         onGoToMyForms={() => {
           setTab("My Forms");
           closeGlobalModal("form-generator-form");
@@ -311,7 +285,6 @@ export default function FormsPage() {
                         alert("No document associated with request.");
                         throw new Error("No document URL available");
                       }}
-                      downloading={false}
                     />
                   );
                 })}

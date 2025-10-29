@@ -14,23 +14,15 @@ export function DynamicForm({
   form,
   values,
   onChange,
-  onSchema,
   errors = {},
   showErrors = false,
-  entityMode,
-  onEntityModeChange,
-  entityModeSupport,
   overrideFields,
 }: {
   form: string;
   values: Record<string, any>;
   onChange: (key: string, value: any) => void;
-  onSchema: (fields: ClientField<[]>[]) => void;
   errors?: Record<string, string>;
   showErrors?: boolean;
-  entityMode: Mode;
-  onEntityModeChange: (m: Mode) => void;
-  entityModeSupport: { invite: boolean; manual: boolean };
   overrideFields?: ClientField<[]>[];
 }) {
   /**

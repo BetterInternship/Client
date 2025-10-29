@@ -48,6 +48,31 @@ export const coerceAnyDate = (raw: unknown): number | undefined => {
 };
 
 /**
+ * Counts the number of weekdays between two dates.
+ *
+ * @param startMs
+ * @param endMs
+ * @returns
+ */
+export const countWeekdaysInclusive = (
+  startMs: number,
+  endMs: number,
+): number => {
+  if (endMs < startMs) return 0;
+  const d = new Date(startMs);
+  d.setHours(0, 0, 0, 0);
+  const end = new Date(endMs);
+  end.setHours(0, 0, 0, 0);
+  let count = 0;
+  while (d.getTime() <= end.getTime()) {
+    const day = d.getDay(); // 0=Sun .. 6=Sat
+    if (day !== 0 && day !== 6) count++;
+    d.setDate(d.getDate() + 1);
+  }
+  return count;
+};
+
+/**
  * Clamps date to within the given range
  *
  * @param ms
