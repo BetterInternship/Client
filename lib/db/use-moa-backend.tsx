@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-10-18 14:22:39
+ * @ Modified time: 2025-10-29 16:45:16
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
@@ -66,7 +66,6 @@ interface IJoinedField extends Omit<IField, "validators" | "transformers"> {
   transformers: ZodType[];
 }
 
-
 // Gets field keys by role
 function fieldKeysByRole(
   data?: IFormSchema,
@@ -119,7 +118,9 @@ export const fetchForms = async (user: PublicUser): Promise<IFormSchema[]> => {
   const { data: forms, error: formsError } = await db
     .from("form_schemas")
     .select("*")
-    .in("id", formGroup?.forms ?? []);
+    .in("name", formGroup?.forms ?? []);
+
+  console.log(formGroup?.forms);
 
   if (formsError) {
     console.log("Could not fetch user forms.");
@@ -262,7 +263,6 @@ async function fetchFieldDefs(
     }),
   );
 }
-
 
 /**
  * Has an implied eval, hence the name.

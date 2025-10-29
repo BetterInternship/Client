@@ -139,7 +139,7 @@ const Section = memo(function Section({
       {defs.map((def) => (
         <div key={`${formKey}:${def.section}:${String(def.id)}`}>
           <FieldRenderer
-            def={def}
+            field={def}
             value={values[def.key]}
             onChange={(v) => onChange(def.key, v)}
             error={errors[def.key]}

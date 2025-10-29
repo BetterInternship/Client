@@ -16,20 +16,6 @@ import { addDays } from "date-fns";
 type SectionKey = "student" | "university" | "entity" | "internship";
 type Mode = "select" | "invite" | "manual";
 
-export type FieldDef = {
-  id: string | number;
-  key: string;
-  label: string;
-  type: string;
-  placeholder?: string;
-  helper?: string;
-  maxLength?: number;
-  options?: Array<{ id: string | number; name: string }>;
-  validators?: Array<z.ZodTypeAny | RegExp | ((v: unknown) => unknown)>;
-  section: SectionKey;
-  params?: Record<string, any>;
-};
-
 type Errors = Record<string, string>;
 type FormValues = Record<string, unknown>;
 
@@ -681,7 +667,7 @@ function flattenProfileShape(input: unknown): Record<string, string> {
 
 function countWeekdaysInclusive(startMs: number, endMs: number): number {
   if (endMs < startMs) return 0;
-  let d = new Date(startMs);
+  const d = new Date(startMs);
   d.setHours(0, 0, 0, 0);
   const end = new Date(endMs);
   end.setHours(0, 0, 0, 0);

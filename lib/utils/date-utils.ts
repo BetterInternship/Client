@@ -1,3 +1,72 @@
+/**
+ * Adds the specified number of days to the date object
+ *
+ * @param d
+ * @param n
+ * @returns
+ */
+export const addDays = (d: Date, n: number) => {
+  const x = new Date(d);
+  x.setDate(x.getDate() + n);
+  return x;
+};
+
+/**
+ * Converts iso to unix timestamp
+ *
+ * @param s
+ * @returns
+ */
+export const coerceISO = (s?: string) => {
+  if (!s) return undefined;
+  const ms = Date.parse(s);
+  return Number.isFinite(ms) ? new Date(ms) : undefined;
+};
+
+/**
+ * Converts any date (string, date obj) to unix timestamp.
+ * // ! we should deprecate this, this is not safe
+ *
+ * @param raw
+ * @returns
+ */
+export const coerceAnyDate = (raw: unknown): number | undefined => {
+  if (typeof raw === "number") return raw > 0 ? raw : undefined;
+  if (typeof raw !== "string") return undefined;
+  const s = raw.trim();
+  if (!s) return undefined;
+
+  // numeric string (ms epoch)
+  if (/^\d{6,}$/.test(s)) {
+    const n = Number(s);
+    return Number.isFinite(n) && n > 0 ? n : undefined;
+  }
+
+  // ISO/date-like string
+  const ms = Date.parse(s);
+  return Number.isFinite(ms) && ms > 0 ? ms : undefined;
+};
+
+/**
+ * Clamps date to within the given range
+ *
+ * @param ms
+ * @param min
+ * @param max
+ * @returns
+ */
+export const clampDateMs = (ms: number, min?: Date, max?: Date) => {
+  if (min && ms < min.getTime()) return min.getTime();
+  if (max && ms > max.getTime()) return max.getTime();
+  return ms;
+};
+
+/**
+ * Format a unix timestamp as a simple date format.
+ *
+ * @param timestamp
+ * @returns
+ */
 export const formatTimestampDate = (timestamp?: number | null) => {
   if (!timestamp) return "-";
   const date = new Date(timestamp);
@@ -94,7 +163,8 @@ export const isoToMs = (iso?: string | null) => {
 export const msToISO = (ms?: number | null) =>
   ms == null ? undefined : new Date(ms).toISOString().slice(0, 10);
 
-export const isISO = (s?: string | null) => !!s && /^\d{4}-\d{2}-\d{2}$/.test(s);
+export const isISO = (s?: string | null) =>
+  !!s && /^\d{4}-\d{2}-\d{2}$/.test(s);
 export const fmtISO = (s?: string | null) =>
   isISO(s)
     ? new Date(`${s}T00:00:00Z`).toLocaleDateString("en-PH", {
@@ -103,4 +173,3 @@ export const fmtISO = (s?: string | null) =>
         day: "numeric",
       })
     : "Not provided";
-

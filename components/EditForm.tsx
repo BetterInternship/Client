@@ -223,7 +223,7 @@ interface FormCheckboxProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   checked?: boolean;
   label?: string;
-  setter?: (value: any) => void;
+  setter?: (value: boolean) => void;
   className?: string;
   sentence?: React.ReactNode;
   required?: boolean;
@@ -255,7 +255,7 @@ export const FormCheckbox = ({
               ? "border-primary border-opacity-85 bg-blue-200"
               : "border-gray-300 bg-gray-50",
           )}
-          onCheckedChange={(checked) => setter && setter(checked)}
+          onCheckedChange={(checked) => setter && setter(!!checked)}
         >
           {checked && <Check className="text-primary opacity-75 h-4 w-4" />}
         </Checkbox>
@@ -750,7 +750,7 @@ export function TimeInputNative({
   required?: boolean;
   helper?: string;
   className?: string;
-} & React.InputHTMLAttributes<HTMLInputElement>) {
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange">) {
   return (
     <div className={className}>
       {label && (

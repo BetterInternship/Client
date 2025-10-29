@@ -75,7 +75,7 @@ export function DynamicForm({
     if (!meta) return [];
 
     try {
-      const fm = new FormMetadata(meta as IFormMetadata);
+      const fm = new FormMetadata(meta);
       const clientFields = fm.getFieldsForClient();
       return Array.isArray(clientFields) ? (clientFields as IFormField[]) : [];
     } catch {
@@ -354,7 +354,7 @@ const CompanySectionWithEntityMode = memo(
             return (
               <div key={`${formKey}:${def.section}:${String(def.id)}`}>
                 <FieldRenderer
-                  def={def}
+                  field={def}
                   value={values[def.key]}
                   onChange={(v) => onChange(def.key, v)}
                   error={errors[def.key]}
@@ -375,7 +375,7 @@ const CompanySectionWithEntityMode = memo(
               className="space-y-2"
             >
               <FieldRenderer
-                def={def}
+                field={def}
                 value={values[def.key]}
                 onChange={(v) => onChange(def.key, v)}
                 error={errors[def.key]}
@@ -479,7 +479,7 @@ const FormSection = memo(function FormSection({
       {defs.map((def) => (
         <div key={`${formKey}:${def.section}:${String(def.id)}`}>
           <FieldRenderer
-            def={def}
+            field={def}
             value={values[def.key]}
             onChange={(v) => onChange(def.key, v)}
             error={errors[def.key]}
