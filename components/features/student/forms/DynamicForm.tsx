@@ -1,51 +1,29 @@
 "use client";
 
 import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { UserService } from "@/lib/api/services";
 import { FieldRenderer } from "@/components/features/student/forms/FieldRenderer";
-import { Loader2 } from "lucide-react";
-import { ClientField, FormMetadata } from "@betterinternship/core/forms";
-import { Loader } from "@/components/ui/loader";
+import { ClientField } from "@betterinternship/core/forms";
 import { coerceAnyDate } from "@/lib/utils";
 
 export function DynamicForm({
-  form,
+  formName,
+  fields,
   values,
   setValues,
   autofillValues,
   onChange,
   errors = {},
   showErrors = false,
-  overrideFields,
 }: {
-  form: string;
+  formName: string;
+  fields: ClientField<[]>[];
   values: Record<string, any>;
   autofillValues: Record<string, string>;
   errors?: Record<string, string>;
   showErrors?: boolean;
-  overrideFields?: ClientField<[]>[];
   setValues: (values: Record<string, string>) => void;
   onChange: (key: string, value: any) => void;
 }) {
-  const {
-    data,
-    isLoading,
-    error: loadError,
-  } = useQuery({
-    queryKey: ["forms", form],
-    queryFn: () => UserService.getForm(form),
-    enabled: !!form && !overrideFields, // skip fetch when caller forces overrideFields
-    staleTime: 60_000,
-  });
-
-  // Loading form
-  if (!data?.formMetadata) return <Loader>Loading form...</Loader>;
-
-  // Extract data from the schema
-  const formMetadata = new FormMetadata(data?.formMetadata);
-  const fields = formMetadata.getFieldsForClient();
-
   // Group by section
   const entitySectionFields: ClientField<[]>[] = fields.filter(
     (d) => d.section === "entity",
@@ -59,8 +37,6 @@ export function DynamicForm({
   const universitySectionFields: ClientField<[]>[] = fields.filter(
     (d) => d.section === "university",
   );
-
-  const showInitialLoader = isLoading;
 
   // Seed from saved autofill
   useEffect(() => {
@@ -80,29 +56,14 @@ export function DynamicForm({
         newValues[field.field] = coercedAutofillValue.toString();
     }
 
+    console.log(fields, autofillValues);
     setValues(newValues);
   }, []);
 
   return (
-    <div className="space-y-4" aria-busy={isLoading}>
-      {showInitialLoader && (
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span>Loading form…</span>
-        </div>
-      )}
-
-      {loadError && !overrideFields && (
-        <p className="text-sm text-red-600">
-          Failed to load form:{" "}
-          {loadError instanceof Error
-            ? loadError.message
-            : JSON.stringify(loadError)}
-        </p>
-      )}
-
+    <div className="space-y-4">
       <FormSection
-        formKey={form}
+        formKey={formName}
         title="Entity Information"
         fields={entitySectionFields}
         values={values}
@@ -112,7 +73,7 @@ export function DynamicForm({
       />
 
       <FormSection
-        formKey={form}
+        formKey={formName}
         title="Internship Information"
         fields={internshipSectionFields}
         values={values}
@@ -122,7 +83,7 @@ export function DynamicForm({
       />
 
       <FormSection
-        formKey={form}
+        formKey={formName}
         title="University Information"
         fields={universitySectionFields}
         values={values}
@@ -132,7 +93,7 @@ export function DynamicForm({
       />
 
       <FormSection
-        formKey={form}
+        formKey={formName}
         title="Student Information"
         fields={studentSectionFields}
         values={values}

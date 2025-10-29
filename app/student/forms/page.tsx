@@ -114,7 +114,7 @@ export default function FormsPage() {
   // refresh on my forms
   useEffect(() => {
     if (tab === "My Forms" && userId) {
-      queryClient.invalidateQueries({ queryKey: ["my_forms", userId] });
+      void queryClient.invalidateQueries({ queryKey: ["my_forms", userId] });
     }
   }, [tab, userId, queryClient]);
 

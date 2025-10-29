@@ -7,7 +7,10 @@ import { useProfileActions } from "@/lib/api/student.actions.api";
 import { StepComplete } from "./StepComplete";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { GenerateButtons } from "./GenerateFormButtons";
-import { ClientField } from "@betterinternship/core/forms";
+import { FormMetadata } from "@betterinternship/core/forms";
+import { useQuery } from "@tanstack/react-query";
+import { Loader } from "@/components/ui/loader";
+import z from "zod";
 
 type Errors = Record<string, string>;
 type FormValues = Record<string, string>;
@@ -28,9 +31,24 @@ export function FormFlowRouter({
   const [busy, setBusy] = useState(false);
 
   // Form stuff
-  const [fields, setFields] = useState<ClientField<[]>[]>([]);
   const [values, setValues] = useState<FormValues>({});
   const [errors, setErrors] = useState<Errors>({});
+
+  // Fetch form
+  const form = useQuery({
+    queryKey: ["forms", formName],
+    queryFn: () => UserService.getForm(formName),
+    enabled: !!formName,
+    staleTime: 60_000,
+  });
+
+  // Loader
+  if (!form.data?.formMetadata || form.isLoading)
+    return <Loader>Loading form...</Loader>;
+
+  // Get interface to form
+  const formMetdata = new FormMetadata(form.data.formMetadata);
+  const fields = formMetdata.getFieldsForClient();
 
   // Saved autofill
   const autofillValues = useMemo(
@@ -50,7 +68,36 @@ export function FormFlowRouter({
     setSubmitted(true);
     if (!profile.data?.id) return;
 
-    console.log("🧾 Submitting flat payload:", values);
+    // Validate fields before allowing to proceed
+    const errors: Record<string, string> = {};
+    for (const field of fields) {
+      // Check if missing
+      const value = values[field.field];
+      if (!value) {
+        errors[field.field] = `${field.field} is missing.`;
+        continue;
+      }
+
+      // Check validator error
+      const coerced = field.coerce(value);
+      const result = field.validator?.safeParse(coerced);
+      if (result?.error) {
+        const errorString = z
+          .treeifyError(result.error)
+          .errors.map((e) => e.split(" ").slice(0).join(" "))
+          .join("\n");
+        console.log("TREES", z.treeifyError(result.error));
+        errors[field.field] = `${field.field}: ${errorString}`;
+        continue;
+      }
+    }
+
+    // If any errors, disallow proceed
+    if (Object.keys(errors).length) {
+      setErrors(errors);
+      console.log("er", errors);
+      return;
+    }
 
     try {
       setBusy(true);
@@ -81,13 +128,14 @@ export function FormFlowRouter({
     <div className="space-y-4">
       <DynamicForm
         key={formName}
-        form={formName}
+        formName={formName}
         values={values}
         onChange={setField}
         showErrors={submitted}
         errors={errors}
         autofillValues={autofillValues ?? {}}
         setValues={setValues}
+        fields={fields}
       />
 
       <div className="pt-2 flex justify-end gap-2 flex-wrap ">
