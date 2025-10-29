@@ -183,6 +183,21 @@ export const UserService = {
     }>(APIRouteBuilder("forms").r("signed").build({ moaServer: true }), data);
   },
 
+  async submitPrefilledForm(data: {
+    formName: string;
+    values: Record<string, string>;
+  }) {
+    return APIClient.post<{
+      success?: boolean;
+      pendingDocumentUrl: string;
+      pendingDocumentId: string;
+      internshipFormId: string;
+    }>(
+      APIRouteBuilder("forms").r("prefilled").build({ moaServer: true }),
+      data,
+    );
+  },
+
   async submitPendingForm(data: {
     formName: string;
     values: Record<string, string>;
@@ -216,8 +231,6 @@ export const UserService = {
     );
     return { ...res, data: res.pendingInfo };
   },
-
-  // TODO: Do submit prefilled form
 
   async getOutsideEntityFormFields(data: { formName: string; party: string }) {
     return APIClient.get<{ fields?: any[] } & FetchResponse>(
