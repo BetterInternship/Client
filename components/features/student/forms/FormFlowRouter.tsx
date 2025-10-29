@@ -109,6 +109,7 @@ export function FormFlowRouter({
         formName,
         formVersion,
         values,
+        parties: { userId: profile.data.id },
       });
 
       setDone(true);
