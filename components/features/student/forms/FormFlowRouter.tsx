@@ -84,18 +84,14 @@ export function FormFlowRouter({
           .treeifyError(result.error)
           .errors.map((e) => e.split(" ").slice(0).join(" "))
           .join("\n");
-        console.log("TREES", z.treeifyError(result.error));
-        errors[field.field] = `${field.field}: ${errorString}`;
+        errors[field.field] = `${field.label}: ${errorString}`;
         continue;
       }
     }
 
     // If any errors, disallow proceed
     setErrors(errors);
-    if (Object.keys(errors).length) {
-      console.log("er", errors);
-      return;
-    }
+    if (Object.keys(errors).length) return;
 
     try {
       setBusy(true);
