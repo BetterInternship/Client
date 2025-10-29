@@ -93,7 +93,7 @@ export function FormFlowRouter({
       | Record<string, string>
       | undefined) ?? undefined;
 
-  console.log("💾 Saved flat:", savedFlat);
+  console.log("💾 Saved autofill:", savedFlat);
 
   // seed from saved
   useEffect(() => {
@@ -126,7 +126,6 @@ export function FormFlowRouter({
   useEffect(() => {
     const raw = values["entity-id"];
     const id = typeof raw === "string" ? raw : raw == null ? "" : String(raw);
-
     if (id && id !== selection) setSelection(id);
   }, [values["entity-id"]]);
 
@@ -351,7 +350,6 @@ export function FormFlowRouter({
     setErrors(next);
     return next;
   }, [mainDefs, values, validatorFns]);
-  console.log("MainDefs", mainDefs);
 
   const handleSubmit = useCallback(
     async (withEsign?: boolean) => {
@@ -449,6 +447,7 @@ export function FormFlowRouter({
       formName,
       selection,
       savedFlat,
+      mode,
     ],
   );
 

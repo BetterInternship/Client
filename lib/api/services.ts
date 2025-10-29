@@ -232,6 +232,15 @@ export const UserService = {
     return { ...res, data: res.pendingInfo };
   },
 
+  async getFormFields(formName: string) {
+    return APIClient.get<{ fields?: any } & FetchResponse>(
+      APIRouteBuilder("forms")
+        .r("form-latest")
+        .p({ name: formName })
+        .build({ moaServer: true }),
+    );
+  },
+
   async getOutsideEntityFormFields(data: { formName: string; party: string }) {
     return APIClient.get<{ fields?: any[] } & FetchResponse>(
       APIRouteBuilder("forms").r("fields").p(data).build({ moaServer: true }),

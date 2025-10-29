@@ -1,13 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, memo } from "react";
-import { useDynamicFormSchema } from "@/lib/db/use-moa-backend";
+import { useQuery } from "@tanstack/react-query";
+import { UserService } from "@/lib/api/services";
 import {
   FieldRenderer,
   type FieldDef as RendererFieldDef,
   type Section,
 } from "@/components/features/student/forms/FieldRenderer";
 import { Loader2 } from "lucide-react";
+import {
+  FormMetadata,
+  type IFormField,
+  type IFormMetadata,
+} from "@betterinternship/core/forms";
 
 type Mode = "select" | "invite" | "manual";
 
@@ -21,6 +27,7 @@ export function DynamicForm({
   entityMode,
   onEntityModeChange,
   entityModeSupport,
+  overrideFields,
 }: {
   form: string;
   values: Record<string, any>;
@@ -31,32 +38,98 @@ export function DynamicForm({
   entityMode: Mode;
   onEntityModeChange: (m: Mode) => void;
   entityModeSupport: { invite: boolean; manual: boolean };
+  overrideFields?: RendererFieldDef[];
 }) {
+  /**
+   * Fetch raw form document + metadata.
+   * We will mold the client schema using FormMetadata.getFieldsForClient().
+   *
+   * This supports either of these shapes:
+   * A) { formDocument, formMetadata }    // raw from server
+   * B) { formFields: { formMetadata: { schema: ... } } } // already molded; we’ll still normalize
+   */
   const {
-    fields: rawFields,
-    error: loadError,
+    data,
     isLoading,
-  } = useDynamicFormSchema(form);
+    error: loadError,
+  } = useQuery({
+    queryKey: ["form-fields", form],
+    queryFn: () => UserService.getFormFields(form),
+    enabled: !!form && !overrideFields, // skip fetch when caller forces overrideFields
+    staleTime: 60_000,
+  });
 
-  const defs: RendererFieldDef[] = useMemo(
+  const moldedClientFields: IFormField[] = useMemo(() => {
+    if (overrideFields) return []; // not used when overrideFields supplied
+
+    const maybeRawMeta = data?.formMetadata;
+
+    let meta: IFormMetadata | null = null;
+
+    if (maybeRawMeta && typeof maybeRawMeta === "object") {
+      meta = maybeRawMeta as IFormMetadata;
+    }
+
+    if (!meta) return [];
+
+    try {
+      const fm = new FormMetadata(meta as IFormMetadata);
+      const clientFields = fm.getFieldsForClient();
+      return Array.isArray(clientFields) ? (clientFields as IFormField[]) : [];
+    } catch {
+      return [];
+    }
+  }, [data, overrideFields]);
+
+  // Filter to only source === "student" (case-insensitive)
+  const studentOnlyRaw = useMemo(
     () =>
-      (rawFields ?? []).map((f) => ({
-        id: f.id,
-        key: f.name,
-        value: f?.value ?? undefined,
-        label: f.label ?? f.name,
-        type: f.type ?? "text",
-        helper: f.helper ?? undefined,
-        validators: f.validators ?? [],
-        section: f.section as Section,
-        options: f.options as { value: string; label: string }[],
-        params: f.params ?? undefined,
-      })),
-    [rawFields],
+      moldedClientFields.filter((f) => String(f?.source ?? "") === "student"),
+    [moldedClientFields],
   );
 
-  console.log("DynamicForm defs:", defs);
+  // Map to renderer defs
+  const defs: RendererFieldDef[] = useMemo(() => {
+    const src = overrideFields ?? studentOnlyRaw ?? [];
 
+    if (overrideFields) {
+      return overrideFields;
+    }
+
+    return (src as IFormField[]).map((f) => {
+      const id = f.id ?? f.field;
+      const key = f.field;
+      const label = f.label;
+      const type = f.type ?? "text";
+
+      const options =
+        Array.isArray(f.options) && f.options.length
+          ? f.options.map((o: any) => ({
+              value: o?.value ?? o,
+              label: o?.label ?? String(o?.value ?? o),
+            }))
+          : undefined;
+
+      // derive section
+      const section: Section =
+        f.section ?? deriveSectionFromField(key) ?? "student";
+
+      return {
+        id,
+        key,
+        value: f.value ?? f.default ?? undefined,
+        label,
+        type,
+        helper: f.helper ?? f.tooltip_label ?? undefined,
+        validators: f.validators ?? [],
+        section,
+        options,
+        params: f.params ?? undefined,
+      } as RendererFieldDef;
+    });
+  }, [overrideFields, studentOnlyRaw]);
+
+  // notify schema changes
   const lastSigRef = useRef("");
   useEffect(() => {
     const sig = JSON.stringify(
@@ -68,6 +141,7 @@ export function DynamicForm({
     }
   }, [defs, onSchema]);
 
+  // bootstrap state once on first load
   const [bootstrapped, setBootstrapped] = useState(false);
   useEffect(() => {
     if (!bootstrapped && defs.length > 0) setBootstrapped(true);
@@ -130,8 +204,9 @@ export function DynamicForm({
 
       if (shouldSet) onChange(d.key, v);
     }
-  }, [bootstrapped, defs]);
+  }, [bootstrapped, defs, onChange, values]);
 
+  // group by section (post-student-filter)
   const companyDefs: RendererFieldDef[] = useMemo(
     () => defs.filter((d) => d.section === "entity"),
     [defs],
@@ -160,7 +235,7 @@ export function DynamicForm({
         </div>
       )}
 
-      {loadError && (
+      {loadError && !overrideFields && (
         <p className="text-sm text-red-600">
           Failed to load form:{" "}
           {loadError instanceof Error
@@ -171,6 +246,7 @@ export function DynamicForm({
 
       {bootstrapped && (
         <>
+          {/* Usually empty since we filtered to source==="student", but retained to preserve API */}
           <CompanySectionWithEntityMode
             formKey={form}
             defs={companyDefs}
@@ -216,6 +292,26 @@ export function DynamicForm({
       )}
     </div>
   );
+}
+
+/* ───────── helpers ───────── */
+
+function deriveSectionFromField(fieldKey: string): Section | undefined {
+  // examples: "student.full-name:default" -> "student"
+  //           "internship.hours:default" -> "internship"
+  const clean = String(fieldKey || "");
+  const beforeColon = clean.split(":")[0] ?? clean;
+  const first = beforeColon.split(".")[0] ?? beforeColon;
+  const s = first.toLowerCase();
+  if (
+    s === "student" ||
+    s === "entity" ||
+    s === "university" ||
+    s === "internship"
+  ) {
+    return s as Section;
+  }
+  return undefined;
 }
 
 const CompanySectionWithEntityMode = memo(
@@ -302,10 +398,12 @@ const CompanySectionWithEntityMode = memo(
 );
 
 const EntityModeHelper = ({
+  value,
   onChange,
   allowInvite,
   allowManual,
 }: {
+  value: Mode;
   onChange: (m: Mode) => void;
   allowInvite: boolean;
   allowManual: boolean;
@@ -330,6 +428,7 @@ const EntityModeHelper = ({
         "text-primary",
         disabled ? "opacity-50 cursor-not-allowed" : "hover:opacity-80",
       ].join(" ")}
+      aria-pressed={value === "invite" || value === "manual"}
     >
       {children}
     </button>
