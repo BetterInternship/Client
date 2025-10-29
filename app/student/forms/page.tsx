@@ -20,6 +20,7 @@ import { useProfileData } from "@/lib/api/student.data.api";
 import { UserService } from "@/lib/api/services";
 import { useRouter } from "next/navigation";
 import ComingSoonCard from "@/components/features/student/forms/ComingSoonCard";
+import { Loader } from "@/components/ui/loader";
 
 /**
  * The forms page component
@@ -35,6 +36,12 @@ export default function FormsPage() {
   const router = useRouter();
   const userId = profile.data?.id;
   const [tab, setTab] = useState<TabKey>("Form Generator");
+
+  // ! remove in the future, disables forms page in prod
+  setTimeout(() => router.push("/search"), 1500);
+  return (
+    <Loader>Forms page is currently in development. Redirecting home...</Loader>
+  );
 
   // All form templates
   const {
