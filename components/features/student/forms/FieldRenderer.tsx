@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-16 22:43:51
- * @ Modified time: 2025-10-29 18:21:34
+ * @ Modified time: 2025-10-29 18:38:54
  * @ Description:
  *
  * The field renderer 3000 automatically renders the correct field for the situation!
@@ -30,7 +30,7 @@ export function FieldRenderer({
   onChange: (v: any) => void;
   error?: string;
   showError?: boolean;
-  allValues?: Record<string, any>;
+  allValues?: Record<string, string>;
 }) {
   // Placeholder or error
   const Note = () => {

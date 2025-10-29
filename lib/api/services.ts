@@ -9,6 +9,7 @@ import {
 } from "@/lib/db/db.types";
 import { APIClient, APIRouteBuilder } from "./api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
+import { IFormMetadata } from "@betterinternship/core/forms";
 
 interface EmployerResponse extends FetchResponse {
   employer: Partial<Employer>;
@@ -232,8 +233,8 @@ export const UserService = {
     return { ...res, data: res.pendingInfo };
   },
 
-  async getFormFields(formName: string) {
-    return APIClient.get<{ fields?: any } & FetchResponse>(
+  async getForm(formName: string) {
+    return APIClient.get<{ formMetadata: IFormMetadata } & FetchResponse>(
       APIRouteBuilder("forms")
         .r("form-latest")
         .p({ name: formName })
