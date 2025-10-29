@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-16 22:43:51
- * @ Modified time: 2025-10-29 18:09:14
+ * @ Modified time: 2025-10-29 18:21:34
  * @ Description:
  *
  * The field renderer 3000 automatically renders the correct field for the situation!
@@ -64,9 +64,7 @@ export function FieldRenderer({
         field={field}
         value={value}
         TooltipContent={Note}
-        onChange={function (v: number): void {
-          throw new Error("Function not implemented.");
-        }}
+        onChange={onChange}
       />
     );
   }
