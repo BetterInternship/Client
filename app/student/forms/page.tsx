@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { OutsideTabPanel, OutsideTabs } from "@/components/ui/outside-tabs";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
@@ -52,15 +52,6 @@ export default function FormsPage() {
   const norm = (s?: string) => (s ?? "").trim().toLowerCase();
 
   const generatorForms = formList;
-  const formNameSet = useMemo(() => {
-    const s = new Set<string>();
-    for (const f of formList ?? []) {
-      if (!f?.name) continue;
-      s.add(norm(f.name));
-    }
-    return s;
-  }, [formList]);
-
   const comingSoon = useMemo(() => {
     const available = new Set(
       (generatorForms ?? [])
@@ -70,11 +61,16 @@ export default function FormsPage() {
     return UPCOMING_FORMS.filter((f) => !available.has(norm(f.label)));
   }, [generatorForms]);
 
-  const openFormModal = (formName: string, formLabel: string) => {
+  const openFormModal = (
+    formName: string,
+    formVersion: number,
+    formLabel: string,
+  ) => {
     openGlobalModal(
       "form-generator-form",
       <FormFlowRouter
-        baseForm={formName}
+        formName={formName}
+        formVersion={formVersion}
         onGoToMyForms={() => {
           setTab("My Forms");
           closeGlobalModal("form-generator-form");
@@ -173,7 +169,7 @@ export default function FormsPage() {
                 generatorForms.map((form) => (
                   <FormGenerateCard
                     key={form.id}
-                    formTitle={form.label ?? ""}
+                    formTitle={`${form.name} (${form.version})`}
                     onViewTemplate={() => {
                       if (!form.base_document_id) {
                         alert("No template available for this form.");
@@ -196,7 +192,7 @@ export default function FormsPage() {
                         });
                     }}
                     onGenerate={() =>
-                      openFormModal(form.name, form.label ?? "")
+                      openFormModal(form.name, form.version, form.label ?? "")
                     }
                   />
                 ))}

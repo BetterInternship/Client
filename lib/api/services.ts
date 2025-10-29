@@ -169,6 +169,7 @@ export const UserService = {
   // ! we can't generate signed forms out of nowhere
   async submitSignedForm(data: {
     formName: string;
+    formVersion: number;
     values: Record<string, string>;
     parties?: {
       userId?: string | null;
@@ -186,6 +187,7 @@ export const UserService = {
 
   async submitPrefilledForm(data: {
     formName: string;
+    formVersion: number;
     values: Record<string, string>;
   }) {
     return APIClient.post<{
@@ -201,6 +203,7 @@ export const UserService = {
 
   async submitPendingForm(data: {
     formName: string;
+    formVersion: number;
     values: Record<string, string>;
     parties?: {
       userId?: string | null;

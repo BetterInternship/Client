@@ -1,18 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, memo } from "react";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { UserService } from "@/lib/api/services";
 import { FieldRenderer } from "@/components/features/student/forms/FieldRenderer";
 import { Loader2 } from "lucide-react";
 import { ClientField, FormMetadata } from "@betterinternship/core/forms";
 import { Loader } from "@/components/ui/loader";
-
-type Mode = "select" | "invite" | "manual";
+import { coerceAnyDate } from "@/lib/utils";
 
 export function DynamicForm({
   form,
   values,
+  setValues,
+  autofillValues,
   onChange,
   errors = {},
   showErrors = false,
@@ -20,19 +21,13 @@ export function DynamicForm({
 }: {
   form: string;
   values: Record<string, any>;
-  onChange: (key: string, value: any) => void;
+  autofillValues: Record<string, string>;
   errors?: Record<string, string>;
   showErrors?: boolean;
   overrideFields?: ClientField<[]>[];
+  setValues: (values: Record<string, string>) => void;
+  onChange: (key: string, value: any) => void;
 }) {
-  /**
-   * Fetch raw form document + metadata.
-   * We will mold the client schema using FormMetadata.getFieldsForClient().
-   *
-   * This supports either of these shapes:
-   * A) { formDocument, formMetadata }    // raw from server
-   * B) { formFields: { formMetadata: { schema: ... } } } // already molded; we’ll still normalize
-   */
   const {
     data,
     isLoading,
@@ -51,12 +46,6 @@ export function DynamicForm({
   const formMetadata = new FormMetadata(data?.formMetadata);
   const fields = formMetadata.getFieldsForClient();
 
-  // bootstrap state once on first load
-  const [bootstrapped, setBootstrapped] = useState(false);
-  useEffect(() => {
-    if (!bootstrapped && fields.length > 0) setBootstrapped(true);
-  }, [bootstrapped, fields.length]);
-
   // Group by section
   const entitySectionFields: ClientField<[]>[] = fields.filter(
     (d) => d.section === "entity",
@@ -71,7 +60,28 @@ export function DynamicForm({
     (d) => d.section === "university",
   );
 
-  const showInitialLoader = isLoading && !bootstrapped;
+  const showInitialLoader = isLoading;
+
+  // Seed from saved autofill
+  useEffect(() => {
+    if (!autofillValues) return;
+
+    const newValues = { ...values };
+    for (const field of fields) {
+      const autofillValue = autofillValues[field.field];
+
+      // Don't autofill if not empty or if nothing to autofill
+      if (autofillValue === undefined) continue;
+      if (!isEmptyFor(field, values[field.field])) continue;
+
+      // Coerce autofill before putting it in
+      const coercedAutofillValue = coerceForField(field, autofillValue);
+      if (coercedAutofillValue !== undefined)
+        newValues[field.field] = coercedAutofillValue.toString();
+    }
+
+    setValues(newValues);
+  }, []);
 
   return (
     <div className="space-y-4" aria-busy={isLoading}>
@@ -91,55 +101,50 @@ export function DynamicForm({
         </p>
       )}
 
-      {bootstrapped && (
-        <>
-          {/* Usually empty since we filtered to source==="student", but retained to preserve API */}
-          <FormSection
-            formKey={form}
-            title="Entity Information"
-            fields={entitySectionFields}
-            values={values}
-            onChange={onChange}
-            errors={errors}
-            showErrors={showErrors}
-          />
+      <FormSection
+        formKey={form}
+        title="Entity Information"
+        fields={entitySectionFields}
+        values={values}
+        onChange={onChange}
+        errors={errors}
+        showErrors={showErrors}
+      />
 
-          <FormSection
-            formKey={form}
-            title="Internship Information"
-            fields={internshipSectionFields}
-            values={values}
-            onChange={onChange}
-            errors={errors}
-            showErrors={showErrors}
-          />
+      <FormSection
+        formKey={form}
+        title="Internship Information"
+        fields={internshipSectionFields}
+        values={values}
+        onChange={onChange}
+        errors={errors}
+        showErrors={showErrors}
+      />
 
-          <FormSection
-            formKey={form}
-            title="University Information"
-            fields={universitySectionFields}
-            values={values}
-            onChange={onChange}
-            errors={errors}
-            showErrors={showErrors}
-          />
+      <FormSection
+        formKey={form}
+        title="University Information"
+        fields={universitySectionFields}
+        values={values}
+        onChange={onChange}
+        errors={errors}
+        showErrors={showErrors}
+      />
 
-          <FormSection
-            formKey={form}
-            title="Student Information"
-            fields={studentSectionFields}
-            values={values}
-            onChange={onChange}
-            errors={errors}
-            showErrors={showErrors}
-          />
-        </>
-      )}
+      <FormSection
+        formKey={form}
+        title="Student Information"
+        fields={studentSectionFields}
+        values={values}
+        onChange={onChange}
+        errors={errors}
+        showErrors={showErrors}
+      />
     </div>
   );
 }
 
-const FormSection = memo(function FormSection({
+const FormSection = function FormSection({
   formKey,
   title,
   fields,
@@ -178,4 +183,51 @@ const FormSection = memo(function FormSection({
       ))}
     </div>
   );
-});
+};
+
+/**
+ * Checks if field is empty, based on field type.
+ *
+ * @param field
+ * @param value
+ * @returns
+ */
+function isEmptyFor(field: ClientField<[]>, value: unknown) {
+  switch (field.type) {
+    case "date":
+      return !(typeof value === "number" && value > 0); // 0/undefined = empty
+    case "signature":
+      return value !== true;
+    case "number":
+      return value === undefined || value === "";
+    default:
+      return value === undefined || value === "";
+  }
+}
+
+/**
+ * Coerces the value into the type needed by the field.
+ * Useful, used outside zod schemas.
+ *
+ * @param field
+ * @param value
+ * @returns
+ */
+const coerceForField = (field: ClientField<[]>, value: unknown) => {
+  switch (field.type) {
+    case "number":
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      return value == null ? "" : String(value);
+    case "date":
+      return coerceAnyDate(value);
+    case "time":
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      return value == null ? "" : String(value);
+    case "signature":
+      return value === true;
+    case "text":
+    default:
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      return value == null ? "" : String(value);
+  }
+};
