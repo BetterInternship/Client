@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-16 22:43:51
- * @ Modified time: 2025-10-29 18:38:54
+ * @ Modified time: 2025-10-29 20:13:05
  * @ Description:
  *
  * The field renderer 3000 automatically renders the correct field for the situation!
@@ -272,7 +272,7 @@ const FieldRendererInput = ({
         value={value ?? ""}
         setter={(v) => {
           if (inputMode !== "numeric") return onChange(v);
-          const next = parseInt(v);
+          const next = v.trim() === "" ? 0 : parseInt(v);
           if (!isNaN(next)) onChange(next);
         }}
         inputMode={inputMode}
