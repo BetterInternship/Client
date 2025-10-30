@@ -46,7 +46,7 @@ export function FormFlowRouter({
   const formMetdata = form.data?.formMetadata
     ? new FormMetadata(form.data.formMetadata)
     : null;
-  const fields = formMetdata?.getFieldsForClient() ?? [];
+  const fields = formMetdata?.getFieldsForClient(values) ?? [];
 
   // Saved autofill
   const autofillValues = useMemo(() => {
