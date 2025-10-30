@@ -11,10 +11,10 @@ import { LucideIcon } from "lucide-react";
  * @param destructive (optional) Descriptor of an action like "delete" that should be highlighted to emphasize its destructive nature.
  */
 export type ActionItem = {
-    id: string;
-    label: string;
-    icon?: LucideIcon;
-    onClick: () => void;
-    disabled?: boolean;
-    destructive?: boolean;
+  id: string;
+  label: string;
+  icon?: LucideIcon;
+  onClick: () => void;
+  disabled?: boolean;
+  destructive?: boolean;
 };

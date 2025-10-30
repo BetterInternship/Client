@@ -450,3 +450,22 @@ export const handleApiError = (error: any) => {
   // ! Show toast notifications here
   return error.message || "An unexpected error occurred";
 };
+
+// update application status
+export const updateApplicationStatus = async (
+  id: string,
+  newStatus: number,
+) => {
+  try {
+    console.log(`Updating application ${id} to status ${newStatus}`);
+    const response = await ApplicationService.reviewApplication(id, {
+      status: newStatus,
+    });
+
+    console.log("API Response: ", response);
+    return response;
+  } catch (error: any) {
+    console.error("Error updating application" + id + ". " + error);
+    throw error;
+  }
+};

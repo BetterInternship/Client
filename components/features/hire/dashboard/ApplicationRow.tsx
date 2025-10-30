@@ -10,7 +10,14 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import { getFullName } from "@/lib/profile";
 import { cn } from "@/lib/utils";
 import { fmtISO } from "@/lib/utils/date-utils";
-import { Calendar, CalendarClock, ContactRound, GraduationCap, MessageCircle, School } from "lucide-react";
+import {
+  Calendar,
+  CalendarClock,
+  ContactRound,
+  GraduationCap,
+  MessageCircle,
+  School,
+} from "lucide-react";
 import { useAppContext } from "@/lib/ctx-app";
 import { Card } from "@/components/ui/card";
 
@@ -35,7 +42,7 @@ export function ApplicationRow({
   updateConversationId,
   setSelectedApplication,
   checkboxSelected = false,
-  onToggleSelect
+  onToggleSelect,
 }: ApplicationRowProps) {
   const { to_university_name, to_app_status_name } = useDbRefs();
   const conversations = useConversations();
@@ -60,8 +67,7 @@ export function ApplicationRow({
             <span>
               {to_university_name(application.user?.university) || ""}{" "}
               {application.user?.expected_start_date &&
-                "• " +
-                application.user?.year_level}
+                "• " + application.user?.year_level}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -70,14 +76,23 @@ export function ApplicationRow({
           </div>
           <div className="flex items-center gap-2">
             <ContactRound size={20} />
-            <span>{application.user?.taking_for_credit ? "For Credit" : "Voluntary"}</span>
+            <span>
+              {application.user?.taking_for_credit ? "For Credit" : "Voluntary"}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <Calendar size={20} />
             <span>
-              {application.user?.expected_start_date || application.user?.expected_end_date ? (
-                <> {fmtISO(application.user?.expected_start_date)} — {fmtISO(application.user?.expected_end_date)}</>
-              ) : <span> No preferred dates provided</span>}
+              {application.user?.expected_start_date ||
+              application.user?.expected_end_date ? (
+                <>
+                  {" "}
+                  {fmtISO(application.user?.expected_start_date)} —{" "}
+                  {fmtISO(application.user?.expected_end_date)}
+                </>
+              ) : (
+                <span> No preferred dates provided</span>
+              )}
             </span>
           </div>
         </div>
@@ -93,16 +108,13 @@ export function ApplicationRow({
           checked={checkboxSelected}
           onCheckedChange={(v) => onToggleSelect?.(!!v)}
         />
-      </td >
-      <td className="px-4 py-2">
-        {getFullName(application.user)}{" "}
       </td>
+      <td className="px-4 py-2">{getFullName(application.user)} </td>
       <td className="px-4 py-2 flex flex-col">
         <span>
           {to_university_name(application.user?.university) || ""}{" "}
           {application.user?.expected_start_date &&
-            "• " +
-            application.user?.year_level}
+            "• " + application.user?.year_level}
         </span>
         <span className="text-gray-500">{application.user?.degree}</span>
       </td>
@@ -110,9 +122,16 @@ export function ApplicationRow({
         {application.user?.taking_for_credit ? "For Credit" : "Voluntary"}
       </td>
       <td className="px-4 py-2">
-        {application.user?.expected_start_date || application.user?.expected_end_date ? (
-          <> {fmtISO(application.user?.expected_start_date)} — {fmtISO(application.user?.expected_end_date)}</>
-        ) : <span className="text-gray-500"> No dates provided</span>}
+        {application.user?.expected_start_date ||
+        application.user?.expected_end_date ? (
+          <>
+            {" "}
+            {fmtISO(application.user?.expected_start_date)} —{" "}
+            {fmtISO(application.user?.expected_end_date)}
+          </>
+        ) : (
+          <span className="text-gray-500"> No dates provided</span>
+        )}
       </td>
       <td>
         <div className="flex items-center gap-2 pr-2 flex-row justify-end">
@@ -120,10 +139,10 @@ export function ApplicationRow({
             type="warning"
             className={cn(
               conversations.unreads.some((unread) =>
-                unread.subscribers.includes(application.user_id)
+                unread.subscribers.includes(application.user_id),
               )
                 ? "block"
-                : "hidden"
+                : "hidden",
             )}
           >
             New Unreads
@@ -139,12 +158,10 @@ export function ApplicationRow({
             }}
             className="relative"
           >
-            <MessageCircle
-              className="h-6 w-6"
-            />
+            <MessageCircle className="h-6 w-6" />
           </Button>
         </div>
       </td>
-    </tr >
+    </tr>
   );
 }
