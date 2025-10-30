@@ -24,17 +24,19 @@ export function DynamicForm({
   setValues: (values: Record<string, string>) => void;
   onChange: (key: string, value: any) => void;
 }) {
+  const filteredFields = fields.filter((field) => field.source === "student");
+
   // Group by section
-  const entitySectionFields: ClientField<[]>[] = fields.filter(
+  const entitySectionFields: ClientField<[]>[] = filteredFields.filter(
     (d) => d.section === "entity",
   );
-  const studentSectionFields: ClientField<[]>[] = fields.filter(
+  const studentSectionFields: ClientField<[]>[] = filteredFields.filter(
     (d) => d.section === "student",
   );
-  const internshipSectionFields: ClientField<[]>[] = fields.filter(
+  const internshipSectionFields: ClientField<[]>[] = filteredFields.filter(
     (d) => d.section === "internship",
   );
-  const universitySectionFields: ClientField<[]>[] = fields.filter(
+  const universitySectionFields: ClientField<[]>[] = filteredFields.filter(
     (d) => d.section === "university",
   );
 
@@ -43,7 +45,7 @@ export function DynamicForm({
     if (!autofillValues) return;
 
     const newValues = { ...values };
-    for (const field of fields) {
+    for (const field of filteredFields) {
       const autofillValue = autofillValues[field.field];
 
       // Don't autofill if not empty or if nothing to autofill
@@ -56,7 +58,6 @@ export function DynamicForm({
         newValues[field.field] = coercedAutofillValue.toString();
     }
 
-    console.log(fields, autofillValues);
     setValues(newValues);
   }, []);
 
@@ -123,6 +124,11 @@ const FormSection = function FormSection({
   showErrors: boolean;
 }) {
   if (!fields.length) return null;
+  const reducedFields = fields.reduce(
+    (acc, cur) =>
+      acc.map((f) => f.field).includes(cur.field) ? acc : [...acc, cur],
+    [] as ClientField<[]>[],
+  );
 
   return (
     <div className="space-y-3">
@@ -130,7 +136,7 @@ const FormSection = function FormSection({
         <h3 className="text-sm font-semibold text-gray-700">{title}</h3>
       </div>
 
-      {fields.map((field) => (
+      {reducedFields.map((field) => (
         <div key={`${formKey}:${field.section}:${field.field}`}>
           <FieldRenderer
             field={field}
