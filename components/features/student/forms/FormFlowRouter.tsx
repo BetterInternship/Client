@@ -49,13 +49,23 @@ export function FormFlowRouter({
   const fields = formMetdata?.getFieldsForClient() ?? [];
 
   // Saved autofill
-  const autofillValues = useMemo(
-    () =>
-      (profile.data?.internship_moa_fields as
-        | Record<string, string>
-        | undefined) ?? undefined,
-    [profile.data],
-  );
+  const autofillValues = useMemo(() => {
+    const autofillValues = profile.data?.internship_moa_fields as Record<
+      string,
+      string
+    >;
+    if (!autofillValues) return;
+
+    // Populate with prefillers as well
+    for (const field of fields) {
+      if (field.prefiller)
+        autofillValues[field.field] = field.prefiller({
+          user: profile.data,
+        });
+    }
+
+    return autofillValues;
+  }, [profile.data]);
 
   // Field setter
   const setField = (key: string, v: string | number) => {
