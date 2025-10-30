@@ -58,13 +58,15 @@ export function FormFlowRouter({
 
     // Populate with prefillers as well
     for (const field of fields) {
-      if (field.prefiller)
-        autofillValues[field.field] = field
-          .prefiller({
-            user: profile.data,
-          })
-          .trim()
-          .replace("  ", " ");
+      if (field.prefiller) {
+        const s = field.prefiller({
+          user: profile.data,
+        });
+
+        // ! Tentative fix for spaces, move to abstraction later on
+        autofillValues[field.field] =
+          typeof s === "string" ? s.trim().replace("  ", " ") : s;
+      }
     }
 
     return autofillValues;
