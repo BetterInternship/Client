@@ -59,9 +59,12 @@ export function FormFlowRouter({
     // Populate with prefillers as well
     for (const field of fields) {
       if (field.prefiller)
-        autofillValues[field.field] = field.prefiller({
-          user: profile.data,
-        });
+        autofillValues[field.field] = field
+          .prefiller({
+            user: profile.data,
+          })
+          .trim()
+          .replace("  ", " ");
     }
 
     return autofillValues;
@@ -79,10 +82,12 @@ export function FormFlowRouter({
     // Validate fields before allowing to proceed
     const errors: Record<string, string> = {};
     for (const field of fields) {
+      if (field.source !== "student") continue;
+
       // Check if missing
       const value = values[field.field];
       if (!value) {
-        errors[field.field] = `${field.field} is missing.`;
+        errors[field.field] = `${field.label} is missing.`;
         continue;
       }
 
