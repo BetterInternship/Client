@@ -88,10 +88,6 @@ export function FormFlowRouter({
 
       // Check if missing
       const value = values[field.field];
-      if (!value) {
-        errors[field.field] = `${field.label} is missing.`;
-        continue;
-      }
 
       // Check validator error
       const coerced = field.coerce(value);

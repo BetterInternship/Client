@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-16 22:43:51
- * @ Modified time: 2025-10-29 20:13:05
+ * @ Modified time: 2025-10-30 21:11:54
  * @ Description:
  *
  * The field renderer 3000 automatically renders the correct field for the situation!
@@ -133,8 +133,8 @@ const FieldRendererDropdown = ({
   return (
     <div className="space-y-1.5">
       <FormDropdown
+        required={false}
         label={field.label}
-        required
         value={value}
         options={options}
         setter={(v) => onChange(v)}
@@ -168,8 +168,8 @@ const FieldRendererDate = ({
   return (
     <div className="space-y-1.5">
       <FormDatePicker
+        required={false}
         label={field.label}
-        required
         date={numericalValue}
         setter={(v) => onChange(v ?? 0)}
         className="w-full"
@@ -209,10 +209,10 @@ const FieldRendererTime = ({
   return (
     <div className="space-y-1.5">
       <TimeInputNative
+        required={false}
         label={field.label}
         value={value}
         onChange={(v) => onChange(v ?? "")}
-        required
       />
       <TooltipContent />
     </div>
@@ -238,10 +238,10 @@ const FieldRendererCheckbox = ({
   return (
     <div className="space-y-1.5">
       <FormCheckbox
+        required={false}
         label={field.label}
         checked={!!value}
         setter={(c) => onChange(c)}
-        required
       />
       <TooltipContent />
     </div>
@@ -268,6 +268,7 @@ const FieldRendererInput = ({
   return (
     <div className="space-y-1.5">
       <FormInput
+        required={false}
         label={field.label}
         value={value ?? ""}
         setter={(v) => {
