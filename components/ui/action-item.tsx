@@ -7,6 +7,7 @@ import { LucideIcon } from "lucide-react";
  * @param label Text label that describes the button.
  * @param icon (optional) An icon accompanying the text label that describes the button.
  * @param onClick A function that performs some action upon clicking the button.
+ * @param active (optional) Track if the item is active.
  * @param disabled (optional) Conditionally disable the button.
  * @param destructive (optional) Descriptor of an action like "delete" that should be highlighted to emphasize its destructive nature.
  */
@@ -15,6 +16,7 @@ export type ActionItem = {
   label: string;
   icon?: LucideIcon;
   onClick: () => void;
+  active?: boolean;
   disabled?: boolean;
   destructive?: boolean;
 };

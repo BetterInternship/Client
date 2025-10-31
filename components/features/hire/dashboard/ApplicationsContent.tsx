@@ -38,13 +38,13 @@ export function ApplicationsContent({
   onStatusChange,
   setSelectedApplication,
 }: ApplicationsContentProps) {
-  const { to_app_status_name } = useDbRefs();
   const { isMobile } = useAppContext();
   const [selectedApplications, setSelectedApplications] = useState<Set<string>>(
     new Set(),
   );
   const [commandBarsVisible, setCommandBarsVisible] = useState(false);
   const [allSelected, setAllSelected] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<number>(-1);
   const sortedApplications = applications.toSorted(
     (a, b) =>
       new Date(b.applied_at ?? "").getTime() -
@@ -105,9 +105,25 @@ export function ApplicationsContent({
     },
   ];
 
-  const filterByStatus = (status?: string) => {
-    console.log("Filtering by applicants with status: " + status);
+  const applyActiveFilter = (apps: typeof sortedApplications) => {
+    switch (activeFilter) {
+        case 4:
+            return apps.filter((application) => application.status === 4);
+        case 1:
+            return apps.filter((application) => application.status === 1);
+        case 6:
+            return apps.filter((application) => application.status === 6);
+        case 7:
+            return apps.filter((application) => application.status === 7);
+        default:
+            return apps.filter((application) => application.status !== 7);
+    }
   };
+
+  const visibleApplications = applyActiveFilter(sortedApplications).filter(
+    (application) => 
+        application.status !== undefined && statusId.includes(application.status),
+  );
 
   const toggleSelect = (id: string, next?: boolean) => {
     setSelectedApplications((prev) => {
@@ -138,11 +154,36 @@ export function ApplicationsContent({
     allSelected ? unselectAll() : selectAll();
   };
 
+  const getCounts = (apps: EmployerApplication[]) => {
+    const counts = {
+        all: 0,
+        hired: 0,
+        starred: 0,
+        rejected: 0,
+        deleted: 0
+    };
+
+    apps.forEach(app => {
+        console.log("application status:" + app.status);
+        if (app.status !== 7) counts.all++;
+        switch (app.status) {
+            case 4: counts.hired++; break;
+            case 1: counts.starred++; break;
+            case 6: counts.rejected++; break;
+            case 7: counts.deleted++; break;
+        }
+    });
+
+    return [counts.all, counts.hired, counts.starred, counts.rejected, counts.deleted];
+  }
+
+
   return isMobile ? (
     <div className="flex flex-col gap-4">
       <ApplicationsHeader
-        selectedCount={sortedApplications.length}
-        onStatusChange={(status) => console.log(status)}
+        selectedCounts={getCounts(sortedApplications)}
+        activeFilter={activeFilter}
+        onFilterChange={(status: number) => setActiveFilter(status)}
       />
       <CommandMenu
         items={statuses}
@@ -173,18 +214,8 @@ export function ApplicationsContent({
         position={{ position: "top" }}
       />
       <div className="flex flex-col gap-2">
-        {sortedApplications.some(
-          (application) =>
-            application.status !== undefined &&
-            statusId.includes(application.status),
-        ) ? (
-          sortedApplications
-            .filter(
-              (application) =>
-                application.status !== undefined &&
-                statusId.includes(application.status),
-            )
-            .map((application) => (
+        {visibleApplications.length ? (
+            visibleApplications.map((application) => (
               <ApplicationRow
                 key={application.id}
                 application={application}
@@ -209,10 +240,11 @@ export function ApplicationsContent({
   ) : (
     <>
       <ApplicationsHeader
-        selectedCount={sortedApplications.length}
-        onStatusChange={(status) => console.log(status)}
+        selectedCounts={getCounts(sortedApplications)}
+        activeFilter={activeFilter}
+        onFilterChange={setActiveFilter}
       />
-      <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-300 border-2 text-sm rounded-md overflow-hidden">
+      <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-200 border-[1px] text-sm rounded-md overflow-hidden">
         <thead className="bg-gray-100">
           <tr className="text-left">
             <th className="p-4">
@@ -226,34 +258,24 @@ export function ApplicationsContent({
           </tr>
         </thead>
         <tbody>
-          {sortedApplications.some(
-            (application) =>
-              application.status !== undefined &&
-              statusId.includes(application.status),
-          ) ? (
-            sortedApplications
-              .filter(
-                (application) =>
-                  application.status !== undefined &&
-                  statusId.includes(application.status),
-              )
-              .map((application) => (
+          {visibleApplications.length ? (
+            visibleApplications.map((application) => (
                 <ApplicationRow
-                  key={application.id}
-                  application={application}
-                  onView={() => onApplicationClick(application)}
-                  onNotes={() => onNotesClick(application)}
-                  onSchedule={() => onScheduleClick(application)}
-                  onStatusChange={(status) =>
+                    key={application.id}
+                    application={application}
+                    onView={() => onApplicationClick(application)}
+                    onNotes={() => onNotesClick(application)}
+                    onSchedule={() => onScheduleClick(application)}
+                    onStatusChange={(status) =>
                     onStatusChange(application, status)
-                  }
-                  openChatModal={openChatModal}
-                  setSelectedApplication={setSelectedApplication}
-                  updateConversationId={updateConversationId}
-                  checkboxSelected={selectedApplications.has(application.id!)}
-                  onToggleSelect={(v) => toggleSelect(application.id!, !!v)}
+                    }
+                    openChatModal={openChatModal}
+                    setSelectedApplication={setSelectedApplication}
+                    updateConversationId={updateConversationId}
+                    checkboxSelected={selectedApplications.has(application.id!)}
+                    onToggleSelect={(v) => toggleSelect(application.id!, !!v)}
                 />
-              ))
+            ))
           ) : (
             <div className="p-2">
               <Badge>No applications under this category.</Badge>

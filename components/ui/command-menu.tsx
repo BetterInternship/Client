@@ -73,8 +73,8 @@ export const CommandMenu = ({
             className={cn(
               "flex flex-col justify-center items-center px-6 py-4 w-36 rounded-sm text-sm gap-2",
               item.destructive
-                ? "text-red-700 hover:bg-red-300/50"
-                : "hover:bg-gray-300/50 text-gray-700",
+                ? "text-red-700 hover:bg-red-300/50 active:bg-red-400/75"
+                : "hover:bg-gray-300/50 text-gray-700 active:bg-gray-400/75",
             )}
           >
             {item.icon && <item.icon size={20} />}
