@@ -28,12 +28,20 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Info,
+  PlusIcon,
 } from "lucide-react";
 import * as React from "react";
 import { createContext, useContext, useRef } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { GroupableRadioDropdown } from "./ui/dropdown";
 import { Input } from "./ui/input";
+import { Tooltip, TooltipTrigger } from "./ui/tooltip";
+import {
+  TooltipArrow,
+  TooltipContent,
+  TooltipPortal,
+} from "@radix-ui/react-tooltip";
 
 interface EditFormContext<T extends IFormData> {
   formData: T;
@@ -159,7 +167,7 @@ export const FormInput = ({
   return (
     <div>
       {label && (
-        <label className="text-xs text-gray-600 mb-1 block">
+        <label className="text-xs text-gray-600 mb-1 flex flex-row items-center gap-2">
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}

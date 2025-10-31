@@ -16,30 +16,15 @@ export function GenerateButtons({
   busy = false,
   disabled,
 }: Props) {
-  // When on student-moa, swap which boolean maps to each action
-  // TODO: LOL this is temp for now pleek
-  const key = String(formKey).toLowerCase();
-  const isStudentMoa =
-    key === "it-student-moa" ||
-    key === "ct-student-moa" ||
-    key === "st-student-moa";
-
-  const withEsignLabel = isStudentMoa
-    ? "Generate & initiate e-sign"
-    : "Generate with e-sign";
-  const withoutEsignLabel = isStudentMoa
-    ? "Generate form (no e-sign)"
-    : "Generate without e-sign";
+  const withEsignLabel = "Generate & Initiate E-sign";
+  const withoutEsignLabel = "Generate Form (no e-sign)";
 
   const withEsignLoading = "Requesting e-sign...";
   const withoutEsignLoading = "Generating...";
-
   const isDisabled = disabled ?? busy;
 
-  const onWithoutEsignClick = () =>
-    void handleSubmit(isStudentMoa ? true : false); // swapped on student-moa
-
-  const onWithEsignClick = () => void handleSubmit(isStudentMoa ? false : true); // swapped on student-moa
+  const onWithoutEsignClick = () => void handleSubmit(false);
+  const onWithEsignClick = () => void handleSubmit(true);
 
   return (
     <div className="pt-2 flex justify-end gap-2 flex-wrap">

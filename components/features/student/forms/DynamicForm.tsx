@@ -3,7 +3,10 @@
 import { useEffect } from "react";
 import { FieldRenderer } from "@/components/features/student/forms/FieldRenderer";
 import { ClientField } from "@betterinternship/core/forms";
-import { coerceAnyDate } from "@/lib/utils";
+import { cn, coerceAnyDate } from "@/lib/utils";
+import { Info } from "lucide-react";
+import { TooltipProvider } from "@radix-ui/react-tooltip";
+import { Tooltip } from "react-tooltip";
 
 export function DynamicForm({
   formName,
@@ -131,24 +134,50 @@ const FormSection = function FormSection({
   );
 
   return (
-    <div className="space-y-3">
-      <div className="pt-2 pb-1">
-        <h3 className="text-sm font-semibold text-gray-700">{title}</h3>
-      </div>
-
-      {reducedFields.map((field) => (
-        <div key={`${formKey}:${field.section}:${field.field}`}>
-          <FieldRenderer
-            field={field}
-            value={values[field.field]}
-            onChange={(v) => onChange(field.field, v)}
-            error={errors[field.field]}
-            showError={showErrors}
-            allValues={values}
-          />
+    <TooltipProvider>
+      <div className="space-y-3">
+        <div className="pt-2 pb-1">
+          <h3 className="text-sm font-semibold text-gray-700">{title}</h3>
         </div>
-      ))}
-    </div>
+
+        {reducedFields.map((field) => (
+          <div
+            className="flex flex-row space-between gap-1"
+            key={`${formKey}:${field.section}:${field.field}`}
+          >
+            <div>
+              <div
+                data-tooltip-id={`${formKey}:${field.section}:${field.field}-tooltip`}
+                data-tooltip-content={field.tooltip_label}
+                data-tooltip-place="top"
+                className="opacity-70 hover:cursor-help"
+              >
+                <Info
+                  className={cn(
+                    "w-3 h-3 mt-[2px] text-primary",
+                    field.tooltip_label.trim() ? "" : "invisible",
+                  )}
+                ></Info>
+              </div>
+              <Tooltip
+                className="z-[99] !text-[10px] p-[0.05em]"
+                id={`${formKey}:${field.section}:${field.field}-tooltip`}
+              />
+            </div>
+            <div className="flex-1">
+              <FieldRenderer
+                field={field}
+                value={values[field.field]}
+                onChange={(v) => onChange(field.field, v)}
+                error={errors[field.field]}
+                showError={showErrors}
+                allValues={values}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </TooltipProvider>
   );
 };
 

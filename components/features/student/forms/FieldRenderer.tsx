@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-16 22:43:51
- * @ Modified time: 2025-10-30 21:11:54
+ * @ Modified time: 2025-10-31 12:31:16
  * @ Description:
  *
  * The field renderer 3000 automatically renders the correct field for the situation!
@@ -17,6 +17,7 @@ import {
   FormCheckbox,
 } from "@/components/EditForm";
 import { ClientField } from "@betterinternship/core/forms";
+import { Info } from "lucide-react";
 
 export function FieldRenderer({
   field,
@@ -33,15 +34,9 @@ export function FieldRenderer({
   allValues?: Record<string, string>;
 }) {
   // Placeholder or error
-  const Note = () => {
+  const TooltipLabel = () => {
     if (showError && !!error)
-      return <p className="text-xs text-rose-600 mt-1">{error}</p>;
-    if (field.tooltip_label)
-      return (
-        <p className="text-xs text-muted-foreground mt-1">
-          {field.tooltip_label}
-        </p>
-      );
+      return <p className="text-xs text-destructive mt-1">{error}</p>;
     return <></>;
   };
 
@@ -51,7 +46,7 @@ export function FieldRenderer({
       <FieldRendererDropdown
         field={field}
         value={value}
-        TooltipContent={Note}
+        TooltipContent={TooltipLabel}
         onChange={onChange}
       />
     );
@@ -63,7 +58,7 @@ export function FieldRenderer({
       <FieldRendererDate
         field={field}
         value={value}
-        TooltipContent={Note}
+        TooltipContent={TooltipLabel}
         onChange={onChange}
       />
     );
@@ -75,7 +70,7 @@ export function FieldRenderer({
       <FieldRendererTime
         field={field}
         value={value}
-        TooltipContent={Note}
+        TooltipContent={TooltipLabel}
         onChange={onChange}
       />
     );
@@ -87,7 +82,7 @@ export function FieldRenderer({
       <FieldRendererCheckbox
         field={field}
         value={value}
-        TooltipContent={Note}
+        TooltipContent={TooltipLabel}
         onChange={onChange}
       />
     );
@@ -97,7 +92,7 @@ export function FieldRenderer({
     <FieldRendererInput
       field={field}
       value={value}
-      TooltipContent={Note}
+      TooltipContent={TooltipLabel}
       onChange={onChange}
     />
   );
