@@ -103,6 +103,7 @@
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.10",
+    "@types/jest": "^30.0.0",
     "@types/knuth-shuffle-seeded": "^1.0.2",
     "@types/node": "^22",
     "@types/number-to-words": "^1.2.3",
@@ -112,9 +113,11 @@
     "eslint-config-next": "15.5.4",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
+    "jest": "^30.2.0",
     "postcss": "^8",
     "prettier": "^3.4.2",
     "tailwindcss": "^3.4.17",
+    "ts-jest": "^29.4.5",
     "typescript": "^5",
     "typescript-eslint": "^8.20.0"
   }
