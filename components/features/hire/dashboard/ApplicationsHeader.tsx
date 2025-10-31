@@ -18,8 +18,6 @@ export function ApplicationsHeader({
     const { to_app_status_name } = useDbRefs();
     const { isMobile } = useAppContext();
 
-    console.log(selectedCounts);
-
     return isMobile ? (
         <>
             <StatusDropdown
@@ -37,14 +35,14 @@ export function ApplicationsHeader({
                 onToggle={() => onFilterChange(-1)}
             />
             <FilterButton
-                name="Starred"
-                itemCount={selectedCounts[2]}
+                name="Accepted"
+                itemCount={selectedCounts[1]}
                 isActive={activeFilter === 4}
                 onToggle={() => onFilterChange(4)}
             />
             <FilterButton
-                name="Hired"
-                itemCount={selectedCounts[1]}
+                name="Starred"
+                itemCount={selectedCounts[2]}
                 isActive={activeFilter === 1}
                 onToggle={() => onFilterChange(1)}
             />

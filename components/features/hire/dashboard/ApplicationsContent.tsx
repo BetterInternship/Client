@@ -122,7 +122,7 @@ export function ApplicationsContent({
 
   const visibleApplications = applyActiveFilter(sortedApplications).filter(
     (application) => 
-        application.status !== undefined && statusId.includes(application.status),
+        application.status !== undefined
   );
 
   const toggleSelect = (id: string, next?: boolean) => {
@@ -157,7 +157,7 @@ export function ApplicationsContent({
   const getCounts = (apps: EmployerApplication[]) => {
     const counts = {
         all: 0,
-        hired: 0,
+        accepted: 0,
         starred: 0,
         rejected: 0,
         deleted: 0
@@ -167,14 +167,14 @@ export function ApplicationsContent({
         console.log("application status:" + app.status);
         if (app.status !== 7) counts.all++;
         switch (app.status) {
-            case 4: counts.hired++; break;
+            case 4: counts.accepted++; break;
             case 1: counts.starred++; break;
             case 6: counts.rejected++; break;
             case 7: counts.deleted++; break;
         }
     });
 
-    return [counts.all, counts.hired, counts.starred, counts.rejected, counts.deleted];
+    return [counts.all, counts.accepted, counts.starred, counts.rejected, counts.deleted];
   }
 
 
