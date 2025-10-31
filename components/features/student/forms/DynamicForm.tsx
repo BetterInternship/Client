@@ -5,7 +5,6 @@ import { FieldRenderer } from "@/components/features/student/forms/FieldRenderer
 import { ClientField } from "@betterinternship/core/forms";
 import { cn, coerceAnyDate } from "@/lib/utils";
 import { Info } from "lucide-react";
-import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { Tooltip } from "react-tooltip";
 
 export function DynamicForm({
@@ -134,48 +133,46 @@ const FormSection = function FormSection({
   );
 
   return (
-    <TooltipProvider>
-      <div className="space-y-3">
-        <div className="pt-2 pb-1">
-          <h3 className="text-sm font-semibold text-gray-700">{title}</h3>
-        </div>
-
-        {reducedFields.map((field) => (
-          <div
-            className="flex flex-row space-between"
-            key={`${formKey}:${field.section}:${field.field}`}
-          >
-            <div>
-              <div className="opacity-50 hover:cursor-help">
-                <Info
-                  data-tooltip-id={`${formKey}:${field.section}:${field.field}-tooltip`}
-                  data-tooltip-content={field.tooltip_label}
-                  data-tooltip-place="bottom"
-                  className={cn(
-                    "w-9 h-9 p-3 text-primary translate-x-[-10px] translate-y-[-10px]",
-                    field.tooltip_label.trim() ? "" : "invisible",
-                  )}
-                ></Info>
-              </div>
-              <Tooltip
-                className="z-[99] !text-[10px] p-[0.05em] !max-w-[80vw]"
-                id={`${formKey}:${field.section}:${field.field}-tooltip`}
-              />
-            </div>
-            <div className="flex-1">
-              <FieldRenderer
-                field={field}
-                value={values[field.field]}
-                onChange={(v) => onChange(field.field, v)}
-                error={errors[field.field]}
-                showError={showErrors}
-                allValues={values}
-              />
-            </div>
-          </div>
-        ))}
+    <div className="space-y-3">
+      <div className="pt-2 pb-1">
+        <h3 className="text-sm font-semibold text-gray-700">{title}</h3>
       </div>
-    </TooltipProvider>
+
+      {reducedFields.map((field) => (
+        <div
+          className="flex flex-row space-between"
+          key={`${formKey}:${field.section}:${field.field}`}
+        >
+          <div>
+            <div className="opacity-50 hover:cursor-help">
+              <Info
+                data-tooltip-id={`${formKey}:${field.section}:${field.field}-tooltip`}
+                data-tooltip-content={field.tooltip_label}
+                data-tooltip-place="bottom"
+                className={cn(
+                  "w-9 h-9 p-3 text-primary translate-x-[-10px] translate-y-[-10px]",
+                  field.tooltip_label.trim() ? "" : "invisible",
+                )}
+              ></Info>
+            </div>
+            <Tooltip
+              className="z-[99] !text-[10px] p-[0.05em] !max-w-[80vw]"
+              id={`${formKey}:${field.section}:${field.field}-tooltip`}
+            />
+          </div>
+          <div className="flex-1">
+            <FieldRenderer
+              field={field}
+              value={values[field.field]}
+              onChange={(v) => onChange(field.field, v)}
+              error={errors[field.field]}
+              showError={showErrors}
+              allValues={values}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
   );
 };
 
