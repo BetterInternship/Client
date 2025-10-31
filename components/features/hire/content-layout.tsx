@@ -93,15 +93,6 @@ const ContentLayout: React.FC<ContentLayoutProps> = ({ children }) => {
       ) : (
         <></>
       )} 
-      {isMobile && (
-        <Link href="listings/create">
-          <button
-            className="fixed bottom-8 right-8 bg-primary rounded-full p-6 z-10 shadow-lg"
-          >
-            <Plus className="h-5 w-5 text-white"/>
-          </button>
-        </Link>
-      )}
       <main className="flex-1 flex overflow-auto justify-center mb-20 h-[100%] ">
         {children}
       </main>

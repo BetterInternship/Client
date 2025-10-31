@@ -3,6 +3,7 @@
 "use client";
 
 import ContentLayout from "@/components/features/hire/content-layout";
+import { Plus } from "lucide-react";
 import { JobsContent } from "@/components/features/hire/dashboard/JobsContent";
 import { ShowUnverifiedBanner } from "@/components/ui/banner";
 import { Card } from "@/components/ui/card";
@@ -10,8 +11,11 @@ import { Loader } from "@/components/ui/loader";
 import { useEmployerApplications, useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
 import { useState } from "react";
 import { useAuthContext } from "../authctx";
+import { useMobile } from "@/hooks/use-mobile";
+import Link from "next/link";
 
 function DashboardContent() {
+  const { isMobile } = useMobile();
   const { isAuthenticated, redirectIfNotLoggedIn, loading } = useAuthContext();
   const profile = useProfile();
   const applications = useEmployerApplications();
@@ -80,6 +84,15 @@ function DashboardContent() {
                     onJobListingClick={handleJobListingClick}
                     updateJob={update_job}
                   />
+                  {isMobile && (
+                    <Link href="listings/create">
+                      <button
+                        className="fixed bottom-8 right-8 bg-primary rounded-full p-6 z-10 shadow-lg"
+                      >
+                        <Plus className="h-5 w-5 text-white"/>
+                      </button>
+                    </Link>
+                  )}
                 </>
               </Card>
             </>
