@@ -109,15 +109,16 @@ export function FormFlowRouter({
     try {
       setBusy(true);
 
+      const finalValues = { ...autofillValues, ...values };
       await update.mutateAsync({
-        internship_moa_fields: { ...autofillValues, ...values },
+        internship_moa_fields: finalValues,
       });
 
       const route = withEsign ? "submitSignedForm" : "submitPendingForm";
       await UserService[route]({
         formName,
         formVersion,
-        values,
+        values: finalValues,
         parties: { userId: profile.data.id },
       });
 
