@@ -47,6 +47,7 @@ export function FormFlowRouter({
     ? new FormMetadata(form.data.formMetadata)
     : null;
   const fields = formMetdata?.getFieldsForClient(values) ?? [];
+  const hasSignature = fields.some((field) => field.type === "signature");
 
   // Saved autofill
   const autofillValues = useMemo(() => {
@@ -156,6 +157,7 @@ export function FormFlowRouter({
           formKey={formName}
           handleSubmit={handleSubmit}
           busy={busy}
+          noEsign={!hasSignature}
         />
       </div>
     </div>
