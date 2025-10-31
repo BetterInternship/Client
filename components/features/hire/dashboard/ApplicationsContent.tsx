@@ -248,7 +248,10 @@ export function ApplicationsContent({
         <thead className="bg-gray-100">
           <tr className="text-left">
             <th className="p-4">
-              <Checkbox onClick={toggleSelectAll}></Checkbox>
+              <Checkbox 
+                onClick={toggleSelectAll}
+                checked={selectedApplications.size === sortedApplications.length}
+                />
             </th>
             <th className="p-4">Applicant</th>
             <th className="p-4">Education</th>
