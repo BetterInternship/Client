@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-16 22:43:51
- * @ Modified time: 2025-10-31 12:31:16
+ * @ Modified time: 2025-10-31 16:18:44
  * @ Description:
  *
  * The field renderer 3000 automatically renders the correct field for the situation!
@@ -15,9 +15,13 @@ import {
   TimeInputNative,
   FormInput,
   FormCheckbox,
+  FormTextarea,
 } from "@/components/EditForm";
+import {
+  AutocompleteTreeMulti,
+  TreeOption,
+} from "@/components/ui/autocomplete";
 import { ClientField } from "@betterinternship/core/forms";
-import { Info } from "lucide-react";
 
 export function FieldRenderer({
   field,
@@ -72,6 +76,34 @@ export function FieldRenderer({
         value={value}
         TooltipContent={TooltipLabel}
         onChange={onChange}
+      />
+    );
+  }
+
+  if (field.type === "textarea") {
+    return (
+      <FieldRendererTextarea
+        field={field}
+        value={value}
+        TooltipContent={TooltipLabel}
+        onChange={onChange}
+      />
+    );
+  }
+
+  if (field.type === "multiselect") {
+    return (
+      <FieldRendererMultiselect
+        field={field}
+        values={value.split("\n")}
+        TooltipContent={TooltipLabel}
+        onChange={(s) => onChange(s.join("\n"))}
+        options={
+          field.options?.map((o) => ({
+            name: o as string,
+            value: o as string,
+          })) ?? []
+        }
       />
     );
   }
@@ -273,6 +305,69 @@ const FieldRendererInput = ({
         }}
         inputMode={inputMode}
         className="w-full"
+      />
+      <TooltipContent />
+    </div>
+  );
+};
+
+/**
+ * Textarea input
+ *
+ * @component
+ */
+const FieldRendererTextarea = ({
+  field,
+  value,
+  TooltipContent,
+  onChange,
+}: {
+  field: ClientField<[]>;
+  value: string;
+  TooltipContent: () => React.ReactNode;
+  onChange: (v: string | number) => void;
+}) => {
+  return (
+    <div className="space-y-1.5">
+      <FormTextarea
+        required={false}
+        label={field.label}
+        value={value ?? ""}
+        setter={onChange}
+        className="w-full"
+      />
+      <TooltipContent />
+    </div>
+  );
+};
+
+/**
+ * Textarea input
+ *
+ * @component
+ */
+const FieldRendererMultiselect = ({
+  field,
+  values,
+  options,
+  TooltipContent,
+  onChange,
+}: {
+  field: ClientField<[]>;
+  values: string[];
+  options: TreeOption[];
+  TooltipContent: () => React.ReactNode;
+  onChange: (v: string[]) => void;
+}) => {
+  return (
+    <div className="space-y-1.5">
+      <AutocompleteTreeMulti
+        required={false}
+        label={field.label}
+        value={values ?? []}
+        setter={onChange}
+        className="w-full"
+        tree={options}
       />
       <TooltipContent />
     </div>

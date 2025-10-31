@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { FieldRenderer } from "@/components/features/student/forms/FieldRenderer";
 import { ClientField } from "@betterinternship/core/forms";
 import { cn, coerceAnyDate } from "@/lib/utils";
-import { FileQuestion, Info, MessageCircleQuestion } from "lucide-react";
+import { Info } from "lucide-react";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { Tooltip } from "react-tooltip";
 

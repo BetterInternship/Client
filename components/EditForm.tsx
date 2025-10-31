@@ -42,6 +42,8 @@ import {
   TooltipContent,
   TooltipPortal,
 } from "@radix-ui/react-tooltip";
+import { Textarea } from "./ui/textarea";
+import { Matcher } from "react-day-picker";
 
 interface EditFormContext<T extends IFormData> {
   formData: T;
@@ -83,6 +85,7 @@ export const createEditForm = <T extends IFormData>(): [
   }) => {
     const { formData, setField } = useFormData<T>(data);
     const { formErrors, setError, setErrors } = useFormErrors<T>();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     const validators = useRef<Function[]>([]);
     const errs = useRef<IFormErrors<T>>({} as IFormErrors<T>);
 
@@ -107,6 +110,7 @@ export const createEditForm = <T extends IFormData>(): [
     const validateFormData = () => {
       errs.current = {} as IFormErrors<T>;
       const result = !validators.current
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
         .map((validator) => validator(formData))
         .some((r) => r);
       setErrors(errs.current);
@@ -175,6 +179,45 @@ export const FormInput = ({
         value={value ?? ""}
         onChange={(e) => setter && setter(e.target.value)}
         className={className}
+        {...props}
+      />
+    </div>
+  );
+};
+
+/**
+ * Big input
+ */
+interface FormTextareaProps
+  extends React.InputHTMLAttributes<HTMLTextAreaElement> {
+  label?: string;
+  setter?: (value: string) => void;
+  required?: boolean;
+  className?: string;
+}
+
+export const FormTextarea = ({
+  label,
+  value,
+  setter,
+  required = true,
+  className,
+  ...props
+}: FormTextareaProps) => {
+  return (
+    <div>
+      {label && (
+        <label className="text-xs text-gray-600 mb-1 flex flex-row items-center gap-2">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+      )}
+      <Textarea
+        value={value ?? ""}
+        onChange={(e) => setter && setter(e.target.value)}
+        className={cn(
+          className,
+          "rounded-[0.33em] outline-none focus-visible:ring-0",
+        )}
         {...props}
       />
     </div>
@@ -516,7 +559,7 @@ export const FormDatePicker = ({
             mode="single"
             selected={selected}
             captionLayout={captionLayout}
-            disabled={disabledDays as any}
+            disabled={disabledDays as Matcher[]}
             onSelect={(d) => {
               setter?.(d ? d.getTime() : undefined);
               if (autoClose) setOpen(false);
