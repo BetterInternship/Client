@@ -24,6 +24,10 @@ import Head from "next/head";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useMobile } from "@/hooks/use-mobile";
+import { useModal } from "@/hooks/use-modal";
+import { TriangleAlert } from 'lucide-react';
+import { cn } from "@/lib/utils";
+
 
 interface CreateJobPageProps {
   createJob: (job: Partial<Job>) => Promise<any>;
@@ -39,31 +43,54 @@ const StepCheckIndicator = ({ checked }: { checked: boolean }) => {
 
 const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
   const [creating, set_creating] = useState(false);
+  const [isMissing, setMissing] = useState(false);
   const { formData, setField, fieldSetter } = useFormData<Job>();
   const { job_pay_freq } = useDbRefs();
   const router = useRouter();
   const profile = useProfile();
   const { isMobile } = useMobile();
 
+  const {
+    open: openAlertModal,
+    close: closeAlertModal,
+    Modal: AlertModal,
+  } = useModal("alert-modal", {showCloseButton: false});
+
   const handleSaveEdit = async () => {
     // Validate required fields
+
+    const missingFields = []
+
     if (!formData.title?.trim()) {
-      alert("Job title is required");
-      return;
+      missingFields.push("Title")
     }
 
     if (!formData.location?.trim()) {
-      alert("Job location is required");
-      return;
+      missingFields.push("Location")
     }
 
     if (!formData.description?.trim()) {
-      alert("Job description is required");
-      return;
+      missingFields.push("Description")
     }
 
     if (!formData.requirements?.trim()) {
-      alert("Job requirements is required");
+      missingFields.push("Requirements");
+    }
+
+    if(formData.internship_preferences?.internship_types === null) {
+      missingFields.push("Internship Types");
+    }
+
+    if(formData.internship_preferences?.job_setup_ids === null) {
+      missingFields.push("Set-up");
+    }
+
+    if(formData.internship_preferences?.job_commitment_ids === null) {
+      missingFields.push("Commitment");
+    }
+
+    if (missingFields.length > 0) {
+      alert("Incomplete form");
       return;
     }
 
@@ -99,6 +126,29 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
     setField("location", profile.data?.location)
   }, [])
 
+  useEffect(() => {
+    const missing = 
+      !formData.title?.trim() ||
+      !formData.location?.trim() ||
+      !formData.description?.trim() ||
+      !formData.requirements?.trim() ||
+      formData.allowance === undefined ||
+      !formData.internship_preferences?.internship_types?.length ||
+      !formData.internship_preferences?.job_commitment_ids?.length ||
+      !formData.internship_preferences?.job_setup_ids?.length;
+
+    setMissing(missing);
+  }, [
+    formData.title,
+    formData.location, 
+    formData.description,
+    formData.requirements,
+    formData.allowance,
+    formData.internship_preferences?.internship_types,
+    formData.internship_preferences?.job_commitment_ids,
+    formData.internship_preferences?.job_setup_ids
+  ]);
+
   return (
     <>
       <Head>
@@ -107,7 +157,9 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
       
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4 fixed top-0 right-0 left-0 z-50 shadow-sm pt-20">
+        <div className={cn("bg-white border-b border-gray-200 px-6 py-4 fixed top-0 right-0 left-0 z-50 shadow-sm",
+          isMobile ? "pt-20" : "mt-20"
+        )}>
           <div className="max-w-5xl mx-auto flex justify-between items-center">
             <h1 className="text-2xl text-gray-800">Create New Job: <span className="font-bold">{formData.title || "Untitled Job"}</span></h1>
             <div className="flex gap-3">
@@ -115,17 +167,13 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                 <>
                   <Button 
                     variant="outline" 
-                    onClick={() => {
-                      if (window.confirm("Are you sure you want to cancel? All unsaved changes will be lost.")) {
-                        router.push("/dashboard");
-                      }
-                    }}
+                    onClick={openAlertModal}
                     disabled={creating}
                   >
                     Cancel
                   </Button>
                   <Button 
-                    disabled={creating} 
+                    disabled={creating || isMissing} 
                     onClick={handleSaveEdit}
                     className="flex items-center"
                   >
@@ -145,18 +193,14 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                   <div className="max-w-5xl mx-auto flex justify-end items-end gap-4">
                     <Button 
                       variant="outline" 
-                      onClick={() => {
-                        if (window.confirm("Are you sure you want to cancel? All unsaved changes will be lost.")) {
-                          router.push("/dashboard");
-                        }
-                      }}
+                      onClick={openAlertModal}
                       disabled={creating}
                       className="h-10"
                     >
                       Cancel
                     </Button>
                     <Button 
-                      disabled={creating} 
+                      disabled={creating || isMissing} 
                       onClick={handleSaveEdit}
                       className="flex items-center h-10"
                     >
@@ -589,6 +633,32 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
       </div>
         </div>
       </div>
+      <AlertModal>
+        <div className="p-8">
+          <div className="mb-8 flex flex-col items-center justify-center text-center">
+            <TriangleAlert className="text-primary h-8 w-8 mb-4"/>
+            <div className="flex flex-col items-center">
+              <h3 className="text-lg">Are you sure you want to cancel?</h3>
+              <p className="text-gray-500 text-sm">All unsaved changes will be lost.</p>
+            </div>
+          </div>
+          <div className="flex justify-center gap-6">
+            <Button 
+            className="bg-white text-primary hover:bg-gray-100 border-solid border-2"
+            onClick={() => {
+              router.push(`/dashboard`)
+            }}
+            >
+              Discard Listing
+            </Button>
+            <Button
+            onClick={closeAlertModal}
+            >
+              Continue Editing
+            </Button>
+          </div>
+        </div>
+      </AlertModal>
     </>
   );
 };
