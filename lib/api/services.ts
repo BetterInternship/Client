@@ -185,62 +185,6 @@ export const UserService = {
     }>(APIRouteBuilder("forms").r("generate").build({ moaServer: true }), data);
   },
 
-  // ! to remove
-  async submitPrefilledForm(data: {
-    formName: string;
-    formVersion: number;
-    values: Record<string, string>;
-    parties?: {
-      userId?: string | null;
-      employerId?: string | null;
-      universityId?: string | null;
-    };
-  }) {
-    return APIClient.post<{
-      success?: boolean;
-      pendingDocumentUrl: string;
-      pendingDocumentId: string;
-      internshipFormId: string;
-    }>(APIRouteBuilder("forms").r("prefill").build({ moaServer: true }), data);
-  },
-
-  // ! to remove
-  async submitPendingForm(data: {
-    formName: string;
-    formVersion: number;
-    values: Record<string, string>;
-    parties?: {
-      userId?: string | null;
-      employerId?: string | null;
-      universityId?: string | null;
-    };
-  }) {
-    return APIClient.post<{
-      success?: boolean;
-      pendingDocumentUrl: string;
-      pendingDocumentId: string;
-      internshipFormId: string;
-    }>(APIRouteBuilder("forms").r("pending").build({ moaServer: true }), data);
-  },
-
-  // ! to remove
-  async approveSignatory(payload: ApproveSignatoryRequest) {
-    return APIClient.post<ApproveSignatoryResponse & FetchResponse>(
-      APIRouteBuilder("forms").r("approve").build({ moaServer: true }),
-      payload,
-    );
-  },
-
-  async getPendingInformation(pendingDocumentId: string) {
-    const res = await APIClient.get<{ pendingInfo?: any } & FetchResponse>(
-      APIRouteBuilder("forms")
-        .r("pending")
-        .p({ pendingDocumentId })
-        .build({ moaServer: true }),
-    );
-    return { ...res, data: res.pendingInfo };
-  },
-
   async getForm(formName: string) {
     return APIClient.get<
       {
@@ -257,12 +201,6 @@ export const UserService = {
         .r("form-latest")
         .p({ name: formName })
         .build({ moaServer: true }),
-    );
-  },
-
-  async getOutsideEntityFormFields(data: { formName: string; party: string }) {
-    return APIClient.get<{ fields?: any[] } & FetchResponse>(
-      APIRouteBuilder("forms").r("fields").p(data).build({ moaServer: true }),
     );
   },
 
