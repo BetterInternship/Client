@@ -120,6 +120,7 @@ export function FormFlowRouter({
         formVersion,
         values: finalValues,
         parties: { userId: profile.data.id },
+        disableEsign: !withEsign,
       });
 
       setDone(true);

@@ -175,6 +175,7 @@ export const UserService = {
       employerId?: string | null;
       universityId?: string | null;
     };
+    disableEsign?: boolean;
   }) {
     return APIClient.post<{
       success?: boolean;
