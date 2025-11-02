@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-15 00:52:43
- * @ Modified time: 2025-07-03 07:17:22
+ * @ Modified time: 2025-10-31 18:13:19
  * @ Description:
  *
  * Form data utility so we don't pollute our components with too much logic.
@@ -62,7 +62,7 @@ export const useFormData = <T extends IFormData>(initialValue?: Partial<T>) => {
  */
 export const useFormErrors = <T extends IFormData>() => {
   const [formErrors, setFormErrors] = useState<IFormErrors<T>>(
-    {} as IFormErrors<T>
+    {} as IFormErrors<T>,
   );
 
   // Sets and individual filter

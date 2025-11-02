@@ -150,7 +150,7 @@ const FormSection = function FormSection({
                 data-tooltip-content={field.tooltip_label}
                 data-tooltip-place="bottom"
                 className={cn(
-                  "w-9 h-9 p-3 text-primary translate-x-[-10px] translate-y-[-10px]",
+                  "w-9 h-9 p-3 px-1 text-primary translate-x-[-10px] translate-y-[-10px]",
                   field.tooltip_label.trim() ? "" : "invisible",
                 )}
               ></Info>

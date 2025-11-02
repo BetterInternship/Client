@@ -165,9 +165,7 @@ export const UserService = {
     );
   },
 
-  // ! todo, add a way for the route to be able to tell if request is valid or not
-  // ! we can't generate signed forms out of nowhere
-  async submitSignedForm(data: {
+  async submitPrefilledForm(data: {
     formName: string;
     formVersion: number;
     values: Record<string, string>;
@@ -176,19 +174,6 @@ export const UserService = {
       employerId?: string | null;
       universityId?: string | null;
     };
-  }) {
-    return APIClient.post<{
-      success?: boolean;
-      pendingDocumentUrl: string;
-      pendingDocumentId: string;
-      internshipFormId: string;
-    }>(APIRouteBuilder("forms").r("signed").build({ moaServer: true }), data);
-  },
-
-  async submitPrefilledForm(data: {
-    formName: string;
-    formVersion: number;
-    values: Record<string, string>;
   }) {
     return APIClient.post<{
       success?: boolean;
