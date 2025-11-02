@@ -31,13 +31,46 @@ describe("JobService", () => {
 
     const result = await JobService.getSavedJobs();
 
-    // check that the route builder was used correctly
+    expect(APIRouteBuilder).toHaveBeenCalledWith("jobs");                                                   // check that the route builder was used correctly
+    expect(APIClient.get).toHaveBeenCalledWith("/mocked/jobs/saved");                                       // check that APIClient.get was called with the mocked URL
+    expect(result).toEqual(mockSavedJobs);                                                                  // verify the returned data
+  });
+
+  it("should create a new job successfully", async () => {
+    const mockJobData = { title: "Backend Engineer", description: "Build APIs" };
+    const mockCreateResponse = { success: true };
+
+    // customize route builder mock for create
+    (APIRouteBuilder as jest.Mock).mockReturnValueOnce({
+      r: jest.fn().mockReturnThis(),
+      build: jest.fn().mockReturnValue("/mocked/jobs/create"),
+    });
+
+    (APIClient.post as jest.Mock).mockResolvedValueOnce(mockCreateResponse);
+
+    const result = await JobService.createJob(mockJobData);
+
     expect(APIRouteBuilder).toHaveBeenCalledWith("jobs");
+    expect(APIClient.post).toHaveBeenCalledWith("/mocked/jobs/create", mockJobData);
+    expect(result).toEqual(mockCreateResponse);
+  });
 
-    // check that APIClient.get was called with the mocked URL
-    expect(APIClient.get).toHaveBeenCalledWith("/mocked/jobs/saved");
+  it("should update a job successfully", async () => {
+    const mockJobId = "123";
+    const mockUpdateData = { title: "Updated Title" };
+    const mockUpdateResponse  = { success: true };
 
-    // verify the returned data
-    expect(result).toEqual(mockSavedJobs);
+    (APIRouteBuilder as jest.Mock).mockReturnValueOnce({
+      r: jest.fn().mockReturnThis(),
+      build: jest.fn().mockReturnValue(`/mocked/jobs/${mockJobId}/update`),
+    });
+
+    (APIClient.put as jest.Mock).mockResolvedValueOnce(mockUpdateResponse );
+
+    const result = await JobService.updateJob(mockJobId, mockUpdateData);
+
+    expect(APIRouteBuilder).toHaveBeenCalledWith("jobs");
+    expect(APIClient.put).toHaveBeenCalledWith(`/mocked/jobs/${mockJobId}/update`, mockUpdateData);
+    expect(result).toEqual(mockUpdateResponse );
   });
 });
