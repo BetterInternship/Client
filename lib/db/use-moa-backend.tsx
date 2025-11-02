@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-10-29 22:11:27
+ * @ Modified time: 2025-11-02 18:59:04
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
@@ -361,6 +361,16 @@ export const fetchAllUserForms = async (userId: string) => {
 
   if (error) throw new Error(`Could not fetch user forms: ${error.message}`);
   return data as IUserForm[];
+};
+
+export const fetchPrefilledDocument = async (prefilledDocumentId: string) => {
+  const prefilledDocument = await db
+    .from("prefilled_documents")
+    .select("*")
+    .eq("id", prefilledDocumentId)
+    .single();
+
+  return prefilledDocument;
 };
 
 export const fetchSignedDocument = async (signedDocumentId: string) => {

@@ -11,6 +11,7 @@ import {
   fetchSignedDocument,
   fetchPendingDocument,
   fetchTemplateDocument,
+  fetchPrefilledDocument,
 } from "@/lib/db/use-moa-backend";
 import FormGenerateCard from "@/components/features/student/forms/FormGenerateCard";
 import MyFormCard from "@/components/features/student/forms/MyFormCard";
@@ -247,9 +248,10 @@ export default function FormsPage() {
                 myFormsSorted.map((row, i) => {
                   const formName = row.form_name;
                   const title = `${formName}`;
-                  const status = row.signed_document_id
-                    ? "Complete"
-                    : "Pending action";
+                  const status =
+                    row.signed_document_id || row.prefilled_document_id
+                      ? "Complete"
+                      : "Pending action";
                   return (
                     <MyFormCard
                       key={i}
@@ -266,6 +268,15 @@ export default function FormsPage() {
                             ? `https://storage.googleapis.com/better-internship-public-bucket/${signedDocument.data.verification_code}.pdf`
                             : null;
 
+                          if (url) return url;
+                        }
+
+                        if (row.prefilled_document_id) {
+                          const prefilledDocument =
+                            await fetchPrefilledDocument(
+                              row.prefilled_document_id,
+                            );
+                          const url = prefilledDocument.data?.url;
                           if (url) return url;
                         }
 

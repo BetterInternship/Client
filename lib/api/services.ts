@@ -165,6 +165,26 @@ export const UserService = {
     );
   },
 
+  async requestGenerateForm(data: {
+    formName: string;
+    formVersion: number;
+    values: Record<string, string>;
+    signatories?: { name: string; title: string }[];
+    parties?: {
+      userId?: string | null;
+      employerId?: string | null;
+      universityId?: string | null;
+    };
+  }) {
+    return APIClient.post<{
+      success?: boolean;
+      documentUrl: string;
+      documentId: string;
+      internshipFormId: string;
+    }>(APIRouteBuilder("forms").r("generate").build({ moaServer: true }), data);
+  },
+
+  // ! to remove
   async submitPrefilledForm(data: {
     formName: string;
     formVersion: number;
@@ -180,12 +200,10 @@ export const UserService = {
       pendingDocumentUrl: string;
       pendingDocumentId: string;
       internshipFormId: string;
-    }>(
-      APIRouteBuilder("forms").r("prefilled").build({ moaServer: true }),
-      data,
-    );
+    }>(APIRouteBuilder("forms").r("prefill").build({ moaServer: true }), data);
   },
 
+  // ! to remove
   async submitPendingForm(data: {
     formName: string;
     formVersion: number;
@@ -204,6 +222,7 @@ export const UserService = {
     }>(APIRouteBuilder("forms").r("pending").build({ moaServer: true }), data);
   },
 
+  // ! to remove
   async approveSignatory(payload: ApproveSignatoryRequest) {
     return APIClient.post<ApproveSignatoryResponse & FetchResponse>(
       APIRouteBuilder("forms").r("approve").build({ moaServer: true }),

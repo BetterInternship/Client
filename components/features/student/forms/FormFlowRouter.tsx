@@ -115,8 +115,7 @@ export function FormFlowRouter({
         internship_moa_fields: finalValues,
       });
 
-      const route = withEsign ? "submitPendingForm" : "submitPrefilledForm";
-      await UserService[route]({
+      await UserService.requestGenerateForm({
         formName,
         formVersion,
         values: finalValues,
