@@ -35,6 +35,7 @@ export default function FormsPage() {
   const router = useRouter();
   const userId = profile.data?.id;
   const [tab, setTab] = useState<TabKey>("Form Generator");
+  const [pendingDocs, setPendingDocs] = useState<Record<string, string[]>>({});
 
   // All form templates
   const {
@@ -106,6 +107,45 @@ export default function FormsPage() {
         .sort((a, b) => parseTsToMs(b.timestamp) - parseTsToMs(a.timestamp)),
     [myForms],
   );
+
+  // prefetch pending documents for rows that have pending_document_id
+  useEffect(() => {
+    if (!myForms?.length) return;
+
+    const ids = Array.from(
+      new Set(
+        myForms.map((r) => r.pending_document_id).filter(Boolean) as string[],
+      ),
+    );
+
+    let cancelled = false;
+    (async () => {
+      for (const id of ids) {
+        if (!id || pendingDocs[id]) continue;
+        try {
+          const resp = await fetchPendingDocument(id);
+          if (cancelled) return;
+
+          console.log("Fetched pending document", id, resp);
+
+          const parties = (resp?.data?.pending_parties ?? []).map(String);
+
+          if (!cancelled) {
+            setPendingDocs((prev) => ({
+              ...prev,
+              [id]: parties,
+            }));
+          }
+        } catch {
+          // ignore; don't block UI
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [myForms, pendingDocs]);
 
   if (!profile.data?.department && !profile.isPending) {
     alert("Profile not yet complete.");
@@ -251,14 +291,22 @@ export default function FormsPage() {
                   const status =
                     row.signed_document_id || row.prefilled_document_id
                       ? "Complete"
-                      : "Pending action";
+                      : "Pending ";
+                  const waitingFor: string[] = row.pending_document_id
+                    ? (pendingDocs[row.pending_document_id] ?? [])
+                    : [];
+
+                  console.log("Waiting for:", waitingFor);
+
                   return (
                     <MyFormCard
                       key={i}
                       title={title}
                       requestedAt={row.timestamp}
                       status={status}
+                      waitingFor={waitingFor}
                       getDownloadUrl={async () => {
+                        // 1) signed document (highest priority)
                         if (row.signed_document_id) {
                           const signedDocument = await fetchSignedDocument(
                             row.signed_document_id,
@@ -271,6 +319,7 @@ export default function FormsPage() {
                           if (url) return url;
                         }
 
+                        // 2) prefilled document
                         if (row.prefilled_document_id) {
                           const prefilledDocument =
                             await fetchPrefilledDocument(
@@ -280,12 +329,17 @@ export default function FormsPage() {
                           if (url) return url;
                         }
 
+                        // 3) pending document
                         if (row.pending_document_id) {
-                          const pendingDocument = await fetchPendingDocument(
-                            row.pending_document_id,
-                          );
+                          const cached = pendingDocs[row.pending_document_id];
+                          const pendingDocument =
+                            cached ??
+                            (await fetchPendingDocument(
+                              row.pending_document_id,
+                            ));
 
-                          const url = pendingDocument.data?.latest_document_url;
+                          const url =
+                            pendingDocument?.data?.latest_document_url;
                           if (url) return url;
                         }
 
