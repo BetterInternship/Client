@@ -14,6 +14,7 @@ import { CommandMenu } from "@/components/ui/command-menu";
 import { Check, SquareCheck, Star, Trash, X } from "lucide-react";
 import { useEffect } from "react";
 import { updateApplicationStatus } from "@/lib/api/services";
+import { ActionItem } from "@/components/ui/action-item";
 
 interface ApplicationsContentProps {
   applications: EmployerApplication[];
@@ -51,9 +52,7 @@ export function ApplicationsContent({
       new Date(a.applied_at ?? "").getTime(),
   );
 
-  const { to_app_status_name, get_app_status, app_statuses } = useDbRefs();
-
-  console.log(app_statuses);
+  const { app_statuses } = useDbRefs();
 
   // make command bars visible when an applicant is selected.
   useEffect(() => {
@@ -197,9 +196,7 @@ export function ApplicationsContent({
             icon: SquareCheck,
             onClick: selectAll,
           },
-          selectedApplications.size > 1
-            ? `${selectedApplications.size} applicants selected`
-            : `${selectedApplications.size} applicant selected`,
+          `${selectedApplications.size} selected`,
           {
             id: "cancel",
             label: "Cancel",
@@ -236,12 +233,32 @@ export function ApplicationsContent({
       </div>
     </div>
   ) : (
-    <>
+    <div className="flex flex-col gap-4">
       <ApplicationsHeader
         selectedCounts={getCounts(sortedApplications)}
         activeFilter={activeFilter}
         onFilterChange={setActiveFilter}
       />
+      <div className="flex justify-between flex-wrap gap-2">
+        <CommandMenu
+          items={statuses}
+          isVisible={commandBarsVisible}
+          defaultVisible={true}
+        />
+        <CommandMenu
+          items={[
+            `${selectedApplications.size} selected`,
+            {
+              id: "cancel",
+              label: "Cancel",
+              icon: X,
+              onClick: unselectAll,
+            },
+          ]}
+          isVisible={commandBarsVisible}
+          defaultVisible={true}
+        />
+      </div>
       <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-200 border-[1px] text-sm rounded-md overflow-hidden">
         <thead className="bg-gray-100">
           <tr className="text-left">
@@ -284,6 +301,6 @@ export function ApplicationsContent({
           )}
         </tbody>
       </table>
-    </>
+    </div>
   );
 }

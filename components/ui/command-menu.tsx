@@ -52,14 +52,17 @@ export const CommandMenu = ({
       aria-hidden={!visible}
       className={cn(
         "flex p-2 gap-4 justify-center items-stretch bg-white/75 backdrop-blur-md border-gray-300 z-[100]",
-        position?.position === "top" || position?.position === "bottom"
-          ? "flex-row inset-x-0 border-y-2"
-          : "flex-col inset-y-0 border-x-2",
-        position?.position === "top" ? "fixed top-16" : "",
-        position?.position === "bottom" ? "fixed bottom-0" : "",
-        position?.position === "left" ? "fixed left-0" : "",
-        position?.position === "right" ? "fixed right-0" : "",
-        position?.position === null ? "rounded-sm" : "",
+        position?.position
+          ? [
+              position?.position === "left" || position?.position === "right"
+                ? "flex-col inset-y-0 border-x-2"
+                : "flex-row inset-x-0 border-y-2",
+              position?.position === "top" ? "fixed top-16" : "",
+              position?.position === "bottom" ? "fixed bottom-0" : "",
+              position?.position === "left" ? "fixed left-0" : "",
+              position?.position === "right" ? "fixed right-0" : "",
+            ]
+          : ["flex-row rounded-md border-2 gap-2 p-1 w-fit"],
         className,
       )}
     >
@@ -71,10 +74,13 @@ export const CommandMenu = ({
             onClick={item.onClick}
             disabled={item.disabled}
             className={cn(
-              "flex flex-col justify-center items-center px-6 py-4 w-36 rounded-sm text-sm gap-2",
+              "flex justify-center items-center w-36 rounded-sm text-sm gap-2",
               item.destructive
                 ? "text-red-700 hover:bg-red-300/50 active:bg-red-400/75"
                 : "hover:bg-gray-300/50 text-gray-700 active:bg-gray-400/75",
+              position?.position
+                ? ["flex-col px-6 py-4"]
+                : ["flex-row px-3 py-2"],
             )}
           >
             {item.icon && <item.icon size={20} />}
@@ -83,7 +89,7 @@ export const CommandMenu = ({
         ) : (
           <span
             key={typeof item === "string" ? `text-${item}` : `node-${idx}`}
-            className="flex justify-center items-center text-sm text-gray-700"
+            className="flex justify-center items-center text-sm text-gray-700 px-4"
           >
             {item as React.ReactNode}
           </span>

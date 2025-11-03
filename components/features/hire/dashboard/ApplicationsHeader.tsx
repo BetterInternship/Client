@@ -3,6 +3,8 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import { StatusDropdown } from "@/components/common/StatusDropdown";
 import { useAppContext } from "@/lib/ctx-app";
 import { FilterButton } from "@/components/ui/filter";
+import { DropdownGroup } from "@/components/ui/dropdown";
+import { DropdownMenu } from "@/components/ui/dropdown-menu";
 
 interface ApplicationsHeaderProps {
   selectedCounts: Record<string | number, number>;
@@ -58,14 +60,13 @@ export function ApplicationsHeader({
 
   return isMobile ? (
     <>
-      <StatusDropdown
-        value={1}
-        onChange={() => onFilterChange(activeFilter)}
-        className="w-full"
-      />
+      <div className="flex flex-wrap gap-2">
+        {allButton}
+        {otherButtons()}
+      </div>
     </>
   ) : (
-    <div className="flex gap-2 pb-4">
+    <div className="flex gap-2">
       {allButton}
       {otherButtons()}
     </div>
