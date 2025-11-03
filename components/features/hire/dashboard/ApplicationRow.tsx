@@ -54,11 +54,29 @@ export function ApplicationRow({
         className="flex flex-col gap-4 hover:cursor-pointer hover:bg-primary/25 transition-colors"
         onClick={onView}
       >
-        <div onClick={(e) => e.stopPropagation()}>
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="flex justify-between"
+        >
           <Checkbox
             checked={checkboxSelected}
             onCheckedChange={(v) => onToggleSelect?.(!!v)}
           />
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              openChatModal();
+              setSelectedApplication(application);
+              updateConversationId(application.user_id ?? "");
+            }}
+            className="relative"
+          >
+            <MessageCircle className="h-6 w-6" />
+            Chat
+          </Button>
         </div>
         <div className="flex flex-col text-gray-500">
           <h4 className="text-gray-900">{getFullName(application.user)}</h4>
@@ -159,6 +177,7 @@ export function ApplicationRow({
             className="relative"
           >
             <MessageCircle className="h-6 w-6" />
+            Chat
           </Button>
         </div>
       </td>
