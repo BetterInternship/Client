@@ -18,7 +18,7 @@ import { useFile } from "@/hooks/use-file";
 import { useModal } from "@/hooks/use-modal";
 import { useSideModal } from "@/hooks/use-side-modal";
 import { EmployerConversationService, UserService } from "@/lib/api/services";
-import { EmployerApplication } from "@/lib/db/db.types";
+import { EmployerApplication, InternshipPreferences } from "@/lib/db/db.types";
 import { ArrowLeft } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { JobDetails } from "@/components/shared/jobs";
@@ -384,7 +384,10 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
             UserService.getUserPfpURL(selectedApplication?.user?.id ?? "")
           }
           pfp_route={`/users/${selectedApplication?.user_id}/pic`}
-          applicant={selectedApplication?.user}
+          applicant={{
+            ...selectedApplication?.user,
+            internship_preferences: selectedApplication?.user?.internship_preferences as InternshipPreferences ?? undefined
+            }}
           open_calendar={async () => {
             closeApplicantModal();
             window

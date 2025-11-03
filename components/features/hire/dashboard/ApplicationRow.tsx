@@ -34,6 +34,15 @@ interface ApplicationRowProps {
   onToggleSelect?: (next: boolean) => void;
 }
 
+interface InternshipPreferences {
+  expected_duration_hours?: number,
+  expected_start_date?: number,
+  internship_type?: string,
+  job_category_ids?: string[],
+  job_commitment_ids?: string[],
+  job_setup_ids?: string[],
+}
+
 export function ApplicationRow({
   application,
   onView,
@@ -47,6 +56,9 @@ export function ApplicationRow({
   const { to_university_name } = useDbRefs();
   const conversations = useConversations();
   const { isMobile } = useAppContext();
+
+  const preferences = (application.user?.internship_preferences || {}) as InternshipPreferences;
+  console.log(preferences);
 
   return isMobile ? (
     <>
@@ -84,8 +96,6 @@ export function ApplicationRow({
             <School size={20} />
             <span>
               {to_university_name(application.user?.university) || ""}{" "}
-              {application.user?.expected_start_date &&
-                "• " + application.user?.year_level}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -95,21 +105,18 @@ export function ApplicationRow({
           <div className="flex items-center gap-2">
             <ContactRound size={20} />
             <span>
-              {application.user?.taking_for_credit ? "For Credit" : "Voluntary"}
+              {preferences.internship_type ? "For Credit" : "Voluntary"}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <Calendar size={20} />
             <span>
-              {application.user?.expected_start_date ||
-              application.user?.expected_end_date ? (
+              {preferences.expected_start_date ? (
                 <>
-                  {" "}
-                  {fmtISO(application.user?.expected_start_date)} —{" "}
-                  {fmtISO(application.user?.expected_end_date)}
+                  {fmtISO(preferences.expected_start_date.toString())}
                 </>
               ) : (
-                <span> No preferred dates provided</span>
+                <span className="text-gray-500"> No start date provided</span>
               )}
             </span>
           </div>
@@ -130,25 +137,20 @@ export function ApplicationRow({
       <td className="px-4 py-2">{getFullName(application.user)} </td>
       <td className="px-4 py-2 flex flex-col">
         <span>
-          {to_university_name(application.user?.university) || ""}{" "}
-          {application.user?.expected_start_date &&
-            "• " + application.user?.year_level}
+          {to_university_name(application.user?.university) || ""}
         </span>
         <span className="text-gray-500">{application.user?.degree}</span>
       </td>
       <td className="px-4 py-2">
-        {application.user?.taking_for_credit ? "For Credit" : "Voluntary"}
+        {preferences.internship_type ? "For Credit" : "Voluntary"}
       </td>
       <td className="px-4 py-2">
-        {application.user?.expected_start_date ||
-        application.user?.expected_end_date ? (
+        {preferences.expected_start_date ? (
           <>
-            {" "}
-            {fmtISO(application.user?.expected_start_date)} —{" "}
-            {fmtISO(application.user?.expected_end_date)}
+            {fmtISO(preferences.expected_start_date.toString())}
           </>
         ) : (
-          <span className="text-gray-500"> No dates provided</span>
+          <span> Not provided</span>
         )}
       </td>
       <td>

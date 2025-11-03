@@ -9,12 +9,13 @@ import { useAppContext } from "@/lib/ctx-app";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ApplicationsHeader } from "./ApplicationsHeader";
-import { ElementType, useState } from "react";
+import { useState } from "react";
 import { CommandMenu } from "@/components/ui/command-menu";
 import { Check, SquareCheck, Star, Trash, X } from "lucide-react";
 import { useEffect } from "react";
 import { updateApplicationStatus } from "@/lib/api/services";
 import { statusIconMap } from "@/components/common/status-icon-map";
+import { type ActionItem } from "@/components/ui/action-item";
 
 interface ApplicationsContentProps {
   applications: EmployerApplication[];
@@ -62,7 +63,6 @@ export function ApplicationsContent({
   // make api call to update status on button click.
   const updateStatus = async (status: number) => {
     try {
-      console.log("Selected applications: ", selectedApplications);
       const updatePromises = Array.from(selectedApplications).map(
         async (id) => {
           const response = await updateApplicationStatus(id, status);
@@ -80,25 +80,27 @@ export function ApplicationsContent({
     }
   };
 
-  const unique_app_statuses = [
-    ...new Map(app_statuses.map((status) => [status.id, status])).values(),
-  ];
+  if (!app_statuses) return null;
 
+  const unique_app_statuses = app_statuses.reduce(
+    (acc: {id: number, name: string}[], cur: {id: number, name: string}) => 
+      (acc.find(a => a.name === cur.name) ? acc : [...acc, cur]), []
+  );
+  
   const statuses = unique_app_statuses
-    .map((status) => {
+    .map((status): ActionItem => {
       const uiProps = statusIconMap[status.id];
-
-      if (!uiProps) return null;
 
       return {
         id: status.id.toString(),
         label: status.name,
-        icon: uiProps.icon,
-        destructive: uiProps?.destructive,
+        icon: uiProps?.icon,
         onClick: () => updateStatus(status.id),
+        destructive: uiProps?.destructive,
       };
     })
     .filter(Boolean);
+
 
   const applyActiveFilter = (apps: typeof sortedApplications) => {
     if (activeFilter === -1) {
