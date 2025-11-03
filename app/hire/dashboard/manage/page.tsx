@@ -51,5 +51,9 @@ function ManageContent() {
 }
 
 export default function Manage() {
-  return <ManageContent />;
+  return (
+    <Suspense>
+      <ManageContent />
+    </Suspense>
+);
 }
