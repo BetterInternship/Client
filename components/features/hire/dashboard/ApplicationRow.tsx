@@ -58,7 +58,6 @@ export function ApplicationRow({
   const { isMobile } = useAppContext();
 
   const preferences = (application.user?.internship_preferences || {}) as InternshipPreferences;
-  console.log(preferences);
 
   return isMobile ? (
     <>
