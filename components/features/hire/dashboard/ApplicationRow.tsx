@@ -44,7 +44,7 @@ export function ApplicationRow({
   checkboxSelected = false,
   onToggleSelect,
 }: ApplicationRowProps) {
-  const { to_university_name, to_app_status_name } = useDbRefs();
+  const { to_university_name } = useDbRefs();
   const conversations = useConversations();
   const { isMobile } = useAppContext();
 

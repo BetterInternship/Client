@@ -1,10 +1,8 @@
 "use client";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { StatusDropdown } from "@/components/common/StatusDropdown";
 import { useAppContext } from "@/lib/ctx-app";
 import { FilterButton } from "@/components/ui/filter";
-import { DropdownGroup } from "@/components/ui/dropdown";
-import { DropdownMenu } from "@/components/ui/dropdown-menu";
+import { statusIconMap } from "@/components/common/status-icon-map";
 
 interface ApplicationsHeaderProps {
   selectedCounts: Record<string | number, number>;
@@ -50,6 +48,7 @@ export function ApplicationsHeader({
         <FilterButton
           key={key}
           name={name}
+          icon={statusIconMap[filterID]?.icon}
           itemCount={value}
           isActive={activeFilter === filterID}
           onToggle={() => onFilterChange(filterID)}

@@ -14,7 +14,7 @@ import { CommandMenu } from "@/components/ui/command-menu";
 import { Check, SquareCheck, Star, Trash, X } from "lucide-react";
 import { useEffect } from "react";
 import { updateApplicationStatus } from "@/lib/api/services";
-import { ActionItem } from "@/components/ui/action-item";
+import { statusIconMap } from "@/components/common/status-icon-map";
 
 interface ApplicationsContentProps {
   applications: EmployerApplication[];
@@ -80,25 +80,13 @@ export function ApplicationsContent({
     }
   };
 
-  type StatusUIProps = {
-    icon: ElementType;
-    destructive?: boolean;
-  };
-
-  const statusUIMap: Record<number, StatusUIProps> = {
-    1: { icon: Star },
-    4: { icon: Check },
-    6: { icon: X },
-    7: { icon: Trash, destructive: true },
-  };
-
   const unique_app_statuses = [
     ...new Map(app_statuses.map((status) => [status.id, status])).values(),
   ];
 
   const statuses = unique_app_statuses
     .map((status) => {
-      const uiProps = statusUIMap[status.id];
+      const uiProps = statusIconMap[status.id];
 
       if (!uiProps) return null;
 
