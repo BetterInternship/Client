@@ -144,7 +144,7 @@ const FormSection = function FormSection({
           key={`${formKey}:${field.section}:${field.field}`}
         >
           <div>
-            <div className="opacity-50 hover:cursor-help">
+            <div className="hover:cursor-help">
               <Info
                 data-tooltip-id={`${formKey}:${field.section}:${field.field}-tooltip`}
                 data-tooltip-content={field.tooltip_label}
