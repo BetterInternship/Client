@@ -18,8 +18,20 @@ export function ApplicationsHeader({
   const { isMobile } = useAppContext();
   const { get_app_status } = useDbRefs();
 
-  const getStatuses = () => {
-    return Object.entries(selectedCounts).map(([key, value]) => {
+  const { all, ...otherCounts } = selectedCounts;
+
+  const allButton = (
+    <FilterButton
+      key="all"
+      name="All"
+      itemCount={all || 0}
+      isActive={activeFilter === -1}
+      onToggle={() => onFilterChange(-1)}
+    />
+  );
+
+  const otherButtons = () => {
+    return Object.entries(otherCounts).map(([key, value]) => {
       let name: string;
       let filterID: number;
 
@@ -53,6 +65,9 @@ export function ApplicationsHeader({
       />
     </>
   ) : (
-    <div className="flex gap-2 pb-4">{getStatuses()}</div>
+    <div className="flex gap-2 pb-4">
+      {allButton}
+      {otherButtons()}
+    </div>
   );
 }
