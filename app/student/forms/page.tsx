@@ -126,8 +126,6 @@ export default function FormsPage() {
           const resp = await fetchPendingDocument(id);
           if (cancelled) return;
 
-          console.log("Fetched pending document", id, resp);
-
           const parties = (resp?.data?.pending_parties ?? []).map(String);
 
           if (!cancelled) {
@@ -295,8 +293,6 @@ export default function FormsPage() {
                     ? (pendingDocs[row.pending_document_id] ?? [])
                     : [];
 
-                  console.log("Waiting for:", waitingFor);
-
                   return (
                     <MyFormCard
                       key={i}
@@ -307,6 +303,7 @@ export default function FormsPage() {
                       getDownloadUrl={async () => {
                         // 1) signed document (highest priority)
                         if (row.signed_document_id) {
+                          console.log(row.signed_document_id);
                           const signedDocument = await fetchSignedDocument(
                             row.signed_document_id,
                           );
@@ -330,12 +327,9 @@ export default function FormsPage() {
 
                         // 3) pending document
                         if (row.pending_document_id) {
-                          const cached = pendingDocs[row.pending_document_id];
-                          const pendingDocument =
-                            cached ??
-                            (await fetchPendingDocument(
-                              row.pending_document_id,
-                            ));
+                          const pendingDocument = await fetchPendingDocument(
+                            row.pending_document_id,
+                          );
 
                           const url =
                             pendingDocument?.data?.latest_document_url;

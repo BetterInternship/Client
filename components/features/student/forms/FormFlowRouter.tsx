@@ -73,6 +73,8 @@ export function FormFlowRouter({
     return autofillValues;
   }, [profile.data]);
 
+  console.log("Autofill values", autofillValues);
+
   // Field setter
   const setField = (key: string, v: string | number) => {
     setValues((prev) => ({ ...prev, [key]: v.toString() }));
@@ -111,6 +113,7 @@ export function FormFlowRouter({
       setBusy(true);
 
       const finalValues = { ...autofillValues, ...values };
+      console.log("Final values to submit", finalValues);
       await update.mutateAsync({
         internship_moa_fields: finalValues,
       });
