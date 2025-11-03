@@ -24,7 +24,7 @@ export function StatusDropdown({
       name="status"
       className={className}
       disabled={disabled}
-      options={app_statuses.filter(as => as.id !== 5)}
+      options={app_statuses.filter(as => as.id === 0 || as.id === 1 || as.id === 4 || as.id === 6)}
       defaultValue={value}
       onChange={onChange}
       fallback="Withdrawn"
