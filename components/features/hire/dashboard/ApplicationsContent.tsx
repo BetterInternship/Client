@@ -9,7 +9,7 @@ import { useAppContext } from "@/lib/ctx-app";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ApplicationsHeader } from "./ApplicationsHeader";
-import { useState } from "react";
+import { ElementType, useState } from "react";
 import { CommandMenu } from "@/components/ui/command-menu";
 import { Check, SquareCheck, Star, Trash, X } from "lucide-react";
 import { useEffect } from "react";
@@ -51,6 +51,10 @@ export function ApplicationsContent({
       new Date(a.applied_at ?? "").getTime(),
   );
 
+  const { to_app_status_name, get_app_status, app_statuses } = useDbRefs();
+
+  console.log(app_statuses);
+
   // make command bars visible when an applicant is selected.
   useEffect(() => {
     setCommandBarsVisible(selectedApplications.size > 0);
@@ -77,52 +81,48 @@ export function ApplicationsContent({
     }
   };
 
-  const statuses = [
-    {
-      id: "4",
-      label: "Accept",
-      icon: Check,
-      onClick: () => updateStatus(4),
-    },
-    {
-      id: "1",
-      label: "Star",
-      icon: Star,
-      onClick: () => updateStatus(1),
-    },
-    {
-      id: "6",
-      label: "Reject",
-      icon: X,
-      onClick: () => updateStatus(6),
-    },
-    {
-      id: "7",
-      label: "Delete",
-      icon: Trash,
-      onClick: () => updateStatus(7),
-      destructive: true,
-    },
+  type StatusUIProps = {
+    icon: ElementType;
+    destructive?: boolean;
+  };
+
+  const statusUIMap: Record<number, StatusUIProps> = {
+    1: { icon: Star },
+    4: { icon: Check },
+    6: { icon: X },
+    7: { icon: Trash, destructive: true },
+  };
+
+  const unique_app_statuses = [
+    ...new Map(app_statuses.map((status) => [status.id, status])).values(),
   ];
 
+  const statuses = unique_app_statuses
+    .map((status) => {
+      const uiProps = statusUIMap[status.id];
+
+      if (!uiProps) return null;
+
+      return {
+        id: status.id.toString(),
+        label: status.name,
+        icon: uiProps.icon,
+        destructive: uiProps?.destructive,
+        onClick: () => updateStatus(status.id),
+      };
+    })
+    .filter(Boolean);
+
   const applyActiveFilter = (apps: typeof sortedApplications) => {
-    switch (activeFilter) {
-        case 4:
-            return apps.filter((application) => application.status === 4);
-        case 1:
-            return apps.filter((application) => application.status === 1);
-        case 6:
-            return apps.filter((application) => application.status === 6);
-        case 7:
-            return apps.filter((application) => application.status === 7);
-        default:
-            return apps.filter((application) => application.status !== 7);
+    if (activeFilter === -1) {
+      return apps.filter((application) => application.status !== 7);
     }
+
+    return apps.filter((application) => application.status === activeFilter);
   };
 
   const visibleApplications = applyActiveFilter(sortedApplications).filter(
-    (application) => 
-        application.status !== undefined
+    (application) => application.status !== undefined,
   );
 
   const toggleSelect = (id: string, next?: boolean) => {
@@ -155,28 +155,26 @@ export function ApplicationsContent({
   };
 
   const getCounts = (apps: EmployerApplication[]) => {
-    const counts = {
-        all: 0,
-        accepted: 0,
-        starred: 0,
-        rejected: 0,
-        deleted: 0
-    };
+    const counts: Record<string | number, number> = { all: 0 };
 
-    apps.forEach(app => {
-        console.log("application status:" + app.status);
-        if (app.status !== 7) counts.all++;
-        switch (app.status) {
-            case 4: counts.accepted++; break;
-            case 1: counts.starred++; break;
-            case 6: counts.rejected++; break;
-            case 7: counts.deleted++; break;
-        }
+    statuses.forEach((status) => {
+      counts[status?.id || 0] = 0;
     });
 
-    return [counts.all, counts.accepted, counts.starred, counts.rejected, counts.deleted];
-  }
+    apps.forEach((app) => {
+      const statusId = app.status;
 
+      if (statusId !== 7) {
+        counts.all++;
+      }
+
+      if (statusId !== undefined && Object.hasOwn(counts, statusId)) {
+        counts[statusId]++;
+      }
+    });
+
+    return counts;
+  };
 
   return isMobile ? (
     <div className="flex flex-col gap-4">
@@ -215,21 +213,21 @@ export function ApplicationsContent({
       />
       <div className="flex flex-col gap-2">
         {visibleApplications.length ? (
-            visibleApplications.map((application) => (
-              <ApplicationRow
-                key={application.id}
-                application={application}
-                onView={() => onApplicationClick(application)}
-                onNotes={() => onNotesClick(application)}
-                onSchedule={() => onScheduleClick(application)}
-                onStatusChange={(status) => onStatusChange(application, status)}
-                openChatModal={openChatModal}
-                setSelectedApplication={setSelectedApplication}
-                updateConversationId={updateConversationId}
-                checkboxSelected={selectedApplications.has(application.id!)}
-                onToggleSelect={(v) => toggleSelect(application.id!, !!v)}
-              />
-            ))
+          visibleApplications.map((application) => (
+            <ApplicationRow
+              key={application.id}
+              application={application}
+              onView={() => onApplicationClick(application)}
+              onNotes={() => onNotesClick(application)}
+              onSchedule={() => onScheduleClick(application)}
+              onStatusChange={(status) => onStatusChange(application, status)}
+              openChatModal={openChatModal}
+              setSelectedApplication={setSelectedApplication}
+              updateConversationId={updateConversationId}
+              checkboxSelected={selectedApplications.has(application.id!)}
+              onToggleSelect={(v) => toggleSelect(application.id!, !!v)}
+            />
+          ))
         ) : (
           <div className="p-2">
             <Badge>No applications under this category.</Badge>
@@ -248,10 +246,12 @@ export function ApplicationsContent({
         <thead className="bg-gray-100">
           <tr className="text-left">
             <th className="p-4">
-              <Checkbox 
+              <Checkbox
                 onClick={toggleSelectAll}
-                checked={selectedApplications.size === sortedApplications.length}
-                />
+                checked={
+                  selectedApplications.size === sortedApplications.length
+                }
+              />
             </th>
             <th className="p-4">Applicant</th>
             <th className="p-4">Education</th>
@@ -263,21 +263,19 @@ export function ApplicationsContent({
         <tbody>
           {visibleApplications.length ? (
             visibleApplications.map((application) => (
-                <ApplicationRow
-                    key={application.id}
-                    application={application}
-                    onView={() => onApplicationClick(application)}
-                    onNotes={() => onNotesClick(application)}
-                    onSchedule={() => onScheduleClick(application)}
-                    onStatusChange={(status) =>
-                    onStatusChange(application, status)
-                    }
-                    openChatModal={openChatModal}
-                    setSelectedApplication={setSelectedApplication}
-                    updateConversationId={updateConversationId}
-                    checkboxSelected={selectedApplications.has(application.id!)}
-                    onToggleSelect={(v) => toggleSelect(application.id!, !!v)}
-                />
+              <ApplicationRow
+                key={application.id}
+                application={application}
+                onView={() => onApplicationClick(application)}
+                onNotes={() => onNotesClick(application)}
+                onSchedule={() => onScheduleClick(application)}
+                onStatusChange={(status) => onStatusChange(application, status)}
+                openChatModal={openChatModal}
+                setSelectedApplication={setSelectedApplication}
+                updateConversationId={updateConversationId}
+                checkboxSelected={selectedApplications.has(application.id!)}
+                onToggleSelect={(v) => toggleSelect(application.id!, !!v)}
+              />
             ))
           ) : (
             <div className="p-2">

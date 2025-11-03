@@ -5,59 +5,54 @@ import { useAppContext } from "@/lib/ctx-app";
 import { FilterButton } from "@/components/ui/filter";
 
 interface ApplicationsHeaderProps {
-    selectedCounts?: number[];
-    activeFilter: number;
-    onFilterChange: (filter: number) => void;
+  selectedCounts: Record<string | number, number>;
+  activeFilter: number;
+  onFilterChange: (filter: number) => void;
 }
 
 export function ApplicationsHeader({
-    selectedCounts = [0, 0, 0, 0, 0],
-    activeFilter,
-    onFilterChange,
+  selectedCounts,
+  activeFilter,
+  onFilterChange,
 }: ApplicationsHeaderProps) {
-    const { to_app_status_name } = useDbRefs();
-    const { isMobile } = useAppContext();
+  const { isMobile } = useAppContext();
+  const { get_app_status } = useDbRefs();
 
-    return isMobile ? (
-        <>
-            <StatusDropdown
-                value={1}
-                onChange={() => onFilterChange(activeFilter)}
-                className="w-full"
-            ></StatusDropdown>
-        </>
-    ) : (
-        <div className="flex gap-2 pb-4">
-            <FilterButton
-                name="All"
-                itemCount={selectedCounts[0]}
-                isActive={activeFilter === -1}
-                onToggle={() => onFilterChange(-1)}
-            />
-            <FilterButton
-                name="Accepted"
-                itemCount={selectedCounts[1]}
-                isActive={activeFilter === 4}
-                onToggle={() => onFilterChange(4)}
-            />
-            <FilterButton
-                name="Starred"
-                itemCount={selectedCounts[2]}
-                isActive={activeFilter === 1}
-                onToggle={() => onFilterChange(1)}
-            />
-            <FilterButton
-                name="Rejected"
-                itemCount={selectedCounts[3]}
-                isActive={activeFilter === 6}
-                onToggle={() => onFilterChange(6)}
-            />
-            <FilterButton
-                name="Deleted"
-                itemCount={selectedCounts[4]}
-                isActive={activeFilter === 7}
-                onToggle={() => onFilterChange(7)}
-            />
-        </div>
-    );
+  const getStatuses = () => {
+    return Object.entries(selectedCounts).map(([key, value]) => {
+      let name: string;
+      let filterID: number;
+
+      if (key === "all") {
+        name = "All";
+        filterID = -1;
+      } else {
+        const numericKey = parseInt(key, 10);
+        name = get_app_status(numericKey)?.name || key;
+        filterID = numericKey;
+      }
+
+      return (
+        <FilterButton
+          key={key}
+          name={name}
+          itemCount={value}
+          isActive={activeFilter === filterID}
+          onToggle={() => onFilterChange(filterID)}
+        />
+      );
+    });
+  };
+
+  return isMobile ? (
+    <>
+      <StatusDropdown
+        value={1}
+        onChange={() => onFilterChange(activeFilter)}
+        className="w-full"
+      />
+    </>
+  ) : (
+    <div className="flex gap-2 pb-4">{getStatuses()}</div>
+  );
 }
