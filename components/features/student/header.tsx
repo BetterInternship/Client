@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useReducer,
-  useState,
-} from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -18,14 +12,10 @@ import {
   Search,
   ChevronRight,
   X as XIcon,
-  Filter as FilterIcon,
-  ChevronDown,
   Menu,
   Check as CheckIcon,
   Newspaper,
 } from "lucide-react";
-import { Checkbox } from "@radix-ui/react-checkbox";
-import { useDetectClickOutside } from "react-detect-click-outside";
 
 import { Button } from "@/components/ui/button";
 import { GroupableNavDropdown, DropdownOption } from "@/components/ui/dropdown";
@@ -80,7 +70,7 @@ const SearchInput = ({
       className={cn(
         "relative w-full border border-gray-300 rounded-[0.33em] overflow-hidden",
         "focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/40",
-        className
+        className,
       )}
     >
       {/* Left icon */}
@@ -96,7 +86,7 @@ const SearchInput = ({
         className={cn(
           "w-full h-10 pl-10 pr-24",
           "bg-transparent border-0 outline-none focus:ring-0 text-gray-900 text-sm",
-          "placeholder:text-gray-500"
+          "placeholder:text-gray-500",
         )}
       />
 
@@ -110,7 +100,7 @@ const SearchInput = ({
           "transition-colors",
           moaOnly
             ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
-            : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
+            : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50",
         )}
         aria-pressed={moaOnly}
         aria-label="Filter: DLSU MOA"
@@ -120,13 +110,13 @@ const SearchInput = ({
             "inline-flex items-center justify-center rounded-full border h-3.5 w-3.5",
             moaOnly
               ? "border-emerald-400 bg-emerald-100"
-              : "border-gray-300 bg-white"
+              : "border-gray-300 bg-white",
           )}
         >
           <CheckIcon
             className={cn(
               "h-3 w-3",
-              moaOnly ? "text-emerald-600" : "text-transparent"
+              moaOnly ? "text-emerald-600" : "text-transparent",
             )}
           />
         </span>
@@ -158,10 +148,11 @@ function MobileDrawer({
   const handleLogout = () => logout().then(() => router.push("/"));
 
   const handleIncompleteProfileClick = (link: string) => {
-    if (
+    if (!isProfileVerified(profile.data)) {
+      router.push(`/register/verify`);
+    } else if (
       !isProfileResume(profile.data) ||
-      !isProfileBaseComplete(profile.data) ||
-      !isProfileVerified(profile.data)
+      !isProfileBaseComplete(profile.data)
     ) {
       openGlobalModal(
         "incomplete-profile",
@@ -175,7 +166,7 @@ function MobileDrawer({
           onClose: () => {
             queryClient.invalidateQueries({ queryKey: ["my-profile"] });
           },
-        }
+        },
       );
     } else {
       router.push(`/${link}`);
@@ -193,7 +184,7 @@ function MobileDrawer({
           "fixed inset-0 z-[120] bg-black/30 backdrop-blur-[2px] transition-opacity duration-200",
           open
             ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
+            : "opacity-0 pointer-events-none",
         )}
         onClick={onClose}
       />
@@ -203,7 +194,7 @@ function MobileDrawer({
         className={cn(
           "fixed right-0 top-0 z-[121] h-[100svh] w-full max-w-[92%] sm:max-w-[420px] bg-white shadow-xl border-l border-gray-200",
           "transition-transform duration-250 ease-out",
-          open ? "translate-x-0" : "translate-x-full"
+          open ? "translate-x-0" : "translate-x-full",
         )}
         role="dialog"
         aria-modal="true"
@@ -232,7 +223,7 @@ function MobileDrawer({
                 </div>
                 <div className="flex flex-col leading-tight">
                   <span className="font-medium">
-                    {getFullName(profile.data)}
+                    {getFullName(profile.data!)}
                   </span>
                   <span className="text-xs text-gray-500">
                     {profile.data?.email}
@@ -306,6 +297,18 @@ function MobileDrawer({
                       </button>
                     </Link>
                   </li>
+                  <li>
+                    <button
+                      onClick={() => handleIncompleteProfileClick("forms")}
+                      className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary"
+                    >
+                      <div>
+                        <Newspaper className="w-4 h-4 inline-block mr-2" />
+                        <span>Forms</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-gray-300" />
+                    </button>
+                  </li>
                 </ul>
               </nav>
             </div>
@@ -315,7 +318,7 @@ function MobileDrawer({
           {isAuthenticated() && (
             <div className="mt-auto border-t px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3">
               <button
-                onClick={handleLogout}
+                onClick={() => void handleLogout()}
                 className="w-full flex items-center justify-center gap-2 text-red-600 font-medium py-2 rounded-md hover:bg-red-50"
               >
                 <LogOut className="w-4 h-4" /> Sign Out
@@ -342,10 +345,11 @@ export const ProfileButton: React.FC = () => {
   const handleLogout = () => logout().then(() => router.push("/"));
 
   const handleIncompleteProfileClick = (link: string) => {
-    if (
+    if (!isProfileVerified(profile.data)) {
+      router.push(`/register/verify`);
+    } else if (
       !isProfileResume(profile.data) ||
-      !isProfileBaseComplete(profile.data) ||
-      !isProfileVerified(profile.data)
+      !isProfileBaseComplete(profile.data)
     ) {
       openGlobalModal(
         "incomplete-profile",
@@ -355,9 +359,9 @@ export const ProfileButton: React.FC = () => {
         {
           allowBackdropClick: false,
           onClose: () => {
-            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+            void queryClient.invalidateQueries({ queryKey: ["my-profile"] });
           },
-        }
+        },
       );
     } else {
       router.push(`/${link}`);
@@ -396,7 +400,7 @@ export const ProfileButton: React.FC = () => {
             <div className="overflow-hidden rounded-full flex items-center justify-center">
               <MyUserPfp size="7" />
             </div>
-            {getFullName(profile.data, false)}
+            {getFullName(profile.data!, false)}
           </>
         }
         content={
@@ -424,7 +428,15 @@ export const ProfileButton: React.FC = () => {
           <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
           <span className="text-primary">Saved Jobs</span>
         </DropdownOption>
-        <DropdownOption href="/" on_click={handleLogout}>
+        <DropdownOption
+          on_click={() => {
+            handleIncompleteProfileClick("forms");
+          }}
+        >
+          <Newspaper className="w-4 h-4 inline-block mr-2 text-primary" />
+          <span className="text-primary">Forms</span>
+        </DropdownOption>
+        <DropdownOption href="/" on_click={() => void handleLogout()}>
           <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />
           <span className="text-red-500">Sign Out</span>
         </DropdownOption>
@@ -510,7 +522,7 @@ export const Header: React.FC = () => {
       <div
         className={cn(
           "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
-          isMobile ? "px-4 py-3" : "py-4 px-8"
+          isMobile ? "px-4 py-3" : "py-4 px-8",
         )}
         style={{ overflow: "visible", position: "relative", zIndex: 100 }}
       >

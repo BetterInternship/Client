@@ -1,23 +1,25 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { OutsideTabPanel, OutsideTabs } from "@/components/ui/outside-tabs";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
-import { Newspaper, Rows2 } from "lucide-react";
+import { Newspaper } from "lucide-react";
 import {
   fetchForms,
   fetchAllUserForms,
   fetchSignedDocument,
   fetchPendingDocument,
+  fetchTemplateDocument,
+  fetchPrefilledDocument,
 } from "@/lib/db/use-moa-backend";
 import FormGenerateCard from "@/components/features/student/forms/FormGenerateCard";
 import MyFormCard from "@/components/features/student/forms/MyFormCard";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { FormFlowRouter } from "@/components/features/student/forms/FormFlowRouter";
 import { useProfileData } from "@/lib/api/student.data.api";
-import { UserService } from "@/lib/api/services";
 import { useRouter } from "next/navigation";
+import ComingSoonCard from "@/components/features/student/forms/ComingSoonCard";
 
 /**
  * The forms page component
@@ -27,11 +29,13 @@ import { useRouter } from "next/navigation";
 type TabKey = "Form Generator" | "My Forms";
 
 export default function FormsPage() {
+  const queryClient = useQueryClient();
   const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
   const profile = useProfileData();
   const router = useRouter();
   const userId = profile.data?.id;
   const [tab, setTab] = useState<TabKey>("Form Generator");
+  const [pendingDocs, setPendingDocs] = useState<Record<string, string[]>>({});
 
   // All form templates
   const {
@@ -47,14 +51,28 @@ export default function FormsPage() {
     gcTime: 10_000,
   });
 
+  const norm = (s?: string) => (s ?? "").trim().toLowerCase();
+
   const generatorForms = formList;
-  const openFormModal = (formName: string, formLabel: string) => {
+  const comingSoon = useMemo(() => {
+    const available = new Set(
+      (generatorForms ?? [])
+        .map((f) => norm(f.label ?? f.name))
+        .filter(Boolean),
+    );
+    return UPCOMING_FORMS.filter((f) => !available.has(norm(f.label)));
+  }, [generatorForms]);
+
+  const openFormModal = (
+    formName: string,
+    formVersion: number,
+    formLabel: string,
+  ) => {
     openGlobalModal(
       "form-generator-form",
       <FormFlowRouter
-        baseForm={formName}
-        // ! remove hard code,
-        allowInvite={true}
+        formName={formName}
+        formVersion={formVersion}
         onGoToMyForms={() => {
           setTab("My Forms");
           closeGlobalModal("form-generator-form");
@@ -82,27 +100,64 @@ export default function FormsPage() {
     gcTime: 10_000,
   });
 
-  const { data: employersData } = useQuery({
-    queryKey: ["companies:list"],
-    queryFn: async () => await UserService.getEntityList(),
-    staleTime: 60_000,
-  });
-
-  const companyMap: Record<string, string> = useMemo(
+  const myFormsSorted = useMemo(
     () =>
-      Object.fromEntries(
-        (employersData?.employers ?? []).map((e) => [
-          String(e.id),
-          e.legal_entity_name,
-        ]),
-      ),
-    [employersData],
+      (myForms ?? [])
+        .slice()
+        .sort((a, b) => parseTsToMs(b.timestamp) - parseTsToMs(a.timestamp)),
+    [myForms],
   );
+
+  // prefetch pending documents for rows that have pending_document_id
+  useEffect(() => {
+    if (!myForms?.length) return;
+
+    const ids = Array.from(
+      new Set(
+        myForms.map((r) => r.pending_document_id).filter(Boolean) as string[],
+      ),
+    );
+
+    let cancelled = false;
+    (async () => {
+      for (const id of ids) {
+        if (!id || pendingDocs[id]) continue;
+        try {
+          const resp = await fetchPendingDocument(id);
+          if (cancelled) return;
+
+          console.log("Fetched pending document", id, resp);
+
+          const parties = (resp?.data?.pending_parties ?? []).map(String);
+
+          if (!cancelled) {
+            setPendingDocs((prev) => ({
+              ...prev,
+              [id]: parties,
+            }));
+          }
+        } catch {
+          // ignore; don't block UI
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [myForms, pendingDocs]);
 
   if (!profile.data?.department && !profile.isPending) {
     alert("Profile not yet complete.");
     router.push("/profile");
   }
+
+  // refresh on my forms
+  useEffect(() => {
+    if (tab === "My Forms" && userId) {
+      void queryClient.invalidateQueries({ queryKey: ["my_forms", userId] });
+    }
+  }, [tab, userId, queryClient]);
 
   return (
     <div className="container max-w-6xl px-4 sm:px-10 pt-6 sm:pt-16 mx-auto">
@@ -132,17 +187,82 @@ export default function FormsPage() {
             <div className="space-y-3">
               {(isLoading || isPending || isFetching) && <div>Loading...</div>}
               {error && <p className="text-red-600">Failed to load forms</p>}
+              {!error &&
+                !(isLoading || isPending || isFetching) &&
+                (generatorForms?.length ?? 0) === 0 && (
+                  <div className="text-sm text-gray-600">
+                    <p>There are no forms available yet for your department.</p>
+                    <p className="mt-1 text-muted-foreground">
+                      Need help? Email{" "}
+                      <a
+                        href="mailto:hello@betterinternship.com"
+                        className="underline"
+                      >
+                        hello@betterinternship.com
+                      </a>
+                      .
+                    </p>
+                  </div>
+                )}
               {!isLoading &&
                 !error &&
+                generatorForms?.length !== 0 &&
                 generatorForms.map((form) => (
                   <FormGenerateCard
-                    key={form.id}
-                    formTitle={form.label ?? ""}
+                    key={form.name}
+                    formName={form.name}
+                    onViewTemplate={() => {
+                      if (!form.base_document_id) {
+                        alert("No template available for this form.");
+                        return;
+                      }
+
+                      fetchTemplateDocument(form.base_document_id)
+                        .then((res) => {
+                          const link = res?.data?.url;
+                          if (link) {
+                            window.open(link, "noopener,noreferrer");
+                          } else {
+                            alert("Template not available.");
+                          }
+                        })
+                        .catch((e) => {
+                          console.error(e);
+                          window.close();
+                          alert("Failed to load template.");
+                        });
+                    }}
                     onGenerate={() =>
-                      openFormModal(form.name, form.label ?? "")
+                      openFormModal(form.name, form.version, form.label ?? "")
                     }
                   />
                 ))}
+
+              {/* coming soon, hard coded for now */}
+              {!error &&
+                !(isLoading || isPending || isFetching) &&
+                (comingSoon?.length ?? 0) > 0 && (
+                  <div className="mt-6 space-y-2">
+                    <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                      Coming Soon
+                    </div>
+                    <div className="space-y-3">
+                      {comingSoon.map((f) => (
+                        <ComingSoonCard key={f.label} title={f.label} />
+                      ))}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Want early access or have a suggestion? Email{" "}
+                      <a
+                        href="mailto:hello@betterinternship.com"
+                        className="underline underline-offset-4"
+                      >
+                        hello@betterinternship.com
+                      </a>
+                      .
+                    </p>
+                  </div>
+                )}
             </div>
           </OutsideTabPanel>
 
@@ -158,46 +278,73 @@ export default function FormsPage() {
                 !myFormsError &&
                 !myForms?.length && (
                   <p className="text-muted-foreground text-sm">
-                    You haven’t generated any forms yet.
+                    You haven't generated any forms yet.
                   </p>
                 )}
 
               {userId &&
                 !loadingMyForms &&
                 !myFormsError &&
-                myForms.map((row, i) => {
-                  const formName = row.form_name;
-                  const companyName = companyMap[row.employer_id];
-                  const title = `${formName} | ${companyName}`;
-                  const status: "Pending" | "Signed" = row.signed_document_id
-                    ? "Signed"
-                    : "Waiting for signature/s";
+                myFormsSorted.map((row, i) => {
+                  const title = `${row.label ?? row.form_name}`;
+                  const status =
+                    row.signed_document_id || row.prefilled_document_id
+                      ? "Complete"
+                      : "Pending ";
+                  const waitingFor: string[] = row.pending_document_id
+                    ? (pendingDocs[row.pending_document_id] ?? [])
+                    : [];
+
+                  console.log("Waiting for:", waitingFor);
+
                   return (
                     <MyFormCard
                       key={i}
                       title={title}
                       requestedAt={row.timestamp}
                       status={status}
+                      waitingFor={waitingFor}
                       getDownloadUrl={async () => {
+                        // 1) signed document (highest priority)
                         if (row.signed_document_id) {
                           const signedDocument = await fetchSignedDocument(
                             row.signed_document_id,
                           );
 
-                          return `https://storage.googleapis.com/better-internship-public-bucket/${signedDocument.data?.verification_code}.pdf`;
+                          const url = signedDocument.data?.verification_code
+                            ? `https://storage.googleapis.com/better-internship-public-bucket/${signedDocument.data.verification_code}.pdf`
+                            : null;
+
+                          if (url) return url;
                         }
 
-                        if (row.pending_document_id) {
-                          const pendingDocument = await fetchPendingDocument(
-                            row.pending_document_id,
-                          );
+                        // 2) prefilled document
+                        if (row.prefilled_document_id) {
+                          const prefilledDocument =
+                            await fetchPrefilledDocument(
+                              row.prefilled_document_id,
+                            );
+                          const url = prefilledDocument.data?.url;
+                          if (url) return url;
+                        }
 
-                          return `https://storage.googleapis.com/better-internship-public-bucket/${pendingDocument.data?.verification_code}.pdf`;
+                        // 3) pending document
+                        if (row.pending_document_id) {
+                          const cached = pendingDocs[row.pending_document_id];
+                          const pendingDocument =
+                            cached ??
+                            (await fetchPendingDocument(
+                              row.pending_document_id,
+                            ));
+
+                          const url =
+                            pendingDocument?.data?.latest_document_url;
+                          if (url) return url;
                         }
 
                         alert("No document associated with request.");
+                        throw new Error("No document URL available");
                       }}
-                      downloading={false}
                     />
                   );
                 })}
@@ -207,4 +354,36 @@ export default function FormsPage() {
       </div>
     </div>
   );
+}
+
+/* Coming Soon config ───────────────────────── */
+const UPCOMING_FORMS: Array<{ label: string }> = [
+  {
+    label: "Student MOA",
+  },
+  {
+    label: "Company Evaluation Form",
+  },
+  {
+    label: "Company and Project Info",
+  },
+  {
+    label: "Progress Report",
+  },
+  {
+    label: "Annex A Internship Plan",
+  },
+];
+/* ──────────────────────────────────────────────────────────────────────────────── */
+
+function parseTsToMs(ts?: string | Date) {
+  if (!ts) return 0;
+  if (ts instanceof Date) return ts.getTime();
+  if (typeof ts === "string") {
+    // keep only the first 3 fractional digits (ms) so Date can parse it
+    const normalized = ts.replace(/\.(\d{3})\d+/, ".$1");
+    const t = new Date(normalized).getTime();
+    return Number.isNaN(t) ? 0 : t;
+  }
+  return 0;
 }

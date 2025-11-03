@@ -28,12 +28,22 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Info,
+  PlusIcon,
 } from "lucide-react";
 import * as React from "react";
 import { createContext, useContext, useRef } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { GroupableRadioDropdown } from "./ui/dropdown";
 import { Input } from "./ui/input";
+import { Tooltip, TooltipTrigger } from "./ui/tooltip";
+import {
+  TooltipArrow,
+  TooltipContent,
+  TooltipPortal,
+} from "@radix-ui/react-tooltip";
+import { Textarea } from "./ui/textarea";
+import { Matcher } from "react-day-picker";
 
 interface EditFormContext<T extends IFormData> {
   formData: T;
@@ -75,6 +85,7 @@ export const createEditForm = <T extends IFormData>(): [
   }) => {
     const { formData, setField } = useFormData<T>(data);
     const { formErrors, setError, setErrors } = useFormErrors<T>();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     const validators = useRef<Function[]>([]);
     const errs = useRef<IFormErrors<T>>({} as IFormErrors<T>);
 
@@ -99,6 +110,7 @@ export const createEditForm = <T extends IFormData>(): [
     const validateFormData = () => {
       errs.current = {} as IFormErrors<T>;
       const result = !validators.current
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
         .map((validator) => validator(formData))
         .some((r) => r);
       setErrors(errs.current);
@@ -159,7 +171,7 @@ export const FormInput = ({
   return (
     <div>
       {label && (
-        <label className="text-xs text-gray-600 mb-1 block">
+        <label className="text-xs text-gray-600 mb-1 flex flex-row items-center gap-2">
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
@@ -167,6 +179,45 @@ export const FormInput = ({
         value={value ?? ""}
         onChange={(e) => setter && setter(e.target.value)}
         className={className}
+        {...props}
+      />
+    </div>
+  );
+};
+
+/**
+ * Big input
+ */
+interface FormTextareaProps
+  extends React.InputHTMLAttributes<HTMLTextAreaElement> {
+  label?: string;
+  setter?: (value: string) => void;
+  required?: boolean;
+  className?: string;
+}
+
+export const FormTextarea = ({
+  label,
+  value,
+  setter,
+  required = true,
+  className,
+  ...props
+}: FormTextareaProps) => {
+  return (
+    <div>
+      {label && (
+        <label className="text-xs text-gray-600 mb-1 flex flex-row items-center gap-2">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+      )}
+      <Textarea
+        value={value ?? ""}
+        onChange={(e) => setter && setter(e.target.value)}
+        className={cn(
+          className,
+          "rounded-[0.33em] outline-none focus-visible:ring-0",
+        )}
         {...props}
       />
     </div>
@@ -184,7 +235,7 @@ interface FormDropdownProps
   label?: string;
   value?: string | number | string[];
   required?: boolean;
-  setter?: (value: any) => void;
+  setter?: (value: string | number) => void;
   className?: string;
 }
 
@@ -223,7 +274,7 @@ interface FormCheckboxProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   checked?: boolean;
   label?: string;
-  setter?: (value: any) => void;
+  setter?: (value: boolean) => void;
   className?: string;
   sentence?: React.ReactNode;
   required?: boolean;
@@ -245,21 +296,29 @@ export const FormCheckbox = ({
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
-      <div className="flex gap-2 items-center">
+      <div className="flex gap-2 sm:items-center">
         <Checkbox
           name={label ?? ""}
           checked={checked}
           className={cn(
-            "flex flex-row items-center justify-center border rounded-[0.33em] w-7 h-7",
+            "inline-flex items-center justify-center rounded-[0.33em] border aspect-square w-6 h-6 sm:w-5 sm:h-5",
             checked
               ? "border-primary border-opacity-85 bg-blue-200"
               : "border-gray-300 bg-gray-50",
           )}
-          onCheckedChange={(checked) => setter && setter(checked)}
+          onCheckedChange={(checked) => setter && setter(!!checked)}
         >
-          {checked && <Check className="text-primary opacity-75" />}
+          {checked && <Check className="text-primary opacity-75 h-4 w-4" />}
         </Checkbox>
-        {sentence && <div className="text-xs text-gray-500">{sentence}</div>}
+        {sentence && (
+          <div
+            className="text-xs text-gray-500 cursor-pointer select-none"
+            onClick={() => setter?.(!checked)}
+            role="button"
+          >
+            {sentence}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -285,7 +344,6 @@ export const FormCheckBoxGroup = ({
   ...props
 }: FormCheckBoxGroupProps) => {
   const handleValueChange = (optionValue: string | number) => {
-    console.log("checkbox changed:", optionValue, "current values:", values);
     if (values.includes(optionValue)) {
       setter(values.filter((v) => v !== optionValue));
     } else {
@@ -501,7 +559,7 @@ export const FormDatePicker = ({
             mode="single"
             selected={selected}
             captionLayout={captionLayout}
-            disabled={disabledDays as any}
+            disabled={disabledDays as Matcher[]}
             onSelect={(d) => {
               setter?.(d ? d.getTime() : undefined);
               if (autoClose) setOpen(false);
@@ -743,7 +801,7 @@ export function TimeInputNative({
   required?: boolean;
   helper?: string;
   className?: string;
-} & React.InputHTMLAttributes<HTMLInputElement>) {
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange">) {
   return (
     <div className={className}>
       {label && (

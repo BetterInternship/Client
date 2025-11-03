@@ -10,13 +10,13 @@ import { usePocketbase } from "./pocketbase";
 
 interface IAuthContext {
   register: (
-    user: Partial<PublicUser>
+    user: Partial<PublicUser>,
   ) => Promise<
     ({ user: Partial<PublicUser>; message?: string } & FetchResponse) | null
   >;
   verify: (
     userId: string,
-    key: string
+    key: string,
   ) => Promise<Partial<PublicUser> & FetchResponse>;
   logout: () => Promise<void>;
   isAuthenticated: () => boolean;
@@ -67,29 +67,35 @@ export const AuthContextProvider = ({
     refreshAuthentication();
   }, []);
 
-  // Whenever auth occurs, invalidate profile
-  useEffect(() => {
-    queryClient.invalidateQueries({ queryKey: ["jobs"] });
-    queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-    queryClient.invalidateQueries({ queryKey: ["my-applications"] });
-    queryClient.invalidateQueries({ queryKey: ["my-saved-jobs"] });
-    queryClient.invalidateQueries({ queryKey: ["my-conversations"] });
-  }, [isAuthenticated]);
-
   const register = async (user: Partial<PublicUser>) => {
+    await queryClient.invalidateQueries({ queryKey: ["jobs"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-applications"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-saved-jobs"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-conversations"] });
     return await AuthService.register(user);
   };
 
   const verify = async (userId: string, key: string) => {
     const response = await AuthService.verify(userId, key);
     if (!response.success) return null;
+    await queryClient.invalidateQueries({ queryKey: ["jobs"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-applications"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-saved-jobs"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-conversations"] });
     setIsAuthenticated(true);
     return response;
   };
 
   const logout = async () => {
-    pocketbase.logout();
-    AuthService.logout();
+    await pocketbase.logout();
+    await AuthService.logout();
+    await queryClient.invalidateQueries({ queryKey: ["jobs"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-applications"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-saved-jobs"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-conversations"] });
     setIsAuthenticated(false);
   };
 

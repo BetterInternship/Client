@@ -9,6 +9,8 @@ import {
   UserApplication,
 } from "@/lib/db/db.types";
 import { APIClient, APIRouteBuilder } from "./api-client";
+import { FetchResponse } from "@/lib/api/use-fetch";
+import { IFormMetadata } from "@betterinternship/core/forms";
 
 interface EmployerResponse extends FetchResponse {
   employer: Partial<Employer>;
@@ -127,11 +129,27 @@ interface SaveJobResponse extends FetchResponse {
   message: string;
 }
 
+export type ApproveSignatoryRequest = {
+  pendingDocumentId: string;
+  signatoryName: string;
+  signatoryTitle: string;
+  party: "student" | "entity" | "student-guardian" | "university";
+  values?: Record<string, string>;
+};
+
+export type ApproveSignatoryResponse = {
+  message?: string;
+  signedDocumentId?: string;
+  signedDocumentUrl?: string;
+  [k: string]: any;
+};
+
 export const UserService = {
   async getMyProfile() {
-    return APIClient.get<UserResponse>(
+    const result = APIClient.get<UserResponse>(
       APIRouteBuilder("users").r("me").build(),
     );
+    return result;
   },
 
   async updateMyProfile(data: Partial<PublicUser>) {
@@ -148,45 +166,43 @@ export const UserService = {
     );
   },
 
-  // ! todo, add a way for the route to be able to tell if request is valid or not
-  // ! we can't generate signed forms out of nowhere
-  async submitSignedForm(data: {
+  async requestGenerateForm(data: {
     formName: string;
+    formVersion: number;
     values: Record<string, string>;
+    signatories?: { name: string; title: string }[];
     parties?: {
-      userId?: string;
-      employerId?: string;
-      universityId?: string;
+      userId?: string | null;
+      employerId?: string | null;
+      universityId?: string | null;
     };
+    disableEsign?: boolean;
   }) {
     return APIClient.post<{
       success?: boolean;
-      pendingDocumentUrl: string;
-      pendingDocumentId: string;
+      documentUrl: string;
+      documentId: string;
       internshipFormId: string;
-    }>(APIRouteBuilder("forms").r("signed").build({ moaServer: true }), data);
+    }>(APIRouteBuilder("forms").r("generate").build({ moaServer: true }), data);
   },
 
-  async submitPendingForm(data: {
-    formName: string;
-    values: Record<string, string>;
-    parties?: {
-      userId?: string;
-      employerId?: string;
-      universityId?: string;
-    };
-  }) {
-    return APIClient.post<{
-      success?: boolean;
-      pendingDocumentUrl: string;
-      pendingDocumentId: string;
-      internshipFormId: string;
-    }>(APIRouteBuilder("forms").r("pending").build({ moaServer: true }), data);
-  },
-
-  async requestEmployerAssist(id: string, recipient: string) {
-    alert("this route isnt implemented yet");
-    return Promise.resolve({});
+  async getForm(formName: string) {
+    return APIClient.get<
+      {
+        formDocument: {
+          name: string;
+          label: string;
+          version: number;
+          base_document_id: string;
+        };
+        formMetadata: IFormMetadata;
+      } & FetchResponse
+    >(
+      APIRouteBuilder("forms")
+        .r("form-latest")
+        .p({ name: formName })
+        .build({ moaServer: true }),
+    );
   },
 
   async parseResume(form: FormData) {
@@ -206,13 +222,24 @@ export const UserService = {
   // ! remove hardcoded mapping
   async getEntityList() {
     const response = await APIClient.get<{
-      entities: { id: string; display_name: string }[];
+      entities: {
+        id: string;
+        display_name: string;
+        legal_identifier: string;
+        contact_name: string;
+        contact_email: string;
+        address: string;
+      }[];
     }>(APIRouteBuilder("entities").r("list").build({ moaServer: true }));
 
     return {
       employers: response.entities.map((e) => ({
         id: e.id,
-        legal_entity_name: e.display_name,
+        display_name: e.display_name,
+        legal_entity_name: e.legal_identifier,
+        contact_name: e.contact_name,
+        contact_email: e.contact_email,
+        address: e.address,
       })),
     };
   },

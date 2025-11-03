@@ -8,7 +8,15 @@ import {
   useMemo,
 } from "react";
 import { motion } from "framer-motion";
-import { Edit2, Upload, Eye, Camera, CheckCircle2, Globe2, Loader2 } from "lucide-react";
+import {
+  Edit2,
+  Upload,
+  Eye,
+  Camera,
+  CheckCircle2,
+  Globe2,
+  Loader2,
+} from "lucide-react";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
@@ -249,7 +257,7 @@ export default function ProfilePage() {
                         if (success) setIsEditing(false);
                         else
                           setSaveError(
-                            "Please fix the errors in the form before saving." // TODO: Make this a toast
+                            "Please fix the errors in the form before saving.", // TODO: Make this a toast
                           );
                       }}
                       disabled={saving}
@@ -257,12 +265,10 @@ export default function ProfilePage() {
                       <CheckCircle2 className="h-4 w-4 mr-1" />
                       {saving ? (
                         <>
-                        <Loader2 className="h-4 w-4 animate-spin"></Loader2>
+                          <Loader2 className="h-4 w-4 animate-spin"></Loader2>
                         </>
                       ) : (
-                      <>
-                        Save
-                      </>
+                        <>Save</>
                       )}
                     </Button>
                   }
@@ -302,13 +308,13 @@ export default function ProfilePage() {
                       "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs border",
                       ok
                         ? "border-emerald-500/40 text-emerald-600"
-                        : "border-amber-500/40 text-amber-700"
+                        : "border-amber-500/40 text-amber-700",
                     )}
                   >
                     <CheckCircle2
                       className={cn(
                         "h-3.5 w-3.5 mr-1",
-                        ok ? "opacity-100" : "opacity-50"
+                        ok ? "opacity-100" : "opacity-50",
                       )}
                     />{" "}
                     {k}
@@ -367,7 +373,9 @@ function HeaderLine({ profile }: { profile: PublicUser }) {
   if (internshipPreferences?.job_setup_ids?.length)
     chips.push(`Setups: ${internshipPreferences?.job_setup_ids.length}`);
   if (internshipPreferences?.job_commitment_ids?.length)
-    chips.push(`Commitment: ${internshipPreferences?.job_commitment_ids?.length}`);
+    chips.push(
+      `Commitment: ${internshipPreferences?.job_commitment_ids?.length}`,
+    );
   if (internshipPreferences?.job_category_ids?.length)
     chips.push(`Roles: ${internshipPreferences?.job_category_ids?.length}`);
 
@@ -404,8 +412,14 @@ function ProfileReadOnlyTabs({
   onEdit: () => void;
 }) {
   const internshipPreferences = profile.internship_preferences;
-  const { to_university_name, to_college_name, to_department_name, job_modes, job_types, job_categories } =
-    useDbRefs();
+  const {
+    to_university_name,
+    to_college_name,
+    to_department_name,
+    job_modes,
+    job_types,
+    job_categories,
+  } = useDbRefs();
 
   type TabKey = "Student Profile" | "Internship Details";
   const [tab, setTab] = useState<TabKey>("Student Profile");
@@ -469,9 +483,22 @@ function ProfileReadOnlyTabs({
                   : "—"
               }
             />
-            <LabeledProperty label="Degree / Program" value={profile.degree ?? "-"} />
-            <LabeledProperty label="College / School" value={profile.college ? to_college_name(profile.college) : "-"} />
-            <LabeledProperty label="Department" value={profile.department ? to_department_name(profile.department) : "-"} />
+            <LabeledProperty
+              label="Degree / Program"
+              value={profile.degree ?? "-"}
+            />
+            <LabeledProperty
+              label="College / School"
+              value={profile.college ? to_college_name(profile.college) : "-"}
+            />
+            <LabeledProperty
+              label="Department"
+              value={
+                profile.department
+                  ? to_department_name(profile.department)
+                  : "-"
+              }
+            />
             <LabeledProperty
               label="Expected Graduation Date"
               value={formatMonth(profile.expected_graduation_date) ?? "-"}
@@ -531,16 +558,17 @@ function ProfileReadOnlyTabs({
             <LabeledProperty
               label="Ideal internship start"
               value={
-                internshipPreferences?.expected_start_date ? toYYYYMM(
-                  internshipPreferences.expected_start_date
-                ) : "—"
+                internshipPreferences?.expected_start_date
+                  ? toYYYYMM(internshipPreferences.expected_start_date)
+                  : "—"
               }
             />
             {internshipPreferences?.internship_type === "credited" && (
               <LabeledProperty
                 label="Expected Duration (hours)"
                 value={
-                  typeof internshipPreferences?.expected_duration_hours === "number"
+                  typeof internshipPreferences?.expected_duration_hours ===
+                  "number"
                     ? String(internshipPreferences?.expected_duration_hours)
                     : "—"
                 }
@@ -561,11 +589,14 @@ function ProfileReadOnlyTabs({
                 Work Modes
               </div>
               {(() => {
-                const ids = (internshipPreferences?.job_setup_ids ?? []) as (string | number)[];
+                const ids = (internshipPreferences?.job_setup_ids ?? []) as (
+                  | string
+                  | number
+                )[];
                 const items = ids
                   .map((id) => {
                     const m = job_modes.find(
-                      (x) => String(x.id) === String(id)
+                      (x) => String(x.id) === String(id),
                     );
                     return m ? { id: String(m.id), name: m.name } : null;
                   })
@@ -595,7 +626,7 @@ function ProfileReadOnlyTabs({
                 const items = ids
                   .map((id) => {
                     const t = job_types.find(
-                      (x) => String(x.id) === String(id)
+                      (x) => String(x.id) === String(id),
                     );
                     return t ? { id: String(t.id), name: t.name } : null;
                   })
@@ -618,7 +649,8 @@ function ProfileReadOnlyTabs({
                 Positions / Categories
               </div>
               {(() => {
-                const ids = (internshipPreferences?.job_category_ids ?? []) as string[];
+                const ids = (internshipPreferences?.job_category_ids ??
+                  []) as string[];
                 const items = ids
                   .map((id) => {
                     const c = job_categories.find((x) => x.id === id);
@@ -670,6 +702,8 @@ const ProfileEditor = forwardRef<
     job_types,
     job_categories,
     getUniversityFromDomain: get_universities_from_domain,
+    get_departments_by_college,
+    to_department_name,
   } = useDbRefs();
 
   type TabKey = "Student Profile" | "Internship Details" | "Calendar";
@@ -721,6 +755,7 @@ const ProfileEditor = forwardRef<
   }));
 
   const [universityOptions, setUniversityOptions] = useState(universities);
+  const [departmentOptions, setDepartmentOptions] = useState(departments);
   const [jobModeOptions, setJobModeOptions] = useState(job_modes);
   const [jobTypeOptions, setJobTypeOptions] = useState(job_types);
   const [jobCategoryOptions, setJobCategoryOptions] = useState(job_categories);
@@ -731,6 +766,7 @@ const ProfileEditor = forwardRef<
 
   useEffect(() => {
     setUniversityOptions(universities);
+    setDepartmentOptions(departments);
     setJobModeOptions((job_modes ?? []).slice());
     setJobTypeOptions((job_types ?? []).slice());
     setJobCategoryOptions((job_categories ?? []).slice());
@@ -746,58 +782,57 @@ const ProfileEditor = forwardRef<
     job_types,
     job_categories,
     get_universities_from_domain,
+    get_departments_by_college,
   ]);
 
   useEffect(() => {
     addValidator(
       "first_name",
       (name: string) =>
-        !isValidRequiredUserName(name) && `First name is not valid.`
+        !isValidRequiredUserName(name) && `First name is not valid.`,
     );
     addValidator(
       "last_name",
       (name: string) =>
-        !isValidRequiredUserName(name) && `Last name is not valid.`
+        !isValidRequiredUserName(name) && `Last name is not valid.`,
     );
     addValidator(
       "phone_number",
       (number: string) =>
-        !isValidPHNumber(number) && "Invalid Philippine number."
+        !isValidPHNumber(number) && "Invalid Philippine number.",
     );
     addValidator(
       "portfolio_link",
-      (link: string) => !isValidOptionalURL(link) && "Invalid portfolio link."
+      (link: string) => !isValidOptionalURL(link) && "Invalid portfolio link.",
     );
     addValidator(
       "github_link",
       (link: string) =>
-        !isValidOptionalGitHubURL(link) && "Invalid GitHub link."
+        !isValidOptionalGitHubURL(link) && "Invalid GitHub link.",
     );
     addValidator(
       "linkedin_link",
       (link: string) =>
-        !isValidOptionalLinkedinURL(link) && "Invalid LinkedIn link."
+        !isValidOptionalLinkedinURL(link) && "Invalid LinkedIn link.",
     );
     addValidator(
       "university",
       (id: string) =>
         !universityOptions.some((u) => u.id === id) &&
-        "Select a valid university."
+        "Select a valid university.",
     );
     addValidator(
       "college",
       (id: string) =>
-        !colleges.some((c) => c.id === id) &&
-        "Select a valid college."
+        !colleges.some((c) => c.id === id) && "Select a valid college.",
     );
     addValidator(
       "department",
       (id: string) =>
-        !departments.some((u) => u.id === id) &&
-        "Select a valid department."
+        !departmentOptions.some((d) => d.id === id) &&
+        "Select a valid department.",
     );
     addValidator("internship_preferences", (i: InternshipPreferences) => {
-
       // Specify start month
       if (!i.expected_start_date)
         return "Please select an expected start month.";
@@ -806,8 +841,12 @@ const ProfileEditor = forwardRef<
       if (i?.internship_type !== "credited") {
         if (!i.expected_duration_hours)
           return "Please enter expected duration.";
-        if (!Number.isFinite(i.expected_duration_hours as number) || i.expected_duration_hours < 100 || i.expected_duration_hours > 2000)
-          return "Enter a valid number of hours (0-2000)"
+        if (
+          !Number.isFinite(i.expected_duration_hours as number) ||
+          i.expected_duration_hours < 100 ||
+          i.expected_duration_hours > 2000
+        )
+          return "Enter a valid number of hours (0-2000)";
       }
 
       // If job setup ids were specified, check that all are valid
@@ -833,11 +872,7 @@ const ProfileEditor = forwardRef<
 
       return "";
     });
-  }, [
-    universityOptions,
-    jobModeOptions,
-    jobTypeOptions,
-  ]);
+  }, [universityOptions, jobModeOptions, jobTypeOptions]);
 
   const [showCalendarHelp, setShowCalendarHelp] = useState(false);
   const helpBtnRef = useRef<HTMLButtonElement>(null);
@@ -875,6 +910,33 @@ const ProfileEditor = forwardRef<
     }
   }, []);
 
+  // for realtime updating the department based on the college
+  useEffect(() => {
+    const collegeId = formData.college;
+
+    if (collegeId) {
+      const list = get_departments_by_college?.(collegeId);
+      setDepartmentOptions(
+        list.map((d) => ({
+          id: d,
+          name: to_department_name(d),
+        })),
+      );
+    } else {
+      // no college selected -> empty department options
+      setDepartmentOptions(
+        departments.map((d) => ({ id: d.id, name: d.name })),
+      );
+      if (formData.department) setField("department", undefined);
+    }
+  }, [
+    formData.college,
+    formData.department,
+    departments,
+    get_departments_by_college,
+    to_department_name,
+  ]);
+
   return (
     <OutsideTabs
       tabs={[
@@ -911,7 +973,7 @@ const ProfileEditor = forwardRef<
           <div
             className={cn(
               "mb-4",
-              isMobile ? "flex flex-col space-y-3" : "grid grid-cols-3 gap-2"
+              isMobile ? "flex flex-col space-y-3" : "grid grid-cols-3 gap-2",
             )}
           >
             <FormInput
@@ -959,32 +1021,37 @@ const ProfileEditor = forwardRef<
               />
             </div>
             <div>
-              <ErrorLabel value={formErrors.degree} />
-              <FormInput
-                label={"Degree / Program"}
-                value={formData.degree ?? undefined}
-                setter={fieldSetter("degree")}
-                placeholder="Indicate degree"
-              />
-            </div>
-            <div>
-              <ErrorLabel value={formErrors.degree} />
+              <ErrorLabel value={formErrors.college} />
               <FormDropdown
                 label={"College"}
                 value={formData.college ?? undefined}
                 setter={fieldSetter("college")}
-                options={colleges.map(c => ({id: c.id, name: c.name}))}
+                options={colleges.map((c) => ({ id: c.id, name: c.name }))}
                 placeholder="Indicate college"
               />
             </div>
             <div>
               <ErrorLabel value={formErrors.department} />
               <FormDropdown
-                label={"Department"}
+                label="Department"
                 value={formData.department ?? undefined}
                 setter={fieldSetter("department")}
-                options={departments.map(d => ({id: d.id, name: d.name}))}
-                placeholder="Indicate department"
+                options={departmentOptions}
+                placeholder={
+                  formData.college
+                    ? "Indicate department"
+                    : "Select a college first"
+                }
+                disabled={!formData.college}
+              />
+            </div>
+            <div>
+              <ErrorLabel value={formErrors.degree} />
+              <FormInput
+                label={"Degree / Program"}
+                value={formData.degree ?? undefined}
+                setter={fieldSetter("degree")}
+                placeholder="Indicate degree"
               />
             </div>
             <div>
@@ -999,7 +1066,7 @@ const ProfileEditor = forwardRef<
                 setter={(ms) =>
                   setField(
                     "expected_graduation_date",
-                    new Date(ms ?? 0).toISOString()
+                    new Date(ms ?? 0).toISOString(),
                   )
                 }
                 fromYear={2025}
@@ -1094,9 +1161,7 @@ const ProfileEditor = forwardRef<
           <FormMonthPicker
             className="w-full"
             label="Ideal internship start"
-            date={
-              formData.internship_preferences?.expected_start_date ?? 0
-            }
+            date={formData.internship_preferences?.expected_start_date ?? 0}
             setter={(ms?: number) => {
               setField("internship_preferences", {
                 ...(formData.internship_preferences ?? {}),
@@ -1127,8 +1192,8 @@ const ProfileEditor = forwardRef<
                       v === ""
                         ? null
                         : Number.isFinite(Number(v))
-                        ? Number(v)
-                        : null,
+                          ? Number(v)
+                          : null,
                   })
                 }
                 required={false}
@@ -1150,7 +1215,7 @@ const ProfileEditor = forwardRef<
               label="Work Modes"
               options={jobModeOptions}
               value={(formData.internship_preferences?.job_setup_ids ?? []).map(
-                Number
+                Number,
               )}
               setter={(ids: number[]) =>
                 setField("internship_preferences", {
@@ -1247,8 +1312,8 @@ const ResumeBox = ({
             {resumeIsUploading
               ? "Uploading…"
               : hasResume
-              ? "Upload new"
-              : "Upload"}
+                ? "Upload new"
+                : "Upload"}
           </Button>
         </div>
       </div>
@@ -1342,7 +1407,7 @@ function computeProfileScore(p?: Partial<PublicUser>): {
       u.internship_preferences?.job_commitment_ids?.length ||
       u.internship_preferences?.job_setup_ids?.length
     ),
-    dates: !!(u.internship_preferences?.expected_start_date),
+    dates: !!u.internship_preferences?.expected_start_date,
     resume: !!u.resume,
   };
 
@@ -1360,7 +1425,7 @@ function computeProfileScore(p?: Partial<PublicUser>): {
 
   const score = Object.entries(parts).reduce(
     (acc, [k, ok]) => acc + (ok ? weights[k as keyof typeof parts] : 0),
-    0
+    0,
   );
 
   const tips: string[] = [];
@@ -1424,4 +1489,3 @@ function toYYYYMM(input?: string | number | null): string | null {
 
   return null;
 }
-

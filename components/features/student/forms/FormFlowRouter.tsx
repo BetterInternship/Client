@@ -1,173 +1,128 @@
 "use client";
 
-import { useCallback, useMemo, useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { z } from "zod";
+import { useMemo, useState } from "react";
 import { UserService } from "@/lib/api/services";
 import { DynamicForm } from "./DynamicForm";
-import { FormDropdown, FormInput } from "@/components/EditForm";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
 import { useProfileActions } from "@/lib/api/student.actions.api";
 import { StepComplete } from "./StepComplete";
 import { useProfileData } from "@/lib/api/student.data.api";
-
-type Mode = "select" | "manual" | "invite";
-type SectionKey = "student" | "university" | "entity";
-
-export type FieldDef = {
-  id: string | number;
-  key: string;
-  label: string;
-  type: string;
-  placeholder?: string;
-  helper?: string;
-  maxLength?: number;
-  options?: Array<{ id: string | number; name: string }>;
-  validators?: z.ZodTypeAny[];
-  section: SectionKey;
-};
-
-export const FormFieldMappings = {
-  employer_id: "",
-};
+import { GenerateButtons } from "./GenerateFormButtons";
+import { FormMetadata } from "@betterinternship/core/forms";
+import { useQuery } from "@tanstack/react-query";
+import { Loader } from "@/components/ui/loader";
+import z from "zod";
 
 type Errors = Record<string, string>;
-type FormValues = Record<string, any>;
+type FormValues = Record<string, string>;
 
 export function FormFlowRouter({
-  baseForm,
+  formName,
+  formVersion,
   onGoToMyForms,
-  allowInvite = true,
 }: {
-  baseForm: string;
+  formName: string;
+  formVersion: number;
   onGoToMyForms?: () => void;
-  allowInvite?: boolean;
 }) {
   const { update } = useProfileActions();
-  const { data: profileData } = useProfileData();
-
-  const [selection, setSelection] = useState<string>(""); // company id only
-  const [mode, setMode] = useState<Mode>("select");
+  const profile = useProfileData();
   const [done, setDone] = useState(false);
-
-  // centralized form state
-  const [values, setValues] = useState<FormValues>({});
-  const [errors, setErrors] = useState<Errors>({});
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  // children will report their field defs so we can validate in one place
-  const [mainDefs, setMainDefs] = useState<FieldDef[]>([]);
+  // Form stuff
+  const [values, setValues] = useState<FormValues>({});
+  const [errors, setErrors] = useState<Errors>({});
 
-  // i am thou profile
-  const savedFields = profileData?.internship_moa_fields as
-    | {
-        student?: Record<string, string>;
-        university?: Record<string, string>;
-        entity?: Record<string, string>;
-      }
-    | undefined;
-
-  // i fill up the forms AUTOMATICALLY
-  useEffect(() => {
-    if (!savedFields) return;
-    if (!mainDefs.length) return;
-
-    setValues((prev) => {
-      const next = { ...prev };
-      let changed = false;
-
-      for (const d of mainDefs) {
-        const sec = d.section; // "student" | "university" | "entity"
-        const fromSaved = savedFields?.[sec]?.[d.key];
-        if (fromSaved !== undefined && shouldSeed(prev[d.key])) {
-          next[d.key] = fromSaved;
-          changed = true;
-        }
-      }
-
-      return changed ? next : prev;
-    });
-
-    // preselect company for select mode if not chosen yet
-    if (mode === "select" && !selection) {
-      const maybeId =
-        savedFields?.entity?.employer_id ?? savedFields?.entity?.company_id; // legacy fallback
-      if (maybeId) setSelection(String(maybeId));
-    }
-  }, [mode, mainDefs, savedFields, selection, setValues, setSelection]);
-
-  const formName = baseForm;
-
-  // fetch companies
-  const { data } = useQuery({
-    queryKey: ["companies:list"],
-    queryFn: async () => await UserService.getEntityList(),
+  // Fetch form
+  const form = useQuery({
+    queryKey: ["forms", formName],
+    queryFn: () => UserService.getForm(formName),
+    enabled: !!formName,
     staleTime: 60_000,
   });
 
-  const companiesRaw = data?.employers ?? [];
-  const companies: Array<{ id: string; name: string }> = companiesRaw.map(
-    (c) => ({ id: String(c.id), name: c.legal_entity_name }),
-  );
+  // Get interface to form
+  const formMetdata = form.data?.formMetadata
+    ? new FormMetadata(form.data.formMetadata)
+    : null;
+  const fields = formMetdata?.getFieldsForClient(values) ?? [];
+  const hasSignature = fields.some((field) => field.type === "signature");
 
-  const validatorFns = useMemo(() => compileValidators(mainDefs), [mainDefs]);
+  // Saved autofill
+  const autofillValues = useMemo(() => {
+    const autofillValues = profile.data?.internship_moa_fields as Record<
+      string,
+      string
+    >;
+    if (!autofillValues) return;
 
-  const setField = useCallback((key: string, v: string) => {
-    setValues((prev) => ({ ...prev, [key]: v }));
-  }, []);
+    // Populate with prefillers as well
+    for (const field of fields) {
+      if (field.prefiller) {
+        const s = field.prefiller({
+          user: profile.data,
+        });
 
-  const validateNow = useCallback(() => {
-    const next = validateAll(mainDefs, values, validatorFns);
-    setErrors(next);
-    return next;
-  }, [mainDefs, values, validatorFns]);
-
-  const handleSubmit = useCallback(async () => {
-    setSubmitted(true);
-
-    if (!profileData?.id) return;
-    if (mode === "select" && !selection) {
-      setErrors((e) => ({ ...e, __company__: "Please select a company." }));
-      return;
+        // ! Tentative fix for spaces, move to abstraction later on
+        autofillValues[field.field] =
+          typeof s === "string" ? s.trim().replace("  ", " ") : s;
+      }
     }
 
-    const next = validateNow();
-    if (Object.values(next).some(Boolean)) return;
-    const { student, university, internship, entity } =
-      groupBySectionUsingNames(mainDefs, values);
+    return autofillValues;
+  }, [profile.data]);
 
-    const selected = companies.find((c) => c.id === selection);
-    const entityPatched = {
-      ...entity,
-      employer_id: selection,
-      employer_legal_name: selected?.name,
-    };
+  // Field setter
+  const setField = (key: string, v: string | number) => {
+    setValues((prev) => ({ ...prev, [key]: v.toString() }));
+  };
 
-    const profilePayload = {
-      student,
-      university,
-      internship,
-      entity: entityPatched,
-    };
+  const handleSubmit = async (withEsign?: boolean) => {
+    setSubmitted(true);
+    if (!profile.data?.id) return;
+
+    // Validate fields before allowing to proceed
+    const errors: Record<string, string> = {};
+    for (const field of fields) {
+      if (field.source !== "student") continue;
+
+      // Check if missing
+      const value = values[field.field];
+
+      // Check validator error
+      const coerced = field.coerce(value);
+      const result = field.validator?.safeParse(coerced);
+      if (result?.error) {
+        const errorString = z
+          .treeifyError(result.error)
+          .errors.map((e) => e.split(" ").slice(0).join(" "))
+          .join("\n");
+        errors[field.field] = `${field.label}: ${errorString}`;
+        continue;
+      }
+    }
+
+    // If any errors, disallow proceed
+    setErrors(errors);
+    if (Object.keys(errors).length) return;
 
     try {
       setBusy(true);
 
-      // Update server-side internship fields
+      const finalValues = { ...autofillValues, ...values };
       await update.mutateAsync({
-        internship_moa_fields: profilePayload,
+        internship_moa_fields: finalValues,
       });
 
-      await UserService.submitSignedForm({
-        formName: formName,
-        values: values,
-        parties: {
-          userId: profileData.id,
-          employerId: selection,
-        },
+      await UserService.requestGenerateForm({
+        formName,
+        formVersion,
+        values: finalValues,
+        parties: { userId: profile.data.id },
+        disableEsign: !withEsign,
       });
+
       setDone(true);
       setSubmitted(false);
     } catch (e) {
@@ -175,191 +130,36 @@ export function FormFlowRouter({
     } finally {
       setBusy(false);
     }
-  }, [
-    mode,
-    selection,
-    mainDefs,
-    values,
-    formName,
-    validateNow,
-    update,
-    companies,
-  ]);
+  };
 
-  if (done) {
-    return (
-      <StepComplete
-        onMyForms={() => {
-          onGoToMyForms?.();
-        }}
-      />
-    );
-  }
+  if (done) return <StepComplete onMyForms={() => onGoToMyForms?.()} />;
+
+  // Loader
+  if (!form.data?.formMetadata || form.isLoading)
+    return <Loader>Loading form...</Loader>;
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-gray-700">Employer</h3>
-
-      {/* SELECT MODE: show dropdown + actions */}
-      {mode === "select" ? (
-        <>
-          <FormDropdown
-            label="Select your company"
-            required
-            value={selection}
-            options={companies.map((c) => ({ id: c.id, name: c.name }))}
-            setter={(v: string | number | null) => {
-              const val = String(v ?? "");
-              setSelection(val);
-            }}
-            className="w-full"
-          />
-          {submitted && errors.__company__ && (
-            <p className="text-xs text-rose-600 mt-1">{errors.__company__}</p>
-          )}
-          {allowInvite ? (
-            <p className="text-xs text-muted-foreground">
-              Company not in our list?{" "}
-              {allowInvite && (
-                <button
-                  type="button"
-                  className="underline underline-offset-4 hover:no-underline mr-2"
-                  onClick={() => {
-                    setMode("invite");
-                    setSelection("");
-                  }}
-                >
-                  Invite them to fill it in
-                </button>
-              )}
-              {allowInvite}
-            </p>
-          ) : null}
-        </>
-      ) : (
-        /* INVITE/MANUAL MODE: hide dropdown, show back-to-select */
-        <div className="flex items-center justify-between rounded-[0.33em] border bg-card px-3 py-2 bg-gray-200">
-          <div className="text-sm">
-            {mode === "invite"
-              ? "Invite the company to complete details"
-              : "Fill company details manually"}
-          </div>
-          <button
-            type="button"
-            className="text-xs underline underline-offset-4 hover:no-underline"
-            onClick={() => {
-              setMode("select");
-              setSelection("");
-            }}
-          >
-            Back to company picker
-          </button>
-        </div>
-      )}
-
-      {/* show employer only fields only when mode is allowed */}
-      {mode === "invite" && allowInvite && (
-        <>
-          {/* // ! todo: these should set state; they shud be saved in user as well */}
-          <FormInput
-            label="Company representative email"
-            value={""}
-            setter={() => {}}
-          />
-          <FormInput
-            label="Company legal entity name"
-            value={""}
-            setter={() => {}}
-          />
-        </>
-      )}
-
-      {/* main form always shown; its schema changes with mode */}
       <DynamicForm
-        form={formName}
+        key={formName}
+        formName={formName}
         values={values}
         onChange={setField}
-        onSchema={(defs) => {
-          setMainDefs(defs as FieldDef[]);
-        }}
         showErrors={submitted}
         errors={errors}
+        autofillValues={autofillValues ?? {}}
+        setValues={setValues}
+        fields={fields}
       />
 
-      <div className="pt-2 flex justify-end">
-        <Button
-          onClick={() => {
-            void handleSubmit();
-          }}
-          className="w-full sm:w-auto"
-          disabled={busy}
-          aria-busy={busy}
-        >
-          {busy ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Submitting...
-            </span>
-          ) : (
-            "Submit"
-          )}
-        </Button>
+      <div className="pt-2 flex justify-end gap-2 flex-wrap ">
+        <GenerateButtons
+          formKey={formName}
+          handleSubmit={handleSubmit}
+          busy={busy}
+          noEsign={!hasSignature}
+        />
       </div>
     </div>
   );
-}
-
-/* ───────────────────────── helpers ───────────────────────── */
-
-function compileValidators(defs: FieldDef[]) {
-  const map: Record<string, ((v: any) => string | null)[]> = {};
-  for (const d of defs) {
-    const schemas = d.validators ?? [];
-    map[d.key] = schemas.map((schema) => (value: any) => {
-      const res = schema.safeParse(value);
-      if (res.success) return null;
-      const issues = res.error.issues as { message: string }[] | undefined;
-      return issues?.map((i) => i.message).join("\n") ?? res.error.message;
-    });
-  }
-  return map;
-}
-
-function validateAll(
-  defs: FieldDef[],
-  values: Record<string, string>,
-  validatorFns: Record<string, ((v: any) => string | null)[]>,
-) {
-  const next: Record<string, string> = {};
-  for (const d of defs) {
-    const fns = validatorFns[d.key] ?? [];
-    const val = values[d.key];
-    const firstErr = fns.map((fn) => fn(val)).find(Boolean) ?? "";
-    next[d.key] = firstErr || "";
-  }
-  return next;
-}
-
-function groupBySectionUsingNames(
-  defs: FieldDef[],
-  values: Record<string, string>,
-) {
-  const out = {
-    student: {} as Record<string, string>,
-    internship: {} as Record<string, string>,
-    university: {} as Record<string, string>,
-    entity: {} as Record<string, string>,
-  };
-
-  for (const d of defs) {
-    const val = values[d.key] ?? values[d.id];
-    if (val === undefined) continue;
-    out[d.section][d.key] = val;
-  }
-  return out;
-}
-
-// only seed when empty/undefined
-function shouldSeed(current: unknown) {
-  return current === undefined || current === "";
 }

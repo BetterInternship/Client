@@ -74,7 +74,7 @@ function AutocompleteBase<ID extends number | string>({
       (value ?? [])
         .map((id) => options.find((o) => o.id === id)?.name)
         .filter(Boolean) as string[],
-    [value, options]
+    [value, options],
   );
 
   const singleDisplay = !multiple && (selectedLabels[0] ?? "");
@@ -88,7 +88,7 @@ function AutocompleteBase<ID extends number | string>({
       (value?.length ?? 0) > 0
     ) {
       // remove last chip
-      const last = value![value!.length - 1];
+      const last = value[value.length - 1];
       removeAt(last);
       e.preventDefault();
     }
@@ -119,7 +119,7 @@ function AutocompleteBase<ID extends number | string>({
           className={cn(
             "min-h-9 w-full rounded-[0.33em] border border-gray-300 bg-white",
             "px-2 py-1 flex flex-wrap items-center gap-1",
-            "focus-within:border-primary focus-within:border-opacity-50"
+            "focus-within:border-primary focus-within:border-opacity-50",
           )}
           onClick={() => inputRef.current?.focus()}
         >
@@ -155,7 +155,7 @@ function AutocompleteBase<ID extends number | string>({
             placeholder={(value?.length ?? 0) === 0 ? placeholder : ""}
             className={cn(
               "flex-1 min-w-[8ch] h-7 text-sm",
-              "bg-transparent outline-none border-none focus:ring-0"
+              "bg-transparent outline-none border-none focus:ring-0",
             )}
             {...props}
           />
@@ -198,7 +198,7 @@ function AutocompleteBase<ID extends number | string>({
                   }}
                   className={cn(
                     "w-full text-left px-4 py-2 text-sm text-gray-700 transition-colors flex items-center gap-2 cursor-pointer hover:bg-gray-100",
-                    active && "bg-blue-50"
+                    active && "bg-blue-50",
                   )}
                 >
                   {multiple ? (
@@ -299,7 +299,7 @@ export const AutocompleteMulti = <ID extends number | string>({
  * Public API: grouped multi-select with tree + label
  * -----------------------------------------------------*/
 export type SubOption = { name: string; value: string };
-export type PositionCategory = {
+export type TreeOption = {
   name: string;
   value: string;
   children?: SubOption[];
@@ -315,7 +315,7 @@ export function AutocompleteTreeMulti({
   label,
 }: {
   required?: boolean;
-  tree: PositionCategory[];
+  tree: TreeOption[];
   value?: string[];
   setter: (next: string[]) => void;
   placeholder?: string;
@@ -354,7 +354,7 @@ export function AutocompleteTreeMulti({
   // sanitize external value
   const selected = useMemo(
     () => Array.from(new Set((value ?? []).filter((v) => validIds.has(v)))),
-    [value, validIds]
+    [value, validIds],
   );
   const selectedSet = useMemo(() => new Set(selected), [selected]);
 
@@ -365,7 +365,7 @@ export function AutocompleteTreeMulti({
     next.has(cid) ? next.delete(cid) : next.add(cid);
     setSelected(Array.from(next));
   };
-  const toggleParent = (p: PositionCategory) => {
+  const toggleParent = (p: TreeOption) => {
     if (!p.children?.length) {
       const next = new Set(selected);
       next.has(p.value) ? next.delete(p.value) : next.add(p.value);
@@ -390,7 +390,7 @@ export function AutocompleteTreeMulti({
       .map((p) => {
         const parentMatch = p.name.toLowerCase().includes(q);
         const kids = p.children?.filter((c) =>
-          `${p.name} ${c.name}`.toLowerCase().includes(q)
+          `${p.name} ${c.name}`.toLowerCase().includes(q),
         );
         if (!p.children?.length) {
           // standalone parent
@@ -400,7 +400,7 @@ export function AutocompleteTreeMulti({
         if (kids && kids.length > 0) return { ...p, children: kids };
         return null;
       })
-      .filter(Boolean) as PositionCategory[];
+      .filter(Boolean) as TreeOption[];
   }, [tree, query]);
 
   // counts for indeterminate
@@ -425,7 +425,7 @@ export function AutocompleteTreeMulti({
       selected
         .map((id) => [id, labelMap.get(id) ?? id] as const)
         .sort((a, b) => a[1].localeCompare(b[1])),
-    [selected, labelMap]
+    [selected, labelMap],
   );
 
   return (
@@ -441,9 +441,9 @@ export function AutocompleteTreeMulti({
         className={cn(
           "min-h-9 w-full rounded-[0.33em] border border-gray-300 bg-white ",
           "py-1 flex flex-wrap items-center gap-1 hover:bg-gray-50 hover:cursor-pointer",
-          "focus-within:border-primary focus-within:border-opacity-50 transition-all"
+          "focus-within:border-primary focus-within:border-opacity-50 transition-all",
         )}
-        onClick={(e) => setIsOpen(true)}
+        onClick={(e) => setIsOpen(!isOpen)}
       >
         {chips.map(([id, label]) => (
           <span
@@ -485,7 +485,7 @@ export function AutocompleteTreeMulti({
                   <button
                     type="button"
                     className={cn(
-                      "w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-100"
+                      "w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-100",
                     )}
                     onClick={() => toggleParent(p)}
                   >
@@ -518,7 +518,7 @@ export function AutocompleteTreeMulti({
                             <button
                               type="button"
                               className={cn(
-                                "w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-100"
+                                "w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-100",
                               )}
                               onClick={() => {
                                 toggleChild(c.value);
