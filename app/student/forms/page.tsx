@@ -170,7 +170,7 @@ export default function FormsPage() {
                 generatorForms.map((form) => (
                   <FormGenerateCard
                     key={form.name}
-                    formName={`${form.label ?? form.name}`}
+                    formName={form.name}
                     onViewTemplate={() => {
                       if (!form.base_document_id) {
                         alert("No template available for this form.");
@@ -238,7 +238,7 @@ export default function FormsPage() {
                 !myFormsError &&
                 !myForms?.length && (
                   <p className="text-muted-foreground text-sm">
-                    You haven’t generated any forms yet.
+                    You haven't generated any forms yet.
                   </p>
                 )}
 
@@ -246,8 +246,7 @@ export default function FormsPage() {
                 !loadingMyForms &&
                 !myFormsError &&
                 myFormsSorted.map((row, i) => {
-                  const formName = row.form_name;
-                  const title = `${formName}`;
+                  const title = `${row.label ?? row.form_name}`;
                   const status =
                     row.signed_document_id || row.prefilled_document_id
                       ? "Complete"
