@@ -43,22 +43,34 @@ export default function MyFormCard({
   const isComplete = status === "Complete";
 
   // Badge style + text based on status
-  const { badgeText, badgeType, downloadLabel } = useMemo(() => {
-    if (isComplete) {
+  type ButtonVariant =
+    | "default"
+    | "ghost"
+    | "link"
+    | "outline"
+    | null
+    | undefined;
+  const { badgeText, badgeType, downloadLabel, buttonDisabled, buttonVariant } =
+    useMemo(() => {
+      if (isComplete) {
+        return {
+          badgeText: "Complete",
+          badgeType: "supportive" as const,
+          downloadLabel: "Download form",
+          buttonDisabled: false,
+          buttonVariant: "default" as ButtonVariant,
+        };
+      }
       return {
-        badgeText: "Complete",
-        badgeType: "supportive" as const,
-        downloadLabel: "Download form",
+        badgeText: "Pending action",
+        badgeType: "warning" as const,
+        downloadLabel: "Waiting for action",
+        buttonDisabled: true,
+        buttonVariant: "outline" as ButtonVariant,
       };
-    }
-    return {
-      badgeText: "Pending action",
-      badgeType: "warning" as const,
-      downloadLabel: "Download form",
-    };
-  }, [isComplete]);
+    }, [isComplete]);
 
-  const disabled = downloading;
+  const disabled = downloading || buttonDisabled;
 
   const handleDownload = async () => {
     const targetUrl = await getDownloadUrl?.();
@@ -108,6 +120,7 @@ export default function MyFormCard({
           onClick={() => void handleDownload()}
           disabled={disabled}
           aria-busy={downloading}
+          variant={buttonVariant}
         >
           {downloading ? (
             <span className="inline-flex items-center gap-2">

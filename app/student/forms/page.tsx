@@ -325,19 +325,20 @@ export default function FormsPage() {
                           if (url) return url;
                         }
 
+                        // ! Shouldnt show download button if pending
                         // 3) pending document
-                        if (row.pending_document_id) {
-                          const pendingDocument = await fetchPendingDocument(
-                            row.pending_document_id,
-                          );
+                        // if (row.pending_document_id) {
+                        //   const pendingDocument = await fetchPendingDocument(
+                        //     row.pending_document_id,
+                        //   );
 
-                          const url =
-                            pendingDocument?.data?.latest_document_url;
-                          if (url) return url;
-                        }
+                        //   const url =
+                        //     pendingDocument?.data?.latest_document_url;
+                        //   if (url) return url;
+                        // }
 
-                        alert("No document associated with request.");
-                        throw new Error("No document URL available");
+                        // alert("No document associated with request.");
+                        // throw new Error("No document URL available");
                       }}
                     />
                   );
