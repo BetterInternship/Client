@@ -3,9 +3,7 @@
 import { useEffect } from "react";
 import { FieldRenderer } from "@/components/features/student/forms/FieldRenderer";
 import { ClientField } from "@betterinternship/core/forms";
-import { cn, coerceAnyDate } from "@/lib/utils";
-import { Info } from "lucide-react";
-import { Tooltip } from "react-tooltip";
+import { coerceAnyDate } from "@/lib/utils";
 
 export function DynamicForm({
   formName,
@@ -26,7 +24,9 @@ export function DynamicForm({
   setValues: (values: Record<string, string>) => void;
   onChange: (key: string, value: any) => void;
 }) {
-  const filteredFields = fields.filter((field) => field.source === "student");
+  const filteredFields = fields
+    .filter((field) => field.party === "student")
+    .filter((field) => field.source !== "manual" || field.type === "signature");
 
   // Group by section
   const entitySectionFields: ClientField<[]>[] = filteredFields.filter(

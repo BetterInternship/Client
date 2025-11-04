@@ -87,7 +87,7 @@ export function FormFlowRouter({
     // Validate fields before allowing to proceed
     const errors: Record<string, string> = {};
     for (const field of fields) {
-      if (field.source !== "student") continue;
+      if (field.party !== "student") continue;
 
       // Check if missing
       const value = values[field.field];
