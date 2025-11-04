@@ -3,6 +3,7 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import { useAppContext } from "@/lib/ctx-app";
 import { FilterButton } from "@/components/ui/filter";
 import { statusIconMap } from "@/components/common/status-icon-map";
+import { List } from "lucide-react";
 
 interface ApplicationsHeaderProps {
   selectedCounts: Record<string | number, number>;
@@ -25,6 +26,7 @@ export function ApplicationsHeader({
       key="all"
       name="All"
       itemCount={all || 0}
+      icon={List}
       isActive={activeFilter === -1}
       onToggle={() => onFilterChange(-1)}
     />
@@ -44,28 +46,31 @@ export function ApplicationsHeader({
         filterID = numericKey;
       }
 
-      return (
-        <FilterButton
-          key={key}
-          name={name}
-          icon={statusIconMap[filterID]?.icon}
-          itemCount={value}
-          isActive={activeFilter === filterID}
-          onToggle={() => onFilterChange(filterID)}
-        />
-      );
+      if (value !== 10) {
+        return (
+          <FilterButton
+            key={key}
+            name={name}
+            icon={statusIconMap.get(filterID)?.icon}
+            itemCount={value}
+            isActive={activeFilter === filterID}
+            onToggle={() => onFilterChange(filterID)}
+          />
+        );
+      }
     });
   };
 
   return isMobile ? (
-    <>
-      <div className="flex flex-wrap gap-2">
+    <div className="flex items-center">
+      <div className="flex items-center gap-2 w-full overflow-x-scroll
+                 [mask-image:_linear-gradient(to_right,black_80%,transparent)]">
         {allButton}
         {otherButtons()}
       </div>
-    </>
+    </div>
   ) : (
-    <div className="flex gap-2">
+    <div className="flex flex-wrap gap-2">
       {allButton}
       {otherButtons()}
     </div>

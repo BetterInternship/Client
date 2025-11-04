@@ -6,10 +6,10 @@ type StatusIconProps = {
   destructive?: boolean;
 };
 
-export const statusIconMap: Record<number, StatusIconProps> = {
-  0: { icon: FileQuestion },
-  2: { icon: Star },
-  4: { icon: Check },
-  6: { icon: X },
-  7: { icon: Trash, destructive: true },
-};
+export const statusIconMap = new Map<number, StatusIconProps>([
+  [0, { icon: FileQuestion }],
+  [2, { icon: Star }],
+  [4, { icon: Check }],
+  [6, { icon: X }],
+  [7, { icon: Trash, destructive: true }],
+]);

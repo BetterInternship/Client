@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ApplicationsHeader } from "./ApplicationsHeader";
 import { useState } from "react";
 import { CommandMenu } from "@/components/ui/command-menu";
-import { Check, SquareCheck, Star, Trash, X } from "lucide-react";
+import { Check, List, SquareCheck, Star, Trash, X } from "lucide-react";
 import { useEffect } from "react";
 import { updateApplicationStatus } from "@/lib/api/services";
 import { statusIconMap } from "@/components/common/status-icon-map";
@@ -89,7 +89,7 @@ export function ApplicationsContent({
   
   const statuses = unique_app_statuses
     .map((status): ActionItem => {
-      const uiProps = statusIconMap[status.id];
+      const uiProps = statusIconMap.get(status.id);
 
       return {
         id: status.id.toString(),

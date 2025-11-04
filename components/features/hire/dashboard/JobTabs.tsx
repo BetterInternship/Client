@@ -35,6 +35,8 @@ import { motion } from "framer-motion";
 import { FileText, MessageCircle, SendHorizonal } from "lucide-react";
 import { useListingsBusinessLogic } from "@/hooks/hire/listings/use-listings-business-logic";
 import { Scrollbar } from "@/components/ui/scroll-area";
+import { useAppContext } from "@/lib/ctx-app";
+import { cn } from "@/lib/utils";
 
 interface JobTabsProps {
   selectedJob: Job | null;
@@ -92,13 +94,14 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
   const [filteredStatus, setFilteredStatus] = useState<number[]>([
     0, 1, 2, 3, 4, 5, 6,
   ]);
-  const [jobName, setJobName] = useState<string>("");
 
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const chatAnchorRef = useRef<HTMLDivElement>(null);
   const [lastSending, setLastSending] = useState(false);
   const [sending, setSending] = useState(false);
   const conversation = useConversation("employer", conversationId);
+
+  const { isMobile } = useAppContext();
 
   const router = useRouter();
 
@@ -278,31 +281,6 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
     </div>;
   };
 
-  const viewListingTab = () => {
-    //listings details panel ekek
-    // import {
-    //   ListingsDetailsPanel,
-    // } from "@/components/features/hire/listings";
-    // ^^^ from here i thibk :D
-
-    <div className="flex-1 min-w-0">
-      <Scrollbar>
-        <ListingsDetailsPanel
-          selectedJob={selectedJob}
-          isEditing={isEditing}
-          saving={saving}
-          onEdit={handleEditStart}
-          onSave={handleSave}
-          onCancel={handleCancel}
-          onShare={handleShare}
-          onDelete={openDeleteModal}
-          updateJob={update_job}
-          setIsEditing={setIsEditing}
-        />
-      </Scrollbar>
-    </div>;
-  };
-
   if (applications.loading) {
     return (
       <div className="w-full flex items-center justify-center">
@@ -332,7 +310,7 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
           </button>
           <h3 className="m-3">{selectedJob?.title}</h3>
         </div>
-        <div className="px-8 flex flex-col flex-1 space-y-6">
+        <div className="flex flex-col flex-1 space-y-6">
           {!profile.loading && !profile.data?.is_verified ? (
             <ShowUnverifiedBanner />
           ) : (

@@ -93,7 +93,10 @@ const ContentLayout: React.FC<ContentLayoutProps> = ({ children }) => {
       ) : (
         <></>
       )} 
-      <main className="flex-1 flex overflow-auto justify-center mb-20 h-[100%] ">
+      <main className={cn(
+        "flex-1 flex overflow-auto justify-center mb-20 h-[100%] pt-4",
+        isMobile ? "px-2" : "px-8"
+      )}>
         {children}
       </main>
     </div>
