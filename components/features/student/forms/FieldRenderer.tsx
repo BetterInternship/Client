@@ -272,6 +272,7 @@ const FieldRendererCheckbox = ({
         label={field.label}
         checked={!!value}
         tooltip={field.tooltip_label}
+        sentence={field.tooltip_label}
         setter={(c) => onChange(c)}
       />
       <TooltipContent />
