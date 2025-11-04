@@ -143,23 +143,6 @@ const FormSection = function FormSection({
           className="flex flex-row space-between"
           key={`${formKey}:${field.section}:${field.field}`}
         >
-          <div>
-            <div className="hover:cursor-help">
-              <Info
-                data-tooltip-id={`${formKey}:${field.section}:${field.field}-tooltip`}
-                data-tooltip-content={field.tooltip_label}
-                data-tooltip-place="bottom"
-                className={cn(
-                  "w-9 h-9 p-3 px-1 text-primary translate-x-[-10px] translate-y-[-10px]",
-                  field.tooltip_label.trim() ? "" : "invisible",
-                )}
-              ></Info>
-            </div>
-            <Tooltip
-              className="z-[99] !text-[10px] p-[0.05em] !max-w-[80vw]"
-              id={`${formKey}:${field.section}:${field.field}-tooltip`}
-            />
-          </div>
           <div className="flex-1">
             <FieldRenderer
               field={field}
