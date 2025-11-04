@@ -73,8 +73,6 @@ export function FormFlowRouter({
     return autofillValues;
   }, [profile.data]);
 
-  console.log("Autofill values", autofillValues);
-
   // Field setter
   const setField = (key: string, v: string | number) => {
     setValues((prev) => ({ ...prev, [key]: v.toString() }));
@@ -85,12 +83,13 @@ export function FormFlowRouter({
     if (!profile.data?.id) return;
 
     // Validate fields before allowing to proceed
+    const finalValues = { ...autofillValues, ...values };
     const errors: Record<string, string> = {};
     for (const field of fields) {
-      if (field.party !== "student") continue;
+      if (field.party !== "student" || field.source === "derived") continue;
 
       // Check if missing
-      const value = values[field.field];
+      const value = finalValues[field.field];
 
       // Check validator error
       const coerced = field.coerce(value);
@@ -112,7 +111,6 @@ export function FormFlowRouter({
     try {
       setBusy(true);
 
-      const finalValues = { ...autofillValues, ...values };
       console.log("Final values to submit", finalValues);
       await update.mutateAsync({
         internship_moa_fields: finalValues,

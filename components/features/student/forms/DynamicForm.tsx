@@ -26,7 +26,7 @@ export function DynamicForm({
 }) {
   const filteredFields = fields
     .filter((field) => field.party === "student")
-    .filter((field) => field.source !== "manual" || field.type === "signature");
+    .filter((field) => field.source === "manual");
 
   // Group by section
   const entitySectionFields: ClientField<[]>[] = filteredFields.filter(
