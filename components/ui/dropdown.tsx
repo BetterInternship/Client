@@ -220,8 +220,14 @@ export const GroupableRadioDropdown = <ID extends number | string>({
     if (activeDropdown !== name) setIsOpen(false);
   }, [activeDropdown, name]);
 
+  const selected =
+    value || value === 0 ? options.find((o) => o.id === value) : undefined;
+
   return (
-    <div className={cn("relative", className)} ref={ref}>
+    <div
+      className={cn("relative w-full max-w-svw min-w-0", className)}
+      ref={ref}
+    >
       <Button
         type="button"
         variant="outline"
@@ -229,18 +235,29 @@ export const GroupableRadioDropdown = <ID extends number | string>({
         size={size}
         onClick={handleClick}
         onTouchEnd={(e) => e.stopPropagation()}
-        className="w-full flex flex-row justify-between"
-      >
-        {(value || value === 0) && options.filter((o) => o.id === value)[0] ? (
-          <span className="text-ellipsis overflow-hidden">
-            {options.filter((o) => o.id === value)[0]?.name}
-          </span>
-        ) : (
-          <span className="text-gray-500 font-normal">{fallback}</span>
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        className={cn(
+          "w-full max-w-full min-w-0",
+          "h-auto min-h-10 py-1",
+          "flex items-start justify-between gap-2",
         )}
+      >
+        {/* shrinkable text container */}
+        <span className="flex-1 min-w-0 text-left pr-2 leading-relaxed">
+          {selected ? (
+            <span className="block whitespace-normal break-words">
+              {selected.name}
+            </span>
+          ) : (
+            <span className="text-gray-500 font-normal">{fallback}</span>
+          )}
+        </span>
+
         <ChevronDown
           className={cn(
-            "w-4 h-4 text-gray-600 transition-transform",
+            "shrink-0 w-4 h-4 text-gray-600 transition-transform",
+            "mt-1",
             isOpen ? "rotate-180" : "",
           )}
         />
@@ -249,15 +266,15 @@ export const GroupableRadioDropdown = <ID extends number | string>({
       {isOpen && (
         <div
           className={cn(
-            "absolute bg-white rounded-md shadow-xl overflow-hidden border border-gray-100",
-            "z-[9999] duration-200 ease-out transition-all", // Add smooth animation
-            isMobile ? "min-w-full" : "min-w-[200px]",
-            className,
+            "absolute left-0 right-0 top-full mt-1 bg-white rounded-md shadow-xl overflow-hidden border border-gray-100",
+            "z-[9999] duration-200 ease-out transition-all max-w-full",
           )}
+          role="listbox"
         >
           <div
             className={cn(
-              "relative z-[100] overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 max-h-64",
+              "relative z-[100] max-h-64 overflow-y-auto overscroll-contain",
+              "scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
             )}
           >
             {options.map((option, index) => (
@@ -270,7 +287,9 @@ export const GroupableRadioDropdown = <ID extends number | string>({
                   highlighted={value === option.id}
                   on_click={() => handleChange(option.id)}
                 >
-                  {option.name}
+                  <span className="block whitespace-normal break-words pr-2">
+                    {option.name}
+                  </span>
                 </DropdownOption>
               </DropdownOptionButton>
             ))}

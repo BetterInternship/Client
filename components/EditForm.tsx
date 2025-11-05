@@ -187,8 +187,10 @@ export function LabelWithTooltip({
       </div>
       {tooltip && (
         <Tooltip
-          className="z-[99] !text-[10px] p-[0.05em] !max-w-[80vw]"
           id={id}
+          positionStrategy="fixed"
+          className="!text-[10px] p-[0.05em] !max-w-[80vw]"
+          style={{ zIndex: 1400 }}
         />
       )}
     </div>

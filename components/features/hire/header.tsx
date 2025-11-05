@@ -57,53 +57,55 @@ export const Header: React.FC = () => {
     }, [isMenuOpen]);
 
   return routeExcluded(noHeaderRoutes) ? (
-    <div className={cn(
-              "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
-              isMobile ? "px-4 py-3" : "py-4 px-8"
-            )}
-            style={{ overflow: "visible", position: "relative", zIndex: 100 }}>
-      <div className="flex items-center gap-3">
-          <HeaderTitle />
-      </div>
-      {god && (
-        <div className="w-full px-4 flex flex-row justify-end z-[100]">
-          <Link href={"/god"}>
-            <Button scheme="destructive" className="hover:bg-destructive/85">
-              GOD
-            </Button>
-          </Link>
+    <div className="flex flex-col">
+      <div className={cn(
+                "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
+                isMobile ? "px-4 py-3" : "py-4 px-8"
+              )}
+              style={{ overflow: "visible", position: "relative", zIndex: 100 }}>
+        <div className="flex items-center gap-3">
+            <HeaderTitle />
         </div>
-      )}
-      {/* {routeExcluded(noProfileRoutes) ? (
-        <ProfileButton />
-      ) : (
-        <div className="w-1 h-10 bg-transparent"></div>
-      )} */}
-      {/* Right: Desktop profile / Mobile burger & floating action button*/}
-        {showProfileButton ? (
-          isMobile ? (
-                <button
-                  type="button"
-                  aria-label="Open menu"
-                  className="inline-flex items-center justify-center h-10 w-10 rounded-md border border-gray-300 hover:bg-gray-50"
-                  onClick={() => setIsMenuOpen(true)}
-                >
-                  <Menu className="h-5 w-5" />
-                </button>
-            )  : (
-            <div className="flex items-center gap-6">
-              <ProfileButton />
-            </div>
-          )
+        {god && (
+          <div className="w-full px-4 flex flex-row justify-end z-[100]">
+            <Link href={"/god"}>
+              <Button scheme="destructive" className="hover:bg-destructive/85">
+                GOD
+              </Button>
+            </Link>
+          </div>
+        )}
+        {/* {routeExcluded(noProfileRoutes) ? (
+          <ProfileButton />
         ) : (
-          <div className="w-1 h-10 bg-transparent" />
-        )}
+          <div className="w-1 h-10 bg-transparent"></div>
+        )} */}
+        {/* Right: Desktop profile / Mobile burger & floating action button*/}
+          {showProfileButton ? (
+            isMobile ? (
+                  <button
+                    type="button"
+                    aria-label="Open menu"
+                    className="inline-flex items-center justify-center h-10 w-10 rounded-md border border-gray-300 hover:bg-gray-50"
+                    onClick={() => setIsMenuOpen(true)}
+                  >
+                    <Menu className="h-5 w-5" />
+                  </button>
+              )  : (
+              <div className="flex items-center gap-6">
+                <ProfileButton />
+              </div>
+            )
+          ) : (
+            <div className="w-1 h-10 bg-transparent" />
+          )}
+          </div>
 
-        {isMobile && showProfileButton && (
-          <MobileDrawer open={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
-        )}
+          {isMobile && showProfileButton && (
+            <MobileDrawer open={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+          )}
+        </div>
         
-    </div>
   ) : (
     <></>
   );
@@ -301,7 +303,7 @@ function MobileDrawer({
                       </button>
                     </Link>
                   </li>
-                  <li>
+                  {/* <li>
                     <Link href="/forms-management" className="block w-full">
                       <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
                         <div>
@@ -311,7 +313,7 @@ function MobileDrawer({
                         <ChevronRight className="w-4 h-4 text-gray-300" />
                       </button>
                     </Link>
-                  </li>
+                  </li> */}
                   <li>
                     <Link href="/company-profile">
                       <button

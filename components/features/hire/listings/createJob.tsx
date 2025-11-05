@@ -161,7 +161,7 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
           isMobile ? "pt-20" : "mt-20"
         )}>
           <div className="max-w-5xl mx-auto flex justify-between items-center">
-            <h1 className="text-2xl text-gray-800">Create New Job: <span className="font-bold">{formData.title || "Untitled Job"}</span></h1>
+            <h1 className={cn("text-gray-800", isMobile ? "text-lg" : "text-2xl")}>Create New Job: <span className="font-bold">{formData.title || "Untitled Job"}</span></h1>
             <div className="flex gap-3">
               {!isMobile ? (
                 <>
@@ -428,32 +428,35 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                             setter={(value) => fieldSetter('allowance')(parseInt(value))}
                             />
                             {formData.allowance === 0 && (
-                              <div className="flex flex-row gap-4 m-4">
-                                <div className="space-y-2 border-l-2 border-gray-300 pl-4">
-                                  <Label className="text-sm font-medium text-gray-700">
-                                    Allowance <span className="text-sm text-gray-300">(Optional)</span>
-                                  </Label>
-                                  <Input
-                                    type="number"
-                                    value={formData.salary ?? ""}
-                                    onChange={(e) => setField("salary", parseInt(e.target.value))}
-                                    placeholder="Enter salary amount"
-                                    className="text-sm"
-                                  />
-                              </div>
+                                <div className={cn("border-l-2 border-gray-300 pl-4 gap-4 m-4",
+                                        isMobile ? "" : "flex flex-row"
+                                    )}>
+                                  <div className="space-y-2 mb-4">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                      Allowance <span className={cn("text-gray-300", isMobile ? "text-xs" : "text-sm")}>(Optional)</span>
+                                    </Label>
+                                    <Input
+                                      type="number"
+                                      value={formData.salary ?? ""}
+                                      onChange={(e) => setField("salary", parseInt(e.target.value))}
+                                      placeholder="Enter salary amount"
+                                      className="text-sm"
+                                    />
+                                  </div>
+                              
 
-                              <div className="space-y-2">
-                                <Label className="text-sm font-medium text-gray-700">
-                                  Pay Frequency{" "} <span className="text-sm text-gray-300">(Optional)</span>
-                                </Label>
-                                <GroupableRadioDropdown
-                                  name="pay_freq"
-                                  defaultValue={formData.salary_freq}
-                                  options={job_pay_freq}
-                                  onChange={fieldSetter("salary_freq")}
-                                />
+                                <div className="space-y-2">
+                                  <Label className="text-sm font-medium text-gray-700">
+                                    Pay Frequency{" "} <span className={cn("text-gray-300", isMobile ? "text-xs" : "text-sm")}>(Optional)</span>
+                                  </Label>
+                                  <GroupableRadioDropdown
+                                    name="pay_freq"
+                                    defaultValue={formData.salary_freq}
+                                    options={job_pay_freq}
+                                    onChange={fieldSetter("salary_freq")}
+                                  />
+                                </div>
                               </div>
-                          </div>
                           )}
                         </div>
                         </Card>
