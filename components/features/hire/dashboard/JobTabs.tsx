@@ -34,9 +34,9 @@ import { getFullName } from "@/lib/profile";
 import { motion } from "framer-motion";
 import { FileText, MessageCircle, SendHorizonal } from "lucide-react";
 import { useListingsBusinessLogic } from "@/hooks/hire/listings/use-listings-business-logic";
-import { Scrollbar } from "@/components/ui/scroll-area";
 import { useAppContext } from "@/lib/ctx-app";
 import { cn } from "@/lib/utils";
+import { ListingsDeleteModal } from "@/components/features/hire/listings";
 
 interface JobTabsProps {
   selectedJob: Job | null;
@@ -62,9 +62,6 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
     handleShare,
     clearSelectedJob,
     handlePageChange,
-    openDeleteModal,
-    closeDeleteModal,
-    DeleteModal,
     setIsEditing,
   } = useListingsBusinessLogic(ownedJobs);
   const { isAuthenticated, redirectIfNotLoggedIn, loading } = useAuthContext();
@@ -94,6 +91,7 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
   const [filteredStatus, setFilteredStatus] = useState<number[]>([
     0, 1, 2, 3, 4, 5, 6,
   ]);
+  const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
 
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const chatAnchorRef = useRef<HTMLDivElement>(null);
@@ -187,6 +185,12 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
   };
 
   const {
+    open: openDeleteModal,
+    close: closeDeleteModal,
+    Modal: DeleteModal,
+  } = useModal("delete-modal");
+
+  const {
     open: openChatModal,
     close: closeChatModal,
     SideModal: ChatModal,
@@ -253,6 +257,13 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
     window?.open(application.user?.calendar_link ?? "", "_blank");
   };
 
+  const handleJobDelete = () => {
+    if (selectedJob) {
+      setJobToDelete(selectedJob);
+      openDeleteModal();
+    }
+  };
+
   //goes back to job list
   const handleJobBack = () => {
     router.push("/dashboard");
@@ -263,22 +274,6 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
     status: number,
   ) => {
     applications.review(application.id ?? "", { status });
-  };
-
-  const applicantsTab = (status: number[]) => {
-    <div>
-      <ApplicationsContent
-        applications={filteredApplications}
-        statusId={status}
-        openChatModal={openChatModal}
-        updateConversationId={updateConversationId}
-        onApplicationClick={handleApplicationClick}
-        onNotesClick={handleNotesClick}
-        onScheduleClick={handleScheduleClick}
-        onStatusChange={handleStatusChange}
-        setSelectedApplication={setSelectedApplication}
-      ></ApplicationsContent>
-    </div>;
   };
 
   if (applications.loading) {
@@ -332,7 +327,7 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
                 </Tab>
                 <Tab name="Preview Listing">
                   <Card className="flex-1 min-w-0">
-                    <Scrollbar>
+                    {/* <Scrollbar> */}
                       <ListingsDetailsPanel
                         selectedJob={selectedJob}
                         isEditing={isEditing}
@@ -341,11 +336,11 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
                         onSave={handleSave}
                         onCancel={handleJobBack}
                         onShare={handleShare}
-                        onDelete={openDeleteModal}
+                        onDelete={handleJobDelete}
                         updateJob={update_job}
                         setIsEditing={setIsEditing}
                       />
-                    </Scrollbar>
+                    {/* </Scrollbar> */}
                   </Card>
                 </Tab>
               </TabGroup>
@@ -353,6 +348,17 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
           )}
         </div>
       </div>
+
+      <DeleteModal>
+        {jobToDelete && (
+          <ListingsDeleteModal
+            job={jobToDelete}
+            deleteJob={delete_job}
+            clearJob={clearSelectedJob}
+            close={closeDeleteModal}
+          />
+        )}
+      </DeleteModal>
 
       <ApplicantModal className="max-w-7xl w-full">
         <ApplicantModalContent

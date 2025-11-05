@@ -27,16 +27,16 @@ const navItems: NavItem[] = [
     icon: <LayoutDashboard className="h-5 w-5" />,
     label: "Dashboard",
   },
-  {
-    href: "/listings",
-    icon: <FileText className="h-5 w-5" />,
-    label: "My Listings",
-  },
-  {
-    href: "/forms-management",
-    icon: <FileUser className="h-5 w-5" />,
-    label: "Forms Automation",
-  },
+  // {
+  //   href: "/listings",
+  //   icon: <FileText className="h-5 w-5" />,
+  //   label: "My Listings",
+  // },
+  // {
+  //   href: "/forms-management",
+  //   icon: <FileUser className="h-5 w-5" />,
+  //   label: "Forms Automation",
+  // },
 ];
 
 function SideNav({ items }: { items: NavItem[] }) {
