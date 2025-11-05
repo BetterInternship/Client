@@ -11,11 +11,11 @@ type CommandMenuPositions = {
 
 /**
  * A CommandMenu is a bar containing controls and other elements.
- * @param items Buttons and other elements to be stored in the CommandMenu.
+ * @param items (optional) Buttons and other elements to be stored in the CommandMenu.
  * @param className (optional) Custom styling.
- * @param isVisible Control visibility of the CommandMenu.
- * @param defaultVisible Set initial visibility of the CommandMenu on page load.
- * @param position Allow a CommandMenu to be docked to a specific side of the screen. Accepts 'top', 'bottom', 'left', or 'right'.
+ * @param isVisible (optional) Control visibility of the CommandMenu.
+ * @param defaultVisible (optional) Set initial visibility of the CommandMenu on page load. Defaults to false.
+ * @param position (optional) Allow a CommandMenu to be docked to a specific side of the screen. Accepts 'top', 'bottom', 'left', or 'right'. If no position is given, the CommandMenu is undocked and can be positioned as you want.
  */
 export const CommandMenu = ({
   items,
@@ -25,7 +25,7 @@ export const CommandMenu = ({
   position,
 }: {
   // ActionItems are for buttons, but you can also put text.
-  items: Array<ActionItem | string>;
+  items?: Array<ActionItem | string>;
   className?: string;
   isVisible?: boolean;
   defaultVisible?: boolean;
@@ -66,7 +66,7 @@ export const CommandMenu = ({
         className,
       )}
     >
-      {items.map((item, idx) =>
+      {items?.map((item, idx) =>
         isActionItem(item) ? (
           <button
             key={item.id}
@@ -77,7 +77,7 @@ export const CommandMenu = ({
               "flex justify-between items-center rounded-sm gap-2",
               item.destructive
                 ? "text-red-700 hover:bg-red-300/50 active:bg-red-400/75"
-                : "hover:bg-gray-300/50 text-gray-700 active:bg-gray-400/75",
+                : "text-gray-700 hover:bg-gray-300/50 active:bg-gray-400/75",
               position?.position
                 ? ["flex-col p-2"]
                 : ["flex-row px-3 py-2"],

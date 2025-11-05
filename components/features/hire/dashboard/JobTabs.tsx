@@ -296,7 +296,7 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
   return (
     <>
       <div className="flex-1 flex flex-col w-full">
-        <div className="flex items-center pl-4 pt-2">
+        <div className="flex flex-col pt-2">
           <button
             onClick={handleJobBack}
             className="flex items-center text-gray-600 hover:text-gray-900 transition-colors m-4"

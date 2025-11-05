@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ApplicationsHeader } from "./ApplicationsHeader";
 import { useState } from "react";
 import { CommandMenu } from "@/components/ui/command-menu";
-import { Check, List, SquareCheck, Star, Trash, X } from "lucide-react";
+import { Calendar, Check, ContactRound, GraduationCap, List, ListCheck, School, SquareCheck, Star, Trash, User2, X } from "lucide-react";
 import { useEffect } from "react";
 import { updateApplicationStatus } from "@/lib/api/services";
 import { statusIconMap } from "@/components/common/status-icon-map";
@@ -31,7 +31,6 @@ interface ApplicationsContentProps {
 
 export function ApplicationsContent({
   applications,
-  statusId,
   openChatModal,
   updateConversationId,
   onApplicationClick,
@@ -77,6 +76,8 @@ export function ApplicationsContent({
       await Promise.all(updatePromises);
     } catch (error) {
       console.error("Failed to update applications: ", error);
+    } finally {
+      unselectAll();
     }
   };
 
@@ -101,6 +102,8 @@ export function ApplicationsContent({
     })
     .filter(Boolean);
 
+  // remove the delete item from the bottom command bar so we can put it in the top one.
+  const statuses_without_delete = statuses.filter((status) => status.id !== "7");
 
   const applyActiveFilter = (apps: typeof sortedApplications) => {
     if (activeFilter === -1) {
@@ -128,9 +131,17 @@ export function ApplicationsContent({
   };
 
   const selectAll = () => {
-    setSelectedApplications(
-      new Set(sortedApplications.map((application) => application.id!)),
-    );
+    // only select all visible applications.
+    if (activeFilter === -1) {
+      setSelectedApplications(new Set(sortedApplications.map((application) => application.id!)));
+    } else {
+      setSelectedApplications(
+        new Set(sortedApplications
+          .filter((application) => application.status === activeFilter)
+          .map((application) => application.id!)
+        ),
+      );
+    }
     setAllSelected(true);
   };
 
@@ -170,23 +181,34 @@ export function ApplicationsContent({
       <ApplicationsHeader
         selectedCounts={getCounts(sortedApplications)}
         activeFilter={activeFilter}
-        onFilterChange={(status: number) => setActiveFilter(status)}
+        onFilterChange={(status: number) => {
+          setActiveFilter(status)
+          unselectAll()
+        }}
       />
       <CommandMenu
-        items={statuses}
+        items={statuses_without_delete}
         isVisible={commandBarsVisible}
         defaultVisible={true}
         position={{ position: "bottom" }}
+        className="justify-between"
       />
       <CommandMenu
         items={[
+          `${selectedApplications.size} selected`,
           {
             id: "select",
             label: "Select all",
             icon: SquareCheck,
             onClick: selectAll,
           },
-          `${selectedApplications.size} selected`,
+          {
+            id: "delete",
+            label: "Delete",
+            icon: Trash,
+            destructive: true,
+            onClick: () => updateStatus(7),
+          },
           {
             id: "cancel",
             label: "Cancel",
@@ -197,6 +219,7 @@ export function ApplicationsContent({
         isVisible={commandBarsVisible}
         defaultVisible={true}
         position={{ position: "top" }}
+        className="justify-between"
       />
       <div className="flex flex-col gap-2">
         {visibleApplications.length ? (
@@ -227,17 +250,27 @@ export function ApplicationsContent({
       <ApplicationsHeader
         selectedCounts={getCounts(sortedApplications)}
         activeFilter={activeFilter}
-        onFilterChange={setActiveFilter}
+        onFilterChange={(status: number) => {
+          setActiveFilter(status)
+          unselectAll()
+        }}
       />
       <div className="flex justify-between flex-wrap gap-2">
         <CommandMenu
-          items={statuses}
+          items={statuses_without_delete}
           isVisible={commandBarsVisible}
           defaultVisible={true}
         />
         <CommandMenu
           items={[
             `${selectedApplications.size} selected`,
+            {
+              id: "delete",
+              label: "Delete",
+              icon: Trash,
+              destructive: true,
+              onClick: () => updateStatus(7),
+            },
             {
               id: "cancel",
               label: "Cancel",
@@ -260,10 +293,36 @@ export function ApplicationsContent({
                 }
               />
             </th>
-            <th className="p-4">Applicant</th>
-            <th className="p-4">Education</th>
-            <th className="p-4">Crediting</th>
-            <th className="p-4">Preferred start</th>
+            <th className="p-4">
+              <div className="flex items-center gap-2">
+                <User2 size={16} />
+                <span>Applicant</span>
+              </div>
+            </th>
+            <th className="p-4">
+              <div className="flex items-center gap-2">
+                <GraduationCap size={16} />
+                <span>Education</span>
+              </div>
+            </th>
+            <th className="p-4">
+              <div className="flex items-center gap-2">
+                <ContactRound size={16} />
+                <span>Crediting</span>
+              </div>
+            </th>
+            <th className="p-4">
+              <div className="flex items-center gap-2">
+                <Calendar size={16} />
+                <span>Preferred start</span>
+              </div>
+            </th>
+            <th className="p-4">
+              <div className="flex items-center gap-2">
+                <ListCheck size={16} />
+                <span>Status</span>
+              </div>
+            </th>
             <th className="p-4"></th>
           </tr>
         </thead>

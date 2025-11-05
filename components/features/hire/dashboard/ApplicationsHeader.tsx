@@ -46,7 +46,7 @@ export function ApplicationsHeader({
         filterID = numericKey;
       }
 
-      if (value !== 10) {
+      if (value !== 0) {
         return (
           <FilterButton
             key={key}
