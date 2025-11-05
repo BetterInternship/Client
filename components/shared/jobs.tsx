@@ -19,6 +19,7 @@ import { Divider } from "../ui/divider";
 import { DropdownGroup } from "../ui/dropdown";
 import { Property } from "../ui/labels";
 import { Toggle } from "../ui/toggle";
+import { useMobile } from "@/hooks/use-mobile";
 
 export const JobHead = ({
   title,
@@ -341,14 +342,37 @@ function HeaderWithActions({
   actions: React.ReactNode[];
   disabled?: boolean;
 }) {
+  const {isMobile} = useMobile();
   return (
-    <div className="flex items-start justify-between gap-3">
+    <div className={cn("items-start justify-between gap-3", 
+      isMobile ? "" : "flex"
+    )}>
+
+      {/* ctas on top for mobile */}
+      {isMobile && 
+        <div className="shrink-0 mb-4">
+          <div className="flex items-center gap-2">
+            {actions.map((a, i) => (
+              <div key={i} className="inline-flex">
+                {a}
+              </div>
+            ))}
+          </div>
+        </div>
+        }
+
       {/* left: title/employer/location */}
       <div className="min-w-0">
-        <h1 className="text-4xl font-semibold text-gray-900 leading-tight truncate">
+        <h1 className={cn("font-semibold text-gray-900 leading-tight truncate",
+          isMobile ? "text-xl" : "text-4xl"
+        )}>
           {job.title}
         </h1>
-        <p className="text-xl text-gray-600 truncate">{job.employer?.name}</p>
+        <p className={cn("text-gray-600 truncate",
+          isMobile ? "text-base" : "text-xl"
+        )}>
+          {job.employer?.name}
+        </p>
         {job.location && (
           <div className="flex items-center gap-1.5 text-gray-600">
             <Building className="h-4 w-4" />
@@ -361,15 +385,17 @@ function HeaderWithActions({
       </div>
 
       {/* right: CTAs */}
-      <div className="shrink-0 sm:mt-1">
-        <div className="flex items-center gap-2">
-          {actions.map((a, i) => (
-            <div key={i} className="inline-flex">
-              {a}
-            </div>
-          ))}
+      {!isMobile && 
+        <div className="shrink-0 sm:mt-1">
+          <div className="flex items-center gap-2">
+            {actions.map((a, i) => (
+              <div key={i} className="inline-flex">
+                {a}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+        }
     </div>
   );
 }

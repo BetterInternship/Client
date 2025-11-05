@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Job } from "@/lib/db/db.types";
+import { useRouter } from "next/navigation";
 
 interface DeleteModalFormProps {
   job: Job;
@@ -16,6 +17,7 @@ export function ListingsDeleteModal({
   close,
 }: DeleteModalFormProps) {
   const [deleting, setDeleting] = useState(false);
+  const router = useRouter();
 
   const handleDelete = async () => {
     if (!job.id) return close();
@@ -24,6 +26,7 @@ export function ListingsDeleteModal({
     clearJob();
     setDeleting(false);
     close();
+    router.push("/dashboard");
   };
 
   return (
@@ -31,9 +34,8 @@ export function ListingsDeleteModal({
       <div className="text-lg mb-4">
         Are you sure you want to delete{" "}
         <span className="font-bold line-clamp-2 truncate break-words whitespace-pre-wrap">
-          "{job.title}"
+          "{job.title}" <span className="font-normal">?</span>
         </span>
-        ?
       </div>
       <div className="w-full flex flex-row items-end justify-end space-x-2">
         <Button

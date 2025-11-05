@@ -12,9 +12,9 @@ import { cn } from "@/lib/utils";
 import { fmtISO } from "@/lib/utils/date-utils";
 import {
   Calendar,
-  CalendarClock,
   ContactRound,
   GraduationCap,
+  ListCheck,
   MessageCircle,
   School,
 } from "lucide-react";
@@ -46,14 +46,13 @@ interface InternshipPreferences {
 export function ApplicationRow({
   application,
   onView,
-  onSchedule,
   openChatModal,
   updateConversationId,
   setSelectedApplication,
   checkboxSelected = false,
   onToggleSelect,
 }: ApplicationRowProps) {
-  const { to_university_name } = useDbRefs();
+  const { to_university_name, to_app_status_name } = useDbRefs();
   const conversations = useConversations();
   const { isMobile } = useAppContext();
 
@@ -119,6 +118,12 @@ export function ApplicationRow({
               )}
             </span>
           </div>
+          <div className="flex items-center gap-2">
+            <ListCheck />
+            <span>
+              Status: {to_app_status_name(application.status)}
+            </span>
+          </div>
         </div>
       </Card>
     </>
@@ -151,6 +156,9 @@ export function ApplicationRow({
         ) : (
           <span> Not provided</span>
         )}
+      </td>
+      <td className="px-4 py-2">
+        {to_app_status_name(application.status)}
       </td>
       <td>
         <div className="flex items-center gap-2 pr-2 flex-row justify-end">

@@ -34,7 +34,9 @@ import { getFullName } from "@/lib/profile";
 import { motion } from "framer-motion";
 import { FileText, MessageCircle, SendHorizonal } from "lucide-react";
 import { useListingsBusinessLogic } from "@/hooks/hire/listings/use-listings-business-logic";
-import { Scrollbar } from "@/components/ui/scroll-area";
+import { useAppContext } from "@/lib/ctx-app";
+import { cn } from "@/lib/utils";
+import { ListingsDeleteModal } from "@/components/features/hire/listings";
 
 interface JobTabsProps {
   selectedJob: Job | null;
@@ -60,9 +62,6 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
     handleShare,
     clearSelectedJob,
     handlePageChange,
-    openDeleteModal,
-    closeDeleteModal,
-    DeleteModal,
     setIsEditing,
   } = useListingsBusinessLogic(ownedJobs);
   const { isAuthenticated, redirectIfNotLoggedIn, loading } = useAuthContext();
@@ -92,13 +91,15 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
   const [filteredStatus, setFilteredStatus] = useState<number[]>([
     0, 1, 2, 3, 4, 5, 6,
   ]);
-  const [jobName, setJobName] = useState<string>("");
+  const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
 
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const chatAnchorRef = useRef<HTMLDivElement>(null);
   const [lastSending, setLastSending] = useState(false);
   const [sending, setSending] = useState(false);
   const conversation = useConversation("employer", conversationId);
+
+  const { isMobile } = useAppContext();
 
   const router = useRouter();
 
@@ -184,6 +185,12 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
   };
 
   const {
+    open: openDeleteModal,
+    close: closeDeleteModal,
+    Modal: DeleteModal,
+  } = useModal("delete-modal");
+
+  const {
     open: openChatModal,
     close: closeChatModal,
     SideModal: ChatModal,
@@ -250,6 +257,13 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
     window?.open(application.user?.calendar_link ?? "", "_blank");
   };
 
+  const handleJobDelete = () => {
+    if (selectedJob) {
+      setJobToDelete(selectedJob);
+      openDeleteModal();
+    }
+  };
+
   //goes back to job list
   const handleJobBack = () => {
     router.push("/dashboard");
@@ -260,47 +274,6 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
     status: number,
   ) => {
     applications.review(application.id ?? "", { status });
-  };
-
-  const applicantsTab = (status: number[]) => {
-    <div>
-      <ApplicationsContent
-        applications={filteredApplications}
-        statusId={status}
-        openChatModal={openChatModal}
-        updateConversationId={updateConversationId}
-        onApplicationClick={handleApplicationClick}
-        onNotesClick={handleNotesClick}
-        onScheduleClick={handleScheduleClick}
-        onStatusChange={handleStatusChange}
-        setSelectedApplication={setSelectedApplication}
-      ></ApplicationsContent>
-    </div>;
-  };
-
-  const viewListingTab = () => {
-    //listings details panel ekek
-    // import {
-    //   ListingsDetailsPanel,
-    // } from "@/components/features/hire/listings";
-    // ^^^ from here i thibk :D
-
-    <div className="flex-1 min-w-0">
-      <Scrollbar>
-        <ListingsDetailsPanel
-          selectedJob={selectedJob}
-          isEditing={isEditing}
-          saving={saving}
-          onEdit={handleEditStart}
-          onSave={handleSave}
-          onCancel={handleCancel}
-          onShare={handleShare}
-          onDelete={openDeleteModal}
-          updateJob={update_job}
-          setIsEditing={setIsEditing}
-        />
-      </Scrollbar>
-    </div>;
   };
 
   if (applications.loading) {
@@ -323,7 +296,7 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
   return (
     <>
       <div className="flex-1 flex flex-col w-full">
-        <div className="flex items-center pl-4 pt-2">
+        <div className="flex flex-col pt-2">
           <button
             onClick={handleJobBack}
             className="flex items-center text-gray-600 hover:text-gray-900 transition-colors m-4"
@@ -332,7 +305,7 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
           </button>
           <h3 className="m-3">{selectedJob?.title}</h3>
         </div>
-        <div className="px-8 flex flex-col flex-1 space-y-6">
+        <div className="flex flex-col flex-1 space-y-6">
           {!profile.loading && !profile.data?.is_verified ? (
             <ShowUnverifiedBanner />
           ) : (
@@ -354,7 +327,7 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
                 </Tab>
                 <Tab name="Preview Listing">
                   <Card className="flex-1 min-w-0">
-                    <Scrollbar>
+                    {/* <Scrollbar> */}
                       <ListingsDetailsPanel
                         selectedJob={selectedJob}
                         isEditing={isEditing}
@@ -363,11 +336,11 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
                         onSave={handleSave}
                         onCancel={handleJobBack}
                         onShare={handleShare}
-                        onDelete={openDeleteModal}
+                        onDelete={handleJobDelete}
                         updateJob={update_job}
                         setIsEditing={setIsEditing}
                       />
-                    </Scrollbar>
+                    {/* </Scrollbar> */}
                   </Card>
                 </Tab>
               </TabGroup>
@@ -375,6 +348,17 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
           )}
         </div>
       </div>
+
+      <DeleteModal>
+        {jobToDelete && (
+          <ListingsDeleteModal
+            job={jobToDelete}
+            deleteJob={delete_job}
+            clearJob={clearSelectedJob}
+            close={closeDeleteModal}
+          />
+        )}
+      </DeleteModal>
 
       <ApplicantModal className="max-w-7xl w-full">
         <ApplicantModalContent

@@ -27,16 +27,16 @@ const navItems: NavItem[] = [
     icon: <LayoutDashboard className="h-5 w-5" />,
     label: "Dashboard",
   },
-  {
-    href: "/listings",
-    icon: <FileText className="h-5 w-5" />,
-    label: "My Listings",
-  },
-  {
-    href: "/forms-management",
-    icon: <FileUser className="h-5 w-5" />,
-    label: "Forms Automation",
-  },
+  // {
+  //   href: "/listings",
+  //   icon: <FileText className="h-5 w-5" />,
+  //   label: "My Listings",
+  // },
+  // {
+  //   href: "/forms-management",
+  //   icon: <FileUser className="h-5 w-5" />,
+  //   label: "Forms Automation",
+  // },
 ];
 
 function SideNav({ items }: { items: NavItem[] }) {
@@ -93,7 +93,10 @@ const ContentLayout: React.FC<ContentLayoutProps> = ({ children }) => {
       ) : (
         <></>
       )} 
-      <main className="flex-1 flex overflow-auto justify-center mb-20 h-[100%] ">
+      <main className={cn(
+        "flex-1 flex overflow-auto justify-center mb-20 h-[100%] pt-4",
+        isMobile ? "px-2" : "px-8"
+      )}>
         {children}
       </main>
     </div>
