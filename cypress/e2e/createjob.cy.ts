@@ -92,10 +92,13 @@ it("Employer make a new Job", function () {
 
   cy.contains("Publish Listing").should("be.disabled");
 
-  cy.contains("Requirements").parent().parent().within(() => {
+  cy.contains("Requirements").parent().within(() => {
     cy.get('div[aria-label="editable markdown"]').type("Requirements for cypress test job.");
   });
 
-  cy.contains("Publish Listing").should("be.enabled");
+  cy.contains("Publish Listing").should("be.enabled").click();
+
+  cy.url().should("include", "/dashboard");
+  cy.contains("cypress test job listing");
 
 });
