@@ -82,7 +82,7 @@ export default function FormsPage() {
         title: `Generate ${formLabel}`,
         hasClose: true,
         onClose: () => closeGlobalModal("form-generator-form"),
-        allowBackdropClick: true,
+        allowBackdropClick: false,
         panelClassName: "sm:w-full sm:max-w-2xl",
       },
     );
