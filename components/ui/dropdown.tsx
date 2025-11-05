@@ -239,8 +239,8 @@ export const GroupableRadioDropdown = <ID extends number | string>({
         aria-expanded={isOpen}
         className={cn(
           "w-full max-w-full min-w-0",
-          "h-auto min-h-10 py-1",
-          "flex items-start justify-between gap-2",
+          "h-auto py-1",
+          "flex items-center justify-between gap-2",
         )}
       >
         {/* shrinkable text container */}
