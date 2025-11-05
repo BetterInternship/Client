@@ -86,7 +86,7 @@ export function FormFlowRouter({
     const finalValues = { ...autofillValues, ...values };
     const errors: Record<string, string> = {};
     for (const field of fields) {
-      if (field.party !== "student" || field.source === "derived") continue;
+      if (field.party !== "student" || field.source !== "manual") continue;
 
       // Check if missing
       const value = finalValues[field.field];
