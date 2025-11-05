@@ -38,12 +38,6 @@ export default function FormsPage() {
   const [tab, setTab] = useState<TabKey>("Form Generator");
   const [pendingDocs, setPendingDocs] = useState<Record<string, string[]>>({});
 
-  // ! remove in the future, disables forms page in prod
-  setTimeout(() => router.push("/search"), 1500);
-  return (
-    <Loader>Forms page is currently in development. Redirecting home...</Loader>
-  );
-
   // All form templates
   const {
     data: formList = [],
