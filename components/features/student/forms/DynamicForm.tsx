@@ -24,7 +24,9 @@ export function DynamicForm({
   setValues: (values: Record<string, string>) => void;
   onChange: (key: string, value: any) => void;
 }) {
-  const filteredFields = fields.filter((field) => field.source === "student");
+  const filteredFields = fields
+    .filter((field) => field.party === "student")
+    .filter((field) => field.source === "manual");
 
   // Group by section
   const entitySectionFields: ClientField<[]>[] = filteredFields.filter(
@@ -137,15 +139,20 @@ const FormSection = function FormSection({
       </div>
 
       {reducedFields.map((field) => (
-        <div key={`${formKey}:${field.section}:${field.field}`}>
-          <FieldRenderer
-            field={field}
-            value={values[field.field]}
-            onChange={(v) => onChange(field.field, v)}
-            error={errors[field.field]}
-            showError={showErrors}
-            allValues={values}
-          />
+        <div
+          className="flex flex-row space-between"
+          key={`${formKey}:${field.section}:${field.field}`}
+        >
+          <div className="flex-1">
+            <FieldRenderer
+              field={field}
+              value={values[field.field]}
+              onChange={(v) => onChange(field.field, v)}
+              error={errors[field.field]}
+              showError={showErrors}
+              allValues={values}
+            />
+          </div>
         </div>
       ))}
     </div>

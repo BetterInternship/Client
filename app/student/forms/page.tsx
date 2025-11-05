@@ -11,6 +11,7 @@ import {
   fetchSignedDocument,
   fetchPendingDocument,
   fetchTemplateDocument,
+  fetchPrefilledDocument,
 } from "@/lib/db/use-moa-backend";
 import FormGenerateCard from "@/components/features/student/forms/FormGenerateCard";
 import MyFormCard from "@/components/features/student/forms/MyFormCard";
@@ -34,6 +35,7 @@ export default function FormsPage() {
   const router = useRouter();
   const userId = profile.data?.id;
   const [tab, setTab] = useState<TabKey>("Form Generator");
+  const [pendingDocs, setPendingDocs] = useState<Record<string, string[]>>({});
 
   // All form templates
   const {
@@ -106,6 +108,43 @@ export default function FormsPage() {
     [myForms],
   );
 
+  // prefetch pending documents for rows that have pending_document_id
+  useEffect(() => {
+    if (!myForms?.length) return;
+
+    const ids = Array.from(
+      new Set(
+        myForms.map((r) => r.pending_document_id).filter(Boolean) as string[],
+      ),
+    );
+
+    let cancelled = false;
+    (async () => {
+      for (const id of ids) {
+        if (!id || pendingDocs[id]) continue;
+        try {
+          const resp = await fetchPendingDocument(id);
+          if (cancelled) return;
+
+          const parties = (resp?.data?.pending_parties ?? []).map(String);
+
+          if (!cancelled) {
+            setPendingDocs((prev) => ({
+              ...prev,
+              [id]: parties,
+            }));
+          }
+        } catch {
+          // ignore; don't block UI
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [myForms, pendingDocs]);
+
   if (!profile.data?.department && !profile.isPending) {
     alert("Profile not yet complete.");
     router.push("/profile");
@@ -169,7 +208,7 @@ export default function FormsPage() {
                 generatorForms.map((form) => (
                   <FormGenerateCard
                     key={form.name}
-                    formTitle={`${form.label ?? form.name}`}
+                    formName={form.name}
                     onViewTemplate={() => {
                       if (!form.base_document_id) {
                         alert("No template available for this form.");
@@ -237,7 +276,7 @@ export default function FormsPage() {
                 !myFormsError &&
                 !myForms?.length && (
                   <p className="text-muted-foreground text-sm">
-                    You haven’t generated any forms yet.
+                    You haven't generated any forms yet.
                   </p>
                 )}
 
@@ -245,19 +284,26 @@ export default function FormsPage() {
                 !loadingMyForms &&
                 !myFormsError &&
                 myFormsSorted.map((row, i) => {
-                  const formName = row.form_name;
-                  const title = `${formName}`;
-                  const status = row.signed_document_id
-                    ? "Complete"
-                    : "Pending action";
+                  const title = `${row.label ?? row.form_name}`;
+                  const status =
+                    row.signed_document_id || row.prefilled_document_id
+                      ? "Complete"
+                      : "Pending ";
+                  const waitingFor: string[] = row.pending_document_id
+                    ? (pendingDocs[row.pending_document_id] ?? [])
+                    : [];
+
                   return (
                     <MyFormCard
                       key={i}
                       title={title}
                       requestedAt={row.timestamp}
                       status={status}
+                      waitingFor={waitingFor}
                       getDownloadUrl={async () => {
+                        // 1) signed document (highest priority)
                         if (row.signed_document_id) {
+                          console.log(row.signed_document_id);
                           const signedDocument = await fetchSignedDocument(
                             row.signed_document_id,
                           );
@@ -269,17 +315,30 @@ export default function FormsPage() {
                           if (url) return url;
                         }
 
-                        if (row.pending_document_id) {
-                          const pendingDocument = await fetchPendingDocument(
-                            row.pending_document_id,
-                          );
-
-                          const url = pendingDocument.data?.latest_document_url;
+                        // 2) prefilled document
+                        if (row.prefilled_document_id) {
+                          const prefilledDocument =
+                            await fetchPrefilledDocument(
+                              row.prefilled_document_id,
+                            );
+                          const url = prefilledDocument.data?.url;
                           if (url) return url;
                         }
 
-                        alert("No document associated with request.");
-                        throw new Error("No document URL available");
+                        // ! Shouldnt show download button if pending
+                        // 3) pending document
+                        // if (row.pending_document_id) {
+                        //   const pendingDocument = await fetchPendingDocument(
+                        //     row.pending_document_id,
+                        //   );
+
+                        //   const url =
+                        //     pendingDocument?.data?.latest_document_url;
+                        //   if (url) return url;
+                        // }
+
+                        // alert("No document associated with request.");
+                        // throw new Error("No document URL available");
                       }}
                     />
                   );

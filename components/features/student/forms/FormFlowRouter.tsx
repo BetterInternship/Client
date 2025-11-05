@@ -46,7 +46,8 @@ export function FormFlowRouter({
   const formMetdata = form.data?.formMetadata
     ? new FormMetadata(form.data.formMetadata)
     : null;
-  const fields = formMetdata?.getFieldsForClient() ?? [];
+  const fields = formMetdata?.getFieldsForClient(values) ?? [];
+  const hasSignature = fields.some((field) => field.type === "signature");
 
   // Saved autofill
   const autofillValues = useMemo(() => {
@@ -58,10 +59,15 @@ export function FormFlowRouter({
 
     // Populate with prefillers as well
     for (const field of fields) {
-      if (field.prefiller)
-        autofillValues[field.field] = field.prefiller({
+      if (field.prefiller) {
+        const s = field.prefiller({
           user: profile.data,
         });
+
+        // ! Tentative fix for spaces, move to abstraction later on
+        autofillValues[field.field] =
+          typeof s === "string" ? s.trim().replace("  ", " ") : s;
+      }
     }
 
     return autofillValues;
@@ -77,14 +83,13 @@ export function FormFlowRouter({
     if (!profile.data?.id) return;
 
     // Validate fields before allowing to proceed
+    const finalValues = { ...autofillValues, ...values };
     const errors: Record<string, string> = {};
     for (const field of fields) {
+      if (field.party !== "student" || field.source === "derived") continue;
+
       // Check if missing
-      const value = values[field.field];
-      if (!value) {
-        errors[field.field] = `${field.field} is missing.`;
-        continue;
-      }
+      const value = finalValues[field.field];
 
       // Check validator error
       const coerced = field.coerce(value);
@@ -106,16 +111,17 @@ export function FormFlowRouter({
     try {
       setBusy(true);
 
+      console.log("Final values to submit", finalValues);
       await update.mutateAsync({
-        internship_moa_fields: { ...autofillValues, ...values },
+        internship_moa_fields: finalValues,
       });
 
-      const route = withEsign ? "submitSignedForm" : "submitPendingForm";
-      await UserService[route]({
+      await UserService.requestGenerateForm({
         formName,
         formVersion,
-        values,
+        values: finalValues,
         parties: { userId: profile.data.id },
+        disableEsign: !withEsign,
       });
 
       setDone(true);
@@ -152,6 +158,7 @@ export function FormFlowRouter({
           formKey={formName}
           handleSubmit={handleSubmit}
           busy={busy}
+          noEsign={!hasSignature}
         />
       </div>
     </div>

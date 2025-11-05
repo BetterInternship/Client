@@ -1,11 +1,12 @@
+import { FetchResponse } from "@/lib/api/use-fetch";
 import {
+  Conversation,
+  Employer,
+  EmployerApplication,
   Job,
   PublicUser,
-  UserApplication,
   SavedJob,
-  EmployerApplication,
-  Employer,
-  Conversation,
+  UserApplication,
 } from "@/lib/db/db.types";
 import { APIClient, APIRouteBuilder } from "./api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
@@ -165,75 +166,24 @@ export const UserService = {
     );
   },
 
-  // ! todo, add a way for the route to be able to tell if request is valid or not
-  // ! we can't generate signed forms out of nowhere
-  async submitSignedForm(data: {
+  async requestGenerateForm(data: {
     formName: string;
     formVersion: number;
     values: Record<string, string>;
+    signatories?: { name: string; title: string }[];
     parties?: {
       userId?: string | null;
       employerId?: string | null;
       universityId?: string | null;
     };
+    disableEsign?: boolean;
   }) {
     return APIClient.post<{
       success?: boolean;
-      pendingDocumentUrl: string;
-      pendingDocumentId: string;
+      documentUrl: string;
+      documentId: string;
       internshipFormId: string;
-    }>(APIRouteBuilder("forms").r("signed").build({ moaServer: true }), data);
-  },
-
-  async submitPrefilledForm(data: {
-    formName: string;
-    formVersion: number;
-    values: Record<string, string>;
-  }) {
-    return APIClient.post<{
-      success?: boolean;
-      pendingDocumentUrl: string;
-      pendingDocumentId: string;
-      internshipFormId: string;
-    }>(
-      APIRouteBuilder("forms").r("prefilled").build({ moaServer: true }),
-      data,
-    );
-  },
-
-  async submitPendingForm(data: {
-    formName: string;
-    formVersion: number;
-    values: Record<string, string>;
-    parties?: {
-      userId?: string | null;
-      employerId?: string | null;
-      universityId?: string | null;
-    };
-  }) {
-    return APIClient.post<{
-      success?: boolean;
-      pendingDocumentUrl: string;
-      pendingDocumentId: string;
-      internshipFormId: string;
-    }>(APIRouteBuilder("forms").r("pending").build({ moaServer: true }), data);
-  },
-
-  async approveSignatory(payload: ApproveSignatoryRequest) {
-    return APIClient.post<ApproveSignatoryResponse & FetchResponse>(
-      APIRouteBuilder("forms").r("approve").build({ moaServer: true }),
-      payload,
-    );
-  },
-
-  async getPendingInformation(pendingDocumentId: string) {
-    const res = await APIClient.get<{ pendingInfo?: any } & FetchResponse>(
-      APIRouteBuilder("forms")
-        .r("pending")
-        .p({ pendingDocumentId })
-        .build({ moaServer: true }),
-    );
-    return { ...res, data: res.pendingInfo };
+    }>(APIRouteBuilder("forms").r("generate").build({ moaServer: true }), data);
   },
 
   async getForm(formName: string) {
@@ -252,12 +202,6 @@ export const UserService = {
         .r("form-latest")
         .p({ name: formName })
         .build({ moaServer: true }),
-    );
-  },
-
-  async getOutsideEntityFormFields(data: { formName: string; party: string }) {
-    return APIClient.get<{ fields?: any[] } & FetchResponse>(
-      APIRouteBuilder("forms").r("fields").p(data).build({ moaServer: true }),
     );
   },
 
@@ -532,4 +476,23 @@ export const handleApiError = (error: any) => {
 
   // ! Show toast notifications here
   return error.message || "An unexpected error occurred";
+};
+
+// update application status
+export const updateApplicationStatus = async (
+  id: string,
+  newStatus: number,
+) => {
+  try {
+    console.log(`Updating application ${id} to status ${newStatus}`);
+    const response = await ApplicationService.reviewApplication(id, {
+      status: newStatus,
+    });
+
+    console.log("API Response: ", response);
+    return response;
+  } catch (error: any) {
+    console.error("Error updating application" + id + ". " + error);
+    throw error;
+  }
 };

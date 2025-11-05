@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-09-22 20:41:02
+ * @ Modified time: 2025-10-31 18:13:16
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -32,7 +32,7 @@ interface IDropdownGroupContext {
   setActiveDropdown: (dropdown: string) => void;
 }
 const DropdownGroupContext = createContext<IDropdownGroupContext>(
-  {} as IDropdownGroupContext
+  {} as IDropdownGroupContext,
 );
 
 /**
@@ -78,7 +78,7 @@ const DropdownOptionButton = ({
       children.props.on_click && children.props.on_click();
       children.props.href && router.push(children.props.href);
     },
-    [children.props, router, set_is_open]
+    [children.props, router, set_is_open],
   );
 
   const onTouchStart = (e: any) => {
@@ -119,7 +119,7 @@ const DropdownOptionButton = ({
         "w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2",
         is_mobile ? "py-3 active:bg-gray-200 touch-manipulation" : "",
         `text-${size}`,
-        children.props.highlighted ? "text-blue-500" : ""
+        children.props.highlighted ? "text-blue-500" : "",
       )}
       onClick={(e) => !scrolling && handleClick(e)}
     >
@@ -200,7 +200,7 @@ export const GroupableRadioDropdown = <ID extends number | string>({
       setIsOpen(!isOpen);
       setActiveDropdown(name);
     },
-    [isOpen, name, setActiveDropdown]
+    [isOpen, name, setActiveDropdown],
   );
 
   /**
@@ -212,7 +212,7 @@ export const GroupableRadioDropdown = <ID extends number | string>({
       onChange(option);
       setIsOpen(false);
     },
-    [onChange]
+    [onChange],
   );
 
   // Check if it's still the active dropdown
@@ -241,7 +241,7 @@ export const GroupableRadioDropdown = <ID extends number | string>({
         <ChevronDown
           className={cn(
             "w-4 h-4 text-gray-600 transition-transform",
-            isOpen ? "rotate-180" : ""
+            isOpen ? "rotate-180" : "",
           )}
         />
       </Button>
@@ -252,12 +252,12 @@ export const GroupableRadioDropdown = <ID extends number | string>({
             "absolute bg-white rounded-md shadow-xl overflow-hidden border border-gray-100",
             "z-[9999] duration-200 ease-out transition-all", // Add smooth animation
             isMobile ? "min-w-full" : "min-w-[200px]",
-            className
+            className,
           )}
         >
           <div
             className={cn(
-              "relative z-[100] overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 max-h-64"
+              "relative z-[100] overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 max-h-64",
             )}
           >
             {options.map((option, index) => (
@@ -349,7 +349,7 @@ export const GroupableNavDropdown = ({
         target: e.target,
       };
     },
-    [is_mobile, is_open]
+    [is_mobile, is_open],
   );
 
   const handleTouchEnd = useCallback(
@@ -379,7 +379,7 @@ export const GroupableNavDropdown = ({
 
       touchStartRef.current = null;
     },
-    [is_mobile, is_open, closeDropdown]
+    [is_mobile, is_open, closeDropdown],
   );
 
   // Set up mobile touch listeners
@@ -400,7 +400,7 @@ export const GroupableNavDropdown = ({
     (e: React.MouseEvent | React.TouchEvent) => {
       e.stopPropagation();
     },
-    []
+    [],
   );
 
   // Toggle dropdown
@@ -409,7 +409,7 @@ export const GroupableNavDropdown = ({
       e.stopPropagation();
       set_is_open(!is_open);
     },
-    [is_open]
+    [is_open],
   );
 
   return (
@@ -427,7 +427,7 @@ export const GroupableNavDropdown = ({
           <ChevronDown
             className={cn(
               "w-4 h-4 text-gray-600 transition-transform",
-              is_open ? "rotate-180" : ""
+              is_open ? "rotate-180" : "",
             )}
           />
         )}
@@ -438,7 +438,7 @@ export const GroupableNavDropdown = ({
           className={cn(
             "absolute right-0 mt-2 bg-white border border-gray-200 rounded-[0.33em] shadow-lg z-[1000]",
             is_mobile ? "w-56" : "w-48", // Slightly wider on mobile for better touch targets
-            className
+            className,
           )}
           onClick={handleDropdownInteraction}
           onTouchStart={handleDropdownInteraction}
@@ -447,7 +447,7 @@ export const GroupableNavDropdown = ({
           <div
             className={cn(
               "relative py-1 z-[1000] max-h-64 overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
-              is_mobile ? "max-h-80" : "max-h-64"
+              is_mobile ? "max-h-80" : "max-h-64",
             )}
             style={{
               scrollbarWidth: "thin",

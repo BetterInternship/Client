@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-16 22:43:51
- * @ Modified time: 2025-10-29 20:13:05
+ * @ Modified time: 2025-10-31 16:18:44
  * @ Description:
  *
  * The field renderer 3000 automatically renders the correct field for the situation!
@@ -15,7 +15,12 @@ import {
   TimeInputNative,
   FormInput,
   FormCheckbox,
+  FormTextarea,
 } from "@/components/EditForm";
+import {
+  AutocompleteTreeMulti,
+  TreeOption,
+} from "@/components/ui/autocomplete";
 import { ClientField } from "@betterinternship/core/forms";
 
 export function FieldRenderer({
@@ -33,15 +38,9 @@ export function FieldRenderer({
   allValues?: Record<string, string>;
 }) {
   // Placeholder or error
-  const Note = () => {
+  const TooltipLabel = () => {
     if (showError && !!error)
-      return <p className="text-xs text-rose-600 mt-1">{error}</p>;
-    if (field.tooltip_label)
-      return (
-        <p className="text-xs text-muted-foreground mt-1">
-          {field.tooltip_label}
-        </p>
-      );
+      return <p className="text-xs text-destructive mt-1">{error}</p>;
     return <></>;
   };
 
@@ -51,7 +50,7 @@ export function FieldRenderer({
       <FieldRendererDropdown
         field={field}
         value={value}
-        TooltipContent={Note}
+        TooltipContent={TooltipLabel}
         onChange={onChange}
       />
     );
@@ -63,7 +62,7 @@ export function FieldRenderer({
       <FieldRendererDate
         field={field}
         value={value}
-        TooltipContent={Note}
+        TooltipContent={TooltipLabel}
         onChange={onChange}
       />
     );
@@ -75,8 +74,36 @@ export function FieldRenderer({
       <FieldRendererTime
         field={field}
         value={value}
-        TooltipContent={Note}
+        TooltipContent={TooltipLabel}
         onChange={onChange}
+      />
+    );
+  }
+
+  if (field.type === "textarea") {
+    return (
+      <FieldRendererTextarea
+        field={field}
+        value={value}
+        TooltipContent={TooltipLabel}
+        onChange={onChange}
+      />
+    );
+  }
+
+  if (field.type === "multiselect") {
+    return (
+      <FieldRendererMultiselect
+        field={field}
+        values={value.split("\n")}
+        TooltipContent={TooltipLabel}
+        onChange={(s) => onChange(s.join("\n"))}
+        options={
+          field.options?.map((o) => ({
+            name: o as string,
+            value: o as string,
+          })) ?? []
+        }
       />
     );
   }
@@ -87,7 +114,7 @@ export function FieldRenderer({
       <FieldRendererCheckbox
         field={field}
         value={value}
-        TooltipContent={Note}
+        TooltipContent={TooltipLabel}
         onChange={onChange}
       />
     );
@@ -97,7 +124,7 @@ export function FieldRenderer({
     <FieldRendererInput
       field={field}
       value={value}
-      TooltipContent={Note}
+      TooltipContent={TooltipLabel}
       onChange={onChange}
     />
   );
@@ -133,12 +160,13 @@ const FieldRendererDropdown = ({
   return (
     <div className="space-y-1.5">
       <FormDropdown
+        required={false}
         label={field.label}
-        required
         value={value}
         options={options}
         setter={(v) => onChange(v)}
         className="w-full"
+        tooltip={field.tooltip_label}
       />
       <TooltipContent />
     </div>
@@ -168,8 +196,8 @@ const FieldRendererDate = ({
   return (
     <div className="space-y-1.5">
       <FormDatePicker
+        required={false}
         label={field.label}
-        required
         date={numericalValue}
         setter={(v) => onChange(v ?? 0)}
         className="w-full"
@@ -177,6 +205,7 @@ const FieldRendererDate = ({
         placeholder="Select date"
         autoClose
         disabledDays={[]}
+        tooltip={field.tooltip_label}
         format={(d) =>
           d.toLocaleDateString(undefined, {
             year: "numeric",
@@ -209,10 +238,11 @@ const FieldRendererTime = ({
   return (
     <div className="space-y-1.5">
       <TimeInputNative
+        required={false}
         label={field.label}
         value={value}
+        tooltip={field.tooltip_label}
         onChange={(v) => onChange(v ?? "")}
-        required
       />
       <TooltipContent />
     </div>
@@ -238,10 +268,12 @@ const FieldRendererCheckbox = ({
   return (
     <div className="space-y-1.5">
       <FormCheckbox
+        required={false}
         label={field.label}
         checked={!!value}
+        tooltip={field.tooltip_label}
+        sentence={field.tooltip_label}
         setter={(c) => onChange(c)}
-        required
       />
       <TooltipContent />
     </div>
@@ -268,6 +300,7 @@ const FieldRendererInput = ({
   return (
     <div className="space-y-1.5">
       <FormInput
+        required={false}
         label={field.label}
         value={value ?? ""}
         setter={(v) => {
@@ -276,7 +309,73 @@ const FieldRendererInput = ({
           if (!isNaN(next)) onChange(next);
         }}
         inputMode={inputMode}
+        tooltip={field.tooltip_label}
         className="w-full"
+      />
+      <TooltipContent />
+    </div>
+  );
+};
+
+/**
+ * Textarea input
+ *
+ * @component
+ */
+const FieldRendererTextarea = ({
+  field,
+  value,
+  TooltipContent,
+  onChange,
+}: {
+  field: ClientField<[]>;
+  value: string;
+  TooltipContent: () => React.ReactNode;
+  onChange: (v: string | number) => void;
+}) => {
+  return (
+    <div className="space-y-1.5">
+      <FormTextarea
+        required={false}
+        label={field.label}
+        value={value ?? ""}
+        setter={onChange}
+        tooltip={field.tooltip_label}
+        className="w-full"
+      />
+      <TooltipContent />
+    </div>
+  );
+};
+
+/**
+ * Textarea input
+ *
+ * @component
+ */
+const FieldRendererMultiselect = ({
+  field,
+  values,
+  options,
+  TooltipContent,
+  onChange,
+}: {
+  field: ClientField<[]>;
+  values: string[];
+  options: TreeOption[];
+  TooltipContent: () => React.ReactNode;
+  onChange: (v: string[]) => void;
+}) => {
+  return (
+    <div className="space-y-1.5">
+      <AutocompleteTreeMulti
+        required={false}
+        label={field.label}
+        value={values ?? []}
+        setter={onChange}
+        className="w-full"
+        tooltip={field.tooltip_label}
+        tree={options}
       />
       <TooltipContent />
     </div>
