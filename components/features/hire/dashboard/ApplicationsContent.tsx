@@ -11,11 +11,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ApplicationsHeader } from "./ApplicationsHeader";
 import { useState } from "react";
 import { CommandMenu } from "@/components/ui/command-menu";
-import { Calendar, Check, ContactRound, GraduationCap, List, ListCheck, School, SquareCheck, Star, Trash, User2, X } from "lucide-react";
+import { Calendar, Check, CheckCircle2, ContactRound, GraduationCap, List, ListCheck, School, SquareCheck, Star, Trash, User2, X } from "lucide-react";
 import { useEffect } from "react";
 import { updateApplicationStatus } from "@/lib/api/services";
 import { statusIconMap } from "@/components/common/status-icon-map";
 import { type ActionItem } from "@/components/ui/action-item";
+import { Toast } from "@/components/ui/toast";
 
 interface ApplicationsContentProps {
   applications: EmployerApplication[];
@@ -46,6 +47,8 @@ export function ApplicationsContent({
   const [commandBarsVisible, setCommandBarsVisible] = useState(false);
   const [allSelected, setAllSelected] = useState(false);
   const [activeFilter, setActiveFilter] = useState<number>(-1);
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
   const sortedApplications = applications.toSorted(
     (a, b) =>
       new Date(b.applied_at ?? "").getTime() -
@@ -54,6 +57,15 @@ export function ApplicationsContent({
 
   const { app_statuses } = useDbRefs();
 
+  useEffect(() => {
+    if (toastVisible) {
+      const timeoutId = setTimeout(() => {
+      setToastVisible(false);
+    }, 5000);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [toastVisible]);
   // make command bars visible when an applicant is selected.
   useEffect(() => {
     setCommandBarsVisible(selectedApplications.size > 0);
@@ -61,6 +73,7 @@ export function ApplicationsContent({
 
   // make api call to update status on button click.
   const updateStatus = async (status: number) => {
+    const count = selectedApplications.size;
     try {
       const updatePromises = Array.from(selectedApplications).map(
         async (id) => {
@@ -78,6 +91,8 @@ export function ApplicationsContent({
       console.error("Failed to update applications: ", error);
     } finally {
       unselectAll();
+      setToastMessage(`Status of ${count} applicant${count === 1 ? "" : "s"} changed.`);
+      setToastVisible(true);
     }
   };
 
@@ -178,6 +193,11 @@ export function ApplicationsContent({
 
   return isMobile ? (
     <div className="flex flex-col gap-4">
+      <Toast
+        visible={toastVisible}
+        title={toastMessage}
+        indicator={<CheckCircle2 />}
+      />
       <ApplicationsHeader
         selectedCounts={getCounts(sortedApplications)}
         activeFilter={activeFilter}
@@ -247,6 +267,11 @@ export function ApplicationsContent({
     </div>
   ) : (
     <div className="flex flex-col gap-4">
+      <Toast
+        visible={toastVisible}
+        title={toastMessage}
+        indicator={<CheckCircle2 />}
+      />
       <ApplicationsHeader
         selectedCounts={getCounts(sortedApplications)}
         activeFilter={activeFilter}
