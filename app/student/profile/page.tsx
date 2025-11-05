@@ -916,7 +916,6 @@ const ProfileEditor = forwardRef<
 
     if (collegeId) {
       const list = get_departments_by_college?.(collegeId);
-      console.log(list);
       setDepartmentOptions(
         list.map((d) => ({
           id: d,

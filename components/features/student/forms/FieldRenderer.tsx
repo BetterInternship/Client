@@ -1,3 +1,12 @@
+/**
+ * @ Author: BetterInternship
+ * @ Create Time: 2025-10-16 22:43:51
+ * @ Modified time: 2025-10-31 16:18:44
+ * @ Description:
+ *
+ * The field renderer 3000 automatically renders the correct field for the situation!
+ */
+
 "use client";
 
 import {
@@ -6,222 +15,369 @@ import {
   TimeInputNative,
   FormInput,
   FormCheckbox,
+  FormTextarea,
 } from "@/components/EditForm";
-import z from "zod";
-import { UserService } from "@/lib/api/services";
-import { useQuery } from "@tanstack/react-query";
-
-type FieldType =
-  | "text"
-  | "number"
-  | "select"
-  | "date"
-  | "time"
-  | "signature"
-  | "reference";
-export type Section =
-  | "student"
-  | "entity"
-  | "university"
-  | "internship"
-  | "student-guardian";
-
-type Option = { value: string; label: string };
-
-export type FieldDef = {
-  id: string;
-  key: string; // db key (used to store in formData)
-  label: string;
-  type: FieldType;
-  required?: boolean;
-  placeholder?: string;
-  helper?: string;
-  maxLength?: number;
-  options?: Option[]; // for select
-  validators: z.ZodTypeAny[];
-  section?: Section;
-  value?: string;
-};
+import {
+  AutocompleteTreeMulti,
+  TreeOption,
+} from "@/components/ui/autocomplete";
+import { ClientField } from "@betterinternship/core/forms";
 
 export function FieldRenderer({
-  def,
-  value = def.value ?? "",
+  field,
+  value = "",
   onChange,
   error,
   showError,
 }: {
-  def: FieldDef;
+  field: ClientField<[]>;
   value: string;
   onChange: (v: any) => void;
   error?: string;
   showError?: boolean;
+  allValues?: Record<string, string>;
 }) {
-  // placeholder and error
-  const Note = () => {
-    if (showError && !!error) {
-      return <p className="text-xs text-rose-600 mt-1">{error}</p>;
-    }
-    if (def.helper) {
-      return <p className="text-xs text-muted-foreground mt-1">{def.helper}</p>;
-    }
-    return null;
+  // Placeholder or error
+  const TooltipLabel = () => {
+    if (showError && !!error)
+      return <p className="text-xs text-destructive mt-1">{error}</p>;
+    return <></>;
   };
 
-  // [custom] for items that need to be queried from backend
-  if (def.type === "reference") {
-    if (def.key === "entity-id") {
-      const { data } = useQuery({
-        queryKey: ["entities", "list"],
-        queryFn: async () => await UserService.getEntityList(),
-        refetchOnMount: "always",
-      });
-
-      const companies: Array<{ id: string; name: string }> = (
-        data?.employers ?? []
-      ).map((c) => ({
-        id: String(c.id),
-        name: c.display_name,
-      }));
-
-      return (
-        <div className="space-y-1.5">
-          <FormDropdown
-            label={def.label}
-            required
-            value={value}
-            options={companies}
-            setter={(v) => onChange(String(v ?? ""))}
-            className="w-full"
-          />
-          <Note />
-        </div>
-      );
-    }
-  }
-
-  // dropdown
-  if (def.type === "select") {
-    const options = (def.options ?? []).map((o) => ({
-      id: o.value,
-      name: o.label,
-    }));
+  // Dropdown
+  if (field.type === "dropdown") {
     return (
-      <div className="space-y-1.5">
-        <FormDropdown
-          label={def.label}
-          required
-          value={value}
-          options={options}
-          setter={(v) => onChange(String(v ?? ""))}
-          className="w-full"
-        />
-        <Note />
-      </div>
+      <FieldRendererDropdown
+        field={field}
+        value={value}
+        TooltipContent={TooltipLabel}
+        onChange={onChange}
+      />
     );
   }
 
-  // date
-  if (def.type === "date") {
-    // Example: disable dates before today+7 for specific keys
-    let disabledDays: { before?: Date } | null = null;
-    if (
-      def.key === "internship_start_date" ||
-      def.key === "internship_end_date"
-    ) {
-      const t = new Date();
-      const min = new Date(t.getFullYear(), t.getMonth(), t.getDate());
-      min.setDate(min.getDate() + 7);
-      disabledDays = { before: min };
-    }
-
+  // Date
+  if (field.type === "date") {
     return (
-      <div className="space-y-1.5">
-        <FormDatePicker
-          label={def.label}
-          required
-          date={Number.isFinite(+value) ? parseInt(value) : undefined}
-          setter={(nextMs) => onChange(nextMs ?? 0)}
-          className="w-full"
-          contentClassName="z-[1100]"
-          placeholder="Select date"
-          autoClose
-          disabledDays={disabledDays ?? []}
-          format={(d) =>
-            d.toLocaleDateString(undefined, {
-              year: "numeric",
-              month: "short",
-              day: "2-digit",
-            })
-          }
-        />
-        <Note />
-      </div>
+      <FieldRendererDate
+        field={field}
+        value={value}
+        TooltipContent={TooltipLabel}
+        onChange={onChange}
+      />
     );
   }
 
-  // time
-  if (def.type === "time") {
+  // Time
+  if (field.type === "time") {
     return (
-      <div className="space-y-1.5">
-        <TimeInputNative
-          label={def.label}
-          value={value} // "HH:MM"
-          // eslint-disable-next-line @typescript-eslint/no-base-to-string
-          onChange={(v) => onChange(v?.toString() ?? "")}
-          required
-          helper={def.helper}
-        />
-        <Note />
-      </div>
+      <FieldRendererTime
+        field={field}
+        value={value}
+        TooltipContent={TooltipLabel}
+        onChange={onChange}
+      />
     );
   }
 
-  // signature (checkbox)
-  const asBool = (v: any) => v === true;
-
-  if (def.type === "signature") {
-    const checked = asBool(value);
+  if (field.type === "textarea") {
     return (
-      <div className="space-y-1.5">
-        <FormCheckbox
-          label={def.label}
-          checked={checked}
-          setter={(c) => onChange(Boolean(c))}
-          sentence={def.helper}
-          required
-        />
-      </div>
+      <FieldRendererTextarea
+        field={field}
+        value={value}
+        TooltipContent={TooltipLabel}
+        onChange={onChange}
+      />
     );
   }
 
-  // input
-  const inputMode = def.type === "number" ? "numeric" : undefined;
-  const sanitizeNumber = (s: string) =>
-    s
-      .replace(/[^\d.]/g, "") // keep digits and dot
-      .replace(/(\..*)\./g, "$1"); // single dot only
+  if (field.type === "multiselect") {
+    return (
+      <FieldRendererMultiselect
+        field={field}
+        values={value.split("\n")}
+        TooltipContent={TooltipLabel}
+        onChange={(s) => onChange(s.join("\n"))}
+        options={
+          field.options?.map((o) => ({
+            name: o as string,
+            value: o as string,
+          })) ?? []
+        }
+      />
+    );
+  }
+
+  // Signatures or checkboxes
+  if (field.type === "signature" || field.type === "checkbox") {
+    return (
+      <FieldRendererCheckbox
+        field={field}
+        value={value}
+        TooltipContent={TooltipLabel}
+        onChange={onChange}
+      />
+    );
+  }
+
+  return (
+    <FieldRendererInput
+      field={field}
+      value={value}
+      TooltipContent={TooltipLabel}
+      onChange={onChange}
+    />
+  );
+}
+
+// ! Probably migrate this in the future
+interface Option {
+  id: string;
+  name: string;
+}
+
+/**
+ * Dropdown
+ *
+ * @component
+ */
+const FieldRendererDropdown = ({
+  field,
+  value,
+  TooltipContent,
+  onChange,
+}: {
+  field: ClientField<[]>;
+  value: string;
+  TooltipContent: () => React.ReactNode;
+  onChange: (v: string | number) => void;
+}) => {
+  const options: Option[] = (field.options ?? []).map((o) => ({
+    id: o as string,
+    name: o as string,
+  }));
 
   return (
     <div className="space-y-1.5">
-      <FormInput
-        label={def.label}
-        required
-        value={value ?? ""}
-        setter={(v) => {
-          if (def.type === "number") {
-            const next = sanitizeNumber(String(v ?? ""));
-            onChange(next);
-          } else {
-            onChange(String(v ?? ""));
-          }
-        }}
-        type="text"
-        inputMode={inputMode}
-        placeholder={def.placeholder}
-        maxLength={def.maxLength}
+      <FormDropdown
+        required={false}
+        label={field.label}
+        value={value}
+        options={options}
+        setter={(v) => onChange(v)}
         className="w-full"
+        tooltip={field.tooltip_label}
       />
-      <Note />
+      <TooltipContent />
     </div>
   );
-}
+};
+
+/**
+ * Date input
+ *
+ * @component
+ */
+const FieldRendererDate = ({
+  field,
+  value,
+  TooltipContent,
+  onChange,
+}: {
+  field: ClientField<[]>;
+  value: string;
+  TooltipContent: () => React.ReactNode;
+  onChange: (v: number) => void;
+}) => {
+  // Try to parse it first
+  const numericalValue = isNaN(parseInt(value)) ? 0 : parseInt(value);
+
+  // By default the unix timestamp is 0 if it's not a number
+  return (
+    <div className="space-y-1.5">
+      <FormDatePicker
+        required={false}
+        label={field.label}
+        date={numericalValue}
+        setter={(v) => onChange(v ?? 0)}
+        className="w-full"
+        contentClassName="z-[1100]"
+        placeholder="Select date"
+        autoClose
+        disabledDays={[]}
+        tooltip={field.tooltip_label}
+        format={(d) =>
+          d.toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "short",
+            day: "2-digit",
+          })
+        }
+      />
+      <TooltipContent />
+    </div>
+  );
+};
+
+/**
+ * Time input
+ *
+ * @component
+ */
+const FieldRendererTime = ({
+  field,
+  value,
+  TooltipContent,
+  onChange,
+}: {
+  field: ClientField<[]>;
+  value: string;
+  TooltipContent: () => React.ReactNode;
+  onChange: (v: string) => void;
+}) => {
+  return (
+    <div className="space-y-1.5">
+      <TimeInputNative
+        required={false}
+        label={field.label}
+        value={value}
+        tooltip={field.tooltip_label}
+        onChange={(v) => onChange(v ?? "")}
+      />
+      <TooltipContent />
+    </div>
+  );
+};
+
+/**
+ * Time input
+ *
+ * @component
+ */
+const FieldRendererCheckbox = ({
+  field,
+  value,
+  TooltipContent,
+  onChange,
+}: {
+  field: ClientField<[]>;
+  value: string;
+  TooltipContent: () => React.ReactNode;
+  onChange: (v: boolean) => void;
+}) => {
+  return (
+    <div className="space-y-1.5">
+      <FormCheckbox
+        required={false}
+        label={field.label}
+        checked={!!value}
+        tooltip={field.tooltip_label}
+        sentence={field.tooltip_label}
+        setter={(c) => onChange(c)}
+      />
+      <TooltipContent />
+    </div>
+  );
+};
+
+/**
+ * Generic input
+ *
+ * @component
+ */
+const FieldRendererInput = ({
+  field,
+  value,
+  TooltipContent,
+  onChange,
+}: {
+  field: ClientField<[]>;
+  value: string;
+  TooltipContent: () => React.ReactNode;
+  onChange: (v: string | number) => void;
+}) => {
+  const inputMode = field.type === "number" ? "numeric" : undefined;
+  return (
+    <div className="space-y-1.5">
+      <FormInput
+        required={false}
+        label={field.label}
+        value={value ?? ""}
+        setter={(v) => {
+          if (inputMode !== "numeric") return onChange(v);
+          const next = v.trim() === "" ? 0 : parseInt(v);
+          if (!isNaN(next)) onChange(next);
+        }}
+        inputMode={inputMode}
+        tooltip={field.tooltip_label}
+        className="w-full"
+      />
+      <TooltipContent />
+    </div>
+  );
+};
+
+/**
+ * Textarea input
+ *
+ * @component
+ */
+const FieldRendererTextarea = ({
+  field,
+  value,
+  TooltipContent,
+  onChange,
+}: {
+  field: ClientField<[]>;
+  value: string;
+  TooltipContent: () => React.ReactNode;
+  onChange: (v: string | number) => void;
+}) => {
+  return (
+    <div className="space-y-1.5">
+      <FormTextarea
+        required={false}
+        label={field.label}
+        value={value ?? ""}
+        setter={onChange}
+        tooltip={field.tooltip_label}
+        className="w-full"
+      />
+      <TooltipContent />
+    </div>
+  );
+};
+
+/**
+ * Textarea input
+ *
+ * @component
+ */
+const FieldRendererMultiselect = ({
+  field,
+  values,
+  options,
+  TooltipContent,
+  onChange,
+}: {
+  field: ClientField<[]>;
+  values: string[];
+  options: TreeOption[];
+  TooltipContent: () => React.ReactNode;
+  onChange: (v: string[]) => void;
+}) => {
+  return (
+    <div className="space-y-1.5">
+      <AutocompleteTreeMulti
+        required={false}
+        label={field.label}
+        value={values ?? []}
+        setter={onChange}
+        className="w-full"
+        tooltip={field.tooltip_label}
+        tree={options}
+      />
+      <TooltipContent />
+    </div>
+  );
+};

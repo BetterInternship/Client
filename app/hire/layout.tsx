@@ -3,7 +3,6 @@ import "../globals.css";
 import { AuthContextProvider } from "./authctx";
 import { RefsContextProvider } from "@/lib/db/use-refs";
 import { AppContextProvider } from "@/lib/ctx-app";
-import Header from "@/components/features/hire/header";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Footer } from "@/components/shared/footer";
@@ -37,7 +36,9 @@ export default function RootLayout({
   return (
     <RefsContextProvider>
       <BIMoaContextProvider>
-        <HTMLContent>{children}</HTMLContent>
+        <PostHogProvider>
+          <HTMLContent>{children}</HTMLContent>
+        </PostHogProvider>
       </BIMoaContextProvider>
     </RefsContextProvider>
   );
@@ -61,12 +62,10 @@ const HTMLContent = ({
         <AppContextProvider>
           <AuthContextProvider>
             <TooltipProvider>
-              <Sonner />
-              <PostHogProvider>
                 <ConversationsContextProvider type="employer">
                   <html
                     lang="en"
-                    className="min-w-fit w-full h-[100vh] overflow-hidden"
+                    className="h-full"
                   >
                     <Head>
                       <meta
@@ -74,14 +73,19 @@ const HTMLContent = ({
                         content="width=device-width, initial-scale=1.0"
                       />
                     </Head>
-                    <body className="h-full overflow-hidden">
+                    <body className="h-full overflow-x-hidden m-0 p-0 antialiased">
                       <ModalProvider>
-                        <AllowLanding>{children}</AllowLanding>
+                        <AllowLanding>
+                          <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
+                            <div className="flex-grow max-h-[100svh] max-w-[100svw] overflow-auto flex flex-col">
+                              {children}
+                            </div>
+                          </div>
+                        </AllowLanding>
                       </ModalProvider>
                     </body>
                   </html>
                 </ConversationsContextProvider>
-              </PostHogProvider>
             </TooltipProvider>
           </AuthContextProvider>
         </AppContextProvider>

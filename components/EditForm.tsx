@@ -28,12 +28,17 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Info,
+  PlusIcon,
 } from "lucide-react";
 import * as React from "react";
 import { createContext, useContext, useRef } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { GroupableRadioDropdown } from "./ui/dropdown";
 import { Input } from "./ui/input";
+import { Tooltip } from "react-tooltip";
+import { Textarea } from "./ui/textarea";
+import { Matcher } from "react-day-picker";
 
 interface EditFormContext<T extends IFormData> {
   formData: T;
@@ -75,6 +80,7 @@ export const createEditForm = <T extends IFormData>(): [
   }) => {
     const { formData, setField } = useFormData<T>(data);
     const { formErrors, setError, setErrors } = useFormErrors<T>();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     const validators = useRef<Function[]>([]);
     const errs = useRef<IFormErrors<T>>({} as IFormErrors<T>);
 
@@ -99,6 +105,7 @@ export const createEditForm = <T extends IFormData>(): [
     const validateFormData = () => {
       errs.current = {} as IFormErrors<T>;
       const result = !validators.current
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
         .map((validator) => validator(formData))
         .some((r) => r);
       setErrors(errs.current);
@@ -146,6 +153,48 @@ interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   setter?: (value: string) => void;
   required?: boolean;
   className?: string;
+  tooltip?: string;
+  tooltipId?: string;
+}
+
+export function LabelWithTooltip({
+  label,
+  required,
+  tooltip,
+  tooltipId,
+}: {
+  label: React.ReactNode;
+  required?: boolean;
+  tooltip?: string | undefined;
+  tooltipId?: string | undefined;
+}) {
+  const id = tooltipId ?? `${label.replace(/\s+/g, "-").toLowerCase()}-tooltip`;
+  return (
+    <div className="flex items-center gap-2 mb-1">
+      <label className="text-xs text-gray-600">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <div className="hover:cursor-help">
+        <Info
+          data-tooltip-id={id}
+          data-tooltip-content={tooltip ?? ""}
+          data-tooltip-place="bottom"
+          className={cn(
+            "w-4 h-4 p-0.5 text-primary",
+            tooltip?.trim() ? "" : "invisible",
+          )}
+        />
+      </div>
+      {tooltip && (
+        <Tooltip
+          id={id}
+          positionStrategy="fixed"
+          className="!text-[10px] p-[0.05em] !max-w-[80vw]"
+          style={{ zIndex: 1400 }}
+        />
+      )}
+    </div>
+  );
 }
 
 export const FormInput = ({
@@ -154,19 +203,70 @@ export const FormInput = ({
   setter,
   required = true,
   className,
+  tooltip,
+  tooltipId,
   ...props
 }: FormInputProps) => {
   return (
     <div>
       {label && (
-        <label className="text-xs text-gray-600 mb-1 block">
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
+        <LabelWithTooltip
+          label={label}
+          required={required}
+          tooltip={tooltip}
+          tooltipId={tooltipId}
+        />
       )}
       <Input
         value={value ?? ""}
         onChange={(e) => setter && setter(e.target.value)}
         className={className}
+        {...props}
+      />
+    </div>
+  );
+};
+
+/**
+ * Big input
+ */
+interface FormTextareaProps
+  extends React.InputHTMLAttributes<HTMLTextAreaElement> {
+  label?: string;
+  setter?: (value: string) => void;
+  required?: boolean;
+  className?: string;
+  tooltip?: string;
+  tooltipId?: string;
+}
+
+export const FormTextarea = ({
+  label,
+  value,
+  setter,
+  required = true,
+  className,
+  tooltip,
+  tooltipId,
+  ...props
+}: FormTextareaProps) => {
+  return (
+    <div>
+      {label && (
+        <LabelWithTooltip
+          label={label}
+          required={required}
+          tooltip={tooltip}
+          tooltipId={tooltipId}
+        />
+      )}
+      <Textarea
+        value={value ?? ""}
+        onChange={(e) => setter && setter(e.target.value)}
+        className={cn(
+          className,
+          "rounded-[0.33em] outline-none focus-visible:ring-0",
+        )}
         {...props}
       />
     </div>
@@ -186,6 +286,8 @@ interface FormDropdownProps
   required?: boolean;
   setter?: (value: string | number) => void;
   className?: string;
+  tooltip?: string;
+  tooltipId?: string;
 }
 
 export const FormDropdown = ({
@@ -195,20 +297,27 @@ export const FormDropdown = ({
   setter,
   required = true,
   className,
+  tooltip,
+  tooltipId,
   ...props
 }: FormDropdownProps) => {
   return (
     <div>
       {label && (
-        <label className="text-xs text-gray-600 mb-1 block">
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
+        <LabelWithTooltip
+          label={label}
+          required={required}
+          tooltip={tooltip}
+          tooltipId={tooltipId}
+        />
       )}
       <GroupableRadioDropdown
         name={label ?? ""}
         defaultValue={value}
         options={options}
         onChange={(id) => setter && setter(id)}
+        className={className}
+        {...(props as any)}
       />
     </div>
   );
@@ -223,10 +332,12 @@ interface FormCheckboxProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   checked?: boolean;
   label?: string;
-  setter?: (value: any) => void;
+  setter?: (value: boolean) => void;
   className?: string;
   sentence?: React.ReactNode;
   required?: boolean;
+  tooltip?: string;
+  tooltipId?: string;
 }
 
 export const FormCheckbox = ({
@@ -236,30 +347,43 @@ export const FormCheckbox = ({
   className,
   sentence,
   required,
+  tooltip,
+  tooltipId,
   ...props
 }: FormCheckboxProps) => {
   return (
-    <div>
+    <div className={className}>
       {label && (
-        <label className="text-xs text-gray-600 mb-1 block">
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
+        <LabelWithTooltip
+          label={label}
+          required={required}
+          tooltip={tooltip}
+          tooltipId={tooltipId}
+        />
       )}
-      <div className="flex gap-2 items-center">
+      <div className="flex gap-2 sm:items-center">
         <Checkbox
           name={label ?? ""}
           checked={checked}
           className={cn(
-            "flex flex-row items-center justify-center border rounded-[0.33em] w-7 h-7",
+            "inline-flex items-center justify-center rounded-[0.33em] border aspect-square w-6 h-6 sm:w-5 sm:h-5",
             checked
               ? "border-primary border-opacity-85 bg-blue-200"
               : "border-gray-300 bg-gray-50",
           )}
-          onCheckedChange={(checked) => setter && setter(checked)}
+          onCheckedChange={(checked) => setter && setter(!!checked)}
         >
-          {checked && <Check className="text-primary opacity-75" />}
+          {checked && <Check className="text-primary opacity-75 h-4 w-4" />}
         </Checkbox>
-        {sentence && <div className="text-xs text-gray-500">{sentence}</div>}
+        {sentence && (
+          <div
+            className="text-xs text-gray-500 cursor-pointer select-none"
+            onClick={() => setter?.(!checked)}
+            role="button"
+          >
+            {sentence}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -273,6 +397,8 @@ interface FormCheckBoxGroupProps
   label?: string;
   required?: boolean;
   className?: string;
+  tooltip?: string;
+  tooltipId?: string;
 }
 
 export const FormCheckBoxGroup = ({
@@ -282,10 +408,11 @@ export const FormCheckBoxGroup = ({
   label,
   required = false,
   className,
+  tooltip,
+  tooltipId,
   ...props
 }: FormCheckBoxGroupProps) => {
   const handleValueChange = (optionValue: string | number) => {
-    console.log("checkbox changed:", optionValue, "current values:", values);
     if (values.includes(optionValue)) {
       setter(values.filter((v) => v !== optionValue));
     } else {
@@ -294,11 +421,14 @@ export const FormCheckBoxGroup = ({
   };
 
   return (
-    <div className="space-y-3">
+    <div className={cn("space-y-3", className)}>
       {label && (
-        <label className="text-lg tracking-tight font-medium text-gray-700 mb-1 block">
-          {label} {required && <span className="text-destructive">*</span>}
-        </label>
+        <LabelWithTooltip
+          label={label}
+          required={required}
+          tooltip={tooltip}
+          tooltipId={tooltipId}
+        />
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -337,6 +467,8 @@ interface FormRadioProps<T extends string | boolean = string> {
   required?: boolean;
   className?: string;
   name?: string;
+  tooltip?: string;
+  tooltipId?: string;
 }
 
 export const FormRadio = <T extends string | boolean = string>({
@@ -346,6 +478,8 @@ export const FormRadio = <T extends string | boolean = string>({
   setter,
   required = false,
   className,
+  tooltip,
+  tooltipId,
   name,
 }: FormRadioProps<T>) => {
   const stringValue = value?.toString() || "";
@@ -365,9 +499,12 @@ export const FormRadio = <T extends string | boolean = string>({
   return (
     <div className={cn("space-y-3", className)}>
       {label && (
-        <label className="text-xs text-gray-600 mb-1 block">
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
+        <LabelWithTooltip
+          label={label}
+          required={required}
+          tooltip={tooltip}
+          tooltipId={tooltipId}
+        />
       )}
 
       <RadioGroup.Root
@@ -431,6 +568,8 @@ interface FormDatePickerProps
   contentClassName?: string;
   captionLayout?: "buttons" | "dropdown";
   required?: boolean;
+  tooltip?: string;
+  tooltipId?: string;
 
   /** Optional: disable dates (react-day-picker style) */
   disabledDays?:
@@ -463,6 +602,8 @@ export const FormDatePicker = ({
   placeholder = "Select date",
   format = (d) => d.toLocaleDateString(),
   required = false,
+  tooltip,
+  tooltipId,
   ...props
 }: FormDatePickerProps) => {
   const [open, setOpen] = React.useState(false);
@@ -471,12 +612,12 @@ export const FormDatePicker = ({
   return (
     <div className={cn("flex flex-col", className)}>
       {label && (
-        <label
-          htmlFor={props.id ?? "date"}
-          className="text-xs text-gray-600 mb-1 block"
-        >
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
+        <LabelWithTooltip
+          label={label}
+          required={required}
+          tooltip={tooltip}
+          tooltipId={tooltipId}
+        />
       )}
 
       <Popover open={open} onOpenChange={setOpen}>
@@ -501,7 +642,7 @@ export const FormDatePicker = ({
             mode="single"
             selected={selected}
             captionLayout={captionLayout}
-            disabled={disabledDays as any}
+            disabled={disabledDays as Matcher[]}
             onSelect={(d) => {
               setter?.(d ? d.getTime() : undefined);
               if (autoClose) setOpen(false);
@@ -535,6 +676,9 @@ interface FormMonthPickerProps
   align?: "start" | "center" | "end";
   sideOffset?: number;
   contentClassName?: string;
+  tooltip?: string;
+  tooltipId?: string;
+  required?: boolean;
 
   /** Placeholder text when no month selected */
   placeholder?: string;
@@ -565,6 +709,9 @@ export const FormMonthPicker = ({
   fromYear = new Date().getFullYear() - 5,
   toYear = new Date().getFullYear() + 5,
   autoClose = true,
+  tooltip,
+  tooltipId,
+  required = false,
   ...props
 }: FormMonthPickerProps) => {
   const [open, setOpen] = React.useState(false);
@@ -613,12 +760,12 @@ export const FormMonthPicker = ({
   return (
     <div className={cn("flex flex-col", className)}>
       {label && (
-        <label
-          htmlFor={props.id ?? "month"}
-          className="text-xs text-gray-600 mb-1 block"
-        >
-          {label}
-        </label>
+        <LabelWithTooltip
+          label={label}
+          required={required}
+          tooltip={tooltip}
+          tooltipId={tooltipId}
+        />
       )}
 
       <Popover open={open} onOpenChange={setOpen}>
@@ -735,6 +882,8 @@ export function TimeInputNative({
   required = true,
   helper,
   className,
+  tooltip,
+  tooltipId,
   ...props
 }: {
   label: string;
@@ -743,13 +892,18 @@ export function TimeInputNative({
   required?: boolean;
   helper?: string;
   className?: string;
-} & React.InputHTMLAttributes<HTMLInputElement>) {
+  tooltip?: string;
+  tooltipId?: string;
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange">) {
   return (
     <div className={className}>
       {label && (
-        <label className="text-xs text-gray-600 mb-1 block">
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
+        <LabelWithTooltip
+          label={label}
+          required={required}
+          tooltip={tooltip}
+          tooltipId={tooltipId}
+        />
       )}
       <Input
         type="time"

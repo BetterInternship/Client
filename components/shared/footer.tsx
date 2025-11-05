@@ -1,60 +1,43 @@
 "use client";
 
-import { useRoute } from "@/hooks/use-route";
-import { useAppContext } from "@/lib/ctx-app";
+import Link from "next/link";
 
-/**
- * Footer
- *
- * @component
- */
-export const Footer = ({ content }: { content?: string }) => {
-  const { isMobile } = useAppContext();
-  const footerRoutes = ["/login", "/register", "/register/verify"];
-  const { routeExcluded } = useRoute();
+type FooterLink = { label: string; href: string };
 
-  // // If on mobile or on a page with no footer
-  // if (isMobile || routeExcluded(footerRoutes)) {
-  //   return <></>;
-  // }
+const LINKS: FooterLink[] = [
+  { label: "Privacy", href: "/PrivacyPolicy.pdf" },
+  { label: "Terms", href: "/TermsConditions.pdf" },
+];
+
+export function Footer({ links = LINKS }: { links?: FooterLink[] }) {
+  const year = new Date().getFullYear();
 
   return (
-    <div className="bg-white dark:bg-black px-8 py-8 opacity-70 dark:opacity-100 dark:border-t dark:border-gray-900/50">
-      <div className="text-center max-w-4xl mx-auto">
-        <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-          {content ?? (
-            <>
-              <div>
-                BetterInternship hotline: {""}
-                <a className="text-primary hover:underline transition-colors duration-200">
-                  09276604999
-                </a>
-              </div>
-              <div>
-                © 2025 BetterInternship. All rights reserved.{" "}
-                <a
-                  href="/TermsConditions.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline transition-colors duration-200"
-                >
-                  Terms & Conditions
-                </a>{" "}
-                and{" "}
-                <a
-                  href="/PrivacyPolicy.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline transition-colors duration-200"
-                >
-                  Privacy Policy
-                </a>
-                .
-              </div>
-            </>
-          )}
-        </p>
+    <footer className="py-1 px-5">
+      <div className="mx-auto">
+        <div className="flex gap-2 justify-center md:flex-row md:items-center md:justify-between">
+          <p className="text-xs text-muted-foreground text-center md:text-left">
+            © {year} BetterInternship Inc.
+          </p>
+
+          <p className="text-xs md:hidden text-muted-foreground">•</p>
+
+          <nav aria-label="Footer" className="flex justify-center">
+            <ul className="flex flex-wrap items-center gap-x-2 md:gap-x-4 gap-y-2 text-xs">
+              {links.map((l) => (
+                <li key={l.label}>
+                  <Link
+                    href={l.href}
+                    className="text-muted-foreground hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring rounded-sm"
+                  >
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
       </div>
-    </div>
+    </footer>
   );
-};
+}

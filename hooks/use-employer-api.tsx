@@ -1,15 +1,14 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { APIClient, APIRouteBuilder } from "@/lib/api/api-client";
 import {
-  JobService,
-  handleApiError,
   ApplicationService,
   EmployerService,
-  EmployerConversationService,
+  JobService,
+  handleApiError
 } from "@/lib/api/services";
 import { Employer, EmployerApplication, Job } from "@/lib/db/db.types";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useCache } from "./use-cache";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { APIClient, APIRouteBuilder } from "@/lib/api/api-client";
 
 export const useEmployerName = (id: string) => {
   const [employerName, setEmployerName] = useState("");

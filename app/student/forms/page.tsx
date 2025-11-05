@@ -11,13 +11,13 @@ import {
   fetchSignedDocument,
   fetchPendingDocument,
   fetchTemplateDocument,
+  fetchPrefilledDocument,
 } from "@/lib/db/use-moa-backend";
 import FormGenerateCard from "@/components/features/student/forms/FormGenerateCard";
 import MyFormCard from "@/components/features/student/forms/MyFormCard";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { FormFlowRouter } from "@/components/features/student/forms/FormFlowRouter";
 import { useProfileData } from "@/lib/api/student.data.api";
-import { UserService } from "@/lib/api/services";
 import { useRouter } from "next/navigation";
 import ComingSoonCard from "@/components/features/student/forms/ComingSoonCard";
 import { Loader } from "@/components/ui/loader";
@@ -36,6 +36,7 @@ export default function FormsPage() {
   const router = useRouter();
   const userId = profile.data?.id;
   const [tab, setTab] = useState<TabKey>("Form Generator");
+  const [pendingDocs, setPendingDocs] = useState<Record<string, string[]>>({});
 
   // ! remove in the future, disables forms page in prod
   setTimeout(() => router.push("/search"), 1500);
@@ -57,35 +58,28 @@ export default function FormsPage() {
     gcTime: 10_000,
   });
 
-  const generatorForms = useMemo(() => {
-    const list = formList ?? [];
-    return list.slice().sort((a, b) => {
-      const aa = (a.label ?? a.name ?? "").toLowerCase().trim();
-      const bb = (b.label ?? b.name ?? "").toLowerCase().trim();
-      if (aa < bb) return -1;
-      if (aa > bb) return 1;
-      return 0;
-    });
-  }, [formList]);
+  const norm = (s?: string) => (s ?? "").trim().toLowerCase();
 
+  const generatorForms = formList;
   const comingSoon = useMemo(() => {
     const available = new Set(
       (generatorForms ?? [])
-        .map((f) => (f.label ?? f.name ?? "").toLowerCase().trim())
+        .map((f) => norm(f.label ?? f.name))
         .filter(Boolean),
     );
-    return UPCOMING_FORMS.filter(
-      (f) => !available.has(f.label.toLowerCase().trim()),
-    );
+    return UPCOMING_FORMS.filter((f) => !available.has(norm(f.label)));
   }, [generatorForms]);
 
-  const openFormModal = (formName: string, formLabel: string) => {
+  const openFormModal = (
+    formName: string,
+    formVersion: number,
+    formLabel: string,
+  ) => {
     openGlobalModal(
       "form-generator-form",
       <FormFlowRouter
-        baseForm={formName}
-        // ! remove hard code,
-        allowInvite={true}
+        formName={formName}
+        formVersion={formVersion}
         onGoToMyForms={() => {
           setTab("My Forms");
           closeGlobalModal("form-generator-form");
@@ -95,7 +89,7 @@ export default function FormsPage() {
         title: `Generate ${formLabel}`,
         hasClose: true,
         onClose: () => closeGlobalModal("form-generator-form"),
-        allowBackdropClick: true,
+        allowBackdropClick: false,
         panelClassName: "sm:w-full sm:max-w-2xl",
       },
     );
@@ -121,22 +115,42 @@ export default function FormsPage() {
     [myForms],
   );
 
-  const { data: employersData } = useQuery({
-    queryKey: ["companies:list"],
-    queryFn: async () => await UserService.getEntityList(),
-    staleTime: 60_000,
-  });
+  // prefetch pending documents for rows that have pending_document_id
+  useEffect(() => {
+    if (!myForms?.length) return;
 
-  const companyMap: Record<string, string> = useMemo(
-    () =>
-      Object.fromEntries(
-        (employersData?.employers ?? []).map((e) => [
-          String(e.id),
-          e.legal_entity_name,
-        ]),
+    const ids = Array.from(
+      new Set(
+        myForms.map((r) => r.pending_document_id).filter(Boolean) as string[],
       ),
-    [employersData],
-  );
+    );
+
+    let cancelled = false;
+    (async () => {
+      for (const id of ids) {
+        if (!id || pendingDocs[id]) continue;
+        try {
+          const resp = await fetchPendingDocument(id);
+          if (cancelled) return;
+
+          const parties = (resp?.data?.pending_parties ?? []).map(String);
+
+          if (!cancelled) {
+            setPendingDocs((prev) => ({
+              ...prev,
+              [id]: parties,
+            }));
+          }
+        } catch {
+          // ignore; don't block UI
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [myForms, pendingDocs]);
 
   if (!profile.data?.department && !profile.isPending) {
     alert("Profile not yet complete.");
@@ -146,7 +160,7 @@ export default function FormsPage() {
   // refresh on my forms
   useEffect(() => {
     if (tab === "My Forms" && userId) {
-      queryClient.invalidateQueries({ queryKey: ["my_forms", userId] });
+      void queryClient.invalidateQueries({ queryKey: ["my_forms", userId] });
     }
   }, [tab, userId, queryClient]);
 
@@ -200,8 +214,8 @@ export default function FormsPage() {
                 generatorForms?.length !== 0 &&
                 generatorForms.map((form) => (
                   <FormGenerateCard
-                    key={form.id}
-                    formTitle={form.label ?? ""}
+                    key={form.name}
+                    formName={form.name}
                     onViewTemplate={() => {
                       if (!form.base_document_id) {
                         alert("No template available for this form.");
@@ -219,12 +233,12 @@ export default function FormsPage() {
                         })
                         .catch((e) => {
                           console.error(e);
-                          w.close();
+                          window.close();
                           alert("Failed to load template.");
                         });
                     }}
                     onGenerate={() =>
-                      openFormModal(form.name, form.label ?? "")
+                      openFormModal(form.name, form.version, form.label ?? "")
                     }
                   />
                 ))}
@@ -269,7 +283,7 @@ export default function FormsPage() {
                 !myFormsError &&
                 !myForms?.length && (
                   <p className="text-muted-foreground text-sm">
-                    You haven’t generated any forms yet.
+                    You haven't generated any forms yet.
                   </p>
                 )}
 
@@ -277,37 +291,62 @@ export default function FormsPage() {
                 !loadingMyForms &&
                 !myFormsError &&
                 myFormsSorted.map((row, i) => {
-                  const formName = row.form_name;
-                  const title = `${formName}`;
-                  const status = row.signed_document_id
-                    ? "Signed"
-                    : "Needs signature/s";
+                  const title = `${row.label ?? row.form_name}`;
+                  const status =
+                    row.signed_document_id || row.prefilled_document_id
+                      ? "Complete"
+                      : "Pending ";
+                  const waitingFor: string[] = row.pending_document_id
+                    ? (pendingDocs[row.pending_document_id] ?? [])
+                    : [];
+
                   return (
                     <MyFormCard
                       key={i}
                       title={title}
                       requestedAt={row.timestamp}
                       status={status}
+                      waitingFor={waitingFor}
                       getDownloadUrl={async () => {
+                        // 1) signed document (highest priority)
                         if (row.signed_document_id) {
+                          console.log(row.signed_document_id);
                           const signedDocument = await fetchSignedDocument(
                             row.signed_document_id,
                           );
 
-                          return `https://storage.googleapis.com/better-internship-public-bucket/${signedDocument.data?.verification_code}.pdf`;
+                          const url = signedDocument.data?.verification_code
+                            ? `https://storage.googleapis.com/better-internship-public-bucket/${signedDocument.data.verification_code}.pdf`
+                            : null;
+
+                          if (url) return url;
                         }
 
-                        if (row.pending_document_id) {
-                          const pendingDocument = await fetchPendingDocument(
-                            row.pending_document_id,
-                          );
-
-                          return pendingDocument.data?.latest_document_url;
+                        // 2) prefilled document
+                        if (row.prefilled_document_id) {
+                          const prefilledDocument =
+                            await fetchPrefilledDocument(
+                              row.prefilled_document_id,
+                            );
+                          const url = prefilledDocument.data?.url;
+                          if (url) return url;
                         }
 
-                        alert("No document associated with request.");
+                        // ! Shouldnt show download button if pending
+                        // 3) pending document
+                        // if (row.pending_document_id) {
+                        //   const pendingDocument = await fetchPendingDocument(
+                        //     row.pending_document_id,
+                        //   );
+
+                        //   const url =
+                        //     pendingDocument?.data?.latest_document_url;
+                        //   if (url) return url;
+                        // }
+
+                        // alert("No document associated with request.");
+                        // throw new Error("No document URL available");
                       }}
-                      downloading={false}
                     />
                   );
                 })}

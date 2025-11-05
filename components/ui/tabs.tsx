@@ -1,16 +1,19 @@
 "use client";
 
-import * as React from "react";
-import { Children, useState, useEffect } from "react";
-import { Button } from "./button";
 import { cn } from "@/lib/utils";
+import * as React from "react";
+import { Children, useEffect, useState } from "react";
+import { Button } from "./button";
 
 interface TabProps {
   name: string;
   children: React.ReactNode;
   indicator?: boolean; // show dot/badge on tab
+  onTabChange?: () => void;
 }
-export const Tab = ({ children }: TabProps) => <>{children}</>;
+export const Tab = ({ name, children, indicator, onTabChange }: TabProps) => {
+  return <>{children}</>;
+};
 
 interface TabGroupProps {
   children: React.ReactElement<TabProps>[];
@@ -50,24 +53,32 @@ export const TabGroup = ({
     else setInternal(v);
   };
 
+  const handleTabChange = (name: string, onTabChange?: () => void) => {
+    setActive(name);
+    if (onTabChange){
+      onTabChange();
+    }
+  };
+
   return (
     <>
-      <div className="flex flex-row items-start bg-white w-full h-fit pb-0 z-50">
+      <div className="flex flex-row items-start gap-1 bg-white w-fit h-fit p-1 z-50 rounded-md border-2">
         {Children.map(children, (child) => {
           if (!React.isValidElement(child)) return null;
           const name = child.props?.name ?? "No name";
           const indicator = child.props?.indicator ?? false;
           const selected = activeTab === name;
+          const onTabChange = child.props?.onTabChange;
           return (
             <Button
               key={name}
               variant="ghost"
               role="tab"
               aria-selected={selected}
-              className="relative px-5 py-4 text-primary aria-selected:text-white aria-selected:bg-primary w-fit rounded-s mr-2"
+              className="relative px-5 py-4 text-primary aria-selected:text-white aria-selected:bg-primary w-fit rounded-s"
               onClick={() => setActive(name)}
             >
-              <span className="flex flex-row items-center text-xs gap-1">
+              <span className="flex flex-row items-center text-sm gap-1">
                 <span
                   className={cn(
                     "rounded-full w-2 h-2 bg-amber-500",
@@ -81,7 +92,7 @@ export const TabGroup = ({
         })}
       </div>
 
-      <div className="relative w-full h-full">
+      <div className="relative w-full">
         {unmountInactive
           ? // render only active tab
             Children.toArray(children).find((child) => {

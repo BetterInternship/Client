@@ -1,14 +1,14 @@
 "use client";
 
-import React from "react";
+import { FileText, FileUser, LayoutDashboard, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, FileText, FileUser } from "lucide-react";
+import React from "react";
+import { useMobile } from "@/hooks/use-mobile";
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { useProfile } from "@/hooks/use-employer-api";
 import { useAuthContext } from "@/app/hire/authctx";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type NavItem = {
   href: string;
@@ -18,20 +18,25 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   {
+    href: "/listings/create",
+    icon: <Plus className="h-5 w-5" />,
+    label: "Add Listing",
+  },
+  {
     href: "/dashboard",
-    icon: <BarChart3 className="h-5 w-5" />,
-    label: "My Applications",
+    icon: <LayoutDashboard className="h-5 w-5" />,
+    label: "Dashboard",
   },
-  {
-    href: "/listings",
-    icon: <FileText className="h-5 w-5" />,
-    label: "My Listings",
-  },
-  {
-    href: "/forms-management",
-    icon: <FileUser className="h-5 w-5" />,
-    label: "Forms Automation",
-  },
+  // {
+  //   href: "/listings",
+  //   icon: <FileText className="h-5 w-5" />,
+  //   label: "My Listings",
+  // },
+  // {
+  //   href: "/forms-management",
+  //   icon: <FileUser className="h-5 w-5" />,
+  //   label: "Forms Automation",
+  // },
 ];
 
 function SideNav({ items }: { items: NavItem[] }) {
@@ -40,7 +45,7 @@ function SideNav({ items }: { items: NavItem[] }) {
 
   return (
     <nav className="flex flex-col">
-      {items.map(({ href, label, icon }) => (
+      {items.map(({ href, label, icon}) => (
         <Link
           key={label}
           href={label !== "Forms Automation" || god ? href : "#"}
@@ -53,7 +58,8 @@ function SideNav({ items }: { items: NavItem[] }) {
             }
             className={cn(
               "w-full h-10 px-8 flex flex-row justify-start border-0 rounded-none",
-              pathname === href ? "text-primary bg-gray-200" : "font-normal"
+              pathname.includes(href) ? "text-primary bg-gray-200" : "font-normal",
+              label === "Add Listing" ? "bg-primary text-white hover:bg-primary-300" : ""
             )}
           >
             {icon}
@@ -70,17 +76,27 @@ interface ContentLayoutProps {
 }
 
 const ContentLayout: React.FC<ContentLayoutProps> = ({ children }) => {
+  const { isMobile } = useMobile();
+  
   return (
-    <div className="w-full flex flex-row space-x-0 ">
-      <aside className="absolute top-18 left-0 z-[100] h-screen border-r bg-muted">
-        <SideNav items={navItems} />
-      </aside>
-      {/* This is only here so the main tag below is offset */}
-      <aside className="h-screen w-fit invisible">
-        <SideNav items={navItems} />
-      </aside>
-
-      <main className="flex-1 flex overflow-auto justify-center  mb-20 h-[100%] ">
+    <div className="w-full flex flex-row space-x-0">
+      {!isMobile ? (
+        <>
+          <aside className="absolute top-20 left-0 z-[100] h-screen border-r bg-muted">
+            <SideNav items={navItems} />
+          </aside>
+          {/* This is only here so the main tag below is offset */}
+          <aside className="h-screen w-fit invisible">
+            <SideNav items={navItems} />
+          </aside>
+        </>
+      ) : (
+        <></>
+      )} 
+      <main className={cn(
+        "flex-1 flex overflow-auto justify-center mb-20 h-[100%] pt-4",
+        isMobile ? "px-2" : "px-8"
+      )}>
         {children}
       </main>
     </div>
