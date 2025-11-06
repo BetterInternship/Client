@@ -59,19 +59,14 @@ function DashboardContent() {
 
   return (
     <ContentLayout>
-      <div className="flex-1 flex flex-col w-full px-6 py-4 gap-4 mt-4">
+      <div className="flex-1 flex flex-col w-full px-4 py-4 gap-4 mt-4">
         <h3 className="text-primary tracking-tighter">Welcome back, {profile.data?.name}</h3>
         <div className="flex flex-col flex-1">
           {!profile.loading && !profile.data?.is_verified ? (
             <ShowUnverifiedBanner />
           ) : (
             <>
-              <Card className="h-full max-h-full border-none">
-                {/* {ownedJobs.length === 1 ? (
-                  <p className="text-gray-500 pb-2">{ownedJobs.length} job listing </p>
-                ) : (
-                  <p className="text-gray-500 pb-2">{ownedJobs.length} job listings </p>
-                )} */}
+              <div>
                 <div className="flex gap-4 mb-4">
                   <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{activeJobs.length}</span> active listing/s</span>
                   <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{inactiveJobs.length}</span> inactive listing/s</span>
@@ -94,7 +89,7 @@ function DashboardContent() {
                     </Link>
                   )}
                 </>
-              </Card>
+              </div>
             </>
           )}
         </div>
