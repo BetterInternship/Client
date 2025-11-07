@@ -3,8 +3,10 @@
 // No business logic - just presentation and event emission
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useConversations } from "@/hooks/use-conversation";
+import { useAppContext } from "@/lib/ctx-app";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { getFullName } from "@/lib/profile";
@@ -18,8 +20,6 @@ import {
   MessageCircle,
   School,
 } from "lucide-react";
-import { useAppContext } from "@/lib/ctx-app";
-import { Card } from "@/components/ui/card";
 
 interface ApplicationRowProps {
   application: EmployerApplication;
@@ -61,7 +61,7 @@ export function ApplicationRow({
   return isMobile ? (
     <>
       <Card
-        className="flex flex-col gap-4 hover:cursor-pointer hover:bg-primary/25 transition-colors"
+        className="flex flex-col gap-0 hover:cursor-pointer hover:bg-primary/25 transition-colors"
         onClick={onView}
       >
         <div
@@ -89,26 +89,26 @@ export function ApplicationRow({
           </Button>
         </div>
         <div className="flex flex-col text-gray-500">
-          <h4 className="text-gray-900">{getFullName(application.user)}</h4>
+          <h4 className="text-gray-900 text-lg">{getFullName(application.user)}</h4>
           <div className="flex items-center gap-2">
             <School size={20} />
-            <span>
+            <span className="text-sm">
               {to_university_name(application.user?.university) || ""}{" "}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <GraduationCap size={20} />
-            <span>{application.user?.degree}</span>
+            <span className="text-sm">{application.user?.degree}</span>
           </div>
           <div className="flex items-center gap-2">
             <ContactRound size={20} />
-            <span>
+            <span className="text-sm">
               {preferences.internship_type ? "For Credit" : "Voluntary"}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <Calendar size={20} />
-            <span>
+            <span className="text-sm">
               {preferences.expected_start_date ? (
                 <>
                   {fmtISO(preferences.expected_start_date.toString())}
@@ -120,7 +120,7 @@ export function ApplicationRow({
           </div>
           <div className="flex items-center gap-2">
             <ListCheck />
-            <span>
+            <span className="text-sm">
               Status: {to_app_status_name(application.status)}
             </span>
           </div>
@@ -128,6 +128,7 @@ export function ApplicationRow({
       </Card>
     </>
   ) : (
+    // desktop
     <tr
       className="hover:bg-primary/25 odd:bg-white even:bg-gray-50 hover:cursor-pointer transition-colors"
       onClick={onView}
