@@ -702,7 +702,10 @@ const ProfileEditor = forwardRef<
     job_types,
     job_categories,
     getUniversityFromDomain: get_universities_from_domain,
+    get_colleges_by_university,
     get_departments_by_college,
+    to_university_name,
+    to_college_name,
     to_department_name,
   } = useDbRefs();
 
@@ -755,6 +758,7 @@ const ProfileEditor = forwardRef<
   }));
 
   const [universityOptions, setUniversityOptions] = useState(universities);
+  const [collegesOptions, setCollegesOptions] = useState(colleges);
   const [departmentOptions, setDepartmentOptions] = useState(departments);
   const [jobModeOptions, setJobModeOptions] = useState(job_modes);
   const [jobTypeOptions, setJobTypeOptions] = useState(job_types);
@@ -910,31 +914,116 @@ const ProfileEditor = forwardRef<
     }
   }, []);
 
-  // for realtime updating the department based on the college
+  // realtime updating the department based on the college (and university fallback)
   useEffect(() => {
     const collegeId = formData.college;
+    const universityId = formData.university;
 
+    // If a specific college is selected -> show departments only for that college
     if (collegeId) {
-      const list = get_departments_by_college?.(collegeId);
-      setDepartmentOptions(
-        list.map((d) => ({
-          id: d,
-          name: to_department_name(d),
-        })),
-      );
-    } else {
-      // no college selected -> empty department options
-      setDepartmentOptions(
-        departments.map((d) => ({ id: d.id, name: d.name })),
-      );
-      if (formData.department) setField("department", undefined);
+      const list = get_departments_by_college?.(collegeId) ?? [];
+      const mapped = list.map((d) => ({ id: d, name: to_department_name(d) }));
+      setDepartmentOptions(mapped);
+
+      // if selected department is not in new list -> clear it
+      if (
+        formData.department &&
+        !mapped.some((m) => m.id === formData.department)
+      ) {
+        setField("department", undefined);
+      }
+
+      return;
     }
+
+    // No college selected but a university is selected -> aggregate departments for all colleges of that university
+    if (universityId) {
+      const collegeIds = get_colleges_by_university?.(universityId) ?? [];
+
+      // collect departments from each college, dedupe
+      const deptSet = new Map<string, { id: string; name: string }>();
+      for (const cId of collegeIds) {
+        const list = get_departments_by_college?.(cId) ?? [];
+        for (const d of list) {
+          if (!deptSet.has(d)) {
+            deptSet.set(d, { id: d, name: to_department_name(d) });
+          }
+        }
+      }
+      const aggregated = Array.from(deptSet.values());
+      setDepartmentOptions(aggregated);
+
+      // If current selected department isn't part of aggregated -> clear it
+      if (
+        formData.department &&
+        !aggregated.some((a) => a.id === formData.department)
+      ) {
+        setField("department", undefined);
+      }
+      return;
+    }
+
+    // Neither college nor university -> show all departments
+    setDepartmentOptions(departments.map((d) => ({ id: d.id, name: d.name })));
+    if (formData.department) setField("department", undefined);
   }, [
     formData.college,
     formData.department,
+    formData.university,
     departments,
     get_departments_by_college,
+    get_colleges_by_university,
     to_department_name,
+    setField,
+  ]);
+
+  // for realtime updating the department based on the university
+  useEffect(() => {
+    const universityId = formData.university;
+    console.log(
+      "Selected university:",
+      universityId,
+      to_university_name(universityId),
+    );
+
+    if (universityId) {
+      const list = get_colleges_by_university?.(universityId) ?? [];
+      const mapped = list.map((d) => ({
+        id: d,
+        name: to_college_name(d) ?? "",
+        short_name: "",
+        university_id: universityId,
+      }));
+      setCollegesOptions(mapped);
+
+      // If the currently selected college is not in the new mapped list, clear it (and department)
+      if (formData.college && !mapped.some((c) => c.id === formData.college)) {
+        setField("college", undefined);
+        setField("department", undefined);
+      }
+    } else {
+      // no university selected -> show all colleges and clear college/department
+      setCollegesOptions(
+        colleges.map((d) => ({
+          id: d.id,
+          name: d.name,
+          short_name: d.short_name,
+          university_id: d.university_id,
+        })),
+      );
+
+      // Clear selected college and department because no university is chosen
+      if (formData.college) setField("college", undefined);
+      if (formData.department) setField("department", undefined);
+    }
+  }, [
+    formData.university,
+    formData.college,
+    colleges,
+    get_colleges_by_university,
+    to_college_name,
+    setField,
+    to_university_name,
   ]);
 
   return (
@@ -1026,7 +1115,10 @@ const ProfileEditor = forwardRef<
                 label={"College"}
                 value={formData.college ?? undefined}
                 setter={fieldSetter("college")}
-                options={colleges.map((c) => ({ id: c.id, name: c.name }))}
+                options={collegesOptions.map((c) => ({
+                  id: c.id,
+                  name: c.name,
+                }))}
                 placeholder="Indicate college"
               />
             </div>
