@@ -61,7 +61,7 @@ export function ApplicationRow({
   return isMobile ? (
     <>
       <Card
-        className="flex flex-col gap-0 hover:cursor-pointer hover:bg-primary/25 transition-colors"
+        className="flex flex-col hover:cursor-pointer hover:bg-primary/25 transition-colors"
         onClick={onView}
       >
         <div
@@ -89,25 +89,25 @@ export function ApplicationRow({
           </Button>
         </div>
         <div className="flex flex-col text-gray-500">
-          <h4 className="text-gray-900 text-lg">{getFullName(application.user)}</h4>
+          <h4 className="text-gray-900 text-base">{getFullName(application.user)}</h4>
           <div className="flex items-center gap-2">
-            <School size={20} />
+            <School size={16} />
             <span className="text-sm">
               {to_university_name(application.user?.university) || ""}{" "}
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <GraduationCap size={20} />
+            <GraduationCap size={16} />
             <span className="text-sm">{application.user?.degree}</span>
           </div>
           <div className="flex items-center gap-2">
-            <ContactRound size={20} />
+            <ContactRound size={16} />
             <span className="text-sm">
               {preferences.internship_type ? "For Credit" : "Voluntary"}
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <Calendar size={20} />
+            <Calendar size={16} />
             <span className="text-sm">
               {preferences.expected_start_date ? (
                 <>
@@ -119,7 +119,7 @@ export function ApplicationRow({
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <ListCheck />
+            <ListCheck size={16} />
             <span className="text-sm">
               Status: {to_app_status_name(application.status)}
             </span>

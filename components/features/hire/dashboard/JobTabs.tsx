@@ -296,16 +296,16 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
   return (
     <>
       <div className="flex-1 flex flex-col w-full">
-        <div className="flex flex-col pt-2">
+        <div className="flex items-center">
           <button
             onClick={handleJobBack}
             className="flex items-center text-gray-600 hover:text-gray-900 transition-colors m-4"
           >
             <ArrowLeft className="s-8" />
           </button>
-          <h3 className="m-3">{selectedJob?.title}</h3>
+          <h3 className="leading-none tracking-tighter">{selectedJob?.title}</h3>
         </div>
-        <div className="flex flex-col flex-1 space-y-6">
+        <div className="flex flex-col flex-1 gap-4">
           {!profile.loading && !profile.data?.is_verified ? (
             <ShowUnverifiedBanner />
           ) : (
@@ -394,8 +394,6 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
             application={selectedApplication}
             reviewApp={async (id, reviewOptions) => {
               await reviewApp(id, reviewOptions);
-              // ! lol remove this later on
-              selectedApplication.notes = reviewOptions.notes;
             }}
             onClose={closeReviewModal}
           />

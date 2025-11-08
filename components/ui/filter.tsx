@@ -46,7 +46,7 @@ export const FilterButton = ({
   return (
     <button
       className={cn(
-        "flex justify-center items-center px-2 py-1 gap-2 text-sm font-sans rounded-sm hover:bg-gray-200 text-gray-800 border-gray-200 border-[1px]",
+        "flex justify-center items-center px-2 py-1 gap-2 text-xs font-sans rounded-sm hover:bg-gray-200 text-gray-800 border-gray-200 border-[1px]",
         active
           ? "bg-primary text-primary-foreground hover:bg-primary"
           : "bg-white",

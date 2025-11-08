@@ -54,12 +54,9 @@ function DashboardContent() {
   if (loading || !isAuthenticated())
     return <Loader>Loading dashboard...</Loader>;
 
-  // ! remove, find a better way
-  let lastSelf = false;
-
   return (
     <ContentLayout>
-      <div className={cn("flex-1 flex flex-col w-full py-4 gap-4 mt-4", isMobile ? "px-1" : "px-4")}>
+      <div className={cn("flex-1 flex flex-col w-full py-4", isMobile ? "px-1" : "px-4")}>
         <h3 className="text-primary tracking-tighter">Welcome back, {profile.data?.name}</h3>
         <div className="flex flex-col flex-1">
           {!profile.loading && !profile.data?.is_verified ? (

@@ -17,6 +17,7 @@ import { updateApplicationStatus } from "@/lib/api/services";
 import { statusIconMap } from "@/components/common/status-icon-map";
 import { type ActionItem } from "@/components/ui/action-item";
 import { Toast } from "@/components/ui/toast";
+import { success } from "zod";
 
 interface ApplicationsContentProps {
   applications: EmployerApplication[];
@@ -73,25 +74,49 @@ export function ApplicationsContent({
 
   // make api call to update status on button click.
   const updateStatus = async (status: number) => {
-    const count = selectedApplications.size;
+    const applicationsToUpdate = Array.from(selectedApplications)
+      .map((id) => sortedApplications.find((app) => app.id === id))
+      .filter((app): app is EmployerApplication => !!app);
+
+      let successfulUpdates = 0;
+      let failedUpdates = 0;
+
     try {
-      const updatePromises = Array.from(selectedApplications).map(
-        async (id) => {
-          const response = await updateApplicationStatus(id, status);
-          const application = sortedApplications.find((app) => app.id === id);
+      const updatePromises = applicationsToUpdate.map(async (application) => {
+        const response = await updateApplicationStatus(application.id!, status);
+        return { response, application };
+      });
 
-          if (application && response.success) {
-            onStatusChange(application, status);
+      const results = await Promise.allSettled(updatePromises);
+
+      results.forEach(result => {
+        if (result.status === 'fulfilled' && result.value.response.success) {
+          onStatusChange(result.value.application, status);
+          successfulUpdates++;
+        } else {
+          failedUpdates++;
+          if (result.status === 'rejected') {
+            console.error("Failed to update application: ", result.reason);
+          } else {
+            console.warn(`API reported failure: ${result.value.application.id}`);
           }
-        },
-      );
-
-      await Promise.all(updatePromises);
+        }
+      })
     } catch (error) {
-      console.error("Failed to update applications: ", error);
+      console.error("Critical error occurred during status update: ", error);
     } finally {
       unselectAll();
-      setToastMessage(`Status of ${count} applicant${count === 1 ? "" : "s"} changed.`);
+
+      if (successfulUpdates > 0 && failedUpdates === 0) {
+        setToastMessage(`Status of ${successfulUpdates} applicant${successfulUpdates === 1 ? "" : "s"} changed.`);
+      } else if (successfulUpdates > 0 && failedUpdates > 0) {
+        setToastMessage(`Changed ${successfulUpdates} applicant${successfulUpdates === 1 ? "" : "s"} and failed to change ${failedUpdates} applicant${successfulUpdates === 1 ? "" : "s"}.`);
+      } else if (failedUpdates > 0) {
+        setToastMessage(`Failed to change ${failedUpdates} applicant${successfulUpdates === 1 ? "" : "s"}. Please try again later.`);
+      } else {
+        return;
+      }
+
       setToastVisible(true);
     }
   };
@@ -147,16 +172,9 @@ export function ApplicationsContent({
 
   const selectAll = () => {
     // only select all visible applications.
-    if (activeFilter === -1) {
-      setSelectedApplications(new Set(sortedApplications.map((application) => application.id!)));
-    } else {
-      setSelectedApplications(
-        new Set(sortedApplications
-          .filter((application) => application.status === activeFilter)
-          .map((application) => application.id!)
-        ),
-      );
-    }
+    setSelectedApplications(
+      new Set(visibleApplications.map((application) => application.id!))
+    )
     setAllSelected(true);
   };
 
@@ -191,8 +209,17 @@ export function ApplicationsContent({
     return counts;
   };
 
+  const numVisibleSelected = visibleApplications.filter(app =>
+    selectedApplications.has(app.id!)
+  ).length;
+
+  const allVisibleSelected = visibleApplications.length > 0 &&
+                             numVisibleSelected === visibleApplications.length;
+
+  const someVisibleSelected = numVisibleSelected > 0 && numVisibleSelected < visibleApplications.length;
+
   return isMobile ? (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-2">
       <Toast
         visible={toastVisible}
         title={toastMessage}
@@ -266,7 +293,7 @@ export function ApplicationsContent({
       </div>
     </div>
   ) : (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-2">
       <Toast
         visible={toastVisible}
         title={toastMessage}
@@ -314,7 +341,11 @@ export function ApplicationsContent({
               <Checkbox
                 onClick={toggleSelectAll}
                 checked={
-                  selectedApplications.size === sortedApplications.length
+                  allVisibleSelected 
+                  ? true
+                  : someVisibleSelected
+                    ? 'indeterminate'
+                    : false
                 }
               />
             </th>
