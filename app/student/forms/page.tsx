@@ -237,8 +237,9 @@ export default function FormsPage() {
                   />
                 ))}
 
+              {/* // ! remove this in the future */}
               {/* coming soon, hard coded for now */}
-              {!error &&
+              {/* {!error &&
                 !(isLoading || isPending || isFetching) &&
                 (comingSoon?.length ?? 0) > 0 && (
                   <div className="mt-6 space-y-2">
@@ -261,7 +262,7 @@ export default function FormsPage() {
                       .
                     </p>
                   </div>
-                )}
+                )} */}
             </div>
           </OutsideTabPanel>
 
