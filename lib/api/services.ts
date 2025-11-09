@@ -1,4 +1,3 @@
-import { FetchResponse } from "@/lib/api/use-fetch";
 import {
   Conversation,
   Employer,
@@ -355,6 +354,7 @@ interface ConversationsResponse extends FetchResponse {
 
 export const EmployerConversationService = {
   async sendToUser(conversationId: string, message: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return APIClient.post<any>(
       APIRouteBuilder("conversations").r("send-to-user").build(),
       {
@@ -374,6 +374,7 @@ export const EmployerConversationService = {
 
 export const UserConversationService = {
   async sendToEmployer(conversationId: string, message: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return APIClient.post<any>(
       APIRouteBuilder("conversations").r("send-to-employer").build(),
       {
@@ -469,12 +470,14 @@ export const ApplicationService = {
 export const handleApiError = (error: any) => {
   console.error("API Error:", error);
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   if (error.message === "Unauthorized") {
     // Already handled by apiClient
     return;
   }
 
   // ! Show toast notifications here
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
   return error.message || "An unexpected error occurred";
 };
 

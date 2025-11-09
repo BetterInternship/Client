@@ -120,7 +120,7 @@ export default function FormsPage() {
     );
 
     let cancelled = false;
-    (async () => {
+    void (async () => {
       for (const id of ids) {
         if (!id || pendingDocs[id]) continue;
         try {

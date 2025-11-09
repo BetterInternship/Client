@@ -51,11 +51,17 @@ export function FormFlowRouter({
 
   // Saved autofill
   const autofillValues = useMemo(() => {
-    const autofillValues = profile.data?.internship_moa_fields as Record<
+    const internshipMoaFields = profile.data?.internship_moa_fields as Record<
       string,
-      string
+      Record<string, string>
     >;
-    if (!autofillValues) return;
+    if (!internshipMoaFields) return;
+
+    // Destructure to isolate only shared fields or fields for that form
+    const autofillValues = {
+      ...internshipMoaFields.shared,
+      ...(internshipMoaFields[formName] ?? {}),
+    };
 
     // Populate with prefillers as well
     for (const field of fields) {
@@ -112,10 +118,33 @@ export function FormFlowRouter({
       setBusy(true);
 
       console.log("Final values to submit", finalValues);
+      const internshipMoaFieldsToSave: Record<
+        string,
+        Record<string, string>
+      > = {
+        shared: {},
+      };
+
+      // Save it per field or shared
+      for (const field of fields) {
+        console.log("ffff", field);
+        if (field.shared) {
+          internshipMoaFieldsToSave.shared[field.field] =
+            finalValues[field.field];
+        } else {
+          if (!internshipMoaFieldsToSave[formName])
+            internshipMoaFieldsToSave[formName] = {};
+          internshipMoaFieldsToSave[formName][field.field] =
+            finalValues[field.field];
+        }
+      }
+
+      // Save for future use
       await update.mutateAsync({
-        internship_moa_fields: finalValues,
+        internship_moa_fields: internshipMoaFieldsToSave,
       });
 
+      // Generate form
       await UserService.requestGenerateForm({
         formName,
         formVersion,
