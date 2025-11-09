@@ -20,6 +20,7 @@ import { FormFlowRouter } from "@/components/features/student/forms/FormFlowRout
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useRouter } from "next/navigation";
 import ComingSoonCard from "@/components/features/student/forms/ComingSoonCard";
+import { Loader } from "@/components/ui/loader";
 
 /**
  * The forms page component
