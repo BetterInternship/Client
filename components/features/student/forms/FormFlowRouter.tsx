@@ -127,7 +127,6 @@ export function FormFlowRouter({
 
       // Save it per field or shared
       for (const field of fields) {
-        console.log("ffff", field);
         if (field.shared) {
           internshipMoaFieldsToSave.shared[field.field] =
             finalValues[field.field];
