@@ -21,6 +21,7 @@ import { useProfileData } from "@/lib/api/student.data.api";
 import { useRouter } from "next/navigation";
 import ComingSoonCard from "@/components/features/student/forms/ComingSoonCard";
 import { Loader } from "@/components/ui/loader";
+import { cn } from "@/lib/utils";
 
 /**
  * The forms page component
@@ -183,8 +184,10 @@ export default function FormsPage() {
           ]}
         >
           <OutsideTabPanel when="Form Generator" activeKey={tab}>
+            {(isLoading || isPending || isFetching) && (
+              <Loader>Loading latest forms...</Loader>
+            )}
             <div className="space-y-3">
-              {(isLoading || isPending || isFetching) && <div>Loading...</div>}
               {error && <p className="text-red-600">Failed to load forms</p>}
               {!error &&
                 !(isLoading || isPending || isFetching) &&
@@ -203,39 +206,47 @@ export default function FormsPage() {
                     </p>
                   </div>
                 )}
-              {!isLoading &&
-                !error &&
-                generatorForms?.length !== 0 &&
-                generatorForms.map((form) => (
-                  <FormGenerateCard
-                    key={form.name}
-                    formName={form.name}
-                    onViewTemplate={() => {
-                      if (!form.base_document_id) {
-                        alert("No template available for this form.");
-                        return;
-                      }
+              <div
+                className={cn(
+                  isLoading || isPending || isFetching
+                    ? "opacity-50 pointer-events-none"
+                    : "",
+                  "flex flex-col gap-2",
+                )}
+              >
+                {!error &&
+                  generatorForms?.length !== 0 &&
+                  generatorForms.map((form, i) => (
+                    <FormGenerateCard
+                      key={form.name + i}
+                      formName={form.name}
+                      onViewTemplate={() => {
+                        if (!form.base_document_id) {
+                          alert("No template available for this form.");
+                          return;
+                        }
 
-                      fetchTemplateDocument(form.base_document_id)
-                        .then((res) => {
-                          const link = res?.data?.url;
-                          if (link) {
-                            window.open(link, "noopener,noreferrer");
-                          } else {
-                            alert("Template not available.");
-                          }
-                        })
-                        .catch((e) => {
-                          console.error(e);
-                          window.close();
-                          alert("Failed to load template.");
-                        });
-                    }}
-                    onGenerate={() =>
-                      openFormModal(form.name, form.version, form.label ?? "")
-                    }
-                  />
-                ))}
+                        fetchTemplateDocument(form.base_document_id)
+                          .then((res) => {
+                            const link = res?.data?.url;
+                            if (link) {
+                              window.open(link, "noopener,noreferrer");
+                            } else {
+                              alert("Template not available.");
+                            }
+                          })
+                          .catch((e) => {
+                            console.error(e);
+                            window.close();
+                            alert("Failed to load template.");
+                          });
+                      }}
+                      onGenerate={() =>
+                        openFormModal(form.name, form.version, form.label ?? "")
+                      }
+                    />
+                  ))}
+              </div>
 
               {/* // ! remove this in the future */}
               {/* coming soon, hard coded for now */}
