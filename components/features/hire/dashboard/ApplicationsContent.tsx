@@ -11,13 +11,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ApplicationsHeader } from "./ApplicationsHeader";
 import { useState } from "react";
 import { CommandMenu } from "@/components/ui/command-menu";
-import { Calendar, Check, CheckCircle2, ContactRound, GraduationCap, List, ListCheck, School, SquareCheck, Star, Trash, User2, X } from "lucide-react";
+import { Calendar, CheckCircle2, ContactRound, GraduationCap, ListCheck, SquareCheck, Trash, User2, X } from "lucide-react";
 import { useEffect } from "react";
 import { updateApplicationStatus } from "@/lib/api/services";
 import { statusIconMap } from "@/components/common/status-icon-map";
 import { type ActionItem } from "@/components/ui/action-item";
 import { Toast } from "@/components/ui/toast";
-import { success } from "zod";
 
 interface ApplicationsContentProps {
   applications: EmployerApplication[];
