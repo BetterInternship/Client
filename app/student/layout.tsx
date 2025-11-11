@@ -17,6 +17,27 @@ export const metadata: Metadata = {
   icons: {
     icon: "/BetterInternshipLogo.ico",
   },
+  openGraph: {
+    title: "BetterInternship",
+    description: "Better Internships Start Here.",
+    url: "https://betterinternship.com",
+    images: [
+      {
+        url: "/logo.png",
+        width: 512,
+        height: 512,
+        alt: "BetterInternship Logo",
+      },
+    ],
+    siteName: "BetterInternship",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "BetterInternship",
+    description: "Better Internships Start Here.",
+    images: ["/logo.png"],
+  },
 };
 
 export const viewport: Viewport = {
