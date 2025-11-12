@@ -55,13 +55,13 @@ export const FilterButton = ({
       aria-pressed={active}
       onClick={handleClick}
     >
-      {Icon && <Icon size={20} />}
+      {Icon && <Icon size={16} />}
       <span>{name}</span>
       {/* Display the item count badge if one is given. */}
       {typeof itemCount === "number" && (
         <span
           className={cn(
-            "px-2 py-1 text-sm rounded-sm",
+            "flex justify-center items-center px-2 py-1 text-xs rounded-sm",
             active ? "text-primary-foreground" : "bg-slate-200 text-gray-800",
           )}
         >
