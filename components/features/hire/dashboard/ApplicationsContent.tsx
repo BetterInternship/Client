@@ -346,6 +346,7 @@ export function ApplicationsContent({
                     ? 'indeterminate'
                     : false
                 }
+                disabled={visibleApplications.length === 0}
               />
             </th>
             <th className="p-4">
@@ -400,7 +401,7 @@ export function ApplicationsContent({
             ))
           ) : (
             <>
-              <Badge className="p-2">No applications under this category.</Badge>
+              <Badge className="m-2">No applications under this category.</Badge>
             </>
           )}
         </tbody>
