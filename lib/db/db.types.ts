@@ -18,6 +18,7 @@ export type PublicUser = Omit<_PublicUserBase, "internship_preferences"> & {
   internship_preferences?: InternshipPreferences;
 };
 export type Employer = Partial<Tables<"employers">>;
+export type User = Partial<Tables<"users">>;
 export interface Conversation extends Tables<"conversations"> {
   employers?: Partial<Employer>;
   employer?: Partial<Employer>;

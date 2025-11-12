@@ -472,7 +472,7 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
                       <Card className="flex flex-col text-left gap-1 p-4 px-6 border-transparent">
                         <MessageCircle className="w-16 h-16 my-4 opacity-50" />
                         <div className="text-xl font-bold">
-                          Send a Message Now!
+                          Start a Conversation!
                         </div>
                         You don't have any messages with this applicant yet.
                       </Card>

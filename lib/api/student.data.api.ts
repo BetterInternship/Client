@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef, useState, useEffect} from "react";
+import { APIClient, APIRouteBuilder } from "@/lib/api/api-client";
 import {
   JobService,
   UserService,
@@ -9,6 +10,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useDbMoa } from "../db/use-bi-moa";
 import { hashStringToInt } from "../utils";
 import shuffle from "knuth-shuffle-seeded";
+import { User, PublicUser} from "@/lib/db/db.types";
+import { getFullName } from "@/lib/profile";
 
 /**
  * From now on, all hooks that query data are meant to do just that.
@@ -202,3 +205,21 @@ export function useApplicationsData() {
     data: applications.data?.applications ?? [],
   };
 }
+
+export const useUserName = (id: string) => {
+  const [userName, setUserName] = useState("");
+  useEffect(() => {
+    if (id.trim() === "") return;
+    // ! refactor lol
+    APIClient.get<any>(APIRouteBuilder("users").r(id).build()).then(
+      ({ user }: { user: User }) => {
+        setUserName(getFullName(user) ?? "");
+      }
+    );
+  }, [id]);
+
+  return {
+    userName,
+  };
+};
+
