@@ -399,9 +399,9 @@ export function ApplicationsContent({
               />
             ))
           ) : (
-            <div className="p-2">
-              <Badge>No applications under this category.</Badge>
-            </div>
+            <>
+              <Badge className="p-2">No applications under this category.</Badge>
+            </>
           )}
         </tbody>
       </table>
