@@ -147,7 +147,6 @@ export function useEmployerApplications() {
 
     // @ts-ignore
     set_cache(updateState);
-    // @ts-ignore
     setEmployerApplications(updateState);
     
     return response;
