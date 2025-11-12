@@ -80,7 +80,7 @@ function DashboardContent() {
                     <Link href="listings/create">
                       <button
                         aria-label="Create new listing"
-                        className="fixed bottom-8 right-2 bg-primary rounded-full p-5 z-10 shadow-lg z-[1000]"
+                        className="fixed bottom-8 right-2 bg-primary rounded-full p-5 z-10 shadow-xl z-[1000]"
                       >
                         <Plus className="h-5 w-5 text-white"/>
                       </button>
