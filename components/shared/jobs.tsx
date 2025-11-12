@@ -20,6 +20,7 @@ import { DropdownGroup } from "../ui/dropdown";
 import { Property } from "../ui/labels";
 import { Toggle } from "../ui/toggle";
 import { useMobile } from "@/hooks/use-mobile";
+import { useAppContext } from "@/lib/ctx-app";
 
 export const JobHead = ({
   title,
@@ -1001,6 +1002,8 @@ export function JobDetails({
   const missingRequired =
     (needsGithub && !hasGithub) || (needsPortfolio && !hasPortfolio);
 
+  const { isMobile } = useAppContext();
+
   return (
     <>
       {user !== undefined && (
@@ -1010,7 +1013,12 @@ export function JobDetails({
           needsPortfolio={needsPortfolio && !hasPortfolio}
         />
       )}
-      <div className="flex-1 px-8 pt-7 overflow-y-auto space-y-5">
+      <div className={cn(
+        "flex-1 overflow-y-auto space-y-5",
+        isMobile 
+          ? "px-3 py-4" 
+          : "px-8 pt-7"
+      )}>
         <HeaderWithActions
           job={job}
           actions={actions}

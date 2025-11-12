@@ -326,7 +326,7 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
                   ></ApplicationsContent>
                 </Tab>
                 <Tab name="Preview Listing">
-                  <Card className="flex-1 min-w-0">
+                  <Card className="flex-1 min-w-0 p-0">
                     {/* <Scrollbar> */}
                       <ListingsDetailsPanel
                         selectedJob={selectedJob}

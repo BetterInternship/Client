@@ -79,7 +79,8 @@ function DashboardContent() {
                   {isMobile && (
                     <Link href="listings/create">
                       <button
-                        className="fixed bottom-8 right-8 bg-primary rounded-full p-6 z-10 shadow-lg"
+                        aria-label="Create new listing"
+                        className="fixed bottom-8 right-2 bg-primary rounded-full p-5 z-10 shadow-lg z-[1000]"
                       >
                         <Plus className="h-5 w-5 text-white"/>
                       </button>
