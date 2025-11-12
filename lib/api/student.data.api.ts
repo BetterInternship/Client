@@ -206,20 +206,3 @@ export function useApplicationsData() {
   };
 }
 
-export const useUserName = (id: string) => {
-  const [userName, setUserName] = useState("");
-  useEffect(() => {
-    if (id.trim() === "") return;
-    // ! refactor lol
-    APIClient.get<any>(APIRouteBuilder("users").r(id).build()).then(
-      ({ user }: { user: User }) => {
-        setUserName(getFullName(user) ?? "");
-      }
-    );
-  }, [id]);
-
-  return {
-    userName,
-  };
-};
-

@@ -10,17 +10,23 @@ import { Ref, useEffect, useMemo, useRef, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Message } from "@/components/ui/messages";
 import { Button } from "@/components/ui/button";
-import { EmployerConversationService } from "@/lib/api/services";
+import { EmployerConversationService, UserService} from "@/lib/api/services";
 import { Loader } from "@/components/ui/loader";
 import { useEmployerName, useProfile } from "@/hooks/use-employer-api"; //here
-import { useUserName } from "@/lib/api/student.data.api";
+import { useUserName } from "@/hooks/use-student-api";
 import { Badge } from "@/components/ui/badge";
 import { getFullName } from "@/lib/profile";
+import { FilterButton } from "@/components/ui/filter";
+import { Conversation } from "@/lib/db/db.types";
 
 export default function ConversationsPage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
   const profile = useProfile();
   const conversations = useConversations();
+  const unreadConvos = useMemo(
+    () => (conversations.data ?? []).filter((convo) => !!convo.last_unreads),
+    [conversations.data],
+  );
   const { isMobile } = useAppContext();
 
   // selection + message composing state
@@ -28,6 +34,9 @@ export default function ConversationsPage() {
   const conversation = useConversation("employer", conversationId);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
+
+  //for filtering
+  const [chatFilter, setChatFilter] = useState<"all" | "unread">("all")
 
   // mobile "router": list or chat
   const [mobileView, setMobileView] = useState<"list" | "chat">("list");
@@ -55,6 +64,19 @@ export default function ConversationsPage() {
       ),
     [conversations.data],
   );
+
+  const sortedUnreads = useMemo(
+    () =>
+      (unreadConvos ?? []).toSorted(
+        (a, b) =>
+          (b.last_unread?.timestamp ?? 0) - (a.last_unread?.timestamp ?? 0),
+      ),
+    [unreadConvos],
+  );
+
+  const visibleConvos = useMemo(() => {
+    return chatFilter === "all" ? sortedConvos : sortedUnreads
+  }, [chatFilter, sortedConvos, unreadConvos]);
 
   const endSend = () => {
     setMessage("");
@@ -100,12 +122,29 @@ export default function ConversationsPage() {
               isMobile ? (mobileView === "list" ? "block" : "hidden") : "block",
             )}
           >
+            <div className="">
+              {/* <Textarea placeholder="Search..."></Textarea> */}
+              <ConversationFilter 
+              conversations={sortedConvos}
+              unreadConvosCount={unreadConvos.length}
+              status={chatFilter}
+              onFilterChange={(status:string) => setChatFilter(status as "all" | "unread")}
+              />
+            </div>
             <div className="h-full max-h-full overflow-y-auto">
-              <ConversationList
-                conversations={sortedConvos}
+              { visibleConvos.length ? (
+                <ConversationList
+                conversations={visibleConvos}
+                unreadConversations={sortedUnreads}
                 profileId={profile.data?.id}
                 onPick={(id) => setConversationId(id)}
               />
+              ) : (
+                <Badge>
+                  No unread conversation :-P
+                </Badge>
+              )
+              }
             </div>
           </aside>
 
@@ -167,16 +206,58 @@ export default function ConversationsPage() {
 
 /* ======================= Subcomponents ======================= */
 
+function ConversationFilter({
+  conversations,
+  unreadConvosCount,
+  status,
+  onFilterChange,
+  }: 
+  {
+  conversations: any[];
+  unreadConvosCount: number;
+  status: string;
+  onFilterChange: (status: string) => void;}) {
+
+    return (
+      <div className="flex p-2 gap-x-2">
+          <FilterButton
+              name="All"
+              key="all"
+              itemCount={conversations.length}
+              isActive={status === "all"}
+              defaultActive={true}
+              onToggle={() => {
+                onFilterChange("all")
+              }}
+              className="text-sm rounded-full">
+            </FilterButton>
+            <FilterButton
+              name="Unread"
+              key="unread"
+              itemCount={unreadConvosCount}
+              isActive={status === "unread"}
+              defaultActive={false}
+              onToggle={() => {
+                onFilterChange("unread")
+              }}
+              className="text-sm rounded-full"
+            >
+            </FilterButton>
+        </div>
+    );
+}
+
 function ConversationList({
   conversations,
+  unreadConversations,
   profileId,
   onPick,
 }: {
   conversations: any[];
+  unreadConversations: any[];
   profileId?: string;
   onPick: (id: string) => void;
 }) {
-  const { unreads } = useConversations();
 
   return (
     <div className="flex flex-col">
@@ -188,7 +269,7 @@ function ConversationList({
           latestMessage={c.last_unread?.message}
           setConversationId={onPick}
           isUnread={
-            !!unreads?.some((u) =>
+            !!unreadConversations?.some((u) =>
               u.subscribers.some((s: string) => c.subscribers?.includes(s)),
             )
           }
@@ -200,7 +281,7 @@ function ConversationList({
 
 function ChatHeaderTitle({ conversationId }: { conversationId?: string }) {
   const { senderId } = useConversation("employer", conversationId || "");
-  const { userName } = useUserName(senderId)
+  const { userName } = useUserName(senderId || "")
   return (
     <div className="min-w-0">
       <div className="font-medium truncate">
@@ -210,6 +291,8 @@ function ChatHeaderTitle({ conversationId }: { conversationId?: string }) {
     </div>
   );
 }
+
+
 
 function ComposerBar({
   value,

@@ -6,6 +6,7 @@ import {
   PublicUser,
   SavedJob,
   UserApplication,
+  User,
 } from "@/lib/db/db.types";
 import { APIClient, APIRouteBuilder } from "./api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
@@ -120,6 +121,10 @@ export const AuthService = {
 };
 interface UserResponse extends FetchResponse {
   user: PublicUser;
+}
+
+interface StudentResponse extends FetchResponse {
+  users: User[];
 }
 
 interface SaveJobResponse extends FetchResponse {
@@ -281,6 +286,12 @@ export const UserService = {
     return APIClient.post<SaveJobResponse>(
       APIRouteBuilder("users").r("save-job").build(),
       { id: jobId },
+    );
+  },
+
+  async getUserById(userId: string): Promise<StudentResponse> {
+    return APIClient.get<StudentResponse>(
+      APIRouteBuilder("users").r(userId).build(),
     );
   },
 };
