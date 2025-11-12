@@ -14,7 +14,7 @@ import { CommandMenu } from "@/components/ui/command-menu";
 import { Calendar, CheckCircle2, ContactRound, GraduationCap, ListCheck, SquareCheck, Trash, User2, X } from "lucide-react";
 import { useEffect } from "react";
 import { updateApplicationStatus } from "@/lib/api/services";
-import { statusIconMap } from "@/components/common/status-icon-map";
+import { statusMap } from "@/components/common/status-icon-map";
 import { type ActionItem } from "@/components/ui/action-item";
 import { Toast } from "@/components/ui/toast";
 
@@ -129,7 +129,7 @@ export function ApplicationsContent({
   
   const statuses = unique_app_statuses
     .map((status): ActionItem => {
-      const uiProps = statusIconMap.get(status.id);
+      const uiProps = statusMap.get(status.id);
 
       return {
         id: status.id.toString(),
@@ -141,8 +141,8 @@ export function ApplicationsContent({
     })
     .filter(Boolean);
 
-  // remove the delete item from the bottom command bar so we can put it in the top one.
-  const statuses_without_delete = statuses.filter((status) => status.id !== "7");
+  // remove the delete item from the bottom command bar so we can put it in the top one and the pending status.
+  const remove_unused_statuses = statuses.filter((status) => status.id !== "7" && status.id !== "0");
 
   const applyActiveFilter = (apps: typeof sortedApplications) => {
     if (activeFilter === -1) {
@@ -233,7 +233,7 @@ export function ApplicationsContent({
         }}
       />
       <CommandMenu
-        items={statuses_without_delete}
+        items={remove_unused_statuses}
         isVisible={commandBarsVisible}
         defaultVisible={true}
         position={{ position: "bottom" }}
@@ -308,7 +308,7 @@ export function ApplicationsContent({
       />
       <div className="flex justify-between flex-wrap gap-2">
         <CommandMenu
-          items={statuses_without_delete}
+          items={remove_unused_statuses}
           isVisible={commandBarsVisible}
           defaultVisible={true}
         />

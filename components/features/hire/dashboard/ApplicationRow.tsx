@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import StatusBadge from "@/components/ui/status-badge";
 import { useConversations } from "@/hooks/use-conversation";
 import { useAppContext } from "@/lib/ctx-app";
 import { EmployerApplication } from "@/lib/db/db.types";
@@ -52,7 +53,7 @@ export function ApplicationRow({
   checkboxSelected = false,
   onToggleSelect,
 }: ApplicationRowProps) {
-  const { to_university_name, to_app_status_name } = useDbRefs();
+  const { to_university_name, to_app_status_name, get_app_status } = useDbRefs();
   const conversations = useConversations();
   const { isMobile } = useAppContext();
 
@@ -89,7 +90,12 @@ export function ApplicationRow({
           </Button>
         </div>
         <div className="flex flex-col text-gray-500">
-          <h4 className="text-gray-900 text-base">{getFullName(application.user)}</h4>
+          <div className="flex flex-col gap-1 pb-2">
+            <h4 className="text-gray-900 text-base">{getFullName(application.user)}</h4>
+            <StatusBadge 
+              statusId={application?.status || 0}
+            />
+          </div>
           <div className="flex items-center gap-2">
             <School size={16} />
             <span className="text-sm">
@@ -116,12 +122,6 @@ export function ApplicationRow({
               ) : (
                 <span className="text-gray-500"> No start date provided</span>
               )}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <ListCheck size={16} />
-            <span className="text-sm">
-              Status: {to_app_status_name(application.status)}
             </span>
           </div>
         </div>
@@ -159,7 +159,9 @@ export function ApplicationRow({
         )}
       </td>
       <td className="px-4 py-2">
-        {to_app_status_name(application.status)}
+        <StatusBadge 
+          statusId={application?.status || 0}
+        />
       </td>
       <td>
         <div className="flex items-center gap-2 pr-2 flex-row justify-end">
