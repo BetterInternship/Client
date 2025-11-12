@@ -22,6 +22,7 @@ import { ModalHandle } from "@/hooks/use-modal";
 import { isValidPHNumber } from "@/lib/utils";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { Job } from "@/lib/db/db.types";
+import { isValidRequiredUserName } from "@/lib/utils/name-utils";
 
 /* ============================== Modal shell ============================== */
 
@@ -194,7 +195,9 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
           const phoneValid = isValidPHNumber(profile.phone);
           return (
             !!profile.firstName &&
+            isValidRequiredUserName(profile.firstName) &&
             !!profile.lastName &&
+            isValidRequiredUserName(profile.lastName) &&
             !isUpdating &&
             phoneValid &&
             !!profile.degree &&
@@ -401,6 +404,16 @@ function StepBasicIdentity({
     [value.phone],
   );
 
+  const firstNameInvalid = useMemo(
+    () => !!value.firstName && !isValidRequiredUserName(value.firstName),
+    [value.firstName],
+  );
+
+  const lastNameInvalid = useMemo(
+    () => !!value.lastName && !isValidRequiredUserName(value.lastName),
+    [value.lastName],
+  );
+
   const [departmentOptions, setDepartmentOptions] =
     useState<{ id: string; name: string }[]>(departments);
 
@@ -496,6 +509,7 @@ function StepBasicIdentity({
               value={value.firstName}
               setter={(v) => onChange({ ...value, firstName: v })}
             />
+
             <FormInput
               label="Middle name"
               required={false}
@@ -508,6 +522,17 @@ function StepBasicIdentity({
               setter={(v) => onChange({ ...value, lastName: v })}
             />
           </div>
+
+          {firstNameInvalid && (
+            <p className="text-xs text-destructive -mt-2">
+              Please enter a first name. Special characters are not allowed.
+            </p>
+          )}
+          {lastNameInvalid && (
+            <p className="text-xs text-destructive -mt-2">
+              Please enter a last name. Special characters are not allowed.
+            </p>
+          )}
 
           <FormInput
             label="Phone number"
