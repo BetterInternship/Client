@@ -433,7 +433,10 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
               <label className="flex items-center text-sm text-gray-700">
                 Work Mode:
               </label>
-              <Property value={workModes} />
+              <Property
+                key="work_modes"
+                value={workModes}
+              />
             </div>
           </div>
 
@@ -443,7 +446,10 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
               <label className="flex items-center text-sm text-gray-700">
                 Work Load:
               </label>
-              <Property value={workLoads} />
+              <Property 
+                key="workload"
+                value={workLoads}
+              />
             </div>
           </div>
 
@@ -454,6 +460,7 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
                 Salary:
               </label>
               <Property
+                key="salary"
                 value={
                   job.salary
                     ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
@@ -469,7 +476,10 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
               <label className="flex items-center text-sm text-gray-700">
                 Accepting:
               </label>
-              <Property value={internshipTypes} />
+              <Property 
+                key="internship_type"
+                value={internshipTypes}
+              />
             </div>
           </div>
         </DropdownGroup>

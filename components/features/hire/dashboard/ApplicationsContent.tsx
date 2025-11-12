@@ -399,11 +399,13 @@ export function ApplicationsContent({
                 onToggleSelect={(v) => toggleSelect(application.id!, !!v)}
               />
             ))
-          ) : (
-            <>
+        ) : (
+          <tr>
+            <td>
               <Badge className="m-2">No applications under this category.</Badge>
-            </>
-          )}
+            </td>
+          </tr>
+        )}
         </tbody>
       </table>
     </div>
