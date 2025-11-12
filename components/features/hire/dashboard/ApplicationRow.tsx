@@ -3,8 +3,11 @@
 // No business logic - just presentation and event emission
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import StatusBadge from "@/components/ui/status-badge";
 import { useConversations } from "@/hooks/use-conversation";
+import { useAppContext } from "@/lib/ctx-app";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { getFullName } from "@/lib/profile";
@@ -18,8 +21,6 @@ import {
   MessageCircle,
   School,
 } from "lucide-react";
-import { useAppContext } from "@/lib/ctx-app";
-import { Card } from "@/components/ui/card";
 
 interface ApplicationRowProps {
   application: EmployerApplication;
@@ -52,7 +53,7 @@ export function ApplicationRow({
   checkboxSelected = false,
   onToggleSelect,
 }: ApplicationRowProps) {
-  const { to_university_name, to_app_status_name } = useDbRefs();
+  const { to_university_name, to_app_status_name, get_app_status } = useDbRefs();
   const conversations = useConversations();
   const { isMobile } = useAppContext();
 
@@ -61,7 +62,7 @@ export function ApplicationRow({
   return isMobile ? (
     <>
       <Card
-        className="flex flex-col gap-4 hover:cursor-pointer hover:bg-primary/25 transition-colors"
+        className="flex flex-col hover:cursor-pointer hover:bg-primary/25 transition-colors"
         onClick={onView}
       >
         <div
@@ -89,26 +90,31 @@ export function ApplicationRow({
           </Button>
         </div>
         <div className="flex flex-col text-gray-500">
-          <h4 className="text-gray-900">{getFullName(application.user)}</h4>
+          <div className="flex flex-col gap-1 pb-2">
+            <h4 className="text-gray-900 text-base">{getFullName(application.user)}</h4>
+            <StatusBadge 
+              statusId={application?.status || 0}
+            />
+          </div>
           <div className="flex items-center gap-2">
-            <School size={20} />
-            <span>
+            <School size={16} />
+            <span className="text-sm">
               {to_university_name(application.user?.university) || ""}{" "}
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <GraduationCap size={20} />
-            <span>{application.user?.degree}</span>
+            <GraduationCap size={16} />
+            <span className="text-sm">{application.user?.degree}</span>
           </div>
           <div className="flex items-center gap-2">
-            <ContactRound size={20} />
-            <span>
+            <ContactRound size={16} />
+            <span className="text-sm">
               {preferences.internship_type ? "For Credit" : "Voluntary"}
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <Calendar size={20} />
-            <span>
+            <Calendar size={16} />
+            <span className="text-sm">
               {preferences.expected_start_date ? (
                 <>
                   {fmtISO(preferences.expected_start_date.toString())}
@@ -118,16 +124,11 @@ export function ApplicationRow({
               )}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <ListCheck />
-            <span>
-              Status: {to_app_status_name(application.status)}
-            </span>
-          </div>
         </div>
       </Card>
     </>
   ) : (
+    // desktop
     <tr
       className="hover:bg-primary/25 odd:bg-white even:bg-gray-50 hover:cursor-pointer transition-colors"
       onClick={onView}
@@ -158,7 +159,9 @@ export function ApplicationRow({
         )}
       </td>
       <td className="px-4 py-2">
-        {to_app_status_name(application.status)}
+        <StatusBadge 
+          statusId={application?.status || 0}
+        />
       </td>
       <td>
         <div className="flex items-center gap-2 pr-2 flex-row justify-end">

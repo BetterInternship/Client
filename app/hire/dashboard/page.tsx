@@ -3,16 +3,16 @@
 "use client";
 
 import ContentLayout from "@/components/features/hire/content-layout";
-import { Plus } from "lucide-react";
 import { JobsContent } from "@/components/features/hire/dashboard/JobsContent";
 import { ShowUnverifiedBanner } from "@/components/ui/banner";
-import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
 import { useEmployerApplications, useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
+import { useMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
+import { Plus } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { useAuthContext } from "../authctx";
-import { useMobile } from "@/hooks/use-mobile";
-import Link from "next/link";
 
 function DashboardContent() {
   const { isMobile } = useMobile();
@@ -54,12 +54,9 @@ function DashboardContent() {
   if (loading || !isAuthenticated())
     return <Loader>Loading dashboard...</Loader>;
 
-  // ! remove, find a better way
-  let lastSelf = false;
-
   return (
     <ContentLayout>
-      <div className="flex-1 flex flex-col w-full px-4 py-4 gap-4 mt-4">
+      <div className={cn("flex-1 flex flex-col w-full py-4", isMobile ? "px-1" : "px-4")}>
         <h3 className="text-primary tracking-tighter">Welcome back, {profile.data?.name}</h3>
         <div className="flex flex-col flex-1">
           {!profile.loading && !profile.data?.is_verified ? (
@@ -82,7 +79,8 @@ function DashboardContent() {
                   {isMobile && (
                     <Link href="listings/create">
                       <button
-                        className="fixed bottom-8 right-8 bg-primary rounded-full p-6 z-10 shadow-lg"
+                        aria-label="Create new listing"
+                        className="fixed bottom-8 right-2 bg-primary rounded-full p-5 z-10 shadow-xl z-[1000]"
                       >
                         <Plus className="h-5 w-5 text-white"/>
                       </button>
