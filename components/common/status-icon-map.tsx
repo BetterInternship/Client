@@ -14,9 +14,9 @@ type StatusProps = {
  * so it corresponds to the 'Star' Lucide React icon.
  */
 export const statusMap = new Map<number, StatusProps>([
-  [0, { icon: FileQuestion, bgColor: "bg-orange-100", fgColor: "text-orange-700" }],
-  [2, { icon: Star, bgColor: "bg-amber-100", fgColor: "text-amber-700" }],
-  [4, { icon: CheckCircle2, bgColor: "bg-green-100", fgColor: "text-green-700" }],
-  [6, { icon: XCircle, bgColor: "bg-red-100", fgColor: "text-red-700" }],
-  [7, { icon: Trash, bgColor: "bg-stone-100", fgColor: "text-stone-700", destructive: true }],
+  [0, { icon: FileQuestion, bgColor: "bg-orange-100", fgColor: "text-orange-900" }],
+  [2, { icon: Star, bgColor: "bg-amber-100", fgColor: "text-amber-900" }],
+  [4, { icon: CheckCircle2, bgColor: "bg-green-100", fgColor: "text-green-900" }],
+  [6, { icon: XCircle, bgColor: "bg-red-100", fgColor: "text-red-900" }],
+  [7, { icon: Trash, bgColor: "bg-stone-200", fgColor: "text-stone-900", destructive: true }],
 ]);
