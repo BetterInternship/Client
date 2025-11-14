@@ -2,11 +2,16 @@
 
 import Link from "next/link";
 
-type FooterLink = { label: string; href: string };
+type FooterLink = { label: string; href: string; className?: string };
 
 const LINKS: FooterLink[] = [
   { label: "Privacy", href: "/PrivacyPolicy.pdf" },
   { label: "Terms", href: "/TermsConditions.pdf" },
+  {
+    label: "Need help?",
+    href: "https://www.facebook.com/profile.php?id=61579853068043",
+    className: "text-primary",
+  },
 ];
 
 export function Footer({ links = LINKS }: { links?: FooterLink[] }) {
@@ -28,7 +33,7 @@ export function Footer({ links = LINKS }: { links?: FooterLink[] }) {
                 <li key={l.label}>
                   <Link
                     href={l.href}
-                    className="text-muted-foreground hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring rounded-sm"
+                    className={`text-muted-foreground hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring rounded-sm ${l.className ?? ""}`}
                   >
                     {l.label}
                   </Link>
