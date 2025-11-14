@@ -28,8 +28,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Info,
-  PlusIcon,
+  MessageCircleQuestion,
 } from "lucide-react";
 import * as React from "react";
 import { createContext, useContext, useRef } from "react";
@@ -175,12 +174,12 @@ export function LabelWithTooltip({
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       <div className="hover:cursor-help">
-        <Info
+        <MessageCircleQuestion
           data-tooltip-id={id}
           data-tooltip-content={tooltip ?? ""}
           data-tooltip-place="bottom"
           className={cn(
-            "w-4 h-4 p-0.5 text-primary",
+            "w-3.5 h-3.5 text-primary",
             tooltip?.trim() ? "" : "invisible",
           )}
         />
