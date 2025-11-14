@@ -19,7 +19,6 @@ import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { FormFlowRouter } from "@/components/features/student/forms/FormFlowRouter";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useRouter } from "next/navigation";
-import ComingSoonCard from "@/components/features/student/forms/ComingSoonCard";
 import { Loader } from "@/components/ui/loader";
 import { cn } from "@/lib/utils";
 
@@ -56,14 +55,6 @@ export default function FormsPage() {
   const norm = (s?: string) => (s ?? "").trim().toLowerCase();
 
   const generatorForms = formList;
-  const comingSoon = useMemo(() => {
-    const available = new Set(
-      (generatorForms ?? [])
-        .map((f) => norm(f.label ?? f.name))
-        .filter(Boolean),
-    );
-    return UPCOMING_FORMS.filter((f) => !available.has(norm(f.label)));
-  }, [generatorForms]);
 
   const openFormModal = (
     formName: string,
@@ -194,13 +185,20 @@ export default function FormsPage() {
                 (generatorForms?.length ?? 0) === 0 && (
                   <div className="text-sm text-gray-600">
                     <p>There are no forms available yet for your department.</p>
-                    <p className="mt-1 text-muted-foreground">
+                    <p className="mt-1 text-muted-foreground text-sm">
                       Need help? Email{" "}
                       <a
                         href="mailto:hello@betterinternship.com"
                         className="underline"
                       >
                         hello@betterinternship.com
+                      </a>{" "}
+                      or contact us via{" "}
+                      <a
+                        href="https://www.facebook.com/profile.php?id=61579853068043"
+                        className="underline"
+                      >
+                        Facebook
                       </a>
                       .
                     </p>
