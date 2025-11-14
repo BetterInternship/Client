@@ -7,10 +7,12 @@ import { useProfileActions } from "@/lib/api/student.actions.api";
 import { StepComplete } from "./StepComplete";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { GenerateButtons } from "./GenerateFormButtons";
+import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { FormMetadata } from "@betterinternship/core/forms";
 import { useQuery } from "@tanstack/react-query";
 import { Loader } from "@/components/ui/loader";
 import z from "zod";
+import { Button } from "@/components/ui/button";
 
 type Errors = Record<string, string>;
 type FormValues = Record<string, string>;
@@ -33,6 +35,11 @@ export function FormFlowRouter({
   // Form stuff
   const [values, setValues] = useState<FormValues>({});
   const [errors, setErrors] = useState<Errors>({});
+
+  // recipient confirmation modal state
+  const [confirmWithEsign, setConfirmWithEsign] = useState<boolean | undefined>(
+    undefined,
+  );
 
   // Fetch form
   const form = useQuery({
@@ -84,7 +91,13 @@ export function FormFlowRouter({
     setValues((prev) => ({ ...prev, [key]: v.toString() }));
   };
 
-  const handleSubmit = async (withEsign?: boolean) => {
+  /**
+   * This submits the form to the server
+   * @param withEsign - if true, enables e-sign; if false, does prefill
+   * @param _bypassConfirm - internal flag to skip recipient confirmation on re-call
+   * @returns
+   */
+  const handleSubmit = async (withEsign?: boolean, _bypassConfirm = false) => {
     setSubmitted(true);
     if (!profile.data?.id) return;
 
@@ -114,10 +127,67 @@ export function FormFlowRouter({
     setErrors(errors);
     if (Object.keys(errors).length) return;
 
+    // Find recipient fields (keys ending with ':recipient')
+    const recipientEmails = fields
+      .filter(
+        (f) => typeof f.field === "string" && f.field.endsWith(":recipient"),
+      )
+      .map((f) => finalValues[f.field]?.trim())
+      .filter(Boolean) as string[];
+
+    if (recipientEmails.length > 0 && !_bypassConfirm) {
+      const recipientFields = fields
+        .filter(
+          (f) => typeof f.field === "string" && f.field.endsWith(":recipient"),
+        )
+        .map((f) => ({
+          field: f.field,
+          label: f.label,
+          email: finalValues[f.field]?.trim(),
+        }))
+        .filter((r) => r.email);
+
+      setConfirmWithEsign(withEsign);
+
+      openGlobalModal(
+        "confirm-recipients",
+        <div>
+          <p className="mt-2 text-sm text-gray-600 text-justify">
+            We will email the following recipients a separate form to complete
+            and sign. Please double-check these addresses before continuing.
+          </p>
+
+          <ul className="mt-4 max-h-40 overflow-auto divide-y">
+            {recipientFields.map((e, i) => (
+              <li key={i} className="py-2 text-sm flex gap-1">
+                <div className="font-medium text-primary">{e.email}</div>
+                <div className=" text-gray-500">- {e.label}</div>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-6 flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => closeGlobalModal("confirm-recipients")}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmRecipients} type="button">
+              Confirm & Send
+            </Button>
+          </div>
+        </div>,
+        { title: "Confirm recipients" },
+      );
+
+      return;
+    }
+
+    // proceed to save + submit
     try {
       setBusy(true);
 
-      console.log("Final values to submit", finalValues);
       const internshipMoaFieldsToSave: Record<
         string,
         Record<string, string>
@@ -159,6 +229,14 @@ export function FormFlowRouter({
     } finally {
       setBusy(false);
     }
+  };
+
+  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
+
+  // Called when the user confirms the recipients in the modal
+  const handleConfirmRecipients = () => {
+    closeGlobalModal("confirm-recipients");
+    void handleSubmit(true, true);
   };
 
   if (done) return <StepComplete onMyForms={() => onGoToMyForms?.()} />;
