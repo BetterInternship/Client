@@ -21,6 +21,7 @@ import { useProfileData } from "@/lib/api/student.data.api";
 import { useRouter } from "next/navigation";
 import { Loader } from "@/components/ui/loader";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 /**
  * The forms page component
@@ -159,9 +160,22 @@ export default function FormsPage() {
             <HeaderText>Forms</HeaderText>
           </div>
           <div className="flex-1 flex-row">
-            <p className="text-gray-600 text-sm sm:text-base mb-2">
-              Automatically generate the internship forms you need using your
-              saved details.
+            <p className="text-gray-600 text-sm sm:text-base mb-2 space-y-1">
+              Generate internship documents using your saved details.
+              <div className="flex gap-1">
+                <div className="text-primary font-semibold">
+                  • Generate for Manual Signing
+                </div>{" "}
+                fills the form without digital signatures (use this if you
+                prefer wet/offline signatures).
+              </div>
+              <div className="flex gap-1">
+                <div className="text-primary font-semibold">
+                  • Generate & Initiate E-Sign
+                </div>{" "}
+                creates the form and starts the electronic signing workflow for
+                all parties.
+              </div>
             </p>
           </div>
         </div>
@@ -245,33 +259,6 @@ export default function FormsPage() {
                     />
                   ))}
               </div>
-
-              {/* // ! remove this in the future */}
-              {/* coming soon, hard coded for now */}
-              {/* {!error &&
-                !(isLoading || isPending || isFetching) &&
-                (comingSoon?.length ?? 0) > 0 && (
-                  <div className="mt-6 space-y-2">
-                    <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                      Coming Soon
-                    </div>
-                    <div className="space-y-3">
-                      {comingSoon.map((f) => (
-                        <ComingSoonCard key={f.label} title={f.label} />
-                      ))}
-                    </div>
-                    <p className="text-[11px] text-muted-foreground">
-                      Want early access or have a suggestion? Email{" "}
-                      <a
-                        href="mailto:hello@betterinternship.com"
-                        className="underline underline-offset-4"
-                      >
-                        hello@betterinternship.com
-                      </a>
-                      .
-                    </p>
-                  </div>
-                )} */}
             </div>
           </OutsideTabPanel>
 
@@ -361,26 +348,6 @@ export default function FormsPage() {
     </div>
   );
 }
-
-/* Coming Soon config ───────────────────────── */
-const UPCOMING_FORMS: Array<{ label: string }> = [
-  {
-    label: "Student MOA",
-  },
-  {
-    label: "Company Evaluation Form",
-  },
-  {
-    label: "Company and Project Info",
-  },
-  {
-    label: "Progress Report",
-  },
-  {
-    label: "Annex A Internship Plan",
-  },
-];
-/* ──────────────────────────────────────────────────────────────────────────────── */
 
 function parseTsToMs(ts?: string | Date) {
   if (!ts) return 0;
