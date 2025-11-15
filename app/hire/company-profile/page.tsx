@@ -243,10 +243,10 @@ const ProfileDetails = ({ profile }: { profile: Employer }) => {
           )}
         >
           <ProfileLinkBadge title="Company Email" link={`mailto:profile.email`} />
-          <ProfileLinkBadge title="Company Website" link={`tel:profile.website`} />
+          <ProfileLinkBadge title="Company Website" link={profile.website} />
           <ProfileLinkBadge
             title="Company Number"
-            link={profile.phone_number}
+            link={`tel:profile.phone_number`}
           />
         </div>
       </Card>
