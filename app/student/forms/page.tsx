@@ -144,10 +144,12 @@ export default function FormsPage() {
     router.push("/profile");
   }
 
-  // ! to do: make this more efficient
+  // ! todo: make this more efficient
   useEffect(() => {
-    void queryClient.invalidateQueries({ queryKey: ["my_forms", userId] });
-  }, []);
+    if (tab === "My Forms" && userId) {
+      void queryClient.invalidateQueries({ queryKey: ["my_forms", userId] });
+    }
+  }, [tab, userId, queryClient]);
 
   return (
     <div className="container max-w-6xl px-4 sm:px-10 pt-6 sm:pt-16 mx-auto">
