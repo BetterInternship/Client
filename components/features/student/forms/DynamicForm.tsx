@@ -1,184 +1,207 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { z, ZodType } from "zod";
-import { useDynamicFormSchema } from "@/lib/db/use-moa-backend";
-import { useFormData } from "@/lib/form-data";
-import {
-  FieldRenderer,
-  FieldDef,
-  FilledBy,
-} from "@/components/features/student/forms/FieldRenderer";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { useEffect } from "react";
+import { FieldRenderer } from "@/components/features/student/forms/FieldRenderer";
+import { ClientField } from "@betterinternship/core/forms";
+import { coerceAnyDate } from "@/lib/utils";
 
-/**
- * The form builder.
- * Changes based on field inputs.
- *
- * @component
- */
-export const DynamicForm = ({ form }: { form: string }) => {
-  const {
-    fields: rawFields,
-    error: loadError,
-    isLoading,
-  } = useDynamicFormSchema(form);
+export function DynamicForm({
+  formName,
+  fields,
+  values,
+  setValues,
+  autofillValues,
+  onChange,
+  errors = {},
+  showErrors = false,
+}: {
+  formName: string;
+  fields: ClientField<[]>[];
+  values: Record<string, any>;
+  autofillValues: Record<string, string>;
+  errors?: Record<string, string>;
+  showErrors?: boolean;
+  setValues: (values: Record<string, string>) => void;
+  onChange: (key: string, value: any) => void;
+}) {
+  const filteredFields = fields
+    .filter((field) => field.party === "student")
+    .filter((field) => field.source === "manual");
 
-  const defs: FieldDef[] = useMemo(
-    () =>
-      (rawFields ?? []).map((f) => ({
-        id: f.id,
-        key: f.name,
-        label: f.label ?? f.name,
-        type: f.type, // "text" | "number" | "select" | "date" | "time"
-        placeholder: f.placeholder,
-        helper: f.helper,
-        maxLength: f.max_length,
-        options: f.options,
-        validators: (f.validators ?? []) as z.ZodTypeAny[],
-        filledBy: f.filled_by as FilledBy,
-      })),
-    [rawFields],
+  // Group by section
+  const entitySectionFields: ClientField<[]>[] = filteredFields.filter(
+    (d) => d.section === "entity",
+  );
+  const studentSectionFields: ClientField<[]>[] = filteredFields.filter(
+    (d) => d.section === "student",
+  );
+  const internshipSectionFields: ClientField<[]>[] = filteredFields.filter(
+    (d) => d.section === "internship",
+  );
+  const universitySectionFields: ClientField<[]>[] = filteredFields.filter(
+    (d) => d.section === "university",
   );
 
-  // Form data & validation state
-  const { formData, setField } = useFormData<Record<string, any>>({});
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [validatorFns, setValidatorFns] = useState<
-    Record<string, ((v: any) => string | null)[]>
-  >({});
-  const [submitted, setSubmitted] = useState(false);
-
-  // Initialize fields and compile validators when defs change
+  // Seed from saved autofill
   useEffect(() => {
-    if (!defs.length) return;
-    for (const d of defs) setField(d.key, "");
-    setValidatorFns(compileValidators(defs));
-    setErrors({});
-    setSubmitted(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defs]);
+    if (!autofillValues) return;
 
-  const Section = ({ title, items }: { title: string; items: FieldDef[] }) => {
-    if (!items.length) return null;
-    return (
-      <div className="space-y-3">
-        <div className="pt-2 pb-1">
-          <h3 className="text-sm font-semibold text-gray-700">{title}</h3>
-        </div>
-        {items.map((def) => (
-          <div key={def.id}>
-            <FieldRenderer
-              def={def}
-              value={String(formData[def.key] ?? "")}
-              onChange={(v) => setField(def.key, v)}
-              error={errors[def.key]}
-              showError={submitted}
-            />
-          </div>
-        ))}
-      </div>
-    );
-  };
+    const newValues = { ...values };
+    for (const field of filteredFields) {
+      const autofillValue = autofillValues[field.field];
 
-  const handleSubmit = async () => {
-    const next = validateAll(defs, formData, validatorFns);
-    setErrors(next);
-    setSubmitted(true);
+      // Don't autofill if not empty or if nothing to autofill
+      if (autofillValue === undefined) continue;
+      if (!isEmptyFor(field, values[field.field])) continue;
 
-    const hasErrors = Object.values(next).some(Boolean);
-    if (hasErrors) return;
+      // Coerce autofill before putting it in
+      const coercedAutofillValue = coerceForField(field, autofillValue);
+      if (coercedAutofillValue !== undefined)
+        newValues[field.field] = coercedAutofillValue.toString();
+    }
 
-    console.log("Submitting", formData);
-  };
+    setValues(newValues);
+  }, []);
 
   return (
     <div className="space-y-4">
-      {isLoading && (
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span>Loading form…</span>
-        </div>
-      )}
+      <FormSection
+        formKey={formName}
+        title="Entity Information"
+        fields={entitySectionFields}
+        values={values}
+        onChange={onChange}
+        errors={errors}
+        showErrors={showErrors}
+      />
 
-      {loadError && (
-        <p className="text-sm text-red-600">
-          Failed to load form:{" "}
-          {loadError instanceof Error
-            ? loadError.message
-            : JSON.stringify(loadError)}
-        </p>
-      )}
+      <FormSection
+        formKey={formName}
+        title="Internship Information"
+        fields={internshipSectionFields}
+        values={values}
+        onChange={onChange}
+        errors={errors}
+        showErrors={showErrors}
+      />
 
-      {!isLoading && defs.length > 0 && (
-        <>
-          <Section
-            title="Student (You)"
-            items={defs.filter((d) => d.filledBy === "student")}
-          />
-          <Section
-            title="Employer"
-            items={defs.filter((d) => d.filledBy === "entity")}
-          />
-          <Section
-            title="University"
-            items={defs.filter((d) => d.filledBy === "university")}
-          />
-        </>
-      )}
+      <FormSection
+        formKey={formName}
+        title="University Information"
+        fields={universitySectionFields}
+        values={values}
+        onChange={onChange}
+        errors={errors}
+        showErrors={showErrors}
+      />
 
-      <div className="pt-2 flex justify-end">
-        <Button
-          onClick={handleSubmit}
-          className="w-full sm:w-auto"
-          disabled={isLoading}
-          aria-busy={isLoading}
-        >
-          {isLoading ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Preparing…
-            </span>
-          ) : (
-            "Submit"
-          )}
-        </Button>
+      <FormSection
+        formKey={formName}
+        title="Student Information"
+        fields={studentSectionFields}
+        values={values}
+        onChange={onChange}
+        errors={errors}
+        showErrors={showErrors}
+      />
+    </div>
+  );
+}
+
+const FormSection = function FormSection({
+  formKey,
+  title,
+  fields,
+  values,
+  onChange,
+  errors,
+  showErrors,
+}: {
+  formKey: string;
+  title: string;
+  fields: ClientField<[]>[];
+  values: Record<string, string>;
+  onChange: (key: string, value: any) => void;
+  errors: Record<string, string>;
+  showErrors: boolean;
+}) {
+  if (!fields.length) return null;
+  const reducedFields = fields.reduce(
+    (acc, cur) =>
+      acc.map((f) => f.field).includes(cur.field) ? acc : [...acc, cur],
+    [] as ClientField<[]>[],
+  );
+
+  return (
+    <div className="space-y-3">
+      <div className="pt-2 pb-1">
+        <h3 className="text-sm font-semibold text-gray-700">{title}</h3>
       </div>
+
+      {reducedFields.map((field) => (
+        <div
+          className="flex flex-row space-between"
+          key={`${formKey}:${field.section}:${field.field}`}
+        >
+          <div className="flex-1">
+            <FieldRenderer
+              field={field}
+              value={values[field.field]}
+              onChange={(v) => onChange(field.field, v)}
+              error={errors[field.field]}
+              showError={showErrors}
+              allValues={values}
+            />
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
 
-/* Helpers */
-
-function compileValidators(defs: FieldDef[]) {
-  const map: Record<string, ((v: any) => string | null)[]> = {};
-  for (const d of defs) {
-    const schemas = (d.validators ?? []) as z.ZodTypeAny[];
-    map[d.key] = schemas.map((schema) => (value: any) => {
-      const res = schema.safeParse(value);
-      if (res.success) return null;
-      // Prefer Zod issues; fallback to error message
-      const issues = (res.error as any)?.issues as
-        | { message: string }[]
-        | undefined;
-      return issues?.map((i) => i.message).join("\n") ?? res.error.message;
-    });
+/**
+ * Checks if field is empty, based on field type.
+ *
+ * @param field
+ * @param value
+ * @returns
+ */
+function isEmptyFor(field: ClientField<[]>, value: unknown) {
+  switch (field.type) {
+    case "date":
+      return !(typeof value === "number" && value > 0); // 0/undefined = empty
+    case "signature":
+      return value !== true;
+    case "number":
+      return value === undefined || value === "";
+    default:
+      return value === undefined || value === "";
   }
-  return map;
 }
 
-function validateAll(
-  defs: FieldDef[],
-  formData: Record<string, any>,
-  validatorFns: Record<string, ((v: any) => string | null)[]>,
-) {
-  const next: Record<string, string> = {};
-  for (const d of defs) {
-    const fns = validatorFns[d.key] ?? [];
-    const val = formData[d.key];
-    const firstErr = fns.map((fn) => fn(val)).find(Boolean) ?? "";
-    next[d.key] = firstErr || "";
+/**
+ * Coerces the value into the type needed by the field.
+ * Useful, used outside zod schemas.
+ *
+ * @param field
+ * @param value
+ * @returns
+ */
+const coerceForField = (field: ClientField<[]>, value: unknown) => {
+  switch (field.type) {
+    case "number":
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      return value == null ? "" : String(value);
+    case "date":
+      return coerceAnyDate(value);
+    case "time":
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      return value == null ? "" : String(value);
+    case "signature":
+      return value === true;
+    case "text":
+    default:
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      return value == null ? "" : String(value);
   }
-  return next;
-}
+};

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,9 +12,9 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { AlertTriangle, Repeat } from "lucide-react";
-import { useAuthContext } from "@/lib/ctx-auth";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { AuthService } from "@/lib/api/services";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function VerifyPage() {
   const router = useRouter();
@@ -63,12 +63,13 @@ export default function VerifyPage() {
 
 function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
   const profile = useProfileData();
+  const queryClient = useQueryClient();
   const [otp, setOtp] = useState("");
   const [otpError, setOtpError] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [eduEmail, setEduEmail] = useState(
-    profile.data?.edu_verification_email ?? ""
+    profile.data?.edu_verification_email ?? "",
   );
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [isCoolingDown, setIsCoolingDown] = useState(false);
@@ -86,7 +87,9 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
     setActivating(true);
     setOtpError("");
     AuthService.activate(eduEmail, otp)
-      .then((response: any) => {
+      .then(async (response: any) => {
+        await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+
         if (response?.success) {
           onFinish();
         } else {
@@ -173,8 +176,8 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
                   ? sending
                     ? "Sending..."
                     : sent
-                    ? "Resend code"
-                    : "Send me a code"
+                      ? "Resend code"
+                      : "Send me a code"
                   : "Please wait…"}
               </Button>
             </div>

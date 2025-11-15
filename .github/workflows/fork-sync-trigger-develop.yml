@@ -19,6 +19,10 @@ jobs:
           ref: develop
           fetch-depth: 0
 
+      - name: Notify Discord of Initiation
+        run: |
+          curl -H "Content-Type: application/json" -d '{"content":"**DEV** Initiating..."}' ${{ secrets.DISCORD_WEBHOOK_URL }}
+
       - name: Add upstream and fetch
         run: |
           git remote add upstream https://github.com/BetterInternship/Client.git
@@ -28,3 +32,41 @@ jobs:
       - name: Push changes to fork
         run: |
           git push origin develop --force
+
+      - name: Deploy to Vercel
+        id: vercel
+        run: |
+          URL=$(npx vercel --prod --token="${{ secrets.VERCEL_TOKEN }}" --name=better-internship-client-dev --confirm)
+          echo "url=$URL" >> $GITHUB_OUTPUT
+
+      - name: Notify Discord of Success
+        if: ${{ success() }}
+        run: |
+          SHORT_SHA=$(git rev-parse --short upstream/develop)
+          COMMIT_URL="https://github.com/${{ github.repository }}/commit/${SHORT_SHA}"
+          ROLE_ID="1430152257072271376"
+          TIMESTAMP=$(date +%s)
+          MESSAGE="✅ **DEV** Client: [${SHORT_SHA}](${COMMIT_URL}) <t:${TIMESTAMP}:R> <@&${ROLE_ID}>"
+
+          curl -H "Content-Type: application/json" \
+            -d '{
+              "content": "'"$MESSAGE"'",
+              "allowed_mentions": { "roles": ["'"$ROLE_ID"'"] }
+            }' \
+            ${{ secrets.DISCORD_WEBHOOK_URL }}
+        
+      - name: Notify Discord of Failure
+        if: ${{ failure() }}
+        run: |
+          SHORT_SHA=$(git rev-parse --short upstream/develop)
+          COMMIT_URL="https://github.com/${{ github.repository }}/commit/${SHORT_SHA}"
+          ROLE_ID="1430152257072271376"
+          TIMESTAMP=$(date +%s)
+          MESSAGE="❌ **DEV** Client: [${SHORT_SHA}](${COMMIT_URL}) <t:${TIMESTAMP}:R> <@&${ROLE_ID}>"
+
+          curl -H "Content-Type: application/json" \
+            -d '{
+              "content": "'"$MESSAGE"'",
+              "allowed_mentions": { "roles": ["'"$ROLE_ID"'"] }
+            }' \
+            ${{ secrets.DISCORD_WEBHOOK_URL }}

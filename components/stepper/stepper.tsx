@@ -27,7 +27,7 @@ function StepperHeader({ step, steps }: { step: number; steps: Step[] }) {
         // mobile: one per row
         "grid grid-cols-1 gap-2 sm:gap-3",
         // desktop+: each child becomes a column with equal width
-        "md:grid-flow-col md:auto-cols-fr"
+        "md:grid-flow-col md:auto-cols-fr",
       )}
     >
       {steps.map((s, idx) => {
@@ -44,15 +44,15 @@ function StepperHeader({ step, steps }: { step: number; steps: Step[] }) {
               active
                 ? "border-primary/60 bg-primary/5"
                 : done
-                ? "border-supportive/40 bg-supportive/5"
-                : "border-border/60"
+                  ? "border-supportive/40 bg-supportive/5"
+                  : "border-border/60",
             )}
             aria-current={active ? "step" : undefined}
           >
             <div
               className={cn(
                 "flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full p-2 shrink-0 ",
-                active ? "bg-primary/10" : "bg-gray-100"
+                active ? "bg-primary/10" : "bg-gray-100",
               )}
             >
               {done ? (
@@ -61,7 +61,7 @@ function StepperHeader({ step, steps }: { step: number; steps: Step[] }) {
                 <Icon
                   className={cn(
                     "h-4 w-4 sm:h-5 sm:w-5 border-none",
-                    active ? "text-primary" : "text-muted-foreground"
+                    active ? "text-primary" : "text-muted-foreground",
                   )}
                 />
               )}
@@ -97,6 +97,8 @@ export const Stepper = ({
   onBack?: (newStep: number) => void;
 }) => {
   const currentStep = steps[step];
+
+  if (!currentStep) return <></>;
 
   return (
     <div className="w-full mx-auto">

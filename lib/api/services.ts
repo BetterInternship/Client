@@ -1,14 +1,15 @@
 import {
+  Conversation,
+  Employer,
+  EmployerApplication,
   Job,
   PublicUser,
-  UserApplication,
   SavedJob,
-  EmployerApplication,
-  Employer,
-  Conversation,
+  UserApplication,
 } from "@/lib/db/db.types";
 import { APIClient, APIRouteBuilder } from "./api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
+import { IFormMetadata } from "@betterinternship/core/forms";
 
 interface EmployerResponse extends FetchResponse {
   employer: Partial<Employer>;
@@ -17,20 +18,20 @@ interface EmployerResponse extends FetchResponse {
 export const EmployerService = {
   async getMyProfile() {
     return APIClient.get<EmployerResponse>(
-      APIRouteBuilder("employer").r("me").build()
+      APIRouteBuilder("employer").r("me").build(),
     );
   },
 
   async getEmployerPfpURL(employerId: string) {
     return APIClient.get<EmployerResponse>(
-      APIRouteBuilder("employer").r(employerId, "pic").build()
+      APIRouteBuilder("employer").r(employerId, "pic").build(),
     );
   },
 
   async updateMyProfile(data: Partial<Employer>) {
     return APIClient.put<EmployerResponse>(
       APIRouteBuilder("employer").r("me").build(),
-      data
+      data,
     );
   },
 
@@ -38,7 +39,7 @@ export const EmployerService = {
     return APIClient.put<ResourceHashResponse>(
       APIRouteBuilder("employer").r("me", "pic").build(),
       file,
-      "form-data"
+      "form-data",
     );
   },
 
@@ -52,7 +53,7 @@ export const EmployerService = {
   }) {
     return APIClient.post<{ success: boolean; message?: string }>(
       APIRouteBuilder("student/moa").r("sign").build({ moaServer: true }),
-      data
+      data,
     );
   },
 };
@@ -73,7 +74,7 @@ export const AuthService = {
   async register(user: Partial<PublicUser>) {
     return APIClient.post<AuthResponse>(
       APIRouteBuilder("auth").r("register").build(),
-      user
+      user,
     );
   },
 
@@ -83,7 +84,7 @@ export const AuthService = {
       {
         email,
         password,
-      }
+      },
     );
   },
 
@@ -93,27 +94,27 @@ export const AuthService = {
       {
         user_id: userId,
         key,
-      }
+      },
     );
   },
 
   async requestActivation(email: string) {
     return APIClient.post<ResourceHashResponse>(
       APIRouteBuilder("auth").r("activate").build(),
-      { email }
+      { email },
     );
   },
 
   async activate(email: string, otp: string) {
     return APIClient.post<ResourceHashResponse>(
       APIRouteBuilder("auth").r("activate", "otp").build(),
-      { email, otp }
+      { email, otp },
     );
   },
 
   async logout() {
     await APIClient.post<FetchResponse>(
-      APIRouteBuilder("auth").r("logout").build()
+      APIRouteBuilder("auth").r("logout").build(),
     );
   },
 };
@@ -127,117 +128,79 @@ interface SaveJobResponse extends FetchResponse {
   message: string;
 }
 
+export type ApproveSignatoryRequest = {
+  pendingDocumentId: string;
+  signatoryName: string;
+  signatoryTitle: string;
+  party: "student" | "entity" | "student-guardian" | "university";
+  values?: Record<string, string>;
+};
+
+export type ApproveSignatoryResponse = {
+  message?: string;
+  signedDocumentId?: string;
+  signedDocumentUrl?: string;
+  [k: string]: any;
+};
+
 export const UserService = {
   async getMyProfile() {
-    return APIClient.get<UserResponse>(
-      APIRouteBuilder("users").r("me").build()
+    const result = APIClient.get<UserResponse>(
+      APIRouteBuilder("users").r("me").build(),
     );
+    return result;
   },
 
   async updateMyProfile(data: Partial<PublicUser>) {
     return APIClient.put<UserResponse>(
       APIRouteBuilder("users").r("me").build(),
-      data
+      data,
     );
   },
 
   async updateMyDocData(data: Partial<PublicUser>) {
     return APIClient.put<UserResponse>(
       APIRouteBuilder("users").r("my-doc-data").build(),
-      data
+      data,
     );
   },
 
-  async generateStudentMoa(data: {
-    employer_id: string;
-    user_id: string;
-    user_address: string;
-    user_degree: string;
-    user_college: string;
-    user_full_name: string;
-    user_id_number: string;
-    student_guardian_name: string;
-    internship_hours: number;
-    internship_start_date: number;
-    internship_start_time: string;
-    internship_end_date: number;
-    internship_end_time: string;
-    internship_coordinator_name: string;
+  async requestGenerateForm(data: {
+    formName: string;
+    formVersion: number;
+    values: Record<string, string>;
+    signatories?: { name: string; title: string }[];
+    parties?: {
+      userId?: string | null;
+      employerId?: string | null;
+      universityId?: string | null;
+    };
+    disableEsign?: boolean;
   }) {
     return APIClient.post<{
-      moaRequestId: string;
-      signedDocumentId: string;
-      verificationCode: string;
-    }>(
-      APIRouteBuilder("student").r("moa", "request").build({ moaServer: true }),
-      data
-    );
+      success?: boolean;
+      documentUrl: string;
+      documentId: string;
+      internshipFormId: string;
+    }>(APIRouteBuilder("forms").r("generate").build({ moaServer: true }), data);
   },
 
-  async generateManualStudentMoa(data: {
-    employer_id: string;
-    user_id: string;
-    user_address: string;
-    user_degree: string;
-    user_college: string;
-    user_full_name: string;
-    user_id_number: string;
-    student_guardian_name: string;
-    internship_hours: number;
-    internship_start_date: number;
-    internship_start_time: string;
-    internship_end_date: number;
-    internship_end_time: string;
-    internship_coordinator_name: string;
-    companyLegalName: string;
-    companyAddress: string;
-    companyRepresentative: string;
-    companyRepresentativePosition: string;
-    companyType: string;
-  }) {
-    return APIClient.post<{
-      moaRequestId: string;
-      signedDocumentId: string;
-      verificationCode: string;
-    }>(
-      APIRouteBuilder("student").r("moa", "request", "manual").build({ moaServer: true }),
-      data
-    );
-  },
-
-  async createStudentMoaRow(data: {
-    MOAAgreementDate?: number;
-    CompanyLegalName?: string;
-    CompanyType?: string;
-    CompanyAddress: string;
-    CompanyRepresentative: string;
-    CompanyRepresentativePosition: string;
-    Studentname: string;
-    StudentProgram: string;
-    StudentCollege: string;
-    StudentAddress: string;
-    InternshipHours: number;
-    InternshipStartDate: number;
-    InternshipEndDate: number;
-    InternshipStartTime: string;
-    InternshipEndTime: string;
-    StudentGuardianName: string;
-    StudentIDNumber: string;
-    InternshipCoordinatorName: string;
-  }) {
-    return APIClient.post<{
-      success: boolean;
-      message?: string;
-    }>(
-      APIRouteBuilder("docs").r("student-moa").build({ moaServer: true }),
-      data
-    );
-  },
-
-  async requestEmployerAssist(id: string, recipient: string) {
-    return APIClient.post<{}>(
-      APIRouteBuilder("student").r("moa", "request", "partial", id).build({ moaServer: true }),
-      { recipient }
+  async getForm(formName: string) {
+    return APIClient.get<
+      {
+        formDocument: {
+          name: string;
+          label: string;
+          version: number;
+          base_document_id: string;
+        };
+        formMetadata: IFormMetadata;
+      } & FetchResponse
+    >(
+      APIRouteBuilder("forms")
+        .r("form-latest")
+        .p({ name: formName })
+        .build({ moaServer: true }),
     );
   },
 
@@ -245,34 +208,50 @@ export const UserService = {
     return APIClient.post<UserResponse>(
       APIRouteBuilder("users").r("me", "extract-resume").build(),
       form,
-      "form-data"
+      "form-data",
     );
   },
 
   async getMyResumeURL() {
     return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("users").r("me", "resume").build()
+      APIRouteBuilder("users").r("me", "resume").build(),
     );
   },
 
   // ! remove hardcoded mapping
   async getEntityList() {
-    const response = await APIClient.get<{ entities: { id: string, display_name: string }[] }>(
-      APIRouteBuilder("entities").r("list").build({ moaServer: true })
-    );
+    const response = await APIClient.get<{
+      entities: {
+        id: string;
+        display_name: string;
+        legal_identifier: string;
+        contact_name: string;
+        contact_email: string;
+        address: string;
+      }[];
+    }>(APIRouteBuilder("entities").r("list").build({ moaServer: true }));
 
-    return { employers: response.entities.map(e => ({ id: e.id, legal_entity_name: e.display_name })) }
+    return {
+      employers: response.entities.map((e) => ({
+        id: e.id,
+        display_name: e.display_name,
+        legal_entity_name: e.legal_identifier,
+        contact_name: e.contact_name,
+        contact_email: e.contact_email,
+        address: e.address,
+      })),
+    };
   },
 
   async getMyPfpURL() {
     return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("users").r("me", "pic").build()
+      APIRouteBuilder("users").r("me", "pic").build(),
     );
   },
 
   async getUserPfpURL(userId: string) {
     return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("users").r(userId, "pic").build()
+      APIRouteBuilder("users").r(userId, "pic").build(),
     );
   },
 
@@ -280,13 +259,13 @@ export const UserService = {
     return APIClient.put<ResourceHashResponse>(
       APIRouteBuilder("users").r("me", "pic").build(),
       file,
-      "form-data"
+      "form-data",
     );
   },
 
   async getUserResumeURL(userId: string) {
     return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("users").r(userId, "resume").build()
+      APIRouteBuilder("users").r(userId, "resume").build(),
     );
   },
 
@@ -294,14 +273,14 @@ export const UserService = {
     return APIClient.put<Response>(
       APIRouteBuilder("users").r("me", "resume").build(),
       form,
-      "form-data"
+      "form-data",
     );
   },
 
   async saveJob(jobId: string) {
     return APIClient.post<SaveJobResponse>(
       APIRouteBuilder("users").r("save-job").build(),
-      { id: jobId }
+      { id: jobId },
     );
   },
 };
@@ -334,33 +313,33 @@ export const JobService = {
 
   async getSavedJobs() {
     return APIClient.get<SavedJobsResponse>(
-      APIRouteBuilder("jobs").r("saved").build()
+      APIRouteBuilder("jobs").r("saved").build(),
     );
   },
 
   async getOwnedJobs() {
     return APIClient.get<OwnedJobsResponse>(
-      APIRouteBuilder("jobs").r("owned").build()
+      APIRouteBuilder("jobs").r("owned").build(),
     );
   },
 
   async createJob(job: Partial<Job>) {
     return APIClient.post<FetchResponse>(
       APIRouteBuilder("jobs").r("create").build(),
-      job
+      job,
     );
   },
 
   async updateJob(jobId: string, job: Partial<Job>) {
     return APIClient.put<FetchResponse>(
       APIRouteBuilder("jobs").r(jobId).build(),
-      job
+      job,
     );
   },
 
   async deleteJob(jobId: string) {
     return APIClient.delete<FetchResponse>(
-      APIRouteBuilder("jobs").r(jobId).build()
+      APIRouteBuilder("jobs").r(jobId).build(),
     );
   },
 };
@@ -375,31 +354,33 @@ interface ConversationsResponse extends FetchResponse {
 
 export const EmployerConversationService = {
   async sendToUser(conversationId: string, message: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return APIClient.post<any>(
       APIRouteBuilder("conversations").r("send-to-user").build(),
       {
         conversation_id: conversationId,
         message,
-      }
+      },
     );
   },
 
   async createConversation(userId: string) {
     return APIClient.post<ConversationResponse>(
       APIRouteBuilder("conversations").r("create").build(),
-      { user_id: userId }
+      { user_id: userId },
     );
   },
 };
 
 export const UserConversationService = {
   async sendToEmployer(conversationId: string, message: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return APIClient.post<any>(
       APIRouteBuilder("conversations").r("send-to-employer").build(),
       {
         conversation_id: conversationId,
         message,
-      }
+      },
     );
   },
 };
@@ -427,29 +408,29 @@ export const ApplicationService = {
       page?: number;
       limit?: number;
       status?: string;
-    } = {}
+    } = {},
   ) {
     return APIClient.get<UserApplicationsResponse>(
-      APIRouteBuilder("applications").p(params).build()
+      APIRouteBuilder("applications").p(params).build(),
     );
   },
 
   async createApplication(data: { job_id: string; cover_letter?: string }) {
     return APIClient.post<CreateApplicationResponse>(
       APIRouteBuilder("applications").r("create").build(),
-      data
+      data,
     );
   },
 
   async getApplicationById(id: string): Promise<UserApplicationResponse> {
     return APIClient.get<UserApplicationResponse>(
-      APIRouteBuilder("applications").r(id).build()
+      APIRouteBuilder("applications").r(id).build(),
     );
   },
 
   async getEmployerApplications(): Promise<EmployerApplicationsResponse> {
     return APIClient.get<EmployerApplicationsResponse>(
-      APIRouteBuilder("employer").r("applications").build()
+      APIRouteBuilder("employer").r("applications").build(),
     );
   },
 
@@ -460,27 +441,27 @@ export const ApplicationService = {
       githubLink?: string;
       portfolioLink?: string;
       resumeFilename?: string;
-    }
+    },
   ) {
     return APIClient.put<UserApplicationResponse>(
       APIRouteBuilder("applications").r(id).build(),
-      data
+      data,
     );
   },
 
   async withdrawApplication(id: string) {
     return APIClient.delete<FetchResponse>(
-      APIRouteBuilder("applications").r(id).build()
+      APIRouteBuilder("applications").r(id).build(),
     );
   },
 
   async reviewApplication(
     id: string,
-    review_options: { review?: string; notes?: string; status?: number }
+    review_options: { review?: string; notes?: string; status?: number },
   ) {
     return APIClient.post<FetchResponse>(
       APIRouteBuilder("applications").r(id, "review").build(),
-      review_options
+      review_options,
     );
   },
 };
@@ -489,11 +470,32 @@ export const ApplicationService = {
 export const handleApiError = (error: any) => {
   console.error("API Error:", error);
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   if (error.message === "Unauthorized") {
     // Already handled by apiClient
     return;
   }
 
   // ! Show toast notifications here
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
   return error.message || "An unexpected error occurred";
+};
+
+// update application status
+export const updateApplicationStatus = async (
+  id: string,
+  newStatus: number,
+) => {
+  try {
+    console.log(`Updating application ${id} to status ${newStatus}`);
+    const response = await ApplicationService.reviewApplication(id, {
+      status: newStatus,
+    });
+
+    console.log("API Response: ", response);
+    return response;
+  } catch (error: any) {
+    console.error("Error updating application" + id + ". " + error);
+    throw error;
+  }
 };

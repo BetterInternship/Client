@@ -88,12 +88,12 @@ export default function RegisterPage() {
   // Build ALL ids for work modes and types
   const allJobModeIds = useMemo(
     () => (refs.job_modes ?? []).map((o: any) => String(o.id)),
-    [refs.job_modes]
+    [refs.job_modes],
   );
 
   const allJobTypeIds = useMemo(
     () => (refs.job_types ?? []).map((o: any) => String(o.id)),
-    [refs.job_types]
+    [refs.job_types],
   );
 
   // Helpers to find specific ids
@@ -189,7 +189,7 @@ export default function RegisterPage() {
     if (internshipType === "credited") {
       regForm.setValue("job_setup_ids", allJobModeIds, { shouldDirty: true });
     } else if (internshipType === "voluntary") {
-      const filtered = [hybridModeId, remoteModeId].filter(Boolean) as string[];
+      const filtered = [hybridModeId, remoteModeId].filter(Boolean);
       regForm.setValue("job_setup_ids", filtered, { shouldDirty: true });
     } else {
       regForm.setValue("job_setup_ids", [], { shouldDirty: true });
@@ -307,7 +307,7 @@ export default function RegisterPage() {
                     <div className="w-full flex flex-row space-between">
                       <div
                         className={
-                          !!regForm.watch("expected_start_date")
+                          regForm.watch("expected_start_date")
                             ? "text-supportive"
                             : ""
                         }
@@ -351,7 +351,7 @@ export default function RegisterPage() {
                                 Number.isFinite(n as number)
                                   ? (n as number)
                                   : null,
-                                { shouldDirty: true }
+                                { shouldDirty: true },
                               );
                             }}
                             className="flex-1"
