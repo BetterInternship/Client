@@ -39,6 +39,7 @@ export default function FormsPage() {
   const router = useRouter();
   const userId = profile.data?.id;
   const [pendingDocs, setPendingDocs] = useState<Record<string, string[]>>({});
+  const [tab, setTab] = useState<string>("");
 
   // All form templates
   const {
@@ -67,6 +68,7 @@ export default function FormsPage() {
         formName={formName}
         formVersion={formVersion}
         onGoToMyForms={() => {
+          setTab("forms");
           closeGlobalModal("form-generator-form");
         }}
       />,
@@ -176,7 +178,12 @@ export default function FormsPage() {
           </div>
         </div>
 
-        <Tabs className="gap-0" defaultValue="form-generator">
+        <Tabs
+          className="gap-0"
+          value={tab || "form-generator"}
+          defaultValue={"form-generator"}
+          onValueChange={setTab}
+        >
           <TabsList className="rounded-b-none border-b-0">
             <TabsTrigger value="form-generator">Form Generator</TabsTrigger>
             <TabsTrigger value="forms">Forms</TabsTrigger>
