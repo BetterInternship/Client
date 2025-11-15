@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-11-15 14:10:43
- * @ Modified time: 2025-11-15 16:25:49
+ * @ Modified time: 2025-11-16 03:35:50
  * @ Description:
  *
  * Allows previewing a form and some fields on that form.
@@ -9,6 +9,7 @@
 
 import "./react-pdf-highlighter.css";
 import { Loader } from "@/components/ui/loader";
+import { cn } from "@/lib/utils";
 import { createPortal } from "react-dom";
 import {
   AreaHighlight,
@@ -168,6 +169,44 @@ const PdfDecorator = ({
       </div>
       <div className="relative flex-1">{children}</div>
       <div className="h-16"></div>
+    </div>
+  );
+};
+
+/**
+ * A preview of what the field will look like on the document.
+ *
+ * @component
+ */
+const FieldPreview = ({
+  value,
+  x,
+  y,
+  w,
+  h,
+}: {
+  value: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}) => {
+  return (
+    <div
+      className={cn("absolute top-0 left-0 border-0! bg-primary/10")}
+      style={{
+        userSelect: "auto",
+        display: "inline-block",
+        width: `round(var(--scale-factor) * ${w}px, 1px)`,
+        height: `round(var(--scale-factor) * ${h}px, 1px)`,
+        fontSize: "12px",
+        transform: `translate(round(var(--scale-factor) * ${x}px, 1px), round(var(--scale-factor) * ${y}px, 1px))`,
+        boxSizing: "border-box",
+        cursor: "pointer",
+        flexShrink: "0",
+      }}
+    >
+      {value}
     </div>
   );
 };
