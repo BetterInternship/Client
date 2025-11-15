@@ -293,7 +293,7 @@ function MobileDrawer({
                     </Link>
                   </li>
                   <li>
-                    <Link href="/" className="block w-full">
+                    <Link href="/dashboard" className="block w-full">
                       <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
                         <div>
                           <LayoutDashboard className="w-4 h-4 inline-block mr-2" />
