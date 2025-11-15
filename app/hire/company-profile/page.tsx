@@ -141,11 +141,6 @@ export default function CompanyProfile() {
                     onValue="Active DLSU MOA"
                     offValue="No DLSU MOA"
                   />
-                  <BoolBadge
-                    state={profile.is_verified}
-                    onValue="Verified"
-                    offValue="Not Verified"
-                  />
                   {to_industry_name(profile.industry, null) && (
                     <Badge>{to_industry_name(profile.industry)}</Badge>
                   )}
