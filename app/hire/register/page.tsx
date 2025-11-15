@@ -284,7 +284,7 @@ const EmployerEditor = ({
         </div>
         <div className="flex justify-between items-center w-full">
           <p className="text-sm text-gray-500">
-            Already have an account? <a className="text-blue-600 hover:text-blue-800 underline font-medium" href="/login">Login here.</a>
+            Already have an account? <a className="text-blue-600 hover:text-blue-800 underline font-medium" href="/login">Log in here.</a>
           </p>
           <Button
             onClick={register}
