@@ -6,6 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuthContext } from "../authctx";
 
+import {
+  FormInput,
+} from "@/components/EditForm";
+
+import { Card } from "@/components/ui/card";
+
 export default function LoginPage() {
   const {
     emailStatus: email_status,
@@ -71,26 +77,15 @@ export default function LoginPage() {
     }
   };
 
+  
   return (
-    <div className="flex-1 flex items-center justify-center px-6 py-12 h-[80vh]">
-      <div className="flex flex-col gap-12 w-full">
-        {/* Welcome Message */}
-        <div className="text-center">
-          {!new_account ? (
-            <h2 className="text-5xl font-heading font-bold text-gray-900">
-              Future interns are waiting!
-            </h2>
-          ) : (
-            <>
-              <h2 className="text-5xl font-heading font-bold text-gray-900">
-                First time here?
-              </h2>
-              <p className="">Don't miss out, sign up with us now!</p>
-            </>
-          )}
-        </div>
-
-        <div className="w-[50vw] lg:w-[30vw] self-center">
+    <div className="flex-1 flex items-center justify-center px-6 py-12 h-full">
+      <div className="flex items-center w-full max-w-2xl h-full">
+        <Card className="w-full">
+          {/* Welcome Message */}
+          <div className="text-3xl tracking-tighter font-bold text-gray-700 mb-4">
+            Employer Login
+          </div>
           {/* Error Message */}
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -101,63 +96,38 @@ export default function LoginPage() {
           {/* Login Form */}
           <form onSubmit={handle_login_request}>
             <div className="flex flex-col gap-4">
-              <Input
+              <FormInput
+                label="Email"
                 type="email"
-                placeholder="Email Address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-12 px-4 !rounded-[0.33em] input-box hover:cursor-text focus:ring-0"
               />
 
-              <Input
+              <FormInput
+                label="Password"
                 type="password"
-                className="h-12 px-4 !rounded-[0.33em] input-box hover:cursor-text"
-                placeholder="Password..."
+                value={password}
                 onChange={(e) => setPassword(e.target.value)}
-              ></Input>
-
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="self-end px-8"
-                size="md"
-                scheme={"primary"}
-              >
-                {isLoading ? "Logging in..." : "Login"}
-              </Button>
+                required
+              />
+              <p className="text-sm text-gray-500">
+                <a className="text-blue-600 hover:text-blue-800 underline font-medium" href="/forgot-password">Forgot password?</a>
+              </p>
+              <div className="flex justify-between items-center w-full">
+                <p className="text-sm text-gray-500">
+                  Don't have an account? <a className="text-blue-600 hover:text-blue-800 underline font-medium" href="/register">Register here.</a>
+                </p>
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Logging in..." : "Log in"}
+                </Button>
+              </div>
             </div>
           </form>
-        </div>
-
-        <div className="flex flex-col gap-2 self-center items-center w-[80vw] lg:w-[30vw]">
-          <p className="text-gray-500">
-            <a
-              className="text-primary hover:underline transition-colors duration-200"
-              href="/forgot-password"
-            >
-              Forgot your password?
-            </a>
-          </p>
-          <p className="text-gray-500">
-            Don't have an account?{" "}
-            <a
-              className="text-primary hover:underline transition-colors duration-200"
-              href="/register"
-            >
-              Register here
-            </a>
-          </p>
-          <p className="text-gray-500">
-            Need help? Call our hotline:{" "}
-            <a
-              className="text-primary hover:underline transition-colors duration-200"
-              href="tel:09276604999"
-            >
-              09276604999
-            </a>
-          </p>
-        </div>
+        </Card>
       </div>
     </div>
   );
