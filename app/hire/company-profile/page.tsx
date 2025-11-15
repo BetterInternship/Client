@@ -242,8 +242,8 @@ const ProfileDetails = ({ profile }: { profile: Employer }) => {
             "flex flex-row gap-2 flex-wrap"
           )}
         >
-          <ProfileLinkBadge title="Company Email" link={profile.email} />
-          <ProfileLinkBadge title="Company Website" link={profile.website} />
+          <ProfileLinkBadge title="Company Email" link={`mailto:profile.email`} />
+          <ProfileLinkBadge title="Company Website" link={`tel:profile.website`} />
           <ProfileLinkBadge
             title="Company Number"
             link={profile.phone_number}
