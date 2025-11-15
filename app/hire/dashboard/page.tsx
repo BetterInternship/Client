@@ -4,7 +4,6 @@
 
 import ContentLayout from "@/components/features/hire/content-layout";
 import { JobsContent } from "@/components/features/hire/dashboard/JobsContent";
-import { ShowUnverifiedBanner } from "@/components/ui/banner";
 import { Loader } from "@/components/ui/loader";
 import { useEmployerApplications, useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
 import { useMobile } from "@/hooks/use-mobile";
@@ -59,37 +58,29 @@ function DashboardContent() {
       <div className={cn("flex-1 flex flex-col w-full py-4", isMobile ? "px-1" : "px-4")}>
         <h3 className="text-primary tracking-tighter">Welcome back, {profile.data?.name}</h3>
         <div className="flex flex-col flex-1">
-          {!profile.loading && !profile.data?.is_verified ? (
-            <ShowUnverifiedBanner />
-          ) : (
-            <>
-              <div>
-                <div className="flex gap-4 mb-4">
-                  <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{activeJobs.length}</span> active listing/s</span>
-                  <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{inactiveJobs.length}</span> inactive listing/s</span>
-                </div>
-                <>
-                  <JobsContent
-                    applications={applications.employer_applications}
-                    jobs={ownedJobs}
-                    employerId={profile.data?.id || ""}
-                    onJobListingClick={handleJobListingClick}
-                    updateJob={update_job}
-                  />
-                  {isMobile && (
-                    <Link href="listings/create">
-                      <button
-                        aria-label="Create new listing"
-                        className="fixed bottom-8 right-2 bg-primary rounded-full p-5 z-10 shadow-xl z-[1000]"
-                      >
-                        <Plus className="h-5 w-5 text-white"/>
-                      </button>
-                    </Link>
-                  )}
-                </>
-              </div>
-            </>
-          )}
+          <div>
+            <div className="flex gap-4 mb-4">
+              <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{activeJobs.length}</span> active listing/s</span>
+              <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{inactiveJobs.length}</span> inactive listing/s</span>
+            </div>
+            <JobsContent
+              applications={applications.employer_applications}
+              jobs={ownedJobs}
+              employerId={profile.data?.id || ""}
+              onJobListingClick={handleJobListingClick}
+              updateJob={update_job}
+            />
+            {isMobile && (
+              <Link href="listings/create">
+                <button
+                  aria-label="Create new listing"
+                  className="fixed bottom-8 right-2 bg-primary rounded-full p-5 z-10 shadow-xl z-[1000]"
+                >
+                  <Plus className="h-5 w-5 text-white"/>
+                </button>
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </ContentLayout>
