@@ -10,29 +10,27 @@ import { isValidEmail } from "@/lib/utils";
 import { normalize } from "path";
 
 /**
- * Display the layout for the forgot password page.
+ * Display the layout for the change password page.
  */
-export default function ForgotPasswordPage() {
+
+export default function ChangePasswordPage() {
   return (
     <div className="flex justify-center px-6 py-12 h-full">
       <div className="flex justify-center items-center w-full max-w-2xl h-full">
-        <ForgotPasswordForm />
+        <ChangePasswordForm />
       </div>
     </div>
-  );
+  )
 }
 
-/**
- * Layout for the forgot password form.
- */
-const ForgotPasswordForm = ({}) => {
-  const { emailStatus: email_status } = useAuthContext(); // check if email exists.
+const ChangePasswordForm = ({}) => {
   const [email, setEmail] = useState("");
-  const [emailNorm, setEmailNorm] = useState("");
+  const [password, setPassword] = useState("");
+  const [reenterPassword, setReenterPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // send password reset request if a valid email is entered.
+  // change password when submit is clicked.
   const handle_request = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -46,15 +44,8 @@ const ForgotPasswordForm = ({}) => {
       return;
     }
 
-    setEmailNorm(normalized);
-
     try {
-      const r = await email_status(normalized);
-
-      if (r.existing_user) {
-        setIsLoading(false);
-        // TODO: send email for password reset request.
-      }
+      // TODO: change password.
     } catch (err: any) {
       setError(err?.message ?? "Something went wrong. Please try again later.");
       setIsLoading(false);
@@ -64,8 +55,8 @@ const ForgotPasswordForm = ({}) => {
   return (
     <>
       <Card className="flex flex-col gap-4 w-full">
-        <h2 className="text-3xl tracking-tighter font-bold text-gray-700">
-          Forgot password
+      <h2 className="text-3xl tracking-tighter font-bold text-gray-700">
+          Change password
         </h2>
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -77,18 +68,27 @@ const ForgotPasswordForm = ({}) => {
           onChange={(e) => setEmail(e.target.value)}
           value={email}
         />
-        <div className="flex justify-between items-center w-[100%]">
-          <p className="text-sm text-gray-500">
-            Already know your password? <a className="text-blue-600 hover:text-blue-800 underline font-medium" href="/login">Log in here.</a>
-          </p>
+        <FormInput
+          label="Password"
+          onChange={(e) => setPassword(e.target.value)}
+          value={password}
+          type="password"
+        />
+        <FormInput
+          label="Re-enter your password"
+          onChange={(e) => setReenterPassword(e.target.value)}
+          value={reenterPassword}
+          type="password"
+        />
+        <div className="flex justify-end items-center w-[100%]">
           <Button
             onClick={handle_request}
             disabled={isLoading}
           >
-            {isLoading ? "Sending request..." : "Request password reset"}
+            {isLoading ? "Changing password..." : "Change password"}
           </Button>
         </div>
       </Card>
     </>
   )
-};
+}
