@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   forwardRef,
@@ -6,30 +6,30 @@ import {
   useImperativeHandle,
   useRef,
   useState,
-} from 'react';
-import { Camera, Edit2 } from 'lucide-react';
-import ContentLayout from '@/components/features/hire/content-layout';
-import { useProfile } from '@/hooks/use-employer-api';
-import { Button } from '@/components/ui/button';
-import { useDbMoa } from '@/lib/db/use-bi-moa';
-import { useDbRefs } from '@/lib/db/use-refs';
-import { Badge, BoolBadge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
-import { Employer } from '@/lib/db/db.types';
-import { cn, isValidEmail, isValidPHNumber, isValidUUID } from '@/lib/utils';
-import { useAppContext } from '@/lib/ctx-app';
-import { Divider } from '@/components/ui/divider';
-import { isValidOptionalURL, openURL, toURL } from '@/lib/utils/url-utils';
-import { ErrorLabel, LabeledProperty } from '@/components/ui/labels';
+} from "react";
+import { Camera, Edit2 } from "lucide-react";
+import ContentLayout from "@/components/features/hire/content-layout";
+import { useProfile } from "@/hooks/use-employer-api";
+import { Button } from "@/components/ui/button";
+import { useDbMoa } from "@/lib/db/use-bi-moa";
+import { useDbRefs } from "@/lib/db/use-refs";
+import { Badge, BoolBadge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Employer } from "@/lib/db/db.types";
+import { cn, isValidEmail, isValidPHNumber, isValidUUID } from "@/lib/utils";
+import { useAppContext } from "@/lib/ctx-app";
+import { Divider } from "@/components/ui/divider";
+import { isValidOptionalURL, openURL, toURL } from "@/lib/utils/url-utils";
+import { ErrorLabel, LabeledProperty } from "@/components/ui/labels";
 import {
   createEditForm,
   FormCheckbox,
   FormDropdown,
   FormInput,
-} from '@/components/EditForm';
-import { MyEmployerPfp } from '@/components/shared/pfp';
-import { FileUploadFormBuilder } from '@/lib/multipart-form';
-import { EmployerService } from '@/lib/api/services';
+} from "@/components/EditForm";
+import { MyEmployerPfp } from "@/components/shared/pfp";
+import { FileUploadFormBuilder } from "@/lib/multipart-form";
+import { EmployerService } from "@/lib/api/services";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<Employer>();
 
@@ -54,47 +54,57 @@ export default function CompanyProfile() {
     const img = new Image();
     img.onload = async () => {
       if (img.width !== img.height) {
-        alert('Image must be square!');
+        alert("Image must be square!");
         return;
       }
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
       if (!allowedTypes.includes(file.type)) {
-        alert('Please upload a JPEG, PNG, or WebP image');
+        alert("Please upload a JPEG, PNG, or WebP image");
         return;
       }
       if (file.size > (1024 * 1024) / 4) {
-        alert('Image size must be less than 0.25MB');
+        alert("Image size must be less than 0.25MB");
         return;
       }
       try {
         setUploading(true);
-        const form = FileUploadFormBuilder.new('logo');
+        const form = FileUploadFormBuilder.new("logo");
         form.file(file);
         // @ts-ignore
         const result = await EmployerService.updateMyPfp(form.build());
         if (!result.success) {
-          alert('Could not upload profile picture.');
+          alert("Could not upload profile picture.");
           return;
         }
-        alert('Profile picture uploaded successfully!');
+        alert("Profile picture uploaded successfully!");
       } catch (error: any) {
-        alert(error.message || 'Failed to upload profile picture');
+        alert(error.message || "Failed to upload profile picture");
       } finally {
         setUploading(false);
         if (profilePictureInputRef.current) {
-          profilePictureInputRef.current.value = '';
+          profilePictureInputRef.current.value = "";
         }
       }
     };
     img.src = URL.createObjectURL(file);
   };
+
+  const { isMobile } = useAppContext();
   return (
     profile && (
       <ContentLayout>
-        <div className="h-fit min-h-screen bg-background p-6 py-12 w-full">
-          <div className="flex items-start gap-8 flex-1 w-full max-w-[600px] m-auto">
+        <div className={cn(
+          "max-w-[600px] bg-background py-4 rounded-lg border-gray-300 border",
+          isMobile
+            ? "px-2"
+            : "px-8"
+        )}>
+          <header className="flex flex-col items-start gap-2 flex-1 w-full m-auto ">
             <div className="relative flex-shrink-0">
-              <MyEmployerPfp size="36" />
+              <MyEmployerPfp size={isMobile
+                ? "20"
+                : "28"
+              } />
               <Button
                 variant="outline"
                 size="icon"
@@ -109,22 +119,24 @@ export default function CompanyProfile() {
                 ref={profilePictureInputRef}
                 onChange={handleProfilePictureUpload}
                 accept="image/*"
-                style={{ display: 'none' }}
+                style={{ display: "none" }}
               />
             </div>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-3xl font-bold font-heading mb-1 line-clamp-1">
-                {profile.name}
-              </h1>
-              <h1 className="text-sm font-normal mb-2 line-clamp-1 text-gray-400">
-                Legal Name: [{profile.legal_entity_name}]
-              </h1>
-              <div className="text-muted-foreground text-sm mt-2">
+            <div className="flex flex-col gap-2">
+              <div>
+                <h1 className="text-2xl font-bold font-heading">
+                  {profile.name}
+                </h1>
+                <h2 className="text-sm font-normal text-gray-400">
+                  Legal Name: {profile.legal_entity_name}
+                </h2>
+              </div>
+              <div className="text-muted-foreground text-sm">
                 <div className="flex flex-row gap-1">
                   <BoolBadge
                     state={check(
-                      profile?.id ?? '',
-                      get_university_by_name('DLSU - Manila')?.id ?? '',
+                      profile?.id ?? "",
+                      get_university_by_name("DLSU - Manila")?.id ?? "",
                     )}
                     onValue="Active DLSU MOA"
                     offValue="No DLSU MOA"
@@ -159,13 +171,13 @@ export default function CompanyProfile() {
                           setIsEditing(false);
                         } else {
                           setSaveError(
-                            'Please fix the errors in the form before saving.',
+                            "Please fix the errors in the form before saving.",
                           );
                         }
                       }}
                       disabled={saving}
                     >
-                      {saving ? 'Saving...' : 'Save'}
+                      {saving ? "Saving..." : "Save"}
                     </Button>
                   </div>
                 ) : (
@@ -176,7 +188,7 @@ export default function CompanyProfile() {
                 )}
               </div>
             </div>
-          </div>
+          </header>
 
           <div className="w-full max-w-[600px] m-auto space-y-2 mt-8 ">
             {!isEditing && <ProfileDetails profile={profile} />}
@@ -220,8 +232,8 @@ const ProfileDetails = ({ profile }: { profile: Employer }) => {
         <div
           className={cn(
             isMobile
-              ? 'grid grid-cols-1 space-y-5 mb-8'
-              : 'grid grid-cols-2 gap-y-5',
+              ? "grid grid-cols-1 space-y-5 mb-8"
+              : "grid grid-cols-2 gap-y-5",
           )}
         >
           <LabeledProperty label="Email" value={profile.email} />
@@ -232,10 +244,7 @@ const ProfileDetails = ({ profile }: { profile: Employer }) => {
         <Divider />
         <div
           className={cn(
-            'mb-8',
-            isMobile
-              ? 'grid grid-cols-1 space-y-2'
-              : 'flex flex-row space-x-2 items-center justify-start',
+            "flex flex-row gap-2 flex-wrap"
           )}
         >
           <ProfileLinkBadge title="Company Email" link={profile.email} />
@@ -300,15 +309,15 @@ const ProfileEditor = forwardRef<
         const updatedProfile = {
           ...cleanFormData(),
           website: toURL(formData.website)?.toString(),
-          industry: isValidUUID(formData.industry ?? '')
+          industry: isValidUUID(formData.industry ?? "")
             ? formData.industry
             : undefined,
         };
         await updateProfile(updatedProfile);
         return true;
       } catch (error) {
-        console.error('Failed to update profile:', error);
-        alert('Failed to update profile. Please try again.');
+        console.error("Failed to update profile:", error);
+        alert("Failed to update profile. Please try again.");
         return false;
       }
     },
@@ -323,20 +332,20 @@ const ProfileEditor = forwardRef<
   // Data validators
   useEffect(() => {
     addValidator(
-      'name',
-      (name: string) => !name.trim() && 'Invalid business name.',
+      "name",
+      (name: string) => !name.trim() && "Invalid business name.",
     );
     addValidator(
-      'legal_entity_name',
-      (name: string) => !name.trim() && 'Invalid legal entity name.',
+      "legal_entity_name",
+      (name: string) => !name.trim() && "Invalid legal entity name.",
     );
     addValidator(
-      'email',
-      (email: string) => !isValidEmail(email) && 'Invalid Philippine number.',
+      "email",
+      (email: string) => !isValidEmail(email) && "Invalid Philippine number.",
     );
     addValidator(
-      'website',
-      (link: string) => !isValidOptionalURL(link) && 'Invalid website link.',
+      "website",
+      (link: string) => !isValidOptionalURL(link) && "Invalid website link.",
     );
   }, []);
 
@@ -344,36 +353,36 @@ const ProfileEditor = forwardRef<
     <>
       <Card>
         <div className="text-xl tracking-tight font-medium text-gray-700 mb-4">
-          Identity
+          About
         </div>
         <div className="flex flex-col space-y-1 mb-2">
           <ErrorLabel value={formErrors.name} />
         </div>
-        <div className={'mb-4 flex flex-col space-y-3'}>
+        <div className={"mb-4 flex flex-col space-y-3"}>
           <FormInput
             label="Company Name"
-            value={formData.name ?? ''}
-            setter={fieldSetter('name')}
+            value={formData.name ?? ""}
+            setter={fieldSetter("name")}
             maxLength={100}
           />
           <FormInput
             label="Legal Entity Name"
-            value={formData.legal_entity_name ?? ''}
-            setter={fieldSetter('legal_entity_name')}
+            value={formData.legal_entity_name ?? ""}
+            setter={fieldSetter("legal_entity_name")}
             maxLength={100}
           />
           <FormInput
             label="Location"
-            value={formData.location ?? ''}
-            setter={fieldSetter('location')}
+            value={formData.location ?? ""}
+            setter={fieldSetter("location")}
             maxLength={100}
             required={false}
           />
           <FormDropdown
             label="Industry"
-            value={formData.industry ?? ''}
+            value={formData.industry ?? ""}
             options={industries.sort((a, b) => a.name.localeCompare(b.name))}
-            setter={fieldSetter('industry')}
+            setter={fieldSetter("industry")}
             required={false}
           />
         </div>
@@ -381,15 +390,15 @@ const ProfileEditor = forwardRef<
           Description
         </label>
         <textarea
-          value={formData.description || ''}
-          onChange={(e) => setField('description', e.target.value)}
+          value={formData.description || ""}
+          onChange={(e) => setField("description", e.target.value)}
           placeholder="Let applicants know what they're in for..."
           className="w-full border border-gray-200 rounded-[0.25em] p-3 px-5 text-sm min-h-24 resize-none focus:border-opacity-70 focus:ring-transparent"
           required={false}
           maxLength={750}
         />
         <p className="text-xs text-muted-foreground text-right">
-          {(formData.description || '').length}/750 characters
+          {(formData.description || "").length}/750 characters
         </p>
         <div className="text-xl tracking-tight font-medium text-gray-700 mb-4">
           Contact Information
@@ -398,16 +407,16 @@ const ProfileEditor = forwardRef<
           <ErrorLabel value={formErrors.email} />
           <FormInput
             label="Company Email"
-            value={formData.email ?? ''}
-            setter={fieldSetter('email')}
+            value={formData.email ?? ""}
+            setter={fieldSetter("email")}
           />
         </div>
         <div className="mb-3">
           <ErrorLabel value={formErrors.phone_number} />
           <FormInput
             label="Phone Number"
-            value={formData.phone_number ?? ''}
-            setter={fieldSetter('phone_number')}
+            value={formData.phone_number ?? ""}
+            setter={fieldSetter("phone_number")}
             required={false}
           />
         </div>
@@ -415,12 +424,12 @@ const ProfileEditor = forwardRef<
           <ErrorLabel value={formErrors.website} />
           <FormInput
             label="Website"
-            value={formData.website ?? ''}
-            setter={fieldSetter('website')}
+            value={formData.website ?? ""}
+            setter={fieldSetter("website")}
             required={false}
           />
         </div>
-        <div className="text-xl tracking-tight font-medium text-gray-700 mt-8">
+        {/* <div className="text-xl tracking-tight font-medium text-gray-700 mt-8">
           Miscellaneous
         </div>
         <div className="mb-3">
@@ -428,13 +437,13 @@ const ProfileEditor = forwardRef<
           <div className="flex flex-row items-center justify-start my-4">
             <FormCheckbox
               checked={formData.accepts_non_university}
-              setter={fieldSetter('accepts_non_university')}
+              setter={fieldSetter("accepts_non_university")}
             />
             <div className="text-sm text-gray-500 ml-3">
               Accept students outside of DLSU?
             </div>
           </div>
-        </div>
+        </div> */}
       </Card>
       <br />
       <br />

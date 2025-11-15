@@ -13,9 +13,9 @@ import shuffle from "knuth-shuffle-seeded";
 /**
  * From now on, all hooks that query data are meant to do just that.
  * Not allowed to have mutations + will be suffixed with "Data".
- * 
- * @param params 
- * @returns 
+ *
+ * @param params
+ * @returns
  */
 export function useJobsData(
   params: {
@@ -25,13 +25,13 @@ export function useJobsData(
     jobWorkloadFilter?: string[];
     jobAllowanceFilter?: string[];
     position?: string[];
-  } = {}
+  } = {},
 ) {
   const dbMoas = useDbMoa();
   const dbRefs = useDbRefs();
   const profile = useProfileData();
   const seed = useRef<number>(
-    hashStringToInt((profile.data?.email ?? "") + new Date().getDay())
+    hashStringToInt((profile.data?.email ?? "") + new Date().getDay()),
   );
   const applications = useApplicationsData();
 
@@ -51,7 +51,9 @@ export function useJobsData(
 
     return allJobs.filter(
       (job) =>
-        !!applications.data.find((application) => application.job_id === job.id)
+        !!applications.data.find(
+          (application) => application.job_id === job.id,
+        ),
     );
   }, [data, applications]);
 
@@ -68,7 +70,6 @@ export function useJobsData(
   const filteredJobs = useMemo(() => {
     const allJobs = data?.jobs ?? [];
     if (!allJobs?.length) return [];
-    console.log(allJobs)
 
     return allJobs.filter((job) => {
       // Search filter
@@ -92,7 +93,7 @@ export function useJobsData(
       // ! remove hard code "Has MOA"
       const hasMoa = dbMoas.check(
         job?.employer_id ?? "",
-        dbRefs.get_university_by_name("DLSU - Manila")?.id ?? ""
+        dbRefs.get_university_by_name("DLSU - Manila")?.id ?? "",
       )
         ? "Has MOA"
         : "No MOA";
@@ -130,7 +131,7 @@ export function useJobsData(
       const endIndex = startIndex + limit;
       return filteredJobs.slice(startIndex, endIndex);
     },
-    [filteredJobs]
+    [filteredJobs],
   );
 
   return {
@@ -156,7 +157,7 @@ export function useJobData(jobId: string) {
   const applications = useApplicationsData();
   const applied = !!useMemo(
     () => applications.data.find((application) => application.job_id === jobId),
-    [applications]
+    [applications],
   );
   const { isPending, data, error } = useQuery({
     queryKey: ["jobs", jobId],
@@ -174,7 +175,7 @@ export function useJobData(jobId: string) {
 export function useProfileData() {
   const { isPending, data, error } = useQuery({
     queryKey: ["my-profile"],
-    queryFn: UserService.getMyProfile,
+    queryFn: () => UserService.getMyProfile(),
   });
 
   return {

@@ -8,7 +8,6 @@ import {
   AlertTriangle,
   Repeat,
   User,
-  Sparkles,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +21,8 @@ import { isProfileResume, isProfileBaseComplete } from "../../lib/profile";
 import { ModalHandle } from "@/hooks/use-modal";
 import { isValidPHNumber } from "@/lib/utils";
 import { useDbRefs } from "@/lib/db/use-refs";
+import { Job } from "@/lib/db/db.types";
+import { isValidRequiredUserName } from "@/lib/utils/name-utils";
 
 /* ============================== Modal shell ============================== */
 
@@ -30,7 +31,7 @@ export function IncompleteProfileContent({
 }: {
   onFinish: () => void;
   applySuccessModalRef?: RefObject<ModalHandle | null>;
-  job?: unknown | null;
+  job?: Job | null;
 }) {
   return (
     <div className="p-6 h-full overflow-y-auto pt-0 sm:max-w-2xl">
@@ -115,7 +116,6 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
 
   // upload on file
   useEffect(() => {
-    console.log(file);
     if (!file) return;
     setParseError(null);
     setParsedReady(false);
@@ -140,7 +140,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
         setIsParsing(false);
         setStep(1);
       })
-      .catch((e: any) => {
+      .catch((e: Error) => {
         if (!cancelled) {
           setParseError(e?.message || "Failed to analyze resume.");
           setIsParsing(false);
@@ -177,8 +177,10 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
             parsedReady={parsedReady}
             parseError={parseError}
             onPick={(f) => setFile(f)}
-            fileInputRef={fileInputRef}
-            response={response}
+            fileInputRef={
+              fileInputRef as unknown as RefObject<HTMLInputElement>
+            }
+            response={response ?? null}
           />
         ),
       });
@@ -193,7 +195,9 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
           const phoneValid = isValidPHNumber(profile.phone);
           return (
             !!profile.firstName &&
+            isValidRequiredUserName(profile.firstName) &&
             !!profile.lastName &&
+            isValidRequiredUserName(profile.lastName) &&
             !isUpdating &&
             phoneValid &&
             !!profile.degree &&
@@ -244,9 +248,17 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
       return;
     }
 
+    // {
     if (current.id === "base") {
       setIsUpdating(true);
-      UserService.updateMyProfile({
+      const fullName = [
+        profile?.firstName ?? "",
+        profile?.middleName ?? "",
+        profile?.lastName ?? "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+      await UserService.updateMyProfile({
         first_name: profile.firstName ?? "",
         middle_name: profile.middleName ?? "",
         last_name: profile.lastName ?? "",
@@ -255,6 +267,19 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
         degree: profile.degree ?? "",
         college: profile.college ?? "",
         department: profile.department ?? "",
+        internship_moa_fields: {
+          student: {
+            "student-degree": profile.degree ?? "",
+            "student-college": profile.college ?? "",
+            "student-full-name": fullName,
+            "student-first-name": profile.firstName ?? "",
+            "student-middle-name": profile.middleName ?? "",
+            "student-last-name": profile.lastName ?? "",
+            "student-department": profile.department ?? "",
+            "student-university": profile.university ?? "",
+            "student-phone-number": profile.phone ?? "",
+          },
+        },
       }).then(() => {
         setIsUpdating(false);
         const isLast = step + 1 >= steps.length;
@@ -289,7 +314,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     <Stepper
       step={step}
       steps={steps}
-      onNext={onNext}
+      onNext={() => void onNext()}
       onBack={() => setStep(Math.max(0, step - 1))}
     />
   );
@@ -364,13 +389,111 @@ function StepBasicIdentity({
   value: ProfileDraft;
   onChange: (v: ProfileDraft) => void;
 }) {
-
-  const { colleges, departments } = useDbRefs();
+  const {
+    colleges,
+    departments,
+    get_departments_by_college,
+    to_department_name,
+    to_university_name,
+    get_colleges_by_university,
+    to_college_name,
+  } = useDbRefs();
 
   const phoneInvalid = useMemo(
     () => !!value.phone && !isValidPHNumber(value.phone),
-    [value.phone]
+    [value.phone],
   );
+
+  const firstNameInvalid = useMemo(
+    () => !!value.firstName && !isValidRequiredUserName(value.firstName),
+    [value.firstName],
+  );
+
+  const lastNameInvalid = useMemo(
+    () => !!value.lastName && !isValidRequiredUserName(value.lastName),
+    [value.lastName],
+  );
+
+  const [departmentOptions, setDepartmentOptions] =
+    useState<{ id: string; name: string }[]>(departments);
+
+  const [collegesOptions, setCollegesOptions] =
+    useState<
+      { id: string; name: string; short_name: string; university_id: string }[]
+    >(colleges);
+
+  // for realtime updating the department based on the college
+  useEffect(() => {
+    const collegeId = value.college;
+
+    if (collegeId) {
+      const list = get_departments_by_college?.(collegeId);
+      setDepartmentOptions(
+        list.map((d) => ({
+          id: d,
+          name: to_department_name(d) ?? "",
+        })),
+      );
+    } else {
+      // no college selected -> empty department options
+      setDepartmentOptions(
+        departments.map((d) => ({ id: d.id, name: d.name })),
+      );
+      if (value.department) {
+        value.department = undefined;
+      }
+    }
+  }, [
+    value.college,
+    value.department,
+    departments,
+    get_departments_by_college,
+    to_department_name,
+  ]);
+
+  // for realtime updating the department based on the university
+  useEffect(() => {
+    const universityId = value.university;
+
+    if (universityId) {
+      const list = get_colleges_by_university?.(universityId) ?? [];
+      const mapped = list.map((d) => ({
+        id: d,
+        name: to_college_name(d) ?? "",
+        short_name: "",
+        university_id: universityId,
+      }));
+      setCollegesOptions(mapped);
+
+      // If the currently selected college is not in the new mapped list, clear it (and department)
+      if (value.college && !mapped.some((c) => c.id === value.college)) {
+        value.college = undefined;
+        value.department = undefined;
+      }
+    } else {
+      // no university selected -> show all colleges and clear college/department
+      setCollegesOptions(
+        colleges.map((d) => ({
+          id: d.id,
+          name: d.name,
+          short_name: d.short_name,
+          university_id: d.university_id,
+        })),
+      );
+
+      // Clear selected college and department because no university is chosen
+      if (value.college) value.college = undefined;
+      if (value.department) value.department = undefined;
+    }
+  }, [
+    value.university,
+    value.college,
+    value.department,
+    colleges,
+    get_colleges_by_university,
+    to_college_name,
+    to_university_name,
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -386,6 +509,7 @@ function StepBasicIdentity({
               value={value.firstName}
               setter={(v) => onChange({ ...value, firstName: v })}
             />
+
             <FormInput
               label="Middle name"
               required={false}
@@ -398,6 +522,17 @@ function StepBasicIdentity({
               setter={(v) => onChange({ ...value, lastName: v })}
             />
           </div>
+
+          {firstNameInvalid && (
+            <p className="text-xs text-destructive -mt-2">
+              Please enter a first name. Special characters are not allowed.
+            </p>
+          )}
+          {lastNameInvalid && (
+            <p className="text-xs text-destructive -mt-2">
+              Please enter a last name. Special characters are not allowed.
+            </p>
+          )}
 
           <FormInput
             label="Phone number"
@@ -419,22 +554,12 @@ function StepBasicIdentity({
         </h4>
         <div className="mt-3 grid grid-cols-1 gap-3">
           <div>
-            <FormInput
-              required
-              label="Degree / Program"
-              value={value.degree ?? ""}
-              setter={(val: any) => onChange({ ...value, degree: val })}
-              placeholder="Select degree / program…"
-            />
-          </div>
-
-          <div>
             <FormDropdown
               required
               label="College"
-              value={value.college ?? ""} 
-              setter={(val: any) => onChange({ ...value, college: val })}
-              options={colleges}
+              value={value.college ?? ""}
+              setter={(val) => onChange({ ...value, college: val.toString() })}
+              options={collegesOptions}
               placeholder="Select college…"
             />
           </div>
@@ -444,9 +569,20 @@ function StepBasicIdentity({
               required
               label="Department"
               value={value.department ?? ""}
-              setter={(val: any) => onChange({ ...value, department: val })}
-              options={departments}
+              setter={(val) =>
+                onChange({ ...value, department: val.toString() })
+              }
+              options={departmentOptions}
               placeholder="Select department…"
+            />
+          </div>
+          <div>
+            <FormInput
+              required
+              label="Degree / Program"
+              value={value.degree ?? ""}
+              setter={(val) => onChange({ ...value, degree: val.toString() })}
+              placeholder="Select degree / program…"
             />
           </div>
         </div>

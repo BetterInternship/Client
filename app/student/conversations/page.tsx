@@ -50,9 +50,9 @@ export default function ConversationsPage() {
     () =>
       (conversations.data ?? []).toSorted(
         (a, b) =>
-          (b.last_unread?.timestamp ?? 0) - (a.last_unread?.timestamp ?? 0)
+          (b.last_unread?.timestamp ?? 0) - (a.last_unread?.timestamp ?? 0),
       ),
-    [conversations.data]
+    [conversations.data],
   );
 
   const endSend = () => {
@@ -66,14 +66,14 @@ export default function ConversationsPage() {
     setSending(true);
 
     const employerConversation = conversations.data?.find((c) =>
-      c?.subscribers?.includes(employerId)
+      c?.subscribers?.includes(employerId),
     );
 
     if (!employerConversation) return endSend();
 
     await UserConversationService.sendToEmployer(
       employerConversation.id,
-      msg
+      msg,
     ).catch(endSend);
 
     endSend();
@@ -96,7 +96,7 @@ export default function ConversationsPage() {
               "border-r border-gray-200 md:min-w-[25%] md:max-w-[25%] md:block",
               // mobile: show only when in list mode
               "md:relative",
-              isMobile ? (mobileView === "list" ? "block" : "hidden") : "block"
+              isMobile ? (mobileView === "list" ? "block" : "hidden") : "block",
             )}
           >
             <div className="h-full max-h-full overflow-y-auto">
@@ -112,7 +112,7 @@ export default function ConversationsPage() {
           <section
             className={cn(
               "flex-1 flex flex-col md:max-w-[75%] max-h-full",
-              isMobile ? (mobileView === "chat" ? "flex" : "hidden") : "flex"
+              isMobile ? (mobileView === "chat" ? "flex" : "hidden") : "flex",
             )}
           >
             {/* Mobile top bar */}
@@ -188,7 +188,7 @@ function ConversationList({
           setConversationId={onPick}
           isUnread={
             !!unreads?.some((u) =>
-              u.subscribers.some((s: string) => c.subscribers?.includes(s))
+              u.subscribers.some((s: string) => c.subscribers?.includes(s)),
             )
           }
         />
@@ -225,7 +225,7 @@ function ComposerBar({
     <div
       className={cn(
         "sticky bottom-0 z-10 border-t bg-white",
-        "px-2 pb-[calc(env(safe-area-inset-bottom)+8px)] pt-2"
+        "px-2 pb-[calc(env(safe-area-inset-bottom)+8px)] pt-2",
       )}
     >
       <div className="flex flex-col gap-2">
@@ -279,7 +279,7 @@ function NoConversationsEmptyState() {
           <h1
             className={cn(
               "font-heading font-bold",
-              isMobile ? "text-5xl" : "text-6xl"
+              isMobile ? "text-5xl" : "text-6xl",
             )}
           >
             BetterInternship
@@ -357,8 +357,8 @@ const ConversationCard = ({
   useEffect(() => {
     setEmployerId(
       conversation?.subscribers?.find(
-        (subscriberId: string) => subscriberId !== profile.data?.id
-      ) ?? ""
+        (subscriberId: string) => subscriberId !== profile.data?.id,
+      ) ?? "",
     );
   }, [conversation, profile.data?.id]);
 
@@ -367,7 +367,7 @@ const ConversationCard = ({
   return (
     <Card
       className={cn(
-        "rounded-none border-0 border-b border-gray-200 py-3 px-4 md:px-6 hover:bg-gray-50 cursor-pointer"
+        "rounded-none border-0 border-b border-gray-200 py-3 px-4 md:px-6 hover:bg-gray-50 cursor-pointer",
       )}
       onMouseDown={() => setConversationId(conversation.id)}
       onTouchStart={() => setConversationId(conversation.id)}

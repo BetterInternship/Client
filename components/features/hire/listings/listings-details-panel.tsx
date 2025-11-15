@@ -52,6 +52,10 @@ export function ListingsDetailsPanel({
     );
   }
 
+  const refreshPage = () => {
+    window.location.reload()
+  }
+
   return (
     <div className="max-w-[1024px] mx-auto">
       <JobDetails
@@ -82,13 +86,17 @@ export function ListingsDetailsPanel({
             : [
               <Link href={{
                 pathname:"/listings/edit",
-                query: {jobId: selectedJob.id}
-                }}>
+                query: {
+                  jobId: selectedJob.id,
+                  refresh: true
+                }
+                }}
+                >
                 <Button
                   key="edit"
                   variant="outline"
                   disabled={saving}
-                  // onClick={onEdit}
+                  // onClick={refreshPage}
                 >
                   Edit
                 </Button>
@@ -111,7 +119,8 @@ export function ListingsDetailsPanel({
                   Delete
                 </Button>,
               ]
-        }
+            }
+          className="p-0"
       />
     </div>
   );
