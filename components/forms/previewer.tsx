@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-11-15 14:10:43
- * @ Modified time: 2025-11-15 16:24:24
+ * @ Modified time: 2025-11-15 16:25:49
  * @ Description:
  *
  * Allows previewing a form and some fields on that form.
@@ -149,6 +149,11 @@ export const DocumentRenderer = ({
   );
 };
 
+/**
+ * Makes the pdf look better.
+ *
+ * @component
+ */
 const PdfDecorator = ({
   title,
   children,
