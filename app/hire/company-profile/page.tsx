@@ -141,11 +141,6 @@ export default function CompanyProfile() {
                     onValue="Active DLSU MOA"
                     offValue="No DLSU MOA"
                   />
-                  <BoolBadge
-                    state={profile.is_verified}
-                    onValue="Verified"
-                    offValue="Not Verified"
-                  />
                   {to_industry_name(profile.industry, null) && (
                     <Badge>{to_industry_name(profile.industry)}</Badge>
                   )}
@@ -247,11 +242,11 @@ const ProfileDetails = ({ profile }: { profile: Employer }) => {
             "flex flex-row gap-2 flex-wrap"
           )}
         >
-          <ProfileLinkBadge title="Company Email" link={profile.email} />
+          <ProfileLinkBadge title="Company Email" link={`mailto:profile.email`} />
           <ProfileLinkBadge title="Company Website" link={profile.website} />
           <ProfileLinkBadge
             title="Company Number"
-            link={profile.phone_number}
+            link={`tel:profile.phone_number`}
           />
         </div>
       </Card>
