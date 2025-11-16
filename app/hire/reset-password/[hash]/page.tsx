@@ -1,34 +1,46 @@
 "use client";
 
 import { useState } from "react";
-import { useAuthContext } from "../authctx";
-
+import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { FormInput } from "@/components/EditForm";
 import { Button } from "@/components/ui/button";
 import { isValidEmail } from "@/lib/utils";
 import { normalize } from "path";
+import { AuthService, EmployerUserService } from "@/lib/api/services";
 
 /**
  * Display the layout for the change password page.
  */
 
-export default function ChangePasswordPage() {
+export default async function ResetPasswordPage({ 
+  params 
+} : { 
+  params: { hash: string }
+}) {
+  const { hash } = await params;
+
   return (
     <div className="flex justify-center px-6 py-12 h-full">
       <div className="flex justify-center items-center w-full max-w-2xl h-full">
-        <ChangePasswordForm />
+        <ResetPasswordForm hash={hash} />
       </div>
     </div>
   )
 }
 
-const ChangePasswordForm = ({}) => {
-  const [email, setEmail] = useState("");
+const ResetPasswordForm = ({
+  hash
+} : {
+  hash: string
+}) => {
   const [password, setPassword] = useState("");
   const [reenterPassword, setReenterPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const router = useRouter();
 
   // change password when submit is clicked.
   const handle_request = async (e: React.FormEvent) => {
@@ -36,38 +48,56 @@ const ChangePasswordForm = ({}) => {
     setIsLoading(true);
     setError("");
 
-    const normalized = normalize(email);
-
-    if (!normalized || !isValidEmail(normalized)) {
+    if (password !== reenterPassword) {
+      setError("Passwords do not match.");
       setIsLoading(false);
-      setError("Enter a valid email.");
       return;
     }
 
     try {
-      // TODO: change password.
+      const r = await EmployerUserService.resetPassword(hash, reenterPassword);
+      console.log(r)
+      
+      // @ts-ignore
+      setSuccess(r.message || "Password reset successful. Redirecting to login page in five seconds.");
+      setIsLoading(false);
+
+      setTimeout(() => {
+        router.push("/login");
+      }, 5000);
     } catch (err: any) {
-      setError(err?.message ?? "Something went wrong. Please try again later.");
+      setError(err?.message ?? "Invalid or expired link. Please try again.");
       setIsLoading(false);
     }
+  }
+
+  if (success) {
+    return (
+      <>
+        <Card className="flex flex-col gap-4 w-full">
+          <h2 className="text-3xl tracking-tighter font-bold text-gray-700">
+            Success
+          </h2>
+          <p>{success}</p>
+          <a href="/login" className="text-blue-600 hover:text-blue-800 underline font-medium">
+            If you are not redirected, click here.
+          </a>
+        </Card>
+      </>
+    )
   }
 
   return (
     <>
       <Card className="flex flex-col gap-4 w-full">
       <h2 className="text-3xl tracking-tighter font-bold text-gray-700">
-          Change password
-        </h2>
+        Reset your password
+      </h2>
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-sm text-red-600 justify-center">{error}</p>
           </div>
         )}
-        <FormInput
-          label="Email"
-          onChange={(e) => setEmail(e.target.value)}
-          value={email}
-        />
         <FormInput
           label="Password"
           onChange={(e) => setPassword(e.target.value)}

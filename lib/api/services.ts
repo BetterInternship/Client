@@ -61,7 +61,6 @@ export const EmployerService = {
 interface EmployerUserResponse extends FetchResponse {
   success: boolean;
   message: string;
-  email: string
 }
 
 export const EmployerUserService = {
@@ -69,6 +68,13 @@ export const EmployerUserService = {
     return APIClient.post<EmployerUserResponse>(
       APIRouteBuilder("employer-users").r("forgot-password").build(),
       { email },
+    );
+  },
+
+  async resetPassword(hash: string, newPassword: string) {
+    return APIClient.post<EmployerUserResponse>(
+      APIRouteBuilder("employer-users").r("reset-password", hash).build(),
+      { newPassword },
     );
   },
 }

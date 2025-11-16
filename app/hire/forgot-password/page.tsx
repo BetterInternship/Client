@@ -34,7 +34,6 @@ const ForgotPasswordForm = ({}) => {
 
   // send password reset request if a valid email is entered.
   const handle_request = async (e: React.FormEvent) => {
-    e.preventDefault();
     setIsLoading(true);
     setError("");
     setMessage("");
@@ -73,9 +72,9 @@ const ForgotPasswordForm = ({}) => {
           value={email}
         />
         <div className="flex justify-between items-center w-[100%]">
-          <p className="text-sm text-gray-500">
+          <span className="text-sm text-gray-500">
             Already know your password? <a className="text-blue-600 hover:text-blue-800 underline font-medium" href="/login">Log in here.</a>
-          </p>
+          </span>
           <Button
             onClick={handle_request}
             disabled={isLoading}
