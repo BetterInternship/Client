@@ -8,6 +8,7 @@ import { FormInput } from "@/components/EditForm";
 import { Button } from "@/components/ui/button";
 import { isValidEmail } from "@/lib/utils";
 import { normalize } from "path";
+import { AuthService, EmployerUserService } from "@/lib/api/services";
 
 /**
  * Display the layout for the forgot password page.
@@ -26,9 +27,8 @@ export default function ForgotPasswordPage() {
  * Layout for the forgot password form.
  */
 const ForgotPasswordForm = ({}) => {
-  const { emailStatus: email_status } = useAuthContext(); // check if email exists.
   const [email, setEmail] = useState("");
-  const [emailNorm, setEmailNorm] = useState("");
+  const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -37,26 +37,16 @@ const ForgotPasswordForm = ({}) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-
-    const normalized = normalize(email);
-
-    if (!normalized || !isValidEmail(normalized)) {
-      setIsLoading(false);
-      setError("Enter a valid email.");
-      return;
-    }
-
-    setEmailNorm(normalized);
+    setMessage("");
 
     try {
-      const r = await email_status(normalized);
+      const r = await EmployerUserService.requestPasswordReset(email);
 
-      if (r.existing_user) {
-        setIsLoading(false);
-        // TODO: send email for password reset request.
-      }
+      // @ts-ignore
+      setMessage(r.message);
     } catch (err: any) {
-      setError(err?.message ?? "Something went wrong. Please try again later.");
+      setError(err.message ?? "Something went wrong. Please try again later.");
+    } finally {
       setIsLoading(false);
     }
   }
@@ -70,6 +60,11 @@ const ForgotPasswordForm = ({}) => {
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-sm text-red-600 justify-center">{error}</p>
+          </div>
+        )}
+        {message && (
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-sm text-green-600 justify-center">{message}</p>
           </div>
         )}
         <FormInput
