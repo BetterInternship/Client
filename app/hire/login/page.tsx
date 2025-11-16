@@ -3,8 +3,9 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useAuthContext } from "../authctx";
+import { cn } from "@/lib/utils";
+import { useAppContext } from "@/lib/ctx-app";
 
 import {
   FormInput,
@@ -23,10 +24,11 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [emailNorm, setEmailNorm] = useState(""); // keep a normalized copy for API calls
   const [password, setPassword] = useState("");
-  const [new_account, set_new_account] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+
+  const { isMobile } = useAppContext();
 
   redirect_if_not_logged_in();
   redirect_if_logged_in();
@@ -79,7 +81,12 @@ export default function LoginPage() {
 
   
   return (
-    <div className="flex-1 flex items-center justify-center px-6 py-12 h-full">
+    <div className={cn(
+      "flex justify-center py-12 pt-12 h-fit overflow-y-auto",
+      isMobile
+        ? "px-2"
+        : "px-6"
+    )}>
       <div className="flex items-center w-full max-w-2xl h-full">
         <Card className="w-full">
           {/* Welcome Message */}

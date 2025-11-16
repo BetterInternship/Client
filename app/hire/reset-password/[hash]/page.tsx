@@ -5,23 +5,29 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { FormInput } from "@/components/EditForm";
 import { Button } from "@/components/ui/button";
-import { isValidEmail } from "@/lib/utils";
-import { normalize } from "path";
 import { AuthService, EmployerUserService } from "@/lib/api/services";
+import { cn } from "@/lib/utils";
+import { useAppContext } from "@/lib/ctx-app";
 
 /**
  * Display the layout for the change password page.
  */
 
-export default async function ResetPasswordPage({ 
+export default function ResetPasswordPage({ 
   params 
 } : { 
   params: { hash: string }
 }) {
-  const { hash } = await params;
+  const { isMobile } = useAppContext();
+  const { hash } = params;
 
   return (
-    <div className="flex justify-center px-6 py-12 h-full">
+    <div className={cn(
+      "flex justify-center py-12 pt-12 h-full overflow-y-auto",
+      isMobile
+        ? "px-2"
+        : "px-6"
+    )}>
       <div className="flex justify-center items-center w-full max-w-2xl h-full">
         <ResetPasswordForm hash={hash} />
       </div>
@@ -56,7 +62,6 @@ const ResetPasswordForm = ({
 
     try {
       const r = await EmployerUserService.resetPassword(hash, reenterPassword);
-      console.log(r)
       
       // @ts-ignore
       setSuccess(r.message || "Password reset successful. Redirecting to login page in five seconds.");
@@ -90,9 +95,9 @@ const ResetPasswordForm = ({
   return (
     <>
       <Card className="flex flex-col gap-4 w-full">
-      <h2 className="text-3xl tracking-tighter font-bold text-gray-700">
-        Reset your password
-      </h2>
+        <h2 className="text-3xl tracking-tighter font-bold text-gray-700">
+          Reset your password
+        </h2>
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-sm text-red-600 justify-center">{error}</p>
@@ -112,6 +117,7 @@ const ResetPasswordForm = ({
         />
         <div className="flex justify-end items-center w-[100%]">
           <Button
+            type="submit"
             onClick={handle_request}
             disabled={isLoading}
           >

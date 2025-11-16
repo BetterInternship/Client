@@ -1,22 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { useAuthContext } from "../authctx";
 
 import { Card } from "@/components/ui/card";
 import { FormInput } from "@/components/EditForm";
 import { Button } from "@/components/ui/button";
-import { isValidEmail } from "@/lib/utils";
-import { normalize } from "path";
-import { AuthService, EmployerUserService } from "@/lib/api/services";
+import { EmployerUserService } from "@/lib/api/services";
+import { cn } from "@/lib/utils";
+import { useAppContext } from "@/lib/ctx-app";
 
 /**
  * Display the layout for the forgot password page.
  */
 export default function ForgotPasswordPage() {
+  const { isMobile } = useAppContext();
+
   return (
-    <div className="flex justify-center px-6 py-12 h-full">
-      <div className="flex justify-center items-center w-full max-w-2xl h-full">
+    <div className={cn(
+      "flex justify-center py-12 pt-12 h-full overflow-y-auto",
+      isMobile
+        ? "px-2"
+        : "px-6"
+    )}>
+      <div className="flex justify-center w-full max-w-2xl h-fit">
         <ForgotPasswordForm />
       </div>
     </div>
@@ -34,6 +40,7 @@ const ForgotPasswordForm = ({}) => {
 
   // send password reset request if a valid email is entered.
   const handle_request = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsLoading(true);
     setError("");
     setMessage("");
@@ -71,11 +78,12 @@ const ForgotPasswordForm = ({}) => {
           onChange={(e) => setEmail(e.target.value)}
           value={email}
         />
-        <div className="flex justify-between items-center w-[100%]">
-          <span className="text-sm text-gray-500">
-            Already know your password? <a className="text-blue-600 hover:text-blue-800 underline font-medium" href="/login">Log in here.</a>
-          </span>
+        <span className="text-sm text-gray-500">
+          Remember your password? <a className="text-blue-600 hover:text-blue-800 underline font-medium" href="/login">Log in here.</a>
+        </span>
+        <div className="flex justify-end items-center w-[100%]">
           <Button
+            type="submit"
             onClick={handle_request}
             disabled={isLoading}
           >
