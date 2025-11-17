@@ -172,10 +172,10 @@ function PartyPills({
             title={`${label} — ${email}`}
             className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] leading-4 text-muted-foreground"
           >
-            <Icon className="h-3.5 w-3.5 text-primary" />
+            <Icon className="h-3.5 w-3.5" />
             <span className="truncate">
-              <span className="text-primary font-semibold">{label}</span> -{" "}
-              {email}
+              <span className="font-semibold">{label}</span>
+              {email ? <> - {email}</> : null}
             </span>
           </span>
         );
