@@ -119,7 +119,7 @@ export function DynamicForm({
       <RecipientSection
         formKey={formName}
         title="Recipient Email(s) — IMPORTANT"
-        subtitle="These email fields are important. Please double-check addresses, recipients are emailed a seperate form to them to complete and sign.."
+        subtitle="These email fields are important. Please double-check addresses, recipients are emailed a seperate form to them to complete and sign."
         fields={recipientFields}
         values={values}
         onChange={onChange}
