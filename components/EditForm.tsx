@@ -169,10 +169,10 @@ export function LabelWithTooltip({
 }) {
   const id = tooltipId ?? `${label.replace(/\s+/g, "-").toLowerCase()}-tooltip`;
   return (
-    <div className="flex items-center gap-2 mb-1">
-      <label className="text-xs text-gray-600">
+    <div className="flex md:items-center gap-2 mb-1">
+      <span className="text-xs text-gray-600">
         {label} {required && <span className="text-red-500">*</span>}
-      </label>
+      </span>
       <div className="hover:cursor-help">
         <MessageCircleQuestion
           data-tooltip-id={id}

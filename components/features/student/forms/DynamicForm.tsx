@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { FieldRenderer } from "@/components/features/student/forms/FieldRenderer";
 import { ClientField } from "@betterinternship/core/forms";
 import { coerceAnyDate } from "@/lib/utils";
+import { RecipientSection } from "@/components/features/student/forms/RecipientSection";
 
 export function DynamicForm({
   formName,
@@ -28,17 +29,27 @@ export function DynamicForm({
     .filter((field) => field.party === "student")
     .filter((field) => field.source === "manual");
 
-  // Group by section
-  const entitySectionFields: ClientField<[]>[] = filteredFields.filter(
+  // Separate recipient fields (those whose field name ends with ":recipient")
+  const recipientFields = filteredFields.filter((f) =>
+    String(f.field).endsWith(":recipient"),
+  );
+
+  // All non-recipient fields
+  const nonRecipientFields = filteredFields.filter(
+    (f) => !String(f.field).endsWith(":recipient"),
+  );
+
+  // Group by section (from non-recipient set)
+  const entitySectionFields: ClientField<[]>[] = nonRecipientFields.filter(
     (d) => d.section === "entity",
   );
-  const studentSectionFields: ClientField<[]>[] = filteredFields.filter(
+  const studentSectionFields: ClientField<[]>[] = nonRecipientFields.filter(
     (d) => d.section === "student",
   );
-  const internshipSectionFields: ClientField<[]>[] = filteredFields.filter(
+  const internshipSectionFields: ClientField<[]>[] = nonRecipientFields.filter(
     (d) => d.section === "internship",
   );
-  const universitySectionFields: ClientField<[]>[] = filteredFields.filter(
+  const universitySectionFields: ClientField<[]>[] = nonRecipientFields.filter(
     (d) => d.section === "university",
   );
 
@@ -99,6 +110,17 @@ export function DynamicForm({
         formKey={formName}
         title="Student Information"
         fields={studentSectionFields}
+        values={values}
+        onChange={onChange}
+        errors={errors}
+        showErrors={showErrors}
+      />
+
+      <RecipientSection
+        formKey={formName}
+        title="Recipient Email(s) — IMPORTANT"
+        subtitle="These email fields are important. Please double-check addresses, recipients are emailed a seperate form to them to complete and sign.."
+        fields={recipientFields}
         values={values}
         onChange={onChange}
         errors={errors}
