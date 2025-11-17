@@ -15,8 +15,11 @@ import { LogOut,
           Menu,
           FileUser,
           Plus,
+          LucideIcon,
+          Paperclip,
+          MessageCircleQuestion,
+          Icon,
           } from "lucide-react";
-import { useAppContext } from "@/lib/ctx-app";
 import { DropdownOption, GroupableNavDropdown } from "@/components/ui/dropdown";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,10 +31,62 @@ import { MyEmployerPfp } from "@/components/shared/pfp";
 import { useProfile } from "@/hooks/use-employer-api";
 import { useMobile } from "@/hooks/use-mobile";
 import { useConversations } from "@/hooks/use-conversation";
-import { useGlobalModal } from "@/components/providers/ModalProvider";
-import { useQueryClient } from "@tanstack/react-query";
 import { MyUserPfp } from "@/components/shared/pfp";
 import { Separator } from "@/components/ui/separator";
+import { ReactNode } from "react";
+
+type MenuLink = {
+  label: string;
+  href: string;
+  icon: LucideIcon;
+  highlight: boolean;
+  destructive: boolean;
+};
+
+const LINKS: MenuLink[] = [
+  {
+    label: "Create Listing",
+    href: "/listings/create",
+    icon: Plus,
+    highlight: true,
+    destructive: false,
+  },
+  {
+    label: "Dashboard",
+    href: "/listings/create",
+    icon: LayoutDashboard,
+    highlight: false,
+    destructive: false,
+  },
+  {
+    label: "Company Profile",
+    href: "/company-profile",
+    icon: Building,
+    highlight: false,
+    destructive: false,
+  },
+  {
+    label: "Privacy Policy",
+    href: "/PrivacyPolicy.pdf",
+    icon: Paperclip,
+    highlight: false,
+    destructive: false,
+  },
+  {
+    label: "Terms and Conditions",
+    href: "/TermsConditions.pdf",
+    icon: Paperclip,
+    highlight: false,
+    destructive: false,
+  },
+  {
+    label: "Need help?",
+    href: "https://www.facebook.com/profile.php?id=61579853068043",
+    icon: MessageCircleQuestion,
+    highlight: false,
+    destructive: false,
+  },
+]
 
 /**
  * The header present on every page
@@ -198,6 +253,7 @@ function MobileDrawer({
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
+  const year = new Date().getFullYear();
 
   const handleLogout = () => logout().then(() => router.push("/"));
 
@@ -210,7 +266,7 @@ function MobileDrawer({
       {/* Backdrop */}
       <div
         className={cn(
-          "fixed inset-0 z-[120] bg-black/30 backdrop-blur-[2px] transition-opacity duration-200",
+          "fixed inset-0 z-[12000] bg-black/30 backdrop-blur-[2px] transition-opacity duration-200",
           open
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
@@ -221,7 +277,7 @@ function MobileDrawer({
       {/* Drawer */}
       <aside
         className={cn(
-          "fixed right-0 top-0 z-[121] h-[100svh] w-full max-w-[92%] sm:max-w-[420px] bg-white shadow-xl border-l border-gray-200",
+          "fixed right-0 top-0 z-[121000] h-[100svh] w-full max-w-[92%] sm:max-w-[420px] bg-white shadow-xl border-l border-gray-200",
           "transition-transform duration-250 ease-out",
           open ? "translate-x-0" : "translate-x-full"
         )}
@@ -281,52 +337,29 @@ function MobileDrawer({
                       </Link>
                     </li>
                   )} */}
-                  <li>
-                    <Link href="/listings/create" className="block w-full">
-                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 bg-primary hover:opacity-50 border border-transparent text-sm">
-                        <div className="text-white">
-                          <Plus className="w-4 h-4 inline-block mr-2" />
-                          <span>Create Listing</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-white" />
-                      </button>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/dashboard" className="block w-full">
-                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                        <div>
-                          <LayoutDashboard className="w-4 h-4 inline-block mr-2" />
-                          <span>Dashboard</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-gray-300" />
-                      </button>
-                    </Link>
-                  </li>
-                  {/* <li>
-                    <Link href="/forms-management" className="block w-full">
-                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                        <div>
-                          <FileUser className="w-4 h-4 inline-block mr-2" />
-                          <span>Forms Automation</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-gray-300" />
-                      </button>
-                    </Link>
-                  </li> */}
-                  <li>
-                    <Link href="/company-profile">
-                      <button
-                        className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary"
-                      >
-                        <div>
-                          <Building className="w-4 h-4 inline-block mr-2" />
-                          <span>Company Profile</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-gray-300" />
-                      </button>
-                    </Link>                   
-                  </li>
+                  {LINKS.map((link) => (
+                    <li>
+                      <Link href={link.href} className="block w-full">
+                        <button className={cn(
+                          "w-full flex items-center justify-between rounded-md px-3 py-2 border border-transparent text-sm",
+                          link.highlight
+                            ? "bg-primary hover:opacity-50 text-white"
+                            : "hover:bg-gray-50"
+                        )}>
+                          <div>
+                            {<link.icon className="w-4 h-4 inline-block mr-2" size={4} />}
+                            <span>{link.label}</span>
+                          </div>
+                          <ChevronRight className={cn(
+                            "w-4 h-4",
+                            link.highlight
+                              ? "text-main"
+                              : "text-muted-foreground"
+                          )} />
+                        </button>
+                      </Link>
+                    </li>
+                  ))}
                 </ul>
               </nav>
             </div>
@@ -334,14 +367,17 @@ function MobileDrawer({
 
           {/* Footer pinned to bottom */}
           {isAuthenticated() && (
-            <div className="mt-auto border-t px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3">
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 text-red-600 font-medium py-2 rounded-md hover:bg-red-50"
-              >
-                <LogOut className="w-4 h-4" /> Sign Out
-              </button>
-            </div>
+            <>
+              <span className="text-center text-xs p-2 text-muted-foreground">2025 BetterInternship, Inc.</span>
+              <div className="mt-auto border-t px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3">
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center justify-center gap-2 text-red-600 font-medium py-2 rounded-md hover:bg-red-50"
+                >
+                  <LogOut className="w-4 h-4" /> Sign Out
+                </button>
+              </div>
+            </>
           )}
         </div>
       </aside>

@@ -31,9 +31,7 @@ export default function HomePage() {
         {/* Companies showcase */}
       <LogoCarouselBasic />
 
-      <div className="dark">
-        <Footer />
-      </div>
+      <Footer theme="dark" />
     </div>
   );
 }

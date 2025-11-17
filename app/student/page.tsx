@@ -17,7 +17,7 @@ export default function HomePage() {
       {/* Benefits clickable */}
       <Testimonials />
 
-      <Footer />
+      <Footer theme="light" />
     </div>
   );
 }

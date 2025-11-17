@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useAppContext } from "@/lib/ctx-app";
+import { cn } from "@/lib/utils";
 
 type FooterLink = { label: string; href: string; className?: string };
 
@@ -14,34 +16,53 @@ const LINKS: FooterLink[] = [
   },
 ];
 
-export function Footer({ links = LINKS }: { links?: FooterLink[] }) {
+export function Footer({
+  links = LINKS,
+  theme = "light"
+} : { 
+  links?: FooterLink[];
+  theme: "light" | "dark";
+}) {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="py-1 px-5">
+    <footer className={cn(
+      "py-1 px-5",
+      theme === "light"
+        ? ""
+        : "bg-black"
+    )}>
       <div className="mx-auto">
-        <div className="flex gap-2 justify-center md:flex-row md:items-center md:justify-between">
-          <p className="text-xs text-muted-foreground text-center md:text-left">
-            © {year} BetterInternship Inc.
-          </p>
-
-          <p className="text-xs md:hidden text-muted-foreground">•</p>
-
-          <nav aria-label="Footer" className="flex justify-center">
-            <ul className="flex flex-wrap items-center gap-x-2 md:gap-x-4 gap-y-2 text-xs">
-              {links.map((l) => (
-                <li key={l.label}>
-                  <Link
-                    href={l.href}
-                    className={`text-muted-foreground hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring rounded-sm ${l.className ?? ""}`}
-                  >
-                    {l.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        </div>
+        <nav aria-label="Footer">
+          <ul className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+            <p className={cn(
+              "text-xs",
+              theme === "light"
+                ? "text-muted-foreground"
+                : "text-gray-300"
+            )}>
+              © {year} BetterInternship Inc.
+            </p>
+            {links.map((l) => (
+              <li key={l.label}>
+                <Link
+                  href={l.href}
+                  className={`
+                    hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring rounded-sm 
+                    ${l.className ?? ""}
+                    ${
+                      theme === "light"
+                        ? "text-muted-foreground"
+                        : "text-gray-300"
+                    }
+                  `}
+                >
+                  {l.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
     </footer>
   );
