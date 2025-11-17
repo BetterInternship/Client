@@ -162,17 +162,25 @@ export default function FormsPage() {
           </div>
           <div className="flex-1 flex-row">
             <p className="text-gray-600 text-sm sm:text-base mb-2 space-y-1">
-              Generate internship documents using your saved details.
-              <div className="flex gap-1">
+              Generate internship documents using your saved details. If you run
+              into any issues, contact us via{" "}
+              <a
+                href="https://www.facebook.com/profile.php?id=61579853068043"
+                className="underline"
+              >
+                Facebook
+              </a>
+              .
+              <div className="md:flex gap-1">
                 <div className="text-primary font-semibold">
-                  • Generate for Manual Signing
+                  Generate for Manual Signing
                 </div>{" "}
                 fills the form without digital signatures (use this if you
                 prefer wet/offline signatures).
               </div>
-              <div className="flex gap-1">
+              <div className="md:flex gap-1">
                 <div className="text-primary font-semibold">
-                  • Generate & Initiate E-Sign
+                  Generate & Initiate E-Sign
                 </div>{" "}
                 creates the form and starts the electronic signing workflow for
                 all parties.
