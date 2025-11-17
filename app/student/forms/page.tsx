@@ -82,6 +82,7 @@ export default function FormsPage() {
     );
   };
 
+  // All user generated forms
   const {
     data: myForms,
     isLoading: loadingMyForms,
@@ -120,7 +121,7 @@ export default function FormsPage() {
           const resp = await fetchPendingDocument(id);
           if (cancelled) return;
 
-          const parties = (resp?.data?.pending_parties ?? []).map(String);
+          const parties = resp?.data?.pending_parties;
 
           if (!cancelled) {
             setPendingDocs((prev) => ({
@@ -295,7 +296,7 @@ export default function FormsPage() {
                       row.signed_document_id || row.prefilled_document_id
                         ? "Complete"
                         : "Pending ";
-                    const waitingFor: string[] = row.pending_document_id
+                    const waitingFor = row.pending_document_id
                       ? (pendingDocs[row.pending_document_id] ?? [])
                       : [];
 
