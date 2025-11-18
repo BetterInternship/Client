@@ -145,10 +145,12 @@ export default function FormsPage() {
     router.push("/profile");
   }
 
-  // ! todo: make this more efficient
   useEffect(() => {
-    if (tab === "My Forms" && userId) {
-      void queryClient.invalidateQueries({ queryKey: ["my_forms", userId] });
+    if (tab === "forms" && userId) {
+      void queryClient.invalidateQueries({
+        queryKey: ["my_forms", userId],
+        refetchType: "all",
+      });
     }
   }, [tab, userId, queryClient]);
 
