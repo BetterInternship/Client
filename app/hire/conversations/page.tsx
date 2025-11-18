@@ -3,7 +3,7 @@ import { useConversation, useConversations } from "@/hooks/use-conversation";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Card } from "@/components/ui/card";
 import { EmployerPfp, UserPfp } from "@/components/shared/pfp";
-import { ChevronLeft, ChevronRight, SendHorizonal, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, SendHorizonal, Plus, CircleEllipsis } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
 import { Ref, useEffect, useMemo, useRef, useState } from "react";
@@ -12,21 +12,19 @@ import { Message } from "@/components/ui/messages";
 import { Button } from "@/components/ui/button";
 import { EmployerConversationService, UserService} from "@/lib/api/services";
 import { Loader } from "@/components/ui/loader";
-import { useEmployerName, useProfile } from "@/hooks/use-employer-api"; //here
+import { useProfile } from "@/hooks/use-employer-api"; //here
 import { useUserName } from "@/hooks/use-student-api";
 import { Badge } from "@/components/ui/badge";
 import { getFullName } from "@/lib/profile";
 import { FilterButton } from "@/components/ui/filter";
 import { Conversation } from "@/lib/db/db.types";
+import ContentLayout from "@/components/features/hire/content-layout";
 
 export default function ConversationsPage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
   const profile = useProfile();
   const conversations = useConversations();
-  const unreadConvos = useMemo(
-    () => (conversations.data ?? []).filter((convo) => !!convo.last_unreads),
-    [conversations.data],
-  );
+  const { unreads } = useConversations();
   const { isMobile } = useAppContext();
 
   // selection + message composing state
@@ -67,16 +65,16 @@ export default function ConversationsPage() {
 
   const sortedUnreads = useMemo(
     () =>
-      (unreadConvos ?? []).toSorted(
+      (unreads ?? []).toSorted(
         (a, b) =>
           (b.last_unread?.timestamp ?? 0) - (a.last_unread?.timestamp ?? 0),
       ),
-    [unreadConvos],
+    [unreads],
   );
 
   const visibleConvos = useMemo(() => {
     return chatFilter === "all" ? sortedConvos : sortedUnreads
-  }, [chatFilter, sortedConvos, unreadConvos]);
+  }, [chatFilter, sortedConvos, unreads]);
 
   const endSend = () => {
     setMessage("");
@@ -110,97 +108,103 @@ export default function ConversationsPage() {
   const hasConversations = (conversations.data?.length ?? 0) > 0;
 
   return (
-    <div className="w-full h-full flex flex-col md:flex-row">
-      {hasConversations ? (
-        <>
-          {/* ===== Left: List (Desktop always visible; Mobile only when in "list" view) ===== */}
-          <aside
-            className={cn(
-              "border-r border-gray-200 md:min-w-[25%] md:max-w-[25%] md:block",
-              // mobile: show only when in list mode
-              "md:relative",
-              isMobile ? (mobileView === "list" ? "block" : "hidden") : "block",
-            )}
-          >
-            <div className="">
-              {/* <Textarea placeholder="Search..."></Textarea> */}
-              <ConversationFilter 
-              conversations={sortedConvos}
-              unreadConvosCount={unreadConvos.length}
-              status={chatFilter}
-              onFilterChange={(status:string) => setChatFilter(status as "all" | "unread")}
-              />
-            </div>
-            <div className="h-full max-h-full overflow-y-auto">
-              { visibleConvos.length ? (
-                <ConversationList
-                conversations={visibleConvos}
-                unreadConversations={sortedUnreads}
-                profileId={profile.data?.id}
-                onPick={(id) => setConversationId(id)}
-              />
-              ) : (
-                <Badge>
-                  No unread conversation :-P
-                </Badge>
-              )
-              }
-            </div>
-          </aside>
+    // <ContentLayout>
+      <div className="w-full h-full flex flex-col md:flex-row">
+        {hasConversations ? (
+          <>
+            {/* ===== Left: List (Desktop always visible; Mobile only when in "list" view) ===== */}
+            <aside
+              className={cn(
+                "border-r border-gray-200 md:min-w-[25%] md:max-w-[25%] md:block",
+                // mobile: show only when in list mode
+                "md:relative",
+                isMobile ? (mobileView === "list" ? "block" : "hidden") : "block",
+              )}
+            >
+              <div className="">
+                {/* <Textarea placeholder="Search..."></Textarea> */}
+                <ConversationFilter 
+                conversations={sortedConvos}
+                unreadConvosCount={sortedUnreads.length}
+                status={chatFilter}
+                onFilterChange={(status:string) => setChatFilter(status as "all" | "unread")}
+                />
+              </div>
+              <div className="h-full max-h-full overflow-y-auto">
+                { visibleConvos.length ? (
+                  <ConversationList
+                  conversations={visibleConvos}
+                  unreadConversations={sortedUnreads}
+                  profileId={profile.data?.id}
+                  onPick={(id) => setConversationId(id)}
+                />
+                ) : (
+                  <div className="grid place-items-center mt-[30vh]">
+                    <p className="text-gray-500">No unread conversation.</p>
+                  </div>
+                )
+                }
+              </div>
+            </aside>
 
-          {/* ===== Right: Chat (Desktop always visible; Mobile only when in "chat" view) ===== */}
-          <section
-            className={cn(
-              "flex-1 flex flex-col md:max-w-[75%] max-h-full",
-              isMobile ? (mobileView === "chat" ? "flex" : "hidden") : "flex",
-            )}
-          >
-            {/* Mobile top bar */}
-            {isMobile && (
-              <div className="sticky top-0 z-10 px-3 py-2 border-b bg-white/90 backdrop-blur">
-                <div className="flex items-center gap-2">
-                  <button
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-gray-100"
-                    onClick={() => {
-                      setMobileView("list");
-                      // keep selection; just go back to list
-                    }}
-                    aria-label="Back to conversations"
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </button>
-                  <ChatHeaderTitle conversationId={conversationId} />
+            {/* ===== Right: Chat (Desktop always visible; Mobile only when in "chat" view) ===== */}
+            <section
+              className={cn(
+                "flex-1 flex flex-col md:max-w-[75%] max-h-full",
+                isMobile ? (mobileView === "chat" ? "flex" : "hidden") : "flex",
+              )}
+            >
+              
+
+              {/* Chat body */}
+              {conversation?.loading ? (
+                <div className="flex-1 flex items-center justify-center">
+                  <Loader>Loading conversation...</Loader>
                 </div>
-              </div>
-            )}
-
-            {/* Chat body */}
-            {conversation?.loading ? (
-              <div className="flex-1 flex items-center justify-center">
-                <Loader>Loading conversation...</Loader>
-              </div>
-            ) : conversationId ? (
-              <>
-                <ConversationPane
-                  conversation={conversation}
-                  chatAnchorRef={chatAnchorRef}
-                />
-                <ComposerBar
-                  disabled={sending}
-                  value={message}
-                  onChange={setMessage}
-                  onSend={() => handleMessage(conversation.senderId, message)}
-                />
-              </>
-            ) : (
-              <EmptyChatHint />
-            )}
-          </section>
-        </>
-      ) : (
-        <NoConversationsEmptyState />
-      )}
-    </div>
+              ) : conversationId ? (
+                <>
+                  {/*top bar */}
+                  <div className="flex justify-between sticky top-0 z-10 px-3 py-2 border-b bg-white/90 backdrop-blur">
+                    <div className="flex items-center gap-2">
+                      {isMobile && (
+                        <button
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-gray-100"
+                          onClick={() => {
+                            setMobileView("list");
+                            // keep selection; just go back to list
+                          }}
+                          aria-label="Back to conversations"
+                        >
+                          <ChevronLeft className="h-5 w-5" />
+                        </button>
+                      )}
+                      <ChatHeaderTitle conversation={conversation} />
+                    </div>
+                    <button className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-gray-100 text-gray-500">
+                        <CircleEllipsis className="h-5 w-5"/>
+                      </button>
+                  </div>
+                  <ConversationPane
+                    conversation={conversation}
+                    chatAnchorRef={chatAnchorRef}
+                  />
+                  <ComposerBar
+                    disabled={sending}
+                    value={message}
+                    onChange={setMessage}
+                    onSend={() => handleMessage(conversation.senderId, message)}
+                  />
+                </>
+              ) : (
+                <EmptyChatHint />
+              )}
+            </section>
+          </>
+        ) : (
+          <NoConversationsEmptyState />
+        )}
+      </div>
+    // </ContentLayout>
   );
 }
 
@@ -269,9 +273,7 @@ function ConversationList({
           latestMessage={c.last_unread?.message}
           setConversationId={onPick}
           isUnread={
-            !!unreadConversations?.some((u) =>
-              u.subscribers.some((s: string) => c.subscribers?.includes(s)),
-            )
+            unreadConversations.some((unreadConv) => unreadConv.id === c.id)
           }
         />
       ))}
@@ -279,9 +281,8 @@ function ConversationList({
   );
 }
 
-function ChatHeaderTitle({ conversationId }: { conversationId?: string }) {
-  const { senderId } = useConversation("employer", conversationId || "");
-  const { userName } = useUserName(senderId || "")
+function ChatHeaderTitle({ conversation }: { conversation?: any }) {
+  const { userName } = useUserName(conversation.senderId || "")
   return (
     <div className="min-w-0">
       <div className="font-medium truncate">
@@ -313,11 +314,11 @@ function ComposerBar({
       )}
     >
       <div className="flex gap-2">
-        <div className="flex justify-start">
+        {/* <div className="flex justify-start">
           <Button className="rounded-full">
             <Plus  className="h-10 w-10"/>
           </Button>
-        </div>
+        </div> */}
         <Textarea
           placeholder="Send a message here..."
           className="w-full h-10 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
@@ -452,6 +453,8 @@ const ConversationCard = ({
   }, [conversation, profile.data?.id]);
 
   const { userName } = useUserName(userId);
+  const name = userName.trim().split(" ");
+  const surname = name[name.length - 1];
 
   return (
     <Card
@@ -465,21 +468,30 @@ const ConversationCard = ({
         <div className="flex items-center gap-3 md:gap-4 min-w-0">
           {userName && <UserPfp user_id={userId} />}
           <div className="flex flex-col min-w-0">
-            <span className="font-medium flex items-center gap-2 truncate">
+            <span className={cn("font-medium flex items-center gap-2 truncate",
+              isUnread ? "font-bold" : "font-medium"
+            )}>
               {userName ?? "Conversation"}
-              <Badge
+              {/* <Badge
                 type="warning"
                 className={cn(isUnread ? "inline-flex" : "hidden")}
               >
                 Unread
-              </Badge>
+              </Badge> */}
             </span>
-            <span className="text-xs text-gray-600 line-clamp-1">
-              {(latestIsYou ? "You: " : "") + (latestMessage ?? "")}
+            <span className={cn("text-xs text-gray-600 line-clamp-1",
+              isUnread ? "font-bold text-black" : ""
+            )}>
+              {(latestIsYou ? "You: " : surname + ": ") + (latestMessage ?? "")}
             </span>
           </div>
         </div>
-        <ChevronRight className="w-5 h-5 opacity-50 shrink-0" />
+        {/* <ChevronRight className="w-5 h-5 opacity-50 shrink-0" /> */}
+        {isUnread ? (
+          <div className="h-3 w-3 bg-primary rounded-full"></div>
+        ):(
+          <></>
+        )}
       </div>
     </Card>
   );

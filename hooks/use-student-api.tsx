@@ -8,7 +8,7 @@ export const useUserName = (id: string) => {
   useEffect(() => {
     if (id.trim() === "") return;
     // ! refactor lol
-    APIClient.get<any>(APIRouteBuilder("user").r(id).build()).then(
+    APIClient.get<any>(APIRouteBuilder("users").r(id).build()).then(
       ({ user }: { user: User }) => {
         setUserName(getFullName(user) ?? "");
       }
