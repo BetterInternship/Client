@@ -47,12 +47,6 @@ export default function MyListings() {
       <>
         {/* Main Content */}
         <div className="flex-1 flex flex-col">
-          {/* Unverified Banner */}
-          {!profileLoading && !profile?.is_verified && (
-            <div className="p-6 pb-0">
-              <ShowUnverifiedBanner />
-            </div>
-          )}
           {/* Content Area */}
           <div className="flex-1 p-6 flex gap-6 overflow-hidden">
             {/* Left Panel - Job List */}
