@@ -120,6 +120,22 @@ export function ApplicationsContent({
     }
   };
 
+  const updateSingleStatus = async (id: string, status: number) => {
+    const application = sortedApplications.find((a) => a.id === id);
+
+    if (!application) return;
+    
+    try {
+      const response = await updateApplicationStatus(id, status);
+
+      if (response) {
+        onStatusChange(application, status);
+      }
+    } catch (error) {
+      console.error("Critical error occurred during status update: ", error);
+    }
+  }
+
   if (!app_statuses) return null;
 
   const unique_app_statuses = app_statuses.reduce(
@@ -217,6 +233,7 @@ export function ApplicationsContent({
 
   const someVisibleSelected = numVisibleSelected > 0 && numVisibleSelected < visibleApplications.length;
 
+
   return isMobile ? (
     <div className="flex flex-col gap-2">
       <Toast
@@ -282,6 +299,7 @@ export function ApplicationsContent({
               updateConversationId={updateConversationId}
               checkboxSelected={selectedApplications.has(application.id!)}
               onToggleSelect={(v) => toggleSelect(application.id!, !!v)}
+              onStatusButtonClick={updateSingleStatus}
             />
           ))
         ) : (
@@ -397,6 +415,7 @@ export function ApplicationsContent({
                 updateConversationId={updateConversationId}
                 checkboxSelected={selectedApplications.has(application.id!)}
                 onToggleSelect={(v) => toggleSelect(application.id!, !!v)}
+                onStatusButtonClick={updateSingleStatus}
               />
             ))
         ) : (

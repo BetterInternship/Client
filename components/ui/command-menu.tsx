@@ -50,6 +50,7 @@ export const CommandMenu = ({
     <div
       role="toolbar"
       aria-hidden={!visible}
+      onClick={(e) => e.stopPropagation()}
       className={cn(
         "flex p-2 gap-2 justify-center items-stretch text-xs bg-white/75 backdrop-blur-md border-gray-300 z-[100]",
         position?.position
@@ -81,10 +82,13 @@ export const CommandMenu = ({
               position?.position
                 ? ["flex-col p-2"]
                 : ["flex-row px-3 py-2"],
+              item.highlighted
+                ? item.highlightColor
+                : ""
             )}
           >
             {item.icon && <item.icon size={18} />}
-            <span>{item.label}</span>
+            {item.label && <span>{item.label}</span>}
           </button>
         ) : (
           <span
