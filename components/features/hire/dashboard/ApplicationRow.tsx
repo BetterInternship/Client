@@ -1,10 +1,13 @@
 // Single row component for the applications table
 // Props in (application data), events out (onView, onNotes, etc.)
 // No business logic - just presentation and event emission
+import { useMemo } from "react";
+import { ActionItem } from "@/components/ui/action-item";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { CommandMenu } from "@/components/ui/command-menu";
 import StatusBadge from "@/components/ui/status-badge";
 import { useConversations } from "@/hooks/use-conversation";
 import { useAppContext } from "@/lib/ctx-app";
@@ -13,13 +16,17 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import { getFullName } from "@/lib/profile";
 import { cn } from "@/lib/utils";
 import { fmtISO } from "@/lib/utils/date-utils";
+import { statusMap } from "@/components/common/status-icon-map";
 import {
   Calendar,
+  CheckCircle2,
   ContactRound,
   GraduationCap,
-  ListCheck,
   MessageCircle,
   School,
+  Star,
+  Trash,
+  XCircle,
 } from "lucide-react";
 
 interface ApplicationRowProps {
@@ -28,6 +35,7 @@ interface ApplicationRowProps {
   onNotes: () => void;
   onSchedule: () => void;
   onStatusChange: (status: number) => void;
+  onStatusButtonClick: (id: string, status: number) => void;
   openChatModal: () => void;
   updateConversationId: (conversationId: string) => void;
   setSelectedApplication: (application: EmployerApplication) => void;
@@ -52,12 +60,49 @@ export function ApplicationRow({
   setSelectedApplication,
   checkboxSelected = false,
   onToggleSelect,
+  onStatusButtonClick,
 }: ApplicationRowProps) {
-  const { to_university_name, to_app_status_name, get_app_status } = useDbRefs();
+  const { to_university_name } = useDbRefs();
   const conversations = useConversations();
   const { isMobile } = useAppContext();
 
   const preferences = (application.user?.internship_preferences || {}) as InternshipPreferences;
+
+  const statuses = useMemo<ActionItem[]>(() => [
+    {
+      "id": "delete",
+      "icon": Trash,
+      "active": true,
+      "destructive": true,
+      "onClick": () => onStatusButtonClick(application.id!, 7),
+      "highlighted": application.status! === 7,
+      "highlightColor": `${statusMap.get(7)?.bgColor} ${statusMap.get(7)?.fgColor}`
+    },
+    {
+      "id": "reject",
+      "icon": XCircle,
+      "active": true,
+      "onClick": () => onStatusButtonClick(application.id!, 6),
+      "highlighted": application.status! === 6,
+      "highlightColor": `${statusMap.get(6)?.bgColor} ${statusMap.get(6)?.fgColor}`
+    },
+    {
+      "id": "star",
+      "icon": Star,
+      "active": true,
+      "onClick": () => onStatusButtonClick(application.id!, 2),
+      "highlighted": application.status! === 2,
+      "highlightColor": `${statusMap.get(2)?.bgColor} ${statusMap.get(2)?.fgColor}`
+    },
+    {
+      "id": "accept",
+      "icon": CheckCircle2,
+      "active": true,
+      "onClick": () => onStatusButtonClick(application.id!, 4),
+      "highlighted": application.status! === 4,
+      "highlightColor": `${statusMap.get(4)?.bgColor} ${statusMap.get(4)?.fgColor}`
+    },
+  ], [application.id, onStatusButtonClick]);
 
   return isMobile ? (
     <>
@@ -72,6 +117,7 @@ export function ApplicationRow({
           <Checkbox
             checked={checkboxSelected}
             onCheckedChange={(v) => onToggleSelect?.(!!v)}
+            className="w-6 h-6"
           />
 
           <Button
@@ -92,9 +138,6 @@ export function ApplicationRow({
         <div className="flex flex-col text-gray-500">
           <div className="flex flex-col gap-1 pb-2">
             <h4 className="text-gray-900 text-base">{getFullName(application.user)}</h4>
-            <StatusBadge 
-              statusId={application?.status || 0}
-            />
           </div>
           <div className="flex items-center gap-2">
             <School size={16} />
@@ -124,6 +167,13 @@ export function ApplicationRow({
               )}
             </span>
           </div>
+        </div>
+        <div className="pt-2">
+          <CommandMenu
+            items={statuses}
+            isVisible={true}
+            defaultVisible={true}
+          />
         </div>
       </Card>
     </>
@@ -159,8 +209,10 @@ export function ApplicationRow({
         )}
       </td>
       <td className="px-4 py-2">
-        <StatusBadge 
-          statusId={application?.status || 0}
+        <CommandMenu
+          items={statuses}
+          isVisible={true}
+          defaultVisible={true}
         />
       </td>
       <td>
