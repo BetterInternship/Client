@@ -3,23 +3,49 @@ import { useConversation, useConversations } from "@/hooks/use-conversation";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Card } from "@/components/ui/card";
 import { EmployerPfp, UserPfp } from "@/components/shared/pfp";
-import { ChevronLeft, ChevronRight, SendHorizonal, Plus, CircleEllipsis } from "lucide-react";
+import { ChevronLeft,
+        ChevronRight,
+        SendHorizonal,
+        Plus,
+        CircleEllipsis,
+        FileUser,
+        Calendar,
+        ContactRound,
+        GraduationCap,
+        ListCheck,
+        MessageCircle,
+        School,
+        FileText,
+       } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
-import { Ref, useEffect, useMemo, useRef, useState } from "react";
+import { Ref, useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Message } from "@/components/ui/messages";
 import { Button } from "@/components/ui/button";
-import { EmployerConversationService, UserService} from "@/lib/api/services";
+import { EmployerConversationService, UserService } from "@/lib/api/services";
 import { Loader } from "@/components/ui/loader";
 import { useProfile, useEmployerApplications } from "@/hooks/use-employer-api";
-import { useUserName } from "@/hooks/use-student-api";
+import { useUserName, getUserById } from "@/hooks/use-student-api";
 import { Badge } from "@/components/ui/badge";
 import { getFullName } from "@/lib/profile";
 import { FilterButton } from "@/components/ui/filter";
 import { EmployerApplication } from "@/lib/db/db.types";
 import ContentLayout from "@/components/features/hire/content-layout";
-import { ApplicationsHeader } from "@/components/features/hire/dashboard/ApplicationsHeader";
+import { useDbRefs } from "@/lib/db/use-refs";
+import { fmtISO } from "@/lib/utils/date-utils";
+import { useModal } from "@/hooks/use-modal";
+import { PDFPreview } from "@/components/shared/pdf-preview";
+import { useFile } from "@/hooks/use-file";
+
+interface InternshipPreferences {
+  expected_duration_hours?: number,
+  expected_start_date?: number,
+  internship_type?: string,
+  job_category_ids?: string[],
+  job_commitment_ids?: string[],
+  job_setup_ids?: string[],
+}
 
 export default function ConversationsPage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
@@ -39,7 +65,10 @@ export default function ConversationsPage() {
   const [chatFilter, setChatFilter] = useState<"all" | "unread">("all")
 
   // mobile "router": list or chat
-  const [mobileView, setMobileView] = useState<"list" | "chat">("list");
+  const [mobileView, setMobileView] = useState<"list" | "chat" | "profile">("list");
+
+  // open and close profile view
+  const [profileView, setProfileView] = useState(false);
 
   // anchor for autoscroll
   const chatAnchorRef = useRef<HTMLDivElement>(null);
@@ -54,6 +83,10 @@ export default function ConversationsPage() {
   // unsubscribe on conversation change (keeps your original behavior)
   useEffect(() => {
     conversation.unsubscribe();
+  }, [conversationId]);
+
+  useEffect(() => {
+    setProfileView(false);
   }, [conversationId]);
 
   const sortedConvos = useMemo(
@@ -185,7 +218,12 @@ export default function ConversationsPage() {
                       applications={applications.employer_applications}
                       />
                     </div>
-                    <button className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-gray-100 text-gray-500 mt-1">
+                    <button
+                    onClick={() => {
+                      setProfileView(prev => !prev);
+                      setMobileView("profile");
+                    }}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-gray-100 text-gray-500 mt-1">
                       <CircleEllipsis className="h-5 w-5"/>
                     </button>
                   </div>
@@ -204,6 +242,34 @@ export default function ConversationsPage() {
                 <EmptyChatHint />
               )}
             </section>
+
+            {profileView && 
+              <aside className={cn(
+                "border-l border-gray-200 md:min-w-[25%] md:max-w-[25%] md:block",
+                isMobile ? (mobileView === "profile" ? "block" : "hidden") : "block"
+              )}>
+                {isMobile && (
+                  <div className="bg-white w-full flex items-start">
+                    <button
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-gray-100"
+                      onClick={() => {
+                        setMobileView("chat");
+                        setConversationId(conversationId);
+                        setProfileView(false);
+                      }}
+                        aria-label="Back to previous conversation"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </button>
+                  </div>
+                )}
+                <ConversationProfile
+                  conversation={conversation}
+                  profileId={conversation.senderId}
+                  applications={applications.employer_applications}
+                />
+              </aside>
+            }
           </>
         ) : (
           <NoConversationsEmptyState />
@@ -254,6 +320,130 @@ function ConversationFilter({
             </FilterButton>
         </div>
     );
+}
+
+function ConversationProfile({
+  conversation,
+  profileId,
+  applications,
+}: {
+  conversation: any;
+  profileId: string;
+  applications?: EmployerApplication[];
+}) {
+  const { user } = getUserById(conversation.senderId || "")
+  const userName = getFullName(user || undefined)
+  const userApplications = applications?.filter(a => profileId === a.user_id)
+
+  const { to_university_name } = useDbRefs();
+  const preferences = (user?.internship_preferences || {}) as InternshipPreferences
+
+  const {
+      open: openResumeModal,
+      close: closeResumeModal,
+      Modal: ResumeModal,
+    } = useModal("resume-modal");
+
+    const { url: resumeURL, sync: syncResumeURL } = useFile({
+        fetcher: useCallback(
+          async () =>
+            await UserService.getUserResumeURL(user?.id ?? ""),
+          [user?.id],
+        ),
+        route: user
+          ? `/users/${user?.id}/resume`
+          : "",
+      });
+
+    useEffect(() => {
+    if (user?.id) {
+      syncResumeURL();
+    }
+  }, [user?.id, syncResumeURL]);
+
+  return(
+    <div className="bg-white h-full p-8">
+      <div className="flex flex-col items-center mt-10 w-full">
+        <UserPfp user_id={profileId} size="20"/>
+        <h3 className="text-xl mt-2">{userName || "User"}</h3>
+      </div>
+      <div className="mt-10">
+        <button 
+        className="flex items-center justify-center w-full bg-primary text-md text-white text-md gap-2 p-2 rounded-sm"
+        onClick={openResumeModal}
+        >
+          <FileUser className="h-5 w-5"/>
+          Resume
+        </button>
+        <div
+        className="flex flex-col text-gray-500 text-md w-full h-[20vh] rounded-sm border mt-4 p-6"
+        >
+          <div className="flex items-center gap-2">
+            <School size={20} />
+            <span>
+              {to_university_name(user?.university) || ""}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <GraduationCap size={20} />
+            <span>
+              {user?.degree}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <ContactRound size={20} />
+            <span>
+              {preferences?.internship_type ? "For Credit" : "Voluntary"}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Calendar size={20} />
+            <span>
+              {preferences.expected_start_date ? (
+                  <>
+                    {fmtISO(preferences.expected_start_date.toString())}
+                  </>
+                ) : (
+                  <span className="text-gray-500"> No start date provided</span>
+                )}
+            </span>
+          </div>
+        </div>
+        <div className="text-gray-500 mt-4 flex flex-wrap overflow-y-auto w-full">
+          <p className="text-sm text-primary mr-1"> Applied for: </p>
+          {userApplications?.map((a) => 
+            <p className="text-sm mr-1">
+              {a.job?.title}
+              {a !== userApplications?.at(-1) && <>, </>}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <ResumeModal>
+        {user?.resume ? (
+          <div className="h-full flex flex-col">
+            <h1 className="font-bold font-heading text-2xl px-6 py-4 text-gray-900">
+              {getFullName(user)} - Resume
+            </h1>
+            <PDFPreview url={resumeURL} />
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-96 px-8">
+            <div className="text-center">
+              <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">
+                No Resume Available
+              </h1>
+              <div className="max-w-md text-center border border-red-200 text-red-600 bg-red-50 rounded-lg p-4">
+                This applicant has not uploaded a resume yet.
+              </div>
+            </div>
+          </div>
+        )}
+      </ResumeModal>
+    </div>
+  )
 }
 
 function ConversationList({

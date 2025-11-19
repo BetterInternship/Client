@@ -19,3 +19,20 @@ export const useUserName = (id: string) => {
     userName,
   };
 };
+
+export const getUserById = (id: string) => {
+  const [user, setUser] = useState<User | null>(null);
+  useEffect(() => {
+    if (id.trim() === "") return;
+    // ! refactor lol
+    APIClient.get<any>(APIRouteBuilder("users").r(id).build()).then(
+      ({ user }: { user: User }) => {
+        setUser(user);
+      }
+    );
+  }, [id]);
+
+  return {
+    user,
+  };
+};
