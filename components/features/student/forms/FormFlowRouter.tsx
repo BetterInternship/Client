@@ -91,6 +91,36 @@ export function FormFlowRouter({
     setValues((prev) => ({ ...prev, [key]: v.toString() }));
   };
 
+  // Validate a single field on blur and update errors immediately
+  const validateFieldOnBlur = (fieldKey: string) => {
+    const finalValues = { ...autofillValues, ...values };
+    const field = fields.find((f) => f.field === fieldKey);
+    if (!field) return;
+
+    // Only validate student/manual fields here
+    if (field.party !== "student" || field.source !== "manual") return;
+
+    const value = finalValues[field.field];
+    const coerced = field.coerce(value);
+    const result = field.validator?.safeParse(coerced);
+    if (result?.error) {
+      const errorString = z
+        .treeifyError(result.error)
+        .errors.map((e) => e.split(" ").slice(0).join(" "))
+        .join("\n");
+      setErrors((prev) => ({
+        ...prev,
+        [field.field]: `${field.label}: ${errorString}`,
+      }));
+    } else {
+      setErrors((prev) => {
+        const copy = { ...prev };
+        delete copy[field.field];
+        return copy;
+      });
+    }
+  };
+
   /**
    * This submits the form to the server
    * @param withEsign - if true, enables e-sign; if false, does prefill
@@ -252,6 +282,7 @@ export function FormFlowRouter({
         formName={formName}
         values={values}
         onChange={setField}
+        onBlurValidate={validateFieldOnBlur}
         showErrors={submitted}
         errors={errors}
         autofillValues={autofillValues ?? {}}

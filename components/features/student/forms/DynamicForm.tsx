@@ -15,6 +15,7 @@ export function DynamicForm({
   onChange,
   errors = {},
   showErrors = false,
+  onBlurValidate,
 }: {
   formName: string;
   fields: ClientField<[]>[];
@@ -24,6 +25,7 @@ export function DynamicForm({
   showErrors?: boolean;
   setValues: (values: Record<string, string>) => void;
   onChange: (key: string, value: any) => void;
+  onBlurValidate?: (fieldKey: string) => void;
 }) {
   const filteredFields = fields
     .filter((field) => field.party === "student")
@@ -82,6 +84,7 @@ export function DynamicForm({
         fields={entitySectionFields}
         values={values}
         onChange={onChange}
+        onBlurValidate={onBlurValidate}
         errors={errors}
         showErrors={showErrors}
       />
@@ -92,6 +95,7 @@ export function DynamicForm({
         fields={internshipSectionFields}
         values={values}
         onChange={onChange}
+        onBlurValidate={onBlurValidate}
         errors={errors}
         showErrors={showErrors}
       />
@@ -102,6 +106,7 @@ export function DynamicForm({
         fields={universitySectionFields}
         values={values}
         onChange={onChange}
+        onBlurValidate={onBlurValidate}
         errors={errors}
         showErrors={showErrors}
       />
@@ -112,6 +117,7 @@ export function DynamicForm({
         fields={studentSectionFields}
         values={values}
         onChange={onChange}
+        onBlurValidate={onBlurValidate}
         errors={errors}
         showErrors={showErrors}
       />
@@ -123,6 +129,7 @@ export function DynamicForm({
         fields={recipientFields}
         values={values}
         onChange={onChange}
+        onBlurValidate={onBlurValidate}
         errors={errors}
         showErrors={showErrors}
       />
@@ -136,6 +143,7 @@ const FormSection = function FormSection({
   fields,
   values,
   onChange,
+  onBlurValidate,
   errors,
   showErrors,
 }: {
@@ -144,6 +152,7 @@ const FormSection = function FormSection({
   fields: ClientField<[]>[];
   values: Record<string, string>;
   onChange: (key: string, value: any) => void;
+  onBlurValidate?: (fieldKey: string) => void;
   errors: Record<string, string>;
   showErrors: boolean;
 }) {
@@ -170,6 +179,7 @@ const FormSection = function FormSection({
               field={field}
               value={values[field.field]}
               onChange={(v) => onChange(field.field, v)}
+              onBlur={() => onBlurValidate?.(field.field)}
               error={errors[field.field]}
               showError={showErrors}
               allValues={values}
