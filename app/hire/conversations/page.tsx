@@ -331,6 +331,7 @@ function ConversationProfile({
   profileId: string;
   applications?: EmployerApplication[];
 }) {
+  const { isMobile } = useAppContext();
   const { user } = getUserById(conversation.senderId || "")
   const userName = getFullName(user || undefined)
   const userApplications = applications?.filter(a => profileId === a.user_id)
@@ -422,7 +423,9 @@ function ConversationProfile({
 
       <ResumeModal>
         {user?.resume ? (
-          <div className="h-full flex flex-col">
+          <div className={cn("flex flex-col",
+            isMobile ? "h-[80vh]" : "h-full"
+          )}>
             <h1 className="font-bold font-heading text-2xl px-6 py-4 text-gray-900">
               {getFullName(user)} - Resume
             </h1>
