@@ -11,13 +11,13 @@ export default function MyFormCard({
   requestedAt,
   status, // "Complete" | "Pending action"
   getDownloadUrl,
-  waitingFor, // e.g., ["student-guardian", "entity"]
+  waitingFor,
 }: {
   title: string;
   requestedAt?: string | Date;
-  status: "Complete" | "Pending action" | string;
+  status: "Complete" | "Pending action" | (string & {});
   getDownloadUrl?: () => Promise<string>;
-  waitingFor?: PartyKey[];
+  waitingFor?: (string | { email?: string; party: PartyKey })[]; // accepts both legacy string array and new object array
 }) {
   const [downloading, setDownloading] = useState(false);
 
@@ -106,9 +106,9 @@ export default function MyFormCard({
           </div>
         )}
 
-        {!isComplete && waitingFor?.length ? (
-          <div className="text-xs text-muted-foreground flex items-center gap-2 pt-1">
-            <span className="whitespace-nowrap">Waiting for action:</span>
+        {!isComplete && Array.isArray(waitingFor) && waitingFor.length ? (
+          <div className="text-xs text-muted-foreground sm:flex items-center gap-2 pt-1">
+            <div className="whitespace-nowrap">Waiting for action:</div>
             <PartyPills items={waitingFor} />
           </div>
         ) : null}
@@ -138,7 +138,7 @@ export default function MyFormCard({
 
 /* ───────────────────── Helpers ───────────────────── */
 
-type PartyKey = "student-guardian" | "entity" | string;
+type PartyKey = "student-guardian" | "entity" | (string & {});
 
 const PARTY_MAP: Record<string, { label: string; Icon: React.ElementType }> = {
   "student-guardian": { label: "Guardian", Icon: Users },
@@ -153,36 +153,38 @@ function prettyParty(p: PartyKey) {
   return meta;
 }
 
-function PartyPills({ items, max = 3 }: { items: PartyKey[]; max?: number }) {
-  if (!items?.length) return null;
+function PartyPills({
+  items,
+}: {
+  items: (string | { email?: string; party: PartyKey })[];
+  max?: number;
+}) {
+  if (!Array.isArray(items) || items.length === 0) return null;
 
-  const shown = items.slice(0, max);
-  const hidden = items.slice(max);
+  // normalize legacy string entries to objects { party, email? }
+  const normalized = items.map((it) =>
+    typeof it === "string" ? { party: it, email: undefined } : it,
+  );
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      {shown.map((p) => {
-        const { label, Icon } = prettyParty(p);
+      {normalized.map(({ party, email }, idx) => {
+        const { label, Icon } = prettyParty(party);
         return (
+          // TODO: ! Go back to this styling. Kinda dont like it rn
           <span
-            key={`${p}-${label}`}
-            title={label}
+            key={`${party}-${email ?? idx}`}
+            title={email ? `${label} — ${email}` : label}
             className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] leading-4 text-muted-foreground"
           >
             <Icon className="h-3.5 w-3.5" />
-            <span className="truncate max-w-[8rem]">{label}</span>
+            <span className="truncate">
+              <span className="font-semibold">{label}</span>
+              {email ? <> - {email}</> : null}
+            </span>
           </span>
         );
       })}
-
-      {hidden.length > 0 && (
-        <span
-          title={hidden.map((p) => prettyParty(p).label).join(", ")}
-          className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] leading-4 text-muted-foreground"
-        >
-          +{hidden.length} more
-        </span>
-      )}
     </div>
   );
 }

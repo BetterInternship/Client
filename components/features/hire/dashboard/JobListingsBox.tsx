@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Toggle } from "@/components/ui/toggle";
+import { useMobile } from "@/hooks/use-mobile";
 import { EmployerApplication, Job } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { cn } from "@/lib/utils";
@@ -38,6 +39,7 @@ export function JobListingsBox({
     };
 
     const router = useRouter();
+    const isMobile = useMobile();
 
     return (
         // <Link href={{
@@ -79,12 +81,12 @@ export function JobListingsBox({
                 </div>
                 <div className="flex flex-row gap-6 rounded-sm">
                     <div>
-                        <h3 className="text-lg text-primary">{applicants.length}</h3>
-                        <p className="text-sm text-gray-500">Total Applicants</p>
+                        <h3 className={cn("text-primary", isMobile ? "text-base": "text-lg")}>{applicants.length}</h3>
+                        <p className={cn("text-gray-500", isMobile ? "text-xs" : "text-sm")}>Total Applicants</p>
                     </div>
                     <div>
-                        <h3 className="text-lg text-primary">{applicants.filter((applicant) => applicant.status === 0).length}</h3>
-                        <p className="text-sm text-gray-500">New Applicants</p>
+                        <h3 className={cn("text-primary", isMobile ? "text-base": "text-lg")}>{applicants.filter((applicant) => applicant.status === 0).length}</h3>
+                        <p className={cn("text-gray-500", isMobile ? "text-xs" : "text-sm")}>New Applicants</p>
                     </div>
                 </div>
 

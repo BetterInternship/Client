@@ -22,6 +22,7 @@ import {
   TreeOption,
 } from "@/components/ui/autocomplete";
 import { ClientField } from "@betterinternship/core/forms";
+import { Info } from "lucide-react";
 
 export function FieldRenderer({
   field,
@@ -297,6 +298,8 @@ const FieldRendererInput = ({
   onChange: (v: string | number) => void;
 }) => {
   const inputMode = field.type === "number" ? "numeric" : undefined;
+  // const isRecipientField =
+  //   typeof field.field === "string" && field.field.endsWith(":recipient");
   return (
     <div className="space-y-1.5">
       <FormInput
@@ -312,6 +315,14 @@ const FieldRendererInput = ({
         tooltip={field.tooltip_label}
         className="w-full"
       />
+      {/* {isRecipientField && (
+        <div className="flex gap-1 md:items-center">
+          <Info className="text-primary h-3.5 w-3.5"></Info>
+          <p className="text-xs text-primary">
+            A separate form will be emailed to them to complete and sign.
+          </p>
+        </div>
+      )} */}
       <TooltipContent />
     </div>
   );

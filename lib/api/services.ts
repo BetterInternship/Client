@@ -59,6 +59,27 @@ export const EmployerService = {
   },
 };
 
+interface EmployerUserResponse extends FetchResponse {
+  success: boolean;
+  message: string;
+}
+
+export const EmployerUserService = {
+  async requestPasswordReset(email: string) {
+    return APIClient.post<EmployerUserResponse>(
+      APIRouteBuilder("employer-users").r("forgot-password").build(),
+      { email },
+    );
+  },
+
+  async resetPassword(hash: string, newPassword: string) {
+    return APIClient.post<EmployerUserResponse>(
+      APIRouteBuilder("employer-users").r("reset-password", hash).build(),
+      { newPassword },
+    );
+  },
+}
+
 // Auth Services
 interface AuthResponse extends FetchResponse {
   success: boolean;

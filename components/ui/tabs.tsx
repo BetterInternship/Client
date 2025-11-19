@@ -78,7 +78,7 @@ export const TabGroup = ({
               className="relative px-5 py-4 text-primary aria-selected:text-white aria-selected:bg-primary w-fit rounded-s"
               onClick={() => setActive(name)}
             >
-              <span className="flex flex-row items-center text-sm gap-1">
+              <span className="flex flex-row items-center text-xs gap-1">
                 <span
                   className={cn(
                     "rounded-full w-2 h-2 bg-amber-500",
