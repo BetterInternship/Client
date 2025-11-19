@@ -1,5 +1,6 @@
 import { FieldRenderer } from "@/components/features/student/forms/FieldRenderer";
 import { Card } from "@/components/ui/card";
+import { ClientField } from "@betterinternship/core/forms";
 
 export function RecipientSection({
   formKey,
@@ -8,6 +9,7 @@ export function RecipientSection({
   fields,
   values,
   onChange,
+  onBlurValidate,
   errors,
   showErrors,
 }: {
@@ -17,6 +19,7 @@ export function RecipientSection({
   fields: ClientField<[]>[];
   values: Record<string, string>;
   onChange: (key: string, value: any) => void;
+  onBlurValidate?: (fieldKey: string) => void;
   errors: Record<string, string>;
   showErrors: boolean;
 }) {
@@ -45,8 +48,8 @@ export function RecipientSection({
               field={field}
               value={values[field.field]}
               onChange={(v) => onChange(field.field, v)}
+              onBlur={() => onBlurValidate?.(field.field)}
               error={errors[field.field]}
-              showError={showErrors}
               allValues={values}
             />
           </div>
