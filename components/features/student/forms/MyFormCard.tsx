@@ -15,7 +15,7 @@ export default function MyFormCard({
 }: {
   title: string;
   requestedAt?: string | Date;
-  status: "Complete" | "Pending action" | string;
+  status: "Complete" | "Pending action" | (string & {});
   getDownloadUrl?: () => Promise<string>;
   waitingFor?: (string | { email?: string; party: PartyKey })[]; // accepts both legacy string array and new object array
 }) {
@@ -106,7 +106,7 @@ export default function MyFormCard({
           </div>
         )}
 
-        {!isComplete && waitingFor?.length ? (
+        {!isComplete && Array.isArray(waitingFor) && waitingFor.length ? (
           <div className="text-xs text-muted-foreground sm:flex items-center gap-2 pt-1">
             <div className="whitespace-nowrap">Waiting for action:</div>
             <PartyPills items={waitingFor} />
@@ -138,7 +138,7 @@ export default function MyFormCard({
 
 /* ───────────────────── Helpers ───────────────────── */
 
-type PartyKey = "student-guardian" | "entity" | string;
+type PartyKey = "student-guardian" | "entity" | (string & {});
 
 const PARTY_MAP: Record<string, { label: string; Icon: React.ElementType }> = {
   "student-guardian": { label: "Guardian", Icon: Users },
@@ -159,11 +159,11 @@ function PartyPills({
   items: (string | { email?: string; party: PartyKey })[];
   max?: number;
 }) {
-  if (!items?.length) return null;
+  if (!Array.isArray(items) || items.length === 0) return null;
 
   // normalize legacy string entries to objects { party, email? }
   const normalized = items.map((it) =>
-    typeof it === "string" ? { party: it as PartyKey, email: undefined } : it,
+    typeof it === "string" ? { party: it, email: undefined } : it,
   );
 
   return (
