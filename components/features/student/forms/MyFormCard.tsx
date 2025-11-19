@@ -11,13 +11,13 @@ export default function MyFormCard({
   requestedAt,
   status, // "Complete" | "Pending action"
   getDownloadUrl,
-  waitingFor, // e.g., ["student-guardian", "entity"]
+  waitingFor, // e.g., [{ email: "x@y.com", party: "student-guardian" }]
 }: {
   title: string;
   requestedAt?: string | Date;
   status: "Complete" | "Pending action" | string;
   getDownloadUrl?: () => Promise<string>;
-  waitingFor?: PartyKey[];
+  waitingFor?: { email: string; party: PartyKey }[];
 }) {
   const [downloading, setDownloading] = useState(false);
 
@@ -107,8 +107,8 @@ export default function MyFormCard({
         )}
 
         {!isComplete && waitingFor?.length ? (
-          <div className="text-xs text-muted-foreground flex items-center gap-2 pt-1">
-            <span className="whitespace-nowrap">Waiting for action:</span>
+          <div className="text-xs text-muted-foreground sm:flex items-center gap-2 pt-1">
+            <div className="whitespace-nowrap">Waiting for action:</div>
             <PartyPills items={waitingFor} />
           </div>
         ) : null}
@@ -153,36 +153,33 @@ function prettyParty(p: PartyKey) {
   return meta;
 }
 
-function PartyPills({ items, max = 3 }: { items: PartyKey[]; max?: number }) {
+function PartyPills({
+  items,
+}: {
+  items: { email: string; party: PartyKey }[];
+  max?: number;
+}) {
   if (!items?.length) return null;
-
-  const shown = items.slice(0, max);
-  const hidden = items.slice(max);
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      {shown.map((p) => {
-        const { label, Icon } = prettyParty(p);
+      {items.map(({ party, email }) => {
+        const { label, Icon } = prettyParty(party);
         return (
+          // TODO: ! Go back to this styling. Kinda dont like it rn
           <span
-            key={`${p}-${label}`}
-            title={label}
+            key={`${party}-${email}`}
+            title={`${label} — ${email}`}
             className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] leading-4 text-muted-foreground"
           >
             <Icon className="h-3.5 w-3.5" />
-            <span className="truncate max-w-[8rem]">{label}</span>
+            <span className="truncate">
+              <span className="font-semibold">{label}</span>
+              {email ? <> - {email}</> : null}
+            </span>
           </span>
         );
       })}
-
-      {hidden.length > 0 && (
-        <span
-          title={hidden.map((p) => prettyParty(p).label).join(", ")}
-          className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] leading-4 text-muted-foreground"
-        >
-          +{hidden.length} more
-        </span>
-      )}
     </div>
   );
 }

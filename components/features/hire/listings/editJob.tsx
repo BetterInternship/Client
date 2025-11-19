@@ -251,10 +251,19 @@ const EditJobPage = ({
 
         {/* Main Content */}
         <div>
-            <div className="p-6 mt-20">
+            <div className={cn(
+                isMobile
+                    ? "p-0 mt-16 pb-16"
+                    : "p-6 mt-20"
+            )}>
             <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200">
             {/* Title Section */}
-            <div className="px-6 py-5 border-b border-gray-200">
+            <div className={cn(
+                "py-5 border-b border-gray-200",
+                isMobile
+                    ? "px-2"
+                    : "px-6"
+            )}>
                 <div className="flex flex-col gap-4">
                 <div className="flex-1 min-w-0">
                     <h2 className="flex flex-row text-lg font-bold text-gray-800 mb-2 break-words overflow-wrap-anywhere leading-tight">
@@ -280,7 +289,11 @@ const EditJobPage = ({
             </div>
 
             {/* Form Content */}
-            <div className="p-6 overflow-hidden">
+            <div className={cn(
+                isMobile
+                    ? "p-2"
+                    : "p-6 overflow-hidden"
+            )}>
                 <div className="space-y-8">
                     <div>
                     {/* Credit Boxes */}
