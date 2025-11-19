@@ -11,13 +11,13 @@ export default function MyFormCard({
   requestedAt,
   status, // "Complete" | "Pending action"
   getDownloadUrl,
-  waitingFor, // e.g., [{ email: "x@y.com", party: "student-guardian" }]
+  waitingFor,
 }: {
   title: string;
   requestedAt?: string | Date;
   status: "Complete" | "Pending action" | string;
   getDownloadUrl?: () => Promise<string>;
-  waitingFor?: { email: string; party: PartyKey }[];
+  waitingFor?: (string | { email?: string; party: PartyKey })[]; // accepts both legacy string array and new object array
 }) {
   const [downloading, setDownloading] = useState(false);
 
@@ -156,20 +156,25 @@ function prettyParty(p: PartyKey) {
 function PartyPills({
   items,
 }: {
-  items: { email: string; party: PartyKey }[];
+  items: (string | { email?: string; party: PartyKey })[];
   max?: number;
 }) {
   if (!items?.length) return null;
 
+  // normalize legacy string entries to objects { party, email? }
+  const normalized = items.map((it) =>
+    typeof it === "string" ? { party: it as PartyKey, email: undefined } : it,
+  );
+
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      {items.map(({ party, email }) => {
+      {normalized.map(({ party, email }, idx) => {
         const { label, Icon } = prettyParty(party);
         return (
           // TODO: ! Go back to this styling. Kinda dont like it rn
           <span
-            key={`${party}-${email}`}
-            title={`${label} — ${email}`}
+            key={`${party}-${email ?? idx}`}
+            title={email ? `${label} — ${email}` : label}
             className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] leading-4 text-muted-foreground"
           >
             <Icon className="h-3.5 w-3.5" />
