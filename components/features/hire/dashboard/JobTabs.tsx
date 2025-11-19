@@ -426,13 +426,28 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
       </ResumeModal>
 
       <ChatModal>
-        <div className="relative p-6 pt-6 pb-20 h-full w-full">
-          <div className="flex flex-col h-[100%] w-full gap-6">
-            <div className="text-4xl font-bold tracking-tight">
-              {getFullName(selectedApplication?.user)}
+        <div className="relative p-6 pb-20 h-full w-full">
+          <div className="flex flex-col h-[100%] w-full">
+            {/*top bar */}
+            <div className="justify-between sticky top-0 z-10 py-2 border-b bg-white/90 backdrop-blur">
+              <div className="flex items-center gap-2 font-medium">
+                {getFullName(selectedApplication?.user)}
+              </div>
+                <div className="text-gray-500 text-[11px] max-w-[40vh] -mt-[2px] flex truncate">
+                  <p className="text-[11px] text-primary"> Applied for: </p>
+                  {applications?.employer_applications.filter(a => a.user_id === selectedApplication?.user_id).map((a) => 
+                    <p className="text-[11px] ml-1">
+                      {a.job?.title}
+                      {a !== applications?.employer_applications.filter(a => a.user_id === selectedApplication?.user_id).at(-1) &&
+                        <>, </>
+                      }
+                    </p>
+                    )
+                  }
+                </div>
             </div>
-            <div className="overflow-y-hidden flex-1 border border-gray-300 rounded-[0.33em] max-h-[75%]">
-              <div className="flex flex-col-reverse max-h-full min-h-full overflow-y-scroll p-2 gap-1">
+            <div className="overflow-y-hidden flex-1 max-h-[75%] mb-6 pb-2 px-2 border-r border-l border-b">
+              <div className="flex flex-col-reverse max-h-full min-h-full overflow-y-scroll p-0 gap-1">
                 <div ref={chatAnchorRef} />
                 {(conversation?.loading ?? true) ? (
                   <div className="flex-1 flex flex-col items-center justify-center">
@@ -481,40 +496,58 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
                 )}
               </div>
             </div>
-            <Textarea
-              ref={messageInputRef}
-              placeholder="Send a message here..."
-              className="w-full h-20 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
+            <div className="flex gap-2">
+              <Textarea
+                ref={messageInputRef}
+                placeholder="Send a message here..."
+                className="w-full h-10 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (!selectedApplication?.user_id) return;
+                    if (messageInputRef.current?.value) {
+                      handleMessage(
+                        selectedApplication.user_id,
+                        messageInputRef.current.value,
+                      );
+                    }
+                  }
+                }}
+                maxLength={1000}
+              />
+              {/* <Button
+                size="md"
+                disabled={sending}
+                onClick={() => {
                   if (!selectedApplication?.user_id) return;
                   if (messageInputRef.current?.value) {
                     handleMessage(
-                      selectedApplication.user_id,
-                      messageInputRef.current.value,
+                      selectedApplication?.user_id,
+                      messageInputRef.current?.value,
                     );
                   }
-                }
-              }}
-              maxLength={1000}
-            />
-            <Button
-              size="md"
-              disabled={sending}
-              onClick={() => {
-                if (!selectedApplication?.user_id) return;
-                if (messageInputRef.current?.value) {
-                  handleMessage(
-                    selectedApplication?.user_id,
-                    messageInputRef.current?.value,
-                  );
-                }
-              }}
-            >
-              {sending ? "Sending..." : "Send Message"}
-              <SendHorizonal className="w-5 h-5" />
-            </Button>
+                }}
+              >
+                <SendHorizonal className="w-5 h-5" />
+              </Button> */}
+              <button 
+                disabled={sending || !messageInputRef.current?.value.trim()}
+                onClick={() => {
+                  if (!selectedApplication?.user_id) return;
+                  if (messageInputRef.current?.value) {
+                    handleMessage(
+                      selectedApplication?.user_id,
+                      messageInputRef.current?.value,
+                    );
+                  }
+                }}
+                className={cn("text-primary px-2",
+                  (sending || !messageInputRef.current?.value.trim()) ? "opacity-50" : ""
+                )}
+              >
+                  <SendHorizonal className="w-7 h-7" />
+            </button>
+            </div>
           </div>
         </div>
       </ChatModal>

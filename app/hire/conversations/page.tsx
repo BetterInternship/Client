@@ -12,18 +12,20 @@ import { Message } from "@/components/ui/messages";
 import { Button } from "@/components/ui/button";
 import { EmployerConversationService, UserService} from "@/lib/api/services";
 import { Loader } from "@/components/ui/loader";
-import { useProfile } from "@/hooks/use-employer-api"; //here
+import { useProfile, useEmployerApplications } from "@/hooks/use-employer-api";
 import { useUserName } from "@/hooks/use-student-api";
 import { Badge } from "@/components/ui/badge";
 import { getFullName } from "@/lib/profile";
 import { FilterButton } from "@/components/ui/filter";
-import { Conversation } from "@/lib/db/db.types";
+import { EmployerApplication } from "@/lib/db/db.types";
 import ContentLayout from "@/components/features/hire/content-layout";
+import { ApplicationsHeader } from "@/components/features/hire/dashboard/ApplicationsHeader";
 
 export default function ConversationsPage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
   const profile = useProfile();
   const conversations = useConversations();
+  const applications = useEmployerApplications();
   const { unreads } = useConversations();
   const { isMobile } = useAppContext();
 
@@ -171,18 +173,21 @@ export default function ConversationsPage() {
                           className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-gray-100"
                           onClick={() => {
                             setMobileView("list");
-                            // keep selection; just go back to list
+                            setConversationId("");
                           }}
                           aria-label="Back to conversations"
                         >
                           <ChevronLeft className="h-5 w-5" />
                         </button>
                       )}
-                      <ChatHeaderTitle conversation={conversation} />
+                      <ChatHeaderTitle 
+                      conversation={conversation} 
+                      applications={applications.employer_applications}
+                      />
                     </div>
-                    <button className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-gray-100 text-gray-500">
-                        <CircleEllipsis className="h-5 w-5"/>
-                      </button>
+                    <button className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-gray-100 text-gray-500 mt-1">
+                      <CircleEllipsis className="h-5 w-5"/>
+                    </button>
                   </div>
                   <ConversationPane
                     conversation={conversation}
@@ -281,14 +286,23 @@ function ConversationList({
   );
 }
 
-function ChatHeaderTitle({ conversation }: { conversation?: any }) {
+function ChatHeaderTitle({ conversation, applications }: { conversation?: any, applications?:EmployerApplication[] }) {
   const { userName } = useUserName(conversation.senderId || "")
+  const userApplications = applications?.filter(a => conversation.senderId === a.user_id)
   return (
-    <div className="min-w-0">
+    <div className="min-w-0 max-w-[33vh]">
       <div className="font-medium truncate">
         {userName || "Conversations"}
       </div>
-      <div className="text-[11px] text-gray-500 -mt-[2px]">Chat</div>
+      <div className="text-gray-500 text-[11px] -mt-[2px] flex truncate">
+        <p className="text-[11px] text-primary"> Applied for: </p>
+        {userApplications?.map((a) => 
+          <p className="text-[11px] ml-1">
+            {a.job?.title}
+            {a !== userApplications?.at(-1) && <>, </>}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
@@ -333,14 +347,22 @@ function ComposerBar({
           maxLength={1000}
         />
         <div className="flex justify-end">
-          <Button
+          {/* <Button
             size="md"
             disabled={disabled || !value.trim()}
             onClick={onSend}
           >
-            {/* {disabled ? "Sending..." : "Send Message"} */}
             <SendHorizonal className="w-20 h-20" />
-          </Button>
+          </Button> */}
+          <button 
+            disabled={disabled || !value.trim()}
+            onClick={onSend}
+            className={cn("text-primary px-2",
+              (disabled || !value.trim()) ? "opacity-50" : ""
+            )}
+          >
+            <SendHorizonal className="w-7 h-7" />
+          </button>
         </div>
       </div>
     </div>
