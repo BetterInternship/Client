@@ -331,7 +331,7 @@ interface FormCheckboxProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   checked?: boolean;
   label?: string;
-  setter?: (value: boolean) => void;
+  setter?: ((value: boolean) => void) | ((e: any, value: boolean) => void);
   className?: string;
   sentence?: React.ReactNode;
   required?: boolean;

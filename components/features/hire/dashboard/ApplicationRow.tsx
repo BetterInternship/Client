@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CommandMenu } from "@/components/ui/command-menu";
-import StatusBadge from "@/components/ui/status-badge";
 import { useConversations } from "@/hooks/use-conversation";
 import { useAppContext } from "@/lib/ctx-app";
 import { EmployerApplication } from "@/lib/db/db.types";
@@ -18,7 +17,9 @@ import { cn } from "@/lib/utils";
 import { fmtISO } from "@/lib/utils/date-utils";
 import { statusMap } from "@/components/common/status-icon-map";
 import {
+  Ban,
   Calendar,
+  Check,
   CheckCircle2,
   ContactRound,
   GraduationCap,
@@ -28,6 +29,8 @@ import {
   Trash,
   XCircle,
 } from "lucide-react";
+import { ActionButton } from "@/components/ui/action-button";
+import { FormCheckbox } from "@/components/EditForm";
 
 interface ApplicationRowProps {
   application: EmployerApplication;
@@ -70,24 +73,17 @@ export function ApplicationRow({
 
   const statuses = useMemo<ActionItem[]>(() => [
     {
-      "id": "delete",
-      "icon": Trash,
+      "id": "accept",
+      "label": "Accepted",
+      "icon": Check,
       "active": true,
-      "destructive": true,
-      "onClick": () => onStatusButtonClick(application.id!, 7),
-      "highlighted": application.status! === 7,
-      "highlightColor": `${statusMap.get(7)?.bgColor} ${statusMap.get(7)?.fgColor}`
+      "onClick": () => onStatusButtonClick(application.id!, 4),
+      "highlighted": application.status! === 4,
+      "highlightColor": `${statusMap.get(4)?.bgColor} ${statusMap.get(4)?.fgColor}`
     },
     {
-      "id": "reject",
-      "icon": XCircle,
-      "active": true,
-      "onClick": () => onStatusButtonClick(application.id!, 6),
-      "highlighted": application.status! === 6,
-      "highlightColor": `${statusMap.get(6)?.bgColor} ${statusMap.get(6)?.fgColor}`
-    },
-    {
-      "id": "star",
+      "id": "shortlist",
+      "label": "Shortlisted",
       "icon": Star,
       "active": true,
       "onClick": () => onStatusButtonClick(application.id!, 2),
@@ -95,12 +91,13 @@ export function ApplicationRow({
       "highlightColor": `${statusMap.get(2)?.bgColor} ${statusMap.get(2)?.fgColor}`
     },
     {
-      "id": "accept",
-      "icon": CheckCircle2,
+      "id": "reject",
+      "label": "Rejected",
+      "icon": Ban,
       "active": true,
-      "onClick": () => onStatusButtonClick(application.id!, 4),
-      "highlighted": application.status! === 4,
-      "highlightColor": `${statusMap.get(4)?.bgColor} ${statusMap.get(4)?.fgColor}`
+      "onClick": () => onStatusButtonClick(application.id!, 6),
+      "highlighted": application.status! === 6,
+      "highlightColor": `${statusMap.get(6)?.bgColor} ${statusMap.get(6)?.fgColor}`
     },
   ], [application.id, onStatusButtonClick]);
 
@@ -114,9 +111,9 @@ export function ApplicationRow({
           onClick={(e) => e.stopPropagation()}
           className="flex justify-between"
         >
-          <Checkbox
+          <FormCheckbox
             checked={checkboxSelected}
-            onCheckedChange={(v) => onToggleSelect?.(!!v)}
+            setter={(v) => onToggleSelect?.(!!v)}
             className="w-6 h-6"
           />
 
@@ -229,20 +226,25 @@ export function ApplicationRow({
           >
             New Unreads
           </Badge>
-          <Button
-            variant="outline"
-            size="sm"
+
+          <ActionButton
+            icon={MessageCircle}
             onClick={(e) => {
               e.stopPropagation();
               openChatModal();
               setSelectedApplication(application);
               updateConversationId(application.user_id ?? "");
             }}
-            className="relative"
-          >
-            <MessageCircle className="h-6 w-6" />
-            Chat
-          </Button>
+          />
+          <ActionButton
+            icon={Trash}
+            onClick={(e) => {
+              e.stopPropagation();
+              onStatusButtonClick(application.id!, 7)
+            }}
+            destructive={true}
+            enabled={application.status! !== 7}
+          />
         </div>
       </td>
     </tr>

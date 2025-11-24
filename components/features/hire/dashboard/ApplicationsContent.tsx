@@ -158,7 +158,8 @@ export function ApplicationsContent({
     .filter(Boolean);
 
   // remove the delete item from the bottom command bar so we can put it in the top one and the pending status.
-  const remove_unused_statuses = statuses.filter((status) => status.id !== "7" && status.id !== "0");
+  const remove_unused_statuses = statuses.filter((status) => status.id !== "7" &&
+                                                             status.id !== "0");
 
   const applyActiveFilter = (apps: typeof sortedApplications) => {
     if (activeFilter === -1) {
@@ -254,30 +255,10 @@ export function ApplicationsContent({
         isVisible={commandBarsVisible}
         defaultVisible={true}
         position={{ position: "bottom" }}
-        className="justify-between"
       />
       <CommandMenu
         items={[
-          `${selectedApplications.size} selected`,
-          {
-            id: "select",
-            label: "Select all",
-            icon: SquareCheck,
-            onClick: selectAll,
-          },
-          {
-            id: "delete",
-            label: "Delete",
-            icon: Trash,
-            destructive: true,
-            onClick: () => updateStatus(7),
-          },
-          {
-            id: "cancel",
-            label: "Cancel",
-            icon: X,
-            onClick: unselectAll,
-          },
+          
         ]}
         isVisible={commandBarsVisible}
         defaultVisible={true}

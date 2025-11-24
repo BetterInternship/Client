@@ -25,7 +25,7 @@ export const CommandMenu = ({
   position,
 }: {
   // ActionItems are for buttons, but you can also put text.
-  items?: Array<ActionItem | string>;
+  items?: Array<ActionItem | string> | Array<Array<ActionItem | string>>;
   className?: string;
   isVisible?: boolean;
   defaultVisible?: boolean;
@@ -67,7 +67,7 @@ export const CommandMenu = ({
         className,
       )}
     >
-      {items?.map((item, idx) =>
+      {items?.map((item, idx) => 
         isActionItem(item) ? (
           <button
             key={item.id}
