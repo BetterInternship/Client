@@ -165,7 +165,7 @@ export function FormFlowRouter({
       .map((f) => finalValues[f.field]?.trim())
       .filter(Boolean) as string[];
 
-    if (recipientEmails.length > 0 && !_bypassConfirm) {
+    if (recipientEmails.length > 0 && withEsign && !_bypassConfirm) {
       const recipientFields = fields
         .filter(
           (f) => typeof f.field === "string" && f.field.endsWith(":recipient"),
