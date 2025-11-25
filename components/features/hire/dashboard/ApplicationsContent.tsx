@@ -157,6 +157,22 @@ export function ApplicationsContent({
     })
     .filter(Boolean);
 
+    // get statuses specifically for the rows. these use different action items.
+    const getRowStatuses = (applicationId: string) => {
+      return unique_app_statuses
+        .filter((status) => status.id !== 7 && status.id !== 0)
+        .map((status): ActionItem => {
+          const uiProps = statusMap.get(status.id);
+          return {
+            id: status.id.toString(),
+            label: status.name,
+            icon: uiProps?.icon,
+            onClick: () => updateSingleStatus(applicationId, status.id),
+            destructive: uiProps?.destructive,
+          };
+        });
+    };
+
   // remove the delete item from the bottom command bar so we can put it in the top one and the pending status.
   const remove_unused_statuses = statuses.filter((status) => status.id !== "7" &&
                                                              status.id !== "0");
@@ -236,7 +252,7 @@ export function ApplicationsContent({
 
 
   return isMobile ? (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 min-h-screen">
       <Toast
         visible={toastVisible}
         title={toastMessage}
@@ -254,16 +270,30 @@ export function ApplicationsContent({
         items={remove_unused_statuses}
         isVisible={commandBarsVisible}
         defaultVisible={true}
-        position={{ position: "bottom" }}
+        position="bottom"
+        undocked={false}
       />
       <CommandMenu
         items={[
-          
+          {
+            id: "cancel",
+            icon: X,
+            onClick: unselectAll,
+          },
+          `${selectedApplications.size} selected`,
+          {
+            id: "delete",
+            label: "Delete",
+            icon: Trash,
+            destructive: true,
+            onClick: () => updateStatus(7),
+          },
         ]}
         isVisible={commandBarsVisible}
         defaultVisible={true}
-        position={{ position: "top" }}
+        position="top"
         className="justify-between"
+        undocked={false}
       />
       <div className="flex flex-col gap-2">
         {visibleApplications.length ? (
@@ -281,6 +311,7 @@ export function ApplicationsContent({
               checkboxSelected={selectedApplications.has(application.id!)}
               onToggleSelect={(v) => toggleSelect(application.id!, !!v)}
               onStatusButtonClick={updateSingleStatus}
+              statuses={getRowStatuses(application.id!)}
             />
           ))
         ) : (
@@ -305,34 +336,8 @@ export function ApplicationsContent({
           unselectAll()
         }}
       />
-      <div className="flex justify-between flex-wrap gap-2">
-        <CommandMenu
-          items={remove_unused_statuses}
-          isVisible={commandBarsVisible}
-          defaultVisible={true}
-        />
-        <CommandMenu
-          items={[
-            `${selectedApplications.size} selected`,
-            {
-              id: "delete",
-              label: "Delete",
-              icon: Trash,
-              destructive: true,
-              onClick: () => updateStatus(7),
-            },
-            {
-              id: "cancel",
-              label: "Cancel",
-              icon: X,
-              onClick: unselectAll,
-            },
-          ]}
-          isVisible={commandBarsVisible}
-          defaultVisible={true}
-        />
-      </div>
-      <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-200 border-[1px] text-sm rounded-md overflow-hidden">
+      
+      <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-200 border-[1px] text-sm rounded-md overflow-visible">
         <thead className="bg-gray-100">
           <tr className="text-left">
             <th className="p-4">
@@ -397,6 +402,7 @@ export function ApplicationsContent({
                 checkboxSelected={selectedApplications.has(application.id!)}
                 onToggleSelect={(v) => toggleSelect(application.id!, !!v)}
                 onStatusButtonClick={updateSingleStatus}
+                statuses={getRowStatuses(application.id!)}
               />
             ))
         ) : (

@@ -17,7 +17,7 @@ export type ActionItem = {
   id: string;
   label?: string;
   icon?: LucideIcon;
-  onClick: () => void;
+  onClick?: () => void;
   active?: boolean;
   disabled?: boolean;
   destructive?: boolean;

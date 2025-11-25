@@ -22,6 +22,7 @@ import {
   Check,
   CheckCircle2,
   ContactRound,
+  FileQuestion,
   GraduationCap,
   MessageCircle,
   School,
@@ -31,6 +32,8 @@ import {
 } from "lucide-react";
 import { ActionButton } from "@/components/ui/action-button";
 import { FormCheckbox } from "@/components/EditForm";
+import { DropdownGroup } from "@/components/ui/dropdown";
+import { DropdownMenu } from "@/components/ui/dropdown-menu";
 
 interface ApplicationRowProps {
   application: EmployerApplication;
@@ -44,6 +47,7 @@ interface ApplicationRowProps {
   setSelectedApplication: (application: EmployerApplication) => void;
   checkboxSelected?: boolean;
   onToggleSelect?: (next: boolean) => void;
+  statuses: ActionItem[];
 }
 
 interface InternshipPreferences {
@@ -64,42 +68,24 @@ export function ApplicationRow({
   checkboxSelected = false,
   onToggleSelect,
   onStatusButtonClick,
+  statuses,
 }: ApplicationRowProps) {
-  const { to_university_name } = useDbRefs();
+  const { to_university_name, get_app_status } = useDbRefs();
   const conversations = useConversations();
   const { isMobile } = useAppContext();
 
   const preferences = (application.user?.internship_preferences || {}) as InternshipPreferences;
 
-  const statuses = useMemo<ActionItem[]>(() => [
-    {
-      "id": "accept",
-      "label": "Accepted",
-      "icon": Check,
-      "active": true,
-      "onClick": () => onStatusButtonClick(application.id!, 4),
-      "highlighted": application.status! === 4,
-      "highlightColor": `${statusMap.get(4)?.bgColor} ${statusMap.get(4)?.fgColor}`
-    },
-    {
-      "id": "shortlist",
-      "label": "Shortlisted",
-      "icon": Star,
-      "active": true,
-      "onClick": () => onStatusButtonClick(application.id!, 2),
-      "highlighted": application.status! === 2,
-      "highlightColor": `${statusMap.get(2)?.bgColor} ${statusMap.get(2)?.fgColor}`
-    },
-    {
-      "id": "reject",
-      "label": "Rejected",
-      "icon": Ban,
-      "active": true,
-      "onClick": () => onStatusButtonClick(application.id!, 6),
-      "highlighted": application.status! === 6,
-      "highlightColor": `${statusMap.get(6)?.bgColor} ${statusMap.get(6)?.fgColor}`
-    },
-  ], [application.id, onStatusButtonClick]);
+  const currentStatusId = application.status?.toString() ?? "0";
+  const defaultStatus: ActionItem = {
+    id: currentStatusId,
+    label: get_app_status(application.status!)?.name,
+    active: true,
+    disabled: false,
+    destructive: false,
+    highlighted: true,
+    highlightColor: statusMap.get(application.status!)?.bgColor,
+  };
 
   return isMobile ? (
     <>
@@ -113,7 +99,7 @@ export function ApplicationRow({
         >
           <FormCheckbox
             checked={checkboxSelected}
-            setter={(v) => onToggleSelect?.(!!v)}
+            setter={(v: boolean) => onToggleSelect?.(!!v)}
             className="w-6 h-6"
           />
 
@@ -166,10 +152,9 @@ export function ApplicationRow({
           </div>
         </div>
         <div className="pt-2">
-          <CommandMenu
+          <DropdownMenu
             items={statuses}
-            isVisible={true}
-            defaultVisible={true}
+            defaultItem={defaultStatus}
           />
         </div>
       </Card>
@@ -205,11 +190,10 @@ export function ApplicationRow({
           <span> Not provided</span>
         )}
       </td>
-      <td className="px-4 py-2">
-        <CommandMenu
+      <td className="px-4 py-2 overflow-visible">
+        <DropdownMenu
           items={statuses}
-          isVisible={true}
-          defaultVisible={true}
+          defaultItem={defaultStatus}
         />
       </td>
       <td>
