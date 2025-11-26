@@ -1,10 +1,8 @@
 "use client";
 
 import { useAuthContext } from "@/app/hire/authctx";
-import ContentLayout from "@/components/features/hire/content-layout";
 import { ApplicationsContent } from "@/components/features/hire/dashboard/ApplicationsContent";
 import { ShowUnverifiedBanner } from "@/components/ui/banner";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
 import { Tab, TabGroup } from "@/components/ui/tabs";
@@ -19,9 +17,8 @@ import { useModal } from "@/hooks/use-modal";
 import { useSideModal } from "@/hooks/use-side-modal";
 import { EmployerConversationService, UserService } from "@/lib/api/services";
 import { EmployerApplication, InternshipPreferences } from "@/lib/db/db.types";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Edit, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { JobDetails } from "@/components/shared/jobs";
 import { Job } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
 import { ListingsDetailsPanel } from "@/components/features/hire/listings";
@@ -37,6 +34,9 @@ import { useListingsBusinessLogic } from "@/hooks/hire/listings/use-listings-bus
 import { useAppContext } from "@/lib/ctx-app";
 import { cn } from "@/lib/utils";
 import { ListingsDeleteModal } from "@/components/features/hire/listings";
+import { Toggle } from "@/components/ui/toggle";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 interface JobTabsProps {
   selectedJob: Job | null;
@@ -306,46 +306,100 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
           <h3 className="leading-none tracking-tighter">{selectedJob?.title}</h3>
         </div>
         <div className="flex flex-col flex-1 gap-4">
-          {!profile.loading && !profile.data?.is_verified ? (
-            <ShowUnverifiedBanner />
-          ) : (
-            <>
-              <TabGroup>
-                <Tab name="Applicants">
-                  {/* we need to add filtering here :D */}
-                  <ApplicationsContent
-                    applications={filteredApplications}
-                    statusId={[0, 1, 2, 3, 4, 5, 6]}
-                    openChatModal={openChatModal}
-                    updateConversationId={updateConversationId}
-                    onApplicationClick={handleApplicationClick}
-                    onNotesClick={handleNotesClick}
-                    onScheduleClick={handleScheduleClick}
-                    onStatusChange={handleStatusChange}
-                    setSelectedApplication={setSelectedApplication}
-                  ></ApplicationsContent>
-                </Tab>
-                <Tab name="Preview Listing">
-                  <Card className="flex-1 min-w-0 p-0">
-                    {/* <Scrollbar> */}
-                      <ListingsDetailsPanel
-                        selectedJob={selectedJob}
-                        isEditing={isEditing}
-                        saving={saving}
-                        onEdit={handleEditStart}
-                        onSave={handleSave}
-                        onCancel={handleJobBack}
-                        onShare={handleShare}
-                        onDelete={handleJobDelete}
-                        updateJob={update_job}
-                        setIsEditing={setIsEditing}
-                      />
-                    {/* </Scrollbar> */}
-                  </Card>
-                </Tab>
-              </TabGroup>
-            </>
-          )}
+          <div className={cn(
+            "px-4 py-3 bg-white border-gray-200 border-2 rounded-md",
+            isMobile
+            ? "flex justify-between gap-2"
+            : "grid grid-cols-2 grid-rows-2 gap-x-2 gap-y-1 w-fit" 
+          )}>
+            <div className="flex items-center gap-2">
+              <Toggle
+                state={selectedJob!.is_active}
+                onClick={() => {
+                    if (!selectedJob!.id) return;
+                    void update_job(selectedJob!.id, {
+                        is_active: !selectedJob!.is_active,
+                    });
+                }}
+              />
+              <span>{selectedJob!.is_active ? "Active" : "Paused"}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link href={{
+                pathname:"/listings/edit",
+                query: {
+                  jobId: selectedJob!.id,
+                  refresh: true
+                }
+              }}
+              >
+                <Button
+                  key="edit"
+                  variant="ghost"
+                  disabled={saving}
+                  className="text-gray-600 hover:bg-primary/10 gap-1"
+                >
+                  <Edit size={16} />
+                  Edit
+                </Button>
+              </Link>
+              <Button
+                key="delete"
+                variant="ghost"
+                disabled={saving}
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive gap-1"
+              >
+                <Trash2 />
+                Delete
+              </Button>
+            </div>
+            <p className={cn(
+              "items-center col-span-2 text-gray-600 text-sm",
+              isMobile
+              ? "hidden"
+              : "flex"
+            )}>
+              {selectedJob!.is_active 
+                ? "This listing is currently accepting applicants."
+                : "This listing is invisible and not currently accepting applicants."
+              }
+            </p>
+          </div>
+          
+          <TabGroup>
+            <Tab name="Applicants">
+              {/* we need to add filtering here :D */}
+              <ApplicationsContent
+                applications={filteredApplications}
+                statusId={[0, 1, 2, 3, 4, 5, 6]}
+                openChatModal={openChatModal}
+                updateConversationId={updateConversationId}
+                onApplicationClick={handleApplicationClick}
+                onNotesClick={handleNotesClick}
+                onScheduleClick={handleScheduleClick}
+                onStatusChange={handleStatusChange}
+                setSelectedApplication={setSelectedApplication}
+              ></ApplicationsContent>
+            </Tab>
+            <Tab name="Listing information">
+              <Card className="flex-1 min-w-0 p-0">
+                {/* <Scrollbar> */}
+                  <ListingsDetailsPanel
+                    selectedJob={selectedJob}
+                    isEditing={isEditing}
+                    saving={saving}
+                    onEdit={handleEditStart}
+                    onSave={handleSave}
+                    onCancel={handleJobBack}
+                    onShare={handleShare}
+                    onDelete={handleJobDelete}
+                    updateJob={update_job}
+                    setIsEditing={setIsEditing}
+                  />
+                {/* </Scrollbar> */}
+              </Card>
+            </Tab>
+          </TabGroup>
         </div>
       </div>
 

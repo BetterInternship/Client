@@ -39,6 +39,52 @@ export const CommandMenu = ({
     typeof x.id === "string" &&
     typeof x.onClick === "function";
 
+  const groups = (items && items.length > 0 && Array.isArray(items[0])) 
+    ? (items as Array<Array<ActionItem | string>>) 
+    : [items as Array<ActionItem | string>];
+
+  const renderGroup = (group: Array<ActionItem | string>, idx: number) => {
+    return (
+      <React.Fragment key={idx}>
+        {idx > 0 && (
+          <div className="w-px bg-gray-300 my-1 mx-1" />
+        )}
+        {group.map((item, idx) => 
+          isActionItem(item) ? (
+            <button
+              key={item.id}
+              type="button"
+              onClick={item.onClick}
+              disabled={item.disabled}
+              className={cn(
+                "flex justify-center items-center rounded-sm gap-2",
+                item.destructive
+                  ? "text-red-700 hover:bg-red-300/50 active:bg-red-400/75"
+                  : "text-gray-700 hover:bg-gray-300/50 active:bg-gray-400/75",
+                position
+                  ? ["flex-col p-2"]
+                  : ["flex-row px-3 py-2"],
+                item.highlighted
+                  ? item.highlightColor
+                  : ""
+              )}
+            >
+              {item.icon && <item.icon size={18} />}
+              {item.label && <span>{item.label}</span>}
+            </button>
+          ) : (
+            <span
+              key={typeof item === "string" ? `text-${item}` : `node-${idx}`}
+              className="flex justify-center items-center text-gray-700 px-2"
+            >
+              {item as React.ReactNode}
+            </span>
+          ),
+        )}
+      </React.Fragment>
+    )
+  };
+
   if (!visible) return null;
 
   return (
@@ -63,48 +109,13 @@ export const CommandMenu = ({
          data-[position=bottom]:bottom-0 \
          data-[position=bottom]:inset-x-0 \
          data-[position=bottom]:border-y-2",
-        "data-[undocked=true]:rounded-md \
-         data-[undocked=true]:border-2 \
-         data-[undocked=true]:border-gray-300 \
-         data-[undocked=true]:m-4 \
-        ",
-        undocked && (position === "top" || position === "bottom") && "!left-1/2 !-translate-x-1/2 !w-max",
-        undocked && (position === "left" || position === "right") && "!top-1/2 !-translate-y-1/2 !h-max",
+        undocked && "rounded-md px-4",
+        undocked && (position === "top" || position === "bottom") && "!left-1/2 -translate-x-1/2 w-max border-2 m-4",
+        undocked && (position === "left" || position === "right") && "!top-1/2 -translate-y-1/2 h-max border-2 m-4",
         className,
       )}
     >
-      {items?.map((item, idx) => 
-        isActionItem(item) ? (
-          <button
-            key={item.id}
-            type="button"
-            onClick={item.onClick}
-            disabled={item.disabled}
-            className={cn(
-              "flex justify-center items-center rounded-sm gap-2",
-              item.destructive
-                ? "text-red-700 hover:bg-red-300/50 active:bg-red-400/75"
-                : "text-gray-700 hover:bg-gray-300/50 active:bg-gray-400/75",
-              position
-                ? ["flex-col p-2"]
-                : ["flex-row px-3 py-2"],
-              item.highlighted
-                ? item.highlightColor
-                : ""
-            )}
-          >
-            {item.icon && <item.icon size={18} />}
-            {item.label && <span>{item.label}</span>}
-          </button>
-        ) : (
-          <span
-            key={typeof item === "string" ? `text-${item}` : `node-${idx}`}
-            className="flex justify-center items-center text-gray-700 px-2"
-          >
-            {item as React.ReactNode}
-          </span>
-        ),
-      )}
+      {groups.map((group, idx) => renderGroup(group || [], idx))}
     </div>
   );
 };

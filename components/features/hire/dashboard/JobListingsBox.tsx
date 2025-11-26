@@ -13,7 +13,6 @@ import { useRouter } from "next/navigation";
 interface JobListingProps {
     job: Job;
     applications: EmployerApplication[];
-    onJobListingClick: (jobId: string, jobTitle: string) => void;
     update_job: (
         job_id: string,
         job: Partial<Job>,
@@ -30,6 +29,8 @@ export function JobListingsBox({
         (application) => application.job_id === job.id
     );
 
+    const router = useRouter();
+
     const handleClick = () => {
         if (job.id && job.title !== undefined) {
             router.push(`/dashboard/manage?jobId=${job.id}`)
@@ -38,7 +39,6 @@ export function JobListingsBox({
         }
     };
 
-    const router = useRouter();
     const isMobile = useMobile();
 
     return (

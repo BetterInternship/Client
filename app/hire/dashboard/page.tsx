@@ -34,12 +34,6 @@ function DashboardContent() {
 
   redirectIfNotLoggedIn();
 
-  //shows applications when job listing is clicked
-  const handleJobListingClick = (jobId: string, jobTitle: string) => {
-    setSelectedJobId(jobId);
-    setJobName(jobTitle);
-  };
-
   if (applications.loading) {
     return (
       <div className="w-full flex items-center justify-center">
@@ -73,7 +67,6 @@ function DashboardContent() {
                     applications={applications.employer_applications}
                     jobs={ownedJobs}
                     employerId={profile.data?.id || ""}
-                    onJobListingClick={handleJobListingClick}
                     updateJob={update_job}
                   />
                   {isMobile && (

@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ApplicationsHeader } from "./ApplicationsHeader";
 import { useState } from "react";
 import { CommandMenu } from "@/components/ui/command-menu";
-import { Calendar, CheckCircle2, ContactRound, GraduationCap, ListCheck, SquareCheck, Trash, User2, X } from "lucide-react";
+import { Calendar, CheckCircle2, CheckSquare, ContactRound, GraduationCap, ListCheck, SquareCheck, Trash, User2, X } from "lucide-react";
 import { useEffect } from "react";
 import { updateApplicationStatus } from "@/lib/api/services";
 import { statusMap } from "@/components/common/status-icon-map";
@@ -45,7 +45,6 @@ export function ApplicationsContent({
     new Set(),
   );
   const [commandBarsVisible, setCommandBarsVisible] = useState(false);
-  const [allSelected, setAllSelected] = useState(false);
   const [activeFilter, setActiveFilter] = useState<number>(-1);
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -189,6 +188,16 @@ export function ApplicationsContent({
     (application) => application.status !== undefined,
   );
 
+  
+  const numVisibleSelected = visibleApplications.filter(app =>
+    selectedApplications.has(app.id!)
+  ).length;
+
+  const allVisibleSelected = visibleApplications.length > 0 &&
+                             numVisibleSelected === visibleApplications.length;
+
+  const someVisibleSelected = numVisibleSelected > 0 && numVisibleSelected < visibleApplications.length;
+
   const toggleSelect = (id: string, next?: boolean) => {
     setSelectedApplications((prev) => {
       const nextSet = new Set(prev);
@@ -207,16 +216,14 @@ export function ApplicationsContent({
     setSelectedApplications(
       new Set(visibleApplications.map((application) => application.id!))
     )
-    setAllSelected(true);
   };
 
   const unselectAll = () => {
     setSelectedApplications(new Set());
-    setAllSelected(false);
   };
 
   const toggleSelectAll = () => {
-    allSelected ? unselectAll() : selectAll();
+    allVisibleSelected ? unselectAll() : selectAll();
   };
 
   const getCounts = (apps: EmployerApplication[]) => {
@@ -240,15 +247,6 @@ export function ApplicationsContent({
 
     return counts;
   };
-
-  const numVisibleSelected = visibleApplications.filter(app =>
-    selectedApplications.has(app.id!)
-  ).length;
-
-  const allVisibleSelected = visibleApplications.length > 0 &&
-                             numVisibleSelected === visibleApplications.length;
-
-  const someVisibleSelected = numVisibleSelected > 0 && numVisibleSelected < visibleApplications.length;
 
 
   return isMobile ? (
@@ -275,24 +273,33 @@ export function ApplicationsContent({
       />
       <CommandMenu
         items={[
-          {
-            id: "cancel",
-            icon: X,
-            onClick: unselectAll,
-          },
-          `${selectedApplications.size} selected`,
-          {
-            id: "delete",
-            label: "Delete",
-            icon: Trash,
-            destructive: true,
-            onClick: () => updateStatus(7),
-          },
+          [
+            {
+              id: "cancel",
+              icon: X,
+              onClick: unselectAll,
+            },
+          ],
+          [
+            {
+              id: "select_all",
+              label: allVisibleSelected ? "Unselect all" : "Select all" ,
+              icon: CheckSquare,
+              onClick: toggleSelectAll,
+            },
+            `${selectedApplications.size} selected`,
+            {
+              id: "delete",
+              label: "Delete",
+              icon: Trash,
+              destructive: true,
+              onClick: () => updateStatus(7),
+            },
+          ],
         ]}
         isVisible={commandBarsVisible}
         defaultVisible={true}
         position="top"
-        className="justify-between"
         undocked={false}
       />
       <div className="flex flex-col gap-2">
@@ -337,7 +344,32 @@ export function ApplicationsContent({
         }}
       />
       <CommandMenu
-        items={remove_unused_statuses}
+        items={[
+          [
+            {
+              id: "cancel",
+              icon: X,
+              onClick: unselectAll,
+            },
+            `${selectedApplications.size} selected`,
+          ],
+          remove_unused_statuses,
+          [
+            {
+              id: "select_all",
+              label: allVisibleSelected ? "Unselect all" : "Select all" ,
+              icon: CheckSquare,
+              onClick: toggleSelectAll,
+            },
+            {
+              id: "delete",
+              label: "Delete",
+              icon: Trash,
+              destructive: true,
+              onClick: () => updateStatus(7),
+            },
+          ],
+        ]}
         isVisible={commandBarsVisible}
         defaultVisible={true}
         position="bottom"
