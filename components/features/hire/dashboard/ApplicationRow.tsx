@@ -95,33 +95,16 @@ export function ApplicationRow({
       >
         <div
           onClick={(e) => e.stopPropagation()}
-          className="flex justify-between"
+          className="flex items-center gap-1 pb-2"
         >
           <FormCheckbox
             checked={checkboxSelected}
             setter={(v: boolean) => onToggleSelect?.(!!v)}
             className="w-6 h-6"
           />
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              openChatModal();
-              setSelectedApplication(application);
-              updateConversationId(application.user_id ?? "");
-            }}
-            className="relative"
-          >
-            <MessageCircle className="h-6 w-6" />
-            Chat
-          </Button>
+          <h4 className="text-gray-900 text-base">{getFullName(application.user)}</h4>
         </div>
         <div className="flex flex-col text-gray-500">
-          <div className="flex flex-col gap-1 pb-2">
-            <h4 className="text-gray-900 text-base">{getFullName(application.user)}</h4>
-          </div>
           <div className="flex items-center gap-2">
             <School size={16} />
             <span className="text-sm">
@@ -151,11 +134,24 @@ export function ApplicationRow({
             </span>
           </div>
         </div>
-        <div className="pt-2">
+        <div className="flex items-center justify-end gap-2 pt-2">
           <DropdownMenu
             items={statuses}
             defaultItem={defaultStatus}
           />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              openChatModal();
+              setSelectedApplication(application);
+              updateConversationId(application.user_id ?? "");
+            }}
+          >
+            <MessageCircle className="h-6 w-6" />
+            Chat
+          </Button>
         </div>
       </Card>
     </>

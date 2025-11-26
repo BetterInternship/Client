@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ChevronDown, ChevronUp, LucideIcon } from "lucide-react";
 import { ActionItem } from "./action-item";
 import StatusBadge from "./status-badge";
@@ -14,16 +14,32 @@ export const DropdownMenu = ({
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [activeItem, setActiveItem] = useState<ActionItem>(defaultItem);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setActiveItem(defaultItem)
   }, [defaultItem]);
 
+  useEffect(() => {
+    const handleClickOut = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOut);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOut);
+    };
+  }, []);
+
   return (
     <div
+      ref={menuRef}
       aria-disabled={!enabled}
       className="
-        relative border-2 border-gray-300 rounded-sm bg-white inline-flex w-max
+        relative border border-gray-300 rounded-[0.33em] bg-white inline-flex w-max
       "
     >
       <div
@@ -36,7 +52,7 @@ export const DropdownMenu = ({
         }}
       >
         <div 
-          className="flex gap-2 p-2 pr-4 rounded-sm items-center"
+          className="flex gap-2 px-2 py-1 pr-4 items-center"
         >
           {isOpen
             ? <ChevronUp size={20} />
