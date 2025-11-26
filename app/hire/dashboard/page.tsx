@@ -11,28 +11,25 @@ import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAuthContext } from "../authctx";
+import { Job } from "@/lib/db/db.types";
 
 function DashboardContent() {
   const { isMobile } = useMobile();
   const { isAuthenticated, redirectIfNotLoggedIn, loading } = useAuthContext();
   const profile = useProfile();
   const applications = useEmployerApplications();
-  const { ownedJobs, update_job } = useOwnedJobs();
-  const archivedJobs = ownedJobs.filter((job) => job.is_active === false ||
-    job.is_deleted === true || job.is_unlisted === true);
+  const { ownedJobs, update_job, delete_job } = useOwnedJobs();
   const activeJobs = ownedJobs.filter((job) => job.is_active)
   const inactiveJobs = ownedJobs.filter((job) => !job.is_active)
 
-  const [selectedJobId, setSelectedJobId] =
-    useState<string | null>(null);
-  const [filteredStatus, setFilteredStatus] =
-    useState<number[]>([]);
-  const [jobName, setJobName] =
-    useState<string>("");
-
   redirectIfNotLoggedIn();
+
+  const handleUpdateJob = async (jobId: string, updates: Partial<Job>) => {
+    const result = await update_job(jobId, updates);
+    return result;
+  }
 
   if (applications.loading) {
     return (
@@ -67,7 +64,7 @@ function DashboardContent() {
                     applications={applications.employer_applications}
                     jobs={ownedJobs}
                     employerId={profile.data?.id || ""}
-                    updateJob={update_job}
+                    updateJob={handleUpdateJob}
                   />
                   {isMobile && (
                     <Link href="listings/create">

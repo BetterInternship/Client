@@ -66,7 +66,7 @@ export const DropdownMenu = ({
       {isOpen && (
         <div
           className="
-            absolute left-0 top-full mt-1 bg-white shadow-md z-10 w-full min-w-max rounded-sm border-gray-300 border-2
+            absolute left-0 top-full mt-1 bg-white shadow-md z-10 w-full min-w-max rounded-[0.33em] border-gray-300 border-2
           "
           onClick={(e) => e.stopPropagation()}
         >
@@ -75,7 +75,7 @@ export const DropdownMenu = ({
               <div 
                 key={idx}
                 className="
-                  flex gap-2 p-2 text-sm
+                  flex gap-2 p-2 text-sm hover:bg-primary/10 transition
                 "
                 onClick={(e) => {
                   e.stopPropagation();

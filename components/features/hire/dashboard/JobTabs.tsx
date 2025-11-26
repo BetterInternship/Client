@@ -295,6 +295,16 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
 
   return (
     <>
+      <DeleteModal>
+        {jobToDelete && (
+          <ListingsDeleteModal
+            job={jobToDelete}
+            deleteJob={delete_job}
+            clearJob={clearSelectedJob}
+            close={closeDeleteModal}
+          />
+        )}
+      </DeleteModal>
       <div className="flex-1 flex flex-col w-full">
         <div className="flex items-center">
           <button
@@ -348,6 +358,7 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
                 variant="ghost"
                 disabled={saving}
                 className="text-destructive hover:bg-destructive/10 hover:text-destructive gap-1"
+                onClick={handleJobDelete}
               >
                 <Trash2 />
                 Delete
@@ -402,17 +413,6 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
           </TabGroup>
         </div>
       </div>
-
-      <DeleteModal>
-        {jobToDelete && (
-          <ListingsDeleteModal
-            job={jobToDelete}
-            deleteJob={delete_job}
-            clearJob={clearSelectedJob}
-            close={closeDeleteModal}
-          />
-        )}
-      </DeleteModal>
 
       <ApplicantModal className="max-w-7xl w-full">
         <ApplicantModalContent

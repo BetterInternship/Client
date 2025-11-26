@@ -279,6 +279,7 @@ export function ApplicationsContent({
               icon: X,
               onClick: unselectAll,
             },
+            `${selectedApplications.size} selected`,
           ],
           [
             {
@@ -287,7 +288,6 @@ export function ApplicationsContent({
               icon: CheckSquare,
               onClick: toggleSelectAll,
             },
-            `${selectedApplications.size} selected`,
             {
               id: "delete",
               label: "Delete",

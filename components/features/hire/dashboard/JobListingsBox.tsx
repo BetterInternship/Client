@@ -29,8 +29,6 @@ export function JobListingsBox({
         (application) => application.job_id === job.id
     );
 
-    const router = useRouter();
-
     const handleClick = () => {
         if (job.id && job.title !== undefined) {
             router.push(`/dashboard/manage?jobId=${job.id}`)
@@ -39,6 +37,7 @@ export function JobListingsBox({
         }
     };
 
+    const router = useRouter();
     const isMobile = useMobile();
 
     return (
@@ -63,7 +62,6 @@ export function JobListingsBox({
                         }
                         {(job.salary !== undefined && job.allowance === 0) ?
                             <span className="text-sm mt-2">₱{job.salary}/{to_job_pay_freq_name(job.salary_freq)}</span> :
-                            // <span className="text-sm mt-2">Unpaid</span>
                             <br/>
                         }
                     </div>
