@@ -63,11 +63,13 @@ export const CommandMenu = ({
          data-[position=bottom]:bottom-0 \
          data-[position=bottom]:inset-x-0 \
          data-[position=bottom]:border-y-2",
-        "data-[undocked=true]:m-2 \
-         data-[undocked=true]:rounded-md \
+        "data-[undocked=true]:rounded-md \
          data-[undocked=true]:border-2 \
          data-[undocked=true]:border-gray-300 \
+         data-[undocked=true]:m-4 \
         ",
+        undocked && (position === "top" || position === "bottom") && "!left-1/2 !-translate-x-1/2 !w-max",
+        undocked && (position === "left" || position === "right") && "!top-1/2 !-translate-y-1/2 !h-max",
         className,
       )}
     >
