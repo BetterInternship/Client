@@ -6,12 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Loader2,
-  User,
-  Building2,
-  Users,
-  UserIcon,
   Loader,
   DownloadIcon,
+  CheckCircle,
+  Minus,
 } from "lucide-react";
 
 export default function MyFormCard({
@@ -49,34 +47,20 @@ export default function MyFormCard({
         : "";
 
   const isComplete = status === "Complete";
-
-  // Badge style + text based on status
-  type ButtonVariant =
-    | "default"
-    | "ghost"
-    | "link"
-    | "outline"
-    | null
-    | undefined;
-  const { badgeText, badgeType, downloadLabel, buttonDisabled, buttonVariant } =
-    useMemo(() => {
-      if (isComplete) {
-        return {
-          badgeText: "Complete",
-          badgeType: "supportive" as const,
-          downloadLabel: "Download form",
-          buttonDisabled: false,
-          buttonVariant: "default" as ButtonVariant,
-        };
-      }
+  const { badgeText, badgeType, buttonDisabled } = useMemo(() => {
+    if (isComplete) {
       return {
-        badgeText: "Pending responses...",
-        badgeType: "warning" as const,
-        downloadLabel: "Waiting for action",
-        buttonDisabled: true,
-        buttonVariant: "outline" as ButtonVariant,
+        badgeText: "Complete",
+        badgeType: "supportive" as const,
+        buttonDisabled: false,
       };
-    }, [isComplete]);
+    }
+    return {
+      badgeText: "Pending responses...",
+      badgeType: "warning" as const,
+      buttonDisabled: true,
+    };
+  }, [isComplete]);
 
   const disabled = downloading || buttonDisabled;
 
@@ -110,7 +94,7 @@ export default function MyFormCard({
         )}
 
         <div className="text-xs text-muted-foreground flex flex-col items-left gap-1 mt-3">
-          <PartyPills items={waitingFor ?? []} />
+          <SignatoryPills items={waitingFor ?? []} isComplete={isComplete} />
         </div>
 
         <Button
@@ -155,32 +139,49 @@ const PARTY_MAP: Record<string, { order: number; Icon: React.ElementType }> = {
   entity: { Icon: Loader, order: 1 },
 };
 
-function PartyPills({
+function SignatoryPills({
   items,
+  isComplete,
 }: {
-  items: (string | { email?: string; party: PartyKey })[];
+  items: (string | { email?: string; title?: string; signed?: boolean })[];
+  isComplete: boolean;
   max?: number;
 }) {
   if (!Array.isArray(items) || items.length === 0) return null;
 
+  console.log(items);
+
   // normalize legacy string entries to objects { party, email? }
   const normalized = items.map((it) =>
-    typeof it === "string" ? { party: it, email: undefined } : it,
+    typeof it === "string"
+      ? { party: it, title: it, email: undefined, signed: false }
+      : it,
   );
 
   return (
     <div className="flex flex-col flex-wrap items-left gap-1.5">
-      {normalized.map(({ party, email }, idx) => {
-        return (
-          <span
-            key={`${party}-${email ?? idx}`}
-            className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] leading-4 text-muted-foreground"
-          >
-            <Loader className="h-3.5 w-3.5" />
-            <span className="truncate">{email ? <>{email}</> : null}</span>
-          </span>
-        );
-      })}
+      {normalized
+        .filter((s) => s.email || s.title)
+        .map(({ email, title, signed }, idx) => {
+          console.log(idx);
+          return (
+            <span
+              key={`${email ?? idx}`}
+              className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] leading-4 text-muted-foreground"
+            >
+              {signed || isComplete ? (
+                <CheckCircle className="h-3.5 w-3.5" />
+              ) : idx === 0 ? (
+                <Loader className="h-3.5 w-3.5 text-warning" />
+              ) : (
+                <Minus className="h-3.5 w-3.5" />
+              )}
+              <span className="truncate">
+                {email ? <>{email ?? title}</> : null}
+              </span>
+            </span>
+          );
+        })}
     </div>
   );
 }
