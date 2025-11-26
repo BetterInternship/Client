@@ -143,7 +143,16 @@ function SignatoryPills({
   items,
   isComplete,
 }: {
-  items: (string | { email?: string; title?: string; signed?: boolean })[];
+  items: (
+    | string
+    | {
+        email?: string;
+        title?: string;
+        signed?: boolean;
+        party?: string;
+        order?: number;
+      }
+  )[];
   isComplete: boolean;
   max?: number;
 }) {
@@ -151,17 +160,29 @@ function SignatoryPills({
 
   console.log(items);
 
+  const orders: Record<string, number> = {
+    entity: 0,
+    "student-guardian": 1,
+    university: 2,
+  };
   // normalize legacy string entries to objects { party, email? }
   const normalized = items.map((it) =>
     typeof it === "string"
-      ? { party: it, title: it, email: undefined, signed: false }
-      : it,
+      ? {
+          party: it,
+          title: it,
+          email: undefined,
+          signed: false,
+          order: orders?.[it] ?? 0,
+        }
+      : { ...it, order: it.party ? (orders[it.party] ?? 0) : 0 },
   );
 
   return (
     <div className="flex flex-col flex-wrap items-left gap-1.5">
       {normalized
         .filter((s) => s.email || s.title)
+        .toSorted((a, b) => b.order - a.order)
         .map(({ email, title, signed }, idx) => {
           console.log(idx);
           return (
