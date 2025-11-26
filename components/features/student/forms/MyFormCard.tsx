@@ -182,7 +182,7 @@ function SignatoryPills({
     <div className="flex flex-col flex-wrap items-left gap-1.5">
       {normalized
         .filter((s) => s.email || s.title)
-        .toSorted((a, b) => b.order - a.order)
+        .toSorted((a, b) => a.order - b.order)
         .map(({ email, title, signed }, idx) => {
           console.log(idx);
           return (
