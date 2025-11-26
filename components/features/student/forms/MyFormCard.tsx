@@ -11,6 +11,7 @@ import {
   CheckCircle,
   Minus,
 } from "lucide-react";
+import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 
 export default function MyFormCard({
   title,
@@ -119,7 +120,7 @@ export default function MyFormCard({
                 <Loader2 className="h-4 w-4 animate-spin" />
               </span>
             ) : disabled ? (
-              <Loader className="w-3 h-3" />
+              <Loader className="w-3 h-3 animate-spin" />
             ) : (
               <DownloadIcon className="w-3 h-3" />
             )}
@@ -131,14 +132,7 @@ export default function MyFormCard({
 }
 
 /* ───────────────────── Helpers ───────────────────── */
-
 type PartyKey = "student-guardian" | "entity" | (string & {});
-const PARTY_MAP: Record<string, { order: number; Icon: React.ElementType }> = {
-  university: { Icon: Loader, order: 3 },
-  "student-guardian": { Icon: Loader, order: 2 },
-  entity: { Icon: Loader, order: 1 },
-};
-
 function SignatoryPills({
   items,
   isComplete,
@@ -193,12 +187,20 @@ function SignatoryPills({
               {signed || isComplete ? (
                 <CheckCircle className="h-3.5 w-3.5" />
               ) : idx === 0 ? (
-                <Loader className="h-3.5 w-3.5 text-warning" />
+                <span className="text-warning font-semibold">
+                  Currently waiting for:
+                </span>
               ) : (
-                <Minus className="h-3.5 w-3.5" />
+                <span className="font-semibold">Pending signature:</span>
               )}
               <span className="truncate">
-                {email ? <>{email ?? title}</> : null}
+                {idx === 0 ? (
+                  <AnimatedShinyText>
+                    {email ? <>{email ?? title}</> : null}
+                  </AnimatedShinyText>
+                ) : email ? (
+                  <>{email ?? title}</>
+                ) : null}
               </span>
             </span>
           );
