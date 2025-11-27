@@ -13,7 +13,6 @@ import { useRouter } from "next/navigation";
 interface JobListingProps {
     job: Job;
     applications: EmployerApplication[];
-    onJobListingClick: (jobId: string, jobTitle: string) => void;
     update_job: (
         job_id: string,
         job: Partial<Job>,
@@ -63,7 +62,6 @@ export function JobListingsBox({
                         }
                         {(job.salary !== undefined && job.allowance === 0) ?
                             <span className="text-sm mt-2">₱{job.salary}/{to_job_pay_freq_name(job.salary_freq)}</span> :
-                            // <span className="text-sm mt-2">Unpaid</span>
                             <br/>
                         }
                     </div>

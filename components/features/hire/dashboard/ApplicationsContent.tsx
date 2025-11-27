@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ApplicationsHeader } from "./ApplicationsHeader";
 import { useState } from "react";
 import { CommandMenu } from "@/components/ui/command-menu";
-import { Calendar, CheckCircle2, ContactRound, GraduationCap, ListCheck, SquareCheck, Trash, User2, X } from "lucide-react";
+import { Calendar, CheckCircle2, CheckSquare, ContactRound, GraduationCap, ListCheck, SquareCheck, Trash, User2, X } from "lucide-react";
 import { useEffect } from "react";
 import { updateApplicationStatus } from "@/lib/api/services";
 import { statusMap } from "@/components/common/status-icon-map";
@@ -45,7 +45,6 @@ export function ApplicationsContent({
     new Set(),
   );
   const [commandBarsVisible, setCommandBarsVisible] = useState(false);
-  const [allSelected, setAllSelected] = useState(false);
   const [activeFilter, setActiveFilter] = useState<number>(-1);
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -157,8 +156,25 @@ export function ApplicationsContent({
     })
     .filter(Boolean);
 
+    // get statuses specifically for the rows. these use different action items.
+    const getRowStatuses = (applicationId: string) => {
+      return unique_app_statuses
+        .filter((status) => status.id !== 7 && status.id !== 0)
+        .map((status): ActionItem => {
+          const uiProps = statusMap.get(status.id);
+          return {
+            id: status.id.toString(),
+            label: status.name,
+            icon: uiProps?.icon,
+            onClick: () => updateSingleStatus(applicationId, status.id),
+            destructive: uiProps?.destructive,
+          };
+        });
+    };
+
   // remove the delete item from the bottom command bar so we can put it in the top one and the pending status.
-  const remove_unused_statuses = statuses.filter((status) => status.id !== "7" && status.id !== "0");
+  const remove_unused_statuses = statuses.filter((status) => status.id !== "7" &&
+                                                             status.id !== "0");
 
   const applyActiveFilter = (apps: typeof sortedApplications) => {
     if (activeFilter === -1) {
@@ -171,6 +187,16 @@ export function ApplicationsContent({
   const visibleApplications = applyActiveFilter(sortedApplications).filter(
     (application) => application.status !== undefined,
   );
+
+  
+  const numVisibleSelected = visibleApplications.filter(app =>
+    selectedApplications.has(app.id!)
+  ).length;
+
+  const allVisibleSelected = visibleApplications.length > 0 &&
+                             numVisibleSelected === visibleApplications.length;
+
+  const someVisibleSelected = numVisibleSelected > 0 && numVisibleSelected < visibleApplications.length;
 
   const toggleSelect = (id: string, next?: boolean) => {
     setSelectedApplications((prev) => {
@@ -190,16 +216,14 @@ export function ApplicationsContent({
     setSelectedApplications(
       new Set(visibleApplications.map((application) => application.id!))
     )
-    setAllSelected(true);
   };
 
   const unselectAll = () => {
     setSelectedApplications(new Set());
-    setAllSelected(false);
   };
 
   const toggleSelectAll = () => {
-    allSelected ? unselectAll() : selectAll();
+    allVisibleSelected ? unselectAll() : selectAll();
   };
 
   const getCounts = (apps: EmployerApplication[]) => {
@@ -224,18 +248,9 @@ export function ApplicationsContent({
     return counts;
   };
 
-  const numVisibleSelected = visibleApplications.filter(app =>
-    selectedApplications.has(app.id!)
-  ).length;
-
-  const allVisibleSelected = visibleApplications.length > 0 &&
-                             numVisibleSelected === visibleApplications.length;
-
-  const someVisibleSelected = numVisibleSelected > 0 && numVisibleSelected < visibleApplications.length;
-
 
   return isMobile ? (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 min-h-screen">
       <Toast
         visible={toastVisible}
         title={toastMessage}
@@ -253,36 +268,39 @@ export function ApplicationsContent({
         items={remove_unused_statuses}
         isVisible={commandBarsVisible}
         defaultVisible={true}
-        position={{ position: "bottom" }}
-        className="justify-between"
+        position="bottom"
+        undocked={false}
       />
       <CommandMenu
         items={[
-          `${selectedApplications.size} selected`,
-          {
-            id: "select",
-            label: "Select all",
-            icon: SquareCheck,
-            onClick: selectAll,
-          },
-          {
-            id: "delete",
-            label: "Delete",
-            icon: Trash,
-            destructive: true,
-            onClick: () => updateStatus(7),
-          },
-          {
-            id: "cancel",
-            label: "Cancel",
-            icon: X,
-            onClick: unselectAll,
-          },
+          [
+            {
+              id: "cancel",
+              icon: X,
+              onClick: unselectAll,
+            },
+            `${selectedApplications.size} selected`,
+          ],
+          [
+            {
+              id: "select_all",
+              label: allVisibleSelected ? "Unselect all" : "Select all" ,
+              icon: CheckSquare,
+              onClick: toggleSelectAll,
+            },
+            {
+              id: "delete",
+              label: "Delete",
+              icon: Trash,
+              destructive: true,
+              onClick: () => updateStatus(7),
+            },
+          ],
         ]}
         isVisible={commandBarsVisible}
         defaultVisible={true}
-        position={{ position: "top" }}
-        className="justify-between"
+        position="top"
+        undocked={false}
       />
       <div className="flex flex-col gap-2">
         {visibleApplications.length ? (
@@ -300,6 +318,7 @@ export function ApplicationsContent({
               checkboxSelected={selectedApplications.has(application.id!)}
               onToggleSelect={(v) => toggleSelect(application.id!, !!v)}
               onStatusButtonClick={updateSingleStatus}
+              statuses={getRowStatuses(application.id!)}
             />
           ))
         ) : (
@@ -324,15 +343,24 @@ export function ApplicationsContent({
           unselectAll()
         }}
       />
-      <div className="flex justify-between flex-wrap gap-2">
-        <CommandMenu
-          items={remove_unused_statuses}
-          isVisible={commandBarsVisible}
-          defaultVisible={true}
-        />
-        <CommandMenu
-          items={[
+      <CommandMenu
+        items={[
+          [
+            {
+              id: "cancel",
+              icon: X,
+              onClick: unselectAll,
+            },
             `${selectedApplications.size} selected`,
+          ],
+          remove_unused_statuses,
+          [
+            {
+              id: "select_all",
+              label: allVisibleSelected ? "Unselect all" : "Select all" ,
+              icon: CheckSquare,
+              onClick: toggleSelectAll,
+            },
             {
               id: "delete",
               label: "Delete",
@@ -340,18 +368,14 @@ export function ApplicationsContent({
               destructive: true,
               onClick: () => updateStatus(7),
             },
-            {
-              id: "cancel",
-              label: "Cancel",
-              icon: X,
-              onClick: unselectAll,
-            },
-          ]}
-          isVisible={commandBarsVisible}
-          defaultVisible={true}
-        />
-      </div>
-      <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-200 border-[1px] text-sm rounded-md overflow-hidden">
+          ],
+        ]}
+        isVisible={commandBarsVisible}
+        defaultVisible={true}
+        position="bottom"
+        undocked={true}
+      />
+      <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-200 border-[1px] text-sm rounded-md overflow-visible">
         <thead className="bg-gray-100">
           <tr className="text-left">
             <th className="p-4">
@@ -416,6 +440,7 @@ export function ApplicationsContent({
                 checkboxSelected={selectedApplications.has(application.id!)}
                 onToggleSelect={(v) => toggleSelect(application.id!, !!v)}
                 onStatusButtonClick={updateSingleStatus}
+                statuses={getRowStatuses(application.id!)}
               />
             ))
         ) : (
