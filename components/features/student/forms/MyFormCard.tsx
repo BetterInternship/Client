@@ -4,7 +4,14 @@ import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, User, Building2, Users } from "lucide-react";
+import {
+  Loader2,
+  Loader,
+  DownloadIcon,
+  CheckCircle,
+  Minus,
+} from "lucide-react";
+import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 
 export default function MyFormCard({
   title,
@@ -41,34 +48,20 @@ export default function MyFormCard({
         : "";
 
   const isComplete = status === "Complete";
-
-  // Badge style + text based on status
-  type ButtonVariant =
-    | "default"
-    | "ghost"
-    | "link"
-    | "outline"
-    | null
-    | undefined;
-  const { badgeText, badgeType, downloadLabel, buttonDisabled, buttonVariant } =
-    useMemo(() => {
-      if (isComplete) {
-        return {
-          badgeText: "Complete",
-          badgeType: "supportive" as const,
-          downloadLabel: "Download form",
-          buttonDisabled: false,
-          buttonVariant: "default" as ButtonVariant,
-        };
-      }
+  const { badgeText, badgeType, buttonDisabled } = useMemo(() => {
+    if (isComplete) {
       return {
-        badgeText: "Pending action",
-        badgeType: "warning" as const,
-        downloadLabel: "Waiting for action",
-        buttonDisabled: true,
-        buttonVariant: "outline" as ButtonVariant,
+        badgeText: "Complete",
+        badgeType: "supportive" as const,
+        buttonDisabled: false,
       };
-    }, [isComplete]);
+    }
+    return {
+      badgeText: "Pending responses...",
+      badgeType: "warning" as const,
+      buttonDisabled: true,
+    };
+  }, [isComplete]);
 
   const disabled = downloading || buttonDisabled;
 
@@ -89,15 +82,10 @@ export default function MyFormCard({
   };
 
   return (
-    <Card className="sm:flex sm:items-center sm:justify-between p-4 sm:p-5">
-      <div className="space-y-1 sm:space-y-0 min-w-0">
-        <div className="sm:flex gap-3 items-center">
-          <Badge type={badgeType} className="pointer-events-none shrink-0">
-            {badgeText}
-          </Badge>
-          <div className="font-medium truncate" title={title}>
-            {title}
-          </div>
+    <Card className="sm:flex flex-col sm:items-start sm:justify-between p-4 sm:p-5">
+      <div className="sm:flex sm:flex-col gap-0 items-start">
+        <div className="font-medium truncate" title={title}>
+          {title}
         </div>
 
         {requested && (
@@ -106,30 +94,37 @@ export default function MyFormCard({
           </div>
         )}
 
-        {!isComplete && Array.isArray(waitingFor) && waitingFor.length ? (
-          <div className="text-xs text-muted-foreground sm:flex items-center gap-2 pt-1">
-            <div className="whitespace-nowrap">Waiting for action:</div>
-            <PartyPills items={waitingFor} />
-          </div>
-        ) : null}
-      </div>
+        <div className="text-xs text-muted-foreground flex flex-col items-left gap-1 mt-3">
+          <SignatoryPills items={waitingFor ?? []} isComplete={isComplete} />
+        </div>
 
-      <div className="flex gap-2 w-full sm:w-auto mt-3 sm:mt-0">
         <Button
-          className="w-full sm:w-auto"
+          className="p-0 flex w-full mt-5 sm:w-auto gap-0 bg-transparent border-transparent hover:cursor-pointer hover:opacity-80 hover:bg-transparent transition-all"
           onClick={() => void handleDownload()}
-          disabled={disabled}
           aria-busy={downloading}
-          variant={buttonVariant}
+          disabled={disabled}
+          size="xs"
         >
-          {downloading ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              {downloadLabel}
-            </span>
-          ) : (
-            downloadLabel
-          )}
+          <Badge
+            className="pointer-events-none shrink-0 rounded-r-none"
+            type={badgeType}
+          >
+            {badgeText}
+          </Badge>
+          <Badge
+            className="w-full sm:w-8 rounded-l-none opacity-80 pointer-events-none"
+            type={disabled ? "accent" : "supportive"}
+          >
+            {downloading ? (
+              <span className="inline-flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+              </span>
+            ) : disabled ? (
+              <Loader className="w-3 h-3 animate-spin" />
+            ) : (
+              <DownloadIcon className="w-3 h-3" />
+            )}
+          </Badge>
         </Button>
       </div>
     </Card>
@@ -137,54 +132,79 @@ export default function MyFormCard({
 }
 
 /* ───────────────────── Helpers ───────────────────── */
-
 type PartyKey = "student-guardian" | "entity" | (string & {});
-
-const PARTY_MAP: Record<string, { label: string; Icon: React.ElementType }> = {
-  "student-guardian": { label: "Guardian", Icon: Users },
-  entity: { label: "Entity", Icon: Building2 },
-};
-
-function prettyParty(p: PartyKey) {
-  const meta = PARTY_MAP[p] ?? {
-    label: String(p).replace(/[-_]/g, " "),
-    Icon: User,
-  };
-  return meta;
-}
-
-function PartyPills({
+function SignatoryPills({
   items,
+  isComplete,
 }: {
-  items: (string | { email?: string; party: PartyKey })[];
+  items: (
+    | string
+    | {
+        email?: string;
+        title?: string;
+        signed?: boolean;
+        party?: string;
+        order?: number;
+      }
+  )[];
+  isComplete: boolean;
   max?: number;
 }) {
   if (!Array.isArray(items) || items.length === 0) return null;
 
+  console.log(items);
+
+  const orders: Record<string, number> = {
+    entity: 0,
+    "student-guardian": 1,
+    university: 2,
+  };
   // normalize legacy string entries to objects { party, email? }
   const normalized = items.map((it) =>
-    typeof it === "string" ? { party: it, email: undefined } : it,
+    typeof it === "string"
+      ? {
+          party: it,
+          title: it,
+          email: undefined,
+          signed: false,
+          order: orders?.[it] ?? 0,
+        }
+      : { ...it, order: it.party ? (orders[it.party] ?? 0) : 0 },
   );
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      {normalized.map(({ party, email }, idx) => {
-        const { label, Icon } = prettyParty(party);
-        return (
-          // TODO: ! Go back to this styling. Kinda dont like it rn
-          <span
-            key={`${party}-${email ?? idx}`}
-            title={email ? `${label} — ${email}` : label}
-            className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] leading-4 text-muted-foreground"
-          >
-            <Icon className="h-3.5 w-3.5" />
-            <span className="truncate">
-              <span className="font-semibold">{label}</span>
-              {email ? <> - {email}</> : null}
+    <div className="flex flex-col flex-wrap items-left gap-1.5">
+      {normalized
+        .filter((s) => s.email || s.title)
+        .toSorted((a, b) => a.order - b.order)
+        .map(({ email, title, signed }, idx) => {
+          console.log(idx);
+          return (
+            <span
+              key={`${email ?? idx}`}
+              className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] leading-4 text-muted-foreground"
+            >
+              {signed || isComplete ? (
+                <CheckCircle className="h-3.5 w-3.5" />
+              ) : idx === 0 ? (
+                <span className="text-warning font-semibold">
+                  Currently waiting for:
+                </span>
+              ) : (
+                <span className="font-semibold">Pending signature:</span>
+              )}
+              <span className="truncate">
+                {idx === 0 ? (
+                  <AnimatedShinyText>
+                    {email ? <>{email ?? title}</> : null}
+                  </AnimatedShinyText>
+                ) : email ? (
+                  <>{email ?? title}</>
+                ) : null}
+              </span>
             </span>
-          </span>
-        );
-      })}
+          );
+        })}
     </div>
   );
 }

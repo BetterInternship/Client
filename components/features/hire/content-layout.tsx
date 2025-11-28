@@ -1,7 +1,7 @@
 "use client";
 
 import { useMobile } from "@/hooks/use-mobile";
-import { LayoutDashboard, Plus } from "lucide-react";
+import { LayoutDashboard, Plus, MessageCircleMore, FileText, FileUser } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
@@ -26,6 +26,11 @@ const navItems: NavItem[] = [
     href: "/dashboard",
     icon: <LayoutDashboard className="h-5 w-5" />,
     label: "Dashboard",
+  },
+  {
+    href: "/conversations",
+    icon: <MessageCircleMore className="h-5 w-5" />,
+    label: "Chats",
   },
   // {
   //   href: "/listings",

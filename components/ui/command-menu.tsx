@@ -3,13 +3,6 @@ import { cn } from "@/lib/utils";
 import { ActionItem } from "./action-item";
 
 /**
- * Allow a CommandMenu to be docked to a side of the screen.
- */
-type CommandMenuPositions = {
-  position: "top" | "bottom" | "left" | "right";
-};
-
-/**
  * A CommandMenu is a bar containing controls and other elements.
  * @param items (optional) Buttons and other elements to be stored in the CommandMenu.
  * @param className (optional) Custom styling.
@@ -23,13 +16,15 @@ export const CommandMenu = ({
   isVisible,
   defaultVisible = false,
   position,
+  undocked = true,
 }: {
   // ActionItems are for buttons, but you can also put text.
-  items?: Array<ActionItem | string>;
+  items?: Array<ActionItem | string> | Array<Array<ActionItem | string>>;
   className?: string;
   isVisible?: boolean;
   defaultVisible?: boolean;
-  position?: CommandMenuPositions;
+  position?: "top" | "bottom" | "left" | "right";
+  undocked?: boolean;
 }) => {
   const [visible, setVisible] = useState<boolean>(defaultVisible);
   const controlled = typeof isVisible === "boolean";
@@ -44,61 +39,83 @@ export const CommandMenu = ({
     typeof x.id === "string" &&
     typeof x.onClick === "function";
 
+  const groups = (items && items.length > 0 && Array.isArray(items[0])) 
+    ? (items as Array<Array<ActionItem | string>>) 
+    : [items as Array<ActionItem | string>];
+
+  const renderGroup = (group: Array<ActionItem | string>, idx: number) => {
+    return (
+      <React.Fragment key={idx}>
+        {idx > 0 && (
+          <div className="w-px bg-gray-300 my-1 mx-1" />
+        )}
+        {group.map((item, idx) => 
+          isActionItem(item) ? (
+            <button
+              key={item.id}
+              type="button"
+              onClick={item.onClick}
+              disabled={item.disabled}
+              className={cn(
+                "flex justify-center items-center rounded-sm gap-2",
+                item.destructive
+                  ? "text-red-700 hover:bg-red-300/50 active:bg-red-400/75"
+                  : "text-gray-700 hover:bg-gray-300/50 active:bg-gray-400/75",
+                position
+                  ? ["flex-col p-2"]
+                  : ["flex-row px-3 py-2"],
+                item.highlighted
+                  ? item.highlightColor
+                  : ""
+              )}
+            >
+              {item.icon && <item.icon size={18} />}
+              {item.label && <span>{item.label}</span>}
+            </button>
+          ) : (
+            <span
+              key={typeof item === "string" ? `text-${item}` : `node-${idx}`}
+              className="flex justify-center items-center text-gray-700 px-2"
+            >
+              {item as React.ReactNode}
+            </span>
+          ),
+        )}
+      </React.Fragment>
+    )
+  };
+
   if (!visible) return null;
 
   return (
     <div
       role="toolbar"
       aria-hidden={!visible}
+      data-position={position}
       onClick={(e) => e.stopPropagation()}
       className={cn(
-        "flex p-2 gap-2 justify-center items-stretch text-xs bg-white/75 backdrop-blur-md border-gray-300 z-[100]",
-        position?.position
-          ? [
-              position.position === "left" || position?.position === "right"
-                ? "flex-col inset-y-0 border-x-2"
-                : "flex-row inset-x-0 border-y-2",
-              position.position === "top" ? "fixed top-0" : "",
-              position.position === "bottom" ? "fixed bottom-0" : "",
-              position.position === "left" ? "fixed left-0" : "",
-              position.position === "right" ? "fixed right-0" : "",
-            ]
-          : ["flex-row rounded-md border-2 gap-2 p-1 w-fit"],
+        "flex gap-2 p-1 justify-center items-stretch text-xs bg-white/75 backdrop-blur-md border-gray-300 z-[100]",
+        "data-[position=left]:flex-col \
+         data-[position=left]:inset-y-0 \
+         data-[position=left]:border-x-2",
+        "data-[position=right]:flex-col \
+         data-[position=right]:inset-y-0 \
+         data-[position=right]:border-x-2",
+        "data-[position=top]:fixed \
+         data-[position=top]:top-0 \
+         data-[position=top]:inset-x-0 \
+         data-[position=top]:border-y-2",
+        "data-[position=bottom]:fixed \
+         data-[position=bottom]:bottom-0 \
+         data-[position=bottom]:inset-x-0 \
+         data-[position=bottom]:border-y-2",
+        undocked && "rounded-md px-4",
+        undocked && (position === "top" || position === "bottom") && "!left-1/2 -translate-x-1/2 w-max border-2 m-4",
+        undocked && (position === "left" || position === "right") && "!top-1/2 -translate-y-1/2 h-max border-2 m-4",
         className,
       )}
     >
-      {items?.map((item, idx) =>
-        isActionItem(item) ? (
-          <button
-            key={item.id}
-            type="button"
-            onClick={item.onClick}
-            disabled={item.disabled}
-            className={cn(
-              "flex justify-center items-center rounded-sm gap-2",
-              item.destructive
-                ? "text-red-700 hover:bg-red-300/50 active:bg-red-400/75"
-                : "text-gray-700 hover:bg-gray-300/50 active:bg-gray-400/75",
-              position?.position
-                ? ["flex-col p-2"]
-                : ["flex-row px-3 py-2"],
-              item.highlighted
-                ? item.highlightColor
-                : ""
-            )}
-          >
-            {item.icon && <item.icon size={18} />}
-            {item.label && <span>{item.label}</span>}
-          </button>
-        ) : (
-          <span
-            key={typeof item === "string" ? `text-${item}` : `node-${idx}`}
-            className="flex justify-center items-center text-gray-700 px-2"
-          >
-            {item as React.ReactNode}
-          </span>
-        ),
-      )}
+      {groups.map((group, idx) => renderGroup(group || [], idx))}
     </div>
   );
 };

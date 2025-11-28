@@ -208,12 +208,15 @@ export function useOwnedJobs(
     const response = await JobService.updateJob(job_id, job);
     if (response.success) {
       // @ts-ignore
-      const job = response.job;
-      const old_job = ownedJobs.filter((oj) => oj.id === job.id)[0] ?? {};
-      set_cache([
-        { ...old_job, ...job },
-        ...ownedJobs.filter((oj) => oj.id !== job.id),
-      ]);
+      const updatedJob = response.job;
+      const old_job = ownedJobs.filter((oj) => oj.id === job_id)[0] ?? {};
+      
+      const newJobs = [
+        { ...old_job, ...updatedJob },
+        ...ownedJobs.filter((oj) => oj.id !== job_id),
+      ]
+      
+      set_cache(newJobs);
       setOwnedJobs(get_cache() ?? []);
     }
     return response;

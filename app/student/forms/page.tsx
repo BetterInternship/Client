@@ -38,7 +38,9 @@ export default function FormsPage() {
   const profile = useProfileData();
   const router = useRouter();
   const userId = profile.data?.id;
-  const [pendingDocs, setPendingDocs] = useState<Record<string, string[]>>({});
+  const [pendingSignatories, setPendingSignatories] = useState<
+    Record<string, string[]>
+  >({});
   const [tab, setTab] = useState<string>("");
 
   // All form templates
@@ -108,25 +110,30 @@ export default function FormsPage() {
     if (!myForms?.length) return;
 
     const ids = Array.from(
+      //  ! remove hard-coded limit in the future, only first 25 forms are shown cuz we made so many...
       new Set(
-        myForms.map((r) => r.pending_document_id).filter(Boolean) as string[],
+        myForms
+          .slice(25)
+          .map((r) => r.pending_document_id)
+          .filter(Boolean) as string[],
       ),
     );
 
     let cancelled = false;
     void (async () => {
       for (const id of ids) {
-        if (!id || pendingDocs[id]) continue;
+        if (!id || pendingSignatories[id]) continue;
         try {
           const resp = await fetchPendingDocument(id);
           if (cancelled) return;
 
-          const parties = resp?.data?.pending_parties;
+          const signatories = resp?.data?.pending_parties;
+          console.log(ids.indexOf(id), signatories);
 
           if (!cancelled) {
-            setPendingDocs((prev) => ({
+            setPendingSignatories((prev) => ({
               ...prev,
-              [id]: parties,
+              [id]: signatories,
             }));
           }
         } catch {
@@ -138,7 +145,7 @@ export default function FormsPage() {
     return () => {
       cancelled = true;
     };
-  }, [myForms, pendingDocs]);
+  }, [myForms, pendingSignatories]);
 
   if (!profile.data?.department && !profile.isPending) {
     alert("Profile not yet complete.");
@@ -307,7 +314,7 @@ export default function FormsPage() {
                         ? "Complete"
                         : "Pending ";
                     const waitingFor = row.pending_document_id
-                      ? (pendingDocs[row.pending_document_id] ?? [])
+                      ? (pendingSignatories[row.pending_document_id] ?? [])
                       : [];
 
                     return (

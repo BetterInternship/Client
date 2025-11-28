@@ -66,6 +66,7 @@ export function FormFlowRouter({
 
     // Destructure to isolate only shared fields or fields for that form
     const autofillValues = {
+      ...(internshipMoaFields.base ?? {}),
       ...internshipMoaFields.shared,
       ...(internshipMoaFields[formName] ?? {}),
     };
@@ -163,7 +164,7 @@ export function FormFlowRouter({
         (f) => typeof f.field === "string" && f.field.endsWith(":recipient"),
       )
       .map((f) => finalValues[f.field]?.trim())
-      .filter(Boolean) as string[];
+      .filter(Boolean);
 
     if (recipientEmails.length > 0 && withEsign && !_bypassConfirm) {
       const recipientFields = fields

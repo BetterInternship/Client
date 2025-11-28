@@ -263,24 +263,6 @@ function MobileDrawer({
               {/* Navigation */}
               <nav>
                 <ul className="grid gap-1">
-                  {/* {isAuthenticated() && (
-                    <li>
-                      <Link href="/conversations" className="block w-full">
-                        <button className="w-full flex items-center justify-between rounded-md px-3 py-2">
-                          <span className="inline-flex items-center gap-2 text-sm">
-                            <MessageCircleMore className="w-4 h-4" /> Chats
-                          </span>
-                          {conversations?.unreads?.length ? (
-                            <span className="text-[10px] leading-none bg-warning/80 px-2 py-1 rounded-full">
-                              {conversations.unreads.length}
-                            </span>
-                          ) : (
-                            <ChevronRight className="w-4 h-4 text-gray-300" />
-                          )}
-                        </button>
-                      </Link>
-                    </li>
-                  )} */}
                   <li>
                     <Link href="/listings/create" className="block w-full">
                       <button className="w-full flex items-center justify-between rounded-md px-3 py-2 bg-primary hover:opacity-50 border border-transparent text-sm">
@@ -314,6 +296,24 @@ function MobileDrawer({
                       </button>
                     </Link>
                   </li> */}
+                  {isAuthenticated() && (
+                    <li>
+                      <Link href="/conversations" className="block w-full">
+                        <button className="w-full flex items-center justify-between rounded-md px-3 py-2">
+                          <span className="inline-flex items-center gap-2 text-sm">
+                            <MessageCircleMore className="w-4 h-4" /> Chats
+                          </span>
+                          {conversations?.unreads?.length ? (
+                            <span className="text-[10px] leading-none bg-warning/80 px-2 py-1 rounded-full">
+                              {conversations.unreads.length}
+                            </span>
+                          ) : (
+                            <ChevronRight className="w-4 h-4 text-gray-300" />
+                          )}
+                        </button>
+                      </Link>
+                    </li>
+                  )}
                   <li>
                     <Link href="/company-profile">
                       <button
