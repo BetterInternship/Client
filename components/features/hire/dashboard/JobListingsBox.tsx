@@ -1,5 +1,6 @@
 // ui for the job box or card
 
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Toggle } from "@/components/ui/toggle";
 import { useMobile } from "@/hooks/use-mobile";
@@ -65,27 +66,19 @@ export function JobListingsBox({
                             <br/>
                         }
                     </div>
-                    <div className="justify-self-end">
-                        <Toggle
-                            state={job.is_active}
-                            onClick={() => {
-                                if (!job.id) return;
-                                void update_job(job.id, {
-                                    is_active: !job.is_active,
-                                });
-                            }}
-                        />
-                    </div>
                 </div>
-                <div className="flex flex-row gap-6 rounded-sm">
-                    <div>
-                        <h3 className={cn("text-primary", isMobile ? "text-base": "text-lg")}>{applicants.length}</h3>
-                        <p className={cn("text-gray-500", isMobile ? "text-xs" : "text-sm")}>Total Applicants</p>
-                    </div>
-                    <div>
-                        <h3 className={cn("text-primary", isMobile ? "text-base": "text-lg")}>{applicants.filter((applicant) => applicant.status === 0).length}</h3>
-                        <p className={cn("text-gray-500", isMobile ? "text-xs" : "text-sm")}>New Applicants</p>
-                    </div>
+                <div className="flex flex-row gap-2 rounded-sm">
+                    <Badge 
+                        strength={"medium"}
+                    >
+                        {applicants.length} total applicant{applicants.length !== 1 ? "s" : ""}
+                    </Badge>
+                    <Badge 
+                        type={applicants.length > 0 ? "primary" : "default"}
+                        strength={"medium"}
+                    >
+                        {applicants.length} new applicant{applicants.length !== 1 ? "s" : ""}
+                    </Badge>
                 </div>
 
             </Card>

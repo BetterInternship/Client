@@ -339,8 +339,16 @@ export const JobService = {
     return APIClient.get<JobsResponse>(APIRouteBuilder("jobs").build());
   },
 
+  // !! this only fetches an *active* job.
   async getJobById(jobId: string) {
     return APIClient.get<JobResponse>(APIRouteBuilder("jobs").r(jobId).build());
+  },
+
+  // sorry for confusing name
+  // the one above existed prior and i don't want to break anything that depends on it
+  // this one gets a single job, whether it is active or not.
+  async getAnyJobById(jobId: string) {
+    return APIClient.get<JobResponse>(APIRouteBuilder("jobs").r("owned").r(jobId).build());
   },
 
   async getSavedJobs() {

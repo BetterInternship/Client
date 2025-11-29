@@ -40,9 +40,13 @@ import { Button } from "@/components/ui/button";
 
 interface JobTabsProps {
   selectedJob: Job | null;
+  onJobUpdate?: (updates: Partial<Job>) => void;
 }
 
-export default function JobTabs({ selectedJob }: JobTabsProps) {
+export default function JobTabs({ 
+  selectedJob,
+  onJobUpdate,
+} : JobTabsProps) {
   const { ownedJobs, update_job, delete_job } = useOwnedJobs();
 
   // Business logic hook
@@ -184,6 +188,17 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
     });
   };
 
+  const handleToggleActive = async () => {
+    if (!selectedJob?.id) return;
+
+    const updates = { is_active: !selectedJob.is_active };
+    const result = await update_job(selectedJob.id, updates);
+
+    if (result.success && onJobUpdate) {
+      onJobUpdate(updates);
+    }
+  };
+
   const {
     open: openDeleteModal,
     close: closeDeleteModal,
@@ -313,7 +328,7 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
           >
             <ArrowLeft className="s-8" />
           </button>
-          <h3 className="leading-none tracking-tighter">{selectedJob?.title}</h3>
+          <h3 className="leading-none tracking-tighter text-xl">{selectedJob?.title}</h3>
         </div>
         <div className="flex flex-col flex-1 gap-4">
           <div className={cn(
@@ -325,14 +340,16 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
             <div className="flex items-center gap-2">
               <Toggle
                 state={selectedJob!.is_active}
-                onClick={() => {
-                    if (!selectedJob!.id) return;
-                    void update_job(selectedJob!.id, {
-                        is_active: !selectedJob!.is_active,
-                    });
-                }}
+                onClick={handleToggleActive}
               />
-              <span>{selectedJob!.is_active ? "Active" : "Paused"}</span>
+              <span
+                className={cn(
+                  "text-sm transition",
+                  selectedJob!.is_active ? "text-primary" : "text-muted-foreground"
+                )}
+              >
+                {selectedJob!.is_active ? "Active" : "Paused"}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <Link href={{
@@ -376,41 +393,40 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
               }
             </p>
           </div>
-          
-          <TabGroup>
-            <Tab name="Applicants">
-              {/* we need to add filtering here :D */}
-              <ApplicationsContent
-                applications={filteredApplications}
-                statusId={[0, 1, 2, 3, 4, 5, 6]}
-                openChatModal={openChatModal}
-                updateConversationId={updateConversationId}
-                onApplicationClick={handleApplicationClick}
-                onNotesClick={handleNotesClick}
-                onScheduleClick={handleScheduleClick}
-                onStatusChange={handleStatusChange}
-                setSelectedApplication={setSelectedApplication}
-              ></ApplicationsContent>
-            </Tab>
-            <Tab name="Listing information">
-              <Card className="flex-1 min-w-0 p-0">
-                {/* <Scrollbar> */}
-                  <ListingsDetailsPanel
-                    selectedJob={selectedJob}
-                    isEditing={isEditing}
-                    saving={saving}
-                    onEdit={handleEditStart}
-                    onSave={handleSave}
-                    onCancel={handleJobBack}
-                    onShare={handleShare}
-                    onDelete={handleJobDelete}
-                    updateJob={update_job}
-                    setIsEditing={setIsEditing}
-                  />
-                {/* </Scrollbar> */}
-              </Card>
-            </Tab>
-          </TabGroup>
+            <TabGroup>
+              <Tab name="Applicants">
+                {/* we need to add filtering here :D */}
+                <ApplicationsContent
+                  applications={filteredApplications}
+                  statusId={[0, 1, 2, 3, 4, 5, 6]}
+                  openChatModal={openChatModal}
+                  updateConversationId={updateConversationId}
+                  onApplicationClick={handleApplicationClick}
+                  onNotesClick={handleNotesClick}
+                  onScheduleClick={handleScheduleClick}
+                  onStatusChange={handleStatusChange}
+                  setSelectedApplication={setSelectedApplication}
+                ></ApplicationsContent>
+              </Tab>
+              <Tab name="Listing information">
+                <Card className="flex-1 min-w-0 p-0">
+                  {/* <Scrollbar> */}
+                    <ListingsDetailsPanel
+                      selectedJob={selectedJob}
+                      isEditing={isEditing}
+                      saving={saving}
+                      onEdit={handleEditStart}
+                      onSave={handleSave}
+                      onCancel={handleJobBack}
+                      onShare={handleShare}
+                      onDelete={handleJobDelete}
+                      updateJob={update_job}
+                      setIsEditing={setIsEditing}
+                    />
+                  {/* </Scrollbar> */}
+                </Card>
+              </Tab>
+            </TabGroup>
         </div>
       </div>
 
