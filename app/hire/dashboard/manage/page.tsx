@@ -38,6 +38,10 @@ function ManageContent() {
     fetchJobData();
   }, [jobId]);
 
+  const handleJobUpdate = (updates: Partial<Job>) => {
+    setJobData(prev => prev ? { ...prev, ...updates } : null);
+  };
+
   if (!jobData) {
     return;
   }
@@ -45,7 +49,10 @@ function ManageContent() {
   return (
     <ContentLayout>
       <div className="w-full h-full">
-        <JobTabs selectedJob={jobData} />
+        <JobTabs 
+          selectedJob={jobData} 
+          onJobUpdate={handleJobUpdate}
+        />
       </div>
     </ContentLayout>
   );

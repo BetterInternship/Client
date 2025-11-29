@@ -40,9 +40,13 @@ import { Button } from "@/components/ui/button";
 
 interface JobTabsProps {
   selectedJob: Job | null;
+  onJobUpdate?: (updates: Partial<Job>) => void;
 }
 
-export default function JobTabs({ selectedJob }: JobTabsProps) {
+export default function JobTabs({ 
+  selectedJob,
+  onJobUpdate,
+} : JobTabsProps) {
   const { ownedJobs, update_job, delete_job } = useOwnedJobs();
 
   // Business logic hook
@@ -182,6 +186,17 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
       ).catch(endSend);
       endSend();
     });
+  };
+
+  const handleToggleActive = async () => {
+    if (!selectedJob?.id) return;
+
+    const updates = { is_active: !selectedJob.is_active };
+    const result = await update_job(selectedJob.id, updates);
+
+    if (result.success && onJobUpdate) {
+      onJobUpdate(updates);
+    }
   };
 
   const {
@@ -325,12 +340,7 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
             <div className="flex items-center gap-2">
               <Toggle
                 state={selectedJob!.is_active}
-                onClick={() => {
-                    if (!selectedJob!.id) return;
-                    void update_job(selectedJob!.id, {
-                        is_active: !selectedJob!.is_active,
-                    });
-                }}
+                onClick={handleToggleActive}
               />
               <span>{selectedJob!.is_active ? "Active" : "Paused"}</span>
             </div>
