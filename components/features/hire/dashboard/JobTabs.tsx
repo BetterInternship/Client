@@ -342,7 +342,14 @@ export default function JobTabs({
                 state={selectedJob!.is_active}
                 onClick={handleToggleActive}
               />
-              <span>{selectedJob!.is_active ? "Active" : "Paused"}</span>
+              <span
+                className={cn(
+                  "text-sm transition",
+                  selectedJob!.is_active ? "text-primary" : "text-muted-foreground"
+                )}
+              >
+                {selectedJob!.is_active ? "Active" : "Paused"}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <Link href={{

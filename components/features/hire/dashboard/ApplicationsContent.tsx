@@ -375,7 +375,7 @@ export function ApplicationsContent({
         position="bottom"
         undocked={true}
       />
-      <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-200 border-[1px] text-sm rounded-md overflow-visible">
+      <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-200 border text-sm rounded-md overflow-visible">
         <thead className="bg-gray-100">
           <tr className="text-left">
             <th className="p-4">
