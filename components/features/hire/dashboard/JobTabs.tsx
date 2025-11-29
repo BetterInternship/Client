@@ -376,39 +376,40 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
               }
             </p>
           </div>
-          
-            <Tab name="Applicants">
-              {/* we need to add filtering here :D */}
-              <ApplicationsContent
-                applications={filteredApplications}
-                statusId={[0, 1, 2, 3, 4, 5, 6]}
-                openChatModal={openChatModal}
-                updateConversationId={updateConversationId}
-                onApplicationClick={handleApplicationClick}
-                onNotesClick={handleNotesClick}
-                onScheduleClick={handleScheduleClick}
-                onStatusChange={handleStatusChange}
-                setSelectedApplication={setSelectedApplication}
-              ></ApplicationsContent>
-            </Tab>
-            <Tab name="Listing information">
-              <Card className="flex-1 min-w-0 p-0">
-                {/* <Scrollbar> */}
-                  <ListingsDetailsPanel
-                    selectedJob={selectedJob}
-                    isEditing={isEditing}
-                    saving={saving}
-                    onEdit={handleEditStart}
-                    onSave={handleSave}
-                    onCancel={handleJobBack}
-                    onShare={handleShare}
-                    onDelete={handleJobDelete}
-                    updateJob={update_job}
-                    setIsEditing={setIsEditing}
-                  />
-                {/* </Scrollbar> */}
-              </Card>
-            </Tab>
+            <TabGroup>
+              <Tab name="Applicants">
+                {/* we need to add filtering here :D */}
+                <ApplicationsContent
+                  applications={filteredApplications}
+                  statusId={[0, 1, 2, 3, 4, 5, 6]}
+                  openChatModal={openChatModal}
+                  updateConversationId={updateConversationId}
+                  onApplicationClick={handleApplicationClick}
+                  onNotesClick={handleNotesClick}
+                  onScheduleClick={handleScheduleClick}
+                  onStatusChange={handleStatusChange}
+                  setSelectedApplication={setSelectedApplication}
+                ></ApplicationsContent>
+              </Tab>
+              <Tab name="Listing information">
+                <Card className="flex-1 min-w-0 p-0">
+                  {/* <Scrollbar> */}
+                    <ListingsDetailsPanel
+                      selectedJob={selectedJob}
+                      isEditing={isEditing}
+                      saving={saving}
+                      onEdit={handleEditStart}
+                      onSave={handleSave}
+                      onCancel={handleJobBack}
+                      onShare={handleShare}
+                      onDelete={handleJobDelete}
+                      updateJob={update_job}
+                      setIsEditing={setIsEditing}
+                    />
+                  {/* </Scrollbar> */}
+                </Card>
+              </Tab>
+            </TabGroup>
         </div>
       </div>
 
