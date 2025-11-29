@@ -313,7 +313,7 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
           >
             <ArrowLeft className="s-8" />
           </button>
-          <h3 className="leading-none tracking-tighter">{selectedJob?.title}</h3>
+          <h3 className="leading-none tracking-tighter text-xl">{selectedJob?.title}</h3>
         </div>
         <div className="flex flex-col flex-1 gap-4">
           <div className={cn(
@@ -377,7 +377,6 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
             </p>
           </div>
           
-          <TabGroup>
             <Tab name="Applicants">
               {/* we need to add filtering here :D */}
               <ApplicationsContent
@@ -410,7 +409,6 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
                 {/* </Scrollbar> */}
               </Card>
             </Tab>
-          </TabGroup>
         </div>
       </div>
 
