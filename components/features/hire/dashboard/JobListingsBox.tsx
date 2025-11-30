@@ -1,6 +1,6 @@
 // ui for the job box or card
 
-import { Badge } from "@/components/ui/badge";
+import { Badge, BoolBadge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Toggle } from "@/components/ui/toggle";
 import { useMobile } from "@/hooks/use-mobile";
@@ -46,26 +46,40 @@ export function JobListingsBox({
         //     pathname: pathName(),
         //     query: { jobId: job.id }
         // }}>
-            <Card className={cn("flex flex-col hover:bg-primary/25 hover:cursor-pointer gap-4",
-                !job.is_active ? "opacity-50" : "cursor-pointer",
-            )}
+            <Card 
+                className="flex flex-col hover:bg-primary/10 hover:cursor-pointer gap-4"
                 onClick={handleClick}
             >
-                <div className="flex flex-row justify-between">
-                    <div className="min-w-0">
-                        <h1 className="font-bold text-primary text-base truncate">{job.title}</h1>
-                        {(job.location) ?
-                            <div className="flex items-center text-sm text-gray-500 mt-2">
-                                <Building className="w-4 h-4 mr-1 flex-shrink-0" />
-                                <span className="truncate">{job.location}</span>
-                            </div> :
-                            <br/>
-                        }
-                        {(job.salary !== undefined && job.allowance === 0) ?
-                            <span className="text-sm mt-2">₱{job.salary}/{to_job_pay_freq_name(job.salary_freq)}</span> :
-                            <br/>
-                        }
+                <div className="flex flex-col w-full">
+                    <div className="flex justify-between gap-2">
+                        <h1 className={cn(
+                            "text-base truncate",
+                            job.is_active
+                                ? "font-bold text-primary"
+                                : "font-normal text-muted-foreground"
+                        )}>
+                            {job.title}
+                        </h1>
+                        <BoolBadge
+                            state={job.is_active}
+                            onValue="Active"
+                            offValue="Paused"
+                            onScheme="primary"
+                            offScheme="default"
+                            className="justify-self-end"
+                        />
                     </div>
+                    {(job.location) ?
+                        <div className="flex items-center text-sm text-gray-500 mt-2">
+                            <Building className="w-4 h-4 mr-1 flex-shrink-0" />
+                            <span className="truncate">{job.location}</span>
+                        </div> :
+                        <br/>
+                    }
+                    {(job.salary !== undefined && job.allowance === 0) ?
+                        <span className="text-sm mt-2">₱{job.salary}/{to_job_pay_freq_name(job.salary_freq)}</span> :
+                        <br/>
+                    }
                 </div>
                 <div className="flex flex-row gap-2 rounded-sm">
                     <Badge 
@@ -75,7 +89,7 @@ export function JobListingsBox({
                     </Badge>
                     <Badge 
                         type={applicants.length > 0 ? "primary" : "default"}
-                        strength={"medium"}
+                        strength={"default"}
                     >
                         {applicants.length} new applicant{applicants.length !== 1 ? "s" : ""}
                     </Badge>
