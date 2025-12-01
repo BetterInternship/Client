@@ -260,7 +260,7 @@ export default function JobTabs({
   const handleApplicationClick = (application: EmployerApplication) => {
     setSelectedApplication(application); // set first
     //openApplicantModal(); // then open
-    window.location.href = `/dashboard/applicant?userId=${application?.user_id}`
+    router.push(`/dashboard/applicant?userId=${application?.user_id}`);
   };
 
   const handleNotesClick = (application: EmployerApplication) => {
