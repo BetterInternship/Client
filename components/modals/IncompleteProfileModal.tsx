@@ -22,6 +22,7 @@ import { ModalHandle } from "@/hooks/use-modal";
 import { isValidPHNumber } from "@/lib/utils";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { Job } from "@/lib/db/db.types";
+import { isValidRequiredUserName } from "@/lib/utils/name-utils";
 
 /* ============================== Modal shell ============================== */
 
@@ -194,7 +195,9 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
           const phoneValid = isValidPHNumber(profile.phone);
           return (
             !!profile.firstName &&
+            isValidRequiredUserName(profile.firstName) &&
             !!profile.lastName &&
+            isValidRequiredUserName(profile.lastName) &&
             !isUpdating &&
             phoneValid &&
             !!profile.degree &&
@@ -391,6 +394,9 @@ function StepBasicIdentity({
     departments,
     get_departments_by_college,
     to_department_name,
+    to_university_name,
+    get_colleges_by_university,
+    to_college_name,
   } = useDbRefs();
 
   const phoneInvalid = useMemo(
@@ -398,8 +404,23 @@ function StepBasicIdentity({
     [value.phone],
   );
 
+  const firstNameInvalid = useMemo(
+    () => !!value.firstName && !isValidRequiredUserName(value.firstName),
+    [value.firstName],
+  );
+
+  const lastNameInvalid = useMemo(
+    () => !!value.lastName && !isValidRequiredUserName(value.lastName),
+    [value.lastName],
+  );
+
   const [departmentOptions, setDepartmentOptions] =
     useState<{ id: string; name: string }[]>(departments);
+
+  const [collegesOptions, setCollegesOptions] =
+    useState<
+      { id: string; name: string; short_name: string; university_id: string }[]
+    >(colleges);
 
   // for realtime updating the department based on the college
   useEffect(() => {
@@ -430,6 +451,50 @@ function StepBasicIdentity({
     to_department_name,
   ]);
 
+  // for realtime updating the department based on the university
+  useEffect(() => {
+    const universityId = value.university;
+
+    if (universityId) {
+      const list = get_colleges_by_university?.(universityId) ?? [];
+      const mapped = list.map((d) => ({
+        id: d,
+        name: to_college_name(d) ?? "",
+        short_name: "",
+        university_id: universityId,
+      }));
+      setCollegesOptions(mapped);
+
+      // If the currently selected college is not in the new mapped list, clear it (and department)
+      if (value.college && !mapped.some((c) => c.id === value.college)) {
+        value.college = undefined;
+        value.department = undefined;
+      }
+    } else {
+      // no university selected -> show all colleges and clear college/department
+      setCollegesOptions(
+        colleges.map((d) => ({
+          id: d.id,
+          name: d.name,
+          short_name: d.short_name,
+          university_id: d.university_id,
+        })),
+      );
+
+      // Clear selected college and department because no university is chosen
+      if (value.college) value.college = undefined;
+      if (value.department) value.department = undefined;
+    }
+  }, [
+    value.university,
+    value.college,
+    value.department,
+    colleges,
+    get_colleges_by_university,
+    to_college_name,
+    to_university_name,
+  ]);
+
   return (
     <div className="flex flex-col gap-6">
       {/* Personal */}
@@ -444,6 +509,7 @@ function StepBasicIdentity({
               value={value.firstName}
               setter={(v) => onChange({ ...value, firstName: v })}
             />
+
             <FormInput
               label="Middle name"
               required={false}
@@ -456,6 +522,17 @@ function StepBasicIdentity({
               setter={(v) => onChange({ ...value, lastName: v })}
             />
           </div>
+
+          {firstNameInvalid && (
+            <p className="text-xs text-destructive -mt-2">
+              Please enter a first name. Special characters are not allowed.
+            </p>
+          )}
+          {lastNameInvalid && (
+            <p className="text-xs text-destructive -mt-2">
+              Please enter a last name. Special characters are not allowed.
+            </p>
+          )}
 
           <FormInput
             label="Phone number"
@@ -482,7 +559,7 @@ function StepBasicIdentity({
               label="College"
               value={value.college ?? ""}
               setter={(val) => onChange({ ...value, college: val.toString() })}
-              options={colleges}
+              options={collegesOptions}
               placeholder="Select college…"
             />
           </div>

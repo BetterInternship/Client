@@ -1,10 +1,10 @@
 "use client";
 
-import { FileText, FileUser, LayoutDashboard, Plus } from "lucide-react";
+import { useMobile } from "@/hooks/use-mobile";
+import { LayoutDashboard, Plus, MessageCircleMore, FileText, FileUser } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
-import { useMobile } from "@/hooks/use-mobile";
 
 import { useAuthContext } from "@/app/hire/authctx";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,12 @@ const navItems: NavItem[] = [
   {
     href: "/dashboard",
     icon: <LayoutDashboard className="h-5 w-5" />,
-    label: "Dashboard",
+    label: "Job listings",
+  },
+  {
+    href: "/conversations",
+    icon: <MessageCircleMore className="h-5 w-5" />,
+    label: "Chats",
   },
   // {
   //   href: "/listings",
@@ -44,29 +49,34 @@ function SideNav({ items }: { items: NavItem[] }) {
   const { god } = useAuthContext();
 
   return (
-    <nav className="flex flex-col">
-      {items.map(({ href, label, icon}) => (
-        <Link
-          key={label}
-          href={label !== "Forms Automation" || god ? href : "#"}
-        >
-          <Button
-            variant="ghost"
-            scheme="default"
-            onClick={() =>
-              god && label === "Forms Automation" && alert("Coming Soon!")
-            }
-            className={cn(
-              "w-full h-10 px-8 flex flex-row justify-start border-0 rounded-none",
-              pathname.includes(href) ? "text-primary bg-gray-200" : "font-normal",
-              label === "Add Listing" ? "bg-primary text-white hover:bg-primary-300" : ""
-            )}
+    <nav className="flex flex-col p-3 gap-2">
+      {items.map(({ href, label, icon}) => {
+        const isActive = pathname.includes(href);
+
+        return (
+          <Link
+            key={label}
+            href={label !== "Forms Automation" || god ? href : "#"}
           >
-            {icon}
-            {label}
-          </Button>
-        </Link>
-      ))}
+            <Button
+              variant="ghost"
+              scheme="default"
+              onClick={() =>
+                god && label === "Forms Automation" && alert("Coming Soon!")
+              }
+              className={cn(
+                "w-full h-10 pl-4 pr-24 flex flex-row justify-start border-0 hover:bg-primary/15 hover:text-primary",
+                isActive ? "text-primary bg-primary/10" : "font-normal",
+                label === "Add Listing" ? "bg-primary text-white hover:bg-primary hover:text-white" : "",
+                isActive && "[&_svg]:fill-primary",
+              )}
+            >
+              {icon}
+              {label}
+            </Button>
+          </Link>
+        )
+      })}
     </nav>
   );
 }

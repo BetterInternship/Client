@@ -11,7 +11,6 @@ interface JobsContentProps {
     applications: EmployerApplication[];
     jobs: Job[];
     employerId: string;
-    onJobListingClick: (jobId: string, jobTitle: string) => void;
     updateJob: (jobId: string, job: Partial<Job>) => Promise<any>;
 }
 
@@ -19,7 +18,6 @@ export function JobsContent({
     applications,
     jobs,
     employerId,
-    onJobListingClick,
     updateJob
 }: JobsContentProps) {
     const sortedJobs = jobs.sort(
@@ -38,7 +36,6 @@ export function JobsContent({
                             key={job.id}
                             job={job}
                             applications={applications}
-                            onJobListingClick={onJobListingClick}
                             update_job={updateJob}
                         />
                     ))

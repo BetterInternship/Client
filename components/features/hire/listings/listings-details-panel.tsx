@@ -119,7 +119,8 @@ export function ListingsDetailsPanel({
                   Delete
                 </Button>,
               ]
-        }
+            }
+          className="p-0"
       />
     </div>
   );

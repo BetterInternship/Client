@@ -3,42 +3,33 @@
 "use client";
 
 import ContentLayout from "@/components/features/hire/content-layout";
-import { Plus } from "lucide-react";
 import { JobsContent } from "@/components/features/hire/dashboard/JobsContent";
 import { ShowUnverifiedBanner } from "@/components/ui/banner";
-import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
 import { useEmployerApplications, useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
-import { useState } from "react";
-import { useAuthContext } from "../authctx";
 import { useMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
+import { Plus } from "lucide-react";
 import Link from "next/link";
+import { useState, useMemo } from "react";
+import { useAuthContext } from "../authctx";
+import { Job } from "@/lib/db/db.types";
 
 function DashboardContent() {
   const { isMobile } = useMobile();
   const { isAuthenticated, redirectIfNotLoggedIn, loading } = useAuthContext();
   const profile = useProfile();
   const applications = useEmployerApplications();
-  const { ownedJobs, update_job } = useOwnedJobs();
-  const archivedJobs = ownedJobs.filter((job) => job.is_active === false ||
-    job.is_deleted === true || job.is_unlisted === true);
+  const { ownedJobs, update_job, delete_job } = useOwnedJobs();
   const activeJobs = ownedJobs.filter((job) => job.is_active)
   const inactiveJobs = ownedJobs.filter((job) => !job.is_active)
 
-  const [selectedJobId, setSelectedJobId] =
-    useState<string | null>(null);
-  const [filteredStatus, setFilteredStatus] =
-    useState<number[]>([]);
-  const [jobName, setJobName] =
-    useState<string>("");
-
   redirectIfNotLoggedIn();
 
-  //shows applications when job listing is clicked
-  const handleJobListingClick = (jobId: string, jobTitle: string) => {
-    setSelectedJobId(jobId);
-    setJobName(jobTitle);
-  };
+  const handleUpdateJob = async (jobId: string, updates: Partial<Job>) => {
+    const result = await update_job(jobId, updates);
+    return result;
+  }
 
   if (applications.loading) {
     return (
@@ -54,24 +45,16 @@ function DashboardContent() {
   if (loading || !isAuthenticated())
     return <Loader>Loading dashboard...</Loader>;
 
-  // ! remove, find a better way
-  let lastSelf = false;
-
   return (
     <ContentLayout>
-      <div className="flex-1 flex flex-col w-full px-6 py-4 gap-4 mt-4">
+      <div className={cn("flex-1 flex flex-col w-full py-4", isMobile ? "px-1" : "px-4")}>
         <h3 className="text-primary tracking-tighter">Welcome back, {profile.data?.name}</h3>
         <div className="flex flex-col flex-1">
           {!profile.loading && !profile.data?.is_verified ? (
             <ShowUnverifiedBanner />
           ) : (
             <>
-              <Card className="h-full max-h-full border-none">
-                {/* {ownedJobs.length === 1 ? (
-                  <p className="text-gray-500 pb-2">{ownedJobs.length} job listing </p>
-                ) : (
-                  <p className="text-gray-500 pb-2">{ownedJobs.length} job listings </p>
-                )} */}
+              <div>
                 <div className="flex gap-4 mb-4">
                   <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{activeJobs.length}</span> active listing/s</span>
                   <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{inactiveJobs.length}</span> inactive listing/s</span>
@@ -81,20 +64,20 @@ function DashboardContent() {
                     applications={applications.employer_applications}
                     jobs={ownedJobs}
                     employerId={profile.data?.id || ""}
-                    onJobListingClick={handleJobListingClick}
-                    updateJob={update_job}
+                    updateJob={handleUpdateJob}
                   />
                   {isMobile && (
                     <Link href="listings/create">
                       <button
-                        className="fixed bottom-8 right-8 bg-primary rounded-full p-6 z-10 shadow-lg"
+                        aria-label="Create new listing"
+                        className="fixed bottom-8 right-2 bg-primary rounded-full p-5 z-10 shadow-xl z-[1000]"
                       >
                         <Plus className="h-5 w-5 text-white"/>
                       </button>
                     </Link>
                   )}
                 </>
-              </Card>
+              </div>
             </>
           )}
         </div>

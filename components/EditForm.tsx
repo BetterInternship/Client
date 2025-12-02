@@ -28,8 +28,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Info,
-  PlusIcon,
+  MessageCircleQuestion,
 } from "lucide-react";
 import * as React from "react";
 import { createContext, useContext, useRef } from "react";
@@ -170,17 +169,17 @@ export function LabelWithTooltip({
 }) {
   const id = tooltipId ?? `${label.replace(/\s+/g, "-").toLowerCase()}-tooltip`;
   return (
-    <div className="flex items-center gap-2 mb-1">
-      <label className="text-xs text-gray-600">
+    <div className="flex md:items-center gap-2 mb-1">
+      <span className="text-xs text-gray-600">
         {label} {required && <span className="text-red-500">*</span>}
-      </label>
+      </span>
       <div className="hover:cursor-help">
-        <Info
+        <MessageCircleQuestion
           data-tooltip-id={id}
           data-tooltip-content={tooltip ?? ""}
           data-tooltip-place="bottom"
           className={cn(
-            "w-4 h-4 p-0.5 text-primary",
+            "w-3.5 h-3.5 text-primary",
             tooltip?.trim() ? "" : "invisible",
           )}
         />
@@ -332,7 +331,7 @@ interface FormCheckboxProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   checked?: boolean;
   label?: string;
-  setter?: (value: boolean) => void;
+  setter?: ((value: boolean) => void) | ((e: any, value: boolean) => void);
   className?: string;
   sentence?: React.ReactNode;
   required?: boolean;

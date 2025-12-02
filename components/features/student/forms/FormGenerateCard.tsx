@@ -32,7 +32,7 @@ export default function FormGenerateCard({
         <div>{formMetdata?.getLabel() ?? ""}</div>
         <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto">
           <Button
-            onClick={onViewTemplate}
+            onClick={() => void onViewTemplate?.()}
             variant="outline"
             className="w-full sm:w-auto sm:shrink-0"
           >

@@ -1,10 +1,8 @@
 "use client";
 
 import { useAuthContext } from "@/app/hire/authctx";
-import ContentLayout from "@/components/features/hire/content-layout";
 import { ApplicationsContent } from "@/components/features/hire/dashboard/ApplicationsContent";
 import { ShowUnverifiedBanner } from "@/components/ui/banner";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
 import { Tab, TabGroup } from "@/components/ui/tabs";
@@ -19,9 +17,8 @@ import { useModal } from "@/hooks/use-modal";
 import { useSideModal } from "@/hooks/use-side-modal";
 import { EmployerConversationService, UserService } from "@/lib/api/services";
 import { EmployerApplication, InternshipPreferences } from "@/lib/db/db.types";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Edit, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { JobDetails } from "@/components/shared/jobs";
 import { Job } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
 import { ListingsDetailsPanel } from "@/components/features/hire/listings";
@@ -37,12 +34,19 @@ import { useListingsBusinessLogic } from "@/hooks/hire/listings/use-listings-bus
 import { useAppContext } from "@/lib/ctx-app";
 import { cn } from "@/lib/utils";
 import { ListingsDeleteModal } from "@/components/features/hire/listings";
+import { Toggle } from "@/components/ui/toggle";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 interface JobTabsProps {
   selectedJob: Job | null;
+  onJobUpdate?: (updates: Partial<Job>) => void;
 }
 
-export default function JobTabs({ selectedJob }: JobTabsProps) {
+export default function JobTabs({ 
+  selectedJob,
+  onJobUpdate,
+} : JobTabsProps) {
   const { ownedJobs, update_job, delete_job } = useOwnedJobs();
 
   // Business logic hook
@@ -184,6 +188,17 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
     });
   };
 
+  const handleToggleActive = async () => {
+    if (!selectedJob?.id) return;
+
+    const updates = { is_active: !selectedJob.is_active };
+    const result = await update_job(selectedJob.id, updates);
+
+    if (result.success && onJobUpdate) {
+      onJobUpdate(updates);
+    }
+  };
+
   const {
     open: openDeleteModal,
     close: closeDeleteModal,
@@ -295,60 +310,6 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
 
   return (
     <>
-      <div className="flex-1 flex flex-col w-full">
-        <div className="flex flex-col pt-2">
-          <button
-            onClick={handleJobBack}
-            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors m-4"
-          >
-            <ArrowLeft className="s-8" />
-          </button>
-          <h3 className="m-3">{selectedJob?.title}</h3>
-        </div>
-        <div className="flex flex-col flex-1 space-y-6">
-          {!profile.loading && !profile.data?.is_verified ? (
-            <ShowUnverifiedBanner />
-          ) : (
-            <>
-              <TabGroup>
-                <Tab name="Applicants">
-                  {/* we need to add filtering here :D */}
-                  <ApplicationsContent
-                    applications={filteredApplications}
-                    statusId={[0, 1, 2, 3, 4, 5, 6]}
-                    openChatModal={openChatModal}
-                    updateConversationId={updateConversationId}
-                    onApplicationClick={handleApplicationClick}
-                    onNotesClick={handleNotesClick}
-                    onScheduleClick={handleScheduleClick}
-                    onStatusChange={handleStatusChange}
-                    setSelectedApplication={setSelectedApplication}
-                  ></ApplicationsContent>
-                </Tab>
-                <Tab name="Preview Listing">
-                  <Card className="flex-1 min-w-0">
-                    {/* <Scrollbar> */}
-                      <ListingsDetailsPanel
-                        selectedJob={selectedJob}
-                        isEditing={isEditing}
-                        saving={saving}
-                        onEdit={handleEditStart}
-                        onSave={handleSave}
-                        onCancel={handleJobBack}
-                        onShare={handleShare}
-                        onDelete={handleJobDelete}
-                        updateJob={update_job}
-                        setIsEditing={setIsEditing}
-                      />
-                    {/* </Scrollbar> */}
-                  </Card>
-                </Tab>
-              </TabGroup>
-            </>
-          )}
-        </div>
-      </div>
-
       <DeleteModal>
         {jobToDelete && (
           <ListingsDeleteModal
@@ -359,6 +320,115 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
           />
         )}
       </DeleteModal>
+      <div className="flex-1 flex flex-col w-full">
+        <div className="flex items-center">
+          <button
+            onClick={handleJobBack}
+            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors m-4"
+          >
+            <ArrowLeft className="s-8" />
+          </button>
+          <h3 className="leading-none tracking-tighter text-xl">{selectedJob?.title}</h3>
+        </div>
+        <div className="flex flex-col flex-1 gap-4">
+          <div className={cn(
+            "px-4 py-3 bg-white border-gray-200 border-2 rounded-md",
+            isMobile
+            ? "flex justify-between gap-2"
+            : "grid grid-cols-2 grid-rows-2 gap-x-2 gap-y-1 w-fit" 
+          )}>
+            <div className="flex items-center gap-2">
+              <Toggle
+                state={selectedJob!.is_active}
+                onClick={handleToggleActive}
+              />
+              <span
+                className={cn(
+                  "text-sm transition",
+                  selectedJob!.is_active ? "text-primary" : "text-muted-foreground"
+                )}
+              >
+                {selectedJob!.is_active ? "Active" : "Paused"}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link href={{
+                pathname:"/listings/edit",
+                query: {
+                  jobId: selectedJob!.id,
+                  refresh: true
+                }
+              }}
+              >
+                <Button
+                  key="edit"
+                  variant="ghost"
+                  disabled={saving}
+                  className="text-gray-600 hover:bg-primary/10 gap-1"
+                >
+                  <Edit size={16} />
+                  Edit
+                </Button>
+              </Link>
+              <Button
+                key="delete"
+                variant="ghost"
+                disabled={saving}
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive gap-1"
+                onClick={handleJobDelete}
+              >
+                <Trash2 />
+                Delete
+              </Button>
+            </div>
+            <p className={cn(
+              "items-center col-span-2 text-gray-600 text-sm",
+              isMobile
+              ? "hidden"
+              : "flex"
+            )}>
+              {selectedJob!.is_active 
+                ? "This listing is currently accepting applicants."
+                : "This listing is invisible and not currently accepting applicants."
+              }
+            </p>
+          </div>
+            <TabGroup>
+              <Tab name="Applicants">
+                {/* we need to add filtering here :D */}
+                <ApplicationsContent
+                  applications={filteredApplications}
+                  statusId={[0, 1, 2, 3, 4, 5, 6]}
+                  openChatModal={openChatModal}
+                  updateConversationId={updateConversationId}
+                  onApplicationClick={handleApplicationClick}
+                  onNotesClick={handleNotesClick}
+                  onScheduleClick={handleScheduleClick}
+                  onStatusChange={handleStatusChange}
+                  setSelectedApplication={setSelectedApplication}
+                ></ApplicationsContent>
+              </Tab>
+              <Tab name="Listing information">
+                <Card className="flex-1 min-w-0 p-0">
+                  {/* <Scrollbar> */}
+                    <ListingsDetailsPanel
+                      selectedJob={selectedJob}
+                      isEditing={isEditing}
+                      saving={saving}
+                      onEdit={handleEditStart}
+                      onSave={handleSave}
+                      onCancel={handleJobBack}
+                      onShare={handleShare}
+                      onDelete={handleJobDelete}
+                      updateJob={update_job}
+                      setIsEditing={setIsEditing}
+                    />
+                  {/* </Scrollbar> */}
+                </Card>
+              </Tab>
+            </TabGroup>
+        </div>
+      </div>
 
       <ApplicantModal className="max-w-7xl w-full">
         <ApplicantModalContent
@@ -394,8 +464,6 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
             application={selectedApplication}
             reviewApp={async (id, reviewOptions) => {
               await reviewApp(id, reviewOptions);
-              // ! lol remove this later on
-              selectedApplication.notes = reviewOptions.notes;
             }}
             onClose={closeReviewModal}
           />
@@ -426,13 +494,28 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
       </ResumeModal>
 
       <ChatModal>
-        <div className="relative p-6 pt-6 pb-20 h-full w-full">
-          <div className="flex flex-col h-[100%] w-full gap-6">
-            <div className="text-4xl font-bold tracking-tight">
-              {getFullName(selectedApplication?.user)}
+        <div className="relative p-6 pb-20 h-full w-full">
+          <div className="flex flex-col h-[100%] w-full">
+            {/*top bar */}
+            <div className="justify-between sticky top-0 z-10 py-2 border-b bg-white/90 backdrop-blur">
+              <div className="flex items-center gap-2 font-medium">
+                {getFullName(selectedApplication?.user)}
+              </div>
+                <div className="text-gray-500 text-[11px] max-w-[40vh] -mt-[2px] flex truncate">
+                  <p className="text-[11px] text-primary"> Applied for: </p>
+                  {applications?.employer_applications.filter(a => a.user_id === selectedApplication?.user_id).map((a) => 
+                    <p className="text-[11px] ml-1">
+                      {a.job?.title}
+                      {a !== applications?.employer_applications.filter(a => a.user_id === selectedApplication?.user_id).at(-1) &&
+                        <>, </>
+                      }
+                    </p>
+                    )
+                  }
+                </div>
             </div>
-            <div className="overflow-y-hidden flex-1 border border-gray-300 rounded-[0.33em] max-h-[75%]">
-              <div className="flex flex-col-reverse max-h-full min-h-full overflow-y-scroll p-2 gap-1">
+            <div className="overflow-y-hidden flex-1 max-h-[75%] mb-6 pb-2 px-2 border-r border-l border-b">
+              <div className="flex flex-col-reverse max-h-full min-h-full overflow-y-scroll p-0 gap-1">
                 <div ref={chatAnchorRef} />
                 {(conversation?.loading ?? true) ? (
                   <div className="flex-1 flex flex-col items-center justify-center">
@@ -472,7 +555,7 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
                       <Card className="flex flex-col text-left gap-1 p-4 px-6 border-transparent">
                         <MessageCircle className="w-16 h-16 my-4 opacity-50" />
                         <div className="text-xl font-bold">
-                          Send a Message Now!
+                          Start a Conversation!
                         </div>
                         You don't have any messages with this applicant yet.
                       </Card>
@@ -481,40 +564,58 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
                 )}
               </div>
             </div>
-            <Textarea
-              ref={messageInputRef}
-              placeholder="Send a message here..."
-              className="w-full h-20 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
+            <div className="flex gap-2">
+              <Textarea
+                ref={messageInputRef}
+                placeholder="Send a message here..."
+                className="w-full h-10 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (!selectedApplication?.user_id) return;
+                    if (messageInputRef.current?.value) {
+                      handleMessage(
+                        selectedApplication.user_id,
+                        messageInputRef.current.value,
+                      );
+                    }
+                  }
+                }}
+                maxLength={1000}
+              />
+              {/* <Button
+                size="md"
+                disabled={sending}
+                onClick={() => {
                   if (!selectedApplication?.user_id) return;
                   if (messageInputRef.current?.value) {
                     handleMessage(
-                      selectedApplication.user_id,
-                      messageInputRef.current.value,
+                      selectedApplication?.user_id,
+                      messageInputRef.current?.value,
                     );
                   }
-                }
-              }}
-              maxLength={1000}
-            />
-            <Button
-              size="md"
-              disabled={sending}
-              onClick={() => {
-                if (!selectedApplication?.user_id) return;
-                if (messageInputRef.current?.value) {
-                  handleMessage(
-                    selectedApplication?.user_id,
-                    messageInputRef.current?.value,
-                  );
-                }
-              }}
-            >
-              {sending ? "Sending..." : "Send Message"}
-              <SendHorizonal className="w-5 h-5" />
-            </Button>
+                }}
+              >
+                <SendHorizonal className="w-5 h-5" />
+              </Button> */}
+              <button 
+                disabled={sending || !messageInputRef.current?.value.trim()}
+                onClick={() => {
+                  if (!selectedApplication?.user_id) return;
+                  if (messageInputRef.current?.value) {
+                    handleMessage(
+                      selectedApplication?.user_id,
+                      messageInputRef.current?.value,
+                    );
+                  }
+                }}
+                className={cn("text-primary px-2",
+                  (sending || !messageInputRef.current?.value.trim()) ? "opacity-50" : ""
+                )}
+              >
+                  <SendHorizonal className="w-7 h-7" />
+            </button>
+            </div>
           </div>
         </div>
       </ChatModal>

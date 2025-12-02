@@ -46,7 +46,7 @@ export const FilterButton = ({
   return (
     <button
       className={cn(
-        "flex justify-center items-center px-2 py-1 gap-2 text-sm font-sans rounded-sm hover:bg-gray-200 text-gray-800 border-gray-200 border-[1px]",
+        "flex justify-center items-center px-2 py-1 gap-2 text-xs font-sans rounded-[0.33em] hover:bg-gray-200 text-gray-800 border-gray-200 border-[1px]",
         active
           ? "bg-primary text-primary-foreground hover:bg-primary"
           : "bg-white",
@@ -55,13 +55,13 @@ export const FilterButton = ({
       aria-pressed={active}
       onClick={handleClick}
     >
-      {Icon && <Icon size={20} />}
+      {Icon && <Icon size={16} />}
       <span>{name}</span>
       {/* Display the item count badge if one is given. */}
       {typeof itemCount === "number" && (
         <span
           className={cn(
-            "px-2 py-1 text-sm rounded-sm",
+            "flex justify-center items-center px-2 py-1 text-xs rounded-sm",
             active ? "text-primary-foreground" : "bg-slate-200 text-gray-800",
           )}
         >

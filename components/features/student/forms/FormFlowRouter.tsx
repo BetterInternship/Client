@@ -7,10 +7,12 @@ import { useProfileActions } from "@/lib/api/student.actions.api";
 import { StepComplete } from "./StepComplete";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { GenerateButtons } from "./GenerateFormButtons";
+import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { FormMetadata } from "@betterinternship/core/forms";
 import { useQuery } from "@tanstack/react-query";
 import { Loader } from "@/components/ui/loader";
 import z from "zod";
+import { Button } from "@/components/ui/button";
 
 type Errors = Record<string, string>;
 type FormValues = Record<string, string>;
@@ -34,6 +36,11 @@ export function FormFlowRouter({
   const [values, setValues] = useState<FormValues>({});
   const [errors, setErrors] = useState<Errors>({});
 
+  // recipient confirmation modal state
+  const [confirmWithEsign, setConfirmWithEsign] = useState<boolean | undefined>(
+    undefined,
+  );
+
   // Fetch form
   const form = useQuery({
     queryKey: ["forms", formName],
@@ -51,11 +58,18 @@ export function FormFlowRouter({
 
   // Saved autofill
   const autofillValues = useMemo(() => {
-    const autofillValues = profile.data?.internship_moa_fields as Record<
+    const internshipMoaFields = profile.data?.internship_moa_fields as Record<
       string,
-      string
+      Record<string, string>
     >;
-    if (!autofillValues) return;
+    if (!internshipMoaFields) return;
+
+    // Destructure to isolate only shared fields or fields for that form
+    const autofillValues = {
+      ...(internshipMoaFields.base ?? {}),
+      ...internshipMoaFields.shared,
+      ...(internshipMoaFields[formName] ?? {}),
+    };
 
     // Populate with prefillers as well
     for (const field of fields) {
@@ -78,7 +92,43 @@ export function FormFlowRouter({
     setValues((prev) => ({ ...prev, [key]: v.toString() }));
   };
 
-  const handleSubmit = async (withEsign?: boolean) => {
+  // Validate a single field on blur and update errors immediately
+  const validateFieldOnBlur = (fieldKey: string) => {
+    const finalValues = { ...autofillValues, ...values };
+    const field = fields.find((f) => f.field === fieldKey);
+    if (!field) return;
+
+    // Only validate student/manual fields here
+    if (field.party !== "student" || field.source !== "manual") return;
+
+    const value = finalValues[field.field];
+    const coerced = field.coerce(value);
+    const result = field.validator?.safeParse(coerced);
+    if (result?.error) {
+      const errorString = z
+        .treeifyError(result.error)
+        .errors.map((e) => e.split(" ").slice(0).join(" "))
+        .join("\n");
+      setErrors((prev) => ({
+        ...prev,
+        [field.field]: `${field.label}: ${errorString}`,
+      }));
+    } else {
+      setErrors((prev) => {
+        const copy = { ...prev };
+        delete copy[field.field];
+        return copy;
+      });
+    }
+  };
+
+  /**
+   * This submits the form to the server
+   * @param withEsign - if true, enables e-sign; if false, does prefill
+   * @param _bypassConfirm - internal flag to skip recipient confirmation on re-call
+   * @returns
+   */
+  const handleSubmit = async (withEsign?: boolean, _bypassConfirm = false) => {
     setSubmitted(true);
     if (!profile.data?.id) return;
 
@@ -108,14 +158,93 @@ export function FormFlowRouter({
     setErrors(errors);
     if (Object.keys(errors).length) return;
 
+    // Find recipient fields (keys ending with ':recipient')
+    const recipientEmails = fields
+      .filter(
+        (f) => typeof f.field === "string" && f.field.endsWith(":recipient"),
+      )
+      .map((f) => finalValues[f.field]?.trim())
+      .filter(Boolean);
+
+    if (recipientEmails.length > 0 && withEsign && !_bypassConfirm) {
+      const recipientFields = fields
+        .filter(
+          (f) => typeof f.field === "string" && f.field.endsWith(":recipient"),
+        )
+        .map((f) => ({
+          field: f.field,
+          label: f.label,
+          email: finalValues[f.field]?.trim(),
+        }))
+        .filter((r) => r.email);
+
+      setConfirmWithEsign(withEsign);
+
+      openGlobalModal(
+        "confirm-recipients",
+        <div>
+          <p className="mt-2 text-sm text-gray-600 text-justify">
+            We will email the following recipients a separate form to complete
+            and sign. Please double-check these addresses before continuing.
+          </p>
+
+          <ul className="mt-4 max-h-40 overflow-auto divide-y">
+            {recipientFields.map((e, i) => (
+              <li key={i} className="py-2 text-sm flex gap-1">
+                <div className="font-medium text-primary">{e.email}</div>
+                <div className=" text-gray-500">- {e.label}</div>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-6 flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => closeGlobalModal("confirm-recipients")}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmRecipients} type="button">
+              Confirm & Send
+            </Button>
+          </div>
+        </div>,
+        { title: "Confirm recipients" },
+      );
+
+      return;
+    }
+
+    // proceed to save + submit
     try {
       setBusy(true);
 
-      console.log("Final values to submit", finalValues);
+      const internshipMoaFieldsToSave: Record<
+        string,
+        Record<string, string>
+      > = {
+        shared: {},
+      };
+
+      // Save it per field or shared
+      for (const field of fields) {
+        if (field.shared) {
+          internshipMoaFieldsToSave.shared[field.field] =
+            finalValues[field.field];
+        } else {
+          if (!internshipMoaFieldsToSave[formName])
+            internshipMoaFieldsToSave[formName] = {};
+          internshipMoaFieldsToSave[formName][field.field] =
+            finalValues[field.field];
+        }
+      }
+
+      // Save for future use
       await update.mutateAsync({
-        internship_moa_fields: finalValues,
+        internship_moa_fields: internshipMoaFieldsToSave,
       });
 
+      // Generate form
       await UserService.requestGenerateForm({
         formName,
         formVersion,
@@ -133,6 +262,14 @@ export function FormFlowRouter({
     }
   };
 
+  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
+
+  // Called when the user confirms the recipients in the modal
+  const handleConfirmRecipients = () => {
+    closeGlobalModal("confirm-recipients");
+    void handleSubmit(true, true);
+  };
+
   if (done) return <StepComplete onMyForms={() => onGoToMyForms?.()} />;
 
   // Loader
@@ -146,6 +283,7 @@ export function FormFlowRouter({
         formName={formName}
         values={values}
         onChange={setField}
+        onBlurValidate={validateFieldOnBlur}
         showErrors={submitted}
         errors={errors}
         autofillValues={autofillValues ?? {}}
