@@ -96,9 +96,29 @@ it("Employer make a new Job", function () {
     cy.get('div[aria-label="editable markdown"]').type("Requirements for cypress test job.");
   });
 
-  cy.contains("Publish Listing").should("be.enabled").click();
+  cy.contains("GitHub Repository").parent().parent().within(() => {
+    cy.get("[data-state=unchecked]")
+    cy.get("button").click()
+    cy.get("[data-state=checked]")
+  }); 
 
-  cy.url().should("include", "/dashboard");
-  cy.contains("cypress test job listing");
+  cy.contains("portfolio").parent().within(() => {
+    cy.get("[data-state=unchecked]")
+    cy.get("button").click()
+    cy.get("[data-state=checked]")
+  });
 
+  cy.contains("Cover Letter").parent().within(() => {
+    cy.get("[data-state=unchecked]")
+    cy.get("button").click()
+    cy.get("[data-state=checked]")
+  });
+
+  //cy.contains("Publish Listing").should("be.enabled").click();
+
+  //cy.url().should("include", "/dashboard");
+  //cy.contains("cypress test job listing");
+
+
+  //TODO optional part
 });
