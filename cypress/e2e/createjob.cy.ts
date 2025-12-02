@@ -1,8 +1,8 @@
 it("Employer make a new Job", function () {
-  cy.loginAsEmployer();
-
+  //cy.loginAsEmployer();
   cy.visit("http://hire.localhost:3000/dashboard");
-
+  cy.wait(12000);
+  //cy.visit("http://hire.localhost:3000/dashboard");
 
   cy.contains("Add Listing").click();
   cy.url().should("include", "/listings/create");
@@ -102,23 +102,21 @@ it("Employer make a new Job", function () {
     cy.get("[data-state=checked]")
   }); 
 
-  cy.contains("portfolio").parent().within(() => {
+  cy.contains("portfolio").parent().parent().within(() => {
     cy.get("[data-state=unchecked]")
     cy.get("button").click()
     cy.get("[data-state=checked]")
   });
 
-  cy.contains("Cover Letter").parent().within(() => {
+  cy.contains("Cover Letter").parent().parent().within(() => {
     cy.get("[data-state=unchecked]")
     cy.get("button").click()
     cy.get("[data-state=checked]")
   });
 
-  //cy.contains("Publish Listing").should("be.enabled").click();
+  cy.contains("Publish Listing").should("be.enabled").click();
 
-  //cy.url().should("include", "/dashboard");
-  //cy.contains("cypress test job listing");
+  cy.url().should("include", "/dashboard");
+  cy.contains("cypress test job listing");
 
-
-  //TODO optional part
 });

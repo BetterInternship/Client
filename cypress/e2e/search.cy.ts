@@ -1,6 +1,6 @@
 it("Bring the user to the Internship Dashboard and search for Intestship", function () {
   cy.visit("http://localhost:3000/");
-
+//NEED TO FIX
   cy.contains("Find Internships").click();
 
   cy.url().should("include", "/search");
