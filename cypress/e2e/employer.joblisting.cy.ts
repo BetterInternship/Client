@@ -28,23 +28,23 @@ describe("Employer Job Listing Flows", () => {
       cy.contains("Applicant");
     });
 
-  // it("Filters applicants by status (Shortlisted, Accepted, Rejected)", () => {
-  //   // click shortlisted and make sure the list updates to show them
-  //   cy.contains("button", "Shortlisted").click();
-  //   cy.contains("Shortlisted", { timeout: 10000 }).should("be.visible");
+  it("Filters applicants by status (Shortlisted, Accepted, Rejected)", () => {
+    // click shortlisted and make sure the list updates to show them
+    cy.contains("button", "Shortlisted").click();
+    cy.contains("Shortlisted", { timeout: 10000 }).should("be.visible");
 
-  //   // do the same for accepted applicants
-  //   cy.contains("button", "Accepted").click();
-  //   cy.contains("Accepted").should("be.visible");
+    // do the same for accepted applicants
+    cy.contains("button", "Accepted").click();
+    cy.contains("Accepted").should("be.visible");
 
-  //   // check if the rejected filter works too
-  //   cy.contains("button", "Rejected").click();
-  //   cy.contains("Rejected").should("be.visible");
+    // check if the rejected filter works too
+    cy.contains("button", "Rejected").click();
+    cy.contains("Rejected").should("be.visible");
 
-  //   // click 'll to reset everything and show the whole list again
-  //   cy.contains("button", "All").click();
-  //   cy.contains("Applicant").should("be.visible"); 
-  // });
+    // click 'll to reset everything and show the whole list again
+    cy.contains("button", "All").click();
+    cy.contains("Applicant").should("be.visible"); 
+  });
 
 
   it("Change Job Listing Status to paused", () => {
