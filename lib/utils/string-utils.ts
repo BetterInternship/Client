@@ -72,9 +72,6 @@ export const normalizePhoneNumber = (
       return "+63".concat(cleanedNumber).trim();
     }
   }
-  console.warn(
-    `Could not normalize phone number: "${phoneNumber}" to a valid PH mobile format.`,
-  );
   return null;
 };
 

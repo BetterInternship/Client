@@ -8,7 +8,8 @@
     "stage": "npm run build && git push origin develop",
     "publish": "npm run build && git push origin develop",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "npx jest"
   },
   "dependencies": {
     "@betterinternship/components": "^1.0.1",

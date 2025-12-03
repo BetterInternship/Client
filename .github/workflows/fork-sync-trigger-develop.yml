@@ -33,6 +33,38 @@ jobs:
         run: |
           git push origin develop --force
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Jest Tests and Log
+        id: jest
+        continue-on-error: true 
+        run: |
+          # Run Jest and pipe output to file
+          npm run test -- --passWithNoTests > jest.log 2>&1
+          TEST_EXIT_CODE=$?
+          
+          # Prepare log for Discord (Tail last 1500 chars, escape quotes/newlines for JSON)
+          LOG_CONTENT=$(cat jest.log | tail -c 1500 | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+          
+          if [ $TEST_EXIT_CODE -eq 0 ]; then
+            STATUS="✅ Jest Passed"
+          else
+            STATUS="❌ Jest Failed"
+          fi
+
+          curl -H "Content-Type: application/json" \
+            -d "{\"content\": \"**$STATUS**\n\`\`\`text\n$LOG_CONTENT\n\`\`\`\"}" \
+            ${{ secrets.TESTING_DISCORD_WEBHOOK_URL }}
+
+          # Check exit code again to actually fail the step if needed
+          if [ $TEST_EXIT_CODE -ne 0 ]; then exit 1; fi
+
       - name: Deploy to Vercel
         id: vercel
         run: |
