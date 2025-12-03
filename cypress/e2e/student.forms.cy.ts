@@ -1,4 +1,4 @@
-it("prevents invalid credentials from logging in", () => {
+it("Visits student forms page after log in", () => {
   // This handles the authentication; if u wanna use another account, just replace the email in the link
   cy.visit(
     "http://localhost:5000/api/auth/google/cypress/modavid.1964@gmail.com",
