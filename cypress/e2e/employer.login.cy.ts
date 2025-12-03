@@ -1,27 +1,29 @@
-it("prevents invalid credentials from logging in", () => {
-  cy.visit("http://hire.localhost:3000/login");
+describe("Student Application Flows", () => {
+  beforeEach(() => {
+    cy.visit("http://hire.localhost:3000/login");
+  });
 
-  cy.get('input[type="email"]').type("fakeemail@gmail.com");
-  cy.get('button[type="submit"]').click();
+  it("prevents invalid credentials from logging in", () => {
+    cy.visit("http://hire.localhost:3000/login");
 
-  cy.contains("Invalid password.");
-});
+    cy.get('input[type="email"]').type("fakeemail@gmail.com");
+    cy.get('button[type="submit"]').click();
 
-it("prevents invalid credentials from logging in", () => {
-  cy.visit("http://hire.localhost:3000/login");
+    cy.contains("Invalid password.");
+  });
 
-  cy.get('input[type="password"]').type("fakepassword");
-  cy.get('button[type="submit"]').click();
+  it("prevents invalid credentials from logging in", () => {
+    cy.get('input[type="password"]').type("fakepassword");
+    cy.get('button[type="submit"]').click();
 
-  cy.contains("Email is required.");
-});
+    cy.contains("Email is required.");
+  });
 
-it("prevents invalid credentials from logging in", () => {
-  cy.visit("http://hire.localhost:3000/login");
+  it("prevents invalid credentials from logging in", () => {
+    cy.get('input[type="email"]').type("fakeemail@gmail.com");
+    cy.get('input[type="password"]').type("fakepassword");
+    cy.get('button[type="submit"]').click();
 
-  cy.get('input[type="email"]').type("fakeemail@gmail.com");
-  cy.get('input[type="password"]').type("fakepassword");
-  cy.get('button[type="submit"]').click();
-
-  cy.contains("Invalid password.");
+    cy.contains("Invalid password.");
+  });
 });
