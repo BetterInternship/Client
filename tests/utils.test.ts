@@ -191,10 +191,7 @@ describe("Utility Functions", () => {
       expect(normalizePhoneNumber("917 123 4567")).toBe("+639171234567");
     });
 
-    it("should return null for non-PH-mobile-formatted numbers and log a warning", () => {
-      const consoleWarnSpy = jest
-        .spyOn(console, "warn")
-        .mockImplementation(() => {});
+    it("should return null for non-PH-mobile-formatted numbers", () => {
       expect(normalizePhoneNumber("1234567890")).toBe(null);
       expect(consoleWarnSpy).toHaveBeenCalled();
       consoleWarnSpy.mockRestore();
