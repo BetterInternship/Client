@@ -45,6 +45,7 @@ jobs:
         id: jest
         continue-on-error: true 
         run: |
+          set +e
           # Run Jest and pipe output to file
           npm run test -- --passWithNoTests > jest.log 2>&1
           TEST_EXIT_CODE=$?
@@ -62,6 +63,8 @@ jobs:
           curl -H "Content-Type: application/json" \
             -d "{\"content\": \"**$STATUS**\n\`\`\`text\n$LOG_CONTENT\n\`\`\`\"}" \
             ${{ secrets.TESTING_DISCORD_WEBHOOK_URL }}
+
+          set -e
 
           # Check exit code again to actually fail the step if needed
           if [ $TEST_EXIT_CODE -ne 0 ]; then exit 1; fi
