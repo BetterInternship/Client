@@ -48,9 +48,10 @@ jobs:
           # Run Jest and pipe output to file
           npm run test -- --passWithNoTests > jest.log 2>&1
           TEST_EXIT_CODE=$?
+          cat jest.log
           
           # Prepare log for Discord (Tail last 1500 chars, escape quotes/newlines for JSON)
-          LOG_CONTENT=$(cat jest.log | tail -c 1500 | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+          LOG_CONTENT=$(tail -c 1800 jest.log)
           
           if [ $TEST_EXIT_CODE -eq 0 ]; then
             STATUS="✅ Jest Passed"
