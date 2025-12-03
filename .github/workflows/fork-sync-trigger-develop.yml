@@ -49,7 +49,6 @@ jobs:
           # Run Jest and pipe output to file
           npm run test -- --passWithNoTests > jest.log 2>&1
           TEST_EXIT_CODE=$?
-          cat jest.log
           
           # Prepare log for Discord (Tail last 1500 chars, escape quotes/newlines for JSON)
           LOG_CONTENT=$(tail -c 1800 jest.log)
