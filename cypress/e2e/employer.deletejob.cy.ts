@@ -29,5 +29,7 @@
     cy.contains("Delete").click();
     cy.contains("Are you sure you want to delete").parent().within(() => {
     cy.contains("Delete").click();
+
+    cy.url().should("include", "/dashboard");
   });
   });
