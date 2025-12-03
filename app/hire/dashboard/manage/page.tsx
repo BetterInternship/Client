@@ -22,7 +22,8 @@ function ManageContent() {
 
       try {
         setLoading(true);
-        const response = await JobService.getJobById(jobId);
+        const response = await JobService.getAnyJobById(jobId);
+        console.log(response);
         if (response?.success && response.job) {
           setJobData(response.job);
         } else {
@@ -37,6 +38,10 @@ function ManageContent() {
     fetchJobData();
   }, [jobId]);
 
+  const handleJobUpdate = (updates: Partial<Job>) => {
+    setJobData(prev => prev ? { ...prev, ...updates } : null);
+  };
+
   if (!jobData) {
     return;
   }
@@ -44,7 +49,10 @@ function ManageContent() {
   return (
     <ContentLayout>
       <div className="w-full h-full">
-        <JobTabs selectedJob={jobData} />
+        <JobTabs 
+          selectedJob={jobData} 
+          onJobUpdate={handleJobUpdate}
+        />
       </div>
     </ContentLayout>
   );

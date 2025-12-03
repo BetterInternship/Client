@@ -2,7 +2,7 @@
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useAppContext } from "@/lib/ctx-app";
 import { FilterButton } from "@/components/ui/filter";
-import { statusIconMap } from "@/components/common/status-icon-map";
+import { statusMap } from "@/components/common/status-icon-map";
 import { List } from "lucide-react";
 
 interface ApplicationsHeaderProps {
@@ -51,7 +51,7 @@ export function ApplicationsHeader({
           <FilterButton
             key={key}
             name={name}
-            icon={statusIconMap.get(filterID)?.icon}
+            icon={statusMap.get(filterID)?.icon}
             itemCount={value}
             isActive={activeFilter === filterID}
             onToggle={() => onFilterChange(filterID)}

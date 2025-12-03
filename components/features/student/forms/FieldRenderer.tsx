@@ -22,26 +22,27 @@ import {
   TreeOption,
 } from "@/components/ui/autocomplete";
 import { ClientField } from "@betterinternship/core/forms";
+import { Info } from "lucide-react";
 
 export function FieldRenderer({
   field,
   value = "",
   onChange,
   error,
-  showError,
+  onBlur,
 }: {
   field: ClientField<[]>;
   value: string;
   onChange: (v: any) => void;
   error?: string;
-  showError?: boolean;
+  onBlur?: () => void;
   allValues?: Record<string, string>;
 }) {
   // Placeholder or error
   const TooltipLabel = () => {
-    if (showError && !!error)
-      return <p className="text-xs text-destructive mt-1">{error}</p>;
-    return <></>;
+    if (error) return <p className="text-xs text-destructive mt-1">{error}</p>;
+
+    return null;
   };
 
   // Dropdown
@@ -52,6 +53,7 @@ export function FieldRenderer({
         value={value}
         TooltipContent={TooltipLabel}
         onChange={onChange}
+        onBlur={onBlur}
       />
     );
   }
@@ -64,6 +66,7 @@ export function FieldRenderer({
         value={value}
         TooltipContent={TooltipLabel}
         onChange={onChange}
+        onBlur={onBlur}
       />
     );
   }
@@ -76,6 +79,7 @@ export function FieldRenderer({
         value={value}
         TooltipContent={TooltipLabel}
         onChange={onChange}
+        onBlur={onBlur}
       />
     );
   }
@@ -87,6 +91,7 @@ export function FieldRenderer({
         value={value}
         TooltipContent={TooltipLabel}
         onChange={onChange}
+        onBlur={onBlur}
       />
     );
   }
@@ -104,6 +109,7 @@ export function FieldRenderer({
             value: o as string,
           })) ?? []
         }
+        onBlur={onBlur}
       />
     );
   }
@@ -116,6 +122,7 @@ export function FieldRenderer({
         value={value}
         TooltipContent={TooltipLabel}
         onChange={onChange}
+        onBlur={onBlur}
       />
     );
   }
@@ -126,6 +133,7 @@ export function FieldRenderer({
       value={value}
       TooltipContent={TooltipLabel}
       onChange={onChange}
+      onBlur={onBlur}
     />
   );
 }
@@ -146,11 +154,13 @@ const FieldRendererDropdown = ({
   value,
   TooltipContent,
   onChange,
+  onBlur,
 }: {
   field: ClientField<[]>;
   value: string;
   TooltipContent: () => React.ReactNode;
   onChange: (v: string | number) => void;
+  onBlur?: () => void;
 }) => {
   const options: Option[] = (field.options ?? []).map((o) => ({
     id: o as string,
@@ -167,6 +177,7 @@ const FieldRendererDropdown = ({
         setter={(v) => onChange(v)}
         className="w-full"
         tooltip={field.tooltip_label}
+        onBlur={() => onBlur?.()}
       />
       <TooltipContent />
     </div>
@@ -183,11 +194,13 @@ const FieldRendererDate = ({
   value,
   TooltipContent,
   onChange,
+  onBlur,
 }: {
   field: ClientField<[]>;
   value: string;
   TooltipContent: () => React.ReactNode;
   onChange: (v: number) => void;
+  onBlur?: () => void;
 }) => {
   // Try to parse it first
   const numericalValue = isNaN(parseInt(value)) ? 0 : parseInt(value);
@@ -199,7 +212,10 @@ const FieldRendererDate = ({
         required={false}
         label={field.label}
         date={numericalValue}
-        setter={(v) => onChange(v ?? 0)}
+        setter={(v) => {
+          onChange(v ?? 0);
+          onBlur?.();
+        }}
         className="w-full"
         contentClassName="z-[1100]"
         placeholder="Select date"
@@ -229,11 +245,13 @@ const FieldRendererTime = ({
   value,
   TooltipContent,
   onChange,
+  onBlur,
 }: {
   field: ClientField<[]>;
   value: string;
   TooltipContent: () => React.ReactNode;
   onChange: (v: string) => void;
+  onBlur?: () => void;
 }) => {
   return (
     <div className="space-y-1.5">
@@ -243,6 +261,7 @@ const FieldRendererTime = ({
         value={value}
         tooltip={field.tooltip_label}
         onChange={(v) => onChange(v ?? "")}
+        onBlur={() => onBlur?.()}
       />
       <TooltipContent />
     </div>
@@ -259,11 +278,13 @@ const FieldRendererCheckbox = ({
   value,
   TooltipContent,
   onChange,
+  onBlur,
 }: {
   field: ClientField<[]>;
   value: string;
   TooltipContent: () => React.ReactNode;
   onChange: (v: boolean) => void;
+  onBlur?: () => void;
 }) => {
   return (
     <div className="space-y-1.5">
@@ -274,6 +295,7 @@ const FieldRendererCheckbox = ({
         tooltip={field.tooltip_label}
         sentence={field.tooltip_label}
         setter={(c) => onChange(c)}
+        onBlur={() => onBlur?.()}
       />
       <TooltipContent />
     </div>
@@ -290,13 +312,17 @@ const FieldRendererInput = ({
   value,
   TooltipContent,
   onChange,
+  onBlur,
 }: {
   field: ClientField<[]>;
   value: string;
   TooltipContent: () => React.ReactNode;
   onChange: (v: string | number) => void;
+  onBlur?: () => void;
 }) => {
   const inputMode = field.type === "number" ? "numeric" : undefined;
+  // const isRecipientField =
+  //   typeof field.field === "string" && field.field.endsWith(":recipient");
   return (
     <div className="space-y-1.5">
       <FormInput
@@ -311,7 +337,16 @@ const FieldRendererInput = ({
         inputMode={inputMode}
         tooltip={field.tooltip_label}
         className="w-full"
+        onBlur={() => onBlur?.()}
       />
+      {/* {isRecipientField && (
+        <div className="flex gap-1 md:items-center">
+          <Info className="text-primary h-3.5 w-3.5"></Info>
+          <p className="text-xs text-primary">
+            A separate form will be emailed to them to complete and sign.
+          </p>
+        </div>
+      )} */}
       <TooltipContent />
     </div>
   );
@@ -327,11 +362,13 @@ const FieldRendererTextarea = ({
   value,
   TooltipContent,
   onChange,
+  onBlur,
 }: {
   field: ClientField<[]>;
   value: string;
   TooltipContent: () => React.ReactNode;
   onChange: (v: string | number) => void;
+  onBlur?: () => void;
 }) => {
   return (
     <div className="space-y-1.5">
@@ -340,6 +377,7 @@ const FieldRendererTextarea = ({
         label={field.label}
         value={value ?? ""}
         setter={onChange}
+        onBlur={() => onBlur?.()}
         tooltip={field.tooltip_label}
         className="w-full"
       />
@@ -359,15 +397,17 @@ const FieldRendererMultiselect = ({
   options,
   TooltipContent,
   onChange,
+  onBlur,
 }: {
   field: ClientField<[]>;
   values: string[];
   options: TreeOption[];
   TooltipContent: () => React.ReactNode;
   onChange: (v: string[]) => void;
+  onBlur?: () => void;
 }) => {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1.5" onBlur={() => onBlur?.()}>
       <AutocompleteTreeMulti
         required={false}
         label={field.label}

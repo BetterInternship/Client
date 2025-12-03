@@ -88,13 +88,23 @@ export default function CompanyProfile() {
     };
     img.src = URL.createObjectURL(file);
   };
+
+  const { isMobile } = useAppContext();
   return (
     profile && (
       <ContentLayout>
-        <div className="mx-auto min-h-screen bg-background p-6 py-12 max-w-6xl">
-          <header className="flex items-start gap-8 flex-1 w-full max-w-[600px] m-auto ">
+        <div className={cn(
+          "max-w-[600px] bg-background py-4 rounded-lg border-gray-300 border",
+          isMobile
+            ? "px-2"
+            : "px-8"
+        )}>
+          <header className="flex flex-col items-start gap-2 flex-1 w-full m-auto ">
             <div className="relative flex-shrink-0">
-              <MyEmployerPfp size="36" />
+              <MyEmployerPfp size={isMobile
+                ? "20"
+                : "28"
+              } />
               <Button
                 variant="outline"
                 size="icon"
@@ -112,14 +122,16 @@ export default function CompanyProfile() {
                 style={{ display: "none" }}
               />
             </div>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-3xl font-bold font-heading mb-1 line-clamp-1">
-                {profile.name}
-              </h1>
-              <h1 className="text-sm font-normal mb-2 line-clamp-1 text-gray-400">
-                Legal Name: [{profile.legal_entity_name}]
-              </h1>
-              <div className="text-muted-foreground text-sm mt-2">
+            <div className="flex flex-col gap-2">
+              <div>
+                <h1 className="text-2xl font-bold font-heading">
+                  {profile.name}
+                </h1>
+                <h2 className="text-sm font-normal text-gray-400">
+                  Legal Name: {profile.legal_entity_name}
+                </h2>
+              </div>
+              <div className="text-muted-foreground text-sm">
                 <div className="flex flex-row gap-1">
                   <BoolBadge
                     state={check(
@@ -232,10 +244,7 @@ const ProfileDetails = ({ profile }: { profile: Employer }) => {
         <Divider />
         <div
           className={cn(
-            "mb-8",
-            isMobile
-              ? "grid grid-cols-1 space-y-2"
-              : "flex flex-row space-x-2 items-center justify-start",
+            "flex flex-row gap-2 flex-wrap"
           )}
         >
           <ProfileLinkBadge title="Company Email" link={profile.email} />
@@ -344,7 +353,7 @@ const ProfileEditor = forwardRef<
     <>
       <Card>
         <div className="text-xl tracking-tight font-medium text-gray-700 mb-4">
-          Identity
+          About
         </div>
         <div className="flex flex-col space-y-1 mb-2">
           <ErrorLabel value={formErrors.name} />
@@ -420,7 +429,7 @@ const ProfileEditor = forwardRef<
             required={false}
           />
         </div>
-        <div className="text-xl tracking-tight font-medium text-gray-700 mt-8">
+        {/* <div className="text-xl tracking-tight font-medium text-gray-700 mt-8">
           Miscellaneous
         </div>
         <div className="mb-3">
@@ -434,7 +443,7 @@ const ProfileEditor = forwardRef<
               Accept students outside of DLSU?
             </div>
           </div>
-        </div>
+        </div> */}
       </Card>
       <br />
       <br />

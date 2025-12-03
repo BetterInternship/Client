@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { FieldRenderer } from "@/components/features/student/forms/FieldRenderer";
 import { ClientField } from "@betterinternship/core/forms";
 import { coerceAnyDate } from "@/lib/utils";
+import { RecipientSection } from "@/components/features/student/forms/RecipientSection";
 
 export function DynamicForm({
   formName,
@@ -14,6 +15,7 @@ export function DynamicForm({
   onChange,
   errors = {},
   showErrors = false,
+  onBlurValidate,
 }: {
   formName: string;
   fields: ClientField<[]>[];
@@ -23,22 +25,33 @@ export function DynamicForm({
   showErrors?: boolean;
   setValues: (values: Record<string, string>) => void;
   onChange: (key: string, value: any) => void;
+  onBlurValidate?: (fieldKey: string) => void;
 }) {
   const filteredFields = fields
     .filter((field) => field.party === "student")
     .filter((field) => field.source === "manual");
 
-  // Group by section
-  const entitySectionFields: ClientField<[]>[] = filteredFields.filter(
+  // Separate recipient fields (those whose field name ends with ":recipient")
+  const recipientFields = filteredFields.filter((f) =>
+    String(f.field).endsWith(":recipient"),
+  );
+
+  // All non-recipient fields
+  const nonRecipientFields = filteredFields.filter(
+    (f) => !String(f.field).endsWith(":recipient"),
+  );
+
+  // Group by section (from non-recipient set)
+  const entitySectionFields: ClientField<[]>[] = nonRecipientFields.filter(
     (d) => d.section === "entity",
   );
-  const studentSectionFields: ClientField<[]>[] = filteredFields.filter(
+  const studentSectionFields: ClientField<[]>[] = nonRecipientFields.filter(
     (d) => d.section === "student",
   );
-  const internshipSectionFields: ClientField<[]>[] = filteredFields.filter(
+  const internshipSectionFields: ClientField<[]>[] = nonRecipientFields.filter(
     (d) => d.section === "internship",
   );
-  const universitySectionFields: ClientField<[]>[] = filteredFields.filter(
+  const universitySectionFields: ClientField<[]>[] = nonRecipientFields.filter(
     (d) => d.section === "university",
   );
 
@@ -71,6 +84,7 @@ export function DynamicForm({
         fields={entitySectionFields}
         values={values}
         onChange={onChange}
+        onBlurValidate={onBlurValidate}
         errors={errors}
         showErrors={showErrors}
       />
@@ -81,6 +95,7 @@ export function DynamicForm({
         fields={internshipSectionFields}
         values={values}
         onChange={onChange}
+        onBlurValidate={onBlurValidate}
         errors={errors}
         showErrors={showErrors}
       />
@@ -91,6 +106,7 @@ export function DynamicForm({
         fields={universitySectionFields}
         values={values}
         onChange={onChange}
+        onBlurValidate={onBlurValidate}
         errors={errors}
         showErrors={showErrors}
       />
@@ -101,6 +117,19 @@ export function DynamicForm({
         fields={studentSectionFields}
         values={values}
         onChange={onChange}
+        onBlurValidate={onBlurValidate}
+        errors={errors}
+        showErrors={showErrors}
+      />
+
+      <RecipientSection
+        formKey={formName}
+        title="Recipient Email(s) — IMPORTANT"
+        subtitle="These email fields are important. Please double-check addresses, recipients are emailed a seperate form to them to complete and sign."
+        fields={recipientFields}
+        values={values}
+        onChange={onChange}
+        onBlurValidate={onBlurValidate}
         errors={errors}
         showErrors={showErrors}
       />
@@ -114,6 +143,7 @@ const FormSection = function FormSection({
   fields,
   values,
   onChange,
+  onBlurValidate,
   errors,
   showErrors,
 }: {
@@ -122,6 +152,7 @@ const FormSection = function FormSection({
   fields: ClientField<[]>[];
   values: Record<string, string>;
   onChange: (key: string, value: any) => void;
+  onBlurValidate?: (fieldKey: string) => void;
   errors: Record<string, string>;
   showErrors: boolean;
 }) {
@@ -148,6 +179,7 @@ const FormSection = function FormSection({
               field={field}
               value={values[field.field]}
               onChange={(v) => onChange(field.field, v)}
+              onBlur={() => onBlurValidate?.(field.field)}
               error={errors[field.field]}
               showError={showErrors}
               allValues={values}

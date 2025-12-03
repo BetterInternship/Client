@@ -1,18 +1,19 @@
 // ui for the job box or card
 
+import { Badge, BoolBadge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Toggle } from "@/components/ui/toggle";
+import { useMobile } from "@/hooks/use-mobile";
 import { EmployerApplication, Job } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { cn } from "@/lib/utils";
-import { Building } from 'lucide-react';
+import { Building, Check, Pause } from 'lucide-react';
 import { useRouter } from "next/navigation";
 
 
 interface JobListingProps {
     job: Job;
     applications: EmployerApplication[];
-    onJobListingClick: (jobId: string, jobTitle: string) => void;
     update_job: (
         job_id: string,
         job: Partial<Job>,
@@ -38,54 +39,63 @@ export function JobListingsBox({
     };
 
     const router = useRouter();
+    const isMobile = useMobile();
 
     return (
         // <Link href={{
         //     pathname: pathName(),
         //     query: { jobId: job.id }
         // }}>
-            <Card className={cn("flex flex-col hover:bg-primary/25 hover:cursor-pointer gap-4",
-                !job.is_active ? "opacity-50" : "cursor-pointer",
-            )}
+            <Card 
+                className="flex flex-col hover:bg-primary/10 hover:cursor-pointer gap-4"
                 onClick={handleClick}
             >
-                <div className="flex flex-row justify-between">
-                    <div className="min-w-0">
-                        <h1 className="font-bold text-primary text-base truncate">{job.title}</h1>
-                        {(job.location) ?
-                            <div className="flex items-center text-sm text-gray-500 mt-2">
-                                <Building className="w-4 h-4 mr-1 flex-shrink-0" />
-                                <span className="truncate">{job.location}</span>
-                            </div> :
-                            <br/>
-                        }
-                        {(job.salary !== undefined && job.allowance === 0) ?
-                            <span className="text-sm mt-2">₱{job.salary}/{to_job_pay_freq_name(job.salary_freq)}</span> :
-                            // <span className="text-sm mt-2">Unpaid</span>
-                            <br/>
-                        }
+                <div className="flex flex-col w-full">
+                    <div className="flex justify-between gap-2">
+                        <h1 className={cn(
+                            "text-base truncate",
+                            job.is_active
+                                ? "font-bold text-primary"
+                                : "font-normal text-muted-foreground"
+                        )}>
+                            {job.title}
+                        </h1>
+                        <Badge
+                            strength="default"
+                            type="default"
+                            className={job.is_active ? "border-primary text-primary gap-2" : "gap-2"}
+                        >
+                            {job.is_active
+                                ? <Check size={16} />
+                                : <Pause size={16} />
+                            }
+                            <span>{job.is_active ? "Active" : "Paused"}</span>
+                        </Badge>
                     </div>
-                    <div className="justify-self-end">
-                        <Toggle
-                            state={job.is_active}
-                            onClick={() => {
-                                if (!job.id) return;
-                                void update_job(job.id, {
-                                    is_active: !job.is_active,
-                                });
-                            }}
-                        />
-                    </div>
+                    {(job.location) ?
+                        <div className="flex items-center text-sm text-gray-500 mt-2">
+                            <Building className="w-4 h-4 mr-1 flex-shrink-0" />
+                            <span className="truncate">{job.location}</span>
+                        </div> :
+                        <br/>
+                    }
+                    {(job.salary !== undefined && job.allowance === 0) ?
+                        <span className="text-sm mt-2">₱{job.salary}/{to_job_pay_freq_name(job.salary_freq)}</span> :
+                        <br/>
+                    }
                 </div>
-                <div className="flex flex-row gap-6 rounded-sm">
-                    <div>
-                        <h3 className="text-lg text-primary">{applicants.length}</h3>
-                        <p className="text-sm text-gray-500">Total Applicants</p>
-                    </div>
-                    <div>
-                        <h3 className="text-lg text-primary">{applicants.filter((applicant) => applicant.status === 0).length}</h3>
-                        <p className="text-sm text-gray-500">New Applicants</p>
-                    </div>
+                <div className="flex flex-row gap-2 rounded-sm">
+                    <Badge 
+                        strength={"medium"}
+                    >
+                        {applicants.length} total applicant{applicants.length !== 1 ? "s" : ""}
+                    </Badge>
+                    <Badge 
+                        type={applicants.length > 0 ? "primary" : "default"}
+                        strength={"default"}
+                    >
+                        {applicants.length} new applicant{applicants.length !== 1 ? "s" : ""}
+                    </Badge>
                 </div>
 
             </Card>

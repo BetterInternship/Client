@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/button";
 import { isValidEmail, isValidPHNumber } from "@/lib/utils";
 import { MultipartFormBuilder } from "@/lib/multipart-form";
 import { Loader } from "@/components/ui/loader";
+import { cn } from "@/lib/utils";
+import { useAppContext } from "@/lib/ctx-app";
 
 const [EmployerRegisterForm, useEmployerRegisterForm] =
   createEditForm<Employer>();
@@ -30,8 +32,15 @@ export default function RegisterPage() {
   if (loading || isAuthenticated())
     return <Loader>Loading registration...</Loader>;
 
+  const { isMobile } = useAppContext();
+
   return (
-    <div className="flex-1 flex justify-center px-6 py-12 pt-12 overflow-y-auto">
+    <div className={cn(
+      "flex-1 flex justify-center py-12 pt-12 overflow-y-auto",
+      isMobile
+        ? "px-2"
+        : "px-6"
+    )}>
       <div className="w-full max-w-2xl h-full">
         <EmployerRegisterForm data={{}}>
           <EmployerEditor registerProfile={register} />
@@ -172,13 +181,13 @@ const EmployerEditor = ({
 
   return (
     <>
-      <Card className="mb-4">
-      <div className="mb-4">
-        <h2 className="text-3xl tracking-tighter font-bold text-gray-700">
-          Employer Registration
-        </h2>
-      </div>
-      <div className="mb-4 flex flex-col space-y-3">
+      <Card>
+        <div className="mb-4">
+          <h2 className="text-3xl tracking-tighter font-bold text-gray-700">
+            Employer Registration
+          </h2>
+        </div>
+        <div className="mb-4 flex flex-col space-y-3">
           <div className="text-xl tracking-tight font-bold text-gray-700">
             Contact Person Information
           </div>
@@ -282,9 +291,9 @@ const EmployerEditor = ({
             .
           </label>
         </div>
-        <div className="flex justify-between items-center w-[100%]">
+        <div className="flex justify-between items-center w-full">
           <p className="text-sm text-gray-500">
-            Already have an account? <a className="text-blue-600 hover:text-blue-800 underline font-medium" href="/login">Login here.</a>
+            Already have an account? <a className="text-blue-600 hover:text-blue-800 underline font-medium" href="/login">Log in here.</a>
           </p>
           <Button
             onClick={register}

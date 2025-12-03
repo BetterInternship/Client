@@ -90,33 +90,65 @@ export function useEmployerApplications() {
     app_id: string,
     review_options: { review?: string; notes?: string; status?: number }
   ) => {
-    const cache = get_cache() as EmployerApplication[];
+    // const cache = get_cache() as EmployerApplication[];
     const response = await ApplicationService.reviewApplication(
       app_id,
       review_options
     );
 
-    if (cache) {
-      const new_apps = [
-        {
-          ...cache.filter((a) => a?.id === app_id)[0],
+    // getting some stale cache errors on multiple updates
+    // if (cache) {
+    //   const new_apps = [
+    //     {
+    //       ...cache.filter((a) => a?.id === app_id)[0],
+    //       // @ts-ignore
+    //       ...response.application,
+    //     },
+    //     ...cache.filter((a) => a?.id !== app_id),
+    //     // @ts-ignore
+    //   ].sort(
+    //     (a, b) =>
+    //       new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+    //   );
+    //   set_cache(new_apps);
+    //   setEmployerApplications(get_cache() as EmployerApplication[]);
+    // } else {
+    //   // @ts-ignore
+    //   set_cache([response.application]);
+    //   // @ts-ignore
+    //   setEmployerApplications([response.application]);
+    // }
+
+    const updateState = (prevApps: EmployerApplication[] | undefined) => {
+      const currentApps = prevApps || [];
+
+      const appIndex = currentApps.findIndex(a => a?.id === app_id);
+      
+      let new_apps: EmployerApplication[];
+
+      if (appIndex > -1) {
+        new_apps = [...currentApps];
+
+        new_apps[appIndex] = {
+          ...currentApps[appIndex],
           // @ts-ignore
-          ...response.application,
-        },
-        ...cache.filter((a) => a?.id !== app_id),
+          ...response.application
+        };
+      } else {
         // @ts-ignore
-      ].sort(
-        (a, b) =>
-          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+        new_apps = [...currentApps, response.application];
+      }
+
+      return new_apps.sort(
+        // @ts-ignore
+        (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
       );
-      set_cache(new_apps);
-      setEmployerApplications(get_cache() as EmployerApplication[]);
-    } else {
-      // @ts-ignore
-      set_cache([response.application]);
-      // @ts-ignore
-      setEmployerApplications([response.application]);
     }
+
+    // @ts-ignore
+    set_cache(updateState);
+    setEmployerApplications(updateState);
+    
     return response;
   };
 
@@ -176,12 +208,15 @@ export function useOwnedJobs(
     const response = await JobService.updateJob(job_id, job);
     if (response.success) {
       // @ts-ignore
-      const job = response.job;
-      const old_job = ownedJobs.filter((oj) => oj.id === job.id)[0] ?? {};
-      set_cache([
-        { ...old_job, ...job },
-        ...ownedJobs.filter((oj) => oj.id !== job.id),
-      ]);
+      const updatedJob = response.job;
+      const old_job = ownedJobs.filter((oj) => oj.id === job_id)[0] ?? {};
+      
+      const newJobs = [
+        { ...old_job, ...updatedJob },
+        ...ownedJobs.filter((oj) => oj.id !== job_id),
+      ]
+      
+      set_cache(newJobs);
       setOwnedJobs(get_cache() ?? []);
     }
     return response;

@@ -20,7 +20,7 @@ export function GenerateButtons({
 }: Props) {
   const withEsignLabel = "Generate & Initiate E-sign";
   const withoutEsignLabel = !noEsign
-    ? "Generate Form (no e-sign)"
+    ? "Generate for Manual Signing"
     : "Generate Form";
 
   const withEsignLoading = "Requesting e-sign...";

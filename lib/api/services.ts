@@ -1,4 +1,3 @@
-import { FetchResponse } from "@/lib/api/use-fetch";
 import {
   Conversation,
   Employer,
@@ -7,6 +6,7 @@ import {
   PublicUser,
   SavedJob,
   UserApplication,
+  User,
 } from "@/lib/db/db.types";
 import { APIClient, APIRouteBuilder } from "./api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
@@ -58,6 +58,27 @@ export const EmployerService = {
     );
   },
 };
+
+interface EmployerUserResponse extends FetchResponse {
+  success: boolean;
+  message: string;
+}
+
+export const EmployerUserService = {
+  async requestPasswordReset(email: string) {
+    return APIClient.post<EmployerUserResponse>(
+      APIRouteBuilder("employer-users").r("forgot-password").build(),
+      { email },
+    );
+  },
+
+  async resetPassword(hash: string, newPassword: string) {
+    return APIClient.post<EmployerUserResponse>(
+      APIRouteBuilder("employer-users").r("reset-password", hash).build(),
+      { newPassword },
+    );
+  },
+}
 
 // Auth Services
 interface AuthResponse extends FetchResponse {
@@ -121,6 +142,10 @@ export const AuthService = {
 };
 interface UserResponse extends FetchResponse {
   user: PublicUser;
+}
+
+interface StudentResponse extends FetchResponse {
+  users: User[];
 }
 
 interface SaveJobResponse extends FetchResponse {
@@ -284,6 +309,12 @@ export const UserService = {
       { id: jobId },
     );
   },
+
+  async getUserById(userId: string): Promise<StudentResponse> {
+    return APIClient.get<StudentResponse>(
+      APIRouteBuilder("users").r(userId).build(),
+    );
+  },
 };
 
 // Job Services
@@ -308,8 +339,16 @@ export const JobService = {
     return APIClient.get<JobsResponse>(APIRouteBuilder("jobs").build());
   },
 
+  // !! this only fetches an *active* job.
   async getJobById(jobId: string) {
     return APIClient.get<JobResponse>(APIRouteBuilder("jobs").r(jobId).build());
+  },
+
+  // sorry for confusing name
+  // the one above existed prior and i don't want to break anything that depends on it
+  // this one gets a single job, whether it is active or not.
+  async getAnyJobById(jobId: string) {
+    return APIClient.get<JobResponse>(APIRouteBuilder("jobs").r("owned").r(jobId).build());
   },
 
   async getSavedJobs() {
@@ -355,6 +394,7 @@ interface ConversationsResponse extends FetchResponse {
 
 export const EmployerConversationService = {
   async sendToUser(conversationId: string, message: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return APIClient.post<any>(
       APIRouteBuilder("conversations").r("send-to-user").build(),
       {
@@ -374,6 +414,7 @@ export const EmployerConversationService = {
 
 export const UserConversationService = {
   async sendToEmployer(conversationId: string, message: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return APIClient.post<any>(
       APIRouteBuilder("conversations").r("send-to-employer").build(),
       {
@@ -469,12 +510,14 @@ export const ApplicationService = {
 export const handleApiError = (error: any) => {
   console.error("API Error:", error);
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   if (error.message === "Unauthorized") {
     // Already handled by apiClient
     return;
   }
 
   // ! Show toast notifications here
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
   return error.message || "An unexpected error occurred";
 };
 

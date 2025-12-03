@@ -20,6 +20,7 @@ import { DropdownGroup } from "../ui/dropdown";
 import { Property } from "../ui/labels";
 import { Toggle } from "../ui/toggle";
 import { useMobile } from "@/hooks/use-mobile";
+import { useAppContext } from "@/lib/ctx-app";
 
 export const JobHead = ({
   title,
@@ -432,7 +433,10 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
               <label className="flex items-center text-sm text-gray-700">
                 Work Mode:
               </label>
-              <Property value={workModes} />
+              <Property
+                key="work_modes"
+                value={workModes}
+              />
             </div>
           </div>
 
@@ -442,7 +446,10 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
               <label className="flex items-center text-sm text-gray-700">
                 Work Load:
               </label>
-              <Property value={workLoads} />
+              <Property 
+                key="workload"
+                value={workLoads}
+              />
             </div>
           </div>
 
@@ -453,6 +460,7 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
                 Salary:
               </label>
               <Property
+                key="salary"
                 value={
                   job.salary
                     ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
@@ -468,7 +476,10 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
               <label className="flex items-center text-sm text-gray-700">
                 Accepting:
               </label>
-              <Property value={internshipTypes} />
+              <Property 
+                key="internship_type"
+                value={internshipTypes}
+              />
             </div>
           </div>
         </DropdownGroup>
@@ -1001,6 +1012,8 @@ export function JobDetails({
   const missingRequired =
     (needsGithub && !hasGithub) || (needsPortfolio && !hasPortfolio);
 
+  const { isMobile } = useAppContext();
+
   return (
     <>
       {user !== undefined && (
@@ -1010,7 +1023,12 @@ export function JobDetails({
           needsPortfolio={needsPortfolio && !hasPortfolio}
         />
       )}
-      <div className="flex-1 px-8 pt-7 overflow-y-auto space-y-5">
+      <div className={cn(
+        "flex-1 overflow-y-auto space-y-5",
+        isMobile 
+          ? "px-3 py-4" 
+          : "px-8 pt-7"
+      )}>
         <HeaderWithActions
           job={job}
           actions={actions}
