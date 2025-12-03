@@ -11,3 +11,8 @@ npm install --legacy-peer-deps
 ```bash
 npm run dev
 ```
+
+## Jest Testing
+```bash
+npm run test
+```
