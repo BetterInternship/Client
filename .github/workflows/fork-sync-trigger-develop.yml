@@ -60,9 +60,10 @@ jobs:
             STATUS="❌ **DEV** Jest Failed"
           fi
 
+          MESSAGE="${STATUS}\n```${LOG_CONTENT}```"
           curl -H "Content-Type: application/json" \
             -d '{
-              "content": "'"$STATUS\n```$LOG_CONTENT```"'",
+              "content": "'"$MESSAGE"'",
               "allowed_mentions": { "roles": ["'"$ROLE_ID"'"] }
             }' \
             ${{ secrets.TESTING_DISCORD_WEBHOOK_URL }}
