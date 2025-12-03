@@ -47,7 +47,7 @@ jobs:
         run: |
           set +e
           # Run Jest and pipe output to file
-          npm run test -- --no-color --passWithNoTests
+          npm run test
           TEST_EXIT_CODE=$?
           
           # Prepare log for Discord (Tail last 1500 chars, escape quotes/newlines for JSON)

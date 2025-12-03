@@ -6,13 +6,13 @@ FAIL tests/utils.test.ts
     Expected number of calls: >= 1
     Received number of calls:    0
 
-    [0m [90m 197 |[39m         [33m.[39mmockImplementation(() [33m=>[39m {})[33m;[39m
-     [90m 198 |[39m       expect(normalizePhoneNumber([32m"1234567890"[39m))[33m.[39mtoBe([36mnull[39m)[33m;[39m
-    [31m[1m>[22m[39m[90m 199 |[39m       expect(consoleWarnSpy)[33m.[39mtoHaveBeenCalled()[33m;[39m
-     [90m     |[39m                              [31m[1m^[22m[39m
-     [90m 200 |[39m       consoleWarnSpy[33m.[39mmockRestore()[33m;[39m
-     [90m 201 |[39m     })[33m;[39m
-     [90m 202 |[39m   })[33m;[39m[0m
+      197 |         .mockImplementation(() => {});
+      198 |       expect(normalizePhoneNumber("1234567890")).toBe(null);
+    > 199 |       expect(consoleWarnSpy).toHaveBeenCalled();
+          |                              ^
+      200 |       consoleWarnSpy.mockRestore();
+      201 |     });
+      202 |   });
 
       at Object.<anonymous> (tests/utils.test.ts:199:30)
 
@@ -21,5 +21,5 @@ PASS lib/api/__tests__/JobService.test.ts
 Test Suites: 1 failed, 1 passed, 2 total
 Tests:       1 failed, 50 passed, 51 total
 Snapshots:   0 total
-Time:        0.587 s, estimated 1 s
+Time:        0.59 s, estimated 1 s
 Ran all test suites.
