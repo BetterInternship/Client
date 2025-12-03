@@ -1,10 +1,9 @@
-it('prevents invalid credentials from logging in', () => {
-  cy.visit('http://hire.localhost:3000/login')
+it("prevents invalid credentials from logging in", () => {
+  cy.visit("http://hire.localhost:3000/login");
 
-  //NEED TO FIX
-  cy.get('input[placeholder="Email Address"]').type("fakeemail@gmail.com")
-  cy.get('input[placeholder="Password..."]').type("fakepassword")
-  cy.get('button[type="submit"]').click()
+  cy.get('input[type="email"]').type("fakeemail@gmail.com");
+  cy.get('input[type="password"]').type("fakepassword");
+  cy.get('button[type="submit"]').click();
 
-  cy.contains("Invalid password.")
-})
+  cy.contains("Invalid password.");
+});
