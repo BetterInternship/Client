@@ -52,6 +52,10 @@ jobs:
           
           # Prepare log for Discord (Tail last 1500 chars, escape quotes/newlines for JSON)
           LOG_CONTENT=$(tail -c 1800 jest.log)
+          echo "LOG"
+          echo $LOG_CONTENT
+          echo "LOG"
+          echo jest.log
           
           if [ $TEST_EXIT_CODE -eq 0 ]; then
             STATUS="✅ **DEV** Jest Passed"

@@ -21,5 +21,5 @@ PASS lib/api/__tests__/JobService.test.ts
 Test Suites: 1 failed, 1 passed, 2 total
 Tests:       1 failed, 50 passed, 51 total
 Snapshots:   0 total
-Time:        0.607 s, estimated 1 s
+Time:        0.587 s, estimated 1 s
 Ran all test suites.
