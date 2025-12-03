@@ -8,7 +8,7 @@ it("Student tries to find a job listing; will fail if search didnt show the job 
   cy.url().should("contain", "preload");
 
   cy.get('input[placeholder="Search Internship Listings"]').type(
-    "cypress test job listing {enter}",
+    "cypress test job listing{enter}",
   );
 
   cy.contains("Job Details").parent().parent().within(() => {
@@ -18,7 +18,7 @@ it("Student tries to find a job listing; will fail if search didnt show the job 
   
 });
 
-it("Student has to click the left panel to show the job listing searched", () => {
+it("Student has to click the left panel to show the job listing searched; apply but cancel", () => {
   // This handles the authentication; if u wanna use another account, just replace the email in the link
   cy.visit(
     "http://localhost:5000/api/auth/google/cypress/janica_megan_reyes@dlsu.edu.ph",
@@ -41,7 +41,7 @@ it("Student has to click the left panel to show the job listing searched", () =>
 
 });
 
-it("Student tries to apply and cant apply because there is no portfolio link added by the student", () => {
+it("Student tries to apply and submit", () => {
   
   cy.visit(
     "http://localhost:5000/api/auth/google/cypress/janica_megan_reyes@dlsu.edu.ph",
@@ -60,7 +60,8 @@ it("Student tries to apply and cant apply because there is no portfolio link add
     cy.contains("cypress test job listing");
     cy.contains("Apply Now").click();
   });
-  cy.contains("Submit Application").should("be.disabled");
+  cy.contains("Submit Application").click();
+  
   
 
 });

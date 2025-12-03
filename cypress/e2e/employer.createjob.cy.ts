@@ -1,6 +1,6 @@
 it("Employer make a new Job", function () {
   cy.loginAsEmployer();
-  
+
   cy.visit("http://hire.localhost:3000/dashboard");
 
   
@@ -106,12 +106,16 @@ it("Employer make a new Job", function () {
     cy.get("[data-state=unchecked]")
     cy.get("button").click()
     cy.get("[data-state=checked]")
+    cy.get("button").click()
+    cy.get("[data-state=unchecked]")
   });
 
   cy.contains("Cover Letter").parent().parent().within(() => {
     cy.get("[data-state=unchecked]")
     cy.get("button").click()
     cy.get("[data-state=checked]")
+    cy.get("button").click()
+    cy.get("[data-state=unchecked]")
   });
 
   cy.contains("Publish Listing").should("be.enabled").click();
