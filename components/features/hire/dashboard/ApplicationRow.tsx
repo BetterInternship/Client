@@ -100,7 +100,6 @@ export function ApplicationRow({
           <FormCheckbox
             checked={checkboxSelected}
             setter={(v: boolean) => onToggleSelect?.(!!v)}
-            className="w-6 h-6"
           />
           <h4 className="text-gray-900 text-base">{getFullName(application.user)}</h4>
         </div>

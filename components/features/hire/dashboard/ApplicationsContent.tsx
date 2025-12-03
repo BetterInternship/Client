@@ -17,6 +17,7 @@ import { updateApplicationStatus } from "@/lib/api/services";
 import { statusMap } from "@/components/common/status-icon-map";
 import { type ActionItem } from "@/components/ui/action-item";
 import { Toast } from "@/components/ui/toast";
+import { AnimatePresence, easeOut, motion } from "framer-motion";
 
 interface ApplicationsContentProps {
   applications: EmployerApplication[];
@@ -129,6 +130,8 @@ export function ApplicationsContent({
 
       if (response) {
         onStatusChange(application, status);
+        setToastMessage(`Applicant status changed.`);
+        setToastVisible(true);
       }
     } catch (error) {
       console.error("Critical error occurred during status update: ", error);
@@ -264,44 +267,62 @@ export function ApplicationsContent({
           unselectAll()
         }}
       />
-      <CommandMenu
-        items={remove_unused_statuses}
-        isVisible={commandBarsVisible}
-        defaultVisible={true}
-        position="bottom"
-        undocked={false}
-      />
-      <CommandMenu
-        items={[
-          [
-            {
-              id: "cancel",
-              icon: X,
-              onClick: unselectAll,
-            },
-            `${selectedApplications.size} selected`,
-          ],
-          [
-            {
-              id: "select_all",
-              label: allVisibleSelected ? "Unselect all" : "Select all" ,
-              icon: CheckSquare,
-              onClick: toggleSelectAll,
-            },
-            {
-              id: "delete",
-              label: "Delete",
-              icon: Trash,
-              destructive: true,
-              onClick: () => updateStatus(7),
-            },
-          ],
-        ]}
-        isVisible={commandBarsVisible}
-        defaultVisible={true}
-        position="top"
-        undocked={false}
-      />
+      <AnimatePresence>
+        {commandBarsVisible && (
+          <>
+            <motion.div
+              className="fixed bottom-4 z-[1000] shadow-xl w-max"
+              initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
+              animate={{ scale: 1, filter: "blur(0px)", opacity: 1, x: "-50%" }}
+              exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              style={{ left: "50%" }}
+            >
+              <CommandMenu
+                buttonLayout="vertical"
+                items={remove_unused_statuses}
+              />
+            </motion.div>
+            <motion.div
+              className="fixed top-20 z-[1000] shadow-xl w-max mx-2"
+              initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
+              animate={{ scale: 1, filter: "blur(0px)", opacity: 1, x: "-50%" }}
+              exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              style={{ left: "50%" }}
+            >
+              <CommandMenu
+                buttonLayout="vertical"
+                items={[
+                  [
+                    {
+                      id: "cancel",
+                      icon: X,
+                      onClick: unselectAll,
+                    },
+                    `${selectedApplications.size} selected`,
+                  ],
+                  [
+                    {
+                      id: "select_all",
+                      label: allVisibleSelected ? "Unselect all" : "Select all" ,
+                      icon: CheckSquare,
+                      onClick: toggleSelectAll,
+                    },
+                    {
+                      id: "delete",
+                      label: "Delete",
+                      icon: Trash,
+                      destructive: true,
+                      onClick: () => updateStatus(7),
+                    },
+                  ],
+                ]}
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
       <div className="flex flex-col gap-2">
         {visibleApplications.length ? (
           visibleApplications.map((application) => (
@@ -343,38 +364,49 @@ export function ApplicationsContent({
           unselectAll()
         }}
       />
-      <CommandMenu
-        items={[
-          [
-            {
-              id: "cancel",
-              icon: X,
-              onClick: unselectAll,
-            },
-            `${selectedApplications.size} selected`,
-          ],
-          remove_unused_statuses,
-          [
-            {
-              id: "select_all",
-              label: allVisibleSelected ? "Unselect all" : "Select all" ,
-              icon: CheckSquare,
-              onClick: toggleSelectAll,
-            },
-            {
-              id: "delete",
-              label: "Delete",
-              icon: Trash,
-              destructive: true,
-              onClick: () => updateStatus(7),
-            },
-          ],
-        ]}
-        isVisible={commandBarsVisible}
-        defaultVisible={true}
-        position="bottom"
-        undocked={true}
-      />
+      <AnimatePresence>
+        {commandBarsVisible && (
+          <>
+          <motion.div
+            className="fixed bottom-4 z-[1000] shadow-xl w-max"
+            initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
+            animate={{ scale: 1, filter: "blur(0px)", opacity: 1, x: "-50%", backdropFilter: "blur(50%)" }}
+            exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            style={{ left: "50%" }}
+          >
+            <CommandMenu
+              items={[
+                [
+                  {
+                    id: "cancel",
+                    icon: X,
+                    onClick: unselectAll,
+                  },
+                  `${selectedApplications.size} selected`,
+                ],
+                remove_unused_statuses,
+                [
+                  {
+                    id: "select_all",
+                    label: allVisibleSelected ? "Unselect all" : "Select all" ,
+                    icon: CheckSquare,
+                    onClick: toggleSelectAll,
+                  },
+                  {
+                    id: "delete",
+                    label: "Delete",
+                    icon: Trash,
+                    destructive: true,
+                    onClick: () => updateStatus(7),
+                  },
+                ],
+              ]}
+            />
+          </motion.div>
+        </>
+        )}
+      </AnimatePresence>
       <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-200 border text-sm rounded-md overflow-visible">
         <thead className="bg-gray-100">
           <tr className="text-left">
