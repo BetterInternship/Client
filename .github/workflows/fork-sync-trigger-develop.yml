@@ -64,7 +64,7 @@ jobs:
           fi
 
           ROLE_ID="1430152257072271376"
-          MESSAGE="${STATUS}\n${LOG_CONTENT}"
+          MESSAGE="${STATUS}\n\`\`\`${LOG_CONTENT}\`\`\`"
           curl -H "Content-Type: application/json" \
             -d '{
               "content": "'"$MESSAGE"'",
