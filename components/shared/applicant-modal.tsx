@@ -36,7 +36,7 @@ export const ApplicantModalContent = ({
   pfp_fetcher: () => Promise<{ hash?: string }>;
   pfp_route: string;
   open_resume: () => void;
-  open_calendar: () => void;
+  open_calendar?: () => void;
   is_employer?: boolean;
   job?: Partial<Job>;
   resume_url?: string;

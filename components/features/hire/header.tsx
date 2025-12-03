@@ -144,16 +144,6 @@ export const ProfileButton = () => {
             {displayName}
           </>
         }
-        content={
-          <div className="px-4 py-3 border-b border-gray-200">
-            <p className="text-sm font-medium text-gray-900">
-              {getFullName(user)}
-            </p>
-            <p className="text-xs text-gray-500 text-ellipsis overflow-hidden">
-              {user?.email}
-            </p>
-          </div>
-        }
       >
         <DropdownOption href="/company-profile">
           <Building className="w-4 h-4 inline-block m-1 mr-2" />
