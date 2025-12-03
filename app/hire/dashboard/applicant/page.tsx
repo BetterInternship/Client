@@ -19,6 +19,7 @@ function ApplicantPageContent () {
     const [loading, setLoading] = useState(true);
     const applications = useEmployerApplications();
     const userApplication = applications?.employer_applications.find(a => userId === a.user_id)
+    const otherApplications = applications?.employer_applications.filter(a => userId === a.user_id && a.id !== userApplication?.id)
     const { app_statuses } = useDbRefs();
 
     useEffect(() => {
@@ -71,6 +72,7 @@ function ApplicantPageContent () {
                 <ApplicantPage 
                 application={userApplication}
                 statuses={getStatuses(userApplication?.id || "")}
+                userApplications={otherApplications}
                 />
             </div>
         </ContentLayout>
