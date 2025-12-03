@@ -19,8 +19,6 @@ describe("Using the Search or Filter", () => {
   });
   
   it("Student filters for 'For Credit' and verifies DLSU MOA badge on all results", () => {
-  cy.visit("http://localhost:3000/search");
-
   // click Filter
   cy.contains("button", "FOR CREDIT").click();
 
