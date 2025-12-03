@@ -1,4 +1,4 @@
-it("Employer changes the status of an application", function () {
+it("Employer checks the applicants of a job listing", function () {
   //cy.loginAsEmployer();
   cy.visit("http://hire.localhost:3000/login");
 
@@ -6,14 +6,7 @@ it("Employer changes the status of an application", function () {
   cy.get('input[type="password"]').type("6m*=&LNM7+");
   cy.get('button[type="submit"]').click();
 
-  cy.visit("http://hire.localhost:3000/dashboard");
+  //cy.visit("http://hire.localhost:3000/dashboard");
   cy.contains("Job listings").click();
   cy.contains("Intestship 102").click();
-
-
-
-
-
-
-
 });

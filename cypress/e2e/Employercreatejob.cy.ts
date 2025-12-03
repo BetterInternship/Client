@@ -1,11 +1,11 @@
 it("Employer make a new Job", function () {
-  //cy.loginAsEmployer();
-  cy.visit("http://hire.localhost:3000/login");
-  cy.get('input[type="email"]').type("janicamegan@gmail.com");
-  cy.get('input[type="password"]').type("6m*=&LNM7+");
-  cy.get('button[type="submit"]').click();
-  //cy.visit("http://hire.localhost:3000/dashboard");
-  
+  cy.loginAsEmployer();
+  // cy.visit("http://hire.localhost:3000/login");
+  // cy.get('input[type="email"]').type("janicamegan@gmail.com");
+  // cy.get('input[type="password"]').type("6m*=&LNM7+");
+  // cy.get('button[type="submit"]').click();
+  cy.visit("http://hire.localhost:3000/dashboard");
+
   
   cy.contains("Add Listing").click();
   cy.url().should("include", "/listings/create");

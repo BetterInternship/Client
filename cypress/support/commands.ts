@@ -5,8 +5,8 @@ Cypress.Commands.add("loginAsEmployer", () => {
     method: "POST",
     url: "http://localhost:5000/api/auth/hire/login",
     body: {
-      email: "yoy424051@gmail.com",
-      password: "we have one of the strongest passwords ever lol",
+      email: "janicamegan@gmail.com",
+      password: "6m*=&LNM7+",
     },
   }).then((resp) => {
     const token = (resp.body as { token: string }).token;
