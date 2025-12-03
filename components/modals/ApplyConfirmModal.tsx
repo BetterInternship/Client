@@ -32,7 +32,8 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
 
   const needsGH = !!job?.internship_preferences?.require_github;
   const needsPF = !!job?.internship_preferences?.require_portfolio;
-  const needsCL = (job?.internship_preferences?.require_cover_letter ?? true) === true;
+  const needsCL =
+    (job?.internship_preferences?.require_cover_letter ?? true) === true;
 
   const hasGH = !!profile.data?.github_link?.trim();
   const hasPF = !!profile.data?.portfolio_link?.trim();
@@ -102,7 +103,7 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
             </div>
             <CoverLetterInput
               ref={coverRef}
-              defaultValue=""
+              defaultValue={coverRef.current?.getValue()}
               error={coverError}
               maxLength={500}
             />
@@ -186,7 +187,7 @@ const CoverLetterInput = React.memo(
       helper?: string;
       maxLength?: number;
     },
-    ref: React.Ref<CoverLetterHandle>
+    ref: React.Ref<CoverLetterHandle>,
   ) {
     const taRef = useRef<HTMLTextAreaElement | null>(null);
     const [count, setCount] = useState(defaultValue?.length ?? 0);
@@ -197,7 +198,7 @@ const CoverLetterInput = React.memo(
         getValue: () => taRef.current?.value ?? "",
         focus: () => taRef.current?.focus(),
       }),
-      []
+      [],
     );
 
     return (
@@ -232,7 +233,7 @@ Best regards,
         </div>
       </div>
     );
-  })
+  }),
 );
 
 const RequirementsChecklist = React.memo(function RequirementsChecklist({

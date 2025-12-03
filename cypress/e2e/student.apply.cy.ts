@@ -1,4 +1,4 @@
-describe("Using the Search or Filter", () => {
+describe("Student Application Flows", () => {
   beforeEach(() => {
     // This handles the authentication; if u wanna use another account, just replace the email in the link
     cy.visit(
@@ -41,8 +41,9 @@ describe("Using the Search or Filter", () => {
         cy.contains("Apply Now").click();
       });
 
-    cy.get("textarea").click().type("A sample cover letter");
+    cy.get("textarea").click();
     cy.wait(1000); // pretend the student is thinking about his life decisions before applying
+    cy.get("textarea").type("A sample cover letter");
     cy.contains("Submit Application").click();
     cy.contains("Application Sent!");
   });
