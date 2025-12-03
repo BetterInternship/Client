@@ -55,13 +55,16 @@ jobs:
           LOG_CONTENT=$(tail -c 1800 jest.log)
           
           if [ $TEST_EXIT_CODE -eq 0 ]; then
-            STATUS="✅ Jest Passed"
+            STATUS="✅ **DEV** Jest Passed"
           else
-            STATUS="❌ Jest Failed"
+            STATUS="❌ **DEV** Jest Failed"
           fi
 
           curl -H "Content-Type: application/json" \
-            -d "{\"content\": \"**$STATUS**\n\`\`\`text\n$LOG_CONTENT\n\`\`\`\"}" \
+            -d '{
+              "content": "'"$STATUS\n```$LOG_CONTENT```"'",
+              "allowed_mentions": { "roles": ["'"$ROLE_ID"'"] }
+            }' \
             ${{ secrets.TESTING_DISCORD_WEBHOOK_URL }}
 
           set -e
