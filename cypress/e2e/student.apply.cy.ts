@@ -60,8 +60,36 @@ it("Student tries to apply and submit", () => {
     cy.contains("cypress test job listing");
     cy.contains("Apply Now").click();
   });
-  cy.contains("Submit Application").click();
+  cy.contains("Submit Application").should("be.enabled");
   
-  
+});
 
+it("Student saves the job then uses the apply now button", () => {
+  
+  cy.visit(
+    "http://localhost:5000/api/auth/google/cypress/janica_megan_reyes@dlsu.edu.ph",
+  );
+
+  // This happens automatically, don't change this line
+  cy.url().should("contain", "preload");
+
+  cy.get('input[placeholder="Search Internship Listings"]').type(
+    "cypress test job listing{enter}",
+  );
+  //make sure we are applying to the right job
+  cy.contains("cypress test job listing").click();
+
+  cy.contains("Job Details").parent().parent().within(() => {
+    cy.contains("cypress test job listing");
+    cy.contains("Save").click();
+    cy.contains("Saved");
+  });
+  cy.contains("Janica Megan Reyes").click();
+  cy.contains("Saved Jobs").click();
+  cy.contains("cypress test job listing").parent().parent().within(() => {
+    cy.contains("View Details").click();
+  });
+  cy.contains("Saved");
+  cy.contains("Apply Now").click();
+  cy.contains("Submit Application").click();
 });
