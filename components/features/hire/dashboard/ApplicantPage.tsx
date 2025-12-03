@@ -40,7 +40,6 @@ export function ApplicantPage({
     const { isMobile } = useAppContext();
 
     const {
-        to_job_type_name,
         to_university_name,
         job_modes,
         job_types,
@@ -109,22 +108,38 @@ export function ApplicantPage({
                             </div>
                             {/* actions */}
                             <div className={cn("flex items-center gap-2 my-4", isMobile ? "justify-start" : "justify-end")}>
-                                    <button className="flex items-center gap-2 text-sm text-gray-600 rounded-[0.33em] p-1.5 px-2 border border-gray-300 hover:text-gray-700 hover:bg-gray-100">
-                                        <MessageCircle className="h-5 w-5"/> Chat
-                                    </button>
-                                    <DropdownMenu
-                                        items={statuses}
-                                        defaultItem={defaultStatus}
-                                    />
+                                <button className="flex items-center gap-2 text-sm text-gray-600 rounded-[0.33em] p-1.5 px-2 border border-gray-300 hover:text-gray-700 hover:bg-gray-100">
+                                    <MessageCircle className="h-5 w-5"/> Chat
+                                </button>
+                                <DropdownMenu
+                                    items={statuses}
+                                    defaultItem={defaultStatus}
+                                />
                             </div>
+                        </div>
+                        {/* other roles *note: will make this look better */}
+                        <div className="flex my-2 mt-4">
+                            <p className="text-sm text-gray-500">Other roles applied for: </p>
+                                <div className="flex">
+                                    {userApplications?.length !== 0 ? (
+                                        userApplications?.map((a) => 
+                                        <p className="text-gray-500 text-sm ml-1">
+                                            {a.job?.title}
+                                            {a !== userApplications?.at(-1) && <>, </>}
+                                        </p>
+                                    )) : (
+                                        <p className="text-gray-500 text-sm"> No other applied roles</p>
+                                    )
+                                    }
+                                </div>
                         </div>
                     </div>
 
                     {isMobile ? (
                         <>
                             <HorizontalCollapsible
-                                className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200 mt-4"
-                                title="Academic Information"
+                            className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200 mt-4"
+                            title="Academic Information"
                             >
                                 <div className="grid gap-2">
                                     <div className={cn(isMobile ? "flex justify-between" : "")}>
@@ -170,28 +185,26 @@ export function ApplicantPage({
                                                 {internshipPreferences?.expected_duration_hours}
                                             </p>
                                         </div>
-
                                         <div className="md:col-span-2">
                                             <Divider />
                                         </div>
-
                                         <div className="mt-2">
                                             <p className="text-xs text-gray-500">
                                                 Work Mode/s
-                                                </p>
-                                                <div className="font-medium text-gray-900">
-                                                    {(() => {
-                                                        const ids = (internshipPreferences?.job_setup_ids ?? []) as (string | number)[];
-                                                        const items = ids
-                                                        .map((id) => {
-                                                            const m = job_modes.find(
-                                                            (x) => String(x.id) === String(id)
-                                                            );
-                                                            return m ? { id: String(m.id), name: m.name } : null;
-                                                        })
-                                                        .filter(Boolean) as { id: string; name: string }[];
+                                            </p>
+                                            <div className="font-medium text-gray-900">
+                                                {(() => {
+                                                    const ids = (internshipPreferences?.job_setup_ids ?? []) as (string | number)[];
+                                                    const items = ids
+                                                    .map((id) => {
+                                                        const m = job_modes.find(
+                                                        (x) => String(x.id) === String(id)
+                                                        );
+                                                        return m ? { id: String(m.id), name: m.name } : null;
+                                                    })
+                                                    .filter(Boolean) as { id: string; name: string }[];
 
-                                                        return items.length ? (
+                                                    return items.length ? (
                                                         <div className="flex flex-wrap gap-1.5">
                                                             {items.map((it) => (
                                                             <Badge key={it.id}>{it.name}</Badge>
@@ -201,38 +214,39 @@ export function ApplicantPage({
                                                         <div className="text-sm text-muted-foreground">—</div>
                                                         );
                                                     })()}
-                                                    </div>
-                                                </div>
-                                            <div>
-                                                <p className="text-xs text-gray-500">Workload Types</p>
-                                                <div className="font-medium text-gray-900 text-sm sm:text-base">
-                                                    {(() => {
-                                                        const ids = (internshipPreferences?.job_commitment_ids ?? []) as (string | number)[];
-                                                        const items = ids
-                                                        .map((id) => {
-                                                            const t = job_types.find(
-                                                            (x) => String(x.id) === String(id)
-                                                            );
-                                                            return t ? { id: String(t.id), name: t.name } : null;
-                                                        })
-                                                        .filter(Boolean) as { id: string; name: string }[];
+                                            </div>
+                                        </div>
+                                            
+                                        <div>
+                                            <p className="text-xs text-gray-500">Workload Types</p>
+                                            <div className="font-medium text-gray-900 text-sm sm:text-base">
+                                                {(() => {
+                                                    const ids = (internshipPreferences?.job_commitment_ids ?? []) as (string | number)[];
+                                                    const items = ids
+                                                    .map((id) => {
+                                                        const t = job_types.find(
+                                                        (x) => String(x.id) === String(id)
+                                                        );
+                                                        return t ? { id: String(t.id), name: t.name } : null;
+                                                    })
+                                                    .filter(Boolean) as { id: string; name: string }[];
 
-                                                        return items.length ? (
+                                                    return items.length ? (
                                                         <div className="flex flex-wrap gap-1.5">
                                                             {items.map((it) => (
                                                             <Badge key={it.id}>{it.name}</Badge>
                                                             ))}
                                                         </div>
-                                                        ) : (
+                                                    ) : (
                                                         <div className="text-sm text-muted-foreground">—</div>
-                                                        );
-                                                    })()}
-                                                </div>
+                                                    );
+                                                })()}
+                                            </div>
                                         </div>
 
                                         <div>
-                                                <p className="text-xs text-gray-500">Positions / Categories</p>
-                                                <div className="font-medium text-gray-900 text-sm sm:text-base">
+                                            <p className="text-xs text-gray-500">Positions / Categories</p>
+                                            <div className="font-medium text-gray-900 text-sm sm:text-base">
                                                 {(() => {
                                                     const ids = (internshipPreferences?.job_category_ids ?? []) as string[];
                                                     const items = ids
@@ -252,9 +266,8 @@ export function ApplicantPage({
                                                     <div className="text-sm text-muted-foreground">—</div>
                                                     );
                                                 })()}
-                                                </div>
                                             </div>
-                                            
+                                        </div>     
                                     </div>
                                 </div>
                             </HorizontalCollapsible>
@@ -365,84 +378,83 @@ export function ApplicantPage({
                             </div>
 
                             <div className="bg-gray-50 rounded-[0.33em] p-4 border border-gray-200 mt-2">
-                                    <div className="flex items-center gap-3 mb-4 sm:mb-5">
-                                        <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
-                                            Internship Preferences
-                                        </h3>
+                                <div className="flex items-center gap-3 mb-4 sm:mb-5">
+                                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
+                                        Internship Preferences
+                                    </h3>
+                                </div>
+                                <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                                    <div className={cn(isMobile ? "flex justify-between" : "")}>
+                                        <p className={cn("text-gray-500", isMobile ? "text-sm" : "text-xs")}>Expected Start Date</p>
+                                        <p className="text-sm font-medium text-gray-900">{formatTimestampDate(internshipPreferences?.expected_start_date)}</p>
                                     </div>
-                                
-                                    <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                                        <div className={cn(isMobile ? "flex justify-between" : "")}>
-                                            <p className={cn("text-gray-500", isMobile ? "text-sm" : "text-xs")}>Expected Start Date</p>
-                                            <p className="text-sm font-medium text-gray-900">{formatTimestampDate(internshipPreferences?.expected_start_date)}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-gray-500">Expected Duration (Hours)</p>
-                                            <p className="text-sm font-medium text-gray-900">
-                                                {internshipPreferences?.expected_duration_hours}
-                                            </p>
-                                        </div>
-                                        <div className="md:col-span-2">
-                                            <Divider />
-                                        </div>
-                                        <div className="mt-2">
-                                            <p className="text-xs text-gray-500">
-                                                Work Mode/s
-                                                </p>
-                                                <div className="font-medium text-gray-900">
-                                                    {(() => {
-                                                        const ids = (internshipPreferences?.job_setup_ids ?? []) as (string | number)[];
-                                                        const items = ids
-                                                        .map((id) => {
-                                                            const m = job_modes.find(
-                                                            (x) => String(x.id) === String(id)
-                                                            );
-                                                            return m ? { id: String(m.id), name: m.name } : null;
-                                                        })
-                                                        .filter(Boolean) as { id: string; name: string }[];
+                                    <div>
+                                        <p className="text-xs text-gray-500">Expected Duration (Hours)</p>
+                                        <p className="text-sm font-medium text-gray-900">
+                                            {internshipPreferences?.expected_duration_hours}
+                                        </p>
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <Divider />
+                                    </div>
+                                    <div className="mt-2">
+                                        <p className="text-xs text-gray-500">
+                                            Work Mode/s
+                                        </p>
+                                        <div className="font-medium text-gray-900">
+                                            {(() => {
+                                                const ids = (internshipPreferences?.job_setup_ids ?? []) as (string | number)[];
+                                                const items = ids
+                                                .map((id) => {
+                                                    const m = job_modes.find(
+                                                    (x) => String(x.id) === String(id)
+                                                    );
+                                                    return m ? { id: String(m.id), name: m.name } : null;
+                                                })
+                                                .filter(Boolean) as { id: string; name: string }[];
 
-                                                        return items.length ? (
-                                                        <div className="flex flex-wrap gap-1.5">
-                                                            {items.map((it) => (
+                                                return items.length ? (
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {items.map((it) => (
                                                             <Badge key={it.id}>{it.name}</Badge>
-                                                            ))}
-                                                        </div>
-                                                        ) : (
-                                                        <div className="text-sm text-muted-foreground">—</div>
-                                                        );
-                                                    })()}
+                                                        ))}
                                                     </div>
-                                                </div>
-                                            <div>
-                                                <p className="text-xs text-gray-500">Workload Types</p>
-                                                <div className="font-medium text-gray-900 text-sm sm:text-base">
-                                                    {(() => {
-                                                        const ids = (internshipPreferences?.job_commitment_ids ?? []) as (string | number)[];
-                                                        const items = ids
-                                                        .map((id) => {
-                                                            const t = job_types.find(
-                                                            (x) => String(x.id) === String(id)
-                                                            );
-                                                            return t ? { id: String(t.id), name: t.name } : null;
-                                                        })
-                                                        .filter(Boolean) as { id: string; name: string }[];
+                                                ) : (
+                                                    <div className="text-sm text-muted-foreground">—</div>
+                                                );
+                                            })()}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-500">Workload Types</p>
+                                            <div className="font-medium text-gray-900 text-sm sm:text-base">
+                                                {(() => {
+                                                    const ids = (internshipPreferences?.job_commitment_ids ?? []) as (string | number)[];
+                                                    const items = ids
+                                                    .map((id) => {
+                                                        const t = job_types.find(
+                                                        (x) => String(x.id) === String(id)
+                                                        );
+                                                        return t ? { id: String(t.id), name: t.name } : null;
+                                                    })
+                                                    .filter(Boolean) as { id: string; name: string }[];
 
-                                                        return items.length ? (
+                                                    return items.length ? (
                                                         <div className="flex flex-wrap gap-1.5">
                                                             {items.map((it) => (
                                                             <Badge key={it.id}>{it.name}</Badge>
                                                             ))}
                                                         </div>
-                                                        ) : (
+                                                    ) : (
                                                         <div className="text-sm text-muted-foreground">—</div>
-                                                        );
-                                                    })()}
-                                                </div>
+                                                    );
+                                                })()}
+                                            </div>
                                         </div>
 
                                         <div>
-                                                <p className="text-xs text-gray-500">Positions / Categories</p>
-                                                <div className="font-medium text-gray-900 text-sm sm:text-base">
+                                            <p className="text-xs text-gray-500">Positions / Categories</p>
+                                            <div className="font-medium text-gray-900 text-sm sm:text-base">
                                                 {(() => {
                                                     const ids = (internshipPreferences?.job_category_ids ?? []) as string[];
                                                     const items = ids
@@ -462,96 +474,80 @@ export function ApplicantPage({
                                                     <div className="text-sm text-muted-foreground">—</div>
                                                     );
                                                 })()}
-                                                </div>
                                             </div>
-                                            
+                                        </div>   
                                     </div>
                                 </div>
 
-                            {/* Contact & Links */}
-                            <div className="bg-gray-50 rounded-[0.33em] p-4 border border-gray-200 mt-2">
-                                {/* <div className="flex items-center gap-3 mb-4 sm:mb-5">
-                                <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
-                                    Contact & Professional Links
-                                </h3>
-                                </div> */}
-                                <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                                <div>
-                                    <p className="text-xs text-gray-500">Phone Number</p>
-                                    <p className="text-sm font-medium text-gray-900">
-                                    {user?.phone_number || "Not provided"}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-gray-500">Portfolio</p>
-                                    {user?.portfolio_link ? (
-                                    <a
-                                        href={user?.portfolio_link}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-600 hover:underline font-medium break-all text-sm"
-                                    >
-                                        View Portfolio
-                                    </a>
-                                    ) : (
-                                    <p className="text-sm font-medium text-gray-900">
-                                        Not provided
-                                    </p>
-                                    )}
-                                </div>
-                                <div>
-                                    <p className="text-xs text-gray-500">GitHub</p>
-                                    {user?.github_link ? (
-                                    <a
-                                        href={user?.github_link}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-600 hover:underline font-medium break-all text-sm"
-                                    >
-                                        View GitHub
-                                    </a>
-                                    ) : (
-                                    <p className="font-medium text-gray-900 text-sm">
-                                        Not provided
-                                    </p>
-                                    )}
-                                </div>
-                                <div>
-                                    <p className="text-xs text-gray-500">LinkedIn</p>
-                                    {user?.linkedin_link ? (
-                                    <a
-                                        href={user?.linkedin_link}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-600 hover:underline font-medium break-all text-sm"
-                                    >
-                                        View LinkedIn
-                                    </a>
-                                    ) : (
-                                    <p className="font-medium text-gray-900 text-sm">
-                                        Not provided
-                                    </p>
-                                    )}
-                                </div>
+                                {/* Contact & Links */}
+                                <div className="bg-gray-50 rounded-[0.33em] p-4 border border-gray-200 mt-2">
+                                    {/* <div className="flex items-center gap-3 mb-4 sm:mb-5">
+                                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
+                                        Contact & Professional Links
+                                    </h3>
+                                    </div> */}
+                                    <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                                    <div>
+                                        <p className="text-xs text-gray-500">Phone Number</p>
+                                        <p className="text-sm font-medium text-gray-900">
+                                        {user?.phone_number || "Not provided"}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500">Portfolio</p>
+                                        {user?.portfolio_link ? (
+                                        <a
+                                            href={user?.portfolio_link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 hover:underline font-medium break-all text-sm"
+                                        >
+                                            View Portfolio
+                                        </a>
+                                        ) : (
+                                        <p className="text-sm font-medium text-gray-900">
+                                            Not provided
+                                        </p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500">GitHub</p>
+                                        {user?.github_link ? (
+                                        <a
+                                            href={user?.github_link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 hover:underline font-medium break-all text-sm"
+                                        >
+                                            View GitHub
+                                        </a>
+                                        ) : (
+                                        <p className="font-medium text-gray-900 text-sm">
+                                            Not provided
+                                        </p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500">LinkedIn</p>
+                                        {user?.linkedin_link ? (
+                                        <a
+                                            href={user?.linkedin_link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 hover:underline font-medium break-all text-sm"
+                                        >
+                                            View LinkedIn
+                                        </a>
+                                        ) : (
+                                        <p className="font-medium text-gray-900 text-sm">
+                                            Not provided
+                                        </p>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </>
                     )}
-
-                    {/* other roles *note: will make this look better */}
-                    <div className="flex mt-2">
-                        <p className="text-sm text-primary">Other roles applied for: </p>
-                            {userApplications?.length !== 0 ? (
-                            userApplications?.map((a) => 
-                                <p className="text-sm ml-1">
-                                    {a.job?.title}
-                                    {a !== userApplications?.at(-1) && <>, </>}
-                                </p>
-                            )) : (
-                                    <p className="text-sm"> No other applied roles</p>
-                                )
-                            }
-                    </div>
                 </div>
 
                 {/* resume */}
