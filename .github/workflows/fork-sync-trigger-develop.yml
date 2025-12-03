@@ -64,12 +64,15 @@ jobs:
           fi
 
           ROLE_ID="1430152257072271376"
-          MESSAGE="${STATUS}\n\`\`\`${LOG_CONTENT}\`\`\`"
+          jq -n \
+            --arg content "**$STATUS**
+            \`\`\`text
+            $LOG_CONTENT
+            \`\`\`" \
+              '{content: $content}' >payload.json
+
           curl -H "Content-Type: application/json" \
-            -d '{
-              "content": "'"$MESSAGE"'",
-              "allowed_mentions": { "roles": ["'"$ROLE_ID"'"] }
-            }' \
+            -d @payload.json \
             ${{ secrets.TESTING_DISCORD_WEBHOOK_URL }}
 
           set -e
