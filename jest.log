@@ -1,25 +1,8 @@
-FAIL tests/utils.test.ts
-  ● Utility Functions › normalizePhoneNumber › should return null for non-PH-mobile-formatted numbers and log a warning
-
-    expect(jest.fn()).toHaveBeenCalled()
-
-    Expected number of calls: >= 1
-    Received number of calls:    0
-
-      197 |         .mockImplementation(() => {});
-      198 |       expect(normalizePhoneNumber("1234567890")).toBe(null);
-    > 199 |       expect(consoleWarnSpy).toHaveBeenCalled();
-          |                              ^
-      200 |       consoleWarnSpy.mockRestore();
-      201 |     });
-      202 |   });
-
-      at Object.<anonymous> (tests/utils.test.ts:199:30)
-
+PASS tests/utils.test.ts
 PASS lib/api/__tests__/JobService.test.ts
 
-Test Suites: 1 failed, 1 passed, 2 total
-Tests:       1 failed, 50 passed, 51 total
+Test Suites: 2 passed, 2 total
+Tests:       51 passed, 51 total
 Snapshots:   0 total
-Time:        0.608 s, estimated 1 s
+Time:        0.722 s, estimated 1 s
 Ran all test suites.

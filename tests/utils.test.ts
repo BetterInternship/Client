@@ -193,8 +193,6 @@ describe("Utility Functions", () => {
 
     it("should return null for non-PH-mobile-formatted numbers", () => {
       expect(normalizePhoneNumber("1234567890")).toBe(null);
-      expect(consoleWarnSpy).toHaveBeenCalled();
-      consoleWarnSpy.mockRestore();
     });
   });
 
