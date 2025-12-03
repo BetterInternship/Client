@@ -7,7 +7,7 @@ import { useMobile } from "@/hooks/use-mobile";
 import { EmployerApplication, Job } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { cn } from "@/lib/utils";
-import { Building } from 'lucide-react';
+import { Building, Check, Pause } from 'lucide-react';
 import { useRouter } from "next/navigation";
 
 
@@ -60,14 +60,17 @@ export function JobListingsBox({
                         )}>
                             {job.title}
                         </h1>
-                        <BoolBadge
-                            state={job.is_active}
-                            onValue="Active"
-                            offValue="Paused"
-                            onScheme="primary"
-                            offScheme="default"
-                            className="justify-self-end"
-                        />
+                        <Badge
+                            strength="default"
+                            type="default"
+                            className={job.is_active ? "border-primary text-primary gap-2" : "gap-2"}
+                        >
+                            {job.is_active
+                                ? <Check size={16} />
+                                : <Pause size={16} />
+                            }
+                            <span>{job.is_active ? "Active" : "Paused"}</span>
+                        </Badge>
                     </div>
                     {(job.location) ?
                         <div className="flex items-center text-sm text-gray-500 mt-2">
