@@ -1,5 +1,4 @@
 describe("Using the Search or Filter", () => {
-  
   beforeEach(() => {
     // This handles the authentication; if u wanna use another account, just replace the email in the link
     cy.visit(
@@ -23,7 +22,6 @@ describe("Using the Search or Filter", () => {
     cy.contains("Educational Background");
     cy.contains("External Profiles");
     cy.contains("Personal Bio");
-
   });
 
   it("Visit Student Applications and check the job applied", () => {
@@ -33,12 +31,11 @@ describe("Using the Search or Filter", () => {
     cy.contains("View Details").click();
     cy.contains("Description");
     cy.contains("Applied");
-
   });
 
   it("Visit Student Saved Jobs", () => {
     cy.contains("Saved Jobs").click();
-    cy.contains("Saved Jobs")
+    cy.contains("Saved Jobs");
   });
 
   it("Visit Student Forms", () => {
