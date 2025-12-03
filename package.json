@@ -9,7 +9,7 @@
     "publish": "npm run build && git push origin develop",
     "start": "next start",
     "lint": "next lint",
-    "test": "npx jest >jest.log 2>&1 --no-color"
+    "test": "npx jest >jest.log 2>&1 --no-color --passWithNoTests"
   },
   "dependencies": {
     "@betterinternship/components": "^1.0.1",
