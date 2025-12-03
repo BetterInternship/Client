@@ -8,7 +8,7 @@ it("Student tries to find a job listing; will fail if search didnt show the job 
   cy.url().should("contain", "preload");
 
   cy.get('input[placeholder="Search Internship Listings"]').type(
-    "cypress test job listing{enter}",
+    "cypress test job listing {enter}",
   );
 
   cy.contains("Job Details").parent().parent().within(() => {
@@ -36,10 +36,12 @@ it("Student has to click the left panel to show the job listing searched", () =>
     cy.contains("cypress test job listing");
     cy.contains("Apply Now").click();
   });
+    cy.contains("Cancel").click();
+    cy.contains("Submit Application").should("not.exist");
 
 });
 
-it("Student tries to apply and submits application", () => {
+it("Student tries to apply and cant apply because there is no portfolio link added by the student", () => {
   
   cy.visit(
     "http://localhost:5000/api/auth/google/cypress/janica_megan_reyes@dlsu.edu.ph",
@@ -59,5 +61,6 @@ it("Student tries to apply and submits application", () => {
     cy.contains("Apply Now").click();
   });
   cy.contains("Submit Application").should("be.disabled");
+  
 
 });
