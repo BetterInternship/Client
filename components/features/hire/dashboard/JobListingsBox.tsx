@@ -1,8 +1,7 @@
 // ui for the job box or card
 
-import { Badge, BoolBadge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Toggle } from "@/components/ui/toggle";
 import { useMobile } from "@/hooks/use-mobile";
 import { EmployerApplication, Job } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
@@ -91,10 +90,10 @@ export function JobListingsBox({
                         {applicants.length} total applicant{applicants.length !== 1 ? "s" : ""}
                     </Badge>
                     <Badge 
-                        type={applicants.length > 0 ? "primary" : "default"}
+                        type={applicants.filter(a => a.status === 0).length > 0 ? "primary" : "default"}
                         strength={"default"}
                     >
-                        {applicants.length} new applicant{applicants.length !== 1 ? "s" : ""}
+                        {applicants.filter(a => a.status === 0).length} new applicant{applicants.length !== 1 ? "s" : ""}
                     </Badge>
                 </div>
 
