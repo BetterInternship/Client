@@ -2,7 +2,6 @@
 
 import { useAuthContext } from "@/app/hire/authctx";
 import { ApplicationsContent } from "@/components/features/hire/dashboard/ApplicationsContent";
-import { ShowUnverifiedBanner } from "@/components/ui/banner";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
 import { Tab, TabGroup } from "@/components/ui/tabs";
@@ -17,7 +16,7 @@ import { useModal } from "@/hooks/use-modal";
 import { useSideModal } from "@/hooks/use-side-modal";
 import { EmployerConversationService, UserService } from "@/lib/api/services";
 import { EmployerApplication, InternshipPreferences } from "@/lib/db/db.types";
-import { ArrowLeft, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, Edit, Info, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Job } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
@@ -51,33 +50,17 @@ export default function JobTabs({
 
   // Business logic hook
   const {
-    searchTerm,
     saving,
     isEditing,
-    jobsPage,
-    jobsPageSize,
-    filteredJobs,
-    setSearchTerm,
-    handleKeyPress,
-    handleJobSelect,
     handleEditStart,
     handleSave,
-    handleCancel,
     handleShare,
     clearSelectedJob,
-    handlePageChange,
     setIsEditing,
   } = useListingsBusinessLogic(ownedJobs);
   const { isAuthenticated, redirectIfNotLoggedIn, loading } = useAuthContext();
   const profile = useProfile();
   const applications = useEmployerApplications();
-  const jobs = useOwnedJobs();
-  const archivedJobs = jobs.ownedJobs.filter(
-    (job) =>
-      job.is_active === false ||
-      job.is_deleted === true ||
-      job.is_unlisted === true,
-  );
 
   const [selectedApplication, setSelectedApplication] =
     useState<EmployerApplication | null>(null);
@@ -281,7 +264,7 @@ export default function JobTabs({
   };
 
   //goes back to job list
-  const handleJobBack = () => {
+const handleJobBack = () => {
     router.push("/dashboard");
   };
 
@@ -354,10 +337,26 @@ export default function JobTabs({
             </div>
             <div className="flex items-center gap-2">
               <Link href={{
+                pathname:"/listings/details",
+                query: {
+                  jobId: selectedJob!.id,
+                }
+              }}
+              >
+                <Button
+                  key="edit"
+                  variant="ghost"
+                  disabled={saving}
+                  className="text-gray-600 hover:bg-primary/10 gap-1"
+                >
+                  <Info size={16} />
+                  Preview
+                </Button>
+              </Link>
+              <Link href={{
                 pathname:"/listings/edit",
                 query: {
                   jobId: selectedJob!.id,
-                  refresh: true
                 }
               }}
               >
@@ -394,8 +393,6 @@ export default function JobTabs({
               }
             </p>
           </div>
-            <TabGroup>
-              <Tab name="Applicants">
                 {/* we need to add filtering here :D */}
                 <ApplicationsContent
                   applications={filteredApplications}
@@ -408,26 +405,6 @@ export default function JobTabs({
                   onStatusChange={handleStatusChange}
                   setSelectedApplication={setSelectedApplication}
                 ></ApplicationsContent>
-              </Tab>
-              <Tab name="Listing information">
-                <Card className="flex-1 min-w-0 p-0">
-                  {/* <Scrollbar> */}
-                    <ListingsDetailsPanel
-                      selectedJob={selectedJob}
-                      isEditing={isEditing}
-                      saving={saving}
-                      onEdit={handleEditStart}
-                      onSave={handleSave}
-                      onCancel={handleJobBack}
-                      onShare={handleShare}
-                      onDelete={handleJobDelete}
-                      updateJob={update_job}
-                      setIsEditing={setIsEditing}
-                    />
-                  {/* </Scrollbar> */}
-                </Card>
-              </Tab>
-            </TabGroup>
         </div>
       </div>
 
