@@ -1,24 +1,20 @@
-import { EmployerApplication, InternshipPreferences, PublicUser } from "@/lib/db/db.types";
-import { ActionItem } from "@/components/ui/action-item";
-import { EmployerConversationService, UserService } from "@/lib/api/services";
-import { useModal } from "@/hooks/use-modal";
-import { PDFPreview } from "@/components/shared/pdf-preview";
-import { getFullName } from "@/lib/profile";
-import { FileText } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useFile } from "@/hooks/use-file";
-import { ArrowLeft, Award, MessageCircle, } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { UserPfp } from "@/components/shared/pfp";
-import { fmtISO, formatMonth, formatTimestampDate } from "@/lib/utils/date-utils";
-import { useDbRefs } from "@/lib/db/use-refs";
-import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { statusMap } from "@/components/common/status-icon-map";
-import { Badge } from "@/components/ui/badge"
-import { useAppContext } from "@/lib/ctx-app";
-import { cn } from "@/lib/utils";
+import { PDFPreview } from "@/components/shared/pdf-preview";
+import { UserPfp } from "@/components/shared/pfp";
+import { ActionItem } from "@/components/ui/action-item";
+import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { HorizontalCollapsible } from "@/components/ui/horizontal-collapse";
-import { Divider } from "@/components/ui/divider";
+import { useFile } from "@/hooks/use-file";
+import { UserService } from "@/lib/api/services";
+import { useAppContext } from "@/lib/ctx-app";
+import { EmployerApplication, PublicUser } from "@/lib/db/db.types";
+import { useDbRefs } from "@/lib/db/use-refs";
+import { getFullName } from "@/lib/profile";
+import { cn } from "@/lib/utils";
+import { formatMonth, formatTimestampDate } from "@/lib/utils/date-utils";
+import { ArrowLeft, Award, FileText, MessageCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect } from "react";
 
 interface ApplicantPageProps {
     application: EmployerApplication | undefined;
@@ -98,16 +94,19 @@ export function ApplicantPage({
                                     {internshipPreferences?.internship_type ==
                                         "credited" && (
                                         <div className="flex justify-start">
-                                            <span className="inline-flex items-center gap-1 sm:gap-2 text-green-700 bg-green-50 px-2 sm:px-3 md:px-4 py-1 sm:py-1 md:py-2 rounded-full text-xs sm:text-sm font-medium">
-                                                <Award className="w-3 h-3 sm:w-4 sm:h-4" />
+                                            <span className="inline-flex items-center gap-1 sm:gap-2 text-green-700 bg-green-50 px-2 sm:px-3 md:px-4 py-1 sm:py-1 md:py-2 rounded-full text-xs font-medium">
+                                                <Award className="w-3 h-3" />
                                                 Credited internship
                                             </span>
                                         </div>)
                                     }
                                 </div>
                             </div>
-                            {/* actions */}
-                            <div className={cn("flex items-center gap-2 my-4", isMobile ? "justify-start" : "justify-end")}>
+                        </div>
+                    </div>
+
+                    {/* actions */}
+                            <div className={cn("flex items-center gap-2 my-4", isMobile ? "justify-start" : "justify-start")}>
                                 <button className="flex items-center gap-2 text-sm text-gray-600 rounded-[0.33em] p-1.5 px-2 border border-gray-300 hover:text-gray-700 hover:bg-gray-100">
                                     <MessageCircle className="h-5 w-5"/> Chat
                                 </button>
@@ -116,8 +115,8 @@ export function ApplicantPage({
                                     defaultItem={defaultStatus}
                                 />
                             </div>
-                        </div>
-                        {/* other roles *note: will make this look better */}
+                    
+                    {/* other roles *note: will make this look better */}
                         <div className="flex my-2 mt-4">
                             <p className="text-sm text-gray-500">Other roles applied for: </p>
                                 <div className="flex">
@@ -133,7 +132,6 @@ export function ApplicantPage({
                                     }
                                 </div>
                         </div>
-                    </div>
 
                     {isMobile ? (
                         <>
@@ -160,10 +158,16 @@ export function ApplicantPage({
                                             {formatMonth(user?.expected_graduation_date)}
                                         </p>
                                     </div>
-                                    <div className={cn(isMobile ? "flex justify-between" : "")}>
+                                    <div className="flex justify-between">
                                         <p className={cn("text-gray-500 text-xs")}>Email</p>
                                         <p className={cn("font-medium text-gray-900", isMobile ? "text-xs" : "text-sm")}>
                                             {user?.email || "Not provided"}
+                                        </p>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <p className="text-xs text-gray-500">Phone Number</p>
+                                        <p className="text-xs font-medium text-gray-900">
+                                        {user?.phone_number || "Not provided"}
                                         </p>
                                     </div>
                                 </div>
@@ -171,7 +175,7 @@ export function ApplicantPage({
 
                             <HorizontalCollapsible
                             className="bg-gray-50 rounded-[0.33em] p-4 border border-gray-200 mt-2"
-                            title= "Internship Preferences"
+                            title= "Internship Requirements"
                             >
                                 <div className="grid gap-2">
                                     <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
@@ -185,105 +189,16 @@ export function ApplicantPage({
                                                 {internshipPreferences?.expected_duration_hours}
                                             </p>
                                         </div>
-                                        <div className="md:col-span-2">
-                                            <Divider />
-                                        </div>
-                                        <div className="mt-2">
-                                            <p className="text-xs text-gray-500">
-                                                Work Mode/s
-                                            </p>
-                                            <div className="font-medium text-gray-900">
-                                                {(() => {
-                                                    const ids = (internshipPreferences?.job_setup_ids ?? []) as (string | number)[];
-                                                    const items = ids
-                                                    .map((id) => {
-                                                        const m = job_modes.find(
-                                                        (x) => String(x.id) === String(id)
-                                                        );
-                                                        return m ? { id: String(m.id), name: m.name } : null;
-                                                    })
-                                                    .filter(Boolean) as { id: string; name: string }[];
-
-                                                    return items.length ? (
-                                                        <div className="flex flex-wrap gap-1.5">
-                                                            {items.map((it) => (
-                                                            <Badge key={it.id}>{it.name}</Badge>
-                                                            ))}
-                                                        </div>
-                                                        ) : (
-                                                        <div className="text-sm text-muted-foreground">—</div>
-                                                        );
-                                                    })()}
-                                            </div>
-                                        </div>
-                                            
-                                        <div>
-                                            <p className="text-xs text-gray-500">Workload Types</p>
-                                            <div className="font-medium text-gray-900 text-sm sm:text-base">
-                                                {(() => {
-                                                    const ids = (internshipPreferences?.job_commitment_ids ?? []) as (string | number)[];
-                                                    const items = ids
-                                                    .map((id) => {
-                                                        const t = job_types.find(
-                                                        (x) => String(x.id) === String(id)
-                                                        );
-                                                        return t ? { id: String(t.id), name: t.name } : null;
-                                                    })
-                                                    .filter(Boolean) as { id: string; name: string }[];
-
-                                                    return items.length ? (
-                                                        <div className="flex flex-wrap gap-1.5">
-                                                            {items.map((it) => (
-                                                            <Badge key={it.id}>{it.name}</Badge>
-                                                            ))}
-                                                        </div>
-                                                    ) : (
-                                                        <div className="text-sm text-muted-foreground">—</div>
-                                                    );
-                                                })()}
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <p className="text-xs text-gray-500">Positions / Categories</p>
-                                            <div className="font-medium text-gray-900 text-sm sm:text-base">
-                                                {(() => {
-                                                    const ids = (internshipPreferences?.job_category_ids ?? []) as string[];
-                                                    const items = ids
-                                                    .map((id) => {
-                                                        const c = job_categories.find((x) => x.id === id);
-                                                        return c ? { id: c.id, name: c.name } : null;
-                                                    })
-                                                    .filter(Boolean) as { id: string; name: string }[];
-
-                                                    return items.length ? (
-                                                    <div className="flex flex-wrap gap-1.5">
-                                                        {items.map((it) => (
-                                                        <Badge key={it.id}>{it.name}</Badge>
-                                                        ))}
-                                                    </div>
-                                                    ) : (
-                                                    <div className="text-sm text-muted-foreground">—</div>
-                                                    );
-                                                })()}
-                                            </div>
-                                        </div>     
                                     </div>
                                 </div>
                             </HorizontalCollapsible>
                             
                             <HorizontalCollapsible
                             className="bg-gray-50 rounded-[0.33em] p-4 border border-gray-200 mt-2"
-                            title="Contact & Professional Links"
+                            title="Professional Links"
                             >
                                 <div className="grid gap-2">
                                     <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                                    <div className="flex justify-between">
-                                        <p className="text-xs text-gray-500">Phone Number</p>
-                                        <p className="text-xs font-medium text-gray-900">
-                                        {user?.phone_number || "Not provided"}
-                                        </p>
-                                    </div>
                                     <div className="flex justify-between">
                                         <p className="text-xs text-gray-500">Portfolio</p>
                                         {user?.portfolio_link ? (
@@ -350,17 +265,12 @@ export function ApplicantPage({
                                 </div>
                             
                                 <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                                    <div className={cn(isMobile ? "flex justify-between" : "")}>
-                                        <p className={cn("text-gray-500 text-xs")}>Program / Degree</p>
-                                        <p className={cn("font-medium text-gray-900", isMobile ? "text-xs" : "text-sm")}>{user?.degree}</p>
+                                    <div>
+                                        <p className={cn("text-gray-500 text-xs")}>Education</p>
+                                        <p className={cn("font-medium text-gray-900", isMobile ? "text-xs" : "text-sm")}>{to_university_name(user?.university)}</p>
+                                        <p className="text-xs text-gray-500">{user?.degree}</p>
                                     </div>
-                                    <div className={cn(isMobile ? "flex justify-between" : "")}>
-                                        <p className={cn("text-gray-500 text-xs")}>Institution</p>
-                                        <p className={cn("font-medium text-gray-900", isMobile ? "text-xs" : "text-sm")}>
-                                            {to_university_name(user?.university)}
-                                        </p>
-                                    </div >
-                                    <div className={cn(isMobile ? "flex justify-between" : "")}>
+                                    <div>
                                         <p className={cn("text-gray-500 text-xs")}>
                                             Expected Graduation Date
                                         </p>
@@ -374,13 +284,19 @@ export function ApplicantPage({
                                             {user?.email || "Not provided"}
                                         </p>
                                     </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500">Phone Number</p>
+                                        <p className="text-sm font-medium text-gray-900">
+                                        {user?.phone_number || "Not provided"}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 
                             <div className="bg-gray-50 rounded-[0.33em] p-4 border border-gray-200 mt-2">
                                 <div className="flex items-center gap-3 mb-4 sm:mb-5">
                                     <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
-                                        Internship Preferences
+                                        Internship Requirements
                                     </h3>
                                 </div>
                                 <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
@@ -394,88 +310,6 @@ export function ApplicantPage({
                                             {internshipPreferences?.expected_duration_hours}
                                         </p>
                                     </div>
-                                    <div className="md:col-span-2">
-                                        <Divider />
-                                    </div>
-                                    <div className="mt-2">
-                                        <p className="text-xs text-gray-500">
-                                            Work Mode/s
-                                        </p>
-                                        <div className="font-medium text-gray-900">
-                                            {(() => {
-                                                const ids = (internshipPreferences?.job_setup_ids ?? []) as (string | number)[];
-                                                const items = ids
-                                                .map((id) => {
-                                                    const m = job_modes.find(
-                                                    (x) => String(x.id) === String(id)
-                                                    );
-                                                    return m ? { id: String(m.id), name: m.name } : null;
-                                                })
-                                                .filter(Boolean) as { id: string; name: string }[];
-
-                                                return items.length ? (
-                                                    <div className="flex flex-wrap gap-1.5">
-                                                        {items.map((it) => (
-                                                            <Badge key={it.id}>{it.name}</Badge>
-                                                        ))}
-                                                    </div>
-                                                ) : (
-                                                    <div className="text-sm text-muted-foreground">—</div>
-                                                );
-                                            })()}
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-gray-500">Workload Types</p>
-                                            <div className="font-medium text-gray-900 text-sm sm:text-base">
-                                                {(() => {
-                                                    const ids = (internshipPreferences?.job_commitment_ids ?? []) as (string | number)[];
-                                                    const items = ids
-                                                    .map((id) => {
-                                                        const t = job_types.find(
-                                                        (x) => String(x.id) === String(id)
-                                                        );
-                                                        return t ? { id: String(t.id), name: t.name } : null;
-                                                    })
-                                                    .filter(Boolean) as { id: string; name: string }[];
-
-                                                    return items.length ? (
-                                                        <div className="flex flex-wrap gap-1.5">
-                                                            {items.map((it) => (
-                                                            <Badge key={it.id}>{it.name}</Badge>
-                                                            ))}
-                                                        </div>
-                                                    ) : (
-                                                        <div className="text-sm text-muted-foreground">—</div>
-                                                    );
-                                                })()}
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <p className="text-xs text-gray-500">Positions / Categories</p>
-                                            <div className="font-medium text-gray-900 text-sm sm:text-base">
-                                                {(() => {
-                                                    const ids = (internshipPreferences?.job_category_ids ?? []) as string[];
-                                                    const items = ids
-                                                    .map((id) => {
-                                                        const c = job_categories.find((x) => x.id === id);
-                                                        return c ? { id: c.id, name: c.name } : null;
-                                                    })
-                                                    .filter(Boolean) as { id: string; name: string }[];
-
-                                                    return items.length ? (
-                                                    <div className="flex flex-wrap gap-1.5">
-                                                        {items.map((it) => (
-                                                        <Badge key={it.id}>{it.name}</Badge>
-                                                        ))}
-                                                    </div>
-                                                    ) : (
-                                                    <div className="text-sm text-muted-foreground">—</div>
-                                                    );
-                                                })()}
-                                            </div>
-                                        </div>   
                                     </div>
                                 </div>
 
@@ -486,13 +320,7 @@ export function ApplicantPage({
                                         Contact & Professional Links
                                     </h3>
                                     </div> */}
-                                    <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                                    <div>
-                                        <p className="text-xs text-gray-500">Phone Number</p>
-                                        <p className="text-sm font-medium text-gray-900">
-                                        {user?.phone_number || "Not provided"}
-                                        </p>
-                                    </div>
+                                    <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
                                     <div>
                                         <p className="text-xs text-gray-500">Portfolio</p>
                                         {user?.portfolio_link ? (
@@ -552,14 +380,14 @@ export function ApplicantPage({
 
                 {/* resume */}
                     {application?.user?.resume ? (
-                        <div className="h-full flex flex-col">
+                        <div className={cn("h-full flex flex-col justify-center items-center", isMobile ? "mt-4 w-full" : "")}>
                             {/* <h1 className="font-bold font-heading text-2xl px-6 py-4 text-gray-600">
-                             Resume
+                            Resume
                             </h1> */}
                             <PDFPreview url={resumeURL} />
                         </div>
                         ) : (
-                        <div className="flex flex-col items-center justify-center h-96 px-8">
+                        <div className="flex flex-col items-center justify-center h-96 px-8 w-full">
                             <div className="text-center">
                             <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                             <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">

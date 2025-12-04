@@ -1,16 +1,15 @@
 "use client";
 
-import { ApplicantPage } from "@/components/features/hire/dashboard/ApplicantPage"
-import ContentLayout from "@/components/features/hire/content-layout";
-import { EmployerApplication, InternshipPreferences } from "@/lib/db/db.types";
-import { Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { UserService } from "@/lib/api/services";
-import { useEmployerApplications } from "@/hooks/use-employer-api"
-import { useDbRefs } from "@/lib/db/use-refs";
-import { type ActionItem } from "@/components/ui/action-item";
 import { statusMap } from "@/components/common/status-icon-map";
-import { updateApplicationStatus } from "@/lib/api/services";
+import ContentLayout from "@/components/features/hire/content-layout";
+import { ApplicantPage } from "@/components/features/hire/dashboard/ApplicantPage";
+import { type ActionItem } from "@/components/ui/action-item";
+import { useEmployerApplications } from "@/hooks/use-employer-api";
+import { updateApplicationStatus, UserService } from "@/lib/api/services";
+import { EmployerApplication } from "@/lib/db/db.types";
+import { useDbRefs } from "@/lib/db/use-refs";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
 function ApplicantPageContent () {
     const searchParams = useSearchParams();
@@ -46,10 +45,10 @@ function ApplicantPageContent () {
 
     if (!app_statuses) return null;
 
-  const unique_app_statuses = app_statuses.reduce(
-    (acc: {id: number, name: string}[], cur: {id: number, name: string}) => 
-      (acc.find(a => a.name === cur.name) ? acc : [...acc, cur]), []
-  );
+    const unique_app_statuses = app_statuses.reduce(
+    (acc: {id: number, name: string}[], cur: {id: number, name: string}) =>
+        (acc.find(a => a.name === cur.name) ? acc : [...acc, cur]), []
+    );
 
     const getStatuses = (applicationId: string) => {
       return unique_app_statuses
