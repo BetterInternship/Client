@@ -1,12 +1,6 @@
 import { ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-export const generateMemberId = () =>
-  `MEM-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-
-export const titleCase = (s: string) => 
-  s.split(" ").map(s => `${s.charAt(0).toUpperCase()}${s.slice(1)}`).join(" ")
-
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -18,7 +12,7 @@ export const toSafeString = (s?: string | null, def: string = "") => {
 
 export const isValidUUID = (uuid: string) => {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-    uuid
+    uuid,
   );
 };
 
@@ -32,23 +26,6 @@ export const getURL = () => {
   url = url.includes("http") ? url : `https://${url}`;
   url = url.charAt(url.length - 1) === "/" ? url : `${url}/`;
   return url;
-};
-
-export const getInitials = (name?: string) => {
-  if (!name) return "HR";
-  const parts = name.split(" ");
-  if (parts.length === 1) return parts[0][0]?.toUpperCase() || "H";
-  return (parts[0][0] + parts[1][0]).toUpperCase();
-};
-
-export const isPathNameSame = (path1: string, path2: string) => {
-  const path1Parts = path1.split("/");
-  const path2Parts = path2.split("/");
-  if (path1Parts.length !== path2Parts.length) return false;
-  // check last path name if same
-  const lastPath1 = path1Parts[path1Parts.length - 1];
-  const lastPath2 = path2Parts[path2Parts.length - 1];
-  return lastPath1 === lastPath2;
 };
 
 export function isValidPHNumber(phone_num?: string | null) {
@@ -70,13 +47,13 @@ export function isValidEmail(email?: string | null) {
 }
 
 export const normalizePhoneNumber = (
-  phoneNumber: string | null | undefined
+  phoneNumber: string | null | undefined,
 ): string | null => {
   if (!phoneNumber) {
     return null;
   }
 
-  let cleanedNumber = phoneNumber.replace(/[-\s]/g, "");
+  const cleanedNumber = phoneNumber.replace(/[-\s]/g, "");
 
   if (cleanedNumber.startsWith("+639") && cleanedNumber.length === 13) {
     if (/^\+639\d{9}$/.test(cleanedNumber)) {
@@ -95,15 +72,12 @@ export const normalizePhoneNumber = (
       return "+63".concat(cleanedNumber).trim();
     }
   }
-  console.warn(
-    `Could not normalize phone number: "${phoneNumber}" to a valid PH mobile format.`
-  );
   return null;
 };
 
 export const isPhoneNumberSame = (
   num1: string | null | undefined,
-  num2: string | null | undefined
+  num2: string | null | undefined,
 ): boolean => {
   if (!num1 || !num2) return false;
   const normalizedNum1 = normalizePhoneNumber(num1);
@@ -113,7 +87,7 @@ export const isPhoneNumberSame = (
 
 export const createSearchFilterString = (
   columns: string[],
-  searchTerm: string
+  searchTerm: string,
 ): string => {
   if (!searchTerm || searchTerm.trim() === "") {
     return "";
@@ -129,11 +103,6 @@ export const createSearchFilterString = (
   }
 
   return columns.map((col) => `${col}.ilike.%${searchTerm}%`).join(",");
-};
-
-export const getSanitizedFilterValue = (value?: string): string => {
-  if (!value || value === "all") return "";
-  return value.replace(/[^a-z0-9_]/gi, "_").toLowerCase();
 };
 
 export const hashStringToInt = (str: string): number => {

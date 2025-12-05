@@ -8,7 +8,8 @@
     "stage": "npm run build && git push origin develop",
     "publish": "npm run build && git push origin develop",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "npx jest --no-color --passWithNoTests >jest.log 2>&1"
   },
   "dependencies": {
     "@betterinternship/components": "^1.0.1",
@@ -62,6 +63,7 @@
     "cmdk": "1.0.4",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "8.5.1",
+    "eslint-plugin-jest": "^29.0.1",
     "framer-motion": "^12.23.12",
     "gsap": "^3.13.0",
     "immer": "^10.1.1",
@@ -105,18 +107,22 @@
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.10",
+    "@types/jest": "^30.0.0",
     "@types/knuth-shuffle-seeded": "^1.0.2",
     "@types/node": "^22",
     "@types/number-to-words": "^1.2.3",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cypress": "^15.6.0",
     "eslint": "^9.18.0",
     "eslint-config-next": "15.5.4",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
+    "jest": "^30.2.0",
     "postcss": "^8",
     "prettier": "^3.4.2",
     "tailwindcss": "^3.4.17",
+    "ts-jest": "^29.4.5",
     "typescript": "^5",
     "typescript-eslint": "^8.20.0"
   }

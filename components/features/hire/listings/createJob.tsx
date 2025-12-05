@@ -316,6 +316,7 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                     <div className="w-full mb-6">
                       <div className="space-y-2 w-full">
                         <FormInput
+                          placeholder="Enter job location here..."
                           value={formData.location ?? ""}
                           maxLength={100}
                           setter={fieldSetter("location")}
