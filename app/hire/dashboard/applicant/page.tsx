@@ -70,6 +70,7 @@ function ApplicantPageContent () {
             <div className="w-full h-full">
                 <ApplicantPage 
                 application={userApplication}
+                jobID={userApplication?.job_id || ""}
                 statuses={getStatuses(userApplication?.id || "")}
                 userApplications={otherApplications}
                 />

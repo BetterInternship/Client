@@ -12,22 +12,29 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import { getFullName } from "@/lib/profile";
 import { cn } from "@/lib/utils";
 import { formatMonth, formatTimestampDate } from "@/lib/utils/date-utils";
-import { ArrowLeft, Award, FileText, MessageCircle } from "lucide-react";
+import { ArrowLeft, Award, FileText, MessageCircle, Phone, Mail, BriefcaseBusiness, Github, Linkedin } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect } from "react";
+import { Tooltip } from "react-tooltip";
+import { Divider } from "@/components/ui/divider";
+import { Badge } from "@/components/ui/badge";
 
 interface ApplicantPageProps {
     application: EmployerApplication | undefined;
+    jobID: string | undefined;
     userApplications?: EmployerApplication[] | undefined;
     statuses: ActionItem[];
     openChatModal?: () => void;
+    prevPage?: string;
 }
 
 export function ApplicantPage({
     application,
+    jobID,
     userApplications,
     statuses,
     openChatModal,
+    prevPage
 }:ApplicantPageProps) {
     const router = useRouter();
     const user = application?.user as Partial<PublicUser>;
@@ -65,6 +72,16 @@ export function ApplicantPage({
             : "",
         });
 
+        const handleBack = () => {
+            if(!prevPage) return;
+
+            if(prevPage === "chat"){
+                router.push(`/conversations?userId=${application?.user_id}`)
+            } else if (prevPage === "job") {
+                router.push(`/dashboard/manage?jobId=${application?.job_id}`)
+            }
+        }
+
         useEffect(() => {
             if (application?.user_id) {
               syncResumeURL();
@@ -75,7 +92,7 @@ export function ApplicantPage({
         <div className="">
             <button
                 className="flex items-center text-gray-600 hover:text-gray-900 transition-colors my-4"
-                onClick={() => router.push(`/dashboard/manage?jobId=${application?.job_id}`)}
+                onClick={() => router.push(`/dashboard/manage?jobId=${jobID}`)}
                 >
                     <ArrowLeft className="s-8" />
             </button>
@@ -85,29 +102,97 @@ export function ApplicantPage({
                     <div className="">
                         <div className="lg:flex items-center justify-between">
                             <div className="flex items-center">
-                                <div className="mr-4">
-                                    <UserPfp user_id={user?.id || ""} size="20"/>
-                                </div>
-                                <div className="mx-2">
-                                    <h3 className="text-xl">{getFullName(application?.user)}</h3>
-                                    <p className="text-sm text-gray-500 mb-2">Applying for: {application?.job?.title}</p>
+                                <div className={cn("relative", isMobile ? "mr-2" : "mr-4")}>
+                                    <UserPfp user_id={user?.id || ""} size={cn(isMobile ? "16" : "20")}/>
                                     {internshipPreferences?.internship_type ==
                                         "credited" && (
-                                        <div className="flex justify-start">
-                                            <span className="inline-flex items-center gap-1 sm:gap-2 text-green-700 bg-green-50 px-2 sm:px-3 md:px-4 py-1 sm:py-1 md:py-2 rounded-full text-xs font-medium">
-                                                <Award className="w-3 h-3" />
-                                                Credited internship
-                                            </span>
+                                        <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1 border-2 border-white">
+                                            <Award className="w-4 h-4 text-white" />
                                         </div>)
                                     }
+                                </div>
+                                <div className="mx-2">
+                                    <h3 className={cn(isMobile? "text-lg" : "text-xl")}>{getFullName(application?.user)}</h3>
+                                    <div className={cn("items-center gap-2 text-xs text-gray-500", isMobile ? "" : "flex")}>
+                                        {/* COntact info */}
+                                        <div className="flex gap-1 items-center">
+                                            <Phone className="h-4 w-4"/>
+                                            <p className="text-gray-500 text-xs">{application?.user?.phone_number}</p>
+                                        </div>
+                                        {!isMobile && <p className="text-xs text-gray-500"> | </p>}
+                                        <div className="flex gap-1">
+                                            <Mail className="h-4 w-4"/>
+                                            <p className="text-gray-500 text-xs">{application?.user?.edu_verification_email}</p>
+                                        </div>
+                                    </div>
+
+                                    {/* links */}
+                                    <div className={cn("flex gap-4 items-center", isMobile ? "mt-2" : "mt-4")}>
+                                        <div>
+                                            {user?.portfolio_link ? (
+                                            <a
+                                                href={user?.portfolio_link}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-slate-950 hover:text-slate-500 ease-in-out font-medium break-all text-xs"
+                                            >
+                                                <BriefcaseBusiness className="h-4 w-4"/>
+                                            </a>) : (
+                                                <p
+                                                className="text-gray-300 font-medium break-all text-xs cursor-default"
+                                                >
+                                                    <BriefcaseBusiness className="h-4 w-4"/>
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            {user?.github_link ? (
+                                            <a
+                                                href={user?.github_link}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-slate-950 hover:text-slate-500 ease-in-out font-medium break-all text-xs"
+                                            >
+                                                <Github className="h-4 w-4"/>
+                                            </a>) : (
+                                                <p
+                                                className="text-gray-300 font-medium break-all text-xs cursor-default"
+                                                >
+                                                    <Github className="h-4 w-4"/>
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            {user?.linkedin_link ? (
+                                            <a
+                                                href={user?.linkedin_link}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-slate-950 hover:text-slate-500 ease-in-out font-medium break-all text-xs"
+                                            >
+                                                <Linkedin className="h-4 w-4"/>
+                                            </a>) : (
+                                                <p
+                                                className="text-gray-300 font-medium break-all text-xs cursor-default"
+                                                >
+                                                    <Linkedin className="h-4 w-4"/>
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* actions */}
-                            <div className={cn("flex items-center gap-2 my-4", isMobile ? "justify-start" : "justify-start")}>
-                                <button className="flex items-center gap-2 text-sm text-gray-600 rounded-[0.33em] p-1.5 px-2 border border-gray-300 hover:text-gray-700 hover:bg-gray-100">
+                        <div className={cn("flex items-center gap-2 my-4", isMobile ? "justify-start" : "justify-start")}>
+                            <button
+                                className="flex items-center gap-2 text-sm text-gray-600 rounded-[0.33em] p-1.5 px-2 border border-gray-300 hover:text-gray-700 hover:bg-gray-100"
+                                onClick={() => router.push(`/conversations?userId=${user.id}`)}
+                                >
                                     <MessageCircle className="h-5 w-5"/> Chat
                                 </button>
                                 <DropdownMenu
@@ -116,28 +201,12 @@ export function ApplicantPage({
                                 />
                             </div>
                     
-                    {/* other roles *note: will make this look better */}
-                        <div className="flex my-2 mt-4">
-                            <p className="text-sm text-gray-500">Other roles applied for: </p>
-                                <div className="flex">
-                                    {userApplications?.length !== 0 ? (
-                                        userApplications?.map((a) => 
-                                        <p className="text-gray-500 text-sm ml-1">
-                                            {a.job?.title}
-                                            {a !== userApplications?.at(-1) && <>, </>}
-                                        </p>
-                                    )) : (
-                                        <p className="text-gray-500 text-sm"> No other applied roles</p>
-                                    )
-                                    }
-                                </div>
-                        </div>
 
                     {isMobile ? (
                         <>
                             <HorizontalCollapsible
                             className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200 mt-4"
-                            title="Academic Information"
+                            title="Applicant Information"
                             >
                                 <div className="grid gap-2">
                                     <div className={cn(isMobile ? "flex justify-between" : "")}>
@@ -156,18 +225,6 @@ export function ApplicantPage({
                                         </p>
                                         <p className={cn("font-medium text-gray-900", isMobile ? "text-xs" : "text-sm")}>
                                             {formatMonth(user?.expected_graduation_date)}
-                                        </p>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <p className={cn("text-gray-500 text-xs")}>Email</p>
-                                        <p className={cn("font-medium text-gray-900", isMobile ? "text-xs" : "text-sm")}>
-                                            {user?.email || "Not provided"}
-                                        </p>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <p className="text-xs text-gray-500">Phone Number</p>
-                                        <p className="text-xs font-medium text-gray-900">
-                                        {user?.phone_number || "Not provided"}
                                         </p>
                                     </div>
                                 </div>
@@ -192,76 +249,29 @@ export function ApplicantPage({
                                     </div>
                                 </div>
                             </HorizontalCollapsible>
-                            
-                            <HorizontalCollapsible
-                            className="bg-gray-50 rounded-[0.33em] p-4 border border-gray-200 mt-2"
-                            title="Professional Links"
-                            >
-                                <div className="grid gap-2">
-                                    <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                                    <div className="flex justify-between">
-                                        <p className="text-xs text-gray-500">Portfolio</p>
-                                        {user?.portfolio_link ? (
-                                        <a
-                                            href={user?.portfolio_link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-600 hover:underline font-medium break-all text-xs"
-                                        >
-                                            View Portfolio
-                                        </a>
-                                        ) : (
-                                        <p className="text-xs font-medium text-gray-900">
-                                            Not provided
-                                        </p>
-                                        )}
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <p className="text-xs text-gray-500">GitHub</p>
-                                        {user?.github_link ? (
-                                        <a
-                                            href={user?.github_link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-600 hover:underline font-medium break-all text-xs"
-                                        >
-                                            View GitHub
-                                        </a>
-                                        ) : (
-                                        <p className="font-medium text-gray-900 text-xs">
-                                            Not provided
-                                        </p>
-                                        )}
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <p className="text-xs text-gray-500">LinkedIn</p>
-                                        {user?.linkedin_link ? (
-                                        <a
-                                            href={user?.linkedin_link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-600 hover:underline font-medium break-all text-xs"
-                                        >
-                                            View LinkedIn
-                                        </a>
-                                        ) : (
-                                        <p className="font-medium text-gray-900 text-xs">
-                                            Not provided
-                                        </p>
-                                        )}
-                                    </div>
-                                    </div>
-                                </div>
-                            </HorizontalCollapsible>
                         </>
                         
                     ) : (
                         <>
                             <div className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200 mt-4">
-                                <div className="flex items-center gap-3 mb-4 sm:mb-5">
+                                    {application?.user?.bio ? (
+                                        <div>
+                                            <p className="text-xs">{application?.user?.bio}</p>
+                                            <Divider/>
+                                        </div>
+                                    ) : (
+
+                                        <div>
+                                            <p className="text-xs">Applicant has not added a bio.</p>
+                                            <Divider/>
+                                        </div>
+                                        
+                                    )}
+                                <div className="items-center gap-3 mb-4 sm:mb-5">
                                     <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
-                                        Academic Information
+                                        Applicant Information
                                     </h3>
+                                    <p className="text-xs text-gray-500 mb-2">Applying for: {application?.job?.title}</p>
                                 </div>
                             
                                 <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
@@ -278,22 +288,8 @@ export function ApplicantPage({
                                             {formatMonth(user?.expected_graduation_date)}
                                         </p>
                                     </div>
-                                    <div className={cn(isMobile ? "flex justify-between" : "")}>
-                                        <p className={cn("text-gray-500 text-xs")}>Email</p>
-                                        <p className={cn("font-medium text-gray-900", isMobile ? "text-xs" : "text-sm")}>
-                                            {user?.email || "Not provided"}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-gray-500">Phone Number</p>
-                                        <p className="text-sm font-medium text-gray-900">
-                                        {user?.phone_number || "Not provided"}
-                                        </p>
-                                    </div>
                                 </div>
-                            </div>
-
-                            <div className="bg-gray-50 rounded-[0.33em] p-4 border border-gray-200 mt-2">
+                                <Divider />
                                 <div className="flex items-center gap-3 mb-4 sm:mb-5">
                                     <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
                                         Internship Requirements
@@ -310,73 +306,34 @@ export function ApplicantPage({
                                             {internshipPreferences?.expected_duration_hours}
                                         </p>
                                     </div>
-                                    </div>
-                                </div>
-
-                                {/* Contact & Links */}
-                                <div className="bg-gray-50 rounded-[0.33em] p-4 border border-gray-200 mt-2">
-                                    {/* <div className="flex items-center gap-3 mb-4 sm:mb-5">
-                                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
-                                        Contact & Professional Links
-                                    </h3>
-                                    </div> */}
-                                    <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
-                                    <div>
-                                        <p className="text-xs text-gray-500">Portfolio</p>
-                                        {user?.portfolio_link ? (
-                                        <a
-                                            href={user?.portfolio_link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-600 hover:underline font-medium break-all text-sm"
-                                        >
-                                            View Portfolio
-                                        </a>
-                                        ) : (
-                                        <p className="text-sm font-medium text-gray-900">
-                                            Not provided
-                                        </p>
-                                        )}
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-gray-500">GitHub</p>
-                                        {user?.github_link ? (
-                                        <a
-                                            href={user?.github_link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-600 hover:underline font-medium break-all text-sm"
-                                        >
-                                            View GitHub
-                                        </a>
-                                        ) : (
-                                        <p className="font-medium text-gray-900 text-sm">
-                                            Not provided
-                                        </p>
-                                        )}
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-gray-500">LinkedIn</p>
-                                        {user?.linkedin_link ? (
-                                        <a
-                                            href={user?.linkedin_link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-600 hover:underline font-medium break-all text-sm"
-                                        >
-                                            View LinkedIn
-                                        </a>
-                                        ) : (
-                                        <p className="font-medium text-gray-900 text-sm">
-                                            Not provided
-                                        </p>
-                                        )}
-                                    </div>
                                 </div>
                             </div>
-                        </>
-                    )}
-                </div>
+
+                            {/* other roles *note: will make this look better */}
+                            <div className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200">
+                                <div className="flex items-center gap-3 mb-4 sm:mb-5">
+                                        <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
+                                            Other Applied Roles
+                                        </h3>
+                                    </div>
+                                    <div className="flex flex-wrap gap-1">
+                                        {userApplications?.length !== 0 ? (
+                                            userApplications?.map((a) => 
+                                            <Badge>
+                                                <p className="inline-flex items-center text-gray-500 text-xs">
+                                                    {a.job?.title}
+                                                </p>
+                                            </Badge>
+                                            
+                                        )) : (
+                                            <p className="text-gray-500 text-sm"> No other applied roles</p>
+                                        )
+                                        }
+                                </div>
+                            </div>
+                            </>
+                        )}
+                    </div>
 
                 {/* resume */}
                     {application?.user?.resume ? (

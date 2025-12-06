@@ -2,6 +2,7 @@
 // rework of ApplicationsTable
 "use client";
 
+import { useAuthContext } from "@/app/hire/authctx";
 import { Badge } from "@/components/ui/badge";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { ApplicationRow } from "./ApplicationRow";
@@ -22,6 +23,7 @@ import { AnimatePresence, easeOut, motion } from "framer-motion";
 interface ApplicationsContentProps {
   applications: EmployerApplication[];
   statusId: number[];
+  isLoading?: boolean;
   openChatModal: () => void;
   updateConversationId: (userId: string) => void;
   onApplicationClick: (application: EmployerApplication) => void;
@@ -35,6 +37,7 @@ interface ApplicationsContentProps {
 
 export function ApplicationsContent({
   applications,
+  isLoading,
   openChatModal,
   updateConversationId,
   onApplicationClick,
@@ -420,95 +423,104 @@ export function ApplicationsContent({
         </>
         )}
       </AnimatePresence>
-      <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-200 border text-sm rounded-md overflow-visible">
-        <thead className="bg-gray-100">
-          <tr className="text-left">
-            <th className="p-4">
-              <Checkbox
-                onClick={toggleSelectAll}
-                checked={
-                  allVisibleSelected 
-                  ? true
-                  : someVisibleSelected
-                    ? 'indeterminate'
-                    : false
-                }
-                disabled={visibleApplications.length === 0}
-              />
-            </th>
-            <th className="p-4">
-              <div className="flex items-center gap-2">
-                <User2 size={16} />
-                <span>Applicant</span>
-              </div>
-            </th>
-            <th className="p-4">
-              <div className="flex items-center gap-2">
-                <GraduationCap size={16} />
-                <span>Education</span>
-              </div>
-            </th>
-            <th className="p-4">
-              <div className="flex items-center gap-2">
-                <ContactRound size={16} />
-                <span>Crediting</span>
-              </div>
-            </th>
-            <th className="p-4">
-              <div className="flex items-center gap-2">
-                <Calendar size={16} />
-                <span>Expected start date</span>
+      {isLoading ? (
+          <div className="w-full flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading Applicants...</p>
+            </div>
+          </div>
+      ) : (
+        <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-200 border text-sm rounded-md overflow-visible">
+          <thead className="bg-gray-100">
+            <tr className="text-left">
+              <th className="p-4">
+                <Checkbox
+                  onClick={toggleSelectAll}
+                  checked={
+                    allVisibleSelected 
+                    ? true
+                    : someVisibleSelected
+                      ? 'indeterminate'
+                      : false
+                  }
+                  disabled={visibleApplications.length === 0}
+                />
+              </th>
+              <th className="p-4">
+                <div className="flex items-center gap-2">
+                  <User2 size={16} />
+                  <span>Applicant</span>
+                </div>
+              </th>
+              <th className="p-4">
+                <div className="flex items-center gap-2">
+                  <GraduationCap size={16} />
+                  <span>Education</span>
+                </div>
+              </th>
+              <th className="p-4">
+                <div className="flex items-center gap-2">
+                  <ContactRound size={16} />
+                  <span>Crediting</span>
+                </div>
+              </th>
+              <th className="p-4">
+                <div className="flex items-center gap-2">
+                  <Calendar size={16} />
+                  <span>Expected start date</span>
               </div>
             </th>
             <th className="p-4">
               <div className="flex items-center gap-2">
                 <Calendar size={16} />
                 <span>Date applied</span>
-              </div>
-            </th>
-            <th className="p-4">
-              <div className="flex items-center gap-2">
-                <ListCheck size={16} />
-                <span>Status</span>
-              </div>
-            </th>
-            <th className="p-4"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {visibleApplications.length ? (
-            visibleApplications.map((application) => (
-              <ApplicationRow
-                key={application.id}
-                application={application}
-                onView={(v) => {
+                </div>
+              </th>
+              <th className="p-4">
+                <div className="flex items-center gap-2">
+                  <ListCheck size={16} />
+                  <span>Status</span>
+                </div>
+              </th>
+              <th className="p-4"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {visibleApplications.length ? (
+              visibleApplications.map((application) => (
+                <ApplicationRow
+                  key={application.id}
+                  application={application}
+                  onView={(v) => {
                   if (selectedApplications.size === 0) {
                     onApplicationClick(application)
                   } else {
                     toggleSelect(application.id!, v)
                   }
                 }}
-                onNotes={() => onNotesClick(application)}
-                onSchedule={() => onScheduleClick(application)}
-                onStatusChange={(status) => onStatusChange(application, status)}
-                openChatModal={openChatModal}
-                setSelectedApplication={setSelectedApplication}
-                updateConversationId={updateConversationId}
-                checkboxSelected={selectedApplications.has(application.id!)}
-                onToggleSelect={(v) => toggleSelect(application.id!, v)}
-                onDeleteButtonClick={() => onRequestDeleteApplicant?.(application)}
-                statuses={getRowStatuses(application.id!)}
-              />
-            ))
-        ) : (
-          <tr>
-            <td>
-              <Badge className="m-2">No applications under this category.</Badge>
-            </td>
-          </tr>
-        )}
-        </tbody>
-      </table>
+                  onNotes={() => onNotesClick(application)}
+                  onSchedule={() => onScheduleClick(application)}
+                  onStatusChange={(status) => onStatusChange(application, status)}
+                  openChatModal={openChatModal}
+                  setSelectedApplication={setSelectedApplication}
+                  updateConversationId={updateConversationId}
+                  checkboxSelected={selectedApplications.has(application.id!)}
+                  onToggleSelect={(v) => toggleSelect(application.id!, v)}
+                  onDeleteButtonClick={() => onRequestDeleteApplicant?.(application)}
+                  statuses={getRowStatuses(application.id!)}
+                />
+              ))
+          ) : (
+            <tr>
+              <td>
+                <Badge className="m-2">No applications under this category.</Badge>
+              </td>
+            </tr>
+          )}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

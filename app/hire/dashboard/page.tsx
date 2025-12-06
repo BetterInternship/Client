@@ -31,7 +31,7 @@ function DashboardContent() {
     return result;
   }
 
-  if (applications.loading) {
+  if (loading) {
     return (
       <div className="w-full flex items-center justify-center">
         <div className="text-center">
@@ -65,6 +65,7 @@ function DashboardContent() {
                     jobs={ownedJobs}
                     employerId={profile.data?.id || ""}
                     updateJob={handleUpdateJob}
+                    isLoading={applications.loading}
                   />
                   {isMobile && (
                     <Link href="listings/create">

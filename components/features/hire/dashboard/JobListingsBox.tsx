@@ -17,12 +17,14 @@ interface JobListingProps {
         job_id: string,
         job: Partial<Job>,
     ) => Promise<{ success: boolean }>;
+    isLoading?: boolean;
 }
 
 export function JobListingsBox({
     job,
     applications,
-    update_job
+    update_job,
+    isLoading
 }: JobListingProps) {
     const { to_job_pay_freq_name } = useDbRefs();
     const applicants = applications.filter(
@@ -39,6 +41,17 @@ export function JobListingsBox({
 
     const router = useRouter();
     const isMobile = useMobile();
+
+    if(isLoading) {
+        return (
+        <div className="w-full flex items-center justify-center">
+            <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+            </div>
+        </div>
+        );
+    }
 
     return (
         // <Link href={{
