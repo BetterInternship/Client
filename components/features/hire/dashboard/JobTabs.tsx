@@ -17,7 +17,7 @@ import { useModal } from "@/hooks/use-modal";
 import { useSideModal } from "@/hooks/use-side-modal";
 import { EmployerConversationService, UserService } from "@/lib/api/services";
 import { EmployerApplication, InternshipPreferences } from "@/lib/db/db.types";
-import { ArrowLeft, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, MessageSquarePlus } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Job } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
@@ -208,9 +208,10 @@ export default function JobTabs({
   const {
     open: openChatModal,
     close: closeChatModal,
-    SideModal: ChatModal,
-  } = useSideModal("chat-modal", {
+    Modal: ChatModal,
+  } = useModal("chat-modal", {
     onClose: () => (conversation.unsubscribe(), setConversationId("")),
+    showCloseButton: false,
   });
 
   const {
@@ -259,7 +260,6 @@ export default function JobTabs({
 
   const handleApplicationClick = (application: EmployerApplication) => {
     setSelectedApplication(application); // set first
-    //openApplicantModal(); // then open
     router.push(`/dashboard/applicant?userId=${application?.user_id}`);
   };
 
@@ -291,6 +291,21 @@ export default function JobTabs({
   ) => {
     applications.review(application.id ?? "", { status });
   };
+
+  const onChatClick = () => {
+    if (!selectedApplication?.user_id) return;
+    updateConversationId(selectedApplication?.user_id);
+
+    const userConversation = conversations.data?.find((c) =>
+      c?.subscribers?.includes(selectedApplication?.user_id)
+    );
+
+    if(userConversation){
+      router.push(`/conversations?userId=${selectedApplication?.user_id}`)
+    } else {
+      openChatModal();
+    }
+  }
 
   if (applications.loading) {
     return (
@@ -400,7 +415,7 @@ export default function JobTabs({
                 <ApplicationsContent
                   applications={filteredApplications}
                   statusId={[0, 1, 2, 3, 4, 5, 6]}
-                  openChatModal={openChatModal}
+                  openChatModal={onChatClick}
                   updateConversationId={updateConversationId}
                   onApplicationClick={handleApplicationClick}
                   onNotesClick={handleNotesClick}
@@ -494,10 +509,9 @@ export default function JobTabs({
         )}
       </ResumeModal>
 
-      <ChatModal>
+      {/* <ChatModal>
         <div className="relative p-6 pb-20 h-full w-full">
           <div className="flex flex-col h-[100%] w-full">
-            {/*top bar */}
             <div className="justify-between sticky top-0 z-10 py-2 border-b bg-white/90 backdrop-blur">
               <div className="flex items-center gap-2 font-medium">
                 {getFullName(selectedApplication?.user)}
@@ -584,21 +598,6 @@ export default function JobTabs({
                 }}
                 maxLength={1000}
               />
-              {/* <Button
-                size="md"
-                disabled={sending}
-                onClick={() => {
-                  if (!selectedApplication?.user_id) return;
-                  if (messageInputRef.current?.value) {
-                    handleMessage(
-                      selectedApplication?.user_id,
-                      messageInputRef.current?.value,
-                    );
-                  }
-                }}
-              >
-                <SendHorizonal className="w-5 h-5" />
-              </Button> */}
               <button 
                 disabled={sending || !messageInputRef.current?.value.trim()}
                 onClick={() => {
@@ -616,6 +615,34 @@ export default function JobTabs({
               >
                   <SendHorizonal className="w-7 h-7" />
             </button>
+            </div>
+          </div>
+        </div>
+      </ChatModal> */}
+
+      <ChatModal>
+        <div className="p-8">
+          <div className="mb-4 flex flex-col items-center justify-center text-center">
+            <MessageSquarePlus className="text-primary h-8 w-8 mb-4"/>
+            <div className="flex flex-col items-center">
+              <h3 className="text-lg">New Conversation</h3>
+              <p className="text-gray-500 text-sm">
+                No conversation history with applicant <span className="text-primary">{getFullName(selectedApplication?.user)}</span>.
+              </p>
+              <p className="text-gray-500 text-sm">Initiate new conversation?</p>
+            </div>
+            <div className="flex justify-center gap-6 mt-2">
+              <Button 
+              className="bg-white text-primary hover:bg-gray-100 border-solid border-2"
+              onClick={closeChatModal}
+              >
+                Cancel
+              </Button>
+              <Button 
+              onClick={() => router.push(`conversations?userId=${selectedApplication?.user_id}`)}
+              >
+                Start new chat
+              </Button>
             </div>
           </div>
         </div>

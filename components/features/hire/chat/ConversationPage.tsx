@@ -96,6 +96,14 @@ export function ConversationPage({
 
     //redirectIfNotLoggedIn();
 
+    const createNewConversation = async (userId: string) => {
+        const response = await EmployerConversationService.createConversation(userId);
+        
+        if (response?.success && response.conversation?.id) {
+            setConversationId(response.conversation.id);
+        }
+    };
+
     // auto-switch to chat view on mobile when a conversation is selected
     useEffect(() => {
         if (isMobile && conversationId) setMobileView("chat");
@@ -109,6 +117,20 @@ export function ConversationPage({
     useEffect(() => {
         setProfileView(false);
     }, [conversationId]);
+
+    useEffect(() => {
+        if (applicantId && conversations.data) {
+            const findChat = conversations.data.find((convo) => 
+                convo.subscribers?.includes(applicantId)
+            );
+            
+            if (findChat?.id) {
+                setConversationId(findChat.id);
+            } else {
+                createNewConversation(applicantId);
+            }
+        }
+    }, [applicantId, conversations.data]);
 
     const sortedConvos = useMemo(
         () =>
@@ -138,22 +160,40 @@ export function ConversationPage({
         chatAnchorRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    const handleMessage = async (studentId: string | undefined, msg: string) => {
-        if (!msg.trim() || !studentId) return;
-        setSending(true);
+    // Handle message
+    const handleMessage = async (studentId: string | undefined, message: string) => {
+        if (message.trim() === "") return;
 
-        const studentConversation = conversations.data?.find((c) =>
+        setSending(true);
+        let userConversation = conversations.data?.find((c) =>
         c?.subscribers?.includes(studentId),
         );
 
-        if (!studentConversation) return endSend();
+        if (!userConversation && studentId) {
+        const response =
+            await EmployerConversationService.createConversation(studentId).catch(
+            endSend,
+            );
 
-        await EmployerConversationService.sendToUser(
-        studentConversation.id,
-        msg,
-        ).catch(endSend);
+        if (!response?.success) {
+            alert("Could not initiate conversation with user.");
+            endSend();
+            return;
+        }
 
+        setConversationId(response.conversation?.id ?? "");
+        userConversation = response.conversation;
         endSend();
+        }
+
+        setTimeout(async () => {
+        if (!userConversation) return endSend();
+        await EmployerConversationService.sendToUser(
+            userConversation?.id,
+            message,
+        ).catch(endSend);
+        endSend();
+        });
     };
 
     // loading state for initial fetch
@@ -400,16 +440,16 @@ export function ConversationPage({
             }
         </div>
         <div className="mt-10">
-            <div className="flex items-center gap-2">
+            <div className={cn("items-center gap-2", isMobile ? "" : "flex")}>
                 <button 
-                className="flex items-center justify-center w-full bg-primary text-md text-white text-md gap-2 p-2 rounded-sm"
+                className={cn("flex items-center justify-center w-full bg-primary text-sm text-white gap-2 p-2 rounded-sm", isMobile ? "mb-2" : "")}
                 onClick={openResumeModal}
                 >
                 <FileUser className="h-5 w-5"/>
                 Resume
                 </button>
                 <button
-                className="flex items-center justify-center w-full border-2 bg-white text-md text-primary text-md gap-2 p-2 rounded-sm"
+                className="flex items-center justify-center w-full border-2 bg-white text-sm text-primary gap-2 p-2 rounded-sm"
                 onClick={() => router.push(`dashboard/applicant?userId=${user?.id}`)}
                 >
                     View Full Application
@@ -655,7 +695,9 @@ export function ConversationPage({
     return (
         <div className="flex-1 flex flex-col-reverse gap-1 p-2 overflow-auto">
         <div ref={chatAnchorRef} />
-        {conversation.messages
+        {conversation?.messages?.length ? (
+            <>
+                {conversation.messages
             ?.map((message: any, idx: number) => {
             if (!idx) lastSelf = false;
             const oldLastSelf = lastSelf;
@@ -678,6 +720,12 @@ export function ConversationPage({
                 them={d.them}
             />
             ))}
+            </>
+        ) : (
+        <div>
+            <h1>start chattong with user</h1>
+        </div>
+    )}
         </div>
     );
     };

@@ -2,6 +2,7 @@
 // rework of ApplicationsTable
 "use client";
 
+import { useAuthContext } from "@/app/hire/authctx";
 import { Badge } from "@/components/ui/badge";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { ApplicationRow } from "./ApplicationRow";
@@ -56,6 +57,17 @@ export function ApplicationsContent({
   );
 
   const { app_statuses } = useDbRefs();
+
+  // if(loading){ 
+  //   return (
+  //     <div className="w-full flex items-center justify-center">
+  //       <div className="text-center">
+  //         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+  //         <p className="text-gray-600">Loading...</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   useEffect(() => {
     if (toastVisible) {
