@@ -53,8 +53,8 @@ export default function FormsPage() {
   } = useQuery({
     queryKey: ["forms:list"],
     queryFn: async () => (profile.data ? await fetchForms(profile.data) : []),
-    staleTime: 10_000,
-    gcTime: 10_000,
+    enabled: !!profile.data,            // wait until profile is available
+    refetchOnMount: "always",           // fetch every time the page/component mounts
   });
 
   const generatorForms = formList;

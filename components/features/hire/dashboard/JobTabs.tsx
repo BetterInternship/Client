@@ -2,10 +2,8 @@
 
 import { useAuthContext } from "@/app/hire/authctx";
 import { ApplicationsContent } from "@/components/features/hire/dashboard/ApplicationsContent";
-import { ShowUnverifiedBanner } from "@/components/ui/banner";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
-import { Tab, TabGroup } from "@/components/ui/tabs";
 import { useConversation, useConversations } from "@/hooks/use-conversation";
 import {
   useEmployerApplications,
@@ -17,7 +15,7 @@ import { useModal } from "@/hooks/use-modal";
 import { useSideModal } from "@/hooks/use-side-modal";
 import { EmployerConversationService, UserService } from "@/lib/api/services";
 import { EmployerApplication, InternshipPreferences } from "@/lib/db/db.types";
-import { ArrowLeft, Edit, Trash2, MessageSquarePlus } from "lucide-react";
+import { ArrowLeft, Edit, Info, Trash2, MessageSquarePlus } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Job } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
@@ -51,22 +49,8 @@ export default function JobTabs({
 
   // Business logic hook
   const {
-    searchTerm,
     saving,
-    isEditing,
-    jobsPage,
-    jobsPageSize,
-    filteredJobs,
-    setSearchTerm,
-    handleKeyPress,
-    handleJobSelect,
-    handleEditStart,
-    handleSave,
-    handleCancel,
-    handleShare,
     clearSelectedJob,
-    handlePageChange,
-    setIsEditing,
   } = useListingsBusinessLogic(ownedJobs);
   const { isAuthenticated, redirectIfNotLoggedIn, loading } = useAuthContext();
   const profile = useProfile();
@@ -97,6 +81,7 @@ export default function JobTabs({
     0, 1, 2, 3, 4, 5, 6,
   ]);
   const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
+  const [applicantToDelete, setApplicantToDelete] = useState<EmployerApplication | null>(null);
 
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const chatAnchorRef = useRef<HTMLDivElement>(null);
@@ -240,6 +225,12 @@ export default function JobTabs({
     Modal: ResumeModal,
   } = useModal("resume-modal");
 
+  const {
+    open: openApplicantDeleteModal,
+    close: closeApplicantDeleteModal,
+    Modal: ApplicantDeleteModal,
+  } = useModal("applicant-delete-modal");
+
   // Wrapper for review function to match expected signature
   const reviewApp = (
     id: string,
@@ -300,6 +291,40 @@ export default function JobTabs({
     applications.review(application.id ?? "", { status });
   };
 
+  const handleRequestApplicantDelete = (application: EmployerApplication) => {
+    setApplicantToDelete(application);
+    openApplicantDeleteModal();
+  };
+
+  const handleConfirmApplicantDelete = async () => {
+    if (!applicantToDelete?.id) return;
+    await applications.review(applicantToDelete.id, { status: 7 });
+    setApplicantToDelete(null);
+    closeApplicantDeleteModal();
+  };
+
+  const handleCancelApplicantDelete = () => {
+    setApplicantToDelete(null);
+    closeApplicantDeleteModal();
+  }
+
+  const handleRequestApplicantDelete = (application: EmployerApplication) => {
+    setApplicantToDelete(application);
+    openApplicantDeleteModal();
+  };
+
+  const handleConfirmApplicantDelete = async () => {
+    if (!applicantToDelete?.id) return;
+    await applications.review(applicantToDelete.id, { status: 7 });
+    setApplicantToDelete(null);
+    closeApplicantDeleteModal();
+  };
+
+  const handleCancelApplicantDelete = () => {
+    setApplicantToDelete(null);
+    closeApplicantDeleteModal();
+  }
+
   const onChatClick = () => {
     if (!selectedApplication?.user_id) return;
     updateConversationId(selectedApplication?.user_id);
@@ -333,6 +358,20 @@ export default function JobTabs({
           />
         )}
       </DeleteModal>
+      
+      <ApplicantDeleteModal>
+        {applicantToDelete && (
+          <div className="p-8 pt-0 h-full">
+            <div className="text-lg mb-4">
+              Delete applicant "{getFullName(applicantToDelete.user)}"?
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={handleCancelApplicantDelete}>Cancel</Button>
+              <Button scheme="destructive" onClick={handleConfirmApplicantDelete}>Delete</Button>
+            </div>
+          </div>
+        )}
+      </ApplicantDeleteModal>
       <div className="flex-1 flex flex-col w-full">
         <div className="flex items-center">
           <button
@@ -347,14 +386,16 @@ export default function JobTabs({
           <div className={cn(
             "px-4 py-3 bg-white border-gray-200 border-2 rounded-md",
             isMobile
-            ? "flex justify-between gap-2"
+            ? "flex flex-col justify-between gap-4 px-2 py-4"
             : "grid grid-cols-2 grid-rows-2 gap-x-2 gap-y-1 w-fit" 
           )}>
             <div className="flex items-center gap-2">
-              <Toggle
-                state={selectedJob!.is_active}
-                onClick={handleToggleActive}
-              />
+              <div className={isMobile ? "pl-2": ""}>
+                <Toggle
+                  state={selectedJob!.is_active}
+                  onClick={handleToggleActive}
+                />
+              </div>
               <span
                 className={cn(
                   "text-sm transition",
@@ -366,10 +407,9 @@ export default function JobTabs({
             </div>
             <div className="flex items-center gap-2">
               <Link href={{
-                pathname:"/listings/edit",
+                pathname:"/listings/details",
                 query: {
                   jobId: selectedJob!.id,
-                  refresh: true
                 }
               }}
               >
@@ -377,7 +417,24 @@ export default function JobTabs({
                   key="edit"
                   variant="ghost"
                   disabled={saving}
-                  className="text-gray-600 hover:bg-primary/10 gap-1"
+                  className="hover:bg-primary/10 gap-1"
+                >
+                  <Info size={16} />
+                  Preview
+                </Button>
+              </Link>
+              <Link href={{
+                pathname:"/listings/edit",
+                query: {
+                  jobId: selectedJob!.id,
+                }
+              }}
+              >
+                <Button
+                  key="edit"
+                  variant="ghost"
+                  disabled={saving}
+                  className="hover:bg-primary/10 gap-1"
                 >
                   <Edit size={16} />
                   Edit
@@ -387,7 +444,7 @@ export default function JobTabs({
                 key="delete"
                 variant="ghost"
                 disabled={saving}
-                className="text-destructive hover:bg-destructive/10 hover:text-destructive gap-1"
+                className="hover:bg-destructive/10 hover:text-destructive gap-1"
                 onClick={handleJobDelete}
               >
                 <Trash2 />
@@ -406,42 +463,22 @@ export default function JobTabs({
               }
             </p>
           </div>
-            <TabGroup>
-              <Tab name="Applicants">
-                {/* we need to add filtering here :D */}
-                <ApplicationsContent
-                  applications={filteredApplications}
-                  statusId={[0, 1, 2, 3, 4, 5, 6]}
-                  isLoading={isLoading}
-                  openChatModal={onChatClick}
-                  updateConversationId={updateConversationId}
-                  onApplicationClick={handleApplicationClick}
-                  onNotesClick={handleNotesClick}
-                  onScheduleClick={handleScheduleClick}
-                  onStatusChange={handleStatusChange}
-                  setSelectedApplication={setSelectedApplication}
-                ></ApplicationsContent>
-              </Tab>
-              <Tab name="Listing information">
-                <Card className="flex-1 min-w-0 p-0">
-                  {/* <Scrollbar> */}
-                    <ListingsDetailsPanel
-                      selectedJob={selectedJob}
-                      isEditing={isEditing}
-                      saving={saving}
-                      onEdit={handleEditStart}
-                      onSave={handleSave}
-                      onCancel={handleJobBack}
-                      onShare={handleShare}
-                      onDelete={handleJobDelete}
-                      updateJob={update_job}
-                      setIsEditing={setIsEditing}
-                    />
-                  {/* </Scrollbar> */}
-                </Card>
-              </Tab>
-            </TabGroup>
-        </div>
+              {/* we need to add filtering here :D */}
+              <ApplicationsContent
+                applications={filteredApplications}
+                statusId={[0, 1, 2, 3, 4, 5, 6]}
+                isLoading={isLoading}
+                openChatModal={onChatClick}
+                updateConversationId={updateConversationId}
+                onApplicationClick={handleApplicationClick}
+                onNotesClick={handleNotesClick}
+                onScheduleClick={handleScheduleClick}
+                onStatusChange={handleStatusChange}
+                setSelectedApplication={setSelectedApplication}
+                onRequestDeleteApplicant={handleRequestApplicantDelete}
+                applicantToDelete={applicantToDelete}
+              ></ApplicationsContent>
+          </div>
       </div>
 
       <ApplicantModal className="max-w-7xl w-full">

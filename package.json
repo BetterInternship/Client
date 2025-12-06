@@ -74,7 +74,7 @@
     "knuth-shuffle-seeded": "^1.0.6",
     "lucide-react": "^0.454.0",
     "luxon": "^3.6.1",
-    "next": "15.2.4",
+    "next": "^15.2.6",
     "next-themes": "^0.4.4",
     "number-to-words": "^1.2.4",
     "pocketbase": "^0.26.1",

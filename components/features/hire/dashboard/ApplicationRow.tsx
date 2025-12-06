@@ -1,47 +1,38 @@
 // Single row component for the applications table
 // Props in (application data), events out (onView, onNotes, etc.)
 // No business logic - just presentation and event emission
-import { useMemo } from "react";
 import { ActionItem } from "@/components/ui/action-item";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CommandMenu } from "@/components/ui/command-menu";
 import { useConversations } from "@/hooks/use-conversation";
 import { useAppContext } from "@/lib/ctx-app";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { getFullName } from "@/lib/profile";
 import { cn } from "@/lib/utils";
-import { fmtISO } from "@/lib/utils/date-utils";
+import { formatDateWithoutTime, formatTimestampDateWithoutTime } from "@/lib/utils/date-utils";
 import { statusMap } from "@/components/common/status-icon-map";
 import {
-  Ban,
   Calendar,
-  Check,
-  CheckCircle2,
   ContactRound,
-  FileQuestion,
   GraduationCap,
   MessageCircle,
   School,
-  Star,
   Trash,
-  XCircle,
 } from "lucide-react";
 import { ActionButton } from "@/components/ui/action-button";
 import { FormCheckbox } from "@/components/EditForm";
-import { DropdownGroup } from "@/components/ui/dropdown";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
 
 interface ApplicationRowProps {
   application: EmployerApplication;
-  onView: () => void;
+  onView: (v: any) => void;
   onNotes: () => void;
   onSchedule: () => void;
   onStatusChange: (status: number) => void;
-  onStatusButtonClick: (id: string, status: number) => void;
+  onDeleteButtonClick: (application: EmployerApplication) => void;
   openChatModal: () => void;
   updateConversationId: (conversationId: string) => void;
   setSelectedApplication: (application: EmployerApplication) => void;
@@ -67,7 +58,7 @@ export function ApplicationRow({
   setSelectedApplication,
   checkboxSelected = false,
   onToggleSelect,
-  onStatusButtonClick,
+  onDeleteButtonClick,
   statuses,
 }: ApplicationRowProps) {
   const { to_university_name, get_app_status } = useDbRefs();
@@ -117,19 +108,13 @@ export function ApplicationRow({
           <div className="flex items-center gap-2">
             <ContactRound size={16} />
             <span className="text-sm">
-              {preferences.internship_type ? "For Credit" : "Voluntary"}
+              {preferences.internship_type}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <Calendar size={16} />
             <span className="text-sm">
-              {preferences.expected_start_date ? (
-                <>
-                  {fmtISO(preferences.expected_start_date.toString())}
-                </>
-              ) : (
-                <span className="text-gray-500"> No start date provided</span>
-              )}
+              {formatTimestampDateWithoutTime(preferences.expected_start_date)}
             </span>
           </div>
         </div>
@@ -174,16 +159,14 @@ export function ApplicationRow({
         <span className="text-gray-500">{application.user?.degree}</span>
       </td>
       <td className="px-4 py-2">
-        {preferences.internship_type ? "For Credit" : "Voluntary"}
+        {preferences.internship_type}
       </td>
       <td className="px-4 py-2">
-        {preferences.expected_start_date ? (
-          <>
-            {fmtISO(preferences.expected_start_date.toString())}
-          </>
-        ) : (
-          <span> Not provided</span>
-        )}
+        {formatTimestampDateWithoutTime(preferences.expected_start_date)}
+      </td>
+      <td className="px-4 py-2">
+        {/* man why is the applied at date a string but the expected start date is a number */}
+        {formatDateWithoutTime(application.applied_at)}
       </td>
       <td className="px-4 py-2 overflow-visible">
         <DropdownMenu
@@ -219,7 +202,7 @@ export function ApplicationRow({
             icon={Trash}
             onClick={(e) => {
               e.stopPropagation();
-              onStatusButtonClick(application.id!, 7)
+              onDeleteButtonClick(application);
             }}
             destructive={true}
             enabled={application.status! !== 7}
