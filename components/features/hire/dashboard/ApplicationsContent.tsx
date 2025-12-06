@@ -23,6 +23,7 @@ import { AnimatePresence, easeOut, motion } from "framer-motion";
 interface ApplicationsContentProps {
   applications: EmployerApplication[];
   statusId: number[];
+  isLoading?: boolean;
   openChatModal: () => void;
   updateConversationId: (userId: string) => void;
   onApplicationClick: (application: EmployerApplication) => void;
@@ -34,6 +35,7 @@ interface ApplicationsContentProps {
 
 export function ApplicationsContent({
   applications,
+  isLoading,
   openChatModal,
   updateConversationId,
   onApplicationClick,
@@ -57,17 +59,6 @@ export function ApplicationsContent({
   );
 
   const { app_statuses } = useDbRefs();
-
-  // if(loading){ 
-  //   return (
-  //     <div className="w-full flex items-center justify-center">
-  //       <div className="text-center">
-  //         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-  //         <p className="text-gray-600">Loading...</p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
 
   useEffect(() => {
     if (toastVisible) {
@@ -240,6 +231,17 @@ export function ApplicationsContent({
   const toggleSelectAll = () => {
     allVisibleSelected ? unselectAll() : selectAll();
   };
+
+  if(isLoading || !app_statuses){ 
+    return (
+      <div className="w-full flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading Applicants...</p>
+        </div>
+      </div>
+    );
+  }
 
   const getCounts = (apps: EmployerApplication[]) => {
     const counts: Record<string | number, number> = { all: 0 };
@@ -419,83 +421,92 @@ export function ApplicationsContent({
         </>
         )}
       </AnimatePresence>
-      <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-200 border text-sm rounded-md overflow-visible">
-        <thead className="bg-gray-100">
-          <tr className="text-left">
-            <th className="p-4">
-              <Checkbox
-                onClick={toggleSelectAll}
-                checked={
-                  allVisibleSelected 
-                  ? true
-                  : someVisibleSelected
-                    ? 'indeterminate'
-                    : false
-                }
-                disabled={visibleApplications.length === 0}
-              />
-            </th>
-            <th className="p-4">
-              <div className="flex items-center gap-2">
-                <User2 size={16} />
-                <span>Applicant</span>
-              </div>
-            </th>
-            <th className="p-4">
-              <div className="flex items-center gap-2">
-                <GraduationCap size={16} />
-                <span>Education</span>
-              </div>
-            </th>
-            <th className="p-4">
-              <div className="flex items-center gap-2">
-                <ContactRound size={16} />
-                <span>Crediting</span>
-              </div>
-            </th>
-            <th className="p-4">
-              <div className="flex items-center gap-2">
-                <Calendar size={16} />
-                <span>Preferred start</span>
-              </div>
-            </th>
-            <th className="p-4">
-              <div className="flex items-center gap-2">
-                <ListCheck size={16} />
-                <span>Status</span>
-              </div>
-            </th>
-            <th className="p-4"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {visibleApplications.length ? (
-            visibleApplications.map((application) => (
-              <ApplicationRow
-                key={application.id}
-                application={application}
-                onView={() => onApplicationClick(application)}
-                onNotes={() => onNotesClick(application)}
-                onSchedule={() => onScheduleClick(application)}
-                onStatusChange={(status) => onStatusChange(application, status)}
-                openChatModal={openChatModal}
-                setSelectedApplication={setSelectedApplication}
-                updateConversationId={updateConversationId}
-                checkboxSelected={selectedApplications.has(application.id!)}
-                onToggleSelect={(v) => toggleSelect(application.id!, !!v)}
-                onStatusButtonClick={updateSingleStatus}
-                statuses={getRowStatuses(application.id!)}
-              />
-            ))
-        ) : (
-          <tr>
-            <td>
-              <Badge className="m-2">No applications under this category.</Badge>
-            </td>
-          </tr>
-        )}
-        </tbody>
-      </table>
+      {isLoading ? (
+          <div className="w-full flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading...</p>
+            </div>
+          </div>
+      ) : (
+        <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-200 border text-sm rounded-md overflow-visible">
+          <thead className="bg-gray-100">
+            <tr className="text-left">
+              <th className="p-4">
+                <Checkbox
+                  onClick={toggleSelectAll}
+                  checked={
+                    allVisibleSelected 
+                    ? true
+                    : someVisibleSelected
+                      ? 'indeterminate'
+                      : false
+                  }
+                  disabled={visibleApplications.length === 0}
+                />
+              </th>
+              <th className="p-4">
+                <div className="flex items-center gap-2">
+                  <User2 size={16} />
+                  <span>Applicant</span>
+                </div>
+              </th>
+              <th className="p-4">
+                <div className="flex items-center gap-2">
+                  <GraduationCap size={16} />
+                  <span>Education</span>
+                </div>
+              </th>
+              <th className="p-4">
+                <div className="flex items-center gap-2">
+                  <ContactRound size={16} />
+                  <span>Crediting</span>
+                </div>
+              </th>
+              <th className="p-4">
+                <div className="flex items-center gap-2">
+                  <Calendar size={16} />
+                  <span>Preferred start</span>
+                </div>
+              </th>
+              <th className="p-4">
+                <div className="flex items-center gap-2">
+                  <ListCheck size={16} />
+                  <span>Status</span>
+                </div>
+              </th>
+              <th className="p-4"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {visibleApplications.length ? (
+              visibleApplications.map((application) => (
+                <ApplicationRow
+                  key={application.id}
+                  application={application}
+                  onView={() => onApplicationClick(application)}
+                  onNotes={() => onNotesClick(application)}
+                  onSchedule={() => onScheduleClick(application)}
+                  onStatusChange={(status) => onStatusChange(application, status)}
+                  openChatModal={openChatModal}
+                  setSelectedApplication={setSelectedApplication}
+                  updateConversationId={updateConversationId}
+                  checkboxSelected={selectedApplications.has(application.id!)}
+                  onToggleSelect={(v) => toggleSelect(application.id!, !!v)}
+                  onStatusButtonClick={updateSingleStatus}
+                  statuses={getRowStatuses(application.id!)}
+                />
+              ))
+          ) : (
+            <tr>
+              <td>
+                <Badge className="m-2">No applications under this category.</Badge>
+              </td>
+            </tr>
+          )}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

@@ -102,8 +102,8 @@ export function ApplicantPage({
                     <div className="">
                         <div className="lg:flex items-center justify-between">
                             <div className="flex items-center">
-                                <div className="mr-4 relative">
-                                    <UserPfp user_id={user?.id || ""} size="20"/>
+                                <div className={cn("relative", isMobile ? "mr-2" : "mr-4")}>
+                                    <UserPfp user_id={user?.id || ""} size={cn(isMobile ? "16" : "20")}/>
                                     {internshipPreferences?.internship_type ==
                                         "credited" && (
                                         <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1 border-2 border-white">
@@ -112,14 +112,14 @@ export function ApplicantPage({
                                     }
                                 </div>
                                 <div className="mx-2">
-                                    <h3 className="text-xl">{getFullName(application?.user)}</h3>
-                                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                                    <h3 className={cn(isMobile? "text-lg" : "text-xl")}>{getFullName(application?.user)}</h3>
+                                    <div className={cn("items-center gap-2 text-xs text-gray-500", isMobile ? "" : "flex")}>
                                         {/* COntact info */}
                                         <div className="flex gap-1 items-center">
                                             <Phone className="h-4 w-4"/>
                                             <p className="text-gray-500 text-xs">{application?.user?.phone_number}</p>
                                         </div>
-                                        <p className="text-xs text-gray-500"> | </p>
+                                        {!isMobile && <p className="text-xs text-gray-500"> | </p>}
                                         <div className="flex gap-1">
                                             <Mail className="h-4 w-4"/>
                                             <p className="text-gray-500 text-xs">{application?.user?.edu_verification_email}</p>
@@ -127,7 +127,7 @@ export function ApplicantPage({
                                     </div>
 
                                     {/* links */}
-                                    <div className="flex gap-4 mt-4 items-center">
+                                    <div className={cn("flex gap-4 items-center", isMobile ? "mt-2" : "mt-4")}>
                                         <div>
                                             {user?.portfolio_link ? (
                                             <a
@@ -206,7 +206,7 @@ export function ApplicantPage({
                         <>
                             <HorizontalCollapsible
                             className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200 mt-4"
-                            title="Academic Information"
+                            title="Applicant Information"
                             >
                                 <div className="grid gap-2">
                                     <div className={cn(isMobile ? "flex justify-between" : "")}>
@@ -225,18 +225,6 @@ export function ApplicantPage({
                                         </p>
                                         <p className={cn("font-medium text-gray-900", isMobile ? "text-xs" : "text-sm")}>
                                             {formatMonth(user?.expected_graduation_date)}
-                                        </p>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <p className={cn("text-gray-500 text-xs")}>Email</p>
-                                        <p className={cn("font-medium text-gray-900", isMobile ? "text-xs" : "text-sm")}>
-                                            {user?.email || "Not provided"}
-                                        </p>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <p className="text-xs text-gray-500">Phone Number</p>
-                                        <p className="text-xs font-medium text-gray-900">
-                                        {user?.phone_number || "Not provided"}
                                         </p>
                                     </div>
                                 </div>
@@ -261,67 +249,6 @@ export function ApplicantPage({
                                     </div>
                                 </div>
                             </HorizontalCollapsible>
-                            
-                            <HorizontalCollapsible
-                            className="bg-gray-50 rounded-[0.33em] p-4 border border-gray-200 mt-2"
-                            title="Professional Links"
-                            >
-                                <div className="grid gap-2">
-                                    <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                                    <div className="flex justify-between">
-                                        <p className="text-xs text-gray-500">Portfolio</p>
-                                        {user?.portfolio_link ? (
-                                        <a
-                                            href={user?.portfolio_link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-600 hover:underline font-medium break-all text-xs"
-                                        >
-                                            View Portfolio
-                                        </a>
-                                        ) : (
-                                        <p className="text-xs font-medium text-gray-900">
-                                            Not provided
-                                        </p>
-                                        )}
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <p className="text-xs text-gray-500">GitHub</p>
-                                        {user?.github_link ? (
-                                        <a
-                                            href={user?.github_link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-600 hover:underline font-medium break-all text-xs"
-                                        >
-                                            View GitHub
-                                        </a>
-                                        ) : (
-                                        <p className="font-medium text-gray-900 text-xs">
-                                            Not provided
-                                        </p>
-                                        )}
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <p className="text-xs text-gray-500">LinkedIn</p>
-                                        {user?.linkedin_link ? (
-                                        <a
-                                            href={user?.linkedin_link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-600 hover:underline font-medium break-all text-xs"
-                                        >
-                                            View LinkedIn
-                                        </a>
-                                        ) : (
-                                        <p className="font-medium text-gray-900 text-xs">
-                                            Not provided
-                                        </p>
-                                        )}
-                                    </div>
-                                    </div>
-                                </div>
-                            </HorizontalCollapsible>
                         </>
                         
                     ) : (
@@ -335,7 +262,7 @@ export function ApplicantPage({
                                     ) : (
 
                                         <div>
-                                            <p className="text-xs">Applicant has no personal bio.</p>
+                                            <p className="text-xs">Applicant has not added a bio.</p>
                                             <Divider/>
                                         </div>
                                         

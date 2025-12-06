@@ -78,6 +78,7 @@ export default function JobTabs({
       job.is_deleted === true ||
       job.is_unlisted === true,
   );
+  const [isLoading, setLoading] = useState(true);
 
   const [selectedApplication, setSelectedApplication] =
     useState<EmployerApplication | null>(null);
@@ -145,10 +146,17 @@ export default function JobTabs({
   }, [lastSending]);
 
   useEffect(() => {
-    if (!selectedJobId && selectedJob?.id) {
+    if (selectedJob?.id) {
       setSelectedJobId(selectedJob?.id);
-    }
-  }, [selectedJobId]);
+      setLoading(true)
+
+      const timer = setTimeout(() => {
+      setLoading(false);
+    }, 400);
+    
+    return () => clearTimeout(timer);
+  }
+}, [selectedJob?.id]);
 
   // Handle message
   const handleMessage = async (userId: string, message: string) => {
@@ -307,17 +315,6 @@ export default function JobTabs({
     }
   }
 
-  if (applications.loading) {
-    return (
-      <div className="w-full flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   if (loading || !isAuthenticated())
     return <Loader>Loading dashboard...</Loader>;
 
@@ -415,6 +412,7 @@ export default function JobTabs({
                 <ApplicationsContent
                   applications={filteredApplications}
                   statusId={[0, 1, 2, 3, 4, 5, 6]}
+                  isLoading={isLoading}
                   openChatModal={onChatClick}
                   updateConversationId={updateConversationId}
                   onApplicationClick={handleApplicationClick}
