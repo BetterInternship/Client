@@ -65,14 +65,16 @@ function SideNav({ items }: { items: NavItem[] }) {
                 god && label === "Forms Automation" && alert("Coming Soon!")
               }
               className={cn(
-                "w-full h-10 pl-4 pr-24 flex flex-row justify-start border-0 hover:bg-primary/15 hover:text-primary",
+                "w-full h-10 pl-4 lg:pr-24 flex flex-row justify-start border-0 hover:bg-primary/15 hover:text-primary",
                 isActive ? "text-primary bg-primary/10" : "font-normal",
                 label === "Add Listing" ? "bg-primary text-white hover:bg-primary hover:text-white" : "",
                 isActive && "[&_svg]:fill-primary",
               )}
             >
               {icon}
-              {label}
+              <div className="sm:hidden lg:block">
+                {label}
+              </div>
             </Button>
           </Link>
         )
