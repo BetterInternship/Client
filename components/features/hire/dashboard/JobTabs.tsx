@@ -308,23 +308,6 @@ export default function JobTabs({
     closeApplicantDeleteModal();
   }
 
-  const handleRequestApplicantDelete = (application: EmployerApplication) => {
-    setApplicantToDelete(application);
-    openApplicantDeleteModal();
-  };
-
-  const handleConfirmApplicantDelete = async () => {
-    if (!applicantToDelete?.id) return;
-    await applications.review(applicantToDelete.id, { status: 7 });
-    setApplicantToDelete(null);
-    closeApplicantDeleteModal();
-  };
-
-  const handleCancelApplicantDelete = () => {
-    setApplicantToDelete(null);
-    closeApplicantDeleteModal();
-  }
-
   const onChatClick = () => {
     if (!selectedApplication?.user_id) return;
     updateConversationId(selectedApplication?.user_id);
