@@ -29,6 +29,8 @@ interface ApplicationsContentProps {
   onScheduleClick: (application: EmployerApplication) => void;
   onStatusChange: (application: EmployerApplication, status: number) => void;
   setSelectedApplication: (application: EmployerApplication) => void;
+  onRequestDeleteApplicant: (application: EmployerApplication) => void;
+  applicantToDelete: EmployerApplication | null;
 }
 
 export function ApplicationsContent({
@@ -40,6 +42,8 @@ export function ApplicationsContent({
   onScheduleClick,
   onStatusChange,
   setSelectedApplication,
+  onRequestDeleteApplicant,
+  applicantToDelete,
 }: ApplicationsContentProps) {
   const { isMobile } = useAppContext();
   const [selectedApplications, setSelectedApplications] = useState<Set<string>>(
@@ -68,8 +72,8 @@ export function ApplicationsContent({
   }, [toastVisible]);
   // make command bars visible when an applicant is selected.
   useEffect(() => {
-    setCommandBarsVisible(selectedApplications.size > 0);
-  }, [selectedApplications.size]);
+    setCommandBarsVisible(selectedApplications.size > 0 && !applicantToDelete);
+  }, [selectedApplications.size, applicantToDelete]);
 
   // make api call to update status on button click.
   const updateStatus = async (status: number) => {
@@ -156,7 +160,7 @@ export function ApplicationsContent({
         onClick: () => updateStatus(status.id),
         destructive: uiProps?.destructive,
       };
-    })
+  })
     .filter(Boolean);
 
     // get statuses specifically for the rows. these use different action items.
@@ -190,7 +194,6 @@ export function ApplicationsContent({
   const visibleApplications = applyActiveFilter(sortedApplications).filter(
     (application) => application.status !== undefined,
   );
-
   
   const numVisibleSelected = visibleApplications.filter(app =>
     selectedApplications.has(app.id!)
@@ -250,7 +253,6 @@ export function ApplicationsContent({
 
     return counts;
   };
-
 
   return isMobile ? (
     <div className="flex flex-col gap-2 min-h-screen">
@@ -315,7 +317,9 @@ export function ApplicationsContent({
                       label: "Delete",
                       icon: Trash,
                       destructive: true,
-                      onClick: () => updateStatus(7),
+                      onClick: () => onRequestDeleteApplicant?.(
+                        sortedApplications.find(a => selectedApplications.has(a.id!))!
+                      ),
                     },
                   ],
                 ]}
@@ -345,7 +349,7 @@ export function ApplicationsContent({
               updateConversationId={updateConversationId}
               checkboxSelected={selectedApplications.has(application.id!)}
               onToggleSelect={(v) => toggleSelect(application.id!, v)}
-              onStatusButtonClick={updateSingleStatus}
+              onDeleteButtonClick={onRequestDeleteApplicant}
               statuses={getRowStatuses(application.id!)}
             />
           ))
@@ -405,7 +409,9 @@ export function ApplicationsContent({
                     label: "Delete",
                     icon: Trash,
                     destructive: true,
-                    onClick: () => updateStatus(7),
+                    onClick: () => onRequestDeleteApplicant?.(
+                      sortedApplications.find(a => selectedApplications.has(a.id!))!
+                    ),
                   },
                 ],
               ]}
@@ -490,7 +496,7 @@ export function ApplicationsContent({
                 updateConversationId={updateConversationId}
                 checkboxSelected={selectedApplications.has(application.id!)}
                 onToggleSelect={(v) => toggleSelect(application.id!, v)}
-                onStatusButtonClick={updateSingleStatus}
+                onDeleteButtonClick={() => onRequestDeleteApplicant?.(application)}
                 statuses={getRowStatuses(application.id!)}
               />
             ))
