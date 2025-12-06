@@ -72,7 +72,7 @@ function SideNav({ items }: { items: NavItem[] }) {
               )}
             >
               {icon}
-              <div className="sm:hidden lg:block">
+              <div className="hidden lg:block">
                 {label}
               </div>
             </Button>
