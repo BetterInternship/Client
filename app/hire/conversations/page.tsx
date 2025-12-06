@@ -19,8 +19,10 @@ export default function ConversationsPage() {
     }, [userId, router]);
 
   return(
-    //<ContentLayout>
+    <ContentLayout
+    className="p-0 max-h-[calc(100vh-7rem)] overflow-hidden"
+    >
       <ConversationPage applicantId={userId || undefined} />
-    //</ContentLayout>
+    </ContentLayout>
   )
 };

@@ -58,7 +58,7 @@ function SideNav({ items }: { items: NavItem[] }) {
                 "w-full h-10 pl-4 pr-24 flex flex-row justify-start border-0 hover:bg-primary/15 hover:text-primary",
                 isActive ? "text-primary bg-primary/10" : "font-normal",
                 label === "Add Listing" ? "bg-primary text-white hover:bg-primary hover:text-white" : "",
-                isActive && "[&_svg]:fill-primary",
+                isActive && "[&_svg]:fill-primary"
               )}
             >
               {icon}
@@ -73,9 +73,10 @@ function SideNav({ items }: { items: NavItem[] }) {
 
 interface ContentLayoutProps {
   children?: React.ReactNode;
+  className?: string;
 }
 
-const ContentLayout: React.FC<ContentLayoutProps> = ({ children }) => {
+const ContentLayout: React.FC<ContentLayoutProps> = ({ children, className }) => {
   const { isMobile } = useMobile();
   
   return (
@@ -95,7 +96,8 @@ const ContentLayout: React.FC<ContentLayoutProps> = ({ children }) => {
       )} 
       <main className={cn(
         "flex-1 flex overflow-auto justify-center mb-20 h-[100%] pt-4",
-        isMobile ? "px-2" : "px-8"
+        isMobile ? "px-2" : "px-8",
+        className
       )}>
         {children}
       </main>

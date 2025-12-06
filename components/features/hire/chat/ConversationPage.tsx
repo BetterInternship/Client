@@ -204,8 +204,7 @@ export function ConversationPage({
     const hasConversations = (conversations.data?.length ?? 0) > 0;
 
     return (
-        // <ContentLayout>
-        <div className="w-full h-full flex flex-col md:flex-row">
+        <div className="w-full h-full flex flex-col md:flex-row overflow-hidden">
             {hasConversations ? (
             <>
                 {/* ===== Left: List (Desktop always visible; Mobile only when in "list" view) ===== */}
@@ -260,7 +259,7 @@ export function ConversationPage({
                 ) : conversationId ? (
                     <>
                     {/*top bar */}
-                    <div className="flex justify-between sticky top-0 z-10 px-3 py-2 border-b bg-white/90 backdrop-blur">
+                    <div className="flex justify-between sticky shrink-0 top-0 z-10 px-3 py-2 border-b bg-white/90 backdrop-blur">
                         <div className="flex items-center gap-2">
                         {isMobile && (
                             <button
@@ -336,7 +335,6 @@ export function ConversationPage({
             <NoConversationsEmptyState />
             )}
         </div>
-        // </ContentLayout>
     );
     }
 
@@ -595,8 +593,8 @@ export function ConversationPage({
     return (
         <div
         className={cn(
-            "sticky bottom-0 z-10 border-t bg-white",
-            "px-2 pb-[calc(env(safe-area-inset-bottom)+8px)] pt-2",
+            "z-10 border-t bg-white",
+            "px-2 py-2",
         )}
         >
         <div className="flex gap-2">
@@ -693,7 +691,7 @@ export function ConversationPage({
     let lastSelf = false;
 
     return (
-        <div className="flex-1 flex flex-col-reverse gap-1 p-2 overflow-auto">
+        <div className="flex-1 flex flex-col-reverse gap-1 p-2 overflow-auto min-h-0">
         <div ref={chatAnchorRef} />
         {conversation?.messages?.length ? (
             <>
