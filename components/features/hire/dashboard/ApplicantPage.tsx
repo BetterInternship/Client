@@ -106,8 +106,11 @@ export function ApplicantPage({
                     </div>
 
                     {/* actions */}
-                            <div className={cn("flex items-center gap-2 my-4", isMobile ? "justify-start" : "justify-start")}>
-                                <button className="flex items-center gap-2 text-sm text-gray-600 rounded-[0.33em] p-1.5 px-2 border border-gray-300 hover:text-gray-700 hover:bg-gray-100">
+                        <div className={cn("flex items-center gap-2 my-4", isMobile ? "justify-start" : "justify-start")}>
+                            <button
+                                className="flex items-center gap-2 text-sm text-gray-600 rounded-[0.33em] p-1.5 px-2 border border-gray-300 hover:text-gray-700 hover:bg-gray-100"
+                                onClick={() => router.push(`/conversations?userId=${user.id}`)}
+                                >
                                     <MessageCircle className="h-5 w-5"/> Chat
                                 </button>
                                 <DropdownMenu
@@ -116,22 +119,6 @@ export function ApplicantPage({
                                 />
                             </div>
                     
-                    {/* other roles *note: will make this look better */}
-                        <div className="flex my-2 mt-4">
-                            <p className="text-sm text-gray-500">Other roles applied for: </p>
-                                <div className="flex">
-                                    {userApplications?.length !== 0 ? (
-                                        userApplications?.map((a) => 
-                                        <p className="text-gray-500 text-sm ml-1">
-                                            {a.job?.title}
-                                            {a !== userApplications?.at(-1) && <>, </>}
-                                        </p>
-                                    )) : (
-                                        <p className="text-gray-500 text-sm"> No other applied roles</p>
-                                    )
-                                    }
-                                </div>
-                        </div>
 
                     {isMobile ? (
                         <>
@@ -374,6 +361,22 @@ export function ApplicantPage({
                                     </div>
                                 </div>
                             </div>
+                            {/* other roles *note: will make this look better */}
+                        <div className="flex flex-col my-2 mt-4 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200">
+                            <p className="text-sm text-gray-500">Other roles applied for: </p>
+                                <div className="flex flex-wrap gap-1">
+                                    {userApplications?.length !== 0 ? (
+                                        userApplications?.map((a) => 
+                                        <p className="inline-flex items-center text-gray-500 text-sm ml-1">
+                                            {a.job?.title}
+                                            {a !== userApplications?.at(-1) && <>, </>}
+                                        </p>
+                                    )) : (
+                                        <p className="text-gray-500 text-sm"> No other applied roles</p>
+                                    )
+                                    }
+                            </div>
+                        </div>
                         </>
                     )}
                 </div>

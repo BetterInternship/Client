@@ -32,16 +32,6 @@ const navItems: NavItem[] = [
     icon: <MessageCircleMore className="h-5 w-5" />,
     label: "Chats",
   },
-  // {
-  //   href: "/listings",
-  //   icon: <FileText className="h-5 w-5" />,
-  //   label: "My Listings",
-  // },
-  // {
-  //   href: "/forms-management",
-  //   icon: <FileUser className="h-5 w-5" />,
-  //   label: "Forms Automation",
-  // },
 ];
 
 function SideNav({ items }: { items: NavItem[] }) {
