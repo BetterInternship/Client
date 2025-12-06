@@ -4,7 +4,6 @@ import { useAuthContext } from "@/app/hire/authctx";
 import { ApplicationsContent } from "@/components/features/hire/dashboard/ApplicationsContent";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
-import { Tab, TabGroup } from "@/components/ui/tabs";
 import { useConversation, useConversations } from "@/hooks/use-conversation";
 import {
   useEmployerApplications,
@@ -51,12 +50,7 @@ export default function JobTabs({
   // Business logic hook
   const {
     saving,
-    isEditing,
-    handleEditStart,
-    handleSave,
-    handleShare,
     clearSelectedJob,
-    setIsEditing,
   } = useListingsBusinessLogic(ownedJobs);
   const { isAuthenticated, redirectIfNotLoggedIn, loading } = useAuthContext();
   const profile = useProfile();
@@ -318,14 +312,16 @@ const handleJobBack = () => {
           <div className={cn(
             "px-4 py-3 bg-white border-gray-200 border-2 rounded-md",
             isMobile
-            ? "flex justify-between gap-2"
+            ? "flex flex-col justify-between gap-4 px-2 py-4"
             : "grid grid-cols-2 grid-rows-2 gap-x-2 gap-y-1 w-fit" 
           )}>
             <div className="flex items-center gap-2">
-              <Toggle
-                state={selectedJob!.is_active}
-                onClick={handleToggleActive}
-              />
+              <div className={isMobile ? "pl-2": ""}>
+                <Toggle
+                  state={selectedJob!.is_active}
+                  onClick={handleToggleActive}
+                />
+              </div>
               <span
                 className={cn(
                   "text-sm transition",
@@ -347,7 +343,7 @@ const handleJobBack = () => {
                   key="edit"
                   variant="ghost"
                   disabled={saving}
-                  className="text-gray-600 hover:bg-primary/10 gap-1"
+                  className="hover:bg-primary/10 gap-1"
                 >
                   <Info size={16} />
                   Preview
@@ -364,7 +360,7 @@ const handleJobBack = () => {
                   key="edit"
                   variant="ghost"
                   disabled={saving}
-                  className="text-gray-600 hover:bg-primary/10 gap-1"
+                  className="hover:bg-primary/10 gap-1"
                 >
                   <Edit size={16} />
                   Edit
@@ -374,7 +370,7 @@ const handleJobBack = () => {
                 key="delete"
                 variant="ghost"
                 disabled={saving}
-                className="text-destructive hover:bg-destructive/10 hover:text-destructive gap-1"
+                className="hover:bg-destructive/10 hover:text-destructive gap-1"
                 onClick={handleJobDelete}
               >
                 <Trash2 />

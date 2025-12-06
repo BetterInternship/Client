@@ -14,30 +14,23 @@ import { EmployerApplication } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { getFullName } from "@/lib/profile";
 import { cn } from "@/lib/utils";
-import { fmtISO } from "@/lib/utils/date-utils";
+import { formatDateWithoutTime, formatTimestampDateWithoutTime } from "@/lib/utils/date-utils";
 import { statusMap } from "@/components/common/status-icon-map";
 import {
-  Ban,
   Calendar,
-  Check,
-  CheckCircle2,
   ContactRound,
-  FileQuestion,
   GraduationCap,
   MessageCircle,
   School,
-  Star,
   Trash,
-  XCircle,
 } from "lucide-react";
 import { ActionButton } from "@/components/ui/action-button";
 import { FormCheckbox } from "@/components/EditForm";
-import { DropdownGroup } from "@/components/ui/dropdown";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
 
 interface ApplicationRowProps {
   application: EmployerApplication;
-  onView: () => void;
+  onView: (v: any) => void;
   onNotes: () => void;
   onSchedule: () => void;
   onStatusChange: (status: number) => void;
@@ -117,19 +110,13 @@ export function ApplicationRow({
           <div className="flex items-center gap-2">
             <ContactRound size={16} />
             <span className="text-sm">
-              {preferences.internship_type ? "For Credit" : "Voluntary"}
+              {preferences.internship_type}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <Calendar size={16} />
             <span className="text-sm">
-              {preferences.expected_start_date ? (
-                <>
-                  {fmtISO(preferences.expected_start_date.toString())}
-                </>
-              ) : (
-                <span className="text-gray-500"> No start date provided</span>
-              )}
+              {formatTimestampDateWithoutTime(preferences.expected_start_date)}
             </span>
           </div>
         </div>
@@ -174,16 +161,14 @@ export function ApplicationRow({
         <span className="text-gray-500">{application.user?.degree}</span>
       </td>
       <td className="px-4 py-2">
-        {preferences.internship_type ? "For Credit" : "Voluntary"}
+        {preferences.internship_type}
       </td>
       <td className="px-4 py-2">
-        {preferences.expected_start_date ? (
-          <>
-            {fmtISO(preferences.expected_start_date.toString())}
-          </>
-        ) : (
-          <span> Not provided</span>
-        )}
+        {formatTimestampDateWithoutTime(preferences.expected_start_date)}
+      </td>
+      <td className="px-4 py-2">
+        {/* man why is the applied at date a string but the expected start date is a number */}
+        {formatDateWithoutTime(application.applied_at)}
       </td>
       <td className="px-4 py-2 overflow-visible">
         <DropdownMenu

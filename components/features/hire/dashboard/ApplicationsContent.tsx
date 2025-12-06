@@ -258,6 +258,7 @@ export function ApplicationsContent({
         visible={toastVisible}
         title={toastMessage}
         indicator={<CheckCircle2 />}
+        className="top-6 z-[1000]"
       />
       <ApplicationsHeader
         selectedCounts={getCounts(sortedApplications)}
@@ -329,7 +330,13 @@ export function ApplicationsContent({
             <ApplicationRow
               key={application.id}
               application={application}
-              onView={() => onApplicationClick(application)}
+              onView={(v) => {
+                if (selectedApplications.size === 0) {
+                  onApplicationClick(application)
+                } else {
+                  toggleSelect(application.id!, v)
+                }
+              }}
               onNotes={() => onNotesClick(application)}
               onSchedule={() => onScheduleClick(application)}
               onStatusChange={(status) => onStatusChange(application, status)}
@@ -337,7 +344,7 @@ export function ApplicationsContent({
               setSelectedApplication={setSelectedApplication}
               updateConversationId={updateConversationId}
               checkboxSelected={selectedApplications.has(application.id!)}
-              onToggleSelect={(v) => toggleSelect(application.id!, !!v)}
+              onToggleSelect={(v) => toggleSelect(application.id!, v)}
               onStatusButtonClick={updateSingleStatus}
               statuses={getRowStatuses(application.id!)}
             />
@@ -444,7 +451,13 @@ export function ApplicationsContent({
             <th className="p-4">
               <div className="flex items-center gap-2">
                 <Calendar size={16} />
-                <span>Preferred start</span>
+                <span>Expected start date</span>
+              </div>
+            </th>
+            <th className="p-4">
+              <div className="flex items-center gap-2">
+                <Calendar size={16} />
+                <span>Date applied</span>
               </div>
             </th>
             <th className="p-4">
@@ -462,7 +475,13 @@ export function ApplicationsContent({
               <ApplicationRow
                 key={application.id}
                 application={application}
-                onView={() => onApplicationClick(application)}
+                onView={(v) => {
+                  if (selectedApplications.size === 0) {
+                    onApplicationClick(application)
+                  } else {
+                    toggleSelect(application.id!, v)
+                  }
+                }}
                 onNotes={() => onNotesClick(application)}
                 onSchedule={() => onScheduleClick(application)}
                 onStatusChange={(status) => onStatusChange(application, status)}
@@ -470,7 +489,7 @@ export function ApplicationsContent({
                 setSelectedApplication={setSelectedApplication}
                 updateConversationId={updateConversationId}
                 checkboxSelected={selectedApplications.has(application.id!)}
-                onToggleSelect={(v) => toggleSelect(application.id!, !!v)}
+                onToggleSelect={(v) => toggleSelect(application.id!, v)}
                 onStatusButtonClick={updateSingleStatus}
                 statuses={getRowStatuses(application.id!)}
               />
