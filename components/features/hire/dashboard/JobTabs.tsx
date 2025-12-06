@@ -411,7 +411,7 @@ export default function JobTabs({
                 className="hover:bg-destructive/10 hover:text-destructive gap-1"
                 onClick={handleJobDelete}
               >
-                <Trash2 />http://hire.localhost:3000/dashboard/manage?jobId=fedb61ca-77fe-49f0-b76a-5435abc5896e
+                <Trash2 />
                 Delete
               </Button>
             </div>
