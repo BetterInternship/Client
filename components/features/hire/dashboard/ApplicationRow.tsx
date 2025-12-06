@@ -1,13 +1,11 @@
 // Single row component for the applications table
 // Props in (application data), events out (onView, onNotes, etc.)
 // No business logic - just presentation and event emission
-import { useMemo } from "react";
 import { ActionItem } from "@/components/ui/action-item";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CommandMenu } from "@/components/ui/command-menu";
 import { useConversations } from "@/hooks/use-conversation";
 import { useAppContext } from "@/lib/ctx-app";
 import { EmployerApplication } from "@/lib/db/db.types";
@@ -34,7 +32,7 @@ interface ApplicationRowProps {
   onNotes: () => void;
   onSchedule: () => void;
   onStatusChange: (status: number) => void;
-  onStatusButtonClick: (id: string, status: number) => void;
+  onDeleteButtonClick: (application: EmployerApplication) => void;
   openChatModal: () => void;
   updateConversationId: (conversationId: string) => void;
   setSelectedApplication: (application: EmployerApplication) => void;
@@ -60,7 +58,7 @@ export function ApplicationRow({
   setSelectedApplication,
   checkboxSelected = false,
   onToggleSelect,
-  onStatusButtonClick,
+  onDeleteButtonClick,
   statuses,
 }: ApplicationRowProps) {
   const { to_university_name, get_app_status } = useDbRefs();
@@ -204,7 +202,7 @@ export function ApplicationRow({
             icon={Trash}
             onClick={(e) => {
               e.stopPropagation();
-              onStatusButtonClick(application.id!, 7)
+              onDeleteButtonClick(application);
             }}
             destructive={true}
             enabled={application.status! !== 7}

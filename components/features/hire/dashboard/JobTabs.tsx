@@ -73,6 +73,7 @@ export default function JobTabs({
     0, 1, 2, 3, 4, 5, 6,
   ]);
   const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
+  const [applicantToDelete, setApplicantToDelete] = useState<EmployerApplication | null>(null);
 
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const chatAnchorRef = useRef<HTMLDivElement>(null);
@@ -208,6 +209,12 @@ export default function JobTabs({
     Modal: ResumeModal,
   } = useModal("resume-modal");
 
+  const {
+    open: openApplicantDeleteModal,
+    close: closeApplicantDeleteModal,
+    Modal: ApplicantDeleteModal,
+  } = useModal("applicant-delete-modal");
+
   // Wrapper for review function to match expected signature
   const reviewApp = (
     id: string,
@@ -258,7 +265,7 @@ export default function JobTabs({
   };
 
   //goes back to job list
-const handleJobBack = () => {
+  const handleJobBack = () => {
     router.push("/dashboard");
   };
 
@@ -268,6 +275,23 @@ const handleJobBack = () => {
   ) => {
     applications.review(application.id ?? "", { status });
   };
+
+  const handleRequestApplicantDelete = (application: EmployerApplication) => {
+    setApplicantToDelete(application);
+    openApplicantDeleteModal();
+  };
+
+  const handleConfirmApplicantDelete = async () => {
+    if (!applicantToDelete?.id) return;
+    await applications.review(applicantToDelete.id, { status: 7 });
+    setApplicantToDelete(null);
+    closeApplicantDeleteModal();
+  };
+
+  const handleCancelApplicantDelete = () => {
+    setApplicantToDelete(null);
+    closeApplicantDeleteModal();
+  }
 
   if (applications.loading) {
     return (
@@ -298,6 +322,20 @@ const handleJobBack = () => {
           />
         )}
       </DeleteModal>
+      
+      <ApplicantDeleteModal>
+        {applicantToDelete && (
+          <div className="p-8 pt-0 h-full">
+            <div className="text-lg mb-4">
+              Delete applicant "{getFullName(applicantToDelete.user)}"?
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={handleCancelApplicantDelete}>Cancel</Button>
+              <Button scheme="destructive" onClick={handleConfirmApplicantDelete}>Delete</Button>
+            </div>
+          </div>
+        )}
+      </ApplicantDeleteModal>
       <div className="flex-1 flex flex-col w-full">
         <div className="flex items-center">
           <button
@@ -373,7 +411,7 @@ const handleJobBack = () => {
                 className="hover:bg-destructive/10 hover:text-destructive gap-1"
                 onClick={handleJobDelete}
               >
-                <Trash2 />
+                <Trash2 />http://hire.localhost:3000/dashboard/manage?jobId=fedb61ca-77fe-49f0-b76a-5435abc5896e
                 Delete
               </Button>
             </div>
@@ -389,19 +427,21 @@ const handleJobBack = () => {
               }
             </p>
           </div>
-                {/* we need to add filtering here :D */}
-                <ApplicationsContent
-                  applications={filteredApplications}
-                  statusId={[0, 1, 2, 3, 4, 5, 6]}
-                  openChatModal={openChatModal}
-                  updateConversationId={updateConversationId}
-                  onApplicationClick={handleApplicationClick}
-                  onNotesClick={handleNotesClick}
-                  onScheduleClick={handleScheduleClick}
-                  onStatusChange={handleStatusChange}
-                  setSelectedApplication={setSelectedApplication}
-                ></ApplicationsContent>
-        </div>
+              {/* we need to add filtering here :D */}
+              <ApplicationsContent
+                applications={filteredApplications}
+                statusId={[0, 1, 2, 3, 4, 5, 6]}
+                openChatModal={openChatModal}
+                updateConversationId={updateConversationId}
+                onApplicationClick={handleApplicationClick}
+                onNotesClick={handleNotesClick}
+                onScheduleClick={handleScheduleClick}
+                onStatusChange={handleStatusChange}
+                setSelectedApplication={setSelectedApplication}
+                onRequestDeleteApplicant={handleRequestApplicantDelete}
+                applicantToDelete={applicantToDelete}
+              ></ApplicationsContent>
+          </div>
       </div>
 
       <ApplicantModal className="max-w-7xl w-full">
