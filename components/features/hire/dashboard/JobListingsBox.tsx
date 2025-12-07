@@ -106,7 +106,7 @@ export function JobListingsBox({
                         type={applicants.filter(a => a.status === 0).length > 0 ? "primary" : "default"}
                         strength={"default"}
                     >
-                        {applicants.filter(a => a.status === 0).length} new applicant{applicants.length !== 1 ? "s" : ""}
+                        {applicants.filter(a => a.status === 0).length} new applicant{applicants.filter(a => a.status === 0).length !== 1 ? "s" : ""}
                     </Badge>
                 </div>
 
