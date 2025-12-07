@@ -3,7 +3,7 @@ import ContentLayout from "@/components/features/hire/content-layout";
 import { Card } from "@/components/ui/card";
 import { useAppContext } from "@/lib/ctx-app";
 import { cn } from "@/lib/utils";
-import { BadgeInfo, Calendar, LucideMessageCircleMore, Mail, Phone } from "lucide-react";
+import { BadgeInfo, Calendar, Facebook, LucideMessageCircleMore, Mail, Phone } from "lucide-react";
 import Link from "next/link";
 
 export default function HelpPage() {
@@ -39,6 +39,12 @@ export default function HelpPage() {
               <span className="flex items-center gap-2">
                 <LucideMessageCircleMore size={20} />
                 Viber
+              </span>
+            </Link>
+            <Link href="viber://add?number=639276604999">
+              <span className="flex items-center gap-2">
+                <Facebook size={20} />
+                Facebook
               </span>
             </Link>
           </Card>
