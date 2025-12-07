@@ -5,7 +5,7 @@
 import { EmployerApplication, Job } from "@/lib/db/db.types";
 import { JobListingsBox } from "./JobListingsBox";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Calendar, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -63,17 +63,30 @@ export function JobsContent({
                 ) : (
                     <div className="w-full h-full flex flex-col justify-center items-center gap-2">
                         <span className="text-muted-foreground">You haven't created any job listings.</span>
-                        <Link
-                            href="/listings/create"
-                            className=""
-                        >
-                            <Button
-                                className="px-8 py-6"
+                        <div className="flex gap-2">
+                            <Link
+                                href="/listings/create"
+                                className=""
                             >
-                                <Plus />
-                                Add Listing
-                            </Button>
-                        </Link>
+                                <Button
+                                    className="px-8 py-6"
+                                >
+                                    <Plus />
+                                    Add a listing to get started.
+                                </Button>
+                            </Link>
+                            <Link
+                                href="https://calendar.app.google/boXRU8HEkisZT95D6"
+                            >
+                                <Button
+                                    className="px-8 py-6"
+                                    variant="outline"
+                                >
+                                    <Calendar />
+                                    Need help? Book a demo.
+                                </Button>
+                            </Link>
+                        </div>
                     </div>
                 )}
         </>
