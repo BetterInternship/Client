@@ -41,7 +41,7 @@ export default function HelpPage() {
                 Viber
               </span>
             </Link>
-            <Link href="viber://add?number=639276604999">
+            <Link href="https://www.facebook.com/profile.php?id=61579853068043">
               <span className="flex items-center gap-2">
                 <Facebook size={20} />
                 Facebook
