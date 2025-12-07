@@ -13,17 +13,12 @@ import { useRouter } from "next/navigation";
 interface JobListingProps {
     job: Job;
     applications: EmployerApplication[];
-    update_job: (
-        job_id: string,
-        job: Partial<Job>,
-    ) => Promise<{ success: boolean }>;
     isLoading?: boolean;
 }
 
 export function JobListingsBox({
     job,
     applications,
-    update_job,
     isLoading
 }: JobListingProps) {
     const { to_job_pay_freq_name } = useDbRefs();
@@ -40,7 +35,6 @@ export function JobListingsBox({
     };
 
     const router = useRouter();
-    const isMobile = useMobile();
 
     if(isLoading) {
         return (
