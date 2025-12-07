@@ -11,7 +11,7 @@ import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAuthContext } from "../authctx";
 import { Job } from "@/lib/db/db.types";
 
@@ -24,6 +24,8 @@ function DashboardContent() {
   const activeJobs = ownedJobs.filter((job) => job.is_active)
   const inactiveJobs = ownedJobs.filter((job) => !job.is_active)
 
+  const [isLoading, setLoading] = useState(true);
+
   redirectIfNotLoggedIn();
 
   const handleUpdateJob = async (jobId: string, updates: Partial<Job>) => {
@@ -31,19 +33,20 @@ function DashboardContent() {
     return result;
   }
 
-  if (loading) {
-    return (
-      <div className="w-full flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+      if (ownedJobs) {
+        setLoading(true)
+  
+        const timer = setTimeout(() => {
+        setLoading(false);
+      }, 400);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [ownedJobs]);
 
   if (loading || !isAuthenticated())
-    return <Loader>Loading dashboard...</Loader>;
+    return <Loader>Loading Dashboard...</Loader>;
 
   return (
     <ContentLayout>
@@ -65,7 +68,7 @@ function DashboardContent() {
                     jobs={ownedJobs}
                     employerId={profile.data?.id || ""}
                     updateJob={handleUpdateJob}
-                    isLoading={applications.loading}
+                    isLoading={isLoading}
                   />
                   {isMobile && (
                     <Link href="listings/create">
