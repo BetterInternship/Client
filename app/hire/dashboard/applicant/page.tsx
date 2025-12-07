@@ -18,8 +18,15 @@ function ApplicantPageContent () {
     const [userData, setUserData] = useState<EmployerApplication | undefined>(undefined)
     const [loading, setLoading] = useState(true);
     const applications = useEmployerApplications();
-    const userApplication = applications?.employer_applications.find(a => userId === a.user_id && a.job_id === jobId)
-    const otherApplications = applications?.employer_applications.filter(a => userId === a.user_id && a.id !== userApplication?.id)
+    let userApplication = applications?.employer_applications.find(a => userId === a.user_id);
+    let otherApplications = applications?.employer_applications.filter(a => userId === a.user_id);
+
+    if (jobId){
+        userApplication = applications?.employer_applications.find(a => userId === a.user_id && a.job_id === jobId)
+        otherApplications = applications?.employer_applications.filter(a => userId === a.user_id && a.id !== userApplication?.id);
+
+    }
+
     const { app_statuses } = useDbRefs();
 
     useEffect(() => {
