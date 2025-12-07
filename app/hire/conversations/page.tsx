@@ -30,7 +30,7 @@ function ConversationsPage() {
 export default function Conversations() {
   return(
     <Suspense>
-      <ConversationPage />
+      <ConversationsPage />
     </Suspense>
   );
 }
