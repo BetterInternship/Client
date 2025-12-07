@@ -7,7 +7,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ContentLayout from "@/components/features/hire/content-layout";
 
-export default function ConversationsPage() {
+function ConversationsPage() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
   const router = useRouter();
@@ -19,10 +19,18 @@ export default function ConversationsPage() {
     }, [userId, router]);
 
   return(
-    <ContentLayout
-    className="p-0 max-h-[calc(100vh-7rem)] overflow-hidden"
-    >
-      <ConversationPage applicantId={userId || undefined} />
-    </ContentLayout>
+      <ContentLayout
+      className="p-0 max-h-[calc(100vh-7rem)] overflow-hidden"
+      >
+        <ConversationPage applicantId={userId || undefined} />
+      </ContentLayout>
   )
 };
+
+export default function Conversations() {
+  return(
+    <Suspense>
+      <ConversationPage />
+    </Suspense>
+  );
+}
