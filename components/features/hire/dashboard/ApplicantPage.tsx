@@ -15,9 +15,13 @@ import { formatMonth, formatTimestampDate } from "@/lib/utils/date-utils";
 import { ArrowLeft, Award, FileText, MessageCircle, Phone, Mail, BriefcaseBusiness, Github, Linkedin } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect } from "react";
-import { Tooltip } from "react-tooltip";
 import { Divider } from "@/components/ui/divider";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ApplicantPageProps {
     application: EmployerApplication | undefined;
@@ -102,9 +106,19 @@ export function ApplicantPage({
                                     <UserPfp user_id={user?.id || ""} size={cn(isMobile ? "16" : "20")}/>
                                     {internshipPreferences?.internship_type ==
                                         "credited" && (
-                                        <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1 border-2 border-white">
-                                            <Award className="w-4 h-4 text-white" />
-                                        </div>)
+                                            <div className="absolute -bottom-1 -right-1">
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <div className="bg-green-500 rounded-full p-1 border-2 border-white">
+                                                            <Award className="w-4 h-4 text-white" />
+                                                        </div>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p className="text-gray-500 text-xs">This individual is looking for internships for credit</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </div>
+                                        )
                                     }
                                 </div>
                                 <div className="mx-2">
@@ -125,57 +139,79 @@ export function ApplicantPage({
                                     {/* links */}
                                     <div className={cn("flex gap-4 items-center", isMobile ? "mt-2" : "mt-4")}>
                                         <div>
-                                            {user?.portfolio_link ? (
-                                            <a
-                                                href={user?.portfolio_link}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-slate-950 hover:text-slate-500 ease-in-out font-medium break-all text-xs"
-                                            >
-                                                <BriefcaseBusiness className="h-4 w-4"/>
-                                            </a>) : (
-                                                <p
-                                                className="text-gray-300 font-medium break-all text-xs cursor-default"
-                                                >
-                                                    <BriefcaseBusiness className="h-4 w-4"/>
-                                                </p>
-                                            )}
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    {user?.portfolio_link ? (
+                                                            <a
+                                                                href={user?.portfolio_link}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-slate-950 hover:text-slate-500 ease-in-out font-medium break-all text-xs"
+                                                            >
+                                                                <BriefcaseBusiness className="h-4 w-4"/>
+                                                            </a>
+                                                    ) : (
+                                                        <p
+                                                        className="text-gray-300 font-medium break-all text-xs cursor-default"
+                                                        >
+                                                            <BriefcaseBusiness className="h-4 w-4"/>
+                                                        </p>
+                                                    )}
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p className="text-xs text-gray-500">Applicant Portfolio</p>
+                                                </TooltipContent>
+                                            </Tooltip>
                                         </div>
 
                                         <div>
-                                            {user?.github_link ? (
-                                            <a
-                                                href={user?.github_link}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-slate-950 hover:text-slate-500 ease-in-out font-medium break-all text-xs"
-                                            >
-                                                <Github className="h-4 w-4"/>
-                                            </a>) : (
-                                                <p
-                                                className="text-gray-300 font-medium break-all text-xs cursor-default"
-                                                >
-                                                    <Github className="h-4 w-4"/>
-                                                </p>
-                                            )}
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    {user?.github_link ? (
+                                                        <a
+                                                            href={user?.github_link}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-slate-950 hover:text-slate-500 ease-in-out font-medium break-all text-xs"
+                                                        >
+                                                            <Github className="h-4 w-4"/>
+                                                        </a>) : (
+                                                            <p
+                                                            className="text-gray-300 font-medium break-all text-xs cursor-default"
+                                                            >
+                                                                <Github className="h-4 w-4"/>
+                                                            </p>
+                                                        )}
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p className="text-xs text-gray-500">Applicant Github</p>
+                                                </TooltipContent>
+                                            </Tooltip>
                                         </div>
 
                                         <div>
-                                            {user?.linkedin_link ? (
-                                            <a
-                                                href={user?.linkedin_link}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-slate-950 hover:text-slate-500 ease-in-out font-medium break-all text-xs"
-                                            >
-                                                <Linkedin className="h-4 w-4"/>
-                                            </a>) : (
-                                                <p
-                                                className="text-gray-300 font-medium break-all text-xs cursor-default"
-                                                >
-                                                    <Linkedin className="h-4 w-4"/>
-                                                </p>
-                                            )}
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    {user?.linkedin_link ? (
+                                                        <a
+                                                            href={user?.linkedin_link}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-slate-950 hover:text-slate-500 ease-in-out font-medium break-all text-xs"
+                                                        >
+                                                            <Linkedin className="h-4 w-4"/>
+                                                        </a>) : (
+                                                            <p
+                                                            className="text-gray-300 font-medium break-all text-xs cursor-default"
+                                                            >
+                                                                <Linkedin className="h-4 w-4"/>
+                                                            </p>
+                                                        )}
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p className="text-xs text-gray-500">Applicant Linkedin</p>
+                                                </TooltipContent>
+                                            </Tooltip>
                                         </div>
                                     </div>
                                 </div>
