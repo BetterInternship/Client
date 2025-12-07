@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { useAppContext } from "@/lib/ctx-app";
 
 //maybe add employers id to cross check
 interface JobsContentProps {
@@ -25,7 +27,7 @@ export function JobsContent({
     updateJob, 
     isLoading
 }: JobsContentProps) {
-    const router = useRouter();
+    const { isMobile } = useAppContext();
 
     const sortedJobs = jobs.sort(
         (a,b) => 
@@ -63,7 +65,12 @@ export function JobsContent({
                 ) : (
                     <div className="w-full h-full flex flex-col justify-center items-center gap-2">
                         <span className="text-muted-foreground">You haven't created any job listings.</span>
-                        <div className="flex gap-2">
+                        <div className={cn(
+                            "flex gap-2",
+                            isMobile
+                            ? "flex-col items-center"
+                            : ""
+                        )}>
                             <Link
                                 href="/listings/create"
                                 className=""
