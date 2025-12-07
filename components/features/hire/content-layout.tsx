@@ -1,7 +1,7 @@
 "use client";
 
 import { useMobile } from "@/hooks/use-mobile";
-import { LayoutDashboard, Plus, MessageCircleMore, FileText, FileUser, Briefcase } from "lucide-react";
+import { LayoutDashboard, Plus, MessageCircleMore, FileText, FileUser, Briefcase, MessageCircleQuestion, HelpCircle } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
@@ -19,18 +19,23 @@ type NavItem = {
 const navItems: NavItem[] = [
   {
     href: "/listings/create",
-    icon: <Plus className="h-5 w-5" />,
+    icon: <Plus />,
     label: "Add Listing",
   },
   {
     href: "/dashboard",
-    icon: <Briefcase className="h-5 w-5" />,
+    icon: <Briefcase />,
     label: "Job listings",
   },
   {
     href: "/conversations",
-    icon: <MessageCircleMore className="h-5 w-5" />,
+    icon: <MessageCircleMore />,
     label: "Chats",
+  },
+  {
+    href: "/help",
+    icon: <HelpCircle />,
+    label: "Help",
   },
 ];
 
@@ -58,7 +63,7 @@ function SideNav({ items }: { items: NavItem[] }) {
                 "w-full h-10 pl-4 lg:pr-24 flex flex-row justify-start border-0 hover:bg-primary/15 hover:text-primary",
                 isActive ? "text-primary bg-primary/10" : "font-normal",
                 label === "Add Listing" ? "bg-primary text-white hover:bg-primary hover:text-white" : "",
-                isActive && "[&_svg]:fill-primary"
+                isActive && "[&_svg]:fill-primary [&_svg]:stroke-primary-foreground"
               )}
             >
               {icon}
