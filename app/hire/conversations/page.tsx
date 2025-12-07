@@ -12,12 +12,6 @@ function ConversationsPage() {
   const userId = searchParams.get("userId");
   const router = useRouter();
 
-  useEffect(() => {
-      if (userId) {
-        router.replace("/conversations");
-      }
-    }, [userId, router]);
-
   return(
       <ContentLayout
       className="p-0 max-h-[calc(100vh-7rem)] overflow-hidden"

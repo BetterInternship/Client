@@ -132,6 +132,18 @@ export function ConversationPage({
         }
     }, [applicantId, conversations.data]);
 
+    useEffect(() => {
+        if (applicantId && conversations.data) {
+            const findChat = conversations.data.find((convo) => 
+                convo.subscribers?.includes(applicantId)
+            );
+            if (findChat?.id) {
+                setConversationId(findChat.id);
+                router.replace('/conversations', { scroll: false });
+            }
+        }
+    }, [applicantId, conversations.data]);
+
     const sortedConvos = useMemo(
         () =>
         (conversations.data ?? []).toSorted(

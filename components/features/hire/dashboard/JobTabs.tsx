@@ -628,7 +628,7 @@ export default function JobTabs({
                 Cancel
               </Button>
               <Button 
-              onClick={() => router.push(`conversations?userId=${selectedApplication?.user_id}`)}
+              onClick={() => router.push(`/conversations?userId=${selectedApplication?.user_id}`)}
               >
                 Start chatting
               </Button>
@@ -656,7 +656,7 @@ export default function JobTabs({
                 Cancel
               </Button>
               <Button 
-              onClick={() => router.push(`conversations?userId=${selectedApplication?.user_id}`)}
+              onClick={() => router.push(`/conversations?userId=${selectedApplication?.user_id}`)}
               >
                 Go to chat
               </Button>
