@@ -448,7 +448,9 @@ export function ConversationPage({
                 </button>
                 <button
                 className="flex items-center justify-center w-full border-2 bg-white text-sm text-primary gap-2 p-2 rounded-sm"
-                onClick={() => router.push(`dashboard/applicant?userId=${user?.id}`)}
+                onClick={() => 
+                    router.push(`dashboard/applicant?userId=${user?.id}`)
+                }
                 >
                     View Full Application
                 </button>
