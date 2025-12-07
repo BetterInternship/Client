@@ -19,6 +19,7 @@ import { MultipartFormBuilder } from "@/lib/multipart-form";
 import { Loader } from "@/components/ui/loader";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
+import Link from "next/link";
 
 const [EmployerRegisterForm, useEmployerRegisterForm] =
   createEditForm<Employer>();
@@ -259,7 +260,7 @@ const EmployerEditor = ({
           <FormCheckbox
             id="accept-terms"
             checked={additionalFields.terms_accepted}
-            setter={(checked) =>
+            setter={(checked: boolean) =>
               setAdditionalFields({
                 ...additionalFields,
                 terms_accepted: checked,
@@ -291,10 +292,10 @@ const EmployerEditor = ({
             .
           </label>
         </div>
-        <div className="flex justify-between items-center w-full">
-          <p className="text-sm text-gray-500">
+        <div className="flex justify-between items-center w-full pb-2">
+          <span className="text-sm text-gray-500">
             Already have an account? <a className="text-blue-600 hover:text-blue-800 underline font-medium" href="/login">Log in here.</a>
-          </p>
+          </span>
           <Button
             onClick={register}
             disabled={!additionalFields.terms_accepted || isRegistering}
@@ -302,6 +303,9 @@ const EmployerEditor = ({
             {isRegistering ? "Registering..." : "Register"}
           </Button>
         </div>
+        <span className="text-muted-foreground text-sm">
+          Need help? Contact us at <a href="tel://09276604999" className="text-blue-600 hover:text-blue-800 underline font-medium">0927 660 4999</a> or on <a href="viber://add?number=639276604999" className="text-blue-600 hover:text-blue-800 underline font-medium">Viber</a>.
+        </span>
       </Card>
     </>
   );
