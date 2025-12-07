@@ -27,7 +27,7 @@ import { Message } from "@/components/ui/messages";
 import { Textarea } from "@/components/ui/textarea";
 import { getFullName } from "@/lib/profile";
 import { motion } from "framer-motion";
-import { FileText, MessageCircle, SendHorizonal } from "lucide-react";
+import { FileText, MessageCirclePlus, SendHorizonal, SquareArrowOutUpRight } from "lucide-react";
 import { useListingsBusinessLogic } from "@/hooks/hire/listings/use-listings-business-logic";
 import { useAppContext } from "@/lib/ctx-app";
 import { cn } from "@/lib/utils";
@@ -170,12 +170,21 @@ export default function JobTabs({
   });
 
   const {
-    open: openChatModal,
-    close: closeChatModal,
-    Modal: ChatModal,
-  } = useModal("chat-modal", {
+    open: openOldChatModal,
+    close: closeOldChatModal,
+    Modal: OldChatModal,
+  } = useModal("old-chat-modal", {
     onClose: () => (conversation.unsubscribe(), setConversationId("")),
     showCloseButton: false,
+  });
+  
+
+  const {
+    open: openChatModal,
+    close: closeChatModal,
+    SideModal: ChatModal,
+  } = useSideModal("chat-modal", {
+    onClose: () => (conversation.unsubscribe(), setConversationId(""))
   });
 
   const {
@@ -288,11 +297,47 @@ export default function JobTabs({
 
     if(userConversation){
       setConversationId(userConversation.id);
-      openChatModal();
+      openOldChatModal();
     } else {
       openNewChatModal();
     }
   }
+
+  // Handle message
+    const handleMessage = async (studentId: string | undefined, message: string) => {
+        if (message.trim() === "") return;
+
+        setSending(true);
+        let userConversation = conversations.data?.find((c) =>
+        c?.subscribers?.includes(studentId),
+        );
+
+        if (!userConversation && studentId) {
+        const response =
+            await EmployerConversationService.createConversation(studentId).catch(
+            endSend,
+            );
+
+        if (!response?.success) {
+            alert("Could not initiate conversation with user.");
+            endSend();
+            return;
+        }
+
+        setConversationId(response.conversation?.id ?? "");
+        userConversation = response.conversation;
+        endSend();
+        }
+
+        setTimeout(async () => {
+        if (!userConversation) return endSend();
+        await EmployerConversationService.sendToUser(
+            userConversation?.id,
+            message,
+        ).catch(endSend);
+        endSend();
+        });
+    };
 
   if (loading || !isAuthenticated())
     return <Loader>Loading dashboard...</Loader>;
@@ -422,7 +467,7 @@ export default function JobTabs({
                 applications={filteredApplications}
                 statusId={[0, 1, 2, 3, 4, 5, 6]}
                 isLoading={isLoading}
-                openChatModal={onChatClick}
+                openChatModal={openChatModal}
                 updateConversationId={updateConversationId}
                 onApplicationClick={handleApplicationClick}
                 onNotesClick={handleNotesClick}
@@ -498,17 +543,17 @@ export default function JobTabs({
         )}
       </ResumeModal>
 
-      {/* <ChatModal>
+      <ChatModal>
         <div className="relative p-6 pb-20 h-full w-full">
           <div className="flex flex-col h-[100%] w-full">
             <div className="justify-between sticky top-0 z-10 py-2 border-b bg-white/90 backdrop-blur">
-              <div className="flex items-center gap-2 font-medium">
+              <div className="flex items-center justify-between gap-2 font-medium text-lg">
                 {getFullName(selectedApplication?.user)}
               </div>
-                <div className="text-gray-500 text-[11px] max-w-[40vh] -mt-[2px] flex truncate">
-                  <p className="text-[11px] text-primary"> Applied for: </p>
+                <div className="text-gray-500 text-sm max-w-[40vh] mb-2 flex truncate">
+                  <p className="text-sm text-primary"> Applied for: </p>
                   {applications?.employer_applications.filter(a => a.user_id === selectedApplication?.user_id).map((a) => 
-                    <p className="text-[11px] ml-1">
+                    <p className="text-sm ml-1">
                       {a.job?.title}
                       {a !== applications?.employer_applications.filter(a => a.user_id === selectedApplication?.user_id).at(-1) &&
                         <>, </>
@@ -517,7 +562,14 @@ export default function JobTabs({
                     )
                   }
                 </div>
-            </div>
+                <button
+                className="flex items-center bg-primary text-white text-sm p-2 rounded-[0.33em] gap-2"
+                onClick={onChatClick}
+                >
+                  <SquareArrowOutUpRight className="h-5 w-5"/>
+                  Go to Chat Page
+                </button>
+            </div>     
             <div className="overflow-y-hidden flex-1 max-h-[75%] mb-6 pb-2 px-2 border-r border-l border-b">
               <div className="flex flex-col-reverse max-h-full min-h-full overflow-y-scroll p-0 gap-1">
                 <div ref={chatAnchorRef} />
@@ -556,12 +608,12 @@ export default function JobTabs({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <Card className="flex flex-col text-left gap-1 p-4 px-6 border-transparent">
-                        <MessageCircle className="w-16 h-16 my-4 opacity-50" />
-                        <div className="text-xl font-bold">
-                          Start a Conversation!
+                      <Card className="flex flex-col items-center justify-center p-4 px-6 border-transparent">
+                        <MessageCirclePlus className="w-8 h-8 my-2 opacity-50" />
+                        <div className="text-base font-bold">
+                          No Messages Yet
                         </div>
-                        You don't have any messages with this applicant yet.
+                        <p className="text-gray-500 text-sm">Start a conversation to see your messages.</p>
                       </Card>
                     </motion.div>
                   </div>
@@ -607,7 +659,7 @@ export default function JobTabs({
             </div>
           </div>
         </div>
-      </ChatModal> */}
+      </ChatModal>
 
       <NewChatModal>
         <div className="p-8">
@@ -637,7 +689,7 @@ export default function JobTabs({
         </div>
       </NewChatModal>
 
-      <ChatModal>
+      <OldChatModal>
         <div className="p-8">
           <div className="mb-4 flex flex-col items-center justify-center text-center">
             <MessageSquareText className="text-primary h-8 w-8 mb-4"/>
@@ -651,7 +703,7 @@ export default function JobTabs({
             <div className="flex justify-center gap-6 mt-2">
               <Button 
               className="bg-white text-primary hover:bg-gray-100 border-solid border-2"
-              onClick={closeChatModal}
+              onClick={closeOldChatModal}
               >
                 Cancel
               </Button>
@@ -663,7 +715,7 @@ export default function JobTabs({
             </div>
           </div>
         </div>
-      </ChatModal>
+      </OldChatModal>
     </>
   );
 }
