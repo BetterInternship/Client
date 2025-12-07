@@ -734,8 +734,14 @@ export function ConversationPage({
             ))}
             </>
         ) : (
-        <div>
-            <h1>start chattong with user</h1>
+        <div className="flex items-center justify-center h-full gap-4">
+            {/* keeping this here as a memory, jk feel free to delete
+            <h1>start chattong with user</h1> */}
+            <MessageCircle className="h-14 w-14 opacity-50"/>
+            <div className="flex flex-col text-start">
+                <p className="font-bold text-lg mb-0">No Messages Yet</p>
+                <p className="text-sm text-gray-500">Start the conversation!</p>
+            </div>
         </div>
     )}
         </div>
