@@ -15,7 +15,7 @@ import { useModal } from "@/hooks/use-modal";
 import { useSideModal } from "@/hooks/use-side-modal";
 import { EmployerConversationService, UserService } from "@/lib/api/services";
 import { EmployerApplication, InternshipPreferences } from "@/lib/db/db.types";
-import { ArrowLeft, Edit, Info, Trash2, MessageSquarePlus } from "lucide-react";
+import { ArrowLeft, Edit, Info, Trash2, MessageSquarePlus, MessageSquareText } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Job } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
@@ -161,6 +161,15 @@ export default function JobTabs({
   } = useModal("delete-modal");
 
   const {
+    open: openNewChatModal,
+    close: closeNewChatModal,
+    Modal: NewChatModal,
+  } = useModal("new-chat-modal", {
+    onClose: () => (conversation.unsubscribe(), setConversationId("")),
+    showCloseButton: false,
+  });
+
+  const {
     open: openChatModal,
     close: closeChatModal,
     Modal: ChatModal,
@@ -270,18 +279,18 @@ export default function JobTabs({
     closeApplicantDeleteModal();
   }
 
-  const onChatClick = () => {
+  const onChatClick = async () => {
     if (!selectedApplication?.user_id) return;
-    updateConversationId(selectedApplication?.user_id);
 
     const userConversation = conversations.data?.find((c) =>
       c?.subscribers?.includes(selectedApplication?.user_id)
     );
 
     if(userConversation){
-      router.push(`/conversations?userId=${selectedApplication?.user_id}`)
-    } else {
+      setConversationId(userConversation.id);
       openChatModal();
+    } else {
+      openNewChatModal();
     }
   }
 
@@ -600,16 +609,44 @@ export default function JobTabs({
         </div>
       </ChatModal> */}
 
-      <ChatModal>
+      <NewChatModal>
         <div className="p-8">
           <div className="mb-4 flex flex-col items-center justify-center text-center">
             <MessageSquarePlus className="text-primary h-8 w-8 mb-4"/>
             <div className="flex flex-col items-center">
               <h3 className="text-lg">New Conversation</h3>
               <p className="text-gray-500 text-sm">
-                No conversation history with applicant <span className="text-primary">{getFullName(selectedApplication?.user)}</span>.
+                No conversation history with <span className="text-primary">{getFullName(selectedApplication?.user)}</span>.
               </p>
               <p className="text-gray-500 text-sm">Initiate new conversation?</p>
+            </div>
+            <div className="flex justify-center gap-6 mt-2">
+              <Button 
+              className="bg-white text-primary hover:bg-gray-100 border-solid border-2"
+              onClick={closeNewChatModal}
+              >
+                Cancel
+              </Button>
+              <Button 
+              onClick={() => router.push(`/conversations?userId=${selectedApplication?.user_id}`)}
+              >
+                Start chatting
+              </Button>
+            </div>
+          </div>
+        </div>
+      </NewChatModal>
+
+      <ChatModal>
+        <div className="p-8">
+          <div className="mb-4 flex flex-col items-center justify-center text-center">
+            <MessageSquareText className="text-primary h-8 w-8 mb-4"/>
+            <div className="flex flex-col items-center">
+              <h3 className="text-lg">Go to Conversations</h3>
+              <p className="text-gray-500 text-sm">
+                You have existing chat history with <span className="text-primary">{getFullName(selectedApplication?.user)}</span>!
+              </p>
+              <p className="text-gray-500 text-sm">Redirect to conversations?</p>
             </div>
             <div className="flex justify-center gap-6 mt-2">
               <Button 
@@ -619,9 +656,9 @@ export default function JobTabs({
                 Cancel
               </Button>
               <Button 
-              onClick={() => router.push(`conversations?userId=${selectedApplication?.user_id}`)}
+              onClick={() => router.push(`/conversations?userId=${selectedApplication?.user_id}`)}
               >
-                Start new chat
+                Go to chat
               </Button>
             </div>
           </div>

@@ -303,7 +303,7 @@ export function ApplicantPage({
                                     <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
                                         Applicant Information
                                     </h3>
-                                    <p className="text-xs text-gray-500 mb-2">Applying for: {application?.job?.title}</p>
+                                    {jobID && (<p className="text-xs text-gray-500 mb-2">Applying for: {application?.job?.title}</p>)}
                                 </div>
                             
                                 <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
@@ -344,9 +344,16 @@ export function ApplicantPage({
                             {/* other roles *note: will make this look better */}
                             <div className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200">
                                 <div className="flex items-center gap-3 mb-4 sm:mb-5">
-                                        <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
-                                            Other Applied Roles
-                                        </h3>
+                                        { jobID ? 
+                                        (
+                                            <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
+                                                Other Applied Roles
+                                            </h3>
+                                        ) : (
+                                            <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
+                                                Applied Roles
+                                            </h3>
+                                        )}
                                     </div>
                                     <div className="flex flex-wrap gap-1">
                                         {userApplications?.length !== 0 ? (
@@ -356,9 +363,14 @@ export function ApplicantPage({
                                                     {a.job?.title}
                                                 </p>
                                             </Badge>
-                                            
                                         )) : (
-                                            <p className="text-gray-500 text-sm"> No other applied roles</p>
+                                            <>
+                                                {jobID ? (
+                                                    <p className="text-gray-500 text-sm"> No applied roles</p>
+                                                ) : (
+                                                    <p className="text-gray-500 text-sm"> No other applied roles</p>
+                                                )}
+                                            </>
                                         )
                                         }
                                 </div>
