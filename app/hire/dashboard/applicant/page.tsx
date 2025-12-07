@@ -14,10 +14,11 @@ import { Suspense, useEffect, useState } from "react";
 function ApplicantPageContent () {
     const searchParams = useSearchParams();
     const userId = searchParams.get("userId");
+    const jobId = searchParams.get("jobId")
     const [userData, setUserData] = useState<EmployerApplication | undefined>(undefined)
     const [loading, setLoading] = useState(true);
     const applications = useEmployerApplications();
-    const userApplication = applications?.employer_applications.find(a => userId === a.user_id)
+    const userApplication = applications?.employer_applications.find(a => userId === a.user_id && a.job_id === jobId)
     const otherApplications = applications?.employer_applications.filter(a => userId === a.user_id && a.id !== userApplication?.id)
     const { app_statuses } = useDbRefs();
 
@@ -70,7 +71,7 @@ function ApplicantPageContent () {
             <div className="w-full h-full">
                 <ApplicantPage 
                 application={userApplication}
-                jobID={userApplication?.job_id || ""}
+                jobID={jobId || ""}
                 statuses={getStatuses(userApplication?.id || "")}
                 userApplications={otherApplications}
                 />

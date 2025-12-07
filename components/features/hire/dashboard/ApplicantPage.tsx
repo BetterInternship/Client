@@ -21,11 +21,10 @@ import { Badge } from "@/components/ui/badge";
 
 interface ApplicantPageProps {
     application: EmployerApplication | undefined;
-    jobID: string | undefined;
+    jobID?: string | undefined;
     userApplications?: EmployerApplication[] | undefined;
     statuses: ActionItem[];
     openChatModal?: () => void;
-    prevPage?: string;
 }
 
 export function ApplicantPage({
@@ -34,7 +33,6 @@ export function ApplicantPage({
     userApplications,
     statuses,
     openChatModal,
-    prevPage
 }:ApplicantPageProps) {
     const router = useRouter();
     const user = application?.user as Partial<PublicUser>;
@@ -73,12 +71,10 @@ export function ApplicantPage({
         });
 
         const handleBack = () => {
-            if(!prevPage) return;
-
-            if(prevPage === "chat"){
-                router.push(`/conversations?userId=${application?.user_id}`)
-            } else if (prevPage === "job") {
-                router.push(`/dashboard/manage?jobId=${application?.job_id}`)
+            if (window.history.length > 1) {
+                router.back();
+            } else {
+                router.push('/dashboard');
             }
         }
 
@@ -91,8 +87,8 @@ export function ApplicantPage({
     return(
         <div className="">
             <button
-                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors my-4"
-                onClick={() => router.push(`/dashboard/manage?jobId=${jobID}`)}
+                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors my-4 pl-4"
+                onClick={handleBack}
                 >
                     <ArrowLeft className="s-8" />
             </button>

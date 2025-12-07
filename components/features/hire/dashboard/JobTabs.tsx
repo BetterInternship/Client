@@ -143,44 +143,6 @@ export default function JobTabs({
   }
 }, [selectedJob?.id]);
 
-  // Handle message
-  const handleMessage = async (userId: string, message: string) => {
-    if (message.trim() === "") return;
-
-    setSending(true);
-    let userConversation = conversations.data?.find((c) =>
-      c?.subscribers?.includes(userId),
-    );
-
-    // Create convo if it doesn't exist first
-    if (!userConversation) {
-      const response =
-        await EmployerConversationService.createConversation(userId).catch(
-          endSend,
-        );
-
-      if (!response?.success) {
-        alert("Could not initiate conversation with user.");
-        endSend();
-        return;
-      }
-
-      // Update the conversation
-      setConversationId(response.conversation?.id ?? "");
-      userConversation = response.conversation;
-      endSend();
-    }
-
-    setTimeout(async () => {
-      if (!userConversation) return endSend();
-      await EmployerConversationService.sendToUser(
-        userConversation?.id,
-        message,
-      ).catch(endSend);
-      endSend();
-    });
-  };
-
   const handleToggleActive = async () => {
     if (!selectedJob?.id) return;
 
@@ -259,7 +221,7 @@ export default function JobTabs({
 
   const handleApplicationClick = (application: EmployerApplication) => {
     setSelectedApplication(application); // set first
-    router.push(`/dashboard/applicant?userId=${application?.user_id}`);
+    router.push(`/dashboard/applicant?userId=${application?.user_id}&jobId=${selectedJobId}`);
   };
 
   const handleNotesClick = (application: EmployerApplication) => {
