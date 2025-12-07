@@ -2,9 +2,12 @@
 
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { EmployerApplication, Job } from "@/lib/db/db.types";
 import { JobListingsBox } from "./JobListingsBox";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 //maybe add employers id to cross check
 interface JobsContentProps {
@@ -22,6 +25,8 @@ export function JobsContent({
     updateJob, 
     isLoading
 }: JobsContentProps) {
+    const router = useRouter();
+
     const sortedJobs = jobs.sort(
         (a,b) => 
        ((b.created_at ?? "") > (a.created_at ?? "")) ? 1 : -1
@@ -39,25 +44,38 @@ export function JobsContent({
     }
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2">
+        <>
             {jobs.length > 0
-                ?
-                (
-                    sortedJobs.filter(job => job.employer_id === employerId
-                    ).map((job) => (
-                        <JobListingsBox
-                            key={job.id}
-                            job={job}
-                            applications={applications}
-                            update_job={updateJob}
-                            isLoading={isLoading}
-                        />
-                    ))
+                ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2">
+                    {
+                        sortedJobs.filter(job => job.employer_id === employerId
+                        ).map((job) => (
+                            <JobListingsBox
+                                key={job.id}
+                                job={job}
+                                applications={applications}
+                                isLoading={isLoading}
+                            />
+                        ))
+                    }
+                </div>
                 ) : (
-                    <div className="p-2 m-4">
-                        <Badge>No job listings currently.</Badge>
+                    <div className="w-full h-full flex flex-col justify-center items-center gap-2">
+                        <span className="text-muted-foreground">You haven't created any job listings.</span>
+                        <Link
+                            href="/listings/create"
+                            className=""
+                        >
+                            <Button
+                                className="px-8 py-6"
+                            >
+                                <Plus />
+                                Add Listing
+                            </Button>
+                        </Link>
                     </div>
                 )}
-        </div>
+        </>
     );
 }

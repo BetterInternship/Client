@@ -15,6 +15,7 @@ import { LogOut,
           Menu,
           FileUser,
           Plus,
+          HelpCircle,
           } from "lucide-react";
 import { useAppContext } from "@/lib/ctx-app";
 import { DropdownOption, GroupableNavDropdown } from "@/components/ui/dropdown";
@@ -315,7 +316,20 @@ function MobileDrawer({
                         </div>
                         <ChevronRight className="w-4 h-4 text-gray-300" />
                       </button>
-                    </Link>                   
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/help">
+                      <button
+                        className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary"
+                      >
+                        <div>
+                          <HelpCircle className="w-4 h-4 inline-block mr-2" />
+                          <span>Help</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-300" />
+                      </button>
+                    </Link>
                   </li>
                 </ul>
               </nav>
