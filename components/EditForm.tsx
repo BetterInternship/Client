@@ -29,6 +29,7 @@ import {
   ChevronLeft,
   ChevronRight,
   MessageCircleQuestion,
+  Minus,
 } from "lucide-react";
 import * as React from "react";
 import { createContext, useContext, useRef } from "react";
@@ -330,6 +331,7 @@ export const FormDropdown = ({
 interface FormCheckboxProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   checked?: boolean;
+  indeterminate?: boolean;
   label?: string;
   setter?: ((value: boolean) => void) | ((e: any, value: boolean) => void);
   className?: string;
@@ -342,6 +344,7 @@ interface FormCheckboxProps
 export const FormCheckbox = ({
   label,
   checked,
+  indeterminate,
   setter,
   className,
   sentence,
@@ -363,7 +366,7 @@ export const FormCheckbox = ({
       <div className="flex gap-2 sm:items-center">
         <Checkbox
           name={label ?? ""}
-          checked={checked}
+          checked={indeterminate ? "indeterminate" : checked}
           className={cn(
             "inline-flex items-center justify-center rounded-[0.33em] border aspect-square w-6 h-6 sm:w-5 sm:h-5",
             checked
@@ -372,7 +375,12 @@ export const FormCheckbox = ({
           )}
           onCheckedChange={(checked) => setter && setter(!!checked)}
         >
-          {checked && <Check className="text-primary opacity-75 h-4 w-4" />}
+          {indeterminate && (
+            <Minus className="text-primary opacity-75 h-4 w-4" />
+          )}
+          {checked && (
+            <Check className="text-primary opacity-75 h-4 w-4" />
+          )}
         </Checkbox>
         {sentence && (
           <div
