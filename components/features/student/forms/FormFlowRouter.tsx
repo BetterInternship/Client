@@ -13,7 +13,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader } from "@/components/ui/loader";
 import z from "zod";
 import { Button } from "@/components/ui/button";
-import { getFullName } from "@/lib/profile";
 import { cn } from "@/lib/utils";
 import { DocumentRenderer } from "./previewer";
 import { ArrowLeft, Info, Loader2 } from "lucide-react";
@@ -424,6 +423,7 @@ export function FormFlowRouter({
                     errors={errors}
                     showErrors={submitted}
                     formName={formName}
+                    onBlurValidate={validateFieldOnBlur}
                     autofillValues={autofillValues ?? {}}
                     setValues={(newValues) =>
                       setValues((prev) => ({ ...prev, ...newValues }))
