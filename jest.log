@@ -1,8 +1,1 @@
-PASS tests/utils.test.ts
-PASS lib/api/__tests__/JobService.test.ts
-
-Test Suites: 2 passed, 2 total
-Tests:       51 passed, 51 total
-Snapshots:   0 total
-Time:        0.722 s, estimated 1 s
-Ran all test suites.
+["C:\\Users\\SeriousDev\\Documents\\BetterInternship\\Client\\tests\\utils.test.ts","C:\\Users\\SeriousDev\\Documents\\BetterInternship\\Client\\lib\\api\\__tests__\\JobService.test.ts"]

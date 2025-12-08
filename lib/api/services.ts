@@ -78,7 +78,7 @@ export const EmployerUserService = {
       { newPassword },
     );
   },
-}
+};
 
 // Auth Services
 interface AuthResponse extends FetchResponse {
@@ -212,7 +212,7 @@ export const UserService = {
   },
 
   async getForm(formName: string) {
-    return APIClient.get<
+    const form = await APIClient.get<
       {
         formDocument: {
           name: string;
@@ -228,6 +228,20 @@ export const UserService = {
         .p({ name: formName })
         .build({ moaServer: true }),
     );
+    const documentUrl = await APIClient.get<
+      {
+        formDocument: string;
+      } & FetchResponse
+    >(
+      APIRouteBuilder("forms")
+        .r("form-document")
+        .p({ name: formName, version: form.formDocument.version })
+        .build({ moaServer: true }),
+    );
+    return {
+      ...form,
+      documentUrl: documentUrl.formDocument,
+    };
   },
 
   async parseResume(form: FormData) {
@@ -348,7 +362,9 @@ export const JobService = {
   // the one above existed prior and i don't want to break anything that depends on it
   // this one gets a single job, whether it is active or not.
   async getAnyJobById(jobId: string) {
-    return APIClient.get<JobResponse>(APIRouteBuilder("jobs").r("owned").r(jobId).build());
+    return APIClient.get<JobResponse>(
+      APIRouteBuilder("jobs").r("owned").r(jobId).build(),
+    );
   },
 
   async getSavedJobs() {
