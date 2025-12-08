@@ -694,7 +694,7 @@ export function ConversationPage({
 
     const ConversationPane = ({
     conversation,
-    chatAnchorRef,
+    chatAnchorRef
     }: {
     // keep "any" per your note; consider adding a strong type later
     conversation: any;
@@ -705,7 +705,7 @@ export function ConversationPage({
     let lastSelf = false;
 
     return (
-        <div className="flex-1 min-h-0 flex flex-col-reverse gap-1 p-2 overflow-y-auto">
+            <div className="flex-1 min-h-0 flex flex-col-reverse gap-1 p-2 overflow-y-auto">
         <div ref={chatAnchorRef} />
         {conversation?.messages?.length ? (
             <>

@@ -242,7 +242,7 @@ export function ApplicantPage({
                     <ArrowLeft className="s-8" />
                 </button>
                 <div className="lg:flex w-full justify-center">
-                    <div className={cn("bg-white rounded-[0.33em] border border-gray-200", isMobile ? "p-4" : "w-[80vh] p-6")}>
+                    <div className={cn("bg-white rounded-[0.33em] border border-gray-200", isMobile ? "p-4" : "w-[50%] p-6")}>
                         {/* "header" ish portion */}
                         <div className="">
                             <div className="lg:flex items-center justify-between">
@@ -259,7 +259,7 @@ export function ApplicantPage({
                                                             </div>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
-                                                            <p className="text-gray-500 text-xs">This individual is looking for internships for credit</p>
+                                                            <p className="text-gray-500 text-xs">This applicant is looking for internships for credit</p>
                                                         </TooltipContent>
                                                     </Tooltip>
                                                 </div>
@@ -268,7 +268,7 @@ export function ApplicantPage({
                                     </div>
                                     <div className="mx-2">
                                         <h3 className={cn(isMobile? "text-lg" : "text-xl")}>{getFullName(application?.user)}</h3>
-                                        <div className={cn("items-center gap-2 text-xs text-gray-500", isMobile ? "" : "flex")}>
+                                        <div className={cn("items-center gap-2 text-xs text-gray-500", isMobile ? "flex-col" : "flex")}>
                                             {/* COntact info */}
                                             <div className="flex gap-1 items-center">
                                                 <Phone className="h-4 w-4"/>
@@ -568,7 +568,7 @@ export function ApplicantPage({
                     }
                     </div>
                     <button
-                    className="flex items-center bg-primary text-white text-sm p-2 rounded-[0.33em] gap-2"
+                    className="flex items-center bg-primary text-white text-sm p-2 rounded-[0.33em] gap-2 hover:opacity-70"
                     onClick={onChatClick}
                     >
                     <SquareArrowOutUpRight className="h-5 w-5"/>
