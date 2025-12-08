@@ -328,8 +328,8 @@ export function FormFlowRouter({
           </h1>
         </div>
       </div>
-      <div className="relative flex w-full h-[100%] max-w-7xl flex-col justify-center overflow-y-hidden sm:w-7xl sm:flex-row ">
-        <div className="relative max-h-[100%] overflow-y-auto w-[100%]">
+      <div className="relative flex w-full h-[100%] max-w-7xl flex-col justify-center overflow-y-hidden sm:w-7xl sm:flex-row bg-white">
+        <div className="relative max-h-[100%] overflow-y-auto w-[100%] bg-white">
           {/* Form Renderer */}
           <div className="h-full max-h-[100%] space-y-4 overflow-y-auto rounded-[0.33em] rounded-t-none rounded-r-none border border-gray-300 p-5 bg-white">
             <div
@@ -371,7 +371,7 @@ export function FormFlowRouter({
                 mobileStage === "confirm" ? "" : "hidden",
               )}
             >
-              <div className="relative h-[60vh] w-full overflow-auto rounded-md border">
+              <div className="relative h-[60vh] w-full overflow-auto rounded-md border bg-white">
                 {form.data.documentUrl ? (
                   <DocumentRenderer
                     documentUrl={form.data.documentUrl}
