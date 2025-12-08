@@ -59,8 +59,8 @@ function DashboardContent() {
             <>
               <div>
                 <div className="flex gap-4 mb-4">
-                  <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{activeJobs.length}</span> active listing/s</span>
-                  <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{inactiveJobs.length}</span> inactive listing/s</span>
+                  <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{activeJobs.length}</span> active listing{activeJobs.length !== 1 ? "s" : ""}</span>
+                  <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{inactiveJobs.length}</span> inactive listing{inactiveJobs.length !== 1 ? "s" : ""}</span>
                 </div>
                 <>
                   <JobsContent
