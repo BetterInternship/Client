@@ -22,6 +22,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Card } from "@/components/ui/card";
 
 interface ApplicantPageProps {
     application: EmployerApplication | undefined;
@@ -40,6 +41,7 @@ export function ApplicantPage({
 }:ApplicantPageProps) {
     const router = useRouter();
     const user = application?.user as Partial<PublicUser>;
+    const userId = application?.user_id;
     const internshipPreferences = user?.internship_preferences;
 
     const { isMobile } = useAppContext();
@@ -63,43 +65,46 @@ export function ApplicantPage({
         highlightColor: statusMap.get(application?.status!)?.bgColor,
       };
 
-      const { url: resumeURL, sync: syncResumeURL } = useFile({
-          fetcher: useCallback(
-            async () =>
-              await UserService.getUserResumeURL(application?.user_id ?? ""),
-            [user?.id],
-          ),
-          route: application
-            ? `/users/${user?.id}/resume`
-            : "",
-        });
+    const { url: resumeURL, sync: syncResumeURL, loading: resumeLoading } = useFile({
+        fetcher: useCallback(
+        async () =>
+            await UserService.getUserResumeURL(userId ?? ""),
+        [userId],
+        ),
+        route: userId
+        ? `/users/${userId}/resume`
+        : "",
+    });
 
-        const handleBack = () => {
-            if (window.history.length > 1) {
-                router.back();
-            } else {
-                router.push('/dashboard');
-            }
+    const handleBack = () => {
+        if (window.history.length > 1) {
+            router.back();
+        } else {
+            router.push('/dashboard');
         }
+    }
 
-        useEffect(() => {
-            if (application?.user_id) {
-              syncResumeURL();
-            }
-          }, [application?.user_id, syncResumeURL]);
+    useEffect(() => {
+        if (userId && application?.user?.resume) {
+            syncResumeURL();
+        }
+    }, [userId, application?.user?.resume]);
 
     return(
-        <div className="">
+        <div className="w-full">
             <button
                 className="flex items-center text-gray-600 hover:text-gray-900 transition-colors my-4 pl-4"
                 onClick={handleBack}
                 >
                     <ArrowLeft className="s-8" />
             </button>
-            <div className="lg:flex w-full justify-center">
-                <div className={cn("bg-white rounded-[0.33em] border border-gray-200", isMobile ? "p-4" : "w-[80vh] p-6")}>
+            <div className={cn(
+                isMobile ? "flex-col" : "",
+                "flex md:flex-col sm:flex-col lg:flex-row w-full justify-center"
+            )}>
+                <Card className={cn(isMobile ? "w-full" : "", "lg:w-1/2 md:w-full")}>
                     {/* "header" ish portion */}
-                    <div className="">
+                    <div>
                         <div className="lg:flex items-center justify-between">
                             <div className="flex items-center">
                                 <div className={cn("relative", isMobile ? "mr-2" : "mr-4")}>
@@ -377,29 +382,36 @@ export function ApplicantPage({
                             </div>
                             </>
                         )}
-                    </div>
+                    </Card>
 
                 {/* resume */}
-                    {application?.user?.resume ? (
-                        <div className={cn("h-full flex flex-col justify-center items-center", isMobile ? "mt-4 w-full" : "")}>
-                            {/* <h1 className="font-bold font-heading text-2xl px-6 py-4 text-gray-600">
-                            Resume
-                            </h1> */}
-                            <PDFPreview url={resumeURL} />
-                        </div>
+                {application?.user?.resume ? (
+                    <div className={cn("h-full flex flex-col justify-center items-center", isMobile ? "mt-4 w-full" : "")}>
+                        {resumeLoading ? (
+                            <div className="w-full flex items-center justify-center">
+                                <div className="text-center">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                                <p className="text-gray-600">Loading Resume...</p>
+                                </div>
+                          </div>
                         ) : (
-                        <div className="flex flex-col items-center justify-center h-96 px-8 w-full">
-                            <div className="text-center">
-                            <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                            <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">
-                                No Resume Available
-                            </h1>
-                            <div className="max-w-md text-center border border-red-200 text-red-600 bg-red-50 rounded-lg p-4">
-                                This applicant has not uploaded a resume yet.
-                            </div>
-                            </div>
+                            <PDFPreview url={resumeURL} />
+                        )}
+                    </div>
+                    ) : (
+                    <div className="flex flex-col items-center justify-center h-96 px-8 w-full">
+                        <div className="text-center">
+                        <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                        <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">
+                            No Resume Available
+                        </h1>
+                        <div className="max-w-md text-center border border-red-200 text-red-600 bg-red-50 rounded-lg p-4">
+                            This applicant has not uploaded a resume yet.
                         </div>
-                    )}
+                        </div>
+                    </div>
+                    )
+                }
             </div>
         </div>
     );
