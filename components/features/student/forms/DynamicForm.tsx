@@ -81,6 +81,7 @@ export function DynamicForm({
     // Push new previews here
     keyedFields
       .filter((kf) => filteredFields.find((f) => f.field === kf.field))
+      .filter((kf) => ~~kf.x || ~~kf.y)
       .forEach((field) => {
         if (!newPreviews[field.page]) newPreviews[field.page] = [];
         newPreviews[field.page].push(
@@ -97,6 +98,10 @@ export function DynamicForm({
 
     setPreviews?.(newPreviews);
   };
+
+  useEffect(() => {
+    refreshPreviews();
+  }, [values]);
 
   // Seed from saved autofill
   useEffect(() => {
@@ -130,6 +135,7 @@ export function DynamicForm({
         onBlurValidate={onBlurValidate}
         errors={errors}
         showErrors={showErrors}
+        setSelected={setSelectedField}
       />
 
       <FormSection
@@ -141,6 +147,7 @@ export function DynamicForm({
         onBlurValidate={onBlurValidate}
         errors={errors}
         showErrors={showErrors}
+        setSelected={setSelectedField}
       />
 
       <FormSection
@@ -152,6 +159,7 @@ export function DynamicForm({
         onBlurValidate={onBlurValidate}
         errors={errors}
         showErrors={showErrors}
+        setSelected={setSelectedField}
       />
 
       <FormSection
@@ -163,6 +171,7 @@ export function DynamicForm({
         onBlurValidate={onBlurValidate}
         errors={errors}
         showErrors={showErrors}
+        setSelected={setSelectedField}
       />
 
       <RecipientSection
@@ -188,6 +197,7 @@ const FormSection = function FormSection({
   onChange,
   onBlurValidate,
   errors,
+  setSelected,
   showErrors,
 }: {
   formKey: string;
@@ -197,6 +207,7 @@ const FormSection = function FormSection({
   onChange: (key: string, value: any) => void;
   onBlurValidate?: (fieldKey: string) => void;
   errors: Record<string, string>;
+  setSelected: (selected: string) => void;
   showErrors: boolean;
 }) {
   if (!fields.length) return null;
@@ -217,7 +228,7 @@ const FormSection = function FormSection({
           className="flex flex-row space-between"
           key={`${formKey}:${field.section}:${field.field}`}
         >
-          <div className="flex-1">
+          <div className="flex-1" onClick={() => setSelected(field.field)}>
             <FieldRenderer
               field={field}
               value={values[field.field]}
