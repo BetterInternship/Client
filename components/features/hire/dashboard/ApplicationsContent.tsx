@@ -2,7 +2,9 @@
 // rework of ApplicationsTable
 "use client";
 
+import { forwardRef, useImperativeHandle } from "react";
 import { useAuthContext } from "@/app/hire/authctx";
+import { useApplicationSelection } from "@/hooks/use-application-selection";
 import { Badge } from "@/components/ui/badge";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { ApplicationRow } from "./ApplicationRow";
@@ -11,14 +13,13 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ApplicationsHeader } from "./ApplicationsHeader";
 import { useState } from "react";
-import { CommandMenu } from "@/components/ui/command-menu";
 import { Calendar, CheckCircle2, CheckSquare, ContactRound, GraduationCap, ListCheck, SquareCheck, Trash, User2, X } from "lucide-react";
 import { useEffect } from "react";
 import { updateApplicationStatus } from "@/lib/api/services";
 import { statusMap } from "@/components/common/status-icon-map";
 import { type ActionItem } from "@/components/ui/action-item";
 import { Toast } from "@/components/ui/toast";
-import { AnimatePresence, easeOut, motion } from "framer-motion";
+import { ApplicationsCommandBar } from "./ApplicationsCommandBar";
 
 interface ApplicationsContentProps {
   applications: EmployerApplication[];
@@ -32,10 +33,15 @@ interface ApplicationsContentProps {
   onStatusChange: (application: EmployerApplication, status: number) => void;
   setSelectedApplication: (application: EmployerApplication) => void;
   onRequestDeleteApplicant: (application: EmployerApplication) => void;
+  onRequestStatusChange: (applications: EmployerApplication[], status: number) => void;
   applicantToDelete: EmployerApplication | null;
+  statusChangeInProgress: boolean;
 }
 
-export function ApplicationsContent({
+export const ApplicationsContent = forwardRef<
+  { unselectAll: () => void },
+  ApplicationsContentProps
+>(function ApplicationsContent({
   applications,
   isLoading,
   openChatModal,
@@ -46,12 +52,12 @@ export function ApplicationsContent({
   onStatusChange,
   setSelectedApplication,
   onRequestDeleteApplicant,
+  onRequestStatusChange,
   applicantToDelete,
-}: ApplicationsContentProps) {
+  statusChangeInProgress,
+}, ref) {
   const { isMobile } = useAppContext();
-  const [selectedApplications, setSelectedApplications] = useState<Set<string>>(
-    new Set(),
-  );
+
   const [commandBarsVisible, setCommandBarsVisible] = useState(false);
   const [activeFilter, setActiveFilter] = useState<number>(-1);
   const [toastVisible, setToastVisible] = useState(false);
@@ -73,59 +79,6 @@ export function ApplicationsContent({
       return () => clearTimeout(timeoutId);
     }
   }, [toastVisible]);
-  // make command bars visible when an applicant is selected.
-  useEffect(() => {
-    setCommandBarsVisible(selectedApplications.size > 0 && !applicantToDelete);
-  }, [selectedApplications.size, applicantToDelete]);
-
-  // make api call to update status on button click.
-  const updateStatus = async (status: number) => {
-    const applicationsToUpdate = Array.from(selectedApplications)
-      .map((id) => sortedApplications.find((app) => app.id === id))
-      .filter((app): app is EmployerApplication => !!app);
-
-      let successfulUpdates = 0;
-      let failedUpdates = 0;
-
-    try {
-      const updatePromises = applicationsToUpdate.map(async (application) => {
-        const response = await updateApplicationStatus(application.id!, status);
-        return { response, application };
-      });
-
-      const results = await Promise.allSettled(updatePromises);
-
-      results.forEach(result => {
-        if (result.status === 'fulfilled' && result.value.response.success) {
-          onStatusChange(result.value.application, status);
-          successfulUpdates++;
-        } else {
-          failedUpdates++;
-          if (result.status === 'rejected') {
-            console.error("Failed to update application: ", result.reason);
-          } else {
-            console.warn(`API reported failure: ${result.value.application.id}`);
-          }
-        }
-      })
-    } catch (error) {
-      console.error("Critical error occurred during status update: ", error);
-    } finally {
-      unselectAll();
-
-      if (successfulUpdates > 0 && failedUpdates === 0) {
-        setToastMessage(`Status of ${successfulUpdates} applicant${successfulUpdates === 1 ? "" : "s"} changed.`);
-      } else if (successfulUpdates > 0 && failedUpdates > 0) {
-        setToastMessage(`Changed ${successfulUpdates} applicant${successfulUpdates === 1 ? "" : "s"} and failed to change ${failedUpdates} applicant${successfulUpdates === 1 ? "" : "s"}.`);
-      } else if (failedUpdates > 0) {
-        setToastMessage(`Failed to change ${failedUpdates} applicant${successfulUpdates === 1 ? "" : "s"}. Please try again later.`);
-      } else {
-        return;
-      }
-
-      setToastVisible(true);
-    }
-  };
 
   const updateSingleStatus = async (id: string, status: number) => {
     const application = sortedApplications.find((a) => a.id === id);
@@ -160,27 +113,33 @@ export function ApplicationsContent({
         id: status.id.toString(),
         label: status.name,
         icon: uiProps?.icon,
-        onClick: () => updateStatus(status.id),
+        onClick: () => {
+          const applicationsToUpdate = Array.from(selectedApplications)
+            .map((id) => sortedApplications.find((app) => app.id === id))
+            .filter((app): app is EmployerApplication => !!app);
+          
+          onRequestStatusChange(applicationsToUpdate, status.id);
+        },
         destructive: uiProps?.destructive,
       };
-  })
-    .filter(Boolean);
+    }
+  ).filter(Boolean);
 
-    // get statuses specifically for the rows. these use different action items.
-    const getRowStatuses = (applicationId: string) => {
-      return unique_app_statuses
-        .filter((status) => status.id !== 7 && status.id !== 0)
-        .map((status): ActionItem => {
-          const uiProps = statusMap.get(status.id);
-          return {
-            id: status.id.toString(),
-            label: status.name,
-            icon: uiProps?.icon,
-            onClick: () => updateSingleStatus(applicationId, status.id),
-            destructive: uiProps?.destructive,
-          };
-        });
-    };
+  // get statuses specifically for the rows. these use different action items.
+  const getRowStatuses = (applicationId: string) => {
+    return unique_app_statuses
+      .filter((status) => status.id !== 7 && status.id !== 0)
+      .map((status): ActionItem => {
+        const uiProps = statusMap.get(status.id);
+        return {
+          id: status.id.toString(),
+          label: status.name,
+          icon: uiProps?.icon,
+          onClick: () => updateSingleStatus(applicationId, status.id),
+          destructive: uiProps?.destructive,
+        };
+      });
+  };
 
   // remove the delete item from the bottom command bar so we can put it in the top one and the pending status.
   const remove_unused_statuses = statuses.filter((status) => status.id !== "7" &&
@@ -198,6 +157,18 @@ export function ApplicationsContent({
     (application) => application.status !== undefined,
   );
   
+  const {
+    selectedApplications,
+    toggleSelect,
+    selectAll,
+    unselectAll,
+    toggleSelectAll,
+  } = useApplicationSelection(visibleApplications);
+
+  useImperativeHandle(ref, () => ({
+    unselectAll,
+  }));
+
   const numVisibleSelected = visibleApplications.filter(app =>
     selectedApplications.has(app.id!)
   ).length;
@@ -207,33 +178,10 @@ export function ApplicationsContent({
 
   const someVisibleSelected = numVisibleSelected > 0 && numVisibleSelected < visibleApplications.length;
 
-  const toggleSelect = (id: string, next?: boolean) => {
-    setSelectedApplications((prev) => {
-      const nextSet = new Set(prev);
-      if (typeof next === "boolean") {
-        next ? nextSet.add(id) : nextSet.delete(id);
-      } else {
-        nextSet.has(id) ? nextSet.delete(id) : nextSet.add(id);
-      }
-
-      return nextSet;
-    });
-  };
-
-  const selectAll = () => {
-    // only select all visible applications.
-    setSelectedApplications(
-      new Set(visibleApplications.map((application) => application.id!))
-    )
-  };
-
-  const unselectAll = () => {
-    setSelectedApplications(new Set());
-  };
-
-  const toggleSelectAll = () => {
-    allVisibleSelected ? unselectAll() : selectAll();
-  };
+  // make command bars visible when an applicant is selected.
+  useEffect(() => {
+    setCommandBarsVisible(selectedApplications.size > 0 && !applicantToDelete && !statusChangeInProgress);
+  }, [selectedApplications.size, applicantToDelete, statusChangeInProgress]);
 
   const getCounts = (apps: EmployerApplication[]) => {
     const counts: Record<string | number, number> = { all: 0 };
@@ -273,64 +221,23 @@ export function ApplicationsContent({
           unselectAll()
         }}
       />
-      <AnimatePresence>
-        {commandBarsVisible && (
-          <>
-            <motion.div
-              className="fixed bottom-4 z-[1000] shadow-xl w-max"
-              initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
-              animate={{ scale: 1, filter: "blur(0px)", opacity: 1, x: "-50%" }}
-              exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              style={{ left: "50%" }}
-            >
-              <CommandMenu
-                buttonLayout="vertical"
-                items={remove_unused_statuses}
-              />
-            </motion.div>
-            <motion.div
-              className="fixed top-20 z-[1000] shadow-xl w-max mx-2"
-              initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
-              animate={{ scale: 1, filter: "blur(0px)", opacity: 1, x: "-50%" }}
-              exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              style={{ left: "50%" }}
-            >
-              <CommandMenu
-                buttonLayout="vertical"
-                items={[
-                  [
-                    {
-                      id: "cancel",
-                      icon: X,
-                      onClick: unselectAll,
-                    },
-                    `${selectedApplications.size} selected`,
-                  ],
-                  [
-                    {
-                      id: "select_all",
-                      label: allVisibleSelected ? "Unselect all" : "Select all" ,
-                      icon: CheckSquare,
-                      onClick: toggleSelectAll,
-                    },
-                    {
-                      id: "delete",
-                      label: "Delete",
-                      icon: Trash,
-                      destructive: true,
-                      onClick: () => onRequestDeleteApplicant?.(
-                        sortedApplications.find(a => selectedApplications.has(a.id!))!
-                      ),
-                    },
-                  ],
-                ]}
-              />
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <ApplicationsCommandBar
+        visible={commandBarsVisible}
+        selectedCount={selectedApplications.size}
+        allVisibleSelected={allVisibleSelected}
+        someVisibleSelected={someVisibleSelected}
+        visibleApplicationsCount={visibleApplications.length}
+        statuses={remove_unused_statuses}
+        onUnselectAll={unselectAll}
+        onToggleSelectAll={toggleSelectAll}
+        onDelete={() => {
+          const appToDelete = Array.from(selectedApplications)
+            .map((id) => sortedApplications.find((app) => app.id === id))
+            .find((app): app is EmployerApplication => !!app);
+          if (appToDelete) onRequestDeleteApplicant(appToDelete);
+        }}
+        onStatusChange={() => {}}
+      />
       <div className="flex flex-col gap-2">
         {visibleApplications.length ? (
           visibleApplications.map((application) => (
@@ -378,51 +285,23 @@ export function ApplicationsContent({
           unselectAll()
         }}
       />
-      <AnimatePresence>
-        {commandBarsVisible && (
-          <>
-          <motion.div
-            className="fixed bottom-4 z-[1000] shadow-xl w-max"
-            initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
-            animate={{ scale: 1, filter: "blur(0px)", opacity: 1, x: "-50%", backdropFilter: "blur(50%)" }}
-            exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            style={{ left: "50%" }}
-          >
-            <CommandMenu
-              items={[
-                [
-                  {
-                    id: "cancel",
-                    icon: X,
-                    onClick: unselectAll,
-                  },
-                  `${selectedApplications.size} selected`,
-                ],
-                remove_unused_statuses,
-                [
-                  {
-                    id: "select_all",
-                    label: allVisibleSelected ? "Unselect all" : "Select all" ,
-                    icon: CheckSquare,
-                    onClick: toggleSelectAll,
-                  },
-                  {
-                    id: "delete",
-                    label: "Delete",
-                    icon: Trash,
-                    destructive: true,
-                    onClick: () => onRequestDeleteApplicant?.(
-                      sortedApplications.find(a => selectedApplications.has(a.id!))!
-                    ),
-                  },
-                ],
-              ]}
-            />
-          </motion.div>
-        </>
-        )}
-      </AnimatePresence>
+      <ApplicationsCommandBar
+        visible={commandBarsVisible}
+        selectedCount={selectedApplications.size}
+        allVisibleSelected={allVisibleSelected}
+        someVisibleSelected={someVisibleSelected}
+        visibleApplicationsCount={visibleApplications.length}
+        statuses={remove_unused_statuses}
+        onUnselectAll={unselectAll}
+        onToggleSelectAll={toggleSelectAll}
+        onDelete={() => {
+          const appToDelete = Array.from(selectedApplications)
+            .map((id) => sortedApplications.find((app) => app.id === id))
+            .find((app): app is EmployerApplication => !!app);
+          if (appToDelete) onRequestDeleteApplicant(appToDelete);
+        }}
+        onStatusChange={() => {}}
+      />
       {isLoading ? (
           <div className="w-full flex items-center justify-center">
             <div className="text-center">
@@ -523,4 +402,4 @@ export function ApplicationsContent({
       )}
     </div>
   );
-}
+});

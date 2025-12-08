@@ -19,7 +19,6 @@ import { ArrowLeft, Edit, Info, Trash2, MessageSquarePlus, MessageSquareText } f
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Job } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
-import { ListingsDetailsPanel } from "@/components/features/hire/listings";
 import { ReviewModalContent } from "@/components/features/hire/dashboard/ReviewModalContent";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { PDFPreview } from "@/components/shared/pdf-preview";
@@ -55,13 +54,6 @@ export default function JobTabs({
   const { isAuthenticated, redirectIfNotLoggedIn, loading } = useAuthContext();
   const profile = useProfile();
   const applications = useEmployerApplications();
-  const jobs = useOwnedJobs();
-  const archivedJobs = jobs.ownedJobs.filter(
-    (job) =>
-      job.is_active === false ||
-      job.is_deleted === true ||
-      job.is_unlisted === true,
-  );
   const [isLoading, setLoading] = useState(true);
 
   const [selectedApplication, setSelectedApplication] =
@@ -82,6 +74,7 @@ export default function JobTabs({
   ]);
   const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
   const [applicantToDelete, setApplicantToDelete] = useState<EmployerApplication | null>(null);
+  const [statusChangeData, setStatusChangeData] = useState<{ applicants: EmployerApplication[]; status: number; } | null>(null);
 
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const chatAnchorRef = useRef<HTMLDivElement>(null);
@@ -92,6 +85,8 @@ export default function JobTabs({
   const { isMobile } = useAppContext();
 
   const router = useRouter();
+
+  const applicationContentRef = useRef<{ unselectAll: () => void }>(null);
 
   // Fetch a presigned resume URL for the currently selected user
   const { url: resumeURL, sync: syncResumeURL } = useFile({
@@ -136,12 +131,12 @@ export default function JobTabs({
       setLoading(true)
 
       const timer = setTimeout(() => {
-      setLoading(false);
-    }, 400);
+        setLoading(false);
+      }, 400);
     
-    return () => clearTimeout(timer);
-  }
-}, [selectedJob?.id]);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedJob?.id]);
 
   const handleToggleActive = async () => {
     if (!selectedJob?.id) return;
@@ -210,6 +205,12 @@ export default function JobTabs({
     close: closeApplicantDeleteModal,
     Modal: ApplicantDeleteModal,
   } = useModal("applicant-delete-modal");
+
+  const {
+    open: openStatusChangeModal,
+    close: closeStatusChangeModal,
+    Modal: StatusChangeModal,
+  } = useModal("mass-change-modal");
 
   // Wrapper for review function to match expected signature
   const reviewApp = (
@@ -281,12 +282,13 @@ export default function JobTabs({
     await applications.review(applicantToDelete.id, { status: 7 });
     setApplicantToDelete(null);
     closeApplicantDeleteModal();
+    applicationContentRef.current?.unselectAll();
   };
 
   const handleCancelApplicantDelete = () => {
     setApplicantToDelete(null);
     closeApplicantDeleteModal();
-  }
+  };
 
   const onChatClick = async () => {
     if (!selectedApplication?.user_id) return;
@@ -301,7 +303,34 @@ export default function JobTabs({
     } else {
       openNewChatModal();
     }
+  };
+
+  const handleRequestStatusChange = (
+    applicants: EmployerApplication[],
+    status: number,
+  ) => {
+    setStatusChangeData({ applicants, status });
+    openStatusChangeModal();
+  };
+
+  const handleCancelStatusChange = () => {
+    setStatusChangeData(null);
+    closeStatusChangeModal();
   }
+
+  const handleConfirmStatusChange = async () => {
+    if (!statusChangeData) return;
+
+    await Promise.all(
+      statusChangeData.applicants.map((app) =>
+        applications.review(app.id ?? "", { status: statusChangeData.status })
+      )
+    );
+
+    setStatusChangeData(null);
+    closeStatusChangeModal();
+    applicationContentRef.current?.unselectAll();
+  };
 
   // Handle message
     const handleMessage = async (studentId: string | undefined, message: string) => {
@@ -342,8 +371,7 @@ export default function JobTabs({
   if (loading || !isAuthenticated())
     return <Loader>Loading dashboard...</Loader>;
 
-  // ! remove, find a better way
-  let lastSelf = false;
+  let lastSelf: boolean = false;
 
   return (
     <>
@@ -371,6 +399,21 @@ export default function JobTabs({
           </div>
         )}
       </ApplicantDeleteModal>
+
+      <StatusChangeModal>
+        {statusChangeData && (
+          <div className="p-8 pt-0 h-full">
+            <div className="text-lg mb-4">
+              Change status for "{statusChangeData.applicants.length}" applicant{statusChangeData.applicants.length !== 1 ? "s" : ""}?
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={handleCancelStatusChange}>Cancel</Button>
+              <Button onClick={handleConfirmStatusChange}>Confirm</Button>
+            </div>
+          </div>
+        )}
+      </StatusChangeModal>
+
       <div className="flex-1 flex flex-col w-full">
         <div className="flex items-center">
           <button
@@ -464,6 +507,7 @@ export default function JobTabs({
           </div>
               {/* we need to add filtering here :D */}
               <ApplicationsContent
+                ref={applicationContentRef}
                 applications={filteredApplications}
                 statusId={[0, 1, 2, 3, 4, 5, 6]}
                 isLoading={isLoading}
@@ -475,7 +519,9 @@ export default function JobTabs({
                 onStatusChange={handleStatusChange}
                 setSelectedApplication={setSelectedApplication}
                 onRequestDeleteApplicant={handleRequestApplicantDelete}
+                onRequestStatusChange={handleRequestStatusChange}
                 applicantToDelete={applicantToDelete}
+                statusChangeInProgress={!!statusChangeData}
               ></ApplicationsContent>
           </div>
       </div>
