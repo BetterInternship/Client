@@ -216,7 +216,9 @@ export function ConversationPage({
     const hasConversations = (conversations.data?.length ?? 0) > 0;
 
     return (
-        <div className="w-full h-screen flex flex-col md:flex-row overflow-hidden">
+        <div 
+            className="w-full h-full flex flex-col md:flex-row"
+        >
             {hasConversations ? (
             <>
                 {/* ===== Left: List (Desktop always visible; Mobile only when in "list" view) ===== */}
@@ -257,7 +259,7 @@ export function ConversationPage({
                 {/* ===== Right: Chat (Desktop always visible; Mobile only when in "chat" view) ===== */}
                 <section
                 className={cn(
-                    "flex-1 flex flex-col md:max-w-[75%] h-full",
+                    "flex-1 flex flex-col h-full",
                     isMobile ? (mobileView === "chat" ? "flex" : "hidden") : "flex",
                 )}
                 >

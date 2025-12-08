@@ -87,14 +87,14 @@ const ContentLayout: React.FC<ContentLayoutProps> = ({ children, className }) =>
   const { isMobile } = useMobile();
   
   return (
-    <div className="w-full flex flex-row space-x-0">
+    <div className="w-full h-full flex flex-row space-x-0">
       {!isMobile ? (
         <>
-          <aside className="absolute top-20 left-0 z-[100] h-screen border-r bg-muted">
-            <SideNav items={navItems} />
-          </aside>
-          {/* This is only here so the main tag below is offset */}
-          <aside className="h-screen w-fit invisible">
+          <aside 
+            className={cn(
+              "z-[100] min-h-stretch border-r bg-muted",
+            )}
+          >
             <SideNav items={navItems} />
           </aside>
         </>
@@ -102,7 +102,7 @@ const ContentLayout: React.FC<ContentLayoutProps> = ({ children, className }) =>
         <></>
       )} 
       <main className={cn(
-        "flex-1 flex overflow-auto justify-center mb-20 h-[100%] pt-4",
+        "flex-1 flex overflow-auto justify-center pt-4",
         isMobile ? "px-2" : "px-8",
         className
       )}>
