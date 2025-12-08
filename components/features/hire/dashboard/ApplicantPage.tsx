@@ -126,7 +126,7 @@ export function ApplicantPage({
         highlightColor: statusMap.get(application?.status!)?.bgColor,
       };
 
-      const { url: resumeURL, sync: syncResumeURL } = useFile({
+      const { url: resumeURL, sync: syncResumeURL, loading: resumeLoading } = useFile({
           fetcher: useCallback(
             async () =>
               await UserService.getUserResumeURL(application?.user_id ?? ""),
@@ -527,10 +527,16 @@ export function ApplicantPage({
                     {/* resume */}
                         {application?.user?.resume ? (
                             <div className={cn("h-full flex flex-col justify-center items-center", isMobile ? "mt-4 w-full" : "")}>
-                                {/* <h1 className="font-bold font-heading text-2xl px-6 py-4 text-gray-600">
-                                Resume
-                                </h1> */}
-                                <PDFPreview url={resumeURL} />
+                                {resumeLoading ? (
+                                    <div className="w-full flex items-center justify-center">
+                                        <div className="w-full text-center">
+                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                                            <p className="text-gray-600">Loading Resume...</p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <PDFPreview url={resumeURL} />
+                                )}
                             </div>
                             ) : (
                             <div className="flex flex-col items-center justify-center h-96 px-8 w-full">
