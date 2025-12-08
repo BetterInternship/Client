@@ -14,9 +14,11 @@ function ConversationsPage() {
 
   return(
       <ContentLayout
-      className="p-0 max-h-[calc(100vh-7rem)] overflow-hidden"
+      className="p-0"
       >
-        <ConversationPage applicantId={userId || undefined} />
+         <div className="w-full h-full">
+          <ConversationPage applicantId={userId || undefined} />
+        </div>
       </ContentLayout>
   )
 };

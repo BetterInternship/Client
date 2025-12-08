@@ -146,7 +146,7 @@ export function ConversationPage({
 
     const sortedConvos = useMemo(
         () =>
-        (conversations.data ?? []).toSorted(
+        (conversations.data?.filter((c) => c?.subscribers?.length > 1) ?? []).toSorted(
             (a, b) =>
             (b.last_unread?.timestamp ?? 0) - (a.last_unread?.timestamp ?? 0),
         ),
@@ -155,7 +155,7 @@ export function ConversationPage({
 
     const sortedUnreads = useMemo(
         () =>
-        (unreads ?? []).toSorted(
+        (unreads.filter((c) => c?.subscribers?.length > 1) ?? []).toSorted(
             (a, b) =>
             (b.last_unread?.timestamp ?? 0) - (a.last_unread?.timestamp ?? 0),
         ),
@@ -216,7 +216,7 @@ export function ConversationPage({
     const hasConversations = (conversations.data?.length ?? 0) > 0;
 
     return (
-        <div className="w-full h-full flex flex-col md:flex-row overflow-hidden">
+        <div className="w-full h-screen flex flex-col md:flex-row overflow-hidden">
             {hasConversations ? (
             <>
                 {/* ===== Left: List (Desktop always visible; Mobile only when in "list" view) ===== */}
@@ -228,7 +228,7 @@ export function ConversationPage({
                     isMobile ? (mobileView === "list" ? "block" : "hidden") : "block",
                 )}
                 >
-                <div className="">
+                <div className="shrink-0">
                     {/* <Textarea placeholder="Search..."></Textarea> */}
                     <ConversationFilter 
                     conversations={sortedConvos}
@@ -237,7 +237,7 @@ export function ConversationPage({
                     onFilterChange={(status:string) => setChatFilter(status as "all" | "unread")}
                     />
                 </div>
-                <div className="h-full max-h-full overflow-y-auto">
+                <div className="flex-1 overflow-y-auto min-h-0">
                     { visibleConvos.length ? (
                     <ConversationList
                     conversations={visibleConvos}
@@ -257,7 +257,7 @@ export function ConversationPage({
                 {/* ===== Right: Chat (Desktop always visible; Mobile only when in "chat" view) ===== */}
                 <section
                 className={cn(
-                    "flex-1 flex flex-col md:max-w-[75%] max-h-full",
+                    "flex-1 flex flex-col md:max-w-[75%] h-full",
                     isMobile ? (mobileView === "chat" ? "flex" : "hidden") : "flex",
                 )}
                 >
@@ -272,10 +272,10 @@ export function ConversationPage({
                     <>
                     {/*top bar */}
                     <div className="flex justify-between sticky shrink-0 top-0 z-10 px-3 py-2 border-b bg-white/90 backdrop-blur">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
                         {isMobile && (
                             <button
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-gray-100"
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-gray-100 shrink-0"
                             onClick={() => {
                                 setMobileView("list");
                                 setConversationId("");
@@ -295,7 +295,7 @@ export function ConversationPage({
                         setProfileView(prev => !prev);
                         setMobileView("profile");
                         }}
-                        className="inline-flex h-12 w-12 items-center justify-center rounded-md hover:bg-gray-100 text-gray-500 mt-1">
+                        className="inline-flex h-12 w-12 items-center justify-center rounded-md hover:bg-gray-100 text-gray-500 mt-1 shrink-0">
                         <CircleEllipsis className="h-6 w-6"/>
                         </button>
                     </div>
@@ -365,7 +365,7 @@ export function ConversationPage({
     onFilterChange: (status: string) => void;}) {
 
         return (
-        <div className="flex p-2 gap-x-2">
+        <div className="flex p-2 gap-x-2 shrink-0">
             <FilterButton
                 name="All"
                 key="all"
@@ -553,7 +553,7 @@ export function ConversationPage({
     }) {
 
     return (
-        <div className="flex flex-col">
+        <div className="flex flex-col overflow-auto">
         {conversations.map((c) => (
             <ConversationCard
             key={c.id}
@@ -574,7 +574,7 @@ export function ConversationPage({
     const { userName } = useUserName(conversation.senderId || "")
     const userApplications = applications?.filter(a => conversation.senderId === a.user_id)
     return (
-        <div className="min-w-0 max-w-[33vh]">
+        <div className="min-w-0 max-w-[33vh] shrink-0">
         <div className="font-medium truncate text-lg">
             {userName || "Conversations"}
         </div>
@@ -607,7 +607,7 @@ export function ConversationPage({
     return (
         <div
         className={cn(
-            "z-10 border-t bg-white",
+            "shrink-0 z-10 border-t bg-white",
             "px-2 py-2",
         )}
         >
@@ -694,7 +694,7 @@ export function ConversationPage({
 
     const ConversationPane = ({
     conversation,
-    chatAnchorRef,
+    chatAnchorRef
     }: {
     // keep "any" per your note; consider adding a strong type later
     conversation: any;
@@ -705,7 +705,7 @@ export function ConversationPage({
     let lastSelf = false;
 
     return (
-        <div className="flex-1 flex flex-col-reverse gap-1 p-2 overflow-auto min-h-0">
+            <div className="flex-1 min-h-0 flex flex-col-reverse gap-1 p-2 overflow-y-auto">
         <div ref={chatAnchorRef} />
         {conversation?.messages?.length ? (
             <>

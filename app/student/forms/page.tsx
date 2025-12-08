@@ -53,8 +53,8 @@ export default function FormsPage() {
   } = useQuery({
     queryKey: ["forms:list"],
     queryFn: async () => (profile.data ? await fetchForms(profile.data) : []),
-    enabled: !!profile.data,            // wait until profile is available
-    refetchOnMount: "always",           // fetch every time the page/component mounts
+    enabled: !!profile.data, // wait until profile is available
+    refetchOnMount: "always", // fetch every time the page/component mounts
   });
 
   const generatorForms = formList;
@@ -80,6 +80,7 @@ export default function FormsPage() {
         onClose: () => closeGlobalModal("form-generator-form"),
         allowBackdropClick: false,
         panelClassName: "sm:w-full sm:max-w-2xl",
+        useCustomPanel: true,
       },
     );
   };
