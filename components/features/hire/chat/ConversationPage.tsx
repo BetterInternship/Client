@@ -246,6 +246,7 @@ export function ConversationPage({
                     unreadConversations={sortedUnreads}
                     profileId={profile.data?.id}
                     onPick={(id) => setConversationId(id)}
+                    currId={conversationId}
                     />
                     ) : (
                     <div className="grid place-items-center mt-[30vh]">
@@ -547,11 +548,13 @@ export function ConversationPage({
     unreadConversations,
     profileId,
     onPick,
+    currId,
     }: {
     conversations: any[];
     unreadConversations: any[];
     profileId?: string;
     onPick: (id: string) => void;
+    currId: boolean;
     }) {
 
     return (
@@ -566,6 +569,7 @@ export function ConversationPage({
             isUnread={
                 unreadConversations.some((unreadConv) => unreadConv.id === c.id)
             }
+            isPicked={currId === c.id}
             />
         ))}
         </div>
@@ -756,12 +760,14 @@ export function ConversationPage({
     latestMessage,
     setConversationId,
     isUnread,
+    isPicked,
     }: {
     conversation: any; // consider replacing with a proper type
     latestIsYou: boolean;
     latestMessage: string;
     setConversationId: (id: string) => void;
     isUnread?: boolean;
+    isPicked: boolean;
     }) => {
     const profile = useProfile();
     const [userId, setUserId] = useState("");
@@ -782,6 +788,7 @@ export function ConversationPage({
         <Card
         className={cn(
             "rounded-none border-0 border-b border-gray-200 py-3 px-4 md:px-6 hover:bg-gray-50 cursor-pointer",
+            isPicked ? "bg-gray-100" : ""
         )}
         onMouseDown={() => setConversationId(conversation.id)}
         onTouchStart={() => setConversationId(conversation.id)}
