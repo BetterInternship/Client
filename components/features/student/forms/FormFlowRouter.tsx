@@ -304,7 +304,12 @@ export function FormFlowRouter({
     );
   };
 
-  if (done) return <StepComplete onMyForms={() => onGoToMyForms?.()} />;
+  if (done)
+    return (
+      <div className="bg-white p-8 rounded-[0.25em]">
+        <StepComplete onMyForms={() => onGoToMyForms?.()} />
+      </div>
+    );
 
   // Loader
   if (!form.data?.formMetadata || form.isLoading)
