@@ -563,7 +563,7 @@ export default function JobTabs({
                   }
                 </div>
                 <button
-                className="flex items-center bg-primary text-white text-sm p-2 rounded-[0.33em] gap-2"
+                className="flex items-center bg-primary text-white text-sm p-2 rounded-[0.33em] gap-2 hover:opacity-70"
                 onClick={onChatClick}
                 >
                   <SquareArrowOutUpRight className="h-5 w-5"/>
