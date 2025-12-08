@@ -61,7 +61,7 @@ export const Header: React.FC = () => {
     <div className="flex flex-col">
       <div className={cn(
                 "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
-                isMobile ? "px-4 py-3" : "py-4 px-8"
+                isMobile ? "px-4 py-3 h-[4rem]" : "py-4 px-8 h-[5rem]"
               )}
               style={{ overflow: "visible", position: "relative", zIndex: 100 }}>
         <div className="flex items-center gap-3">
