@@ -651,7 +651,7 @@ export function ApplicantPage({
                     maxLength={1000}
                 />
                 <button 
-                    disabled={sending || !messageInputRef.current?.value.trim()}
+                    disabled={sending || messageInputRef.current?.value.trim() === undefined}
                     onClick={() => {
                     if (!application?.user_id) return;
                     if (messageInputRef.current?.value) {
@@ -662,7 +662,7 @@ export function ApplicantPage({
                     }
                     }}
                     className={cn("text-primary px-2",
-                    (sending || !messageInputRef.current?.value.trim()) ? "opacity-50" : ""
+                    (sending || messageInputRef.current?.value.trim() === undefined) ? "opacity-50" : ""
                     )}
                 >
                     <SendHorizonal className="w-7 h-7" />

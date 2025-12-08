@@ -699,7 +699,7 @@ export default function JobTabs({
                 maxLength={1000}
               />
               <button 
-                disabled={sending || !messageInputRef.current?.value.trim()}
+                disabled={sending || messageInputRef.current?.value.trim() === undefined}
                 onClick={() => {
                   if (!selectedApplication?.user_id) return;
                   if (messageInputRef.current?.value) {
@@ -710,7 +710,7 @@ export default function JobTabs({
                   }
                 }}
                 className={cn("text-primary px-2",
-                  (sending || !messageInputRef.current?.value.trim()) ? "opacity-50" : ""
+                  (sending || messageInputRef.current?.value.trim() === undefined) ? "opacity-50" : ""
                 )}
               >
                   <SendHorizonal className="w-7 h-7" />
