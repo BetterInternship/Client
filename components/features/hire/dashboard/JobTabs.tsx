@@ -173,7 +173,6 @@ export default function JobTabs({
     showCloseButton: false,
   });
   
-
   const {
     open: openChatModal,
     close: closeChatModal,
@@ -181,6 +180,20 @@ export default function JobTabs({
   } = useSideModal("chat-modal", {
     onClose: () => (conversation.unsubscribe(), setConversationId(""))
   });
+
+  useEffect(() => {
+    const handleEsc = (event: any) => {
+      if (event.key === 'Escape') {
+        closeChatModal();
+      }
+    };
+
+    window.addEventListener('keydown', handleEsc);
+
+    return () => {
+      window.removeEventListener('keydown', handleEsc);
+    };
+  }, [closeChatModal]);
 
   const {
     open: openApplicantModal,
