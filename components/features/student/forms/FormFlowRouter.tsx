@@ -314,7 +314,7 @@ export function FormFlowRouter({
   return (
     <div className="relative mx-auto flex h-[100%] max-h-[100%] w-full flex-col items-center overflow-y-hidden px-4 py-8 bg-white bg-opacity-25">
       <div className="max-w-7xl w-full overflow-x-visible overflow-y-visible">
-        <div className="flex flex-col bg-white px-6 py-3 border rounded-[0.33em] bg-opacity-65 items-start gap-1 rounded-b-none">
+        <div className="flex flex-col bg-white px-6 py-3 border rounded-[0.33em] items-start gap-1 rounded-b-none">
           <Button
             variant="ghost"
             className="relative translate-x-[-1em] text-opacity-65 p-2"
