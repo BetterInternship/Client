@@ -20,6 +20,7 @@ import { statusMap } from "@/components/common/status-icon-map";
 import { type ActionItem } from "@/components/ui/action-item";
 import { Toast } from "@/components/ui/toast";
 import { ApplicationsCommandBar } from "./ApplicationsCommandBar";
+import { FormCheckbox } from "@/components/EditForm";
 
 interface ApplicationsContentProps {
   applications: EmployerApplication[];
@@ -313,16 +314,14 @@ export const ApplicationsContent = forwardRef<
         <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-200 border text-sm rounded-md overflow-visible">
           <thead className="bg-gray-100">
             <tr className="text-left">
-              <th className="p-4">
-                <Checkbox
-                  onClick={toggleSelectAll}
-                  checked={
-                    allVisibleSelected 
-                    ? true
-                    : someVisibleSelected
-                      ? 'indeterminate'
-                      : false
-                  }
+              <th 
+                className="p-4"
+                onClick={toggleSelectAll}
+              >
+                <FormCheckbox
+                  checked={allVisibleSelected}
+                  indeterminate={someVisibleSelected}
+                  setter={toggleSelectAll}
                   disabled={visibleApplications.length === 0}
                 />
               </th>

@@ -145,10 +145,16 @@ export function ApplicationRow({
       className="hover:bg-primary/25 odd:bg-white even:bg-gray-50 hover:cursor-pointer transition-colors"
       onClick={onView}
     >
-      <td className="px-4 py-2">
-        <Checkbox
+      <td 
+        className="px-4 py-2"
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleSelect?.(!checkboxSelected);
+        }}
+      >
+        <FormCheckbox
           checked={checkboxSelected}
-          onCheckedChange={(v) => onToggleSelect?.(!!v)}
+          setter={(v: boolean) => onToggleSelect?.(!!v)}
         />
       </td>
       <td className="px-4 py-2">{getFullName(application.user)} </td>
