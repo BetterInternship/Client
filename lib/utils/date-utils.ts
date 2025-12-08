@@ -133,18 +133,16 @@ export const formatDate = (dateString?: string | null) => {
 /**
  * Return a formatted date string from a UNIX timestamp without the time.
  * @param timestamp Timestamp/date in UNIX timestamp format.
- * @returns 
+ * @returns
  */
 export const formatTimestampDateWithoutTime = (timestamp?: number | null) => {
   if (!timestamp) return "-";
   const date = new Date(timestamp);
-  return (
-    date.toLocaleDateString("en-PH", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
-  );
+  return date.toLocaleDateString("en-PH", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 };
 
 /**
@@ -154,13 +152,11 @@ export const formatTimestampDateWithoutTime = (timestamp?: number | null) => {
 export const formatDateWithoutTime = (dateString?: string | null) => {
   if (!dateString) return "-";
   const date = new Date(dateString);
-  return (
-    date.toLocaleDateString("en-PH", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
-  );
+  return date.toLocaleDateString("en-PH", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 };
 
 /**

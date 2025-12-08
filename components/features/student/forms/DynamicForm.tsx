@@ -3,7 +3,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FieldRenderer } from "@/components/features/student/forms/FieldRenderer";
 import { ClientField } from "@betterinternship/core/forms";
-import { cn, coerceAnyDate } from "@/lib/utils";
+import {
+  cn,
+  coerceAnyDate,
+  formatDate,
+  formatDateWithoutTime,
+} from "@/lib/utils";
 import { RecipientSection } from "@/components/features/student/forms/RecipientSection";
 
 export function DynamicForm({
@@ -23,6 +28,7 @@ export function DynamicForm({
   fields: ClientField<[]>[];
   renderFields: {
     field: string;
+    type: string;
     w: number;
     h: number;
     x: number;
@@ -84,9 +90,18 @@ export function DynamicForm({
       .filter((kf) => ~~kf.x || ~~kf.y)
       .forEach((field) => {
         if (!newPreviews[field.page]) newPreviews[field.page] = [];
+        const clientField = fields.find((f) => f.field === field.field);
+        let value = values[field.field] as string;
+
+        // Map values appropriately for preview
+        if (clientField?.type === "date")
+          value = formatDateWithoutTime(
+            new Date(parseInt(value || "0")).toISOString(),
+          );
+
         newPreviews[field.page].push(
           <FieldPreview
-            value={values[field.field] as string}
+            value={value}
             x={field.x}
             y={field.y}
             w={field.w}
@@ -326,7 +341,7 @@ const FieldPreview = ({
     <div
       ref={scrollRef}
       className={cn(
-        "absolute top-0 left-0 border-0!",
+        "absolute top-0 left-0 border-0! text-ellipsis truncate",
         selected ? "bg-supportive/25" : "bg-primary/20",
       )}
       style={{
