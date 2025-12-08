@@ -190,9 +190,16 @@ export function FormFlowRouter({
 
           <ul className="mt-4 max-h-40 overflow-auto divide-y">
             {recipientFields.map((e, i) => (
-              <li key={i} className="py-2 text-sm flex gap-1">
-                <div className="font-medium text-primary">{e.email}</div>
-                <div className=" text-gray-500">- {e.label}</div>
+              <li
+                key={i}
+                className="py-2 text-sm flex gap-1 items-center overflow-hidden"
+              >
+                <div className="font-medium text-primary truncate">
+                  {e.email}
+                </div>
+                <div className="text-gray-500 whitespace-nowrap">
+                  - {e.label}
+                </div>
               </li>
             ))}
           </ul>
