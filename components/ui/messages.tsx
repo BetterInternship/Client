@@ -25,7 +25,7 @@ export const Message = ({
       <div className="flex-1 bg-transparent"></div>
       <div className="flex flex-col">
         {!prevSelf && (
-          <div className="text-right text-xs pr-1 pb-1 text-gray-500">you</div>
+          <div className="text-right text-xs pr-1 pb-1 text-gray-500">You</div>
         )}
         <Card className="py-2 px-4 w-fit text-sm w-prose max-w-full text-wrap break-words bg-primary text-white">
           {message}

@@ -91,6 +91,7 @@ export function ConversationPage({
 
     // open and close profile view
     const [profileView, setProfileView] = useState(false);
+    const [ellipsisState, setEllipsisState] = useState(true);
 
     // checking if user data jis fully loaded
     const [userDataLoading, setUserDataLoading] = useState(true);
@@ -119,7 +120,9 @@ export function ConversationPage({
     }, [conversationId]);
 
     useEffect(() => {
-        setProfileView(false);
+        if(conversationId && ellipsisState) {
+            setProfileView(true);
+        } 
     }, [conversationId]);
 
     useEffect(() => {
@@ -338,7 +341,8 @@ export function ConversationPage({
                                 </div>
                                 <button
                                 onClick={() => {
-                                setProfileView(prev => !prev);
+                                setEllipsisState(!ellipsisState);
+                                setProfileView(!profileView);
                                 setMobileView("profile");
                                 }}
                                 className="inline-flex h-12 w-12 items-center justify-center rounded-md hover:bg-gray-100 text-gray-500 mt-1 shrink-0">
@@ -795,13 +799,13 @@ export function ConversationPage({
                 })
                 ?.toReversed()
                 ?.map((d: any) => (
-                <Message
+                    <Message
                     key={d.key}
                     message={d.message}
                     self={d.self}
                     prevSelf={d.prevSelf}
                     them={d.them}
-                />
+                    />
                 ))}
                 </>
             ) : (
@@ -866,8 +870,8 @@ export function ConversationPage({
             ease: "easeOut", 
         }}
         className={cn(
-            "rounded-none border-0 border-b border-gray-200 py-3 px-4 md:px-6",
-            isPicked ? "bg-gray-100" : " hover:bg-gray-100 cursor-pointer"
+            "rounded-none border-0 border-b border-gray-200 py-3 px-4 md:px-6 cursor-pointer",
+            isPicked ? "bg-gray-100" : " hover:bg-gray-100"
         )}
         onMouseDown={() => setConversationId(conversation.id)}
         onTouchStart={() => setConversationId(conversation.id)}
