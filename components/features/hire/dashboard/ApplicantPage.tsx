@@ -46,7 +46,7 @@ import {
 import { Message } from "@/components/ui/messages";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { useAuthContext } from "@/app/hire/authctx";
 
@@ -88,6 +88,7 @@ export function ApplicantPage({
     const [lastSending, setLastSending] = useState(false);
     const [sending, setSending] = useState(false);
     const conversation = useConversation("employer", conversationId);
+    const [exitingBack, setExitingBack] = useState(false);
 
     const {
         to_university_name,
@@ -142,6 +143,7 @@ export function ApplicantPage({
         });
 
         const handleBack = () => {
+            setExitingBack(true);
             if (window.history.length > 1) {
                 router.back();
             } else {
@@ -154,7 +156,7 @@ export function ApplicantPage({
             close: closeNewChatModal,
             Modal: NewChatModal,
           } = useModal("new-chat-modal", {
-            onClose: () => (conversation.unsubscribe()),
+            onClose: () => (conversation.unsubscribe(), setConversationId("")),
             showCloseButton: false,
           });
         
@@ -163,7 +165,7 @@ export function ApplicantPage({
             close: closeOldChatModal,
             Modal: OldChatModal,
           } = useModal("old-chat-modal", {
-            onClose: () => (conversation.unsubscribe()),
+            onClose: () => (conversation.unsubscribe(), setConversationId("")),
             showCloseButton: false,
           });
           
@@ -173,7 +175,7 @@ export function ApplicantPage({
             close: closeChatModal,
             SideModal: ChatModal,
           } = useSideModal("chat-modal", {
-            onClose: () => (conversation.unsubscribe())
+            onClose: () => (conversation.unsubscribe(), setConversationId(""))
           });
 
         useEffect(() => {
@@ -244,8 +246,7 @@ export function ApplicantPage({
         <>
         <motion.div
             initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-            animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
-            exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+            animate={exitingBack ? { scale: 0.98, filter: "blur(4px)", opacity: 0 } : { scale: 1, filter: "blur(0px)", opacity: 1 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
         >
             <button
@@ -589,13 +590,10 @@ export function ApplicantPage({
                 <div className="flex flex-col-reverse max-h-full min-h-full overflow-y-scroll p-0 gap-1">
                     <div ref={chatAnchorRef} />
                     {(conversation?.loading ?? true) ? (
-                    <div className="w-full h-full mb-[50%] flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-                        <p className="text-gray-600">Loading Conversation...</p>
-                      </div>
+                    <div className="flex-1 flex flex-col items-center justify-center">
+                        <Loader>Loading conversation...</Loader>
                     </div>
-                    ) : (conversation?.messages?.length ? (
+                    ) : conversation?.messages?.length ? (
                     conversation.messages
                         ?.map((message: any, idx: number) => {
                         if (!idx) lastSelf = false;
@@ -635,20 +633,10 @@ export function ApplicantPage({
                         </Card>
                         </motion.div>
                     </div>
-                    ))}
+                    )}
                 </div>
                 </div>
-                <div 
-                className="flex gap-2"
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    if (!application?.user_id || !messageInputRef.current?.value?.trim() || sending) return;
-                    
-                    const message = messageInputRef.current.value;
-                    messageInputRef.current.value = "";
-                    handleMessage(application.user_id, message);
-                  }}
-                >
+                <div className="flex gap-2">
                 <Textarea
                     ref={messageInputRef}
                     placeholder="Send a message here..."
@@ -668,7 +656,7 @@ export function ApplicantPage({
                     maxLength={1000}
                 />
                 <button 
-                    disabled={sending}
+                    disabled={sending || messageInputRef.current?.value.trim() === undefined}
                     onClick={() => {
                     if (!application?.user_id) return;
                     if (messageInputRef.current?.value) {
@@ -679,7 +667,7 @@ export function ApplicantPage({
                     }
                     }}
                     className={cn("text-primary px-2",
-                    (sending) ? "opacity-50" : ""
+                    (sending || messageInputRef.current?.value.trim() === undefined) ? "opacity-50" : ""
                     )}
                 >
                     <SendHorizonal className="w-7 h-7" />

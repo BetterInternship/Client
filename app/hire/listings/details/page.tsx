@@ -2,6 +2,7 @@
 
 import ContentLayout from "@/components/features/hire/content-layout";
 import JobDetailsPage from "@/components/features/hire/listings/jobDetails";
+import { Loader } from "@/components/ui/loader";
 import { JobService } from "@/lib/api/services";
 import { Job } from "@/lib/db/db.types";
 import { useSearchParams } from "next/navigation";
@@ -45,8 +46,12 @@ function JobDetailsPageRouteContent() {
       fetchJobData();
     }, [jobId]);
 
-  if (!jobData) {
-    return;
+  if (loading || !jobData) {
+    return (
+      <ContentLayout>
+        <Loader>Loading listing information...</Loader>
+      </ContentLayout>
+    );
   }
 
   return (
