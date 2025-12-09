@@ -457,6 +457,7 @@ export function ConversationPage({
     const { isMobile } = useAppContext();
     const { user } = getUserById(conversation.senderId || "")
     const userName = getFullName(user || undefined)
+    const userId = user?.id
     const userApplications = applications?.filter(a => profileId === a.user_id)
 
     const { to_university_name } = useDbRefs();
@@ -482,10 +483,10 @@ export function ConversationPage({
         });
 
         useEffect(() => {
-        if (user?.id) {
-        syncResumeURL();
-        }
-    }, [user?.id, syncResumeURL]);
+            if (user?.id) {
+            syncResumeURL();
+            }
+        }, [user?.id, syncResumeURL]);
 
     return(
         <AnimatePresence mode="wait">
@@ -499,7 +500,7 @@ export function ConversationPage({
             {user ? (
             <>
                 <div className="flex flex-col items-center mt-10 w-full">
-                <UserPfp user_id={profileId} size="20"/>
+                    <UserPfp user_id={userId || ""} size="20"/>
                 <h3 className="text-xl mt-2">{userName || "User"}</h3>
                 {preferences?.internship_type && 
                     <div className="flex justify-start">
