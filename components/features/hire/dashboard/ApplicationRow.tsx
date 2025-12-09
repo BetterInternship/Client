@@ -5,7 +5,6 @@ import { ActionItem } from "@/components/ui/action-item";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useConversations } from "@/hooks/use-conversation";
 import { useAppContext } from "@/lib/ctx-app";
 import { EmployerApplication } from "@/lib/db/db.types";
@@ -14,6 +13,7 @@ import { getFullName } from "@/lib/profile";
 import { cn } from "@/lib/utils";
 import { formatDateWithoutTime, formatTimestampDateWithoutTime } from "@/lib/utils/date-utils";
 import { statusMap } from "@/components/common/status-icon-map";
+import { motion } from "framer-motion";
 import {
   Calendar,
   ContactRound,
@@ -27,6 +27,7 @@ import { FormCheckbox } from "@/components/EditForm";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
 
 interface ApplicationRowProps {
+  index?: number;
   application: EmployerApplication;
   onView: (v: any) => void;
   onNotes: () => void;
@@ -51,6 +52,7 @@ interface InternshipPreferences {
 }
 
 export function ApplicationRow({
+  index = 0,
   application,
   onView,
   openChatModal,
@@ -64,8 +66,11 @@ export function ApplicationRow({
   const { to_university_name, get_app_status } = useDbRefs();
   const conversations = useConversations();
   const { isMobile } = useAppContext();
-
   const preferences = (application.user?.internship_preferences || {}) as InternshipPreferences;
+
+  // limit row animation to first 50.
+  const MAX_STAGGER_ROWS = 50;
+  const staggerDelay = index < MAX_STAGGER_ROWS ? index * 0.05 : 0;
 
   const currentStatusId = application.status?.toString() ?? "0";
   const defaultStatus: ActionItem = {
@@ -79,69 +84,80 @@ export function ApplicationRow({
   };
 
   return isMobile ? (
-    <>
-      <Card
-        className="flex flex-col hover:cursor-pointer hover:bg-primary/25 transition-colors"
-        onClick={onView}
+      <motion.div
+        key={application.id}
+        initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+        animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
+        exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+        transition={{ duration: 0.3, delay: staggerDelay, ease: "easeOut" }}
       >
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className="flex items-center gap-1 pb-2"
+        <Card
+          className="flex flex-col hover:cursor-pointer hover:bg-primary/25 transition-colors"
+          onClick={onView}
         >
-          <FormCheckbox
-            checked={checkboxSelected}
-            setter={(v: boolean) => onToggleSelect?.(!!v)}
-          />
-          <h4 className="text-gray-900 text-base">{getFullName(application.user)}</h4>
-        </div>
-        <div className="flex flex-col text-gray-500">
-          <div className="flex items-center gap-2">
-            <School size={16} />
-            <span className="text-sm">
-              {to_university_name(application.user?.university) || ""}{" "}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <GraduationCap size={16} />
-            <span className="text-sm">{application.user?.degree}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <ContactRound size={16} />
-            <span className="text-sm">
-              {preferences.internship_type}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Calendar size={16} />
-            <span className="text-sm">
-              {formatTimestampDateWithoutTime(preferences.expected_start_date)}
-            </span>
-          </div>
-        </div>
-        <div className="flex items-center justify-end gap-2 pt-2">
-          <DropdownMenu
-            items={statuses}
-            defaultItem={defaultStatus}
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              openChatModal();
-              setSelectedApplication(application);
-              updateConversationId(application.user_id ?? "");
-            }}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1 pb-2"
           >
-            <MessageCircle className="h-6 w-6" />
-            Chat
-          </Button>
-        </div>
-      </Card>
-    </>
+            <FormCheckbox
+              checked={checkboxSelected}
+              setter={(v: boolean) => onToggleSelect?.(!!v)}
+            />
+            <h4 className="text-gray-900 text-base">{getFullName(application.user)}</h4>
+          </div>
+          <div className="flex flex-col text-gray-500">
+            <div className="flex items-center gap-2">
+              <School size={16} />
+              <span className="text-sm">
+                {to_university_name(application.user?.university) || ""}{" "}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <GraduationCap size={16} />
+              <span className="text-sm">{application.user?.degree}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <ContactRound size={16} />
+              <span className="text-sm">
+                {preferences.internship_type}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar size={16} />
+              <span className="text-sm">
+                {formatTimestampDateWithoutTime(preferences.expected_start_date)}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <DropdownMenu
+              items={statuses}
+              defaultItem={defaultStatus}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                openChatModal();
+                setSelectedApplication(application);
+                updateConversationId(application.user_id ?? "");
+              }}
+            >
+              <MessageCircle className="h-6 w-6" />
+              Chat
+            </Button>
+          </div>
+        </Card>
+      </motion.div>
   ) : (
     // desktop
-    <tr
+    <motion.tr
+      key={application.id}
+      initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+      animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
+      exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+      transition={{ duration: 0.3, delay: index * 0.05, ease: "easeOut" }}
       className="hover:bg-primary/25 odd:bg-white even:bg-gray-50 hover:cursor-pointer transition-colors"
       onClick={onView}
     >
@@ -215,6 +231,6 @@ export function ApplicationRow({
           />
         </div>
       </td>
-    </tr>
+    </motion.tr>
   );
 }
