@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useAuthContext } from "../authctx";
@@ -13,8 +13,17 @@ import {
 
 import { Card } from "@/components/ui/card";
 import { MailCheck, TriangleAlert } from "lucide-react";
+import { Loader } from "@/components/ui/loader";
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<Loader>Loading login...</Loader>}>
+      <LoginContent />
+    </Suspense>
+  )
+}
+
+function LoginContent() {
   const {
     emailStatus: email_status,
     login,
