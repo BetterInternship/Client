@@ -55,6 +55,8 @@ export default function JobTabs({
   const profile = useProfile();
   const applications = useEmployerApplications();
   const [isLoading, setLoading] = useState(true);
+  const [exitingBack, setExitingBack] = useState(false);
+  const [exitingForward, setExitingForward] = useState(false);
 
   const [selectedApplication, setSelectedApplication] =
     useState<EmployerApplication | null>(null);
@@ -275,6 +277,7 @@ export default function JobTabs({
 
   //goes back to job list
   const handleJobBack = () => {
+    setExitingBack(true);
     router.push("/dashboard");
   };
 
@@ -346,43 +349,43 @@ export default function JobTabs({
   };
 
   // Handle message
-    const handleMessage = async (studentId: string | undefined, message: string) => {
-        if (message.trim() === "") return;
+  const handleMessage = async (studentId: string | undefined, message: string) => {
+    if (message.trim() === "") return;
 
-        setSending(true);
-        let userConversation = conversations.data?.find((c) =>
-        c?.subscribers?.includes(studentId),
+    setSending(true);
+    let userConversation = conversations.data?.find((c) =>
+    c?.subscribers?.includes(studentId),
+    );
+
+    if (!userConversation && studentId) {
+    const response =
+        await EmployerConversationService.createConversation(studentId).catch(
+        endSend,
         );
 
-        if (!userConversation && studentId) {
-        const response =
-            await EmployerConversationService.createConversation(studentId).catch(
-            endSend,
-            );
-
-        if (!response?.success) {
-            alert("Could not initiate conversation with user.");
-            endSend();
-            return;
-        }
-
-        setConversationId(response.conversation?.id ?? "");
-        userConversation = response.conversation;
+    if (!response?.success) {
+        alert("Could not initiate conversation with user.");
         endSend();
-        }
+        return;
+    }
 
-        setTimeout(async () => {
-        if (!userConversation) return endSend();
-        await EmployerConversationService.sendToUser(
-            userConversation?.id,
-            message,
-        ).catch(endSend);
-        endSend();
-        });
-    };
+    setConversationId(response.conversation?.id ?? "");
+    userConversation = response.conversation;
+    endSend();
+    }
 
-  if (loading || !isAuthenticated())
-    return null;
+    setTimeout(async () => {
+      if (!userConversation) return endSend();
+      await EmployerConversationService.sendToUser(
+          userConversation?.id,
+          message,
+      ).catch(endSend);
+      endSend();
+    });
+  };
+
+  if (isLoading || !isAuthenticated())
+    return <Loader>Loading job...</Loader>;
 
   let lastSelf: boolean = false;
 
@@ -390,8 +393,7 @@ export default function JobTabs({
     <>
       <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        animate={exitingBack ? { opacity: 0 } : { opacity: 1 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
       >
         <DeleteModal>
