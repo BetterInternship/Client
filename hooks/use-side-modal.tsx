@@ -1,8 +1,7 @@
 import { ArrowLeft } from "lucide-react";
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useAppContext } from "@/lib/ctx-app";
-import { AnimatePresence, motion } from "framer-motion";
 
 /**
  * A modal that pops up from the side of the window.
@@ -16,13 +15,8 @@ export const useSideModal = (
    }
 ) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [hasMounted, setHasMounted] = useState(false);
   const { allowBackdropClick = true } = options || {};
   const { isMobile } = useAppContext();
-
-  useEffect(() => {
-        if (!isOpen) setHasMounted(isOpen);
-      }, [isOpen]);
 
   const backdropRef = useRef<HTMLDivElement>(null);
   const handleBackdropClick = useCallback(
@@ -48,31 +42,21 @@ export const useSideModal = (
           ref={backdropRef}
           onClick={handleBackdropClick}
           >
-            <AnimatePresence initial={!hasMounted}>
-              <motion.div
-                key={name}
-                initial={{ x: "100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "100%" }}    
-                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                onAnimationComplete={() => setHasMounted(true)}
-                className="absolute right-0 lg:w-1/3 w-full h-full bg-white"
+            <div className="absolute right-0 lg:w-1/3 w-full h-full bg-white">
+              <div className="relative w-full p-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => (
+                    setIsOpen(false), options?.onClose && options?.onClose()
+                  )}
+                  className="p-2 hover:bg-gray-100 rounded-full"
                 >
-                  <div className="relative w-full p-4">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => (
-                        setIsOpen(false), options?.onClose && options?.onClose()
-                      )}
-                      className="p-2 hover:bg-gray-100 rounded-full"
-                    >
-                      <ArrowLeft className="h-8 w-8" />
-                    </Button>
-                  </div>
-                  {children}
-              </motion.div>
-            </AnimatePresence>
+                  <ArrowLeft className="h-8 w-8" />
+                </Button>
+              </div>
+              {children}
+            </div>
           </div>
         )
       );
