@@ -436,7 +436,7 @@ export function FormFlowRouter({
                     renderFields={formMetdata?.getFieldsForServer() ?? []}
                   />
 
-                  <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:justify-end">
+                  <div className="flex flex-col gap-2 pb-3 sm:flex-row sm:justify-end">
                     <div className="flex justify-end gap-2 flex-wrap ">
                       <GenerateButtons
                         formKey={formName}
