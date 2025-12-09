@@ -101,7 +101,7 @@ export const DropdownMenu = ({
                   <div 
                     key={idx}
                     className="
-                      flex gap-2 p-2 text-sm hover:bg-primary/10 transition
+                      flex gap-2 p-2 text-sm hover:bg-primary/10 transition cursor-pointer
                     "
                     onClick={(e) => {
                       e.stopPropagation();

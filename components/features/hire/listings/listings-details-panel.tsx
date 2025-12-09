@@ -52,10 +52,6 @@ export function ListingsDetailsPanel({
     );
   }
 
-  const refreshPage = () => {
-    window.location.reload()
-  }
-
   return (
     <div className="max-w-[1024px] mx-auto">
       <JobDetails
