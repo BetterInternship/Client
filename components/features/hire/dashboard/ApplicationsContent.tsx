@@ -9,7 +9,6 @@ import { EmployerApplication } from "@/lib/db/db.types";
 import { ApplicationRow } from "./ApplicationRow";
 import { useAppContext } from "@/lib/ctx-app";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { motion } from "framer-motion";
 import { ApplicationsHeader } from "./ApplicationsHeader";
 import { useState } from "react";
 import { Calendar, CheckCircle2, CheckSquare, ContactRound, GraduationCap, ListCheck, SquareCheck, Trash, User2, X } from "lucide-react";
