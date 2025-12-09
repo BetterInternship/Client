@@ -6,6 +6,7 @@ import { Job } from "@/lib/db/db.types";
 import { JobService } from "@/lib/api/services";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { Loader } from "@/components/ui/loader";
 
 function ManageContent() {
   const searchParams = useSearchParams();
@@ -42,8 +43,12 @@ function ManageContent() {
     setJobData(prev => prev ? { ...prev, ...updates } : null);
   };
 
-  if (!jobData) {
-    return;
+  if (loading || !jobData) {
+    return (
+      <ContentLayout>
+        <Loader>Loading dashboard...</Loader>
+      </ContentLayout>
+    );
   }
 
   return (
