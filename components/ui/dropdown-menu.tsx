@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp, LucideIcon } from "lucide-react";
 import { ActionItem } from "./action-item";
 import StatusBadge from "./status-badge";
@@ -7,13 +8,16 @@ export const DropdownMenu = ({
   items,
   defaultItem,
   enabled = true,
+  size,
 } : {
   items: ActionItem[];
   defaultItem: ActionItem;
   enabled?: boolean;
+  size?: string;
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [activeItem, setActiveItem] = useState<ActionItem>(defaultItem);
+  const [boxSize, setBoxSize] = useState<String | undefined>(size)
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -55,8 +59,8 @@ export const DropdownMenu = ({
           className="flex gap-2 px-2 py-1 pr-4 items-center"
         >
           {isOpen
-            ? <ChevronUp size={20} />
-            : <ChevronDown size={20} />
+            ? <ChevronUp size={cn(20)} />
+            : <ChevronDown size={cn(20)} />
           }
           <StatusBadge
             statusId={parseInt(activeItem.id)}

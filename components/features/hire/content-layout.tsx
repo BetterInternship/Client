@@ -1,7 +1,7 @@
 "use client";
 
 import { useMobile } from "@/hooks/use-mobile";
-import { LayoutDashboard, Plus, MessageCircleMore, FileText, FileUser } from "lucide-react";
+import { LayoutDashboard, Plus, MessageCircleMore, FileText, FileUser, Briefcase, MessageCircleQuestion, HelpCircle } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
@@ -19,29 +19,24 @@ type NavItem = {
 const navItems: NavItem[] = [
   {
     href: "/listings/create",
-    icon: <Plus className="h-5 w-5" />,
+    icon: <Plus />,
     label: "Add Listing",
   },
   {
     href: "/dashboard",
-    icon: <LayoutDashboard className="h-5 w-5" />,
-    label: "Dashboard",
+    icon: <Briefcase />,
+    label: "Job listings",
   },
   {
     href: "/conversations",
-    icon: <MessageCircleMore className="h-5 w-5" />,
+    icon: <MessageCircleMore />,
     label: "Chats",
   },
-  // {
-  //   href: "/listings",
-  //   icon: <FileText className="h-5 w-5" />,
-  //   label: "My Listings",
-  // },
-  // {
-  //   href: "/forms-management",
-  //   icon: <FileUser className="h-5 w-5" />,
-  //   label: "Forms Automation",
-  // },
+  {
+    href: "/help",
+    icon: <HelpCircle />,
+    label: "Help",
+  },
 ];
 
 function SideNav({ items }: { items: NavItem[] }) {
@@ -49,49 +44,57 @@ function SideNav({ items }: { items: NavItem[] }) {
   const { god } = useAuthContext();
 
   return (
-    <nav className="flex flex-col">
-      {items.map(({ href, label, icon}) => (
-        <Link
-          key={label}
-          href={label !== "Forms Automation" || god ? href : "#"}
-        >
-          <Button
-            variant="ghost"
-            scheme="default"
-            onClick={() =>
-              god && label === "Forms Automation" && alert("Coming Soon!")
-            }
-            className={cn(
-              "w-full h-10 px-8 flex flex-row justify-start border-0 rounded-none",
-              pathname.includes(href) ? "text-primary bg-gray-200" : "font-normal",
-              label === "Add Listing" ? "bg-primary text-white hover:bg-primary-300" : ""
-            )}
+    <nav className="flex flex-col p-3 gap-2">
+      {items.map(({ href, label, icon}) => {
+        const isActive = pathname.includes(href);
+
+        return (
+          <Link
+            key={label}
+            href={label !== "Forms Automation" || god ? href : "#"}
           >
-            {icon}
-            {label}
-          </Button>
-        </Link>
-      ))}
+            <Button
+              variant="ghost"
+              scheme="default"
+              onClick={() =>
+                god && label === "Forms Automation" && alert("Coming Soon!")
+              }
+              className={cn(
+                "w-full h-10 pl-4 lg:pr-24 flex flex-row justify-start border-0 hover:bg-primary/15 hover:text-primary",
+                isActive ? "text-primary bg-primary/10" : "font-normal",
+                label === "Add Listing" ? "bg-primary text-white hover:bg-primary hover:text-white" : "",
+                isActive && "[&_svg]:fill-primary [&_svg]:stroke-primary-foreground"
+              )}
+            >
+              {icon}
+              <div className="hidden lg:block">
+                {label}
+              </div>
+            </Button>
+          </Link>
+        )
+      })}
     </nav>
   );
 }
 
 interface ContentLayoutProps {
   children?: React.ReactNode;
+  className?: string;
 }
 
-const ContentLayout: React.FC<ContentLayoutProps> = ({ children }) => {
+const ContentLayout: React.FC<ContentLayoutProps> = ({ children, className }) => {
   const { isMobile } = useMobile();
   
   return (
-    <div className="w-full flex flex-row space-x-0">
+    <div className="w-full h-full flex flex-row space-x-0">
       {!isMobile ? (
         <>
-          <aside className="absolute top-20 left-0 z-[100] h-screen border-r bg-muted">
-            <SideNav items={navItems} />
-          </aside>
-          {/* This is only here so the main tag below is offset */}
-          <aside className="h-screen w-fit invisible">
+          <aside 
+            className={cn(
+              "z-[100] min-h-stretch border-r bg-muted",
+            )}
+          >
             <SideNav items={navItems} />
           </aside>
         </>
@@ -99,8 +102,9 @@ const ContentLayout: React.FC<ContentLayoutProps> = ({ children }) => {
         <></>
       )} 
       <main className={cn(
-        "flex-1 flex overflow-auto justify-center mb-20 h-[100%] pt-4",
-        isMobile ? "px-2" : "px-8"
+        "flex-1 flex overflow-auto justify-center pt-4",
+        isMobile ? "px-2" : "px-8",
+        className
       )}>
         {children}
       </main>

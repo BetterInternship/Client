@@ -33,6 +33,55 @@ jobs:
         run: |
           git push origin develop --force
 
+      - name: Checkout fork again, after pushing
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run Jest Tests and Log
+        id: jest
+        continue-on-error: true 
+        run: |
+          set +e
+          # Run Jest and pipe output to file
+          npm run test
+          TEST_EXIT_CODE=$?
+          
+          # Prepare log for Discord (Tail last 1500 chars, escape quotes/newlines for JSON)
+          LOG_CONTENT=$(tail -c 1800 jest.log)
+          
+          if [ $TEST_EXIT_CODE -eq 0 ]; then
+            STATUS="✅ **DEV** Jest Passed"
+          else
+            STATUS="❌ **DEV** Jest Failed"
+          fi
+
+          ROLE_ID="1430152257072271376"
+          jq -n \
+            --arg content "**$STATUS**
+            \`\`\`text
+            $LOG_CONTENT
+            \`\`\`" \
+              '{content: $content}' >payload.json
+
+          curl -H "Content-Type: application/json" \
+            -d @payload.json \
+            ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+          set -e
+
+          # Check exit code again to actually fail the step if needed
+          if [ $TEST_EXIT_CODE -ne 0 ]; then exit 1; fi
+
       - name: Deploy to Vercel
         id: vercel
         run: |

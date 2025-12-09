@@ -132,6 +132,9 @@ export default function LoginPage() {
                   {isLoading ? "Logging in..." : "Log in"}
                 </Button>
               </div>
+              <span className="text-muted-foreground text-sm">
+                Need help? Contact us at <a href="tel://09276604999" className="text-blue-600 hover:text-blue-800 underline font-medium">0927 660 4999</a> or on <a href="viber://add?number=639276604999" className="text-blue-600 hover:text-blue-800 underline font-medium">Viber</a>.
+              </span>
             </div>
           </form>
         </Card>

@@ -2,25 +2,29 @@
 // rework of ApplicationsTable
 "use client";
 
+import { forwardRef, useImperativeHandle } from "react";
+import { useApplicationSelection } from "@/hooks/use-application-selection";
 import { Badge } from "@/components/ui/badge";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { ApplicationRow } from "./ApplicationRow";
 import { useAppContext } from "@/lib/ctx-app";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { Checkbox } from "@/components/ui/checkbox";
+import { motion } from "framer-motion";
 import { ApplicationsHeader } from "./ApplicationsHeader";
 import { useState } from "react";
-import { CommandMenu } from "@/components/ui/command-menu";
 import { Calendar, CheckCircle2, CheckSquare, ContactRound, GraduationCap, ListCheck, SquareCheck, Trash, User2, X } from "lucide-react";
 import { useEffect } from "react";
 import { updateApplicationStatus } from "@/lib/api/services";
 import { statusMap } from "@/components/common/status-icon-map";
 import { type ActionItem } from "@/components/ui/action-item";
 import { Toast } from "@/components/ui/toast";
+import { ApplicationsCommandBar } from "./ApplicationsCommandBar";
+import { FormCheckbox } from "@/components/EditForm";
 
 interface ApplicationsContentProps {
   applications: EmployerApplication[];
   statusId: number[];
+  isLoading?: boolean;
   openChatModal: () => void;
   updateConversationId: (userId: string) => void;
   onApplicationClick: (application: EmployerApplication) => void;
@@ -28,10 +32,18 @@ interface ApplicationsContentProps {
   onScheduleClick: (application: EmployerApplication) => void;
   onStatusChange: (application: EmployerApplication, status: number) => void;
   setSelectedApplication: (application: EmployerApplication) => void;
+  onRequestDeleteApplicant: (application: EmployerApplication) => void;
+  onRequestStatusChange: (applications: EmployerApplication[], status: number) => void;
+  applicantToDelete: EmployerApplication | null;
+  statusChangeInProgress: boolean;
 }
 
-export function ApplicationsContent({
+export const ApplicationsContent = forwardRef<
+  { unselectAll: () => void },
+  ApplicationsContentProps
+>(function ApplicationsContent({
   applications,
+  isLoading,
   openChatModal,
   updateConversationId,
   onApplicationClick,
@@ -39,11 +51,13 @@ export function ApplicationsContent({
   onScheduleClick,
   onStatusChange,
   setSelectedApplication,
-}: ApplicationsContentProps) {
+  onRequestDeleteApplicant,
+  onRequestStatusChange,
+  applicantToDelete,
+  statusChangeInProgress,
+}, ref) {
   const { isMobile } = useAppContext();
-  const [selectedApplications, setSelectedApplications] = useState<Set<string>>(
-    new Set(),
-  );
+
   const [commandBarsVisible, setCommandBarsVisible] = useState(false);
   const [activeFilter, setActiveFilter] = useState<number>(-1);
   const [toastVisible, setToastVisible] = useState(false);
@@ -65,59 +79,6 @@ export function ApplicationsContent({
       return () => clearTimeout(timeoutId);
     }
   }, [toastVisible]);
-  // make command bars visible when an applicant is selected.
-  useEffect(() => {
-    setCommandBarsVisible(selectedApplications.size > 0);
-  }, [selectedApplications.size]);
-
-  // make api call to update status on button click.
-  const updateStatus = async (status: number) => {
-    const applicationsToUpdate = Array.from(selectedApplications)
-      .map((id) => sortedApplications.find((app) => app.id === id))
-      .filter((app): app is EmployerApplication => !!app);
-
-      let successfulUpdates = 0;
-      let failedUpdates = 0;
-
-    try {
-      const updatePromises = applicationsToUpdate.map(async (application) => {
-        const response = await updateApplicationStatus(application.id!, status);
-        return { response, application };
-      });
-
-      const results = await Promise.allSettled(updatePromises);
-
-      results.forEach(result => {
-        if (result.status === 'fulfilled' && result.value.response.success) {
-          onStatusChange(result.value.application, status);
-          successfulUpdates++;
-        } else {
-          failedUpdates++;
-          if (result.status === 'rejected') {
-            console.error("Failed to update application: ", result.reason);
-          } else {
-            console.warn(`API reported failure: ${result.value.application.id}`);
-          }
-        }
-      })
-    } catch (error) {
-      console.error("Critical error occurred during status update: ", error);
-    } finally {
-      unselectAll();
-
-      if (successfulUpdates > 0 && failedUpdates === 0) {
-        setToastMessage(`Status of ${successfulUpdates} applicant${successfulUpdates === 1 ? "" : "s"} changed.`);
-      } else if (successfulUpdates > 0 && failedUpdates > 0) {
-        setToastMessage(`Changed ${successfulUpdates} applicant${successfulUpdates === 1 ? "" : "s"} and failed to change ${failedUpdates} applicant${successfulUpdates === 1 ? "" : "s"}.`);
-      } else if (failedUpdates > 0) {
-        setToastMessage(`Failed to change ${failedUpdates} applicant${successfulUpdates === 1 ? "" : "s"}. Please try again later.`);
-      } else {
-        return;
-      }
-
-      setToastVisible(true);
-    }
-  };
 
   const updateSingleStatus = async (id: string, status: number) => {
     const application = sortedApplications.find((a) => a.id === id);
@@ -129,6 +90,8 @@ export function ApplicationsContent({
 
       if (response) {
         onStatusChange(application, status);
+        setToastMessage(`Applicant status changed.`);
+        setToastVisible(true);
       }
     } catch (error) {
       console.error("Critical error occurred during status update: ", error);
@@ -150,27 +113,33 @@ export function ApplicationsContent({
         id: status.id.toString(),
         label: status.name,
         icon: uiProps?.icon,
-        onClick: () => updateStatus(status.id),
+        onClick: () => {
+          const applicationsToUpdate = Array.from(selectedApplications)
+            .map((id) => sortedApplications.find((app) => app.id === id))
+            .filter((app): app is EmployerApplication => !!app);
+          
+          onRequestStatusChange(applicationsToUpdate, status.id);
+        },
         destructive: uiProps?.destructive,
       };
-    })
-    .filter(Boolean);
+    }
+  ).filter(Boolean);
 
-    // get statuses specifically for the rows. these use different action items.
-    const getRowStatuses = (applicationId: string) => {
-      return unique_app_statuses
-        .filter((status) => status.id !== 7 && status.id !== 0)
-        .map((status): ActionItem => {
-          const uiProps = statusMap.get(status.id);
-          return {
-            id: status.id.toString(),
-            label: status.name,
-            icon: uiProps?.icon,
-            onClick: () => updateSingleStatus(applicationId, status.id),
-            destructive: uiProps?.destructive,
-          };
-        });
-    };
+  // get statuses specifically for the rows. these use different action items.
+  const getRowStatuses = (applicationId: string) => {
+    return unique_app_statuses
+      .filter((status) => status.id !== 7 && status.id !== 0)
+      .map((status): ActionItem => {
+        const uiProps = statusMap.get(status.id);
+        return {
+          id: status.id.toString(),
+          label: status.name,
+          icon: uiProps?.icon,
+          onClick: () => updateSingleStatus(applicationId, status.id),
+          destructive: uiProps?.destructive,
+        };
+      });
+  };
 
   // remove the delete item from the bottom command bar so we can put it in the top one and the pending status.
   const remove_unused_statuses = statuses.filter((status) => status.id !== "7" &&
@@ -187,8 +156,19 @@ export function ApplicationsContent({
   const visibleApplications = applyActiveFilter(sortedApplications).filter(
     (application) => application.status !== undefined,
   );
-
   
+  const {
+    selectedApplications,
+    toggleSelect,
+    selectAll,
+    unselectAll,
+    toggleSelectAll,
+  } = useApplicationSelection(visibleApplications);
+
+  useImperativeHandle(ref, () => ({
+    unselectAll,
+  }));
+
   const numVisibleSelected = visibleApplications.filter(app =>
     selectedApplications.has(app.id!)
   ).length;
@@ -198,33 +178,10 @@ export function ApplicationsContent({
 
   const someVisibleSelected = numVisibleSelected > 0 && numVisibleSelected < visibleApplications.length;
 
-  const toggleSelect = (id: string, next?: boolean) => {
-    setSelectedApplications((prev) => {
-      const nextSet = new Set(prev);
-      if (typeof next === "boolean") {
-        next ? nextSet.add(id) : nextSet.delete(id);
-      } else {
-        nextSet.has(id) ? nextSet.delete(id) : nextSet.add(id);
-      }
-
-      return nextSet;
-    });
-  };
-
-  const selectAll = () => {
-    // only select all visible applications.
-    setSelectedApplications(
-      new Set(visibleApplications.map((application) => application.id!))
-    )
-  };
-
-  const unselectAll = () => {
-    setSelectedApplications(new Set());
-  };
-
-  const toggleSelectAll = () => {
-    allVisibleSelected ? unselectAll() : selectAll();
-  };
+  // make command bars visible when an applicant is selected.
+  useEffect(() => {
+    setCommandBarsVisible(selectedApplications.size > 0 && !applicantToDelete && !statusChangeInProgress);
+  }, [selectedApplications.size, applicantToDelete, statusChangeInProgress]);
 
   const getCounts = (apps: EmployerApplication[]) => {
     const counts: Record<string | number, number> = { all: 0 };
@@ -248,13 +205,13 @@ export function ApplicationsContent({
     return counts;
   };
 
-
   return isMobile ? (
     <div className="flex flex-col gap-2 min-h-screen">
       <Toast
         visible={toastVisible}
         title={toastMessage}
         indicator={<CheckCircle2 />}
+        className="top-6 z-[1000]"
       />
       <ApplicationsHeader
         selectedCounts={getCounts(sortedApplications)}
@@ -264,51 +221,37 @@ export function ApplicationsContent({
           unselectAll()
         }}
       />
-      <CommandMenu
-        items={remove_unused_statuses}
-        isVisible={commandBarsVisible}
-        defaultVisible={true}
-        position="bottom"
-        undocked={false}
-      />
-      <CommandMenu
-        items={[
-          [
-            {
-              id: "cancel",
-              icon: X,
-              onClick: unselectAll,
-            },
-            `${selectedApplications.size} selected`,
-          ],
-          [
-            {
-              id: "select_all",
-              label: allVisibleSelected ? "Unselect all" : "Select all" ,
-              icon: CheckSquare,
-              onClick: toggleSelectAll,
-            },
-            {
-              id: "delete",
-              label: "Delete",
-              icon: Trash,
-              destructive: true,
-              onClick: () => updateStatus(7),
-            },
-          ],
-        ]}
-        isVisible={commandBarsVisible}
-        defaultVisible={true}
-        position="top"
-        undocked={false}
+      <ApplicationsCommandBar
+        visible={commandBarsVisible}
+        selectedCount={selectedApplications.size}
+        allVisibleSelected={allVisibleSelected}
+        someVisibleSelected={someVisibleSelected}
+        visibleApplicationsCount={visibleApplications.length}
+        statuses={remove_unused_statuses}
+        onUnselectAll={unselectAll}
+        onToggleSelectAll={toggleSelectAll}
+        onDelete={() => {
+          const appToDelete = Array.from(selectedApplications)
+            .map((id) => sortedApplications.find((app) => app.id === id))
+            .find((app): app is EmployerApplication => !!app);
+          if (appToDelete) onRequestDeleteApplicant(appToDelete);
+        }}
+        onStatusChange={() => {}}
       />
       <div className="flex flex-col gap-2">
         {visibleApplications.length ? (
-          visibleApplications.map((application) => (
+          visibleApplications.map((application, index) => (
             <ApplicationRow
               key={application.id}
+              index={index}
               application={application}
-              onView={() => onApplicationClick(application)}
+              onView={(v) => {
+                if (selectedApplications.size === 0) {
+                  onApplicationClick(application)
+                } else {
+                  toggleSelect(application.id!, v)
+                }
+              }}
               onNotes={() => onNotesClick(application)}
               onSchedule={() => onScheduleClick(application)}
               onStatusChange={(status) => onStatusChange(application, status)}
@@ -316,8 +259,8 @@ export function ApplicationsContent({
               setSelectedApplication={setSelectedApplication}
               updateConversationId={updateConversationId}
               checkboxSelected={selectedApplications.has(application.id!)}
-              onToggleSelect={(v) => toggleSelect(application.id!, !!v)}
-              onStatusButtonClick={updateSingleStatus}
+              onToggleSelect={(v) => toggleSelect(application.id!, v)}
+              onDeleteButtonClick={onRequestDeleteApplicant}
               statuses={getRowStatuses(application.id!)}
             />
           ))
@@ -343,115 +286,120 @@ export function ApplicationsContent({
           unselectAll()
         }}
       />
-      <CommandMenu
-        items={[
-          [
-            {
-              id: "cancel",
-              icon: X,
-              onClick: unselectAll,
-            },
-            `${selectedApplications.size} selected`,
-          ],
-          remove_unused_statuses,
-          [
-            {
-              id: "select_all",
-              label: allVisibleSelected ? "Unselect all" : "Select all" ,
-              icon: CheckSquare,
-              onClick: toggleSelectAll,
-            },
-            {
-              id: "delete",
-              label: "Delete",
-              icon: Trash,
-              destructive: true,
-              onClick: () => updateStatus(7),
-            },
-          ],
-        ]}
-        isVisible={commandBarsVisible}
-        defaultVisible={true}
-        position="bottom"
-        undocked={true}
+      <ApplicationsCommandBar
+        visible={commandBarsVisible}
+        selectedCount={selectedApplications.size}
+        allVisibleSelected={allVisibleSelected}
+        someVisibleSelected={someVisibleSelected}
+        visibleApplicationsCount={visibleApplications.length}
+        statuses={remove_unused_statuses}
+        onUnselectAll={unselectAll}
+        onToggleSelectAll={toggleSelectAll}
+        onDelete={() => {
+          const appToDelete = Array.from(selectedApplications)
+            .map((id) => sortedApplications.find((app) => app.id === id))
+            .find((app): app is EmployerApplication => !!app);
+          if (appToDelete) onRequestDeleteApplicant(appToDelete);
+        }}
+        onStatusChange={() => {}}
       />
-      <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-200 border-[1px] text-sm rounded-md overflow-visible">
-        <thead className="bg-gray-100">
-          <tr className="text-left">
-            <th className="p-4">
-              <Checkbox
+      {isLoading ? (
+          <div className="w-full flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading Applicants...</p>
+            </div>
+          </div>
+      ) : (
+        <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-200 border text-sm rounded-md overflow-visible">
+          <thead className="bg-gray-100">
+            <tr className="text-left">
+              <th 
+                className="p-4"
                 onClick={toggleSelectAll}
-                checked={
-                  allVisibleSelected 
-                  ? true
-                  : someVisibleSelected
-                    ? 'indeterminate'
-                    : false
-                }
-                disabled={visibleApplications.length === 0}
-              />
-            </th>
-            <th className="p-4">
-              <div className="flex items-center gap-2">
-                <User2 size={16} />
-                <span>Applicant</span>
-              </div>
-            </th>
-            <th className="p-4">
-              <div className="flex items-center gap-2">
-                <GraduationCap size={16} />
-                <span>Education</span>
-              </div>
-            </th>
-            <th className="p-4">
-              <div className="flex items-center gap-2">
-                <ContactRound size={16} />
-                <span>Crediting</span>
+              >
+                <FormCheckbox
+                  checked={allVisibleSelected}
+                  indeterminate={someVisibleSelected}
+                  setter={toggleSelectAll}
+                  disabled={visibleApplications.length === 0}
+                />
+              </th>
+              <th className="p-4">
+                <div className="flex items-center gap-2">
+                  <User2 size={16} />
+                  <span>Applicant</span>
+                </div>
+              </th>
+              <th className="p-4">
+                <div className="flex items-center gap-2">
+                  <GraduationCap size={16} />
+                  <span>Education</span>
+                </div>
+              </th>
+              <th className="p-4">
+                <div className="flex items-center gap-2">
+                  <ContactRound size={16} />
+                  <span>Crediting</span>
+                </div>
+              </th>
+              <th className="p-4">
+                <div className="flex items-center gap-2">
+                  <Calendar size={16} />
+                  <span>Expected start date</span>
               </div>
             </th>
             <th className="p-4">
               <div className="flex items-center gap-2">
                 <Calendar size={16} />
-                <span>Preferred start</span>
-              </div>
-            </th>
-            <th className="p-4">
-              <div className="flex items-center gap-2">
-                <ListCheck size={16} />
-                <span>Status</span>
-              </div>
-            </th>
-            <th className="p-4"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {visibleApplications.length ? (
-            visibleApplications.map((application) => (
-              <ApplicationRow
-                key={application.id}
-                application={application}
-                onView={() => onApplicationClick(application)}
-                onNotes={() => onNotesClick(application)}
-                onSchedule={() => onScheduleClick(application)}
-                onStatusChange={(status) => onStatusChange(application, status)}
-                openChatModal={openChatModal}
-                setSelectedApplication={setSelectedApplication}
-                updateConversationId={updateConversationId}
-                checkboxSelected={selectedApplications.has(application.id!)}
-                onToggleSelect={(v) => toggleSelect(application.id!, !!v)}
-                onStatusButtonClick={updateSingleStatus}
-                statuses={getRowStatuses(application.id!)}
-              />
-            ))
-        ) : (
-          <tr>
-            <td>
-              <Badge className="m-2">No applications under this category.</Badge>
-            </td>
-          </tr>
-        )}
-        </tbody>
-      </table>
+                <span>Date applied</span>
+                </div>
+              </th>
+              <th className="p-4">
+                <div className="flex items-center gap-2">
+                  <ListCheck size={16} />
+                  <span>Status</span>
+                </div>
+              </th>
+              <th className="p-4"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {visibleApplications.length ? (
+              visibleApplications.map((application, index) => (
+                <ApplicationRow
+                  key={application.id}
+                  index={index}
+                  application={application}
+                  onView={(v) => {
+                  if (selectedApplications.size === 0) {
+                    onApplicationClick(application)
+                  } else {
+                    toggleSelect(application.id!, v)
+                  }
+                }}
+                  onNotes={() => onNotesClick(application)}
+                  onSchedule={() => onScheduleClick(application)}
+                  onStatusChange={(status) => onStatusChange(application, status)}
+                  openChatModal={openChatModal}
+                  setSelectedApplication={setSelectedApplication}
+                  updateConversationId={updateConversationId}
+                  checkboxSelected={selectedApplications.has(application.id!)}
+                  onToggleSelect={(v) => toggleSelect(application.id!, v)}
+                  onDeleteButtonClick={() => onRequestDeleteApplicant?.(application)}
+                  statuses={getRowStatuses(application.id!)}
+                />
+              ))
+          ) : (
+            <tr>
+              <td>
+                <Badge className="m-2">No applications under this category.</Badge>
+              </td>
+            </tr>
+          )}
+          </tbody>
+        </table>
+      )}
     </div>
   );
-}
+});

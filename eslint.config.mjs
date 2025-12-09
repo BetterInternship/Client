@@ -3,6 +3,7 @@ import eslint from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import jestPlugin from "eslint-plugin-jest";
 
 export default tseslint.config(
   {
@@ -22,6 +23,9 @@ export default tseslint.config(
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
+    },
+    plugins: {
+      jest: jestPlugin,
     },
   },
   {

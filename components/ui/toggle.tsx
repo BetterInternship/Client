@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 
 export const Toggle = ({
   state,
@@ -15,7 +14,7 @@ export const Toggle = ({
         onClick();
       }}
       className={cn(
-        "relative inline-flex h-4 w-7 items-center rounded-full transition-colors focus:ring-transparent z-30",
+        "relative flex h-4 w-7 items-center rounded-full transition-colors focus:ring-transparent z-30",
         state ? "bg-primary" : "bg-gray-300"
       )}
     >

@@ -15,6 +15,7 @@ import { LogOut,
           Menu,
           FileUser,
           Plus,
+          HelpCircle,
           } from "lucide-react";
 import { useAppContext } from "@/lib/ctx-app";
 import { DropdownOption, GroupableNavDropdown } from "@/components/ui/dropdown";
@@ -60,7 +61,7 @@ export const Header: React.FC = () => {
     <div className="flex flex-col">
       <div className={cn(
                 "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
-                isMobile ? "px-4 py-3" : "py-4 px-8"
+                isMobile ? "px-4 py-3 h-[4rem]" : "py-4 px-8 h-[5rem]"
               )}
               style={{ overflow: "visible", position: "relative", zIndex: 100 }}>
         <div className="flex items-center gap-3">
@@ -143,16 +144,6 @@ export const ProfileButton = () => {
             </div>
             {displayName}
           </>
-        }
-        content={
-          <div className="px-4 py-3 border-b border-gray-200">
-            <p className="text-sm font-medium text-gray-900">
-              {getFullName(user)}
-            </p>
-            <p className="text-xs text-gray-500 text-ellipsis overflow-hidden">
-              {user?.email}
-            </p>
-          </div>
         }
       >
         <DropdownOption href="/company-profile">
@@ -325,7 +316,20 @@ function MobileDrawer({
                         </div>
                         <ChevronRight className="w-4 h-4 text-gray-300" />
                       </button>
-                    </Link>                   
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/help">
+                      <button
+                        className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary"
+                      >
+                        <div>
+                          <HelpCircle className="w-4 h-4 inline-block mr-2" />
+                          <span>Help</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-300" />
+                      </button>
+                    </Link>
                   </li>
                 </ul>
               </nav>
