@@ -154,7 +154,7 @@ export function ApplicantPage({
             close: closeNewChatModal,
             Modal: NewChatModal,
           } = useModal("new-chat-modal", {
-            onClose: () => (conversation.unsubscribe(), setConversationId("")),
+            onClose: () => (conversation.unsubscribe()),
             showCloseButton: false,
           });
         
@@ -163,7 +163,7 @@ export function ApplicantPage({
             close: closeOldChatModal,
             Modal: OldChatModal,
           } = useModal("old-chat-modal", {
-            onClose: () => (conversation.unsubscribe(), setConversationId("")),
+            onClose: () => (conversation.unsubscribe()),
             showCloseButton: false,
           });
           
@@ -173,7 +173,7 @@ export function ApplicantPage({
             close: closeChatModal,
             SideModal: ChatModal,
           } = useSideModal("chat-modal", {
-            onClose: () => (conversation.unsubscribe(), setConversationId(""))
+            onClose: () => (conversation.unsubscribe())
           });
 
         useEffect(() => {
@@ -589,10 +589,13 @@ export function ApplicantPage({
                 <div className="flex flex-col-reverse max-h-full min-h-full overflow-y-scroll p-0 gap-1">
                     <div ref={chatAnchorRef} />
                     {(conversation?.loading ?? true) ? (
-                    <div className="flex-1 flex flex-col items-center justify-center">
-                        <Loader>Loading conversation...</Loader>
+                    <div className="w-full h-full mb-[50%] flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading Conversation...</p>
+                      </div>
                     </div>
-                    ) : conversation?.messages?.length ? (
+                    ) : (conversation?.messages?.length ? (
                     conversation.messages
                         ?.map((message: any, idx: number) => {
                         if (!idx) lastSelf = false;
@@ -632,10 +635,20 @@ export function ApplicantPage({
                         </Card>
                         </motion.div>
                     </div>
-                    )}
+                    ))}
                 </div>
                 </div>
-                <div className="flex gap-2">
+                <div 
+                className="flex gap-2"
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!application?.user_id || !messageInputRef.current?.value?.trim() || sending) return;
+                    
+                    const message = messageInputRef.current.value;
+                    messageInputRef.current.value = "";
+                    handleMessage(application.user_id, message);
+                  }}
+                >
                 <Textarea
                     ref={messageInputRef}
                     placeholder="Send a message here..."
@@ -655,7 +668,7 @@ export function ApplicantPage({
                     maxLength={1000}
                 />
                 <button 
-                    disabled={sending || messageInputRef.current?.value.trim() === undefined}
+                    disabled={sending}
                     onClick={() => {
                     if (!application?.user_id) return;
                     if (messageInputRef.current?.value) {
@@ -666,7 +679,7 @@ export function ApplicantPage({
                     }
                     }}
                     className={cn("text-primary px-2",
-                    (sending || messageInputRef.current?.value.trim() === undefined) ? "opacity-50" : ""
+                    (sending) ? "opacity-50" : ""
                     )}
                 >
                     <SendHorizonal className="w-7 h-7" />
