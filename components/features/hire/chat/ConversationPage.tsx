@@ -92,6 +92,9 @@ export function ConversationPage({
     // open and close profile view
     const [profileView, setProfileView] = useState(false);
 
+    // checking if user data jis fully loaded
+    const [userDataLoading, setUserDataLoading] = useState(true);
+
     // anchor for autoscroll
     const chatAnchorRef = useRef<HTMLDivElement>(null);
 
@@ -223,9 +226,30 @@ export function ConversationPage({
 
     const hasConversations = (conversations.data?.length ?? 0) > 0;
 
+    useEffect(() => {
+        if (!conversations.data) {
+            setUserDataLoading(true);
+            return;
+        }
+
+        const allUsersLoaded = visibleConvos.every((convo) => {
+            const userId = convo?.subscribers?.find(
+                (id: string) => id !== profile.data?.id
+            );
+            return userId;
+        });
+
+        if (allUsersLoaded) {
+            const timer = setTimeout(() => {
+                setUserDataLoading(false);
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [conversations.data, visibleConvos, profile.data?.id]);
+
     return (
         <>
-            {conversations.loading ? (
+            {userDataLoading ? (
                 <div className="w-full h-full flex items-center justify-center">
                     <div className="text-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
@@ -593,9 +617,10 @@ export function ConversationPage({
 
     return (
         <div className="flex flex-col overflow-auto">
-        {conversations.map((c) => (
+        {conversations.map((c, index) => (
             <ConversationCard
             key={c.id}
+            index={index}
             conversation={c}
             latestIsYou={c.last_unread?.sender_id === profileId}
             latestMessage={c.last_unread?.message}
@@ -745,46 +770,52 @@ export function ConversationPage({
     let lastSelf = false;
 
     return (
-            <div className="flex-1 min-h-0 flex flex-col-reverse gap-1 p-2 overflow-y-auto">
-        <div ref={chatAnchorRef} />
-        {conversation?.messages?.length ? (
-            <>
-                {conversation.messages
-            ?.map((message: any, idx: number) => {
-            if (!idx) lastSelf = false;
-            const oldLastSelf = lastSelf;
-            lastSelf = message.sender_id === profile.data?.id;
-            return {
-                key: idx,
-                message: message.message,
-                self: message.sender_id === profile.data?.id,
-                prevSelf: oldLastSelf,
-                them: userName,
-            };
-            })
-            ?.toReversed()
-            ?.map((d: any) => (
-            <Message
-                key={d.key}
-                message={d.message}
-                self={d.self}
-                prevSelf={d.prevSelf}
-                them={d.them}
-            />
-            ))}
-            </>
-        ) : (
-        <div className="flex items-center justify-center h-full gap-4">
-            {/* keeping this here as a memory, jk feel free to delete
-            <h1>start chattong with user</h1> */}
-            <MessageCircle className="h-14 w-14 opacity-50"/>
-            <div className="flex flex-col text-start">
-                <p className="font-bold text-lg mb-0">No Messages Yet</p>
-                <p className="text-sm text-gray-500">Start the conversation!</p>
+        <motion.div
+            initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+            animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
+            exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="flex-1 min-h-0 flex flex-col-reverse gap-1 p-2 overflow-y-auto"
+        >
+            <div ref={chatAnchorRef} />
+            {conversation?.messages?.length ? (
+                <>
+                    {conversation.messages
+                ?.map((message: any, idx: number) => {
+                if (!idx) lastSelf = false;
+                const oldLastSelf = lastSelf;
+                lastSelf = message.sender_id === profile.data?.id;
+                return {
+                    key: idx,
+                    message: message.message,
+                    self: message.sender_id === profile.data?.id,
+                    prevSelf: oldLastSelf,
+                    them: userName,
+                };
+                })
+                ?.toReversed()
+                ?.map((d: any) => (
+                <Message
+                    key={d.key}
+                    message={d.message}
+                    self={d.self}
+                    prevSelf={d.prevSelf}
+                    them={d.them}
+                />
+                ))}
+                </>
+            ) : (
+            <div className="flex items-center justify-center h-full gap-4">
+                {/* keeping this here as a memory, jk feel free to delete
+                <h1>start chattong with user</h1> */}
+                <MessageCircle className="h-14 w-14 opacity-50"/>
+                <div className="flex flex-col text-start">
+                    <p className="font-bold text-lg mb-0">No Messages Yet</p>
+                    <p className="text-sm text-gray-500">Start the conversation!</p>
+                </div>
             </div>
-        </div>
-    )}
-        </div>
+        )}
+        </motion.div>
     );
     };
 
