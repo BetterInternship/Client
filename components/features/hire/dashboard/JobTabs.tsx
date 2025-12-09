@@ -34,7 +34,6 @@ import { ListingsDeleteModal } from "@/components/features/hire/listings";
 import { Toggle } from "@/components/ui/toggle";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { FadeIn } from "@/components/animata/fade";
 
 interface JobTabsProps {
   selectedJob: Job | null;

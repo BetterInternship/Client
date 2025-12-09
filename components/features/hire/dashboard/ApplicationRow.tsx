@@ -157,7 +157,11 @@ export function ApplicationRow({
       initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
       animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
       exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.05, ease: "easeOut" }}
+      transition={{ 
+        duration: 0.3, 
+        delay: staggerDelay, 
+        ease: "easeOut", 
+      }}
       className="hover:bg-primary/25 odd:bg-white even:bg-gray-50 hover:cursor-pointer transition-colors"
       onClick={onView}
     >

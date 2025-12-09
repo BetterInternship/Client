@@ -48,6 +48,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
+import { useAuthContext } from "@/app/hire/authctx";
 
 interface ApplicantPageProps {
     application: EmployerApplication | undefined;
@@ -69,6 +70,9 @@ export function ApplicantPage({
     const profile = useProfile();
 
     const { isMobile } = useAppContext();
+    const { isAuthenticated, redirectIfNotLoggedIn, loading } = useAuthContext();
+
+    redirectIfNotLoggedIn();
 
     const [conversationId, setConversationId] = useState("");
     const conversations = useConversations();
@@ -229,12 +233,21 @@ export function ApplicantPage({
         });
     };
 
-          
+    
+    if (loading || resumeLoading) {
+        return <Loader>Getting applicant information...</Loader>;
+    }
+
     let lastSelf = false;
 
     return(
         <>
-        <div className="">
+        <motion.div
+            initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+            animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
+            exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+        >
             <button
                 className="flex items-center text-gray-600 hover:text-gray-900 transition-colors my-4 pl-4"
                 onClick={handleBack}
@@ -527,16 +540,7 @@ export function ApplicantPage({
                     {/* resume */}
                         {application?.user?.resume ? (
                             <div className={cn("h-full flex flex-col justify-center items-center", isMobile ? "mt-4 w-full" : "")}>
-                                {resumeLoading ? (
-                                    <div className="w-full flex items-center justify-center">
-                                        <div className="w-full text-center">
-                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-                                            <p className="text-gray-600">Loading Resume...</p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <PDFPreview url={resumeURL} />
-                                )}
+                                <PDFPreview url={resumeURL} />
                             </div>
                             ) : (
                             <div className="flex flex-col items-center justify-center h-96 px-8 w-full">
@@ -552,7 +556,7 @@ export function ApplicantPage({
                             </div>
                         )}
                 </div>
-            </div>
+            </motion.div>
 
             <ChatModal>
             <div className="relative p-6 pb-20 h-full w-full">
