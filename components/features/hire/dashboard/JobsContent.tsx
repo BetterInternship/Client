@@ -10,6 +10,7 @@ import { Calendar, Plus } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
+import { useState } from "react";
 
 //maybe add employers id to cross check
 interface JobsContentProps {
@@ -27,6 +28,8 @@ export function JobsContent({
     updateJob, 
     isLoading
 }: JobsContentProps) {
+    const [exiting, setExiting] = useState(false);
+
     const { isMobile } = useAppContext();
 
     const sortedJobs = jobs.sort(
@@ -34,7 +37,7 @@ export function JobsContent({
        ((b.created_at ?? "") > (a.created_at ?? "")) ? 1 : -1
     );
 
-    if(isLoading) {
+    if (isLoading || !jobs || !sortedJobs) {
         return (
         <div className="w-full flex items-center justify-center">
             <div className="text-center">
@@ -49,13 +52,12 @@ export function JobsContent({
         <>
             <motion.div
                 initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-                animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
-                exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+                animate={exiting ? { scale: 1.02, filter: "blur(4px)", opacity: 0 } : { scale: 1, filter: "blur(0px)", opacity: 1 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
             >
-                {jobs.length > 0
+                {sortedJobs && sortedJobs.length > 0
                     ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2" onClick={() => setExiting(true)}>
                         {
                             sortedJobs.filter(job => job.employer_id === employerId
                             ).map((job) => (
