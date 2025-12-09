@@ -3,14 +3,13 @@
 "use client";
 
 import { forwardRef, useImperativeHandle } from "react";
-import { useAuthContext } from "@/app/hire/authctx";
 import { useApplicationSelection } from "@/hooks/use-application-selection";
 import { Badge } from "@/components/ui/badge";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { ApplicationRow } from "./ApplicationRow";
 import { useAppContext } from "@/lib/ctx-app";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { Checkbox } from "@/components/ui/checkbox";
+import { motion } from "framer-motion";
 import { ApplicationsHeader } from "./ApplicationsHeader";
 import { useState } from "react";
 import { Calendar, CheckCircle2, CheckSquare, ContactRound, GraduationCap, ListCheck, SquareCheck, Trash, User2, X } from "lucide-react";
@@ -241,9 +240,10 @@ export const ApplicationsContent = forwardRef<
       />
       <div className="flex flex-col gap-2">
         {visibleApplications.length ? (
-          visibleApplications.map((application) => (
+          visibleApplications.map((application, index) => (
             <ApplicationRow
               key={application.id}
+              index={index}
               application={application}
               onView={(v) => {
                 if (selectedApplications.size === 0) {
@@ -366,9 +366,10 @@ export const ApplicationsContent = forwardRef<
           </thead>
           <tbody>
             {visibleApplications.length ? (
-              visibleApplications.map((application) => (
+              visibleApplications.map((application, index) => (
                 <ApplicationRow
                   key={application.id}
+                  index={index}
                   application={application}
                   onView={(v) => {
                   if (selectedApplications.size === 0) {
