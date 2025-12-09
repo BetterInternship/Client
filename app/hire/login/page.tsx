@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useAuthContext } from "../authctx";
 import { cn } from "@/lib/utils";
@@ -12,13 +12,13 @@ import {
 } from "@/components/EditForm";
 
 import { Card } from "@/components/ui/card";
+import { MailCheck, TriangleAlert } from "lucide-react";
 
 export default function LoginPage() {
   const {
     emailStatus: email_status,
     login,
     redirectIfLoggedIn: redirect_if_logged_in,
-    redirectIfNotLoggedIn: redirect_if_not_logged_in,
   } = useAuthContext();
 
   const [email, setEmail] = useState("");
@@ -28,9 +28,11 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
+  const searchParams = useSearchParams();
+  const status = searchParams.get("status");
+
   const { isMobile } = useAppContext();
 
-  redirect_if_not_logged_in();
   redirect_if_logged_in();
 
   const normalize = (s: string) => s.trim().toLowerCase();
@@ -95,8 +97,23 @@ export default function LoginPage() {
           </div>
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600 justify-center">{error}</p>
+            <div className={cn(
+              "flex gap-2 items-center mb-4 p-3 bg-destructive/10 text-destructive border border-destructive/50 rounded-lg",
+              isMobile ? "flex-col items-start" : ""
+            )}>
+              <TriangleAlert size={isMobile ? 24 : 20} />
+              <span className="text-sm justify-center">{error}</span>
+            </div>
+          )}
+
+          {/* check email message on successful register */}
+          {status === "success" && !error && (
+            <div className={cn(
+              "flex gap-2 items-center mb-4 p-3 bg-supportive/10 text-supportive border border-supportive/50 rounded-lg",
+              isMobile ? "flex-col items-start" : ""
+            )}>
+              <MailCheck size={isMobile ? 24 : 20} />
+              <span className="text-sm justify-center">Registration successful. Please check your email for the password.</span>
             </div>
           )}
 
