@@ -10,16 +10,13 @@ export const DropdownMenu = ({
   items,
   defaultItem,
   enabled = true,
-  size,
 } : {
   items: ActionItem[];
   defaultItem: ActionItem;
   enabled?: boolean;
-  size?: string;
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [activeItem, setActiveItem] = useState<ActionItem>(defaultItem);
-  const [boxSize, setBoxSize] = useState<String | undefined>(size)
   const menuRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
 
