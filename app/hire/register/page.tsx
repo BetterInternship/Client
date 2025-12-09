@@ -138,8 +138,7 @@ const EmployerEditor = ({
       return;
     }
 
-    alert("Email has been sent with password!");
-    router.push("/login");
+    router.push("/login?status=success");
     setIsRegistering(false);
   };
 
