@@ -15,7 +15,7 @@ import z from "zod";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { DocumentRenderer } from "./previewer";
-import { ArrowLeft, Info, Loader2 } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { useAppContext } from "@/lib/ctx-app";
 
 type Errors = Record<string, string>;
@@ -318,25 +318,24 @@ export function FormFlowRouter({
   return (
     <div className="relative mx-auto flex h-[100%] max-h-[100%] w-full flex-col items-center overflow-y-hidden px-4 py-8 bg-white bg-opacity-25">
       <div className="max-w-7xl w-full overflow-x-visible overflow-y-visible">
-        <div className="flex flex-col bg-white px-6 py-3 border rounded-[0.33em] items-start gap-1 rounded-b-none">
-          <Button
-            variant="ghost"
-            className="relative translate-x-[-1em] text-opacity-65 p-2"
-            size="xs"
-            onClick={() => closeGlobalModal("form-generator-form")}
-          >
-            <ArrowLeft className="w-2 h-2 scale-75" />
-            Back
-          </Button>
+        <div className="flex justify-between  bg-white px-5 py-2 pt-3 border-b rounded-[0.33em]  gap-1 rounded-b-none align-center">
           <h1 className="text-primary text-2xl font-bold tracking-tight whitespace-normal sm:whitespace-nowrap ">
             {formName}
           </h1>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => closeGlobalModal("form-generator-form")}
+            className="rounded-full"
+          >
+            <X className="h-4 w-4 text-gray-500" />
+          </Button>
         </div>
       </div>
       <div className="relative flex w-full h-[100%] max-w-7xl flex-col justify-center overflow-y-hidden sm:w-7xl sm:flex-row bg-white">
         <div className="relative max-h-[100%] overflow-y-auto w-[100%] bg-white">
           {/* Form Renderer */}
-          <div className="h-full max-h-[100%] space-y-4 overflow-y-auto rounded-[0.33em] rounded-t-none rounded-r-none border border-gray-300 p-5 bg-white">
+          <div className="h-full max-h-[100%]  overflow-y-auto  border-r border-gray-300 px-5 pt-2 bg-white">
             <div
               className={cn(
                 "mb-2 sm:hidden",
@@ -437,8 +436,8 @@ export function FormFlowRouter({
                     renderFields={formMetdata?.getFieldsForServer() ?? []}
                   />
 
-                  <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:justify-end">
-                    <div className="pt-2 flex justify-end gap-2 flex-wrap ">
+                  <div className="flex flex-col gap-2 pb-3 sm:flex-row sm:justify-end">
+                    <div className="flex justify-end gap-2 flex-wrap ">
                       <GenerateButtons
                         formKey={formName}
                         handleSubmit={handleSubmit}

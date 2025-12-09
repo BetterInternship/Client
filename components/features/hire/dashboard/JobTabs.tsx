@@ -55,6 +55,8 @@ export default function JobTabs({
   const profile = useProfile();
   const applications = useEmployerApplications();
   const [isLoading, setLoading] = useState(true);
+  const [exitingBack, setExitingBack] = useState(false);
+  const [exitingForward, setExitingForward] = useState(false);
 
   const [selectedApplication, setSelectedApplication] =
     useState<EmployerApplication | null>(null);
@@ -275,6 +277,7 @@ export default function JobTabs({
 
   //goes back to job list
   const handleJobBack = () => {
+    setExitingBack(true);
     router.push("/dashboard");
   };
 
@@ -346,261 +349,266 @@ export default function JobTabs({
   };
 
   // Handle message
-    const handleMessage = async (studentId: string | undefined, message: string) => {
-        if (message.trim() === "") return;
+  const handleMessage = async (studentId: string | undefined, message: string) => {
+    if (message.trim() === "") return;
 
-        setSending(true);
-        let userConversation = conversations.data?.find((c) =>
-        c?.subscribers?.includes(studentId),
+    setSending(true);
+    let userConversation = conversations.data?.find((c) =>
+    c?.subscribers?.includes(studentId),
+    );
+
+    if (!userConversation && studentId) {
+    const response =
+        await EmployerConversationService.createConversation(studentId).catch(
+        endSend,
         );
 
-        if (!userConversation && studentId) {
-        const response =
-            await EmployerConversationService.createConversation(studentId).catch(
-            endSend,
-            );
-
-        if (!response?.success) {
-            alert("Could not initiate conversation with user.");
-            endSend();
-            return;
-        }
-
-        setConversationId(response.conversation?.id ?? "");
-        userConversation = response.conversation;
+    if (!response?.success) {
+        alert("Could not initiate conversation with user.");
         endSend();
-        }
+        return;
+    }
 
-        setTimeout(async () => {
-        if (!userConversation) return endSend();
-        await EmployerConversationService.sendToUser(
-            userConversation?.id,
-            message,
-        ).catch(endSend);
-        endSend();
-        });
-    };
+    setConversationId(response.conversation?.id ?? "");
+    userConversation = response.conversation;
+    endSend();
+    }
 
-  if (loading || !isAuthenticated())
-    return <Loader>Loading dashboard...</Loader>;
+    setTimeout(async () => {
+      if (!userConversation) return endSend();
+      await EmployerConversationService.sendToUser(
+          userConversation?.id,
+          message,
+      ).catch(endSend);
+      endSend();
+    });
+  };
+
+  if (isLoading || !isAuthenticated())
+    return <Loader>Loading job...</Loader>;
 
   let lastSelf: boolean = false;
 
   return (
     <>
-      <DeleteModal>
-        {jobToDelete && (
-          <ListingsDeleteModal
-            job={jobToDelete}
-            deleteJob={delete_job}
-            clearJob={clearSelectedJob}
-            close={closeDeleteModal}
-          />
-        )}
-      </DeleteModal>
-      
-      <ApplicantDeleteModal>
-        {applicantToDelete && (
-          <div className="p-8 pt-0 h-full">
-            <div className="text-lg mb-4">
-              Delete applicant "{getFullName(applicantToDelete.user)}"?
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={handleCancelApplicantDelete}>Cancel</Button>
-              <Button scheme="destructive" onClick={handleConfirmApplicantDelete}>Delete</Button>
-            </div>
-          </div>
-        )}
-      </ApplicantDeleteModal>
-
-      <StatusChangeModal>
-        {statusChangeData && (
-          <div className="p-8 pt-0 h-full">
-            <div className="text-lg mb-4">
-              Change status for "{statusChangeData.applicants.length}" applicant{statusChangeData.applicants.length !== 1 ? "s" : ""}?
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={handleCancelStatusChange}>Cancel</Button>
-              <Button onClick={handleConfirmStatusChange}>Confirm</Button>
-            </div>
-          </div>
-        )}
-      </StatusChangeModal>
-
-      <div className="flex-1 flex flex-col w-full">
-        <div className="flex items-center">
-          <button
-            onClick={handleJobBack}
-            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors m-4"
-          >
-            <ArrowLeft className="s-8" />
-          </button>
-          <h3 className="leading-none tracking-tighter text-xl">{selectedJob?.title}</h3>
-        </div>
-        <div className="flex flex-col flex-1 gap-4">
-          <div className={cn(
-            "px-4 py-3 bg-white border-gray-200 border-2 rounded-md",
-            isMobile
-            ? "flex flex-col justify-between gap-4 px-2 py-4"
-            : "grid grid-cols-2 grid-rows-2 gap-x-2 gap-y-1 w-fit" 
-          )}>
-            <div className="flex items-center gap-2">
-              <div className={isMobile ? "pl-2": ""}>
-                <Toggle
-                  state={selectedJob!.is_active}
-                  onClick={handleToggleActive}
-                />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={exitingBack ? { opacity: 0 } : { opacity: 1 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
+        <DeleteModal>
+          {jobToDelete && (
+            <ListingsDeleteModal
+              job={jobToDelete}
+              deleteJob={delete_job}
+              clearJob={clearSelectedJob}
+              close={closeDeleteModal}
+            />
+          )}
+        </DeleteModal>
+        
+        <ApplicantDeleteModal>
+          {applicantToDelete && (
+            <div className="p-8 pt-0 h-full">
+              <div className="text-lg mb-4">
+                Delete applicant "{getFullName(applicantToDelete.user)}"?
               </div>
-              <span
-                className={cn(
-                  "text-sm transition",
-                  selectedJob!.is_active ? "text-primary" : "text-muted-foreground"
-                )}
-              >
-                {selectedJob!.is_active ? "Active" : "Paused"}
-              </span>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={handleCancelApplicantDelete}>Cancel</Button>
+                <Button scheme="destructive" onClick={handleConfirmApplicantDelete}>Delete</Button>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Link href={{
-                pathname:"/listings/details",
-                query: {
-                  jobId: selectedJob!.id,
-                }
-              }}
-              >
-                <Button
-                  key="edit"
-                  variant="ghost"
-                  disabled={saving}
-                  className="hover:bg-primary/10 gap-1"
-                >
-                  <Info size={16} />
-                  Preview
-                </Button>
-              </Link>
-              <Link href={{
-                pathname:"/listings/edit",
-                query: {
-                  jobId: selectedJob!.id,
-                }
-              }}
-              >
-                <Button
-                  key="edit"
-                  variant="ghost"
-                  disabled={saving}
-                  className="hover:bg-primary/10 gap-1"
-                >
-                  <Edit size={16} />
-                  Edit
-                </Button>
-              </Link>
-              <Button
-                key="delete"
-                variant="ghost"
-                disabled={saving}
-                className="hover:bg-destructive/10 hover:text-destructive gap-1"
-                onClick={handleJobDelete}
-              >
-                <Trash2 />
-                Delete
-              </Button>
+          )}
+        </ApplicantDeleteModal>
+
+        <StatusChangeModal>
+          {statusChangeData && (
+            <div className="p-8 pt-0 h-full">
+              <div className="text-lg mb-4">
+                Change status for "{statusChangeData.applicants.length}" applicant{statusChangeData.applicants.length !== 1 ? "s" : ""}?
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={handleCancelStatusChange}>Cancel</Button>
+                <Button onClick={handleConfirmStatusChange}>Confirm</Button>
+              </div>
             </div>
-            <p className={cn(
-              "items-center col-span-2 text-gray-600 text-sm",
+          )}
+        </StatusChangeModal>
+
+        <div className="flex-1 flex flex-col w-full">
+          <div className="flex items-center">
+            <button
+              onClick={handleJobBack}
+              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors m-4"
+            >
+              <ArrowLeft className="s-8" />
+            </button>
+            <h3 className="leading-none tracking-tighter text-xl">{selectedJob?.title}</h3>
+          </div>
+          <div className="flex flex-col flex-1 gap-4">
+            <div className={cn(
+              "px-4 py-3 bg-white border-gray-200 border-2 rounded-md",
               isMobile
-              ? "hidden"
-              : "flex"
+              ? "flex flex-col justify-between gap-4 px-2 py-4"
+              : "grid grid-cols-2 grid-rows-2 gap-x-2 gap-y-1 w-fit" 
             )}>
-              {selectedJob!.is_active 
-                ? "This listing is currently accepting applicants."
-                : "This listing is invisible and not currently accepting applicants."
-              }
-            </p>
-          </div>
-              {/* we need to add filtering here :D */}
-              <ApplicationsContent
-                ref={applicationContentRef}
-                applications={filteredApplications}
-                statusId={[0, 1, 2, 3, 4, 5, 6]}
-                isLoading={isLoading}
-                openChatModal={openChatModal}
-                updateConversationId={updateConversationId}
-                onApplicationClick={handleApplicationClick}
-                onNotesClick={handleNotesClick}
-                onScheduleClick={handleScheduleClick}
-                onStatusChange={handleStatusChange}
-                setSelectedApplication={setSelectedApplication}
-                onRequestDeleteApplicant={handleRequestApplicantDelete}
-                onRequestStatusChange={handleRequestStatusChange}
-                applicantToDelete={applicantToDelete}
-                statusChangeInProgress={!!statusChangeData}
-              ></ApplicationsContent>
-          </div>
-      </div>
+              <div className="flex items-center gap-2">
+                <div className={isMobile ? "pl-2": ""}>
+                  <Toggle
+                    state={selectedJob!.is_active}
+                    onClick={handleToggleActive}
+                  />
+                </div>
+                <span
+                  className={cn(
+                    "text-sm transition",
+                    selectedJob!.is_active ? "text-primary" : "text-muted-foreground"
+                  )}
+                >
+                  {selectedJob!.is_active ? "Active" : "Paused"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Link href={{
+                  pathname:"/listings/details",
+                  query: {
+                    jobId: selectedJob!.id,
+                  }
+                }}
+                >
+                  <Button
+                    key="edit"
+                    variant="ghost"
+                    disabled={saving}
+                    className="hover:bg-primary/10 gap-1"
+                  >
+                    <Info size={16} />
+                    Preview
+                  </Button>
+                </Link>
+                <Link href={{
+                  pathname:"/listings/edit",
+                  query: {
+                    jobId: selectedJob!.id,
+                  }
+                }}
+                >
+                  <Button
+                    key="edit"
+                    variant="ghost"
+                    disabled={saving}
+                    className="hover:bg-primary/10 gap-1"
+                  >
+                    <Edit size={16} />
+                    Edit
+                  </Button>
+                </Link>
+                <Button
+                  key="delete"
+                  variant="ghost"
+                  disabled={saving}
+                  className="hover:bg-destructive/10 hover:text-destructive gap-1"
+                  onClick={handleJobDelete}
+                >
+                  <Trash2 />
+                  Delete
+                </Button>
+              </div>
+              <p className={cn(
+                "items-center col-span-2 text-gray-600 text-sm",
+                isMobile
+                ? "hidden"
+                : "flex"
+              )}>
+                {selectedJob!.is_active 
+                  ? "This listing is currently accepting applicants."
+                  : "This listing is invisible and not currently accepting applicants."
+                }
+              </p>
+            </div>
+                {/* we need to add filtering here :D */}
+                <ApplicationsContent
+                  ref={applicationContentRef}
+                  applications={filteredApplications}
+                  statusId={[0, 1, 2, 3, 4, 5, 6]}
+                  isLoading={isLoading}
+                  openChatModal={openChatModal}
+                  updateConversationId={updateConversationId}
+                  onApplicationClick={handleApplicationClick}
+                  onNotesClick={handleNotesClick}
+                  onScheduleClick={handleScheduleClick}
+                  onStatusChange={handleStatusChange}
+                  setSelectedApplication={setSelectedApplication}
+                  onRequestDeleteApplicant={handleRequestApplicantDelete}
+                  onRequestStatusChange={handleRequestStatusChange}
+                  applicantToDelete={applicantToDelete}
+                  statusChangeInProgress={!!statusChangeData}
+                ></ApplicationsContent>
+            </div>
+        </div>
 
-      <ApplicantModal className="max-w-7xl w-full">
-        <ApplicantModalContent
-          is_employer={true}
-          clickable={true}
-          pfp_fetcher={async () =>
-            UserService.getUserPfpURL(selectedApplication?.user?.id ?? "")
-          }
-          pfp_route={`/users/${selectedApplication?.user_id}/pic`}
-          applicant={{
-            ...selectedApplication?.user,
-            internship_preferences: selectedApplication?.user?.internship_preferences as InternshipPreferences ?? undefined
+        <ApplicantModal className="max-w-7xl w-full">
+          <ApplicantModalContent
+            is_employer={true}
+            clickable={true}
+            pfp_fetcher={async () =>
+              UserService.getUserPfpURL(selectedApplication?.user?.id ?? "")
+            }
+            pfp_route={`/users/${selectedApplication?.user_id}/pic`}
+            applicant={{
+              ...selectedApplication?.user,
+              internship_preferences: selectedApplication?.user?.internship_preferences as InternshipPreferences ?? undefined
+              }}
+            open_calendar={async () => {
+              closeApplicantModal();
+              window
+                ?.open(selectedApplication?.user?.calendar_link ?? "", "_blank")
+                ?.focus();
             }}
-          open_calendar={async () => {
-            closeApplicantModal();
-            window
-              ?.open(selectedApplication?.user?.calendar_link ?? "", "_blank")
-              ?.focus();
-          }}
-          open_resume={async () => {
-            closeApplicantModal();
-            await syncResumeURL();
-            openResumeModal();
-          }}
-          job={selectedApplication?.job}
-          resume_url={resumeURL}
-        />
-      </ApplicantModal>
-
-      <ReviewModal>
-        {selectedApplication && (
-          <ReviewModalContent
-            application={selectedApplication}
-            reviewApp={async (id, reviewOptions) => {
-              await reviewApp(id, reviewOptions);
+            open_resume={async () => {
+              closeApplicantModal();
+              await syncResumeURL();
+              openResumeModal();
             }}
-            onClose={closeReviewModal}
+            job={selectedApplication?.job}
+            resume_url={resumeURL}
           />
-        )}
-      </ReviewModal>
+        </ApplicantModal>
 
-      <ResumeModal>
-        {selectedApplication?.user?.resume ? (
-          <div className="h-full flex flex-col">
-            <h1 className="font-bold font-heading text-2xl px-6 py-4 text-gray-900">
-              {getFullName(selectedApplication?.user)} - Resume
-            </h1>
-            <PDFPreview url={resumeURL} />
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center h-96 px-8">
-            <div className="text-center">
-              <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">
-                No Resume Available
+        <ReviewModal>
+          {selectedApplication && (
+            <ReviewModalContent
+              application={selectedApplication}
+              reviewApp={async (id, reviewOptions) => {
+                await reviewApp(id, reviewOptions);
+              }}
+              onClose={closeReviewModal}
+            />
+          )}
+        </ReviewModal>
+
+        <ResumeModal>
+          {selectedApplication?.user?.resume ? (
+            <div className="h-full flex flex-col">
+              <h1 className="font-bold font-heading text-2xl px-6 py-4 text-gray-900">
+                {getFullName(selectedApplication?.user)} - Resume
               </h1>
-              <div className="max-w-md text-center border border-red-200 text-red-600 bg-red-50 rounded-lg p-4">
-                This applicant has not uploaded a resume yet.
+              <PDFPreview url={resumeURL} />
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-96 px-8">
+              <div className="text-center">
+                <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">
+                  No Resume Available
+                </h1>
+                <div className="max-w-md text-center border border-red-200 text-red-600 bg-red-50 rounded-lg p-4">
+                  This applicant has not uploaded a resume yet.
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </ResumeModal>
+          )}
+        </ResumeModal>
 
       <ChatModal>
         <>
@@ -727,61 +735,62 @@ export default function JobTabs({
         </>
       </ChatModal>
 
-      <NewChatModal>
-        <div className="p-8">
-          <div className="mb-4 flex flex-col items-center justify-center text-center">
-            <MessageSquarePlus className="text-primary h-8 w-8 mb-4"/>
-            <div className="flex flex-col items-center">
-              <h3 className="text-lg">New Conversation</h3>
-              <p className="text-gray-500 text-sm">
-                No conversation history with <span className="text-primary">{getFullName(selectedApplication?.user)}</span>.
-              </p>
-              <p className="text-gray-500 text-sm">Initiate new conversation?</p>
-            </div>
-            <div className="flex justify-center gap-6 mt-2">
-              <Button 
-              className="bg-white text-primary hover:bg-gray-100 border-solid border-2"
-              onClick={closeNewChatModal}
-              >
-                Cancel
-              </Button>
-              <Button 
-              onClick={() => router.push(`/conversations?userId=${selectedApplication?.user_id}`)}
-              >
-                Start chatting
-              </Button>
+        <NewChatModal>
+          <div className="p-8">
+            <div className="mb-4 flex flex-col items-center justify-center text-center">
+              <MessageSquarePlus className="text-primary h-8 w-8 mb-4"/>
+              <div className="flex flex-col items-center">
+                <h3 className="text-lg">New Conversation</h3>
+                <p className="text-gray-500 text-sm">
+                  No conversation history with <span className="text-primary">{getFullName(selectedApplication?.user)}</span>.
+                </p>
+                <p className="text-gray-500 text-sm">Initiate new conversation?</p>
+              </div>
+              <div className="flex justify-center gap-6 mt-2">
+                <Button 
+                className="bg-white text-primary hover:bg-gray-100 border-solid border-2"
+                onClick={closeNewChatModal}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                onClick={() => router.push(`/conversations?userId=${selectedApplication?.user_id}`)}
+                >
+                  Start chatting
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </NewChatModal>
+        </NewChatModal>
 
-      <OldChatModal>
-        <div className="p-8">
-          <div className="mb-4 flex flex-col items-center justify-center text-center">
-            <MessageSquareText className="text-primary h-8 w-8 mb-4"/>
-            <div className="flex flex-col items-center">
-              <h3 className="text-lg">Go to Conversations</h3>
-              <p className="text-gray-500 text-sm">
-                You have existing chat history with <span className="text-primary">{getFullName(selectedApplication?.user)}</span>!
-              </p>
-              <p className="text-gray-500 text-sm">Redirect to conversations?</p>
-            </div>
-            <div className="flex justify-center gap-6 mt-2">
-              <Button 
-              className="bg-white text-primary hover:bg-gray-100 border-solid border-2"
-              onClick={closeOldChatModal}
-              >
-                Cancel
-              </Button>
-              <Button 
-              onClick={() => router.push(`/conversations?userId=${selectedApplication?.user_id}`)}
-              >
-                Go to chat
-              </Button>
+        <OldChatModal>
+          <div className="p-8">
+            <div className="mb-4 flex flex-col items-center justify-center text-center">
+              <MessageSquareText className="text-primary h-8 w-8 mb-4"/>
+              <div className="flex flex-col items-center">
+                <h3 className="text-lg">Go to Conversations</h3>
+                <p className="text-gray-500 text-sm">
+                  You have existing chat history with <span className="text-primary">{getFullName(selectedApplication?.user)}</span>!
+                </p>
+                <p className="text-gray-500 text-sm">Redirect to conversations?</p>
+              </div>
+              <div className="flex justify-center gap-6 mt-2">
+                <Button 
+                className="bg-white text-primary hover:bg-gray-100 border-solid border-2"
+                onClick={closeOldChatModal}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                onClick={() => router.push(`/conversations?userId=${selectedApplication?.user_id}`)}
+                >
+                  Go to chat
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </OldChatModal>
+        </OldChatModal>
+      </motion.div>
     </>
   );
 }

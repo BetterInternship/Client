@@ -140,7 +140,7 @@ export function DynamicForm({
   }, []);
 
   return (
-    <div className="space-y-4 ">
+    <div className="space-y-4">
       <FormSection
         formKey={formName}
         title="Entity Information"
