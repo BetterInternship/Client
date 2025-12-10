@@ -31,7 +31,6 @@ import { Badge } from "@/components/ui/badge";
 import { getFullName } from "@/lib/profile";
 import { FilterButton } from "@/components/ui/filter";
 import { EmployerApplication } from "@/lib/db/db.types";
-import ContentLayout from "@/components/features/hire/content-layout";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { fmtISO } from "@/lib/utils/date-utils";
 import { useModal } from "@/hooks/use-modal";
