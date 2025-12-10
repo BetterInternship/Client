@@ -385,7 +385,7 @@ export default function JobTabs({
   };
 
   if (isLoading || !isAuthenticated())
-    return <Loader>Loading job...</Loader>;
+    return null;
 
   let lastSelf: boolean = false;
 
