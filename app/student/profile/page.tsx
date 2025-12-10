@@ -1020,10 +1020,6 @@ const ProfileEditor = forwardRef<
     formData.university,
     formData.college,
     colleges,
-    get_colleges_by_university,
-    to_college_name,
-    setField,
-    to_university_name,
   ]);
 
   return (
