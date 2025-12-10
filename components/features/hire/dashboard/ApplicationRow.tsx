@@ -199,6 +199,7 @@ export function ApplicationRow({
           items={statuses}
           defaultItem={defaultStatus}
         />
+        
       </td>
       <td>
         <div className="flex items-center gap-2 pr-2 flex-row justify-end">

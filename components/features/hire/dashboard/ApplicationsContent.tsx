@@ -310,7 +310,7 @@ export const ApplicationsContent = forwardRef<
             </div>
           </div>
       ) : (
-        <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-200 border text-sm rounded-md overflow-visible">
+        <table className="relative table-auto border-separate border-spacing-0 w-full bg-white border-gray-200 border text-sm rounded-md overflow-hidden">
           <thead className="bg-gray-100">
             <tr className="text-left">
               <th 

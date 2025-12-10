@@ -46,7 +46,7 @@ import {
 import { Message } from "@/components/ui/messages";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { useAuthContext } from "@/app/hire/authctx";
 
@@ -88,6 +88,7 @@ export function ApplicantPage({
     const [lastSending, setLastSending] = useState(false);
     const [sending, setSending] = useState(false);
     const conversation = useConversation("employer", conversationId);
+    const [exitingBack, setExitingBack] = useState(false);
 
     const {
         to_university_name,
@@ -142,6 +143,7 @@ export function ApplicantPage({
         });
 
         const handleBack = () => {
+            setExitingBack(true);
             if (window.history.length > 1) {
                 router.back();
             } else {
@@ -244,8 +246,7 @@ export function ApplicantPage({
         <>
         <motion.div
             initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-            animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
-            exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+            animate={exitingBack ? { scale: 0.98, filter: "blur(4px)", opacity: 0 } : { scale: 1, filter: "blur(0px)", opacity: 1 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
         >
             <button

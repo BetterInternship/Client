@@ -1,6 +1,6 @@
 import { useFile } from "@/hooks/use-file";
 import { EmployerService, UserService } from "@/lib/api/services";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Loader } from "../ui/loader";
 
@@ -15,12 +15,15 @@ const Pfp = ({
   source,
   pfp_fetcher,
   size = "10",
+  onRefresh,
 }: {
   id: string;
   source: string;
   pfp_fetcher: () => Promise<any>;
   size?: string;
+  onRefresh?: boolean;
 }) => {
+
   const { url, sync, loading } = useFile({
     route: `/${source}/` + id + "/pic",
     fetcher: pfp_fetcher,
@@ -57,13 +60,14 @@ export const UserPfp = ({
   user_id: string;
   size?: string;
 }) => {
+
   const pfp_fetcher = useCallback(
     async () => UserService.getUserPfpURL(user_id),
     [user_id]
   );
 
   return (
-    <Pfp id={user_id} size={size} source={"users"} pfp_fetcher={pfp_fetcher} />
+    <Pfp key={user_id} id={user_id} size={size} source={"users"} pfp_fetcher={pfp_fetcher}/>
   );
 };
 

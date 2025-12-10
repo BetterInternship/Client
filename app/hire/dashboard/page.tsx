@@ -47,8 +47,13 @@ function DashboardContent() {
     }
   }, [ownedJobs]);
 
-  if (loading || !isAuthenticated())
-    return null;
+  if (loading || !isAuthenticated()) {
+    return (
+      <ContentLayout>
+        <Loader>Loading dashboard...</Loader>
+      </ContentLayout>
+    );
+  }
 
   return (
     <ContentLayout>
