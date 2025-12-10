@@ -101,6 +101,7 @@ export function ConversationPage({
 
     //redirectIfNotLoggedIn();
 
+    // if employer is redirected to the chat page with a non existent conversation, make a new one
     const createNewConversation = async (userId: string) => {
         const response = await EmployerConversationService.createConversation(userId);
         
@@ -176,9 +177,11 @@ export function ConversationPage({
         [unreads],
     );
 
-    const visibleConvos = useMemo(() => {
+    const uniqueChats = useMemo(() => {
         return chatFilter === "all" ? sortedConvos : sortedUnreads
     }, [chatFilter, sortedConvos, unreads]);
+
+    const visibleConvos = Array.from(new Set(uniqueChats));
 
     const endSend = () => {
         setMessage("");
@@ -222,15 +225,11 @@ export function ConversationPage({
         });
     };
 
-    // loading state for initial fetch
-    // if (conversations.loading) {
-    //     return <Loader>Loading your conversations...</Loader>;
-    // }
-
     const hasConversations = (conversations.data?.length ?? 0) > 0;
 
+    // determine if all user data is loaded before loading entire page
     useEffect(() => {
-        if (!conversations.data) {
+        if (!conversations.data && hasConversations) {
             setUserDataLoading(true);
             return;
         }
@@ -245,7 +244,7 @@ export function ConversationPage({
         if (allUsersLoaded) {
             const timer = setTimeout(() => {
                 setUserDataLoading(false);
-            }, 300);
+            }, 200);
             return () => clearTimeout(timer);
         }
     }, [conversations.data, visibleConvos, profile.data?.id]);
@@ -385,11 +384,21 @@ export function ConversationPage({
                                 </button>
                             </div>
                             )}
-                            <ConversationProfile
-                            conversation={conversation}
-                            profileId={conversation.senderId}
-                            applications={applications.employer_applications}
-                            />
+                            <AnimatePresence mode="wait">
+                                <motion.div 
+                                className="bg-white h-full p-8"
+                                    initial={{ x: "100%" }}
+                                    animate={{ x: 0 }}
+                                    exit={{ x: "100%" }}
+                                    transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                                >
+                                    <ConversationProfile
+                                    conversation={conversation}
+                                    profileId={conversation.senderId}
+                                    applications={applications.employer_applications}
+                                    />
+                                </motion.div>
+                            </AnimatePresence>
                         </aside>
                         }
                     </>
@@ -489,14 +498,7 @@ export function ConversationPage({
         }, [user?.id, syncResumeURL]);
 
     return(
-        <AnimatePresence mode="wait">
-            <motion.div 
-            className="bg-white h-full p-8"
-                initial={{ x: "100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "100%" }}
-                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            >
+        <>
             {user ? (
             <>
                 <div className="flex flex-col items-center mt-10 w-full">
@@ -566,6 +568,13 @@ export function ConversationPage({
                     </p>
                 )}
                 </div>
+               {/* <div className="flex-1">
+                 <button 
+                    className="flex w-full border border-destructive justify-center items-center text-sm text-destructive p-2 rounded-[0.33em]"
+                    >
+                        Delete Conversation
+                    </button>
+               </div> */}
             </div>
 
             <ResumeModal>
@@ -601,8 +610,7 @@ export function ConversationPage({
                 </div>
             </div>
         )}
-        </motion.div>
-        </AnimatePresence>
+        </>
     )
     }
 
