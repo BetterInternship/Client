@@ -36,7 +36,7 @@ export function ApplicationsCommandBar({
       {visible && (
         <>
           <motion.div
-            className="fixed bottom-4 z-[1000] shadow-xl w-max"
+            className="fixed bottom-4 z-[100] shadow-xl w-max overflow-hidden rounded-md"
             initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
             animate={{ scale: 1, filter: "blur(0px)", opacity: 1, x: "-50%" }}
             exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
@@ -49,7 +49,7 @@ export function ApplicationsCommandBar({
             />
           </motion.div>
           <motion.div
-            className="fixed top-20 z-[1000] shadow-xl w-max mx-2"
+            className="fixed top-20 z-[100] shadow-xl w-max mx-2 overflow-hidden rounded-md"
             initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
             animate={{ scale: 1, filter: "blur(0px)", opacity: 1, x: "-50%" }}
             exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
@@ -74,13 +74,6 @@ export function ApplicationsCommandBar({
                     icon: CheckSquare,
                     onClick: onToggleSelectAll,
                   },
-                  {
-                    id: "delete",
-                    label: "Delete",
-                    icon: Trash,
-                    destructive: true,
-                    onClick: onDelete,
-                  },
                 ],
               ]}
             />
@@ -93,7 +86,7 @@ export function ApplicationsCommandBar({
       {visible && (
         <>
         <motion.div
-          className="fixed bottom-4 z-[1000] shadow-xl w-max"
+          className="fixed bottom-4 z-[100] shadow-xl w-max overflow-hidden rounded-md"
           initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
           animate={{ scale: 1, filter: "blur(0px)", opacity: 1, x: "-50%", backdropFilter: "blur(50%)" }}
           exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
@@ -117,13 +110,6 @@ export function ApplicationsCommandBar({
                   label: allVisibleSelected ? "Unselect all" : "Select all" ,
                   icon: CheckSquare,
                   onClick: onToggleSelectAll,
-                },
-                {
-                  id: "delete",
-                  label: "Delete",
-                  icon: Trash,
-                  destructive: true,
-                  onClick: onDelete,
                 },
               ],
             ]}

@@ -127,7 +127,7 @@ export const ApplicationsContent = forwardRef<
   // get statuses specifically for the rows. these use different action items.
   const getRowStatuses = (applicationId: string) => {
     return unique_app_statuses
-      .filter((status) => status.id !== 7 && status.id !== 0)
+      .filter((status) => status.id !== 7 && status.id !== 5 && status.id !== 0)
       .map((status): ActionItem => {
         const uiProps = statusMap.get(status.id);
         return {
@@ -141,7 +141,7 @@ export const ApplicationsContent = forwardRef<
   };
 
   // remove the delete item from the bottom command bar so we can put it in the top one and the pending status.
-  const remove_unused_statuses = statuses.filter((status) => status.id !== "7" &&
+  const remove_unused_statuses = statuses.filter((status) => status.id !== "5" &&
                                                              status.id !== "0");
 
   const applyActiveFilter = (apps: typeof sortedApplications) => {

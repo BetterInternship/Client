@@ -15,7 +15,7 @@ import { useModal } from "@/hooks/use-modal";
 import { useSideModal } from "@/hooks/use-side-modal";
 import { EmployerConversationService, UserService } from "@/lib/api/services";
 import { EmployerApplication, InternshipPreferences } from "@/lib/db/db.types";
-import { ArrowLeft, Edit, Info, Trash2, MessageSquarePlus, MessageSquareText } from "lucide-react";
+import { ArrowLeft, Edit, Info, Trash2, MessageSquarePlus, MessageSquareText, Wrench } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Job } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
@@ -75,7 +75,7 @@ export default function JobTabs({
     0, 1, 2, 3, 4, 5, 6,
   ]);
   const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
-  const [applicantToDelete, setApplicantToDelete] = useState<EmployerApplication | null>(null);
+  const [applicantToArchive, setApplicantToDelete] = useState<EmployerApplication | null>(null);
   const [statusChangeData, setStatusChangeData] = useState<{ applicants: EmployerApplication[]; status: number; } | null>(null);
 
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
@@ -216,10 +216,10 @@ export default function JobTabs({
   } = useModal("resume-modal");
 
   const {
-    open: openApplicantDeleteModal,
-    close: closeApplicantDeleteModal,
-    Modal: ApplicantDeleteModal,
-  } = useModal("applicant-delete-modal");
+    open: openApplicantArchiveModal,
+    close: closeApplicantArchiveModal,
+    Modal: ApplicantArchiveModal,
+  } = useModal("applicant-archive-modal");
 
   const {
     open: openStatusChangeModal,
@@ -290,20 +290,20 @@ export default function JobTabs({
 
   const handleRequestApplicantDelete = (application: EmployerApplication) => {
     setApplicantToDelete(application);
-    openApplicantDeleteModal();
+    openApplicantArchiveModal();
   };
 
-  const handleConfirmApplicantDelete = async () => {
-    if (!applicantToDelete?.id) return;
-    await applications.review(applicantToDelete.id, { status: 7 });
+  const handleConfirmApplicantArchive = async () => {
+    if (!applicantToArchive?.id) return;
+    await applications.review(applicantToArchive.id, { status: 7 });
     setApplicantToDelete(null);
-    closeApplicantDeleteModal();
+    closeApplicantArchiveModal();
     applicationContentRef.current?.unselectAll();
   };
 
-  const handleCancelApplicantDelete = () => {
+  const handleCancelApplicantArchive = () => {
     setApplicantToDelete(null);
-    closeApplicantDeleteModal();
+    closeApplicantArchiveModal();
   };
 
   const onChatClick = async () => {
@@ -407,19 +407,19 @@ export default function JobTabs({
           )}
         </DeleteModal>
         
-        <ApplicantDeleteModal>
-          {applicantToDelete && (
+        <ApplicantArchiveModal>
+          {applicantToArchive && (
             <div className="p-8 pt-0 h-full">
               <div className="text-lg mb-4">
-                Delete applicant "{getFullName(applicantToDelete.user)}"?
+                Archive applicant "{getFullName(applicantToArchive.user)}"?
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={handleCancelApplicantDelete}>Cancel</Button>
-                <Button scheme="destructive" onClick={handleConfirmApplicantDelete}>Delete</Button>
+                <Button variant="outline" onClick={handleCancelApplicantArchive}>Cancel</Button>
+                <Button variant="default" onClick={handleConfirmApplicantArchive}>Archive</Button>
               </div>
             </div>
           )}
-        </ApplicantDeleteModal>
+        </ApplicantArchiveModal>
 
         <StatusChangeModal>
           {statusChangeData && (
@@ -443,88 +443,99 @@ export default function JobTabs({
             >
               <ArrowLeft className="s-8" />
             </button>
-            <h3 className="leading-none tracking-tighter text-xl">{selectedJob?.title}</h3>
           </div>
           <div className="flex flex-col flex-1 gap-4">
             <div className={cn(
-              "px-4 py-3 bg-white border-gray-200 border-2 rounded-md",
-              isMobile
-              ? "flex flex-col justify-between gap-4 px-2 py-4"
-              : "grid grid-cols-2 grid-rows-2 gap-x-2 gap-y-1 w-fit" 
+              "flex flex-col px-4 py-4 bg-white border-gray-200 border-2 rounded-md",
+              isMobile ? "w-full gap-4" : "w-fit gap-2"
             )}>
-              <div className="flex items-center gap-2">
-                <div className={isMobile ? "pl-2": ""}>
-                  <Toggle
-                    state={selectedJob!.is_active}
-                    onClick={handleToggleActive}
-                  />
-                </div>
-                <span
-                  className={cn(
-                    "text-sm transition",
-                    selectedJob!.is_active ? "text-primary" : "text-muted-foreground"
-                  )}
-                >
-                  {selectedJob!.is_active ? "Active" : "Paused"}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Link href={{
-                  pathname:"/listings/details",
-                  query: {
-                    jobId: selectedJob!.id,
-                  }
-                }}
-                >
-                  <Button
-                    key="edit"
-                    variant="ghost"
-                    disabled={saving}
-                    className="hover:bg-primary/10 gap-1"
-                  >
-                    <Info size={16} />
-                    Preview
-                  </Button>
-                </Link>
-                <Link href={{
-                  pathname:"/listings/edit",
-                  query: {
-                    jobId: selectedJob!.id,
-                  }
-                }}
-                >
-                  <Button
-                    key="edit"
-                    variant="ghost"
-                    disabled={saving}
-                    className="hover:bg-primary/10 gap-1"
-                  >
-                    <Edit size={16} />
-                    Edit
-                  </Button>
-                </Link>
-                <Button
-                  key="delete"
-                  variant="ghost"
-                  disabled={saving}
-                  className="hover:bg-destructive/10 hover:text-destructive gap-1"
-                  onClick={handleJobDelete}
-                >
-                  <Trash2 />
-                  Delete
-                </Button>
-              </div>
-              <p className={cn(
-                "items-center col-span-2 text-gray-600 text-sm",
-                isMobile
-                ? "hidden"
-                : "flex"
+              <h3 className={cn(
+                "leading-none tracking-tighter text-xl",
+                isMobile ? "pl-2" : ""
               )}>
-                {selectedJob!.is_active 
-                  ? "This listing is currently accepting applicants."
-                  : "This listing is invisible and not currently accepting applicants."
-                }
-              </p>
+                {selectedJob?.title}
+              </h3>
+              <div className={cn(
+                isMobile
+                ? "flex flex-col justify-between gap-4"
+                : "grid grid-cols-2 grid-rows-2 gap-x-2 gap-y-1"
+              )}>
+                <div className="flex items-center gap-2">
+                  <div className={cn(
+                    isMobile ? "pl-2" : ""
+                  )}>
+                    <Toggle
+                      state={selectedJob!.is_active}
+                      onClick={handleToggleActive}
+                    />
+                  </div>
+                  <span
+                    className={cn(
+                      "text-sm transition px-2 py-1 rounded-[0.33rem]",
+                      selectedJob!.is_active ? "bg-supportive text-white" : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {selectedJob!.is_active ? "Active" : "Paused"}
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Link href={{
+                    pathname:"/listings/details",
+                    query: {
+                      jobId: selectedJob!.id,
+                    }
+                  }}
+                  >
+                    <Button
+                      key="edit"
+                      variant="ghost"
+                      disabled={saving}
+                      className="hover:bg-primary/10 gap-1"
+                    >
+                      <Info size={16} />
+                      Preview
+                    </Button>
+                  </Link>
+                  <Link href={{
+                    pathname:"/listings/edit",
+                    query: {
+                      jobId: selectedJob!.id,
+                    }
+                  }}
+                  >
+                    <Button
+                      key="edit"
+                      variant="ghost"
+                      disabled={saving}
+                      className="hover:bg-primary/10 gap-1"
+                    >
+                      <Edit size={16} />
+                      Edit
+                    </Button>
+                  </Link>
+                  <Button
+                    key="delete"
+                    variant="ghost"
+                    disabled={saving}
+                    className="hover:bg-destructive/10 hover:text-destructive gap-1"
+                    onClick={handleJobDelete}
+                  >
+                    <Trash2 />
+                    Delete
+                  </Button>
+                </div>
+                <p className={cn(
+                  "items-center col-span-2 text-gray-600 text-sm",
+                  isMobile
+                  ? "hidden"
+                  : "flex"
+                )}>
+                  {selectedJob!.is_active 
+                    ? "This listing is currently accepting applicants."
+                    : "This listing is invisible and not currently accepting applicants."
+                  }
+                </p>
+              </div>
             </div>
                 {/* we need to add filtering here :D */}
                 <ApplicationsContent
@@ -541,7 +552,7 @@ export default function JobTabs({
                   setSelectedApplication={setSelectedApplication}
                   onRequestDeleteApplicant={handleRequestApplicantDelete}
                   onRequestStatusChange={handleRequestStatusChange}
-                  applicantToDelete={applicantToDelete}
+                  applicantToDelete={applicantToArchive}
                   statusChangeInProgress={!!statusChangeData}
                 ></ApplicationsContent>
             </div>

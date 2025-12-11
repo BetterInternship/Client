@@ -78,7 +78,6 @@ function SideNav({ items }: { items: NavItem[] }) {
                 "w-full h-10 pl-4 flex flex-row justify-between border-0 hover:bg-primary/15 hover:text-primary",
                 isActive ? "text-primary bg-primary/10" : "font-normal",
                 label === "Add Listing" ? "bg-primary text-white hover:bg-primary hover:text-white" : "",
-                isActive && "[&_svg]:fill-primary [&_svg]:stroke-primary-foreground"
               )}
             >
               <div className="flex items-center w-full flex-row gap-2">

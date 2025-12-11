@@ -15,6 +15,7 @@ import { formatDateWithoutTime, formatTimestampDateWithoutTime } from "@/lib/uti
 import { statusMap } from "@/components/common/status-icon-map";
 import { motion } from "framer-motion";
 import {
+  Archive,
   Calendar,
   ContactRound,
   GraduationCap,
@@ -60,7 +61,7 @@ export function ApplicationRow({
   setSelectedApplication,
   checkboxSelected = false,
   onToggleSelect,
-  onDeleteButtonClick,
+  onDeleteButtonClick: onArchiveButtonClick,
   statuses,
 }: ApplicationRowProps) {
   const { to_university_name, get_app_status } = useDbRefs();
@@ -226,12 +227,11 @@ export function ApplicationRow({
             }}
           />
           <ActionButton
-            icon={Trash}
+            icon={Archive}
             onClick={(e) => {
               e.stopPropagation();
-              onDeleteButtonClick(application);
+              onArchiveButtonClick(application);
             }}
-            destructive={true}
             enabled={application.status! !== 7}
           />
         </div>

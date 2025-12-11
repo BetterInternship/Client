@@ -68,12 +68,15 @@ export function JobListingsBox({
                         </h1>
                         <Badge
                             strength="default"
-                            type="default"
-                            className={job.is_active ? "border-primary text-primary gap-2" : "gap-2"}
+                            type="accent"
+                            className={cn(
+                                "flex gap-1",
+                                job.is_active ? "bg-supportive text-white" : "text-muted-foreground flex items-center font-normal"
+                            )}
                         >
                             {job.is_active
                                 ? <Check size={16} />
-                                : <Pause size={16} />
+                                : <Pause fill="hsl(var(--muted-foreground))" size={16} />
                             }
                             <span>{job.is_active ? "Active" : "Paused"}</span>
                         </Badge>
