@@ -74,13 +74,6 @@ export function ApplicationsCommandBar({
                     icon: CheckSquare,
                     onClick: onToggleSelectAll,
                   },
-                  {
-                    id: "delete",
-                    label: "Delete",
-                    icon: Trash,
-                    destructive: true,
-                    onClick: onDelete,
-                  },
                 ],
               ]}
             />
@@ -117,13 +110,6 @@ export function ApplicationsCommandBar({
                   label: allVisibleSelected ? "Unselect all" : "Select all" ,
                   icon: CheckSquare,
                   onClick: onToggleSelectAll,
-                },
-                {
-                  id: "delete",
-                  label: "Delete",
-                  icon: Trash,
-                  destructive: true,
-                  onClick: onDelete,
                 },
               ],
             ]}

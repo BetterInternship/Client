@@ -75,7 +75,7 @@ export default function JobTabs({
     0, 1, 2, 3, 4, 5, 6,
   ]);
   const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
-  const [applicantToDelete, setApplicantToDelete] = useState<EmployerApplication | null>(null);
+  const [applicantToArchive, setApplicantToDelete] = useState<EmployerApplication | null>(null);
   const [statusChangeData, setStatusChangeData] = useState<{ applicants: EmployerApplication[]; status: number; } | null>(null);
 
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
@@ -216,10 +216,10 @@ export default function JobTabs({
   } = useModal("resume-modal");
 
   const {
-    open: openApplicantDeleteModal,
-    close: closeApplicantDeleteModal,
-    Modal: ApplicantDeleteModal,
-  } = useModal("applicant-delete-modal");
+    open: openApplicantArchiveModal,
+    close: closeApplicantArchiveModal,
+    Modal: ApplicantArchiveModal,
+  } = useModal("applicant-archive-modal");
 
   const {
     open: openStatusChangeModal,
@@ -290,20 +290,20 @@ export default function JobTabs({
 
   const handleRequestApplicantDelete = (application: EmployerApplication) => {
     setApplicantToDelete(application);
-    openApplicantDeleteModal();
+    openApplicantArchiveModal();
   };
 
-  const handleConfirmApplicantDelete = async () => {
-    if (!applicantToDelete?.id) return;
-    await applications.review(applicantToDelete.id, { status: 7 });
+  const handleConfirmApplicantArchive = async () => {
+    if (!applicantToArchive?.id) return;
+    await applications.review(applicantToArchive.id, { status: 7 });
     setApplicantToDelete(null);
-    closeApplicantDeleteModal();
+    closeApplicantArchiveModal();
     applicationContentRef.current?.unselectAll();
   };
 
-  const handleCancelApplicantDelete = () => {
+  const handleCancelApplicantArchive = () => {
     setApplicantToDelete(null);
-    closeApplicantDeleteModal();
+    closeApplicantArchiveModal();
   };
 
   const onChatClick = async () => {
@@ -407,19 +407,19 @@ export default function JobTabs({
           )}
         </DeleteModal>
         
-        <ApplicantDeleteModal>
-          {applicantToDelete && (
+        <ApplicantArchiveModal>
+          {applicantToArchive && (
             <div className="p-8 pt-0 h-full">
               <div className="text-lg mb-4">
-                Delete applicant "{getFullName(applicantToDelete.user)}"?
+                Archive applicant "{getFullName(applicantToArchive.user)}"?
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={handleCancelApplicantDelete}>Cancel</Button>
-                <Button scheme="destructive" onClick={handleConfirmApplicantDelete}>Delete</Button>
+                <Button variant="outline" onClick={handleCancelApplicantArchive}>Cancel</Button>
+                <Button variant="default" onClick={handleConfirmApplicantArchive}>Archive</Button>
               </div>
             </div>
           )}
-        </ApplicantDeleteModal>
+        </ApplicantArchiveModal>
 
         <StatusChangeModal>
           {statusChangeData && (
@@ -541,7 +541,7 @@ export default function JobTabs({
                   setSelectedApplication={setSelectedApplication}
                   onRequestDeleteApplicant={handleRequestApplicantDelete}
                   onRequestStatusChange={handleRequestStatusChange}
-                  applicantToDelete={applicantToDelete}
+                  applicantToDelete={applicantToArchive}
                   statusChangeInProgress={!!statusChangeData}
                 ></ApplicationsContent>
             </div>
