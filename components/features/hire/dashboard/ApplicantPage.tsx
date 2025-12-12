@@ -160,25 +160,25 @@ export function ApplicantPage({
         } = useModal("new-chat-modal", {
         onClose: () => (conversation.unsubscribe(), setConversationId("")),
         showCloseButton: false,
-        });
-    
-        const {
+    });
+
+    const {
         open: openOldChatModal,
         close: closeOldChatModal,
         Modal: OldChatModal,
         } = useModal("old-chat-modal", {
         onClose: () => (conversation.unsubscribe(), setConversationId("")),
         showCloseButton: false,
-        });
-        
+    });
     
-        const {
+
+    const {
         open: openChatModal,
         close: closeChatModal,
         SideModal: ChatModal,
         } = useSideModal("chat-modal", {
         onClose: () => (conversation.unsubscribe(), setConversationId(""))
-        });
+    });
 
     useEffect(() => {
         if (application?.user_id) {
@@ -458,20 +458,34 @@ export function ApplicantPage({
                             
                         ) : (
                             <>
-                                <div className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200 mt-4">
-                                        {application?.user?.bio ? (
-                                            <div>
-                                                <p className="text-xs">{application?.user?.bio}</p>
-                                                <Divider/>
-                                            </div>
-                                        ) : (
+                                <HorizontalCollapsible 
+                                    className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
+                                    title="Cover letter"
+                                >
+                                    <span className={cn(
+                                        "text-sm/5",
+                                        application!.cover_letter?.length === 0 ? "text-muted-foreground" : ""
+                                    )}>
+                                        {application!.cover_letter?.length === 0 
+                                            ? "The user has not provided a cover letter."
+                                            : application!.cover_letter
+                                        }
+                                    </span>
+                                </HorizontalCollapsible>
+                                <div className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200">
+                                    {application?.user?.bio ? (
+                                        <div>
+                                            <p className="text-xs">{application?.user?.bio}</p>
+                                            <Divider/>
+                                        </div>
+                                    ) : (
 
-                                            <div>
-                                                <p className="text-xs">Applicant has not added a bio.</p>
-                                                <Divider/>
-                                            </div>
-                                            
-                                        )}
+                                        <div>
+                                            <p className="text-xs">Applicant has not added a bio.</p>
+                                            <Divider/>
+                                        </div>
+                                        
+                                    )}
                                     <div className="items-center gap-3 mb-4 sm:mb-5">
                                         <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
                                             Applicant Information

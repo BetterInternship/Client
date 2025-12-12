@@ -1,7 +1,7 @@
 import { ChevronDown, ChevronUp} from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 
 //very simple singular collapsible accordion
@@ -33,9 +33,20 @@ export const HorizontalCollapsible = ({
                 {!isToggled ? <ChevronDown className='h-5 w-5' /> : <ChevronUp className='h-5 w-5' />}
                 {title}
             </button>
-            <div className={cn('transition-[max-height] duration-300 ease-in-out', isToggled ? 'mt-4 max-h-[100vh]' : 'max-h-0 overflow-hidden')}>
-                {isToggled && children}
-            </div>
+            <motion.div 
+                initial={false}
+                animate={{
+                    height: isToggled ? "auto" : 0,
+                    transform: isToggled ? "scale(1)" : "scale(0.98)",
+                    filter: isToggled ? "blur(0px)" : "blur(4px)",
+                    marginTop: isToggled ? 16 : 0,
+                    opacity: isToggled ? 1 : 0,
+                }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                style={{ overflow: "hidden" }}
+            >
+                {children}
+            </motion.div>
         </div>
     )
 };
