@@ -50,7 +50,8 @@ export const CommandMenu = ({
                   : "text-gray-700 hover:bg-gray-300/50 active:bg-gray-400/75",
                 item.highlighted
                   ? item.highlightColor
-                  : ""
+                  : "",
+                item.fgColor,
               )}
             >
               {item.icon && <item.icon size={18} />}
