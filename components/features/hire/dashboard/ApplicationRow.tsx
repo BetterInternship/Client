@@ -98,7 +98,7 @@ export function ApplicationRow({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1 pb-2"
+            className="flex items-center gap-2 pb-2"
           >
             <FormCheckbox
               checked={checkboxSelected}
