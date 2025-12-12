@@ -139,6 +139,8 @@ export const ApplicationsContent = forwardRef<
           icon: uiProps?.icon,
           onClick: () => updateSingleStatus(applicationId, status.id),
           destructive: uiProps?.destructive,
+          bgColor: uiProps?.bgColor,
+          fgColor: uiProps?.fgColor,
         };
       });
   };
