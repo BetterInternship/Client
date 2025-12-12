@@ -250,17 +250,17 @@ export function ApplicantPage({
 
     return(
         <>
-        <motion.div
-            initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-            animate={exitingBack ? { scale: 0.98, filter: "blur(4px)", opacity: 0 } : { scale: 1, filter: "blur(0px)", opacity: 1 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-        >
-            <button
-                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors my-4 pl-4"
-                onClick={handleBack}
+            <motion.div
+                initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+                animate={exitingBack ? { scale: 0.98, filter: "blur(4px)", opacity: 0 } : { scale: 1, filter: "blur(0px)", opacity: 1 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
             >
-                <ArrowLeft className="s-8" />
-            </button>
+                <button
+                    className="flex items-center text-gray-600 hover:text-gray-900 transition-colors my-4 pl-4"
+                    onClick={handleBack}
+                >
+                    <ArrowLeft className="s-8" />
+                </button>
                 <div className="lg:flex w-full justify-center">
                     <div className={cn("bg-white rounded-[0.33em] border border-gray-200", isMobile ? "p-4" : "w-[50%] p-6")}>
                         {/* "header" ish portion */}

@@ -25,7 +25,7 @@ import { PDFPreview } from "@/components/shared/pdf-preview";
 import { Message } from "@/components/ui/messages";
 import { Textarea } from "@/components/ui/textarea";
 import { getFullName } from "@/lib/profile";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { FileText, MessageCirclePlus, SendHorizonal, SquareArrowOutUpRight } from "lucide-react";
 import { useListingsBusinessLogic } from "@/hooks/hire/listings/use-listings-business-logic";
 import { useAppContext } from "@/lib/ctx-app";
@@ -75,7 +75,7 @@ export default function JobTabs({
     0, 1, 2, 3, 4, 5, 6,
   ]);
   const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
-  const [applicantToArchive, setApplicantToDelete] = useState<EmployerApplication | null>(null);
+  const [applicantToArchive, setApplicantToArchive] = useState<EmployerApplication | null>(null);
   const [statusChangeData, setStatusChangeData] = useState<{ applicants: EmployerApplication[]; status: number; } | null>(null);
 
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
@@ -288,21 +288,21 @@ export default function JobTabs({
     applications.review(application.id ?? "", { status });
   };
 
-  const handleRequestApplicantDelete = (application: EmployerApplication) => {
-    setApplicantToDelete(application);
+  const handleRequestApplicantArchive = (application: EmployerApplication) => {
+    setApplicantToArchive(application);
     openApplicantArchiveModal();
   };
 
   const handleConfirmApplicantArchive = async () => {
     if (!applicantToArchive?.id) return;
     await applications.review(applicantToArchive.id, { status: 7 });
-    setApplicantToDelete(null);
+    setApplicantToArchive(null);
     closeApplicantArchiveModal();
     applicationContentRef.current?.unselectAll();
   };
 
   const handleCancelApplicantArchive = () => {
-    setApplicantToDelete(null);
+    setApplicantToArchive(null);
     closeApplicantArchiveModal();
   };
 
@@ -555,7 +555,7 @@ export default function JobTabs({
                   onScheduleClick={handleScheduleClick}
                   onStatusChange={handleStatusChange}
                   setSelectedApplication={setSelectedApplication}
-                  onRequestDeleteApplicant={handleRequestApplicantDelete}
+                  onRequestDeleteApplicant={handleRequestApplicantArchive}
                   onRequestStatusChange={handleRequestStatusChange}
                   applicantToDelete={applicantToArchive}
                   statusChangeInProgress={!!statusChangeData}
@@ -626,137 +626,138 @@ export default function JobTabs({
           )}
         </ResumeModal>
 
-      <ChatModal>
-        <div className="relative p-6 pb-20 h-full w-full">
-            <div className="flex flex-col h-[100%] w-full">
-              <div className="justify-between sticky top-0 z-10 py-2 border-b bg-white/90 backdrop-blur">
-                <div className="flex items-center justify-between gap-2 font-medium text-lg">
-                  {getFullName(selectedApplication?.user)}
-                </div>
-                  <div className="text-gray-500 text-sm max-w-[40vh] mb-2 flex truncate">
-                    <p className="text-sm text-primary"> Applied for: </p>
-                    {applications?.employer_applications.filter(a => a.user_id === selectedApplication?.user_id).map((a) => 
-                      <p className="text-sm ml-1">
-                        {a.job?.title}
-                        {a !== applications?.employer_applications.filter(a => a.user_id === selectedApplication?.user_id).at(-1) &&
-                          <>, </>
-                        }
-                      </p>
-                      )
-                    }
+        <ChatModal>
+          <div className="relative p-6 pb-20 h-full w-full">
+              <div className="flex flex-col h-[100%] w-full">
+                <div className="justify-between sticky top-0 z-10 py-2 border-b bg-white/90 backdrop-blur">
+                  <div className="flex items-center justify-between gap-2 font-medium text-lg">
+                    {getFullName(selectedApplication?.user)}
                   </div>
-                  <button
-                  className="flex items-center bg-primary text-white text-sm p-2 rounded-[0.33em] gap-2 hover:opacity-70"
-                  onClick={onChatClick}
-                  >
-                    <SquareArrowOutUpRight className="h-5 w-5"/>
-                    Go to Chat Page
-                  </button>
-              </div>     
-              <div className="overflow-y-hidden flex-1 max-h-[75%] mb-6 pb-2 px-2 border-r border-l border-b">
-                <div className="flex flex-col-reverse max-h-full min-h-full overflow-y-scroll p-0 gap-1">
-                  <div ref={chatAnchorRef} />
-                  {(conversation?.loading ?? true) ? (
-                    <div className="w-full h-full mb-[50%] flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-                        <p className="text-gray-600">Loading Conversation...</p>
-                      </div>
+                    <div className="text-gray-500 text-sm max-w-[40vh] mb-2 flex truncate">
+                      <p className="text-sm text-primary"> Applied for: </p>
+                      {applications?.employer_applications.filter(a => a.user_id === selectedApplication?.user_id).map((a) => 
+                        <p className="text-sm ml-1">
+                          {a.job?.title}
+                          {a !== applications?.employer_applications.filter(a => a.user_id === selectedApplication?.user_id).at(-1) &&
+                            <>, </>
+                          }
+                        </p>
+                        )
+                      }
                     </div>
-                    ) : (
-                    conversation?.messages?.length ? (
-                      conversation.messages
-                        ?.map((message: any, idx: number) => {
-                          if (!idx) lastSelf = false;
-                          const oldLastSelf = lastSelf;
-                          lastSelf = message.sender_id === profile.data?.id;
-                          return {
-                            key: idx,
-                            message: message.message,
-                            self: message.sender_id === profile.data?.id,
-                            prevSelf: oldLastSelf,
-                            them: getFullName(selectedApplication?.user),
-                          };
-                        })
-                        ?.toReversed()
-                        ?.map((d: any) => (
-                          <Message
-                            key={d.key}
-                            message={d.message}
-                            self={d.self}
-                            prevSelf={d.prevSelf}
-                            them={d.them}
-                          />
-                        ))
-                    ) : (
-                      <div className="flex-1 flex flex-col items-center justify-center">
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <Card className="flex flex-col items-center justify-center p-4 px-6 border-transparent">
-                            <MessageCirclePlus className="w-8 h-8 my-2 opacity-50" />
-                            <div className="text-base font-bold">
-                              No Messages Yet
-                            </div>
-                            <p className="text-gray-500 text-sm">Start a conversation to see your messages.</p>
-                          </Card>
-                        </motion.div>
-                      </div>
-                    ))}
-                  </div>
+                    <button
+                    className="flex items-center bg-primary text-white text-sm p-2 rounded-[0.33em] gap-2 hover:opacity-70"
+                    onClick={onChatClick}
+                    >
+                      <SquareArrowOutUpRight className="h-5 w-5"/>
+                      Go to Chat Page
+                    </button>
                 </div>
-                <div 
-                className="flex gap-2"
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    if (!selectedApplication?.user_id || !messageInputRef.current?.value?.trim() || sending) return;
-                    
-                    const message = messageInputRef.current.value;
-                    messageInputRef.current.value = "";
-                    handleMessage(selectedApplication.user_id, message);
-                  }}
-                >
-                  <Textarea
-                    ref={messageInputRef}
-                    placeholder="Send a message here..."
-                    className="w-full h-10 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
+                <div className="overflow-y-hidden flex-1 max-h-[75%] mb-6 pb-2 px-2 border-r border-l border-b">
+                  <div className="flex flex-col-reverse max-h-full min-h-full overflow-y-scroll p-0 gap-1">
+                    <div ref={chatAnchorRef} />
+                    {(conversation?.loading ?? true) ? (
+                      <div className="w-full h-full mb-[50%] flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                          <p className="text-gray-600">Loading Conversation...</p>
+                        </div>
+                      </div>
+                      ) : (
+                      conversation?.messages?.length ? (
+                        conversation.messages
+                          ?.map((message: any, idx: number) => {
+                            if (!idx) lastSelf = false;
+                            const oldLastSelf = lastSelf;
+                            lastSelf = message.sender_id === profile.data?.id;
+                            return {
+                              key: idx,
+                              message: message.message,
+                              self: message.sender_id === profile.data?.id,
+                              prevSelf: oldLastSelf,
+                              them: getFullName(selectedApplication?.user),
+                            };
+                          })
+                          ?.toReversed()
+                          ?.map((d: any) => (
+                            <Message
+                              key={d.key}
+                              message={d.message}
+                              self={d.self}
+                              prevSelf={d.prevSelf}
+                              them={d.them}
+                            />
+                          ))
+                      ) : (
+                        <div className="flex-1 flex flex-col items-center justify-center">
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <Card className="flex flex-col items-center justify-center p-4 px-6 border-transparent">
+                              <MessageCirclePlus className="w-8 h-8 my-2 opacity-50" />
+                              <div className="text-base font-bold">
+                                No Messages Yet
+                              </div>
+                              <p className="text-gray-500 text-sm">Start a conversation to see your messages.</p>
+                            </Card>
+                          </motion.div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div 
+                  className="flex gap-2"
+                  onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!selectedApplication?.user_id || !messageInputRef.current?.value?.trim() || sending) return;
+                      
+                      const message = messageInputRef.current.value;
+                      messageInputRef.current.value = "";
+                      handleMessage(selectedApplication.user_id, message);
+                    }}
+                  >
+                    <Textarea
+                      ref={messageInputRef}
+                      placeholder="Send a message here..."
+                      className="w-full h-10 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          if (!selectedApplication?.user_id) return;
+                          if (messageInputRef.current?.value) {
+                            handleMessage(
+                              selectedApplication.user_id,
+                              messageInputRef.current.value,
+                            );
+                          }
+                        }
+                      }}
+                      maxLength={1000}
+                    />
+                    <button 
+                      disabled={sending}
+                      onClick={() => {
                         if (!selectedApplication?.user_id) return;
                         if (messageInputRef.current?.value) {
                           handleMessage(
-                            selectedApplication.user_id,
-                            messageInputRef.current.value,
+                            selectedApplication?.user_id,
+                            messageInputRef.current?.value,
                           );
                         }
-                      }
-                    }}
-                    maxLength={1000}
-                  />
-                  <button 
-                    disabled={sending}
-                    onClick={() => {
-                      if (!selectedApplication?.user_id) return;
-                      if (messageInputRef.current?.value) {
-                        handleMessage(
-                          selectedApplication?.user_id,
-                          messageInputRef.current?.value,
-                        );
-                      }
-                    }}
-                    className={cn("text-primary px-2",
-                      (sending) ? "opacity-50" : "hover:opacity-70"
-                    )}
-                  >
-                      <SendHorizonal className="w-7 h-7" />
-                </button>
+                      }}
+                      className={cn("text-primary px-2",
+                        (sending) ? "opacity-50" : "hover:opacity-70"
+                      )}
+                    >
+                        <SendHorizonal className="w-7 h-7" />
+                  </button>
+                  </div>
                 </div>
-              </div>
-          </div>
-      </ChatModal>
+            </div>
+        </ChatModal>
+
 
         <NewChatModal>
           <div className="p-8">
