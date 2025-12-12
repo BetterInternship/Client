@@ -323,14 +323,6 @@ export function ConversationPage({
                                 onChange={setMessage}
                                 onSend={async () => {
                                     handleMessage(conversation.senderId, message)
-                                    // if(!conversation.messages?.length) {
-                                    //     const tempId = conversationId
-                                    //     setConversationId("")
-                                    //     setTimeout(() => {
-                                    //     setConversationId(tempId);
-                                    //     endSend();
-                                    // }, 10);
-                                    // }
                                 }}
                             />
                             </>
@@ -489,7 +481,7 @@ export function ConversationPage({
                 }
             </div>
             <div className="mt-10">
-                <div className={cn("items-center gap-2", isMobile ? "" : "flex")}>
+                <div className={cn("flex flex-col items-center gap-2")}>
                     <button 
                     className={cn("flex items-center justify-center w-full bg-primary text-sm text-white gap-2 p-2 rounded-sm", isMobile ? "mb-2" : "")}
                     onClick={openResumeModal}
@@ -739,62 +731,71 @@ export function ConversationPage({
     const ConversationPane = ({
     conversation,
     chatAnchorRef,
-    latestMessage,
     }: {
     // keep "any" per your note; consider adding a strong type later
     conversation: Conversation;
     chatAnchorRef: Ref<HTMLDivElement>;
-    latestMessage?: string;
     }) => {
     const profile = useProfile();
     const { userName } = useUserName(conversation.senderId);
     let lastSelf = false;
 
     return (
-        <motion.div
-            initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-            animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
-            exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="flex-1 min-h-0 flex flex-col-reverse gap-1 p-2 overflow-y-auto"
-        >
-            <div ref={chatAnchorRef} />
-            {conversation?.messages?.length ? (
-                <>
-                    {conversation.messages
-                    ?.map((message: any, idx: number) => {
-                    if (!idx) lastSelf = false;
-                    const oldLastSelf = lastSelf;
-                    lastSelf = message.sender_id === profile.data?.id;
-                    return {
-                        key: idx,
-                        message: message.message,
-                        self: message.sender_id === profile.data?.id,
-                        prevSelf: oldLastSelf,
-                        them: userName,
-                    };
-                    })
-                    ?.toReversed()
-                    ?.map((d: any) => (
-                        <Message
-                        key={d.key}
-                        message={d.message}
-                        self={d.self}
-                        prevSelf={d.prevSelf}
-                        them={d.them}
-                        />
-                    ))}
-                </>
-            ) : (
-            <div className="flex items-center justify-center h-full gap-4">
-                <MessageCircle className="h-14 w-14 opacity-50"/>
-                <div className="flex flex-col text-start">
-                    <p className="font-bold text-lg mb-0">No Messages Yet</p>
-                    <p className="text-sm text-gray-500">Start the conversation!</p>
+        <>
+            {conversation?.loading ? (
+                <div className="w-full h-full mb-[50%] flex items-center justify-center">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading Conversation...</p>
+                    </div>
                 </div>
-            </div>
-        )}
-        </motion.div>
+            ) : (
+                <motion.div
+                initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+                animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
+                exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="flex-1 min-h-0 flex flex-col-reverse gap-1 p-2 overflow-y-auto"
+            >
+                <div ref={chatAnchorRef} />
+                {conversation?.messages?.length ? (
+                    <>
+                        {conversation.messages
+                        ?.map((message: any, idx: number) => {
+                        if (!idx) lastSelf = false;
+                        const oldLastSelf = lastSelf;
+                        lastSelf = message.sender_id === profile.data?.id;
+                        return {
+                            key: idx,
+                            message: message.message,
+                            self: message.sender_id === profile.data?.id,
+                            prevSelf: oldLastSelf,
+                            them: userName,
+                        };
+                        })
+                        ?.toReversed()
+                        ?.map((d: any) => (
+                            <Message
+                            key={d.key}
+                            message={d.message}
+                            self={d.self}
+                            prevSelf={d.prevSelf}
+                            them={d.them}
+                            />
+                        ))}
+                    </>
+                ) : (
+                <div className="flex items-center justify-center h-full gap-4">
+                    <MessageCircle className="h-14 w-14 opacity-50"/>
+                    <div className="flex flex-col text-start">
+                        <p className="font-bold text-lg mb-0">No Messages Yet</p>
+                        <p className="text-sm text-gray-500">Start the conversation!</p>
+                    </div>
+                </div>
+            )}
+            </motion.div>
+            )}
+        </>
     );
     };
 
