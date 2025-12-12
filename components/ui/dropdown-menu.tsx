@@ -93,16 +93,16 @@ export const DropdownMenu = ({
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
               style={{ position: "fixed", top: pos.top, left: pos.left, width: pos.width }}
-              className="bg-white shadow-lg z-[9999] min-w-max rounded-[0.33em] border-gray-300 border-2"
+              className="bg-white shadow-lg z-[9999] min-w-max rounded-[0.33em] border-gray-300 border-2 overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {items.map((item, idx) => {
                 return (
                   <div 
                     key={idx}
-                    className="
-                      flex gap-2 p-2 text-sm hover:bg-primary/10 transition cursor-pointer
-                    "
+                    className={cn(
+                      "flex gap-2 p-2 text-sm hover:bg-primary/10 transition cursor-pointer overflow-hidden",
+                    )}
                     onClick={(e) => {
                       e.stopPropagation();
                       setActiveItem(item);
@@ -110,10 +110,9 @@ export const DropdownMenu = ({
                       item.onClick?.();
                     }}
                   >
-                    {item.icon && <item.icon size={18} />}
-                    <span>
-                      {item.label}
-                    </span>
+                    <StatusBadge
+                      statusId={parseInt(item.id)}
+                    />
                   </div>
                 )
               })}

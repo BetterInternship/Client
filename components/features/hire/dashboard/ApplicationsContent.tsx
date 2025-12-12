@@ -120,6 +120,9 @@ export const ApplicationsContent = forwardRef<
           onRequestStatusChange(applicationsToUpdate, status.id);
         },
         destructive: uiProps?.destructive,
+        highlightColor: uiProps?.fgColor,
+        bgColor: uiProps?.bgColor,
+        fgColor: uiProps?.fgColor,
       };
     }
   ).filter(Boolean);
@@ -136,6 +139,8 @@ export const ApplicationsContent = forwardRef<
           icon: uiProps?.icon,
           onClick: () => updateSingleStatus(applicationId, status.id),
           destructive: uiProps?.destructive,
+          bgColor: uiProps?.bgColor,
+          fgColor: uiProps?.fgColor,
         };
       });
   };
@@ -228,7 +233,7 @@ export const ApplicationsContent = forwardRef<
         visibleApplicationsCount={visibleApplications.length}
         statuses={remove_unused_statuses}
         onUnselectAll={unselectAll}
-        onToggleSelectAll={toggleSelectAll}
+        onSelectAll={selectAll}
         onDelete={() => {
           const appToDelete = Array.from(selectedApplications)
             .map((id) => sortedApplications.find((app) => app.id === id))
@@ -293,7 +298,7 @@ export const ApplicationsContent = forwardRef<
         visibleApplicationsCount={visibleApplications.length}
         statuses={remove_unused_statuses}
         onUnselectAll={unselectAll}
-        onToggleSelectAll={toggleSelectAll}
+        onSelectAll={selectAll}
         onDelete={() => {
           const appToDelete = Array.from(selectedApplications)
             .map((id) => sortedApplications.find((app) => app.id === id))

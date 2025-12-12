@@ -12,7 +12,7 @@ interface ApplicationsCommandBarProps {
   visibleApplicationsCount: number,
   statuses: ActionItem[],
   onUnselectAll: () => void,
-  onToggleSelectAll: () => void,
+  onSelectAll: () => void,
   onDelete: () => void,
   onStatusChange: () => void,
 }
@@ -25,7 +25,7 @@ export function ApplicationsCommandBar({
   visibleApplicationsCount,
   statuses,
   onUnselectAll,
-  onToggleSelectAll,
+  onSelectAll,
   onDelete,
   onStatusChange,
 } : ApplicationsCommandBarProps) {
@@ -70,9 +70,9 @@ export function ApplicationsCommandBar({
                 [
                   {
                     id: "select_all",
-                    label: allVisibleSelected ? "Unselect all" : "Select all" ,
+                    label: "Select all",
                     icon: CheckSquare,
-                    onClick: onToggleSelectAll,
+                    onClick: onSelectAll,
                   },
                 ],
               ]}
@@ -107,9 +107,9 @@ export function ApplicationsCommandBar({
               [
                 {
                   id: "select_all",
-                  label: allVisibleSelected ? "Unselect all" : "Select all" ,
+                  label: "Select all",
                   icon: CheckSquare,
-                  onClick: onToggleSelectAll,
+                  onClick: onSelectAll,
                 },
               ],
             ]}

@@ -26,6 +26,7 @@ import { ArrowLeft,
         MessageSquarePlus,
         MessageCirclePlus,
         SendHorizonal,
+        Archive,
      } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, useRef  } from "react";
@@ -49,6 +50,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { useAuthContext } from "@/app/hire/authctx";
+import { ActionButton } from "@/components/ui/action-button";
 
 interface ApplicantPageProps {
     application: EmployerApplication | undefined;
@@ -131,58 +133,58 @@ export function ApplicantPage({
         highlightColor: statusMap.get(application?.status!)?.bgColor,
       };
 
-      const { url: resumeURL, sync: syncResumeURL, loading: resumeLoading } = useFile({
-          fetcher: useCallback(
-            async () =>
-              await UserService.getUserResumeURL(application?.user_id ?? ""),
-            [user?.id],
-          ),
-          route: application
-            ? `/users/${user?.id}/resume`
-            : "",
+    const { url: resumeURL, sync: syncResumeURL, loading: resumeLoading } = useFile({
+        fetcher: useCallback(
+        async () =>
+            await UserService.getUserResumeURL(application?.user_id ?? ""),
+        [user?.id],
+        ),
+        route: application
+        ? `/users/${user?.id}/resume`
+        : "",
+    });
+
+    const handleBack = () => {
+        setExitingBack(true);
+        if (window.history.length > 1) {
+            router.back();
+        } else {
+            router.push('/dashboard');
+        }
+    }
+
+    const {
+        open: openNewChatModal,
+        close: closeNewChatModal,
+        Modal: NewChatModal,
+        } = useModal("new-chat-modal", {
+        onClose: () => (conversation.unsubscribe(), setConversationId("")),
+        showCloseButton: false,
+        });
+    
+        const {
+        open: openOldChatModal,
+        close: closeOldChatModal,
+        Modal: OldChatModal,
+        } = useModal("old-chat-modal", {
+        onClose: () => (conversation.unsubscribe(), setConversationId("")),
+        showCloseButton: false,
+        });
+        
+    
+        const {
+        open: openChatModal,
+        close: closeChatModal,
+        SideModal: ChatModal,
+        } = useSideModal("chat-modal", {
+        onClose: () => (conversation.unsubscribe(), setConversationId(""))
         });
 
-        const handleBack = () => {
-            setExitingBack(true);
-            if (window.history.length > 1) {
-                router.back();
-            } else {
-                router.push('/dashboard');
-            }
+    useEffect(() => {
+        if (application?.user_id) {
+            syncResumeURL();
         }
-
-        const {
-            open: openNewChatModal,
-            close: closeNewChatModal,
-            Modal: NewChatModal,
-          } = useModal("new-chat-modal", {
-            onClose: () => (conversation.unsubscribe(), setConversationId("")),
-            showCloseButton: false,
-          });
-        
-          const {
-            open: openOldChatModal,
-            close: closeOldChatModal,
-            Modal: OldChatModal,
-          } = useModal("old-chat-modal", {
-            onClose: () => (conversation.unsubscribe(), setConversationId("")),
-            showCloseButton: false,
-          });
-          
-        
-          const {
-            open: openChatModal,
-            close: closeChatModal,
-            SideModal: ChatModal,
-          } = useSideModal("chat-modal", {
-            onClose: () => (conversation.unsubscribe(), setConversationId(""))
-          });
-
-        useEffect(() => {
-            if (application?.user_id) {
-              syncResumeURL();
-            }
-          }, [application?.user_id, syncResumeURL]);
+        }, [application?.user_id, syncResumeURL]);
     
     const onChatClick = async () => {
     if (!application?.user_id) return;
@@ -235,6 +237,10 @@ export function ApplicantPage({
         });
     };
 
+    const handleSetStatus = (statusId: string | number) => {
+        const action = statuses?.find((s) => s.id?.toString() === statusId.toString());
+        action?.onClick?.();
+    }
     
     if (loading || resumeLoading) {
         return <Loader>Getting applicant information...</Loader>;
@@ -379,19 +385,27 @@ export function ApplicantPage({
                         </div>
 
                         {/* actions */}
-                            <div className={cn("flex items-center gap-2 my-4", isMobile ? "justify-start" : "justify-start")}>
+                        <div className="flex items-center justify-between gap-2 my-4">
+                            <div className="flex items-center gap-2">
                                 <button
                                     className="flex items-center gap-2 text-sm text-gray-600 rounded-[0.33em] p-1.5 px-2 border border-gray-300 hover:text-gray-700 hover:bg-gray-100"
                                     onClick={openChatModal}
                                     >
-                                        <MessageCircle className="h-5 w-5"/> Chat
-                                    </button>
-                                    <DropdownMenu
-                                        items={statuses}
-                                        defaultItem={defaultStatus}
-                                    />
-                                </div>
-                        
+                                    <MessageCircle className="h-5 w-5"/> Chat
+                                </button>
+                                <DropdownMenu
+                                    items={statuses}
+                                    defaultItem={defaultStatus}
+                                />
+                            </div>
+                            <div className="flex items-center gap-2">
+                            <ActionButton
+                                icon={Archive}
+                                onClick={() => handleSetStatus(7)}
+                                enabled={application!.status !== 7}
+                            />
+                            </div>
+                        </div>
 
                         {isMobile ? (
                             <>

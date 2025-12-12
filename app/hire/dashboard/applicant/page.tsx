@@ -60,7 +60,7 @@ function ApplicantPageContent () {
 
     const getStatuses = (applicationId: string) => {
       return unique_app_statuses
-        .filter((status) => status.id !== 7 && status.id !== 0)
+        .filter((status) => status.id !== 7 && status.id !== 5 && status.id !== 0)
         .map((status): ActionItem => {
           const uiProps = statusMap.get(status.id);
           return {
@@ -77,10 +77,10 @@ function ApplicantPageContent () {
         <ContentLayout>
             <div className="w-full h-full">
                 <ApplicantPage 
-                application={userApplication}
-                jobID={jobId || ""}
-                statuses={getStatuses(userApplication?.id || "")}
-                userApplications={otherApplications}
+                    application={userApplication}
+                    jobID={jobId || ""}
+                    statuses={getStatuses(userApplication?.id || "")}
+                    userApplications={otherApplications}
                 />
             </div>
         </ContentLayout>
