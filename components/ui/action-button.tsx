@@ -41,8 +41,7 @@ export const ActionButton = ({
           <div className="absolute top-2 right-2 h-2 w-2 z-10 bg-primary rounded-full outline
             odd:outline-white
             even:outline-gray-50
-            group-enabled:group-data-[destructive=true]:group-hover:outline-red-600
-            group-enabled:group-data-[destructive=false]:group-hover:outline-primary/25
+            group-hover:outline-0
           ">
           </div>
         }

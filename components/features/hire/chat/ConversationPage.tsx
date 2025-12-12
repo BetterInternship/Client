@@ -52,6 +52,18 @@ interface InternshipPreferences {
   job_commitment_ids?: string[],
   job_setup_ids?: string[],
 }
+interface Message {
+  sender_id: string;
+  message: string;
+  timestamp: string;
+}
+
+interface Conversation {
+    messages: Message[];
+    senderId: string;
+    loading: boolean;
+    unsubscribe: Function;
+}
 
 export function ConversationPage({
     applicantId,
@@ -306,10 +318,20 @@ export function ConversationPage({
                                 chatAnchorRef={chatAnchorRef}
                             />
                             <ComposerBar
-                                disabled={sending}
+                                disabled={sending || conversation.loading}
                                 value={message}
                                 onChange={setMessage}
-                                onSend={async () => handleMessage(conversation.senderId, message)}
+                                onSend={async () => {
+                                    handleMessage(conversation.senderId, message)
+                                    // if(!conversation.messages?.length) {
+                                    //     const tempId = conversationId
+                                    //     setConversationId("")
+                                    //     setTimeout(() => {
+                                    //     setConversationId(tempId);
+                                    //     endSend();
+                                    // }, 10);
+                                    // }
+                                }}
                             />
                             </>
                         ) : (
@@ -716,11 +738,13 @@ export function ConversationPage({
 
     const ConversationPane = ({
     conversation,
-    chatAnchorRef
+    chatAnchorRef,
+    latestMessage,
     }: {
     // keep "any" per your note; consider adding a strong type later
-    conversation: any;
+    conversation: Conversation;
     chatAnchorRef: Ref<HTMLDivElement>;
+    latestMessage?: string;
     }) => {
     const profile = useProfile();
     const { userName } = useUserName(conversation.senderId);
@@ -738,33 +762,31 @@ export function ConversationPage({
             {conversation?.messages?.length ? (
                 <>
                     {conversation.messages
-                ?.map((message: any, idx: number) => {
-                if (!idx) lastSelf = false;
-                const oldLastSelf = lastSelf;
-                lastSelf = message.sender_id === profile.data?.id;
-                return {
-                    key: idx,
-                    message: message.message,
-                    self: message.sender_id === profile.data?.id,
-                    prevSelf: oldLastSelf,
-                    them: userName,
-                };
-                })
-                ?.toReversed()
-                ?.map((d: any) => (
-                    <Message
-                    key={d.key}
-                    message={d.message}
-                    self={d.self}
-                    prevSelf={d.prevSelf}
-                    them={d.them}
-                    />
-                ))}
+                    ?.map((message: any, idx: number) => {
+                    if (!idx) lastSelf = false;
+                    const oldLastSelf = lastSelf;
+                    lastSelf = message.sender_id === profile.data?.id;
+                    return {
+                        key: idx,
+                        message: message.message,
+                        self: message.sender_id === profile.data?.id,
+                        prevSelf: oldLastSelf,
+                        them: userName,
+                    };
+                    })
+                    ?.toReversed()
+                    ?.map((d: any) => (
+                        <Message
+                        key={d.key}
+                        message={d.message}
+                        self={d.self}
+                        prevSelf={d.prevSelf}
+                        them={d.them}
+                        />
+                    ))}
                 </>
             ) : (
             <div className="flex items-center justify-center h-full gap-4">
-                {/* keeping this here as a memory, jk feel free to delete
-                <h1>start chattong with user</h1> */}
                 <MessageCircle className="h-14 w-14 opacity-50"/>
                 <div className="flex flex-col text-start">
                     <p className="font-bold text-lg mb-0">No Messages Yet</p>
