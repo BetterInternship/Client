@@ -66,18 +66,6 @@ export function ConversationPage({
 
     // selection + message composing state
     const [conversationId, setConversationId] = useState("");
-
-    useEffect(() => {
-        if (applicantId && conversations.data) {
-            const findChat = conversations.data.find((convo) => 
-                convo.subscribers?.includes(applicantId)
-            );
-            if (findChat?.id) {
-                setConversationId(findChat.id);
-            }
-        }
-    }, [applicantId, conversations.data]);
-
     const conversation = useConversation("employer", conversationId);
     const [message, setMessage] = useState("");
     const [sending, setSending] = useState(false);
@@ -100,15 +88,6 @@ export function ConversationPage({
 
     //redirectIfNotLoggedIn();
 
-    // if employer is redirected to the chat page with a non existent conversation, make a new one
-    const createNewConversation = async (userId: string) => {
-        const response = await EmployerConversationService.createConversation(userId);
-        
-        if (response?.success && response.conversation?.id) {
-            setConversationId(response.conversation.id);
-        }
-    };
-
     // auto-switch to chat view on mobile when a conversation is selected
     useEffect(() => {
         if (isMobile && conversationId) setMobileView("chat");
@@ -116,7 +95,9 @@ export function ConversationPage({
 
     // unsubscribe on conversation change (keeps your original behavior)
     useEffect(() => {
-        conversation.unsubscribe();
+        if (conversationId) {
+            conversation.unsubscribe();
+        }
     }, [conversationId]);
 
     useEffect(() => {
@@ -133,23 +114,13 @@ export function ConversationPage({
             
             if (findChat?.id) {
                 setConversationId(findChat.id);
+                router.replace('/conversations', { scroll: false });
             } else {
-                createNewConversation(applicantId);
+                console.log("L bozo no new chat page zzz")
             }
         }
     }, [applicantId, conversations.data]);
 
-    useEffect(() => {
-        if (applicantId && conversations.data) {
-            const findChat = conversations.data.find((convo) => 
-                convo.subscribers?.includes(applicantId)
-            );
-            if (findChat?.id) {
-                setConversationId(findChat.id);
-                router.replace('/conversations', { scroll: false });
-            }
-        }
-    }, [applicantId, conversations.data]);
 
     const sortedConvos = useMemo(
         () =>
@@ -159,7 +130,7 @@ export function ConversationPage({
         ))) 
         ?? []).toSorted(
             (a, b) =>
-            (b.last_unread?.timestamp ?? 0) - (a.last_unread?.timestamp ?? 0),
+            (b.last_unread?.timestamp ?? 0) - (a.last_unread?.timestamp ?? 0)
         ),
         [conversations.data],
     );
@@ -196,23 +167,6 @@ export function ConversationPage({
         let userConversation = conversations.data?.find((c) =>
         c?.subscribers?.includes(studentId),
         );
-
-        if (!userConversation && studentId) {
-        const response =
-            await EmployerConversationService.createConversation(studentId).catch(
-            endSend,
-            );
-
-        if (!response?.success) {
-            alert("Could not initiate conversation with user.");
-            endSend();
-            return;
-        }
-
-        setConversationId(response.conversation?.id ?? "");
-        userConversation = response.conversation;
-        endSend();
-        }
 
         setTimeout(async () => {
         if (!userConversation) return endSend();
@@ -355,7 +309,7 @@ export function ConversationPage({
                                 disabled={sending}
                                 value={message}
                                 onChange={setMessage}
-                                onSend={() => handleMessage(conversation.senderId, message)}
+                                onSend={async () => handleMessage(conversation.senderId, message)}
                             />
                             </>
                         ) : (
@@ -689,11 +643,6 @@ export function ConversationPage({
         )}
         >
         <div className="flex gap-2">
-            {/* <div className="flex justify-start">
-            <Button className="rounded-full">
-                <Plus  className="h-10 w-10"/>
-            </Button>
-            </div> */}
             <Textarea
             placeholder="Send a message here..."
             className="w-full h-10 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
@@ -708,16 +657,12 @@ export function ConversationPage({
             maxLength={1000}
             />
             <div className="flex justify-end">
-            {/* <Button
-                size="md"
-                disabled={disabled || !value.trim()}
-                onClick={onSend}
-            >
-                <SendHorizonal className="w-20 h-20" />
-            </Button> */}
             <button 
                 disabled={disabled || !value.trim()}
-                onClick={onSend}
+                onClick={(e) => {
+                    e.preventDefault();
+                    onSend();
+                }}
                 className={cn("text-primary px-2",
                 (disabled || !value.trim()) ? "opacity-50" : ""
                 )}
@@ -896,7 +841,7 @@ export function ConversationPage({
                 <span className={cn("text-xs text-gray-600 line-clamp-1",
                 isUnread ? "font-bold text-black" : ""
                 )}>
-                {conversation?.messages?.length !== 0 ? ((latestIsYou ? "You: " : surname + ": ") + (latestMessage ?? "")) :
+                {latestMessage ? ((latestIsYou ? "You: " : surname + ": ") + (latestMessage ?? "")) :
                 ("No message history")}
                 </span>
             </div>

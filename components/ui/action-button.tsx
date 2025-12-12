@@ -24,6 +24,7 @@ export const ActionButton = ({
         data-destructive={destructive}
         disabled={!enabled}
         className="
+          group
           relative
           flex justify-center items-center p-2 transition rounded-sm
           enabled:data-[destructive=true]:hover:text-red-600
@@ -40,6 +41,8 @@ export const ActionButton = ({
           <div className="absolute top-2 right-2 h-2 w-2 z-10 bg-primary rounded-full outline
             odd:outline-white
             even:outline-gray-50
+            group-enabled:group-data-[destructive=true]:group-hover:outline-red-600
+            group-enabled:group-data-[destructive=false]:group-hover:outline-primary/25
           ">
           </div>
         }

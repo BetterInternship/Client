@@ -772,7 +772,11 @@ export default function JobTabs({
                   Cancel
                 </Button>
                 <Button 
-                onClick={() => router.push(`/conversations?userId=${selectedApplication?.user_id}`)}
+                onClick={async () => {
+                  if (!selectedApplication?.user_id) return;
+                  const response = await EmployerConversationService.createConversation(selectedApplication.user_id);
+                  if(response?.success && response.conversation?.id) router.push(`/conversations?userId=${selectedApplication?.user_id}`)
+                }}
                 >
                   Start chatting
                 </Button>

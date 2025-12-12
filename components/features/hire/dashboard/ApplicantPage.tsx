@@ -696,7 +696,11 @@ export function ApplicantPage({
                     Cancel
                 </Button>
                 <Button 
-                onClick={() => router.push(`/conversations?userId=${application?.user_id}`)}
+                onClick={ async () => {
+                    if (!application?.user_id) return;
+                    const response = await EmployerConversationService.createConversation(application.user_id);
+                    if(response?.success && response.conversation?.id) router.push(`/conversations?userId=${application?.user_id}`)
+                }}
                 >
                     Start chatting
                 </Button>
