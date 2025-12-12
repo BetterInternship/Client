@@ -131,9 +131,9 @@ export const ConversationsContextProvider = ({
   const [loading, setLoading] = useState(true);
 
   // Just so users get unread notifs after they leave page
-  useEffect(() => {
-    pb.collection("conversations").unsubscribe();
-  }, [pathname]);
+  // useEffect(() => {
+  //   pb.collection("conversations").unsubscribe();
+  // }, [pathname]);
 
   // Subscribe and init conversations
   useEffect(() => {

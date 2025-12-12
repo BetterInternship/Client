@@ -10,12 +10,14 @@ import { Loader } from "@/components/ui/loader";
 import { useEmployerApplications, useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { Plus } from "lucide-react";
+import { Bell, Plus } from "lucide-react";
 import Link from "next/link";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuthContext } from "../authctx";
 import { Job } from "@/lib/db/db.types";
 import { FadeIn } from "@/components/animata/fade";
+import { useModal } from "@/hooks/use-modal";
+import { getNotificationPermission, requestNotificationPermission, checkNotificationSupport, shouldShowNotification, sendNotification } from "@/lib/notification-service";
 
 function DashboardContent() {
   const { isMobile } = useMobile();
@@ -34,6 +36,28 @@ function DashboardContent() {
     const result = await update_job(jobId, updates);
     return result;
   }
+
+  const {
+    open: openNotifPermsModal,
+    close: closeNotifPermsModal,
+    Modal: NotifPermsModal,
+  } = useModal("notif-perms-modal");
+
+  useEffect(() => {
+    const requestPermission = async () => {
+      if (checkNotificationSupport()) {
+        const currentPermission = getNotificationPermission();
+  
+        if (currentPermission === 'default') {
+          openNotifPermsModal();
+          const permission = await requestNotificationPermission();
+          closeNotifPermsModal();
+        }
+      }
+    };
+
+    requestPermission();
+  }, []);
 
   useEffect(() => {
       if (ownedJobs) {
@@ -57,6 +81,14 @@ function DashboardContent() {
 
   return (
     <ContentLayout>
+      <NotifPermsModal>
+        <div className="p-8 pt-0 h-full">
+          <div className="text-lg mb-4">
+            <Bell size={48} />
+            <span>Please grant notification access so we can send you chat notifications.</span>
+          </div>
+        </div>
+      </NotifPermsModal>
       <div className={cn("flex-1 flex flex-col w-full py-4", isMobile ? "px-1" : "px-4")}>
         <h3 className="text-primary tracking-tighter">Welcome back, {profile.data?.name}</h3>
         <div className="flex flex-col flex-1">
