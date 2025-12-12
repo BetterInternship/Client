@@ -10,7 +10,7 @@ import { Calendar, Plus } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 //maybe add employers id to cross check
 interface JobsContentProps {
@@ -29,6 +29,7 @@ export function JobsContent({
     isLoading
 }: JobsContentProps) {
     const [exiting, setExiting] = useState(false);
+    const [showLoader, setShowLoader] = useState(false);
 
     const { isMobile } = useAppContext();
 
@@ -37,7 +38,19 @@ export function JobsContent({
        ((b.created_at ?? "") > (a.created_at ?? "")) ? 1 : -1
     );
 
-    if (isLoading || !jobs || !sortedJobs) {
+    useEffect(() => {
+        let t: ReturnType<typeof setTimeout> | undefined;
+
+        if (isLoading) {
+            t = setTimeout(() => setShowLoader(true), 200);
+        } else {
+            setShowLoader(false);
+        }
+
+        return () => t && clearTimeout(t);
+    }, [isLoading]);
+
+    if (showLoader || isLoading) {
         return (
         <div className="w-full flex items-center justify-center">
             <div className="text-center">
