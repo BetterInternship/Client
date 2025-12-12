@@ -10,7 +10,7 @@ import { Loader } from "@/components/ui/loader";
 import { useEmployerApplications, useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { Plus } from "lucide-react";
+import { Bell, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { useAuthContext } from "../authctx";
@@ -83,7 +83,12 @@ function DashboardContent() {
   return (
     <ContentLayout>
       <NotifPermsModal>
-        <span>Please grant notification access so we can show you notifications.</span>
+        <div className="p-8 pt-0 h-full">
+          <div className="text-lg mb-4">
+            <Bell size={48} />
+            <span>Please grant notification access so we can send you chat notifications.</span>
+          </div>
+        </div>
       </NotifPermsModal>
       <div className={cn("flex-1 flex flex-col w-full py-4", isMobile ? "px-1" : "px-4")}>
         <h3 className="text-primary tracking-tighter">Welcome back, {profile.data?.name}</h3>
