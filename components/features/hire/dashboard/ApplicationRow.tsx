@@ -204,19 +204,6 @@ export function ApplicationRow({
       </td>
       <td>
         <div className="flex items-center gap-2 pr-2 flex-row justify-end">
-          <Badge
-            type="warning"
-            className={cn(
-              conversations.unreads.some((unread) =>
-                unread.subscribers.includes(application.user_id),
-              )
-                ? "block"
-                : "hidden",
-            )}
-          >
-            New Unreads
-          </Badge>
-
           <ActionButton
             icon={MessageCircle}
             onClick={(e) => {
@@ -225,7 +212,10 @@ export function ApplicationRow({
               setSelectedApplication(application);
               updateConversationId(application.user_id ?? "");
             }}
-          />
+            notification={conversations.unreads.some((unread) =>
+                unread.subscribers.includes(application.user_id))}
+          >
+          </ActionButton>
           <ActionButton
             icon={Archive}
             onClick={(e) => {

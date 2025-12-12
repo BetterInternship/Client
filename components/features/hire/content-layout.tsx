@@ -78,6 +78,7 @@ function SideNav({ items }: { items: NavItem[] }) {
                 "w-full h-10 pl-4 flex flex-row justify-between border-0 hover:bg-primary/15 hover:text-primary",
                 isActive ? "text-primary bg-primary/10" : "font-normal",
                 label === "Add Listing" ? "bg-primary text-white hover:bg-primary hover:text-white" : "",
+                isActive && "[&_svg]:fill-primary [&_svg]:stroke-primary-foreground"
               )}
             >
               <div className="flex items-center w-full flex-row gap-2">
@@ -87,7 +88,7 @@ function SideNav({ items }: { items: NavItem[] }) {
                 </div>
               </div>
               <div className="lg:pl-24">
-                {(label === "Chats" && unreads.length > 0) && <div className="bg-primary rounded-full text-white text-[9px] px-2">{unreads.length}</div>}
+                {(label === "Chats" && unreads.length > 0) && <div className="bg-primary rounded-full text-white text-[11px] px-2 font-bold">{unreads.length}</div>}
               </div>
             </Button>
           </Link>
