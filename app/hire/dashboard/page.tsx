@@ -41,7 +41,7 @@ function DashboardContent() {
   
         const timer = setTimeout(() => {
         setLoading(false);
-      }, 400);
+      }, 200);
       
       return () => clearTimeout(timer);
     }
