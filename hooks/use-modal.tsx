@@ -190,12 +190,12 @@ export const useModal = (
                     size="sm"
                     onClick={() => {
                       console.debug(`[useModal:${name}] close button click`);
-                      setIsOpen(false);
+                      close();
                     }}
                     onTouchEnd={(e) => {
                       e.stopPropagation();
                       console.debug(`[useModal:${name}] close button touch`);
-                      setIsOpen(false);
+                      close();
                     }}
                     className={cn(
                       "h-8 w-8 p-0 hover:bg-gray-100 rounded-full transition-colors",
