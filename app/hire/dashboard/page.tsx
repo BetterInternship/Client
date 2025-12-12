@@ -29,7 +29,6 @@ function DashboardContent() {
   const inactiveJobs = ownedJobs.filter((job) => !job.is_active)
 
   const [isLoading, setLoading] = useState(true);
-  const hasRequestedNotifRef = useRef(false);
 
   redirectIfNotLoggedIn();
 

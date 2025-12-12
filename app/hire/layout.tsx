@@ -1,19 +1,19 @@
+
 import type { Metadata } from "next";
 import "../globals.css";
 import { AuthContextProvider } from "./authctx";
 import { RefsContextProvider } from "@/lib/db/use-refs";
 import { AppContextProvider } from "@/lib/ctx-app";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Footer } from "@/components/shared/footer";
 import { BIMoaContextProvider } from "@/lib/db/use-bi-moa";
 import { PostHogProvider } from "../posthog-provider";
 import TanstackProvider from "../tanstack-provider";
 import Head from "next/head";
 import AllowLanding from "./allowLanding";
 import { ConversationsContextProvider } from "@/hooks/use-conversation";
-import { PocketbaseProvider } from "@/lib/pocketbase";
+import { PocketbaseProvider, usePocketbase } from "@/lib/pocketbase";
 import { ModalProvider } from "@/components/providers/ModalProvider";
+import { NotificationListener } from "./notification-listener";
 
 export const metadata: Metadata = {
   title: "Recruiter Dashboard - BetterInternship",
@@ -78,6 +78,7 @@ const HTMLContent = ({
                         <AllowLanding>
                           <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
                             <div className="flex-grow max-h-[100svh] max-w-[100svw] overflow-auto flex flex-col">
+                              <NotificationListener />
                               {children}
                             </div>
                           </div>
