@@ -258,9 +258,9 @@ export function ApplicantPage({
             <button
                 className="flex items-center text-gray-600 hover:text-gray-900 transition-colors my-4 pl-4"
                 onClick={handleBack}
-                >
-                    <ArrowLeft className="s-8" />
-                </button>
+            >
+                <ArrowLeft className="s-8" />
+            </button>
                 <div className="lg:flex w-full justify-center">
                     <div className={cn("bg-white rounded-[0.33em] border border-gray-200", isMobile ? "p-4" : "w-[50%] p-6")}>
                         {/* "header" ish portion */}
@@ -409,20 +409,23 @@ export function ApplicantPage({
 
                         {isMobile ? (
                             <>
-                                <HorizontalCollapsible 
-                                    className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
-                                    title="Cover letter"
-                                >
-                                    <span className={cn(
-                                        "text-sm/5",
-                                        application!.cover_letter?.length === 0 ? "text-muted-foreground" : ""
-                                    )}>
-                                        {application!.cover_letter?.length === 0 
-                                            ? "The user has not provided a cover letter."
-                                            : application!.cover_letter
-                                        }
-                                    </span>
-                                </HorizontalCollapsible>
+                                {application!.job?.internship_preferences?.require_cover_letter ||
+                                 application!.cover_letter &&
+                                    <HorizontalCollapsible 
+                                        className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
+                                        title="Cover letter"
+                                    >
+                                        <span className={cn(
+                                            "text-sm/5",
+                                            application!.cover_letter?.length === 0 ? "text-muted-foreground" : ""
+                                        )}>
+                                            {application!.cover_letter?.length === 0 
+                                                ? "The user has not provided a cover letter."
+                                                : application!.cover_letter
+                                            }
+                                        </span>
+                                    </HorizontalCollapsible>
+                                }
                                 <HorizontalCollapsible
                                     className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
                                     title="Applicant Information"
@@ -472,20 +475,23 @@ export function ApplicantPage({
                             
                         ) : (
                             <>
-                                <HorizontalCollapsible 
-                                    className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
-                                    title="Cover letter"
-                                >
-                                    <span className={cn(
-                                        "text-sm/5",
-                                        application!.cover_letter?.length === 0 ? "text-muted-foreground" : ""
-                                    )}>
-                                        {application!.cover_letter?.length === 0 
-                                            ? "The user has not provided a cover letter."
-                                            : application!.cover_letter
-                                        }
-                                    </span>
-                                </HorizontalCollapsible>
+                                {application!.job?.internship_preferences?.require_cover_letter ||
+                                 application!.cover_letter &&
+                                    <HorizontalCollapsible 
+                                        className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
+                                        title="Cover letter"
+                                    >
+                                        <span className={cn(
+                                            "text-sm/5",
+                                            application!.cover_letter?.length === 0 ? "text-muted-foreground" : ""
+                                        )}>
+                                            {application!.cover_letter?.length === 0 
+                                                ? "The user has not provided a cover letter."
+                                                : application!.cover_letter
+                                            }
+                                        </span>
+                                    </HorizontalCollapsible>
+                                }
                                 <div className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200">
                                     {application?.user?.bio ? (
                                         <div>
