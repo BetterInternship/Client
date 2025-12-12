@@ -163,7 +163,7 @@ export function ApplicationRow({
         delay: staggerDelay, 
         ease: "easeOut", 
       }}
-      className="hover:bg-primary/25 odd:bg-white even:bg-gray-50 hover:cursor-pointer transition-colors"
+      className="group hover:bg-primary/25 odd:bg-white even:bg-gray-50 hover:cursor-pointer transition-colors"
       onClick={onView}
     >
       <td 

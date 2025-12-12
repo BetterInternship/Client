@@ -15,13 +15,11 @@ const Pfp = ({
   source,
   pfp_fetcher,
   size = "10",
-  onRefresh,
 }: {
   id: string;
   source: string;
   pfp_fetcher: () => Promise<any>;
   size?: string;
-  onRefresh?: boolean;
 }) => {
 
   const { url, sync, loading } = useFile({
@@ -39,7 +37,7 @@ const Pfp = ({
       className={`relative w-${size} h-${size} flex items-center border border-gray-300 rounded-full overflow-hidden aspect-square`}
     >
       {loading ? (
-        <div className="animate-spin rounded-full w-[100%] h-[100%] border-b-2 border-primary mx-auto"></div>
+        <div className="rounded-full w-[100%] h-[100%] border-b-2 border-primary mx-auto"><img src={"/images/default-pfp.jpg"}></img></div>
       ) : (
         <img src={url}></img>
       )}
