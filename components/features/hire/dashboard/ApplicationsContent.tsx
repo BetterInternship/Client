@@ -184,7 +184,7 @@ export const ApplicationsContent = forwardRef<
 
   // make command bars visible when an applicant is selected.
   useEffect(() => {
-    setCommandBarsVisible(selectedApplications.size > 0 && !applicantToDelete && !statusChangeInProgress);
+    setCommandBarsVisible(selectedApplications.size > 0);
   }, [selectedApplications.size, applicantToDelete, statusChangeInProgress]);
 
   const getCounts = (apps: EmployerApplication[]) => {

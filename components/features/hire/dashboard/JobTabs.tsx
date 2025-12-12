@@ -425,7 +425,12 @@ export default function JobTabs({
           {statusChangeData && (
             <div className="p-8 pt-0 h-full">
               <div className="text-lg mb-4">
-                Change status for "{statusChangeData.applicants.length}" applicant{statusChangeData.applicants.length !== 1 ? "s" : ""}?
+                <span>Change status for {statusChangeData.applicants.length} applicant{statusChangeData.applicants.length !== 1 ? "s" : ""}?</span>
+                <ul className="list-disc list-inside text-sm">
+                  {statusChangeData.applicants.map(a => (
+                    <li>{a.user?.first_name} {a.user?.last_name}</li>
+                  ))}
+                </ul>
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={handleCancelStatusChange}>Cancel</Button>
