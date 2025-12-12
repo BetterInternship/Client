@@ -409,9 +409,23 @@ export function ApplicantPage({
 
                         {isMobile ? (
                             <>
+                                <HorizontalCollapsible 
+                                    className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
+                                    title="Cover letter"
+                                >
+                                    <span className={cn(
+                                        "text-sm/5",
+                                        application!.cover_letter?.length === 0 ? "text-muted-foreground" : ""
+                                    )}>
+                                        {application!.cover_letter?.length === 0 
+                                            ? "The user has not provided a cover letter."
+                                            : application!.cover_letter
+                                        }
+                                    </span>
+                                </HorizontalCollapsible>
                                 <HorizontalCollapsible
-                                className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200 mt-4"
-                                title="Applicant Information"
+                                    className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
+                                    title="Applicant Information"
                                 >
                                     <div className="grid gap-2">
                                         <div className={cn(isMobile ? "flex justify-between" : "")}>
