@@ -9,6 +9,7 @@ import { FetchResponse } from "@/lib/api/use-fetch";
 import { useQueryClient } from "@tanstack/react-query";
 import { usePocketbase } from "@/lib/pocketbase";
 import { EmployerService } from "@/lib/api/services";
+import { useRef } from "react";
 
 interface IAuthContext {
   user: Partial<PublicEmployerUser> | null;
@@ -51,11 +52,7 @@ export const AuthContextProvider = ({
   const router = useRouter();
   const [proxy, setProxy] = useState("");
   const [loading, setLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    if (typeof window === "undefined") return false;
-    const isAuthed = sessionStorage.getItem("isAuthenticated");
-    return isAuthed ? JSON.parse(isAuthed) : false;
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const queryClient = useQueryClient();
   const pocketbase = usePocketbase();
   const [god, setGod] = useState(false);
@@ -80,6 +77,10 @@ export const AuthContextProvider = ({
       const response = await EmployerService.getMyProfile();
 
       if (!response.success) {
+        setIsAuthenticated(false);
+        setUser(null);
+        sessionStorage.removeItem("isAuthenticated");
+        sessionStorage.removeItem("user");
         setLoading(false);
         return null;
       }
@@ -156,10 +157,19 @@ export const AuthContextProvider = ({
       if (!loading && !isAuthenticated) router.push("/login");
     }, [isAuthenticated, loading]);
 
-  const redirectIfLoggedIn = () =>
+  const redirectIfLoggedIn = () => {
+    const effectRan = useRef(false);
+
     useEffect(() => {
-      if (!loading && isAuthenticated) router.push("/dashboard");
+      if (effectRan.current && !loading && isAuthenticated) {
+        router.push("/dashboard")
+      };
+
+      if (!loading) {
+        effectRan.current = true;
+      }
     }, [isAuthenticated, loading]);
+  }
 
   useEffect(() => {
     refreshAuthentication();
