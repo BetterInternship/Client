@@ -17,7 +17,7 @@ export function NotificationListener() {
         if (checkNotificationSupport()) {
           const n = sendNotification(`New message - BetterInternship`, {
             body: lastMessage.message.substring(0, 100),
-            tag: lastMessage.sender_id,
+            tag: convoId,
           });
 
           if (n) {
