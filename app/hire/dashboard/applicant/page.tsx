@@ -24,7 +24,6 @@ function ApplicantPageContent () {
     if (jobId){
         userApplication = applications?.employer_applications.find(a => userId === a.user_id && a.job_id === jobId)
         otherApplications = applications?.employer_applications.filter(a => userId === a.user_id && a.id !== userApplication?.id);
-
     }
 
     const { app_statuses } = useDbRefs();

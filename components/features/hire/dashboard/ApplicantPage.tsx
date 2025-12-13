@@ -43,6 +43,7 @@ import { useConversation, useConversations } from "@/hooks/use-conversation";
 import { Loader } from "@/components/ui/loader";
 import {
   useProfile,
+  useEmployerApplications,
 } from "@/hooks/use-employer-api";
 import { Message } from "@/components/ui/messages";
 import { Textarea } from "@/components/ui/textarea";
@@ -68,6 +69,7 @@ export function ApplicantPage({
     const router = useRouter();
     const user = application?.user as Partial<PublicUser>;
     const internshipPreferences = user?.internship_preferences;
+    const applications = useEmployerApplications();
 
     const profile = useProfile();
 
@@ -170,7 +172,6 @@ export function ApplicantPage({
         onClose: () => (conversation.unsubscribe(), setConversationId("")),
         showCloseButton: false,
     });
-    
 
     const {
         open: openChatModal,
@@ -179,6 +180,12 @@ export function ApplicantPage({
         } = useSideModal("chat-modal", {
         onClose: () => (conversation.unsubscribe(), setConversationId(""))
     });
+
+    const {
+        open: openApplicantArchiveModal,
+        close: closeApplicantArchiveModal,
+        Modal: ApplicantArchiveModal,
+    } = useModal("applicant-archive-modal");
 
     useEffect(() => {
         if (application?.user_id) {
@@ -241,6 +248,17 @@ export function ApplicantPage({
         const action = statuses?.find((s) => s.id?.toString() === statusId.toString());
         action?.onClick?.();
     }
+
+    const handleConfirmApplicantArchive = async () => {
+        if (!application?.user_id) return;
+        await applications.review((application.id || ""), { status: 7 });
+        router.push(`/dashboard/manage?jobId=${application.job_id}`);
+        closeApplicantArchiveModal();
+    };
+
+    const handleCancelApplicantArchive = () => {
+        closeApplicantArchiveModal();
+    };
     
     if (loading || resumeLoading) {
         return <Loader>Getting applicant information...</Loader>;
@@ -401,7 +419,10 @@ export function ApplicantPage({
                             <div className="flex items-center gap-2">
                             <ActionButton
                                 icon={Archive}
-                                onClick={() => handleSetStatus(7)}
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    openApplicantArchiveModal()
+                                }}
                                 enabled={application!.status !== 7}
                             />
                             </div>
@@ -784,6 +805,19 @@ export function ApplicantPage({
             </div>
             </div>
         </OldChatModal>
+                <ApplicantArchiveModal>
+                {application?.user && (
+                    <div className="p-8 pt-0 h-full">
+                    <div className="text-lg mb-4">
+                        Archive applicant "{getFullName(application.user)}"?
+                    </div>
+                    <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={handleCancelApplicantArchive}>Cancel</Button>
+                        <Button variant="default" onClick={handleConfirmApplicantArchive}>Archive</Button>
+                    </div>
+                    </div>
+                )}
+                </ApplicantArchiveModal>
             </>
     );
 }
