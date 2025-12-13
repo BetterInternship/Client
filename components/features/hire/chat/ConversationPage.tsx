@@ -225,14 +225,14 @@ export function ConversationPage({
                 </div>
             ) : (
                 <div 
-                    className="w-full h-full flex flex-col md:flex-row"
+                    className="w-full h-full flex flex-col md:flex-row overflow-hidden"
                 >
                     {hasConversations ? (
                     <>
                         {/* ===== Left: List (Desktop always visible; Mobile only when in "list" view) ===== */}
                         <aside
                         className={cn(
-                            "border-r border-gray-200 md:min-w-[25%] md:max-w-[25%] h-full flex flex-col",
+                            "border-r border-gray-200 md:min-w-[25%] md:max-w-[25%] h-full flex flex-col overflow-hidden",
                             // mobile: show only when in list mode
                             "md:relative",
                             isMobile ? (mobileView === "list" ? "block" : "hidden") : "block",
@@ -246,7 +246,7 @@ export function ConversationPage({
                             onFilterChange={(status:string) => setChatFilter(status as "all" | "unread")}
                             />
                         </div>
-                        <div className="flex-1 overflow-y-auto min-h-0">
+                        <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0">
                             { visibleConvos.length ? (
                             <ConversationList
                             conversations={visibleConvos}
@@ -267,7 +267,7 @@ export function ConversationPage({
                         {/* ===== Right: Chat (Desktop always visible; Mobile only when in "chat" view) ===== */}
                         <section
                         className={cn(
-                            "flex-1 flex flex-col h-full",
+                            "flex-1 flex flex-col h-full overflow-hidden",
                             isMobile ? (mobileView === "chat" ? "flex" : "hidden") : "flex",
                         )}
                         >
@@ -315,10 +315,12 @@ export function ConversationPage({
                                 <CircleEllipsis className="h-6 w-6"/>
                                 </button>
                             </div>
-                            <ConversationPane
-                                conversation={conversation}
-                                chatAnchorRef={chatAnchorRef}
-                            />
+                            <div className="flex-1 min-h-0 overflow-auto">
+                                <ConversationPane
+                                    conversation={conversation}
+                                    chatAnchorRef={chatAnchorRef}
+                                />
+                            </div>
                             <ComposerBar
                                 disabled={sending || conversation.loading}
                                 value={message}
@@ -335,7 +337,7 @@ export function ConversationPage({
 
                         {profileView && 
                         <aside className={cn(
-                            "border-l border-gray-200 md:min-w-[25%] md:max-w-[25%] md:block",
+                            "border-l border-gray-200 md:min-w-[25%] md:max-w-[25%] md:block h-full flex flex-col overflow-hidden",
                             isMobile ? (mobileView === "profile" ? "block" : "hidden") : "block"
                         )}>
                             {isMobile && (
