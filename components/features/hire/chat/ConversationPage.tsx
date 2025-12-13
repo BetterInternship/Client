@@ -232,7 +232,7 @@ export function ConversationPage({
                         {/* ===== Left: List (Desktop always visible; Mobile only when in "list" view) ===== */}
                         <aside
                         className={cn(
-                            "border-r border-gray-200 md:min-w-[25%] md:max-w-[25%] md:block",
+                            "border-r border-gray-200 md:min-w-[25%] md:max-w-[25%] h-full flex flex-col",
                             // mobile: show only when in list mode
                             "md:relative",
                             isMobile ? (mobileView === "list" ? "block" : "hidden") : "block",
