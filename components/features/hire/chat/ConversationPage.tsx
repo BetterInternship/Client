@@ -307,7 +307,9 @@ export function ConversationPage({
                                 onClick={() => {
                                 setEllipsisState(!ellipsisState);
                                 setProfileView(!profileView);
-                                setMobileView("profile");
+                                if (isMobile && !profileView) {
+                                    setMobileView("profile");
+                                }
                                 }}
                                 className="inline-flex h-12 w-12 items-center justify-center rounded-md hover:bg-gray-100 text-gray-500 mt-1 shrink-0">
                                 <CircleEllipsis className="h-6 w-6"/>
