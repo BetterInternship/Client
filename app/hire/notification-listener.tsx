@@ -9,15 +9,27 @@ export function NotificationListener() {
     if (!user?.id) return;
 
     pb.collection("conversations").subscribe("*", (e) => {
+      const convoId = e.record.id;
       const newMessages = e.record.contents;
       const lastMessage = newMessages[newMessages.length - 1];
 
       if (lastMessage?.sender_id !== user.id) {
-        console.log('Sending notification...');
         if (checkNotificationSupport()) {
-          sendNotification('message', {
+          const n = sendNotification(`New message - BetterInternship`, {
             body: lastMessage.message.substring(0, 100),
+            tag: lastMessage.sender_id,
           });
+
+          if (n) {
+            n.onclick = () => {
+              window.focus();
+              const target = `/conversations?userId=${lastMessage.sender_id}`;
+
+              if (window.location.pathname + window.location.search !== target) {
+                window.location.href = target;
+              }
+            }
+          }
         }
       }
     }, { expand: "subscribers" });
