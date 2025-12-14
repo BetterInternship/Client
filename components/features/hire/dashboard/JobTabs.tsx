@@ -781,7 +781,7 @@ export default function JobTabs({
                 onClick={async () => {
                   if (!selectedApplication?.user_id) return;
                   const response = await EmployerConversationService.createConversation(selectedApplication.user_id);
-                  if(response?.success && response.conversation?.id) router.push(`/conversations?userId=${selectedApplication?.user_id}`)
+                  if(response?.success && response.conversation?.id) router.push(`/conversations?conversationId=${response.conversation.id}`)
                 }}
                 >
                   Start chatting
@@ -810,7 +810,11 @@ export default function JobTabs({
                   Cancel
                 </Button>
                 <Button 
-                onClick={() => router.push(`/conversations?userId=${selectedApplication?.user_id}`)}
+                onClick={async () => {
+                  const findChat = conversations.data.find((convo) => 
+                      convo.subscribers?.includes(selectedApplication?.user_id)
+                  );
+                  if(findChat) router.push(`/conversations?conversationId=${findChat.id}`)}}
                 >
                   Go to chat
                 </Button>

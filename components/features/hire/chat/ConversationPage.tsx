@@ -42,6 +42,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface ConversationProps {
     applicantId?: string;
+    chatId?:string;
 };
 
 interface InternshipPreferences {
@@ -67,6 +68,7 @@ interface Conversation {
 
 export function ConversationPage({
     applicantId,
+    chatId,
 } : ConversationProps) {
     const { redirectIfNotLoggedIn } = useAuthContext();
     const profile = useProfile();
@@ -126,19 +128,11 @@ export function ConversationPage({
     }, [conversationId, conversation.messages?.length, conversation.loading]);
 
     useEffect(() => {
-        if (applicantId && conversations.data) {
-            const findChat = conversations.data.find((convo) => 
-                convo.subscribers?.includes(applicantId)
-            );
-            
-            if (findChat?.id) {
-                setConversationId(findChat.id);
-                router.replace('/conversations', { scroll: false });
-            } else {
-                console.log("L bozo no new chat page zzz")
-            }
+        if(chatId) {
+            setConversationId(chatId)
+            router.replace('/conversations', { scroll: false });
         }
-    }, [applicantId, conversations.data]);
+    }, [chatId])
 
 
     const sortedConvos = useMemo(
@@ -184,8 +178,23 @@ export function ConversationPage({
 
         setSending(true);
         let userConversation = conversations.data?.find((c) =>
-        c?.subscribers?.includes(studentId),
-        );
+        c?.subscribers?.includes(studentId));
+
+        if (!userConversation && studentId) {
+            const response =
+                await EmployerConversationService.createConversation(studentId).catch(
+                endSend,
+                );
+
+            if (!response?.success) {
+                alert("Could not initiate conversation with user.");
+                endSend();
+                return;
+            }
+
+            setConversationId(response.conversation?.id ?? "");
+            userConversation = response.conversation;
+        }
 
         setTimeout(async () => {
         if (!userConversation) return endSend();
