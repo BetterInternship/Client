@@ -607,7 +607,7 @@ export function ConversationPage({
     }) {
 
     return (
-        <div className="flex flex-col overflow-y-scroll">
+        <div className="flex flex-col">
         {conversations.map((c, index) => (
             <ConversationCard
             key={c.id}
