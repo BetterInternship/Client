@@ -118,6 +118,13 @@ export function ConversationPage({
         } 
     }, [conversationId]);
 
+    //scroll to bottom of the chat if messages exist
+    useEffect(() => {
+    if (conversationId && !conversation.loading && conversation.messages?.length) {
+        chatAnchorRef.current?.scrollIntoView({ behavior: "instant" });
+    }
+    }, [conversationId, conversation.messages?.length, conversation.loading]);
+
     useEffect(() => {
         if (applicantId && conversations.data) {
             const findChat = conversations.data.find((convo) => 
@@ -740,6 +747,7 @@ export function ConversationPage({
     conversation: Conversation;
     chatAnchorRef: Ref<HTMLDivElement>;
     }) => {
+    const { isMobile } = useAppContext()
     const profile = useProfile();
     const { userName } = useUserName(conversation.senderId);
     let lastSelf = false;
@@ -789,7 +797,7 @@ export function ConversationPage({
                         ))}
                     </>
                 ) : (
-                <div className="flex items-center justify-center h-full gap-4">
+                <div className={cn("relative flex items-center justify-center h-full gap-4", isMobile ? "pt-60" : "pt-80")}>
                     <MessageCircle className="h-14 w-14 opacity-50"/>
                     <div className="flex flex-col text-start">
                         <p className="font-bold text-lg mb-0">No Messages Yet</p>
