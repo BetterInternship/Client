@@ -861,8 +861,7 @@ export function ConversationPage({
             "rounded-none border-0 border-b border-gray-200 py-3 px-4 md:px-6 cursor-pointer",
             isPicked ? "bg-gray-100" : " hover:bg-gray-100"
         )}
-        onMouseDown={() => setConversationId(conversation.id)}
-        onTouchStart={() => setConversationId(conversation.id)}
+        onClick={() => setConversationId(conversation.id)}
         >
         <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-3 md:gap-4 min-w-0">
