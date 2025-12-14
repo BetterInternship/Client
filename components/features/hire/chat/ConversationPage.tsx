@@ -129,7 +129,9 @@ export function ConversationPage({
 
     useEffect(() => {
         if(chatId) {
-            setConversationId(chatId)
+            setTimeout(() => {
+                setConversationId(chatId);
+            }, 300);
             router.replace('/conversations', { scroll: false });
         }
     }, [chatId])
