@@ -695,7 +695,7 @@ export default function JobTabs({
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.3 }}
                           >
-                            <Card className="flex flex-col items-center justify-center p-4 px-6 border-transparent">
+                            <Card className="flex flex-col p-4 px-6 border-transparent">
                               <MessageCirclePlus className="w-8 h-8 my-2 opacity-50" />
                               <div className="text-base font-bold">
                                 No Messages Yet

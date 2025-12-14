@@ -242,7 +242,7 @@ export function ConversationPage({
                             "border-r border-gray-200 md:min-w-[25%] md:max-w-[25%] h-full flex flex-col overflow-hidden",
                             // mobile: show only when in list mode
                             "md:relative",
-                            isMobile ? (mobileView === "list" ? "block" : "hidden") : "block",
+                            isMobile ? (mobileView === "list" ? "flex" : "hidden") : "flex",
                         )}
                         >
                         <div className="shrink-0">
