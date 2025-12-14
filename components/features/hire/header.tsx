@@ -295,7 +295,7 @@ function MobileDrawer({
                             <MessageCircleMore className="w-4 h-4" /> Chats
                           </span>
                           {conversations?.unreads?.length ? (
-                            <span className="text-[10px] leading-none bg-warning/80 px-2 py-1 rounded-full">
+                            <span className="text-[10px] leading-none bg-primary px-2 py-1 rounded-full text-white font-bold">
                               {conversations.unreads.length}
                             </span>
                           ) : (
