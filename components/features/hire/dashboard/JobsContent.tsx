@@ -29,7 +29,7 @@ export function JobsContent({
     isLoading
 }: JobsContentProps) {
     const [exiting, setExiting] = useState(false);
-    const [showLoader, setShowLoader] = useState(false);
+    const [showLoader, setShowLoader] = useState(true);
 
     const { isMobile } = useAppContext();
 
@@ -38,10 +38,12 @@ export function JobsContent({
        ((b.created_at ?? "") > (a.created_at ?? "")) ? 1 : -1
     );
 
+    const hasJobs = jobs.length
+
     useEffect(() => {
         let t: ReturnType<typeof setTimeout> | undefined;
 
-        if (isLoading) {
+        if (!sortedJobs && hasJobs) {
             t = setTimeout(() => setShowLoader(true), 200);
         } else {
             setShowLoader(false);

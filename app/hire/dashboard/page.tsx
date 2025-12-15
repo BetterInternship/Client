@@ -60,16 +60,12 @@ function DashboardContent() {
   }, []);
 
   useEffect(() => {
-      if (ownedJobs) {
+      if (ownedJobs  && (!activeJobs.length && !inactiveJobs.length)) {
         setLoading(true)
-  
-        const timer = setTimeout(() => {
+      } else {
         setLoading(false);
-      }, 200);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [ownedJobs]);
+      }
+  }, [ownedJobs, activeJobs, inactiveJobs]);
 
   if (loading || !isAuthenticated()) {
     return (
