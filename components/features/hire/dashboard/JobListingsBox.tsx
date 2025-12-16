@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Loader } from "@/components/ui/loader";
 import { useMobile } from "@/hooks/use-mobile";
 import { EmployerApplication, Job } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
@@ -23,7 +24,7 @@ export function JobListingsBox({
 }: JobListingProps) {
     const { to_job_pay_freq_name } = useDbRefs();
     const applicants = applications.filter(
-        (application) => application.job_id === job.id
+        (application) => application.job_id === job.id && application.status !== 7 && application.status !== 5
     );
 
     const handleClick = () => {
@@ -36,15 +37,8 @@ export function JobListingsBox({
 
     const router = useRouter();
 
-    if(isLoading) {
-        return (
-        <div className="w-full flex items-center justify-center">
-            <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading...</p>
-            </div>
-        </div>
-        );
+    if (isLoading) {
+        return <Loader>Loading...</Loader>;
     }
 
     return (

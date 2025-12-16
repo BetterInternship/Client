@@ -2,7 +2,6 @@
 // Props in (application data), events out (onView, onNotes, etc.)
 // No business logic - just presentation and event emission
 import { ActionItem } from "@/components/ui/action-item";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useConversations } from "@/hooks/use-conversation";
@@ -10,7 +9,6 @@ import { useAppContext } from "@/lib/ctx-app";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { getFullName } from "@/lib/profile";
-import { cn } from "@/lib/utils";
 import { formatDateWithoutTime, formatTimestampDateWithoutTime } from "@/lib/utils/date-utils";
 import { statusMap } from "@/components/common/status-icon-map";
 import { motion } from "framer-motion";
@@ -21,7 +19,7 @@ import {
   GraduationCap,
   MessageCircle,
   School,
-  Trash,
+  Trash2,
 } from "lucide-react";
 import { ActionButton } from "@/components/ui/action-button";
 import { FormCheckbox } from "@/components/EditForm";
@@ -34,6 +32,7 @@ interface ApplicationRowProps {
   onNotes: () => void;
   onSchedule: () => void;
   onStatusChange: (status: number) => void;
+  onArchiveButtonClick: (application: EmployerApplication) => void;
   onDeleteButtonClick: (application: EmployerApplication) => void;
   openChatModal: () => void;
   updateConversationId: (conversationId: string) => void;
@@ -61,7 +60,8 @@ export function ApplicationRow({
   setSelectedApplication,
   checkboxSelected = false,
   onToggleSelect,
-  onDeleteButtonClick: onArchiveButtonClick,
+  onArchiveButtonClick,
+  onDeleteButtonClick,
   statuses,
 }: ApplicationRowProps) {
   const { to_university_name, get_app_status } = useDbRefs();
@@ -216,14 +216,26 @@ export function ApplicationRow({
                 unread.subscribers.includes(application.user_id))}
           >
           </ActionButton>
-          <ActionButton
-            icon={Archive}
-            onClick={(e) => {
-              e.stopPropagation();
-              onArchiveButtonClick(application);
-            }}
-            enabled={application.status! !== 7}
-          />
+          {application.status !== 7 &&
+            <ActionButton
+              icon={Archive}
+              onClick={(e) => {
+                e.stopPropagation();
+                onArchiveButtonClick(application);
+              }}
+              enabled={application.status! !== 7}
+            />
+          }
+          {application.status === 7 &&
+            <ActionButton
+              icon={Trash2}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeleteButtonClick(application);
+              }}
+              enabled={application.status! === 7}
+            />
+          }
         </div>
       </td>
     </motion.tr>

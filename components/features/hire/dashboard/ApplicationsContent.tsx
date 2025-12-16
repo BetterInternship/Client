@@ -31,10 +31,11 @@ interface ApplicationsContentProps {
   onScheduleClick: (application: EmployerApplication) => void;
   onStatusChange: (application: EmployerApplication, status: number) => void;
   setSelectedApplication: (application: EmployerApplication) => void;
+  onRequestArchiveApplicant: (application: EmployerApplication) => void;
   onRequestDeleteApplicant: (application: EmployerApplication) => void;
   onRequestStatusChange: (applications: EmployerApplication[], status: number) => void;
   applicantToDelete: EmployerApplication | null;
-  statusChangeInProgress: boolean;
+  applicantToArchive: EmployerApplication | null;
 }
 
 export const ApplicationsContent = forwardRef<
@@ -51,9 +52,10 @@ export const ApplicationsContent = forwardRef<
   onStatusChange,
   setSelectedApplication,
   onRequestDeleteApplicant,
+  onRequestArchiveApplicant,
   onRequestStatusChange,
+  applicantToArchive,
   applicantToDelete,
-  statusChangeInProgress,
 }, ref) {
   const { isMobile } = useAppContext();
 
@@ -185,7 +187,7 @@ export const ApplicationsContent = forwardRef<
   // make command bars visible when an applicant is selected.
   useEffect(() => {
     setCommandBarsVisible(selectedApplications.size > 0);
-  }, [selectedApplications.size, applicantToDelete, statusChangeInProgress]);
+  }, [selectedApplications.size]);
 
   const getCounts = (apps: EmployerApplication[]) => {
     const counts: Record<string | number, number> = { all: 0 };
@@ -264,6 +266,7 @@ export const ApplicationsContent = forwardRef<
               updateConversationId={updateConversationId}
               checkboxSelected={selectedApplications.has(application.id!)}
               onToggleSelect={(v) => toggleSelect(application.id!, v)}
+              onArchiveButtonClick={onRequestArchiveApplicant}
               onDeleteButtonClick={onRequestDeleteApplicant}
               statuses={getRowStatuses(application.id!)}
             />
@@ -390,6 +393,7 @@ export const ApplicationsContent = forwardRef<
                   updateConversationId={updateConversationId}
                   checkboxSelected={selectedApplications.has(application.id!)}
                   onToggleSelect={(v) => toggleSelect(application.id!, v)}
+                  onArchiveButtonClick={() => onRequestArchiveApplicant?.(application)}
                   onDeleteButtonClick={() => onRequestDeleteApplicant?.(application)}
                   statuses={getRowStatuses(application.id!)}
                 />

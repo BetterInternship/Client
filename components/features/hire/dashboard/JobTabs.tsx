@@ -3,7 +3,6 @@
 import { useAuthContext } from "@/app/hire/authctx";
 import { ApplicationsContent } from "@/components/features/hire/dashboard/ApplicationsContent";
 import { Card } from "@/components/ui/card";
-import { Loader } from "@/components/ui/loader";
 import { useConversation, useConversations } from "@/hooks/use-conversation";
 import {
   useEmployerApplications,
@@ -25,7 +24,7 @@ import { PDFPreview } from "@/components/shared/pdf-preview";
 import { Message } from "@/components/ui/messages";
 import { Textarea } from "@/components/ui/textarea";
 import { getFullName } from "@/lib/profile";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { FileText, MessageCirclePlus, SendHorizonal, SquareArrowOutUpRight } from "lucide-react";
 import { useListingsBusinessLogic } from "@/hooks/hire/listings/use-listings-business-logic";
 import { useAppContext } from "@/lib/ctx-app";
@@ -56,7 +55,6 @@ export default function JobTabs({
   const applications = useEmployerApplications();
   const [isLoading, setLoading] = useState(true);
   const [exitingBack, setExitingBack] = useState(false);
-  const [exitingForward, setExitingForward] = useState(false);
 
   const [selectedApplication, setSelectedApplication] =
     useState<EmployerApplication | null>(null);
@@ -76,6 +74,7 @@ export default function JobTabs({
   ]);
   const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
   const [applicantToArchive, setApplicantToArchive] = useState<EmployerApplication | null>(null);
+  const [applicantToDelete, setApplicantToDelete] = useState<EmployerApplication | null>(null);
   const [statusChangeData, setStatusChangeData] = useState<{ applicants: EmployerApplication[]; status: number; } | null>(null);
 
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
@@ -222,6 +221,12 @@ export default function JobTabs({
   } = useModal("applicant-archive-modal");
 
   const {
+    open: openApplicantDeleteModal,
+    close: closeApplicantDeleteModal,
+    Modal: ApplicantDeleteModal,
+  } = useModal("applicant-delete-modal");
+
+  const {
     open: openStatusChangeModal,
     close: closeStatusChangeModal,
     Modal: StatusChangeModal,
@@ -293,6 +298,11 @@ export default function JobTabs({
     openApplicantArchiveModal();
   };
 
+  const handleRequestApplicantDelete = (application: EmployerApplication) => {
+    setApplicantToDelete(application);
+    openApplicantDeleteModal();
+  }
+
   const handleConfirmApplicantArchive = async () => {
     if (!applicantToArchive?.id) return;
     await applications.review(applicantToArchive.id, { status: 7 });
@@ -301,9 +311,22 @@ export default function JobTabs({
     applicationContentRef.current?.unselectAll();
   };
 
+  const handleConfirmApplicantDelete = async () => {
+    if (!applicantToDelete?.id) return;
+    await applications.review(applicantToDelete.id, { status: 5 });
+    setApplicantToDelete(null);
+    closeApplicantDeleteModal();
+    applicationContentRef.current?.unselectAll();
+  };
+
   const handleCancelApplicantArchive = () => {
     setApplicantToArchive(null);
     closeApplicantArchiveModal();
+  };
+
+  const handleCancelApplicantDelete = () => {
+    setApplicantToDelete(null);
+    closeApplicantDeleteModal();
   };
 
   const onChatClick = async () => {
@@ -420,6 +443,22 @@ export default function JobTabs({
             </div>
           )}
         </ApplicantArchiveModal>
+
+        <ApplicantDeleteModal>
+          {applicantToDelete && (
+            <div className="p-8 pt-0 h-full">
+              <div className="flex flex-col gap-2 mb-4">
+                <span className="text-lg">Delete applicant "{getFullName(applicantToDelete.user)}"?</span>
+                <span>This action is permanent and cannot be reversed.</span>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={handleCancelApplicantDelete}>Cancel</Button>
+                <Button variant="default" scheme="destructive" onClick={handleConfirmApplicantDelete}>Delete</Button>
+              </div>
+            </div>
+          )}
+        </ApplicantDeleteModal>
 
         <StatusChangeModal>
           {statusChangeData && (
@@ -555,10 +594,11 @@ export default function JobTabs({
                   onScheduleClick={handleScheduleClick}
                   onStatusChange={handleStatusChange}
                   setSelectedApplication={setSelectedApplication}
-                  onRequestDeleteApplicant={handleRequestApplicantArchive}
+                  onRequestArchiveApplicant={handleRequestApplicantArchive}
+                  onRequestDeleteApplicant={handleRequestApplicantDelete}
                   onRequestStatusChange={handleRequestStatusChange}
-                  applicantToDelete={applicantToArchive}
-                  statusChangeInProgress={!!statusChangeData}
+                  applicantToArchive={applicantToArchive}
+                  applicantToDelete={applicantToDelete}
                 ></ApplicationsContent>
             </div>
         </div>
