@@ -1,12 +1,13 @@
+import { FormTemplate } from "../db/use-moa-backend";
 import {
   Conversation,
   Employer,
-  EmployerApplication,
   Job,
   PublicUser,
   SavedJob,
   UserApplication,
   User,
+  EmployerApplication,
 } from "@/lib/db/db.types";
 import { APIClient, APIRouteBuilder } from "./api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
@@ -209,6 +210,21 @@ export const UserService = {
       documentId: string;
       internshipFormId: string;
     }>(APIRouteBuilder("forms").r("generate").build({ moaServer: true }), data);
+  },
+
+  async getMyFormTemplates() {
+    const { formGroupId } = await APIClient.get<{ formGroupId: string }>(
+      APIRouteBuilder("users").r("me/form-templates").build(),
+    );
+    const { formTemplates } = await APIClient.get<{
+      formTemplates: FormTemplate[];
+    }>(
+      APIRouteBuilder("forms")
+        .r("form-templates")
+        .p({ formGroupId })
+        .build({ moaServer: true }),
+    );
+    return formTemplates;
   },
 
   async getForm(formName: string) {

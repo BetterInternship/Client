@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState, useEffect} from "react";
+import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { APIClient, APIRouteBuilder } from "@/lib/api/api-client";
 import {
   JobService,
@@ -10,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useDbMoa } from "../db/use-bi-moa";
 import { hashStringToInt } from "../utils";
 import shuffle from "knuth-shuffle-seeded";
-import { User, PublicUser} from "@/lib/db/db.types";
+import { User, PublicUser } from "@/lib/db/db.types";
 import { getFullName } from "@/lib/profile";
 
 /**
@@ -182,7 +182,7 @@ export function useProfileData() {
   });
 
   return {
-    data: data?.user ?? null,
+    data: (data?.user as PublicUser) ?? null,
     error,
     isPending,
   };
@@ -205,4 +205,3 @@ export function useApplicationsData() {
     data: applications.data?.applications ?? [],
   };
 }
-

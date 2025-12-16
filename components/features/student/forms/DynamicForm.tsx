@@ -3,12 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FieldRenderer } from "@/components/features/student/forms/FieldRenderer";
 import { ClientField } from "@betterinternship/core/forms";
-import {
-  cn,
-  coerceAnyDate,
-  formatDate,
-  formatDateWithoutTime,
-} from "@/lib/utils";
+import { cn, coerceAnyDate, formatDateWithoutTime } from "@/lib/utils";
 import { RecipientSection } from "@/components/features/student/forms/RecipientSection";
 
 export function DynamicForm({

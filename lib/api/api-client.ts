@@ -54,7 +54,7 @@ export const APIRouteBuilder = (() => {
       const base = opts?.moaServer ? MOA_API_BASE_URL : API_BASE_URL;
       if (!this.params) return `${base}/${this.routes.join("/")}`;
       return `${base}/${this.routes.join("/")}?${createParameterString(
-        this.params
+        this.params,
       )}`;
     }
   }
@@ -69,7 +69,7 @@ class FetchClient {
   private async request<T>(
     url: string,
     options: RequestInit = {},
-    type: string = "json"
+    type: string = "json",
   ): Promise<T> {
     const headers: HeadersInit =
       type === "json"
@@ -119,7 +119,7 @@ class FetchClient {
             : data
           : undefined,
       },
-      type
+      type,
     );
   }
 
@@ -134,7 +134,7 @@ class FetchClient {
             : data
           : undefined,
       },
-      type
+      type,
     );
   }
 

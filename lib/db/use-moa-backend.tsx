@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-11-02 20:28:14
+ * @ Modified time: 2025-12-16 22:06:16
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
@@ -12,7 +12,6 @@ import { createClient } from "@supabase/supabase-js";
 import { Database, Tables } from "@betterinternship/schema.base";
 import { PublicUser } from "./db.types";
 import { UserService } from "../api/services";
-import { IFormMetadata } from "@betterinternship/core/forms";
 
 // Environment setup
 const DB_URL_BASE = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -36,58 +35,23 @@ const db_base = createClient<Database>(
  */
 export type IUserForm = Tables<"user_internship_forms">;
 
+export interface FormTemplate {
+  formDocument: string;
+  formVersion: number;
+  formName: string;
+  formLabel: string;
+}
+
 /**
  * Fetches all forms from the database given the user's department.
  *
  * @returns
  */
-export const fetchForms = async (
-  user: PublicUser,
-): Promise<
-  (IFormMetadata & {
-    name: string;
-    version: number;
-    base_document_id: string;
-  })[]
-> => {
-  if (!user.department) {
-    return [];
-  }
-  // Pull mapping for user department
-  const { data: internshipFormMapping, error: internshipFormMappingError } =
-    await db_base
-      .from("internship_form_mappings")
-      .select("*")
-      .eq("department_id", user.department)
-      .single();
-
-  // Handle error or nonexistent mapping
-  if (!internshipFormMapping?.form_group_id) {
-    console.log("Could not find mapping for department.");
-    if (internshipFormMappingError)
-      console.log(
-        "Actually, something went wrong: " +
-          internshipFormMappingError?.message,
-      );
-    return [];
-  }
-
-  // Get form group
-  const { data: formGroup, error: formGroupError } = await db
-    .from("form_groups")
-    .select("*")
-    .eq("id", internshipFormMapping.form_group_id)
-    .single();
-
-  const forms = await Promise.all(
-    formGroup?.forms.map(async (formName: string) => {
-      const { formMetadata, formDocument } =
-        await UserService.getForm(formName);
-      return { ...formMetadata, ...formDocument };
-    }) ?? [],
-  );
-
-  return forms ?? [];
+export const fetchForms = async (user: PublicUser) => {
+  if (!user.department) return [];
+  const r = await UserService.getMyFormTemplates();
+  console.log("ball", r);
+  return r;
 };
 
 /**
@@ -96,7 +60,7 @@ export const fetchForms = async (
  * @param userId
  * @returns
  */
-export const fetchAllUserForms = async (userId: string) => {
+export const fetchAllUserInitiatedForms = async (userId: string) => {
   if (!userId) return;
 
   const { data, error } = await db_base
@@ -108,6 +72,8 @@ export const fetchAllUserForms = async (userId: string) => {
   return data as IUserForm[];
 };
 
+// ! GET RID OF ALL OF THESE FUNCTIONS BELOW
+// ! GET RID OF ALL OF THESE FUNCTIONS BELOW
 export const fetchPrefilledDocument = async (prefilledDocumentId: string) => {
   const prefilledDocument = await db
     .from("external_documents")
@@ -138,13 +104,5 @@ export const fetchPendingDocument = async (pendingDocumentId: string) => {
   return pendingDocument;
 };
 
-export const fetchTemplateDocument = async (baseDocumentId: string) => {
-  if (!baseDocumentId) return;
-  const baseDocument = await db
-    .from("base_documents")
-    .select("url")
-    .eq("id", baseDocumentId)
-    .single();
-
-  return baseDocument;
-};
+// ! GET RID OF ALL OF THESE FUNCTIONS ABOVE
+// ! GET RID OF ALL OF THESE FUNCTIONS ABOVE

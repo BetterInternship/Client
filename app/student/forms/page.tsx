@@ -6,11 +6,11 @@ import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { Newspaper } from "lucide-react";
 import {
   fetchForms,
-  fetchAllUserForms,
+  fetchAllUserInitiatedForms,
   fetchSignedDocument,
   fetchPendingDocument,
-  fetchTemplateDocument,
   fetchPrefilledDocument,
+  FormTemplate,
 } from "@/lib/db/use-moa-backend";
 import FormGenerateCard from "@/components/features/student/forms/FormGenerateCard";
 import MyFormCard from "@/components/features/student/forms/MyFormCard";
@@ -42,23 +42,22 @@ export default function FormsPage() {
     Record<string, string[]>
   >({});
   const [tab, setTab] = useState<string>("");
+  const [formLoading, setFormLoading] = useState<boolean>(false);
+  const [formList, setFormList] = useState<FormTemplate[]>([]);
 
   // All form templates
-  const {
-    data: formList = [],
-    isLoading,
-    isPending,
-    isFetching,
-    error,
-  } = useQuery({
-    queryKey: ["forms:list"],
-    queryFn: async () => (profile.data ? await fetchForms(profile.data) : []),
-    enabled: !!profile.data, // wait until profile is available
-    refetchOnMount: "always", // fetch every time the page/component mounts
-  });
+  useEffect(() => {
+    if (!profile.data) return;
+    setFormLoading(true);
+    void fetchForms(profile.data)
+      .then((formTemplates) => setFormList(formTemplates))
+      .then(() => setFormLoading(false))
+      .catch(() => setFormLoading(false));
+  }, [profile.data]);
+
+  console.log("list", formList, profile.data);
 
   const generatorForms = formList;
-
   const openFormModal = (
     formName: string,
     formVersion: number,
@@ -93,7 +92,7 @@ export default function FormsPage() {
   } = useQuery({
     queryKey: ["my_forms", userId],
     enabled: !!userId,
-    queryFn: () => (userId ? fetchAllUserForms(userId) : []),
+    queryFn: () => (userId ? fetchAllUserInitiatedForms(userId) : []),
     staleTime: 10_000,
     gcTime: 10_000,
   });
@@ -132,6 +131,8 @@ export default function FormsPage() {
           console.log(ids.indexOf(id), signatories);
 
           if (!cancelled) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
             setPendingSignatories((prev) => ({
               ...prev,
               [id]: signatories,
@@ -211,77 +212,57 @@ export default function FormsPage() {
           </TabsList>
           <div className="bg-white border border-gray-300 border-t-0 p-8">
             <TabsContent value={"form-generator"}>
-              {(isLoading || isPending || isFetching) && (
-                <Loader>Loading latest forms...</Loader>
-              )}
+              {formLoading && <Loader>Loading latest forms...</Loader>}
               <div className="space-y-3">
-                {error && <p className="text-red-600">Failed to load forms</p>}
-                {!error &&
-                  !(isLoading || isPending || isFetching) &&
-                  (generatorForms?.length ?? 0) === 0 && (
-                    <div className="text-sm text-gray-600">
-                      <p>
-                        There are no forms available yet for your department.
-                      </p>
-                      <p className="mt-1 text-muted-foreground text-sm">
-                        Need help? Email{" "}
-                        <a
-                          href="mailto:hello@betterinternship.com"
-                          className="underline"
-                        >
-                          hello@betterinternship.com
-                        </a>{" "}
-                        or contact us via{" "}
-                        <a
-                          href="https://www.facebook.com/profile.php?id=61579853068043"
-                          className="underline"
-                        >
-                          Facebook
-                        </a>
-                        .
-                      </p>
-                    </div>
-                  )}
+                {!formLoading && (generatorForms?.length ?? 0) === 0 && (
+                  <div className="text-sm text-gray-600">
+                    <p>There are no forms available yet for your department.</p>
+                    <p className="mt-1 text-muted-foreground text-sm">
+                      Need help? Email{" "}
+                      <a
+                        href="mailto:hello@betterinternship.com"
+                        className="underline"
+                      >
+                        hello@betterinternship.com
+                      </a>{" "}
+                      or contact us via{" "}
+                      <a
+                        href="https://www.facebook.com/profile.php?id=61579853068043"
+                        className="underline"
+                      >
+                        Facebook
+                      </a>
+                      .
+                    </p>
+                  </div>
+                )}
                 <div
                   className={cn(
-                    isLoading || isPending || isFetching
-                      ? "opacity-50 pointer-events-none"
-                      : "",
+                    formLoading ? "opacity-50 pointer-events-none" : "",
                     "flex flex-col gap-2",
                   )}
                 >
-                  {!error &&
-                    generatorForms?.length !== 0 &&
+                  {generatorForms?.length !== 0 &&
                     generatorForms.map((form, i) => (
                       <FormGenerateCard
-                        key={form.name + i}
-                        formName={form.name}
+                        key={form.formName + i}
+                        formName={form.formName}
+                        formLabel={form.formLabel}
                         onViewTemplate={() => {
-                          if (!form.base_document_id) {
+                          if (!form.formDocument) {
                             alert("No template available for this form.");
                             return;
                           }
 
-                          fetchTemplateDocument(form.base_document_id)
-                            .then((res) => {
-                              const link = res?.data?.url;
-                              if (link) {
-                                window.open(link, "noopener,noreferrer");
-                              } else {
-                                alert("Template not available.");
-                              }
-                            })
-                            .catch((e) => {
-                              console.error(e);
-                              window.close();
-                              alert("Failed to load template.");
-                            });
+                          alert(
+                            "Reimplement view form template! (Make sure formDocument is form url)",
+                          );
                         }}
                         onGenerate={() =>
                           openFormModal(
-                            form.name,
-                            form.version,
-                            form.label ?? "",
+                            form.formName,
+                            form.formVersion,
+                            form.formLabel,
                           )
                         }
                       />
@@ -349,6 +330,8 @@ export default function FormsPage() {
                             const url = prefilledDocument.data?.url;
                             if (url) return url;
                           }
+
+                          return "";
                         }}
                       />
                     );
