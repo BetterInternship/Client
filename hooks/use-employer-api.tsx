@@ -75,8 +75,12 @@ export function useEmployerApplications() {
       // Otherwise, pull from server
       const response = await ApplicationService.getEmployerApplications();
       if (response.success) {
-        setEmployerApplications(response.applications ?? []);
-        set_cache(response.applications ?? []);
+        const filteredApplications = (response.applications ?? []).filter(
+          (app) => app.status !== 5
+        );
+
+        setEmployerApplications(filteredApplications);
+        set_cache(filteredApplications);
       }
     } catch (err) {
       const errorMessage = handleApiError(err);
