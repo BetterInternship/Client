@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   Globe2,
   Loader2,
+  FileQuestion,
 } from "lucide-react";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "../../../lib/ctx-auth";
@@ -172,7 +173,14 @@ export default function ProfilePage() {
     !isProfileBaseComplete(profile.data) ||
     profile.data?.acknowledged_auto_apply === false
   ) {
-    return <></>;
+    return (
+      <div className="flex flex-col gap-4 items-center justify-center h-full">
+        <FileQuestion className="text-warning w-20 h-20" />
+        <span className="text-lg text-gray-500">
+          Page Paused, Please Reload
+        </span>
+      </div>
+    );
   }
 
   return (
