@@ -37,7 +37,7 @@ export default function FormsPage() {
   const userId = profile.data?.id;
   const [tab, setTab] = useState<string>("");
   const [formLoading, setFormLoading] = useState<boolean>(false);
-  const [formList, setFormList] = useState<FormTemplate[]>([]);
+  const [formTemplates, setFormTemplates] = useState<FormTemplate[]>([]);
   const modalRegistry = useModalRegistry();
 
   // All form templates
@@ -45,12 +45,10 @@ export default function FormsPage() {
     if (!profile.data) return;
     setFormLoading(true);
     void fetchForms(profile.data)
-      .then((formTemplates) => setFormList(formTemplates))
+      .then((formTemplates) => setFormTemplates(formTemplates))
       .then(() => setFormLoading(false))
       .catch(() => setFormLoading(false));
   }, [profile.data]);
-
-  const generatorForms = formList;
 
   // All user generated forms
   const {
@@ -69,29 +67,11 @@ export default function FormsPage() {
     () =>
       (myForms ?? [])
         .slice()
-        .sort((a, b) => parseTsToMs(b.timestamp) - parseTsToMs(a.timestamp)),
+        .sort((a, b) => (b.timestamp + "").localeCompare(a.timestamp + "")),
     [myForms],
   );
 
-  // prefetch pending documents for rows that have pending_document_id
-  useEffect(() => {
-    if (!myForms?.length) return;
-
-    const ids = Array.from(
-      //  ! remove hard-coded limit in the future, only first 25 forms are shown cuz we made so many...
-      new Set(
-        myForms
-          .slice(25)
-          .map((r) => r.pending_document_id)
-          .filter(Boolean) as string[],
-      ),
-    );
-  }, [myForms]);
-
-  if (!profile.data?.department && !profile.isPending) {
-    alert("Profile not yet complete.");
-    router.push("/profile");
-  }
+  if (!profile.data?.department && !profile.isPending) router.push("/profile");
 
   useEffect(() => {
     if (tab === "forms" && userId) {
@@ -153,7 +133,7 @@ export default function FormsPage() {
             <TabsContent value={"form-generator"}>
               {formLoading && <Loader>Loading latest forms...</Loader>}
               <div className="space-y-3">
-                {!formLoading && (generatorForms?.length ?? 0) === 0 && (
+                {!formLoading && (formTemplates?.length ?? 0) === 0 && (
                   <div className="text-sm text-gray-600">
                     <p>There are no forms available yet for your department.</p>
                     <p className="mt-1 text-muted-foreground text-sm">
@@ -181,8 +161,8 @@ export default function FormsPage() {
                     "flex flex-col gap-2",
                   )}
                 >
-                  {generatorForms?.length !== 0 &&
-                    generatorForms.map((form, i) => (
+                  {formTemplates?.length !== 0 &&
+                    formTemplates.map((form, i) => (
                       <FormGenerateCard
                         key={form.formName + i}
                         formName={form.formName}
@@ -237,8 +217,12 @@ export default function FormsPage() {
                         : "Pending ";
                     const waitingFor = row.pending_document_id
                       ? [
-                          "reimplement-this-feature@yes.com",
-                          "pending-signatures-should-be-on-row@yes.com",
+                          {
+                            email: "reimplement-this-feature@yes.com",
+                          },
+                          {
+                            email: "pending-sigs-should-be-on-DB-row@yes.com",
+                          },
                         ]
                       : [];
 
@@ -285,16 +269,4 @@ export default function FormsPage() {
       </div>
     </div>
   );
-}
-
-function parseTsToMs(ts?: string | Date) {
-  if (!ts) return 0;
-  if (ts instanceof Date) return ts.getTime();
-  if (typeof ts === "string") {
-    // keep only the first 3 fractional digits (ms) so Date can parse it
-    const normalized = ts.replace(/\.(\d{3})\d+/, ".$1");
-    const t = new Date(normalized).getTime();
-    return Number.isNaN(t) ? 0 : t;
-  }
-  return 0;
 }

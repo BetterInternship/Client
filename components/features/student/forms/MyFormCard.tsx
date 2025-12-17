@@ -24,7 +24,7 @@ export default function MyFormCard({
   requestedAt?: string | Date;
   status: "Complete" | "Pending action" | (string & {});
   getDownloadUrl?: () => Promise<string>;
-  waitingFor?: (string | { email?: string; party: PartyKey })[]; // accepts both legacy string array and new object array
+  waitingFor?: (string | { email?: string })[];
 }) {
   const [downloading, setDownloading] = useState(false);
 

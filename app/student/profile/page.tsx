@@ -5,7 +5,6 @@ import {
   useRef,
   forwardRef,
   useImperativeHandle,
-  useMemo,
 } from "react";
 import { motion } from "framer-motion";
 import {
@@ -28,7 +27,11 @@ import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { Button } from "@/components/ui/button";
 import { FileUploadInput, useFile, useFileUpload } from "@/hooks/use-file";
 import { Card } from "@/components/ui/card";
-import { getFullName } from "@/lib/profile";
+import {
+  getFullName,
+  isProfileBaseComplete,
+  isProfileResume,
+} from "@/lib/profile";
 import { toURL, openURL } from "@/lib/utils/url-utils";
 import {
   isValidOptionalGitHubURL,
@@ -61,6 +64,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { AutoApplyCard } from "@/components/features/student/profile/AutoApplyCard";
 import { useProfileActions } from "@/lib/api/student.actions.api";
+import useModalRegistry from "@/components/modals/useModalRegistry";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
@@ -68,6 +72,7 @@ export default function ProfilePage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
   const profile = useProfileData();
   const profileActions = useProfileActions();
+  const modalRegistry = useModalRegistry();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -86,12 +91,30 @@ export default function ProfilePage() {
     Modal: EmployerModal,
   } = useModal("employer-modal");
 
-  const { open: openResumeModal, Modal: ResumeModal } =
-    useModal("resume-modal");
-
+  const { open: openResumeModal } = useModal("resume-modal");
   const profileEditorRef = useRef<{ save: () => Promise<boolean> }>(null);
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
+
+  const openEmployerWithResume = async () => {
+    await syncResumeURL();
+    openEmployerModal();
+  };
+
+  const handleAutoApplySave = async () => {
+    setAutoApplySaving(true);
+    setAutoApplyError(null);
+
+    const prev = !!profile.data?.apply_for_me;
+
+    try {
+      await profileActions.update.mutateAsync({ apply_for_me: !prev });
+    } catch (e: any) {
+      setAutoApplyError((e as string) ?? "Failed to update auto-apply");
+    } finally {
+      setAutoApplySaving(false);
+    }
+  };
 
   redirectIfNotLoggedIn();
 
@@ -112,10 +135,18 @@ export default function ProfilePage() {
   }, [searchParams]);
 
   useEffect(() => {
-    if (data?.resume) {
-      syncResumeURL();
-    }
+    if (data?.resume) void syncResumeURL();
   }, [data?.resume, syncResumeURL]);
+
+  useEffect(() => {
+    if (
+      !isProfileResume(profile.data) ||
+      !isProfileBaseComplete(profile.data) ||
+      profile.data?.acknowledged_auto_apply === false
+    ) {
+      modalRegistry.incompleteProfile.open();
+    }
+  }, []);
 
   if (profile.isPending) {
     return (
@@ -136,31 +167,13 @@ export default function ProfilePage() {
     );
   }
 
-  useEffect(() => {
-    if (data?.resume) {
-      syncResumeURL();
-    }
-  }, [data?.resume, syncResumeURL]);
-
-  const openEmployerWithResume = async () => {
-    await syncResumeURL();
-    openEmployerModal();
-  };
-
-  const handleAutoApplySave = async () => {
-    setAutoApplySaving(true);
-    setAutoApplyError(null);
-
-    const prev = !!profile.data?.apply_for_me;
-
-    try {
-      await profileActions.update.mutateAsync({ apply_for_me: !prev });
-    } catch (e: any) {
-      setAutoApplyError(e?.message ?? "Failed to update auto-apply");
-    } finally {
-      setAutoApplySaving(false);
-    }
-  };
+  if (
+    !isProfileResume(profile.data) ||
+    !isProfileBaseComplete(profile.data) ||
+    profile.data?.acknowledged_auto_apply === false
+  ) {
+    return <></>;
+  }
 
   return (
     data && (
@@ -188,7 +201,9 @@ export default function ProfilePage() {
                   maxSize={1}
                   onSelect={(file) => (
                     pfpUpload(file),
-                    queryClient.invalidateQueries({ queryKey: ["my-profile"] })
+                    void queryClient.invalidateQueries({
+                      queryKey: ["my-profile"],
+                    })
                   )}
                 />
               </div>
@@ -249,17 +264,20 @@ export default function ProfilePage() {
                   rightSlot={
                     <Button
                       className="text-xs"
-                      onClick={async () => {
-                        setSaving(true);
-                        setSaveError(null);
-                        const success = await profileEditorRef.current?.save();
-                        setSaving(false);
-                        if (success) setIsEditing(false);
-                        else
-                          setSaveError(
-                            "Please fix the errors in the form before saving.", // TODO: Make this a toast
-                          );
-                      }}
+                      onClick={() =>
+                        void (async () => {
+                          setSaving(true);
+                          setSaveError(null);
+                          const success =
+                            await profileEditorRef.current?.save();
+                          setSaving(false);
+                          if (success) setIsEditing(false);
+                          else
+                            setSaveError(
+                              "Please fix the errors in the form before saving.", // TODO: Make this a toast
+                            );
+                        })()
+                      }
                       disabled={saving}
                     >
                       <CheckCircle2 className="h-4 w-4 mr-1" />
@@ -338,12 +356,14 @@ export default function ProfilePage() {
             applicant={data}
             pfp_fetcher={() => UserService.getUserPfpURL("me")}
             pfp_route="/users/me/pic"
-            open_resume={async () => {
-              closeEmployerModal();
-              await syncResumeURL();
-              openResumeModal();
-            }}
-            open_calendar={async () => {
+            open_resume={() =>
+              void (async () => {
+                closeEmployerModal();
+                await syncResumeURL();
+                openResumeModal();
+              })()
+            }
+            open_calendar={() => {
               openURL(data?.calendar_link);
             }}
             resume_url={resumeURL}
@@ -649,8 +669,7 @@ function ProfileReadOnlyTabs({
                 Positions / Categories
               </div>
               {(() => {
-                const ids = (internshipPreferences?.job_category_ids ??
-                  []) as string[];
+                const ids = internshipPreferences?.job_category_ids ?? [];
                 const items = ids
                   .map((id) => {
                     const c = job_categories.find((x) => x.id === id);
@@ -724,7 +743,7 @@ const ProfileEditor = forwardRef<
 
   useImperativeHandle(ref, () => ({
     save: async () => {
-      await validateFormData();
+      validateFormData();
       const hasErrors = Object.values(formErrors).some(Boolean);
       if (hasErrors) {
         if (hasCalendarErrors) setTab("Calendar");
@@ -751,7 +770,7 @@ const ProfileEditor = forwardRef<
             formData.internship_preferences?.job_category_ids ?? [],
         },
       };
-      await updateProfile(updatedProfile);
+      updateProfile(updatedProfile);
       qc.invalidateQueries({ queryKey: ["my-profile"] });
       return true;
     },
@@ -846,7 +865,7 @@ const ProfileEditor = forwardRef<
         if (!i.expected_duration_hours)
           return "Please enter expected duration.";
         if (
-          !Number.isFinite(i.expected_duration_hours as number) ||
+          !Number.isFinite(i.expected_duration_hours) ||
           i.expected_duration_hours < 100 ||
           i.expected_duration_hours > 2000
         )
@@ -1016,11 +1035,7 @@ const ProfileEditor = forwardRef<
       if (formData.college) setField("college", undefined);
       if (formData.department) setField("department", undefined);
     }
-  }, [
-    formData.university,
-    formData.college,
-    colleges,
-  ]);
+  }, [formData.university, formData.college, colleges]);
 
   return (
     <OutsideTabs
@@ -1525,23 +1540,6 @@ function computeProfileScore(p?: Partial<PublicUser>): {
   if (!parts.resume) tips.push("Upload a resume in PDF (≤2.5MB).");
 
   return { score, parts, tips };
-}
-
-function ymToFirstDayTs(ym?: string | number | null): number | undefined {
-  if (ym == null || ym === "") return undefined;
-
-  if (typeof ym === "number") {
-    const d = new Date(ym);
-    return new Date(d.getFullYear(), d.getMonth(), 1, 0, 0, 0, 0).getTime();
-  }
-
-  // Extract YYYY and MM safely from any string that starts with "YYYY-MM"
-  const m = /^(\d{4})-(\d{2})/.exec(String(ym));
-  if (!m) return undefined;
-
-  const y = Number(m[1]);
-  const mo = Number(m[2]) - 1;
-  return new Date(y, mo, 1, 0, 0, 0, 0).getTime(); // local midnight
 }
 
 function monthFromMs(ms?: number | null): string | null {
