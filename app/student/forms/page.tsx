@@ -8,7 +8,6 @@ import {
   fetchForms,
   fetchAllUserInitiatedForms,
   fetchSignedDocument,
-  fetchPendingDocument,
   fetchPrefilledDocument,
   FormTemplate,
 } from "@/lib/db/use-moa-backend";
@@ -38,9 +37,6 @@ export default function FormsPage() {
   const profile = useProfileData();
   const router = useRouter();
   const userId = profile.data?.id;
-  const [pendingSignatories, setPendingSignatories] = useState<
-    Record<string, string[]>
-  >({});
   const [tab, setTab] = useState<string>("");
   const [formLoading, setFormLoading] = useState<boolean>(false);
   const [formList, setFormList] = useState<FormTemplate[]>([]);
@@ -54,8 +50,6 @@ export default function FormsPage() {
       .then(() => setFormLoading(false))
       .catch(() => setFormLoading(false));
   }, [profile.data]);
-
-  console.log("list", formList, profile.data);
 
   const generatorForms = formList;
   const openFormModal = (
@@ -118,36 +112,7 @@ export default function FormsPage() {
           .filter(Boolean) as string[],
       ),
     );
-
-    let cancelled = false;
-    void (async () => {
-      for (const id of ids) {
-        if (!id || pendingSignatories[id]) continue;
-        try {
-          const resp = await fetchPendingDocument(id);
-          if (cancelled) return;
-
-          const signatories = resp?.data?.pending_parties;
-          console.log(ids.indexOf(id), signatories);
-
-          if (!cancelled) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
-            setPendingSignatories((prev) => ({
-              ...prev,
-              [id]: signatories,
-            }));
-          }
-        } catch {
-          // ignore; don't block UI
-        }
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [myForms, pendingSignatories]);
+  }, [myForms]);
 
   if (!profile.data?.department && !profile.isPending) {
     alert("Profile not yet complete.");
@@ -296,7 +261,10 @@ export default function FormsPage() {
                         ? "Complete"
                         : "Pending ";
                     const waitingFor = row.pending_document_id
-                      ? (pendingSignatories[row.pending_document_id] ?? [])
+                      ? [
+                          "reimplement-this-feature@yes.com",
+                          "pending-signatures-should-be-on-row@yes.com",
+                        ]
                       : [];
 
                     return (
@@ -309,7 +277,6 @@ export default function FormsPage() {
                         getDownloadUrl={async () => {
                           // 1) signed document (highest priority)
                           if (row.signed_document_id) {
-                            console.log(row.signed_document_id);
                             const signedDocument = await fetchSignedDocument(
                               row.signed_document_id,
                             );

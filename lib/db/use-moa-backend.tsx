@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-12-16 22:06:16
+ * @ Modified time: 2025-12-17 13:23:52
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
@@ -92,16 +92,6 @@ export const fetchSignedDocument = async (signedDocumentId: string) => {
     .single();
 
   return signedDocument;
-};
-
-export const fetchPendingDocument = async (pendingDocumentId: string) => {
-  const pendingDocument = await db
-    .from("pending_documents")
-    .select("*")
-    .eq("id", pendingDocumentId)
-    .single();
-
-  return pendingDocument;
 };
 
 // ! GET RID OF ALL OF THESE FUNCTIONS ABOVE
