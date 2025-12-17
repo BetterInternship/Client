@@ -8,47 +8,31 @@ import React, {
   useCallback,
 } from "react";
 import { useSearchParams } from "next/navigation";
-import { CheckSquare, Square, Trash2 } from "lucide-react";
+import { CheckSquare, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  useJobsData,
-  useProfileData,
-  useApplicationsData,
-} from "@/lib/api/student.data.api";
+import { useJobsData, useProfileData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Job } from "@/lib/db/db.types";
 import { Paginator } from "@/components/ui/paginator";
-import { useModal, useModalRef } from "@/hooks/use-modal";
+import { useModalRef } from "@/hooks/use-modal";
 import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
-import { IncompleteProfileContent } from "@/components/modals/IncompleteProfileModal";
 import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { JobModal } from "@/components/modals/JobModal";
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { Toaster } from "@/components/ui/sonner";
-import { useGlobalModal } from "@/components/providers/ModalProvider";
-import { useQueryClient } from "@tanstack/react-query";
-import {
-  isProfileBaseComplete,
-  isProfileResume,
-  isProfileVerified,
-} from "@/lib/profile";
+import { isProfileBaseComplete, isProfileResume } from "@/lib/profile";
 import { useRouter } from "next/navigation";
 import { SaveJobButton } from "@/components/features/student/job/save-job-button";
 import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job-button";
-import { MassApplyModal } from "@/components/modals/MassApplyModal";
 import { ApplyConfirmModal } from "@/components/modals/ApplyConfirmModal";
 import { applyToJob } from "@/lib/application";
 import { PageError } from "@/components/ui/error";
-import {
-  useApplicationActions,
-  useProfileActions,
-} from "@/lib/api/student.actions.api";
-import { MassApplyComposer } from "@/components/features/student/mass-apply/MassApplyComposer";
-import { MassApplyResults } from "@/components/features/student/mass-apply/MassApplyResults";
+import { useApplicationActions } from "@/lib/api/student.actions.api";
+import useModalRegistry from "@/components/modals/useModalRegistry";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
+  const modalRegistry = useModalRegistry();
   const { isAuthenticated } = useAuthContext();
   const { isMobile } = useMobile();
 
@@ -80,13 +64,9 @@ export default function SearchPage() {
     jobMoaFilter,
   });
   const applicationActions = useApplicationActions();
-  const applications = useApplicationsData();
   const profile = useProfileData();
-  const profileActions = useProfileActions();
-  const queryClient = useQueryClient();
 
   // Modals
-  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
   const jobModalRef = useModalRef();
   const applySuccessModalRef = useModalRef();
   const applyConfirmModalRef = useModalRef();
@@ -130,9 +110,6 @@ export default function SearchPage() {
     }
   }, [jobsPage.length, searchParams, selectedJob]);
 
-  /* --------------------------------------------
-    * Selection helpers
-    -------------------------------------------- */
   const toggleSelect = (jobId: string) =>
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -180,17 +157,7 @@ export default function SearchPage() {
       !isProfileBaseComplete(profile.data) ||
       profile.data?.acknowledged_auto_apply === false
     ) {
-      openGlobalModal(
-        "incomplete-profile",
-        <IncompleteProfileContent
-          onFinish={() => closeGlobalModal("incomplete-profile")}
-        />,
-        {
-          allowBackdropClick: false,
-          title: "Complete your profile",
-          showHeaderDivider: true,
-        } as any,
-      );
+      modalRegistry.incompleteProfile.open();
       return;
     }
 
@@ -204,25 +171,13 @@ export default function SearchPage() {
       return;
     }
 
-    openGlobalModal(
-      "mass-apply-compose",
-      <MassApplyComposer
-        initialText={bulkCoverLetter}
-        disabled={massApplying}
-        minChars={0}
-        maxChars={500}
-        onCancel={() => closeGlobalModal("mass-apply-compose")}
-        onSubmit={async (text) => {
-          setBulkCoverLetter(text);
-          await runMassApply(text);
-          closeGlobalModal("mass-apply-compose");
-        }}
-      />,
-      {
-        title: `Apply to ${selectedIds.size} selected`,
-        allowBackdropClick: false,
-      } as any,
-    );
+    modalRegistry.massApplyCompose.open({
+      bulkCoverLetter,
+      setBulkCoverLetter,
+      runMassApply,
+      massApplying,
+      selectedCount: selectedIds.size + "",
+    });
   };
 
   const [massApplying, setMassApplying] = useState(false);
@@ -283,23 +238,12 @@ export default function SearchPage() {
             failed: [] as { job: Job; error: string }[],
           };
           setMassResult(data);
-          closeGlobalModal("mass-apply-compose");
-          openGlobalModal(
-            "mass-apply-results",
-            <MassApplyResults
-              data={data}
-              onClose={() => closeGlobalModal("mass-apply-results")}
-              onClearSelection={() => {
-                clearSelection();
-                setSelectMode(false);
-                closeGlobalModal("mass-apply-results");
-              }}
-            />,
-            {
-              title: "Bulk application summary",
-              showHeaderDivider: true,
-            } as any,
-          );
+          modalRegistry.massApplyCompose.close();
+          modalRegistry.massApplyResult.open({
+            massApplyResultsData: data,
+            clearSelection,
+            setSelectMode,
+          });
           return;
         }
 
@@ -333,32 +277,17 @@ export default function SearchPage() {
         setMassApplying(false);
         const data = { ok, skipped, failed };
         setMassResult(data);
-        closeGlobalModal("mass-apply-compose");
-        openGlobalModal(
-          "mass-apply-results",
-          <MassApplyResults
-            data={data}
-            onClose={() => closeGlobalModal("mass-apply-results")}
-            onClearSelection={() => {
-              clearSelection();
-              setSelectMode(false);
-              closeGlobalModal("mass-apply-results");
-            }}
-          />,
-          { title: "Bulk application summary", showHeaderDivider: true } as any,
-        );
+        modalRegistry.massApplyCompose.close();
+        modalRegistry.massApplyResult.open({
+          massApplyResultsData: data,
+          clearSelection,
+          setSelectMode,
+        });
       } finally {
         isSubmittingRef.current = false;
       }
     },
-    [
-      profile.data,
-      openGlobalModal,
-      closeGlobalModal,
-      applicationActions,
-      clearSelection,
-      setSelectMode,
-    ],
+    [profile.data, applicationActions, clearSelection, setSelectMode],
   );
   const router = useRouter();
 
@@ -688,12 +617,4 @@ export default function SearchPage() {
       />
     </>
   );
-}
-
-function useEvent<T extends (...args: any[]) => any>(fn: T) {
-  const ref = React.useRef(fn);
-  useEffect(() => {
-    ref.current = fn;
-  }, [fn]);
-  return useCallback((...args: Parameters<T>) => ref.current(...args), []);
 }

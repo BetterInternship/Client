@@ -13,8 +13,6 @@ import {
 } from "@/lib/db/use-moa-backend";
 import FormGenerateCard from "@/components/features/student/forms/FormGenerateCard";
 import MyFormCard from "@/components/features/student/forms/MyFormCard";
-import { useGlobalModal } from "@/components/providers/ModalProvider";
-import { FormFlowRouter } from "@/components/features/student/forms/FormFlowRouter";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useRouter } from "next/navigation";
 import { Loader } from "@/components/ui/loader";
@@ -25,6 +23,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/new-tabs";
+import useModalRegistry from "@/components/modals/useModalRegistry";
 
 /**
  * The forms page component
@@ -33,13 +32,13 @@ import {
  */
 export default function FormsPage() {
   const queryClient = useQueryClient();
-  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
   const profile = useProfileData();
   const router = useRouter();
   const userId = profile.data?.id;
   const [tab, setTab] = useState<string>("");
   const [formLoading, setFormLoading] = useState<boolean>(false);
   const [formList, setFormList] = useState<FormTemplate[]>([]);
+  const modalRegistry = useModalRegistry();
 
   // All form templates
   useEffect(() => {
@@ -52,31 +51,6 @@ export default function FormsPage() {
   }, [profile.data]);
 
   const generatorForms = formList;
-  const openFormModal = (
-    formName: string,
-    formVersion: number,
-    formLabel: string,
-  ) => {
-    openGlobalModal(
-      "form-generator-form",
-      <FormFlowRouter
-        formName={formName}
-        formVersion={formVersion}
-        onGoToMyForms={() => {
-          setTab("forms");
-          closeGlobalModal("form-generator-form");
-        }}
-      />,
-      {
-        title: `Generate ${formLabel}`,
-        hasClose: true,
-        onClose: () => closeGlobalModal("form-generator-form"),
-        allowBackdropClick: false,
-        panelClassName: "sm:w-full sm:max-w-2xl",
-        useCustomPanel: true,
-      },
-    );
-  };
 
   // All user generated forms
   const {
@@ -224,11 +198,12 @@ export default function FormsPage() {
                           );
                         }}
                         onGenerate={() =>
-                          openFormModal(
-                            form.formName,
-                            form.formVersion,
-                            form.formLabel,
-                          )
+                          modalRegistry.formGenerator.open({
+                            formName: form.formName,
+                            formVersion: form.formVersion,
+                            formLabel: form.formLabel,
+                            setTab,
+                          })
                         }
                       />
                     ))}

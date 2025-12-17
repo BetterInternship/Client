@@ -44,6 +44,7 @@ import {
   JobFilters,
   JobFilter,
 } from "@/components/features/student/search/JobFilters";
+import useModalRegistry from "@/components/modals/useModalRegistry";
 
 /* =======================================================================================
    Small UI Primitives
@@ -142,8 +143,7 @@ function MobileDrawer({
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
-  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
-  const queryClient = useQueryClient();
+  const modalRegistry = useModalRegistry();
 
   const handleLogout = () => logout().then(() => router.push("/"));
 
@@ -154,20 +154,7 @@ function MobileDrawer({
       !isProfileResume(profile.data) ||
       !isProfileBaseComplete(profile.data)
     ) {
-      openGlobalModal(
-        "incomplete-profile",
-        <IncompleteProfileContent
-          onFinish={() => {
-            closeGlobalModal("incomplete-profile");
-          }}
-        />,
-        {
-          allowBackdropClick: false,
-          onClose: () => {
-            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-          },
-        },
-      );
+      modalRegistry.incompleteProfile.open();
     } else {
       router.push(`/${link}`);
     }
@@ -223,7 +210,7 @@ function MobileDrawer({
                 </div>
                 <div className="flex flex-col leading-tight">
                   <span className="font-medium">
-                    {getFullName(profile.data!)}
+                    {getFullName(profile.data)}
                   </span>
                   <span className="text-xs text-gray-500">
                     {profile.data?.email}
@@ -339,9 +326,7 @@ export const ProfileButton: React.FC = () => {
   const conversations = useConversations();
   const { isAuthenticated, logout } = useAuthContext();
   const router = useRouter();
-  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
-  const queryClient = useQueryClient();
-
+  const modalRegistry = useModalRegistry();
   const handleLogout = () => logout().then(() => router.push("/"));
 
   const handleIncompleteProfileClick = (link: string) => {
@@ -351,18 +336,7 @@ export const ProfileButton: React.FC = () => {
       !isProfileResume(profile.data) ||
       !isProfileBaseComplete(profile.data)
     ) {
-      openGlobalModal(
-        "incomplete-profile",
-        <IncompleteProfileContent
-          onFinish={() => closeGlobalModal("incomplete-profile")}
-        />,
-        {
-          allowBackdropClick: false,
-          onClose: () => {
-            void queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-          },
-        },
-      );
+      modalRegistry.incompleteProfile.open();
     } else {
       router.push(`/${link}`);
     }
@@ -400,7 +374,7 @@ export const ProfileButton: React.FC = () => {
             <div className="overflow-hidden rounded-full flex items-center justify-center">
               <MyUserPfp size="7" />
             </div>
-            {getFullName(profile.data!, false)}
+            {getFullName(profile.data, false)}
           </>
         }
         content={
