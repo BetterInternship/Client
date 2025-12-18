@@ -1,16 +1,11 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
-import { File, Newspaper } from "lucide-react";
-import {
-  fetchForms,
-  fetchAllUserInitiatedForms,
-  FormTemplate,
-} from "@/lib/db/use-moa-backend";
+import { Newspaper } from "lucide-react";
+import { fetchForms, FormTemplate } from "@/lib/db/use-moa-backend";
 import FormGenerateCard from "@/components/features/student/forms/FormGenerateCard";
-import MyFormCard from "@/components/features/student/forms/MyFormCard";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useRouter } from "next/navigation";
 import { Loader } from "@/components/ui/loader";
@@ -55,27 +50,6 @@ export default function FormsPage() {
       .then(() => setFormLoading(false))
       .catch(() => setFormLoading(false));
   }, [profile.data]);
-
-  // All user generated forms
-  const {
-    data: myForms,
-    isLoading: loadingMyForms,
-    error: myFormsError,
-  } = useQuery({
-    queryKey: ["my_forms", userId],
-    enabled: !!userId,
-    queryFn: () => (userId ? fetchAllUserInitiatedForms(userId) : []),
-    staleTime: 10_000,
-    gcTime: 10_000,
-  });
-
-  const myFormsSorted = useMemo(
-    () =>
-      (myForms ?? [])
-        .slice()
-        .sort((a, b) => (b.timestamp + "").localeCompare(a.timestamp + "")),
-    [myForms],
-  );
 
   if (!profile.data?.department && !profile.isPending) router.push("/profile");
 
