@@ -158,14 +158,13 @@ export default function FormsPage() {
                 <div
                   className={cn(
                     formLoading ? "opacity-50 pointer-events-none" : "",
-                    "flex flex-col gap-2",
+                    "grid grid-cols-4",
                   )}
                 >
                   {formTemplates?.length !== 0 &&
                     formTemplates.map((form, i) => (
                       <FormGenerateCard
                         key={form.formName + i}
-                        formName={form.formName}
                         formLabel={form.formLabel}
                         onViewTemplate={() => {
                           if (!form.formDocument) {
