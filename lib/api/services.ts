@@ -353,6 +353,15 @@ export const UserService = {
       APIRouteBuilder("users").r(userId).build(),
     );
   },
+
+  async getUniqueDegrees(universityId?: string) {
+    return APIClient.get<{ degrees: string[] }>(
+      APIRouteBuilder("users")
+        .r("degrees")
+        .p(universityId ? { universityId } : {})
+        .build(),
+    );
+  },
 };
 
 // Job Services

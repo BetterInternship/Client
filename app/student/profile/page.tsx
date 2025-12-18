@@ -56,6 +56,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { Autocomplete, AutocompleteMulti } from "@/components/ui/autocomplete";
 import { AutocompleteTreeMulti } from "@/components/ui/autocomplete";
+import { AutocompleteWithCustom } from "@/components/ui/autocomplete-with-custom";
+import { useDegreeOptions } from "@/hooks/use-degree-options";
 import { POSITION_TREE } from "@/lib/consts/positions";
 import { OutsideTabs, OutsideTabPanel } from "@/components/ui/outside-tabs";
 import {
@@ -794,6 +796,9 @@ const ProfileEditor = forwardRef<
     { value: "credit", label: "Credited" },
     { value: "voluntary", label: "Voluntary" },
   ];
+  
+  // Fetch degree suggestions based on selected university
+  const { degrees: degreeOptions } = useDegreeOptions(formData.university);
 
   useEffect(() => {
     setUniversityOptions(universities);
@@ -1158,11 +1163,13 @@ const ProfileEditor = forwardRef<
             </div>
             <div>
               <ErrorLabel value={formErrors.degree} />
-              <FormInput
+              <AutocompleteWithCustom
                 label={"Degree / Program"}
                 value={formData.degree ?? undefined}
                 setter={fieldSetter("degree")}
-                placeholder="Indicate degree"
+                placeholder="Type your degree (e.g., Computer Science)"
+                options={degreeOptions}
+                required
               />
             </div>
             <div>
