@@ -12,6 +12,7 @@ import {
 import { APIClient, APIRouteBuilder } from "./api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { IFormMetadata } from "@betterinternship/core/forms";
+import { Tables } from "@betterinternship/schema.base";
 
 interface EmployerResponse extends FetchResponse {
   employer: Partial<Employer>;
@@ -229,7 +230,7 @@ export const UserService = {
 
   async getMyGeneratedForms() {
     const { forms } = await APIClient.get<{
-      forms: { label: string; timestamp: string }[];
+      forms: Tables<"user_internship_forms">[];
     }>(APIRouteBuilder("users").r("me/form-log").build());
     return forms ?? [];
   },

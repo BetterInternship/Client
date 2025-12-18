@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-12-18 15:17:08
- * @ Modified time: 2025-12-18 16:00:22
+ * @ Modified time: 2025-12-18 16:46:52
  * @ Description:
  *
  * These are the forms a user has generated or initiated.
@@ -16,6 +16,9 @@ import { createContext, useContext } from "react";
 interface IMyForms {
   forms: {
     label: string;
+    prefilled_document_id?: string | null;
+    pending_document_id?: string | null;
+    signed_document_id?: string | null;
     timestamp: number;
     singing_parties: { email: string; signed: boolean }[];
   }[];
@@ -49,6 +52,9 @@ export const MyFormsContextProvider = ({
         forms:
           forms?.map((f) => ({
             label: f.label ?? "",
+            prefilled_document_id: f.pending_document_id,
+            pending_document_id: f.pending_document_id,
+            signed_document_id: f.pending_document_id,
             timestamp: parseInt(f.timestamp),
             singing_parties: [],
           })) ?? [],

@@ -13,8 +13,8 @@ export default function FormGenerateCard({
     <>
       <Card className="flex flex-col justify-end items-center aspect-square p-0">
         <div className="flex gap-0 w-full border-b border-gray-300 overflow-hidden">
-          <div className="px-3 py-2 text-gray-600 text-sm text-ellipsis text-nowrap line-clamp-1">
-            {formLabel} hello hello helloa sdasd dasdasdasd
+          <div className="px-3 py-2 text-gray-700 text-xs text-ellipsis text-nowrap line-clamp-1">
+            {formLabel}
           </div>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center gap-4">

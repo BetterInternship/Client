@@ -128,7 +128,7 @@ export default function FormsPage() {
           <div
             className={cn(
               formLoading ? "opacity-50 pointer-events-none" : "",
-              "grid grid-cols-4 gap-5",
+              "grid sm:grid-cols-4 grid-cols-2 gap-5",
             )}
           >
             {formTemplates?.length !== 0 &&
