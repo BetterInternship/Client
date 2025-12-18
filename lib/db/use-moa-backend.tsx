@@ -1,13 +1,12 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-12-17 13:23:52
+ * @ Modified time: 2025-12-18 15:54:45
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
  */
 
-import { DocumentDatabase } from "@betterinternship/schema.moa";
 import { createClient } from "@supabase/supabase-js";
 import { Database, Tables } from "@betterinternship/schema.base";
 import { PublicUser } from "./db.types";
@@ -24,7 +23,6 @@ if (!DB_URL || !DB_ANON_KEY) {
   // ! PUT THIS BACK IN when codebase becomes stable
   // throw new Error("[ERROR:ENV] Missing supabase configuration (for MOA docs backend).");
 }
-const db = createClient<DocumentDatabase>(DB_URL ?? "", DB_ANON_KEY ?? "");
 const db_base = createClient<Database>(
   DB_URL_BASE ?? "",
   DB_ANON_KEY_BASE ?? "",
@@ -53,46 +51,3 @@ export const fetchForms = async (user: PublicUser) => {
   console.log("ball", r);
   return r;
 };
-
-/**
- * Fetches all past user-filled forms.
- *
- * @param userId
- * @returns
- */
-export const fetchAllUserInitiatedForms = async (userId: string) => {
-  if (!userId) return;
-
-  const { data, error } = await db_base
-    .from("user_internship_forms")
-    .select("*")
-    .eq("user_id", userId);
-
-  if (error) throw new Error(`Could not fetch user forms: ${error.message}`);
-  return data as IUserForm[];
-};
-
-// ! GET RID OF ALL OF THESE FUNCTIONS BELOW
-// ! GET RID OF ALL OF THESE FUNCTIONS BELOW
-export const fetchPrefilledDocument = async (prefilledDocumentId: string) => {
-  const prefilledDocument = await db
-    .from("external_documents")
-    .select("*")
-    .eq("id", prefilledDocumentId)
-    .single();
-
-  return prefilledDocument;
-};
-
-export const fetchSignedDocument = async (signedDocumentId: string) => {
-  const signedDocument = await db
-    .from("signed_documents")
-    .select("*")
-    .eq("id", signedDocumentId)
-    .single();
-
-  return signedDocument;
-};
-
-// ! GET RID OF ALL OF THESE FUNCTIONS ABOVE
-// ! GET RID OF ALL OF THESE FUNCTIONS ABOVE

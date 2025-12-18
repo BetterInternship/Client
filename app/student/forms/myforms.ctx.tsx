@@ -1,14 +1,15 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-12-18 15:17:08
- * @ Modified time: 2025-12-18 15:33:33
+ * @ Modified time: 2025-12-18 16:00:22
  * @ Description:
  *
  * These are the forms a user has generated or initiated.
  */
 
-import { useProfileData } from "@/lib/api/student.data.api";
-import { fetchAllUserInitiatedForms } from "@/lib/db/use-moa-backend";
+"use client";
+
+import { UserService } from "@/lib/api/services";
 import { useQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 
@@ -24,23 +25,20 @@ interface IMyForms {
 
 const MyFormsContext = createContext<IMyForms>({} as IMyForms);
 
-export const useMyForms = useContext<IMyForms>(MyFormsContext);
+export const useMyForms = () => useContext<IMyForms>(MyFormsContext);
 
 export const MyFormsContextProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
-  const profile = useProfileData();
-  const userId = profile.data.id;
   const {
     data: forms,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["my_forms", userId],
-    enabled: !!userId,
-    queryFn: () => (userId ? fetchAllUserInitiatedForms(userId) : []),
+    queryKey: ["my_forms"],
+    queryFn: () => UserService.getMyGeneratedForms(),
     staleTime: 10_000,
     gcTime: 10_000,
   });

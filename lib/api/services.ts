@@ -227,6 +227,13 @@ export const UserService = {
     return formTemplates;
   },
 
+  async getMyGeneratedForms() {
+    const { forms } = await APIClient.get<{
+      forms: { label: string; timestamp: string }[];
+    }>(APIRouteBuilder("users").r("me/form-log").build());
+    return forms ?? [];
+  },
+
   async getForm(formName: string) {
     const form = await APIClient.get<
       {
