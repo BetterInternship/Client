@@ -89,12 +89,14 @@ const FormLog = ({
     >
       <div className="px-5 flex flex-col border-b text-xs text-gray-700 font-normal">
         <div className="relative flex flex-row justify-between items-center h-full">
-          <div className="flex flex-row gap-2 items-center py-3">
-            {downloadUrl ? (
-              <CheckCircle2 className="w-4 h-4 text-supportive-foreground bg-supportive rounded-full" />
-            ) : (
-              <Loader className="animate-spin w-4 h-4 text-warning rounded-full" />
-            )}
+          <div className="flex flex-row gap-2 items-center py-3 min-w-5">
+            <div className="min-w-4">
+              {downloadUrl ? (
+                <CheckCircle2 className="w-4 h-4 text-supportive-foreground bg-supportive rounded-full" />
+              ) : (
+                <Loader className="animate-spin w-4 h-4 text-warning rounded-full" />
+              )}
+            </div>
             <div className="text-ellipsis line-clamp-1 pr-5">{label}</div>
           </div>
           <div className="h-full p-3 hover:bg-white/50 transition-all">
