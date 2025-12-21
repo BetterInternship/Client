@@ -10,28 +10,54 @@ import {
   Dot,
   DownloadIcon,
   Loader,
+  LogsIcon,
+  LucideChevronsLeft,
+  LucideChevronsRight,
 } from "lucide-react";
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 import { FormRendererContextProvider } from "@/components/features/student/forms/form-renderer.ctx";
+import { cn } from "@/lib/utils";
+import { HeaderIcon } from "@/components/ui/text";
+import { useMobile } from "@/hooks/use-mobile";
 
 const FormsLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <MyFormsContextProvider>
-      <div className="h-full overflow-auto">{children}</div>
-      <FormLogSidePanel />
+      <FormRendererContextProvider>
+        <div className="h-full overflow-auto">{children}</div>
+        <FormLogSidePanel />
+      </FormRendererContextProvider>
     </MyFormsContextProvider>
   );
 };
 
 const FormLogSidePanel = () => {
   const myForms = useMyForms();
+  const disabled = myForms.forms.length === 0;
+  const { isMobile } = useMobile();
+  const [isOpen, setIsOpen] = useState(true);
 
+  if (disabled) return <></>;
   return (
-    <FormRendererContextProvider>
-      <div className="absolute sm:max-w-sm w-full right-0 h-full max-h-full overflow-auto bg-white border-l border-slate-300">
+    <>
+      <div
+        className={cn(
+          "absolute sm:max-w-sm left-0 h-full max-h-full overflow-auto bg-white border-l border-slate-300 transition-all duration-500",
+          isOpen ? "left-0" : "left-[-96em]",
+        )}
+      >
         <div className="relative font-semibold tracking-tight border-b">
-          <div className="sticky top-0 text-primary font-bold text-xl p-5 bg-gray-50 z-50">
+          <div className="sticky flex items-center gap-2 top-0 text-primary font-bold text-xl p-5 bg-white z-50 border-b-2 border-t border-gray-100">
+            <HeaderIcon className="w-4 h-4 p-1" icon={LogsIcon} />
             My Form History
+            {isOpen && isMobile && (
+              <div
+                className="absolute right-0 p-3 m-2 bg-white rounded-full border border-gray-300 hover:bg-slate-100 transition-all hover:cursor-pointer"
+                onClick={() => setIsOpen(false)}
+              >
+                <LucideChevronsLeft className="w-4 h-4" />
+              </div>
+            )}
           </div>
           <div className="flex flex-col">
             {myForms.forms.map((form) => {
@@ -47,7 +73,23 @@ const FormLogSidePanel = () => {
           </div>
         </div>
       </div>
-    </FormRendererContextProvider>
+      {!isOpen && (
+        <div
+          className="absolute p-3 m-2 bg-white rounded-full border border-gray-300 hover:bg-slate-100 transition-all hover:cursor-pointer"
+          onClick={() => setIsOpen(true)}
+        >
+          <LucideChevronsRight className="w-4 h-4" />
+        </div>
+      )}
+      {isOpen && !isMobile && (
+        <div
+          className="absolute left-96 p-3 m-2 bg-white rounded-full border border-gray-300 hover:bg-slate-100 transition-all hover:cursor-pointer"
+          onClick={() => setIsOpen(false)}
+        >
+          <LucideChevronsLeft className="w-4 h-4" />
+        </div>
+      )}
+    </>
   );
 };
 
