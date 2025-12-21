@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { isProfileBaseComplete, isProfileResume } from "@/lib/profile";
-import { RefObject, useMemo } from "react";
-import { ModalHandle } from "@/hooks/use-modal";
+import { useMemo } from "react";
 import useModalRegistry from "@/components/modals/useModalRegistry";
 
 // ! todo: rmove openAppModal and use openGlobalModal instead
@@ -13,13 +12,11 @@ export const ApplyToJobButton = ({
   profile,
   job,
   openAppModal,
-  applySuccessModalRef,
   className,
 }: {
   profile: PublicUser | null;
   job: Job;
   openAppModal: () => void;
-  applySuccessModalRef?: RefObject<ModalHandle | null>;
   className?: string;
 }) => {
   const auth = useAuthContext();

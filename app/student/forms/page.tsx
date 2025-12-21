@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { Newspaper } from "lucide-react";
 import { fetchForms, FormTemplate } from "@/lib/db/use-moa-backend";
@@ -10,7 +9,6 @@ import { useProfileData } from "@/lib/api/student.data.api";
 import { useRouter } from "next/navigation";
 import { Loader } from "@/components/ui/loader";
 import { cn } from "@/lib/utils";
-import useModalRegistry from "@/components/modals/useModalRegistry";
 import { Separator } from "@/components/ui/separator";
 
 /**
@@ -19,14 +17,10 @@ import { Separator } from "@/components/ui/separator";
  * @component
  */
 export default function FormsPage() {
-  const queryClient = useQueryClient();
   const profile = useProfileData();
   const router = useRouter();
-  const userId = profile.data?.id;
-  const [tab, setTab] = useState<string>("");
   const [formLoading, setFormLoading] = useState<boolean>(false);
   const [formTemplates, setFormTemplates] = useState<FormTemplate[]>([]);
-  const modalRegistry = useModalRegistry();
 
   // All form templates
   useEffect(() => {
@@ -52,15 +46,6 @@ export default function FormsPage() {
   }, [profile.data]);
 
   if (!profile.data?.department && !profile.isPending) router.push("/profile");
-
-  useEffect(() => {
-    if (tab === "forms" && userId) {
-      void queryClient.invalidateQueries({
-        queryKey: ["my_forms", userId],
-        refetchType: "all",
-      });
-    }
-  }, [tab, userId, queryClient]);
 
   return (
     <div className="container max-w-5xl p-10 pt-16 mx-auto">
@@ -136,14 +121,7 @@ export default function FormsPage() {
                 <FormGenerateCard
                   key={form.formName + i}
                   formLabel={form.formLabel}
-                  onGenerate={() =>
-                    modalRegistry.formGenerator.open({
-                      formName: form.formName,
-                      formVersion: form.formVersion,
-                      formLabel: form.formLabel,
-                      setTab,
-                    })
-                  }
+                  onGenerate={() => router.push(`/forms/${form.formName}`)}
                 />
               ))}
           </div>

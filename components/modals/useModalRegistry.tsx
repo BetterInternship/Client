@@ -40,40 +40,6 @@ export const useModalRegistry = () => {
       close: () => close("incomplete-profile"),
     },
 
-    // The modal that's shown when someone is opening a form template
-    formGenerator: {
-      open: ({
-        formName,
-        formVersion,
-        formLabel,
-        setTab,
-      }: {
-        formName: string;
-        formVersion: number;
-        formLabel: string;
-        setTab: (tab: string) => void;
-      }) =>
-        open(
-          "form-generator-form",
-          <FormFlowRouter
-            formName={formName}
-            formVersion={formVersion}
-            onGoToMyForms={() => {
-              setTab("forms");
-              close("form-generator-form");
-            }}
-          />,
-          {
-            title: `Generate ${formLabel}`,
-            hasClose: true,
-            allowBackdropClick: false,
-            panelClassName: "sm:w-full sm:max-w-2xl",
-            useCustomPanel: true,
-          },
-        ),
-      close: () => close("form-generator-form"),
-    },
-
     // Mass apply fill-out modal
     massApplyCompose: {
       open: ({

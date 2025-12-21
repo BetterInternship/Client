@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 type Props = {
-  formKey: string;
   handleSubmit: (withEsign?: boolean) => Promise<void> | void;
   busy?: boolean;
   noEsign?: boolean;
@@ -12,7 +11,6 @@ type Props = {
 };
 
 export function GenerateButtons({
-  formKey,
   handleSubmit,
   busy = false,
   noEsign,
@@ -36,7 +34,7 @@ export function GenerateButtons({
       <Button
         onClick={noEsign ? onWithEsignClick : onWithoutEsignClick}
         variant={noEsign ? "default" : "outline"}
-        className="w-full sm:w-auto"
+        className="w-full sm:w-auto text-xs"
         disabled={isDisabled}
         aria-busy={busy}
       >
@@ -54,7 +52,7 @@ export function GenerateButtons({
       {!noEsign && (
         <Button
           onClick={onWithEsignClick}
-          className="w-full sm:w-auto"
+          className="w-full sm:w-auto text-xs"
           disabled={isDisabled}
           aria-busy={busy}
         >

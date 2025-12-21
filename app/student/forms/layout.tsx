@@ -35,7 +35,7 @@ const FormLogSidePanel = () => {
   const myForms = useMyForms();
   const disabled = myForms.forms.length === 0;
   const { isMobile } = useMobile();
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   if (disabled) return <></>;
   return (
@@ -75,7 +75,7 @@ const FormLogSidePanel = () => {
       </div>
       {!isOpen && (
         <div
-          className="absolute p-3 m-2 bg-white rounded-full border border-gray-300 hover:bg-slate-100 transition-all hover:cursor-pointer"
+          className="absolute p-3 m-2 mt-3 bg-white rounded-full border border-gray-300 hover:bg-slate-100 transition-all hover:cursor-pointer"
           onClick={() => setIsOpen(true)}
         >
           <LucideChevronsRight className="w-4 h-4" />
@@ -83,7 +83,7 @@ const FormLogSidePanel = () => {
       )}
       {isOpen && !isMobile && (
         <div
-          className="absolute left-96 p-3 m-2 bg-white rounded-full border border-gray-300 hover:bg-slate-100 transition-all hover:cursor-pointer"
+          className="absolute left-96 p-3 m-2 mt-3  bg-white rounded-full border border-gray-300 hover:bg-slate-100 transition-all hover:cursor-pointer"
           onClick={() => setIsOpen(false)}
         >
           <LucideChevronsLeft className="w-4 h-4" />

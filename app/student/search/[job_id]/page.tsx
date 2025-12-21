@@ -110,7 +110,6 @@ export default function JobPage() {
                         openAppModal={() =>
                           applyConfirmModalRef.current?.open()
                         }
-                        applySuccessModalRef={applySuccessModalRef}
                       />
                     </div>
                   )}
@@ -139,7 +138,7 @@ export default function JobPage() {
                                   year: "numeric",
                                   month: "long",
                                   day: "numeric",
-                                }
+                                },
                               )
                             : ""}
                         </p>
@@ -207,7 +206,7 @@ export default function JobPage() {
             (response) => {
               if (!response.success) return alert(response.message);
               applySuccessModalRef.current?.open();
-            }
+            },
           );
         }}
       />

@@ -136,7 +136,6 @@ export const JobModal = ({
               profile={profile.data}
               job={job}
               openAppModal={openAppModal}
-              applySuccessModalRef={applySuccessModalRef}
               className="w-full"
             />
           </div>
@@ -177,7 +176,7 @@ function ReqPill({ ok, label }: { ok: boolean; label: string }) {
         "flex items-center gap-2 rounded-[0.33em] px-2 py-0.5 text-sm border",
         ok
           ? "bg-supporitve/10 border-supportive/50 text-supprotive"
-          : "bg-warning/10 border-warning/50 text-warning"
+          : "bg-warning/10 border-warning/50 text-warning",
       )}
     >
       {ok ? (

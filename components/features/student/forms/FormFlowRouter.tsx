@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FormService } from "@/lib/api/services";
 import { FormRenderer } from "./FormRenderer";
 import { useProfileActions } from "@/lib/api/student.actions.api";
@@ -8,8 +8,6 @@ import { StepComplete } from "./StepComplete";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { GenerateButtons } from "./GenerateFormButtons";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
-import { FormMetadata } from "@betterinternship/core/forms";
-import { useQuery } from "@tanstack/react-query";
 import { Loader } from "@/components/ui/loader";
 import z from "zod";
 import { Button } from "@/components/ui/button";
@@ -17,22 +15,22 @@ import { cn } from "@/lib/utils";
 import { DocumentRenderer } from "./previewer";
 import { X, Loader2 } from "lucide-react";
 import { useAppContext } from "@/lib/ctx-app";
+import { useFormRendererContext } from "./form-renderer.ctx";
 
 type Errors = Record<string, string>;
 type FormValues = Record<string, string>;
 
 export function FormFlowRouter({
   formName,
-  formVersion,
   onGoToMyForms,
 }: {
   formName: string;
-  formVersion: number;
   onGoToMyForms?: () => void;
 }) {
   const { update } = useProfileActions();
   const { isMobile } = useAppContext();
   const profile = useProfileData();
+  const form = useFormRendererContext();
   const [done, setDone] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -52,20 +50,14 @@ export function FormFlowRouter({
     undefined,
   );
 
-  // Fetch form
-  const form = useQuery({
-    queryKey: ["forms", formName],
-    queryFn: () => FormService.getForm(formName),
-    enabled: !!formName,
-    staleTime: 60_000,
-  });
-
   // Get interface to form
-  const formMetdata = form.data?.formMetadata
-    ? new FormMetadata(form.data.formMetadata)
-    : null;
-  const fields = formMetdata?.getFieldsForClientService(values) ?? [];
+  const formMetdata = form.formMetadata ?? null;
+  const fields = formMetdata?.getFieldsForClientService() ?? [];
   const hasSignature = fields.some((field) => field.type === "signature");
+
+  useEffect(() => {
+    form.updateFormName(formName);
+  }, [formName]);
 
   // Saved autofill
   const autofillValues = useMemo(() => {
@@ -86,6 +78,8 @@ export function FormFlowRouter({
     for (const field of fields) {
       if (field.prefiller) {
         const s = field.prefiller({
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-expect-error
           user: profile.data,
         });
 
@@ -266,8 +260,8 @@ export function FormFlowRouter({
 
       // Generate form
       await FormService.requestGenerateForm({
-        formName,
-        formVersion,
+        formName: form.formName,
+        formVersion: form.formVersion,
         values: finalValues,
         parties: { userId: profile.data.id },
         disableEsign: !withEsign,
@@ -291,12 +285,12 @@ export function FormFlowRouter({
   };
 
   const openDocPreviewModal = () => {
-    if (!form.data?.documentUrl) return;
+    if (!form.document.url) return;
     openGlobalModal(
       "doc-preview",
       <div className="h-[95dvh] w-[95dvw] sm:w-[80vw]">
         <DocumentRenderer
-          documentUrl={form.data?.documentUrl}
+          documentUrl={form.document.url}
           highlights={[]}
           previews={previews}
           onHighlightFinished={() => {}}
@@ -314,7 +308,7 @@ export function FormFlowRouter({
     );
 
   // Loader
-  if (!form.data?.formMetadata || form.isLoading)
+  if (!form.formMetadata || form.loading)
     return <Loader>Loading form...</Loader>;
 
   return (
@@ -345,9 +339,9 @@ export function FormFlowRouter({
               )}
             >
               <div className="relative w-full overflow-auto rounded-md border">
-                {form.data.documentUrl ? (
+                {form.document.url ? (
                   <DocumentRenderer
-                    documentUrl={form.data.documentUrl}
+                    documentUrl={form.document.url}
                     highlights={[]}
                     previews={previews}
                     onHighlightFinished={() => {}}
@@ -363,7 +357,7 @@ export function FormFlowRouter({
                 <Button
                   className="w-full"
                   onClick={() => setMobileStage("form")}
-                  disabled={form.isLoading}
+                  disabled={form.loading}
                 >
                   Fill Form
                 </Button>
@@ -378,9 +372,9 @@ export function FormFlowRouter({
               )}
             >
               <div className="relative h-[60vh] w-full overflow-auto rounded-md border bg-white">
-                {form.data.documentUrl ? (
+                {form.document.url ? (
                   <DocumentRenderer
-                    documentUrl={form.data.documentUrl}
+                    documentUrl={form.document.url}
                     highlights={[]}
                     previews={previews}
                     onHighlightFinished={() => {}}
@@ -393,7 +387,6 @@ export function FormFlowRouter({
               </div>
               <div className="pt-2 flex justify-end gap-2 flex-wrap">
                 <GenerateButtons
-                  formKey={formName}
                   handleSubmit={handleSubmit}
                   busy={busy}
                   noEsign={!hasSignature}
@@ -405,16 +398,12 @@ export function FormFlowRouter({
               className={cn(mobileStage === "form" ? "" : "hidden", "sm:block")}
             >
               {/* loading / error / empty / form */}
-              {form.isLoading ? (
+              {form.loading ? (
                 <div className="flex items-center justify-center">
                   <span className="inline-flex items-center gap-2 text-sm">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Loading form…
                   </span>
-                </div>
-              ) : form.error ? (
-                <div className="text-sm text-rose-600">
-                  Failed to load fields.
                 </div>
               ) : fields.length === 0 ? (
                 <div className="text-sm text-gray-500">
@@ -441,7 +430,6 @@ export function FormFlowRouter({
                   <div className="flex flex-col gap-2 pb-3 sm:flex-row sm:justify-end">
                     <div className="flex justify-end gap-2 flex-wrap ">
                       <GenerateButtons
-                        formKey={formName}
                         handleSubmit={handleSubmit}
                         busy={busy}
                         noEsign={!hasSignature}
@@ -460,7 +448,7 @@ export function FormFlowRouter({
                           openDocPreviewModal();
                         }
                       }}
-                      disabled={!form.data.documentUrl}
+                      disabled={!form.document.url}
                       className="w-full sm:hidden"
                     >
                       Open Preview
@@ -474,12 +462,12 @@ export function FormFlowRouter({
 
         {/* PDF Renderer - hidden on small screens, visible on sm+ */}
         <div className="relative hidden max-w-[600px] min-w-[600px] overflow-auto sm:block">
-          {!form.isLoading ? (
+          {!form.loading ? (
             <div className="relative flex h-full w-full flex-row gap-2">
-              {!!form.data.documentUrl && (
+              {!!form.document.url && (
                 <div className="relative h-full w-full">
                   <DocumentRenderer
-                    documentUrl={form.data.documentUrl}
+                    documentUrl={form.document.url}
                     highlights={[]}
                     previews={previews}
                     onHighlightFinished={() => {}}
