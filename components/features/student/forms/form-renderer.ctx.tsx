@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-11-09 03:19:04
- * @ Modified time: 2025-12-21 20:59:49
+ * @ Modified time: 2025-12-21 22:09:39
  * @ Description:
  *
  * We can move this out later on so it becomes reusable in other places.
@@ -135,6 +135,7 @@ export const FormRendererContextProvider = ({
 
     void FormService.getForm(formName)
       .then((form) => {
+        const fm = new FormMetadata(form.formMetadata);
         const newFormName = form.formMetadata.name;
         const newFormVersion = form.formMetadata.schema_version;
 
@@ -142,6 +143,10 @@ export const FormRendererContextProvider = ({
         if (formName !== newFormName || formVersion !== newFormVersion) {
           setFormName(newFormName);
           setFormVersion(newFormVersion);
+          setDocumentName(form.formDocument.name);
+          setDocumentUrl(form.documentUrl);
+          setFields(fm.getFieldsForClientService());
+          setPreviewFields(fm.getFieldsForSigningService());
         }
       })
       .then(() => setLoading(false))

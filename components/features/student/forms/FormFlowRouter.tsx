@@ -13,7 +13,7 @@ import z from "zod";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { DocumentRenderer } from "./previewer";
-import { X, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useAppContext } from "@/lib/ctx-app";
 import { useFormRendererContext } from "./form-renderer.ctx";
 
@@ -49,6 +49,8 @@ export function FormFlowRouter({
   const [confirmWithEsign, setConfirmWithEsign] = useState<boolean | undefined>(
     undefined,
   );
+
+  console.log("FOMRURL", form.document.url);
 
   // Get interface to form
   const formMetdata = form.formMetadata ?? null;
@@ -318,14 +320,6 @@ export function FormFlowRouter({
           <h1 className="text-primary text-2xl font-bold tracking-tight whitespace-normal sm:whitespace-nowrap ">
             {formName}
           </h1>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => closeGlobalModal("form-generator-form")}
-            className="rounded-full"
-          >
-            <X className="h-4 w-4 text-gray-500" />
-          </Button>
         </div>
       </div>
       <div className="relative flex w-full h-[100%] max-w-7xl flex-col justify-center overflow-y-hidden sm:w-7xl sm:flex-row bg-white">
