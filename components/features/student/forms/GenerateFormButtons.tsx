@@ -29,7 +29,7 @@ export function GenerateButtons({
   const onWithEsignClick = () => void handleSubmit(true);
 
   return (
-    <div className="pt-2 flex justify-end gap-2 flex-wrap">
+    <div className="pt-2 flex items-start justify-end gap-2">
       {/* Secondary: WITHOUT e-sign */}
       <Button
         onClick={noEsign ? onWithEsignClick : onWithoutEsignClick}

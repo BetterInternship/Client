@@ -50,12 +50,12 @@ const FormLogSidePanel = () => {
       )}
       <div
         className={cn(
-          "absolute sm:max-w-sm left-0 h-full max-h-full overflow-auto bg-white border-l border-slate-300 transition-all duration-500",
+          "absolute sm:max-w-sm left-0 h-full max-h-full overflow-auto bg-white border-l border-slate-300 transition-all duration-500 z-50",
           isOpen ? "left-0" : "left-[-96em]",
         )}
       >
         <div className="relative font-semibold tracking-tight border-b">
-          <div className="sticky flex items-center gap-2 top-0 text-primary font-bold text-xl p-5 bg-white z-50 border-b-2 border-t border-gray-100">
+          <div className="sticky flex items-center gap-2 top-0 text-primary font-bold text-xl p-5 bg-white border-b-2 border-t border-gray-100">
             <HeaderIcon className="w-4 h-4 p-1" icon={LogsIcon} />
             My Form History
             {isOpen && isMobile && (
@@ -83,7 +83,7 @@ const FormLogSidePanel = () => {
       </div>
       {!isOpen && (
         <div
-          className="absolute p-3 m-2 mt-3 bg-white rounded-full border border-gray-300 hover:bg-slate-100 transition-all hover:cursor-pointer"
+          className="absolute p-3 m-2 mt-3 bg-white rounded-full border border-gray-300 hover:bg-slate-100 hover:opacity-100 opacity-50 transition-all hover:cursor-pointer"
           onClick={() => setIsOpen(true)}
         >
           <LucideChevronsRight className="w-4 h-4" />

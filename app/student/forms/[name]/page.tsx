@@ -25,8 +25,8 @@ export default function FormPage() {
     <div className="w-full flex flex-col h-full bg-gray-50">
       {/* // ! factor out this header in the future */}
       <div className="bg-white border-b border-gray-200 shadow-sm flex-shrink-0">
-        <div className="max-w-4xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+        <div className="max-w-7xl mx-auto py-4">
+          <div className="flex sm:items-center items-start justify-between flex-col sm:flex-row">
             <Button
               variant="ghost"
               onClick={() => router.back()}

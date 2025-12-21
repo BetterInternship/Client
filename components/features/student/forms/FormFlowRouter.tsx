@@ -314,25 +314,21 @@ export function FormFlowRouter({
     return <Loader>Loading form...</Loader>;
 
   return (
-    <div className="relative mx-auto flex h-[100%] max-h-[100%] w-full flex-col items-center overflow-y-hidden px-4 py-8 bg-white bg-opacity-25">
-      <div className="max-w-7xl w-full overflow-x-visible overflow-y-visible">
-        <div className="flex justify-between  bg-white px-5 py-2 pt-3 border-b rounded-[0.33em]  gap-1 rounded-b-none align-center">
-          <h1 className="text-primary text-2xl font-bold tracking-tight whitespace-normal sm:whitespace-nowrap ">
-            {formName}
-          </h1>
-        </div>
-      </div>
-      <div className="relative flex w-full h-[100%] max-w-7xl flex-col justify-center overflow-y-hidden sm:w-7xl sm:flex-row bg-white">
-        <div className="relative max-h-[100%] overflow-y-auto w-[100%] bg-white">
+    <div className="relative mx-auto flex h-[100%] max-h-[100%] w-full flex-col items-center overflow-y-hidden bg-opacity-25 max-w-7xl bg-white border border-gray-400 my-7 rounded-[0.33em]">
+      <h1 className="sticky bg-slate-500 text-white text-2xl font-bold tracking-tight whitespace-normal sm:whitespace-nowrap shadow-md px-7 py-4 w-full z-20">
+        {formName}
+      </h1>
+      <div className="relative flex w-full h-[100%] flex-col justify-center overflow-y-hidden sm:w-7xl sm:flex-row">
+        <div className="relative max-h-[100%] overflow-y-hidden w-[100%]">
           {/* Form Renderer */}
-          <div className="h-full max-h-[100%]  overflow-y-auto  border-r border-gray-300 px-5 pt-2 bg-white">
+          <div className="h-full max-h-[100%] overflow-y-auto bg-white">
             <div
               className={cn(
                 "mb-2 sm:hidden",
                 mobileStage === "preview" ? "" : "hidden",
               )}
             >
-              <div className="relative w-full overflow-auto rounded-md border">
+              <div className="relative w-full overflow-auto rounded-md border mx-auto">
                 {form.document.url ? (
                   <DocumentRenderer
                     documentUrl={form.document.url}
@@ -389,7 +385,11 @@ export function FormFlowRouter({
             </div>
 
             <div
-              className={cn(mobileStage === "form" ? "" : "hidden", "sm:block")}
+              className={cn(
+                "px-7 py-4",
+                mobileStage === "form" ? "" : "hidden",
+                "sm:block",
+              )}
             >
               {/* loading / error / empty / form */}
               {form.loading ? (
@@ -400,8 +400,8 @@ export function FormFlowRouter({
                   </span>
                 </div>
               ) : fields.length === 0 ? (
-                <div className="text-sm text-gray-500">
-                  No fields available for this request.
+                <div className="text-sm text-gray-500 py-2">
+                  This form does not have any fields to fill out.
                 </div>
               ) : (
                 <div className="space-y-4">
