@@ -12,6 +12,7 @@ import {
   Loader,
 } from "lucide-react";
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
+import { FormRendererContextProvider } from "@/components/features/student/forms/form-renderer.ctx";
 
 const FormsLayout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -26,25 +27,27 @@ const FormLogSidePanel = () => {
   const myForms = useMyForms();
 
   return (
-    <div className="absolute sm:max-w-sm w-full right-0 h-full max-h-full overflow-auto bg-white border-l border-slate-300">
-      <div className="relative font-semibold tracking-tight border-b">
-        <div className="sticky top-0 text-primary font-bold text-xl p-5 bg-gray-50 z-50">
-          My Form History
-        </div>
-        <div className="flex flex-col">
-          {myForms.forms.map((form) => {
-            return (
-              <FormLog
-                label={form.label}
-                downloadUrl={
-                  form.signed_document_id || form.prefilled_document_id
-                }
-              ></FormLog>
-            );
-          })}
+    <FormRendererContextProvider>
+      <div className="absolute sm:max-w-sm w-full right-0 h-full max-h-full overflow-auto bg-white border-l border-slate-300">
+        <div className="relative font-semibold tracking-tight border-b">
+          <div className="sticky top-0 text-primary font-bold text-xl p-5 bg-gray-50 z-50">
+            My Form History
+          </div>
+          <div className="flex flex-col">
+            {myForms.forms.map((form) => {
+              return (
+                <FormLog
+                  label={form.label}
+                  downloadUrl={
+                    form.signed_document_id || form.prefilled_document_id
+                  }
+                ></FormLog>
+              );
+            })}
+          </div>
         </div>
       </div>
-    </div>
+    </FormRendererContextProvider>
   );
 };
 

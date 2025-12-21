@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-12-18 15:17:08
- * @ Modified time: 2025-12-18 16:46:52
+ * @ Modified time: 2025-12-21 21:03:01
  * @ Description:
  *
  * These are the forms a user has generated or initiated.
@@ -9,7 +9,7 @@
 
 "use client";
 
-import { UserService } from "@/lib/api/services";
+import { FormService } from "@/lib/api/services";
 import { useQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 
@@ -41,7 +41,7 @@ export const MyFormsContextProvider = ({
     error,
   } = useQuery({
     queryKey: ["my_forms"],
-    queryFn: () => UserService.getMyGeneratedForms(),
+    queryFn: () => FormService.getMyGeneratedForms(),
     staleTime: 10_000,
     gcTime: 10_000,
   });

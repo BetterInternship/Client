@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { UserService } from "@/lib/api/services";
-import { DynamicForm } from "./DynamicForm";
+import { FormService, UserService } from "@/lib/api/services";
+import { FormRenderer } from "./FormRenderer";
 import { useProfileActions } from "@/lib/api/student.actions.api";
 import { StepComplete } from "./StepComplete";
 import { useProfileData } from "@/lib/api/student.data.api";
@@ -55,7 +55,7 @@ export function FormFlowRouter({
   // Fetch form
   const form = useQuery({
     queryKey: ["forms", formName],
-    queryFn: () => UserService.getForm(formName),
+    queryFn: () => FormService.getForm(formName),
     enabled: !!formName,
     staleTime: 60_000,
   });
@@ -64,7 +64,7 @@ export function FormFlowRouter({
   const formMetdata = form.data?.formMetadata
     ? new FormMetadata(form.data.formMetadata)
     : null;
-  const fields = formMetdata?.getFieldsForClient(values) ?? [];
+  const fields = formMetdata?.getFieldsForClientService(values) ?? [];
   const hasSignature = fields.some((field) => field.type === "signature");
 
   // Saved autofill
@@ -110,7 +110,8 @@ export function FormFlowRouter({
     if (!field) return;
 
     // Only validate student/manual fields here
-    if (field.party !== "student" || field.source !== "manual") return;
+    if (field.signing_party_id !== "student" || field.source !== "manual")
+      return;
 
     const value = finalValues[field.field];
     const coerced = field.coerce(value);
@@ -147,7 +148,8 @@ export function FormFlowRouter({
     const finalValues = { ...autofillValues, ...values };
     const errors: Record<string, string> = {};
     for (const field of fields) {
-      if (field.party !== "student" || field.source !== "manual") continue;
+      if (field.signing_party_id !== "student" || field.source !== "manual")
+        continue;
 
       // Check if missing
       const value = finalValues[field.field];
@@ -263,7 +265,7 @@ export function FormFlowRouter({
       });
 
       // Generate form
-      await UserService.requestGenerateForm({
+      await FormService.requestGenerateForm({
         formName,
         formVersion,
         values: finalValues,
@@ -420,12 +422,11 @@ export function FormFlowRouter({
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <DynamicForm
+                  <FormRenderer
                     fields={fields}
                     values={values}
                     onChange={setField}
                     errors={errors}
-                    showErrors={submitted}
                     formName={formName}
                     onBlurValidate={validateFieldOnBlur}
                     autofillValues={autofillValues ?? {}}
@@ -433,7 +434,8 @@ export function FormFlowRouter({
                       setValues((prev) => ({ ...prev, ...newValues }))
                     }
                     setPreviews={setPreviews}
-                    renderFields={formMetdata?.getFieldsForServer() ?? []}
+                    blocks={[]}
+                    pendingUrl={""}
                   />
 
                   <div className="flex flex-col gap-2 pb-3 sm:flex-row sm:justify-end">

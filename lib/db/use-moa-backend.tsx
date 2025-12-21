@@ -1,14 +1,14 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-11 00:00:00
- * @ Modified time: 2025-12-18 16:20:48
+ * @ Modified time: 2025-12-21 21:02:34
  * @ Description:
  *
  * This handles interactions with our MOA Api server.
  */
 
 import { PublicUser } from "./db.types";
-import { UserService } from "../api/services";
+import { FormService } from "../api/services";
 
 // Environment setup
 const DB_URL = process.env.NEXT_PUBLIC_MOA_DOCS_SUPABASE_URL;
@@ -34,6 +34,6 @@ export interface FormTemplate {
  */
 export const fetchForms = async (user: PublicUser) => {
   if (!user.department) return [];
-  const r = await UserService.getMyFormTemplates();
+  const r = await FormService.getMyFormTemplates();
   return r;
 };

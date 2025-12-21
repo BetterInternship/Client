@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-16 22:43:51
- * @ Modified time: 2025-10-31 16:18:44
+ * @ Modified time: 2025-12-21 20:07:54
  * @ Description:
  *
  * The field renderer 3000 automatically renders the correct field for the situation!
@@ -10,19 +10,18 @@
 "use client";
 
 import {
-  FormDropdown,
-  FormDatePicker,
-  TimeInputNative,
-  FormInput,
   FormCheckbox,
+  FormDatePicker,
+  FormDropdown,
+  FormInput,
   FormTextarea,
+  TimeInputNative,
 } from "@/components/EditForm";
 import {
   AutocompleteTreeMulti,
   TreeOption,
 } from "@/components/ui/autocomplete";
 import { ClientField } from "@betterinternship/core/forms";
-import { Info } from "lucide-react";
 
 export function FieldRenderer({
   field,
@@ -40,7 +39,7 @@ export function FieldRenderer({
 }) {
   // Placeholder or error
   const TooltipLabel = () => {
-    if (error) return <p className="text-xs text-destructive mt-1">{error}</p>;
+    if (error) return <p className="text-destructive mt-1 text-xs">{error}</p>;
 
     return null;
   };
@@ -294,7 +293,7 @@ const FieldRendererCheckbox = ({
         checked={!!value}
         tooltip={field.tooltip_label}
         sentence={field.tooltip_label}
-        setter={(c) => onChange(c)}
+        setter={(c: boolean) => onChange(c)}
         onBlur={() => onBlur?.()}
       />
       <TooltipContent />

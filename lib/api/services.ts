@@ -171,28 +171,7 @@ export type ApproveSignatoryResponse = {
   [k: string]: any;
 };
 
-export const UserService = {
-  async getMyProfile() {
-    const result = APIClient.get<UserResponse>(
-      APIRouteBuilder("users").r("me").build(),
-    );
-    return result;
-  },
-
-  async updateMyProfile(data: Partial<PublicUser>) {
-    return APIClient.put<UserResponse>(
-      APIRouteBuilder("users").r("me").build(),
-      data,
-    );
-  },
-
-  async updateMyDocData(data: Partial<PublicUser>) {
-    return APIClient.put<UserResponse>(
-      APIRouteBuilder("users").r("my-doc-data").build(),
-      data,
-    );
-  },
-
+export const FormService = {
   async requestGenerateForm(data: {
     formName: string;
     formVersion: number;
@@ -266,6 +245,29 @@ export const UserService = {
       ...form,
       documentUrl: documentUrl.formDocument,
     };
+  },
+};
+
+export const UserService = {
+  async getMyProfile() {
+    const result = APIClient.get<UserResponse>(
+      APIRouteBuilder("users").r("me").build(),
+    );
+    return result;
+  },
+
+  async updateMyProfile(data: Partial<PublicUser>) {
+    return APIClient.put<UserResponse>(
+      APIRouteBuilder("users").r("me").build(),
+      data,
+    );
+  },
+
+  async updateMyDocData(data: Partial<PublicUser>) {
+    return APIClient.put<UserResponse>(
+      APIRouteBuilder("users").r("my-doc-data").build(),
+      data,
+    );
   },
 
   async parseResume(form: FormData) {
