@@ -40,6 +40,14 @@ const FormLogSidePanel = () => {
   if (disabled) return <></>;
   return (
     <>
+      {isOpen && (
+        <div
+          className={cn(
+            "absolute w-full h-full transition-opacity duration-500",
+            isOpen ? "bg-black bg-opacity-15" : "bg-transparent bg-opacity-0",
+          )}
+        />
+      )}
       <div
         className={cn(
           "absolute sm:max-w-sm left-0 h-full max-h-full overflow-auto bg-white border-l border-slate-300 transition-all duration-500",
@@ -67,7 +75,7 @@ const FormLogSidePanel = () => {
                   downloadUrl={
                     form.signed_document_id || form.prefilled_document_id
                   }
-                ></FormLog>
+                />
               );
             })}
           </div>
