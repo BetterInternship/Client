@@ -50,12 +50,12 @@ export function FormFlowRouter({
     undefined,
   );
 
-  console.log("FOMRURL", form.document.url);
-
   // Get interface to form
   const formMetdata = form.formMetadata ?? null;
   const fields = formMetdata?.getFieldsForClientService() ?? [];
   const hasSignature = fields.some((field) => field.type === "signature");
+
+  console.log("fields", formMetdata, fields);
 
   useEffect(() => {
     form.updateFormName(formName);
@@ -417,7 +417,7 @@ export function FormFlowRouter({
                       setValues((prev) => ({ ...prev, ...newValues }))
                     }
                     setPreviews={setPreviews}
-                    blocks={[]}
+                    blocks={form.blocks}
                     pendingUrl={""}
                   />
 

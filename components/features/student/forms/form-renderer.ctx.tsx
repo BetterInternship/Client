@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-11-09 03:19:04
- * @ Modified time: 2025-12-21 22:09:39
+ * @ Modified time: 2025-12-23 00:31:57
  * @ Description:
  *
  * We can move this out later on so it becomes reusable in other places.
@@ -16,6 +16,7 @@ import {
   FormMetadata,
   IFormMetadata,
   IFormParameters,
+  ClientBlock,
 } from "@betterinternship/core/forms";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,7 @@ export interface IFormRendererContext {
   formMetadata: FormMetadata<[]>;
   document: IDocument;
   fields: (ClientField<[]> | ClientPhantomField<[]>)[];
+  blocks: ClientBlock<[]>[];
   params: IFormParameters;
   keyedFields: (ServerField & { _id: string })[];
   previews: Record<number, React.ReactNode[]>;
@@ -71,6 +73,7 @@ export const FormRendererContextProvider = ({
   const [formName, setFormName] = useState<string>("");
   const [formVersion, setFormVersion] = useState<number>(0);
   const [previewFields, setPreviewFields] = useState<ServerField[]>([]);
+  const [blocks, setBlocks] = useState<ClientBlock<[]>[]>([]);
   const [fields, setFields] = useState<ClientField<[]>[]>([]);
   const [params, setParams] = useState<IFormParameters>({});
   const [previews, setPreviews] = useState<Record<number, React.ReactNode[]>>(
@@ -141,11 +144,13 @@ export const FormRendererContextProvider = ({
 
         // Only update form if it's new
         if (formName !== newFormName || formVersion !== newFormVersion) {
+          setFormMetadata(fm);
           setFormName(newFormName);
           setFormVersion(newFormVersion);
           setDocumentName(form.formDocument.name);
           setDocumentUrl(form.documentUrl);
           setFields(fm.getFieldsForClientService());
+          setBlocks(fm.getAllBlocksForClientService());
           setPreviewFields(fm.getFieldsForSigningService());
         }
       })
@@ -181,6 +186,7 @@ export const FormRendererContextProvider = ({
     formVersion,
     formMetadata,
     fields,
+    blocks,
     params,
     keyedFields,
     previews,

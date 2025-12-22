@@ -215,6 +215,7 @@ export const FormService = {
   },
 
   async getForm(formName: string) {
+    console.log("bbb", formName);
     const form = await APIClient.get<
       {
         formDocument: {
@@ -227,10 +228,10 @@ export const FormService = {
       } & FetchResponse
     >(
       APIRouteBuilder("forms")
-        .r("form-latest")
-        .p({ name: formName })
+        .r(`form-latest?name=${formName}`)
         .build({ moaServer: true }),
     );
+    console.log("aaa", form);
     const documentUrl = await APIClient.get<
       {
         formDocument: string;
