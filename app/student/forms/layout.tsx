@@ -55,7 +55,7 @@ const FormLogSidePanel = () => {
         )}
       >
         <div className="relative font-semibold tracking-tight border-b">
-          <div className="sticky flex items-center gap-2 top-0 text-primary font-bold text-xl p-5 bg-white border-b-2 border-t border-gray-100">
+          <div className="sticky flex items-center gap-2 top-0 text-primary font-bold text-xl p-5 bg-white border-b-2 border-t border-gray-100 z-30">
             <HeaderIcon className="w-4 h-4 p-1" icon={LogsIcon} />
             My Form History
             {isOpen && isMobile && (

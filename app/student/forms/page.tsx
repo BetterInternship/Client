@@ -27,20 +27,7 @@ export default function FormsPage() {
     if (!profile.data) return;
     setFormLoading(true);
     void fetchForms(profile.data)
-      .then((formTemplates) =>
-        setFormTemplates([
-          // ! remove this after testing lol
-          ...formTemplates,
-          ...formTemplates,
-          ...formTemplates,
-          ...formTemplates,
-          ...formTemplates,
-          ...formTemplates,
-          ...formTemplates,
-          ...formTemplates,
-          ...formTemplates,
-        ]),
-      )
+      .then((formTemplates) => setFormTemplates(formTemplates))
       .then(() => setFormLoading(false))
       .catch(() => setFormLoading(false));
   }, [profile.data]);
