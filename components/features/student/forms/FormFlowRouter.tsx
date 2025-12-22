@@ -389,16 +389,6 @@ export function FormFlowRouter({
                 busy={busy}
                 hasSignature={hasSignature}
               />
-
-              <div className="flex flex-col gap-2 pb-3 sm:flex-row sm:justify-end">
-                <div className="flex justify-end gap-2 flex-wrap ">
-                  <GenerateButtons
-                    handleSubmit={handleSubmit}
-                    busy={busy}
-                    noEsign={!hasSignature}
-                  />
-                </div>
-              </div>
             </>
           )}
         </div>
