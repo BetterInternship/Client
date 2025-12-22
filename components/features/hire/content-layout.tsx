@@ -81,14 +81,25 @@ function SideNav({ items }: { items: NavItem[] }) {
                 isActive && "[&_svg]:fill-primary/20"
               )}
             >
-              <div className="flex items-center w-full flex-row gap-2">
-                {icon}
+              <div className="flex items-center w-full flex-row gap-2 lg:pr-24">
+                <div className="relative">
+                  {icon}
+                  {
+                    (label === "Chats" && unreads.length > 0) && 
+                    <div className="lg:hidden bg-primary rounded-full p-1 absolute left-2.5 top-0" />
+                  }
+                </div>
                 <div className="hidden lg:block">
                   {label}
                 </div>
               </div>
-              <div className="lg:pl-24">
-                {(label === "Chats" && unreads.length > 0) && <div className="bg-primary rounded-full text-white text-[11px] px-2 font-bold">{unreads.length}</div>}
+              <div className="hidden lg:block">
+                {
+                  (label === "Chats" && unreads.length > 0) && 
+                  <div className="bg-primary rounded-full text-white text-[11px] px-2 font-bold">
+                    {unreads.length}
+                  </div>
+                }
               </div>
             </Button>
           </Link>

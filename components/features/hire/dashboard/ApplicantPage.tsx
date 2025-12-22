@@ -27,6 +27,7 @@ import { ArrowLeft,
         MessageCirclePlus,
         SendHorizonal,
         Archive,
+        HandHelping,
      } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, useRef  } from "react";
@@ -287,25 +288,38 @@ export function ApplicantPage({
                                 <div className="flex items-center">
                                     <div className={cn("relative", isMobile ? "mr-2" : "mr-4")}>
                                         <UserPfp user_id={user?.id || ""} size={cn(isMobile ? "16" : "20")}/>
-                                        {internshipPreferences?.internship_type ==
-                                            "credited" && (
-                                                <div className="absolute -bottom-1 -right-1">
+                                    </div>
+                                    <div className="mx-2">
+                                        <div className="flex gap-2">
+                                            <h3 className={cn(isMobile? "text-lg" : "text-xl")}>{getFullName(application?.user)}</h3>
+                                            {internshipPreferences?.internship_type ===
+                                                "credited" ? (
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <div className="bg-green-500 rounded-full p-1 border-2 border-white">
-                                                                <Award className="w-4 h-4 text-white" />
+                                                            <div className="bg-supportive/10 rounded-md px-2 py-1 w-fit flex justify-center items-center gap-1 text-xs text-supportive">
+                                                                <Award className="w-4 h-4" />
+                                                                <span>Credited</span>
                                                             </div>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
                                                             <p className="text-gray-500 text-xs">This applicant is looking for internships for credit</p>
                                                         </TooltipContent>
                                                     </Tooltip>
-                                                </div>
-                                            )
-                                        }
-                                    </div>
-                                    <div className="mx-2">
-                                        <h3 className={cn(isMobile? "text-lg" : "text-xl")}>{getFullName(application?.user)}</h3>
+                                                ) : (
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <div className="bg-muted rounded-md px-2 py-1 w-fit flex justify-center items-center gap-1 text-xs text-muted-foreground">
+                                                                <HandHelping className="w-4 h-4" />
+                                                                <span>Voluntary</span>
+                                                            </div>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p className="text-gray-500 text-xs">This applicant is looking for internships voluntarily</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                )
+                                            }
+                                        </div>
                                         <div className={cn("items-center gap-2 text-xs text-gray-500", isMobile ? "flex-col" : "flex")}>
                                             {/* COntact info */}
                                             <div className="flex gap-1 items-center">
