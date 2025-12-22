@@ -43,14 +43,14 @@ const FormLogSidePanel = () => {
       {isOpen && (
         <div
           className={cn(
-            "absolute w-full h-full transition-opacity duration-500",
+            "absolute w-full h-full transition-opacity duration-500 z-[100]",
             isOpen ? "bg-black bg-opacity-15" : "bg-transparent bg-opacity-0",
           )}
         />
       )}
       <div
         className={cn(
-          "absolute sm:max-w-sm left-0 h-full max-h-full overflow-auto bg-white border-l border-slate-300 transition-all duration-500 z-50",
+          "absolute sm:max-w-sm left-0 h-full max-h-full overflow-auto bg-white border-l border-slate-300 transition-all duration-500 z-[100]",
           isOpen ? "left-0" : "left-[-96em]",
         )}
       >
@@ -91,7 +91,7 @@ const FormLogSidePanel = () => {
       )}
       {isOpen && !isMobile && (
         <div
-          className="absolute left-96 p-3 m-2 mt-3  bg-white rounded-full border border-gray-300 hover:bg-slate-100 transition-all hover:cursor-pointer"
+          className="absolute left-96 p-3 m-2 mt-3  bg-white rounded-full border border-gray-300 hover:bg-slate-100 transition-all hover:cursor-pointer z-[100]"
           onClick={() => setIsOpen(false)}
         >
           <LucideChevronsLeft className="w-4 h-4" />

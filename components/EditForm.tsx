@@ -375,7 +375,9 @@ export const FormCheckbox = ({
           )}
           onCheckedChange={(checked) => setter && setter(!!checked)}
         >
-          {indeterminate && <Minus className="text-primary opacity-75 h-4 w-4" />}
+          {indeterminate && (
+            <Minus className="text-primary opacity-75 h-4 w-4" />
+          )}
           {checked && <Check className="text-primary opacity-75 h-4 w-4" />}
         </Checkbox>
         {sentence && (

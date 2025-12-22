@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-16 22:43:51
- * @ Modified time: 2025-12-21 20:05:47
+ * @ Modified time: 2025-12-23 01:25:48
  * @ Description:
  *
  * This kinda cool.
@@ -12,7 +12,7 @@
 // Renders headers
 export function HeaderRenderer({ content }: { content: string }) {
   return (
-    <div className="text-3xl font-bold tracking-tight text-gray-700">
+    <div className="text-lg font-bold tracking-tight text-gray-700 mt-8 mb-2">
       {content}
     </div>
   );

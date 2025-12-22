@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { FieldRenderer } from "./FieldRenderer";
 import { HeaderRenderer, ParagraphRenderer } from "./BlockRenderer";
 import { useFormRendererContext } from "./form-renderer.ctx";
+import { GenerateButtons } from "./GenerateFormButtons";
 
 export function FormRenderer({
   formName,
@@ -18,8 +19,10 @@ export function FormRenderer({
   onChange,
   errors = {},
   setPreviews,
-  pendingUrl,
   onBlurValidate,
+  handleSubmit,
+  busy,
+  hasSignature,
 }: {
   formName: string;
   signingPartyId?: string;
@@ -28,11 +31,13 @@ export function FormRenderer({
   values: Record<string, any>;
   autofillValues: Record<string, string>;
   errors?: Record<string, string>;
-  pendingUrl: string;
   setValues: (values: Record<string, string>) => void;
   onChange: (key: string, value: any) => void;
   setPreviews?: (previews: Record<number, React.ReactNode[]>) => void;
   onBlurValidate?: (fieldKey: string) => void;
+  handleSubmit?: () => Promise<void>;
+  busy?: boolean;
+  hasSignature?: boolean;
 }) {
   const form = useFormRendererContext();
   const filteredFields = fields
@@ -96,19 +101,31 @@ export function FormRenderer({
   // Refresh previews when fields change
   useEffect(() => {
     refreshPreviews();
-  }, [form.keyedFields, values, pendingUrl]);
+  }, [form.keyedFields, values]);
 
   return (
-    <div className="space-y-4">
+    <div className="relative max-h-[100%] overflow-auto pb-8">
+      <div className="sticky top-0 px-7 py-3 text-2xl font-bold tracking-tighter text-gray-700 text-opacity-60 bg-gray-100 border-b border-gray-300 z-[50] shadow-soft">
+        {formName}
+      </div>
       <BlocksRenderer
         formKey={formName}
-        blocks={blocks}
+        blocks={[...blocks, ...blocks]}
         values={values}
         onChange={onChange}
         errors={errors}
         setSelected={setSelectedField}
         onBlurValidate={onBlurValidate}
       />
+      {handleSubmit && (
+        <div className="px-7 py-3">
+          <GenerateButtons
+            handleSubmit={handleSubmit}
+            busy={busy}
+            noEsign={!hasSignature}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -133,7 +150,7 @@ const BlocksRenderer = ({
   if (!blocks.length) return null;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 px-7">
       {blocks
         .toSorted((a, b) => a.order - b.order)
         .map((block) => (

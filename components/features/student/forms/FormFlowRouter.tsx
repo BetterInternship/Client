@@ -286,22 +286,6 @@ export function FormFlowRouter({
     void handleSubmit(true, true);
   };
 
-  const openDocPreviewModal = () => {
-    if (!form.document.url) return;
-    openGlobalModal(
-      "doc-preview",
-      <div className="h-[95dvh] w-[95dvw] sm:w-[80vw]">
-        <DocumentRenderer
-          documentUrl={form.document.url}
-          highlights={[]}
-          previews={previews}
-          onHighlightFinished={() => {}}
-        />
-      </div>,
-      { title: "Document Preview" },
-    );
-  };
-
   if (done)
     return (
       <div className="bg-white p-8 rounded-[0.25em]">
@@ -315,143 +299,108 @@ export function FormFlowRouter({
 
   return (
     <div className="relative mx-auto flex h-[100%] max-h-[100%] w-full flex-col items-center overflow-y-hidden bg-opacity-25 max-w-7xl bg-white border border-gray-400 my-7 rounded-[0.33em]">
-      <h1 className="sticky bg-slate-500 text-white text-2xl font-bold tracking-tight whitespace-normal sm:whitespace-nowrap shadow-md px-7 py-4 w-full z-20">
-        {formName}
-      </h1>
       <div className="relative flex w-full h-[100%] flex-col justify-center overflow-y-hidden sm:w-7xl sm:flex-row">
-        <div className="relative max-h-[100%] overflow-y-hidden w-[100%]">
-          {/* Form Renderer */}
-          <div className="h-full max-h-[100%] overflow-y-auto bg-white">
-            <div
-              className={cn(
-                "mb-2 sm:hidden",
-                mobileStage === "preview" ? "" : "hidden",
-              )}
-            >
-              <div className="relative w-full overflow-auto rounded-md border mx-auto">
-                {form.document.url ? (
-                  <DocumentRenderer
-                    documentUrl={form.document.url}
-                    highlights={[]}
-                    previews={previews}
-                    onHighlightFinished={() => {}}
-                  />
-                ) : (
-                  <div className="p-4 text-sm text-gray-500">
-                    No preview available
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-2 flex gap-2">
-                <Button
-                  className="w-full"
-                  onClick={() => setMobileStage("form")}
-                  disabled={form.loading}
-                >
-                  Fill Form
-                </Button>
-              </div>
-            </div>
-
-            {/* Mobile: confirm preview stage */}
-            <div
-              className={cn(
-                "sm:hidden",
-                mobileStage === "confirm" ? "" : "hidden",
-              )}
-            >
-              <div className="relative h-[60vh] w-full overflow-auto rounded-md border bg-white">
-                {form.document.url ? (
-                  <DocumentRenderer
-                    documentUrl={form.document.url}
-                    highlights={[]}
-                    previews={previews}
-                    onHighlightFinished={() => {}}
-                  />
-                ) : (
-                  <div className="p-4 text-sm text-gray-500">
-                    No preview available
-                  </div>
-                )}
-              </div>
-              <div className="pt-2 flex justify-end gap-2 flex-wrap">
-                <GenerateButtons
-                  handleSubmit={handleSubmit}
-                  busy={busy}
-                  noEsign={!hasSignature}
+        {/* Form Renderer */}
+        <div className="relative w-full h-full max-h-full overflow-hidden">
+          <div
+            className={cn(
+              "mb-2 sm:hidden",
+              mobileStage === "preview" ? "" : "hidden",
+            )}
+          >
+            <div className="relative w-full overflow-auto rounded-md border mx-auto">
+              {form.document.url ? (
+                <DocumentRenderer
+                  documentUrl={form.document.url}
+                  highlights={[]}
+                  previews={previews}
+                  onHighlightFinished={() => {}}
                 />
-              </div>
+              ) : (
+                <div className="p-4 text-sm text-gray-500">
+                  No preview available
+                </div>
+              )}
             </div>
 
-            <div
-              className={cn(
-                "px-7 py-4",
-                mobileStage === "form" ? "" : "hidden",
-                "sm:block",
-              )}
-            >
-              {/* loading / error / empty / form */}
-              {form.loading ? (
-                <div className="flex items-center justify-center">
-                  <span className="inline-flex items-center gap-2 text-sm">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Loading form…
-                  </span>
-                </div>
-              ) : fields.length === 0 ? (
-                <div className="text-sm text-gray-500 py-2">
-                  This form does not have any fields to fill out.
-                </div>
+            <div className="mt-2 flex gap-2">
+              <Button
+                className="w-full"
+                onClick={() => setMobileStage("form")}
+                disabled={form.loading}
+              >
+                Fill Form
+              </Button>
+            </div>
+          </div>
+
+          {/* Mobile: confirm preview stage */}
+          <div
+            className={cn(
+              "sm:hidden",
+              mobileStage === "confirm" ? "" : "hidden",
+            )}
+          >
+            <div className="relative h-[60vh] w-full overflow-auto rounded-md border bg-white">
+              {form.document.url ? (
+                <DocumentRenderer
+                  documentUrl={form.document.url}
+                  highlights={[]}
+                  previews={previews}
+                  onHighlightFinished={() => {}}
+                />
               ) : (
-                <div className="space-y-4">
-                  <FormRenderer
-                    fields={fields}
-                    values={values}
-                    onChange={setField}
-                    errors={errors}
-                    formName={formName}
-                    onBlurValidate={validateFieldOnBlur}
-                    autofillValues={autofillValues ?? {}}
-                    setValues={(newValues) =>
-                      setValues((prev) => ({ ...prev, ...newValues }))
-                    }
-                    setPreviews={setPreviews}
-                    blocks={form.blocks}
-                    pendingUrl={""}
-                  />
-
-                  <div className="flex flex-col gap-2 pb-3 sm:flex-row sm:justify-end">
-                    <div className="flex justify-end gap-2 flex-wrap ">
-                      <GenerateButtons
-                        handleSubmit={handleSubmit}
-                        busy={busy}
-                        noEsign={!hasSignature}
-                      />
-                    </div>
-
-                    {/* On mobile, also show a secondary preview button */}
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        // On mobile while editing, allow quick jump to preview stage
-                        if (isMobile) {
-                          setMobileStage("preview");
-                          window.scrollTo({ top: 0, behavior: "smooth" });
-                        } else {
-                          openDocPreviewModal();
-                        }
-                      }}
-                      disabled={!form.document.url}
-                      className="w-full sm:hidden"
-                    >
-                      Open Preview
-                    </Button>
-                  </div>
+                <div className="p-4 text-sm text-gray-500">
+                  No preview available
                 </div>
               )}
             </div>
           </div>
+
+          {/* loading / error / empty / form */}
+          {form.loading ? (
+            <div className="flex items-center justify-center">
+              <span className="inline-flex items-center gap-2 text-sm">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading form…
+              </span>
+            </div>
+          ) : fields.length === 0 ? (
+            <div className="text-sm text-gray-500 p-4">
+              This form does not have any fields to fill out.
+            </div>
+          ) : (
+            <>
+              <FormRenderer
+                fields={fields}
+                values={values}
+                onChange={setField}
+                errors={errors}
+                formName={formName}
+                onBlurValidate={validateFieldOnBlur}
+                autofillValues={autofillValues ?? {}}
+                setValues={(newValues) =>
+                  setValues((prev) => ({ ...prev, ...newValues }))
+                }
+                setPreviews={setPreviews}
+                blocks={form.blocks}
+                // ! MOVE THIS FUNCTION INSIDE OF THE FORM RENDERER
+                handleSubmit={handleSubmit}
+                busy={busy}
+                hasSignature={hasSignature}
+              />
+
+              <div className="flex flex-col gap-2 pb-3 sm:flex-row sm:justify-end">
+                <div className="flex justify-end gap-2 flex-wrap ">
+                  <GenerateButtons
+                    handleSubmit={handleSubmit}
+                    busy={busy}
+                    noEsign={!hasSignature}
+                  />
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* PDF Renderer - hidden on small screens, visible on sm+ */}
