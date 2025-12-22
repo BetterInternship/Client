@@ -14,9 +14,36 @@ import { cn } from "@/lib/utils";
 import { DocumentRenderer } from "./previewer";
 import { Loader2 } from "lucide-react";
 import { useFormRendererContext } from "./form-renderer.ctx";
+import { ClientField } from "@betterinternship/core/forms";
 
 type Errors = Record<string, string>;
 type FormValues = Record<string, string>;
+
+const validateValue = (
+  field: ClientField<[]>,
+  values: FormValues,
+  autofillValues: FormValues,
+) => {
+  const finalValues = { ...values, ...autofillValues };
+  // Only validate student/manual fields here
+  // ! change the party to initiator
+  if (field.signing_party_id !== "party-student" || field.source !== "manual")
+    return;
+
+  const value = finalValues[field.field];
+  const coerced = field.coerce(value);
+  const result = field.validator?.safeParse(coerced);
+
+  if (result?.error) {
+    const errorString = z
+      .treeifyError(result.error)
+      .errors.map((e) => e.split(" ").slice(0).join(" "))
+      .join("\n");
+    return `${field.label}: ${errorString}`;
+  }
+
+  return null;
+};
 
 export function FormFlowRouter({
   formName,
@@ -51,8 +78,6 @@ export function FormFlowRouter({
   const formMetdata = form.formMetadata ?? null;
   const fields = formMetdata?.getFieldsForClientService() ?? [];
   const hasSignature = fields.some((field) => field.type === "signature");
-
-  console.log("fields", formMetdata, fields);
 
   useEffect(() => {
     form.updateFormName(formName);
@@ -98,25 +123,14 @@ export function FormFlowRouter({
 
   // Validate a single field on blur and update errors immediately
   const validateFieldOnBlur = (fieldKey: string) => {
-    const finalValues = { ...autofillValues, ...values };
     const field = fields.find((f) => f.field === fieldKey);
     if (!field) return;
+    const error = validateValue(field, values, autofillValues ?? {});
 
-    // Only validate student/manual fields here
-    if (field.signing_party_id !== "student" || field.source !== "manual")
-      return;
-
-    const value = finalValues[field.field];
-    const coerced = field.coerce(value);
-    const result = field.validator?.safeParse(coerced);
-    if (result?.error) {
-      const errorString = z
-        .treeifyError(result.error)
-        .errors.map((e) => e.split(" ").slice(0).join(" "))
-        .join("\n");
+    if (error) {
       setErrors((prev) => ({
         ...prev,
-        [field.field]: `${field.label}: ${errorString}`,
+        [field.field]: error,
       }));
     } else {
       setErrors((prev) => {
@@ -141,24 +155,8 @@ export function FormFlowRouter({
     const finalValues = { ...autofillValues, ...values };
     const errors: Record<string, string> = {};
     for (const field of fields) {
-      // ! Check if signatory id is equal to the students' signatory id
-      // ! PLEASE do ths
-      if (field.source !== "manual") continue;
-
-      // Check if missing
-      const value = finalValues[field.field];
-
-      // Check validator error
-      const coerced = field.coerce(value);
-      const result = field.validator?.safeParse(coerced);
-      if (result?.error) {
-        const errorString = z
-          .treeifyError(result.error)
-          .errors.map((e) => e.split(" ").slice(0).join(" "))
-          .join("\n");
-        errors[field.field] = `${field.label}: ${errorString}`;
-        continue;
-      }
+      const error = validateValue(field, values, autofillValues ?? {});
+      if (error) errors[field.field] = error;
     }
 
     // If any errors, disallow proceed
