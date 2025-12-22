@@ -8,14 +8,13 @@ import { Button } from "@/components/ui/button";
 import { useAppContext } from "@/lib/ctx-app";
 import { ArrowLeft } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 /**
  * The individual form page.
  * Allows viewing an individual form.
  */
 export default function FormPage() {
-  const [formName, setFormName] = useState<string>("");
   const router = useRouter();
   const params = useParams();
   const form = useFormRendererContext();
@@ -39,7 +38,6 @@ export default function FormPage() {
 
   useEffect(() => {
     const { name } = params;
-    setFormName(name as string);
     form.updateFormName(name as string);
   }, [params]);
 
@@ -74,7 +72,7 @@ export default function FormPage() {
         </div>
       </div>
 
-      <FormFlowRouter formName={formName} />
+      <FormFlowRouter formName={form.formName} />
     </div>
   );
 }

@@ -6,7 +6,6 @@ import { FormRenderer } from "./FormRenderer";
 import { useProfileActions } from "@/lib/api/student.actions.api";
 import { StepComplete } from "./StepComplete";
 import { useProfileData } from "@/lib/api/student.data.api";
-import { GenerateButtons } from "./GenerateFormButtons";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { Loader } from "@/components/ui/loader";
 import z from "zod";
@@ -14,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { DocumentRenderer } from "./previewer";
 import { Loader2 } from "lucide-react";
-import { useAppContext } from "@/lib/ctx-app";
 import { useFormRendererContext } from "./form-renderer.ctx";
 
 type Errors = Record<string, string>;
@@ -28,7 +26,6 @@ export function FormFlowRouter({
   onGoToMyForms?: () => void;
 }) {
   const { update } = useProfileActions();
-  const { isMobile } = useAppContext();
   const profile = useProfileData();
   const form = useFormRendererContext();
   const [done, setDone] = useState(false);
@@ -144,8 +141,9 @@ export function FormFlowRouter({
     const finalValues = { ...autofillValues, ...values };
     const errors: Record<string, string> = {};
     for (const field of fields) {
-      if (field.signing_party_id !== "student" || field.source !== "manual")
-        continue;
+      // ! Check if signatory id is equal to the students' signatory id
+      // ! PLEASE do ths
+      if (field.source !== "manual") continue;
 
       // Check if missing
       const value = finalValues[field.field];
@@ -365,31 +363,26 @@ export function FormFlowRouter({
                 Loading form…
               </span>
             </div>
-          ) : fields.length === 0 ? (
-            <div className="text-sm text-gray-500 p-4">
-              This form does not have any fields to fill out.
-            </div>
           ) : (
-            <>
-              <FormRenderer
-                fields={fields}
-                values={values}
-                onChange={setField}
-                errors={errors}
-                formName={formName}
-                onBlurValidate={validateFieldOnBlur}
-                autofillValues={autofillValues ?? {}}
-                setValues={(newValues) =>
-                  setValues((prev) => ({ ...prev, ...newValues }))
-                }
-                setPreviews={setPreviews}
-                blocks={form.blocks}
-                // ! MOVE THIS FUNCTION INSIDE OF THE FORM RENDERER
-                handleSubmit={handleSubmit}
-                busy={busy}
-                hasSignature={hasSignature}
-              />
-            </>
+            <FormRenderer
+              blocks={form.blocks}
+              values={values}
+              onChange={setField}
+              errors={errors}
+              formName={formName}
+              onBlurValidate={validateFieldOnBlur}
+              autofillValues={autofillValues ?? {}}
+              setValues={(newValues) =>
+                setValues((prev) => ({ ...prev, ...newValues }))
+              }
+              // ! change this to initiator in the future
+              signingPartyId={"party-student"}
+              setPreviews={setPreviews}
+              // ! MOVE THIS FUNCTION INSIDE OF THE FORM RENDERER
+              handleSubmit={handleSubmit}
+              busy={busy}
+              hasSignature={hasSignature}
+            />
           )}
         </div>
 

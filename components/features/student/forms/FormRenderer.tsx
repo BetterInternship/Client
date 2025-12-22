@@ -11,7 +11,6 @@ import { GenerateButtons } from "./GenerateFormButtons";
 export function FormRenderer({
   formName,
   signingPartyId,
-  fields,
   blocks,
   values,
   setValues,
@@ -26,7 +25,6 @@ export function FormRenderer({
 }: {
   formName: string;
   signingPartyId?: string;
-  fields: ClientField<[]>[];
   blocks: ClientBlock<[]>[];
   values: Record<string, any>;
   autofillValues: Record<string, string>;
@@ -40,9 +38,16 @@ export function FormRenderer({
   hasSignature?: boolean;
 }) {
   const form = useFormRendererContext();
-  const filteredFields = fields
-    .filter((field) => field.signing_party_id === signingPartyId)
-    .filter((field) => field.source === "manual");
+  const filteredBlocks = blocks
+    .filter((block) => block.signing_party_id === signingPartyId)
+    .filter(
+      (block) =>
+        block.field_schema?.source === "manual" ||
+        block.phantom_field_schema?.source === "manual",
+    );
+  const filteredFields = filteredBlocks
+    .map((block) => block.field_schema ?? block.phantom_field_schema)
+    .filter((block) => !!block);
   const [selectedField, setSelectedField] = useState<string>("");
 
   // Seed from saved autofill
@@ -68,13 +73,12 @@ export function FormRenderer({
 
   const refreshPreviews = () => {
     const newPreviews: Record<number, React.ReactNode[]> = {};
-    // Push new previews here
     form.keyedFields
       .filter((kf) => filteredFields.find((f) => f.field === kf.field))
       .filter((kf) => kf.x && kf.y)
       .forEach((field) => {
         if (!newPreviews[field.page]) newPreviews[field.page] = [];
-        const clientField = fields.find((f) => f.field === field.field);
+        const clientField = filteredFields.find((f) => f.field === field.field);
         let value = values[field.field] as string;
 
         // Map values appropriately for preview
@@ -108,9 +112,10 @@ export function FormRenderer({
       <div className="sticky top-0 px-7 py-3 text-2xl font-bold tracking-tighter text-gray-700 text-opacity-60 bg-gray-100 border-b border-gray-300 z-[50] shadow-soft">
         {formName}
       </div>
+      <div className="py-4"></div>
       <BlocksRenderer
         formKey={formName}
-        blocks={blocks}
+        blocks={filteredBlocks}
         values={values}
         onChange={onChange}
         errors={errors}
@@ -148,6 +153,8 @@ const BlocksRenderer = ({
   onBlurValidate?: (fieldKey: string) => void;
 }) => {
   if (!blocks.length) return null;
+
+  console.log(blocks);
 
   return (
     <div className="space-y-3 px-7">

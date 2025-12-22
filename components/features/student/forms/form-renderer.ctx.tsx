@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-11-09 03:19:04
- * @ Modified time: 2025-12-23 00:31:57
+ * @ Modified time: 2025-12-23 04:37:44
  * @ Description:
  *
  * We can move this out later on so it becomes reusable in other places.
@@ -143,16 +143,14 @@ export const FormRendererContextProvider = ({
         const newFormVersion = form.formMetadata.schema_version;
 
         // Only update form if it's new
-        if (formName !== newFormName || formVersion !== newFormVersion) {
-          setFormMetadata(fm);
-          setFormName(newFormName);
-          setFormVersion(newFormVersion);
-          setDocumentName(form.formDocument.name);
-          setDocumentUrl(form.documentUrl);
-          setFields(fm.getFieldsForClientService());
-          setBlocks(fm.getAllBlocksForClientService());
-          setPreviewFields(fm.getFieldsForSigningService());
-        }
+        setFormMetadata(fm);
+        setFormName(newFormName);
+        setFormVersion(newFormVersion);
+        setDocumentName(form.formDocument.name);
+        setDocumentUrl(form.documentUrl);
+        setFields(fm.getFieldsForClientService());
+        setBlocks(fm.getAllBlocksForClientService());
+        setPreviewFields(fm.getFieldsForSigningService());
       })
       .then(() => setLoading(false))
       .catch((e) => {
@@ -161,6 +159,7 @@ export const FormRendererContextProvider = ({
       });
 
     setLoading(true);
+    console.log("UPDATING FORM", formName);
     return () => controller.abort();
   }, [formName, formVersion]);
 
