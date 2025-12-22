@@ -19,6 +19,7 @@ import { FormRendererContextProvider } from "@/components/features/student/forms
 import { cn } from "@/lib/utils";
 import { HeaderIcon } from "@/components/ui/text";
 import { useMobile } from "@/hooks/use-mobile";
+import { formatTimeAgo } from "../../../lib/utils/date-utils";
 
 const FormsLayout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -68,16 +69,19 @@ const FormLogSidePanel = () => {
             )}
           </div>
           <div className="flex flex-col">
-            {myForms.forms.map((form) => {
-              return (
-                <FormLog
-                  label={form.label}
-                  downloadUrl={
-                    form.signed_document_id || form.prefilled_document_id
-                  }
-                />
-              );
-            })}
+            {myForms.forms
+              .toSorted((a, b) => b.timestamp.localeCompare(a.timestamp))
+              .map((form) => {
+                return (
+                  <FormLog
+                    label={form.label}
+                    timestamp={formatTimeAgo(form.timestamp)}
+                    downloadUrl={
+                      form.signed_document_id || form.prefilled_document_id
+                    }
+                  />
+                );
+              })}
           </div>
         </div>
       </div>
@@ -103,9 +107,11 @@ const FormLogSidePanel = () => {
 
 const FormLog = ({
   label,
+  timestamp,
   downloadUrl,
 }: {
   label: string;
+  timestamp: string;
   downloadUrl?: string | null;
 }) => {
   const [downloading, setDownloading] = useState(false);
@@ -141,8 +147,8 @@ const FormLog = ({
       onClick={() => (downloadUrl ? handleDownload() : setIsOpen(!isOpen))}
     >
       <div className="px-5 flex flex-col border-b text-xs text-gray-700 font-normal">
-        <div className="relative flex flex-row justify-between items-center h-full">
-          <div className="flex flex-row gap-2 items-center py-3 min-w-5">
+        <div className="relative flex flex-row justify-between h-full items-start">
+          <div className="flex flex-row gap-2 py-3 min-w-5 items-start">
             <div className="min-w-4">
               {downloadUrl ? (
                 <CheckCircle2 className="w-4 h-4 text-supportive-foreground bg-supportive rounded-full" />
@@ -150,15 +156,18 @@ const FormLog = ({
                 <Loader className="animate-spin w-4 h-4 text-warning rounded-full" />
               )}
             </div>
-            <div className="text-ellipsis line-clamp-1 pr-5">{label}</div>
+            <div>
+              <div className="text-ellipsis line-clamp-1 pr-5">{label}</div>
+              <div className="pr-5 text-gray-400 mt-1">{timestamp}</div>
+            </div>
           </div>
-          <div className="h-full p-3 hover:bg-white/50 transition-all">
+          <div className="h-full p-2 m-1 hover:bg-white/50 transition-all rounded-full aspect-square">
             {downloadUrl ? (
-              <DownloadIcon className="text-slate-400 w-4 h-4" />
+              <DownloadIcon className="text-slate-400 w-4 h-4 mb-1" />
             ) : isOpen ? (
-              <ChevronUp className="text-slate-400 w-4 h-4" />
+              <ChevronUp className="text-slate-400 w-4 h-4 mb-1" />
             ) : (
-              <ChevronDown className="text-slate-400 w-4 h-4" />
+              <ChevronDown className="text-slate-400 w-4 h-4 mb-1" />
             )}
           </div>
         </div>

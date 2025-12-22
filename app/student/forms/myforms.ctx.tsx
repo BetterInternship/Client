@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-12-18 15:17:08
- * @ Modified time: 2025-12-21 21:03:01
+ * @ Modified time: 2025-12-23 03:04:10
  * @ Description:
  *
  * These are the forms a user has generated or initiated.
@@ -19,7 +19,7 @@ interface IMyForms {
     prefilled_document_id?: string | null;
     pending_document_id?: string | null;
     signed_document_id?: string | null;
-    timestamp: number;
+    timestamp: string;
     singing_parties: { email: string; signed: boolean }[];
   }[];
   loading: boolean;
@@ -55,7 +55,7 @@ export const MyFormsContextProvider = ({
             prefilled_document_id: f.pending_document_id,
             pending_document_id: f.pending_document_id,
             signed_document_id: f.pending_document_id,
-            timestamp: parseInt(f.timestamp),
+            timestamp: f.timestamp,
             singing_parties: [],
           })) ?? [],
         loading: isLoading,

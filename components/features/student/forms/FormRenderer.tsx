@@ -110,7 +110,7 @@ export function FormRenderer({
       </div>
       <BlocksRenderer
         formKey={formName}
-        blocks={[...blocks, ...blocks]}
+        blocks={blocks}
         values={values}
         onChange={onChange}
         errors={errors}
