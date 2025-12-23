@@ -14,6 +14,7 @@ import { DocumentRenderer } from "./previewer";
 import { Loader2 } from "lucide-react";
 import { useFormRendererContext } from "./form-renderer.ctx";
 import { validateField } from "./utils";
+import { useMyAutofill } from "@/hooks/use-my-autofill";
 
 type Errors = Record<string, string>;
 type FormValues = Record<string, string>;
@@ -54,37 +55,7 @@ export function FormFlowRouter({
   }, [formName]);
 
   // Saved autofill
-  const autofillValues = useMemo(() => {
-    const internshipMoaFields = profile.data?.internship_moa_fields as Record<
-      string,
-      Record<string, string>
-    >;
-    if (!internshipMoaFields) return;
-
-    // Destructure to isolate only shared fields or fields for that form
-    const autofillValues = {
-      ...(internshipMoaFields.base ?? {}),
-      ...internshipMoaFields.shared,
-      ...(internshipMoaFields[formName] ?? {}),
-    };
-
-    // Populate with prefillers as well
-    for (const field of fields) {
-      if (field.prefiller) {
-        const s = field.prefiller({
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-expect-error
-          user: profile.data,
-        });
-
-        // ! Tentative fix for spaces, move to abstraction later on
-        autofillValues[field.field] =
-          typeof s === "string" ? s.trim().replace("  ", " ") : s;
-      }
-    }
-
-    return autofillValues;
-  }, [profile.data]);
+  const autofillValues = useMyAutofill();
 
   // Field setter
   const setField = (key: string, v: string | number) => {

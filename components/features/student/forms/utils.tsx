@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-12-23 20:41:54
- * @ Modified time: 2025-12-23 21:08:27
+ * @ Modified time: 2025-12-23 21:32:19
  * @ Description:
  *
  * Move some of these utils to the core package maybe.
@@ -21,8 +21,8 @@ import z from "zod";
  * @param blocks
  * @param signingPartyId
  */
-export const filterBlocks = (
-  blocks: ClientBlock<[]>[],
+export const filterBlocks = <T extends any[]>(
+  blocks: ClientBlock<T>[],
   signingPartyId?: string,
 ) => {
   return blocks
@@ -40,7 +40,7 @@ export const filterBlocks = (
  * @param block
  * @returns
  */
-export const isBlockField = (block: ClientBlock<[]>) => {
+export const isBlockField = <T extends any[]>(block: ClientBlock<T>) => {
   return !!block.field_schema || !!block.phantom_field_schema;
 };
 
@@ -50,9 +50,9 @@ export const isBlockField = (block: ClientBlock<[]>) => {
  * @param block
  * @returns
  */
-export const getBlockField = (
-  block: ClientBlock<[]>,
-): ClientField<[]> | ClientPhantomField<[]> => {
+export const getBlockField = <T extends any[]>(
+  block: ClientBlock<T>,
+): ClientField<T> | ClientPhantomField<T> => {
   if (!isBlockField(block)) throw new Error("Block is not a field!");
   return block.field_schema ?? block.phantom_field_schema!;
 };
@@ -66,7 +66,10 @@ export const getBlockField = (
  * @param value
  * @returns
  */
-export const coerceForField = (field: ClientField<[]>, value: unknown) => {
+export const coerceForField = <T extends any[]>(
+  field: ClientField<T>,
+  value: unknown,
+) => {
   switch (field.type) {
     case "number":
       // eslint-disable-next-line @typescript-eslint/no-base-to-string
@@ -92,7 +95,10 @@ export const coerceForField = (field: ClientField<[]>, value: unknown) => {
  * @param value
  * @returns
  */
-export function isEmptyFor(field: ClientField<[]>, value: unknown) {
+export const isEmptyFor = <T extends any[]>(
+  field: ClientField<T>,
+  value: unknown,
+) => {
   switch (field.type) {
     case "date":
       return !(typeof value === "number" && value > 0); // 0/undefined = empty
@@ -103,7 +109,7 @@ export function isEmptyFor(field: ClientField<[]>, value: unknown) {
     default:
       return value === undefined || value === "";
   }
-}
+};
 
 // ! move to core package
 type FormValues = Record<string, string>;
@@ -116,8 +122,8 @@ type FormValues = Record<string, string>;
  * @param autofillValues
  * @returns
  */
-export const validateField = (
-  field: ClientField<[]>,
+export const validateField = <T extends any[]>(
+  field: ClientField<T>,
   values: FormValues,
   autofillValues: FormValues,
 ) => {
@@ -150,8 +156,8 @@ export const validateField = (
  * @param autofillValues
  * @returns
  */
-export const seedValuesWithAutofill = (
-  blocks: ClientBlock<[]>[],
+export const seedValuesWithAutofill = <T extends any[]>(
+  blocks: ClientBlock<T>[],
   values: FormValues,
   autofillValues: FormValues,
 ) => {

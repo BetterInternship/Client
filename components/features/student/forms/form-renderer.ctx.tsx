@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-11-09 03:19:04
- * @ Modified time: 2025-12-23 21:21:30
+ * @ Modified time: 2025-12-23 21:30:47
  * @ Description:
  *
  * We can move this out later on so it becomes reusable in other places.
@@ -21,18 +21,19 @@ import {
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { FormService } from "@/lib/api/services";
+import { PublicUser } from "@/lib/db/db.types";
 
 // ? Current schema version, update if needed; tells us if out of date
 export const SCHEMA_VERSION = 1;
 
 // Context interface
-export interface IFormRendererContext {
+export interface IFormRendererContext<T extends any[]> {
   formName: string;
   formVersion: number;
-  formMetadata: FormMetadata<[]>;
+  formMetadata: FormMetadata<T>;
   document: IDocument;
-  fields: (ClientField<[]> | ClientPhantomField<[]>)[];
-  blocks: ClientBlock<[]>[];
+  fields: (ClientField<T> | ClientPhantomField<T>)[];
+  blocks: ClientBlock<T>[];
   params: IFormParameters;
   keyedFields: (ServerField & { _id: string })[];
   previews: Record<number, React.ReactNode[]>;
@@ -51,8 +52,8 @@ interface IDocument {
 }
 
 // Context defs
-const FormRendererContext = createContext<IFormRendererContext>(
-  {} as IFormRendererContext,
+const FormRendererContext = createContext<IFormRendererContext<[PublicUser]>>(
+  {} as IFormRendererContext<[PublicUser]>,
 );
 export const useFormRendererContext = () => useContext(FormRendererContext);
 
@@ -67,14 +68,26 @@ export const FormRendererContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  // Define state here
+  // Default form metadata
+  const initialFormMetadata: IFormMetadata = {
+    name: "",
+    label: "",
+    schema_version: SCHEMA_VERSION,
+    schema: { blocks: [] },
+    subscribers: [],
+    signing_parties: [],
+  };
+
+  const [formMetadata, setFormMetadata] = useState<FormMetadata<[PublicUser]>>(
+    new FormMetadata(initialFormMetadata),
+  );
   const [documentName, setDocumentName] = useState<string>("");
   const [documentUrl, setDocumentUrl] = useState<string>("");
   const [formName, setFormName] = useState<string>("");
   const [formVersion, setFormVersion] = useState<number>(0);
   const [previewFields, setPreviewFields] = useState<ServerField[]>([]);
-  const [blocks, setBlocks] = useState<ClientBlock<[]>[]>([]);
-  const [fields, setFields] = useState<ClientField<[]>[]>([]);
+  const [blocks, setBlocks] = useState<ClientBlock<[PublicUser]>[]>([]);
+  const [fields, setFields] = useState<ClientField<[PublicUser]>[]>([]);
   const [params, setParams] = useState<IFormParameters>({});
   const [previews, setPreviews] = useState<Record<number, React.ReactNode[]>>(
     {},
@@ -89,19 +102,6 @@ export const FormRendererContextProvider = ({
         ...field,
       })),
     [previewFields],
-  );
-
-  // Default form metadata
-  const initialFormMetadata: IFormMetadata = {
-    name: "",
-    label: "",
-    schema_version: SCHEMA_VERSION,
-    schema: { blocks: [] },
-    subscribers: [],
-    signing_parties: [],
-  };
-  const [formMetadata, setFormMetadata] = useState<FormMetadata<[]>>(
-    new FormMetadata(initialFormMetadata),
   );
 
   // Loading states
@@ -180,7 +180,7 @@ export const FormRendererContextProvider = ({
   }, [selectedPreviewId, keyedFields]);
 
   // The form context
-  const formContext: IFormRendererContext = {
+  const formContext: IFormRendererContext<[PublicUser]> = {
     formName,
     formVersion,
     formMetadata,

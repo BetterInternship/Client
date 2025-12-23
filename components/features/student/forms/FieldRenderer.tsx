@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-16 22:43:51
- * @ Modified time: 2025-12-21 20:07:54
+ * @ Modified time: 2025-12-23 21:33:59
  * @ Description:
  *
  * The field renderer 3000 automatically renders the correct field for the situation!
@@ -23,20 +23,20 @@ import {
 } from "@/components/ui/autocomplete";
 import { ClientField } from "@betterinternship/core/forms";
 
-export function FieldRenderer({
+export const FieldRenderer = <T extends any[]>({
   field,
   value = "",
   onChange,
   error,
   onBlur,
 }: {
-  field: ClientField<[]>;
+  field: ClientField<T>;
   value: string;
   onChange: (v: any) => void;
   error?: string;
   onBlur?: () => void;
   allValues?: Record<string, string>;
-}) {
+}) => {
   // Placeholder or error
   const TooltipLabel = () => {
     if (error) return <p className="text-destructive mt-1 text-xs">{error}</p>;
@@ -135,7 +135,7 @@ export function FieldRenderer({
       onBlur={onBlur}
     />
   );
-}
+};
 
 // ! Probably migrate this in the future
 interface Option {
@@ -148,14 +148,14 @@ interface Option {
  *
  * @component
  */
-const FieldRendererDropdown = ({
+const FieldRendererDropdown = <T extends any[]>({
   field,
   value,
   TooltipContent,
   onChange,
   onBlur,
 }: {
-  field: ClientField<[]>;
+  field: ClientField<T>;
   value: string;
   TooltipContent: () => React.ReactNode;
   onChange: (v: string | number) => void;
@@ -188,14 +188,14 @@ const FieldRendererDropdown = ({
  *
  * @component
  */
-const FieldRendererDate = ({
+const FieldRendererDate = <T extends any[]>({
   field,
   value,
   TooltipContent,
   onChange,
   onBlur,
 }: {
-  field: ClientField<[]>;
+  field: ClientField<T>;
   value: string;
   TooltipContent: () => React.ReactNode;
   onChange: (v: number) => void;
@@ -239,14 +239,14 @@ const FieldRendererDate = ({
  *
  * @component
  */
-const FieldRendererTime = ({
+const FieldRendererTime = <T extends any[]>({
   field,
   value,
   TooltipContent,
   onChange,
   onBlur,
 }: {
-  field: ClientField<[]>;
+  field: ClientField<T>;
   value: string;
   TooltipContent: () => React.ReactNode;
   onChange: (v: string) => void;
@@ -272,14 +272,14 @@ const FieldRendererTime = ({
  *
  * @component
  */
-const FieldRendererCheckbox = ({
+const FieldRendererCheckbox = <T extends any[]>({
   field,
   value,
   TooltipContent,
   onChange,
   onBlur,
 }: {
-  field: ClientField<[]>;
+  field: ClientField<T>;
   value: string;
   TooltipContent: () => React.ReactNode;
   onChange: (v: boolean) => void;
@@ -306,14 +306,14 @@ const FieldRendererCheckbox = ({
  *
  * @component
  */
-const FieldRendererInput = ({
+const FieldRendererInput = <T extends any[]>({
   field,
   value,
   TooltipContent,
   onChange,
   onBlur,
 }: {
-  field: ClientField<[]>;
+  field: ClientField<T>;
   value: string;
   TooltipContent: () => React.ReactNode;
   onChange: (v: string | number) => void;
@@ -356,14 +356,14 @@ const FieldRendererInput = ({
  *
  * @component
  */
-const FieldRendererTextarea = ({
+const FieldRendererTextarea = <T extends any[]>({
   field,
   value,
   TooltipContent,
   onChange,
   onBlur,
 }: {
-  field: ClientField<[]>;
+  field: ClientField<T>;
   value: string;
   TooltipContent: () => React.ReactNode;
   onChange: (v: string | number) => void;
@@ -390,7 +390,7 @@ const FieldRendererTextarea = ({
  *
  * @component
  */
-const FieldRendererMultiselect = ({
+const FieldRendererMultiselect = <T extends any[]>({
   field,
   values,
   options,
@@ -398,7 +398,7 @@ const FieldRendererMultiselect = ({
   onChange,
   onBlur,
 }: {
-  field: ClientField<[]>;
+  field: ClientField<T>;
   values: string[];
   options: TreeOption[];
   TooltipContent: () => React.ReactNode;

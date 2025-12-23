@@ -75,7 +75,7 @@ export function FormRenderer({
   );
 }
 
-const BlocksRenderer = ({
+const BlocksRenderer = <T extends any[]>({
   formKey,
   blocks,
   values,
@@ -85,7 +85,7 @@ const BlocksRenderer = ({
   onBlurValidate,
 }: {
   formKey: string;
-  blocks: ClientBlock<[]>[];
+  blocks: ClientBlock<T>[];
   values: Record<string, string>;
   onChange: (key: string, value: any) => void;
   errors: Record<string, string>;
