@@ -8,11 +8,10 @@ import { HeaderRenderer, ParagraphRenderer } from "./BlockRenderer";
 import { FieldPreview, useFormRendererContext } from "./form-renderer.ctx";
 import { GenerateButtons } from "./GenerateFormButtons";
 import {
-  coerceForField,
   filterBlocks,
   getBlockField,
   isBlockField,
-  isEmptyFor,
+  seedValuesWithAutofill,
 } from "./utils";
 
 export function FormRenderer({
@@ -51,31 +50,16 @@ export function FormRenderer({
   // Seed from saved autofill
   useEffect(() => {
     if (!autofillValues) return;
-
-    const newValues = { ...values };
-    for (const block of filteredBlocks) {
-      if (!isBlockField(block)) continue;
-      const field = getBlockField(block);
-      const autofillValue = autofillValues[field.field];
-
-      // Don't autofill if not empty or if nothing to autofill
-      if (autofillValue === undefined) continue;
-      if (!isEmptyFor(field, values[field.field])) continue;
-
-      // Coerce autofill before putting it in
-      const coercedAutofillValue = coerceForField(field, autofillValue);
-      if (coercedAutofillValue !== undefined)
-        newValues[field.field] = coercedAutofillValue.toString();
-    }
-
-    setValues(newValues);
+    setValues(seedValuesWithAutofill(filteredBlocks, values, autofillValues));
   }, []);
 
-  const filteredFields = filteredBlocks
-    .map((block) => getBlockField(block))
-    .filter((field) => !!field);
   const refreshPreviews = () => {
+    const filteredFields = filteredBlocks
+      .map((block) => getBlockField(block))
+      .filter((field) => !!field);
+
     const newPreviews: Record<number, React.ReactNode[]> = {};
+
     form.keyedFields
       .filter((kf) => filteredFields.find((f) => f.field === kf.field))
       .filter((kf) => kf.x && kf.y)
@@ -117,15 +101,17 @@ export function FormRenderer({
         {formName}
       </div>
       <div className="py-4"></div>
-      <BlocksRenderer
-        formKey={formName}
-        blocks={filteredBlocks}
-        values={values}
-        onChange={onChange}
-        errors={errors}
-        setSelected={setSelectedField}
-        onBlurValidate={onBlurValidate}
-      />
+      <div className="space-y-3 px-7">
+        <BlocksRenderer
+          formKey={formName}
+          blocks={filteredBlocks}
+          values={values}
+          onChange={onChange}
+          errors={errors}
+          setSelected={setSelectedField}
+          onBlurValidate={onBlurValidate}
+        />
+      </div>
       {handleSubmit && (
         <div className="px-7 py-3">
           <GenerateButtons
@@ -157,46 +143,36 @@ const BlocksRenderer = ({
   onBlurValidate?: (fieldKey: string) => void;
 }) => {
   if (!blocks.length) return null;
-  return (
-    <div className="space-y-3 px-7">
-      {blocks
-        .toSorted((a, b) => a.order - b.order)
-        .map((block) => {
-          const field = getBlockField(block);
-
-          return (
-            <div
-              className="space-between flex flex-row"
-              key={`${formKey}:${block.text_content ?? JSON.stringify(block.field_schema)}`}
-            >
-              <div
-                className="flex-1"
-                onFocus={() => setSelected(block.field_schema?.field as string)}
-              >
-                <FieldRenderer
-                  field={field}
-                  value={values[field.field]}
-                  onChange={(v) => onChange(field.field, v)}
-                  onBlur={() => onBlurValidate?.(field.field)}
-                  error={errors[field.field]}
-                  allValues={values}
-                />
-              </div>
-
-              {block.block_type === "header" && block.text_content && (
-                <div className="flex-1">
-                  <HeaderRenderer content={block.text_content} />
-                </div>
-              )}
-
-              {block.block_type === "paragraph" && block.text_content && (
-                <div className="flex-1">
-                  <ParagraphRenderer content={block.text_content} />
-                </div>
-              )}
-            </div>
-          );
-        })}
-    </div>
-  );
+  const sortedBlocks = blocks.toSorted((a, b) => a.order - b.order);
+  return sortedBlocks.map((block) => {
+    const field = getBlockField(block);
+    return (
+      <div
+        className="space-between flex flex-row"
+        key={`${formKey}:${block.text_content ?? JSON.stringify(block.field_schema)}`}
+      >
+        <div
+          className="flex-1"
+          onFocus={() => setSelected(block.field_schema?.field as string)}
+        >
+          {isBlockField(block) && (
+            <FieldRenderer
+              field={field}
+              value={values[field.field]}
+              onChange={(v) => onChange(field.field, v)}
+              onBlur={() => onBlurValidate?.(field.field)}
+              error={errors[field.field]}
+              allValues={values}
+            />
+          )}
+          {block.block_type === "header" && block.text_content && (
+            <HeaderRenderer content={block.text_content} />
+          )}
+          {block.block_type === "paragraph" && block.text_content && (
+            <ParagraphRenderer content={block.text_content} />
+          )}
+        </div>
+      </div>
+    );
+  });
 };

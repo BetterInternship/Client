@@ -8,42 +8,15 @@ import { StepComplete } from "./StepComplete";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { Loader } from "@/components/ui/loader";
-import z from "zod";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { DocumentRenderer } from "./previewer";
 import { Loader2 } from "lucide-react";
 import { useFormRendererContext } from "./form-renderer.ctx";
-import { ClientField } from "@betterinternship/core/forms";
+import { validateField } from "./utils";
 
 type Errors = Record<string, string>;
 type FormValues = Record<string, string>;
-
-const validateValue = (
-  field: ClientField<[]>,
-  values: FormValues,
-  autofillValues: FormValues,
-) => {
-  const finalValues = { ...values, ...autofillValues };
-  // Only validate student/manual fields here
-  // ! change the party to initiator
-  if (field.signing_party_id !== "party-student" || field.source !== "manual")
-    return;
-
-  const value = finalValues[field.field];
-  const coerced = field.coerce(value);
-  const result = field.validator?.safeParse(coerced);
-
-  if (result?.error) {
-    const errorString = z
-      .treeifyError(result.error)
-      .errors.map((e) => e.split(" ").slice(0).join(" "))
-      .join("\n");
-    return `${field.label}: ${errorString}`;
-  }
-
-  return null;
-};
 
 export function FormFlowRouter({
   formName,
@@ -125,7 +98,7 @@ export function FormFlowRouter({
   const validateFieldOnBlur = (fieldKey: string) => {
     const field = fields.find((f) => f.field === fieldKey);
     if (!field) return;
-    const error = validateValue(field, values, autofillValues ?? {});
+    const error = validateField(field, values, autofillValues ?? {});
 
     if (error) {
       setErrors((prev) => ({
@@ -155,7 +128,7 @@ export function FormFlowRouter({
     const finalValues = { ...autofillValues, ...values };
     const errors: Record<string, string> = {};
     for (const field of fields) {
-      const error = validateValue(field, values, autofillValues ?? {});
+      const error = validateField(field, values, autofillValues ?? {});
       if (error) errors[field.field] = error;
     }
 
