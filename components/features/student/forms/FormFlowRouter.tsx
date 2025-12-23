@@ -31,9 +31,6 @@ export function FormFlowRouter({
   const [done, setDone] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [previews, setPreviews] = useState<Record<number, React.ReactNode[]>>(
-    {},
-  );
   const [mobileStage, setMobileStage] = useState<
     "preview" | "form" | "confirm"
   >("preview");
@@ -282,7 +279,7 @@ export function FormFlowRouter({
                 <DocumentRenderer
                   documentUrl={form.document.url}
                   highlights={[]}
-                  previews={previews}
+                  previews={form.previews}
                   onHighlightFinished={() => {}}
                 />
               ) : (
@@ -315,7 +312,7 @@ export function FormFlowRouter({
                 <DocumentRenderer
                   documentUrl={form.document.url}
                   highlights={[]}
-                  previews={previews}
+                  previews={form.previews}
                   onHighlightFinished={() => {}}
                 />
               ) : (
@@ -336,11 +333,9 @@ export function FormFlowRouter({
             </div>
           ) : (
             <FormRenderer
-              blocks={form.blocks}
               values={values}
               onChange={setField}
               errors={errors}
-              formName={formName}
               onBlurValidate={validateFieldOnBlur}
               autofillValues={autofillValues ?? {}}
               setValues={(newValues) =>
@@ -348,7 +343,6 @@ export function FormFlowRouter({
               }
               // ! change this to initiator in the future
               signingPartyId={"party-student"}
-              setPreviews={setPreviews}
               // ! MOVE THIS FUNCTION INSIDE OF THE FORM RENDERER
               handleSubmit={handleSubmit}
               busy={busy}
@@ -366,7 +360,7 @@ export function FormFlowRouter({
                   <DocumentRenderer
                     documentUrl={form.document.url}
                     highlights={[]}
-                    previews={previews}
+                    previews={form.previews}
                     onHighlightFinished={() => {}}
                   />
                 </div>
