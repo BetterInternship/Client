@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-11-09 03:19:04
- * @ Modified time: 2025-12-23 04:37:44
+ * @ Modified time: 2025-12-23 20:55:22
  * @ Description:
  *
  * We can move this out later on so it becomes reusable in other places.
@@ -209,8 +209,9 @@ export const FormRendererContextProvider = ({
  *
  * @component
  */
-const FieldPreview = ({
+export const FieldPreview = ({
   field,
+  value,
   x,
   y,
   w,
@@ -219,12 +220,13 @@ const FieldPreview = ({
   onClick,
 }: {
   field: string;
+  value?: string;
   x: number;
   y: number;
   w: number;
   h: number;
   selected: boolean;
-  onClick: () => void;
+  onClick?: () => void;
 }) => {
   return (
     <div
@@ -232,8 +234,8 @@ const FieldPreview = ({
         "absolute top-0 left-0 border-0!",
         selected ? "bg-supportive/50!" : "bg-warning/50!",
       )}
-      onClick={() => onClick()}
-      onMouseDown={onClick}
+      onClick={() => onClick?.()}
+      onMouseDown={() => onClick?.()}
       style={{
         userSelect: "auto",
         display: "inline-block",
@@ -246,7 +248,7 @@ const FieldPreview = ({
         flexShrink: "0",
       }}
     >
-      {field}
+      {value ?? field}
     </div>
   );
 };
