@@ -16,7 +16,7 @@ import { useFormRendererContext } from "./form-renderer.ctx";
 import { validateField } from "./utils";
 import { useMyAutofill } from "@/hooks/use-my-autofill";
 
-type Errors = Record<string, string>;
+type FormErrors = Record<string, string>;
 type FormValues = Record<string, string>;
 
 export function FormFlowRouter({
@@ -26,19 +26,15 @@ export function FormFlowRouter({
   formName: string;
   onGoToMyForms?: () => void;
 }) {
-  const { update } = useProfileActions();
-  const profile = useProfileData();
   const form = useFormRendererContext();
   const [done, setDone] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [busy, setBusy] = useState(false);
   const [mobileStage, setMobileStage] = useState<
     "preview" | "form" | "confirm"
   >("preview");
 
   // Form stuff
   const [values, setValues] = useState<FormValues>({});
-  const [errors, setErrors] = useState<Errors>({});
+  const [errors, setErrors] = useState<FormErrors>({});
 
   // Get interface to form
   const formMetdata = form.formMetadata ?? null;
@@ -75,145 +71,6 @@ export function FormFlowRouter({
         return copy;
       });
     }
-  };
-
-  /**
-   * This submits the form to the server
-   * @param withEsign - if true, enables e-sign; if false, does prefill
-   * @param _bypassConfirm - internal flag to skip recipient confirmation on re-call
-   * @returns
-   */
-  const handleSubmit = async (withEsign?: boolean, _bypassConfirm = false) => {
-    setSubmitted(true);
-    if (!profile.data?.id) return;
-
-    // Validate fields before allowing to proceed
-    const finalValues = { ...autofillValues, ...values };
-    const errors: Record<string, string> = {};
-    for (const field of fields) {
-      const error = validateField(field, values, autofillValues ?? {});
-      if (error) errors[field.field] = error;
-    }
-
-    // If any errors, disallow proceed
-    setErrors(errors);
-    if (Object.keys(errors).length) return;
-
-    // Find recipient fields (keys ending with ':recipient')
-    const recipientEmails = fields
-      .filter(
-        (f) => typeof f.field === "string" && f.field.endsWith(":recipient"),
-      )
-      .map((f) => finalValues[f.field]?.trim())
-      .filter(Boolean);
-
-    if (recipientEmails.length > 0 && withEsign && !_bypassConfirm) {
-      const recipientFields = fields
-        .filter(
-          (f) => typeof f.field === "string" && f.field.endsWith(":recipient"),
-        )
-        .map((f) => ({
-          field: f.field,
-          label: f.label,
-          email: finalValues[f.field]?.trim(),
-        }))
-        .filter((r) => r.email);
-
-      openGlobalModal(
-        "confirm-recipients",
-        <div>
-          <p className="mt-2 text-sm text-gray-600 text-justify">
-            We will email the following recipients a separate form to complete
-            and sign. Please double-check these addresses before continuing.
-          </p>
-
-          <ul className="mt-4 max-h-40 overflow-auto divide-y">
-            {recipientFields.map((e, i) => (
-              <li
-                key={i}
-                className="py-2 text-sm flex gap-1 items-center overflow-hidden"
-              >
-                <div className="font-medium text-primary truncate">
-                  {e.email}
-                </div>
-                <div className="text-gray-500 whitespace-nowrap">
-                  - {e.label}
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          <div className="mt-6 flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => closeGlobalModal("confirm-recipients")}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleConfirmRecipients} type="button">
-              Confirm & Send
-            </Button>
-          </div>
-        </div>,
-        { title: "Confirm recipients" },
-      );
-
-      return;
-    }
-
-    // proceed to save + submit
-    try {
-      setBusy(true);
-
-      const internshipMoaFieldsToSave: Record<
-        string,
-        Record<string, string>
-      > = {
-        shared: {},
-      };
-
-      // Save it per field or shared
-      for (const field of fields) {
-        if (field.shared) {
-          internshipMoaFieldsToSave.shared[field.field] =
-            finalValues[field.field];
-        } else {
-          if (!internshipMoaFieldsToSave[formName])
-            internshipMoaFieldsToSave[formName] = {};
-          internshipMoaFieldsToSave[formName][field.field] =
-            finalValues[field.field];
-        }
-      }
-
-      // Save for future use
-      await update.mutateAsync({
-        internship_moa_fields: internshipMoaFieldsToSave,
-      });
-
-      // Generate form
-      await FormService.requestGenerateForm({
-        formName: form.formName,
-        formVersion: form.formVersion,
-        values: finalValues,
-        parties: { userId: profile.data.id },
-        disableEsign: !withEsign,
-      });
-
-      setDone(true);
-      setSubmitted(false);
-    } catch (e) {
-      console.error("Submission error", e);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
-
-  // Called when the user confirms the recipients in the modal
-  const handleConfirmRecipients = () => {
-    closeGlobalModal("confirm-recipients");
-    void handleSubmit(true, true);
   };
 
   if (done)
@@ -299,7 +156,6 @@ export function FormFlowRouter({
             <FormRenderer
               values={values}
               onChange={setField}
-              errors={errors}
               onBlurValidate={validateFieldOnBlur}
               autofillValues={autofillValues ?? {}}
               setValues={(newValues) =>
@@ -308,8 +164,6 @@ export function FormFlowRouter({
               // ! change this to initiator in the future
               signingPartyId={"party-student"}
               // ! MOVE THIS FUNCTION INSIDE OF THE FORM RENDERER
-              handleSubmit={handleSubmit}
-              busy={busy}
               hasSignature={hasSignature}
             />
           )}
