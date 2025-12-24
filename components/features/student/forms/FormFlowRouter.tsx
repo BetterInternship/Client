@@ -40,11 +40,6 @@ export function FormFlowRouter({
   const [values, setValues] = useState<FormValues>({});
   const [errors, setErrors] = useState<Errors>({});
 
-  // recipient confirmation modal state
-  const [confirmWithEsign, setConfirmWithEsign] = useState<boolean | undefined>(
-    undefined,
-  );
-
   // Get interface to form
   const formMetdata = form.formMetadata ?? null;
   const fields = formMetdata?.getFieldsForClientService() ?? [];
@@ -123,8 +118,6 @@ export function FormFlowRouter({
           email: finalValues[f.field]?.trim(),
         }))
         .filter((r) => r.email);
-
-      setConfirmWithEsign(withEsign);
 
       openGlobalModal(
         "confirm-recipients",
