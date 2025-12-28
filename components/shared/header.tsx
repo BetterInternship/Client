@@ -29,7 +29,10 @@ export const HeaderTitle = () => {
           className="w-8 h-8 aspect-square object-cover"
           alt="BetterInternship logo"
         ></img>
-        <span className="lg:block md:hidden sm:hidden">BetterInternship</span>
+        {isMobile
+          ? null
+          : <span className="lg:block md:hidden sm:hidden">BetterInternship</span>
+        }
       </h1>
     </Link>
   );
