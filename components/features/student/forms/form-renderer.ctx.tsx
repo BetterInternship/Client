@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-11-09 03:19:04
- * @ Modified time: 2025-12-23 21:30:47
+ * @ Modified time: 2025-12-28 18:44:17
  * @ Description:
  *
  * We can move this out later on so it becomes reusable in other places.
@@ -140,7 +140,7 @@ export const FormRendererContextProvider = ({
       .then((form) => {
         const fm = new FormMetadata(form.formMetadata);
         const newFormName = form.formMetadata.name;
-        const newFormVersion = form.formMetadata.schema_version;
+        const newFormVersion = form.formDocument.version;
 
         // Only update form if it's new
         setFormMetadata(fm);

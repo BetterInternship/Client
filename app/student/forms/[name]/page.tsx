@@ -21,6 +21,8 @@ export default function FormPage() {
   const { isMobile } = useAppContext();
   const { open: openGlobalModal } = useGlobalModal();
 
+  console.log("FormPage render", form);
+
   const openDocPreviewModal = () => {
     openGlobalModal(
       "doc-preview",

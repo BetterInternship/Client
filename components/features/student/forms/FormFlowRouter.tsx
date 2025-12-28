@@ -162,7 +162,7 @@ export function FormFlowRouter({
                 setValues((prev) => ({ ...prev, ...newValues }))
               }
               // ! change this to initiator in the future
-              signingPartyId={"party-student"}
+              signingPartyId={"student"}
               // ! MOVE THIS FUNCTION INSIDE OF THE FORM RENDERER
               hasSignature={hasSignature}
             />
