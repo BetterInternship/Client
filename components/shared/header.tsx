@@ -26,7 +26,7 @@ export const HeaderTitle = () => {
       >
         <img
           src="/BetterInternshipLogo.png"
-          className="w-8 h-8 aspect-square object-cover"
+          className="w-8 h-8 aspect-square object-contain"
           alt="BetterInternship logo"
         ></img>
         {isMobile
