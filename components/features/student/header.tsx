@@ -495,7 +495,7 @@ export const Header: React.FC = () => {
       {/* Top Bar */}
       <div
         className={cn(
-          "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
+          "flex gap-2 justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
           isMobile ? "px-4 py-3" : "py-4 px-8",
         )}
         style={{ overflow: "visible", position: "relative", zIndex: 100 }}
