@@ -193,17 +193,9 @@ export const FormService = {
   },
 
   async getMyFormTemplates() {
-    const { formGroupId } = await APIClient.get<{ formGroupId: string }>(
-      APIRouteBuilder("users").r("me/form-templates").build(),
-    );
     const { formTemplates } = await APIClient.get<{
       formTemplates: FormTemplate[];
-    }>(
-      APIRouteBuilder("forms")
-        .r("form-templates")
-        .p({ formGroupId })
-        .build({ moaServer: true }),
-    );
+    }>(APIRouteBuilder("users").r("me/form-templates").build());
     return formTemplates;
   },
 
@@ -283,31 +275,6 @@ export const UserService = {
     return APIClient.get<ResourceHashResponse>(
       APIRouteBuilder("users").r("me", "resume").build(),
     );
-  },
-
-  // ! remove hardcoded mapping
-  async getEntityList() {
-    const response = await APIClient.get<{
-      entities: {
-        id: string;
-        display_name: string;
-        legal_identifier: string;
-        contact_name: string;
-        contact_email: string;
-        address: string;
-      }[];
-    }>(APIRouteBuilder("entities").r("list").build({ moaServer: true }));
-
-    return {
-      employers: response.entities.map((e) => ({
-        id: e.id,
-        display_name: e.display_name,
-        legal_entity_name: e.legal_identifier,
-        contact_name: e.contact_name,
-        contact_email: e.contact_email,
-        address: e.address,
-      })),
-    };
   },
 
   async getMyPfpURL() {

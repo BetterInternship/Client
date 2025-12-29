@@ -1,12 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FormService } from "@/lib/api/services";
 import { FormRenderer } from "./FormRenderer";
-import { useProfileActions } from "@/lib/api/student.actions.api";
 import { StepComplete } from "./StepComplete";
-import { useProfileData } from "@/lib/api/student.data.api";
-import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { Loader } from "@/components/ui/loader";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -72,6 +68,8 @@ export function FormFlowRouter({
       });
     }
   };
+
+  console.log(form.formMetadata.encodeAsJSON());
 
   if (done)
     return (
@@ -161,9 +159,7 @@ export function FormFlowRouter({
               setValues={(newValues) =>
                 setValues((prev) => ({ ...prev, ...newValues }))
               }
-              // ! change this to initiator in the future
-              signingPartyId={"student"}
-              // ! MOVE THIS FUNCTION INSIDE OF THE FORM RENDERER
+              signingPartyId={"initiator"}
               hasSignature={hasSignature}
             />
           )}

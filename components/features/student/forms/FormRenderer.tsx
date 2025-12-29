@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { FieldRenderer } from "./FieldRenderer";
 import { HeaderRenderer, ParagraphRenderer } from "./BlockRenderer";
 import { useFormRendererContext } from "./form-renderer.ctx";
-import { GenerateButtons } from "./GenerateFormButtons";
+import { GenerateFormButtons } from "./generate-form-button";
 import {
   filterBlocks,
   getBlockField,
@@ -211,15 +211,13 @@ export function FormRenderer({
           onBlurValidate={onBlurValidate}
         />
       </div>
-      {handleSubmit && (
-        <div className="px-7 py-3">
-          <GenerateButtons
-            handleSubmit={handleSubmit}
-            busy={busy}
-            noEsign={!hasSignature}
-          />
-        </div>
-      )}
+      <div className="px-7 py-3">
+        <GenerateFormButtons
+          handleSubmit={handleSubmit}
+          busy={busy}
+          noEsign={!hasSignature}
+        />
+      </div>
     </div>
   );
 }
@@ -248,7 +246,7 @@ const BlocksRenderer = <T extends any[]>({
     return (
       <div
         className="space-between flex flex-row"
-        key={`${formKey}:${block.text_content ?? JSON.stringify(block.field_schema)}`}
+        key={`${formKey}:${block.text_content ?? JSON.stringify(block.field_schema) ?? JSON.stringify(block.phantom_field_schema)}`}
       >
         <div
           className="flex-1"

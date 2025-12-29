@@ -10,7 +10,7 @@ type Props = {
   disabled?: boolean;
 };
 
-export function GenerateButtons({
+export function GenerateFormButtons({
   handleSubmit,
   busy = false,
   noEsign,
@@ -30,7 +30,6 @@ export function GenerateButtons({
 
   return (
     <div className="pt-2 flex items-start justify-end gap-2">
-      {/* Secondary: WITHOUT e-sign */}
       <Button
         onClick={noEsign ? onWithEsignClick : onWithoutEsignClick}
         variant={noEsign ? "default" : "outline"}
@@ -48,7 +47,6 @@ export function GenerateButtons({
         )}
       </Button>
 
-      {/* Primary: WITH e-sign */}
       {!noEsign && (
         <Button
           onClick={onWithEsignClick}
