@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-11-09 03:19:04
- * @ Modified time: 2025-12-29 11:44:14
+ * @ Modified time: 2025-12-30 06:57:48
  * @ Description:
  *
  * We can move this out later on so it becomes reusable in other places.
@@ -148,8 +148,8 @@ export const FormRendererContextProvider = ({
         setFormVersion(newFormVersion);
         setDocumentName(form.formDocument.name);
         setDocumentUrl(form.documentUrl);
-        setFields(fm.getFieldsForClientService());
-        setBlocks(fm.getAllBlocksForClientService());
+        setFields(fm.getFieldsForClientService("initiator"));
+        setBlocks(fm.getBlocksForClientService("initiator"));
         setPreviewFields(fm.getFieldsForSigningService());
       })
       .then(() => setLoading(false))

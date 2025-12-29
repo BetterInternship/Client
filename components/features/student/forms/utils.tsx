@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-12-23 20:41:54
- * @ Modified time: 2025-12-23 21:32:19
+ * @ Modified time: 2025-12-30 06:57:18
  * @ Description:
  *
  * Move some of these utils to the core package maybe.
@@ -14,25 +14,6 @@ import {
   ClientPhantomField,
 } from "@betterinternship/core/forms";
 import z from "zod";
-
-/**
- * Filter blocks to be rendered by the form for a party.
- *
- * @param blocks
- * @param signingPartyId
- */
-export const filterBlocks = <T extends any[]>(
-  blocks: ClientBlock<T>[],
-  signingPartyId?: string,
-) => {
-  return blocks
-    .filter((block) => block.signing_party_id === signingPartyId)
-    .filter(
-      (block) =>
-        block.field_schema?.source === "manual" ||
-        block.phantom_field_schema?.source === "manual",
-    );
-};
 
 /**
  * Checks if a block is a field.

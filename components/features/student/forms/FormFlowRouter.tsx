@@ -159,7 +159,6 @@ export function FormFlowRouter({
               setValues={(newValues) =>
                 setValues((prev) => ({ ...prev, ...newValues }))
               }
-              signingPartyId={"initiator"}
               hasSignature={hasSignature}
             />
           )}

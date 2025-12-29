@@ -7,7 +7,6 @@ import { HeaderRenderer, ParagraphRenderer } from "./BlockRenderer";
 import { useFormRendererContext } from "./form-renderer.ctx";
 import { GenerateFormButtons } from "./generate-form-button";
 import {
-  filterBlocks,
   getBlockField,
   isBlockField,
   seedValuesWithAutofill,
@@ -23,7 +22,6 @@ import { useProfileActions } from "@/lib/api/student.actions.api";
 type FormErrors = Record<string, string>;
 
 export function FormRenderer({
-  signingPartyId,
   values,
   setValues,
   autofillValues,
@@ -31,7 +29,6 @@ export function FormRenderer({
   onBlurValidate,
   hasSignature,
 }: {
-  signingPartyId?: string;
   values: Record<string, any>;
   autofillValues: Record<string, string>;
   setValues: (values: Record<string, string>) => void;
@@ -42,7 +39,7 @@ export function FormRenderer({
   const form = useFormRendererContext();
   const formMetdata = form.formMetadata ?? null;
   const fields = formMetdata?.getFieldsForClientService() ?? [];
-  const filteredBlocks = filterBlocks(form.blocks, signingPartyId);
+  const filteredBlocks = form.blocks;
   const profile = useProfileData();
   const { update } = useProfileActions();
   const [submitted, setSubmitted] = useState(false);
