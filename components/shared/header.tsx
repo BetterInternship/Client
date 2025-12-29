@@ -21,7 +21,7 @@ export const HeaderTitle = () => {
       <h1
         className={cn(
           "font-display font-bold text-gray-900 flex flex-row space-x-2 items-center",
-          isMobile ? "text-lg" : "text-2xl",
+          isMobile ? "text-lg" : "text-xl",
         )}
       >
         <img
@@ -29,10 +29,7 @@ export const HeaderTitle = () => {
           className="w-8 h-8 aspect-square object-contain"
           alt="BetterInternship logo"
         ></img>
-        {isMobile
-          ? null
-          : <span className="lg:block md:hidden sm:hidden">BetterInternship</span>
-        }
+          <span className="xl:inline-block hidden">BetterInternship</span>
       </h1>
     </Link>
   );
