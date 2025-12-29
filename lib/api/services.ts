@@ -162,12 +162,6 @@ export const FormService = {
     formName: string;
     formVersion: number;
     values: Record<string, string>;
-    signatories?: { name: string; title: string }[];
-    parties?: {
-      userId?: string | null;
-      employerId?: string | null;
-      universityId?: string | null;
-    };
     disableEsign?: boolean;
   }) {
     return APIClient.post<{
@@ -175,7 +169,7 @@ export const FormService = {
       documentUrl: string;
       documentId: string;
       internshipFormId: string;
-    }>(APIRouteBuilder("forms").r("generate").build({ moaServer: true }), data);
+    }>(APIRouteBuilder("users").r("me/generate-form").build(), data);
   },
 
   async getMyFormTemplates() {
@@ -202,26 +196,10 @@ export const FormService = {
           base_document_id: string;
         };
         formMetadata: IFormMetadata;
+        documentUrl: string;
       } & FetchResponse
-    >(
-      APIRouteBuilder("forms")
-        .r(`form-latest?name=${formName}`)
-        .build({ moaServer: true }),
-    );
-    const documentUrl = await APIClient.get<
-      {
-        formDocument: string;
-      } & FetchResponse
-    >(
-      APIRouteBuilder("forms")
-        .r("form-document")
-        .p({ name: formName, version: form.formDocument.version })
-        .build({ moaServer: true }),
-    );
-    return {
-      ...form,
-      documentUrl: documentUrl.formDocument,
-    };
+    >(APIRouteBuilder("users").r(`me/form?name=${formName}`).build());
+    return form;
   },
 };
 
@@ -380,10 +358,6 @@ export const JobService = {
 
 interface ConversationResponse extends FetchResponse {
   conversation?: Conversation;
-}
-
-interface ConversationsResponse extends FetchResponse {
-  conversations?: Conversation[];
 }
 
 export const EmployerConversationService = {

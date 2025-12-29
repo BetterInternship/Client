@@ -176,7 +176,6 @@ export function FormRenderer({
         formName: form.formName,
         formVersion: form.formVersion,
         values: finalValues,
-        parties: { userId: profile.data.id },
         disableEsign: !withEsign,
       });
 
