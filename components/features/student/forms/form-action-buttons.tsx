@@ -2,35 +2,95 @@
 
 import useModalRegistry from "@/components/modals/useModalRegistry";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
 import { useFormRendererContext } from "./form-renderer.ctx";
+import { useState } from "react";
+import { useFormFiller } from "./form-filler.ctx";
+import { useMyAutofillUpdate, useMyAutofill } from "@/hooks/use-my-autofill";
+import { useProfileData } from "@/lib/api/student.data.api";
+import { FormService } from "@/lib/api/services";
+import { TextLoader } from "@/components/ui/loader";
 
-type Props = {
-  handleSubmit: (withEsign?: boolean) => Promise<void> | void;
-  busy?: boolean;
-  noEsign?: boolean;
-  disabled?: boolean;
-};
-
-export function FormActionButtons({
-  handleSubmit,
-  busy = false,
-  noEsign,
-  disabled,
-}: Props) {
+export function FormActionButtons() {
   const form = useFormRendererContext();
+  const formFiller = useFormFiller();
+  const autofillValues = useMyAutofill();
+  const profile = useProfileData();
   const modalRegistry = useModalRegistry();
-  const withEsignLabel = "Generate & Initiate E-sign";
-  const withoutEsignLabel = !noEsign
-    ? "Generate for Manual Signing"
-    : "Generate Form";
+  const updateAutofill = useMyAutofillUpdate();
 
-  const withEsignLoading = "Requesting e-sign...";
-  const withoutEsignLoading = "Generating...";
-  const isDisabled = disabled ?? busy;
+  const noEsign = !form.formMetadata.mayInvolveEsign();
+  const initiateFormLabel = "Fill out & initiate e-sign";
+  const filloutFormLabel = !noEsign
+    ? "Fill out for manual signing"
+    : "Fill out form";
 
+  const [busy, setBusy] = useState<boolean>(false);
   const onWithoutEsignClick = () => void handleSubmit(false);
   const onWithEsignClick = () => void handleSubmit(true);
+
+  /**
+   * This submits the form to the server
+   * @param withEsign - if true, enables e-sign; if false, does prefill
+   * @param _bypassConfirm - internal flag to skip recipient confirmation on re-call
+   * @returns
+   */
+  const handleSubmit = async (withEsign?: boolean) => {
+    setBusy(true);
+    if (!profile.data?.id) return;
+
+    // Validate fields before allowing to proceed
+    const finalValues = formFiller.getFinalValues(autofillValues);
+    const errors = formFiller.validate(form.fields, autofillValues);
+    if (Object.keys(errors).length) return;
+
+    // proceed to save + submit
+    try {
+      setBusy(true);
+
+      // Update autofill afterwards (so even if it fails, autofill is there)
+      await updateAutofill(form.formName, form.fields, finalValues);
+
+      // Iniate e-sign
+      if (withEsign) {
+        // Check if other parties need to be requested from
+        const signingPartyBlocks =
+          form.formMetadata.getSigningPartyBlocks("initiator");
+
+        // Open request for contacts
+        if (signingPartyBlocks.length) {
+          modalRegistry.specifySigningParties.open(signingPartyBlocks, () =>
+            FormService.initiateForm({
+              formName: form.formName,
+              formVersion: form.formVersion,
+              values: finalValues,
+            }),
+          );
+
+          // Just e-sign and fill-out right away
+        } else {
+          await FormService.initiateForm({
+            formName: form.formName,
+            formVersion: form.formVersion,
+            values: finalValues,
+          });
+        }
+
+        // Just fill out form
+      } else {
+        await FormService.filloutForm({
+          formName: form.formName,
+          formVersion: form.formVersion,
+          values: finalValues,
+        });
+      }
+
+      setBusy(false);
+    } catch (e) {
+      console.error("Submission error", e);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <div className="pt-2 flex items-start justify-end gap-2">
@@ -38,43 +98,18 @@ export function FormActionButtons({
         onClick={noEsign ? onWithEsignClick : onWithoutEsignClick}
         variant={noEsign ? "default" : "outline"}
         className="w-full sm:w-auto text-xs"
-        disabled={isDisabled}
-        aria-busy={busy}
+        disabled={busy}
       >
-        {busy ? (
-          <span className="inline-flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            {withoutEsignLoading}
-          </span>
-        ) : (
-          withoutEsignLabel
-        )}
+        <TextLoader loading={busy}>{filloutFormLabel}</TextLoader>
       </Button>
 
       {!noEsign && (
         <Button
-          onClick={() => {
-            const signingPartyBlocks =
-              form.formMetadata.getSigningPartyBlocks("initiator");
-            if (signingPartyBlocks.length)
-              modalRegistry.specifySigningParties.open(
-                signingPartyBlocks,
-                onWithEsignClick,
-              );
-            else onWithEsignClick();
-          }}
+          onClick={onWithEsignClick}
           className="w-full sm:w-auto text-xs"
-          disabled={isDisabled}
-          aria-busy={busy}
+          disabled={busy}
         >
-          {busy ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              {withEsignLoading}
-            </span>
-          ) : (
-            withEsignLabel
-          )}
+          <TextLoader loading={busy}>{initiateFormLabel}</TextLoader>
         </Button>
       )}
     </div>

@@ -1,15 +1,11 @@
 "use client";
 
 import { ClientBlock } from "@betterinternship/core/forms";
-import { useState } from "react";
 import { FieldRenderer } from "./FieldRenderer";
 import { HeaderRenderer, ParagraphRenderer } from "./BlockRenderer";
 import { useFormRendererContext } from "./form-renderer.ctx";
 import { FormActionButtons } from "./form-action-buttons";
 import { getBlockField, isBlockField } from "./utils";
-import { useProfileData } from "@/lib/api/student.data.api";
-import { FormService } from "@/lib/api/services";
-import { useProfileActions } from "@/lib/api/student.actions.api";
 import { useFormFiller } from "./form-filler.ctx";
 import { useMyAutofill } from "@/hooks/use-my-autofill";
 
@@ -17,82 +13,8 @@ export function FormFillerRenderer() {
   const form = useFormRendererContext();
   const formFiller = useFormFiller();
   const autofillValues = useMyAutofill();
-  const profile = useProfileData();
-
   const formMetdata = form.formMetadata ?? null;
-  const fields = formMetdata?.getFieldsForClientService("initiator") ?? [];
   const filteredBlocks = form.blocks;
-
-  const { update } = useProfileActions();
-  const [submitted, setSubmitted] = useState(false);
-  const [busy, setBusy] = useState(false);
-
-  /**
-   * This submits the form to the server
-   * @param withEsign - if true, enables e-sign; if false, does prefill
-   * @param _bypassConfirm - internal flag to skip recipient confirmation on re-call
-   * @returns
-   */
-  const handleSubmit = async (withEsign?: boolean, _bypassConfirm = false) => {
-    setSubmitted(true);
-    if (!profile.data?.id) return;
-
-    // Validate fields before allowing to proceed
-    const finalValues = formFiller.getFinalValues(autofillValues);
-    const errors = formFiller.validate(form.fields, autofillValues);
-    if (Object.keys(errors).length) return;
-
-    // proceed to save + submit
-    try {
-      setBusy(true);
-
-      const internshipMoaFieldsToSave: Record<
-        string,
-        Record<string, string>
-      > = {
-        shared: {} as Record<string, string>,
-      };
-
-      // Save it per field or shared
-      for (const field of fields) {
-        if (field.shared) {
-          internshipMoaFieldsToSave.shared[field.field] =
-            finalValues[field.field];
-        } else {
-          if (!internshipMoaFieldsToSave[form.formName])
-            internshipMoaFieldsToSave[form.formName] = {};
-          internshipMoaFieldsToSave[form.formName][field.field] =
-            finalValues[field.field];
-        }
-      }
-
-      // Save for future use
-      await update.mutateAsync({
-        internship_moa_fields: internshipMoaFieldsToSave,
-      });
-
-      // Generate form
-      if (withEsign) {
-        await FormService.initiateForm({
-          formName: form.formName,
-          formVersion: form.formVersion,
-          values: finalValues,
-        });
-      } else {
-        await FormService.filloutForm({
-          formName: form.formName,
-          formVersion: form.formVersion,
-          values: finalValues,
-        });
-      }
-
-      setSubmitted(false);
-    } catch (e) {
-      console.error("Submission error", e);
-    } finally {
-      setBusy(false);
-    }
-  };
 
   return (
     <div className="relative max-h-[100%] overflow-auto pb-8">
@@ -112,11 +34,7 @@ export function FormFillerRenderer() {
         />
       </div>
       <div className="px-7 py-3">
-        <FormActionButtons
-          handleSubmit={handleSubmit}
-          busy={busy}
-          noEsign={!formMetdata.mayInvolveEsign()}
-        />
+        <FormActionButtons />
       </div>
     </div>
   );

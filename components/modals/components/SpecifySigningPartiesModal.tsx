@@ -4,15 +4,27 @@ import { FieldRenderer } from "@/components/features/student/forms/FieldRenderer
 import { getBlockField } from "@/components/features/student/forms/utils";
 import { ClientBlock } from "@betterinternship/core/forms";
 import { PublicUser } from "@/lib/db/db.types";
+import { TextLoader } from "@/components/ui/loader";
 
 export const SpecifySigningPartiesModal = ({
   signingPartyBlocks,
   handleSubmit,
+  close,
 }: {
   signingPartyBlocks: ClientBlock<[PublicUser]>[];
-  handleSubmit: () => void;
+  handleSubmit: () => Promise<any>;
+  close: () => void;
 }) => {
+  const [busy, setBusy] = useState(false);
   const [values, setValues] = useState<Record<string, string>>({});
+
+  const handleClick = async () => {
+    setBusy(true);
+    await handleSubmit();
+    close();
+    setBusy(false);
+  };
+
   return (
     <div className="flex flex-col space-y-2 max-w-prose min-w-[100%]">
       <div className="py-4 text-warning text-sm">
@@ -34,8 +46,12 @@ export const SpecifySigningPartiesModal = ({
         );
       })}
 
-      <Button className="mt-4 self-end" onClick={handleSubmit}>
-        Sign and Send Form
+      <Button
+        className="mt-4 self-end"
+        disabled={busy}
+        onClick={() => void handleClick()}
+      >
+        <TextLoader loading={busy}>Sign and send form</TextLoader>
       </Button>
     </div>
   );

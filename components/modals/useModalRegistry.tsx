@@ -114,14 +114,15 @@ export const useModalRegistry = () => {
     specifySigningParties: {
       open: (
         signingPartyBlocks: ClientBlock<[PublicUser]>[],
-        handleSubmit: () => void,
+        handleSubmit: () => Promise<any>,
       ) =>
         open(
           "specify-signing-parties",
           <SpecifySigningPartiesModal
             signingPartyBlocks={signingPartyBlocks}
             handleSubmit={handleSubmit}
-          ></SpecifySigningPartiesModal>,
+            close={() => close("specify-signing-parties")}
+          />,
           {
             title: "Next Signing Parties",
             showHeaderDivider: true,
