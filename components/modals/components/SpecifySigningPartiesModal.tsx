@@ -13,6 +13,7 @@ import { PublicUser } from "@/lib/db/db.types";
 import { TextLoader } from "@/components/ui/loader";
 import { IFormFiller } from "@/components/features/student/forms/form-filler.ctx";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 export const SpecifySigningPartiesModal = ({
   fields,
@@ -30,6 +31,7 @@ export const SpecifySigningPartiesModal = ({
   close: () => void;
 }) => {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [errors, setErrors] = useState<FormErrors>({});
   const [signingPartyValues, setSigningPartyValues] = useState<FormValues>({});
   const [busy, setBusy] = useState(false);
@@ -61,6 +63,7 @@ export const SpecifySigningPartiesModal = ({
     // Submit and close modal if okay
     await handleSubmit(formFiller.getFinalValues(additionalValues));
     await queryClient.invalidateQueries({ queryKey: ["my_forms"] });
+    router.push("/forms/history");
     close();
     setBusy(false);
   };

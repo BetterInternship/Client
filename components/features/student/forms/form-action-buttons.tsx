@@ -11,6 +11,7 @@ import { FormService } from "@/lib/api/services";
 import { TextLoader } from "@/components/ui/loader";
 import { FormValues } from "@betterinternship/core/forms";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 export function FormActionButtons() {
   const form = useFormRendererContext();
@@ -20,6 +21,7 @@ export function FormActionButtons() {
   const modalRegistry = useModalRegistry();
   const updateAutofill = useMyAutofillUpdate();
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const noEsign = !form.formMetadata.mayInvolveEsign();
   const initiateFormLabel = "Fill out & initiate e-sign";
@@ -44,7 +46,7 @@ export function FormActionButtons() {
     // Validate fields before allowing to proceed
     const finalValues = formFiller.getFinalValues(autofillValues);
     const errors = formFiller.validate(form.fields, autofillValues);
-    if (Object.keys(errors).length) return;
+    if (Object.keys(errors).length) return setBusy(false);
 
     // proceed to save + submit
     try {
@@ -81,6 +83,9 @@ export function FormActionButtons() {
             formVersion: form.formVersion,
             values: finalValues,
           });
+
+          await queryClient.invalidateQueries({ queryKey: ["my_forms"] });
+          router.push("/forms/history");
         }
 
         // Just fill out form
@@ -90,10 +95,12 @@ export function FormActionButtons() {
           formVersion: form.formVersion,
           values: finalValues,
         });
+
+        await queryClient.invalidateQueries({ queryKey: ["my_forms"] });
+        router.push("/forms/history");
       }
 
       setBusy(false);
-      await queryClient.invalidateQueries({ queryKey: ["my_forms"] });
     } catch (e) {
       console.error("Submission error", e);
     } finally {

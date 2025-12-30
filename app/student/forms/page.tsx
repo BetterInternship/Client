@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
-import { Newspaper } from "lucide-react";
+import { ChevronRight, Newspaper } from "lucide-react";
 import { FormTemplate } from "@/lib/db/use-moa-backend";
 import FormTemplateCard from "@/components/features/student/forms/FormGenerateCard";
 import { useProfileData } from "@/lib/api/student.data.api";
@@ -11,6 +11,7 @@ import { Loader } from "@/components/ui/loader";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { FormService } from "@/lib/api/services";
+import { Button } from "@/components/ui/button";
 
 /**
  * The forms page component
@@ -69,6 +70,15 @@ export default function FormsPage() {
               .
             </div>
           </div>
+        </div>
+        <div className="flex flex-col w-full pt-5">
+          <Button
+            className="self-start"
+            onClick={() => router.push("/forms/history")}
+          >
+            View Form History
+            <ChevronRight />
+          </Button>
         </div>
       </div>
       <Separator className="mt-4 mb-8" />
