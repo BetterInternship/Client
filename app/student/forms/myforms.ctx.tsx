@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-12-18 15:17:08
- * @ Modified time: 2025-12-30 22:59:00
+ * @ Modified time: 2025-12-30 23:19:48
  * @ Description:
  *
  * These are the forms a user has generated or initiated.
@@ -19,6 +19,7 @@ interface IMyForms {
     prefilled_document_id?: string | null;
     pending_document_id?: string | null;
     signed_document_id?: string | null;
+    latest_document_url?: string | null;
     timestamp: string;
     singing_parties: { email: string; signed: boolean }[];
   }[];
@@ -46,20 +47,21 @@ export const MyFormsContextProvider = ({
     gcTime: 10_000,
   });
 
-  console.log("forms", forms);
+  const mappedForms =
+    forms?.map?.((f) => ({
+      label: f.form_label!,
+      prefilled_document_id: f.form_processes.prefilled_document_id,
+      pending_document_id: f.form_processes.pending_document_id,
+      signed_document_id: f.form_processes.signed_document_id,
+      latest_document_url: f.form_processes.latest_document_url,
+      timestamp: f.timestamp,
+      singing_parties: [],
+    })) ?? [];
 
   return (
     <MyFormsContext.Provider
       value={{
-        forms:
-          forms?.map?.((f) => ({
-            label: f.form_label!,
-            prefilled_document_id: f.form_processes.pending_document_id,
-            pending_document_id: f.form_processes.pending_document_id,
-            signed_document_id: f.form_processes.pending_document_id,
-            timestamp: f.timestamp,
-            singing_parties: [],
-          })) ?? [],
+        forms: mappedForms,
         loading: isLoading,
         error: error?.message,
       }}

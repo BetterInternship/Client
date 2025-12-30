@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { Newspaper } from "lucide-react";
 import { FormTemplate } from "@/lib/db/use-moa-backend";
-import FormGenerateCard from "@/components/features/student/forms/FormGenerateCard";
+import FormTemplateCard from "@/components/features/student/forms/FormGenerateCard";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useRouter } from "next/navigation";
 import { Loader } from "@/components/ui/loader";
@@ -101,12 +101,12 @@ export default function FormsPage() {
           <div
             className={cn(
               formLoading ? "opacity-50 pointer-events-none" : "",
-              "grid sm:grid-cols-4 grid-cols-2 gap-5",
+              "flex flex-col",
             )}
           >
             {formTemplates?.length !== 0 &&
               formTemplates.map((form, i) => (
-                <FormGenerateCard
+                <FormTemplateCard
                   key={form.formName + i}
                   formLabel={form.formLabel}
                   onGenerate={() => router.push(`/forms/${form.formName}`)}

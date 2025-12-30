@@ -79,9 +79,10 @@ const FormLogSidePanel = () => {
                   <FormLog
                     label={form.label}
                     timestamp={formatTimeAgo(form.timestamp)}
-                    downloadUrl={
+                    documentId={
                       form.signed_document_id || form.prefilled_document_id
                     }
+                    downloadUrl={form.latest_document_url}
                   />
                 );
               })}
@@ -111,10 +112,12 @@ const FormLogSidePanel = () => {
 const FormLog = ({
   label,
   timestamp,
+  documentId,
   downloadUrl,
 }: {
   label: string;
   timestamp: string;
+  documentId?: string | null;
   downloadUrl?: string | null;
 }) => {
   const [downloading, setDownloading] = useState(false);
@@ -123,8 +126,7 @@ const FormLog = ({
   // Handles the browser download behavior
   // We let the browser choose the filename by setting it empty
   const handleDownload = () => {
-    return alert("TODO: Reimplement download behavior; pull url first.");
-    if (!downloadUrl) return;
+    if (!documentId) return;
     try {
       setDownloading(true);
       const a = document.createElement("a");
@@ -147,13 +149,13 @@ const FormLog = ({
   return (
     <div
       className=" hover:bg-slate-100 hover:cursor-pointer transition-all"
-      onClick={() => (downloadUrl ? handleDownload() : setIsOpen(!isOpen))}
+      onClick={() => (documentId ? handleDownload() : setIsOpen(!isOpen))}
     >
       <div className="px-5 flex flex-col border-b text-xs text-gray-700 font-normal">
         <div className="relative flex flex-row justify-between h-full items-start">
           <div className="flex flex-row gap-2 py-3 min-w-5 items-start">
             <div className="min-w-4">
-              {downloadUrl ? (
+              {documentId ? (
                 <CheckCircle2 className="w-4 h-4 text-supportive-foreground bg-supportive rounded-full" />
               ) : (
                 <Loader className="animate-spin w-4 h-4 text-warning rounded-full" />
@@ -165,7 +167,7 @@ const FormLog = ({
             </div>
           </div>
           <div className="h-full p-2 m-1 hover:bg-white/50 transition-all rounded-full aspect-square">
-            {downloadUrl ? (
+            {documentId ? (
               <DownloadIcon className="text-slate-400 w-4 h-4 mb-1" />
             ) : isOpen ? (
               <ChevronUp className="text-slate-400 w-4 h-4 mb-1" />
@@ -174,7 +176,7 @@ const FormLog = ({
             )}
           </div>
         </div>
-        {!downloadUrl && isOpen && (
+        {!documentId && isOpen && (
           <div className="flex flex-col gap-1 mb-4">
             {pendingSigningParties.map((psp, i) => (
               <div className="flex flex-row gap-2 text-[1em]">

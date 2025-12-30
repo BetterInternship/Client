@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { File, SquareArrowOutUpRight } from "lucide-react";
 
-export default function FormGenerateCard({
+export default function FormTemplateCard({
   formLabel,
   onGenerate,
 }: {
@@ -10,18 +10,15 @@ export default function FormGenerateCard({
   onGenerate: () => void;
 }) {
   return (
-    <>
-      <Card className="flex flex-col justify-end items-center aspect-square p-0">
-        <div className="flex gap-0 w-full border-b border-gray-300 overflow-hidden">
-          <div className="px-3 py-2 text-gray-700 text-xs text-ellipsis text-nowrap line-clamp-1">
+    <div className="border-b bg-white hover:bg-gray-100 duration-150 transition-all">
+      <Card className="flex flex-row justify-end items-center p-0 rounded-none border-none bg-transparent">
+        <div className="flex gap-0 w-full overflow-hidden">
+          <div className="px-3 py-2 text-gray-700 text-sm text-ellipsis text-nowrap line-clamp-1">
             {formLabel}
           </div>
         </div>
-        <div className="flex-1 flex flex-col items-center justify-center gap-4">
-          <File className="w-16 h-16 text-gray-400" />
-        </div>
 
-        <div className="flex gap-0 w-full border-t border-gray-300 overflow-hidden">
+        <div className="flex gap-0 w-fit border border-gray-300 overflow-hidden">
           <Button
             onClick={onGenerate}
             variant="outline"
@@ -33,6 +30,6 @@ export default function FormGenerateCard({
           </Button>
         </div>
       </Card>
-    </>
+    </div>
   );
 }

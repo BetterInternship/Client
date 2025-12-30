@@ -10,6 +10,7 @@ import { useProfileData } from "@/lib/api/student.data.api";
 import { FormService } from "@/lib/api/services";
 import { TextLoader } from "@/components/ui/loader";
 import { FormValues } from "@betterinternship/core/forms";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function FormActionButtons() {
   const form = useFormRendererContext();
@@ -18,6 +19,7 @@ export function FormActionButtons() {
   const profile = useProfileData();
   const modalRegistry = useModalRegistry();
   const updateAutofill = useMyAutofillUpdate();
+  const queryClient = useQueryClient();
 
   const noEsign = !form.formMetadata.mayInvolveEsign();
   const initiateFormLabel = "Fill out & initiate e-sign";
@@ -91,6 +93,7 @@ export function FormActionButtons() {
       }
 
       setBusy(false);
+      await queryClient.invalidateQueries({ queryKey: ["my_forms"] });
     } catch (e) {
       console.error("Submission error", e);
     } finally {
