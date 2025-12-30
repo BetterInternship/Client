@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-12-23 20:41:54
- * @ Modified time: 2025-12-30 06:57:18
+ * @ Modified time: 2025-12-30 08:15:41
  * @ Description:
  *
  * Move some of these utils to the core package maybe.
@@ -33,8 +33,14 @@ export const isBlockField = <T extends any[]>(block: ClientBlock<T>) => {
  */
 export const getBlockField = <T extends any[]>(
   block: ClientBlock<T>,
-): ClientField<T> | ClientPhantomField<T> => {
-  if (!isBlockField(block)) throw new Error("Block is not a field!");
+): ClientField<T> | ClientPhantomField<T> | undefined => {
+  if (!isBlockField(block)) {
+    console.error(
+      "Block is not a field!",
+      block.text_content ?? block.block_type,
+    );
+    return;
+  }
   return block.field_schema ?? block.phantom_field_schema!;
 };
 
@@ -109,9 +115,7 @@ export const validateField = <T extends any[]>(
   autofillValues: FormValues,
 ) => {
   const finalValues = { ...values, ...autofillValues };
-  // Only validate student/manual fields here
-  // ! change the party to initiator
-  if (field.signing_party_id !== "party-student" || field.source !== "manual")
+  if (field.signing_party_id !== "initiator" || field.source !== "manual")
     return;
 
   const value = finalValues[field.field];
@@ -148,7 +152,7 @@ export const seedValuesWithAutofill = <T extends any[]>(
   // Iterate over the blocks we have
   for (const block of blocks) {
     if (!isBlockField(block)) continue;
-    const field = getBlockField(block);
+    const field = getBlockField(block)!;
     const autofillValue = autofillValues[field.field];
 
     // Don't autofill if not empty or if nothing to autofill

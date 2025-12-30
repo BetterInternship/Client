@@ -10,7 +10,7 @@ type Props = {
   disabled?: boolean;
 };
 
-export function GenerateFormButtons({
+export function FormActionButtons({
   handleSubmit,
   busy = false,
   noEsign,

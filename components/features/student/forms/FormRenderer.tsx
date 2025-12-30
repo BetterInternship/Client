@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { FieldRenderer } from "./FieldRenderer";
 import { HeaderRenderer, ParagraphRenderer } from "./BlockRenderer";
 import { useFormRendererContext } from "./form-renderer.ctx";
-import { GenerateFormButtons } from "./generate-form-button";
+import { FormActionButtons } from "./form-action-buttons";
 import {
   getBlockField,
   isBlockField,
@@ -69,74 +69,6 @@ export function FormRenderer({
     setErrors(errors);
     if (Object.keys(errors).length) return;
 
-    // Find recipient fields (keys ending with ':recipient')
-    const recipientEmails = fields
-      .filter(
-        (f) => typeof f.field === "string" && f.field.endsWith(":recipient"),
-      )
-      .map((f) => (finalValues[f.field] as string)?.trim())
-      .filter(Boolean);
-
-    if (recipientEmails.length > 0 && withEsign && !_bypassConfirm) {
-      const recipientFields = fields
-        .filter(
-          (f) => typeof f.field === "string" && f.field.endsWith(":recipient"),
-        )
-        .map((f) => ({
-          field: f.field,
-          label: f.label,
-          email: (finalValues[f.field] as string)?.trim(),
-        }))
-        .filter((r) => r.email);
-
-      openGlobalModal(
-        "confirm-recipients",
-        <div>
-          <p className="mt-2 text-sm text-gray-600 text-justify">
-            We will email the following recipients a separate form to complete
-            and sign. Please double-check these addresses before continuing.
-          </p>
-
-          <ul className="mt-4 max-h-40 overflow-auto divide-y">
-            {recipientFields.map((e, i) => (
-              <li
-                key={i}
-                className="py-2 text-sm flex gap-1 items-center overflow-hidden"
-              >
-                <div className="font-medium text-primary truncate">
-                  {e.email}
-                </div>
-                <div className="text-gray-500 whitespace-nowrap">
-                  - {e.label}
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          <div className="mt-6 flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => closeGlobalModal("confirm-recipients")}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => {
-                closeGlobalModal("confirm-recipients");
-                void handleSubmit(true, true);
-              }}
-              type="button"
-            >
-              Confirm & Send
-            </Button>
-          </div>
-        </div>,
-        { title: "Confirm recipients" },
-      );
-
-      return;
-    }
-
     // proceed to save + submit
     try {
       setBusy(true);
@@ -169,12 +101,19 @@ export function FormRenderer({
       });
 
       // Generate form
-      await FormService.requestGenerateForm({
-        formName: form.formName,
-        formVersion: form.formVersion,
-        values: finalValues,
-        disableEsign: !withEsign,
-      });
+      if (withEsign) {
+        await FormService.initiateForm({
+          formName: form.formName,
+          formVersion: form.formVersion,
+          values: finalValues,
+        });
+      } else {
+        await FormService.filloutForm({
+          formName: form.formName,
+          formVersion: form.formVersion,
+          values: finalValues,
+        });
+      }
 
       setSubmitted(false);
     } catch (e) {
@@ -208,7 +147,7 @@ export function FormRenderer({
         />
       </div>
       <div className="px-7 py-3">
-        <GenerateFormButtons
+        <FormActionButtons
           handleSubmit={handleSubmit}
           busy={busy}
           noEsign={!hasSignature}
@@ -236,9 +175,11 @@ const BlocksRenderer = <T extends any[]>({
   onBlurValidate?: (fieldKey: string) => void;
 }) => {
   if (!blocks.length) return null;
-  const sortedBlocks = blocks.toSorted((a, b) => a.order - b.order);
+  const sortedBlocks = blocks
+    .toSorted((a, b) => a.order - b.order)
+    .filter((block) => getBlockField(block)?.source === "manual");
   return sortedBlocks.map((block) => {
-    const field = getBlockField(block);
+    const field = getBlockField(block)!;
     return (
       <div
         className="space-between flex flex-row"
