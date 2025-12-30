@@ -196,7 +196,19 @@ export const FormService = {
 
   async getMyGeneratedForms() {
     const { forms } = await APIClient.get<{
-      forms: Tables<"user_internship_forms">[];
+      forms: {
+        form_label: string | null;
+        form_name: string;
+        form_process_id: string;
+        form_status: string | null;
+        timestamp: string;
+        form_processes: {
+          prefilled_document_id?: string;
+          pending_document_id?: string;
+          signed_document_id?: string;
+          latest_document_url?: string;
+        };
+      }[];
     }>(APIRouteBuilder("users").r("me/form-log").build());
     return forms ?? [];
   },
