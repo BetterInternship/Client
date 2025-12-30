@@ -34,14 +34,16 @@ const FormLogPage = () => {
       <Separator className="mt-4 mb-8" />
 
       <div className="mb-6 sm:mb-8 animate-fade-in">
-        {myForms.forms.map((form) => (
-          <FormLog
-            label={form.label}
-            documentId={form.signed_document_id ?? form.prefilled_document_id}
-            timestamp={form.timestamp}
-            downloadUrl={form.latest_document_url}
-          ></FormLog>
-        ))}
+        {myForms.forms
+          .toSorted((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp))
+          .map((form) => (
+            <FormLog
+              label={form.label}
+              documentId={form.signed_document_id ?? form.prefilled_document_id}
+              timestamp={formatTimeAgo(form.timestamp)}
+              downloadUrl={form.latest_document_url}
+            ></FormLog>
+          ))}
       </div>
     </div>
   );
@@ -64,6 +66,7 @@ const FormLog = ({
   // Handles the browser download behavior
   // We let the browser choose the filename by setting it empty
   const handleDownload = () => {
+    console.log(downloadUrl);
     if (!documentId) return;
     try {
       setDownloading(true);
