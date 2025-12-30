@@ -11,9 +11,7 @@ import { Loader2 } from "lucide-react";
 import { useFormRendererContext } from "./form-renderer.ctx";
 import { validateField } from "./utils";
 import { useMyAutofill } from "@/hooks/use-my-autofill";
-
-type FormErrors = Record<string, string>;
-type FormValues = Record<string, string>;
+import { FormErrors, FormValues } from "@betterinternship/core/forms";
 
 export function FormFlowRouter({
   formName,
@@ -34,8 +32,7 @@ export function FormFlowRouter({
 
   // Get interface to form
   const formMetdata = form.formMetadata ?? null;
-  const fields = formMetdata?.getFieldsForClientService() ?? [];
-  const hasSignature = fields.some((field) => field.type === "signature");
+  const fields = formMetdata?.getFieldsForClientService("initiator") ?? [];
 
   useEffect(() => {
     form.updateFormName(formName);
@@ -68,8 +65,6 @@ export function FormFlowRouter({
       });
     }
   };
-
-  console.log(form.formMetadata.encodeAsJSON());
 
   if (done)
     return (
@@ -159,7 +154,7 @@ export function FormFlowRouter({
               setValues={(newValues) =>
                 setValues((prev) => ({ ...prev, ...newValues }))
               }
-              hasSignature={hasSignature}
+              hasSignature={formMetdata.mayInvolveEsign()}
             />
           )}
         </div>

@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-16 22:43:51
- * @ Modified time: 2025-12-29 11:54:22
+ * @ Modified time: 2025-12-30 12:15:22
  * @ Description:
  *
  * The field renderer 3000 automatically renders the correct field for the situation!
@@ -43,8 +43,6 @@ export const FieldRenderer = <T extends any[]>({
 
     return null;
   };
-
-  console.log(field.field, field.validator);
 
   // Dropdown
   if (field.type === "dropdown") {

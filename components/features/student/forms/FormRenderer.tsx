@@ -1,6 +1,6 @@
 "use client";
 
-import { ClientBlock } from "@betterinternship/core/forms";
+import { ClientBlock, FormErrors } from "@betterinternship/core/forms";
 import { useEffect, useState } from "react";
 import { FieldRenderer } from "./FieldRenderer";
 import { HeaderRenderer, ParagraphRenderer } from "./BlockRenderer";
@@ -12,14 +12,9 @@ import {
   seedValuesWithAutofill,
   validateField,
 } from "./utils";
-import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { useProfileData } from "@/lib/api/student.data.api";
-import { Button } from "@/components/ui/button";
 import { FormService } from "@/lib/api/services";
 import { useProfileActions } from "@/lib/api/student.actions.api";
-
-// ! move this
-type FormErrors = Record<string, string>;
 
 export function FormRenderer({
   values,
@@ -38,14 +33,13 @@ export function FormRenderer({
 }) {
   const form = useFormRendererContext();
   const formMetdata = form.formMetadata ?? null;
-  const fields = formMetdata?.getFieldsForClientService() ?? [];
+  const fields = formMetdata?.getFieldsForClientService("initiator") ?? [];
   const filteredBlocks = form.blocks;
   const profile = useProfileData();
   const { update } = useProfileActions();
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
-  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
 
   /**
    * This submits the form to the server
@@ -175,21 +169,16 @@ const BlocksRenderer = <T extends any[]>({
   onBlurValidate?: (fieldKey: string) => void;
 }) => {
   if (!blocks.length) return null;
-  const sortedBlocks = blocks
-    .toSorted((a, b) => a.order - b.order)
-    .filter((block) => getBlockField(block)?.source === "manual");
-  return sortedBlocks.map((block) => {
+  const sortedBlocks = blocks.toSorted((a, b) => a.order - b.order);
+  return sortedBlocks.map((block, i) => {
     const field = getBlockField(block)!;
     return (
-      <div
-        className="space-between flex flex-row"
-        key={`${formKey}:${block.text_content ?? JSON.stringify(block.field_schema) ?? JSON.stringify(block.phantom_field_schema)}`}
-      >
+      <div className="space-between flex flex-row" key={`${formKey}:${i}`}>
         <div
           className="flex-1"
           onFocus={() => setSelected(block.field_schema?.field as string)}
         >
-          {isBlockField(block) && (
+          {isBlockField(block) && getBlockField(block)?.source === "manual" && (
             <FieldRenderer
               field={field}
               value={values[field.field]}

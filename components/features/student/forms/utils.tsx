@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-12-23 20:41:54
- * @ Modified time: 2025-12-30 08:15:41
+ * @ Modified time: 2025-12-30 12:42:38
  * @ Description:
  *
  * Move some of these utils to the core package maybe.
@@ -12,6 +12,7 @@ import {
   ClientBlock,
   ClientField,
   ClientPhantomField,
+  FormValues,
 } from "@betterinternship/core/forms";
 import z from "zod";
 
@@ -35,7 +36,7 @@ export const getBlockField = <T extends any[]>(
   block: ClientBlock<T>,
 ): ClientField<T> | ClientPhantomField<T> | undefined => {
   if (!isBlockField(block)) {
-    console.error(
+    console.warn(
       "Block is not a field!",
       block.text_content ?? block.block_type,
     );
@@ -97,9 +98,6 @@ export const isEmptyFor = <T extends any[]>(
       return value === undefined || value === "";
   }
 };
-
-// ! move to core package
-type FormValues = Record<string, string>;
 
 /**
  * Validates a specific field, given the specified values.

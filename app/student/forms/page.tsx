@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { Newspaper } from "lucide-react";
-import { fetchForms, FormTemplate } from "@/lib/db/use-moa-backend";
+import { FormTemplate } from "@/lib/db/use-moa-backend";
 import FormGenerateCard from "@/components/features/student/forms/FormGenerateCard";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useRouter } from "next/navigation";
 import { Loader } from "@/components/ui/loader";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import { FormService } from "@/lib/api/services";
 
 /**
  * The forms page component
@@ -26,7 +27,7 @@ export default function FormsPage() {
   useEffect(() => {
     if (!profile.data) return;
     setFormLoading(true);
-    void fetchForms(profile.data)
+    void FormService.getMyFormTemplates()
       .then((formTemplates) => setFormTemplates(formTemplates))
       .then(() => setFormLoading(false))
       .catch(() => setFormLoading(false));
