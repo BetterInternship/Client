@@ -20,13 +20,16 @@ import { cn } from "@/lib/utils";
 import { HeaderIcon } from "@/components/ui/text";
 import { useMobile } from "@/hooks/use-mobile";
 import { formatTimeAgo } from "../../../lib/utils/date-utils";
+import { FormFillerContextProvider } from "@/components/features/student/forms/form-filler.ctx";
 
 const FormsLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <MyFormsContextProvider>
       <FormRendererContextProvider>
-        <div className="h-full overflow-auto">{children}</div>
-        <FormLogSidePanel />
+        <FormFillerContextProvider>
+          <div className="h-full overflow-auto">{children}</div>
+          <FormLogSidePanel />
+        </FormFillerContextProvider>
       </FormRendererContextProvider>
     </MyFormsContextProvider>
   );

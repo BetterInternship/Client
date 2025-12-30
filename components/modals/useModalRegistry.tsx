@@ -1,12 +1,13 @@
-import { IncompleteProfileContent } from "./IncompleteProfileModal";
+import { useQueryClient } from "@tanstack/react-query";
 import { useGlobalModal } from "../providers/ModalProvider";
-import { FormFlowRouter } from "../features/student/forms/FormFlowRouter";
-import { MassApplyComposer } from "../features/student/mass-apply/MassApplyComposer";
+
+import { IncompleteProfileContent } from "./components/IncompleteProfileModal";
+import { MassApplyComposer } from "./components/MassApplyComposer";
 import {
   MassApplyResults,
   MassApplyResultsData,
-} from "../features/student/mass-apply/MassApplyResults";
-import { useQueryClient } from "@tanstack/react-query";
+} from "./components/MassApplyResults";
+import { SpecifySigningPartiesModal } from "./components/SpecifySigningPartiesModal";
 
 /**
  * Simplifies modal config since we usually reuse each of these modal stuffs.
@@ -104,6 +105,21 @@ export const useModalRegistry = () => {
             showHeaderDivider: true,
           },
         ),
+      close: () => close("mass-apply-results"),
+    },
+
+    // Email confirmation modal
+    specifySigningParties: {
+      open: () =>
+        open(
+          "specify-signing-parties",
+          <SpecifySigningPartiesModal></SpecifySigningPartiesModal>,
+          {
+            title: "Next Signing Parties",
+            showHeaderDivider: true,
+          },
+        ),
+      close: () => close("specify-signing-parties"),
     },
   };
 

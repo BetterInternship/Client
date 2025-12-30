@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-12-23 20:41:54
- * @ Modified time: 2025-12-30 12:42:38
+ * @ Modified time: 2025-12-30 13:45:55
  * @ Description:
  *
  * Move some of these utils to the core package maybe.
@@ -97,71 +97,4 @@ export const isEmptyFor = <T extends any[]>(
     default:
       return value === undefined || value === "";
   }
-};
-
-/**
- * Validates a specific field, given the specified values.
- *
- * @param field
- * @param values
- * @param autofillValues
- * @returns
- */
-export const validateField = <T extends any[]>(
-  field: ClientField<T>,
-  values: FormValues,
-  autofillValues: FormValues,
-) => {
-  const finalValues = { ...values, ...autofillValues };
-  if (field.signing_party_id !== "initiator" || field.source !== "manual")
-    return;
-
-  const value = finalValues[field.field];
-  const coerced = field.coerce(value);
-  const result = field.validator?.safeParse(coerced);
-
-  if (result?.error) {
-    const errorString = z
-      .treeifyError(result.error)
-      .errors.map((e) => e.split(" ").slice(0).join(" "))
-      .join("\n");
-    return `${field.label}: ${errorString}`;
-  }
-
-  return null;
-};
-
-/**
- * Given a set of values, it seeds them with the autofill values provided.
- *
- * @param blocks
- * @param values
- * @param autofillValues
- * @returns
- */
-export const seedValuesWithAutofill = <T extends any[]>(
-  blocks: ClientBlock<T>[],
-  values: FormValues,
-  autofillValues: FormValues,
-) => {
-  // Initialize with values dict
-  const seededValues = { ...values };
-
-  // Iterate over the blocks we have
-  for (const block of blocks) {
-    if (!isBlockField(block)) continue;
-    const field = getBlockField(block)!;
-    const autofillValue = autofillValues[field.field];
-
-    // Don't autofill if not empty or if nothing to autofill
-    if (autofillValue === undefined) continue;
-    if (!isEmptyFor(field, values[field.field])) continue;
-
-    // Coerce autofill before putting it in
-    const coercedAutofillValue = coerceForField(field, autofillValue);
-    if (coercedAutofillValue !== undefined)
-      seededValues[field.field] = coercedAutofillValue.toString();
-  }
-
-  return seededValues;
 };

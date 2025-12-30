@@ -1,37 +1,23 @@
 "use client";
 
 import { ClientBlock, FormErrors } from "@betterinternship/core/forms";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { FieldRenderer } from "./FieldRenderer";
 import { HeaderRenderer, ParagraphRenderer } from "./BlockRenderer";
 import { useFormRendererContext } from "./form-renderer.ctx";
 import { FormActionButtons } from "./form-action-buttons";
-import {
-  getBlockField,
-  isBlockField,
-  seedValuesWithAutofill,
-  validateField,
-} from "./utils";
+import { getBlockField, isBlockField } from "./utils";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { FormService } from "@/lib/api/services";
 import { useProfileActions } from "@/lib/api/student.actions.api";
+import { useFormFiller } from "./form-filler.ctx";
+import { useMyAutofill } from "@/hooks/use-my-autofill";
 
-export function FormRenderer({
-  values,
-  setValues,
-  autofillValues,
-  onChange,
-  onBlurValidate,
-  hasSignature,
-}: {
-  values: Record<string, any>;
-  autofillValues: Record<string, string>;
-  setValues: (values: Record<string, string>) => void;
-  onChange: (key: string, value: any) => void;
-  onBlurValidate?: (fieldKey: string) => void;
-  hasSignature?: boolean;
-}) {
+export function FormFillerRenderer() {
   const form = useFormRendererContext();
+  const formFiller = useFormFiller();
+  const autofillValues = useMyAutofill();
+
   const formMetdata = form.formMetadata ?? null;
   const fields = formMetdata?.getFieldsForClientService("initiator") ?? [];
   const filteredBlocks = form.blocks;
@@ -39,7 +25,6 @@ export function FormRenderer({
   const { update } = useProfileActions();
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [errors, setErrors] = useState<FormErrors>({});
 
   /**
    * This submits the form to the server
@@ -52,15 +37,8 @@ export function FormRenderer({
     if (!profile.data?.id) return;
 
     // Validate fields before allowing to proceed
-    const finalValues = { ...autofillValues, ...values };
-    const errors: Record<string, string> = {};
-    for (const field of fields) {
-      const error = validateField(field, values, autofillValues ?? {});
-      if (error) errors[field.field] = error;
-    }
-
-    // If any errors, disallow proceed
-    setErrors(errors);
+    const finalValues = formFiller.getFinalValues(autofillValues);
+    const errors = formFiller.validate(form.fields, autofillValues);
     if (Object.keys(errors).length) return;
 
     // proceed to save + submit
@@ -71,21 +49,19 @@ export function FormRenderer({
         string,
         Record<string, string>
       > = {
-        shared: {},
+        shared: {} as Record<string, string>,
       };
 
       // Save it per field or shared
       for (const field of fields) {
         if (field.shared) {
-          internshipMoaFieldsToSave.shared[field.field] = finalValues[
-            field.field
-          ] as string;
+          internshipMoaFieldsToSave.shared[field.field] =
+            finalValues[field.field];
         } else {
           if (!internshipMoaFieldsToSave[form.formName])
             internshipMoaFieldsToSave[form.formName] = {};
-          internshipMoaFieldsToSave[form.formName][field.field] = finalValues[
-            field.field
-          ] as string;
+          internshipMoaFieldsToSave[form.formName][field.field] =
+            finalValues[field.field];
         }
       }
 
@@ -117,12 +93,6 @@ export function FormRenderer({
     }
   };
 
-  // Seed from saved autofill
-  useEffect(() => {
-    if (!autofillValues) return;
-    setValues(seedValuesWithAutofill(filteredBlocks, values, autofillValues));
-  }, []);
-
   return (
     <div className="relative max-h-[100%] overflow-auto pb-8">
       <div className="sticky top-0 px-7 py-3 text-2xl font-bold tracking-tighter text-gray-700 text-opacity-60 bg-gray-100 border-b border-gray-300 z-[50] shadow-soft">
@@ -133,18 +103,21 @@ export function FormRenderer({
         <BlocksRenderer
           formKey={form.formName}
           blocks={filteredBlocks}
-          values={values}
-          onChange={onChange}
-          errors={errors}
+          values={formFiller.getFinalValues(autofillValues)}
+          onChange={(key, value) => (
+            formFiller.setValue(key, value),
+            console.log(key, value)
+          )}
+          errors={formFiller.errors}
           setSelected={form.setSelectedPreviewId}
-          onBlurValidate={onBlurValidate}
+          onBlurValidate={() => formFiller.validate}
         />
       </div>
       <div className="px-7 py-3">
         <FormActionButtons
           handleSubmit={handleSubmit}
           busy={busy}
-          noEsign={!hasSignature}
+          noEsign={!formMetdata.mayInvolveEsign()}
         />
       </div>
     </div>

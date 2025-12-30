@@ -1,77 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FormRenderer } from "./FormRenderer";
-import { StepComplete } from "./StepComplete";
+import { FormFillerRenderer } from "./FormRenderer";
 import { Loader } from "@/components/ui/loader";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { DocumentRenderer } from "./previewer";
 import { Loader2 } from "lucide-react";
 import { useFormRendererContext } from "./form-renderer.ctx";
-import { validateField } from "./utils";
-import { useMyAutofill } from "@/hooks/use-my-autofill";
-import { FormErrors, FormValues } from "@betterinternship/core/forms";
 
-export function FormFlowRouter({
-  formName,
-  onGoToMyForms,
-}: {
-  formName: string;
-  onGoToMyForms?: () => void;
-}) {
+export function FormFlowRouter({ formName }: { formName: string }) {
   const form = useFormRendererContext();
-  const [done, setDone] = useState(false);
   const [mobileStage, setMobileStage] = useState<
     "preview" | "form" | "confirm"
   >("preview");
 
-  // Form stuff
-  const [values, setValues] = useState<FormValues>({});
-  const [errors, setErrors] = useState<FormErrors>({});
-
-  // Get interface to form
-  const formMetdata = form.formMetadata ?? null;
-  const fields = formMetdata?.getFieldsForClientService("initiator") ?? [];
-
   useEffect(() => {
     form.updateFormName(formName);
   }, [formName]);
-
-  // Saved autofill
-  const autofillValues = useMyAutofill();
-
-  // Field setter
-  const setField = (key: string, v: string | number) => {
-    setValues((prev) => ({ ...prev, [key]: v.toString() }));
-  };
-
-  // Validate a single field on blur and update errors immediately
-  const validateFieldOnBlur = (fieldKey: string) => {
-    const field = fields.find((f) => f.field === fieldKey);
-    if (!field) return;
-    const error = validateField(field, values, autofillValues ?? {});
-
-    if (error) {
-      setErrors((prev) => ({
-        ...prev,
-        [field.field]: error,
-      }));
-    } else {
-      setErrors((prev) => {
-        const copy = { ...prev };
-        delete copy[field.field];
-        return copy;
-      });
-    }
-  };
-
-  if (done)
-    return (
-      <div className="bg-white p-8 rounded-[0.25em]">
-        <StepComplete onMyForms={() => onGoToMyForms?.()} />
-      </div>
-    );
 
   // Loader
   if (!form.formMetadata || form.loading)
@@ -146,16 +92,7 @@ export function FormFlowRouter({
               </span>
             </div>
           ) : (
-            <FormRenderer
-              values={values}
-              onChange={setField}
-              onBlurValidate={validateFieldOnBlur}
-              autofillValues={autofillValues ?? {}}
-              setValues={(newValues) =>
-                setValues((prev) => ({ ...prev, ...newValues }))
-              }
-              hasSignature={formMetdata.mayInvolveEsign()}
-            />
+            <FormFillerRenderer />
           )}
         </div>
 
