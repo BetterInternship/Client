@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@betterinternship/components": "^1.0.1",
-    "@betterinternship/core": "^1.8.3",
+    "@betterinternship/core": "^1.8.4",
     "@betterinternship/schema.base": "^1.0.21",
     "@betterinternship/schema.moa": "^1.5.15",
     "@dnd-kit/core": "^6.3.1",

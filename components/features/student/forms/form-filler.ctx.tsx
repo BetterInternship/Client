@@ -1,5 +1,5 @@
 import z from "zod";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { PublicUser } from "@/lib/db/db.types";
 
 import {

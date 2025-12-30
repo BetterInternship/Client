@@ -1,6 +1,6 @@
 "use client";
 
-import { ClientBlock, FormErrors } from "@betterinternship/core/forms";
+import { ClientBlock } from "@betterinternship/core/forms";
 import { useState } from "react";
 import { FieldRenderer } from "./FieldRenderer";
 import { HeaderRenderer, ParagraphRenderer } from "./BlockRenderer";
