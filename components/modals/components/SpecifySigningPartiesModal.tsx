@@ -2,25 +2,62 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FieldRenderer } from "@/components/features/student/forms/FieldRenderer";
 import { getBlockField } from "@/components/features/student/forms/utils";
-import { ClientBlock } from "@betterinternship/core/forms";
+import {
+  ClientBlock,
+  ClientField,
+  ClientPhantomField,
+  FormErrors,
+  FormValues,
+} from "@betterinternship/core/forms";
 import { PublicUser } from "@/lib/db/db.types";
 import { TextLoader } from "@/components/ui/loader";
+import { IFormFiller } from "@/components/features/student/forms/form-filler.ctx";
 
 export const SpecifySigningPartiesModal = ({
+  fields,
+  formFiller,
+  autofillValues,
   signingPartyBlocks,
   handleSubmit,
   close,
 }: {
+  fields: (ClientField<[PublicUser]> | ClientPhantomField<[PublicUser]>)[];
+  formFiller: IFormFiller;
+  autofillValues?: FormValues;
   signingPartyBlocks: ClientBlock<[PublicUser]>[];
-  handleSubmit: () => Promise<any>;
+  handleSubmit: (signingPartyValues: FormValues) => Promise<any>;
   close: () => void;
 }) => {
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [signingPartyValues, setSigningPartyValues] = useState<FormValues>({});
   const [busy, setBusy] = useState(false);
-  const [values, setValues] = useState<Record<string, string>>({});
 
   const handleClick = async () => {
     setBusy(true);
-    await handleSubmit();
+
+    // Derive stuff we need
+    const signingPartyFields = signingPartyBlocks
+      .map((block) => getBlockField(block))
+      .filter((field) => !!field);
+    const additionalValues = {
+      ...autofillValues,
+      ...signingPartyValues,
+    };
+
+    // Try to validate the emails
+    const errors = formFiller.validate(
+      [...fields, ...signingPartyFields],
+      additionalValues,
+    );
+    setErrors(errors);
+
+    if (Object.keys(errors).length) {
+      setBusy(false);
+      return;
+    }
+
+    // Submit and close modal if okay
+    await handleSubmit(formFiller.getFinalValues(additionalValues));
     close();
     setBusy(false);
   };
@@ -38,9 +75,13 @@ export const SpecifySigningPartiesModal = ({
         return (
           <FieldRenderer
             field={field}
-            value={values[field.field]}
+            value={signingPartyValues[field.field]}
+            error={errors[field.field]}
             onChange={(value: string) =>
-              setValues({ ...values, [field.field]: value })
+              setSigningPartyValues({
+                ...signingPartyValues,
+                [field.field]: value,
+              })
             }
           ></FieldRenderer>
         );

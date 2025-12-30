@@ -8,8 +8,14 @@ import {
   MassApplyResultsData,
 } from "./components/MassApplyResults";
 import { SpecifySigningPartiesModal } from "./components/SpecifySigningPartiesModal";
-import { ClientBlock } from "@betterinternship/core/forms";
+import {
+  ClientBlock,
+  ClientField,
+  ClientPhantomField,
+  FormValues,
+} from "@betterinternship/core/forms";
 import { PublicUser } from "@/lib/db/db.types";
+import { IFormFiller } from "../features/student/forms/form-filler.ctx";
 
 /**
  * Simplifies modal config since we usually reuse each of these modal stuffs.
@@ -113,15 +119,24 @@ export const useModalRegistry = () => {
     // Email confirmation modal
     specifySigningParties: {
       open: (
+        fields: (
+          | ClientField<[PublicUser]>
+          | ClientPhantomField<[PublicUser]>
+        )[],
+        formFiller: IFormFiller,
         signingPartyBlocks: ClientBlock<[PublicUser]>[],
-        handleSubmit: () => Promise<any>,
+        handleSubmit: (signingPartyValues: FormValues) => Promise<any>,
+        autofillValues?: FormValues,
       ) =>
         open(
           "specify-signing-parties",
           <SpecifySigningPartiesModal
+            fields={fields}
+            formFiller={formFiller}
             signingPartyBlocks={signingPartyBlocks}
             handleSubmit={handleSubmit}
             close={() => close("specify-signing-parties")}
+            autofillValues={autofillValues}
           />,
           {
             title: "Next Signing Parties",

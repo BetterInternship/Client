@@ -9,7 +9,7 @@ import {
   FormValues,
 } from "@betterinternship/core/forms";
 
-interface IFormFiller {
+export interface IFormFiller {
   getFinalValues: (autofillValues?: FormValues) => FormValues;
   setValue: (field: string, value: string) => void;
   setValues: (values: Record<string, string>) => void;
