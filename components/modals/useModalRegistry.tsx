@@ -8,6 +8,8 @@ import {
   MassApplyResultsData,
 } from "./components/MassApplyResults";
 import { SpecifySigningPartiesModal } from "./components/SpecifySigningPartiesModal";
+import { ClientBlock } from "@betterinternship/core/forms";
+import { PublicUser } from "@/lib/db/db.types";
 
 /**
  * Simplifies modal config since we usually reuse each of these modal stuffs.
@@ -110,10 +112,16 @@ export const useModalRegistry = () => {
 
     // Email confirmation modal
     specifySigningParties: {
-      open: () =>
+      open: (
+        signingPartyBlocks: ClientBlock<[PublicUser]>[],
+        handleSubmit: () => void,
+      ) =>
         open(
           "specify-signing-parties",
-          <SpecifySigningPartiesModal></SpecifySigningPartiesModal>,
+          <SpecifySigningPartiesModal
+            signingPartyBlocks={signingPartyBlocks}
+            handleSubmit={handleSubmit}
+          ></SpecifySigningPartiesModal>,
           {
             title: "Next Signing Parties",
             showHeaderDivider: true,

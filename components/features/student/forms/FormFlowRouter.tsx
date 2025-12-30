@@ -9,7 +9,7 @@ import { DocumentRenderer } from "./previewer";
 import { Loader2 } from "lucide-react";
 import { useFormRendererContext } from "./form-renderer.ctx";
 
-export function FormFlowRouter({ formName }: { formName: string }) {
+export function FormAndDocumentLayout({ formName }: { formName: string }) {
   const form = useFormRendererContext();
   const [mobileStage, setMobileStage] = useState<
     "preview" | "form" | "confirm"

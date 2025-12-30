@@ -1,7 +1,9 @@
 "use client";
 
+import useModalRegistry from "@/components/modals/useModalRegistry";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { useFormRendererContext } from "./form-renderer.ctx";
 
 type Props = {
   handleSubmit: (withEsign?: boolean) => Promise<void> | void;
@@ -16,6 +18,8 @@ export function FormActionButtons({
   noEsign,
   disabled,
 }: Props) {
+  const form = useFormRendererContext();
+  const modalRegistry = useModalRegistry();
   const withEsignLabel = "Generate & Initiate E-sign";
   const withoutEsignLabel = !noEsign
     ? "Generate for Manual Signing"
@@ -49,7 +53,16 @@ export function FormActionButtons({
 
       {!noEsign && (
         <Button
-          onClick={onWithEsignClick}
+          onClick={() => {
+            const signingPartyBlocks =
+              form.formMetadata.getSigningPartyBlocks("initiator");
+            if (signingPartyBlocks.length)
+              modalRegistry.specifySigningParties.open(
+                signingPartyBlocks,
+                onWithEsignClick,
+              );
+            else onWithEsignClick();
+          }}
           className="w-full sm:w-auto text-xs"
           disabled={isDisabled}
           aria-busy={busy}

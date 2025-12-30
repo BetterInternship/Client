@@ -17,11 +17,12 @@ export function FormFillerRenderer() {
   const form = useFormRendererContext();
   const formFiller = useFormFiller();
   const autofillValues = useMyAutofill();
+  const profile = useProfileData();
 
   const formMetdata = form.formMetadata ?? null;
   const fields = formMetdata?.getFieldsForClientService("initiator") ?? [];
   const filteredBlocks = form.blocks;
-  const profile = useProfileData();
+
   const { update } = useProfileActions();
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -104,10 +105,7 @@ export function FormFillerRenderer() {
           formKey={form.formName}
           blocks={filteredBlocks}
           values={formFiller.getFinalValues(autofillValues)}
-          onChange={(key, value) => (
-            formFiller.setValue(key, value),
-            console.log(key, value)
-          )}
+          onChange={formFiller.setValue}
           errors={formFiller.errors}
           setSelected={form.setSelectedPreviewId}
           onBlurValidate={() => formFiller.validate}

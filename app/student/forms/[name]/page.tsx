@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
-import { FormFlowRouter } from "@/components/features/student/forms/FormFlowRouter";
+import { FormAndDocumentLayout } from "@/components/features/student/forms/FormFlowRouter";
 import { DocumentRenderer } from "@/components/forms/previewer";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { Button } from "@/components/ui/button";
@@ -72,7 +72,7 @@ export default function FormPage() {
         </div>
       </div>
 
-      <FormFlowRouter formName={form.formName} />
+      <FormAndDocumentLayout formName={form.formName} />
     </div>
   );
 }
