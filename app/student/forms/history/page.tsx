@@ -10,7 +10,7 @@ import {
   CheckIcon,
   ChevronDown,
   ChevronUp,
-  Dot,
+  CircleDot,
   DownloadIcon,
   Loader,
   Newspaper,
@@ -152,7 +152,7 @@ const FormLog = ({
                   {signingParty.signed ? (
                     <CheckIcon className="w-2 h-2 m-1 text-slate-500" />
                   ) : (
-                    <Dot className="w-2 h-2 m-1 text-slate-500" />
+                    <CircleDot className="w-2 h-2 m-1 text-slate-500" />
                   )}
 
                   {i > 0 &&
