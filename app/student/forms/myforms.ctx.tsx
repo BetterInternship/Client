@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-12-18 15:17:08
- * @ Modified time: 2025-12-30 23:19:48
+ * @ Modified time: 2025-12-31 15:08:13
  * @ Description:
  *
  * These are the forms a user has generated or initiated.
@@ -10,6 +10,7 @@
 "use client";
 
 import { FormService } from "@/lib/api/services";
+import { IFormSigningParty } from "@betterinternship/core/forms";
 import { useQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 
@@ -21,7 +22,7 @@ interface IMyForms {
     signed_document_id?: string | null;
     latest_document_url?: string | null;
     timestamp: string;
-    singing_parties: { email: string; signed: boolean }[];
+    signing_parties?: IFormSigningParty[];
   }[];
   loading: boolean;
   error?: string;
@@ -54,8 +55,8 @@ export const MyFormsContextProvider = ({
       pending_document_id: f.form_processes.pending_document_id,
       signed_document_id: f.form_processes.signed_document_id,
       latest_document_url: f.form_processes.latest_document_url,
+      signing_parties: f.form_processes.signing_parties,
       timestamp: f.timestamp,
-      singing_parties: [],
     })) ?? [];
 
   return (

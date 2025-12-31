@@ -12,6 +12,7 @@ import { TextLoader } from "@/components/ui/loader";
 import { FormValues } from "@betterinternship/core/forms";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { getClientAudit } from "@/lib/audit";
 
 export function FormActionButtons() {
   const form = useFormRendererContext();
@@ -72,6 +73,7 @@ export function FormActionButtons() {
                 formName: form.formName,
                 formVersion: form.formVersion,
                 values: { ...finalValues, ...signingPartyValues },
+                audit: getClientAudit(),
               }),
             autofillValues,
           );
@@ -82,6 +84,7 @@ export function FormActionButtons() {
             formName: form.formName,
             formVersion: form.formVersion,
             values: finalValues,
+            audit: getClientAudit(),
           });
 
           await queryClient.invalidateQueries({ queryKey: ["my_forms"] });

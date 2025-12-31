@@ -114,7 +114,7 @@ export default function FormsPage() {
               "flex flex-col",
             )}
           >
-            {formTemplates?.length !== 0 &&
+            {formTemplates?.length &&
               formTemplates.map((form, i) => (
                 <FormTemplateCard
                   key={form.formName + i}

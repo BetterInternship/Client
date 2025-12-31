@@ -19,6 +19,7 @@ import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 import { Separator } from "@radix-ui/react-separator";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { IFormSigningParty } from "@betterinternship/core/forms";
 
 const FormLogPage = () => {
   const router = useRouter();
@@ -64,6 +65,7 @@ const FormLogPage = () => {
                 }
                 timestamp={formatTimeAgo(form.timestamp)}
                 downloadUrl={form.latest_document_url}
+                signingParties={form.signing_parties}
               ></FormLog>
             ))}
         </div>
@@ -77,11 +79,13 @@ const FormLog = ({
   timestamp,
   documentId,
   downloadUrl,
+  signingParties,
 }: {
   label: string;
   timestamp: string;
   documentId?: string | null;
   downloadUrl?: string | null;
+  signingParties?: IFormSigningParty[];
 }) => {
   const [downloading, setDownloading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -103,12 +107,6 @@ const FormLog = ({
       setDownloading(false);
     }
   };
-
-  const pendingSigningParties = [
-    { email: "modavid.1964@gmail.com", signed: true },
-    { email: "modavid.1964+entity@gmail.com" },
-    { email: "modavid.1964+guardian@gmail.com" },
-  ];
 
   return (
     <div
@@ -142,25 +140,38 @@ const FormLog = ({
         </div>
         {!documentId && isOpen && (
           <div className="flex flex-col gap-1 mb-4">
-            {pendingSigningParties.map((psp, i) => (
-              <div className="flex flex-row gap-2 text-[1em]">
-                {psp.signed ? (
-                  <CheckIcon className="w-2 h-2 m-1 text-slate-500" />
-                ) : (
-                  <Dot className="w-2 h-2 m-1 text-slate-500" />
-                )}
+            {signingParties?.map((signingParty, i) => {
+              const displayName =
+                signingParty._id === "initiator"
+                  ? "You"
+                  : (signingParty.signatory_account?.email ??
+                    signingParty.signatory_account?.name ??
+                    signingParty.signatory_source?.label);
+              return (
+                <div className="flex flex-row gap-2 text-[1em]">
+                  {signingParty.signed ? (
+                    <CheckIcon className="w-2 h-2 m-1 text-slate-500" />
+                  ) : (
+                    <Dot className="w-2 h-2 m-1 text-slate-500" />
+                  )}
 
-                {i > 0 && pendingSigningParties[i - 1].signed !== psp.signed ? (
-                  <AnimatedShinyText>{psp.email}</AnimatedShinyText>
-                ) : (
-                  <div
-                    className={psp.signed ? "text-supportive" : "text-gray-500"}
-                  >
-                    {psp.email}
-                  </div>
-                )}
-              </div>
-            ))}
+                  {i > 0 &&
+                  signingParties[i - 1].signed !== signingParty.signed ? (
+                    <AnimatedShinyText>{displayName}</AnimatedShinyText>
+                  ) : (
+                    <div
+                      className={
+                        signingParty.signed
+                          ? "text-supportive"
+                          : "text-gray-500"
+                      }
+                    >
+                      {displayName}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

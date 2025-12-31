@@ -11,7 +11,7 @@ import {
 } from "@/lib/db/db.types";
 import { APIClient, APIRouteBuilder } from "./api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
-import { IFormMetadata } from "@betterinternship/core/forms";
+import { IFormMetadata, IFormSigningParty } from "@betterinternship/core/forms";
 import { Tables } from "@betterinternship/schema.base";
 
 interface EmployerResponse extends FetchResponse {
@@ -162,7 +162,7 @@ export const FormService = {
     formName: string;
     formVersion: number;
     values: Record<string, string>;
-    disableEsign?: boolean;
+    audit: any;
   }) {
     return APIClient.post<{
       formProcessId: string;
@@ -207,6 +207,7 @@ export const FormService = {
           pending_document_id?: string;
           signed_document_id?: string;
           latest_document_url?: string;
+          signing_parties?: IFormSigningParty[];
         };
       }[];
     }>(APIRouteBuilder("users").r("me/form-log").build());
