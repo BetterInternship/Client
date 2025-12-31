@@ -93,7 +93,6 @@ const FormLog = ({
   // Handles the browser download behavior
   // We let the browser choose the filename by setting it empty
   const handleDownload = () => {
-    console.log(downloadUrl);
     if (!documentId) return;
     try {
       setDownloading(true);
@@ -146,7 +145,7 @@ const FormLog = ({
                   ? "You"
                   : (signingParty.signatory_account?.email ??
                     signingParty.signatory_account?.name ??
-                    signingParty.signatory_source?.label);
+                    `(${signingParty.signatory_source?.label})`);
               return (
                 <div className="flex flex-row gap-2 text-[1em]">
                   {signingParty.signed ? (
