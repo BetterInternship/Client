@@ -167,7 +167,7 @@ const FieldRendererDropdown = <T extends any[]>({
   }));
 
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1.5 relative overflow-visible">
       <FormDropdown
         required={false}
         label={field.label}

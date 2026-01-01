@@ -107,7 +107,7 @@ function AutocompleteBase<ID extends number | string>({
   };
 
   return (
-    <div className={cn("relative w-full", className)} ref={ref}>
+    <div className={cn("relative w-full overflow-visible", className)} ref={ref}>
       {label ? (
         <label htmlFor={inputId} className="text-xs text-gray-600 mb-1 block">
           {label} {required && <span className="text-red-500">*</span>}
@@ -432,7 +432,7 @@ export function AutocompleteTreeMulti({
   );
 
   return (
-    <div className={cn("relative w-full", className)} ref={ref}>
+    <div className={cn("relative w-full overflow-visible", className)} ref={ref}>
       {label ? (
         <LabelWithTooltip label={label} required={required} tooltip={tooltip} />
       ) : null}

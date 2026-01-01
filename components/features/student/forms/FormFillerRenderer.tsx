@@ -68,9 +68,9 @@ export function FormFillerRenderer({
   }, [form.selectedPreviewId]);
 
   return (
-    <>
-      <div ref={scrollContainerRef} className="relative max-h-[100%] min-h-[100%] overflow-auto flex flex-col">
-        <div className="sticky top-0 px-7 py-3 text-2xl font-bold tracking-tighter text-gray-700 text-opacity-60 bg-gray-100 border-b z-[50] shadow-soft border-r border-gray-300">
+    <div className="relative h-full flex flex-col">
+      <div ref={scrollContainerRef} className="relative flex-1 overflow-auto flex flex-col">
+        <div className="px-7 py-3 text-2xl font-bold tracking-tighter text-gray-700 text-opacity-60 bg-gray-100 border-b shadow-soft border-r border-gray-300">
           {form.formName}
         </div>
         <div className="space-y-2 px-7 border-r border-gray-300 flex-1">
@@ -86,12 +86,11 @@ export function FormFillerRenderer({
             selectedFieldId={form.selectedPreviewId}
           />
         </div>
-        <div className="py-3"></div>
-        <div className="sticky w-full bottom-0 px-7 py-3 bg-gray-100 border-t border-r border-gray-300 z-[50]">
-          <FormActionButtons />
-        </div>
       </div>
-    </>
+      <div className="px-7 py-3 bg-gray-100 border-t border-r border-gray-300">
+        <FormActionButtons />
+      </div>
+    </div>
   );
 }
 
