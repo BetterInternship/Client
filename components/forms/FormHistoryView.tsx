@@ -2,11 +2,12 @@
 
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { Newspaper } from "lucide-react";
-import { formatTimeAgo } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { Divider } from "@/components/ui/divider";
+import { Separator } from "@/components/ui/separator";
+
 import { FormLog } from "./FormLog";
 import { IFormSigningParty } from "@betterinternship/core/forms";
+import { formatDate } from "@/lib/utils";
 
 interface FormHistoryViewProps {
   forms: Array<{
@@ -33,7 +34,7 @@ export function FormHistoryView({ forms }: FormHistoryViewProps) {
         </div>
         <Badge>{forms.length} generated forms</Badge>
       </div>
-      <Divider />
+      <Separator className="mt-8" />
 
       <div className="animate-fade-in">
         {forms
@@ -43,7 +44,7 @@ export function FormHistoryView({ forms }: FormHistoryViewProps) {
               key={form.id}
               label={form.label}
               documentId={form.signed_document_id ?? form.prefilled_document_id}
-              timestamp={formatTimeAgo(form.timestamp)}
+              timestamp={formatDate(form.timestamp)}
               downloadUrl={form.latest_document_url}
               signingParties={form.signing_parties}
             />

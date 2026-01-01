@@ -51,7 +51,7 @@ export const FormLog = ({
       className="hover:bg-slate-100 hover:cursor-pointer transition-all"
       onClick={() => (documentId ? handleDownload() : setIsOpen(!isOpen))}
     >
-      <div className="px-5 flex flex-col border-b text-xs text-gray-700 font-normal">
+      <div className="px-5 flex flex-col border-b text-sm text-gray-700 font-normal">
         <div className="relative flex flex-row justify-between h-full items-start">
           <div className="flex flex-row gap-2 py-3 min-w-5 items-start">
             <div className="min-w-4">
@@ -61,9 +61,9 @@ export const FormLog = ({
                 <div className="animate-spin w-4 h-4 text-warning rounded-full border border-warning border-t-transparent" />
               )}
             </div>
-            <div>
+            <div className="flex">
               <div className="text-ellipsis line-clamp-1 pr-5">{label}</div>
-              <div className="pr-5 text-gray-400 mt-1">{timestamp}</div>
+              <div className="text-gray-400">{timestamp}</div>
             </div>
           </div>
           <div className="h-full p-2 m-1 hover:bg-white/50 transition-all rounded-full aspect-square">
@@ -86,7 +86,10 @@ export const FormLog = ({
                     signingParty.signatory_account?.name ??
                     `(${signingParty.signatory_source?.label})`);
               return (
-                <div key={signingParty._id} className="flex flex-row gap-2 text-[1em]">
+                <div
+                  key={signingParty._id}
+                  className="flex flex-row gap-2 text-[1em]"
+                >
                   {signingParty.signed ? (
                     <CheckIcon className="w-2 h-2 m-1 text-slate-500" />
                   ) : (

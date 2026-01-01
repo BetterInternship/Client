@@ -124,9 +124,11 @@ export const formatDate = (dateString?: string | null) => {
       day: "numeric",
     }) +
     ", " +
-    String(date.getHours()).padStart(2, "0") +
-    ":" +
-    String(date.getMinutes()).padStart(2, "0")
+    date.toLocaleTimeString("en-PH", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
   );
 };
 
