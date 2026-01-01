@@ -117,7 +117,8 @@ const BlocksRenderer = <T extends any[]>({
               ref={(el) => {
                 if (el && field) fieldRefs[field.field] = el;
               }}
-              className={`flex-1 transition-all py-2 px-1 ${isSelected ? "ring-2 ring-blue-500 ring-offset-2 rounded-[0.33em]" : ""}`}
+              onClick={() => setSelected(block.field_schema?.field as string)}
+              className={`flex-1 transition-all py-2 px-1 cursor-pointer ${isSelected ? "ring-2 ring-blue-500 ring-offset-2 rounded-[0.33em]" : ""}`}
               onFocus={() => setSelected(block.field_schema?.field as string)}
             >
               <FieldRenderer

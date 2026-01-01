@@ -14,6 +14,7 @@ interface FormPreviewPdfDisplayProps {
   values: Record<string, string>;
   scale?: number;
   onFieldClick?: (fieldName: string) => void;
+  selectedFieldId?: string;
 }
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
@@ -29,6 +30,7 @@ export const FormPreviewPdfDisplay = ({
   values,
   scale: initialScale = 1.0,
   onFieldClick,
+  selectedFieldId,
 }: FormPreviewPdfDisplayProps) => {
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [pageCount, setPageCount] = useState<number>(0);
@@ -37,8 +39,27 @@ export const FormPreviewPdfDisplay = ({
   const [selectedPage, setSelectedPage] = useState<number>(1);
   const [isLoadingDoc, setIsLoadingDoc] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [animatingFieldId, setAnimatingFieldId] = useState<string | null>(null);
 
   const pageRefs = useRef<Map<number, HTMLDivElement | null>>(new Map());
+
+  // Jump to field's page and trigger animation when selected from form
+  useEffect(() => {
+    if (!selectedFieldId) return;
+    
+    const selectedField = blocks.find(b => b.field === selectedFieldId);
+    if (selectedField && selectedField.page) {
+      const fieldPage = selectedField.page;
+      setSelectedPage(fieldPage);
+      const pageNode = pageRefs.current.get(fieldPage);
+      pageNode?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    
+    // Trigger bump animation
+    setAnimatingFieldId(selectedFieldId);
+    const timeout = setTimeout(() => setAnimatingFieldId(null), 600);
+    return () => clearTimeout(timeout);
+  }, [selectedFieldId, blocks]);
 
   // Initialize PDF.js worker
   useEffect(() => {
@@ -170,6 +191,8 @@ export const FormPreviewPdfDisplay = ({
               })}
               values={values}
               onFieldClick={onFieldClick}
+              animatingFieldId={animatingFieldId}
+              selectedFieldId={selectedFieldId}
             />
           ))}
         </div>
@@ -188,6 +211,8 @@ interface PdfPageWithFieldsProps {
   blocks: IFormBlock[];
   values: Record<string, string>;
   onFieldClick?: (fieldName: string) => void;
+  animatingFieldId?: string | null;
+  selectedFieldId?: string;
 }
 
 const PdfPageWithFields = ({
@@ -200,6 +225,8 @@ const PdfPageWithFields = ({
   blocks,
   values,
   onFieldClick,
+  animatingFieldId,
+  selectedFieldId,
 }: PdfPageWithFieldsProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -352,19 +379,17 @@ const PdfPageWithFields = ({
 
           // Calculate dynamic font size based on box dimensions
           const baseFontSize = Math.min(
-            Math.max(heightPixels * 0.6, 6), // Use 60% of box height, min 6px
-            14 // Max 14px
+            Math.max(heightPixels * 1, 6), // Use 60% of box height, min 6px
+            20
           );
+
+          const isSelected = animatingFieldId === fieldName || selectedFieldId === fieldName;
 
           return (
             <div
               key={fieldName}
               onClick={() => onFieldClick?.(fieldName)}
-              className={`absolute border cursor-pointer transition-all ${
-                isFilled
-                  ? "border-green-400 bg-green-50"
-                  : "border-dashed border-blue-400 bg-blue-50"
-              }`}
+              className={`absolute cursor-pointer transition-all text-black ${isSelected ? 'bg-green-300' : 'bg-blue-200'} `}
               style={{
                 left: `${displayPos.displayX}px`,
                 top: `${displayPos.displayY}px`,
@@ -381,7 +406,7 @@ const PdfPageWithFields = ({
             >
               {isFilled && (
                 <div
-                  className="font-semibold text-green-700"
+                  className="font-semibold text-black"
                   style={{
                     fontSize: `${baseFontSize}px`,
                     lineHeight: 1,
