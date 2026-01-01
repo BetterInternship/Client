@@ -114,7 +114,7 @@ export function FormActionButtons() {
   return (
     <div className="pt-2 flex items-start justify-end gap-2">
       <Button
-        onClick={noEsign ? onWithEsignClick : onWithoutEsignClick}
+        onClick={onWithoutEsignClick}
         variant={noEsign ? "default" : "outline"}
         className="w-full sm:w-auto text-xs"
         disabled={busy}
