@@ -16,17 +16,16 @@ import {
   Newspaper,
 } from "lucide-react";
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
-import { Separator } from "@radix-ui/react-separator";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { IFormSigningParty } from "@betterinternship/core/forms";
+import { Badge } from "@/components/ui/badge";
+import { Divider } from "@/components/ui/divider";
 
 const FormLogPage = () => {
   const router = useRouter();
   const myForms = useMyForms();
-  const disabled = myForms.forms.length === 0;
 
-  if (disabled) return <></>;
   return (
     <div className="relative w-full flex flex-col h-full bg-gray-50">
       <div className="w-full bg-white border-b border-gray-200 shadow-sm flex-shrink-0">
@@ -44,13 +43,14 @@ const FormLogPage = () => {
         </div>
       </div>
       <div className="container max-w-5xl p-10 pt-16 mx-auto">
-        <div className="mb-6 sm:mb-8 animate-fade-in">
+        <div className="animate-fade-in">
           <div className="flex flex-row items-center gap-3 mb-2">
             <HeaderIcon icon={Newspaper}></HeaderIcon>
             <HeaderText>Form History</HeaderText>
           </div>
+          <Badge>{myForms.forms.length} generated forms</Badge>
+          <Divider />
         </div>
-        <Separator className="mt-4 mb-8" />
 
         <div className="mb-6 sm:mb-8 animate-fade-in">
           {myForms.forms
@@ -68,6 +68,11 @@ const FormLogPage = () => {
                 signingParties={form.signing_parties}
               ></FormLog>
             ))}
+          {!myForms.forms.length && (
+            <div className="text-gray-500">
+              You haven't generated any forms yet.
+            </div>
+          )}
         </div>
       </div>
     </div>

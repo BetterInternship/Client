@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-11-09 03:19:04
- * @ Modified time: 2025-12-30 06:57:48
+ * @ Modified time: 2026-01-01 16:29:31
  * @ Description:
  *
  * We can move this out later on so it becomes reusable in other places.
@@ -18,10 +18,18 @@ import {
   IFormParameters,
   ClientBlock,
 } from "@betterinternship/core/forms";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { cn } from "@/lib/utils";
 import { FormService } from "@/lib/api/services";
 import { PublicUser } from "@/lib/db/db.types";
+import { useQuery } from "@tanstack/react-query";
 
 // ? Current schema version, update if needed; tells us if out of date
 export const SCHEMA_VERSION = 1;
@@ -94,6 +102,15 @@ export const FormRendererContextProvider = ({
   );
   const [selectedPreviewId, setSelectedPreviewId] = useState<string>("");
 
+  // Cache forms
+  const { data: form, isLoading } = useQuery({
+    queryKey: useMemo(() => ["form-template", formName], [formName]),
+    queryFn: useCallback(() => FormService.getForm(formName), [formName]),
+    enabled: !!formName,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
   // Used in the ui for selecting / distinguishing fields
   const keyedFields = useMemo(
     () =>
@@ -103,9 +120,6 @@ export const FormRendererContextProvider = ({
       })),
     [previewFields],
   );
-
-  // Loading states
-  const [loading, setLoading] = useState(false);
 
   // Refresh previews of the different fields
   const refreshPreviews = () => {
@@ -133,35 +147,22 @@ export const FormRendererContextProvider = ({
 
   // When form name and version are updated, pull latest
   useEffect(() => {
-    if (!formName || (!formVersion && formVersion !== 0)) return;
-    const controller = new AbortController();
+    if (!form) return;
 
-    void FormService.getForm(formName)
-      .then((form) => {
-        const fm = new FormMetadata(form.formMetadata);
-        const newFormName = form.formMetadata.name;
-        const newFormVersion = form.formDocument.version;
+    const fm = new FormMetadata(form.formMetadata);
+    const newFormName = form.formMetadata.name;
+    const newFormVersion = form.formDocument.version;
 
-        // Only update form if it's new
-        setFormMetadata(fm);
-        setFormName(newFormName);
-        setFormVersion(newFormVersion);
-        setDocumentName(form.formDocument.name);
-        setDocumentUrl(form.documentUrl);
-        setFields(fm.getFieldsForClientService("initiator"));
-        setBlocks(fm.getBlocksForClientService("initiator"));
-        setPreviewFields(fm.getFieldsForSigningService());
-      })
-      .then(() => setLoading(false))
-      .catch((e) => {
-        alert(e);
-        setLoading(false);
-      });
-
-    setLoading(true);
-    console.log("UPDATING FORM", formName);
-    return () => controller.abort();
-  }, [formName, formVersion]);
+    // Only update form if it's new
+    setFormMetadata(fm);
+    setFormName(newFormName);
+    setFormVersion(newFormVersion);
+    setDocumentName(form.formDocument.name);
+    setDocumentUrl(form.documentUrl);
+    setFields(fm.getFieldsForClientService("initiator"));
+    setBlocks(fm.getBlocksForClientService("initiator"));
+    setPreviewFields(fm.getFieldsForSigningService());
+  }, [form]);
 
   // Clear fields on refresh?
   useEffect(() => {
@@ -189,7 +190,7 @@ export const FormRendererContextProvider = ({
     params,
     keyedFields,
     previews,
-    loading,
+    loading: isLoading,
     selectedPreviewId: selectedPreviewId || null,
     setSelectedPreviewId: (id: string | null) => setSelectedPreviewId(id ?? ""),
     document: { name: documentName, url: documentUrl },
