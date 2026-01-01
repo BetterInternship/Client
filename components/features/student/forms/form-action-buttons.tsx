@@ -47,7 +47,7 @@ export function FormActionButtons() {
     // Validate fields before allowing to proceed
     const finalValues = formFiller.getFinalValues(autofillValues);
     const errors = formFiller.validate(form.fields, autofillValues);
-    return console.log(errors);
+    console.log(errors);
 
     if (Object.keys(errors).length) return setBusy(false);
 
