@@ -4,6 +4,7 @@ import { useMyForms } from "../myforms.ctx";
 import { useState } from "react";
 import { formatTimeAgo } from "@/lib/utils";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
+import { FormsNavigation } from "@/components/features/student/forms/FormsNavigation";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -28,31 +29,18 @@ const FormLogPage = () => {
 
   return (
     <div className="relative w-full flex flex-col h-full bg-gray-50">
-      <div className="w-full bg-white border-b border-gray-200 shadow-sm flex-shrink-0">
-        <div className="max-w-7xl mx-auto py-4">
-          <div className="flex sm:items-center items-start justify-between flex-col sm:flex-row">
-            <Button
-              variant="ghost"
-              onClick={() => router.back()}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </Button>
-          </div>
-        </div>
-      </div>
-      <div className="container max-w-5xl p-10 pt-16 mx-auto">
+      <FormsNavigation />
+      <div className="container max-w-5xl pt-8 mx-auto">
         <div className="animate-fade-in">
           <div className="flex flex-row items-center gap-3 mb-2">
             <HeaderIcon icon={Newspaper}></HeaderIcon>
             <HeaderText>Form History</HeaderText>
           </div>
           <Badge>{myForms.forms.length} generated forms</Badge>
-          <Divider />
         </div>
+        <Divider />
 
-        <div className="mb-6 sm:mb-8 animate-fade-in">
+        <div className="animate-fade-in">
           {myForms.forms
             .toSorted(
               (a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp),
