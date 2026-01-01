@@ -11,8 +11,8 @@ import {
 
 export interface IFormFiller {
   getFinalValues: (autofillValues?: FormValues) => FormValues;
-  setValue: (field: string, value: string) => void;
-  setValues: (values: Record<string, string>) => void;
+  setValue: (field: string, value: any) => void;
+  setValues: (values: Record<string, any>) => void;
 
   errors: FormErrors;
   validate: (
@@ -37,12 +37,22 @@ export const FormFillerContextProvider = ({
     return { ...autofillValues, ...values };
   };
 
-  const setValue = (field: string, value: string) => {
-    _setValues({ ...values, [field]: value });
+  const setValue = (field: string, value: any) => {
+    // Convert all values to strings for consistency
+    const stringValue = value === null || value === undefined ? "" : String(value);
+    _setValues({ ...values, [field]: stringValue });
   };
 
-  const setValues = (newValues: Record<string, string>) => {
-    _setValues({ ...values, ...newValues });
+  const setValues = (newValues: Record<string, any>) => {
+    // Convert all values to strings for consistency
+    const stringifiedValues = Object.entries(newValues).reduce(
+      (acc, [key, val]) => {
+        acc[key] = val === null || val === undefined ? "" : String(val);
+        return acc;
+      },
+      {} as Record<string, string>
+    );
+    _setValues({ ...values, ...stringifiedValues });
   };
 
   const validate = (
