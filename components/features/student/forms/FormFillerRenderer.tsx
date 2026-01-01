@@ -81,7 +81,7 @@ export function FormFillerRenderer({
             onChange={formFiller.setValue}
             errors={formFiller.errors}
             setSelected={form.setSelectedPreviewId}
-            onBlurValidate={() => formFiller.validate}
+            onBlurValidate={(fieldKey, field) => formFiller.validateField(fieldKey, field, autofillValues)}
             fieldRefs={fieldRefs.current}
             selectedFieldId={form.selectedPreviewId}
           />
@@ -112,7 +112,7 @@ const BlocksRenderer = <T extends any[]>({
   onChange: (key: string, value: any) => void;
   errors: Record<string, string>;
   setSelected: (selected: string) => void;
-  onBlurValidate?: (fieldKey: string) => void;
+  onBlurValidate?: (fieldKey: string, field: any) => void;
   fieldRefs: Record<string, HTMLDivElement | null>;
   selectedFieldId?: string;
 }) => {
@@ -141,7 +141,7 @@ const BlocksRenderer = <T extends any[]>({
                 field={field}
                 value={values[field.field]}
                 onChange={(v) => onChange(field.field, v)}
-                onBlur={() => onBlurValidate?.(field.field)}
+                onBlur={() => onBlurValidate?.(field.field, field)}
                 error={errors[field.field]}
                 allValues={values}
               />

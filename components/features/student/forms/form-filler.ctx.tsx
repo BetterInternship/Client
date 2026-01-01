@@ -13,6 +13,7 @@ export interface IFormFiller {
   getFinalValues: (autofillValues?: FormValues) => FormValues;
   setValue: (field: string, value: any) => void;
   setValues: (values: Record<string, any>) => void;
+  validateField: (fieldKey: string, field: ClientField<any> | ClientPhantomField<any>, autofillValues?: FormValues) => void;
 
   errors: FormErrors;
   validate: (
@@ -61,7 +62,7 @@ export const FormFillerContextProvider = ({
   ) => {
     const errors: Record<string, string> = {};
     for (const field of fields) {
-      const error = validateField(field, values, autofillValues ?? {});
+      const error = validateFieldHelper(field, values, autofillValues ?? {});
       console.log("err", error, field);
       if (error) errors[field.field] = error;
     }
@@ -71,12 +72,33 @@ export const FormFillerContextProvider = ({
     return errors;
   };
 
+  const validateField = (
+    fieldKey: string,
+    field: ClientField<any> | ClientPhantomField<any>,
+    autofillValues?: FormValues,
+  ) => {
+    _setValues((currentValues) => {
+      const error = validateFieldHelper(field, currentValues, autofillValues ?? {});
+      if (error) {
+        _setErrors((prev) => ({ ...prev, [fieldKey]: error }));
+      } else {
+        _setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[fieldKey];
+          return newErrors;
+        });
+      }
+      return currentValues;
+    });
+  };
+
   return (
     <FormFillerContext.Provider
       value={{
         getFinalValues,
         setValue,
         setValues,
+        validateField,
 
         validate,
         errors,
@@ -95,7 +117,7 @@ export const FormFillerContextProvider = ({
  * @param autofillValues
  * @returns
  */
-const validateField = <T extends any[]>(
+const validateFieldHelper = <T extends any[]>(
   field: ClientField<T>,
   values: FormValues,
   autofillValues: FormValues,
