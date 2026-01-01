@@ -1,19 +1,44 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { FormFillerRenderer } from "./FormFillerRenderer";
 import { Loader } from "@/components/ui/loader";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { DocumentRenderer } from "./previewer";
+import { FormPreviewPdfDisplay } from "./previewer";
 import { Loader2 } from "lucide-react";
 import { useFormRendererContext } from "./form-renderer.ctx";
+import { getBlockField, isBlockField } from "./utils";
 
 export function FormAndDocumentLayout({ formName }: { formName: string }) {
   const form = useFormRendererContext();
   const [mobileStage, setMobileStage] = useState<
     "preview" | "form" | "confirm"
   >("preview");
+  const [values, setValues] = useState<Record<string, string>>({});
+
+  // Filter blocks to only include manual source fields (same as FormFillerRenderer)
+  const manualBlocks = useMemo(
+    () =>
+      form.blocks.filter(
+        (block) =>
+          isBlockField(block) && getBlockField(block)?.source === "manual"
+      ),
+    [form.blocks]
+  );
+
+  // Get keyedFields that correspond to manual blocks (for PDF preview with coordinates)
+  const manualKeyedFields = useMemo(() => {
+    if (!form.keyedFields || form.keyedFields.length === 0) return [];
+    
+    // Get field names from manual blocks
+    const manualFieldNames = new Set(
+      manualBlocks.map((block) => getBlockField(block)?.field).filter(Boolean)
+    );
+    
+    // Filter keyedFields to only those in manual blocks
+    return form.keyedFields.filter((kf) => manualFieldNames.has(kf.field));
+  }, [form.keyedFields, manualBlocks]);
 
   useEffect(() => {
     form.updateFormName(formName);
@@ -28,6 +53,7 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
       <div className="relative flex w-full h-[100%] flex-col justify-center overflow-y-hidden sm:w-7xl sm:flex-row">
         {/* Form Renderer */}
         <div className="relative w-full h-full max-h-full overflow-hidden">
+          {/* MOBILE */}
           <div
             className={cn(
               "mb-2 sm:hidden",
@@ -36,11 +62,10 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
           >
             <div className="relative w-full overflow-auto rounded-md border mx-auto">
               {form.document.url ? (
-                <DocumentRenderer
+                <FormPreviewPdfDisplay
                   documentUrl={form.document.url}
-                  highlights={[]}
-                  previews={form.previews}
-                  onHighlightFinished={() => {}}
+                  blocks={manualKeyedFields}
+                  values={values}
                 />
               ) : (
                 <div className="p-4 text-sm text-gray-500">
@@ -69,11 +94,10 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
           >
             <div className="relative h-[60vh] w-full overflow-auto rounded-md border bg-white">
               {form.document.url ? (
-                <DocumentRenderer
+                <FormPreviewPdfDisplay
                   documentUrl={form.document.url}
-                  highlights={[]}
-                  previews={form.previews}
-                  onHighlightFinished={() => {}}
+                  blocks={manualKeyedFields}
+                  values={values}
                 />
               ) : (
                 <div className="p-4 text-sm text-gray-500">
@@ -83,6 +107,7 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
             </div>
           </div>
 
+          {/* DESKTOP */}
           {/* loading / error / empty / form */}
           {form.loading ? (
             <div className="flex items-center justify-center">
@@ -92,7 +117,7 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
               </span>
             </div>
           ) : (
-            <FormFillerRenderer />
+            <FormFillerRenderer onValuesChange={setValues} />
           )}
         </div>
 
@@ -102,11 +127,10 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
             <div className="relative flex h-full w-full flex-row gap-2">
               {!!form.document.url && (
                 <div className="relative h-full w-full">
-                  <DocumentRenderer
+                  <FormPreviewPdfDisplay
                     documentUrl={form.document.url}
-                    highlights={[]}
-                    previews={form.previews}
-                    onHighlightFinished={() => {}}
+                    blocks={manualKeyedFields}
+                    values={values}
                   />
                 </div>
               )}

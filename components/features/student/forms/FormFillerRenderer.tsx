@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { ClientBlock } from "@betterinternship/core/forms";
 import { FieldRenderer } from "./FieldRenderer";
 import { HeaderRenderer, ParagraphRenderer } from "./BlockRenderer";
@@ -9,11 +10,21 @@ import { getBlockField, isBlockField } from "./utils";
 import { useFormFiller } from "./form-filler.ctx";
 import { useMyAutofill } from "@/hooks/use-my-autofill";
 
-export function FormFillerRenderer() {
+export function FormFillerRenderer({
+  onValuesChange,
+}: {
+  onValuesChange?: (values: Record<string, string>) => void;
+}) {
   const form = useFormRendererContext();
   const formFiller = useFormFiller();
   const autofillValues = useMyAutofill();
   const filteredBlocks = form.blocks;
+  const finalValues = formFiller.getFinalValues(autofillValues);
+
+  // Notify parent of values change
+  useEffect(() => {
+    onValuesChange?.(finalValues);
+  }, [finalValues, onValuesChange]);
 
   return (
     <>
@@ -25,7 +36,7 @@ export function FormFillerRenderer() {
           <BlocksRenderer
             formKey={form.formName}
             blocks={filteredBlocks}
-            values={formFiller.getFinalValues(autofillValues)}
+            values={finalValues}
             onChange={formFiller.setValue}
             errors={formFiller.errors}
             setSelected={form.setSelectedPreviewId}
