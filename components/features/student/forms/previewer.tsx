@@ -204,10 +204,10 @@ const PdfPageWithFields = ({
 
   useEffect(() => registerPageRef(pageNumber, containerRef.current), [pageNumber, registerPageRef]);
 
-  // Force re-render of field positions when scale or values change
+  // Force re-render of field positions when scale changes
   useEffect(() => {
     setForceRender((prev) => prev + 1);
-  }, [scale, values]);
+  }, [scale]);
 
   // Setup intersection observer for visibility
   useEffect(() => {

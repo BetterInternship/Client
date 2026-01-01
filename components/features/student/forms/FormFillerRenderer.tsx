@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { ClientBlock } from "@betterinternship/core/forms";
 import { FieldRenderer } from "./FieldRenderer";
 import { HeaderRenderer, ParagraphRenderer } from "./BlockRenderer";
@@ -19,7 +19,10 @@ export function FormFillerRenderer({
   const formFiller = useFormFiller();
   const autofillValues = useMyAutofill();
   const filteredBlocks = form.blocks;
-  const finalValues = formFiller.getFinalValues(autofillValues);
+  const finalValues = useMemo(
+    () => formFiller.getFinalValues(autofillValues),
+    [formFiller, autofillValues]
+  );
 
   // Notify parent of values change
   useEffect(() => {
