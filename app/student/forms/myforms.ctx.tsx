@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-12-18 15:17:08
- * @ Modified time: 2025-12-31 15:08:13
+ * @ Modified time: 2026-01-01 11:31:54
  * @ Description:
  *
  * These are the forms a user has generated or initiated.
@@ -49,15 +49,17 @@ export const MyFormsContextProvider = ({
   });
 
   const mappedForms =
-    forms?.map?.((f) => ({
-      label: f.form_label!,
-      prefilled_document_id: f.form_processes.prefilled_document_id,
-      pending_document_id: f.form_processes.pending_document_id,
-      signed_document_id: f.form_processes.signed_document_id,
-      latest_document_url: f.form_processes.latest_document_url,
-      signing_parties: f.form_processes.signing_parties,
-      timestamp: f.timestamp,
-    })) ?? [];
+    forms
+      ?.filter((f) => !!f.form_processes)
+      ?.map((f) => ({
+        label: f.form_label!,
+        prefilled_document_id: f.form_processes.prefilled_document_id,
+        pending_document_id: f.form_processes.pending_document_id,
+        signed_document_id: f.form_processes.signed_document_id,
+        latest_document_url: f.form_processes.latest_document_url,
+        signing_parties: f.form_processes.signing_parties,
+        timestamp: f.timestamp,
+      })) ?? [];
 
   return (
     <MyFormsContext.Provider
