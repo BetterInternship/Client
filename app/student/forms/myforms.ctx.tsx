@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-12-18 15:17:08
- * @ Modified time: 2026-01-01 11:31:54
+ * @ Modified time: 2026-01-01 11:37:14
  * @ Description:
  *
  * These are the forms a user has generated or initiated.
@@ -47,6 +47,8 @@ export const MyFormsContextProvider = ({
     staleTime: 10_000,
     gcTime: 10_000,
   });
+
+  console.log(forms);
 
   const mappedForms =
     forms

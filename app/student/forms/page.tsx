@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { FormService } from "@/lib/api/services";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
 
 /**
  * The forms page component
@@ -21,18 +22,14 @@ import { Button } from "@/components/ui/button";
 export default function FormsPage() {
   const profile = useProfileData();
   const router = useRouter();
-  const [formLoading, setFormLoading] = useState<boolean>(false);
-  const [formTemplates, setFormTemplates] = useState<FormTemplate[]>([]);
 
-  // All form templates
-  useEffect(() => {
-    if (!profile.data) return;
-    setFormLoading(true);
-    void FormService.getMyFormTemplates()
-      .then((formTemplates) => setFormTemplates(formTemplates))
-      .then(() => setFormLoading(false))
-      .catch(() => setFormLoading(false));
-  }, [profile.data]);
+  // ! refactor into a hook
+  const { data: formTemplates, isLoading } = useQuery({
+    queryKey: ["my-form-templates"],
+    queryFn: () => FormService.getMyFormTemplates(),
+    staleTime: 60 * 60 * 1000 * 24,
+    gcTime: 60 * 60 * 1000 * 24,
+  });
 
   if (!profile.data?.department && !profile.isPending) router.push("/profile");
 
@@ -84,9 +81,9 @@ export default function FormsPage() {
       <Separator className="mt-4 mb-8" />
 
       <div className="mb-6 sm:mb-8 animate-fade-in space-y-10">
-        {formLoading && <Loader>Loading latest forms...</Loader>}
+        {isLoading && <Loader>Loading latest forms...</Loader>}
         <div className="space-y-3">
-          {!formLoading && (formTemplates?.length ?? 0) === 0 && (
+          {!isLoading && (formTemplates?.length ?? 0) === 0 && (
             <div className="text-sm text-gray-600">
               <p>There are no forms available yet for your department.</p>
               <p className="mt-1 text-muted-foreground text-sm">
@@ -110,7 +107,7 @@ export default function FormsPage() {
           )}
           <div
             className={cn(
-              formLoading ? "opacity-50 pointer-events-none" : "",
+              isLoading ? "opacity-50 pointer-events-none" : "",
               "flex flex-col",
             )}
           >
