@@ -1,31 +1,44 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { FileText, History } from "lucide-react";
+import { FileText, History, Edit } from "lucide-react";
 
 export function FormsNavigation({
   activeView,
   onViewChange,
   hasHistory,
+  currentFormName,
 }: {
   activeView: "generate" | "history";
   onViewChange: (view: "generate" | "history") => void;
   hasHistory: boolean;
+  currentFormName?: string | null;
 }) {
   const navItems = [
     {
       label: "Generate Forms",
       icon: FileText,
       view: "generate" as const,
-      isActive: activeView === "generate",
+      isActive: activeView === "generate" && !currentFormName,
     },
     {
       label: "Form History",
       icon: History,
       view: "history" as const,
-      isActive: activeView === "history",
+      isActive: activeView === "history" && !currentFormName,
       disabled: !hasHistory,
     },
+    ...(currentFormName
+      ? [
+          {
+            label: currentFormName,
+            icon: Edit,
+            view: "form" as const,
+            isActive: true,
+            disabled: false,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -36,8 +49,12 @@ export function FormsNavigation({
             const Icon = item.icon;
             return (
               <button
-                key={item.view}
-                onClick={() => !item.disabled && onViewChange(item.view)}
+                key={item.label}
+                onClick={() =>
+                  !item.disabled &&
+                  item.view !== "form" &&
+                  onViewChange(item.view as "generate" | "history")
+                }
                 disabled={item.disabled}
                 className={cn(
                   "flex items-center gap-2 px-4 py-3 font-medium text-sm transition-all duration-200 relative",

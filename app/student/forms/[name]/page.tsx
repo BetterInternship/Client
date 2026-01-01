@@ -6,6 +6,7 @@ import { DocumentRenderer } from "@/components/forms/previewer";
 import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { Button } from "@/components/ui/button";
 import { useAppContext } from "@/lib/ctx-app";
+import { useFormsLayout } from "../layout";
 import { ArrowLeft } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -20,6 +21,7 @@ export default function FormPage() {
   const form = useFormRendererContext();
   const { isMobile } = useAppContext();
   const { open: openGlobalModal } = useGlobalModal();
+  const { setCurrentFormName } = useFormsLayout();
 
   const openDocPreviewModal = () => {
     openGlobalModal(
@@ -39,7 +41,9 @@ export default function FormPage() {
   useEffect(() => {
     const { name } = params;
     form.updateFormName(name as string);
-  }, [params]);
+    setCurrentFormName(name as string);
+    return () => setCurrentFormName(null);
+  }, [params, setCurrentFormName]);
 
   return (
     <div className="w-full flex flex-col h-full bg-gray-50">
