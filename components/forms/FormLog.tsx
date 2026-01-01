@@ -1,73 +1,21 @@
 "use client";
 
-import { useMyForms } from "../myforms.ctx";
 import { useState } from "react";
-import { formatTimeAgo } from "@/lib/utils";
-import { HeaderIcon, HeaderText } from "@/components/ui/text";
-import { FormsNavigation } from "@/components/features/student/forms/FormsNavigation";
 import {
-  ArrowLeft,
   CheckCircle2,
   CheckIcon,
   ChevronDown,
   ChevronUp,
   CircleDot,
   DownloadIcon,
-  Loader,
-  Newspaper,
 } from "lucide-react";
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 import { IFormSigningParty } from "@betterinternship/core/forms";
-import { Badge } from "@/components/ui/badge";
-import { Divider } from "@/components/ui/divider";
 
-const FormLogPage = () => {
-  const router = useRouter();
-  const myForms = useMyForms();
-
-  return (
-    <div className="relative w-full flex flex-col h-full bg-gray-50">
-      <FormsNavigation />
-      <div className="container max-w-5xl pt-8 mx-auto">
-        <div className="animate-fade-in">
-          <div className="flex flex-row items-center gap-3 mb-2">
-            <HeaderIcon icon={Newspaper}></HeaderIcon>
-            <HeaderText>Form History</HeaderText>
-          </div>
-          <Badge>{myForms.forms.length} generated forms</Badge>
-        </div>
-        <Divider />
-
-        <div className="animate-fade-in">
-          {myForms.forms
-            .toSorted(
-              (a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp),
-            )
-            .map((form) => (
-              <FormLog
-                label={form.label}
-                documentId={
-                  form.signed_document_id ?? form.prefilled_document_id
-                }
-                timestamp={formatTimeAgo(form.timestamp)}
-                downloadUrl={form.latest_document_url}
-                signingParties={form.signing_parties}
-              ></FormLog>
-            ))}
-          {!myForms.forms.length && (
-            <div className="text-gray-500">
-              You haven't generated any forms yet.
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const FormLog = ({
+/**
+ * Form Log Item
+ */
+export const FormLog = ({
   label,
   timestamp,
   documentId,
@@ -83,8 +31,6 @@ const FormLog = ({
   const [downloading, setDownloading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  // Handles the browser download behavior
-  // We let the browser choose the filename by setting it empty
   const handleDownload = () => {
     if (!documentId) return;
     try {
@@ -102,7 +48,7 @@ const FormLog = ({
 
   return (
     <div
-      className=" hover:bg-slate-100 hover:cursor-pointer transition-all"
+      className="hover:bg-slate-100 hover:cursor-pointer transition-all"
       onClick={() => (documentId ? handleDownload() : setIsOpen(!isOpen))}
     >
       <div className="px-5 flex flex-col border-b text-xs text-gray-700 font-normal">
@@ -112,7 +58,7 @@ const FormLog = ({
               {documentId ? (
                 <CheckCircle2 className="w-4 h-4 text-supportive-foreground bg-supportive rounded-full" />
               ) : (
-                <Loader className="animate-spin w-4 h-4 text-warning rounded-full" />
+                <div className="animate-spin w-4 h-4 text-warning rounded-full border border-warning border-t-transparent" />
               )}
             </div>
             <div>
@@ -140,7 +86,7 @@ const FormLog = ({
                     signingParty.signatory_account?.name ??
                     `(${signingParty.signatory_source?.label})`);
               return (
-                <div className="flex flex-row gap-2 text-[1em]">
+                <div key={signingParty._id} className="flex flex-row gap-2 text-[1em]">
                   {signingParty.signed ? (
                     <CheckIcon className="w-2 h-2 m-1 text-slate-500" />
                   ) : (
@@ -170,5 +116,3 @@ const FormLog = ({
     </div>
   );
 };
-
-export default FormLogPage;

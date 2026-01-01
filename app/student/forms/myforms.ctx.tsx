@@ -44,11 +44,9 @@ export const MyFormsContextProvider = ({
   } = useQuery({
     queryKey: ["my_forms"],
     queryFn: () => FormService.getMyGeneratedForms(),
-    staleTime: 10_000,
-    gcTime: 10_000,
+    staleTime: 0,
+    gcTime: 60 * 60 * 1000,
   });
-
-  console.log(forms);
 
   const mappedForms =
     forms
