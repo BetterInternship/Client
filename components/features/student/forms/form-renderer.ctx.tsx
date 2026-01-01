@@ -147,7 +147,7 @@ export const FormRendererContextProvider = ({
 
   // When form name and version are updated, pull latest
   useEffect(() => {
-    if (!form) return;
+    if (!form || !form.formMetadata) return;
 
     const fm = new FormMetadata(form.formMetadata);
     const newFormName = form.formMetadata.name;
