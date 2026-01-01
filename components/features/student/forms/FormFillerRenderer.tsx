@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { ClientBlock } from "@betterinternship/core/forms";
 import { FieldRenderer } from "./FieldRenderer";
 import { HeaderRenderer, ParagraphRenderer } from "./BlockRenderer";
@@ -19,6 +19,9 @@ export function FormFillerRenderer({
   const formFiller = useFormFiller();
   const autofillValues = useMyAutofill();
   const filteredBlocks = form.blocks;
+  const fieldRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
   const finalValues = useMemo(
     () => formFiller.getFinalValues(autofillValues),
     [formFiller, autofillValues]
@@ -29,13 +32,32 @@ export function FormFillerRenderer({
     onValuesChange?.(finalValues);
   }, [finalValues, onValuesChange]);
 
+  // Scroll to selected field
+  useEffect(() => {
+    if (!form.selectedPreviewId || !fieldRefs.current[form.selectedPreviewId]) return;
+    
+    const fieldElement = fieldRefs.current[form.selectedPreviewId];
+    const scrollContainer = scrollContainerRef.current;
+    
+    if (fieldElement && scrollContainer) {
+      // Scroll the field into view with a small padding
+      fieldElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      
+      // Add a highlight animation
+      fieldElement.classList.add("ring-2", "ring-blue-400", "ring-offset-2", "rounded");
+      setTimeout(() => {
+        fieldElement.classList.remove("ring-2", "ring-blue-400", "ring-offset-2", "rounded");
+      }, 1500);
+    }
+  }, [form.selectedPreviewId]);
+
   return (
     <>
-      <div className="relative max-h-[100%] min-h-[100%] overflow-auto flex flex-col">
+      <div ref={scrollContainerRef} className="relative max-h-[100%] min-h-[100%] overflow-auto flex flex-col">
         <div className="sticky top-0 px-7 py-3 text-2xl font-bold tracking-tighter text-gray-700 text-opacity-60 bg-gray-100 border-b z-[50] shadow-soft border-r border-gray-300">
           {form.formName}
         </div>
-        <div className="space-y-3 px-7 border-r border-gray-300 flex-1">
+        <div className="space-y-2 px-7 border-r border-gray-300 flex-1">
           <BlocksRenderer
             formKey={form.formName}
             blocks={filteredBlocks}
@@ -44,6 +66,8 @@ export function FormFillerRenderer({
             errors={formFiller.errors}
             setSelected={form.setSelectedPreviewId}
             onBlurValidate={() => formFiller.validate}
+            fieldRefs={fieldRefs.current}
+            selectedFieldId={form.selectedPreviewId}
           />
         </div>
         <div className="py-3"></div>
@@ -63,6 +87,8 @@ const BlocksRenderer = <T extends any[]>({
   errors,
   setSelected,
   onBlurValidate,
+  fieldRefs,
+  selectedFieldId,
 }: {
   formKey: string;
   blocks: ClientBlock<T>[];
@@ -71,17 +97,27 @@ const BlocksRenderer = <T extends any[]>({
   errors: Record<string, string>;
   setSelected: (selected: string) => void;
   onBlurValidate?: (fieldKey: string) => void;
+  fieldRefs: Record<string, HTMLDivElement | null>;
+  selectedFieldId?: string;
 }) => {
   if (!blocks.length) return null;
   const sortedBlocks = blocks.toSorted((a, b) => a.order - b.order);
   return sortedBlocks.map((block, i) => {
-    const field = getBlockField(block)!;
+    const isForm = isBlockField(block);
+    const field = isForm ? getBlockField(block) : null;
+    
+    // Only check selection for form fields
+    const isSelected = isForm && field && selectedFieldId === field.field;
+    
     return (
       <>
-        {isBlockField(block) && getBlockField(block)?.source === "manual" && (
+        {isForm && field?.source === "manual" && (
           <div className="space-between flex flex-row" key={`${formKey}:${i}`}>
             <div
-              className="flex-1"
+              ref={(el) => {
+                if (el && field) fieldRefs[field.field] = el;
+              }}
+              className={`flex-1 transition-all py-2 px-1 ${isSelected ? "ring-2 ring-blue-500 ring-offset-2 rounded-[0.33em]" : ""}`}
               onFocus={() => setSelected(block.field_schema?.field as string)}
             >
               <FieldRenderer

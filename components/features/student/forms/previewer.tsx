@@ -13,6 +13,7 @@ interface FormPreviewPdfDisplayProps {
   blocks: any[]; // ServerField[] with coordinates (x, y, w, h, page, field)
   values: Record<string, string>;
   scale?: number;
+  onFieldClick?: (fieldName: string) => void;
 }
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
@@ -27,6 +28,7 @@ export const FormPreviewPdfDisplay = ({
   blocks,
   values,
   scale: initialScale = 1.0,
+  onFieldClick,
 }: FormPreviewPdfDisplayProps) => {
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [pageCount, setPageCount] = useState<number>(0);
@@ -167,6 +169,7 @@ export const FormPreviewPdfDisplay = ({
                 return page === pageNumber;
               })}
               values={values}
+              onFieldClick={onFieldClick}
             />
           ))}
         </div>
@@ -184,6 +187,7 @@ interface PdfPageWithFieldsProps {
   registerPageRef: (page: number, node: HTMLDivElement | null) => void;
   blocks: IFormBlock[];
   values: Record<string, string>;
+  onFieldClick?: (fieldName: string) => void;
 }
 
 const PdfPageWithFields = ({
@@ -195,6 +199,7 @@ const PdfPageWithFields = ({
   registerPageRef,
   blocks,
   values,
+  onFieldClick,
 }: PdfPageWithFieldsProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -336,8 +341,14 @@ const PdfPageWithFields = ({
           const widthPixels = (w * pdfScale * rect.width) / canvas.width;
           const heightPixels = (h * pdfScale * rect.height) / canvas.height;
 
-          const value = values[fieldName] || "";
-          const isFilled = value.trim().length > 0;
+          const rawValue = values[fieldName];
+          // Handle different value types (string, array, object, etc)
+          const valueStr = Array.isArray(rawValue) 
+            ? rawValue.join(", ") 
+            : typeof rawValue === "string" 
+            ? rawValue 
+            : "";
+          const isFilled = valueStr.trim().length > 0;
 
           // Calculate dynamic font size based on box dimensions
           const baseFontSize = Math.min(
@@ -348,7 +359,8 @@ const PdfPageWithFields = ({
           return (
             <div
               key={fieldName}
-              className={`absolute border ${
+              onClick={() => onFieldClick?.(fieldName)}
+              className={`absolute border cursor-pointer transition-all ${
                 isFilled
                   ? "border-green-400 bg-green-50"
                   : "border-dashed border-blue-400 bg-blue-50"
@@ -365,7 +377,7 @@ const PdfPageWithFields = ({
                 alignItems: "center",
                 paddingLeft: "2px",
               }}
-              title={`${label}: ${value}`}
+              title={`${label}: ${valueStr}`}
             >
               {isFilled && (
                 <div
@@ -378,7 +390,7 @@ const PdfPageWithFields = ({
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {value}
+                  {valueStr}
                 </div>
               )}
             </div>

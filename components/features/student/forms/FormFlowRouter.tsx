@@ -66,6 +66,7 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
                   documentUrl={form.document.url}
                   blocks={manualKeyedFields}
                   values={values}
+                  onFieldClick={(fieldName) => form.setSelectedPreviewId(fieldName)}
                 />
               ) : (
                 <div className="p-4 text-sm text-gray-500">
@@ -98,6 +99,7 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
                   documentUrl={form.document.url}
                   blocks={manualKeyedFields}
                   values={values}
+                  onFieldClick={(fieldName) => form.setSelectedPreviewId(fieldName)}
                 />
               ) : (
                 <div className="p-4 text-sm text-gray-500">
@@ -131,6 +133,7 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
                     documentUrl={form.document.url}
                     blocks={manualKeyedFields}
                     values={values}
+                    onFieldClick={(fieldName) => form.setSelectedPreviewId(fieldName)}
                   />
                 </div>
               )}
