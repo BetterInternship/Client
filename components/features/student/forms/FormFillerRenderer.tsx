@@ -21,6 +21,22 @@ export function FormFillerRenderer({
   const filteredBlocks = form.blocks;
   const fieldRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  console.log("filteredBlocks", filteredBlocks);
+
+  // Deduplicate blocks: only keep first instance of each field ID
+  const deduplicatedBlocks = useMemo(() => {
+    const seenFieldIds = new Set<string>();
+    return filteredBlocks.filter((block) => {
+      if (!isBlockField(block)) return true; // Always include non-field blocks
+      const field = getBlockField(block);
+      if (!field) return true;
+      
+      // Only include if this is the first time we see this field ID
+      if (seenFieldIds.has(field.field)) return false;
+      seenFieldIds.add(field.field);
+      return true;
+    });
+  }, [filteredBlocks]);
 
   const finalValues = useMemo(
     () => formFiller.getFinalValues(autofillValues),
@@ -60,7 +76,7 @@ export function FormFillerRenderer({
         <div className="space-y-2 px-7 border-r border-gray-300 flex-1">
           <BlocksRenderer
             formKey={form.formName}
-            blocks={filteredBlocks}
+            blocks={deduplicatedBlocks}
             values={finalValues}
             onChange={formFiller.setValue}
             errors={formFiller.errors}
