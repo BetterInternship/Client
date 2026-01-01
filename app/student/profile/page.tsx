@@ -65,7 +65,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { AutoApplyCard } from "@/components/features/student/profile/AutoApplyCard";
 import { useProfileActions } from "@/lib/api/student.actions.api";
-import useModalRegistry from "@/components/modals/useModalRegistry";
+import useModalRegistry from "@/components/modals/modal-registry";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 

@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-12-23 20:41:54
- * @ Modified time: 2025-12-30 18:25:04
+ * @ Modified time: 2026-01-01 19:11:07
  * @ Description:
  *
  * Move some of these utils to the core package maybe.
@@ -12,9 +12,7 @@ import {
   ClientBlock,
   ClientField,
   ClientPhantomField,
-  FormValues,
 } from "@betterinternship/core/forms";
-import z from "zod";
 
 /**
  * Checks if a block is a field.

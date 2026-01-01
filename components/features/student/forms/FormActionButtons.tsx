@@ -1,6 +1,6 @@
 "use client";
 
-import useModalRegistry from "@/components/modals/useModalRegistry";
+import useModalRegistry from "@/components/modals/modal-registry";
 import { Button } from "@/components/ui/button";
 import { useFormRendererContext } from "./form-renderer.ctx";
 import { useState } from "react";

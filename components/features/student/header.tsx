@@ -41,7 +41,7 @@ import {
   JobFilters,
   JobFilter,
 } from "@/components/features/student/search/JobFilters";
-import useModalRegistry from "@/components/modals/useModalRegistry";
+import useModalRegistry from "@/components/modals/modal-registry";
 
 /* =======================================================================================
    Small UI Primitives

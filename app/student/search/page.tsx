@@ -28,7 +28,7 @@ import { ApplyConfirmModal } from "@/components/modals/ApplyConfirmModal";
 import { applyToJob } from "@/lib/application";
 import { PageError } from "@/components/ui/error";
 import { useApplicationActions } from "@/lib/api/student.actions.api";
-import useModalRegistry from "@/components/modals/useModalRegistry";
+import useModalRegistry from "@/components/modals/modal-registry";
 import { Loader } from "@/components/ui/loader";
 
 export default function SearchPage() {

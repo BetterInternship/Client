@@ -5,7 +5,7 @@ import { CheckCircle } from "lucide-react";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { isProfileBaseComplete, isProfileResume } from "@/lib/profile";
 import { useMemo } from "react";
-import useModalRegistry from "@/components/modals/useModalRegistry";
+import useModalRegistry from "@/components/modals/modal-registry";
 
 // ! todo: rmove openAppModal and use openGlobalModal instead
 export const ApplyToJobButton = ({

@@ -4,7 +4,7 @@ import { ClientBlock } from "@betterinternship/core/forms";
 import { FieldRenderer } from "./FieldRenderer";
 import { HeaderRenderer, ParagraphRenderer } from "./BlockRenderer";
 import { useFormRendererContext } from "./form-renderer.ctx";
-import { FormActionButtons } from "./form-action-buttons";
+import { FormActionButtons } from "./FormActionButtons";
 import { getBlockField, isBlockField } from "./utils";
 import { useFormFiller } from "./form-filler.ctx";
 import { useMyAutofill } from "@/hooks/use-my-autofill";
