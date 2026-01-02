@@ -102,13 +102,17 @@ export const FormRendererContextProvider = ({
   );
   const [selectedPreviewId, setSelectedPreviewId] = useState<string>("");
 
+  // TODO: READD STALE
   // Cache forms
   const { data: form, isLoading } = useQuery({
     queryKey: useMemo(() => ["form-template", formName], [formName]),
     queryFn: useCallback(() => FormService.getForm(formName), [formName]),
     enabled: !!formName,
-    staleTime: 10 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnMount: "stale",
+    refetchOnReconnect: true,
   });
 
   // Used in the ui for selecting / distinguishing fields

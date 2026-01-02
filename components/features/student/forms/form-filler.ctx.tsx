@@ -44,10 +44,18 @@ export const FormFillerContextProvider = ({
     // Start with defaults/manually entered values
     const result = { ...values };
 
-    // Only override with autofill if autofill has non-empty values
+    // Only use autofill if user hasn't manually entered a value for that field
     if (autofillValues) {
       Object.entries(autofillValues).forEach(([key, value]) => {
-        if (value && value.trim && value.trim().length > 0) {
+        // Only use autofill if:
+        // 1. Field is empty in manual values AND
+        // 2. Autofill value is not empty
+        if (
+          (!values[key] || values[key] === "") &&
+          value &&
+          value.trim &&
+          value.trim().length > 0
+        ) {
           result[key] = value;
         }
       });

@@ -33,14 +33,17 @@ export default function FormsPage() {
   // The queryKey includes the version, so React Query treats it as a new query when version changes
   // When re-enabling the smart update check, add updateInfo?.version back to queryKey
   // and change enabled to: enabled: !!updateInfo
+  // TODO: READD STALE
   const { data: formTemplates, isLoading } = useQuery({
     queryKey: ["my-form-templates"],
     queryFn: () => FormService.getMyFormTemplates(),
-    staleTime: 5 * 60 * 1000, // Keep data fresh for 5 minutes
-    gcTime: 24 * 60 * 60 * 1000,
+    staleTime: 0, // Keep data fresh for 5 minutes
+    gcTime: 0,
     refetchOnWindowFocus: true, // Refetch when user switches back to tab
     // enabled: !!updateInfo, // Only fetch after we have update info
   });
+
+  console.log("Fetched form templates:", formTemplates);
 
   if (!profile.data?.department && !profile.isPending) router.push("/profile");
 
