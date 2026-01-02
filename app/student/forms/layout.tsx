@@ -7,6 +7,7 @@ import { FormRendererContextProvider } from "@/components/features/student/forms
 import { FormFillerContextProvider } from "@/components/features/student/forms/form-filler.ctx";
 import { FormsNavigation } from "@/components/features/student/forms/FormsNavigation";
 import { useMyForms } from "./myforms.ctx";
+import { SignContextProvider } from "@/components/providers/sign.ctx";
 
 interface FormsLayoutContextType {
   activeView: "generate" | "history";
@@ -87,7 +88,9 @@ const FormsLayout = ({ children }: { children: React.ReactNode }) => {
       <MyFormsContextProvider>
         <FormRendererContextProvider>
           <FormFillerContextProvider>
-            <FormsLayoutContent>{children}</FormsLayoutContent>
+            <SignContextProvider>
+              <FormsLayoutContent>{children}</FormsLayoutContent>
+            </SignContextProvider>
           </FormFillerContextProvider>
         </FormRendererContextProvider>
       </MyFormsContextProvider>

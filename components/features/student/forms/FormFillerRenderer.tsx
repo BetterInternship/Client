@@ -9,6 +9,9 @@ import { FormActionButtons } from "./FormActionButtons";
 import { getBlockField, isBlockField } from "./utils";
 import { useFormFiller } from "./form-filler.ctx";
 import { useMyAutofill } from "@/hooks/use-my-autofill";
+import { useProfileData } from "@/lib/api/student.data.api";
+import { getFullName } from "@/lib/profile";
+import { useSignContext } from "@/components/providers/sign.ctx";
 
 export function FormFillerRenderer({
   onValuesChange,
@@ -17,6 +20,8 @@ export function FormFillerRenderer({
 }) {
   const form = useFormRendererContext();
   const formFiller = useFormFiller();
+  const profile = useProfileData();
+  const signContext = useSignContext();
   const autofillValues = useMyAutofill();
   const filteredBlocks = form.blocks;
   const fieldRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -41,6 +46,22 @@ export function FormFillerRenderer({
     () => formFiller.getFinalValues(autofillValues),
     [formFiller, autofillValues],
   );
+
+  useEffect(() => {
+    const signatureFields =
+      form.formMetadata.getSignatureFieldsForClientService("initiator");
+    const valuesWithPrefilledSignatures =
+      form.formMetadata.setSignatureValueForSigningParty(
+        finalValues,
+        getFullName(profile.data),
+        "initiator",
+      );
+
+    formFiller.setValues(valuesWithPrefilledSignatures);
+    signContext.setRequiredSignatures(
+      signatureFields.map((signatureField) => signatureField.field),
+    );
+  }, [form]);
 
   // Initialize form values whenever form changes
   useEffect(() => {
@@ -182,13 +203,9 @@ const BlocksRenderer = <T extends any[]>({
                 ref={(el) => {
                   if (el && actualField) fieldRefs[actualField.field] = el;
                 }}
-                onClick={() =>
-                  !isPhantom && setSelected(actualField?.field as string)
-                }
+                onClick={() => !isPhantom && setSelected(actualField?.field)}
                 className={`flex-1 transition-all py-2 px-1 ${isPhantom ? "cursor-not-allowed" : "cursor-pointer"} ${isSelected ? "ring-2 ring-blue-500 ring-offset-2 rounded-[0.33em]" : ""}`}
-                onFocus={() =>
-                  !isPhantom && setSelected(actualField?.field as string)
-                }
+                onFocus={() => !isPhantom && setSelected(actualField?.field)}
                 title={isPhantom ? "This field is not visible in the PDF" : ""}
               >
                 <FieldRenderer
