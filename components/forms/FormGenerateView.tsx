@@ -40,8 +40,8 @@ export function FormGenerateView({
               <div className="text-primary font-semibold">
                 Generate & Initiate E-Sign
               </div>
-              : creates the form and starts the electronic signing workflow
-              for all parties.
+              : creates the form and starts the electronic signing workflow for
+              all parties.
             </div>
             <div className="mt-2">
               If you run into any issues, contact us via{" "}
