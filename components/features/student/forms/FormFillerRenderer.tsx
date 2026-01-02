@@ -42,12 +42,20 @@ export function FormFillerRenderer({
     [formFiller, autofillValues],
   );
 
-  // Initialize form values from field defaults
+  // Initialize form values from field defaults via prefiller
   useEffect(() => {
     const defaultValues: Record<string, any> = {};
     form.fields.forEach((field) => {
-      if ("default_value" in field && field.default_value) {
-        defaultValues[field.field] = field.default_value;
+      // Call the prefiller function to get the default value
+      if (field.prefiller && typeof field.prefiller === "function") {
+        try {
+          const defaultValue = field.prefiller();
+          if (defaultValue) {
+            defaultValues[field.field] = defaultValue;
+          }
+        } catch (error) {
+          console.error(`Error calling prefiller for ${field.field}:`, error);
+        }
       }
     });
 

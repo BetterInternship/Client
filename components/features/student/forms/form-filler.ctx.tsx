@@ -40,7 +40,19 @@ export const FormFillerContextProvider = ({
   const [errors, _setErrors] = useState({});
 
   const getFinalValues = (autofillValues?: FormValues) => {
-    return { ...autofillValues, ...values };
+    // Start with defaults/manually entered values
+    const result = { ...values };
+    
+    // Only override with autofill if autofill has non-empty values
+    if (autofillValues) {
+      Object.entries(autofillValues).forEach(([key, value]) => {
+        if (value && value.trim && value.trim().length > 0) {
+          result[key] = value;
+        }
+      });
+    }
+    
+    return result;
   };
 
   const setValue = (field: string, value: any) => {
@@ -69,7 +81,7 @@ export const FormFillerContextProvider = ({
         acc[key] = val === null || val === undefined ? "" : String(val);
         return acc;
       },
-      {} as Record<string, string>,
+      {} as Record<string, string>
     );
     _setValues(stringifiedValues);
   };
