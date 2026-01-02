@@ -29,6 +29,7 @@ export const FieldRenderer = <T extends any[]>({
   onChange,
   error,
   onBlur,
+  isPhantom = false,
 }: {
   field: ClientField<T>;
   value: string;
@@ -36,6 +37,7 @@ export const FieldRenderer = <T extends any[]>({
   error?: string;
   onBlur?: () => void;
   allValues?: Record<string, string>;
+  isPhantom?: boolean;
 }) => {
   // Placeholder or error
   const TooltipLabel = () => {
@@ -53,6 +55,7 @@ export const FieldRenderer = <T extends any[]>({
         TooltipContent={TooltipLabel}
         onChange={onChange}
         onBlur={onBlur}
+        isPhantom={isPhantom}
       />
     );
   }
@@ -66,6 +69,7 @@ export const FieldRenderer = <T extends any[]>({
         TooltipContent={TooltipLabel}
         onChange={onChange}
         onBlur={onBlur}
+        isPhantom={isPhantom}
       />
     );
   }
@@ -79,6 +83,7 @@ export const FieldRenderer = <T extends any[]>({
         TooltipContent={TooltipLabel}
         onChange={onChange}
         onBlur={onBlur}
+        isPhantom={isPhantom}
       />
     );
   }
@@ -91,6 +96,7 @@ export const FieldRenderer = <T extends any[]>({
         TooltipContent={TooltipLabel}
         onChange={onChange}
         onBlur={onBlur}
+        isPhantom={isPhantom}
       />
     );
   }
@@ -109,6 +115,7 @@ export const FieldRenderer = <T extends any[]>({
           })) ?? []
         }
         onBlur={onBlur}
+        isPhantom={isPhantom}
       />
     );
   }
@@ -122,6 +129,7 @@ export const FieldRenderer = <T extends any[]>({
         TooltipContent={TooltipLabel}
         onChange={onChange}
         onBlur={onBlur}
+        isPhantom={isPhantom}
       />
     );
   }
@@ -133,7 +141,19 @@ export const FieldRenderer = <T extends any[]>({
       TooltipContent={TooltipLabel}
       onChange={onChange}
       onBlur={onBlur}
+      isPhantom={isPhantom}
     />
+  );
+};
+
+/**
+ * Badge component for phantom fields
+ */
+const PhantomFieldBadge = () => {
+  return (
+    <span className="text-xs font-medium px-1.5 py-0.5 bg-amber-100 text-amber-500 rounded-[0.33em] whitespace-nowrap">
+      Not in PDF
+    </span>
   );
 };
 
@@ -154,17 +174,21 @@ const FieldRendererDropdown = <T extends any[]>({
   TooltipContent,
   onChange,
   onBlur,
+  isPhantom = false,
 }: {
   field: ClientField<T>;
   value: string;
   TooltipContent: () => React.ReactNode;
   onChange: (v: string | number) => void;
   onBlur?: () => void;
+  isPhantom?: boolean;
 }) => {
   const options: Option[] = (field.options ?? []).map((o) => ({
     id: o as string,
     name: o as string,
   }));
+
+  const badge = isPhantom && <PhantomFieldBadge />;
 
   return (
     <div className="space-y-1.5 relative overflow-visible">
@@ -177,6 +201,7 @@ const FieldRendererDropdown = <T extends any[]>({
         className="w-full"
         tooltip={field.tooltip_label}
         onBlur={() => onBlur?.()}
+        labelAddon={badge}
       />
       <TooltipContent />
     </div>
@@ -194,15 +219,19 @@ const FieldRendererDate = <T extends any[]>({
   TooltipContent,
   onChange,
   onBlur,
+  isPhantom = false,
 }: {
   field: ClientField<T>;
   value: string;
   TooltipContent: () => React.ReactNode;
   onChange: (v: number) => void;
   onBlur?: () => void;
+  isPhantom?: boolean;
 }) => {
   // Try to parse it first
   const numericalValue = isNaN(parseInt(value)) ? 0 : parseInt(value);
+
+  const badge = isPhantom && <PhantomFieldBadge />;
 
   // By default the unix timestamp is 0 if it's not a number
   return (
@@ -228,6 +257,7 @@ const FieldRendererDate = <T extends any[]>({
             day: "2-digit",
           })
         }
+        labelAddon={badge}
       />
       <TooltipContent />
     </div>
@@ -245,13 +275,17 @@ const FieldRendererTime = <T extends any[]>({
   TooltipContent,
   onChange,
   onBlur,
+  isPhantom = false,
 }: {
   field: ClientField<T>;
   value: string;
   TooltipContent: () => React.ReactNode;
   onChange: (v: string) => void;
   onBlur?: () => void;
+  isPhantom?: boolean;
 }) => {
+  const badge = isPhantom && <PhantomFieldBadge />;
+
   return (
     <div className="space-y-1.5">
       <TimeInputNative
@@ -261,6 +295,7 @@ const FieldRendererTime = <T extends any[]>({
         tooltip={field.tooltip_label}
         onChange={(v) => onChange(v ?? "")}
         onBlur={() => onBlur?.()}
+        labelAddon={badge}
       />
       <TooltipContent />
     </div>
@@ -268,7 +303,7 @@ const FieldRendererTime = <T extends any[]>({
 };
 
 /**
- * Time input
+ * Checkbox input
  *
  * @component
  */
@@ -278,13 +313,17 @@ const FieldRendererCheckbox = <T extends any[]>({
   TooltipContent,
   onChange,
   onBlur,
+  isPhantom = false,
 }: {
   field: ClientField<T>;
   value: string;
   TooltipContent: () => React.ReactNode;
   onChange: (v: boolean) => void;
   onBlur?: () => void;
+  isPhantom?: boolean;
 }) => {
+  const badge = isPhantom && <PhantomFieldBadge />;
+
   return (
     <div className="space-y-1.5">
       <FormCheckbox
@@ -295,6 +334,7 @@ const FieldRendererCheckbox = <T extends any[]>({
         sentence={field.tooltip_label}
         setter={(c: boolean) => onChange(c)}
         onBlur={() => onBlur?.()}
+        labelAddon={badge}
       />
       <TooltipContent />
     </div>
@@ -312,14 +352,18 @@ const FieldRendererInput = <T extends any[]>({
   TooltipContent,
   onChange,
   onBlur,
+  isPhantom = false,
 }: {
   field: ClientField<T>;
   value: string;
   TooltipContent: () => React.ReactNode;
   onChange: (v: string | number) => void;
   onBlur?: () => void;
+  isPhantom?: boolean;
 }) => {
   const inputMode = field.type === "number" ? "numeric" : undefined;
+  const badge = isPhantom && <PhantomFieldBadge />;
+
   // const isRecipientField =
   //   typeof field.field === "string" && field.field.endsWith(":recipient");
   return (
@@ -337,6 +381,7 @@ const FieldRendererInput = <T extends any[]>({
         tooltip={field.tooltip_label}
         className="w-full"
         onBlur={() => onBlur?.()}
+        labelAddon={badge}
       />
       {/* {isRecipientField && (
         <div className="flex gap-1 md:items-center">
@@ -362,13 +407,17 @@ const FieldRendererTextarea = <T extends any[]>({
   TooltipContent,
   onChange,
   onBlur,
+  isPhantom = false,
 }: {
   field: ClientField<T>;
   value: string;
   TooltipContent: () => React.ReactNode;
   onChange: (v: string | number) => void;
   onBlur?: () => void;
+  isPhantom?: boolean;
 }) => {
+  const badge = isPhantom && <PhantomFieldBadge />;
+
   return (
     <div className="space-y-1.5">
       <FormTextarea
@@ -379,6 +428,7 @@ const FieldRendererTextarea = <T extends any[]>({
         onBlur={() => onBlur?.()}
         tooltip={field.tooltip_label}
         className="w-full"
+        labelAddon={badge}
       />
       <TooltipContent />
     </div>
@@ -386,7 +436,7 @@ const FieldRendererTextarea = <T extends any[]>({
 };
 
 /**
- * Textarea input
+ * Multiselect input
  *
  * @component
  */
@@ -397,6 +447,7 @@ const FieldRendererMultiselect = <T extends any[]>({
   TooltipContent,
   onChange,
   onBlur,
+  isPhantom = false,
 }: {
   field: ClientField<T>;
   values: string[];
@@ -404,7 +455,10 @@ const FieldRendererMultiselect = <T extends any[]>({
   TooltipContent: () => React.ReactNode;
   onChange: (v: string[]) => void;
   onBlur?: () => void;
+  isPhantom?: boolean;
 }) => {
+  const badge = isPhantom && <PhantomFieldBadge />;
+
   return (
     <div className="space-y-1.5" onBlur={() => onBlur?.()}>
       <AutocompleteTreeMulti
@@ -415,6 +469,7 @@ const FieldRendererMultiselect = <T extends any[]>({
         className="w-full"
         tooltip={field.tooltip_label}
         tree={options}
+        labelAddon={badge}
       />
       <TooltipContent />
     </div>

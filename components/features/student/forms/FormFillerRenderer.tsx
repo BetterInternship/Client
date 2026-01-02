@@ -21,17 +21,16 @@ export function FormFillerRenderer({
   const filteredBlocks = form.blocks;
   const fieldRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  console.log("filteredBlocks", filteredBlocks);
 
   // Deduplicate blocks: only keep first instance of each field ID
   const deduplicatedBlocks = useMemo(() => {
     const seenFieldIds = new Set<string>();
     return filteredBlocks.filter((block) => {
-      if (!isBlockField(block)) return true; // Always include non-field blocks
-      const field = getBlockField(block);
+      if (!isBlockField(block) && block.block_type !== "form_phantom_field")
+        return true;
+      const field = getBlockField(block) || block.phantom_field_schema;
       if (!field) return true;
-      
-      // Only include if this is the first time we see this field ID
+
       if (seenFieldIds.has(field.field)) return false;
       seenFieldIds.add(field.field);
       return true;
@@ -40,7 +39,7 @@ export function FormFillerRenderer({
 
   const finalValues = useMemo(
     () => formFiller.getFinalValues(autofillValues),
-    [formFiller, autofillValues]
+    [formFiller, autofillValues],
   );
 
   // Notify parent of values change
@@ -50,26 +49,40 @@ export function FormFillerRenderer({
 
   // Scroll to selected field
   useEffect(() => {
-    if (!form.selectedPreviewId || !fieldRefs.current[form.selectedPreviewId]) return;
-    
+    if (!form.selectedPreviewId || !fieldRefs.current[form.selectedPreviewId])
+      return;
+
     const fieldElement = fieldRefs.current[form.selectedPreviewId];
     const scrollContainer = scrollContainerRef.current;
-    
+
     if (fieldElement && scrollContainer) {
       // Scroll the field into view with a small padding
       fieldElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      
+
       // Add a highlight animation
-      fieldElement.classList.add("ring-2", "ring-blue-400", "ring-offset-2", "rounded");
+      fieldElement.classList.add(
+        "ring-2",
+        "ring-blue-400",
+        "ring-offset-2",
+        "rounded",
+      );
       setTimeout(() => {
-        fieldElement.classList.remove("ring-2", "ring-blue-400", "ring-offset-2", "rounded");
+        fieldElement.classList.remove(
+          "ring-2",
+          "ring-blue-400",
+          "ring-offset-2",
+          "rounded",
+        );
       }, 1500);
     }
   }, [form.selectedPreviewId]);
 
   return (
     <div className="relative h-full flex flex-col">
-      <div ref={scrollContainerRef} className="relative flex-1 overflow-auto flex flex-col">
+      <div
+        ref={scrollContainerRef}
+        className="relative flex-1 overflow-auto flex flex-col"
+      >
         <div className="px-7 py-3 text-2xl font-bold tracking-tighter text-gray-700 text-opacity-60 bg-gray-100 border-b shadow-soft border-r border-gray-300">
           {form.formName}
         </div>
@@ -81,7 +94,9 @@ export function FormFillerRenderer({
             onChange={formFiller.setValue}
             errors={formFiller.errors}
             setSelected={form.setSelectedPreviewId}
-            onBlurValidate={(fieldKey, field) => formFiller.validateField(fieldKey, field, autofillValues)}
+            onBlurValidate={(fieldKey, field) =>
+              formFiller.validateField(fieldKey, field, autofillValues)
+            }
             fieldRefs={fieldRefs.current}
             selectedFieldId={form.selectedPreviewId}
           />
@@ -120,32 +135,53 @@ const BlocksRenderer = <T extends any[]>({
   return sortedBlocks.map((block, i) => {
     const isForm = isBlockField(block);
     const field = isForm ? getBlockField(block) : null;
-    
+
+    // Check if this is a phantom block
+    const isPhantomBlock = block.block_type === "form_phantom_field";
+    const phantomField = isPhantomBlock ? block.phantom_field_schema : null;
+
+    // For phantom blocks, get field from phantom_field_schema
+    const actualField = field || phantomField;
+    const isPhantom = isPhantomBlock;
+
     // Only check selection for form fields
     const isSelected = isForm && field && selectedFieldId === field.field;
-    
+
     return (
       <>
-        {isForm && field?.source === "manual" && (
-          <div className="space-between flex flex-row" key={`${formKey}:${i}`}>
+        {(isForm || isPhantomBlock) && actualField?.source === "manual" && (
+          <>
             <div
-              ref={(el) => {
-                if (el && field) fieldRefs[field.field] = el;
-              }}
-              onClick={() => setSelected(block.field_schema?.field as string)}
-              className={`flex-1 transition-all py-2 px-1 cursor-pointer ${isSelected ? "ring-2 ring-blue-500 ring-offset-2 rounded-[0.33em]" : ""}`}
-              onFocus={() => setSelected(block.field_schema?.field as string)}
+              className="space-between flex flex-row"
+              key={`${formKey}:${i}`}
             >
-              <FieldRenderer
-                field={field}
-                value={values[field.field]}
-                onChange={(v) => onChange(field.field, v)}
-                onBlur={() => onBlurValidate?.(field.field, field)}
-                error={errors[field.field]}
-                allValues={values}
-              />
+              <div
+                ref={(el) => {
+                  if (el && actualField) fieldRefs[actualField.field] = el;
+                }}
+                onClick={() =>
+                  !isPhantom && setSelected(actualField?.field as string)
+                }
+                className={`flex-1 transition-all py-2 px-1 ${isPhantom ? "cursor-not-allowed" : "cursor-pointer"} ${isSelected ? "ring-2 ring-blue-500 ring-offset-2 rounded-[0.33em]" : ""}`}
+                onFocus={() =>
+                  !isPhantom && setSelected(actualField?.field as string)
+                }
+                title={isPhantom ? "This field is not visible in the PDF" : ""}
+              >
+                <FieldRenderer
+                  field={actualField}
+                  value={values[actualField.field]}
+                  onChange={(v) => onChange(actualField.field, v)}
+                  onBlur={() =>
+                    onBlurValidate?.(actualField.field, actualField)
+                  }
+                  error={errors[actualField.field]}
+                  allValues={values}
+                  isPhantom={isPhantom}
+                />
+              </div>
             </div>
-          </div>
+          </>
         )}
         {block.block_type === "header" && block.text_content && (
           <div className="flex flex-row">
