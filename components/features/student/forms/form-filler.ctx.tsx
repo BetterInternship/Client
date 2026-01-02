@@ -13,7 +13,12 @@ export interface IFormFiller {
   getFinalValues: (autofillValues?: FormValues) => FormValues;
   setValue: (field: string, value: any) => void;
   setValues: (values: Record<string, any>) => void;
-  validateField: (fieldKey: string, field: ClientField<any> | ClientPhantomField<any>, autofillValues?: FormValues) => void;
+  initializeValues: (defaultValues: Record<string, any>) => void;
+  validateField: (
+    fieldKey: string,
+    field: ClientField<any> | ClientPhantomField<any>,
+    autofillValues?: FormValues,
+  ) => void;
 
   errors: FormErrors;
   validate: (
@@ -40,7 +45,8 @@ export const FormFillerContextProvider = ({
 
   const setValue = (field: string, value: any) => {
     // Convert all values to strings for consistency
-    const stringValue = value === null || value === undefined ? "" : String(value);
+    const stringValue =
+      value === null || value === undefined ? "" : String(value);
     _setValues({ ...values, [field]: stringValue });
   };
 
@@ -51,9 +57,21 @@ export const FormFillerContextProvider = ({
         acc[key] = val === null || val === undefined ? "" : String(val);
         return acc;
       },
-      {} as Record<string, string>
+      {} as Record<string, string>,
     );
     _setValues({ ...values, ...stringifiedValues });
+  };
+
+  const initializeValues = (defaultValues: Record<string, any>) => {
+    // Initialize form with default values from metadata
+    const stringifiedValues = Object.entries(defaultValues).reduce(
+      (acc, [key, val]) => {
+        acc[key] = val === null || val === undefined ? "" : String(val);
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+    _setValues(stringifiedValues);
   };
 
   const validate = (
@@ -78,7 +96,11 @@ export const FormFillerContextProvider = ({
     autofillValues?: FormValues,
   ) => {
     _setValues((currentValues) => {
-      const error = validateFieldHelper(field, currentValues, autofillValues ?? {});
+      const error = validateFieldHelper(
+        field,
+        currentValues,
+        autofillValues ?? {},
+      );
       if (error) {
         _setErrors((prev) => ({ ...prev, [fieldKey]: error }));
       } else {
@@ -98,6 +120,7 @@ export const FormFillerContextProvider = ({
         getFinalValues,
         setValue,
         setValues,
+        initializeValues,
         validateField,
 
         validate,

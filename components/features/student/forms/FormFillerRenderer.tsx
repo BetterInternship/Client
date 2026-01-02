@@ -42,6 +42,20 @@ export function FormFillerRenderer({
     [formFiller, autofillValues],
   );
 
+  // Initialize form values from field defaults
+  useEffect(() => {
+    const defaultValues: Record<string, any> = {};
+    form.fields.forEach((field) => {
+      if ("default_value" in field && field.default_value) {
+        defaultValues[field.field] = field.default_value;
+      }
+    });
+
+    if (Object.keys(defaultValues).length > 0) {
+      formFiller.initializeValues(defaultValues);
+    }
+  }, [form.fields, formFiller]);
+
   // Notify parent of values change
   useEffect(() => {
     onValuesChange?.(finalValues);
