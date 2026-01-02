@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-10-16 22:43:51
- * @ Modified time: 2025-12-30 12:15:22
+ * @ Modified time: 2026-01-02 18:38:36
  * @ Description:
  *
  * The field renderer 3000 automatically renders the correct field for the situation!
@@ -364,8 +364,6 @@ const FieldRendererInput = <T extends any[]>({
   const inputMode = field.type === "number" ? "numeric" : undefined;
   const badge = isPhantom && <PhantomFieldBadge />;
 
-  // const isRecipientField =
-  //   typeof field.field === "string" && field.field.endsWith(":recipient");
   return (
     <div className="space-y-1.5">
       <FormInput
@@ -383,14 +381,6 @@ const FieldRendererInput = <T extends any[]>({
         onBlur={() => onBlur?.()}
         labelAddon={badge}
       />
-      {/* {isRecipientField && (
-        <div className="flex gap-1 md:items-center">
-          <Info className="text-primary h-3.5 w-3.5"></Info>
-          <p className="text-xs text-primary">
-            A separate form will be emailed to them to complete and sign.
-          </p>
-        </div>
-      )} */}
       <TooltipContent />
     </div>
   );
