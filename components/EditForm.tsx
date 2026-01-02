@@ -165,16 +165,19 @@ export function LabelWithTooltip({
   tooltipId,
   labelAddon,
 }: {
-  label: string;
+  label: React.ReactNode;
   required?: boolean;
   tooltip?: string | undefined;
   tooltipId?: string | undefined;
   labelAddon?: React.ReactNode;
 }) {
-  const id = tooltipId ?? `${label.replace(/\s+/g, "-").toLowerCase()}-tooltip`;
+  const id =
+    tooltipId ??
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
+    `${label?.toString().replace(/\s+/g, "-").toLowerCase()}-tooltip`;
   return (
-    <div className="flex md:items-center justify-between gap-2 mb-1 w-full">
-      <div className="flex md:items-center gap-2">
+    <div className="mb-1 flex w-full justify-between gap-2 md:items-center">
+      <div className="flex gap-2 md:items-center">
         <span className="text-xs text-gray-600">
           {label} {required && <span className="text-red-500">*</span>}
         </span>
@@ -184,7 +187,7 @@ export function LabelWithTooltip({
             data-tooltip-content={tooltip ?? ""}
             data-tooltip-place="bottom"
             className={cn(
-              "w-3.5 h-3.5 text-primary",
+              "text-primary h-3.5 w-3.5",
               tooltip?.trim() ? "" : "invisible",
             )}
           />
@@ -195,7 +198,7 @@ export function LabelWithTooltip({
         <Tooltip
           id={id}
           positionStrategy="fixed"
-          className="!text-[10px] p-[0.05em] !max-w-[80vw]"
+          className="!max-w-[80vw] p-[0.05em] !text-[10px]"
           style={{ zIndex: 1400 }}
         />
       )}
@@ -238,7 +241,8 @@ export const FormInput = ({
 /**
  * Big input
  */
-interface FormTextareaProps extends React.InputHTMLAttributes<HTMLTextAreaElement> {
+interface FormTextareaProps
+  extends React.InputHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   setter?: (value: string) => void;
   required?: boolean;
@@ -288,7 +292,8 @@ export const FormTextarea = ({
  *
  * @component
  */
-interface FormDropdownProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface FormDropdownProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
   options: { id: number | string; name: string }[];
   label?: string;
   value?: string | number | string[];
@@ -340,7 +345,8 @@ export const FormDropdown = ({
  *
  * @component
  */
-interface FormCheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface FormCheckboxProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
   checked?: boolean;
   indeterminate?: boolean;
   label?: string;
@@ -408,7 +414,8 @@ export const FormCheckbox = ({
   );
 };
 
-interface FormCheckBoxGroupProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface FormCheckBoxGroupProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
   options: { value: string | number; label: string; description?: string }[];
   values: (string | number)[];
   setter: (value: any) => void;
@@ -574,7 +581,8 @@ export const FormRadio = <T extends string | boolean = string>({
  *
  * Accepts/returns a number timestamp (ms) via `date` / `setter`.
  */
-interface FormDatePickerProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface FormDatePickerProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   date?: number;
   setter?: (value?: number) => void;
@@ -684,7 +692,8 @@ export const FormDatePicker = ({
  *
  * Accepts/returns a number timestamp (ms) via `date` / `setter`.
  */
-interface FormMonthPickerProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface FormMonthPickerProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   /** ms since epoch; will be normalized to the first day of the month */
   date?: number;

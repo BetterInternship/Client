@@ -13,6 +13,7 @@ import { FormValues } from "@betterinternship/core/forms";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { getClientAudit } from "@/lib/audit";
+import { useSignContext } from "@/components/providers/sign.ctx";
 
 export function FormActionButtons() {
   const form = useFormRendererContext();
@@ -22,6 +23,7 @@ export function FormActionButtons() {
   const modalRegistry = useModalRegistry();
   const updateAutofill = useMyAutofillUpdate();
   const queryClient = useQueryClient();
+  const signContext = useSignContext();
   const router = useRouter();
 
   const noEsign = !form.formMetadata.mayInvolveEsign();
@@ -119,7 +121,7 @@ export function FormActionButtons() {
         onClick={onWithoutEsignClick}
         variant={noEsign ? "default" : "outline"}
         className="w-full sm:w-auto text-xs"
-        disabled={busy}
+        disabled={busy || !signContext.hasAgreed}
       >
         <TextLoader loading={busy}>{filloutFormLabel}</TextLoader>
       </Button>
@@ -128,7 +130,7 @@ export function FormActionButtons() {
         <Button
           onClick={onWithEsignClick}
           className="w-full sm:w-auto text-xs"
-          disabled={busy}
+          disabled={busy || !signContext.hasAgreed}
         >
           <TextLoader loading={busy}>{initiateFormLabel}</TextLoader>
         </Button>
