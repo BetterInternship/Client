@@ -63,7 +63,7 @@ export const SpecifySigningPartiesModal = ({
     // Submit and close modal if okay
     await handleSubmit(formFiller.getFinalValues(additionalValues));
     await queryClient.invalidateQueries({ queryKey: ["my_forms"] });
-    router.push("/forms/history");
+    router.push("/forms");
     close();
     setBusy(false);
   };

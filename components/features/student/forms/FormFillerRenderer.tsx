@@ -73,7 +73,7 @@ export function FormFillerRenderer({
         <div className="px-7 py-3 text-2xl font-bold tracking-tighter text-gray-700 text-opacity-60 bg-gray-100 border-b shadow-soft border-r border-gray-300">
           {form.formName}
         </div>
-        <div className="space-y-2 px-7 border-r border-gray-300 flex-1">
+        <div className="space-y-2 px-7 border-r border-gray-300 flex-1 mb-5">
           <BlocksRenderer
             formKey={form.formName}
             blocks={deduplicatedBlocks}
@@ -87,7 +87,7 @@ export function FormFillerRenderer({
           />
         </div>
       </div>
-      <div className="px-7 py-3 bg-gray-100 border-t border-r border-gray-300">
+      <div className="p-3 bg-gray-100 border-t border-r border-gray-300">
         <FormActionButtons />
       </div>
     </div>

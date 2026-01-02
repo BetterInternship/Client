@@ -62,14 +62,17 @@ function FormsLayoutContent({ children }: { children: React.ReactNode }) {
         setCurrentFormName,
       }}
     >
-      <div suppressHydrationWarning className="h-full flex flex-col">
+      <div
+        suppressHydrationWarning
+        className="h-full flex flex-col overflow-hidden"
+      >
         <FormsNavigation
           activeView={activeView}
           onViewChange={handleViewChange}
           hasHistory={myForms?.forms?.length > 0}
           currentFormName={currentFormName}
         />
-        <div className="h-full overflow-auto">{children}</div>
+        <div className="flex-1 overflow-hidden">{children}</div>
       </div>
     </FormsLayoutContext.Provider>
   );
@@ -77,7 +80,10 @@ function FormsLayoutContent({ children }: { children: React.ReactNode }) {
 
 const FormsLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div suppressHydrationWarning>
+    <div
+      suppressHydrationWarning
+      className="h-screen flex flex-col overflow-hidden"
+    >
       <MyFormsContextProvider>
         <FormRendererContextProvider>
           <FormFillerContextProvider>

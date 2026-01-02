@@ -22,20 +22,20 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
     () =>
       form.blocks.filter(
         (block) =>
-          isBlockField(block) && getBlockField(block)?.source === "manual"
+          isBlockField(block) && getBlockField(block)?.source === "manual",
       ),
-    [form.blocks]
+    [form.blocks],
   );
 
   // Get keyedFields that correspond to manual blocks (for PDF preview with coordinates)
   const manualKeyedFields = useMemo(() => {
     if (!form.keyedFields || form.keyedFields.length === 0) return [];
-    
+
     // Get field names from manual blocks
     const manualFieldNames = new Set(
-      manualBlocks.map((block) => getBlockField(block)?.field).filter(Boolean)
+      manualBlocks.map((block) => getBlockField(block)?.field).filter(Boolean),
     );
-    
+
     // Filter keyedFields to only those in manual blocks
     return form.keyedFields.filter((kf) => manualFieldNames.has(kf.field));
   }, [form.keyedFields, manualBlocks]);
@@ -49,8 +49,8 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
     return <Loader>Loading form...</Loader>;
 
   return (
-    <div className="relative mx-auto flex h-[100%] max-h-[100%] w-full flex-col items-center overflow-y-hidden bg-opacity-25 max-w-7xl bg-white border border-gray-400 my-7 rounded-[0.33em]">
-      <div className="relative flex w-full h-[100%] flex-col justify-center overflow-y-hidden sm:w-7xl sm:flex-row">
+    <div className="relative mx-auto flex h-full w-full flex-col items-center overflow-hidden bg-opacity-25 max-w-7xl bg-white border border-gray-400 rounded-[0.33em]">
+      <div className="relative flex w-full h-full flex-col justify-center overflow-hidden sm:flex-row">
         {/* Form Renderer */}
         <div className="relative w-full h-full max-h-full overflow-hidden">
           {/* MOBILE */}
@@ -66,7 +66,9 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
                   documentUrl={form.document.url}
                   blocks={manualKeyedFields}
                   values={values}
-                  onFieldClick={(fieldName) => form.setSelectedPreviewId(fieldName)}
+                  onFieldClick={(fieldName) =>
+                    form.setSelectedPreviewId(fieldName)
+                  }
                   selectedFieldId={form.selectedPreviewId}
                 />
               ) : (
@@ -100,7 +102,9 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
                   documentUrl={form.document.url}
                   blocks={manualKeyedFields}
                   values={values}
-                  onFieldClick={(fieldName) => form.setSelectedPreviewId(fieldName)}
+                  onFieldClick={(fieldName) =>
+                    form.setSelectedPreviewId(fieldName)
+                  }
                   selectedFieldId={form.selectedPreviewId}
                 />
               ) : (
@@ -135,7 +139,9 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
                     documentUrl={form.document.url}
                     blocks={manualKeyedFields}
                     values={values}
-                    onFieldClick={(fieldName) => form.setSelectedPreviewId(fieldName)}
+                    onFieldClick={(fieldName) =>
+                      form.setSelectedPreviewId(fieldName)
+                    }
                     selectedFieldId={form.selectedPreviewId}
                   />
                 </div>

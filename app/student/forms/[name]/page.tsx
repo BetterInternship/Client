@@ -46,7 +46,7 @@ export default function FormPage() {
   }, [params, setCurrentFormName]);
 
   return (
-    <div className="w-full flex flex-col h-full bg-gray-50">
+    <div className="w-full flex flex-col h-full overflow-hidden bg-gray-50">
       <FormAndDocumentLayout formName={form.formName} />
     </div>
   );

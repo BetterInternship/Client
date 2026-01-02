@@ -90,7 +90,7 @@ export function FormActionButtons() {
           });
 
           await queryClient.invalidateQueries({ queryKey: ["my_forms"] });
-          router.push("/forms/history");
+          router.push("/forms");
         }
 
         // Just fill out form
@@ -102,7 +102,7 @@ export function FormActionButtons() {
         });
 
         await queryClient.invalidateQueries({ queryKey: ["my_forms"] });
-        router.push("/forms/history");
+        router.push("/forms");
       }
 
       setBusy(false);
@@ -114,7 +114,7 @@ export function FormActionButtons() {
   };
 
   return (
-    <div className="pt-2 flex items-start justify-end gap-2">
+    <div className="flex items-start justify-end gap-2">
       <Button
         onClick={onWithoutEsignClick}
         variant={noEsign ? "default" : "outline"}
