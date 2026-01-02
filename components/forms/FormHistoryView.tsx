@@ -26,7 +26,7 @@ interface FormHistoryViewProps {
  */
 export function FormHistoryView({ forms }: FormHistoryViewProps) {
   return (
-    <div className="container max-w-5xl pt-8 mx-auto">
+    <div className="container max-w-5xl pt-8 mx-auto overflow-y-auto h-full">
       <div className="animate-fade-in">
         <div className="flex flex-row items-center gap-3 mb-2">
           <HeaderIcon icon={Newspaper}></HeaderIcon>
