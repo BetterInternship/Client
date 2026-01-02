@@ -400,13 +400,10 @@ const PdfPageWithFields = ({
           const canvas = canvasRef.current;
           if (!rect || !canvas) return null;
 
-          // Calculate zoom factor from browser zoom (rendered vs actual canvas size)
-          const browserZoom = rect.width > 0 ? rect.width / canvas.width : 1;
-          // Combine PDF scale (from zoom buttons) with browser zoom
-          const combinedZoom = scale * browserZoom;
-
-          const widthPixels = w * combinedZoom;
-          const heightPixels = h * combinedZoom;
+          // Canvas internal resolution is scaled by DPR, but CSS size compensates
+          // We only need the scale factor, not DPR-adjusted dimensions
+          const widthPixels = w * scale;
+          const heightPixels = h * scale;
 
           const rawValue = values[fieldName];
           // Handle different value types (string, array, object, etc)
