@@ -121,7 +121,9 @@ export function FormActionButtons() {
         onClick={onWithoutEsignClick}
         variant={noEsign ? "default" : "outline"}
         className="w-full sm:w-auto text-xs"
-        disabled={busy || !signContext.hasAgreed}
+        // ! fix this, make sure signature is required and filled in + checked
+        // disabled={busy || !signContext.hasAgreed}
+        disabled={busy}
       >
         <TextLoader loading={busy}>{filloutFormLabel}</TextLoader>
       </Button>
@@ -130,7 +132,9 @@ export function FormActionButtons() {
         <Button
           onClick={onWithEsignClick}
           className="w-full sm:w-auto text-xs"
-          disabled={busy || !signContext.hasAgreed}
+          // ! fix this, make sure signature is required and filled in + checked
+          // disabled={busy || !signContext.hasAgreed}
+          disabled={busy}
         >
           <TextLoader loading={busy}>{initiateFormLabel}</TextLoader>
         </Button>
