@@ -155,6 +155,7 @@ interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   className?: string;
   tooltip?: string;
   tooltipId?: string;
+  labelAddon?: React.ReactNode;
 }
 
 export function LabelWithTooltip({
@@ -162,29 +163,34 @@ export function LabelWithTooltip({
   required,
   tooltip,
   tooltipId,
+  labelAddon,
 }: {
-  label: React.ReactNode;
+  label: string;
   required?: boolean;
   tooltip?: string | undefined;
   tooltipId?: string | undefined;
+  labelAddon?: React.ReactNode;
 }) {
   const id = tooltipId ?? `${label.replace(/\s+/g, "-").toLowerCase()}-tooltip`;
   return (
-    <div className="flex md:items-center gap-2 mb-1">
-      <span className="text-xs text-gray-600">
-        {label} {required && <span className="text-red-500">*</span>}
-      </span>
-      <div className="hover:cursor-help">
-        <MessageCircleQuestion
-          data-tooltip-id={id}
-          data-tooltip-content={tooltip ?? ""}
-          data-tooltip-place="bottom"
-          className={cn(
-            "w-3.5 h-3.5 text-primary",
-            tooltip?.trim() ? "" : "invisible",
-          )}
-        />
+    <div className="flex md:items-center justify-between gap-2 mb-1 w-full">
+      <div className="flex md:items-center gap-2">
+        <span className="text-xs text-gray-600">
+          {label} {required && <span className="text-red-500">*</span>}
+        </span>
+        <div className="hover:cursor-help">
+          <MessageCircleQuestion
+            data-tooltip-id={id}
+            data-tooltip-content={tooltip ?? ""}
+            data-tooltip-place="bottom"
+            className={cn(
+              "w-3.5 h-3.5 text-primary",
+              tooltip?.trim() ? "" : "invisible",
+            )}
+          />
+        </div>
       </div>
+      {labelAddon && <div>{labelAddon}</div>}
       {tooltip && (
         <Tooltip
           id={id}
@@ -205,6 +211,7 @@ export const FormInput = ({
   className,
   tooltip,
   tooltipId,
+  labelAddon,
   ...props
 }: FormInputProps) => {
   return (
@@ -215,6 +222,7 @@ export const FormInput = ({
           required={required}
           tooltip={tooltip}
           tooltipId={tooltipId}
+          labelAddon={labelAddon}
         />
       )}
       <Input
@@ -230,14 +238,14 @@ export const FormInput = ({
 /**
  * Big input
  */
-interface FormTextareaProps
-  extends React.InputHTMLAttributes<HTMLTextAreaElement> {
+interface FormTextareaProps extends React.InputHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   setter?: (value: string) => void;
   required?: boolean;
   className?: string;
   tooltip?: string;
   tooltipId?: string;
+  labelAddon?: React.ReactNode;
 }
 
 export const FormTextarea = ({
@@ -248,6 +256,7 @@ export const FormTextarea = ({
   className,
   tooltip,
   tooltipId,
+  labelAddon,
   ...props
 }: FormTextareaProps) => {
   return (
@@ -258,6 +267,7 @@ export const FormTextarea = ({
           required={required}
           tooltip={tooltip}
           tooltipId={tooltipId}
+          labelAddon={labelAddon}
         />
       )}
       <Textarea
@@ -278,8 +288,7 @@ export const FormTextarea = ({
  *
  * @component
  */
-interface FormDropdownProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+interface FormDropdownProps extends React.InputHTMLAttributes<HTMLInputElement> {
   options: { id: number | string; name: string }[];
   label?: string;
   value?: string | number | string[];
@@ -288,6 +297,7 @@ interface FormDropdownProps
   className?: string;
   tooltip?: string;
   tooltipId?: string;
+  labelAddon?: React.ReactNode;
 }
 
 export const FormDropdown = ({
@@ -299,6 +309,7 @@ export const FormDropdown = ({
   className,
   tooltip,
   tooltipId,
+  labelAddon,
   ...props
 }: FormDropdownProps) => {
   return (
@@ -309,6 +320,7 @@ export const FormDropdown = ({
           required={required}
           tooltip={tooltip}
           tooltipId={tooltipId}
+          labelAddon={labelAddon}
         />
       )}
       <GroupableRadioDropdown
@@ -328,8 +340,7 @@ export const FormDropdown = ({
  *
  * @component
  */
-interface FormCheckboxProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+interface FormCheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
   checked?: boolean;
   indeterminate?: boolean;
   label?: string;
@@ -339,6 +350,7 @@ interface FormCheckboxProps
   required?: boolean;
   tooltip?: string;
   tooltipId?: string;
+  labelAddon?: React.ReactNode;
 }
 
 export const FormCheckbox = ({
@@ -351,6 +363,7 @@ export const FormCheckbox = ({
   required,
   tooltip,
   tooltipId,
+  labelAddon,
   ...props
 }: FormCheckboxProps) => {
   return (
@@ -361,6 +374,7 @@ export const FormCheckbox = ({
           required={required}
           tooltip={tooltip}
           tooltipId={tooltipId}
+          labelAddon={labelAddon}
         />
       )}
       <div className="flex gap-2 sm:items-center">
@@ -394,8 +408,7 @@ export const FormCheckbox = ({
   );
 };
 
-interface FormCheckBoxGroupProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+interface FormCheckBoxGroupProps extends React.InputHTMLAttributes<HTMLInputElement> {
   options: { value: string | number; label: string; description?: string }[];
   values: (string | number)[];
   setter: (value: any) => void;
@@ -561,8 +574,7 @@ export const FormRadio = <T extends string | boolean = string>({
  *
  * Accepts/returns a number timestamp (ms) via `date` / `setter`.
  */
-interface FormDatePickerProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+interface FormDatePickerProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   date?: number;
   setter?: (value?: number) => void;
@@ -575,6 +587,7 @@ interface FormDatePickerProps
   required?: boolean;
   tooltip?: string;
   tooltipId?: string;
+  labelAddon?: React.ReactNode;
 
   /** Optional: disable dates (react-day-picker style) */
   disabledDays?:
@@ -609,6 +622,7 @@ export const FormDatePicker = ({
   required = false,
   tooltip,
   tooltipId,
+  labelAddon,
   ...props
 }: FormDatePickerProps) => {
   const [open, setOpen] = React.useState(false);
@@ -622,6 +636,7 @@ export const FormDatePicker = ({
           required={required}
           tooltip={tooltip}
           tooltipId={tooltipId}
+          labelAddon={labelAddon}
         />
       )}
 
@@ -669,8 +684,7 @@ export const FormDatePicker = ({
  *
  * Accepts/returns a number timestamp (ms) via `date` / `setter`.
  */
-interface FormMonthPickerProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+interface FormMonthPickerProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   /** ms since epoch; will be normalized to the first day of the month */
   date?: number;
@@ -889,6 +903,7 @@ export function TimeInputNative({
   className,
   tooltip,
   tooltipId,
+  labelAddon,
   ...props
 }: {
   label: string;
@@ -899,6 +914,7 @@ export function TimeInputNative({
   className?: string;
   tooltip?: string;
   tooltipId?: string;
+  labelAddon?: React.ReactNode;
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange">) {
   return (
     <div className={className}>
@@ -908,6 +924,7 @@ export function TimeInputNative({
           required={required}
           tooltip={tooltip}
           tooltipId={tooltipId}
+          labelAddon={labelAddon}
         />
       )}
       <Input

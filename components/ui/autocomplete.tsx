@@ -107,11 +107,17 @@ function AutocompleteBase<ID extends number | string>({
   };
 
   return (
-    <div className={cn("relative w-full overflow-visible", className)} ref={ref}>
+    <div
+      className={cn("relative w-full overflow-visible", className)}
+      ref={ref}
+    >
       {label ? (
-        <label htmlFor={inputId} className="text-xs text-gray-600 mb-1 block">
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
+        <div className="flex items-center gap-2 mb-1">
+          <label htmlFor={inputId} className="text-xs text-gray-600">
+            {label} {required && <span className="text-red-500">*</span>}
+          </label>
+          {labelAddon && <div>{labelAddon}</div>}
+        </div>
       ) : null}
 
       {multiple ? (
@@ -315,6 +321,7 @@ export function AutocompleteTreeMulti({
   className,
   label,
   tooltip,
+  labelAddon,
 }: {
   required?: boolean;
   tree: TreeOption[];
@@ -324,6 +331,7 @@ export function AutocompleteTreeMulti({
   className?: string;
   label?: React.ReactNode;
   tooltip?: string;
+  labelAddon?: React.ReactNode;
 }) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -432,7 +440,10 @@ export function AutocompleteTreeMulti({
   );
 
   return (
-    <div className={cn("relative w-full overflow-visible", className)} ref={ref}>
+    <div
+      className={cn("relative w-full overflow-visible", className)}
+      ref={ref}
+    >
       {label ? (
         <LabelWithTooltip label={label} required={required} tooltip={tooltip} />
       ) : null}
