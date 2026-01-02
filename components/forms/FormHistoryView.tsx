@@ -18,6 +18,7 @@ interface FormHistoryViewProps {
     latest_document_url?: string | null;
     timestamp: string;
     signing_parties?: IFormSigningParty[];
+    rejection_reason?: string;
   }>;
 }
 
@@ -41,12 +42,13 @@ export function FormHistoryView({ forms }: FormHistoryViewProps) {
           .toSorted((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp))
           .map((form) => (
             <FormLog
-              key={form.id}
+              key={form.timestamp}
               label={form.label}
               documentId={form.signed_document_id ?? form.prefilled_document_id}
               timestamp={formatDate(form.timestamp)}
               downloadUrl={form.latest_document_url}
               signingParties={form.signing_parties}
+              rejectionReason={form.rejection_reason}
             />
           ))}
       </div>

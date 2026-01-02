@@ -215,6 +215,7 @@ export const FormService = {
           signed_document_id?: string;
           latest_document_url?: string;
           signing_parties?: IFormSigningParty[];
+          rejection_reason?: string;
         };
       }[];
     }>(APIRouteBuilder("users").r("me/form-log").build());

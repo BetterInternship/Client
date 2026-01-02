@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-12-18 15:17:08
- * @ Modified time: 2026-01-01 11:37:14
+ * @ Modified time: 2026-01-03 01:16:40
  * @ Description:
  *
  * These are the forms a user has generated or initiated.
@@ -22,6 +22,7 @@ interface IMyForms {
     signed_document_id?: string | null;
     latest_document_url?: string | null;
     timestamp: string;
+    rejection_reason?: string;
     signing_parties?: IFormSigningParty[];
   }[];
   loading: boolean;
@@ -58,6 +59,7 @@ export const MyFormsContextProvider = ({
         signed_document_id: f.form_processes.signed_document_id,
         latest_document_url: f.form_processes.latest_document_url,
         signing_parties: f.form_processes.signing_parties,
+        rejection_reason: f.form_processes.rejection_reason,
         timestamp: f.timestamp,
       })) ?? [];
 

@@ -8,9 +8,12 @@ import {
   ChevronUp,
   CircleDot,
   DownloadIcon,
+  XCircle,
 } from "lucide-react";
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 import { IFormSigningParty } from "@betterinternship/core/forms";
+import { Badge } from "../ui/badge";
+import { Divider } from "../ui/divider";
 
 /**
  * Form Log Item
@@ -21,12 +24,14 @@ export const FormLog = ({
   documentId,
   downloadUrl,
   signingParties,
+  rejectionReason,
 }: {
   label: string;
   timestamp: string;
   documentId?: string | null;
   downloadUrl?: string | null;
   signingParties?: IFormSigningParty[];
+  rejectionReason?: string;
 }) => {
   const [downloading, setDownloading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -46,6 +51,8 @@ export const FormLog = ({
     }
   };
 
+  if (rejectionReason) console.log(rejectionReason);
+
   return (
     <div
       className="hover:bg-slate-100 hover:cursor-pointer transition-all"
@@ -55,7 +62,9 @@ export const FormLog = ({
         <div className="relative flex flex-row justify-between h-full items-start">
           <div className="flex flex-row gap-2 py-3 min-w-5 items-start">
             <div className="min-w-4">
-              {documentId ? (
+              {rejectionReason ? (
+                <XCircle className="w-4 h-4 text-destructive-foreground bg-destructive rounded-full" />
+              ) : documentId ? (
                 <CheckCircle2 className="w-4 h-4 text-supportive-foreground bg-supportive rounded-full" />
               ) : (
                 <div className="animate-spin w-4 h-4 text-warning rounded-full border border-warning border-t-transparent" />
@@ -78,6 +87,17 @@ export const FormLog = ({
         </div>
         {!documentId && isOpen && (
           <div className="flex flex-col gap-1 mb-4">
+            <div className="">
+              {!!rejectionReason && (
+                <div className="flex flex-col gap-2">
+                  <Badge type="destructive" className="w-fit">
+                    Your form was rejected by one of the signatories.
+                  </Badge>
+                  <span className="text-gray=700">{rejectionReason}</span>
+                </div>
+              )}
+              <Divider></Divider>
+            </div>
             {signingParties?.map((signingParty, i) => {
               const displayName =
                 signingParty._id === "initiator"
@@ -98,7 +118,11 @@ export const FormLog = ({
 
                   {i > 0 &&
                   signingParties[i - 1].signed !== signingParty.signed ? (
-                    <AnimatedShinyText>{displayName}</AnimatedShinyText>
+                    !rejectionReason ? (
+                      <AnimatedShinyText>{displayName}</AnimatedShinyText>
+                    ) : (
+                      <span className="text-destructive">{displayName}</span>
+                    )
                   ) : (
                     <div
                       className={
