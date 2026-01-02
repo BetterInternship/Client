@@ -1,8 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { GlobalWorkerOptions, getDocument, version as pdfjsVersion } from "pdfjs-dist";
-import type { PDFDocumentProxy, PDFPageProxy, RenderTask } from "pdfjs-dist/types/src/display/api";
+import {
+  GlobalWorkerOptions,
+  getDocument,
+  version as pdfjsVersion,
+} from "pdfjs-dist";
+import type {
+  PDFDocumentProxy,
+  PDFPageProxy,
+  RenderTask,
+} from "pdfjs-dist/types/src/display/api";
 import type { PageViewport } from "pdfjs-dist/types/src/display/display_utils";
 import { type IFormBlock } from "@betterinternship/core/forms";
 import { Loader } from "@/components/ui/loader";
@@ -17,7 +25,8 @@ interface FormPreviewPdfDisplayProps {
   selectedFieldId?: string;
 }
 
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
 
 /**
  * PDF display component that shows form fields as boxes overlaid on the PDF
@@ -46,15 +55,15 @@ export const FormPreviewPdfDisplay = ({
   // Jump to field's page and trigger animation when selected from form
   useEffect(() => {
     if (!selectedFieldId) return;
-    
-    const selectedField = blocks.find(b => b.field === selectedFieldId);
+
+    const selectedField = blocks.find((b) => b.field === selectedFieldId);
     if (selectedField && selectedField.page) {
       const fieldPage = selectedField.page;
       setSelectedPage(fieldPage);
       const pageNode = pageRefs.current.get(fieldPage);
       pageNode?.scrollIntoView({ behavior: "smooth", block: "center" });
     }
-    
+
     // Trigger bump animation
     setAnimatingFieldId(selectedFieldId);
     const timeout = setTimeout(() => setAnimatingFieldId(null), 600);
@@ -64,7 +73,9 @@ export const FormPreviewPdfDisplay = ({
   // Initialize PDF.js worker
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const workerFile = pdfjsVersion.startsWith("4") ? "pdf.worker.min.mjs" : "pdf.worker.min.js";
+    const workerFile = pdfjsVersion.startsWith("4")
+      ? "pdf.worker.min.mjs"
+      : "pdf.worker.min.js";
     GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsVersion}/${workerFile}`;
   }, []);
 
@@ -100,9 +111,12 @@ export const FormPreviewPdfDisplay = ({
     };
   }, [documentUrl]);
 
-  const registerPageRef = useCallback((page: number, node: HTMLDivElement | null) => {
-    pageRefs.current.set(page, node);
-  }, []);
+  const registerPageRef = useCallback(
+    (page: number, node: HTMLDivElement | null) => {
+      pageRefs.current.set(page, node);
+    },
+    [],
+  );
 
   const handleZoom = (direction: "in" | "out") => {
     const delta = direction === "in" ? 0.1 : -0.1;
@@ -118,7 +132,7 @@ export const FormPreviewPdfDisplay = ({
 
   const pagesArray = useMemo(
     () => Array.from({ length: pageCount }, (_, idx) => idx + 1),
-    [pageCount]
+    [pageCount],
   );
 
   if (error) {
@@ -234,7 +248,10 @@ const PdfPageWithFields = ({
   const [rendering, setRendering] = useState<boolean>(false);
   const [forceRender, setForceRender] = useState<number>(0);
 
-  useEffect(() => registerPageRef(pageNumber, containerRef.current), [pageNumber, registerPageRef]);
+  useEffect(
+    () => registerPageRef(pageNumber, containerRef.current),
+    [pageNumber, registerPageRef],
+  );
 
   // Force re-render of field positions when scale changes
   useEffect(() => {
@@ -252,7 +269,7 @@ const PdfPageWithFields = ({
           onVisible(pageNumber);
         }
       },
-      { threshold: 0.6 }
+      { threshold: 0.6 },
     );
 
     observer.observe(element);
@@ -288,7 +305,8 @@ const PdfPageWithFields = ({
         return renderTask.promise;
       })
       .catch((err) => {
-        if (!cancelled) console.error(`Failed to render page ${pageNumber}:`, err);
+        if (!cancelled)
+          console.error(`Failed to render page ${pageNumber}:`, err);
       })
       .finally(() => {
         if (!cancelled) setRendering(false);
@@ -300,17 +318,17 @@ const PdfPageWithFields = ({
     };
   }, [pdf, pageNumber, scale]);
 
-  // Convert PDF coordinates to display coordinates
+  // Convert PDF coordinates to display coordinates, accounting for zoom-aware rendering
   const pdfToDisplay = (
     pdfX: number,
-    pdfY: number
+    pdfY: number,
   ): { displayX: number; displayY: number } | null => {
     const canvas = canvasRef.current;
     const viewport = viewportRef.current;
     if (!canvas || !viewport) return null;
 
     // Metadata coordinates already use top-left origin (y=0 at top)
-    // Just scale them directly to display coordinates
+    // Scale them directly to display coordinates
     const displayX = pdfX * scale;
     const displayY = pdfY * scale;
 
@@ -318,6 +336,18 @@ const PdfPageWithFields = ({
       displayX,
       displayY,
     };
+  };
+
+  // Get the actual zoom-aware scale factor for box sizing
+  const getZoomAwareScale = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return scale;
+
+    const rect = canvas.getBoundingClientRect();
+    // Browser zoom factor: rendered size vs actual canvas size
+    const browserZoom = rect.width > 0 ? rect.width / canvas.width : 1;
+    // Combine PDF scale (from zoom buttons) with browser zoom
+    return Math.max(browserZoom, 0.1); // Prevent division by zero
   };
 
   return (
@@ -363,33 +393,37 @@ const PdfPageWithFields = ({
           const canvas = canvasRef.current;
           if (!rect || !canvas) return null;
 
-          // Calculate actual pixel dimensions from PDF coordinates
-          const pdfScale = scale * (window.devicePixelRatio || 1);
-          const widthPixels = (w * pdfScale * rect.width) / canvas.width;
-          const heightPixels = (h * pdfScale * rect.height) / canvas.height;
+          // Calculate zoom factor from browser zoom (rendered vs actual canvas size)
+          const browserZoom = rect.width > 0 ? rect.width / canvas.width : 1;
+          // Combine PDF scale (from zoom buttons) with browser zoom
+          const combinedZoom = scale * browserZoom;
+
+          const widthPixels = w * combinedZoom;
+          const heightPixels = h * combinedZoom;
 
           const rawValue = values[fieldName];
           // Handle different value types (string, array, object, etc)
-          const valueStr = Array.isArray(rawValue) 
-            ? rawValue.join(", ") 
-            : typeof rawValue === "string" 
-            ? rawValue 
-            : "";
+          const valueStr = Array.isArray(rawValue)
+            ? rawValue.join(", ")
+            : typeof rawValue === "string"
+              ? rawValue
+              : "";
           const isFilled = valueStr.trim().length > 0;
 
           // Calculate dynamic font size based on box dimensions
           const baseFontSize = Math.min(
             Math.max(heightPixels * 1, 6), // Use 60% of box height, min 6px
-            20
+            20,
           );
 
-          const isSelected = animatingFieldId === fieldName || selectedFieldId === fieldName;
+          const isSelected =
+            animatingFieldId === fieldName || selectedFieldId === fieldName;
 
           return (
             <div
               key={fieldName}
               onClick={() => onFieldClick?.(fieldName)}
-              className={`absolute cursor-pointer transition-all text-black ${isSelected ? 'bg-green-300' : 'bg-blue-200'} `}
+              className={`absolute cursor-pointer transition-all text-black ${isSelected ? "bg-green-300" : "bg-blue-200"} `}
               style={{
                 left: `${displayPos.displayX}px`,
                 top: `${displayPos.displayY}px`,
@@ -425,4 +459,3 @@ const PdfPageWithFields = ({
     </div>
   );
 };
-
