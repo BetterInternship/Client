@@ -42,18 +42,10 @@ export function FormFillerRenderer({
     [formFiller, autofillValues],
   );
 
-  const initializedFormsRef = useRef<Set<string>>(new Set());
-
-  // Initialize form values from field defaults via prefiller (once per form)
+  // Initialize form values whenever form changes
   useEffect(() => {
-    const formKey = form.formName;
-    
-    // Only initialize if we haven't initialized this form yet
-    if (initializedFormsRef.current.has(formKey)) return;
-    
     const defaultValues: Record<string, any> = {};
     form.fields.forEach((field) => {
-      // Call the prefiller function to get the default value
       if (field.prefiller && typeof field.prefiller === "function") {
         try {
           const defaultValue = field.prefiller();
@@ -69,9 +61,9 @@ export function FormFillerRenderer({
     if (Object.keys(defaultValues).length > 0) {
       formFiller.initializeValues(defaultValues);
     }
-    
-    initializedFormsRef.current.add(formKey);
-  }, [form.formName, form.fields, formFiller]);
+
+    formFiller.resetErrors();
+  }, [form.formName]);
 
   // Notify parent of values change
   useEffect(() => {

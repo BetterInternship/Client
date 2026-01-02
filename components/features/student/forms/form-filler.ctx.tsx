@@ -14,6 +14,7 @@ export interface IFormFiller {
   setValue: (field: string, value: any) => void;
   setValues: (values: Record<string, any>) => void;
   initializeValues: (defaultValues: Record<string, any>) => void;
+  resetErrors: () => void;
   validateField: (
     fieldKey: string,
     field: ClientField<any> | ClientPhantomField<any>,
@@ -85,7 +86,9 @@ export const FormFillerContextProvider = ({
     );
     _setValues(stringifiedValues);
   };
-
+  const resetErrors = () => {
+    _setErrors({});
+  };
   const validate = (
     fields: (ClientField<[PublicUser]> | ClientPhantomField<[PublicUser]>)[],
     autofillValues?: FormValues,
@@ -133,6 +136,7 @@ export const FormFillerContextProvider = ({
         setValue,
         setValues,
         initializeValues,
+        resetErrors,
         validateField,
 
         validate,
