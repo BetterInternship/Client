@@ -90,13 +90,15 @@ export function FormGenerateView({
             )}
           >
             {formTemplates?.length &&
-              formTemplates.map((form, i) => (
-                <FormTemplateCard
-                  key={form.formName + i}
-                  formLabel={form.formLabel}
-                  onGenerate={() => router.push(`/forms/${form.formName}`)}
-                />
-              ))}
+              formTemplates
+                .sort((a, b) => a.formName.localeCompare(b.formName))
+                .map((form, i) => (
+                  <FormTemplateCard
+                    key={form.formName + i}
+                    formLabel={form.formLabel}
+                    onGenerate={() => router.push(`/forms/${form.formName}`)}
+                  />
+                ))}
           </div>
         </div>
       </div>
