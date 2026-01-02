@@ -20,12 +20,26 @@ export default function FormsPage() {
   const myForms = useMyForms();
   const { activeView } = useFormsLayout();
 
-  // ! refactor into a hook
+  // Query 1: Check for updates (cheap query - just a timestamp)
+  // TODO: Enable this later for smart cache invalidation
+  // const { data: updateInfo } = useQuery({
+  //   queryKey: ["form-templates-last-updated"],
+  //   queryFn: () => FormService.getFormTemplatesLastUpdated(),
+  // });
+
+  // console.log("Form templates last updated info:", updateInfo);
+
+  // Query 2: Fetch full form data only if version changes
+  // The queryKey includes the version, so React Query treats it as a new query when version changes
+  // When re-enabling the smart update check, add updateInfo?.version back to queryKey
+  // and change enabled to: enabled: !!updateInfo
   const { data: formTemplates, isLoading } = useQuery({
     queryKey: ["my-form-templates"],
     queryFn: () => FormService.getMyFormTemplates(),
-    staleTime: 60 * 60 * 1000 * 24,
-    gcTime: 60 * 60 * 1000 * 24,
+    staleTime: 5 * 60 * 1000, // Keep data fresh for 5 minutes
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: true, // Refetch when user switches back to tab
+    // enabled: !!updateInfo, // Only fetch after we have update info
   });
 
   if (!profile.data?.department && !profile.isPending) router.push("/profile");

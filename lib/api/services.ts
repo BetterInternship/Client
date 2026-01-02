@@ -194,6 +194,13 @@ export const FormService = {
     return formTemplates;
   },
 
+  async getFormTemplatesLastUpdated() {
+    return APIClient.get<{
+      lastUpdatedAt: string;
+      version: number;
+    }>(APIRouteBuilder("services").r("me/latest-form-check").build());
+  },
+
   async getMyGeneratedForms() {
     const { forms } = await APIClient.get<{
       forms: {
