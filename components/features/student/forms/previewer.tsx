@@ -285,7 +285,10 @@ const PdfPageWithFields = ({
     pdf
       .getPage(pageNumber)
       .then((page: PDFPageProxy) => {
-        const viewport = page.getViewport({ scale });
+        // Account for device pixel ratio for crisp rendering on high-DPI displays
+        const dpr =
+          typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
+        const viewport = page.getViewport({ scale: scale * dpr });
         viewportRef.current = viewport;
 
         const canvas = canvasRef.current;
@@ -293,6 +296,10 @@ const PdfPageWithFields = ({
 
         canvas.width = viewport.width;
         canvas.height = viewport.height;
+
+        // Set CSS pixel size to match logical size (divided by dpr)
+        canvas.style.width = `${viewport.width / dpr}px`;
+        canvas.style.height = `${viewport.height / dpr}px`;
 
         const canvasContext = canvas.getContext("2d");
         if (!canvasContext) return;
