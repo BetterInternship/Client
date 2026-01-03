@@ -63,39 +63,51 @@ export function FormFillerRenderer({
     );
   }, [form]);
 
-  // Initialize form values whenever form changes
+  // Initialize form values whenever form changes or profile loads
   useEffect(() => {
     formFiller.resetErrors();
 
-    const autosaveValues = finalValues;
-    const hasAutosave = Object.values(autosaveValues).some(
-      (v) => v && String(v).trim().length > 0,
-    );
-
-    if (!hasAutosave) {
-      // No autosave - load autofill
-      const defaultValues: Record<string, any> = {};
-      form.fields.forEach((field) => {
-        if (field.prefiller && typeof field.prefiller === "function") {
-          try {
-            const defaultValue = field.prefiller({
-              user: profile.data,
-            });
-            if (defaultValue) {
-              defaultValues[field.field] = defaultValue;
-            }
-          } catch (error) {
-            console.error(`Error calling prefiller for ${field.field}:`, error);
-          }
-        }
-      });
-
-      if (Object.keys(defaultValues).length > 0) {
-        formFiller.initializeValues(defaultValues);
-      }
+    // Wait for form metadata to load
+    if (!form.fields || form.fields.length === 0) {
+      return;
     }
-    // If autosave exists, it's already loaded via finalValues, so do nothing
-  }, [form.formName]);
+
+    // Wait for profile data to load
+    if (!profile.data?.id) {
+      return;
+    }
+
+    // Load autofill or prefiller values for each field
+    const defaultValues: Record<string, any> = {};
+
+    form.fields.forEach((field) => {
+      const autofillValue = autofillValues[field.field];
+
+      // Priority: Autofill > Prefiller > Empty
+      if (autofillValue) {
+        const stringValue = String(autofillValue).trim();
+        if (stringValue.length > 0) {
+          defaultValues[field.field] = stringValue;
+        }
+      } else if (field.prefiller && typeof field.prefiller === "function") {
+        try {
+          const prefillerValue = field.prefiller({ user: profile.data });
+          if (prefillerValue !== null && prefillerValue !== undefined) {
+            const stringValue = String(prefillerValue).trim();
+            if (stringValue.length > 0) {
+              defaultValues[field.field] = stringValue;
+            }
+          }
+        } catch (err) {
+          console.error(`Error calling prefiller for ${field.field}:`, err);
+        }
+      }
+    });
+
+    if (Object.keys(defaultValues).length > 0) {
+      formFiller.initializeValues(defaultValues);
+    }
+  }, [form.formName, form.fields.length, profile.data]);
 
   // Notify parent of values change
   useEffect(() => {

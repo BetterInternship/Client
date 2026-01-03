@@ -41,23 +41,22 @@ export const FormFillerContextProvider = ({
   const [errors, _setErrors] = useState({});
 
   const getFinalValues = (autofillValues?: FormValues) => {
-    // Start with defaults/manually entered values
+    // Priority: User Input > Autofill > Empty
     const result = { ...values };
 
-    // Only use autofill if user hasn't manually entered a value for that field
     if (autofillValues) {
       Object.entries(autofillValues).forEach(([key, value]) => {
-        // Only use autofill if:
-        // 1. Field is empty in manual values AND
-        // 2. Autofill value is not empty
-        if (
-          (!values[key] || values[key] === "") &&
-          value &&
-          value.trim &&
-          value.trim().length > 0
-        ) {
+        const userValue = values[key];
+        const hasUserValue =
+          userValue !== null &&
+          userValue !== undefined &&
+          String(userValue).trim().length > 0;
+
+        // If user hasn't entered anything for this field, use autofill
+        if (!hasUserValue && value && value.trim && value.trim().length > 0) {
           result[key] = value;
         }
+        // If user has a value, keep it (already in result from spread)
       });
     }
 
@@ -84,15 +83,28 @@ export const FormFillerContextProvider = ({
   };
 
   const initializeValues = (defaultValues: Record<string, any>) => {
-    // Initialize form with default values from metadata
+    // Initialize form with default values
+    // Only set fields that don't already have user-entered values
     const stringifiedValues = Object.entries(defaultValues).reduce(
       (acc, [key, val]) => {
-        acc[key] = val === null || val === undefined ? "" : String(val);
+        const currentValue = values[key];
+        // Don't overwrite if user already has a value
+        const hasExistingValue =
+          currentValue !== null &&
+          currentValue !== undefined &&
+          String(currentValue).trim().length > 0;
+
+        if (!hasExistingValue) {
+          acc[key] = val === null || val === undefined ? "" : String(val);
+        } else {
+          // Keep existing user value
+          acc[key] = currentValue;
+        }
         return acc;
       },
       {} as Record<string, string>,
     );
-    _setValues(stringifiedValues);
+    _setValues({ ...values, ...stringifiedValues });
   };
   const resetErrors = () => {
     _setErrors({});
