@@ -2,15 +2,15 @@
  * Cache configuration constants for React Query
  */
 
-// Default stale time: 1 day in milliseconds
+// Default stale time: 15 minutes in milliseconds
 const DEFAULT_STALE_TIME_MS = parseInt(
-  process.env.NEXT_PUBLIC_CACHE_STALE_TIME || "86400000",
+  process.env.NEXT_PUBLIC_CACHE_STALE_TIME || "900000",
   10,
 );
 
-// Default garbage collection time: 1 day in milliseconds
+// Default garbage collection time: 15 minutes in milliseconds
 const DEFAULT_GC_TIME_MS = parseInt(
-  process.env.NEXT_PUBLIC_CACHE_GC_TIME || "86400000",
+  process.env.NEXT_PUBLIC_CACHE_GC_TIME || "900000",
   10,
 );
 
