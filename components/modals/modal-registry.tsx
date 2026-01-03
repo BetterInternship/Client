@@ -8,6 +8,7 @@ import {
   MassApplyResultsData,
 } from "./components/MassApplyResults";
 import { SpecifySigningPartiesModal } from "./components/SpecifySigningPartiesModal";
+import { FormSubmissionSuccessModal } from "./components/FormSubmissionSuccessModal";
 import {
   ClientBlock,
   ClientField,
@@ -144,6 +145,24 @@ export const useModalRegistry = () => {
           },
         ),
       close: () => close("specify-signing-parties"),
+    },
+
+    // Form submission success modal
+    formSubmissionSuccess: {
+      open: () =>
+        open(
+          "form-submission-success",
+          <FormSubmissionSuccessModal
+            onClose={() => close("form-submission-success")}
+          />,
+          {
+            closeOnEsc: false,
+            allowBackdropClick: false,
+            hasClose: false,
+            onClose: () => close("form-submission-success"),
+          },
+        ),
+      close: () => close("form-submission-success"),
     },
   };
 

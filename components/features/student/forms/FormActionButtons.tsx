@@ -92,7 +92,7 @@ export function FormActionButtons() {
           });
 
           await queryClient.invalidateQueries({ queryKey: ["my_forms"] });
-          router.push("/forms");
+          modalRegistry.formSubmissionSuccess.open();
         }
 
         // Just fill out form
@@ -104,7 +104,7 @@ export function FormActionButtons() {
         });
 
         await queryClient.invalidateQueries({ queryKey: ["my_forms"] });
-        router.push("/forms");
+        modalRegistry.formSubmissionSuccess.open();
       }
 
       setBusy(false);

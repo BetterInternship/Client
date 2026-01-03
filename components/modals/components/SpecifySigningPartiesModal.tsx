@@ -14,6 +14,7 @@ import { TextLoader } from "@/components/ui/loader";
 import { IFormFiller } from "@/components/features/student/forms/form-filler.ctx";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import useModalRegistry from "../modal-registry";
 
 export const SpecifySigningPartiesModal = ({
   fields,
@@ -32,6 +33,7 @@ export const SpecifySigningPartiesModal = ({
 }) => {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const modalRegistry = useModalRegistry();
   const [errors, setErrors] = useState<FormErrors>({});
   const [signingPartyValues, setSigningPartyValues] = useState<FormValues>({});
   const [busy, setBusy] = useState(false);
@@ -63,8 +65,8 @@ export const SpecifySigningPartiesModal = ({
     // Submit and close modal if okay
     await handleSubmit(formFiller.getFinalValues(additionalValues));
     await queryClient.invalidateQueries({ queryKey: ["my_forms"] });
-    router.push("/forms");
     close();
+    modalRegistry.formSubmissionSuccess.open();
     setBusy(false);
   };
 
