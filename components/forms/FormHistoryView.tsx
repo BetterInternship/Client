@@ -11,6 +11,7 @@ import { formatDate } from "@/lib/utils";
 
 interface FormHistoryViewProps {
   forms: Array<{
+    form_process_id: string;
     label: string;
     prefilled_document_id?: string | null;
     pending_document_id?: string | null;
@@ -42,6 +43,7 @@ export function FormHistoryView({ forms }: FormHistoryViewProps) {
           .toSorted((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp))
           .map((form) => (
             <FormLog
+              formProcessId={form.form_process_id}
               key={form.timestamp}
               label={form.label}
               documentId={form.signed_document_id ?? form.prefilled_document_id}

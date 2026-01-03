@@ -17,6 +17,8 @@ import {
 } from "@betterinternship/core/forms";
 import { PublicUser } from "@/lib/db/db.types";
 import { IFormFiller } from "../features/student/forms/form-filler.ctx";
+import { ResendFormModal } from "./components/ResendFormModal";
+import { CancelFormModal } from "./components/CancelFormModal";
 
 /**
  * Simplifies modal config since we usually reuse each of these modal stuffs.
@@ -166,6 +168,38 @@ export const useModalRegistry = () => {
           },
         ),
       close: () => close("form-submission-success"),
+    },
+
+    // Cancel from request
+    cancelFormRequest: {
+      open: (formProcessId: string) =>
+        open(
+          "cancel-form-request",
+          <CancelFormModal formProcessId={formProcessId} />,
+          {
+            title: "Cancel this form request?",
+            hasClose: false,
+            allowBackdropClick: false,
+            closeOnEsc: false,
+          },
+        ),
+      close: () => close("cancel-form-request"),
+    },
+
+    // Resend form request
+    resendFormRequest: {
+      open: (formProcessId: string) =>
+        open(
+          "resend-form-request",
+          <ResendFormModal formProcessId={formProcessId} />,
+          {
+            title: "Resend form email?",
+            hasClose: false,
+            allowBackdropClick: false,
+            closeOnEsc: false,
+          },
+        ),
+      close: () => close("resend-form-request"),
     },
   };
 

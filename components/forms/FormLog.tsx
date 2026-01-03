@@ -14,11 +14,14 @@ import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 import { IFormSigningParty } from "@betterinternship/core/forms";
 import { Badge } from "../ui/badge";
 import { Divider } from "../ui/divider";
+import { Button } from "../ui/button";
+import useModalRegistry from "../modals/modal-registry";
 
 /**
  * Form Log Item
  */
 export const FormLog = ({
+  formProcessId,
   label,
   timestamp,
   documentId,
@@ -26,6 +29,7 @@ export const FormLog = ({
   signingParties,
   rejectionReason,
 }: {
+  formProcessId: string;
   label: string;
   timestamp: string;
   documentId?: string | null;
@@ -33,6 +37,7 @@ export const FormLog = ({
   signingParties?: IFormSigningParty[];
   rejectionReason?: string;
 }) => {
+  const modalRegistry = useModalRegistry();
   const [downloading, setDownloading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -70,9 +75,37 @@ export const FormLog = ({
                 <div className="animate-spin w-4 h-4 text-warning rounded-full border border-warning border-t-transparent" />
               )}
             </div>
-            <div className="flex">
-              <div className="text-ellipsis line-clamp-1 pr-5">{label}</div>
-              <div className="text-gray-400">{timestamp}</div>
+            <div className="flex flex-col gap-2">
+              <div className="flex">
+                <div className="text-ellipsis line-clamp-1 pr-5">{label}</div>
+                <div className="text-gray-400">{timestamp}</div>
+              </div>
+              {!rejectionReason && !documentId && (
+                <div className="flex flex-row gap-1">
+                  <Button
+                    className=""
+                    size="xs"
+                    variant="outline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      modalRegistry.resendFormRequest.open(formProcessId);
+                    }}
+                  >
+                    Resend Form Email
+                  </Button>
+                  <Button
+                    className=""
+                    size="xs"
+                    variant="outline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      modalRegistry.cancelFormRequest.open(formProcessId);
+                    }}
+                  >
+                    Cancel Form Request
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
           <div className="h-full p-2 m-1 hover:bg-white/50 transition-all rounded-full aspect-square">

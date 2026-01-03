@@ -237,6 +237,22 @@ export const FormService = {
     >(APIRouteBuilder("users").r(`me/form?name=${formName}`).build());
     return form;
   },
+
+  async resendForm(formProcessId: string) {
+    const form = await APIClient.post<FetchResponse>(
+      APIRouteBuilder("users").r(`me/resend-form`).build(),
+      { formProcessId },
+    );
+    return form;
+  },
+
+  async cancelForm(formProcessId: string) {
+    const form = await APIClient.post<FetchResponse>(
+      APIRouteBuilder("users").r(`me/cancel-form`).build(),
+      { formProcessId },
+    );
+    return form;
+  },
 };
 
 export const UserService = {
