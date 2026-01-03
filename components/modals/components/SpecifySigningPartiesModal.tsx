@@ -38,6 +38,8 @@ export const SpecifySigningPartiesModal = ({
   const [signingPartyValues, setSigningPartyValues] = useState<FormValues>({});
   const [busy, setBusy] = useState(false);
 
+  const [submitted, setSubmitted] = useState(false);
+
   const handleClick = async () => {
     setBusy(true);
 
@@ -65,9 +67,10 @@ export const SpecifySigningPartiesModal = ({
     // Submit and close modal if okay
     await handleSubmit(formFiller.getFinalValues(additionalValues));
     await queryClient.invalidateQueries({ queryKey: ["my_forms"] });
+    setSubmitted(true);
+    setBusy(false);
     close();
     modalRegistry.formSubmissionSuccess.open();
-    setBusy(false);
   };
 
   return (
@@ -95,13 +98,16 @@ export const SpecifySigningPartiesModal = ({
         );
       })}
 
-      <Button
-        className="mt-4 self-end"
-        disabled={busy}
-        onClick={() => void handleClick()}
-      >
-        <TextLoader loading={busy}>Sign and send form</TextLoader>
-      </Button>
+      <div className="mt-4 flex gap-2 self-end">
+        {!busy && !submitted && (
+          <Button variant="outline" onClick={close}>
+            Cancel
+          </Button>
+        )}
+        <Button disabled={busy} onClick={() => void handleClick()}>
+          <TextLoader loading={busy}>Sign and send form</TextLoader>
+        </Button>
+      </div>
     </div>
   );
 };

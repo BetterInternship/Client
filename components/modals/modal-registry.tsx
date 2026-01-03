@@ -141,6 +141,9 @@ export const useModalRegistry = () => {
           />,
           {
             title: "Next Signing Parties",
+            closeOnEsc: false,
+            allowBackdropClick: false,
+            hasClose: false,
             showHeaderDivider: true,
           },
         ),
