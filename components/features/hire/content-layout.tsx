@@ -1,9 +1,11 @@
 "use client";
 
+import { useConversation, useConversations } from "@/hooks/use-conversation";
 import { useMobile } from "@/hooks/use-mobile";
 import { LayoutDashboard, Plus, MessageCircleMore, FileText, FileUser, Briefcase, MessageCircleQuestion, HelpCircle } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useMemo } from "react";
 import React from "react";
 
 import { useAuthContext } from "@/app/hire/authctx";
@@ -42,6 +44,19 @@ const navItems: NavItem[] = [
 function SideNav({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
   const { god } = useAuthContext();
+  const { unreads } = useConversations();
+
+  const sortedUnreads = useMemo(
+          () =>
+          (unreads.filter((c, index, self) => (c?.subscribers?.length > 1) && 
+          index === self.findIndex((ca) => (
+              ca.id === c.id
+          ))) ?? []).toSorted(
+              (a, b) =>
+              (b.last_unread?.timestamp ?? 0) - (a.last_unread?.timestamp ?? 0),
+          ),
+          [unreads],
+      );
 
   return (
     <nav className="flex flex-col p-3 gap-2">
@@ -60,15 +75,31 @@ function SideNav({ items }: { items: NavItem[] }) {
                 god && label === "Forms Automation" && alert("Coming Soon!")
               }
               className={cn(
-                "w-full h-10 pl-4 lg:pr-24 flex flex-row justify-start border-0 hover:bg-primary/15 hover:text-primary",
+                "w-full h-10 pl-4 flex flex-row justify-between border-0 hover:bg-primary/15 hover:text-primary",
                 isActive ? "text-primary bg-primary/10" : "font-normal",
                 label === "Add Listing" ? "bg-primary text-white hover:bg-primary hover:text-white" : "",
-                isActive && "[&_svg]:fill-primary [&_svg]:stroke-primary-foreground"
+                isActive && "[&_svg]:fill-primary/20"
               )}
             >
-              {icon}
+              <div className="flex items-center w-full flex-row gap-2 lg:pr-24">
+                <div className="relative">
+                  {icon}
+                  {
+                    (label === "Chats" && unreads.length > 0) && 
+                    <div className="lg:hidden bg-primary rounded-full p-1 absolute left-2.5 top-0" />
+                  }
+                </div>
+                <div className="hidden lg:block">
+                  {label}
+                </div>
+              </div>
               <div className="hidden lg:block">
-                {label}
+                {
+                  (label === "Chats" && unreads.length > 0) && 
+                  <div className="bg-primary rounded-full text-white text-[11px] px-2 font-bold">
+                    {unreads.length}
+                  </div>
+                }
               </div>
             </Button>
           </Link>

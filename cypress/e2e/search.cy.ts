@@ -5,7 +5,7 @@ it("Bring the user to the Internship Dashboard and search for Intestship", funct
 
   cy.url().should("include", "/search");
 
-  cy.get('input[placeholder="Search Internship Listings"]').type(
+  cy.get('input[placeholder="Search listings"]').type(
     "cypress test job listing{enter}",
   );
 

@@ -297,7 +297,7 @@ export default function RegisterPage() {
                           label="Which university are you from?"
                           options={refs.universities}
                           setter={(value) =>
-                            regForm.setValue("university", value)
+                            regForm.setValue("university", value + "")
                           }
                           className="flex-1"
                         />

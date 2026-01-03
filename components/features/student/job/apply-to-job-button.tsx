@@ -1,62 +1,28 @@
-import { useGlobalModal } from "@/components/providers/ModalProvider";
 import { useJobsData } from "@/lib/api/student.data.api";
 import { Job, PublicUser } from "@/lib/db/db.types";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { useQueryClient } from "@tanstack/react-query";
-import { IncompleteProfileContent } from "@/components/modals/IncompleteProfileModal";
-import {
-  isProfileBaseComplete,
-  isProfileResume,
-  isProfileVerified,
-} from "@/lib/profile";
-import { RefObject, useMemo } from "react";
-import { ModalHandle } from "@/hooks/use-modal";
+import { isProfileBaseComplete, isProfileResume } from "@/lib/profile";
+import { useMemo } from "react";
+import useModalRegistry from "@/components/modals/modal-registry";
 
 // ! todo: rmove openAppModal and use openGlobalModal instead
 export const ApplyToJobButton = ({
   profile,
   job,
   openAppModal,
-  applySuccessModalRef,
   className,
 }: {
   profile: PublicUser | null;
   job: Job;
   openAppModal: () => void;
-  applySuccessModalRef?: RefObject<ModalHandle | null>;
   className?: string;
 }) => {
   const auth = useAuthContext();
   const jobs = useJobsData();
-  const queryClient = useQueryClient();
+  const modalRegistry = useModalRegistry();
   const applied = useMemo(() => !!jobs.isJobApplied(job.id!), [jobs]);
-  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
-
-  /**
-   * Opens the modal for completing incomplete profile
-   *
-   * @returns
-   */
-  const openIncompleteProfileModal = () =>
-    openGlobalModal(
-      "incomplete-profile",
-      <IncompleteProfileContent
-        job={job}
-        applySuccessModalRef={applySuccessModalRef}
-        onFinish={() => {
-          closeGlobalModal("incomplete-profile");
-          queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-        }}
-      />,
-      {
-        allowBackdropClick: false,
-        onClose: () => {
-          queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-        },
-      }
-    );
 
   /**
    * Handles apply checks
@@ -74,7 +40,7 @@ export const ApplyToJobButton = ({
       !isProfileBaseComplete(profile) ||
       profile.acknowledged_auto_apply === false
     ) {
-      return openIncompleteProfileModal();
+      return modalRegistry.incompleteProfile.open();
     }
 
     if (applied) {

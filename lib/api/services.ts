@@ -1,16 +1,18 @@
+import { FormTemplate } from "../db/use-moa-backend";
 import {
   Conversation,
   Employer,
-  EmployerApplication,
   Job,
   PublicUser,
   SavedJob,
   UserApplication,
   User,
+  EmployerApplication,
 } from "@/lib/db/db.types";
 import { APIClient, APIRouteBuilder } from "./api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
-import { IFormMetadata } from "@betterinternship/core/forms";
+import { IFormMetadata, IFormSigningParty } from "@betterinternship/core/forms";
+import { Tables } from "@betterinternship/schema.base";
 
 interface EmployerResponse extends FetchResponse {
   employer: Partial<Employer>;
@@ -41,20 +43,6 @@ export const EmployerService = {
       APIRouteBuilder("employer").r("me", "pic").build(),
       file,
       "form-data",
-    );
-  },
-
-  async signMoaWithSignature(data: {
-    moaFieldsId: string;
-    companyLegalName: string;
-    companyAddress: string;
-    companyRepresentative: string;
-    companyRepresentativePosition: string;
-    companyType: string;
-  }) {
-    return APIClient.post<{ success: boolean; message?: string }>(
-      APIRouteBuilder("student/moa").r("sign").build({ moaServer: true }),
-      data,
     );
   },
 };
@@ -169,6 +157,104 @@ export type ApproveSignatoryResponse = {
   [k: string]: any;
 };
 
+export const FormService = {
+  async initiateForm(data: {
+    formName: string;
+    formVersion: number;
+    values: Record<string, string>;
+    audit: any;
+  }) {
+    return APIClient.post<{
+      formProcessId: string;
+      isPending?: string;
+      documentId?: string;
+      documentUrl?: string;
+      success?: boolean;
+    }>(APIRouteBuilder("users").r("me/initiate-form").build(), data);
+  },
+
+  async filloutForm(data: {
+    formName: string;
+    formVersion: number;
+    values: Record<string, string>;
+    disableEsign?: boolean;
+  }) {
+    return APIClient.post<{
+      formProcessId: string;
+      documentId?: string;
+      documentUrl?: string;
+      success?: boolean;
+    }>(APIRouteBuilder("users").r("me/fillout-form").build(), data);
+  },
+
+  async getMyFormTemplates() {
+    const { formTemplates } = await APIClient.get<{
+      formTemplates: FormTemplate[];
+    }>(APIRouteBuilder("users").r("me/form-templates").build());
+    return formTemplates;
+  },
+
+  async getFormTemplatesLastUpdated() {
+    return APIClient.get<{
+      lastUpdatedAt: string;
+      version: number;
+    }>(APIRouteBuilder("services").r("me/latest-form-check").build());
+  },
+
+  async getMyGeneratedForms() {
+    const { forms } = await APIClient.get<{
+      forms: {
+        form_label: string | null;
+        form_name: string;
+        form_process_id: string;
+        form_status: string | null;
+        timestamp: string;
+        form_processes: {
+          prefilled_document_id?: string;
+          pending_document_id?: string;
+          signed_document_id?: string;
+          latest_document_url?: string;
+          signing_parties?: IFormSigningParty[];
+          rejection_reason?: string;
+        };
+      }[];
+    }>(APIRouteBuilder("users").r("me/form-log").build());
+    return forms ?? [];
+  },
+
+  async getForm(formName: string) {
+    const form = await APIClient.get<
+      {
+        formDocument: {
+          name: string;
+          label: string;
+          version: number;
+          base_document_id: string;
+        };
+        formMetadata: IFormMetadata;
+        documentUrl: string;
+      } & FetchResponse
+    >(APIRouteBuilder("users").r(`me/form?name=${formName}`).build());
+    return form;
+  },
+
+  async resendForm(formProcessId: string) {
+    const form = await APIClient.post<FetchResponse>(
+      APIRouteBuilder("users").r(`me/resend-form`).build(),
+      { formProcessId },
+    );
+    return form;
+  },
+
+  async cancelForm(formProcessId: string) {
+    const form = await APIClient.post<FetchResponse>(
+      APIRouteBuilder("users").r(`me/cancel-form`).build(),
+      { formProcessId },
+    );
+    return form;
+  },
+};
+
 export const UserService = {
   async getMyProfile() {
     const result = APIClient.get<UserResponse>(
@@ -184,66 +270,6 @@ export const UserService = {
     );
   },
 
-  async updateMyDocData(data: Partial<PublicUser>) {
-    return APIClient.put<UserResponse>(
-      APIRouteBuilder("users").r("my-doc-data").build(),
-      data,
-    );
-  },
-
-  async requestGenerateForm(data: {
-    formName: string;
-    formVersion: number;
-    values: Record<string, string>;
-    signatories?: { name: string; title: string }[];
-    parties?: {
-      userId?: string | null;
-      employerId?: string | null;
-      universityId?: string | null;
-    };
-    disableEsign?: boolean;
-  }) {
-    return APIClient.post<{
-      success?: boolean;
-      documentUrl: string;
-      documentId: string;
-      internshipFormId: string;
-    }>(APIRouteBuilder("forms").r("generate").build({ moaServer: true }), data);
-  },
-
-  async getForm(formName: string) {
-    const form = await APIClient.get<
-      {
-        formDocument: {
-          name: string;
-          label: string;
-          version: number;
-          base_document_id: string;
-        };
-        formMetadata: IFormMetadata;
-      } & FetchResponse
-    >(
-      APIRouteBuilder("forms")
-        .r("form-latest")
-        .p({ name: formName })
-        .build({ moaServer: true }),
-    );
-    const documentUrl = await APIClient.get<
-      {
-        formDocument: string;
-      } & FetchResponse
-    >(
-      APIRouteBuilder("forms")
-        .r("form-document")
-        .p({ name: formName, version: form.formDocument.version })
-        .build({ moaServer: true }),
-    );
-    return {
-      ...form,
-      documentUrl: documentUrl.formDocument,
-    };
-  },
-
   async parseResume(form: FormData) {
     return APIClient.post<UserResponse>(
       APIRouteBuilder("users").r("me", "extract-resume").build(),
@@ -256,31 +282,6 @@ export const UserService = {
     return APIClient.get<ResourceHashResponse>(
       APIRouteBuilder("users").r("me", "resume").build(),
     );
-  },
-
-  // ! remove hardcoded mapping
-  async getEntityList() {
-    const response = await APIClient.get<{
-      entities: {
-        id: string;
-        display_name: string;
-        legal_identifier: string;
-        contact_name: string;
-        contact_email: string;
-        address: string;
-      }[];
-    }>(APIRouteBuilder("entities").r("list").build({ moaServer: true }));
-
-    return {
-      employers: response.entities.map((e) => ({
-        id: e.id,
-        display_name: e.display_name,
-        legal_entity_name: e.legal_identifier,
-        contact_name: e.contact_name,
-        contact_email: e.contact_email,
-        address: e.address,
-      })),
-    };
   },
 
   async getMyPfpURL() {
@@ -402,10 +403,6 @@ export const JobService = {
 
 interface ConversationResponse extends FetchResponse {
   conversation?: Conversation;
-}
-
-interface ConversationsResponse extends FetchResponse {
-  conversations?: Conversation[];
 }
 
 export const EmployerConversationService = {

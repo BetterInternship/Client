@@ -16,8 +16,8 @@ import ResumeUpload from "@/components/features/student/resume-parser/ResumeUplo
 import { FormDropdown, FormInput } from "@/components/EditForm";
 import { UserService } from "@/lib/api/services";
 import { useProfileData } from "@/lib/api/student.data.api";
-import { Stepper } from "../stepper/stepper";
-import { isProfileResume, isProfileBaseComplete } from "../../lib/profile";
+import { Stepper } from "../../stepper/stepper";
+import { isProfileResume, isProfileBaseComplete } from "../../../lib/profile";
 import { ModalHandle } from "@/hooks/use-modal";
 import { isValidPHNumber } from "@/lib/utils";
 import { useDbRefs } from "@/lib/db/use-refs";

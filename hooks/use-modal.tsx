@@ -168,18 +168,19 @@ export const useModal = (
         <AnimatePresence initial={!hasMounted}>
           <motion.div
             key={name}
-            initial={{ opacity: 0, y: 25, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+            animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
+            exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
             onAnimationComplete={() => setHasMounted(true)}
           >
             <div
               ref={panelRef}
               className={cn(
-                "bg-white overflow-hidden shadow-2xl flex flex-col w-full h-fit",
+                "bg-white overflow-hidden border border-gray-200 flex flex-col w-full h-fit",
                 isMobile
-                  ? "max-w-full min-w-[100svw] mx-0 rounded-t-[0.33em] rounded-b-none min-h-[200px]"
-                  : "max-w-2xl rounded-[0.33em]",
+                  ? "max-w-full min-w-[100svw] mx-0 rounded-t-md rounded-b-none min-h-[200px]"
+                  : "max-w-2xl rounded-md",
                 className
               )}
             >
@@ -190,12 +191,12 @@ export const useModal = (
                     size="sm"
                     onClick={() => {
                       console.debug(`[useModal:${name}] close button click`);
-                      setIsOpen(false);
+                      close();
                     }}
                     onTouchEnd={(e) => {
                       e.stopPropagation();
                       console.debug(`[useModal:${name}] close button touch`);
-                      setIsOpen(false);
+                      close();
                     }}
                     className={cn(
                       "h-8 w-8 p-0 hover:bg-gray-100 rounded-full transition-colors",

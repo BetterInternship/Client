@@ -2,10 +2,6 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 if (!API_BASE_URL) console.warn("[WARNING]: Base API URL is not set.");
 
-// API configuration and helper funcs
-const MOA_API_BASE_URL = process.env.NEXT_PUBLIC_MOA_API_URL;
-if (!MOA_API_BASE_URL) console.warn("[WARNING]: Base MOA API URL is not set.");
-
 interface Params {
   [key: string]: any;
 }
@@ -50,11 +46,10 @@ export const APIRouteBuilder = (() => {
       return this;
     }
 
-    build(opts?: { moaServer?: boolean }) {
-      const base = opts?.moaServer ? MOA_API_BASE_URL : API_BASE_URL;
-      if (!this.params) return `${base}/${this.routes.join("/")}`;
-      return `${base}/${this.routes.join("/")}?${createParameterString(
-        this.params
+    build() {
+      if (!this.params) return `${API_BASE_URL}/${this.routes.join("/")}`;
+      return `${API_BASE_URL}/${this.routes.join("/")}?${createParameterString(
+        this.params,
       )}`;
     }
   }
@@ -69,7 +64,7 @@ class FetchClient {
   private async request<T>(
     url: string,
     options: RequestInit = {},
-    type: string = "json"
+    type: string = "json",
   ): Promise<T> {
     const headers: HeadersInit =
       type === "json"
@@ -119,7 +114,7 @@ class FetchClient {
             : data
           : undefined,
       },
-      type
+      type,
     );
   }
 
@@ -134,7 +129,7 @@ class FetchClient {
             : data
           : undefined,
       },
-      type
+      type,
     );
   }
 

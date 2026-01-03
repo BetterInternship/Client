@@ -46,7 +46,7 @@ function ManageContent() {
   if (loading || !jobData) {
     return (
       <ContentLayout>
-        <Loader>Loading dashboard...</Loader>
+        <Loader>Loading job...</Loader>
       </ContentLayout>
     );
   }

@@ -51,7 +51,7 @@ div:has(> ._container_12oj9_1) {
 
 ._container_12oj9_1 {
   position: absolute;
-  overflow: auto;
+  overflow-y: auto;
   width: 600px;
   height: 100%;
   border: 2px solid rgba(0, 0, 0, 0.1);

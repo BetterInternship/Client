@@ -26,6 +26,8 @@ import { ArrowLeft,
         MessageSquarePlus,
         MessageCirclePlus,
         SendHorizonal,
+        Archive,
+        HandHelping,
      } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, useRef  } from "react";
@@ -42,6 +44,7 @@ import { useConversation, useConversations } from "@/hooks/use-conversation";
 import { Loader } from "@/components/ui/loader";
 import {
   useProfile,
+  useEmployerApplications,
 } from "@/hooks/use-employer-api";
 import { Message } from "@/components/ui/messages";
 import { Textarea } from "@/components/ui/textarea";
@@ -49,6 +52,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { useAuthContext } from "@/app/hire/authctx";
+import { ActionButton } from "@/components/ui/action-button";
 
 interface ApplicantPageProps {
     application: EmployerApplication | undefined;
@@ -66,6 +70,7 @@ export function ApplicantPage({
     const router = useRouter();
     const user = application?.user as Partial<PublicUser>;
     const internshipPreferences = user?.internship_preferences;
+    const applications = useEmployerApplications();
 
     const profile = useProfile();
 
@@ -131,58 +136,63 @@ export function ApplicantPage({
         highlightColor: statusMap.get(application?.status!)?.bgColor,
       };
 
-      const { url: resumeURL, sync: syncResumeURL, loading: resumeLoading } = useFile({
-          fetcher: useCallback(
-            async () =>
-              await UserService.getUserResumeURL(application?.user_id ?? ""),
-            [user?.id],
-          ),
-          route: application
-            ? `/users/${user?.id}/resume`
-            : "",
-        });
+    const { url: resumeURL, sync: syncResumeURL, loading: resumeLoading } = useFile({
+        fetcher: useCallback(
+        async () =>
+            await UserService.getUserResumeURL(application?.user_id ?? ""),
+        [user?.id],
+        ),
+        route: application
+        ? `/users/${user?.id}/resume`
+        : "",
+    });
 
-        const handleBack = () => {
-            setExitingBack(true);
-            if (window.history.length > 1) {
-                router.back();
-            } else {
-                router.push('/dashboard');
-            }
+    const handleBack = () => {
+        setExitingBack(true);
+        if (window.history.length > 1) {
+            router.back();
+        } else {
+            router.push('/dashboard');
         }
+    }
 
-        const {
-            open: openNewChatModal,
-            close: closeNewChatModal,
-            Modal: NewChatModal,
-          } = useModal("new-chat-modal", {
-            onClose: () => (conversation.unsubscribe(), setConversationId("")),
-            showCloseButton: false,
-          });
-        
-          const {
-            open: openOldChatModal,
-            close: closeOldChatModal,
-            Modal: OldChatModal,
-          } = useModal("old-chat-modal", {
-            onClose: () => (conversation.unsubscribe(), setConversationId("")),
-            showCloseButton: false,
-          });
-          
-        
-          const {
-            open: openChatModal,
-            close: closeChatModal,
-            SideModal: ChatModal,
-          } = useSideModal("chat-modal", {
-            onClose: () => (conversation.unsubscribe(), setConversationId(""))
-          });
+    const {
+        open: openNewChatModal,
+        close: closeNewChatModal,
+        Modal: NewChatModal,
+        } = useModal("new-chat-modal", {
+        onClose: () => (conversation.unsubscribe(), setConversationId("")),
+        showCloseButton: false,
+    });
 
-        useEffect(() => {
-            if (application?.user_id) {
-              syncResumeURL();
-            }
-          }, [application?.user_id, syncResumeURL]);
+    const {
+        open: openOldChatModal,
+        close: closeOldChatModal,
+        Modal: OldChatModal,
+        } = useModal("old-chat-modal", {
+        onClose: () => (conversation.unsubscribe(), setConversationId("")),
+        showCloseButton: false,
+    });
+
+    const {
+        open: openChatModal,
+        close: closeChatModal,
+        SideModal: ChatModal,
+        } = useSideModal("chat-modal", {
+        onClose: () => (conversation.unsubscribe(), setConversationId(""))
+    });
+
+    const {
+        open: openApplicantArchiveModal,
+        close: closeApplicantArchiveModal,
+        Modal: ApplicantArchiveModal,
+    } = useModal("applicant-archive-modal");
+
+    useEffect(() => {
+        if (application?.user_id) {
+            syncResumeURL();
+        }
+        }, [application?.user_id, syncResumeURL]);
     
     const onChatClick = async () => {
     if (!application?.user_id) return;
@@ -235,6 +245,21 @@ export function ApplicantPage({
         });
     };
 
+    const handleSetStatus = (statusId: string | number) => {
+        const action = statuses?.find((s) => s.id?.toString() === statusId.toString());
+        action?.onClick?.();
+    }
+
+    const handleConfirmApplicantArchive = async () => {
+        if (!application?.user_id) return;
+        await applications.review((application.id || ""), { status: 7 });
+        router.push(`/dashboard/manage?jobId=${application.job_id}`);
+        closeApplicantArchiveModal();
+    };
+
+    const handleCancelApplicantArchive = () => {
+        closeApplicantArchiveModal();
+    };
     
     if (loading || resumeLoading) {
         return <Loader>Getting applicant information...</Loader>;
@@ -244,14 +269,14 @@ export function ApplicantPage({
 
     return(
         <>
-        <motion.div
-            initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-            animate={exitingBack ? { scale: 0.98, filter: "blur(4px)", opacity: 0 } : { scale: 1, filter: "blur(0px)", opacity: 1 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-        >
-            <button
-                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors my-4 pl-4"
-                onClick={handleBack}
+            <motion.div
+                initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+                animate={exitingBack ? { scale: 0.98, filter: "blur(4px)", opacity: 0 } : { scale: 1, filter: "blur(0px)", opacity: 1 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+            >
+                <button
+                    className="flex items-center text-gray-600 hover:text-gray-900 transition-colors my-4 pl-4"
+                    onClick={handleBack}
                 >
                     <ArrowLeft className="s-8" />
                 </button>
@@ -263,25 +288,38 @@ export function ApplicantPage({
                                 <div className="flex items-center">
                                     <div className={cn("relative", isMobile ? "mr-2" : "mr-4")}>
                                         <UserPfp user_id={user?.id || ""} size={cn(isMobile ? "16" : "20")}/>
-                                        {internshipPreferences?.internship_type ==
-                                            "credited" && (
-                                                <div className="absolute -bottom-1 -right-1">
+                                    </div>
+                                    <div className="mx-2">
+                                        <div className="flex gap-2">
+                                            <h3 className={cn(isMobile? "text-lg" : "text-xl")}>{getFullName(application?.user)}</h3>
+                                            {internshipPreferences?.internship_type ===
+                                                "credited" ? (
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <div className="bg-green-500 rounded-full p-1 border-2 border-white">
-                                                                <Award className="w-4 h-4 text-white" />
+                                                            <div className="bg-supportive/10 rounded-md px-2 py-1 w-fit flex justify-center items-center gap-1 text-xs text-supportive">
+                                                                <Award className="w-4 h-4" />
+                                                                <span>Credited</span>
                                                             </div>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
                                                             <p className="text-gray-500 text-xs">This applicant is looking for internships for credit</p>
                                                         </TooltipContent>
                                                     </Tooltip>
-                                                </div>
-                                            )
-                                        }
-                                    </div>
-                                    <div className="mx-2">
-                                        <h3 className={cn(isMobile? "text-lg" : "text-xl")}>{getFullName(application?.user)}</h3>
+                                                ) : (
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <div className="bg-muted rounded-md px-2 py-1 w-fit flex justify-center items-center gap-1 text-xs text-muted-foreground">
+                                                                <HandHelping className="w-4 h-4" />
+                                                                <span>Voluntary</span>
+                                                            </div>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p className="text-gray-500 text-xs">This applicant is looking for internships voluntarily</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                )
+                                            }
+                                        </div>
                                         <div className={cn("items-center gap-2 text-xs text-gray-500", isMobile ? "flex-col" : "flex")}>
                                             {/* COntact info */}
                                             <div className="flex gap-1 items-center">
@@ -379,25 +417,53 @@ export function ApplicantPage({
                         </div>
 
                         {/* actions */}
-                            <div className={cn("flex items-center gap-2 my-4", isMobile ? "justify-start" : "justify-start")}>
+                        <div className="flex items-center justify-between gap-2 my-4">
+                            <div className="flex items-center gap-2">
                                 <button
                                     className="flex items-center gap-2 text-sm text-gray-600 rounded-[0.33em] p-1.5 px-2 border border-gray-300 hover:text-gray-700 hover:bg-gray-100"
                                     onClick={openChatModal}
                                     >
-                                        <MessageCircle className="h-5 w-5"/> Chat
-                                    </button>
-                                    <DropdownMenu
-                                        items={statuses}
-                                        defaultItem={defaultStatus}
-                                    />
-                                </div>
-                        
+                                    <MessageCircle className="h-5 w-5"/> Chat
+                                </button>
+                                <DropdownMenu
+                                    items={statuses}
+                                    defaultItem={defaultStatus}
+                                />
+                            </div>
+                            <div className="flex items-center gap-2">
+                            <ActionButton
+                                icon={Archive}
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    openApplicantArchiveModal()
+                                }}
+                                enabled={application!.status !== 7}
+                            />
+                            </div>
+                        </div>
 
                         {isMobile ? (
                             <>
+                                {application!.job?.internship_preferences?.require_cover_letter ||
+                                 application!.cover_letter &&
+                                    <HorizontalCollapsible 
+                                        className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
+                                        title="Cover letter"
+                                    >
+                                        <span className={cn(
+                                            "text-sm/5",
+                                            application!.cover_letter?.length === 0 ? "text-muted-foreground" : ""
+                                        )}>
+                                            {application!.cover_letter?.length === 0 
+                                                ? "The user has not provided a cover letter."
+                                                : application!.cover_letter
+                                            }
+                                        </span>
+                                    </HorizontalCollapsible>
+                                }
                                 <HorizontalCollapsible
-                                className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200 mt-4"
-                                title="Applicant Information"
+                                    className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
+                                    title="Applicant Information"
                                 >
                                     <div className="grid gap-2">
                                         <div className={cn(isMobile ? "flex justify-between" : "")}>
@@ -444,20 +510,37 @@ export function ApplicantPage({
                             
                         ) : (
                             <>
-                                <div className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200 mt-4">
-                                        {application?.user?.bio ? (
-                                            <div>
-                                                <p className="text-xs">{application?.user?.bio}</p>
-                                                <Divider/>
-                                            </div>
-                                        ) : (
+                                {application!.job?.internship_preferences?.require_cover_letter ||
+                                 application!.cover_letter &&
+                                    <HorizontalCollapsible 
+                                        className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
+                                        title="Cover letter"
+                                    >
+                                        <span className={cn(
+                                            "text-sm/5",
+                                            application!.cover_letter?.length === 0 ? "text-muted-foreground" : ""
+                                        )}>
+                                            {application!.cover_letter?.length === 0 
+                                                ? "The user has not provided a cover letter."
+                                                : application!.cover_letter
+                                            }
+                                        </span>
+                                    </HorizontalCollapsible>
+                                }
+                                <div className="bg-blue-50 rounded-[0.33em] p-4 border border-gray-200">
+                                    {application?.user?.bio ? (
+                                        <div>
+                                            <p className="text-xs">{application?.user?.bio}</p>
+                                            <Divider/>
+                                        </div>
+                                    ) : (
 
-                                            <div>
-                                                <p className="text-xs">Applicant has not added a bio.</p>
-                                                <Divider/>
-                                            </div>
-                                            
-                                        )}
+                                        <div>
+                                            <p className="text-xs">Applicant has not added a bio.</p>
+                                            <Divider/>
+                                        </div>
+                                        
+                                    )}
                                     <div className="items-center gap-3 mb-4 sm:mb-5">
                                         <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
                                             Applicant Information
@@ -696,7 +779,11 @@ export function ApplicantPage({
                     Cancel
                 </Button>
                 <Button 
-                onClick={() => router.push(`/conversations?userId=${application?.user_id}`)}
+                onClick={ async () => {
+                    if (!application?.user_id) return;
+                    const response = await EmployerConversationService.createConversation(application.user_id);
+                    if(response?.success && response.conversation?.id) router.push(`/conversations?userId=${application?.user_id}`)
+                }}
                 >
                     Start chatting
                 </Button>
@@ -732,6 +819,19 @@ export function ApplicantPage({
             </div>
             </div>
         </OldChatModal>
+                <ApplicantArchiveModal>
+                {application?.user && (
+                    <div className="p-8 pt-0 h-full">
+                    <div className="text-lg mb-4">
+                        Archive applicant "{getFullName(application.user)}"?
+                    </div>
+                    <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={handleCancelApplicantArchive}>Cancel</Button>
+                        <Button variant="default" onClick={handleConfirmApplicantArchive}>Archive</Button>
+                    </div>
+                    </div>
+                )}
+                </ApplicantArchiveModal>
             </>
     );
 }

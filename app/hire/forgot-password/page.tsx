@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { EmployerUserService } from "@/lib/api/services";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
+import { AnimatePresence, motion } from "framer-motion";
 
 /**
  * Display the layout for the forgot password page.
@@ -59,38 +60,50 @@ const ForgotPasswordForm = ({}) => {
 
   return (
     <>
-      <Card className="flex flex-col gap-4 w-full">
-        <h2 className="text-3xl tracking-tighter font-bold text-gray-700">
-          Forgot password
-        </h2>
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-600 justify-center">{error}</p>
-          </div>
-        )}
-        {message && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-sm text-green-600 justify-center">{message}</p>
-          </div>
-        )}
-        <FormInput
-          label="Email"
-          onChange={(e) => setEmail(e.target.value)}
-          value={email}
-        />
-        <span className="text-sm text-gray-500">
-          Remember your password? <a className="text-blue-600 hover:text-blue-800 underline font-medium" href="/login">Log in here.</a>
-        </span>
-        <div className="flex justify-end items-center w-[100%]">
-          <Button
-            type="submit"
-            onClick={handle_request}
-            disabled={isLoading}
-          >
-            {isLoading ? "Sending request..." : "Request password reset"}
-          </Button>
-        </div>
-      </Card>
+      <AnimatePresence>
+        <motion.div
+          initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+          animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          className="w-full"
+        >
+          <Card className="flex flex-col gap-4">
+            <h2 className="text-3xl tracking-tighter font-bold text-gray-700">
+              Forgot password
+            </h2>
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600 justify-center">{error}</p>
+              </div>
+            )}
+            {message && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm text-green-600 justify-center">{message}</p>
+              </div>
+            )}
+            <FormInput
+              label="Email"
+              onChange={(e) => setEmail(e.target.value)}
+              value={email}
+            />
+            <div className="flex justify-end items-center w-[100%]">
+              <Button
+                type="submit"
+                onClick={handle_request}
+                disabled={isLoading}
+              >
+                {isLoading ? "Sending request..." : "Request password reset"}
+              </Button>
+            </div>
+            <span className="text-sm text-gray-500">
+              Remember your password? <a className="text-blue-600 hover:text-blue-800 underline font-medium" href="/login">Log in here.</a>
+            </span>
+            <span className="text-muted-foreground text-sm">
+              Need help? Contact us at <a href="tel://09276604999" className="text-blue-600 hover:text-blue-800 underline font-medium">0927 660 4999</a> or on <a href="viber://add?number=639276604999" className="text-blue-600 hover:text-blue-800 underline font-medium">Viber</a>.
+            </span>
+          </Card>
+        </motion.div>
+      </AnimatePresence>
     </>
   )
 };

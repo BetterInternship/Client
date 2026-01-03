@@ -31,10 +31,11 @@ interface ApplicationsContentProps {
   onScheduleClick: (application: EmployerApplication) => void;
   onStatusChange: (application: EmployerApplication, status: number) => void;
   setSelectedApplication: (application: EmployerApplication) => void;
+  onRequestArchiveApplicant: (application: EmployerApplication) => void;
   onRequestDeleteApplicant: (application: EmployerApplication) => void;
   onRequestStatusChange: (applications: EmployerApplication[], status: number) => void;
   applicantToDelete: EmployerApplication | null;
-  statusChangeInProgress: boolean;
+  applicantToArchive: EmployerApplication | null;
 }
 
 export const ApplicationsContent = forwardRef<
@@ -51,9 +52,10 @@ export const ApplicationsContent = forwardRef<
   onStatusChange,
   setSelectedApplication,
   onRequestDeleteApplicant,
+  onRequestArchiveApplicant,
   onRequestStatusChange,
+  applicantToArchive,
   applicantToDelete,
-  statusChangeInProgress,
 }, ref) {
   const { isMobile } = useAppContext();
 
@@ -120,6 +122,9 @@ export const ApplicationsContent = forwardRef<
           onRequestStatusChange(applicationsToUpdate, status.id);
         },
         destructive: uiProps?.destructive,
+        highlightColor: uiProps?.fgColor,
+        bgColor: uiProps?.bgColor,
+        fgColor: uiProps?.fgColor,
       };
     }
   ).filter(Boolean);
@@ -127,7 +132,7 @@ export const ApplicationsContent = forwardRef<
   // get statuses specifically for the rows. these use different action items.
   const getRowStatuses = (applicationId: string) => {
     return unique_app_statuses
-      .filter((status) => status.id !== 7 && status.id !== 0)
+      .filter((status) => status.id !== 7 && status.id !== 5 && status.id !== 0)
       .map((status): ActionItem => {
         const uiProps = statusMap.get(status.id);
         return {
@@ -136,12 +141,14 @@ export const ApplicationsContent = forwardRef<
           icon: uiProps?.icon,
           onClick: () => updateSingleStatus(applicationId, status.id),
           destructive: uiProps?.destructive,
+          bgColor: uiProps?.bgColor,
+          fgColor: uiProps?.fgColor,
         };
       });
   };
 
   // remove the delete item from the bottom command bar so we can put it in the top one and the pending status.
-  const remove_unused_statuses = statuses.filter((status) => status.id !== "7" &&
+  const remove_unused_statuses = statuses.filter((status) => status.id !== "5" &&
                                                              status.id !== "0");
 
   const applyActiveFilter = (apps: typeof sortedApplications) => {
@@ -179,8 +186,8 @@ export const ApplicationsContent = forwardRef<
 
   // make command bars visible when an applicant is selected.
   useEffect(() => {
-    setCommandBarsVisible(selectedApplications.size > 0 && !applicantToDelete && !statusChangeInProgress);
-  }, [selectedApplications.size, applicantToDelete, statusChangeInProgress]);
+    setCommandBarsVisible(selectedApplications.size > 0);
+  }, [selectedApplications.size]);
 
   const getCounts = (apps: EmployerApplication[]) => {
     const counts: Record<string | number, number> = { all: 0 };
@@ -228,7 +235,7 @@ export const ApplicationsContent = forwardRef<
         visibleApplicationsCount={visibleApplications.length}
         statuses={remove_unused_statuses}
         onUnselectAll={unselectAll}
-        onToggleSelectAll={toggleSelectAll}
+        onSelectAll={selectAll}
         onDelete={() => {
           const appToDelete = Array.from(selectedApplications)
             .map((id) => sortedApplications.find((app) => app.id === id))
@@ -259,6 +266,7 @@ export const ApplicationsContent = forwardRef<
               updateConversationId={updateConversationId}
               checkboxSelected={selectedApplications.has(application.id!)}
               onToggleSelect={(v) => toggleSelect(application.id!, v)}
+              onArchiveButtonClick={onRequestArchiveApplicant}
               onDeleteButtonClick={onRequestDeleteApplicant}
               statuses={getRowStatuses(application.id!)}
             />
@@ -293,7 +301,7 @@ export const ApplicationsContent = forwardRef<
         visibleApplicationsCount={visibleApplications.length}
         statuses={remove_unused_statuses}
         onUnselectAll={unselectAll}
-        onToggleSelectAll={toggleSelectAll}
+        onSelectAll={selectAll}
         onDelete={() => {
           const appToDelete = Array.from(selectedApplications)
             .map((id) => sortedApplications.find((app) => app.id === id))
@@ -385,6 +393,7 @@ export const ApplicationsContent = forwardRef<
                   updateConversationId={updateConversationId}
                   checkboxSelected={selectedApplications.has(application.id!)}
                   onToggleSelect={(v) => toggleSelect(application.id!, v)}
+                  onArchiveButtonClick={() => onRequestArchiveApplicant?.(application)}
                   onDeleteButtonClick={() => onRequestDeleteApplicant?.(application)}
                   statuses={getRowStatuses(application.id!)}
                 />

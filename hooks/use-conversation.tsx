@@ -19,6 +19,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { useRef } from "react";
 
 interface Message {
   sender_id: string;
@@ -41,6 +42,7 @@ export const useConversation = (
   const [loading, setLoading] = useState(true);
   const { pb, user, refresh } = usePocketbase();
   const [unsubscribe, setUnsubscribe] = useState<Function>(() => () => {});
+  const unsubscribeRef = useRef<(() => void) | null>(null);
   const setLoadingFalse = () => setTimeout(() => setLoading(false), 500);
 
   const seenConversation = useCallback(async () => {
@@ -60,10 +62,15 @@ export const useConversation = (
 
   useEffect(() => {
     setLoading(true);
+
+    unsubscribeRef.current?.();
+    unsubscribeRef.current = null;
+
     if (!user || !conversationId || !conversationId.trim().length) {
       setMessages([]);
       setSenderId("");
-      return () => (unsubscribe(), setLoadingFalse());
+      setLoadingFalse();
+      return;
     }
 
     // Pull messages first
@@ -92,16 +99,22 @@ export const useConversation = (
           filter: `id = '${conversationId}'`,
         }
       )
-      .then((u) => setUnsubscribe(() => (setLoadingFalse(), u)));
+      .then((u) => unsubscribeRef.current = () => {
+        setLoadingFalse();
+        u();
+      });
 
-    return () => unsubscribe();
-  }, [user, conversationId]);
+    return () => {
+      unsubscribeRef.current?.();
+      unsubscribeRef.current = null;
+    };
+  }, [user, pb, conversationId, seenConversation]);
 
   return {
     messages,
     senderId,
     loading,
-    unsubscribe,
+    unsubscribe: () => unsubscribeRef.current?.(),
   };
 };
 
@@ -129,11 +142,6 @@ export const ConversationsContextProvider = ({
   const [conversations, setConversations] = useState<any[]>([]);
   const [unreadConversations, setUnreadConversations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Just so users get unread notifs after they leave page
-  useEffect(() => {
-    pb.collection("conversations").unsubscribe();
-  }, [pathname]);
 
   // Subscribe and init conversations
   useEffect(() => {

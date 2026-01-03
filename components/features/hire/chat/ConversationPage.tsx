@@ -31,7 +31,6 @@ import { Badge } from "@/components/ui/badge";
 import { getFullName } from "@/lib/profile";
 import { FilterButton } from "@/components/ui/filter";
 import { EmployerApplication } from "@/lib/db/db.types";
-import ContentLayout from "@/components/features/hire/content-layout";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { fmtISO } from "@/lib/utils/date-utils";
 import { useModal } from "@/hooks/use-modal";
@@ -43,6 +42,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface ConversationProps {
     applicantId?: string;
+    chatId?:string;
 };
 
 interface InternshipPreferences {
@@ -53,9 +53,22 @@ interface InternshipPreferences {
   job_commitment_ids?: string[],
   job_setup_ids?: string[],
 }
+interface Message {
+  sender_id: string;
+  message: string;
+  timestamp: string;
+}
+
+interface Conversation {
+    messages: Message[];
+    senderId: string;
+    loading: boolean;
+    unsubscribe: Function;
+}
 
 export function ConversationPage({
     applicantId,
+    chatId,
 } : ConversationProps) {
     const { redirectIfNotLoggedIn } = useAuthContext();
     const profile = useProfile();
@@ -67,18 +80,6 @@ export function ConversationPage({
 
     // selection + message composing state
     const [conversationId, setConversationId] = useState("");
-
-    useEffect(() => {
-        if (applicantId && conversations.data) {
-            const findChat = conversations.data.find((convo) => 
-                convo.subscribers?.includes(applicantId)
-            );
-            if (findChat?.id) {
-                setConversationId(findChat.id);
-            }
-        }
-    }, [applicantId, conversations.data]);
-
     const conversation = useConversation("employer", conversationId);
     const [message, setMessage] = useState("");
     const [sending, setSending] = useState(false);
@@ -101,14 +102,6 @@ export function ConversationPage({
 
     //redirectIfNotLoggedIn();
 
-    const createNewConversation = async (userId: string) => {
-        const response = await EmployerConversationService.createConversation(userId);
-        
-        if (response?.success && response.conversation?.id) {
-            setConversationId(response.conversation.id);
-        }
-    };
-
     // auto-switch to chat view on mobile when a conversation is selected
     useEffect(() => {
         if (isMobile && conversationId) setMobileView("chat");
@@ -116,7 +109,9 @@ export function ConversationPage({
 
     // unsubscribe on conversation change (keeps your original behavior)
     useEffect(() => {
-        conversation.unsubscribe();
+        if (conversationId) {
+            conversation.unsubscribe();
+        }
     }, [conversationId]);
 
     useEffect(() => {
@@ -125,31 +120,22 @@ export function ConversationPage({
         } 
     }, [conversationId]);
 
+    //scroll to bottom of the chat if messages exist
     useEffect(() => {
-        if (applicantId && conversations.data) {
-            const findChat = conversations.data.find((convo) => 
-                convo.subscribers?.includes(applicantId)
-            );
-            
-            if (findChat?.id) {
-                setConversationId(findChat.id);
-            } else {
-                createNewConversation(applicantId);
-            }
-        }
-    }, [applicantId, conversations.data]);
+    if (conversationId && !conversation.loading && conversation.messages?.length) {
+        chatAnchorRef.current?.scrollIntoView({ behavior: "instant" });
+    }
+    }, [conversationId, conversation.messages?.length, conversation.loading]);
 
     useEffect(() => {
-        if (applicantId && conversations.data) {
-            const findChat = conversations.data.find((convo) => 
-                convo.subscribers?.includes(applicantId)
-            );
-            if (findChat?.id) {
-                setConversationId(findChat.id);
-                router.replace('/conversations', { scroll: false });
-            }
+        if(chatId) {
+            setTimeout(() => {
+                setConversationId(chatId);
+            }, 300);
+            router.replace('/conversations', { scroll: false });
         }
-    }, [applicantId, conversations.data]);
+    }, [chatId])
+
 
     const sortedConvos = useMemo(
         () =>
@@ -159,7 +145,7 @@ export function ConversationPage({
         ))) 
         ?? []).toSorted(
             (a, b) =>
-            (b.last_unread?.timestamp ?? 0) - (a.last_unread?.timestamp ?? 0),
+            (b.last_unread?.timestamp ?? 0) - (a.last_unread?.timestamp ?? 0)
         ),
         [conversations.data],
     );
@@ -176,9 +162,11 @@ export function ConversationPage({
         [unreads],
     );
 
-    const visibleConvos = useMemo(() => {
+    const uniqueChats = useMemo(() => {
         return chatFilter === "all" ? sortedConvos : sortedUnreads
     }, [chatFilter, sortedConvos, unreads]);
+
+    const visibleConvos = Array.from(new Set(uniqueChats));
 
     const endSend = () => {
         setMessage("");
@@ -192,24 +180,22 @@ export function ConversationPage({
 
         setSending(true);
         let userConversation = conversations.data?.find((c) =>
-        c?.subscribers?.includes(studentId),
-        );
+        c?.subscribers?.includes(studentId));
 
         if (!userConversation && studentId) {
-        const response =
-            await EmployerConversationService.createConversation(studentId).catch(
-            endSend,
-            );
+            const response =
+                await EmployerConversationService.createConversation(studentId).catch(
+                endSend,
+                );
 
-        if (!response?.success) {
-            alert("Could not initiate conversation with user.");
-            endSend();
-            return;
-        }
+            if (!response?.success) {
+                alert("Could not initiate conversation with user.");
+                endSend();
+                return;
+            }
 
-        setConversationId(response.conversation?.id ?? "");
-        userConversation = response.conversation;
-        endSend();
+            setConversationId(response.conversation?.id ?? "");
+            userConversation = response.conversation;
         }
 
         setTimeout(async () => {
@@ -222,15 +208,11 @@ export function ConversationPage({
         });
     };
 
-    // loading state for initial fetch
-    // if (conversations.loading) {
-    //     return <Loader>Loading your conversations...</Loader>;
-    // }
-
     const hasConversations = (conversations.data?.length ?? 0) > 0;
 
+    // determine if all user data is loaded before loading entire page
     useEffect(() => {
-        if (!conversations.data) {
+        if (!conversations.data && hasConversations) {
             setUserDataLoading(true);
             return;
         }
@@ -245,7 +227,7 @@ export function ConversationPage({
         if (allUsersLoaded) {
             const timer = setTimeout(() => {
                 setUserDataLoading(false);
-            }, 300);
+            }, 200);
             return () => clearTimeout(timer);
         }
     }, [conversations.data, visibleConvos, profile.data?.id]);
@@ -261,17 +243,17 @@ export function ConversationPage({
                 </div>
             ) : (
                 <div 
-                    className="w-full h-full flex flex-col md:flex-row"
+                    className="w-full h-full flex flex-col md:flex-row overflow-hidden"
                 >
                     {hasConversations ? (
                     <>
                         {/* ===== Left: List (Desktop always visible; Mobile only when in "list" view) ===== */}
                         <aside
                         className={cn(
-                            "border-r border-gray-200 md:min-w-[25%] md:max-w-[25%] md:block",
+                            "border-r border-gray-200 md:min-w-[25%] md:max-w-[25%] h-full flex flex-col overflow-hidden",
                             // mobile: show only when in list mode
                             "md:relative",
-                            isMobile ? (mobileView === "list" ? "block" : "hidden") : "block",
+                            isMobile ? (mobileView === "list" ? "flex" : "hidden") : "flex",
                         )}
                         >
                         <div className="shrink-0">
@@ -282,7 +264,7 @@ export function ConversationPage({
                             onFilterChange={(status:string) => setChatFilter(status as "all" | "unread")}
                             />
                         </div>
-                        <div className="flex-1 overflow-y-auto min-h-0">
+                        <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0">
                             { visibleConvos.length ? (
                             <ConversationList
                             conversations={visibleConvos}
@@ -303,7 +285,7 @@ export function ConversationPage({
                         {/* ===== Right: Chat (Desktop always visible; Mobile only when in "chat" view) ===== */}
                         <section
                         className={cn(
-                            "flex-1 flex flex-col h-full",
+                            "flex-1 flex flex-col h-full overflow-hidden",
                             isMobile ? (mobileView === "chat" ? "flex" : "hidden") : "flex",
                         )}
                         >
@@ -343,21 +325,27 @@ export function ConversationPage({
                                 onClick={() => {
                                 setEllipsisState(!ellipsisState);
                                 setProfileView(!profileView);
-                                setMobileView("profile");
+                                if (isMobile && !profileView) {
+                                    setMobileView("profile");
+                                }
                                 }}
                                 className="inline-flex h-12 w-12 items-center justify-center rounded-md hover:bg-gray-100 text-gray-500 mt-1 shrink-0">
                                 <CircleEllipsis className="h-6 w-6"/>
                                 </button>
                             </div>
-                            <ConversationPane
-                                conversation={conversation}
-                                chatAnchorRef={chatAnchorRef}
-                            />
+                            <div className="flex-1 min-h-0 overflow-auto">
+                                <ConversationPane
+                                    conversation={conversation}
+                                    chatAnchorRef={chatAnchorRef}
+                                />
+                            </div>
                             <ComposerBar
-                                disabled={sending}
+                                disabled={sending || conversation.loading}
                                 value={message}
                                 onChange={setMessage}
-                                onSend={() => handleMessage(conversation.senderId, message)}
+                                onSend={async () => {
+                                    handleMessage(conversation.senderId, message)
+                                }}
                             />
                             </>
                         ) : (
@@ -367,7 +355,7 @@ export function ConversationPage({
 
                         {profileView && 
                         <aside className={cn(
-                            "border-l border-gray-200 md:min-w-[25%] md:max-w-[25%] md:block",
+                            "border-l border-gray-200 md:min-w-[25%] md:max-w-[25%] md:block h-full flex flex-col overflow-hidden",
                             isMobile ? (mobileView === "profile" ? "block" : "hidden") : "block"
                         )}>
                             {isMobile && (
@@ -385,11 +373,21 @@ export function ConversationPage({
                                 </button>
                             </div>
                             )}
-                            <ConversationProfile
-                            conversation={conversation}
-                            profileId={conversation.senderId}
-                            applications={applications.employer_applications}
-                            />
+                            <AnimatePresence mode="wait">
+                                <motion.div 
+                                className="bg-white h-full p-8"
+                                    initial={{ x: "100%" }}
+                                    animate={{ x: 0 }}
+                                    exit={{ x: "100%" }}
+                                    transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                                >
+                                    <ConversationProfile
+                                    conversation={conversation}
+                                    profileId={conversation.senderId}
+                                    applications={applications.employer_applications}
+                                    />
+                                </motion.div>
+                            </AnimatePresence>
                         </aside>
                         }
                     </>
@@ -489,14 +487,7 @@ export function ConversationPage({
         }, [user?.id, syncResumeURL]);
 
     return(
-        <AnimatePresence mode="wait">
-            <motion.div 
-            className="bg-white h-full p-8"
-                initial={{ x: "100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "100%" }}
-                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            >
+        <>
             {user ? (
             <>
                 <div className="flex flex-col items-center mt-10 w-full">
@@ -512,7 +503,7 @@ export function ConversationPage({
                 }
             </div>
             <div className="mt-10">
-                <div className={cn("items-center gap-2", isMobile ? "" : "flex")}>
+                <div className={cn("flex flex-col items-center gap-2")}>
                     <button 
                     className={cn("flex items-center justify-center w-full bg-primary text-sm text-white gap-2 p-2 rounded-sm", isMobile ? "mb-2" : "")}
                     onClick={openResumeModal}
@@ -566,6 +557,13 @@ export function ConversationPage({
                     </p>
                 )}
                 </div>
+               {/* <div className="flex-1">
+                 <button 
+                    className="flex w-full border border-destructive justify-center items-center text-sm text-destructive p-2 rounded-[0.33em]"
+                    >
+                        Delete Conversation
+                    </button>
+               </div> */}
             </div>
 
             <ResumeModal>
@@ -601,8 +599,7 @@ export function ConversationPage({
                 </div>
             </div>
         )}
-        </motion.div>
-        </AnimatePresence>
+        </>
     )
     }
 
@@ -621,7 +618,7 @@ export function ConversationPage({
     }) {
 
     return (
-        <div className="flex flex-col overflow-auto">
+        <div className="flex flex-col">
         {conversations.map((c, index) => (
             <ConversationCard
             key={c.id}
@@ -682,11 +679,6 @@ export function ConversationPage({
         )}
         >
         <div className="flex gap-2">
-            {/* <div className="flex justify-start">
-            <Button className="rounded-full">
-                <Plus  className="h-10 w-10"/>
-            </Button>
-            </div> */}
             <Textarea
             placeholder="Send a message here..."
             className="w-full h-10 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
@@ -701,16 +693,12 @@ export function ConversationPage({
             maxLength={1000}
             />
             <div className="flex justify-end">
-            {/* <Button
-                size="md"
-                disabled={disabled || !value.trim()}
-                onClick={onSend}
-            >
-                <SendHorizonal className="w-20 h-20" />
-            </Button> */}
             <button 
                 disabled={disabled || !value.trim()}
-                onClick={onSend}
+                onClick={(e) => {
+                    e.preventDefault();
+                    onSend();
+                }}
                 className={cn("text-primary px-2",
                 (disabled || !value.trim()) ? "opacity-50" : ""
                 )}
@@ -764,63 +752,73 @@ export function ConversationPage({
 
     const ConversationPane = ({
     conversation,
-    chatAnchorRef
+    chatAnchorRef,
     }: {
     // keep "any" per your note; consider adding a strong type later
-    conversation: any;
+    conversation: Conversation;
     chatAnchorRef: Ref<HTMLDivElement>;
     }) => {
+    const { isMobile } = useAppContext()
     const profile = useProfile();
     const { userName } = useUserName(conversation.senderId);
     let lastSelf = false;
 
     return (
-        <motion.div
-            initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-            animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
-            exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="flex-1 min-h-0 flex flex-col-reverse gap-1 p-2 overflow-y-auto"
-        >
-            <div ref={chatAnchorRef} />
-            {conversation?.messages?.length ? (
-                <>
-                    {conversation.messages
-                ?.map((message: any, idx: number) => {
-                if (!idx) lastSelf = false;
-                const oldLastSelf = lastSelf;
-                lastSelf = message.sender_id === profile.data?.id;
-                return {
-                    key: idx,
-                    message: message.message,
-                    self: message.sender_id === profile.data?.id,
-                    prevSelf: oldLastSelf,
-                    them: userName,
-                };
-                })
-                ?.toReversed()
-                ?.map((d: any) => (
-                    <Message
-                    key={d.key}
-                    message={d.message}
-                    self={d.self}
-                    prevSelf={d.prevSelf}
-                    them={d.them}
-                    />
-                ))}
-                </>
-            ) : (
-            <div className="flex items-center justify-center h-full gap-4">
-                {/* keeping this here as a memory, jk feel free to delete
-                <h1>start chattong with user</h1> */}
-                <MessageCircle className="h-14 w-14 opacity-50"/>
-                <div className="flex flex-col text-start">
-                    <p className="font-bold text-lg mb-0">No Messages Yet</p>
-                    <p className="text-sm text-gray-500">Start the conversation!</p>
+        <>
+            {conversation?.loading ? (
+                <div className="w-full h-full mb-[50%] flex items-center justify-center">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading Conversation...</p>
+                    </div>
                 </div>
-            </div>
-        )}
-        </motion.div>
+            ) : (
+                <motion.div
+                initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+                animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
+                exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="flex-1 min-h-0 flex flex-col-reverse gap-1 p-2 overflow-y-auto"
+            >
+                <div ref={chatAnchorRef} />
+                {conversation?.messages?.length ? (
+                    <>
+                        {conversation.messages
+                        ?.map((message: any, idx: number) => {
+                        if (!idx) lastSelf = false;
+                        const oldLastSelf = lastSelf;
+                        lastSelf = message.sender_id === profile.data?.id;
+                        return {
+                            key: idx,
+                            message: message.message,
+                            self: message.sender_id === profile.data?.id,
+                            prevSelf: oldLastSelf,
+                            them: userName,
+                        };
+                        })
+                        ?.toReversed()
+                        ?.map((d: any) => (
+                            <Message
+                            key={d.key}
+                            message={d.message}
+                            self={d.self}
+                            prevSelf={d.prevSelf}
+                            them={d.them}
+                            />
+                        ))}
+                    </>
+                ) : (
+                <div className={cn("relative flex items-center justify-center h-full gap-4", isMobile ? "pt-60" : "pt-80")}>
+                    <MessageCircle className="h-14 w-14 opacity-50"/>
+                    <div className="flex flex-col text-start">
+                        <p className="font-bold text-lg mb-0">No Messages Yet</p>
+                        <p className="text-sm text-gray-500">Start the conversation!</p>
+                    </div>
+                </div>
+            )}
+            </motion.div>
+            )}
+        </>
     );
     };
 
@@ -874,8 +872,7 @@ export function ConversationPage({
             "rounded-none border-0 border-b border-gray-200 py-3 px-4 md:px-6 cursor-pointer",
             isPicked ? "bg-gray-100" : " hover:bg-gray-100"
         )}
-        onMouseDown={() => setConversationId(conversation.id)}
-        onTouchStart={() => setConversationId(conversation.id)}
+        onClick={() => setConversationId(conversation.id)}
         >
         <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-3 md:gap-4 min-w-0">
@@ -889,7 +886,7 @@ export function ConversationPage({
                 <span className={cn("text-xs text-gray-600 line-clamp-1",
                 isUnread ? "font-bold text-black" : ""
                 )}>
-                {conversation?.messages?.length !== 0 ? ((latestIsYou ? "You: " : surname + ": ") + (latestMessage ?? "")) :
+                {latestMessage ? ((latestIsYou ? "You: " : surname + ": ") + (latestMessage ?? "")) :
                 ("No message history")}
                 </span>
             </div>

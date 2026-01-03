@@ -12,6 +12,8 @@ import { LucideIcon } from "lucide-react";
  * @param destructive (optional) Descriptor of an action like "delete" that should be highlighted to emphasize its destructive nature.
  * @param highlighted (optional) Emphasize a button if it corresponds to a current state, such as an active filter.
  * @param highlightColor (optional) Specify a color for the highlighted button.
+ * @param bgColor (optional) Specify a background color for the button when it is hovered or pressed.
+ * @param fgColor (optional) Specify a foreground color for the button.
  */
 export type ActionItem = {
   id: string;
@@ -23,4 +25,6 @@ export type ActionItem = {
   destructive?: boolean;
   highlighted?: boolean;
   highlightColor?: string;
+  bgColor?: string;
+  fgColor?: string;
 };

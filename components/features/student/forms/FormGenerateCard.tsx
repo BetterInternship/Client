@@ -1,48 +1,33 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import { UserService } from "@/lib/api/services";
-import { FormMetadata } from "@betterinternship/core/forms";
+import { File, SquareArrowOutUpRight } from "lucide-react";
 
-export default function FormGenerateCard({
-  formName,
+export default function FormTemplateCard({
+  formLabel,
   onGenerate,
-  onViewTemplate,
 }: {
-  formName: string;
+  formLabel: string;
   onGenerate: () => void;
-  onViewTemplate?: () => void | Promise<void>;
 }) {
-  // Fetch form
-  const form = useQuery({
-    queryKey: ["forms", formName],
-    queryFn: () => UserService.getForm(formName),
-    enabled: !!formName,
-    staleTime: 60_000,
-  });
-
-  // Get interface to form
-  const formMetdata = form.data?.formMetadata
-    ? new FormMetadata(form.data.formMetadata)
-    : null;
-
   return (
-    <>
-      <Card className="sm:flex sm:justify-between items-center">
-        <div>{formMetdata?.getLabel() ?? ""}</div>
-        <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto">
-          <Button
-            onClick={() => void onViewTemplate?.()}
-            variant="outline"
-            className="w-full sm:w-auto sm:shrink-0"
-          >
-            View template
-          </Button>
-          <Button onClick={onGenerate} className="w-full sm:w-auto sm:shrink-0">
-            Generate
-          </Button>
+    <div className="border-b hover:bg-gray-100 duration-150 transition-all">
+      <Card className="flex flex-row justify-end items-center p-2 rounded-none border-none bg-transparent">
+        <div className="flex gap-0 w-full overflow-hidden">
+          <div className="px-3 py-2 text-gray-700 text-sm text-ellipsis text-nowrap line-clamp-1">
+            {formLabel}
+          </div>
         </div>
+
+        <Button
+          onClick={onGenerate}
+          variant="outline"
+          scheme="primary"
+          className="flex flex-row justify-between bg-primary/10 border-none "
+        >
+          Open
+          <SquareArrowOutUpRight />
+        </Button>
       </Card>
-    </>
+    </div>
   );
 }

@@ -50,7 +50,8 @@ export const CommandMenu = ({
                   : "text-gray-700 hover:bg-gray-300/50 active:bg-gray-400/75",
                 item.highlighted
                   ? item.highlightColor
-                  : ""
+                  : "",
+                item.fgColor,
               )}
             >
               {item.icon && <item.icon size={18} />}
@@ -74,7 +75,7 @@ export const CommandMenu = ({
       role="toolbar"
       onClick={(e) => e.stopPropagation()}
       className={cn(
-        "flex gap-4 px-6 py-2 justify-center items-stretch text-xs bg-white border border-gray-300 rounded-md transition",
+        "flex gap-4 px-6 py-2 justify-center items-stretch text-xs bg-white border border-gray-300 rounded-md transition bg-clip-padding bg-clip-border",
         className,
       )}
     >

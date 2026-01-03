@@ -31,9 +31,6 @@ import { useAuthContext } from "@/lib/ctx-auth";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { cn } from "@/lib/utils";
 import { getFullName } from "@/lib/profile";
-import { useQueryClient } from "@tanstack/react-query";
-import { useGlobalModal } from "@/components/providers/ModalProvider";
-import { IncompleteProfileContent } from "@/components/modals/IncompleteProfileModal";
 import {
   isProfileBaseComplete,
   isProfileResume,
@@ -44,6 +41,7 @@ import {
   JobFilters,
   JobFilter,
 } from "@/components/features/student/search/JobFilters";
+import useModalRegistry from "@/components/modals/modal-registry";
 
 /* =======================================================================================
    Small UI Primitives
@@ -52,7 +50,7 @@ const SearchInput = ({
   value,
   onChange,
   onEnter,
-  placeholder = "Search Internship Listings",
+  placeholder = "Search listings",
   className = "",
   moaOnly,
   onToggleMoa,
@@ -85,7 +83,7 @@ const SearchInput = ({
         placeholder={placeholder}
         className={cn(
           "w-full h-10 pl-10 pr-24",
-          "bg-transparent border-0 outline-none focus:ring-0 text-gray-900 text-sm",
+          "bg-white border-0 outline-none focus:ring-0 text-gray-900 text-sm",
           "placeholder:text-gray-500",
         )}
       />
@@ -142,8 +140,7 @@ function MobileDrawer({
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
-  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
-  const queryClient = useQueryClient();
+  const modalRegistry = useModalRegistry();
 
   const handleLogout = () => logout().then(() => router.push("/"));
 
@@ -154,20 +151,7 @@ function MobileDrawer({
       !isProfileResume(profile.data) ||
       !isProfileBaseComplete(profile.data)
     ) {
-      openGlobalModal(
-        "incomplete-profile",
-        <IncompleteProfileContent
-          onFinish={() => {
-            closeGlobalModal("incomplete-profile");
-          }}
-        />,
-        {
-          allowBackdropClick: false,
-          onClose: () => {
-            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-          },
-        },
-      );
+      modalRegistry.incompleteProfile.open();
     } else {
       router.push(`/${link}`);
     }
@@ -223,7 +207,7 @@ function MobileDrawer({
                 </div>
                 <div className="flex flex-col leading-tight">
                   <span className="font-medium">
-                    {getFullName(profile.data!)}
+                    {getFullName(profile.data)}
                   </span>
                   <span className="text-xs text-gray-500">
                     {profile.data?.email}
@@ -237,8 +221,8 @@ function MobileDrawer({
                   {isAuthenticated() && (
                     <li>
                       <Link href="/conversations" className="block w-full">
-                        <button className="w-full flex items-center justify-between rounded-md px-3 py-2">
-                          <span className="inline-flex items-center gap-2 text-sm">
+                        <button className="w-full flex items-center justify-between rounded-md py-2">
+                          <span className="inline-flex items-center text-sm">
                             <MessageCircleMore className="w-4 h-4" /> Chats
                           </span>
                           {conversations?.unreads?.length ? (
@@ -339,9 +323,7 @@ export const ProfileButton: React.FC = () => {
   const conversations = useConversations();
   const { isAuthenticated, logout } = useAuthContext();
   const router = useRouter();
-  const { open: openGlobalModal, close: closeGlobalModal } = useGlobalModal();
-  const queryClient = useQueryClient();
-
+  const modalRegistry = useModalRegistry();
   const handleLogout = () => logout().then(() => router.push("/"));
 
   const handleIncompleteProfileClick = (link: string) => {
@@ -351,18 +333,7 @@ export const ProfileButton: React.FC = () => {
       !isProfileResume(profile.data) ||
       !isProfileBaseComplete(profile.data)
     ) {
-      openGlobalModal(
-        "incomplete-profile",
-        <IncompleteProfileContent
-          onFinish={() => closeGlobalModal("incomplete-profile")}
-        />,
-        {
-          allowBackdropClick: false,
-          onClose: () => {
-            void queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-          },
-        },
-      );
+      modalRegistry.incompleteProfile.open();
     } else {
       router.push(`/${link}`);
     }
@@ -398,14 +369,14 @@ export const ProfileButton: React.FC = () => {
         display={
           <>
             <div className="overflow-hidden rounded-full flex items-center justify-center">
-              <MyUserPfp size="7" />
+              <MyUserPfp size="6" />
             </div>
-            {getFullName(profile.data!, false)}
+            {getFullName(profile.data, false)}
           </>
         }
         content={
-          <div className="px-4 py-3 border-b border-gray-200">
-            <p className="text-xs text-gray-500 text-ellipsis overflow-hidden">
+          <div className="px-9 py-3 border-b border-gray-200">
+            <p className="align-left text-xs text-gray-500 text-ellipsis overflow-hidden">
               {profile.data?.email}
             </p>
           </div>
@@ -521,7 +492,7 @@ export const Header: React.FC = () => {
       {/* Top Bar */}
       <div
         className={cn(
-          "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
+          "flex gap-2 justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
           isMobile ? "px-4 py-3" : "py-4 px-8",
         )}
         style={{ overflow: "visible", position: "relative", zIndex: 100 }}

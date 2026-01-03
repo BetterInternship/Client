@@ -9,7 +9,7 @@ import ContentLayout from "@/components/features/hire/content-layout";
 
 function ConversationsPage() {
   const searchParams = useSearchParams();
-  const userId = searchParams.get("userId");
+  const conversationId = searchParams.get("conversationId")
   const router = useRouter();
 
   return(
@@ -17,7 +17,9 @@ function ConversationsPage() {
       className="p-0"
       >
          <div className="w-full h-full">
-          <ConversationPage applicantId={userId || undefined} />
+          <ConversationPage 
+          chatId={conversationId || undefined}
+           />
         </div>
       </ContentLayout>
   )

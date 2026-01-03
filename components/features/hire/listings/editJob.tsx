@@ -193,7 +193,7 @@ const EditJobPage = ({
                   isMobile ? "pt-20" : "mt-20"
                 )}>
             <div className="max-w-5xl mx-auto flex justify-between items-center">
-            <h1 className={cn("text-gray-800", isMobile ? "text-lg" : "text-2xl")}>Edit Job: <span className="font-bold">{formData.title || "Untitled Job"}</span></h1>
+            <h1 className={cn("text-gray-800 w-full truncate", isMobile ? "text-lg" : "text-2xl")}>Edit Job: <span className="font-bold">{formData.title || "Untitled Job"}</span></h1>
             {!isMobile ? (
                 <div className="flex gap-3">
                     <Button 
@@ -253,7 +253,7 @@ const EditJobPage = ({
         <div>
             <div className={cn(
                 isMobile
-                    ? "p-0 mt-16 pb-16"
+                    ? "p-0 mt-18 pb-16"
                     : "p-6 mt-20"
             )}>
             <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200">

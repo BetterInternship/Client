@@ -1,3 +1,5 @@
+"use client";
+
 import { useAppContext } from "@/lib/ctx-app";
 import { useRef, useCallback, useEffect } from "react";
 
@@ -36,7 +38,7 @@ export const useMobile = () => {
         target: e.target,
       };
     },
-    [isMobile]
+    [isMobile],
   );
 
   const handleTouchEnd = useCallback(
@@ -61,7 +63,7 @@ export const useMobile = () => {
         end: touchEndRef.current.target,
       };
     },
-    [isMobile]
+    [isMobile],
   );
 
   useEffect(() => {

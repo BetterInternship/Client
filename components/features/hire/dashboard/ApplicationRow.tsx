@@ -2,7 +2,6 @@
 // Props in (application data), events out (onView, onNotes, etc.)
 // No business logic - just presentation and event emission
 import { ActionItem } from "@/components/ui/action-item";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useConversations } from "@/hooks/use-conversation";
@@ -10,17 +9,17 @@ import { useAppContext } from "@/lib/ctx-app";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { getFullName } from "@/lib/profile";
-import { cn } from "@/lib/utils";
 import { formatDateWithoutTime, formatTimestampDateWithoutTime } from "@/lib/utils/date-utils";
 import { statusMap } from "@/components/common/status-icon-map";
 import { motion } from "framer-motion";
 import {
+  Archive,
   Calendar,
   ContactRound,
   GraduationCap,
   MessageCircle,
   School,
-  Trash,
+  Trash2,
 } from "lucide-react";
 import { ActionButton } from "@/components/ui/action-button";
 import { FormCheckbox } from "@/components/EditForm";
@@ -33,6 +32,7 @@ interface ApplicationRowProps {
   onNotes: () => void;
   onSchedule: () => void;
   onStatusChange: (status: number) => void;
+  onArchiveButtonClick: (application: EmployerApplication) => void;
   onDeleteButtonClick: (application: EmployerApplication) => void;
   openChatModal: () => void;
   updateConversationId: (conversationId: string) => void;
@@ -60,6 +60,7 @@ export function ApplicationRow({
   setSelectedApplication,
   checkboxSelected = false,
   onToggleSelect,
+  onArchiveButtonClick,
   onDeleteButtonClick,
   statuses,
 }: ApplicationRowProps) {
@@ -97,7 +98,7 @@ export function ApplicationRow({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1 pb-2"
+            className="flex items-center gap-2 pb-2"
           >
             <FormCheckbox
               checked={checkboxSelected}
@@ -162,7 +163,7 @@ export function ApplicationRow({
         delay: staggerDelay, 
         ease: "easeOut", 
       }}
-      className="hover:bg-primary/25 odd:bg-white even:bg-gray-50 hover:cursor-pointer transition-colors"
+      className="group hover:bg-primary/25 odd:bg-white even:bg-gray-50 hover:cursor-pointer transition-colors"
       onClick={onView}
     >
       <td 
@@ -203,19 +204,6 @@ export function ApplicationRow({
       </td>
       <td>
         <div className="flex items-center gap-2 pr-2 flex-row justify-end">
-          <Badge
-            type="warning"
-            className={cn(
-              conversations.unreads.some((unread) =>
-                unread.subscribers.includes(application.user_id),
-              )
-                ? "block"
-                : "hidden",
-            )}
-          >
-            New Unreads
-          </Badge>
-
           <ActionButton
             icon={MessageCircle}
             onClick={(e) => {
@@ -224,16 +212,30 @@ export function ApplicationRow({
               setSelectedApplication(application);
               updateConversationId(application.user_id ?? "");
             }}
-          />
-          <ActionButton
-            icon={Trash}
-            onClick={(e) => {
-              e.stopPropagation();
-              onDeleteButtonClick(application);
-            }}
-            destructive={true}
-            enabled={application.status! !== 7}
-          />
+            notification={conversations.unreads.some((unread) =>
+                unread.subscribers.includes(application.user_id))}
+          >
+          </ActionButton>
+          {application.status !== 7 &&
+            <ActionButton
+              icon={Archive}
+              onClick={(e) => {
+                e.stopPropagation();
+                onArchiveButtonClick(application);
+              }}
+              enabled={application.status! !== 7}
+            />
+          }
+          {application.status === 7 &&
+            <ActionButton
+              icon={Trash2}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeleteButtonClick(application);
+              }}
+              enabled={application.status! === 7}
+            />
+          }
         </div>
       </td>
     </motion.tr>
