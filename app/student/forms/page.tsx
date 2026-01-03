@@ -8,6 +8,10 @@ import { useMyForms } from "./myforms.ctx";
 import { FormGenerateView } from "../../../components/forms/FormGenerateView";
 import { FormHistoryView } from "../../../components/forms/FormHistoryView";
 import { useFormsLayout } from "./layout";
+import {
+  FORM_TEMPLATES_STALE_TIME,
+  FORM_TEMPLATES_GC_TIME,
+} from "@/lib/consts/cache";
 
 /**
  * The forms page component - shows either history or generate based on form count
@@ -33,12 +37,11 @@ export default function FormsPage() {
   // The queryKey includes the version, so React Query treats it as a new query when version changes
   // When re-enabling the smart update check, add updateInfo?.version back to queryKey
   // and change enabled to: enabled: !!updateInfo
-  // TODO: READD STALE
   const { data: formTemplates, isLoading } = useQuery({
     queryKey: ["my-form-templates"],
     queryFn: () => FormService.getMyFormTemplates(),
-    staleTime: 0, // Keep data fresh for 5 minutes
-    gcTime: 0,
+    staleTime: FORM_TEMPLATES_STALE_TIME,
+    gcTime: FORM_TEMPLATES_GC_TIME,
     refetchOnWindowFocus: true, // Refetch when user switches back to tab
     // enabled: !!updateInfo, // Only fetch after we have update info
   });

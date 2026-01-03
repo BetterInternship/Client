@@ -30,6 +30,10 @@ import { cn } from "@/lib/utils";
 import { FormService } from "@/lib/api/services";
 import { PublicUser } from "@/lib/db/db.types";
 import { useQuery } from "@tanstack/react-query";
+import {
+  FORM_RENDERER_STALE_TIME,
+  FORM_RENDERER_GC_TIME,
+} from "@/lib/consts/cache";
 
 // ? Current schema version, update if needed; tells us if out of date
 export const SCHEMA_VERSION = 1;
@@ -102,14 +106,13 @@ export const FormRendererContextProvider = ({
   );
   const [selectedPreviewId, setSelectedPreviewId] = useState<string>("");
 
-  // TODO: READD STALE
   // Cache forms
   const { data: form, isLoading } = useQuery({
     queryKey: useMemo(() => ["form-template", formName], [formName]),
     queryFn: useCallback(() => FormService.getForm(formName), [formName]),
     enabled: !!formName,
-    staleTime: 0,
-    gcTime: 0,
+    staleTime: FORM_RENDERER_STALE_TIME,
+    gcTime: FORM_RENDERER_GC_TIME,
     refetchOnWindowFocus: true,
     refetchOnMount: "stale",
     refetchOnReconnect: true,
