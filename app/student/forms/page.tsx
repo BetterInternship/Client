@@ -46,8 +46,6 @@ export default function FormsPage() {
     // enabled: !!updateInfo, // Only fetch after we have update info
   });
 
-  console.log("Fetched form templates:", formTemplates);
-
   if (!profile.data?.department && !profile.isPending) router.push("/profile");
 
   return (

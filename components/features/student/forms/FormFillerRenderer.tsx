@@ -65,25 +65,36 @@ export function FormFillerRenderer({
 
   // Initialize form values whenever form changes
   useEffect(() => {
-    const defaultValues: Record<string, any> = {};
-    form.fields.forEach((field) => {
-      if (field.prefiller && typeof field.prefiller === "function") {
-        try {
-          const defaultValue = field.prefiller();
-          if (defaultValue) {
-            defaultValues[field.field] = defaultValue;
-          }
-        } catch (error) {
-          console.error(`Error calling prefiller for ${field.field}:`, error);
-        }
-      }
-    });
-
-    if (Object.keys(defaultValues).length > 0) {
-      formFiller.initializeValues(defaultValues);
-    }
-
     formFiller.resetErrors();
+
+    const autosaveValues = finalValues;
+    const hasAutosave = Object.values(autosaveValues).some(
+      (v) => v && String(v).trim().length > 0,
+    );
+
+    if (!hasAutosave) {
+      // No autosave - load autofill
+      const defaultValues: Record<string, any> = {};
+      form.fields.forEach((field) => {
+        if (field.prefiller && typeof field.prefiller === "function") {
+          try {
+            const defaultValue = field.prefiller({
+              user: profile.data,
+            });
+            if (defaultValue) {
+              defaultValues[field.field] = defaultValue;
+            }
+          } catch (error) {
+            console.error(`Error calling prefiller for ${field.field}:`, error);
+          }
+        }
+      });
+
+      if (Object.keys(defaultValues).length > 0) {
+        formFiller.initializeValues(defaultValues);
+      }
+    }
+    // If autosave exists, it's already loaded via finalValues, so do nothing
   }, [form.formName]);
 
   // Notify parent of values change
