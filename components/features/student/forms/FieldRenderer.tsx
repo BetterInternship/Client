@@ -23,6 +23,7 @@ import {
   TreeOption,
 } from "@/components/ui/autocomplete";
 import { ClientField } from "@betterinternship/core/forms";
+import { Eye } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export const FieldRenderer = <T extends any[]>({
@@ -161,13 +162,26 @@ export const FieldRenderer = <T extends any[]>({
 };
 
 /**
- * Badge component for phantom fields
+ * Subtle icon for phantom fields (not visible in PDF)
  */
 const PhantomFieldBadge = () => {
+  const [showTooltip, setShowTooltip] = useState(false);
+
   return (
-    <span className="rounded-[0.33em] bg-amber-100 px-1.5 py-0.5 text-xs font-medium whitespace-nowrap text-amber-500">
-      Not in PDF
-    </span>
+    <div className="relative flex">
+      <Eye
+        size={14}
+        className="text-gray-300 hover:text-gray-400 cursor-help transition-colors"
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+      />
+      {showTooltip && (
+        <div className="absolute top-1/2 transform -translate-y-1/2 right-full mr-2 px-2 py-1 bg-gray-700 text-white text-xs rounded whitespace-nowrap z-10 pointer-events-none">
+          Not visible in PDF
+          <div className="absolute left-full top-1/2 transform -translate-y-1/2 border-4 border-transparent border-l-gray-700"></div>
+        </div>
+      )}
+    </div>
   );
 };
 
