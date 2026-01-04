@@ -446,7 +446,7 @@ function StepBasicIdentity({
         departments.map((d) => ({ id: d.id, name: d.name })),
       );
       if (value.department) {
-        value.department = undefined;
+        onChange({ ...value, department: undefined });
       }
     }
   }, [
@@ -455,9 +455,10 @@ function StepBasicIdentity({
     departments,
     get_departments_by_college,
     to_department_name,
+    onChange,
   ]);
 
-  // for realtime updating the department based on the university
+  // for realtime updating the college based on the university
   useEffect(() => {
     const universityId = value.university;
 
@@ -473,8 +474,7 @@ function StepBasicIdentity({
 
       // If the currently selected college is not in the new mapped list, clear it (and department)
       if (value.college && !mapped.some((c) => c.id === value.college)) {
-        value.college = undefined;
-        value.department = undefined;
+        onChange({ ...value, college: undefined, department: undefined });
       }
     } else {
       // no university selected -> show all colleges and clear college/department
@@ -488,8 +488,9 @@ function StepBasicIdentity({
       );
 
       // Clear selected college and department because no university is chosen
-      if (value.college) value.college = undefined;
-      if (value.department) value.department = undefined;
+      if (value.college || value.department) {
+        onChange({ ...value, college: undefined, department: undefined });
+      }
     }
   }, [
     value.university,
@@ -498,7 +499,7 @@ function StepBasicIdentity({
     colleges,
     get_colleges_by_university,
     to_college_name,
-    to_university_name,
+    onChange,
   ]);
 
   return (
