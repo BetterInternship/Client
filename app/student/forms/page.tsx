@@ -12,7 +12,6 @@ import {
   FORM_TEMPLATES_STALE_TIME,
   FORM_TEMPLATES_GC_TIME,
 } from "@/lib/consts/cache";
-import { Card } from "@/components/ui/card";
 
 /**
  * The forms page component - shows either history or generate based on form count
@@ -48,36 +47,6 @@ export default function FormsPage() {
   });
 
   if (!profile.data?.department && !profile.isPending) router.push("/profile");
-
-  return (
-    <div className="w-full mt-20">
-      <Card className="mx-auto max-w-prose">
-        <div className="text-4xl font-bold tracking-tight text-gray-700">
-          Woah slow down!
-        </div>
-        <div className="max-w-prose text-lg text-gray-700 mt-4">
-          We see you and a few others have stumbled on our form generation page,
-          and we're glad you're excited! However, we were just in the midst of
-          pushing a few things into production earlier this week. We promise
-          this will be out before the week ends, so sit tight!
-          <br />
-          <br />
-          <br />
-          <div className="opacity-70 text-sm">
-            For updates and concerns, message us here:
-            <br />
-            <a
-              className="hover:cursor-pointer"
-              href="https://www.facebook.com/shi.sherwin/"
-              target="__blank"
-            >
-              https://www.facebook.com/shi.sherwin/
-            </a>
-          </div>
-        </div>
-      </Card>
-    </div>
-  );
 
   return (
     <>
