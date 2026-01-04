@@ -90,7 +90,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   const [showComplete, setShowComplete] = useState(false);
 
   // profile being edited
-  const [profile, setProfile] = useState<ProfileDraft>({
+  const [profile, setProfile] = useState<ProfileDraft>(() => ({
     firstName: existingProfile.data?.first_name ?? "",
     middleName: existingProfile.data?.middle_name ?? "",
     lastName: existingProfile.data?.last_name ?? "",
@@ -99,7 +99,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     college: existingProfile.data?.college ?? "",
     department: existingProfile.data?.department ?? "",
     degree: existingProfile.data?.degree ?? "",
-  });
+  }));
 
   const [autoApply, setAutoApply] = useState<boolean | null>(true);
 
@@ -120,7 +120,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     setParseError(null);
     setParsedReady(false);
     setIsParsing(true);
-    upload(file);
+    void upload(file);
   }, [file]);
 
   // hydrate once per promise
