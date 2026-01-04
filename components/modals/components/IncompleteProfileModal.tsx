@@ -23,6 +23,7 @@ import { isValidPHNumber } from "@/lib/utils";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { Job } from "@/lib/db/db.types";
 import { isValidRequiredUserName } from "@/lib/utils/name-utils";
+import { DropdownGroup } from "@/components/ui/dropdown";
 
 /* ============================== Modal shell ============================== */
 
@@ -241,6 +242,8 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   const onNext = async () => {
     const current = steps[step];
 
+    console.log(current);
+
     if (!current) return;
 
     if (current.id === "resume") {
@@ -248,7 +251,6 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
       return;
     }
 
-    // {
     if (current.id === "base") {
       setIsUpdating(true);
       const fullName = [
@@ -280,12 +282,14 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
             "student-phone-number": profile.phone ?? "",
           },
         },
-      }).then(() => {
-        setIsUpdating(false);
-        const isLast = step + 1 >= steps.length;
-        if (isLast) setShowComplete(true);
-        else setStep(step + 1);
-      });
+      })
+        .then(() => {
+          setIsUpdating(false);
+          const isLast = step + 1 >= steps.length;
+          if (isLast) setShowComplete(true);
+          else setStep(step + 1);
+        })
+        .catch((e) => console.log(e));
       return;
     }
 
@@ -293,7 +297,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
       if (autoApply === null) return;
 
       setIsUpdating(true);
-      UserService.updateMyProfile({
+      await UserService.updateMyProfile({
         acknowledged_auto_apply: true,
         apply_for_me: autoApply,
       }).then(() => {
@@ -311,12 +315,14 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   }
 
   return (
-    <Stepper
-      step={step}
-      steps={steps}
-      onNext={() => void onNext()}
-      onBack={() => setStep(Math.max(0, step - 1))}
-    />
+    <DropdownGroup>
+      <Stepper
+        step={step}
+        steps={steps}
+        onNext={() => void onNext()}
+        onBack={() => setStep(Math.max(0, step - 1))}
+      />
+    </DropdownGroup>
   );
 }
 
