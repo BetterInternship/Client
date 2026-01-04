@@ -170,6 +170,7 @@ export const FormService = {
       documentId?: string;
       documentUrl?: string;
       success?: boolean;
+      message?: string;
     }>(APIRouteBuilder("users").r("me/initiate-form").build(), data);
   },
 
@@ -184,6 +185,7 @@ export const FormService = {
       documentId?: string;
       documentUrl?: string;
       success?: boolean;
+      message?: string;
     }>(APIRouteBuilder("users").r("me/fillout-form").build(), data);
   },
 

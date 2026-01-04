@@ -11,9 +11,7 @@ import { FormService } from "@/lib/api/services";
 import { TextLoader } from "@/components/ui/loader";
 import { FormValues } from "@betterinternship/core/forms";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { getClientAudit } from "@/lib/audit";
-import { useSignContext } from "@/components/providers/sign.ctx";
 
 export function FormActionButtons() {
   const form = useFormRendererContext();
@@ -23,8 +21,6 @@ export function FormActionButtons() {
   const modalRegistry = useModalRegistry();
   const updateAutofill = useMyAutofillUpdate();
   const queryClient = useQueryClient();
-  const signContext = useSignContext();
-  const router = useRouter();
 
   const noEsign = !form.formMetadata.mayInvolveEsign();
   const initiateFormLabel = "Fill out & initiate e-sign";
@@ -84,12 +80,19 @@ export function FormActionButtons() {
 
           // Just e-sign and fill-out right away
         } else {
-          await FormService.initiateForm({
+          const response = await FormService.initiateForm({
             formName: form.formName,
             formVersion: form.formVersion,
             values: finalValues,
             audit: getClientAudit(),
           });
+
+          if (!response.success) {
+            setBusy(false);
+            alert("Something went wrong, please try again.");
+            console.error(response.message);
+            return;
+          }
 
           await queryClient.invalidateQueries({ queryKey: ["my_forms"] });
           modalRegistry.formSubmissionSuccess.open();
@@ -97,11 +100,18 @@ export function FormActionButtons() {
 
         // Just fill out form
       } else {
-        await FormService.filloutForm({
+        const response = await FormService.filloutForm({
           formName: form.formName,
           formVersion: form.formVersion,
           values: finalValues,
         });
+
+        if (!response.success) {
+          setBusy(false);
+          alert("Something went wrong, please try again.");
+          console.error(response.message);
+          return;
+        }
 
         await queryClient.invalidateQueries({ queryKey: ["my_forms"] });
         modalRegistry.formSubmissionSuccess.open();

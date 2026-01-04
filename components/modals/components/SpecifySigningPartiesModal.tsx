@@ -28,11 +28,12 @@ export const SpecifySigningPartiesModal = ({
   formFiller: IFormFiller;
   autofillValues?: FormValues;
   signingPartyBlocks: ClientBlock<[PublicUser]>[];
-  handleSubmit: (signingPartyValues: FormValues) => Promise<any>;
+  handleSubmit: (
+    signingPartyValues: FormValues,
+  ) => Promise<{ success?: boolean; message?: string }>;
   close: () => void;
 }) => {
   const queryClient = useQueryClient();
-  const router = useRouter();
   const modalRegistry = useModalRegistry();
   const [errors, setErrors] = useState<FormErrors>({});
   const [signingPartyValues, setSigningPartyValues] = useState<FormValues>({});
@@ -64,8 +65,19 @@ export const SpecifySigningPartiesModal = ({
       return;
     }
 
-    // Submit and close modal if okay
-    await handleSubmit(formFiller.getFinalValues(additionalValues));
+    // Submit and close modal if okay, and alert otherwise
+    const response = await handleSubmit(
+      formFiller.getFinalValues(additionalValues),
+    );
+
+    if (!response.success) {
+      setBusy(false);
+      alert("Something went wrong, please try again.");
+      console.error(response.message);
+      return;
+    }
+
+    // Invalidate queries
     await queryClient.invalidateQueries({ queryKey: ["my_forms"] });
     setSubmitted(true);
     setBusy(false);
