@@ -113,7 +113,6 @@ export function FormFillerRenderer({
   const formatValues = (values: Record<string, any>) => {
     const formatted: Record<string, string> = {};
 
-    console.log("formatValues called with: ", values);
     Object.entries(values).forEach(([key, value]) => {
       // unix timestamp to string
       const numValue = Number(value);
@@ -125,7 +124,6 @@ export function FormFillerRenderer({
       
     });
     
-    console.log("formatValues returning: ", formatted);
     return formatted;
   };
 
