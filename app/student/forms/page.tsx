@@ -60,6 +60,20 @@ export default function FormsPage() {
           and we're glad you're excited! However, we were just in the midst of
           pushing a few things into production earlier this week. We promise
           this will be out before the week ends, so sit tight!
+          <br />
+          <br />
+          <br />
+          <div className="opacity-70 text-sm">
+            For updates and concerns, message us here:
+            <br />
+            <a
+              className="hover:cursor-pointer"
+              href="https://www.facebook.com/shi.sherwin/"
+              target="__blank"
+            >
+              https://www.facebook.com/shi.sherwin/
+            </a>
+          </div>
         </div>
       </Card>
     </div>
