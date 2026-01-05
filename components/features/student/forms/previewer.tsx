@@ -628,14 +628,8 @@ const PdfPageWithFields = ({
             fontSize = 25;
             lineHeight = fontSize * 1.0;
           } else if (isFilled) {
-            // Use metadata size if provided, otherwise fit to box
-            if (block.field_schema?.size && !shouldWrap) {
-              // Fixed size, no wrapping
-              fontSize = block.field_schema.size;
-              lineHeight = fontSize * 1.0;
-              displayLines = [valueStr];
-            } else if (shouldWrap) {
-              // Use exact PDF engine algorithm for text (no padding)
+            if (shouldWrap) {
+              // Use exact PDF engine algorithm for text with wrapping (no padding)
               const fitted = fitWrapped({
                 text: valueStr,
                 maxWidth: widthPixels,
@@ -648,7 +642,7 @@ const PdfPageWithFields = ({
               lineHeight = fitted.lineHeight;
               displayLines = fitted.lines || [];
             } else {
-              // No wrapping, use metadata size
+              // No wrapping - use original size and let text grow
               fontSize = block.field_schema?.size ?? 11;
               lineHeight = fontSize * 1.0;
               displayLines = [valueStr];
@@ -671,7 +665,7 @@ const PdfPageWithFields = ({
                 top: `${displayPos.displayY}px`,
                 width: `${Math.max(widthPixels, 10)}px`,
                 height: `${Math.max(heightPixels, 10)}px`,
-                overflow: "hidden",
+                overflow: shouldWrap ? "hidden" : "visible",
                 display: "flex",
                 alignItems:
                   align_v === "middle"
