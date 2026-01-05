@@ -574,7 +574,6 @@ const PdfPageWithFields = ({
       {/* Field boxes overlay */}
       <div className="absolute inset-0" key={forceRender}>
         {blocks.map((block) => {
-          // blocks are ServerFields with x, y, w, h, page, field properties
           const x = block.x || 0;
           const y = block.y || 0;
           const w = block.w || 0;
@@ -585,8 +584,6 @@ const PdfPageWithFields = ({
           if (!x || !y || !w || !h) {
             return null;
           }
-
-          const schema = { x, y, w, h, field: fieldName, label };
 
           const displayPos = pdfToDisplay(x, y);
           if (!displayPos) {
@@ -611,6 +608,11 @@ const PdfPageWithFields = ({
               : "";
           const isFilled = valueStr.trim().length > 0;
 
+          // Get alignment and wrapping from field schema
+          const align_h = block.align_h ?? "left";
+          const align_v = block.align_v ?? "top";
+          const shouldWrap = block.wrap ?? true;
+
           // Calculate optimal font size using PDF engine algorithm
           const fieldType =
             block.field_schema?.type ||
@@ -626,20 +628,33 @@ const PdfPageWithFields = ({
             fontSize = 25;
             lineHeight = fontSize * 1.0;
           } else if (isFilled) {
-            // Use exact PDF engine algorithm for text (no padding)
-            const fitted = fitWrapped({
-              text: valueStr,
-              maxWidth: widthPixels,
-              maxHeight: heightPixels,
-              startSize: 11,
-              lineHeightMult: 1.0,
-              zoom: scale,
-            });
-            fontSize = fitted.fontSize;
-            lineHeight = fitted.lineHeight;
-            displayLines = fitted.lines || [];
+            // Use metadata size if provided, otherwise fit to box
+            if (block.field_schema?.size && !shouldWrap) {
+              // Fixed size, no wrapping
+              fontSize = block.field_schema.size;
+              lineHeight = fontSize * 1.0;
+              displayLines = [valueStr];
+            } else if (shouldWrap) {
+              // Use exact PDF engine algorithm for text (no padding)
+              const fitted = fitWrapped({
+                text: valueStr,
+                maxWidth: widthPixels,
+                maxHeight: heightPixels,
+                startSize: block.field_schema?.size ?? 11,
+                lineHeightMult: 1.0,
+                zoom: scale,
+              });
+              fontSize = fitted.fontSize;
+              lineHeight = fitted.lineHeight;
+              displayLines = fitted.lines || [];
+            } else {
+              // No wrapping, use metadata size
+              fontSize = block.field_schema?.size ?? 11;
+              lineHeight = fontSize * 1.0;
+              displayLines = [valueStr];
+            }
           } else {
-            fontSize = 11;
+            fontSize = block.field_schema?.size ?? 11;
             lineHeight = fontSize * 1.0;
           }
 
@@ -650,7 +665,7 @@ const PdfPageWithFields = ({
             <div
               key={fieldName}
               onClick={() => onFieldClick?.(fieldName)}
-              className={`absolute cursor-pointer transition-all text-black ${isSelected ? "bg-green-300" : "bg-blue-200"} `}
+              className={`absolute cursor-pointer text-black transition-all ${isSelected ? "bg-green-300" : "bg-blue-200"} `}
               style={{
                 left: `${displayPos.displayX}px`,
                 top: `${displayPos.displayY}px`,
@@ -658,8 +673,18 @@ const PdfPageWithFields = ({
                 height: `${Math.max(heightPixels, 10)}px`,
                 overflow: "hidden",
                 display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                alignItems:
+                  align_v === "middle"
+                    ? "center"
+                    : align_v === "bottom"
+                      ? "flex-end"
+                      : "flex-start",
+                justifyContent:
+                  align_h === "center"
+                    ? "center"
+                    : align_h === "right"
+                      ? "flex-end"
+                      : "flex-start",
               }}
               title={`${label}: ${valueStr}`}
             >
@@ -672,16 +697,15 @@ const PdfPageWithFields = ({
                     fontSize: `${fontSize}px`,
                     lineHeight: `${lineHeight}px`,
                     overflow: "visible",
-                    whiteSpace: "pre-wrap",
-                    wordWrap: "break-word",
+                    whiteSpace: shouldWrap ? "pre-wrap" : "nowrap",
+                    wordWrap: shouldWrap ? "break-word" : "normal",
                     width: "100%",
                     padding: "0px",
                     boxSizing: "border-box",
                     display: "flex",
-                    alignItems:
-                      fieldType === "signature" ? "flex-end" : "center",
-                    justifyContent: "center",
-                    textAlign: "center",
+                    alignItems: "inherit",
+                    justifyContent: "inherit",
+                    textAlign: align_h === "center" ? "center" : align_h,
                     fontFamily:
                       fieldType === "signature"
                         ? "Italianno, cursive"
