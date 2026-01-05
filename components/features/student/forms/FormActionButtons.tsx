@@ -12,6 +12,7 @@ import { TextLoader } from "@/components/ui/loader";
 import { FormValues } from "@betterinternship/core/forms";
 import { useQueryClient } from "@tanstack/react-query";
 import { getClientAudit } from "@/lib/audit";
+import { useSignContext } from "@/components/providers/sign.ctx";
 
 export function FormActionButtons() {
   const form = useFormRendererContext();
@@ -20,6 +21,7 @@ export function FormActionButtons() {
   const profile = useProfileData();
   const modalRegistry = useModalRegistry();
   const updateAutofill = useMyAutofillUpdate();
+  const signContext = useSignContext();
   const queryClient = useQueryClient();
 
   const noEsign = !form.formMetadata.mayInvolveEsign();
@@ -131,9 +133,7 @@ export function FormActionButtons() {
         onClick={onWithoutEsignClick}
         variant={noEsign ? "default" : "outline"}
         className="w-full sm:w-auto text-xs"
-        // ! fix this, make sure signature is required and filled in + checked
-        // disabled={busy || !signContext.hasAgreed}
-        disabled={busy}
+        disabled={busy || !signContext.hasAgreed}
       >
         <TextLoader loading={busy}>{filloutFormLabel}</TextLoader>
       </Button>
@@ -142,9 +142,7 @@ export function FormActionButtons() {
         <Button
           onClick={onWithEsignClick}
           className="w-full sm:w-auto text-xs"
-          // ! fix this, make sure signature is required and filled in + checked
-          // disabled={busy || !signContext.hasAgreed}
-          disabled={busy}
+          disabled={busy || !signContext.hasAgreed}
         >
           <TextLoader loading={busy}>{initiateFormLabel}</TextLoader>
         </Button>
