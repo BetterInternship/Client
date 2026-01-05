@@ -33,19 +33,14 @@ if (typeof window !== "undefined") {
 }
 
 // Text wrapping and fitting utilities (matches PDF engine exactly)
-function measureTextWidth(
-  text: string,
-  fontSize: number,
-  zoom: number = 1,
-): number {
+
+// Measure text width using Canvas (used by wrapText)
+function measureTextWidth(text: string, fontSize: number): number {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   if (!ctx) return 0;
   ctx.font = `${fontSize}px Roboto`;
-  const width = ctx.measureText(text).width;
-  // Canvas measures Roboto wider than pdf-lib's font.widthOfTextAtSize()
-  // Fixed correction factor calibrated at 110% zoom
-  return width * 1.15;
+  return ctx.measureText(text).width;
 }
 
 // Get font metrics (approximated for browser, matching PDF engine approach)
@@ -211,6 +206,65 @@ function fitWrapped({
     zoom,
   });
   return { fontSize: bestSize, lineHeight: bestLineHeight, ...laid };
+}
+
+// For non-wrapping fields: find the largest font size that fits text on ONE line
+function fitNoWrap({
+  text,
+  maxWidth,
+  maxHeight,
+  startSize,
+}: {
+  text: string;
+  maxWidth: number;
+  maxHeight: number;
+  startSize: number;
+}) {
+  const line = String(text ?? "").replace(/\r?\n/g, " ");
+
+  // TWEAK THIS VALUE: Higher = more aggressive shrinking (more safety margin)
+  // Try: 2 (minimal), 4 (conservative), 8 (moderate), 12 (aggressive)
+  const SAFETY_MARGIN = 0;
+
+  const fits = (size: number): boolean => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return false;
+    ctx.font = `${size}px Roboto`;
+    // Measure text width with a small correction factor for safety
+    // TWEAK THIS: 1.0 (most lenient), 1.05, 1.1, 1.15 (most conservative)
+    const w = ctx.measureText(line).width * 0.68;
+    const { height } = getFontMetricsAtSize(size);
+    return w <= maxWidth - SAFETY_MARGIN && height <= maxHeight - SAFETY_MARGIN;
+  };
+
+  // If startSize already fits, return it
+  if (fits(startSize)) {
+    const { ascent, descent, height } = getFontMetricsAtSize(startSize);
+    return { fontSize: startSize, line, ascent, descent, height };
+  }
+
+  // Binary search down to find a size that fits
+  let lo = startSize;
+  while (!fits(lo)) {
+    lo /= 2;
+    if (lo < 0.1) break;
+  }
+
+  // Binary search up to find the largest size that fits
+  let hi = startSize;
+  for (let i = 0; i < 22; i++) {
+    const mid = (lo + hi) / 2;
+    if (fits(mid)) {
+      lo = mid;
+    } else {
+      hi = mid;
+    }
+  }
+
+  const bestSize = lo;
+  const { ascent, descent, height } = getFontMetricsAtSize(bestSize);
+  return { fontSize: bestSize, line, ascent, descent, height };
 }
 
 interface FormPreviewPdfDisplayProps {
@@ -542,18 +596,6 @@ const PdfPageWithFields = ({
     };
   };
 
-  // Get the actual zoom-aware scale factor for box sizing
-  const getZoomAwareScale = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return scale;
-
-    const rect = canvas.getBoundingClientRect();
-    // Browser zoom factor: rendered size vs actual canvas size
-    const browserZoom = rect.width > 0 ? rect.width / canvas.width : 1;
-    // Combine PDF scale (from zoom buttons) with browser zoom
-    return Math.max(browserZoom, 0.1); // Prevent division by zero
-  };
-
   return (
     <div
       ref={containerRef}
@@ -623,11 +665,7 @@ const PdfPageWithFields = ({
           let lineHeight: number;
           let displayLines: string[] = [];
 
-          if (fieldType === "signature") {
-            // Signatures are not wrapped
-            fontSize = 25;
-            lineHeight = fontSize * 1.0;
-          } else if (isFilled) {
+          if (isFilled) {
             if (shouldWrap) {
               // Use exact PDF engine algorithm for text with wrapping (no padding)
               const fitted = fitWrapped({
@@ -642,10 +680,18 @@ const PdfPageWithFields = ({
               lineHeight = fitted.lineHeight;
               displayLines = fitted.lines || [];
             } else {
-              // No wrapping - use original size and let text grow
-              fontSize = block.field_schema?.size ?? 11;
+              // No wrapping - find largest font size that fits on ONE line
+              const defaultSize = fieldType === "signature" ? 25 : 11;
+              const fitted = fitNoWrap({
+                text: valueStr,
+                maxWidth: widthPixels,
+                maxHeight: heightPixels,
+                startSize: block.field_schema?.size ?? defaultSize,
+              });
+
+              fontSize = fitted.fontSize;
               lineHeight = fontSize * 1.0;
-              displayLines = [valueStr];
+              displayLines = [fitted.line];
             }
           } else {
             fontSize = block.field_schema?.size ?? 11;
@@ -665,7 +711,7 @@ const PdfPageWithFields = ({
                 top: `${displayPos.displayY}px`,
                 width: `${Math.max(widthPixels, 10)}px`,
                 height: `${Math.max(heightPixels, 10)}px`,
-                overflow: shouldWrap ? "hidden" : "visible",
+                overflow: "hidden",
                 display: "flex",
                 alignItems:
                   align_v === "middle"
@@ -695,6 +741,7 @@ const PdfPageWithFields = ({
                     wordWrap: shouldWrap ? "break-word" : "normal",
                     width: "100%",
                     padding: "0px",
+                    margin: "0px",
                     boxSizing: "border-box",
                     display: "flex",
                     alignItems: "inherit",
