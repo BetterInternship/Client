@@ -14,6 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getClientAudit } from "@/lib/audit";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
+import { useSignContext } from "@/components/providers/sign.ctx";
 
 export function FormActionButtons() {
   const form = useFormRendererContext();
@@ -22,6 +23,7 @@ export function FormActionButtons() {
   const profile = useProfileData();
   const modalRegistry = useModalRegistry();
   const updateAutofill = useMyAutofillUpdate();
+  const signContext = useSignContext();
   const queryClient = useQueryClient();
 
   const noEsign = !form.formMetadata.mayInvolveEsign();
@@ -136,10 +138,8 @@ export function FormActionButtons() {
       <Button
         onClick={onWithoutEsignClick}
         variant={noEsign ? "default" : "outline"}
-        className="flex-1 sm:flex-none text-sm h-10 sm:h-fit"
-        // ! fix this, make sure signature is required and filled in + checked
-        // disabled={busy || !signContext.hasAgreed}
-        disabled={busy}
+        className="w-full sm:w-auto text-xs"
+        disabled={busy || !signContext.hasAgreed}
       >
         <TextLoader loading={busy}>
           <span className="sm:hidden">{noEsign ? "Fill out" : "Manual"}</span>
@@ -150,10 +150,8 @@ export function FormActionButtons() {
       {!noEsign && (
         <Button
           onClick={onWithEsignClick}
-          className="flex-1 sm:flex-none text-sm h-10 sm:h-fit"
-          // ! fix this, make sure signature is required and filled in + checked
-          // disabled={busy || !signContext.hasAgreed}
-          disabled={busy}
+          className="w-full sm:w-auto text-xs"
+          disabled={busy || !signContext.hasAgreed}
         >
           <TextLoader loading={busy}>
             <span className="sm:hidden">E-Sign</span>
