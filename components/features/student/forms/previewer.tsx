@@ -34,10 +34,33 @@ if (typeof window !== "undefined") {
 
 // Text wrapping and fitting utilities (matches PDF engine exactly)
 
+// Shared canvas for text measurements (optimization to avoid creating new canvases)
+let sharedCanvas: HTMLCanvasElement | null = null;
+let sharedCtx: CanvasRenderingContext2D | null = null;
+
+// Cache for fitNoWrap results to avoid recalculating (optimization for signatures/repeated fields)
+const fitNoWrapCache = new Map<
+  string,
+  {
+    fontSize: number;
+    line: string;
+    ascent: number;
+    descent: number;
+    height: number;
+  }
+>();
+
+function getSharedContext(): CanvasRenderingContext2D | null {
+  if (!sharedCanvas) {
+    sharedCanvas = document.createElement("canvas");
+    sharedCtx = sharedCanvas.getContext("2d");
+  }
+  return sharedCtx;
+}
+
 // Measure text width using Canvas (used by wrapText)
 function measureTextWidth(text: string, fontSize: number): number {
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
+  const ctx = getSharedContext();
   if (!ctx) return 0;
   ctx.font = `${fontSize}px Roboto`;
   return ctx.measureText(text).width;
@@ -222,13 +245,20 @@ function fitNoWrap({
 }) {
   const line = String(text ?? "").replace(/\r?\n/g, " ");
 
+  // Create cache key from inputs - cache results to avoid recalculating
+  const cacheKey = `${line}|${maxWidth}|${maxHeight}|${startSize}`;
+  if (fitNoWrapCache.has(cacheKey)) {
+    return fitNoWrapCache.get(cacheKey)!;
+  }
+
   // TWEAK THIS VALUE: Higher = more aggressive shrinking (more safety margin)
   // Try: 2 (minimal), 4 (conservative), 8 (moderate), 12 (aggressive)
   const SAFETY_MARGIN = 0;
 
+  // Use shared canvas context (optimization to avoid creating new canvases)
+  const ctx = getSharedContext();
+
   const fits = (size: number): boolean => {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
     if (!ctx) return false;
     ctx.font = `${size}px Roboto`;
     // Measure text width with a small correction factor for safety
@@ -241,7 +271,9 @@ function fitNoWrap({
   // If startSize already fits, return it
   if (fits(startSize)) {
     const { ascent, descent, height } = getFontMetricsAtSize(startSize);
-    return { fontSize: startSize, line, ascent, descent, height };
+    const result = { fontSize: startSize, line, ascent, descent, height };
+    fitNoWrapCache.set(cacheKey, result);
+    return result;
   }
 
   // Binary search down to find a size that fits
@@ -264,7 +296,12 @@ function fitNoWrap({
 
   const bestSize = lo;
   const { ascent, descent, height } = getFontMetricsAtSize(bestSize);
-  return { fontSize: bestSize, line, ascent, descent, height };
+  const result = { fontSize: bestSize, line, ascent, descent, height };
+
+  // Store in cache for future calls
+  fitNoWrapCache.set(cacheKey, result);
+
+  return result;
 }
 
 interface FormPreviewPdfDisplayProps {
