@@ -536,6 +536,9 @@ const PdfPageWithFields = ({
   const [rendering, setRendering] = useState<boolean>(false);
   const [forceRender, setForceRender] = useState<number>(0);
 
+  // offscreen canvas for text measurement
+  
+
   useEffect(
     () => registerPageRef(pageNumber, containerRef.current),
     [pageNumber, registerPageRef],

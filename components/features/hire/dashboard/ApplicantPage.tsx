@@ -419,12 +419,12 @@ export function ApplicantPage({
                         {/* actions */}
                         <div className="flex items-center justify-between gap-2 my-4">
                             <div className="flex items-center gap-2">
-                                <button
+                                {/* <button
                                     className="flex items-center gap-2 text-sm text-gray-600 rounded-[0.33em] p-1.5 px-2 border border-gray-300 hover:text-gray-700 hover:bg-gray-100"
                                     onClick={openChatModal}
                                     >
                                     <MessageCircle className="h-5 w-5"/> Chat
-                                </button>
+                                </button> */}
                                 <DropdownMenu
                                     items={statuses}
                                     defaultItem={defaultStatus}

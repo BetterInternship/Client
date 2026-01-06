@@ -287,7 +287,7 @@ function MobileDrawer({
                       </button>
                     </Link>
                   </li> */}
-                  {isAuthenticated() && (
+                  {/* {isAuthenticated() && (
                     <li>
                       <Link href="/conversations" className="block w-full">
                         <button className="w-full flex items-center justify-between rounded-md px-3 py-2">
@@ -304,7 +304,7 @@ function MobileDrawer({
                         </button>
                       </Link>
                     </li>
-                  )}
+                  )} */}
                   <li>
                     <Link href="/company-profile">
                       <button
