@@ -73,6 +73,9 @@ export const AuthContextProvider = ({
     await queryClient.invalidateQueries({ queryKey: ["my-applications"] });
     await queryClient.invalidateQueries({ queryKey: ["my-saved-jobs"] });
     await queryClient.invalidateQueries({ queryKey: ["my-conversations"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-form-templates"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-form-template"] });
     return await AuthService.register(user);
   };
 
@@ -84,6 +87,9 @@ export const AuthContextProvider = ({
     await queryClient.invalidateQueries({ queryKey: ["my-applications"] });
     await queryClient.invalidateQueries({ queryKey: ["my-saved-jobs"] });
     await queryClient.invalidateQueries({ queryKey: ["my-conversations"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-form-templates"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-form-template"] });
     setIsAuthenticated(true);
     return response;
   };
@@ -96,6 +102,9 @@ export const AuthContextProvider = ({
     await queryClient.invalidateQueries({ queryKey: ["my-applications"] });
     await queryClient.invalidateQueries({ queryKey: ["my-saved-jobs"] });
     await queryClient.invalidateQueries({ queryKey: ["my-conversations"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-form-templates"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-form-template"] });
     setIsAuthenticated(false);
   };
 

@@ -78,7 +78,7 @@ export const SpecifySigningPartiesModal = ({
     }
 
     // Invalidate queries
-    await queryClient.invalidateQueries({ queryKey: ["my_forms"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
     setSubmitted(true);
     setBusy(false);
     close();
