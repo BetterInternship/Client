@@ -190,7 +190,7 @@ export function FormFillerRenderer({
           />
         </div>
       </div>
-      <div className="p-3 bg-gray-100 border-t border-r border-gray-300">
+      <div className="hidden sm:block p-2 bg-gray-100 border-t border-r border-gray-300">
         <FormActionButtons />
       </div>
     </div>
