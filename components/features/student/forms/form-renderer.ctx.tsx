@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-11-09 03:19:04
- * @ Modified time: 2026-01-01 16:29:31
+ * @ Modified time: 2026-01-06 19:31:46
  * @ Description:
  *
  * We can move this out later on so it becomes reusable in other places.
@@ -110,7 +110,7 @@ export const FormRendererContextProvider = ({
 
   // Cache forms
   const { data: form, isLoading } = useQuery({
-    queryKey: useMemo(() => ["form-template", formName], [formName]),
+    queryKey: useMemo(() => ["my-form-template", formName], [formName]),
     queryFn: useCallback(() => FormService.getForm(formName), [formName]),
     enabled: !!formName,
     staleTime: FORM_RENDERER_STALE_TIME,

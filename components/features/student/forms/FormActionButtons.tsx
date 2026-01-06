@@ -103,7 +103,7 @@ export function FormActionButtons() {
             return;
           }
 
-          await queryClient.invalidateQueries({ queryKey: ["my_forms"] });
+          await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
           modalRegistry.formSubmissionSuccess.open();
         }
 
@@ -122,7 +122,7 @@ export function FormActionButtons() {
           return;
         }
 
-        await queryClient.invalidateQueries({ queryKey: ["my_forms"] });
+        await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
         modalRegistry.formSubmissionSuccess.open();
       }
 

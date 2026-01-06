@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-12-18 15:17:08
- * @ Modified time: 2026-01-03 13:40:52
+ * @ Modified time: 2026-01-06 19:30:02
  * @ Description:
  *
  * These are the forms a user has generated or initiated.
@@ -44,7 +44,7 @@ export const MyFormsContextProvider = ({
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["my_forms"],
+    queryKey: ["my-forms"],
     queryFn: () => FormService.getMyGeneratedForms(),
     staleTime: 0,
     gcTime: 60 * 60 * 1000,
