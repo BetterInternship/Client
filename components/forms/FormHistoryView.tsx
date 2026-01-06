@@ -39,20 +39,34 @@ export function FormHistoryView({ forms }: FormHistoryViewProps) {
       <Separator className="mt-8" />
 
       <div className="animate-fade-in">
-        {forms
-          .toSorted((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp))
-          .map((form) => (
-            <FormLog
-              formProcessId={form.form_process_id}
-              key={form.timestamp}
-              label={form.label}
-              documentId={form.signed_document_id ?? form.prefilled_document_id}
-              timestamp={formatDate(form.timestamp)}
-              downloadUrl={form.latest_document_url}
-              signingParties={form.signing_parties}
-              rejectionReason={form.rejection_reason}
-            />
-          ))}
+        {forms.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <p className="text-lg font-medium text-gray-600">No forms yet</p>
+            <p className="text-sm text-gray-500 mt-1">
+              You haven't generated any forms yet. Create your first form to get
+              started!
+            </p>
+          </div>
+        ) : (
+          forms
+            .toSorted(
+              (a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp),
+            )
+            .map((form) => (
+              <FormLog
+                formProcessId={form.form_process_id}
+                key={form.timestamp}
+                label={form.label}
+                documentId={
+                  form.signed_document_id ?? form.prefilled_document_id
+                }
+                timestamp={formatDate(form.timestamp)}
+                downloadUrl={form.latest_document_url}
+                signingParties={form.signing_parties}
+                rejectionReason={form.rejection_reason}
+              />
+            ))
+        )}
       </div>
     </div>
   );
