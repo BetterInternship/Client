@@ -16,6 +16,257 @@ import { type IFormBlock } from "@betterinternship/core/forms";
 import { Loader } from "@/components/ui/loader";
 import { ZoomIn, ZoomOut } from "lucide-react";
 
+// Load Roboto font from Google Fonts and wait for it to load
+if (typeof window !== "undefined") {
+  const link = document.createElement("link");
+  link.href =
+    "https://fonts.googleapis.com/css2?family=Roboto:wght@400&family=Italianno&display=block";
+  link.rel = "stylesheet";
+  document.head.appendChild(link);
+
+  // Ensure fonts are loaded before using them
+  if ("fonts" in document) {
+    document.fonts.ready.catch(() => {
+      // Font loading failed, but continue anyway
+    });
+  }
+}
+
+// Text wrapping and fitting utilities (matches PDF engine exactly)
+
+// Measure text width using Canvas (used by wrapText)
+function measureTextWidth(text: string, fontSize: number): number {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return 0;
+  ctx.font = `${fontSize}px Roboto`;
+  return ctx.measureText(text).width;
+}
+
+// Get font metrics (approximated for browser, matching PDF engine approach)
+function getFontMetricsAtSize(fontSize: number) {
+  const ascent = fontSize * 0.8;
+  const descent = -fontSize * 0.26;
+  return {
+    ascent,
+    descent,
+    height: ascent - descent,
+  };
+}
+
+// Wrap text into lines that fit maxWidth (matches PDF engine)
+function wrapText({
+  text,
+  fontSize,
+  maxWidth,
+}: {
+  text: string;
+  fontSize: number;
+  maxWidth: number;
+}): string[] {
+  const paragraphs = String(text ?? "").split(/\r?\n/);
+  const lines: string[] = [];
+  const measure = (s: string) => measureTextWidth(s, fontSize);
+
+  const breakLongWord = (word: string): string[] => {
+    const parts: string[] = [];
+    let cur = "";
+    for (const ch of word) {
+      const next = cur + ch;
+      if (cur && measure(next) > maxWidth) {
+        parts.push(cur);
+        cur = ch;
+      } else {
+        cur = next;
+      }
+    }
+    if (cur) parts.push(cur);
+    return parts;
+  };
+
+  for (const para of paragraphs) {
+    const trimmed = para.trim();
+    if (!trimmed) {
+      lines.push("");
+      continue;
+    }
+
+    const words = trimmed.split(/\s+/);
+    let current = "";
+
+    for (const w of words) {
+      const candidate = current ? `${current} ${w}` : w;
+
+      if (measure(candidate) <= maxWidth) {
+        current = candidate;
+        continue;
+      }
+
+      if (current) {
+        lines.push(current);
+        current = "";
+      }
+
+      if (measure(w) <= maxWidth) {
+        current = w;
+      } else {
+        const broken = breakLongWord(w);
+        for (let i = 0; i < broken.length; i++) {
+          if (i === broken.length - 1) current = broken[i];
+          else lines.push(broken[i]);
+        }
+      }
+    }
+
+    if (current) lines.push(current);
+  }
+
+  return lines;
+}
+
+function layoutWrappedBlock({
+  text,
+  fontSize,
+  lineHeight,
+  maxWidth,
+  zoom = 1,
+}: {
+  text: string;
+  fontSize: number;
+  lineHeight: number;
+  maxWidth: number;
+  zoom?: number;
+}) {
+  const { ascent, descent } = getFontMetricsAtSize(fontSize);
+  const lines = wrapText({ text, fontSize, maxWidth, zoom });
+  const n = lines.length;
+  const blockHeight = (n > 0 ? (n - 1) * lineHeight : 0) + (ascent - descent);
+  return { lines, ascent, descent, blockHeight };
+}
+
+function fitWrapped({
+  text,
+  maxWidth,
+  maxHeight,
+  startSize,
+  lineHeightMult = 1.2,
+  zoom = 1,
+}: {
+  text: string;
+  maxWidth: number;
+  maxHeight: number;
+  startSize: number;
+  lineHeightMult?: number;
+  zoom?: number;
+}) {
+  const fits = (size: number): boolean => {
+    const lh = size * lineHeightMult;
+    const { blockHeight } = layoutWrappedBlock({
+      text,
+      fontSize: size,
+      lineHeight: lh,
+      maxWidth,
+      zoom,
+    });
+    return blockHeight <= maxHeight + 1e-6;
+  };
+
+  if (fits(startSize)) {
+    const lh = startSize * lineHeightMult;
+    const laid = layoutWrappedBlock({
+      text,
+      fontSize: startSize,
+      lineHeight: lh,
+      maxWidth,
+      zoom,
+    });
+    return { fontSize: startSize, lineHeight: lh, ...laid };
+  }
+
+  let hi = startSize;
+  let lo = startSize;
+  while (!fits(lo)) {
+    lo /= 2;
+    if (lo < 0.1) break;
+  }
+
+  for (let i = 0; i < 22; i++) {
+    const mid = (lo + hi) / 2;
+    if (fits(mid)) lo = mid;
+    else hi = mid;
+  }
+
+  const bestSize = lo;
+  const bestLineHeight = bestSize * lineHeightMult;
+  const laid = layoutWrappedBlock({
+    text,
+    fontSize: bestSize,
+    lineHeight: bestLineHeight,
+    maxWidth,
+    zoom,
+  });
+  return { fontSize: bestSize, lineHeight: bestLineHeight, ...laid };
+}
+
+// For non-wrapping fields: find the largest font size that fits text on ONE line
+function fitNoWrap({
+  text,
+  maxWidth,
+  maxHeight,
+  startSize,
+}: {
+  text: string;
+  maxWidth: number;
+  maxHeight: number;
+  startSize: number;
+}) {
+  const line = String(text ?? "").replace(/\r?\n/g, " ");
+
+  // TWEAK THIS VALUE: Higher = more aggressive shrinking (more safety margin)
+  // Try: 2 (minimal), 4 (conservative), 8 (moderate), 12 (aggressive)
+  const SAFETY_MARGIN = 0;
+
+  const fits = (size: number): boolean => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return false;
+    ctx.font = `${size}px Roboto`;
+    // Measure text width with a small correction factor for safety
+    // TWEAK THIS: 1.0 (most lenient), 1.05, 1.1, 1.15 (most conservative)
+    const w = ctx.measureText(line).width * 0.68;
+    const { height } = getFontMetricsAtSize(size);
+    return w <= maxWidth - SAFETY_MARGIN && height <= maxHeight - SAFETY_MARGIN;
+  };
+
+  // If startSize already fits, return it
+  if (fits(startSize)) {
+    const { ascent, descent, height } = getFontMetricsAtSize(startSize);
+    return { fontSize: startSize, line, ascent, descent, height };
+  }
+
+  // Binary search down to find a size that fits
+  let lo = startSize;
+  while (!fits(lo)) {
+    lo /= 2;
+    if (lo < 0.1) break;
+  }
+
+  // Binary search up to find the largest size that fits
+  let hi = startSize;
+  for (let i = 0; i < 22; i++) {
+    const mid = (lo + hi) / 2;
+    if (fits(mid)) {
+      lo = mid;
+    } else {
+      hi = mid;
+    }
+  }
+
+  const bestSize = lo;
+  const { ascent, descent, height } = getFontMetricsAtSize(bestSize);
+  return { fontSize: bestSize, line, ascent, descent, height };
+}
+
 interface FormPreviewPdfDisplayProps {
   documentUrl: string;
   blocks: any[]; // ServerField[] with coordinates (x, y, w, h, page, field)
@@ -348,22 +599,6 @@ const PdfPageWithFields = ({
     };
   };
 
-  // Get the actual zoom-aware scale factor for box sizing
-  const getZoomAwareScale = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return scale;
-
-    const rect = canvas.getBoundingClientRect();
-    // Browser zoom factor: rendered size vs actual canvas size
-    const browserZoom = rect.width > 0 ? rect.width / canvas.width : 1;
-    // Combine PDF scale (from zoom buttons) with browser zoom
-    return Math.max(browserZoom, 0.1); // Prevent division by zero
-  };
-
-  const getFittedFontSize = (valueStr: string, widthPixels: number) => {
-    let textWidth = ctx
-  }
-
   return (
     <div
       ref={containerRef}
@@ -384,7 +619,6 @@ const PdfPageWithFields = ({
       {/* Field boxes overlay */}
       <div className="absolute inset-0" key={forceRender}>
         {blocks.map((block) => {
-          // blocks are ServerFields with x, y, w, h, page, field properties
           const x = block.x || 0;
           const y = block.y || 0;
           const w = block.w || 0;
@@ -395,8 +629,6 @@ const PdfPageWithFields = ({
           if (!x || !y || !w || !h) {
             return null;
           }
-
-          const schema = { x, y, w, h, field: fieldName, label };
 
           const displayPos = pdfToDisplay(x, y);
           if (!displayPos) {
@@ -421,11 +653,53 @@ const PdfPageWithFields = ({
               : "";
           const isFilled = valueStr.trim().length > 0;
 
-          // Calculate dynamic font size based on box dimensions
-          const baseFontSize = Math.min(
-            Math.max(heightPixels * 1, 6), // Use 60% of box height, min 6px
-            20,
-          );
+          // Get alignment and wrapping from field schema
+          const align_h = block.align_h ?? "left";
+          const align_v = block.align_v ?? "top";
+          const shouldWrap = block.wrap ?? true;
+
+          // Calculate optimal font size using PDF engine algorithm
+          const fieldType =
+            block.field_schema?.type ||
+            block.phantom_field_schema?.type ||
+            block.type;
+
+          let fontSize: number;
+          let lineHeight: number;
+          let displayLines: string[] = [];
+
+          if (isFilled) {
+            if (shouldWrap) {
+              // Use exact PDF engine algorithm for text with wrapping (no padding)
+              const fitted = fitWrapped({
+                text: valueStr,
+                maxWidth: widthPixels,
+                maxHeight: heightPixels,
+                startSize: block.field_schema?.size ?? 11,
+                lineHeightMult: 1.0,
+                zoom: scale,
+              });
+              fontSize = fitted.fontSize;
+              lineHeight = fitted.lineHeight;
+              displayLines = fitted.lines || [];
+            } else {
+              // No wrapping - find largest font size that fits on ONE line
+              const defaultSize = fieldType === "signature" ? 25 : 11;
+              const fitted = fitNoWrap({
+                text: valueStr,
+                maxWidth: widthPixels,
+                maxHeight: heightPixels,
+                startSize: block.field_schema?.size ?? defaultSize,
+              });
+
+              fontSize = fitted.fontSize;
+              lineHeight = fontSize * 1.0;
+              displayLines = [fitted.line];
+            }
+          } else {
+            fontSize = block.field_schema?.size ?? 11;
+            lineHeight = fontSize * 1.0;
+          }
 
           const isSelected =
             animatingFieldId === fieldName || selectedFieldId === fieldName;
@@ -434,31 +708,57 @@ const PdfPageWithFields = ({
             <div
               key={fieldName}
               onClick={() => onFieldClick?.(fieldName)}
-              className={`absolute cursor-pointer transition-all text-black ${isSelected ? "bg-green-300" : "bg-blue-200"} `}
+              className={`absolute cursor-pointer text-black transition-all ${isSelected ? "bg-green-300" : "bg-blue-200"} `}
               style={{
                 left: `${displayPos.displayX}px`,
                 top: `${displayPos.displayY}px`,
                 width: `${Math.max(widthPixels, 10)}px`,
                 height: `${Math.max(heightPixels, 10)}px`,
-                whiteSpace: "normal",
+                overflow: "hidden",
                 display: "flex",
-                alignItems: "center",
-                paddingLeft: "2px",
+                alignItems:
+                  align_v === "middle"
+                    ? "center"
+                    : align_v === "bottom"
+                      ? "flex-end"
+                      : "flex-start",
+                justifyContent:
+                  align_h === "center"
+                    ? "center"
+                    : align_h === "right"
+                      ? "flex-end"
+                      : "flex-start",
               }}
               title={`${label}: ${valueStr}`}
             >
               {isFilled && (
                 <div
-                  className="font-semibold text-black"
+                  className={
+                    fieldType === "signature" ? "text-blue-600" : "text-black"
+                  }
                   style={{
-                    fontSize: `${baseFontSize}px`,
-                    lineHeight: 1,
-                    overflow: "hidden",
-                    textOverflow: "clip",
-                    whiteSpace: "nowrap",
+                    fontSize: `${fontSize}px`,
+                    lineHeight: `${lineHeight}px`,
+                    overflow: "visible",
+                    whiteSpace: shouldWrap ? "pre-wrap" : "nowrap",
+                    wordWrap: shouldWrap ? "break-word" : "normal",
+                    width: "100%",
+                    padding: "0px",
+                    margin: "0px",
+                    boxSizing: "border-box",
+                    display: "flex",
+                    alignItems: "inherit",
+                    justifyContent: "inherit",
+                    textAlign: align_h === "center" ? "center" : align_h,
+                    fontFamily:
+                      fieldType === "signature"
+                        ? "Italianno, cursive"
+                        : "Roboto, sans-serif",
+                    fontWeight: fieldType === "signature" ? "normal" : "600",
+                    color: fieldType === "signature" ? "#0000FF" : "#000000",
                   }}
                 >
-                  {valueStr}
+                  {displayLines.length > 0 ? displayLines.join("\n") : valueStr}
                 </div>
               )}
             </div>
