@@ -116,14 +116,17 @@ export function FormFillerRenderer({
     Object.entries(values).forEach(([key, value]) => {
       // unix timestamp to string
       const numValue = Number(value);
-      if (!isNaN(numValue) && numValue > 1000000000 && numValue < 999999999999999) {
+      if (
+        !isNaN(numValue) &&
+        numValue > 1000000000 &&
+        numValue < 999999999999999
+      ) {
         formatted[key] = formatTimestampDateWithoutTime(numValue);
       } else {
         formatted[key] = String(value || "");
       }
-      
     });
-    
+
     return formatted;
   };
 
@@ -169,7 +172,7 @@ export function FormFillerRenderer({
         className="relative flex-1 overflow-auto flex flex-col"
       >
         <div className="px-7 py-3 text-2xl font-bold tracking-tighter text-gray-700 text-opacity-60 bg-gray-100 border-b shadow-soft border-r border-gray-300">
-          {form.formName}
+          {form.formLabel}
         </div>
         <div className="space-y-2 px-7 border-r border-gray-300 flex-1 mb-5">
           <BlocksRenderer

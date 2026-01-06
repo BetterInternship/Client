@@ -6,13 +6,13 @@ import { FileText, History, Edit } from "lucide-react";
 export function FormsNavigation({
   activeView,
   onViewChange,
-  hasHistory,
   currentFormName,
+  currentFormLabel,
 }: {
   activeView: "generate" | "history";
   onViewChange: (view: "generate" | "history") => void;
-  hasHistory: boolean;
   currentFormName?: string | null;
+  currentFormLabel?: string | null;
 }) {
   const navItems = [
     {
@@ -31,7 +31,7 @@ export function FormsNavigation({
     ...(currentFormName
       ? [
           {
-            label: currentFormName,
+            label: currentFormLabel || currentFormName,
             icon: Edit,
             view: "form" as const,
             isActive: true,
