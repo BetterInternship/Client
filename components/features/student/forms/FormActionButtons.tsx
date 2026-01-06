@@ -12,6 +12,8 @@ import { TextLoader } from "@/components/ui/loader";
 import { FormValues } from "@betterinternship/core/forms";
 import { useQueryClient } from "@tanstack/react-query";
 import { getClientAudit } from "@/lib/audit";
+import { toast } from "sonner";
+import { toastPresets } from "@/components/ui/sonner-toast";
 
 export function FormActionButtons() {
   const form = useFormRendererContext();
@@ -47,7 +49,11 @@ export function FormActionButtons() {
     const errors = formFiller.validate(form.fields, autofillValues);
     console.log(errors);
 
-    if (Object.keys(errors).length) return setBusy(false);
+    if (Object.keys(errors).length) {
+      toast.error("There are missing fields", toastPresets.destructive);
+      setBusy(false);
+      return;
+    }
 
     // proceed to save + submit
     try {

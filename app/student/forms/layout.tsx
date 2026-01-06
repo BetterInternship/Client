@@ -8,7 +8,7 @@ import { FormFillerContextProvider } from "@/components/features/student/forms/f
 import { FormsNavigation } from "@/components/features/student/forms/FormsNavigation";
 import { useMyForms } from "./myforms.ctx";
 import { SignContextProvider } from "@/components/providers/sign.ctx";
-import { Toaster } from "@/components/ui/sonner";
+import { SonnerToaster } from "@/components/ui/sonner-toast";
 
 interface FormsLayoutContextType {
   activeView: "generate" | "history";
@@ -98,7 +98,7 @@ const FormsLayout = ({ children }: { children: React.ReactNode }) => {
           <FormFillerContextProvider>
             <SignContextProvider>
               <FormsLayoutContent>{children}</FormsLayoutContent>
-              <Toaster />
+              <SonnerToaster />
             </SignContextProvider>
           </FormFillerContextProvider>
         </FormRendererContextProvider>
