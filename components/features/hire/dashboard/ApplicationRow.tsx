@@ -204,7 +204,7 @@ export function ApplicationRow({
       </td>
       <td>
         <div className="flex items-center gap-2 pr-2 flex-row justify-end">
-          <ActionButton
+          {/* <ActionButton
             icon={MessageCircle}
             onClick={(e) => {
               e.stopPropagation();
@@ -215,7 +215,7 @@ export function ApplicationRow({
             notification={conversations.unreads.some((unread) =>
                 unread.subscribers.includes(application.user_id))}
           >
-          </ActionButton>
+          </ActionButton> */}
           {application.status !== 7 &&
             <ActionButton
               icon={Archive}
