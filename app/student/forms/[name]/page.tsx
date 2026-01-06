@@ -23,6 +23,17 @@ export default function FormPage() {
     return () => setCurrentFormName(null);
   }, [params, setCurrentFormName]);
 
+  // Warn user before unloading the page
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
+
   return (
     <div className="w-full flex flex-col h-full overflow-hidden bg-gray-50">
       <FormAndDocumentLayout formName={form.formName} />
