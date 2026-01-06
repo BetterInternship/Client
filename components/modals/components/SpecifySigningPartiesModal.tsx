@@ -13,7 +13,6 @@ import { PublicUser } from "@/lib/db/db.types";
 import { TextLoader } from "@/components/ui/loader";
 import { IFormFiller } from "@/components/features/student/forms/form-filler.ctx";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import useModalRegistry from "../modal-registry";
 
 export const SpecifySigningPartiesModal = ({
@@ -65,7 +64,6 @@ export const SpecifySigningPartiesModal = ({
       return;
     }
 
-    // Submit and close modal if okay, and alert otherwise
     const response = await handleSubmit(
       formFiller.getFinalValues(additionalValues),
     );

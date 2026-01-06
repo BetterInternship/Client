@@ -40,9 +40,8 @@ export const FormFillerContextProvider = ({
   const [values, _setValues] = useState({});
   const [errors, _setErrors] = useState({});
 
-  const getFinalValues = (autofillValues?: FormValues) => {
-    // Just return user values - autofill is applied once during initialization
-    return { ...values };
+  const getFinalValues = (additionalValues?: FormValues) => {
+    return { ...additionalValues, ...values };
   };
 
   const setValue = (field: string, value: any) => {
