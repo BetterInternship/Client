@@ -171,10 +171,10 @@ export function FormFillerRenderer({
         ref={scrollContainerRef}
         className="relative flex-1 overflow-auto flex flex-col"
       >
-        <div className="px-7 py-3 text-2xl font-bold tracking-tighter text-gray-700 text-opacity-60 bg-gray-100 border-b shadow-soft border-r border-gray-300">
-          {form.formLabel}
+        <div className="px-7 py-5 sm:hidden">
+          <h2 className="text-2xl font-bold text-primary">{form.formLabel}</h2>
         </div>
-        <div className="space-y-2 px-7 border-r border-gray-300 flex-1 mb-5">
+        <div className="space-y-3 px-7 flex-1 mb-5">
           <BlocksRenderer
             formKey={form.formName}
             blocks={deduplicatedBlocks}

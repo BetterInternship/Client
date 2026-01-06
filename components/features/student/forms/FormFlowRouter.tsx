@@ -6,13 +6,14 @@ import { Loader } from "@/components/ui/loader";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { FormPreviewPdfDisplay } from "./previewer";
-import { Loader2, ChevronLeft, AlertCircle } from "lucide-react";
+import { Loader2, ChevronLeft } from "lucide-react";
 import { useFormRendererContext } from "./form-renderer.ctx";
 import { useFormFiller } from "./form-filler.ctx";
 import { useMyAutofill } from "@/hooks/use-my-autofill";
 import { getBlockField, isBlockField } from "./utils";
 import { FormActionButtons } from "./FormActionButtons";
 import { toast } from "sonner";
+import { toastPresets } from "@/components/ui/sonner-toast";
 
 export function FormAndDocumentLayout({ formName }: { formName: string }) {
   const form = useFormRendererContext();
@@ -55,7 +56,7 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
     return <Loader>Loading form...</Loader>;
 
   return (
-    <div className="relative mx-auto flex h-full w-full flex-col items-center overflow-hidden bg-opacity-25 max-w-7xl bg-white border border-gray-400 rounded-[0.33em]">
+    <div className="relative mx-auto flex h-full w-full flex-col items-center overflow-hidden bg-opacity-25 max-w-7xl bg-white border border-gray-200 rounded-[0.33em]">
       {/* ============ MOBILE LAYOUT ============ */}
       <div className="sm:hidden w-full h-full flex flex-col overflow-hidden">
         {/* Mobile: Preview Stage - Show PDF */}
@@ -124,10 +125,10 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
                     autofillValues,
                   );
                   if (Object.keys(errors).length > 0) {
-                    toast.error("There are missing fields", {
-                      icon: <AlertCircle className="h-4 w-4" />,
-                      duration: 3000,
-                    });
+                    toast.error(
+                      "There are missing fields",
+                      toastPresets.destructive,
+                    );
                     return;
                   }
                   setMobileStage("sign");
