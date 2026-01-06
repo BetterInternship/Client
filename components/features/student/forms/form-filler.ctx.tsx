@@ -41,26 +41,8 @@ export const FormFillerContextProvider = ({
   const [errors, _setErrors] = useState({});
 
   const getFinalValues = (autofillValues?: FormValues) => {
-    // Priority: User Input > Autofill > Empty
-    const result = { ...values };
-
-    if (autofillValues) {
-      Object.entries(autofillValues).forEach(([key, value]) => {
-        const userValue = values[key];
-        const hasUserValue =
-          userValue !== null &&
-          userValue !== undefined &&
-          String(userValue).trim().length > 0;
-
-        // If user hasn't entered anything for this field, use autofill
-        if (!hasUserValue && value && value.trim && value.trim().length > 0) {
-          result[key] = value;
-        }
-        // If user has a value, keep it (already in result from spread)
-      });
-    }
-
-    return result;
+    // Just return user values - autofill is applied once during initialization
+    return { ...values };
   };
 
   const setValue = (field: string, value: any) => {
