@@ -262,8 +262,7 @@ function fitNoWrap({
     if (!ctx) return false;
     ctx.font = `${size}px Roboto`;
     // Measure text width with a small correction factor for safety
-    // TWEAK THIS: 1.0 (most lenient), 1.05, 1.1, 1.15 (most conservative)
-    const w = ctx.measureText(line).width * 0.68;
+    const w = ctx.measureText(line).width * 0.7;
     const { height } = getFontMetricsAtSize(size);
     return w <= maxWidth - SAFETY_MARGIN && height <= maxHeight - SAFETY_MARGIN;
   };
