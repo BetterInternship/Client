@@ -29,11 +29,11 @@ const navItems: NavItem[] = [
     icon: <Briefcase />,
     label: "Job listings",
   },
-  {
-    href: "/conversations",
-    icon: <MessageCircleMore />,
-    label: "Chats",
-  },
+  // {
+  //   href: "/conversations",
+  //   icon: <MessageCircleMore />,
+  //   label: "Chats",
+  // },
   {
     href: "/help",
     icon: <HelpCircle />,

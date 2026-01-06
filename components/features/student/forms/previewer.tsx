@@ -248,6 +248,9 @@ const PdfPageWithFields = ({
   const [rendering, setRendering] = useState<boolean>(false);
   const [forceRender, setForceRender] = useState<number>(0);
 
+  // offscreen canvas for text measurement
+  
+
   useEffect(
     () => registerPageRef(pageNumber, containerRef.current),
     [pageNumber, registerPageRef],
@@ -357,6 +360,10 @@ const PdfPageWithFields = ({
     return Math.max(browserZoom, 0.1); // Prevent division by zero
   };
 
+  const getFittedFontSize = (valueStr: string, widthPixels: number) => {
+    let textWidth = ctx
+  }
+
   return (
     <div
       ref={containerRef}
@@ -433,9 +440,7 @@ const PdfPageWithFields = ({
                 top: `${displayPos.displayY}px`,
                 width: `${Math.max(widthPixels, 10)}px`,
                 height: `${Math.max(heightPixels, 10)}px`,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
+                whiteSpace: "normal",
                 display: "flex",
                 alignItems: "center",
                 paddingLeft: "2px",
@@ -449,7 +454,7 @@ const PdfPageWithFields = ({
                     fontSize: `${baseFontSize}px`,
                     lineHeight: 1,
                     overflow: "hidden",
-                    textOverflow: "ellipsis",
+                    textOverflow: "clip",
                     whiteSpace: "nowrap",
                   }}
                 >
