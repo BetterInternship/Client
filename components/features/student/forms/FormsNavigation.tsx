@@ -16,17 +16,17 @@ export function FormsNavigation({
 }) {
   const navItems = [
     {
-      label: "Generate Forms",
-      icon: FileText,
-      view: "generate" as const,
-      isActive: activeView === "generate" && !currentFormName,
-    },
-    {
-      label: "Form History",
+      label: "My Forms",
       icon: History,
       view: "history" as const,
       isActive: activeView === "history" && !currentFormName,
       disabled: !hasHistory,
+    },
+    {
+      label: "Generate Forms",
+      icon: FileText,
+      view: "generate" as const,
+      isActive: activeView === "generate" && !currentFormName,
     },
     ...(currentFormName
       ? [
