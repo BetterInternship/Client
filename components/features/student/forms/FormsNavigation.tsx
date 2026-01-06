@@ -20,7 +20,7 @@ export function FormsNavigation({
       icon: History,
       view: "history" as const,
       isActive: activeView === "history" && !currentFormName,
-      disabled: !hasHistory,
+      disabled: false,
     },
     {
       label: "Generate Forms",

@@ -37,14 +37,16 @@ function FormsLayoutContent({ children }: { children: React.ReactNode }) {
   >(null);
   const [currentFormName, setCurrentFormName] = useState<string | null>(null);
 
+  const hasFormsToShow = (myForms?.forms?.length ?? 0) > 0;
+
   // Determine the active view: use manual selection if user clicked nav, otherwise derive from forms
   const activeView = useMemo(() => {
     if (manualActiveView !== null) {
       return manualActiveView;
     }
     // Default: show history if there are forms, otherwise show generate
-    return myForms?.forms?.length > 0 ? "history" : "generate";
-  }, [manualActiveView, myForms?.forms?.length]);
+    return hasFormsToShow ? "history" : "generate";
+  }, [manualActiveView, hasFormsToShow]);
 
   const handleViewChange = (view: "generate" | "history") => {
     setManualActiveView(view);

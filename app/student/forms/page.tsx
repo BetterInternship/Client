@@ -51,8 +51,8 @@ export default function FormsPage() {
   return (
     <>
       {/* Show the active view */}
-      {activeView === "history" && myForms?.forms?.length > 0 ? (
-        <FormHistoryView forms={myForms.forms} />
+      {activeView === "history" ? (
+        <FormHistoryView forms={myForms?.forms ?? []} />
       ) : (
         <FormGenerateView formTemplates={formTemplates} isLoading={isLoading} />
       )}
