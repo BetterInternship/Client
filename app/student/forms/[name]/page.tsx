@@ -13,7 +13,7 @@ import { useEffect } from "react";
 export default function FormPage() {
   const params = useParams();
   const form = useFormRendererContext();
-  const { setCurrentFormName } = useFormsLayout();
+  const { setCurrentFormName, setCurrentFormLabel } = useFormsLayout();
 
   useEffect(() => {
     const { name } = params;
@@ -21,7 +21,11 @@ export default function FormPage() {
     setCurrentFormName(name as string);
 
     return () => setCurrentFormName(null);
-  }, [params, setCurrentFormName]);
+  }, [params, setCurrentFormName, form]);
+
+  useEffect(() => {
+    setCurrentFormLabel(form.formLabel);
+  }, [form.formLabel, setCurrentFormLabel]);
 
   // Warn user before unloading the page
   useEffect(() => {

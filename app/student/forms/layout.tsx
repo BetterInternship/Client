@@ -14,6 +14,8 @@ interface FormsLayoutContextType {
   setActiveView: (view: "generate" | "history") => void;
   currentFormName: string | null;
   setCurrentFormName: (name: string | null) => void;
+  currentFormLabel: string | null;
+  setCurrentFormLabel: (label: string | null) => void;
 }
 
 const FormsLayoutContext = createContext<FormsLayoutContextType | undefined>(
@@ -36,6 +38,7 @@ function FormsLayoutContent({ children }: { children: React.ReactNode }) {
     "generate" | "history" | null
   >(null);
   const [currentFormName, setCurrentFormName] = useState<string | null>(null);
+  const [currentFormLabel, setCurrentFormLabel] = useState<string | null>(null);
 
   const hasFormsToShow = (myForms?.forms?.length ?? 0) > 0;
 
@@ -63,6 +66,8 @@ function FormsLayoutContent({ children }: { children: React.ReactNode }) {
         setActiveView: setManualActiveView,
         currentFormName,
         setCurrentFormName,
+        currentFormLabel,
+        setCurrentFormLabel,
       }}
     >
       <div
@@ -72,8 +77,8 @@ function FormsLayoutContent({ children }: { children: React.ReactNode }) {
         <FormsNavigation
           activeView={activeView}
           onViewChange={handleViewChange}
-          hasHistory={myForms?.forms?.length > 0}
           currentFormName={currentFormName}
+          currentFormLabel={currentFormLabel}
         />
         <div className="flex-1 overflow-hidden">{children}</div>
       </div>

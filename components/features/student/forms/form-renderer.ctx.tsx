@@ -41,6 +41,7 @@ export const SCHEMA_VERSION = 1;
 // Context interface
 export interface IFormRendererContext<T extends any[]> {
   formName: string;
+  formLabel: string;
   formVersion: number;
   formMetadata: FormMetadata<T>;
   document: IDocument;
@@ -96,6 +97,7 @@ export const FormRendererContextProvider = ({
   const [documentName, setDocumentName] = useState<string>("");
   const [documentUrl, setDocumentUrl] = useState<string>("");
   const [formName, setFormName] = useState<string>("");
+  const [formLabel, setFormLabel] = useState<string>("");
   const [formVersion, setFormVersion] = useState<number>(0);
   const [previewFields, setPreviewFields] = useState<ServerField[]>([]);
   const [blocks, setBlocks] = useState<ClientBlock<[PublicUser]>[]>([]);
@@ -158,11 +160,13 @@ export const FormRendererContextProvider = ({
 
     const fm = new FormMetadata(form.formMetadata);
     const newFormName = form.formMetadata.name;
+    const newFormLabel = form.formMetadata.label;
     const newFormVersion = form.formDocument.version;
 
     // Only update form if it's new
     setFormMetadata(fm);
     setFormName(newFormName);
+    setFormLabel(newFormLabel);
     setFormVersion(newFormVersion);
     setDocumentName(form.formDocument.name);
     setDocumentUrl(form.documentUrl);
@@ -190,6 +194,7 @@ export const FormRendererContextProvider = ({
   // The form context
   const formContext: IFormRendererContext<[PublicUser]> = {
     formName,
+    formLabel,
     formVersion,
     formMetadata,
     fields,
