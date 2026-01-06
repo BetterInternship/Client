@@ -126,27 +126,33 @@ export function FormActionButtons() {
   };
 
   return (
-    <div className="flex items-start justify-end gap-2">
+    <div className="flex flex-row items-stretch gap-2 w-full sm:w-auto sm:justify-end">
       <Button
         onClick={onWithoutEsignClick}
         variant={noEsign ? "default" : "outline"}
-        className="w-full sm:w-auto text-xs"
+        className="flex-1 sm:flex-none text-sm h-10 sm:h-fit"
         // ! fix this, make sure signature is required and filled in + checked
         // disabled={busy || !signContext.hasAgreed}
         disabled={busy}
       >
-        <TextLoader loading={busy}>{filloutFormLabel}</TextLoader>
+        <TextLoader loading={busy}>
+          <span className="sm:hidden">{noEsign ? "Fill out" : "Manual"}</span>
+          <span className="hidden sm:inline">{filloutFormLabel}</span>
+        </TextLoader>
       </Button>
 
       {!noEsign && (
         <Button
           onClick={onWithEsignClick}
-          className="w-full sm:w-auto text-xs"
+          className="flex-1 sm:flex-none text-sm h-10 sm:h-fit"
           // ! fix this, make sure signature is required and filled in + checked
           // disabled={busy || !signContext.hasAgreed}
           disabled={busy}
         >
-          <TextLoader loading={busy}>{initiateFormLabel}</TextLoader>
+          <TextLoader loading={busy}>
+            <span className="sm:hidden">E-Sign</span>
+            <span className="hidden sm:inline">{initiateFormLabel}</span>
+          </TextLoader>
         </Button>
       )}
     </div>

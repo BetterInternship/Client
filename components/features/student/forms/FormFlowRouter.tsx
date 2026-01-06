@@ -6,15 +6,21 @@ import { Loader } from "@/components/ui/loader";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { FormPreviewPdfDisplay } from "./previewer";
-import { Loader2 } from "lucide-react";
+import { Loader2, ChevronLeft, AlertCircle } from "lucide-react";
 import { useFormRendererContext } from "./form-renderer.ctx";
+import { useFormFiller } from "./form-filler.ctx";
+import { useMyAutofill } from "@/hooks/use-my-autofill";
 import { getBlockField, isBlockField } from "./utils";
+import { FormActionButtons } from "./FormActionButtons";
+import { toast } from "sonner";
 
 export function FormAndDocumentLayout({ formName }: { formName: string }) {
   const form = useFormRendererContext();
-  const [mobileStage, setMobileStage] = useState<
-    "preview" | "form" | "confirm"
-  >("preview");
+  const formFiller = useFormFiller();
+  const autofillValues = useMyAutofill();
+  const [mobileStage, setMobileStage] = useState<"preview" | "form" | "sign">(
+    "preview",
+  );
   const [values, setValues] = useState<Record<string, string>>({});
 
   // Filter blocks to only include manual source fields (same as FormFillerRenderer)
@@ -50,17 +56,12 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
 
   return (
     <div className="relative mx-auto flex h-full w-full flex-col items-center overflow-hidden bg-opacity-25 max-w-7xl bg-white border border-gray-400 rounded-[0.33em]">
-      <div className="relative flex w-full h-full flex-col justify-center overflow-hidden sm:flex-row">
-        {/* Form Renderer */}
-        <div className="relative w-full h-full max-h-full overflow-hidden">
-          {/* MOBILE */}
-          <div
-            className={cn(
-              "mb-2 sm:hidden",
-              mobileStage === "preview" ? "" : "hidden",
-            )}
-          >
-            <div className="relative w-full overflow-auto rounded-md border mx-auto">
+      {/* ============ MOBILE LAYOUT ============ */}
+      <div className="sm:hidden w-full h-full flex flex-col overflow-hidden">
+        {/* Mobile: Preview Stage - Show PDF */}
+        {mobileStage === "preview" && (
+          <div className="w-full h-full flex flex-col overflow-hidden">
+            <div className="flex-1 overflow-auto">
               {form.document.url ? (
                 <FormPreviewPdfDisplay
                   documentUrl={form.document.url}
@@ -78,25 +79,70 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
               )}
             </div>
 
-            <div className="mt-2 flex gap-2">
+            <div className="border-t bg-white p-4">
               <Button
-                className="w-full"
+                className="w-full h-10"
                 onClick={() => setMobileStage("form")}
                 disabled={form.loading}
               >
-                Fill Form
+                Start Filling
               </Button>
             </div>
           </div>
+        )}
 
-          {/* Mobile: confirm preview stage */}
-          <div
-            className={cn(
-              "sm:hidden",
-              mobileStage === "confirm" ? "" : "hidden",
-            )}
-          >
-            <div className="relative h-[60vh] w-full overflow-auto rounded-md border bg-white">
+        {/* Mobile: Form Stage - Show Form Only */}
+        {mobileStage === "form" && (
+          <div className="w-full h-full flex flex-col overflow-hidden">
+            <div className="flex-1 overflow-auto">
+              {form.loading ? (
+                <div className="flex items-center justify-center h-full">
+                  <span className="inline-flex items-center gap-2 text-sm">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Loading form…
+                  </span>
+                </div>
+              ) : (
+                <FormFillerRenderer onValuesChange={setValues} />
+              )}
+            </div>
+
+            <div className="border-t bg-white p-4 flex gap-2">
+              <Button
+                variant="ghost"
+                className="flex-1 h-10"
+                onClick={() => setMobileStage("preview")}
+              >
+                Back
+              </Button>
+              <Button
+                className="flex-1 h-10"
+                onClick={() => {
+                  // Validate fields before proceeding
+                  const errors = formFiller.validate(
+                    form.fields,
+                    autofillValues,
+                  );
+                  if (Object.keys(errors).length > 0) {
+                    toast.error("There are missing fields", {
+                      icon: <AlertCircle className="h-4 w-4" />,
+                      duration: 3000,
+                    });
+                    return;
+                  }
+                  setMobileStage("sign");
+                }}
+              >
+                Review
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile: Sign Stage - Show PDF with Signing Options */}
+        {mobileStage === "sign" && (
+          <div className="w-full h-full flex flex-col overflow-hidden">
+            <div className="flex-1 overflow-auto">
               {form.document.url ? (
                 <FormPreviewPdfDisplay
                   documentUrl={form.document.url}
@@ -113,12 +159,30 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
                 </div>
               )}
             </div>
-          </div>
 
-          {/* DESKTOP */}
-          {/* loading / error / empty / form */}
+            <div className="border-t bg-white p-4 flex gap-2 items-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 flex-shrink-0"
+                onClick={() => setMobileStage("form")}
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              <div className="flex-1">
+                <FormActionButtons />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ============ DESKTOP LAYOUT ============ */}
+      <div className="hidden sm:flex relative w-full h-full flex-row overflow-hidden gap-0">
+        {/* Desktop: Form on Left */}
+        <div className="relative flex-1 overflow-auto">
           {form.loading ? (
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center h-full">
               <span className="inline-flex items-center gap-2 text-sm">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Loading form…
@@ -129,23 +193,19 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
           )}
         </div>
 
-        {/* PDF Renderer - hidden on small screens, visible on sm+ */}
-        <div className="relative hidden max-w-[600px] min-w-[600px] overflow-auto sm:block">
-          {!form.loading ? (
-            <div className="relative flex h-full w-full flex-row gap-2">
-              {!!form.document.url && (
-                <div className="relative h-full w-full">
-                  <FormPreviewPdfDisplay
-                    documentUrl={form.document.url}
-                    blocks={manualKeyedFields}
-                    values={values}
-                    onFieldClick={(fieldName) =>
-                      form.setSelectedPreviewId(fieldName)
-                    }
-                    selectedFieldId={form.selectedPreviewId}
-                  />
-                </div>
-              )}
+        {/* Desktop: PDF Preview on Right */}
+        <div className="relative max-w-[600px] min-w-[600px] overflow-auto border-l">
+          {!form.loading && form.document.url ? (
+            <div className="relative h-full w-full">
+              <FormPreviewPdfDisplay
+                documentUrl={form.document.url}
+                blocks={manualKeyedFields}
+                values={values}
+                onFieldClick={(fieldName) =>
+                  form.setSelectedPreviewId(fieldName)
+                }
+                selectedFieldId={form.selectedPreviewId}
+              />
             </div>
           ) : null}
         </div>
