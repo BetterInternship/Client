@@ -27,6 +27,7 @@ export function FormsNavigation({
       icon: FileText,
       view: "generate" as const,
       isActive: activeView === "generate" && !currentFormName,
+      disabled: false,
     },
     ...(currentFormName
       ? [
