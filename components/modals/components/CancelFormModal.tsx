@@ -21,6 +21,13 @@ export const CancelFormModal = ({
       you can cancel this form and submit a new one.
       <div className="flex flex-row gap-2 self-end">
         <Button
+          scheme="secondary"
+          disabled={loading}
+          onClick={() => modalRegistry.cancelFormRequest.close()}
+        >
+          <TextLoader loading={loading}>Close</TextLoader>
+        </Button>
+        <Button
           disabled={loading}
           scheme="destructive"
           onClick={() => {
@@ -39,13 +46,6 @@ export const CancelFormModal = ({
           }}
         >
           <TextLoader loading={loading}>Cancel Request</TextLoader>
-        </Button>
-        <Button
-          scheme="secondary"
-          disabled={loading}
-          onClick={() => modalRegistry.cancelFormRequest.close()}
-        >
-          <TextLoader loading={loading}>Close</TextLoader>
         </Button>
       </div>
     </div>
