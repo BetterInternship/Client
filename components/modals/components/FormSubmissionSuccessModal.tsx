@@ -25,8 +25,10 @@ function AnimatedCheck() {
 }
 
 export function FormSubmissionSuccessModal({
+  submissionType,
   onClose,
 }: {
+  submissionType: "esign" | "manual" | null;
   onClose: () => void;
 }) {
   const router = useRouter();
@@ -41,6 +43,9 @@ export function FormSubmissionSuccessModal({
     onClose();
     router.push("/forms");
   };
+
+  const process = submissionType == "esign" ? "sent" : "generated";
+  console.log("FormSubmissionSuccessModal rendered with type:", submissionType);
 
   return (
     <div className="flex flex-col items-center gap-6 px-6 py-10 text-center mt-2">
@@ -79,7 +84,7 @@ export function FormSubmissionSuccessModal({
 
       <div className="">
         <h2 className="text-2xl font-semibold text-foreground">
-          Form sent successfully
+          Form {process} successfully
         </h2>
         <p className="text-sm text-muted-foreground">
           You can now view and manage it in your forms.

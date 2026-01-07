@@ -154,10 +154,11 @@ export const useModalRegistry = () => {
 
     // Form submission success modal
     formSubmissionSuccess: {
-      open: () =>
+      open: (submissionType: "esign" | "manual" | null) =>
         open(
           "form-submission-success",
           <FormSubmissionSuccessModal
+            submissionType={submissionType}
             onClose={() => close("form-submission-success")}
           />,
           {
