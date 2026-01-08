@@ -41,7 +41,7 @@ export function FormSubmissionSuccessModal({
 
   const handleNavigateToForms = () => {
     onClose();
-    router.push("/forms");
+    router.push("/forms?view=history");
   };
 
   const process = submissionType == "esign" ? "sent" : "generated";
