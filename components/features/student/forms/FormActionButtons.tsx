@@ -49,7 +49,6 @@ export function FormActionButtons() {
     // Validate fields before allowing to proceed
     const finalValues = formFiller.getFinalValues(autofillValues);
     const errors = formFiller.validate(form.fields, autofillValues);
-    console.log(errors);
 
     if (Object.keys(errors).length) {
       toast.error("There are missing fields", toastPresets.destructive);
