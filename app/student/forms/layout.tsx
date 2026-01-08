@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, createContext, useContext, useMemo } from "react";
+import { useState, createContext, useContext, useMemo, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { MyFormsContextProvider } from "./myforms.ctx";
 import { FormRendererContextProvider } from "@/components/features/student/forms/form-renderer.ctx";
@@ -38,6 +38,7 @@ function FormsLayoutContent({ children }: { children: React.ReactNode }) {
   const [manualActiveView, setManualActiveView] = useState<
     "generate" | "history" | null
   >(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [currentFormName, setCurrentFormName] = useState<string | null>(null);
   const [currentFormLabel, setCurrentFormLabel] = useState<string | null>(null);
 
@@ -51,6 +52,21 @@ function FormsLayoutContent({ children }: { children: React.ReactNode }) {
     // Default: show history if there are forms, otherwise show generate
     return hasFormsToShow ? "history" : "generate";
   }, [manualActiveView, hasFormsToShow]);
+
+  // Check for view query parameter on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const viewParam = params.get("view");
+      if (viewParam === "history" || viewParam === "generate") {
+        setManualActiveView(viewParam);
+        // Clean up URL after reading param
+        window.history.replaceState({}, "", pathname);
+      }
+      // Mark as initialized regardless of whether we found a param
+      setIsInitialized(true);
+    }
+  }, [pathname]);
 
   const handleViewChange = (view: "generate" | "history") => {
     setManualActiveView(view);
@@ -75,13 +91,19 @@ function FormsLayoutContent({ children }: { children: React.ReactNode }) {
         suppressHydrationWarning
         className="h-full flex flex-col overflow-hidden"
       >
-        <FormsNavigation
-          activeView={activeView}
-          onViewChange={handleViewChange}
-          currentFormName={currentFormName}
-          currentFormLabel={currentFormLabel}
-        />
-        <div className="flex-1 overflow-hidden">{children}</div>
+        {!isInitialized ? (
+          <div className="flex-1" />
+        ) : (
+          <>
+            <FormsNavigation
+              activeView={activeView}
+              onViewChange={handleViewChange}
+              currentFormName={currentFormName}
+              currentFormLabel={currentFormLabel}
+            />
+            <div className="flex-1 overflow-hidden">{children}</div>
+          </>
+        )}
       </div>
     </FormsLayoutContext.Provider>
   );
