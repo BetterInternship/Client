@@ -103,7 +103,7 @@ export function FormActionButtons() {
           }
 
           await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
-          modalRegistry.formSubmissionSuccess.open();
+          modalRegistry.formSubmissionSuccess.open("esign");
         }
 
         // Just fill out form
@@ -122,7 +122,8 @@ export function FormActionButtons() {
         }
 
         await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
-        modalRegistry.formSubmissionSuccess.open();
+
+        modalRegistry.formSubmissionSuccess.open("manual");
       }
 
       setBusy(false);

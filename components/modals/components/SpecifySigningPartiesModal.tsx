@@ -80,7 +80,7 @@ export const SpecifySigningPartiesModal = ({
     setSubmitted(true);
     setBusy(false);
     close();
-    modalRegistry.formSubmissionSuccess.open();
+    modalRegistry.formSubmissionSuccess.open("esign");
   };
 
   return (

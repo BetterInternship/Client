@@ -14,9 +14,17 @@ export const ResendFormModal = ({
 
   return (
     <div className="flex flex-col w-full gap-5">
-      This will send the same form link again to the employer in case they
-      missed the earlier email.
+      This will resend an email to the latest signatory. Only do this if you are
+      sure they have not recevied it, or enough time has passed since the last
+      follow-up.
       <div className="flex flex-row gap-2 self-end">
+        <Button
+          disabled={loading}
+          scheme="secondary"
+          onClick={() => modalRegistry.resendFormRequest.close()}
+        >
+          <TextLoader loading={loading}>Close</TextLoader>
+        </Button>
         <Button
           disabled={loading}
           scheme="destructive"
@@ -36,13 +44,6 @@ export const ResendFormModal = ({
           }}
         >
           <TextLoader loading={loading}>Resend Form</TextLoader>
-        </Button>
-        <Button
-          disabled={loading}
-          scheme="secondary"
-          onClick={() => modalRegistry.resendFormRequest.close()}
-        >
-          <TextLoader loading={loading}>Close</TextLoader>
         </Button>
       </div>
     </div>

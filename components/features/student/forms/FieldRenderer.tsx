@@ -437,8 +437,17 @@ const FieldRendererSignature = <T extends any[]>({
 
   // ! PUT THIS SOMEWHERE ELSE
   useEffect(() => {
-    signContext.setHasAgreedForSignature(field.field, value, checked);
-  }, [checked, value]);
+    const hasValue = !!value?.trim();
+    const shouldAgree = hasValue && checked;
+    signContext.setHasAgreedForSignature(field.field, value, shouldAgree);
+  }, [checked, value, field.field]);
+
+  const handleCheckboxChange = (newChecked: boolean) => {
+    setChecked(newChecked);
+    const hasValue = !!value?.trim();
+    const shouldAgree = hasValue && newChecked;
+    signContext.setHasAgreedForSignature(field.field, value, shouldAgree);
+  };
 
   return (
     <div className="space-y-1.5 rounded-[0.33em] border border-gray-300 p-4 px-5">
@@ -451,7 +460,12 @@ const FieldRendererSignature = <T extends any[]>({
         className="w-full"
         onBlur={() => onBlur?.()}
       />
-      <div className="mt-5 flex flex-row" onClick={() => setChecked(!checked)}>
+      <div
+        className="mt-5 flex flex-row cursor-pointer"
+        onClick={() => {
+          handleCheckboxChange(!checked);
+        }}
+      >
         <div className="mt-1 mr-2">
           <FormCheckbox checked={checked} setter={setChecked}></FormCheckbox>
         </div>

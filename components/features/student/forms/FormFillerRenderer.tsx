@@ -234,9 +234,10 @@ const BlocksRenderer = <T extends any[]>({
 
     // Only check selection for form fields
     const isSelected = isForm && field && selectedFieldId === field.field;
+    const blockKey = `${formKey}:${actualField?.field || block.block_type}:${i}`;
 
     return (
-      <>
+      <div key={blockKey}>
         {(isForm || isPhantomBlock) && actualField?.source === "manual" && (
           <>
             <div
@@ -277,7 +278,7 @@ const BlocksRenderer = <T extends any[]>({
             <ParagraphRenderer content={block.text_content} />
           </div>
         )}
-      </>
+      </div>
     );
   });
 };
