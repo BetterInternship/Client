@@ -1,7 +1,7 @@
 "use client";
 
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
-import { Newspaper } from "lucide-react";
+import { Newspaper, MessageSquare } from "lucide-react";
 import FormTemplateCard from "@/components/features/student/forms/FormGenerateCard";
 import { useRouter } from "next/navigation";
 import { Loader } from "@/components/ui/loader";
@@ -28,30 +28,36 @@ export function FormGenerateView({
           <HeaderText>Internship Forms</HeaderText>
         </div>
         <div className="flex-1 flex-row mt-4">
-          <div className="text-gray-600 text-sm sm:text-base mb-2 space-y-1">
-            <div className="md:flex gap-1">
-              <div className="text-primary font-semibold">
-                Generate for Manual Signing
-              </div>
-              : fills the form without digital signatures (use this if you
-              prefer wet/offline signatures).
+          <div className="text-gray-600 text-sm space-y-2">
+            <div>
+              <span className="text-primary font-semibold">
+                Print for Wet Signatures
+              </span>
+              <span className="text-gray-600">
+                : You'll complete the form and sign it by hand after printing.
+              </span>
             </div>
-            <div className="md:flex gap-1">
-              <div className="text-primary font-semibold">
-                Generate & Initiate E-Sign
-              </div>
-              : creates the form and starts the electronic signing workflow for
-              all parties.
+            <div>
+              <span className="text-primary font-semibold">
+                Sign via BetterInternship
+              </span>
+              <span className="text-gray-600">
+                : Start an online signing process through BetterInternship.
+                We'll email all required parties and let you track progress —
+                10× faster.
+              </span>
             </div>
-            <div className="mt-2">
-              If you run into any issues, contact us via{" "}
-              <a
-                href="https://www.facebook.com/profile.php?id=61579853068043"
-                className="underline"
-              >
-                Facebook
-              </a>
-              .
+            <div className="mt-4 flex items-center gap-2">
+              <MessageSquare className="w-4 h-4 text-primary flex-shrink-0" />
+              <p className="text-sm text-gray-700">
+                Run into issues?{" "}
+                <a
+                  href="https://www.facebook.com/profile.php?id=61579853068043"
+                  className="text-primary font-medium underline"
+                >
+                  Contact us via Facebook
+                </a>
+              </p>
             </div>
           </div>
         </div>
