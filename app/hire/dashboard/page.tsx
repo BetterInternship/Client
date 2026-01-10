@@ -60,7 +60,7 @@ function DashboardContent() {
   }, []);
 
   useEffect(() => {
-      if (ownedJobs  && (!activeJobs.length && !inactiveJobs.length)) {
+      if (!ownedJobs) {
         setLoading(true)
       } else {
         setLoading(false);
