@@ -96,6 +96,7 @@ export function FormGenerateView({
                   <FormTemplateCard
                     key={form.formName + i}
                     formLabel={form.formLabel}
+                    formName={form.formName}
                     onGenerate={() => router.push(`/forms/${form.formName}`)}
                   />
                 ))}

@@ -28,6 +28,14 @@ interface IMyForms {
   }[];
   loading: boolean;
   error?: string;
+  // Helper functions for checking form status
+  hasPendingInstance: (formLabel: string) => boolean;
+  hasCompletedInstance: (formLabel: string) => boolean;
+  shouldShowDuplicateWarning: (formLabel: string) => {
+    show: boolean;
+    hasPending: boolean;
+    hasCompleted: boolean;
+  };
 }
 
 const MyFormsContext = createContext<IMyForms>({} as IMyForms);
@@ -65,12 +73,59 @@ export const MyFormsContextProvider = ({
         timestamp: f.timestamp,
       })) ?? [];
 
+  // Helper function to check if form has pending instances
+  const hasPendingInstance = (formLabel: string): boolean => {
+    return mappedForms.some(
+      (f) => f.label === formLabel && !!f.pending_document_id,
+    );
+  };
+
+  // Helper function to check if form has completed instances
+  const hasCompletedInstance = (formLabel: string): boolean => {
+    return mappedForms.some(
+      (f) => f.label === formLabel && !!f.signed_document_id,
+    );
+  };
+
+  // Helper function to determine if we should show duplicate warning
+  const shouldShowDuplicateWarning = (formLabel: string) => {
+    const formInstances = mappedForms.filter((f) => f.label === formLabel);
+
+    // If no existing instances, don't show warning
+    if (formInstances.length === 0) {
+      return { show: false, hasPending: false, hasCompleted: false };
+    }
+
+    // Check pending first (hierarchy: pending > completed)
+    // Pending = no documentId (neither signed nor prefilled)
+    const hasPending = formInstances.some(
+      (f) => !f.signed_document_id && !f.prefilled_document_id,
+    );
+    if (hasPending) {
+      return { show: true, hasPending: true, hasCompleted: false };
+    }
+
+    // Then check completed (has documentId: either signed or prefilled)
+    const hasCompleted = formInstances.some(
+      (f) => !!f.signed_document_id || !!f.prefilled_document_id,
+    );
+    if (hasCompleted) {
+      return { show: true, hasPending: false, hasCompleted: true };
+    }
+
+    // No pending or completed instances (only rejected)
+    return { show: false, hasPending: false, hasCompleted: false };
+  };
+
   return (
     <MyFormsContext.Provider
       value={{
         forms: mappedForms,
         loading: isLoading,
         error: error?.message,
+        hasPendingInstance,
+        hasCompletedInstance,
+        shouldShowDuplicateWarning,
       }}
     >
       {children}
