@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useGlobalModal } from "../providers/ModalProvider";
+import { AlertCircle, CheckCircle, LucideIcon } from "lucide-react";
 
 import { IncompleteProfileContent } from "./components/IncompleteProfileModal";
 import { MassApplyComposer } from "./components/MassApplyComposer";
@@ -19,6 +20,8 @@ import { PublicUser } from "@/lib/db/db.types";
 import { IFormFiller } from "../features/student/forms/form-filler.ctx";
 import { ResendFormModal } from "./components/ResendFormModal";
 import { CancelFormModal } from "./components/CancelFormModal";
+import { WarningModal } from "./components/WarningModal";
+import { SuccessModal } from "./components/SuccessModal";
 
 /**
  * Simplifies modal config since we usually reuse each of these modal stuffs.
@@ -201,6 +204,133 @@ export const useModalRegistry = () => {
           },
         ),
       close: () => close("resend-form-request"),
+    },
+
+    // Duplicate form warning
+    duplicateFormWarning: {
+      open: ({
+        hasPendingInstance,
+        hasCompletedInstance,
+        onGenerateAnother,
+        onGoBack,
+      }: {
+        hasPendingInstance: boolean;
+        hasCompletedInstance: boolean;
+        onGenerateAnother: () => void;
+        onGoBack: () => void;
+      }) => {
+        const isPending = hasPendingInstance;
+
+        const title = isPending
+          ? "You already have an outgoing instance of this form"
+          : "You've already generated this form before";
+
+        const message = isPending
+          ? "This form is currently being filled out by other signatories. It is highly recommended to cancel the pending attempt before starting a new one. Multiple outgoing versions may cause confusion."
+          : "You already have a completed version of this form. Are you sure you want another one?";
+
+        return open(
+          "duplicate-form-warning",
+          <WarningModal
+            icon={isPending ? AlertCircle : CheckCircle}
+            iconColor={isPending ? "text-amber-600" : "text-emerald-600"}
+            title={title}
+            message={message}
+            primaryAction={{
+              label: "Generate another copy",
+              onClick: onGenerateAnother,
+            }}
+            secondaryAction={{
+              label: "Go back",
+              onClick: onGoBack,
+            }}
+            close={() => close("duplicate-form-warning")}
+          />,
+          {
+            title: " ",
+            allowBackdropClick: false,
+            closeOnEsc: false,
+            hasClose: false,
+          },
+        );
+      },
+      close: () => close("duplicate-form-warning"),
+    },
+
+    // Generic warning modal for reuse
+    warning: {
+      open: ({
+        icon,
+        iconColor,
+        title,
+        message,
+        primaryAction,
+        secondaryAction,
+      }: {
+        icon: LucideIcon;
+        iconColor: string;
+        title: string;
+        message: string;
+        primaryAction: { label: string; onClick: () => void };
+        secondaryAction?: { label: string; onClick: () => void };
+      }) =>
+        open(
+          "warning",
+          <WarningModal
+            icon={icon}
+            iconColor={iconColor}
+            title={title}
+            message={message}
+            primaryAction={primaryAction}
+            secondaryAction={secondaryAction}
+            close={() => close("warning")}
+          />,
+          {
+            title: " ",
+            allowBackdropClick: false,
+            closeOnEsc: false,
+            hasClose: false,
+          },
+        ),
+      close: () => close("warning"),
+    },
+
+    // Generic success modal for reuse
+    success: {
+      open: ({
+        icon,
+        iconColor,
+        title,
+        message,
+        primaryAction,
+        secondaryAction,
+      }: {
+        icon: LucideIcon;
+        iconColor: string;
+        title: string;
+        message: string;
+        primaryAction: { label: string; onClick: () => void };
+        secondaryAction?: { label: string; onClick: () => void };
+      }) =>
+        open(
+          "success",
+          <SuccessModal
+            icon={icon}
+            iconColor={iconColor}
+            title={title}
+            message={message}
+            primaryAction={primaryAction}
+            secondaryAction={secondaryAction}
+            close={() => close("success")}
+          />,
+          {
+            title: " ",
+            allowBackdropClick: false,
+            closeOnEsc: false,
+            hasClose: false,
+          },
+        ),
+      close: () => close("success"),
     },
   };
 
