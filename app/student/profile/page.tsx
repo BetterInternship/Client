@@ -869,7 +869,7 @@ const ProfileEditor = forwardRef<
         return "Please select an expected start month.";
 
       // If credited, check if number of hours are valid
-      if (i?.internship_type !== "credited") {
+      if (i?.internship_type === "credited") {
         if (!i.expected_duration_hours)
           return "Please enter expected duration.";
         if (
@@ -877,7 +877,7 @@ const ProfileEditor = forwardRef<
           i.expected_duration_hours < 100 ||
           i.expected_duration_hours > 2000
         )
-          return "Enter a valid number of hours (0-2000)";
+          return "Enter a valid number of hours (100-2000)";
       }
 
       // If job setup ids were specified, check that all are valid
