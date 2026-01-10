@@ -2,6 +2,12 @@
 
 import useModalRegistry from "@/components/modals/modal-registry";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useFormRendererContext } from "./form-renderer.ctx";
 import { useState } from "react";
 import { useFormFiller } from "./form-filler.ctx";
@@ -15,6 +21,7 @@ import { getClientAudit } from "@/lib/audit";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
 import { useSignContext } from "@/components/providers/sign.ctx";
+import { CircleHelp } from "lucide-react";
 
 export function FormActionButtons() {
   const form = useFormRendererContext();
@@ -27,10 +34,8 @@ export function FormActionButtons() {
   const queryClient = useQueryClient();
 
   const noEsign = !form.formMetadata.mayInvolveEsign();
-  const initiateFormLabel = "Fill out & initiate e-sign";
-  const filloutFormLabel = !noEsign
-    ? "Fill out for manual signing"
-    : "Fill out form";
+  const initiateFormLabel = "Sign via BetterInternship";
+  const filloutFormLabel = !noEsign ? "Print for Wet Signature" : "Print form";
 
   const [busy, setBusy] = useState<boolean>(false);
   const onWithoutEsignClick = () => void handleSubmit(false);
@@ -134,31 +139,59 @@ export function FormActionButtons() {
   };
 
   return (
-    <div className="flex flex-row items-stretch gap-2 w-full sm:w-auto sm:justify-end">
-      <Button
-        onClick={onWithoutEsignClick}
-        variant={noEsign ? "default" : "outline"}
-        className="w-full sm:w-auto text-xs"
-        disabled={busy || !signContext.hasAgreed}
-      >
-        <TextLoader loading={busy}>
-          <span className="sm:hidden">{noEsign ? "Fill out" : "Manual"}</span>
-          <span className="hidden sm:inline">{filloutFormLabel}</span>
-        </TextLoader>
-      </Button>
+    <TooltipProvider>
+      <div className="flex flex-row items-stretch gap-2 w-full sm:w-auto sm:justify-end">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={onWithoutEsignClick}
+              variant={noEsign ? "default" : "outline"}
+              className="w-full sm:w-auto text-xs"
+              disabled={busy || !signContext.hasAgreed}
+            >
+              <TextLoader loading={busy}>
+                <div className="flex items-center gap-1.5">
+                  <span className="sm:hidden">
+                    {noEsign ? "Fill out" : "Manual"}
+                  </span>
+                  <span className="hidden sm:inline">{filloutFormLabel}</span>
+                  <CircleHelp className="w-2 h-2 opacity-50" />
+                </div>
+              </TextLoader>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="bg-slate-900 text-white px-3 py-2 rounded-md text-sm font-medium max-w-xs text-justify">
+            You’ll complete the form and sign it by hand after printing.
+          </TooltipContent>
+        </Tooltip>
 
-      {!noEsign && (
-        <Button
-          onClick={onWithEsignClick}
-          className="w-full sm:w-auto text-xs"
-          disabled={busy || !signContext.hasAgreed}
-        >
-          <TextLoader loading={busy}>
-            <span className="sm:hidden">E-Sign</span>
-            <span className="hidden sm:inline">{initiateFormLabel}</span>
-          </TextLoader>
-        </Button>
-      )}
-    </div>
+        {!noEsign && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={onWithEsignClick}
+                className="w-full sm:w-auto text-xs"
+                disabled={busy || !signContext.hasAgreed}
+              >
+                <TextLoader loading={busy}>
+                  <div className="flex items-center gap-1.5">
+                    <span className="sm:hidden">E-Sign</span>
+                    <span className="hidden sm:inline">
+                      {initiateFormLabel}
+                    </span>
+                    <CircleHelp className="w-2 h-2 opacity-50" />
+                  </div>
+                </TextLoader>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="bg-slate-900 text-white px-3 py-2 rounded-md text-sm font-medium max-w-xs text-justify">
+              Start an online signing process through BetterIntership. We’ll
+              email all required parties and let you track progress, 10×
+              faster.
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+    </TooltipProvider>
   );
 }

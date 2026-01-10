@@ -51,6 +51,13 @@ export default function SearchPage() {
   const [jobMoaFilter, setJobMoaFilter] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
+  // get job list div so we can scroll on page change.
+  const listRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToTop = () => {
+    listRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   // page + pagination
   const jobsPageSize = 10;
   const [_jobsPage, setJobsPage] = useState(1);
@@ -420,7 +427,7 @@ export default function SearchPage() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto pt-2 px-3">
+            <div ref={listRef} className="flex-1 overflow-y-auto pt-2 px-3">
               {jobsPage.length ? (
                 <div className="space-y-4">
                   {jobsPage.map((job) => (
@@ -467,7 +474,10 @@ export default function SearchPage() {
                 <Paginator
                   totalItems={jobs.filteredJobs.length}
                   itemsPerPage={jobsPageSize}
-                  onPageChange={(page) => setJobsPage(page)}
+                  onPageChange={(page) => {
+                    setJobsPage(page);
+                    scrollToTop();
+                  }}
                 />
               </div>
             </div>
@@ -476,7 +486,10 @@ export default function SearchPage() {
           // Desktop split view
           <>
             {/* Left: List */}
-            <div className="w-1/3 border-r overflow-x-hidden overflow-y-auto p-6">
+            <div 
+              ref={listRef} 
+              className="w-1/3 border-r overflow-x-hidden overflow-y-auto p-6"
+            >
               {jobsPage.length ? (
                 <div className="space-y-3">
                   {jobsPage.map((job) => (
@@ -532,7 +545,10 @@ export default function SearchPage() {
                 <Paginator
                   totalItems={jobs.filteredJobs.length}
                   itemsPerPage={jobsPageSize}
-                  onPageChange={(page) => setJobsPage(page)}
+                  onPageChange={(page) => {
+                    setJobsPage(page);
+                    scrollToTop();
+                  }}
                 />
               </div>
             </div>
