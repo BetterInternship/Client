@@ -141,29 +141,43 @@ export function FormActionButtons() {
   return (
     <TooltipProvider>
       <div className="flex flex-row items-stretch gap-2 w-full sm:w-auto sm:justify-end">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              onClick={onWithoutEsignClick}
-              variant={noEsign ? "default" : "outline"}
-              className="w-full sm:w-auto text-xs"
-              disabled={busy || !signContext.hasAgreed}
-            >
-              <TextLoader loading={busy}>
-                <div className="flex items-center gap-1.5">
-                  <span className="sm:hidden">
-                    {noEsign ? "Fill out" : "Manual"}
-                  </span>
-                  <span className="hidden sm:inline">{filloutFormLabel}</span>
-                  <CircleHelp className="w-2 h-2 opacity-50" />
-                </div>
-              </TextLoader>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="bg-slate-900 text-white px-3 py-2 rounded-md text-sm font-medium max-w-xs text-justify">
-            You’ll complete the form and sign it by hand after printing.
-          </TooltipContent>
-        </Tooltip>
+        {noEsign ? (
+          <Button
+            onClick={onWithoutEsignClick}
+            variant="default"
+            className="w-full sm:w-auto text-xs"
+            disabled={busy || !signContext.hasAgreed}
+          >
+            <TextLoader loading={busy}>
+              <div className="flex items-center gap-1.5">
+                <span className="sm:hidden">Fill out</span>
+                <span className="hidden sm:inline">{filloutFormLabel}</span>
+              </div>
+            </TextLoader>
+          </Button>
+        ) : (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={onWithoutEsignClick}
+                variant="default"
+                className="w-full sm:w-auto text-xs"
+                disabled={busy || !signContext.hasAgreed}
+              >
+                <TextLoader loading={busy}>
+                  <div className="flex items-center gap-1.5">
+                    <span className="sm:hidden">Manual</span>
+                    <span className="hidden sm:inline">{filloutFormLabel}</span>
+                    <CircleHelp className="w-2 h-2 opacity-50" />
+                  </div>
+                </TextLoader>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="bg-slate-900 text-white px-3 py-2 rounded-md text-sm font-medium max-w-xs text-justify">
+              You’ll complete the form and sign it by hand after printing.
+            </TooltipContent>
+          </Tooltip>
+        )}
 
         {!noEsign && (
           <Tooltip>
@@ -186,8 +200,7 @@ export function FormActionButtons() {
             </TooltipTrigger>
             <TooltipContent className="bg-slate-900 text-white px-3 py-2 rounded-md text-sm font-medium max-w-xs text-justify">
               Start an online signing process through BetterIntership. We’ll
-              email all required parties and let you track progress, 10×
-              faster.
+              email all required parties and let you track progress, 10× faster.
             </TooltipContent>
           </Tooltip>
         )}

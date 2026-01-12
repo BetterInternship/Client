@@ -114,9 +114,13 @@ export function FormFillerRenderer({
     const formatted: Record<string, string> = {};
 
     Object.entries(values).forEach(([key, value]) => {
-      // unix timestamp to string
+      // Find the field definition to check its type
+      const field = form.fields.find((f) => f.field === key);
+
+      // Only convert to date if it's actually a date field
       const numValue = Number(value);
       if (
+        field?.type === "date" &&
         !isNaN(numValue) &&
         numValue > 1000000000 &&
         numValue < 999999999999999
