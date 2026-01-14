@@ -25,6 +25,7 @@ interface IMyForms {
     timestamp: string;
     rejection_reason?: string;
     signing_parties?: IFormSigningParty[];
+    status?: string;
   }[];
   loading: boolean;
   error?: string;
@@ -70,6 +71,7 @@ export const MyFormsContextProvider = ({
         latest_document_url: f.form_processes.latest_document_url,
         signing_parties: f.form_processes.signing_parties,
         rejection_reason: f.form_processes.rejection_reason,
+        status: f.form_process_status,
         timestamp: f.timestamp,
       })) ?? [];
 

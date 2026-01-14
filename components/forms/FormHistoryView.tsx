@@ -19,6 +19,7 @@ interface FormHistoryViewProps {
     latest_document_url?: string | null;
     timestamp: string;
     signing_parties?: IFormSigningParty[];
+    status?: string | null;
     rejection_reason?: string;
   }>;
 }
@@ -63,6 +64,7 @@ export function FormHistoryView({ forms }: FormHistoryViewProps) {
                 timestamp={formatDate(form.timestamp)}
                 downloadUrl={form.latest_document_url}
                 signingParties={form.signing_parties}
+                status={form.status}
                 rejectionReason={form.rejection_reason}
               />
             ))
