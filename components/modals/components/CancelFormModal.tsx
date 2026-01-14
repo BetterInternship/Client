@@ -5,6 +5,7 @@ import { useState } from "react";
 import { TextLoader } from "@/components/ui/loader";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const CancelFormModal = ({
   formProcessId,
@@ -12,6 +13,7 @@ export const CancelFormModal = ({
   formProcessId: string;
 }) => {
   const modalRegistry = useModalRegistry();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
 
   return (
@@ -41,6 +43,9 @@ export const CancelFormModal = ({
                     "Successfully Cancelled Form Request",
                     toastPresets.success,
                   );
+                  void queryClient.invalidateQueries({
+                    queryKey: ["my-forms"],
+                  });
                   modalRegistry.cancelFormRequest.close();
                 } else {
                   toast.error(
