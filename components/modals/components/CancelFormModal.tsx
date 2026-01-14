@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { FormService } from "@/lib/api/services";
 import { useState } from "react";
 import { TextLoader } from "@/components/ui/loader";
+import { toast } from "sonner";
+import { toastPresets } from "@/components/ui/sonner-toast";
 
 export const CancelFormModal = ({
   formProcessId,
@@ -35,14 +37,25 @@ export const CancelFormModal = ({
             void FormService.cancelForm(formProcessId)
               .then((r) => {
                 if (r.success) {
-                  alert("Successfully Cancelled Form Request");
+                  toast.success(
+                    "Successfully Cancelled Form Request",
+                    toastPresets.success,
+                  );
                   modalRegistry.cancelFormRequest.close();
                 } else {
-                  alert("Could not cancel form request: " + r.message);
+                  toast.error(
+                    "Could not cancel form request: " + r.message,
+                    toastPresets.destructive,
+                  );
                 }
               })
               .then(() => setLoading(false))
-              .catch((e) => (alert(e), setLoading(false)));
+              .catch(
+                (e) => (
+                  toast.error(e, toastPresets.destructive),
+                  setLoading(false)
+                ),
+              );
           }}
         >
           <TextLoader loading={loading}>Cancel Request</TextLoader>
