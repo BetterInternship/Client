@@ -72,6 +72,7 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
                     form.setSelectedPreviewId(fieldName)
                   }
                   selectedFieldId={form.selectedPreviewId}
+                  scale={0.7}
                 />
               ) : (
                 <div className="p-4 text-sm text-gray-500">
@@ -153,6 +154,7 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
                     form.setSelectedPreviewId(fieldName)
                   }
                   selectedFieldId={form.selectedPreviewId}
+                  scale={0.7}
                 />
               ) : (
                 <div className="p-4 text-sm text-gray-500">
