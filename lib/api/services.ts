@@ -209,7 +209,7 @@ export const FormService = {
         form_label: string | null;
         form_name: string;
         form_process_id: string;
-        form_status: string | null;
+        form_process_status: string | null;
         timestamp: string;
         form_processes: {
           prefilled_document_id?: string;

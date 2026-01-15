@@ -28,6 +28,7 @@ export const FormLog = ({
   documentId,
   downloadUrl,
   signingParties,
+  status,
   rejectionReason,
 }: {
   formProcessId: string;
@@ -36,6 +37,7 @@ export const FormLog = ({
   documentId?: string | null;
   downloadUrl?: string | null;
   signingParties?: IFormSigningParty[];
+  status?: string | null;
   rejectionReason?: string;
 }) => {
   const modalRegistry = useModalRegistry();
@@ -67,18 +69,26 @@ export const FormLog = ({
       <div className="px-4 sm:px-6 py-4 text-xs sm:text-sm text-gray-700 space-y-3">
         {/* Status Badge */}
         <div className="flex items-center gap-2">
-          {rejectionReason ? (
+          {status === "rejected" ? (
             <Badge
               type="destructive"
-              className="px-2.5 py-1 gap-1.5 flex items-center font-medium"
+              className=" gap-1 flex items-center font-medium"
             >
               <XCircle className="w-3.5 h-3.5" />
               Rejected
             </Badge>
-          ) : documentId ? (
+          ) : status === "cancelled" ? (
+            <Badge
+              type="destructive"
+              className=" gap-1 flex items-center font-medium"
+            >
+              <XCircle className="w-3.5 h-3.5" />
+              Cancelled
+            </Badge>
+          ) : status === "done" ? (
             <Badge
               type="supportive"
-              className="px-2.5 py-1 gap-1.5 flex items-center font-medium"
+              className="gap-1 flex items-center font-medium"
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
               Completed
@@ -86,7 +96,7 @@ export const FormLog = ({
           ) : (
             <Badge
               type="warning"
-              className="px-2.5 py-1 gap-1.5 flex items-center font-medium"
+              className="gap-1 flex items-center font-medium"
             >
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
               Pending
@@ -227,11 +237,13 @@ export const FormLog = ({
           {/* Expandable Details Section */}
           {!documentId && isOpen && (
             <div className="mt-2 p-4 bg-white border border-gray-200 rounded-[0.33em]">
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-4">
                 {!!rejectionReason && (
-                  <div className="flex flex-col gap-2 bg-red-50 p-3 rounded-md">
+                  <div className="flex flex-col bg-red-50 p-4 rounded-[0.33em]">
                     <div className="text-xs font-semibold text-red-700">
-                      Reason for Rejection
+                      {status === "cancelled"
+                        ? "Reason for cancellation"
+                        : "Reason for rejection"}
                     </div>
                     <span className="text-gray-700 text-xs leading-relaxed">
                       {rejectionReason}

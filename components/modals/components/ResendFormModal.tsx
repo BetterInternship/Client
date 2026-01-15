@@ -3,6 +3,8 @@ import { FormService } from "@/lib/api/services";
 import useModalRegistry from "../modal-registry";
 import { useState } from "react";
 import { TextLoader } from "@/components/ui/loader";
+import { toast } from "sonner";
+import { toastPresets } from "@/components/ui/sonner-toast";
 
 export const ResendFormModal = ({
   formProcessId,
@@ -33,14 +35,26 @@ export const ResendFormModal = ({
             void FormService.resendForm(formProcessId)
               .then((r) => {
                 if (r.success) {
-                  alert("Successfully Resent Form");
+                  toast.success(
+                    "Successfully Resent Form",
+                    toastPresets.success,
+                  );
+
                   modalRegistry.resendFormRequest.close();
                 } else {
-                  alert("Could not resend form: " + r.message);
+                  toast.error(
+                    "Could not resend form: " + r.message,
+                    toastPresets.destructive,
+                  );
                 }
               })
               .then(() => setLoading(false))
-              .catch((e) => (alert(e), setLoading(false)));
+              .catch(
+                (e) => (
+                  toast.error(e, toastPresets.destructive),
+                  setLoading(false)
+                ),
+              );
           }}
         >
           <TextLoader loading={loading}>Resend Form</TextLoader>
