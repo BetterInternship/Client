@@ -88,10 +88,10 @@ export const SpecifySigningPartiesModal = ({
   };
 
   return (
-    <div className="flex flex-col space-y-2 max-w-prose min-w-[100%]">
-      <div className="py-4 text-warning text-sm">
-        This form also requires the signature of other parties. <br />
-        Specify their emails below so we can send them this form on your behalf.
+    <div className="flex flex-col space-y-4 max-w-prose min-w-[100%]">
+      <div className="pt-4 text-sm leading-relaxed  text-justify">
+        This form requires signatures from other parties. Enter their emails
+        below and we'll send them the form to sign.
       </div>
 
       {signingPartyBlocks.map((block) => {
