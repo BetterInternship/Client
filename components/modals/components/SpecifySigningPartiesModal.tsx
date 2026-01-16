@@ -15,7 +15,7 @@ import { TextLoader } from "@/components/ui/loader";
 import { IFormFiller } from "@/components/features/student/forms/form-filler.ctx";
 import { useQueryClient } from "@tanstack/react-query";
 import useModalRegistry from "../modal-registry";
-import { CheckCircle, Divider } from "lucide-react";
+import { CheckCircle, ChevronDown } from "lucide-react";
 
 export const SpecifySigningPartiesModal = ({
   fields,
@@ -41,8 +41,8 @@ export const SpecifySigningPartiesModal = ({
   const [errors, setErrors] = useState<FormErrors>({});
   const [signingPartyValues, setSigningPartyValues] = useState<FormValues>({});
   const [busy, setBusy] = useState(false);
-
   const [submitted, setSubmitted] = useState(false);
+  const [isProcessStoryOpen, setIsProcessStoryOpen] = useState(false);
 
   const handleClick = async () => {
     setBusy(true);
@@ -113,12 +113,21 @@ export const SpecifySigningPartiesModal = ({
       })}
 
       {/* Process Story */}
-      <div className="mt-4 py-4 border-t border-b border-gray-200">
-        <div className="text-xs font-semibold text-gray-700 mb-3">
-          Signing order
-        </div>
-        <div className="space-y-3">
-          {signingParties?.map((party, index) => {
+      <button
+        onClick={() => setIsProcessStoryOpen(!isProcessStoryOpen)}
+        className="mt-4 w-full flex items-center gap-2 text-xs text-gray-600 hover:text-primary transition-colors"
+      >
+        <span className="">View signing order</span>
+        <ChevronDown
+          className={`w-4 h-4 transition-transform flex-shrink-0 ${
+            isProcessStoryOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {isProcessStoryOpen && (
+        <div className="px-2 pb-2 text-xs text-gray-600 space-y-1">
+          {signingParties?.map((party) => {
             // Find the source party's title if signatory_source exists
             let sourceTitle = "";
             if (party.signatory_source?._id) {
@@ -128,40 +137,30 @@ export const SpecifySigningPartiesModal = ({
               sourceTitle = sourceParty?.signatory_title.trim() || "";
             }
 
-            const displayTitle = party.signatory_title
-              .trim()
-              .includes("Student")
-              ? `${party.signatory_title.trim()} (You)`
-              : party.signatory_title.trim();
+            const displayTitle = party.signatory_title;
+            const displaySourceTitle = sourceTitle;
 
-            const displaySourceTitle =
-              sourceTitle && sourceTitle.includes("Student")
-                ? `${sourceTitle} (You)`
-                : sourceTitle;
+            const isSourceFromYou = sourceTitle == "Student";
 
             return (
-              <div key={party._id} className="border-l-4 border-primary pl-3">
-                <div className="text-xs font-medium text-gray-900">
-                  <span className="text-gray-500 mr-1">
-                    Signatory {party.order}:
-                  </span>
-                  {displayTitle}
-                </div>
+              <div key={party._id}>
+                <span className="font-semibold">{party.order}.</span>{" "}
+                {displayTitle}
                 {displaySourceTitle && (
-                  <div className="text-xs text-gray-500">
-                    email from{" "}
-                    <span className="font-semibold">{displaySourceTitle}</span>
-                  </div>
+                  <span className="block ml-4 text-gray-400 flex items-center gap-2">
+                    from {displaySourceTitle}
+                    {isSourceFromYou && (
+                      <span className="text-xs bg-blue-100 text-primary px-1.5 py-0.5 rounded">
+                        You
+                      </span>
+                    )}
+                  </span>
                 )}
               </div>
             );
           })}
         </div>
-        <div className="mt-3 flex items-center gap-2 text-xs text-emerald-700">
-          <CheckCircle className="w-3.5 h-3.5 flex-shrink-0" />
-          <span>All signatures collected → Form complete</span>
-        </div>
-      </div>
+      )}
 
       <div className="mt-4 flex gap-2 self-end">
         {!busy && !submitted && (
