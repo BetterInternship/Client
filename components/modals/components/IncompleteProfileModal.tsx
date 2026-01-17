@@ -581,6 +581,7 @@ function StepBasicIdentity({
               }
               options={departmentOptions}
               placeholder="Select department…"
+              disabled={value.college === ""}
             />
           </div>
           <div>
@@ -590,6 +591,7 @@ function StepBasicIdentity({
               value={value.degree ?? ""}
               setter={(val) => onChange({ ...value, degree: val.toString() })}
               placeholder="Select degree / program…"
+              disabled={value.department === ""}
             />
           </div>
         </div>
