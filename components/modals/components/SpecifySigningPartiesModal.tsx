@@ -15,7 +15,8 @@ import { TextLoader } from "@/components/ui/loader";
 import { IFormFiller } from "@/components/features/student/forms/form-filler.ctx";
 import { useQueryClient } from "@tanstack/react-query";
 import useModalRegistry from "../modal-registry";
-import { CheckCircle, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import { SigningPartyTimeline } from "./SigningPartyTimeline";
 
 export const SpecifySigningPartiesModal = ({
   fields,
@@ -126,39 +127,8 @@ export const SpecifySigningPartiesModal = ({
       </button>
 
       {isProcessStoryOpen && (
-        <div className="px-2 pb-2 text-xs text-gray-600 space-y-1">
-          {signingParties?.map((party) => {
-            // Find the source party's title if signatory_source exists
-            let sourceTitle = "";
-            if (party.signatory_source?._id) {
-              const sourceParty = signingParties?.find(
-                (p) => p._id === party.signatory_source?._id,
-              );
-              sourceTitle = sourceParty?.signatory_title.trim() || "";
-            }
-
-            const displayTitle = party.signatory_title;
-            const displaySourceTitle = sourceTitle;
-
-            const isSourceFromYou = sourceTitle == "Student";
-
-            return (
-              <div key={party._id}>
-                <span className="font-semibold">{party.order}.</span>{" "}
-                {displayTitle}
-                {displaySourceTitle && (
-                  <span className="block ml-4 text-gray-400 flex items-center gap-2">
-                    from {displaySourceTitle}
-                    {isSourceFromYou && (
-                      <span className="text-xs bg-blue-100 text-primary px-1.5 py-0.5 rounded">
-                        You
-                      </span>
-                    )}
-                  </span>
-                )}
-              </div>
-            );
-          })}
+        <div className="px-2 pb-2">
+          <SigningPartyTimeline signingParties={signingParties} />
         </div>
       )}
 
