@@ -94,9 +94,15 @@ export const FormFillerContextProvider = ({
     fields: (ClientField<[PublicUser]> | ClientPhantomField<[PublicUser]>)[],
     autofillValues?: FormValues,
   ) => {
+    const finalValues = { ...autofillValues, ...values };
     const errors: Record<string, string> = {};
     for (const field of fields) {
-      const error = validateFieldHelper(field, values, autofillValues ?? {});
+      const error = validateFieldHelper(
+        field,
+        values,
+        autofillValues ?? {},
+        finalValues,
+      );
       console.log("err", error, field);
       if (error) errors[field.field] = error;
     }
@@ -112,10 +118,12 @@ export const FormFillerContextProvider = ({
     autofillValues?: FormValues,
   ) => {
     _setValues((currentValues) => {
+      const finalValues = { ...autofillValues, ...currentValues };
       const error = validateFieldHelper(
         field,
         currentValues,
         autofillValues ?? {},
+        finalValues,
       );
       if (error) {
         _setErrors((prev) => ({ ...prev, [fieldKey]: error }));
@@ -152,22 +160,29 @@ export const FormFillerContextProvider = ({
 /**
  * Validates a specific field, given the specified values.
  *
+ * The validator was created with initial params. When validating cross-field validators,
+ * ensure that validators reference field values via the params system.
+ * The field params should be updated by the form context before validation.
+ *
  * @param field
  * @param values
  * @param autofillValues
+ * @param finalValues - All form values for context
  * @returns
  */
 const validateFieldHelper = <T extends any[]>(
   field: ClientField<T>,
   values: FormValues,
   autofillValues: FormValues,
+  finalValues?: FormValues,
 ) => {
-  const finalValues = { ...autofillValues, ...values };
+  const allValues = finalValues || { ...autofillValues, ...values };
   if (field.signing_party_id !== "initiator" || field.source !== "manual")
     return;
 
-  const value = finalValues[field.field];
+  const value = allValues[field.field];
   const coerced = field.coerce(value);
+
   const result = field.validator?.safeParse(coerced);
 
   if (result?.error) {

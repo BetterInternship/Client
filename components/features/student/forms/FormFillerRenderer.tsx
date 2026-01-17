@@ -186,9 +186,34 @@ export function FormFillerRenderer({
             onChange={formFiller.setValue}
             errors={formFiller.errors}
             setSelected={form.setSelectedPreviewId}
-            onBlurValidate={(fieldKey, field) =>
-              formFiller.validateField(fieldKey, field, autofillValues)
-            }
+            onBlurValidate={(fieldKey, field) => {
+              // Before validating, sync form values to params so validators can access them
+              const currentValues = formFiller.getFinalValues(autofillValues);
+
+              // Use form values directly as params (already in correct format)
+              const mergedParams = { ...form.params, ...currentValues };
+
+              // Update form renderer state (for future renders)
+              form.updateFieldsWithParams(currentValues);
+
+              // Recreate the field with merged params using formMetadata
+              const fieldsWithMergedParams =
+                form.formMetadata.getFieldsForClientService(
+                  "initiator",
+                  mergedParams,
+                );
+              const updatedField = fieldsWithMergedParams.find(
+                (f) => f.field === fieldKey,
+              );
+
+              if (!updatedField) {
+                console.warn(`Field ${fieldKey} not found in recreated fields`);
+                return;
+              }
+
+              // Validate with the updated field that has fresh params
+              formFiller.validateField(fieldKey, updatedField, autofillValues);
+            }}
             fieldRefs={fieldRefs.current}
             selectedFieldId={form.selectedPreviewId}
           />

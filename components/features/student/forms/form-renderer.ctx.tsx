@@ -57,6 +57,7 @@ export interface IFormRendererContext<T extends any[]> {
   // Setters
   updateFormName: (newFormName: string) => void;
   refreshPreviews: () => void;
+  updateFieldsWithParams: (newParams: Record<string, any>) => void;
 }
 
 interface IDocument {
@@ -170,7 +171,9 @@ export const FormRendererContextProvider = ({
     setFormVersion(newFormVersion);
     setDocumentName(form.formDocument.name);
     setDocumentUrl(form.documentUrl);
-    setFields(fm.getFieldsForClientService("initiator"));
+    const loadedFields = fm.getFieldsForClientService("initiator");
+
+    setFields(loadedFields);
     setBlocks(fm.getBlocksForClientService("initiator"));
     setPreviewFields(fm.getFieldsForSigningService());
   }, [form]);
@@ -208,6 +211,14 @@ export const FormRendererContextProvider = ({
     document: { name: documentName, url: documentUrl },
     updateFormName: (newFormName: string) => setFormName(newFormName),
     refreshPreviews: refreshPreviews,
+    updateFieldsWithParams: (newParams: Record<string, any>) => {
+      // Merge new params with existing ones (don't replace)
+      const mergedParams = { ...params, ...newParams };
+      setFields(
+        formMetadata.getFieldsForClientService("initiator", mergedParams),
+      );
+      setParams(mergedParams);
+    },
   };
 
   return (
