@@ -3,19 +3,17 @@
 import { useState } from "react";
 import {
   CheckCircle2,
-  CheckIcon,
   ChevronDown,
   ChevronUp,
-  CircleDot,
   DownloadIcon,
   XCircle,
   Loader2,
 } from "lucide-react";
-import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 import { IFormSigningParty } from "@betterinternship/core/forms";
 import { Badge } from "../ui/badge";
 import { Divider } from "../ui/divider";
 import { Button } from "../ui/button";
+import { SigningStatusTimeline } from "./SigningStatusTimeline";
 import useModalRegistry from "../modals/modal-registry";
 
 /**
@@ -255,89 +253,10 @@ export const FormLog = ({
                     <div className="text-xs font-semibold text-gray-700">
                       Signing Status
                     </div>
-                    <div className="flex flex-col gap-1.5">
-                      {signingParties.map((signingParty, i) => {
-                        const displayName =
-                          signingParty._id === "initiator"
-                            ? "You"
-                            : (signingParty.signatory_account?.email ??
-                              signingParty.signatory_account?.name ??
-                              `(${signingParty.signatory_source?.label})`);
-
-                        // Find the latest signed signatory
-                        const latestSignedIndex = signingParties
-                          .map((p, idx) => ({ ...p, idx }))
-                          .filter((p) => p.signed)
-                          .sort((a, b) => b.idx - a.idx)[0]?.idx;
-
-                        const isLatestSigned = i === latestSignedIndex;
-
-                        const handleDownloadLatest = () => {
-                          if (!downloadUrl) return;
-                          try {
-                            setDownloading(true);
-                            const a = document.createElement("a");
-                            a.href = downloadUrl;
-                            a.download = "";
-                            a.target = "_blank";
-                            a.rel = "noopener noreferrer";
-                            a.click();
-                          } finally {
-                            setDownloading(false);
-                          }
-                        };
-
-                        return (
-                          <div
-                            key={signingParty._id}
-                            className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-2 px-2 border-b border-gray-200 last:border-b-0"
-                          >
-                            <div className="flex items-center gap-4 flex-1 min-w-0">
-                              {signingParty.signed ? (
-                                <Badge
-                                  type="supportive"
-                                  className="px-2 py-2 gap-1 flex items-center text-xs whitespace-nowrap flex-shrink-0"
-                                >
-                                  <CheckIcon className="w-3 h-3" />
-                                  Signed
-                                </Badge>
-                              ) : (
-                                <Badge
-                                  type="default"
-                                  className="px-2 py-2 gap-1 flex items-center text-xs text-gray-600 whitespace-nowrap flex-shrink-0"
-                                >
-                                  <CircleDot className="w-3 h-3" />
-                                  Pending
-                                </Badge>
-                              )}
-                              <div className="flex flex-col flex-1 min-w-0">
-                                <div className="text-xs font-medium text-gray-900">
-                                  {signingParty.signatory_title}
-                                </div>
-                                <span className="text-xs text-gray-600 truncate">
-                                  {displayName}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-1 flex-shrink-0 w-full sm:w-auto">
-                              {isLatestSigned && downloadUrl ? (
-                                <Button
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDownloadLatest();
-                                  }}
-                                  className="text-xs"
-                                >
-                                  <DownloadIcon className="w-3 h-3" />
-                                  Download Latest Form
-                                </Button>
-                              ) : null}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                    <SigningStatusTimeline
+                      signingParties={signingParties}
+                      downloadUrl={downloadUrl}
+                    />
                   </div>
                 )}
               </div>
