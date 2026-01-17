@@ -25,21 +25,39 @@ export const SigningPartyTimeline = ({
         }
 
         const isSourceFromYou = sourceTitle === "Student";
+        const isYou = party.signatory_title == "Student";
+
+        let displayTitle = party.signatory_title;
+        if (isYou) {
+          displayTitle = "You";
+        }
 
         return (
           <TimelineItem
             key={party._id}
             number={party.order}
-            title={party.signatory_title}
+            title={
+              isYou ? (
+                <span className="text-sm bg-blue-100 text-primary px-2 py-1 rounded font-medium">
+                  You
+                </span>
+              ) : (
+                displayTitle
+              )
+            }
             subtitle={
               sourceTitle && (
                 <div className="flex items-center gap-2">
-                  <span>from {sourceTitle}</span>
-                  {isSourceFromYou && (
-                    <span className="text-xs bg-blue-100 text-primary px-1.5 py-0.5 rounded font-medium">
-                      You
-                    </span>
-                  )}
+                  <span>
+                    email coming from{" "}
+                    {isSourceFromYou ? (
+                      <span className="text-xs bg-blue-100 text-primary px-1.5 py-0.5 rounded font-medium">
+                        You
+                      </span>
+                    ) : (
+                      sourceTitle
+                    )}
+                  </span>
                 </div>
               )
             }
