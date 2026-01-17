@@ -82,14 +82,16 @@ function wrapText({
   text,
   fontSize,
   maxWidth,
+  zoom = 1,
 }: {
   text: string;
   fontSize: number;
   maxWidth: number;
+  zoom?: number;
 }): string[] {
   const paragraphs = String(text ?? "").split(/\r?\n/);
   const lines: string[] = [];
-  const measure = (s: string) => measureTextWidth(s, fontSize);
+  const measure = (s: string) => measureTextWidth(s, fontSize) * zoom;
 
   const breakLongWord = (word: string): string[] => {
     const parts: string[] = [];
@@ -536,7 +538,6 @@ const PdfPageWithFields = ({
   const [forceRender, setForceRender] = useState<number>(0);
 
   // offscreen canvas for text measurement
-  
 
   useEffect(
     () => registerPageRef(pageNumber, containerRef.current),
@@ -749,8 +750,8 @@ const PdfPageWithFields = ({
                 left: `${displayPos.displayX}px`,
                 top: `${displayPos.displayY}px`,
                 width: `${Math.max(widthPixels, 10)}px`,
-                height: `${Math.max(heightPixels, 10)}px`,
-                overflow: "hidden",
+                minHeight: `${Math.max(heightPixels, 10)}px`,
+                overflow: "visible",
                 display: "flex",
                 alignItems:
                   align_v === "middle"

@@ -8,12 +8,15 @@ import {
   ClientPhantomField,
   FormErrors,
   FormValues,
+  IFormSigningParty,
 } from "@betterinternship/core/forms";
 import { PublicUser } from "@/lib/db/db.types";
 import { TextLoader } from "@/components/ui/loader";
 import { IFormFiller } from "@/components/features/student/forms/form-filler.ctx";
 import { useQueryClient } from "@tanstack/react-query";
 import useModalRegistry from "../modal-registry";
+import { ChevronDown } from "lucide-react";
+import { SigningPartyTimeline } from "./SigningPartyTimeline";
 
 export const SpecifySigningPartiesModal = ({
   fields,
@@ -22,6 +25,7 @@ export const SpecifySigningPartiesModal = ({
   signingPartyBlocks,
   handleSubmit,
   close,
+  signingParties,
 }: {
   fields: (ClientField<[PublicUser]> | ClientPhantomField<[PublicUser]>)[];
   formFiller: IFormFiller;
@@ -31,14 +35,15 @@ export const SpecifySigningPartiesModal = ({
     signingPartyValues: FormValues,
   ) => Promise<{ success?: boolean; message?: string }>;
   close: () => void;
+  signingParties?: IFormSigningParty[];
 }) => {
   const queryClient = useQueryClient();
   const modalRegistry = useModalRegistry();
   const [errors, setErrors] = useState<FormErrors>({});
   const [signingPartyValues, setSigningPartyValues] = useState<FormValues>({});
   const [busy, setBusy] = useState(false);
-
   const [submitted, setSubmitted] = useState(false);
+  const [isProcessStoryOpen, setIsProcessStoryOpen] = useState(false);
 
   const handleClick = async () => {
     setBusy(true);
@@ -84,10 +89,10 @@ export const SpecifySigningPartiesModal = ({
   };
 
   return (
-    <div className="flex flex-col space-y-2 max-w-prose min-w-[100%]">
-      <div className="py-4 text-warning text-sm">
-        This form also requires the signature of other parties. <br />
-        Specify their emails below so we can send them this form on your behalf.
+    <div className="flex flex-col space-y-4 max-w-prose min-w-[100%]">
+      <div className="pt-4 text-sm leading-relaxed  text-justify">
+        This form requires signatures from other parties. Enter their emails
+        below and we'll send them the form to sign.
       </div>
 
       {signingPartyBlocks.map((block) => {
@@ -107,6 +112,25 @@ export const SpecifySigningPartiesModal = ({
           ></FieldRenderer>
         );
       })}
+
+      {/* Process Story */}
+      <button
+        onClick={() => setIsProcessStoryOpen(!isProcessStoryOpen)}
+        className="mt-4 w-full flex items-center gap-2 text-xs text-gray-600 hover:text-primary transition-colors"
+      >
+        <span className="">View signing order</span>
+        <ChevronDown
+          className={`w-4 h-4 transition-transform flex-shrink-0 ${
+            isProcessStoryOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {isProcessStoryOpen && (
+        <div className="px-2 pb-2">
+          <SigningPartyTimeline signingParties={signingParties} />
+        </div>
+      )}
 
       <div className="mt-4 flex gap-2 self-end">
         {!busy && !submitted && (
