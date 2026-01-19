@@ -25,6 +25,7 @@ import { Job } from "@/lib/db/db.types";
 import { isValidRequiredUserName } from "@/lib/utils/name-utils";
 import { DropdownGroup } from "@/components/ui/dropdown";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 /* ============================== Modal shell ============================== */
 
@@ -92,6 +93,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   const [step, setStep] = useState(0);
   const [showComplete, setShowComplete] = useState(false);
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   // profile being edited
   const [profile, setProfile] = useState<ProfileDraft>(() => ({
@@ -309,8 +311,11 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
         if (isLast) {
           setShowComplete(true);
           void queryClient.invalidateQueries({
-                      queryKey: ["my-profile"],
-                    })
+            queryKey: ["my-profile"],
+          })
+          setTimeout(() => {
+            router.push('/profile');
+          }, 1000);
         }
         else setStep(step + 1);
       });
@@ -686,6 +691,9 @@ function StepComplete({ onDone }: { onDone: () => void }) {
       <h3 className="text-xl font-semibold mt-4">Profile complete</h3>
       <p className="text-sm text-muted-foreground mt-1">
         You’re all set. Nice work!
+      </p>
+      <p className="text-sm text-muted-foreground mt-1">
+        Please wait while we redirect you...
       </p>
 
       <style jsx>{`
