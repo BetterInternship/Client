@@ -48,7 +48,7 @@ export default function IncompleteProfileContent({
           size="sm"
           onClick={router.back}
           >
-            <ArrowLeft className="h-8 w-8 text-gray-500"/>
+            <ArrowLeft className="!h-6 !w-6 text-gray-500"/>
           </Button>
         </div>
         <div className="w-16 h-16 mx-auto mb-4 bg-primary/15 rounded-full flex items-center justify-center">
@@ -327,7 +327,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
           })
           setTimeout(() => {
             router.push('/profile');
-          }, 1000);
+          }, 1500);
         }
         else setStep(step + 1);
       });
