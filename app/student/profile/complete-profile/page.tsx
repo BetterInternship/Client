@@ -24,6 +24,7 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import { Job } from "@/lib/db/db.types";
 import { isValidRequiredUserName } from "@/lib/utils/name-utils";
 import { DropdownGroup } from "@/components/ui/dropdown";
+import { useQueryClient } from "@tanstack/react-query";
 
 /* ============================== Modal shell ============================== */
 
@@ -90,6 +91,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   const existingProfile = useProfileData();
   const [step, setStep] = useState(0);
   const [showComplete, setShowComplete] = useState(false);
+  const queryClient = useQueryClient();
 
   // profile being edited
   const [profile, setProfile] = useState<ProfileDraft>(() => ({
@@ -304,7 +306,12 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
       }).then(() => {
         setIsUpdating(false);
         const isLast = step + 1 >= steps.length;
-        if (isLast) setShowComplete(true);
+        if (isLast) {
+          setShowComplete(true);
+          void queryClient.invalidateQueries({
+                      queryKey: ["my-profile"],
+                    })
+        }
         else setStep(step + 1);
       });
       return;
