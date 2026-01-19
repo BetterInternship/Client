@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   Repeat,
   User,
+  ArrowLeft,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +25,9 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import { Job } from "@/lib/db/db.types";
 import { isValidRequiredUserName } from "@/lib/utils/name-utils";
 import { DropdownGroup } from "@/components/ui/dropdown";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 /* ============================== Modal shell ============================== */
 
@@ -34,9 +38,19 @@ export default function IncompleteProfileContent({
   applySuccessModalRef?: RefObject<ModalHandle | null>;
   job?: Job | null;
 }) {
+  const router = useRouter()
   return (
     <div className="flex flex-col justify-start items-center p-6 h-full overflow-y-auto sm:max-w-2xl mx-auto pt-20">
       <div className="text-center mb-10 w-full shrink-0">
+        <div className="flex justify-start">
+          <Button 
+          variant="ghost"
+          size="sm"
+          onClick={router.back}
+          >
+            <ArrowLeft className="!h-6 !w-6 text-gray-500"/>
+          </Button>
+        </div>
         <div className="w-16 h-16 mx-auto mb-4 bg-primary/15 rounded-full flex items-center justify-center">
           <User className="w-8 h-8 text-primary" />
         </div>
@@ -90,6 +104,8 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   const existingProfile = useProfileData();
   const [step, setStep] = useState(0);
   const [showComplete, setShowComplete] = useState(false);
+  const queryClient = useQueryClient();
+  const router = useRouter();
 
   // profile being edited
   const [profile, setProfile] = useState<ProfileDraft>(() => ({
@@ -304,7 +320,15 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
       }).then(() => {
         setIsUpdating(false);
         const isLast = step + 1 >= steps.length;
-        if (isLast) setShowComplete(true);
+        if (isLast) {
+          setShowComplete(true);
+          void queryClient.invalidateQueries({
+            queryKey: ["my-profile"],
+          })
+          setTimeout(() => {
+            router.push('/profile');
+          }, 1500);
+        }
         else setStep(step + 1);
       });
       return;
@@ -679,6 +703,9 @@ function StepComplete({ onDone }: { onDone: () => void }) {
       <h3 className="text-xl font-semibold mt-4">Profile complete</h3>
       <p className="text-sm text-muted-foreground mt-1">
         You’re all set. Nice work!
+      </p>
+      <p className="text-sm text-muted-foreground mt-1">
+        Please wait while we redirect you...
       </p>
 
       <style jsx>{`
