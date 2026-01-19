@@ -53,7 +53,7 @@ import {
 import { Divider } from "@/components/ui/divider";
 import { isValidRequiredUserName } from "@/lib/utils/name-utils";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Autocomplete, AutocompleteMulti } from "@/components/ui/autocomplete";
 import { AutocompleteTreeMulti } from "@/components/ui/autocomplete";
 import { POSITION_TREE } from "@/lib/consts/positions";
@@ -79,6 +79,7 @@ export default function ProfilePage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [autoApplySaving, setAutoApplySaving] = useState(false);
   const [autoApplyError, setAutoApplyError] = useState<string | null>(null);
+  const router = useRouter();
 
   const { url: resumeURL, sync: syncResumeURL } = useFile({
     fetcher: UserService.getMyResumeURL,
@@ -145,7 +146,7 @@ export default function ProfilePage() {
       !isProfileBaseComplete(profile.data) ||
       profile.data?.acknowledged_auto_apply === false
     ) {
-      modalRegistry.incompleteProfile.open();
+      router.push(`profile/complete-profile`);
     }
   }, []);
 
