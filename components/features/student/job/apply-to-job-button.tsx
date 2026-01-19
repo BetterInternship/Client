@@ -42,8 +42,7 @@ export const ApplyToJobButton = ({
       !isProfileBaseComplete(profile) ||
       profile.acknowledged_auto_apply === false
     ) {
-      // return modalRegistry.incompleteProfile.open();
-      return router.push(`profile/complete-profile`);
+      return modalRegistry.incompleteProfile.open();
     }
 
     if (applied) {

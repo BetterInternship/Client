@@ -151,7 +151,7 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
                   }}
                   className={[
                     // Base panel
-                    "bg-white overflow-hidden shadow-2xl relative border",
+                    "bg-white overflow-visible shadow-2xl relative border",
                     // Mobile: full-width bottom sheet, rounded top only
                     "w-full max-w-full min-w-[100svw] rounded-t-[0.33em] rounded-b-none",
                     // Let content grow but cap height properly
@@ -198,8 +198,8 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
                   )}
 
                   {/* Content area */}
-                  <div className="">
-                    <div className="px-4 pb-4 overflow-auto max-h-[calc(var(--vh,1vh)*100-4rem)] sm:max-h-[calc(90vh-4rem)]">
+                  <div className="h-full flex flex-col">
+                    <div className="px-4 pb-4 overflow-visible max-h-[calc(var(--vh,1vh)*100-4rem)] sm:max-h-[calc(90vh-4rem)]">
                       {node}
                     </div>
                   </div>
