@@ -6,6 +6,7 @@ import { useAuthContext } from "@/lib/ctx-auth";
 import { isProfileBaseComplete, isProfileResume } from "@/lib/profile";
 import { useMemo } from "react";
 import useModalRegistry from "@/components/modals/modal-registry";
+import { useRouter } from "next/navigation";
 
 // ! todo: rmove openAppModal and use openGlobalModal instead
 export const ApplyToJobButton = ({
@@ -23,6 +24,7 @@ export const ApplyToJobButton = ({
   const jobs = useJobsData();
   const modalRegistry = useModalRegistry();
   const applied = useMemo(() => !!jobs.isJobApplied(job.id!), [jobs]);
+  const router = useRouter();
 
   /**
    * Handles apply checks
@@ -40,7 +42,8 @@ export const ApplyToJobButton = ({
       !isProfileBaseComplete(profile) ||
       profile.acknowledged_auto_apply === false
     ) {
-      return modalRegistry.incompleteProfile.open();
+      // return modalRegistry.incompleteProfile.open();
+      return router.push(`profile/complete-profile`);
     }
 
     if (applied) {

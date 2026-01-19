@@ -151,7 +151,7 @@ function MobileDrawer({
       !isProfileResume(profile.data) ||
       !isProfileBaseComplete(profile.data)
     ) {
-      modalRegistry.incompleteProfile.open();
+      router.push(`profile/complete-profile`);
     } else {
       router.push(`/${link}`);
     }
@@ -334,7 +334,7 @@ export const ProfileButton: React.FC = () => {
       !isProfileResume(profile.data) ||
       !isProfileBaseComplete(profile.data)
     ) {
-      modalRegistry.incompleteProfile.open();
+      router.push(`profile/complete-profile`);
     } else {
       router.push(`/${link}`);
     }
