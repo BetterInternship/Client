@@ -16,7 +16,7 @@ import ResumeUpload from "@/components/features/student/resume-parser/ResumeUplo
 import { FormDropdown, FormInput } from "@/components/EditForm";
 import { UserService } from "@/lib/api/services";
 import { useProfileData } from "@/lib/api/student.data.api";
-import { Stepper } from "../../stepper/stepper";
+import { Stepper } from "@/components/stepper/stepper";
 import { isProfileResume, isProfileBaseComplete } from "../../../lib/profile";
 import { ModalHandle } from "@/hooks/use-modal";
 import { isValidPHNumber } from "@/lib/utils";
@@ -27,7 +27,7 @@ import { DropdownGroup } from "@/components/ui/dropdown";
 
 /* ============================== Modal shell ============================== */
 
-export function IncompleteProfileContent({
+export default function IncompleteProfileContent({
   onFinish,
 }: {
   onFinish: () => void;
@@ -35,8 +35,8 @@ export function IncompleteProfileContent({
   job?: Job | null;
 }) {
   return (
-    <div className="p-6 pt-0 sm:max-w-2xl">
-      <div className="text-center my-6">
+    <div className="p-6 h-full overflow-y-auto pt-0">
+      <div className="text-center mb-6">
         <div className="w-16 h-16 mx-auto mb-4 bg-primary/15 rounded-full flex items-center justify-center">
           <User className="w-8 h-8 text-primary" />
         </div>
@@ -49,6 +49,7 @@ export function IncompleteProfileContent({
     </div>
   );
 }
+
 
 /* ============================== Types ============================== */
 
@@ -581,7 +582,6 @@ function StepBasicIdentity({
               }
               options={departmentOptions}
               placeholder="Select department…"
-              disabled={value.college === ""}
             />
           </div>
           <div>
@@ -591,7 +591,6 @@ function StepBasicIdentity({
               value={value.degree ?? ""}
               setter={(val) => onChange({ ...value, degree: val.toString() })}
               placeholder="Select degree / program…"
-              disabled={value.department === ""}
             />
           </div>
         </div>

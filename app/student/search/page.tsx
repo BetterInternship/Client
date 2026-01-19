@@ -165,7 +165,7 @@ export default function SearchPage() {
       !isProfileBaseComplete(profile.data) ||
       profile.data?.acknowledged_auto_apply === false
     ) {
-      return router.push(`profile/complete-profile`);
+      return modalRegistry.incompleteProfile.open();
     }
 
     const allApplied =
