@@ -78,8 +78,8 @@ function snakeToDraft(u: ResumeParsedUserSnake): Partial<ProfileDraft> {
     middleName: u.middle_name,
     lastName: u.last_name,
     phone: u.phone_number,
-    university: u.university,
-    degree: u.degree,
+    // university: u.university,
+    // degree: u.degree,
   };
 }
 
