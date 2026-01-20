@@ -468,14 +468,21 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
               <label className="flex items-center text-sm text-gray-700">
                 Allowance:
               </label>
-              <Property
-                key="salary"
-                value={
-                  job.salary
-                    ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
-                    : "-"
-                }
-              />
+              <div className="flex">
+                <span className=" mr-1">₱</span> 
+                <Property
+                  key="salary"
+                  value={
+                    job.salary
+                      ? (to_job_pay_freq_name(job.salary_freq) !== "Not specified" ? (
+                          `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
+                        ) : (
+                          `${job.salary}`
+                        ))
+                      : "-"
+                  }
+                />
+              </div>
             </div>
           </div>
           ) : (
