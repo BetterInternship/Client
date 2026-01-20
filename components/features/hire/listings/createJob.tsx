@@ -50,6 +50,9 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
   const profile = useProfile();
   const { isMobile } = useMobile();
 
+  const isSalaryFilled = typeof formData.salary === 'number' && formData.salary;
+  const payFreqMissing = isSalaryFilled && !formData.salary_freq;
+
   const {
     open: openAlertModal,
     close: closeAlertModal,
@@ -87,6 +90,10 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
 
     if(formData.internship_preferences?.job_commitment_ids === null) {
       missingFields.push("Commitment");
+    }
+
+    if(isSalaryFilled && !formData.salary_freq){
+      missingFields.push("Pay Frequency")
     }
 
     if (missingFields.length > 0) {
@@ -135,7 +142,8 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
       formData.allowance === undefined ||
       !formData.internship_preferences?.internship_types?.length ||
       !formData.internship_preferences?.job_commitment_ids?.length ||
-      !formData.internship_preferences?.job_setup_ids?.length;
+      !formData.internship_preferences?.job_setup_ids?.length ||
+      payFreqMissing;
 
     setMissing(missing);
   }, [
@@ -146,7 +154,9 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
     formData.allowance,
     formData.internship_preferences?.internship_types,
     formData.internship_preferences?.job_commitment_ids,
-    formData.internship_preferences?.job_setup_ids
+    formData.internship_preferences?.job_setup_ids,
+    formData.salary,
+    formData.salary_freq,
   ]);
 
   return (
@@ -459,14 +469,18 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                               
 
                                 <div className="space-y-2">
-                                  <Label className="text-sm font-medium text-gray-700">
-                                    Pay Frequency{" "} <span className={cn("text-gray-300", isMobile ? "text-xs" : "text-sm")}>(Optional)</span>
+                                  <Label className={cn("text-sm font-medium text-gray-700", 
+                                    !formData.salary ? "text-gray-400" : "")}>
+                                    Pay Frequency{" "} 
+                                    { !formData.salary ? (<></>) : (<span className="text-destructive">*</span>) }
+                                    {/* <span className={cn("text-gray-300", isMobile ? "text-xs" : "text-sm")}>(Optional)</span> */}
                                   </Label>
                                   <GroupableRadioDropdown
                                     name="pay_freq"
                                     defaultValue={formData.salary_freq}
                                     options={job_pay_freq}
                                     onChange={fieldSetter("salary_freq")}
+                                    disabled={!formData.salary}
                                   />
                                 </div>
                               </div>
