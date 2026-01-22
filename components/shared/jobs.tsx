@@ -461,7 +461,7 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
               <></>
             )}
 
-          {job.salary ? (
+          {job.allowance === 0 ? (
             <div className="flex items-start gap-2">
             <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
             <div>
