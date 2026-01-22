@@ -469,7 +469,7 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
                 Allowance:
               </label>
               <div className="flex">
-                <span className=" mr-1">₱</span> 
+                {job.salary ? <span className=" mr-1">₱</span> : <></>}
                 <Property
                   key="salary"
                   value={
@@ -479,7 +479,7 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
                         ) : (
                           `${job.salary}`
                         ))
-                      : "-"
+                      : "With pay"
                   }
                 />
               </div>
