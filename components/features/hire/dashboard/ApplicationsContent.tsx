@@ -274,7 +274,7 @@ export const ApplicationsContent = forwardRef<
       </div>
     </div>
   ) : (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 mb-24">
       <Toast
         visible={toastVisible}
         title={toastMessage}
