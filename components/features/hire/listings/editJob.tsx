@@ -68,6 +68,20 @@ const EditJobPage = ({
 
     const refreshFlag = searchParams.get('refresh');
 
+    const { job_categories } = useDbRefs();
+
+    // create category groups
+    const category_items = job_categories
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) // use order col as sort
+      .map((category) => {
+        if (!category.parent_id && category.name !== "Others") return null;
+        
+        return {
+          id: category.id,
+          name: category.name,
+        }
+    }).filter(Boolean) ?? [];
+
     const {
         open: openAlertModal,
         close: closeAlertModal,
@@ -551,6 +565,23 @@ const EditJobPage = ({
                             )}
                             </Card>
                         </div>
+
+                    <div>
+                        <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
+                            Category<span className="text-destructive">*</span>
+                            <p className="text-gray-500 text-sm font-normal">Choose a category that describes the job (like Cybersecurity, Legal, Design, etc.). This will help people find your listing.</p>
+                        </div>
+                        
+                        <GroupableRadioDropdown
+                            name="category"
+                            defaultValue={formData.internship_preferences?.job_category_ids}
+                            options={category_items}
+                            onChange={(value) => setField("internship_preferences", {
+                            ...formData.internship_preferences,
+                            job_category_ids: value,
+                            })}
+                        />
+                    </div>
 
                     <div className="grid grid-cols-1 gap-6">
                     <div>
