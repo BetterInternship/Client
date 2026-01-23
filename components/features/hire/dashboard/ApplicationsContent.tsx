@@ -101,12 +101,7 @@ export const ApplicationsContent = forwardRef<
 
   if (!app_statuses) return null;
 
-  const unique_app_statuses = app_statuses.reduce(
-    (acc: {id: number, name: string}[], cur: {id: number, name: string}) => 
-      (acc.find(a => a.name === cur.name) ? acc : [...acc, cur]), []
-  );
-  
-  const statuses = unique_app_statuses
+  const statuses = app_statuses
     .map((status): ActionItem => {
       const uiProps = statusMap.get(status.id);
 
@@ -131,12 +126,8 @@ export const ApplicationsContent = forwardRef<
 
   // get statuses specifically for the rows. these use different action items.
   const getRowStatuses = (applicationId: string) => {
-    return unique_app_statuses
-      .filter((status) => status.id !== 7 && 
-                          status.id !== 5 && 
-                          status.id !== 2 &&
-                          status.id !== 3 &&
-                          status.id !== 0)
+    return app_statuses
+      .filter((status) => status.id !== 7 && status.id !== 5 && status.id !== 0)
       .map((status): ActionItem => {
         const uiProps = statusMap.get(status.id);
         return {
