@@ -28,7 +28,6 @@ import { useModal } from "@/hooks/use-modal";
 import { TriangleAlert } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
-
 interface CreateJobPageProps {
   createJob: (job: Partial<Job>) => Promise<any>;
 }
@@ -49,6 +48,23 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
   const router = useRouter();
   const profile = useProfile();
   const { isMobile } = useMobile();
+
+  const isSalaryFilled = typeof formData.salary === 'number' && formData.salary;
+  const payFreqMissing = isSalaryFilled && !formData.salary_freq;
+
+  const { job_categories } = useDbRefs();
+
+  // create category groups
+  const category_items = job_categories
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) // use order col as sort
+    .map((category) => {
+      if (!category.parent_id && category.name !== "Others") return null;
+      
+      return {
+        id: category.id,
+        name: category.name,
+      }
+    }).filter(Boolean) ?? [];
 
   const {
     open: openAlertModal,
@@ -87,6 +103,14 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
 
     if(formData.internship_preferences?.job_commitment_ids === null) {
       missingFields.push("Commitment");
+    }
+
+    if(formData.internship_preferences?.job_category_ids === null) {
+      missingFields.push("Category");
+    }
+
+    if(isSalaryFilled && !formData.salary_freq){
+      missingFields.push("Pay Frequency")
     }
 
     if (missingFields.length > 0) {
@@ -135,7 +159,9 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
       formData.allowance === undefined ||
       !formData.internship_preferences?.internship_types?.length ||
       !formData.internship_preferences?.job_commitment_ids?.length ||
-      !formData.internship_preferences?.job_setup_ids?.length;
+      !formData.internship_preferences?.job_setup_ids?.length ||
+      !formData.internship_preferences?.job_category_ids?.length ||
+      payFreqMissing;
 
     setMissing(missing);
   }, [
@@ -146,7 +172,10 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
     formData.allowance,
     formData.internship_preferences?.internship_types,
     formData.internship_preferences?.job_commitment_ids,
-    formData.internship_preferences?.job_setup_ids
+    formData.internship_preferences?.job_setup_ids,
+    formData.internship_preferences?.job_category_ids,
+    formData.salary,
+    formData.salary_freq,
   ]);
 
   return (
@@ -459,14 +488,18 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                               
 
                                 <div className="space-y-2">
-                                  <Label className="text-sm font-medium text-gray-700">
-                                    Pay Frequency{" "} <span className={cn("text-gray-300", isMobile ? "text-xs" : "text-sm")}>(Optional)</span>
+                                  <Label className={cn("text-sm font-medium text-gray-700", 
+                                    !formData.salary ? "text-gray-400" : "")}>
+                                    Pay Frequency{" "} 
+                                    { !formData.salary ? (<></>) : (<span className="text-destructive">*</span>) }
+                                    {/* <span className={cn("text-gray-300", isMobile ? "text-xs" : "text-sm")}>(Optional)</span> */}
                                   </Label>
                                   <GroupableRadioDropdown
                                     name="pay_freq"
                                     defaultValue={formData.salary_freq}
                                     options={job_pay_freq}
                                     onChange={fieldSetter("salary_freq")}
+                                    disabled={!formData.salary}
                                   />
                                 </div>
                               </div>
@@ -523,13 +556,30 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                         </Card>
                     </div>
 
+                <div>
+                  <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
+                      Category<span className="text-destructive">*</span>
+                      <p className="text-gray-500 text-sm font-normal">Choose a category that describes the job (like Cybersecurity, Legal, Design, etc.). This will help people find your listing.</p>
+                  </div>
+                  
+                  <GroupableRadioDropdown
+                    name="category"
+                    defaultValue={formData.internship_preferences?.job_category_ids}
+                    options={category_items}
+                    onChange={(value) => setField("internship_preferences", {
+                      ...formData.internship_preferences,
+                      job_category_ids: value,
+                    })}
+                  />
+                </div>
+
                 <div className="grid grid-cols-1 gap-6">
                   <div>
                     <div className="text-xl tracking-tight font-medium my-4">
                       <div className="text-lg tracking-tight font-medium text-gray-700 my-4">
                           Description<span className="text-destructive">*</span>
+                          <p className="text-gray-500 text-sm font-normal">What will the intern do? Briefly describe their tasks, projects, or roles in your company</p>
                       </div>
-                      <p className="text-gray-500 text-sm font-normal">What will the intern do? Briefly describe their tasks, projects, or roles in your company</p>
                     </div>
                     <div className="relative">
                       <MDXEditor
@@ -543,9 +593,8 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                   <div>
                     <div className="text-xl tracking-tight font-medium text-gray-700 my-4">
                       Requirements<span className="text-destructive">*</span>
+                      <p className="text-gray-500 text-sm mb-3">List preferred courses, skills, and qualifications from applicants</p>
                     </div>
-                    {/* <p className="text-gray-500 text-xs mb-3">*Note that resumes are already a given requirement for applicants</p> */}
-                    <p className="text-gray-500 text-sm mb-3">List preferred courses, skills, and qualifications from applicants</p>
                     <div className="relative mb-4">
                       <MDXEditor
                         className="min-h-[200px] w-full border border-gray-200 rounded-[0.33em] overflow-y-auto"

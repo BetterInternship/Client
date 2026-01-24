@@ -409,79 +409,102 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
     (job.internship_preferences?.job_setup_ids ?? [])
       .map((id) => to_job_mode_name(id))
       .filter(Boolean)
-      .join(", ") || "None";
+      .join(", ") || "";
 
   const workLoads =
     (job.internship_preferences?.job_commitment_ids ?? [])
       .map((id) => to_job_type_name(id))
       .filter(Boolean)
-      .join(", ") || "None";
+      .join(", ") || "";
 
   const internshipTypes =
     (job.internship_preferences?.internship_types ?? [])
       .filter(Boolean)
       .map((type) => type.charAt(0).toUpperCase() + type.slice(1).toLowerCase())
-      .join(", ") || "-";
+      .join(", ") || "";
 
   return (
     <div className="space-y-2">
       <div className="grid sm:grid-cols-4 gap-2">
         <DropdownGroup>
-          <div className="flex items-start gap-2">
-            <Monitor className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-            <div>
-              <label className="flex items-center text-sm text-gray-700">
-                Work Mode:
-              </label>
-              <Property
-                key="work_modes"
-                value={workModes}
-              />
+          {workModes ? (
+            <div className="flex items-start gap-2">
+              <Monitor className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+              <div>
+                <label className="flex items-center text-sm text-gray-700">
+                  Work Mode:
+                </label>
+                <Property
+                  key="work_modes"
+                  value={workModes}
+                />
+              </div>
             </div>
-          </div>
+            ) : (
+              <></>
+            )}
 
-          <div className="flex items-start gap-2">
-            <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-            <div>
-              <label className="flex items-center text-sm text-gray-700">
-                Work Load:
-              </label>
-              <Property 
-                key="workload"
-                value={workLoads}
-              />
+          {workLoads ? (
+            <div className="flex items-start gap-2">
+              <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+              <div>
+                <label className="flex items-center text-sm text-gray-700">
+                  Work Load:
+                </label>
+                <Property 
+                  key="workload"
+                  value={workLoads}
+                />
+              </div>
             </div>
-          </div>
+            ) : (
+              <></>
+            )}
 
-          <div className="flex items-start gap-2">
+          {job.allowance === 0 ? (
+            <div className="flex items-start gap-2">
             <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
             <div>
               <label className="flex items-center text-sm text-gray-700">
-                Salary:
+                Allowance:
               </label>
-              <Property
-                key="salary"
-                value={
-                  job.salary
-                    ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
-                    : "-"
-                }
-              />
+              <div className="flex">
+                {job.salary ? <span className=" mr-1">₱</span> : <></>}
+                <Property
+                  key="salary"
+                  value={
+                    job.salary
+                      ? (to_job_pay_freq_name(job.salary_freq) !== "Not specified" ? (
+                          `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
+                        ) : (
+                          `${job.salary}`
+                        ))
+                      : "With pay"
+                  }
+                />
+              </div>
             </div>
           </div>
+          ) : (
+            <></>
+          )}
 
-          <div className="flex items-start gap-2">
-            <UserCheck className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-            <div>
-              <label className="flex items-center text-sm text-gray-700">
-                Accepting:
-              </label>
-              <Property 
-                key="internship_type"
-                value={internshipTypes}
-              />
+          {internshipTypes ? (
+            <div className="flex items-start gap-2">
+              <UserCheck className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+              <div>
+                <label className="flex items-center text-sm text-gray-700">
+                  Accepting:
+                </label>
+                <Property 
+                  key="internship_type"
+                  value={internshipTypes}
+                />
+              </div>
             </div>
-          </div>
+          ) : (
+            <></>
+          )}
         </DropdownGroup>
       </div>
     </div>

@@ -273,7 +273,7 @@ export const GroupableRadioDropdown = <ID extends number | string>({
         >
           <div
             className={cn(
-              "relative z-[100] max-h-64 overflow-y-auto overscroll-contain",
+              "relative z-[100] max-h-40 overflow-y-auto overscroll-contain",
               "scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
             )}
           >

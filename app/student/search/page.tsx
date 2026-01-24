@@ -165,8 +165,11 @@ export default function SearchPage() {
       !isProfileBaseComplete(profile.data) ||
       profile.data?.acknowledged_auto_apply === false
     ) {
-      modalRegistry.incompleteProfile.open();
-      return;
+      if (isMobile) {
+        return router.push(`profile/complete-profile`);
+      } else {
+        return modalRegistry.incompleteProfile.open();
+      }
     }
 
     const allApplied =
