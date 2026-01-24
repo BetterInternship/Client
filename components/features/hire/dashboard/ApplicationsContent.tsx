@@ -207,7 +207,7 @@ export const ApplicationsContent = forwardRef<
   };
 
   return isMobile ? (
-    <div className="flex flex-col gap-2 min-h-screen">
+    <div className="flex flex-col gap-2 min-h-screen mb-28">
       <Toast
         visible={toastVisible}
         title={toastMessage}
@@ -274,7 +274,7 @@ export const ApplicationsContent = forwardRef<
       </div>
     </div>
   ) : (
-    <div className="flex flex-col gap-2 mb-24">
+    <div className="flex flex-col gap-2 mb-28">
       <Toast
         visible={toastVisible}
         title={toastMessage}
