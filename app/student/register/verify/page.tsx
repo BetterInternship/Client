@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { useModal } from "@/hooks/use-modal";
+import { SquareAsterisk } from 'lucide-react';
 import {
   InputOTP,
   InputOTPGroup,
@@ -74,6 +76,7 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [isCoolingDown, setIsCoolingDown] = useState(false);
   const [activating, setActivating] = useState(false);
+  const [countdown, setCountdown] = useState(0);
 
   useEffect(() => {
     if (!eduEmail?.trim()) return setIsEmailValid(false);
@@ -100,6 +103,12 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
       .finally(() => setActivating(false));
   }, [otp, eduEmail, onFinish]);
 
+  const {
+    open: openOTPModal,
+    close: closeOTPModal,
+    Modal: OTPModal,
+  } = useModal("otp-modal");
+
   const requestOTP = () => {
     if (!isEmailValid || sending || isCoolingDown) return;
     setSending(true);
@@ -110,16 +119,27 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
           alert(response.message);
           return;
         }
-        alert("Check your inbox for a 6-digit code.");
+        // alert("Check your inbox for a 6-digit code.");
+        openOTPModal();
         setSent(true);
         setIsCoolingDown(true);
-        setTimeout(() => setIsCoolingDown(false), 60_000); // 60s cooldown
+        setCountdown(60);
       })
       .catch(() => setOtpError("Couldn’t send OTP. Try again."))
       .finally(() => setSending(false));
   };
 
+  useEffect(() => {
+  if (countdown > 0) {
+    const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    return () => clearTimeout(timer);
+  } else if (countdown === 0 && isCoolingDown) {
+    setIsCoolingDown(false);
+  }
+}, [countdown, isCoolingDown]);
+
   return (
+  <>
     <div className="space-y-6">
       <div>
         <p className="text-sm text-gray-600">
@@ -178,12 +198,32 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
                     : sent
                       ? "Resend code"
                       : "Send me a code"
-                  : "Please wait…"}
+                  : `${countdown}s until you can resend your OTP`}
               </Button>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <OTPModal>
+      <div className="p-8">
+        <div className="mb-8 flex flex-col items-center justify-center text-center">
+          <div className="flex gap-2">
+            <SquareAsterisk className="text-primary h-8 w-8 mb-4" />
+            <SquareAsterisk className="text-primary h-8 w-8 mb-4" />
+            <SquareAsterisk className="text-primary h-8 w-8 mb-4" />
+          </div>
+          <div className="flex flex-col items-center">
+            <h3 className="text-lg">Check your inbox for a 6-digit code.</h3>
+            OTP expires in 10 minutes.
+          </div>
+        </div>
+        <div className="flex justify-center gap-6">
+          <Button onClick={closeOTPModal}>Ok</Button>
+        </div>
+      </div>
+    </OTPModal>
+    </>
   );
 }

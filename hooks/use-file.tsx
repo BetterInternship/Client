@@ -10,6 +10,9 @@
 
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { useCallback, useImperativeHandle, useRef, useState } from "react";
+import { useModal } from "@/hooks/use-modal";
+import { TriangleAlert } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
 interface IUseFile {
   url: string;
@@ -179,6 +182,12 @@ export const useFileUpload = ({
   const [response, setResponse] = useState<Promise<any>>();
   const fileInputRef = useRef<IFileUploadRef>(null);
 
+  const {
+    open: openFileFailModal,
+    close: closeFileFailModal,
+    Modal: BaseModal,
+  } = useModal("file-fail-modal");
+
   /**
    * Upload the file.
    *
@@ -200,18 +209,36 @@ export const useFileUpload = ({
     console.log(result);
 
     if (!result.success) {
-      alert("Could not upload file.");
-      return;
+      // alert("Could not upload file.");
+      openFileFailModal();
     }
 
     if (!silent) alert("File uploaded successfully!");
     setIsUploading(false);
   };
 
+  const FileFailModal = ({ children }: { children?: React.ReactNode }) => (
+    <BaseModal>
+      <div className="p-8">
+        <div className="mb-8 flex flex-col items-center justify-center text-center">
+          <TriangleAlert className="text-primary h-8 w-8 mb-4" />
+          <div className="flex flex-col items-center">
+            <h3 className="text-lg">Could not upload file</h3>
+            <p className="text-gray-500 text-sm">Please try again</p>
+          </div>
+        </div>
+        <div className="flex justify-center gap-6">
+          <Button onClick={closeFileFailModal}>Try Again</Button>
+        </div>
+      </div>
+    </BaseModal>
+  );
+
   return {
     upload,
     response,
     isUploading,
     fileInputRef,
-  };
+    FileFailModal,
+  }
 };
