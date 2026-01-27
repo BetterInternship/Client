@@ -9,6 +9,7 @@ import {
   Repeat,
   User,
   ArrowLeft,
+  TriangleAlert,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,7 @@ import { DropdownGroup } from "@/components/ui/dropdown";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useModal } from "@/hooks/use-modal";
 
 /* ============================== Modal shell ============================== */
 
@@ -128,8 +130,14 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   const [parsedReady, setParsedReady] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
 
+  const {
+    open: openFileFailModal,
+    close: closeFileFailModal,
+    Modal: FileFailModal,
+  } = useModal("file-fail-modal", {showCloseButton: false});
+
   // analyze
-  const { upload, fileInputRef, response } = useAnalyzeResume(file);
+  const { upload, fileInputRef, response, uploadSuccess } = useAnalyzeResume(file);
   const handledResponseRef = useRef<Promise<any> | null>(null);
 
   // upload on file
@@ -156,7 +164,12 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
         }
         setParsedReady(true);
         setIsParsing(false);
-        setStep(1);
+        if (uploadSuccess) {
+          setStep(1);
+        } else {
+          setStep(0);
+          openFileFailModal();
+        }
       })
       .catch((e: Error) => {
         if (!cancelled) {
@@ -187,7 +200,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
         title: "Upload your resume",
         subtitle: "Upload a PDF and we'll auto-fill what we can.",
         icon: Upload,
-        canNext: () => !!file && !isParsing,
+        canNext: () => !!file && !isParsing && uploadSuccess,
         component: (
           <StepResume
             file={file}
@@ -264,6 +277,9 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     if (!current) return;
 
     if (current.id === "resume") {
+      if(!uploadSuccess){
+        return;
+      }
       setStep(step + 1);
       return;
     }
@@ -340,14 +356,31 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   }
 
   return (
-    <DropdownGroup>
-      <Stepper
-        step={step}
-        steps={steps}
-        onNext={() => void onNext()}
-        onBack={() => setStep(Math.max(0, step - 1))}
-      />
-    </DropdownGroup>
+    <>
+      <DropdownGroup>
+        <Stepper
+          step={step}
+          steps={steps}
+          onNext={() => void onNext()}
+          onBack={() => setStep(Math.max(0, step - 1))}
+        />
+      </DropdownGroup>
+
+      <FileFailModal>
+      <div className="p-8">
+        <div className="mb-8 flex flex-col items-center justify-center text-center">
+          <TriangleAlert className="text-primary h-8 w-8 mb-4 mt-0" />
+          <div className="flex flex-col items-center">
+            <h3 className="text-lg">Could not upload file</h3>
+            <p className="text-gray-500 text-sm">Please try again with a different file</p>
+          </div>
+        </div>
+        <div className="flex justify-center gap-6">
+          <Button onClick={closeFileFailModal}>Try Again</Button>
+        </div>
+      </div>
+    </FileFailModal>
+    </>
   );
 }
 
