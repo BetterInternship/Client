@@ -1443,10 +1443,13 @@ const ResumeBox = ({
         ref={resumeFileInputRef}
         maxSize={2.5}
         allowedTypes={["application/pdf"]}
-        onSelect={(file) => {
+        onSelect={async (file) => {
           // filename display removed by design
-          resumeUpload(file);
-          queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+          const success = await resumeUpload(file);
+          
+          if(success) {
+            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+          } 
         }}
       />
 
