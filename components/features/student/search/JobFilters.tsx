@@ -8,11 +8,7 @@ import React, {
   useState,
   useEffect,
 } from "react";
-import {
-  Filter as FilterIcon,
-  ChevronDown,
-  Check,
-} from "lucide-react";
+import { Filter as FilterIcon, ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useDbRefs } from "@/lib/db/use-refs";
@@ -157,14 +153,14 @@ function CheckboxRow({
       type="button"
       onClick={() => onChange(!checked)}
       className={cn(
-        "flex items-center justify-between w-full text-left px-2 py-2 rounded hover:bg-gray-50 border border-transparent"
+        "flex items-center justify-between w-full text-left px-2 py-2 rounded hover:bg-gray-50 border border-transparent",
       )}
     >
       <span className="text-sm">{label}</span>
       <span
         className={cn(
           "inline-flex items-center justify-center w-5 h-5 rounded border",
-          checked ? "border-blue-500 bg-blue-100" : "border-gray-300"
+          checked ? "border-blue-500 bg-blue-100" : "border-gray-300",
         )}
       >
         {checked ? <Check className="w-3.5 h-3.5 text-blue-600" /> : null}
@@ -185,17 +181,17 @@ function PositionPanel() {
   const { job_categories } = useDbRefs();
 
   const categories: PositionCategory[] = job_categories
-  .filter((category) => {
-    if (category.parent_id === null) return category;
-  })
-  .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-  .map((category) => {
-    return {
-      name: category.name,
-      value: category.id,
-      children: []
-    }
-  });
+    .filter((category) => {
+      if (category.parent_id === null) return category;
+    })
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .map((category) => {
+      return {
+        name: category.name,
+        value: category.id,
+        children: [],
+      };
+    });
 
   const getChildren = (parentId: string) =>
     job_categories
@@ -208,7 +204,7 @@ function PositionPanel() {
 
   const mapChildren = (parentId: string) => {
     return getChildren(parentId).map((c) => c.value);
-  }
+  };
 
   const MasterCheckbox = ({
     checked,
@@ -220,7 +216,7 @@ function PositionPanel() {
     <span
       className={cn(
         "inline-flex items-center justify-center w-4.5 h-4.5 rounded border text-[10px]",
-        checked ? "border-blue-500 bg-blue-100" : "border-gray-300 bg-white"
+        checked ? "border-blue-500 bg-blue-100" : "border-gray-300 bg-white",
       )}
       aria-hidden="true"
     >
@@ -273,7 +269,7 @@ function PositionPanel() {
               aria-checked={headerIndeterminate ? "mixed" : headerChecked}
               className={cn(
                 "flex items-center justify-between px-3 py-2 gap-2 cursor-pointer",
-                "bg-white hover:bg-gray-50 active:bg-gray-100"
+                "bg-white hover:bg-gray-50 active:bg-gray-100",
               )}
               onClick={handleHeaderToggle}
               onKeyDown={(e) => {
@@ -388,7 +384,7 @@ function DetailsPanel() {
                 "inline-flex items-center justify-center w-4.5 h-4.5 rounded border text-[10px]",
                 checked
                   ? "border-blue-500 bg-blue-100"
-                  : "border-gray-300 bg-white"
+                  : "border-gray-300 bg-white",
               )}
               aria-hidden="true"
             >
@@ -446,11 +442,9 @@ function DetailsPanel() {
         keyName="jobAllowance"
         options={ALLOWANCE_OPTIONS}
       />
-      <Group title="Internship MOA" keyName="jobMoa" options={MOA_OPTIONS} />
     </div>
   );
 }
-
 
 export function JobFilters({
   onApply,
@@ -499,7 +493,7 @@ export function JobFilters({
                     "text-sm px-3 py-1 rounded-full",
                     tab === "category"
                       ? "bg-gray-900 text-white"
-                      : "bg-gray-100"
+                      : "bg-gray-100",
                   )}
                   onClick={() => setTab("category")}
                 >
@@ -508,7 +502,9 @@ export function JobFilters({
                 <button
                   className={cn(
                     "text-sm  px-3 py-1 rounded-full",
-                    tab === "details" ? "bg-gray-900 text-white" : "bg-gray-100"
+                    tab === "details"
+                      ? "bg-gray-900 text-white"
+                      : "bg-gray-100",
                   )}
                   onClick={() => setTab("details")}
                 >
@@ -583,7 +579,7 @@ export function JobFilters({
               <button
                 className={cn(
                   "text-sm px-3 py-1 rounded-full",
-                  tab === "category" ? "bg-gray-900 text-white" : "bg-gray-100"
+                  tab === "category" ? "bg-gray-900 text-white" : "bg-gray-100",
                 )}
                 onClick={() => setTab("category")}
               >
@@ -592,7 +588,7 @@ export function JobFilters({
               <button
                 className={cn(
                   "text-sm px-3 py-1 rounded-full",
-                  tab === "details" ? "bg-gray-900 text-white" : "bg-gray-100"
+                  tab === "details" ? "bg-gray-900 text-white" : "bg-gray-100",
                 )}
                 onClick={() => setTab("details")}
               >
