@@ -20,7 +20,6 @@ import {
   Filter,
   Search,
   ChevronDown,
-  Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 

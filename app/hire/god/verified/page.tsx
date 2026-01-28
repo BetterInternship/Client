@@ -18,6 +18,8 @@ import {
   ListSummary,
 } from "@/components/features/hire/god/ui";
 import {
+  GenerateMagicLinkButton,
+  GenerateMagicLinkModal,
   RegisterEmployerButton,
   RegisterEmployerModal,
 } from "@/components/features/hire/god/RegisterEmployerModal";
@@ -38,6 +40,12 @@ export default function VerifiedEmployersPage() {
     open: openRegister,
     close: closeRegister,
   } = useModal("register-modal");
+
+  const {
+    Modal: MagicLinkModal,
+    open: openMagicLink,
+    close: closeMagicLink,
+  } = useModal("magic-link-modal");
 
   const [search, setSearch] = useState<string | null>(null);
   const [hideNoApps, setHideNoApps] = useState(false);
@@ -104,17 +112,19 @@ export default function VerifiedEmployersPage() {
           </>
         }
         leftActions={
-          <Button
-            scheme="primary"
-            size="xs"
-            onClick={(ev) => {
-              ev.stopPropagation();
-              authorizeAs(e.id ?? "");
-            }}
-            disabled={authorizingId === (e.id ?? "")}
-          >
-            {authorizingId === (e.id ?? "") ? "Opening…" : "View"}
-          </Button>
+          <>
+            <Button
+              scheme="primary"
+              size="xs"
+              onClick={(ev) => {
+                ev.stopPropagation();
+                authorizeAs(e.id ?? "");
+              }}
+              disabled={authorizingId === (e.id ?? "")}
+            >
+              {authorizingId === (e.id ?? "") ? "Opening…" : "View"}
+            </Button>
+          </>
         }
         more={
           <div className="space-y-2 text-sm">
@@ -148,6 +158,7 @@ export default function VerifiedEmployersPage() {
         />
         {/* Button gets the owner’s open() via props */}
         <RegisterEmployerButton onOpen={openRegister} />
+        <GenerateMagicLinkButton onOpen={openMagicLink} />
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
@@ -179,6 +190,13 @@ export default function VerifiedEmployersPage() {
       </ListShell>
 
       <RegisterEmployerModal Modal={RegisterModal} onClose={closeRegister} />
+      <GenerateMagicLinkModal
+        Modal={MagicLinkModal}
+        onClose={closeMagicLink}
+        employers={filtered
+          .filter((e) => e.id && e.name)
+          .map((e) => ({ id: e.id!, name: e.name! }))}
+      />
     </>
   );
 }
