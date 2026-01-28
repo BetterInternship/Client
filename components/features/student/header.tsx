@@ -98,7 +98,7 @@ const SearchInput = ({
       <button
         type="button"
         onClick={() => onToggleMoa(!moaOnly)}
-        className="flex items-center gap-2.5 px-4 h-10 hover:bg-gray-50  transition-all"
+        className="flex items-center gap-2 px-3 h-10 hover:bg-gray-50  transition-all"
         aria-pressed={moaOnly}
       >
         {moaOnly ? (
@@ -106,7 +106,7 @@ const SearchInput = ({
         ) : (
           <Square className="h-5 w-5 text-gray-400" />
         )}
-        <label className="text-sm font-medium text-gray-700 cursor-pointer whitespace-nowrap">
+        <label className="text-xs font-medium text-gray-700 cursor-pointer whitespace-nowrap">
           For Credit
         </label>
       </button>
