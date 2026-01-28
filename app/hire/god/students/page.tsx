@@ -26,6 +26,7 @@ import { useModal } from "@/hooks/use-modal";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import { UserService } from "@/lib/api/services";
+import { useModalRegistry } from "@/components/modals/modal-registry";
 import { useFile } from "@/hooks/use-file";
 import {
   FileText,
@@ -33,6 +34,8 @@ import {
   ChevronDown,
   Check,
   X,
+  CheckSquare,
+  Square,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -51,6 +54,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
+import { useJobsData } from "@/lib/api/student.data.api";
 
 const STUDENT_ORIGIN =
   process.env.NEXT_PUBLIC_CLIENT_URL || "http://localhost:3000";
@@ -98,10 +102,17 @@ export default function StudentsPage() {
   const queryClient = useQueryClient();
   const employers = useEmployers();
   const refs = useDbRefs();
+  const modalRegistry = useModalRegistry();
 
   // local tags (by user.id)
   const { tagMap, addTag, removeTag, allTags } =
     useLocalTagMap("god-tags:students");
+
+  // Mass apply selection state
+  const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [massApplyMode, setMassApplyMode] = useState(false);
 
   // filter states
   const [activeTags, setActiveTags] = useState<string[]>([]);
@@ -166,6 +177,28 @@ export default function StudentsPage() {
 
   const setSearchQuery = (id?: number | string | null) =>
     setSearch(id?.toString() ?? null);
+
+  const toggleStudentSelection = (studentId: string) => {
+    setSelectedStudentIds((prev) => {
+      const next = new Set(prev);
+      next.has(studentId) ? next.delete(studentId) : next.add(studentId);
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedStudentIds(new Set());
+
+  const selectAllFiltered = () => {
+    const next = new Set(selectedStudentIds);
+    filtered.forEach((u: any) => u.id && next.add(u.id));
+    setSelectedStudentIds(next);
+  };
+
+  const unselectAllFiltered = () => {
+    const next = new Set(selectedStudentIds);
+    filtered.forEach((u: any) => u.id && next.delete(u.id));
+    setSelectedStudentIds(next);
+  };
 
   const applications = useMemo(() => {
     const apps: any[] = [];
@@ -248,6 +281,7 @@ export default function StudentsPage() {
   const rows = filtered.map((u: any) => {
     const userApplications = applications.filter((a) => a.user_id === u.id);
     const isRowPending = impersonate.isPending && impUserId === u.id;
+    const isSelected = selectedStudentIds.has(u.id);
     const lastTs = u?.last_session?.timestamp
       ? new Date(u.last_session.timestamp).getTime()
       : undefined;
@@ -313,17 +347,33 @@ export default function StudentsPage() {
           />
         }
         leftActions={
-          <Button
-            scheme="primary"
-            size="xs"
-            disabled={isRowPending}
-            onClick={(ev) => {
-              ev.stopPropagation();
-              viewAsStudent(u.id);
-            }}
-          >
-            {isRowPending ? "Starting..." : "View"}
-          </Button>
+          massApplyMode ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleStudentSelection(u.id);
+              }}
+              className="p-1 hover:bg-blue-50 rounded transition !opacity-100 !pointer-events-auto"
+            >
+              {isSelected ? (
+                <CheckSquare className="h-5 w-5 text-blue-600" />
+              ) : (
+                <Square className="h-5 w-5 text-gray-400" />
+              )}
+            </button>
+          ) : (
+            <Button
+              scheme="primary"
+              size="xs"
+              disabled={isRowPending}
+              onClick={(ev) => {
+                ev.stopPropagation();
+                viewAsStudent(u.id);
+              }}
+            >
+              {isRowPending ? "Starting..." : "View"}
+            </Button>
+          )
         }
         more={
           <div className="space-y-2 text-sm">
@@ -347,9 +397,17 @@ export default function StudentsPage() {
           </div>
         }
         onClick={() => {
-          setSelectedUser(u);
-          openApplicantModal();
+          if (massApplyMode) {
+            toggleStudentSelection(u.id);
+          } else {
+            setSelectedUser(u);
+            openApplicantModal();
+          }
         }}
+        className={cn(
+          "transition-colors",
+          massApplyMode && isSelected && "bg-blue-50 border-blue-200",
+        )}
       />
     );
   });
@@ -387,6 +445,18 @@ export default function StudentsPage() {
           className="w-80"
           placeholder="Search student..."
         />
+
+        <Button
+          variant={massApplyMode ? "default" : "outline"}
+          onClick={() => {
+            setMassApplyMode(!massApplyMode);
+            if (!massApplyMode) {
+              clearSelection();
+            }
+          }}
+        >
+          {massApplyMode ? "Cancel Selection" : "Mass Apply"}
+        </Button>
 
         <Popover>
           <PopoverTrigger asChild>
@@ -591,6 +661,52 @@ export default function StudentsPage() {
       <ListShell toolbar={toolbar} fullWidth>
         {rows}
       </ListShell>
+
+      {/* Floating toolbar when students are selected */}
+      {massApplyMode && selectedStudentIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border border-gray-200 rounded-lg shadow-lg px-6 py-4 flex items-center gap-4 z-50">
+          <span className="font-semibold text-gray-900">
+            {selectedStudentIds.size} student
+            {selectedStudentIds.size > 1 ? "s" : ""} selected
+          </span>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                unselectAllFiltered();
+              }}
+            >
+              Deselect All on Page
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                selectAllFiltered();
+              }}
+            >
+              Select All on Page
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                modalRegistry.massApplyJobSelector.open({
+                  selectedStudentIds,
+                  onClose: () => {
+                    setMassApplyMode(false);
+                    clearSelection();
+                  },
+                  panelClassName:
+                    "w-[85vw] h-[85vh] sm:max-w-[85vw] sm:max-h-[85vh]",
+                });
+              }}
+            >
+              Apply to Job
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Wider modal for resume preview on desktop */}
       <ApplicantModal className="!w-[1200px] max-w-[95vw]">
