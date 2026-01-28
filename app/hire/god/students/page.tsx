@@ -115,10 +115,19 @@ export default function StudentsPage() {
   const [massApplyMode, setMassApplyMode] = useState(false);
 
   // filter states
-  const [activeTags, setActiveTags] = useState<string[]>([]);
-  const [mode, setMode] = useState<"any" | "all">("any"); // tag matching
-  const [activeCourses, setActiveCourses] = useState<string[]>([]);
-  const [activePositions, setActivePositions] = useState<string[]>([]);
+  const [filterApplyForMe, setFilterApplyForMe] = useState<boolean | null>(
+    null,
+  );
+  const [filterCreditedInternship, setFilterCreditedInternship] = useState<
+    boolean | null
+  >(null);
+  const [activeColleges, setActiveColleges] = useState<string[]>([]);
+  const [activeWorkModes, setActiveWorkModes] = useState<(string | number)[]>(
+    [],
+  );
+  const [activeWorkTypes, setActiveWorkTypes] = useState<(string | number)[]>(
+    [],
+  );
 
   // quick filters / search
   const [search, setSearch] = useState<string | null>(null);
@@ -217,22 +226,31 @@ export default function StudentsPage() {
 
   /* ---------- Filter helpers ---------- */
 
-  const matchesTagFilter = (id: string) => {
-    if (activeTags.length === 0) return true;
-    const tags = tagMap[id] ?? [];
-    return mode === "any"
-      ? activeTags.some((t) => tags.includes(t))
-      : activeTags.every((t) => tags.includes(t));
+  const matchesCollege = (u: any) => {
+    if (activeColleges.length === 0) return true;
+    return activeColleges.includes(u.college);
   };
 
-  const matchesPosition = (u: any) => {
-    if (activePositions.length === 0) return true;
-    const arr: string[] = Array.isArray(u.job_category_ids)
-      ? u.job_category_ids
-      : Array.isArray(u.job_position_ids)
-        ? u.job_position_ids
-        : [];
-    return arr.some((id) => activePositions.includes(id));
+  const matchesApplyForMe = (u: any) => {
+    if (filterApplyForMe === null) return true;
+    return u.apply_for_me === filterApplyForMe;
+  };
+
+  const matchesWorkModes = (u: any) => {
+    if (activeWorkModes.length === 0) return true;
+    const modes = u.internship_preferences?.job_setup_ids ?? [];
+    return activeWorkModes.some((mode) => modes.includes(String(mode) as any));
+  };
+
+  const matchesWorkTypes = (u: any) => {
+    if (activeWorkTypes.length === 0) return true;
+    const types = u.internship_preferences?.job_commitment_ids ?? [];
+    return activeWorkTypes.some((type) => types.includes(String(type) as any));
+  };
+  const matchesCreditedInternship = (u: any) => {
+    if (filterCreditedInternship === null) return true;
+    const isCredited = u.internship_preferences?.internship_type === "credited";
+    return isCredited === filterCreditedInternship;
   };
 
   /* ---------- Main filtered list ---------- */
@@ -250,8 +268,11 @@ export default function StudentsPage() {
         ?.toLowerCase()
         .includes(search?.toLowerCase() ?? ""),
     )
-    .filter((u: any) => matchesTagFilter(u.id))
-    .filter(matchesPosition)
+    .filter(matchesCollege)
+    .filter(matchesApplyForMe)
+    .filter(matchesWorkModes)
+    .filter(matchesWorkTypes)
+    .filter(matchesCreditedInternship)
     .toSorted(
       (a: any, b: any) =>
         new Date(b.created_at ?? "").getTime() -
@@ -408,9 +429,22 @@ export default function StudentsPage() {
 
   const filtersActiveCount =
     (hideNoApps ? 1 : 0) +
-    activeCourses.length +
-    activePositions.length +
-    activeTags.length;
+    (filterApplyForMe !== null ? 1 : 0) +
+    (filterCreditedInternship !== null ? 1 : 0) +
+    activeColleges.length +
+    activeWorkModes.length +
+    activeWorkTypes.length;
+
+  // Get unique colleges for filter
+  const collegeOptions = useMemo(() => {
+    const colleges = new Set<string>();
+    users.forEach((u: any) => {
+      if (u.college) colleges.add(u.college);
+    });
+    return Array.from(colleges).sort((a, b) =>
+      refs.to_college_name(a).localeCompare(refs.to_college_name(b)),
+    );
+  }, [users, refs]);
 
   const toolbar = (
     <div className="flex justify-between">
@@ -466,7 +500,7 @@ export default function StudentsPage() {
 
           <PopoverContent
             align="start"
-            className="w-[28rem] p-0 overflow-hidden"
+            className="w-[28rem] p-0  max-h-[80vh] flex flex-col"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50">
@@ -476,135 +510,226 @@ export default function StudentsPage() {
                   className="text-xs text-blue-700 hover:underline"
                   onClick={() => {
                     setHideNoApps(false);
-                    setActiveCourses([]);
+                    setFilterApplyForMe(null);
+                    setFilterCreditedInternship(null);
+                    setActiveColleges([]);
+                    setActiveWorkModes([]);
+                    setActiveWorkTypes([]);
                     setActivePositions([]);
-                    setActiveTags([]);
-                    setMode("any");
                   }}
                 >
                   Reset all
                 </button>
               )}
             </div>
-            {/* Quick */}
-            <div className="px-4 py-3 border-b">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-700">
-                  Hide without applications
-                </span>
-                <Switch
-                  checked={hideNoApps}
-                  onCheckedChange={(v) => setHideNoApps(Boolean(v))}
-                />
-              </div>
-            </div>
-            {/* Course */}
-            <div className="px-4 py-3 border-b">
-              <div className="mb-2 flex items-center justify-between">
-                <div className="text-sm font-medium">Course</div>
-                {activeCourses.length > 0 && (
-                  <button
-                    className="text-xs text-blue-700 hover:underline"
-                    onClick={() => setActiveCourses([])}
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-            </div>
-            {/* Position */}
-            <div className="px-4 py-3 border-b">
-              <div className="mb-2 flex items-center justify-between">
-                <div className="text-sm font-medium">Position</div>
-                {activePositions.length > 0 && (
-                  <button
-                    className="text-xs text-blue-700 hover:underline"
-                    onClick={() => setActivePositions([])}
-                  >
-                    Clear
-                  </button>
-                )}
+
+            {/* Scrollable content */}
+            <div className="flex-1 overflow-y-auto">
+              {/* Hide without applications */}
+              <div className="px-4 py-3 border-b">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-700">
+                    Hide without applications
+                  </span>
+                  <Switch
+                    checked={hideNoApps}
+                    onCheckedChange={(v) => setHideNoApps(Boolean(v))}
+                  />
+                </div>
               </div>
 
-              <Command>
-                <CommandInput placeholder="Search position..." />
-                <CommandList className="max-h-40 overflow-auto">
-                  <CommandEmpty className="px-2 py-1 text-xs text-slate-400">
-                    No matches
-                  </CommandEmpty>
-                  <CommandGroup>
-                    {positionOptions.map((p) => {
-                      const on = activePositions.includes(p.id);
-                      return (
-                        <CommandItem
-                          key={p.id}
-                          onSelect={() =>
-                            setActivePositions((prev) =>
-                              on
-                                ? prev.filter((x) => x !== p.id)
-                                : [...prev, p.id],
-                            )
-                          }
-                          className="cursor-pointer"
-                        >
-                          <span className="truncate">{p.label}</span>
-                          <RowCheck visible={on} />
-                        </CommandItem>
-                      );
-                    })}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </div>
-            ;{/* Tags */}
-            <div className="px-4 py-3">
-              <div className="mb-2 flex items-center justify-between">
-                <div className="text-sm font-medium">Tags</div>
-                <div className="flex items-center gap-3">
-                  <button
-                    className="text-xs text-slate-600 underline"
+              {/* Apply For Me */}
+              <div className="px-4 py-3 border-b">
+                <div className="text-sm font-medium mb-2">Apply For Me</div>
+                <div className="flex gap-2">
+                  <Button
+                    variant={filterApplyForMe === true ? "default" : "outline"}
+                    size="sm"
                     onClick={() =>
-                      setMode((m) => (m === "any" ? "all" : "any"))
+                      setFilterApplyForMe(
+                        filterApplyForMe === true ? null : true,
+                      )
                     }
-                    title="Toggle ANY/ALL"
                   >
-                    Match: {mode.toUpperCase()}
-                  </button>
-                  {activeTags.length > 0 && (
+                    Enabled
+                  </Button>
+                  <Button
+                    variant={filterApplyForMe === false ? "default" : "outline"}
+                    size="sm"
+                    onClick={() =>
+                      setFilterApplyForMe(
+                        filterApplyForMe === false ? null : false,
+                      )
+                    }
+                  >
+                    Disabled
+                  </Button>
+                </div>
+              </div>
+
+              {/* College */}
+              <div className="px-4 py-3 border-b">
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="text-sm font-medium">College</div>
+                  {activeColleges.length > 0 && (
                     <button
                       className="text-xs text-blue-700 hover:underline"
-                      onClick={() => setActiveTags([])}
+                      onClick={() => setActiveColleges([])}
                     >
                       Clear
                     </button>
                   )}
                 </div>
+                <div className="space-y-1 max-h-40 overflow-y-auto">
+                  {collegeOptions.length === 0 ? (
+                    <div className="px-2 py-1 text-xs text-slate-400">
+                      No colleges
+                    </div>
+                  ) : (
+                    collegeOptions.map((college) => {
+                      const on = activeColleges.includes(college);
+                      return (
+                        <button
+                          key={college}
+                          onClick={() =>
+                            setActiveColleges((prev) =>
+                              on
+                                ? prev.filter((x) => x !== college)
+                                : [...prev, college],
+                            )
+                          }
+                          className="w-full flex items-center justify-between px-2 py-1.5 text-sm text-left hover:bg-gray-50 rounded transition cursor-pointer"
+                        >
+                          <span className="truncate">
+                            {refs.to_college_name(college)}
+                          </span>
+                          <RowCheck visible={on} />
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
               </div>
 
-              <div className="flex flex-wrap gap-1.5 max-h-32 overflow-auto pr-1">
-                {allTags.length === 0 ? (
-                  <span className="text-xs text-slate-400">No tags</span>
-                ) : (
-                  allTags.map((t) => {
-                    const on = activeTags.includes(t);
-                    return (
-                      <Chip
-                        key={t}
-                        active={on}
-                        onClick={() =>
-                          setActiveTags((prev) =>
-                            on ? prev.filter((x) => x !== t) : [...prev, t],
-                          )
-                        }
-                      >
-                        {t}
-                      </Chip>
-                    );
-                  })
-                )}
+              {/* Work Modes */}
+              <div className="px-4 py-3 border-b">
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="text-sm font-medium">Work Modes</div>
+                  {activeWorkModes.length > 0 && (
+                    <button
+                      className="text-xs text-blue-700 hover:underline"
+                      onClick={() => setActiveWorkModes([])}
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                <div className="space-y-1 max-h-40 overflow-y-auto">
+                  {refs.job_modes.length === 0 ? (
+                    <div className="px-2 py-1 text-xs text-slate-400">
+                      No work modes
+                    </div>
+                  ) : (
+                    refs.job_modes.map((mode) => {
+                      const on = activeWorkModes.includes(mode.id);
+                      return (
+                        <button
+                          key={mode.id}
+                          onClick={() =>
+                            setActiveWorkModes((prev) =>
+                              on
+                                ? prev.filter((x) => x !== mode.id)
+                                : [...prev, mode.id],
+                            )
+                          }
+                          className="w-full flex items-center justify-between px-2 py-1.5 text-sm text-left hover:bg-gray-50 rounded transition cursor-pointer"
+                        >
+                          <span className="truncate">{mode.name}</span>
+                          <RowCheck visible={on} />
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+
+              {/* Work Types */}
+              <div className="px-4 py-3 border-b">
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="text-sm font-medium">Work Types</div>
+                  {activeWorkTypes.length > 0 && (
+                    <button
+                      className="text-xs text-blue-700 hover:underline"
+                      onClick={() => setActiveWorkTypes([])}
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                <div className="space-y-1 max-h-40 overflow-y-auto">
+                  {refs.job_types.length === 0 ? (
+                    <div className="px-2 py-1 text-xs text-slate-400">
+                      No work types
+                    </div>
+                  ) : (
+                    refs.job_types.map((type) => {
+                      const on = activeWorkTypes.includes(type.id);
+                      return (
+                        <button
+                          key={type.id}
+                          onClick={() =>
+                            setActiveWorkTypes((prev) =>
+                              on
+                                ? prev.filter((x) => x !== type.id)
+                                : [...prev, type.id],
+                            )
+                          }
+                          className="w-full flex items-center justify-between px-2 py-1.5 text-sm text-left hover:bg-gray-50 rounded transition cursor-pointer"
+                        >
+                          <span className="truncate">{type.name}</span>
+                          <RowCheck visible={on} />
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+
+              {/* Credited Internship */}
+              <div className="px-4 py-3 border-b">
+                <div className="text-sm font-medium mb-2">Internship Type</div>
+                <div className="flex gap-2">
+                  <Button
+                    variant={
+                      filterCreditedInternship === true ? "default" : "outline"
+                    }
+                    size="sm"
+                    onClick={() =>
+                      setFilterCreditedInternship(
+                        filterCreditedInternship === true ? null : true,
+                      )
+                    }
+                  >
+                    Credited
+                  </Button>
+                  <Button
+                    variant={
+                      filterCreditedInternship === false ? "default" : "outline"
+                    }
+                    size="sm"
+                    onClick={() =>
+                      setFilterCreditedInternship(
+                        filterCreditedInternship === false ? null : false,
+                      )
+                    }
+                  >
+                    Non-Credited
+                  </Button>
+                </div>
               </div>
             </div>
-            ;{/* Footer */}
+
+            {/* Footer */}
             <div className="px-4 py-3 border-t bg-gray-50 flex items-center justify-between">
               <div className="text-xs text-slate-500">
                 {filtersActiveCount > 0
@@ -619,10 +744,12 @@ export default function StudentsPage() {
                     className="h-8 px-3"
                     onClick={() => {
                       setHideNoApps(false);
-                      setActiveCourses([]);
+                      setFilterApplyForMe(null);
+                      setFilterCreditedInternship(null);
+                      setActiveColleges([]);
+                      setActiveWorkModes([]);
+                      setActiveWorkTypes([]);
                       setActivePositions([]);
-                      setActiveTags([]);
-                      setMode("any");
                     }}
                   >
                     <X className="h-3.5 w-3.5 mr-1" />
