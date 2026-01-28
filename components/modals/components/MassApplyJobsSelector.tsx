@@ -190,7 +190,9 @@ export function MassApplyJobsSelector({
         </Button>
         <Button
           size="sm"
-          disabled={!selectedJobId || !coverLetter.trim() || massApply.isPending}
+          disabled={
+            !selectedJobId || !coverLetter.trim() || massApply.isPending
+          }
           onClick={() => void handleApply()}
         >
           {massApply.isPending
