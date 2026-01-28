@@ -14,6 +14,8 @@ import {
   X as XIcon,
   Menu,
   Check as CheckIcon,
+  CheckSquare,
+  Square,
   Newspaper,
 } from "lucide-react";
 
@@ -68,11 +70,12 @@ const SearchInput = ({
       className={cn(
         "relative w-full border border-gray-300 rounded-[0.33em] overflow-hidden",
         "focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/40",
+        "flex items-center",
         className,
       )}
     >
       {/* Left icon */}
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-gray-400 pointer-events-none" />
+      <Search className="h-4 w-4 text-gray-400 pointer-events-none ml-3" />
 
       {/* Text input */}
       <input
@@ -82,43 +85,30 @@ const SearchInput = ({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={cn(
-          "w-full h-10 pl-10 pr-24",
+          "flex-1 h-10 px-3",
           "bg-white border-0 outline-none focus:ring-0 text-gray-900 text-sm",
           "placeholder:text-gray-500",
         )}
       />
 
-      {/* Right inline MOA toggle (compact pill) */}
+      {/* Divider */}
+      <div className="h-6 w-0.5 bg-gray-300" />
+
+      {/* For Credit Checkbox */}
       <button
         type="button"
         onClick={() => onToggleMoa(!moaOnly)}
-        className={cn(
-          "absolute right-1 top-1/2 -translate-y-1/2",
-          "inline-flex items-center gap-1.5 h-7 px-2 rounded-[0.33em] border text-xs",
-          "transition-colors",
-          moaOnly
-            ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
-            : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50",
-        )}
+        className="flex items-center gap-2.5 px-4 h-10 hover:bg-gray-50  transition-all"
         aria-pressed={moaOnly}
-        aria-label="Filter: DLSU MOA"
       >
-        <span
-          className={cn(
-            "inline-flex items-center justify-center rounded-full border h-3.5 w-3.5",
-            moaOnly
-              ? "border-emerald-400 bg-emerald-100"
-              : "border-gray-300 bg-white",
-          )}
-        >
-          <CheckIcon
-            className={cn(
-              "h-3 w-3",
-              moaOnly ? "text-emerald-600" : "text-transparent",
-            )}
-          />
-        </span>
-        <span className="leading-none">FOR CREDIT</span>
+        {moaOnly ? (
+          <CheckSquare className="h-5 w-5 text-primary" />
+        ) : (
+          <Square className="h-5 w-5 text-gray-400" />
+        )}
+        <label className="text-sm font-medium text-gray-700 cursor-pointer whitespace-nowrap">
+          For Credit
+        </label>
       </button>
     </div>
   );
@@ -469,6 +459,16 @@ export const Header: React.FC = () => {
     const params = new URLSearchParams();
     const q = override?.q ?? searchTerm;
     const moa = override?.moa ?? moaOnly;
+
+    // Preserve existing filters
+    if (searchParams.get("position"))
+      params.set("position", searchParams.get("position")!);
+    if (searchParams.get("mode")) params.set("mode", searchParams.get("mode")!);
+    if (searchParams.get("workload"))
+      params.set("workload", searchParams.get("workload")!);
+    if (searchParams.get("allowance"))
+      params.set("allowance", searchParams.get("allowance")!);
+
     if (q) params.set("query", q);
     if (moa) params.set("moa", "Has MOA");
     router.push(`/search/?${params.toString()}`);
