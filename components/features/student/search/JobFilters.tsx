@@ -468,16 +468,14 @@ export function JobFilters({
     return (
       <div className="relative">
         <Button
-          variant="outline"
+          variant="ghost"
           size="md"
           onClick={() => setOpen((p) => !p)}
-          className="min-w-[110px] justify-between"
+          className="justify-between p-2 px-3"
         >
           <span className="inline-flex items-center gap-2">
             <FilterIcon className="w-4 h-4" />
-            Filters
           </span>
-          <ChevronDown className="w-4 h-4" />
         </Button>
 
         {open && (
