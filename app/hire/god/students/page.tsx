@@ -309,37 +309,34 @@ export default function StudentsPage() {
         title={getFullName(u)}
         subtitle={<span className="text-xs text-slate-500">{u.email}</span>}
         metas={
-          <>
-            <BoolBadge
-              state={u.apply_for_me}
-              onValue="Apply for me: ON"
-              offValue="Apply for me: OFF"
-              offScheme="destructive"
-            />
-            <BoolBadge
-              state={u.is_verified}
-              onValue="verified"
-              offValue="not verified"
-            />
-            <BoolBadge
-              state={u.resume}
-              onValue="Profile Complete"
-              offValue="Profile Incomplete"
-            />
-            <LastLogin ts={lastTs} />
-            <Meta>created: {formatDate(u.created_at ?? "")}</Meta>
+          <div className="space-y-1">
+            <div className="flex items-center gap-1">
+              <BoolBadge
+                state={u.apply_for_me}
+                onValue="Apply for me: ON"
+                offValue="Apply for me: OFF"
+                offScheme="destructive"
+              />
+              <BoolBadge
+                state={u.is_verified}
+                onValue="verified"
+                offValue="not verified"
+              />
+              <BoolBadge
+                state={u.resume}
+                onValue="Profile: Complete"
+                offValue="Profile: Incomplete"
+              />
+              <LastLogin ts={lastTs} />
+              <Meta>created: {formatDate(u.created_at ?? "")}</Meta>
+              <Meta>{userApplications.length ?? 0} applications</Meta>
+            </div>
 
-            <Separator orientation="vertical" className="h-6" />
-            <Meta>{u.degree}</Meta>
-            <Meta>{userApplications.length ?? 0} applications</Meta>
-
-            {(modeTxt || typeTxt || posTxt) && (
-              <Separator orientation="vertical" className="h-6" />
-            )}
-            {modeTxt && <Meta>{modeTxt}</Meta>}
-            {typeTxt && <Meta>{typeTxt}</Meta>}
-            {posTxt && <Meta>{posTxt}</Meta>}
-          </>
+            <div className="flex items-center gap-1">
+              <Meta>{refs.to_college_name(u.college)}</Meta>
+              <Meta>{u.degree}</Meta>
+            </div>
+          </div>
         }
         leftActions={
           massApplyMode ? (
