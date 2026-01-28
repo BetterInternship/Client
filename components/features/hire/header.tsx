@@ -2,21 +2,22 @@
 
 import React, { useMemo, useEffect, useState } from "react";
 import { useAuthContext } from "@/app/hire/authctx";
-import { useRouter, usePathname, useSearchParams} from "next/navigation";
-import { LogOut,
-          Building,
-          UserPlus,
-          XIcon,
-          MessageCircleMore,
-          ChevronRight,
-          Search,
-          Settings, 
-          LayoutDashboard,
-          Menu,
-          FileUser,
-          Plus,
-          HelpCircle,
-          } from "lucide-react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import {
+  LogOut,
+  Building,
+  UserPlus,
+  XIcon,
+  MessageCircleMore,
+  ChevronRight,
+  Search,
+  Settings,
+  LayoutDashboard,
+  Menu,
+  FileUser,
+  Plus,
+  HelpCircle,
+} from "lucide-react";
 import { useAppContext } from "@/lib/ctx-app";
 import { DropdownOption, GroupableNavDropdown } from "@/components/ui/dropdown";
 import { cn } from "@/lib/utils";
@@ -51,21 +52,23 @@ export const Header: React.FC = () => {
   const showProfileButton = routeExcluded(noProfileRoutes);
 
   useEffect(() => {
-      document.body.style.overflow = isMenuOpen ? "hidden" : "";
-      return () => {
-        document.body.style.overflow = "";
-      };
-    }, [isMenuOpen]);
+    document.body.style.overflow = isMenuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMenuOpen]);
 
   return routeExcluded(noHeaderRoutes) ? (
     <div className="flex flex-col">
-      <div className={cn(
-                "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
-                isMobile ? "px-4 py-3 h-[4rem]" : "py-4 px-8 h-[5rem]"
-              )}
-              style={{ overflow: "visible", position: "relative", zIndex: 100 }}>
+      <div
+        className={cn(
+          "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
+          isMobile ? "px-4 py-3 h-[4rem]" : "py-4 px-8 h-[5rem]",
+        )}
+        style={{ overflow: "visible", position: "relative", zIndex: 100 }}
+      >
         <div className="flex items-center gap-3">
-            <HeaderTitle />
+          <HeaderTitle />
         </div>
         {god && (
           <div className="w-full px-4 flex flex-row justify-end z-[100]">
@@ -82,31 +85,30 @@ export const Header: React.FC = () => {
           <div className="w-1 h-10 bg-transparent"></div>
         )} */}
         {/* Right: Desktop profile / Mobile burger & floating action button*/}
-          {showProfileButton ? (
-            isMobile ? (
-                  <button
-                    type="button"
-                    aria-label="Open menu"
-                    className="inline-flex items-center justify-center h-10 w-10 rounded-md border border-gray-300 hover:bg-gray-50"
-                    onClick={() => setIsMenuOpen(true)}
-                  >
-                    <Menu className="h-5 w-5" />
-                  </button>
-              )  : (
-              <div className="flex items-center gap-6">
-                <ProfileButton />
-              </div>
-            )
+        {showProfileButton ? (
+          isMobile ? (
+            <button
+              type="button"
+              aria-label="Open menu"
+              className="inline-flex items-center justify-center h-10 w-10 rounded-md border border-gray-300 hover:bg-gray-50"
+              onClick={() => setIsMenuOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </button>
           ) : (
-            <div className="w-1 h-10 bg-transparent" />
-          )}
-          </div>
+            <div className="flex items-center gap-6">
+              <ProfileButton />
+            </div>
+          )
+        ) : (
+          <div className="w-1 h-10 bg-transparent" />
+        )}
+      </div>
 
-          {isMobile && showProfileButton && (
-            <MobileDrawer open={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
-          )}
-        </div>
-        
+      {isMobile && showProfileButton && (
+        <MobileDrawer open={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+      )}
+    </div>
   ) : (
     <></>
   );
@@ -146,10 +148,10 @@ export const ProfileButton = () => {
           </>
         }
       >
-        <DropdownOption href="/company-profile">
+        {/* <DropdownOption href="/company-profile">
           <Building className="w-4 h-4 inline-block m-1 mr-2" />
           Company Profile
-        </DropdownOption>
+        </DropdownOption> */}
         {/* <DropdownOption href="/company-users">
           <UserPlus className="w-4 h-4 inline-block m-1 mr-2" />
           Manage Accounts
@@ -168,7 +170,7 @@ export const ProfileButton = () => {
       className="h-10 border-gray-300 hover:bg-gray-50 "
       onClick={() => router.push("/login")}
     >
-      Sign in 
+      Sign in
     </Button>
   );
 };
@@ -204,7 +206,7 @@ function MobileDrawer({
           "fixed inset-0 z-[120] bg-black/30 backdrop-blur-[2px] transition-opacity duration-200",
           open
             ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
+            : "opacity-0 pointer-events-none",
         )}
         onClick={onClose}
       />
@@ -214,7 +216,7 @@ function MobileDrawer({
         className={cn(
           "fixed right-0 top-0 z-[121] h-[100svh] w-full max-w-[92%] sm:max-w-[420px] bg-white shadow-xl border-l border-gray-200",
           "transition-transform duration-250 ease-out",
-          open ? "translate-x-0" : "translate-x-full"
+          open ? "translate-x-0" : "translate-x-full",
         )}
         role="dialog"
         aria-modal="true"
@@ -242,9 +244,7 @@ function MobileDrawer({
                   <MyUserPfp size="9" />
                 </div>
                 <div className="flex flex-col leading-tight">
-                  <span className="font-medium">
-                    {profile.data?.name}
-                  </span>
+                  <span className="font-medium">{profile.data?.name}</span>
                   <span className="text-xs text-gray-500">
                     {profile.data?.email}
                   </span>
@@ -305,11 +305,9 @@ function MobileDrawer({
                       </Link>
                     </li>
                   )} */}
-                  <li>
+                  {/* <li>
                     <Link href="/company-profile">
-                      <button
-                        className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary"
-                      >
+                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary">
                         <div>
                           <Building className="w-4 h-4 inline-block mr-2" />
                           <span>Company Profile</span>
@@ -317,12 +315,10 @@ function MobileDrawer({
                         <ChevronRight className="w-4 h-4 text-gray-300" />
                       </button>
                     </Link>
-                  </li>
+                  </li> */}
                   <li>
                     <Link href="/help">
-                      <button
-                        className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary"
-                      >
+                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary">
                         <div>
                           <HelpCircle className="w-4 h-4 inline-block mr-2" />
                           <span>Help</span>
