@@ -469,6 +469,16 @@ export const Header: React.FC = () => {
     const params = new URLSearchParams();
     const q = override?.q ?? searchTerm;
     const moa = override?.moa ?? moaOnly;
+
+    // Preserve existing filters
+    if (searchParams.get("position"))
+      params.set("position", searchParams.get("position")!);
+    if (searchParams.get("mode")) params.set("mode", searchParams.get("mode")!);
+    if (searchParams.get("workload"))
+      params.set("workload", searchParams.get("workload")!);
+    if (searchParams.get("allowance"))
+      params.set("allowance", searchParams.get("allowance")!);
+
     if (q) params.set("query", q);
     if (moa) params.set("moa", "Has MOA");
     router.push(`/search/?${params.toString()}`);

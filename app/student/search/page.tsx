@@ -87,11 +87,15 @@ export default function SearchPage() {
     -------------------------------------------- */
   useEffect(() => {
     const query = searchParams.get("query") || "";
-    const pos = searchParams.get("position")?.split(",") || [];
-    const jobAllowance = searchParams.get("allowance")?.split(",") || [];
-    const jobWorkload = searchParams.get("workload")?.split(",") || [];
-    const jobMode = searchParams.get("mode")?.split(",") || [];
-    const jobMoa = searchParams.get("moa")?.split(",") || [];
+    const pos = (searchParams.get("position") || "").split(",").filter(Boolean);
+    const jobAllowance = (searchParams.get("allowance") || "")
+      .split(",")
+      .filter(Boolean);
+    const jobWorkload = (searchParams.get("workload") || "")
+      .split(",")
+      .filter(Boolean);
+    const jobMode = (searchParams.get("mode") || "").split(",").filter(Boolean);
+    const jobMoa = (searchParams.get("moa") || "").split(",").filter(Boolean);
 
     setPosition(pos);
     setJobAllowanceFilter(jobAllowance);
@@ -104,7 +108,14 @@ export default function SearchPage() {
   // Reset to page 1 when filters or search term change
   useEffect(() => {
     setJobsPage(1);
-  }, [searchTerm, jobMoaFilter]);
+  }, [
+    searchTerm,
+    position,
+    jobModeFilter,
+    jobWorkloadFilter,
+    jobAllowanceFilter,
+    jobMoaFilter,
+  ]);
 
   // Sync selected job
   useEffect(() => {
@@ -398,9 +409,7 @@ export default function SearchPage() {
 
       <div className="flex-1 flex overflow-hidden min-h-0 max-h-100">
         {jobs.isPending ? (
-          <Loader>
-            Loading...
-          </Loader>
+          <Loader>Loading...</Loader>
         ) : isMobile ? (
           // Mobile list
           <div className="w-full flex flex-col h-full">
@@ -489,8 +498,8 @@ export default function SearchPage() {
           // Desktop split view
           <>
             {/* Left: List */}
-            <div 
-              ref={listRef} 
+            <div
+              ref={listRef}
               className="w-1/3 border-r overflow-x-hidden overflow-y-auto p-6"
             >
               {jobsPage.length ? (

@@ -75,7 +75,6 @@ export function useJobsData(
     if (!allJobs?.length) return [];
 
     return allJobs.filter((job) => {
-      // Search filter
       if (params.search?.trim()) {
         const searchTerm = params.search.toLowerCase();
         const searchableText = [
@@ -92,7 +91,7 @@ export function useJobsData(
         if (!searchableText.includes(searchTerm)) return false;
       }
 
-      // Moa filter
+      // MOA filter
       // ! remove hard code "Has MOA"
       const hasMoa = dbMoas.check(
         job?.employer_id ?? "",
@@ -103,26 +102,42 @@ export function useJobsData(
 
       if (params.jobMoaFilter?.length && !params.jobMoaFilter?.includes(hasMoa))
         return false;
-      if (
-        params.jobModeFilter?.length &&
-        !params.jobModeFilter?.includes(job.mode?.toString() ?? "#")
-      )
-        return false;
-      if (
-        params.jobWorkloadFilter?.length &&
-        !params.jobWorkloadFilter?.includes(job.type?.toString() ?? "#")
-      )
-        return false;
+
+      // Job Mode filter (job_setup_ids from internship_preferences)
+      if (params.jobModeFilter?.length) {
+        const jobSetupIds = job.internship_preferences?.job_setup_ids ?? [];
+        const hasMatchingMode = jobSetupIds.some((id) =>
+          params.jobModeFilter?.includes(id.toString()),
+        );
+        if (!hasMatchingMode) return false;
+      }
+
+      // Job Workload filter (job_commitment_ids from internship_preferences)
+      if (params.jobWorkloadFilter?.length) {
+        const jobCommitmentIds =
+          job.internship_preferences?.job_commitment_ids ?? [];
+        const hasMatchingWorkload = jobCommitmentIds.some((id) =>
+          params.jobWorkloadFilter?.includes(id.toString()),
+        );
+        if (!hasMatchingWorkload) return false;
+      }
+
+      // Allowance filter
       if (
         params.jobAllowanceFilter?.length &&
         !params.jobAllowanceFilter?.includes(job.allowance?.toString() ?? "#")
       )
         return false;
-      if (
-        params.position?.length &&
-        !params.position?.includes(job.category?.join(",") ?? "#")
-      )
-        return false;
+
+      // Position (internship type) filter - credit/volunteer
+      if (params.position?.length) {
+        const internshipTypes =
+          job.internship_preferences?.internship_types ?? [];
+        const hasMatchingType = internshipTypes.some((type) =>
+          params.position?.includes(type),
+        );
+        if (!hasMatchingType) return false;
+      }
 
       return true;
     });
