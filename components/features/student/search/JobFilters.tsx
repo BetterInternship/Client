@@ -180,30 +180,122 @@ function PositionPanel() {
 
   const { job_categories } = useDbRefs();
 
-  const categories: PositionCategory[] = job_categories
-    .filter((category) => {
-      if (category.parent_id === null) return category;
-    })
-    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-    .map((category) => {
-      return {
-        name: category.name,
-        value: category.id,
-        children: [],
-      };
-    });
+  // IDs of categories that should be hidden from direct display
+  // (Full Stack, Backend, Frontend, QA will only appear under Software Engineering)
+  const HIDDEN_CATEGORIES = new Set([
+    "381239bf-7c82-4f87-a1b8-39d952f8876b", // Full Stack
+    "e5a73819-ee90-43fb-b71b-7ba12f0a4dbf", // Backend
+    "8b323584-9340-41e8-928e-f9345f1ad59e", // Frontend
+    "91b180be-3d23-4f0a-bd64-c82cef9d3ae5", // QA
+  ]);
 
-  const getChildren = (parentId: string) =>
-    job_categories
-      .filter((category) => category.parent_id === parentId)
+  // Categories that should not appear at top level
+  const MOVE_TO_OTHERS = new Set([
+    "ab93abaf-c117-4482-9594-8bfecec44f69", // Engineering (will be under Others)
+  ]);
+
+  // Get all top-level categories, excluding those in MOVE_TO_OTHERS
+  const categories: PositionCategory[] = job_categories
+    .filter(
+      (category) =>
+        category.parent_id === null && !MOVE_TO_OTHERS.has(category.id),
+    )
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .map((category) => ({
+      name: category.name,
+      value: category.id,
+      children: [],
+    }));
+
+  // Helper to get children of a category
+  const getChildrenIds = (parentId: string): string[] => {
+    return job_categories
+      .filter(
+        (category) =>
+          category.parent_id === parentId &&
+          !HIDDEN_CATEGORIES.has(category.id),
+      )
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .map((c) => c.id);
+  };
+
+  // Helper to get display info for children
+  const getChildren = (parentId: string) => {
+    const baseChildren = job_categories
+      .filter(
+        (category) =>
+          category.parent_id === parentId &&
+          !HIDDEN_CATEGORIES.has(category.id),
+      )
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
       .map((c) => ({
         name: c.name,
         value: c.id,
       }));
 
+    // !! TEMP: Software Engineering should show the hidden categories (Full Stack, Backend, Frontend, QA)
+    if (parentId === "fc5ba110-e6df-440c-878f-b5f29be54ba9") {
+      const hiddenChildren = job_categories
+        .filter((category) => HIDDEN_CATEGORIES.has(category.id))
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+        .map((c) => ({
+          name: c.name,
+          value: c.id,
+        }));
+      return hiddenChildren;
+    }
+
+    // !! TEMP: If this is Others, show Engineering as a single item (not individual engineering types)
+    if (parentId === "0debeda8-f257-49a6-881f-11a6b8eb560b") {
+      const engineeringCategory = {
+        name: "Engineering",
+        value: "ab93abaf-c117-4482-9594-8bfecec44f69",
+      };
+      return [...baseChildren, engineeringCategory];
+    }
+
+    return baseChildren;
+  };
+
   const mapChildren = (parentId: string) => {
-    return getChildren(parentId).map((c) => c.value);
+    const baseIds = getChildrenIds(parentId);
+
+    // !! TEMP: If Others, include Engineering + all 6 engineering subcategories (Civil, Industrial, Electronics, Aerospace, Chemical, Electrical)
+    if (parentId === "0debeda8-f257-49a6-881f-11a6b8eb560b") {
+      const engineeringId = "ab93abaf-c117-4482-9594-8bfecec44f69";
+      const engineeringChildIds = job_categories
+        .filter((category) => category.parent_id === engineeringId)
+        .map((c) => c.id);
+      return [...baseIds, engineeringId, ...engineeringChildIds];
+    }
+
+    // !! TEMP: Software Engineering includes all 4 hidden categories when selected
+    if (parentId === "fc5ba110-e6df-440c-878f-b5f29be54ba9") {
+      return [
+        "381239bf-7c82-4f87-a1b8-39d952f8876b", // Full Stack
+        "e5a73819-ee90-43fb-b71b-7ba12f0a4dbf", // Backend
+        "8b323584-9340-41e8-928e-f9345f1ad59e", // Frontend
+        "91b180be-3d23-4f0a-bd64-c82cef9d3ae5", // QA
+      ];
+    }
+
+    // Special case: Parent of Software Engineering - include SE + its mapped items
+    if (parentId === "1e3b7585-293b-430a-a5cb-c773e0639bb0") {
+      const mappedIds = [
+        "fc5ba110-e6df-440c-878f-b5f29be54ba9", // Software Engineering itself
+        "381239bf-7c82-4f87-a1b8-39d952f8876b", // Full Stack
+        "e5a73819-ee90-43fb-b71b-7ba12f0a4dbf", // Backend
+        "8b323584-9340-41e8-928e-f9345f1ad59e", // Frontend
+        "91b180be-3d23-4f0a-bd64-c82cef9d3ae5", // QA
+      ];
+      // Keep all non-SE children + add SE + its mapped items
+      const nonSE = baseIds.filter(
+        (id) => id !== "fc5ba110-e6df-440c-878f-b5f29be54ba9",
+      );
+      return [...nonSE, ...mappedIds];
+    }
+
+    return baseIds;
   };
 
   const MasterCheckbox = ({
@@ -249,11 +341,13 @@ function PositionPanel() {
 
         const handleHeaderToggle = () => {
           const turnOn = !(headerChecked || headerIndeterminate);
+          const childIds = mapChildren(cat.value);
+          const valuesToDispatch = [cat.value, ...childIds];
           // toggle parent + all children
           dispatch({
             type: "BULK_SET",
             key: "position",
-            values: [cat.value, ...childIds],
+            values: valuesToDispatch,
             on: turnOn,
           });
         };
@@ -319,14 +413,96 @@ function PositionPanel() {
             {/* Children */}
             {expanded && hasChildren && (
               <div className="border-t px-2 py-1 bg-white">
-                {children.map((c) => (
-                  <CheckboxRow
-                    key={c.value}
-                    checked={selected.has(c.value)}
-                    onChange={(v) => toggle(c.value, v)}
-                    label={c.name}
-                  />
-                ))}
+                {children.map((c) => {
+                  // Helper function to render special category items (SE, Engineering, etc)
+                  const renderSpecialCategory = (
+                    categoryId: string,
+                    childIds: string[],
+                  ) => {
+                    const itemChecked = selected.has(categoryId);
+                    const selectedChildren = childIds.filter((id) =>
+                      selected.has(id),
+                    );
+                    const allChildrenChecked =
+                      selectedChildren.length === childIds.length;
+                    const headerChecked = itemChecked && allChildrenChecked;
+                    const headerIndeterminate =
+                      (itemChecked && !allChildrenChecked) ||
+                      (!itemChecked && selectedChildren.length > 0);
+
+                    return (
+                      <button
+                        key={categoryId}
+                        type="button"
+                        onClick={() => {
+                          const turnOn = !(
+                            headerChecked || headerIndeterminate
+                          );
+                          dispatch({
+                            type: "BULK_SET",
+                            key: "position",
+                            values: [categoryId, ...childIds],
+                            on: turnOn,
+                          });
+                        }}
+                        className={cn(
+                          "flex items-center justify-between w-full text-left px-2 py-2 rounded hover:bg-gray-50 border border-transparent",
+                        )}
+                      >
+                        <span className="text-sm">{c.name}</span>
+                        <span
+                          className={cn(
+                            "inline-flex items-center justify-center w-5 h-5 rounded border",
+                            headerChecked
+                              ? "border-blue-500 bg-blue-100"
+                              : "border-gray-300",
+                          )}
+                        >
+                          {headerIndeterminate ? (
+                            <span className="w-2.5 h-0.5 bg-blue-600 rounded-sm" />
+                          ) : headerChecked ? (
+                            <Check className="w-3.5 h-3.5 text-blue-600" />
+                          ) : null}
+                        </span>
+                      </button>
+                    );
+                  };
+
+                  // !! TEMP: Software Engineering - clicking it selects itself + 4 hidden categories
+                  if (c.value === "fc5ba110-e6df-440c-878f-b5f29be54ba9") {
+                    const softwareEngineeringHiddenIds = [
+                      "381239bf-7c82-4f87-a1b8-39d952f8876b", // Full Stack
+                      "e5a73819-ee90-43fb-b71b-7ba12f0a4dbf", // Backend
+                      "8b323584-9340-41e8-928e-f9345f1ad59e", // Frontend
+                      "91b180be-3d23-4f0a-bd64-c82cef9d3ae5", // QA
+                    ];
+                    return renderSpecialCategory(
+                      c.value,
+                      softwareEngineeringHiddenIds,
+                    );
+                  }
+
+                  // !! TEMP: Engineering - clicking it selects itself + all 6 engineering subcategories
+                  if (c.value === "ab93abaf-c117-4482-9594-8bfecec44f69") {
+                    const engineeringChildIds = job_categories
+                      .filter(
+                        (cat) =>
+                          cat.parent_id ===
+                          "ab93abaf-c117-4482-9594-8bfecec44f69",
+                      )
+                      .map((cat) => cat.id);
+                    return renderSpecialCategory(c.value, engineeringChildIds);
+                  }
+
+                  return (
+                    <CheckboxRow
+                      key={c.value}
+                      checked={selected.has(c.value)}
+                      onChange={(v) => toggle(c.value, v)}
+                      label={c.name}
+                    />
+                  );
+                })}
               </div>
             )}
           </div>

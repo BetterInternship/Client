@@ -14,6 +14,29 @@ import { User, PublicUser } from "@/lib/db/db.types";
 import { getFullName } from "@/lib/profile";
 
 /**
+ * Normalize internship_preferences field which may be stored as JSON string or object
+ */
+const normalizeInternshipPreferences = (prefs: any) => {
+  if (typeof prefs === "string") {
+    try {
+      return JSON.parse(prefs);
+    } catch {
+      return {};
+    }
+  }
+  return prefs ?? {};
+};
+
+/**
+ * Ensure a value is an array, handles string, array, and invalid inputs
+ */
+const ensureArray = (value: any): any[] => {
+  if (Array.isArray(value)) return value;
+  if (typeof value === "string") return [value];
+  return [];
+};
+
+/**
  * From now on, all hooks that query data are meant to do just that.
  * Not allowed to have mutations + will be suffixed with "Data".
  *
@@ -74,7 +97,21 @@ export function useJobsData(
     const allJobs = data?.jobs ?? [];
     if (!allJobs?.length) return [];
 
-    return allJobs.filter((job) => {
+    // Initialize filter statistics
+    const stats = {
+      total: allJobs.length,
+      search: { rejected: 0, examples: [] as string[] },
+      moa: { rejected: 0, examples: [] as string[] },
+      mode: { rejected: 0, examples: [] as string[] },
+      workload: { rejected: 0, examples: [] as string[] },
+      allowance: { rejected: 0, examples: [] as string[] },
+      category: { rejected: 0, examples: [] as string[] },
+      passed: 0,
+    };
+
+    const filtered = allJobs.filter((job) => {
+      const prefs = normalizeInternshipPreferences(job.internship_preferences);
+
       if (params.search?.trim()) {
         const searchTerm = params.search.toLowerCase();
         const searchableText = [
@@ -88,11 +125,18 @@ export function useJobsData(
           .join(" ")
           .toLowerCase();
 
-        if (!searchableText.includes(searchTerm)) return false;
+        if (!searchableText.includes(searchTerm)) {
+          stats.search.rejected++;
+          if (stats.search.examples.length < 2) {
+            stats.search.examples.push(
+              `${job.title} (search: "${params.search}")`,
+            );
+          }
+          return false;
+        }
       }
 
       // MOA filter
-      // ! remove hard code "Has MOA"
       const hasMoa = dbMoas.check(
         job?.employer_id ?? "",
         dbRefs.get_university_by_name("DLSU - Manila")?.id ?? "",
@@ -100,47 +144,120 @@ export function useJobsData(
         ? "Has MOA"
         : "No MOA";
 
-      if (params.jobMoaFilter?.length && !params.jobMoaFilter?.includes(hasMoa))
+      if (
+        params.jobMoaFilter?.length &&
+        !params.jobMoaFilter?.includes(hasMoa)
+      ) {
+        stats.moa.rejected++;
+        if (stats.moa.examples.length < 2) {
+          stats.moa.examples.push(`${job.title} (${hasMoa})`);
+        }
         return false;
+      }
 
-      // Job Mode filter (job_setup_ids from internship_preferences)
+      // Job Mode filter (job_setup_ids)
       if (params.jobModeFilter?.length) {
-        const jobSetupIds = job.internship_preferences?.job_setup_ids ?? [];
+        const jobSetupIds = ensureArray(prefs.job_setup_ids);
         const hasMatchingMode = jobSetupIds.some((id) =>
           params.jobModeFilter?.includes(id.toString()),
         );
-        if (!hasMatchingMode) return false;
+        if (!hasMatchingMode) {
+          stats.mode.rejected++;
+          if (stats.mode.examples.length < 2) {
+            stats.mode.examples.push(
+              `${job.title} (IDs: ${jobSetupIds.join(", ")})`,
+            );
+          }
+          return false;
+        }
       }
 
-      // Job Workload filter (job_commitment_ids from internship_preferences)
+      // Job Workload filter (job_commitment_ids)
       if (params.jobWorkloadFilter?.length) {
-        const jobCommitmentIds =
-          job.internship_preferences?.job_commitment_ids ?? [];
+        const jobCommitmentIds = ensureArray(prefs.job_commitment_ids);
         const hasMatchingWorkload = jobCommitmentIds.some((id) =>
           params.jobWorkloadFilter?.includes(id.toString()),
         );
-        if (!hasMatchingWorkload) return false;
+        if (!hasMatchingWorkload) {
+          stats.workload.rejected++;
+          if (stats.workload.examples.length < 2) {
+            stats.workload.examples.push(
+              `${job.title} (IDs: ${jobCommitmentIds.join(", ")})`,
+            );
+          }
+          return false;
+        }
       }
 
       // Allowance filter
       if (
         params.jobAllowanceFilter?.length &&
         !params.jobAllowanceFilter?.includes(job.allowance?.toString() ?? "#")
-      )
+      ) {
+        stats.allowance.rejected++;
+        if (stats.allowance.examples.length < 2) {
+          stats.allowance.examples.push(`${job.title} (₱${job.allowance})`);
+        }
         return false;
-
-      // Position (internship type) filter - credit/volunteer
-      if (params.position?.length) {
-        const internshipTypes =
-          job.internship_preferences?.internship_types ?? [];
-        const hasMatchingType = internshipTypes.some((type) =>
-          params.position?.includes(type),
-        );
-        if (!hasMatchingType) return false;
       }
 
+      // Position (job categories) filter
+      if (params.position?.length) {
+        const jobCategoryIds = ensureArray(prefs.job_category_ids);
+
+        // Check if any of the job's categories match any selected filter
+        const hasMatchingCategory = jobCategoryIds.some((jobCategoryId) =>
+          params.position?.includes(jobCategoryId as string),
+        );
+
+        if (!hasMatchingCategory) {
+          stats.category.rejected++;
+          if (stats.category.examples.length < 2) {
+            stats.category.examples.push(
+              `${job.title} (IDs: ${jobCategoryIds.join(", ")})`,
+            );
+          }
+          return false;
+        }
+      }
+
+      stats.passed++;
       return true;
     });
+
+    // Log summary
+    console.group("🔍 Job Filter Summary");
+    console.log(
+      `Total Jobs: ${stats.total} | Passed: ${stats.passed} | Rejected: ${stats.total - stats.passed}`,
+    );
+    console.log("📋 Params Position:", params.position);
+    if (stats.search.rejected > 0)
+      console.log(
+        `  ❌ Search: ${stats.search.rejected} rejected - Examples: ${stats.search.examples.join(", ")}`,
+      );
+    if (stats.moa.rejected > 0)
+      console.log(
+        `  ❌ MOA: ${stats.moa.rejected} rejected - Examples: ${stats.moa.examples.join(", ")}`,
+      );
+    if (stats.mode.rejected > 0)
+      console.log(
+        `  ❌ Mode: ${stats.mode.rejected} rejected - Examples: ${stats.mode.examples.join(", ")}`,
+      );
+    if (stats.workload.rejected > 0)
+      console.log(
+        `  ❌ Workload: ${stats.workload.rejected} rejected - Examples: ${stats.workload.examples.join(", ")}`,
+      );
+    if (stats.allowance.rejected > 0)
+      console.log(
+        `  ❌ Allowance: ${stats.allowance.rejected} rejected - Examples: ${stats.allowance.examples.join(", ")}`,
+      );
+    if (stats.category.rejected > 0)
+      console.log(
+        `  ❌ Categories: ${stats.category.rejected} rejected - Examples: ${stats.category.examples.join(", ")}`,
+      );
+    console.groupEnd();
+
+    return filtered;
   }, [data, params]);
 
   const getJobsPage = useCallback(
