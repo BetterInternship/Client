@@ -67,12 +67,12 @@ export function JobsContent({
         <>
             <motion.div
                 initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-                animate={exiting ? { scale: 1.02, filter: "blur(4px)", opacity: 0 } : { scale: 1, filter: "blur(0px)", opacity: 1 }}
+                animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
             >
                 {sortedJobs && sortedJobs.length > 0
                     ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2" onClick={() => setExiting(true)}>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2">
                         {
                             sortedJobs.filter(job => job.employer_id === employerId
                             ).map((job) => (
