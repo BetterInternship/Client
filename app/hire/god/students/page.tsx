@@ -321,6 +321,11 @@ export default function StudentsPage() {
               onValue="verified"
               offValue="not verified"
             />
+            <BoolBadge
+              state={u.resume}
+              onValue="Profile Complete"
+              offValue="Profile Incomplete"
+            />
             <LastLogin ts={lastTs} />
             <Meta>created: {formatDate(u.created_at ?? "")}</Meta>
 
@@ -335,16 +340,6 @@ export default function StudentsPage() {
             {typeTxt && <Meta>{typeTxt}</Meta>}
             {posTxt && <Meta>{posTxt}</Meta>}
           </>
-        }
-        footer={
-          <EditableTags
-            id={u.id}
-            tags={rowTags}
-            onAdd={addTag}
-            onRemove={removeTag}
-            suggestions={allTags}
-            placeholder="tag student…"
-          />
         }
         leftActions={
           massApplyMode ? (
