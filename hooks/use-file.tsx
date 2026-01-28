@@ -10,6 +10,9 @@
 
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { useCallback, useImperativeHandle, useRef, useState } from "react";
+import { useModal } from "@/hooks/use-modal";
+import { TriangleAlert } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
 interface IUseFile {
   url: string;
@@ -176,6 +179,7 @@ export const useFileUpload = ({
   silent?: boolean;
 }) => {
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
   const [response, setResponse] = useState<Promise<any>>();
   const fileInputRef = useRef<IFileUploadRef>(null);
 
@@ -186,7 +190,7 @@ export const useFileUpload = ({
    * @returns
    */
   const upload = async (file?: File | null) => {
-    if (!file) return;
+    if (!file) return false;
 
     // Perform the file upload
     setIsUploading(true);
@@ -200,18 +204,22 @@ export const useFileUpload = ({
     console.log(result);
 
     if (!result.success) {
-      alert("Could not upload file.");
-      return;
+      // alert("Could not upload file.");
+      setUploadSuccess(false)
+      return uploadSuccess
     }
 
     if (!silent) alert("File uploaded successfully!");
     setIsUploading(false);
+    setUploadSuccess(true)
+    return uploadSuccess
   };
 
   return {
     upload,
     response,
     isUploading,
+    uploadSuccess,
     fileInputRef,
-  };
+  }
 };

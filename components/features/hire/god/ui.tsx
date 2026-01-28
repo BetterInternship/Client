@@ -65,7 +65,6 @@ export function Meta({ children }: { children?: React.ReactNode }) {
   );
 }
 
-
 export function LastLogin({ ts }: { ts?: number }) {
   if (!ts) return <Meta>last login: Never</Meta>;
   const d = new Date(ts);
@@ -104,9 +103,7 @@ export function RowCard(props: {
   return (
     <li onClick={onClick} className="group px-4 py-3 hover:bg-slate-50">
       <div className="flex items-center gap-3">
-        <div className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-          {leftActions}
-        </div>
+        <div className="">{leftActions}</div>
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -230,7 +227,7 @@ export function TagPill({
         "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs",
         active ? "bg-slate-800 text-white border-slate-800" : "text-slate-700",
         onClick && "cursor-pointer hover:bg-slate-100",
-        className
+        className,
       )}
     >
       {label}
@@ -269,7 +266,7 @@ export function EditableTags({
   const [draft, setDraft] = useState("");
   const remaining = suggestions
     .filter(
-      (t) => !tags.includes(t) && t.toLowerCase().includes(draft.toLowerCase())
+      (t) => !tags.includes(t) && t.toLowerCase().includes(draft.toLowerCase()),
     )
     .slice(0, 6);
 
@@ -303,7 +300,10 @@ export function EditableTags({
             placeholder={placeholder}
             className="h-6 rounded border px-2 text-xs text-slate-700 outline-none focus:ring-1 focus:ring-slate-300"
           />
-          <button className="ml-0.5 -mr-0.5 rounded hover:bg-black/10 p-[2px] transition-all" onClick={commit} >
+          <button
+            className="ml-0.5 -mr-0.5 rounded hover:bg-black/10 p-[2px] transition-all"
+            onClick={commit}
+          >
             <Plus className="h-3 w-3" />
           </button>
         </span>
@@ -386,7 +386,7 @@ export function TagFilterBar({
 
   const filtered = React.useMemo(
     () => allTags.filter((t) => t.toLowerCase().includes(q.toLowerCase())),
-    [allTags, q]
+    [allTags, q],
   );
 
   const visibleActive = active.slice(0, 4);
@@ -405,7 +405,7 @@ export function TagFilterBar({
             type="button"
             className={cn(
               "h-7 px-2 rounded-[6px] text-xs",
-              mode === "any" ? "bg-slate-900 text-white" : "hover:bg-slate-100"
+              mode === "any" ? "bg-slate-900 text-white" : "hover:bg-slate-100",
             )}
             onClick={() => setMode("any")}
           >
@@ -415,7 +415,7 @@ export function TagFilterBar({
             type="button"
             className={cn(
               "h-7 px-2 rounded-[6px] text-xs",
-              mode === "all" ? "bg-slate-900 text-white" : "hover:bg-slate-100"
+              mode === "all" ? "bg-slate-900 text-white" : "hover:bg-slate-100",
             )}
             onClick={() => setMode("all")}
           >
