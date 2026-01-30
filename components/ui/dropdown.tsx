@@ -257,7 +257,6 @@ export const GroupableRadioDropdown = <ID extends number | string>({
         <ChevronDown
           className={cn(
             "shrink-0 w-4 h-4 text-gray-600 transition-transform",
-            "mt-1",
             isOpen ? "rotate-180" : "",
           )}
         />
