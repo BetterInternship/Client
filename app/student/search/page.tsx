@@ -8,7 +8,7 @@ import React, {
   useCallback,
 } from "react";
 import { useSearchParams } from "next/navigation";
-import { CheckSquare, Square } from "lucide-react";
+import { ArrowUpRightFromSquare, CheckSquare, Link, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useJobsData, useProfileData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "@/lib/ctx-auth";
@@ -575,6 +575,16 @@ export default function SearchPage() {
                   }}
                   job={selectedJob}
                   actions={[
+                    <Button 
+                      variant="link"
+                      onClick={() => router.push(`/search/${selectedJob?.id}`)}
+                      name="View full page"
+                      scheme="default"
+                      size="md"
+                    >
+                      <ArrowUpRightFromSquare />
+                      View full page
+                    </Button>,
                     <SaveJobButton job={selectedJob} />,
                     <ApplyToJobButton
                       profile={profile.data}
