@@ -69,9 +69,7 @@ function EditJobPageRouteContent() {
   }, [jobId]);
 
   if (loading || !jobData) {
-    return (
-        <Loader>Loading listing information...</Loader>
-    );
+    return <Loader>Loading listing information...</Loader>;
   }
 
   return (
