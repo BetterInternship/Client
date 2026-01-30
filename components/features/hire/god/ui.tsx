@@ -101,7 +101,7 @@ export function RowCard(props: {
 
   return (
     <li onClick={onClick} className="group px-4 py-3 hover:bg-slate-50">
-      <div className="flex items-center gap-3">
+      <div className="flex gap-3">
         <div className="">{leftActions}</div>
 
         <div className="min-w-0 flex-1">

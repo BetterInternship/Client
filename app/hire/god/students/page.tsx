@@ -13,7 +13,7 @@ import {
   EditableTags,
   ListSummary,
 } from "@/components/features/hire/god/ui";
-import { BoolBadge } from "@/components/ui/badge";
+import { BoolBadge, Badge } from "@/components/ui/badge";
 import { getFullName } from "@/lib/profile";
 import { formatDate } from "@/lib/utils";
 import {
@@ -356,6 +356,112 @@ export default function StudentsPage() {
             <div className="flex items-center gap-1">
               <Meta>{refs.to_college_name(u.college)}</Meta>
               <Meta>{u.degree}</Meta>
+            </div>
+
+            {/* Internship Preferences */}
+
+            <div className="space-y-2">
+              {/* Start Date & Duration */}
+              <div className="flex flex-wrap gap-3 text-xs text-gray-600">
+                <Meta>
+                  📅 Start:{" "}
+                  {u.internship_preferences?.expected_start_date
+                    ? formatDate(u.internship_preferences.expected_start_date)
+                    : "—"}
+                </Meta>
+                <Meta>
+                  ⌛ Duration:{" "}
+                  {u.internship_preferences?.expected_duration_hours
+                    ? `${u.internship_preferences.expected_duration_hours}h`
+                    : "—"}
+                </Meta>
+                <Meta>
+                  🎓{" "}
+                  {u.internship_preferences?.internship_type
+                    ? u.internship_preferences.internship_type === "credited"
+                      ? "Credited"
+                      : "Voluntary"
+                    : "—"}
+                </Meta>
+              </div>
+              {/* Work Modes */}
+              <div className="flex items-center gap-2">
+                <p className="text-xs text-gray-500 font-medium mb-1.5">
+                  💼 Work Modes
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(() => {
+                    const ids = (u.internship_preferences?.job_setup_ids ??
+                      []) as (string | number)[];
+                    const items = ids
+                      .map((id) => {
+                        const m = refs.job_modes.find(
+                          (x) => String(x.id) === String(id),
+                        );
+                        return m ? { id: String(m.id), name: m.name } : null;
+                      })
+                      .filter(Boolean) as { id: string; name: string }[];
+
+                    return items.length ? (
+                      items.map((it) => <Badge key={it.id}>{it.name}</Badge>)
+                    ) : (
+                      <span className="text-xs text-gray-500">—</span>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* Workload Types */}
+              <div className="flex items-center gap-2">
+                <p className="text-xs text-gray-500 font-medium mb-1.5">
+                  📋 Workload Types
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(() => {
+                    const ids = (u.internship_preferences?.job_commitment_ids ??
+                      []) as (string | number)[];
+                    const items = ids
+                      .map((id) => {
+                        const t = refs.job_types.find(
+                          (x) => String(x.id) === String(id),
+                        );
+                        return t ? { id: String(t.id), name: t.name } : null;
+                      })
+                      .filter(Boolean) as { id: string; name: string }[];
+
+                    return items.length ? (
+                      items.map((it) => <Badge key={it.id}>{it.name}</Badge>)
+                    ) : (
+                      <span className="text-xs text-gray-500">—</span>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* Position Categories */}
+              <div className="flex items-center gap-2">
+                <p className="text-xs text-gray-500 font-medium mb-1.5">
+                  📍 Positions
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(() => {
+                    const ids = (u.internship_preferences?.job_category_ids ??
+                      []) as string[];
+                    const items = ids
+                      .map((id) => {
+                        const c = refs.job_categories.find((x) => x.id === id);
+                        return c ? { id: c.id, name: c.name } : null;
+                      })
+                      .filter(Boolean) as { id: string; name: string }[];
+
+                    return items.length ? (
+                      items.map((it) => <Badge key={it.id}>{it.name}</Badge>)
+                    ) : (
+                      <span className="text-xs text-gray-500">—</span>
+                    );
+                  })()}
+                </div>
+              </div>
             </div>
           </div>
         }
