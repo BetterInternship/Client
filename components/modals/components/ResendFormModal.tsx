@@ -15,14 +15,14 @@ export const ResendFormModal = ({
   const [loading, setLoading] = useState(false);
 
   return (
-    <div className="flex flex-col w-full gap-5">
+    <div className="flex flex-col w-full gap-3 mt-2 text-sm text-gray-600 leading-relaxed text-justify">
       This will resend an email to the latest signatory. Only do this if you are
-      sure they have not recevied it, or enough time has passed since the last
+      sure they have not recieved it, or enough time has passed since the last
       follow-up.
       <div className="flex flex-row gap-2 self-end">
         <Button
           disabled={loading}
-          scheme="secondary"
+          variant="outline"
           onClick={() => modalRegistry.resendFormRequest.close()}
         >
           <TextLoader loading={loading}>Close</TextLoader>

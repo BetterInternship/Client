@@ -17,7 +17,7 @@ export const CancelFormModal = ({
   const [loading, setLoading] = useState(false);
 
   return (
-    <div className="flex flex-col w-full gap-5">
+    <div className="flex flex-col w-full gap-3 mt-2 text-sm text-gray-600 leading-relaxed text-justify">
       This will cancel the current form request and stop any further responses.{" "}
       <br />
       <br />
@@ -25,7 +25,7 @@ export const CancelFormModal = ({
       you can cancel this form and submit a new one.
       <div className="flex flex-row gap-2 self-end">
         <Button
-          scheme="secondary"
+          variant="outline"
           disabled={loading}
           onClick={() => modalRegistry.cancelFormRequest.close()}
         >
