@@ -14,7 +14,7 @@
   "dependencies": {
     "@betterinternship/components": "^1.0.1",
     "@betterinternship/core": "^1.9.4",
-    "@betterinternship/schema.base": "^1.2.0",
+    "@betterinternship/schema.base": "^1.2.1",
     "@betterinternship/schema.moa": "^1.5.15",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/modifiers": "^9.0.0",
