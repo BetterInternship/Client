@@ -189,7 +189,7 @@ export const useModalRegistry = () => {
             hasClose: false,
             allowBackdropClick: false,
             closeOnEsc: false,
-            showHeaderDivider: true,
+            showHeaderDivider,
           },
         ),
       close: () => close("cancel-form-request"),
@@ -242,13 +242,10 @@ export const useModalRegistry = () => {
             iconColor={isPending ? "text-amber-600" : "text-emerald-600"}
             title={title}
             message={message}
-            primaryAction={{
+            primaryAction={{ label: "Go back", onClick: onGoBack }}
+            secondaryAction={{
               label: "Generate another copy",
               onClick: onGenerateAnother,
-            }}
-            secondaryAction={{
-              label: "Go back",
-              onClick: onGoBack,
             }}
             close={() => close("duplicate-form-warning")}
           />,
