@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 06:01:21
- * @ Modified time: 2025-10-05 11:54:22
+ * @ Modified time: 2026-02-01 21:10:38
  * @ Description:
  *
  * Properly handles dealing with files stored in GCS and their local state.
@@ -9,9 +9,15 @@
  */
 
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
-import { useCallback, useImperativeHandle, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { useModal } from "@/hooks/use-modal";
-import { TriangleAlert } from 'lucide-react';
+import { TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface IUseFile {
@@ -120,7 +126,7 @@ export const FileUploadInput = ({
       open: () => fileInputRef.current?.click(),
       getFile: () => file,
     }),
-    []
+    [],
   );
 
   /**
@@ -179,8 +185,7 @@ export const useFileUpload = ({
   silent?: boolean;
 }) => {
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadSuccess, setUploadSuccess] = useState(false);
-  const [response, setResponse] = useState<Promise<any>>();
+  const [response, setResponse] = useState<{ success?: boolean }>();
   const fileInputRef = useRef<IFileUploadRef>(null);
 
   /**
@@ -198,28 +203,18 @@ export const useFileUpload = ({
     form.file(file);
 
     // Check for success
-    let result = uploader(form.build());
+    const result = (await uploader(form.build())) as { success?: boolean };
     setResponse(result);
-    result = await result;
-    console.log(result);
 
-    if (!result.success) {
-      // alert("Could not upload file.");
-      setUploadSuccess(false)
-      return uploadSuccess
-    }
-
+    if (!result.success) return;
     if (!silent) alert("File uploaded successfully!");
     setIsUploading(false);
-    setUploadSuccess(true)
-    return uploadSuccess
   };
 
   return {
     upload,
     response,
     isUploading,
-    uploadSuccess,
     fileInputRef,
-  }
+  };
 };

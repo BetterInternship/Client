@@ -19,7 +19,10 @@ import { FormDropdown, FormInput } from "@/components/EditForm";
 import { UserService } from "@/lib/api/services";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { Stepper } from "@/components/stepper/stepper";
-import { isProfileResume, isProfileBaseComplete } from "../../../../lib/profile";
+import {
+  isProfileResume,
+  isProfileBaseComplete,
+} from "../../../../lib/profile";
 import { ModalHandle } from "@/hooks/use-modal";
 import { isValidPHNumber } from "@/lib/utils";
 import { useDbRefs } from "@/lib/db/use-refs";
@@ -40,17 +43,13 @@ export default function IncompleteProfileContent({
   applySuccessModalRef?: RefObject<ModalHandle | null>;
   job?: Job | null;
 }) {
-  const router = useRouter()
+  const router = useRouter();
   return (
     <div className="flex flex-col justify-start items-center p-6 h-full overflow-y-auto sm:max-w-2xl mx-auto pt-20">
       <div className="text-center mb-10 w-full shrink-0">
         <div className="flex justify-start">
-          <Button 
-          variant="ghost"
-          size="sm"
-          onClick={router.back}
-          >
-            <ArrowLeft className="!h-6 !w-6 text-gray-500"/>
+          <Button variant="ghost" size="sm" onClick={router.back}>
+            <ArrowLeft className="!h-6 !w-6 text-gray-500" />
           </Button>
         </div>
         <div className="w-16 h-16 mx-auto mb-4 bg-primary/15 rounded-full flex items-center justify-center">
@@ -134,11 +133,11 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     open: openFileFailModal,
     close: closeFileFailModal,
     Modal: FileFailModal,
-  } = useModal("file-fail-modal", {showCloseButton: false});
+  } = useModal("file-fail-modal", { showCloseButton: false });
 
   // analyze
-  const { upload, fileInputRef, response, uploadSuccess } = useAnalyzeResume(file);
-  const handledResponseRef = useRef<Promise<any> | null>(null);
+  const { upload, fileInputRef, response } = useAnalyzeResume(file);
+  const handledResponseRef = useRef<any>(null);
 
   // upload on file
   useEffect(() => {
@@ -155,29 +154,31 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     handledResponseRef.current = response;
 
     let cancelled = false;
-    response
-      .then(({ extractedUser }: { extractedUser?: ResumeParsedUserSnake }) => {
-        if (cancelled) return;
-        if (extractedUser) {
-          const patch = snakeToDraft(extractedUser);
-          setProfile((p) => ({ ...p, ...patch }));
-        }
-        setParsedReady(true);
-        setIsParsing(false);
-        if (uploadSuccess) {
-          setStep(1);
-        } else {
-          setStep(0);
-          openFileFailModal();
-        }
-      })
-      .catch((e: Error) => {
-        if (!cancelled) {
-          setParseError(e?.message || "Failed to analyze resume.");
-          setIsParsing(false);
-          setParsedReady(false);
-        }
-      });
+    const { extractedUser, message } = response as {
+      success?: boolean;
+      message?: string;
+      extractedUser?: ResumeParsedUserSnake;
+    };
+
+    if (cancelled) return;
+    if (extractedUser) {
+      const patch = snakeToDraft(extractedUser);
+      setProfile((p) => ({ ...p, ...patch }));
+    }
+    setParsedReady(true);
+    setIsParsing(false);
+
+    if (response?.success) {
+      setStep(1);
+    } else {
+      setStep(0);
+      openFileFailModal();
+    }
+    if (!cancelled && message) {
+      setParseError(message || "Failed to analyze resume.");
+      setIsParsing(false);
+      setParsedReady(false);
+    }
 
     return () => {
       cancelled = true;
@@ -277,7 +278,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     if (!current) return;
 
     if (current.id === "resume") {
-      if(!uploadSuccess){
+      if (!uploadSuccess) {
         return;
       }
       setStep(step + 1);
@@ -340,12 +341,11 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
           setShowComplete(true);
           void queryClient.invalidateQueries({
             queryKey: ["my-profile"],
-          })
+          });
           setTimeout(() => {
-            router.push('/profile');
+            router.push("/profile");
           }, 1500);
-        }
-        else setStep(step + 1);
+        } else setStep(step + 1);
       });
       return;
     }
@@ -367,19 +367,21 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
       </DropdownGroup>
 
       <FileFailModal>
-      <div className="p-8">
-        <div className="mb-8 flex flex-col items-center justify-center text-center">
-          <TriangleAlert className="text-primary h-8 w-8 mb-4 mt-0" />
-          <div className="flex flex-col items-center">
-            <h3 className="text-lg">Could not upload file</h3>
-            <p className="text-gray-500 text-sm">Please try again with a different file</p>
+        <div className="p-8">
+          <div className="mb-8 flex flex-col items-center justify-center text-center">
+            <TriangleAlert className="text-primary h-8 w-8 mb-4 mt-0" />
+            <div className="flex flex-col items-center">
+              <h3 className="text-lg">Could not upload file</h3>
+              <p className="text-gray-500 text-sm">
+                Please try again with a different file
+              </p>
+            </div>
+          </div>
+          <div className="flex justify-center gap-6">
+            <Button onClick={closeFileFailModal}>Try Again</Button>
           </div>
         </div>
-        <div className="flex justify-center gap-6">
-          <Button onClick={closeFileFailModal}>Try Again</Button>
-        </div>
-      </div>
-    </FileFailModal>
+      </FileFailModal>
     </>
   );
 }
