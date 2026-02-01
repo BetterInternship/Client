@@ -30,6 +30,8 @@ import { PageError } from "@/components/ui/error";
 import { useApplicationActions } from "@/lib/api/student.actions.api";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { Loader } from "@/components/ui/loader";
+import { ShareJobButton } from "@/components/features/student/job/share-job-button";
+import { ViewPageButton } from "@/components/features/student/job/view-page-button";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -575,16 +577,9 @@ export default function SearchPage() {
                   }}
                   job={selectedJob}
                   actions={[
-                    <Button 
-                      variant="link"
-                      onClick={() => router.push(`/search/${selectedJob?.id}`)}
-                      name="View full page"
-                      scheme="default"
-                      size="md"
-                    >
-                      <ArrowUpRightFromSquare />
-                      View full page
-                    </Button>,
+                    <ShareJobButton
+                      id={selectedJob?.id}
+                    />,
                     <SaveJobButton job={selectedJob} />,
                     <ApplyToJobButton
                       profile={profile.data}

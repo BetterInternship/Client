@@ -26,6 +26,7 @@ import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job
 import { ApplyConfirmModal } from "@/components/modals/ApplyConfirmModal";
 import { applyToJob } from "@/lib/application";
 import { useApplicationActions } from "@/lib/api/student.actions.api";
+import { ShareJobButton } from "@/components/features/student/job/share-job-button";
 
 /**
  * The individual job page.
@@ -104,6 +105,9 @@ export default function JobPage() {
 
                   {job.data && (
                     <div className="flex items-center gap-3">
+                      <ShareJobButton
+                        id={job.data.id ?? ""}
+                      />
                       <SaveJobButton job={job.data} />
                       <ApplyToJobButton
                         profile={profile.data}
