@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Check, Share } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const ShareJobButton = ({id} : {id: string}) => {
   const [clicked, setClicked] = useState(false);
@@ -12,6 +12,12 @@ export const ShareJobButton = ({id} : {id: string}) => {
     setClicked(true);
     setTimeout(() => setClicked(false), 1500);
   }
+
+  useEffect(
+    () => {
+      setClicked(false);
+    }, [id]
+  );
   
   return (
     <Button
