@@ -108,9 +108,18 @@ export default function ProfilePage() {
     setAutoApplyError(null);
 
     const prev = !!profile.data?.apply_for_me;
+    const newEnabled = !prev;
 
     try {
-      await profileActions.update.mutateAsync({ apply_for_me: !prev });
+      // await profileActions.update.mutateAsync({ apply_for_me: !prev });
+      await UserService.updateMyProfile({
+        apply_for_me: newEnabled,
+        auto_apply_enabled_at: newEnabled ? new Date().toISOString() : null,
+      })
+      void queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+
+      // console.log("apply_for_me: ", profile?.data?.apply_for_me);
+      // console.log("auto_apply_enabled_at:", profile.data?.auto_apply_enabled_at);
     } catch (e: any) {
       setAutoApplyError((e as string) ?? "Failed to update auto-apply");
     } finally {
@@ -308,6 +317,7 @@ export default function ProfilePage() {
           <aside className="lg:col-span-1 space-y-6">
             <AutoApplyCard
               initialEnabled={!!data?.apply_for_me}
+              enabledAt={data?.auto_apply_enabled_at}
               onSave={handleAutoApplySave}
               saving={autoApplySaving}
               error={autoApplyError}
