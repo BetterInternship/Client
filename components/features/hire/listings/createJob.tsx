@@ -71,7 +71,7 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
     job_categories
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) // use order col as sort
       .map((category) => {
-        if (category.name == "Others" || tempDisable.includes(category.id))
+        if (category.name == "Others" || tempDisable.includes(category.id) || category.name == "Computer Science") //! temp!
           return null;
 
         return {

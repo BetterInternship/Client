@@ -8,7 +8,7 @@ import React, {
   useCallback,
 } from "react";
 import { useSearchParams } from "next/navigation";
-import { CheckSquare, Square } from "lucide-react";
+import { ArrowUpRightFromSquare, CheckSquare, Link, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useJobsData, useProfileData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "@/lib/ctx-auth";
@@ -30,6 +30,8 @@ import { PageError } from "@/components/ui/error";
 import { useApplicationActions } from "@/lib/api/student.actions.api";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { Loader } from "@/components/ui/loader";
+import { ShareJobButton } from "@/components/features/student/job/share-job-button";
+import { ViewPageButton } from "@/components/features/student/job/view-page-button";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -575,6 +577,9 @@ export default function SearchPage() {
                   }}
                   job={selectedJob}
                   actions={[
+                    <ShareJobButton
+                      id={selectedJob?.id}
+                    />,
                     <SaveJobButton job={selectedJob} />,
                     <ApplyToJobButton
                       profile={profile.data}

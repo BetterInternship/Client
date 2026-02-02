@@ -50,7 +50,6 @@ export default function IncompleteProfileContent({
   );
 }
 
-
 /* ============================== Types ============================== */
 
 type ProfileDraft = {
@@ -114,7 +113,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
 
   // analyze
   const { upload, fileInputRef, response } = useAnalyzeResume(file);
-  const handledResponseRef = useRef<Promise<any> | null>(null);
+  const handledResponseRef = useRef<any>(null);
 
   // upload on file
   useEffect(() => {
@@ -130,29 +129,27 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     if (!response || handledResponseRef.current === response) return;
     handledResponseRef.current = response;
 
-    let cancelled = false;
-    response
-      .then(({ extractedUser }: { extractedUser?: ResumeParsedUserSnake }) => {
-        if (cancelled) return;
-        if (extractedUser) {
-          const patch = snakeToDraft(extractedUser);
-          setProfile((p) => ({ ...p, ...patch }));
-        }
-        setParsedReady(true);
-        setIsParsing(false);
-        setStep(1);
-      })
-      .catch((e: Error) => {
-        if (!cancelled) {
-          setParseError(e?.message || "Failed to analyze resume.");
-          setIsParsing(false);
-          setParsedReady(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
+    const { extractedUser, message, success } = response as {
+      success?: boolean;
+      message?: string;
+      extractedUser?: ResumeParsedUserSnake;
     };
+
+    if (!success && message) {
+      setParseError(message || "Failed to analyze resume.");
+      setIsParsing(false);
+      setParsedReady(false);
+      return;
+    }
+
+    if (extractedUser) {
+      const patch = snakeToDraft(extractedUser);
+      setProfile((p) => ({ ...p, ...patch }));
+    }
+
+    setParsedReady(true);
+    setIsParsing(false);
+    setStep(1);
   }, [response]);
 
   const steps = useMemo(() => {

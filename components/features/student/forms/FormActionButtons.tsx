@@ -56,7 +56,10 @@ export function FormActionButtons() {
     const errors = formFiller.validate(form.fields, autofillValues);
 
     if (Object.keys(errors).length) {
-      toast.error("There are missing fields", toastPresets.destructive);
+      toast.error(
+        "Some information is missing or incorrect",
+        toastPresets.destructive,
+      );
       setBusy(false);
       return;
     }

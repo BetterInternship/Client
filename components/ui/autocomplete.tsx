@@ -4,8 +4,9 @@ import { useState, useMemo, useRef, useId } from "react";
 import { Input } from "./input";
 import { useDetectClickOutside } from "react-detect-click-outside";
 import { cn } from "@/lib/utils";
-import { PlusCircleIcon } from "lucide-react";
+import { PlusCircleIcon, X } from "lucide-react";
 import { LabelWithTooltip } from "../EditForm";
+import { Button } from "./button";
 
 export interface IAutocompleteOption<ID extends number | string> {
   id: ID;
@@ -141,14 +142,16 @@ function AutocompleteBase<ID extends number | string>({
                 className="px-2 py-1 text-xs rounded-sm bg-gray-100 border border-gray-300 flex items-center gap-1"
               >
                 {label}
-                <button
+                <Button
                   type="button"
-                  className="ml-1 text-gray-500 hover:text-gray-700 leading-none"
+                  variant="ghost"
+                  size="xs"
+                  className="h-5 w-5 p-0 ml-1 hover:bg-gray-300"
                   onClick={() => removeAt(id)}
                   aria-label={`Remove ${label}`}
                 >
-                  ×
-                </button>
+                  <X className="h-3.5 w-3.5" />
+                </Button>
               </span>
             );
           })}
@@ -462,17 +465,19 @@ export function AutocompleteTreeMulti({
         {chips.map(([id, label]) => (
           <span
             key={id}
-            className="ml-2 mt-[0.25em] px-2 py-1 text-xs rounded-full bg-gray-100 border border-gray-300 flex items-center gap-1"
+            className="ml-2  px-2 py-1 text-xs rounded-full bg-gray-100 border border-gray-300 flex items-center gap-1"
           >
             {label}
-            <button
+            <Button
               type="button"
-              className="ml-1 text-gray-500 hover:text-gray-700 leading-none"
+              variant="ghost"
+              size="xs"
+              className="h-5 w-5 p-0 ml-0.5 hover:bg-gray-300 rounded-full hover:text-destructive"
               onClick={() => removeAt(id)}
               aria-label={`Remove ${label}`}
             >
-              ×
-            </button>
+              <X className="h-3 w-3 " />
+            </Button>
           </span>
         ))}
         {selected.length === 0 && (
