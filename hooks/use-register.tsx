@@ -1,9 +1,9 @@
 import { UserService } from "@/lib/api/services";
 import { useFileUpload } from "./use-file";
 
-export const useAnalyzeResume = (file: File | null) => {
-  const { fileInputRef, isUploading, uploadSuccess, upload, response } = useFileUpload({
-    uploader: UserService.parseResume,
+export const useAnalyzeResume = () => {
+  const { fileInputRef, isUploading, upload, response } = useFileUpload({
+    uploader: (form) => UserService.parseResume(form),
     filename: "resume",
     silent: true,
   });
@@ -11,7 +11,6 @@ export const useAnalyzeResume = (file: File | null) => {
   return {
     upload,
     isUploading,
-    uploadSuccess,
     fileInputRef,
     response,
   };

@@ -16,6 +16,7 @@ import {
   JobMode,
   JobHead,
   JobApplicationRequirements,
+  JobDetails,
 } from "@/components/shared/jobs";
 import { Card } from "@/components/ui/card";
 import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
@@ -25,6 +26,7 @@ import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job
 import { ApplyConfirmModal } from "@/components/modals/ApplyConfirmModal";
 import { applyToJob } from "@/lib/application";
 import { useApplicationActions } from "@/lib/api/student.actions.api";
+import { ShareJobButton } from "@/components/features/student/job/share-job-button";
 
 /**
  * The individual job page.
@@ -103,6 +105,9 @@ export default function JobPage() {
 
                   {job.data && (
                     <div className="flex items-center gap-3">
+                      <ShareJobButton
+                        id={job.data.id ?? ""}
+                      />
                       <SaveJobButton job={job.data} />
                       <ApplyToJobButton
                         profile={profile.data}
@@ -121,72 +126,16 @@ export default function JobPage() {
               <div className="flex-1 overflow-y-auto">
                 <div className="max-w-4xl mx-auto px-6 py-8">
                   {/* Job Header Card */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-                    <div className="flex items-start justify-between mb-6">
-                      <div className="flex-1 max-w-full">
-                        <JobHead
-                          title={job.data.title}
-                          employer={job.data.employer?.name}
-                          size="3"
-                        />
-                        <p className="text-gray-500 text-sm">
-                          Listed on{" "}
-                          {job.data.created_at
-                            ? new Date(job.data.created_at).toLocaleDateString(
-                                "en-US",
-                                {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                },
-                              )
-                            : ""}
-                        </p>
-                      </div>
-                    </div>
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 py-3 px-4">
                     {/* Job Details Grid */}
-                    <div className="flex flex-wrap gap-2">
-                      <EmployerMOA
-                        employer_id={job.data.employer_id}
-                        university_id={universities[0]?.id}
-                      />
-                      <JobType type={job.data.type} />
-                      <JobSalary
-                        salary={job.data.salary}
-                        salary_freq={job.data.salary_freq}
-                      />
-                      <JobMode mode={job.data.mode} />
-                    </div>
-
-                    <div className="border-t border-gray-200 my-8"></div>
-
-                    <h2 className="text-2xl text-gray-700 mb-6 flex items-center gap-3">
-                      Description
-                    </h2>
-                    <div className="prose max-w-none text-gray-700 leading-relaxed">
-                      <div className="text-base leading-7">
-                        <ReactMarkdown>
-                          {job.data.description || "No description provided."}
-                        </ReactMarkdown>
-                      </div>
-                    </div>
-
-                    <div className="border-t border-gray-200 my-8"></div>
-                    <h2 className="text-2xl text-gray-700 mb-6 flex items-center gap-3">
-                      Requirements
-                    </h2>
-
-                    <JobApplicationRequirements job={job.data} />
-
-                    <div className="prose max-w-none text-gray-700 leading-relaxed">
-                      <div className="text-base leading-7">
-                        {job.data.requirements}
-                      </div>
-                    </div>
+                    <JobDetails
+                      user={{
+                        github_link: profile.data?.github_link ?? null,
+                        portfolio_link: profile.data?.portfolio_link ?? null,
+                      }}
+                      job={job.data}
+                    />
                   </div>
-
-                  {/* Bottom Spacing */}
-                  <div className="h-16"></div>
                 </div>
               </div>
             )}

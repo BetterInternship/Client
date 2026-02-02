@@ -19,11 +19,13 @@ import {
 
 export function AutoApplyCard({
   initialEnabled,
+  enabledAt,
   onSave,
   saving,
   error,
 }: {
   initialEnabled: boolean;
+  enabledAt: string | null;
   onSave: (next: boolean) => Promise<void>;
   saving?: boolean;
   error?: string | null;
@@ -32,6 +34,21 @@ export function AutoApplyCard({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+
+  const daysRemaining = useMemo(() => {
+      if (!enabled || !enabledAt) return 0;
+
+      const enabledDate = new Date(enabledAt)
+      const endDate = new Date(enabledDate.getTime() + (14 * 24 * 60 * 60 * 1000))
+      const dateNow = new Date()
+      const daysLeft = Math.ceil((endDate.getTime() - dateNow.getTime())/ (24 * 60 * 60 * 1000))
+
+      console.log("  endDate:", endDate);
+      console.log("  dateNow:", dateNow);
+      console.log("  daysLeft:", daysLeft);
+
+      return Math.max(0, daysLeft);
+    }, [enabled, enabledAt])
 
   const isBusy = pending || !!saving;
 
@@ -126,13 +143,16 @@ export function AutoApplyCard({
         {/* Explanation */}
         <div className={cn("text-xs leading-relaxed text-justify", tone.subtext)}>
           Automatically send your resume to matching companies. Only companies that fit
-          your profile will see your resume.
+          your profile will see your resume. 
         </div>
 
         {/* Status */}
         {enabled ? (
           <p className="text-sm text-emerald-800">
-            {isBusy ? "Saving…" : "Apply for Me is currently active."}
+            {isBusy ? "Saving…" : 
+              daysRemaining > 0 ? 
+              `Apply for Me is currently active, ${daysRemaining} days remaining.` :
+              "Apply for Me has expired. Toggle to renew for 14 days."}
           </p>
         ) : (
           <p className="text-sm text-red-800">
