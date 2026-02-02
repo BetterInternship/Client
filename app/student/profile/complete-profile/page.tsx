@@ -153,14 +153,12 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     if (!response || handledResponseRef.current === response) return;
     handledResponseRef.current = response;
 
-    let cancelled = false;
-    const { extractedUser, message } = response as {
+    const { extractedUser, message, success } = response as {
       success?: boolean;
       message?: string;
       extractedUser?: ResumeParsedUserSnake;
     };
 
-    if (cancelled) return;
     if (extractedUser) {
       const patch = snakeToDraft(extractedUser);
       setProfile((p) => ({ ...p, ...patch }));
@@ -168,21 +166,15 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     setParsedReady(true);
     setIsParsing(false);
 
-    if (response?.success) {
+    if (success) {
       setStep(1);
-    } else {
+    } else if (!success && message) {
       setStep(0);
       openFileFailModal();
-    }
-    if (!cancelled && message) {
       setParseError(message || "Failed to analyze resume.");
       setIsParsing(false);
       setParsedReady(false);
     }
-
-    return () => {
-      cancelled = true;
-    };
   }, [response]);
 
   const steps = useMemo(() => {
