@@ -88,11 +88,10 @@ const EditJobPage = ({
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) // use order col as sort
       .map((category) => {
         if (
-          category.name == "Others" ||
           tempDisable.includes(category.id) ||
-          category.name == "Computer Science"
+          category.parent_id == null || // for the subheaders
+          category.name == "Engineering" // ! this is temp bc engineering is a subheader but its placed under others for now
         )
-          //! temp!
           return null;
 
         return {
