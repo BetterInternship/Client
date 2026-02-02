@@ -71,7 +71,11 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
     job_categories
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) // use order col as sort
       .map((category) => {
-        if (category.name == "Others" || tempDisable.includes(category.id) || category.name == "Computer Science") //! temp!
+        if (
+          tempDisable.includes(category.id) ||
+          category.parent_id == null || // for the subheaders
+          category.name == "Engineering" // ! this is temp bc engineering is a subheader but its placed under others for now
+        )
           return null;
 
         return {
