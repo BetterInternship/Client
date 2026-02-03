@@ -103,12 +103,11 @@ export default function ProfilePage() {
     openEmployerModal();
   };
 
-  const handleAutoApplySave = async () => {
+  const handleAutoApplySave = async (newEnabled: boolean) => {
     setAutoApplySaving(true);
     setAutoApplyError(null);
 
     const prev = !!profile.data?.apply_for_me;
-    const newEnabled = !prev;
 
     try {
       // await profileActions.update.mutateAsync({ apply_for_me: !prev });
