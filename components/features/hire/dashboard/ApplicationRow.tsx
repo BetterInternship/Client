@@ -9,7 +9,10 @@ import { useAppContext } from "@/lib/ctx-app";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { getFullName } from "@/lib/profile";
-import { formatDateWithoutTime, formatTimestampDateWithoutTime } from "@/lib/utils/date-utils";
+import {
+  formatDateWithoutTime,
+  formatTimestampDateWithoutTime,
+} from "@/lib/utils/date-utils";
 import { statusMap } from "@/components/common/status-icon-map";
 import { motion } from "framer-motion";
 import {
@@ -43,12 +46,12 @@ interface ApplicationRowProps {
 }
 
 interface InternshipPreferences {
-  expected_duration_hours?: number,
-  expected_start_date?: number,
-  internship_type?: string,
-  job_category_ids?: string[],
-  job_commitment_ids?: string[],
-  job_setup_ids?: string[],
+  expected_duration_hours?: number;
+  expected_start_date?: number;
+  internship_type?: string;
+  job_category_ids?: string[];
+  job_commitment_ids?: string[];
+  job_setup_ids?: string[];
 }
 
 export function ApplicationRow({
@@ -67,7 +70,8 @@ export function ApplicationRow({
   const { to_university_name, get_app_status } = useDbRefs();
   const conversations = useConversations();
   const { isMobile } = useAppContext();
-  const preferences = (application.user?.internship_preferences || {}) as InternshipPreferences;
+  const preferences = (application.user?.internship_preferences ||
+    {}) as InternshipPreferences;
 
   // limit row animation to first 50.
   const MAX_STAGGER_ROWS = 50;
@@ -85,72 +89,69 @@ export function ApplicationRow({
   };
 
   return isMobile ? (
-      <motion.div
-        key={application.id}
-        initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-        animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
-        exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-        transition={{ duration: 0.3, delay: staggerDelay, ease: "easeOut" }}
+    <motion.div
+      key={application.id}
+      initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+      animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
+      exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+      transition={{ duration: 0.3, delay: staggerDelay, ease: "easeOut" }}
+    >
+      <Card
+        className="flex flex-col hover:cursor-pointer hover:bg-primary/25 transition-colors"
+        onClick={onView}
       >
-        <Card
-          className="flex flex-col hover:cursor-pointer hover:bg-primary/25 transition-colors"
-          onClick={onView}
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center gap-2 pb-2"
         >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-2 pb-2"
+          <FormCheckbox
+            checked={checkboxSelected}
+            setter={(v: boolean) => onToggleSelect?.(!!v)}
+          />
+          <h4 className="text-gray-900 text-base">
+            {getFullName(application.user)}
+          </h4>
+        </div>
+        <div className="flex flex-col text-gray-500">
+          <div className="flex items-center gap-2">
+            <School size={16} />
+            <span className="text-sm">
+              {to_university_name(application.user?.university) || ""}{" "}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <GraduationCap size={16} />
+            <span className="text-sm">{application.user?.degree}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <ContactRound size={16} />
+            <span className="text-sm">{preferences.internship_type}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Calendar size={16} />
+            <span className="text-sm">
+              {formatTimestampDateWithoutTime(preferences.expected_start_date)}
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center justify-end gap-2 pt-2">
+          <DropdownMenu items={statuses} defaultItem={defaultStatus} />
+          {/* <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              openChatModal();
+              setSelectedApplication(application);
+              updateConversationId(application.user_id ?? "");
+            }}
           >
-            <FormCheckbox
-              checked={checkboxSelected}
-              setter={(v: boolean) => onToggleSelect?.(!!v)}
-            />
-            <h4 className="text-gray-900 text-base">{getFullName(application.user)}</h4>
-          </div>
-          <div className="flex flex-col text-gray-500">
-            <div className="flex items-center gap-2">
-              <School size={16} />
-              <span className="text-sm">
-                {to_university_name(application.user?.university) || ""}{" "}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <GraduationCap size={16} />
-              <span className="text-sm">{application.user?.degree}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <ContactRound size={16} />
-              <span className="text-sm">
-                {preferences.internship_type}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Calendar size={16} />
-              <span className="text-sm">
-                {formatTimestampDateWithoutTime(preferences.expected_start_date)}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center justify-end gap-2 pt-2">
-            <DropdownMenu
-              items={statuses}
-              defaultItem={defaultStatus}
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                openChatModal();
-                setSelectedApplication(application);
-                updateConversationId(application.user_id ?? "");
-              }}
-            >
-              <MessageCircle className="h-6 w-6" />
-              Chat
-            </Button>
-          </div>
-        </Card>
-      </motion.div>
+            <MessageCircle className="h-6 w-6" />
+            Chat
+          </Button> */}
+        </div>
+      </Card>
+    </motion.div>
   ) : (
     // desktop
     <motion.tr
@@ -158,15 +159,15 @@ export function ApplicationRow({
       initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
       animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
       exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-      transition={{ 
-        duration: 0.3, 
-        delay: staggerDelay, 
-        ease: "easeOut", 
+      transition={{
+        duration: 0.3,
+        delay: staggerDelay,
+        ease: "easeOut",
       }}
       className="group hover:bg-primary/25 odd:bg-white even:bg-gray-50 hover:cursor-pointer transition-colors"
       onClick={onView}
     >
-      <td 
+      <td
         className="px-4 py-2"
         onClick={(e) => {
           e.stopPropagation();
@@ -180,14 +181,10 @@ export function ApplicationRow({
       </td>
       <td className="px-4 py-2">{getFullName(application.user)} </td>
       <td className="px-4 py-2 flex flex-col">
-        <span>
-          {to_university_name(application.user?.university) || ""}
-        </span>
+        <span>{to_university_name(application.user?.university) || ""}</span>
         <span className="text-gray-500">{application.user?.degree}</span>
       </td>
-      <td className="px-4 py-2">
-        {preferences.internship_type}
-      </td>
+      <td className="px-4 py-2">{preferences.internship_type}</td>
       <td className="px-4 py-2">
         {formatTimestampDateWithoutTime(preferences.expected_start_date)}
       </td>
@@ -196,11 +193,7 @@ export function ApplicationRow({
         {formatDateWithoutTime(application.applied_at)}
       </td>
       <td className="px-4 py-2 overflow-visible">
-        <DropdownMenu
-          items={statuses}
-          defaultItem={defaultStatus}
-        />
-        
+        <DropdownMenu items={statuses} defaultItem={defaultStatus} />
       </td>
       <td>
         <div className="flex items-center gap-2 pr-2 flex-row justify-end">
@@ -216,7 +209,7 @@ export function ApplicationRow({
                 unread.subscribers.includes(application.user_id))}
           >
           </ActionButton> */}
-          {application.status !== 7 &&
+          {application.status !== 7 && (
             <ActionButton
               icon={Archive}
               onClick={(e) => {
@@ -225,8 +218,8 @@ export function ApplicationRow({
               }}
               enabled={application.status! !== 7}
             />
-          }
-          {application.status === 7 &&
+          )}
+          {application.status === 7 && (
             <ActionButton
               icon={Trash2}
               onClick={(e) => {
@@ -235,7 +228,7 @@ export function ApplicationRow({
               }}
               enabled={application.status! === 7}
             />
-          }
+          )}
         </div>
       </td>
     </motion.tr>

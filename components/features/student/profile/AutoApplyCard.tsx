@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -43,12 +43,16 @@ export function AutoApplyCard({
       const dateNow = new Date()
       const daysLeft = Math.ceil((endDate.getTime() - dateNow.getTime())/ (24 * 60 * 60 * 1000))
 
-      console.log("  endDate:", endDate);
-      console.log("  dateNow:", dateNow);
-      console.log("  daysLeft:", daysLeft);
+      // console.log("  endDate:", endDate);
+      // console.log("  dateNow:", dateNow);
+      // console.log("  daysLeft:", daysLeft);
 
       return Math.max(0, daysLeft);
     }, [enabled, enabledAt])
+
+  useEffect(() => {
+    setEnabled(!!initialEnabled);
+  }, [initialEnabled]);
 
   const isBusy = pending || !!saving;
 
@@ -149,10 +153,9 @@ export function AutoApplyCard({
         {/* Status */}
         {enabled ? (
           <p className="text-sm text-emerald-800">
-            {isBusy ? "Saving…" : 
-              daysRemaining > 0 ? 
-              `Apply for Me is currently active, ${daysRemaining} days remaining.` :
-              "Apply for Me has expired. Toggle to renew for 14 days."}
+            {daysRemaining > 0 ? 
+            (isBusy ? "Saving…" : `Apply for Me is currently active, ${daysRemaining} days remaining.`) :
+              "Apply for Me has expired."}
           </p>
         ) : (
           <p className="text-sm text-red-800">
