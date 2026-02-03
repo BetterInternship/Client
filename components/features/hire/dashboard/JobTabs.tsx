@@ -14,7 +14,15 @@ import { useModal } from "@/hooks/use-modal";
 import { useSideModal } from "@/hooks/use-side-modal";
 import { EmployerConversationService, UserService } from "@/lib/api/services";
 import { EmployerApplication, InternshipPreferences } from "@/lib/db/db.types";
-import { ArrowLeft, Edit, Info, Trash2, MessageSquarePlus, MessageSquareText, Wrench } from "lucide-react";
+import {
+  ArrowLeft,
+  Edit,
+  Info,
+  Trash2,
+  MessageSquarePlus,
+  MessageSquareText,
+  Wrench,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Job } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
@@ -25,7 +33,12 @@ import { Message } from "@/components/ui/messages";
 import { Textarea } from "@/components/ui/textarea";
 import { getFullName } from "@/lib/profile";
 import { motion } from "framer-motion";
-import { FileText, MessageCirclePlus, SendHorizonal, SquareArrowOutUpRight } from "lucide-react";
+import {
+  FileText,
+  MessageCirclePlus,
+  SendHorizonal,
+  SquareArrowOutUpRight,
+} from "lucide-react";
 import { useListingsBusinessLogic } from "@/hooks/hire/listings/use-listings-business-logic";
 import { useAppContext } from "@/lib/ctx-app";
 import { cn } from "@/lib/utils";
@@ -39,17 +52,11 @@ interface JobTabsProps {
   onJobUpdate?: (updates: Partial<Job>) => void;
 }
 
-export default function JobTabs({ 
-  selectedJob,
-  onJobUpdate,
-} : JobTabsProps) {
+export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
   const { ownedJobs, update_job, delete_job } = useOwnedJobs();
 
   // Business logic hook
-  const {
-    saving,
-    clearSelectedJob,
-  } = useListingsBusinessLogic(ownedJobs);
+  const { saving, clearSelectedJob } = useListingsBusinessLogic(ownedJobs);
   const { isAuthenticated, redirectIfNotLoggedIn, loading } = useAuthContext();
   const profile = useProfile();
   const applications = useEmployerApplications();
@@ -73,9 +80,14 @@ export default function JobTabs({
     0, 1, 2, 3, 4, 5, 6,
   ]);
   const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
-  const [applicantToArchive, setApplicantToArchive] = useState<EmployerApplication | null>(null);
-  const [applicantToDelete, setApplicantToDelete] = useState<EmployerApplication | null>(null);
-  const [statusChangeData, setStatusChangeData] = useState<{ applicants: EmployerApplication[]; status: number; } | null>(null);
+  const [applicantToArchive, setApplicantToArchive] =
+    useState<EmployerApplication | null>(null);
+  const [applicantToDelete, setApplicantToDelete] =
+    useState<EmployerApplication | null>(null);
+  const [statusChangeData, setStatusChangeData] = useState<{
+    applicants: EmployerApplication[];
+    status: number;
+  } | null>(null);
 
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const chatAnchorRef = useRef<HTMLDivElement>(null);
@@ -129,12 +141,12 @@ export default function JobTabs({
   useEffect(() => {
     if (selectedJob?.id) {
       setSelectedJobId(selectedJob?.id);
-      setLoading(true)
+      setLoading(true);
 
       const timer = setTimeout(() => {
         setLoading(false);
       }, 400);
-    
+
       return () => clearTimeout(timer);
     }
   }, [selectedJob?.id]);
@@ -173,26 +185,26 @@ export default function JobTabs({
     onClose: () => (conversation.unsubscribe(), setConversationId("")),
     showCloseButton: false,
   });
-  
+
   const {
     open: openChatModal,
     close: closeChatModal,
     SideModal: ChatModal,
   } = useSideModal("chat-modal", {
-    onClose: () => (conversation.unsubscribe(), setConversationId(""))
+    onClose: () => (conversation.unsubscribe(), setConversationId("")),
   });
 
   useEffect(() => {
     const handleEsc = (event: any) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         closeChatModal();
       }
     };
 
-    window.addEventListener('keydown', handleEsc);
+    window.addEventListener("keydown", handleEsc);
 
     return () => {
-      window.removeEventListener('keydown', handleEsc);
+      window.removeEventListener("keydown", handleEsc);
     };
   }, [closeChatModal]);
 
@@ -260,7 +272,9 @@ export default function JobTabs({
 
   const handleApplicationClick = (application: EmployerApplication) => {
     setSelectedApplication(application); // set first
-    router.push(`/dashboard/applicant?userId=${application?.user_id}&jobId=${selectedJobId}`);
+    router.push(
+      `/dashboard/applicant?userId=${application?.user_id}&jobId=${selectedJobId}`,
+    );
   };
 
   const handleNotesClick = (application: EmployerApplication) => {
@@ -301,7 +315,7 @@ export default function JobTabs({
   const handleRequestApplicantDelete = (application: EmployerApplication) => {
     setApplicantToDelete(application);
     openApplicantDeleteModal();
-  }
+  };
 
   const handleConfirmApplicantArchive = async () => {
     if (!applicantToArchive?.id) return;
@@ -333,10 +347,10 @@ export default function JobTabs({
     if (!selectedApplication?.user_id) return;
 
     const userConversation = conversations.data?.find((c) =>
-      c?.subscribers?.includes(selectedApplication?.user_id)
+      c?.subscribers?.includes(selectedApplication?.user_id),
     );
 
-    if(userConversation){
+    if (userConversation) {
       setConversationId(userConversation.id);
       openOldChatModal();
     } else {
@@ -355,15 +369,15 @@ export default function JobTabs({
   const handleCancelStatusChange = () => {
     setStatusChangeData(null);
     closeStatusChangeModal();
-  }
+  };
 
   const handleConfirmStatusChange = async () => {
     if (!statusChangeData) return;
 
     await Promise.all(
       statusChangeData.applicants.map((app) =>
-        applications.review(app.id ?? "", { status: statusChangeData.status })
-      )
+        applications.review(app.id ?? "", { status: statusChangeData.status }),
+      ),
     );
 
     setStatusChangeData(null);
@@ -372,43 +386,45 @@ export default function JobTabs({
   };
 
   // Handle message
-  const handleMessage = async (studentId: string | undefined, message: string) => {
+  const handleMessage = async (
+    studentId: string | undefined,
+    message: string,
+  ) => {
     if (message.trim() === "") return;
 
     setSending(true);
     let userConversation = conversations.data?.find((c) =>
-    c?.subscribers?.includes(studentId),
+      c?.subscribers?.includes(studentId),
     );
 
     if (!userConversation && studentId) {
-    const response =
+      const response =
         await EmployerConversationService.createConversation(studentId).catch(
-        endSend,
+          endSend,
         );
 
-    if (!response?.success) {
+      if (!response?.success) {
         alert("Could not initiate conversation with user.");
         endSend();
         return;
-    }
+      }
 
-    setConversationId(response.conversation?.id ?? "");
-    userConversation = response.conversation;
-    endSend();
+      setConversationId(response.conversation?.id ?? "");
+      userConversation = response.conversation;
+      endSend();
     }
 
     setTimeout(async () => {
       if (!userConversation) return endSend();
       await EmployerConversationService.sendToUser(
-          userConversation?.id,
-          message,
+        userConversation?.id,
+        message,
       ).catch(endSend);
       endSend();
     });
   };
 
-  if (isLoading || !isAuthenticated())
-    return null;
+  if (isLoading || !isAuthenticated()) return null;
 
   let lastSelf: boolean = false;
 
@@ -429,7 +445,7 @@ export default function JobTabs({
             />
           )}
         </DeleteModal>
-        
+
         <ApplicantArchiveModal>
           {applicantToArchive && (
             <div className="p-8 pt-0 h-full">
@@ -437,8 +453,18 @@ export default function JobTabs({
                 Archive applicant "{getFullName(applicantToArchive.user)}"?
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={handleCancelApplicantArchive}>Cancel</Button>
-                <Button variant="default" onClick={handleConfirmApplicantArchive}>Archive</Button>
+                <Button
+                  variant="outline"
+                  onClick={handleCancelApplicantArchive}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={handleConfirmApplicantArchive}
+                >
+                  Archive
+                </Button>
               </div>
             </div>
           )}
@@ -448,13 +474,23 @@ export default function JobTabs({
           {applicantToDelete && (
             <div className="p-8 pt-0 h-full">
               <div className="flex flex-col gap-2 mb-4">
-                <span className="text-lg">Delete applicant "{getFullName(applicantToDelete.user)}"?</span>
+                <span className="text-lg">
+                  Delete applicant "{getFullName(applicantToDelete.user)}"?
+                </span>
                 <span>This action is permanent and cannot be reversed.</span>
               </div>
 
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={handleCancelApplicantDelete}>Cancel</Button>
-                <Button variant="default" scheme="destructive" onClick={handleConfirmApplicantDelete}>Delete</Button>
+                <Button variant="outline" onClick={handleCancelApplicantDelete}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="default"
+                  scheme="destructive"
+                  onClick={handleConfirmApplicantDelete}
+                >
+                  Delete
+                </Button>
               </div>
             </div>
           )}
@@ -464,15 +500,23 @@ export default function JobTabs({
           {statusChangeData && (
             <div className="p-8 pt-0 h-full">
               <div className="text-lg mb-4">
-                <span>Change status for {statusChangeData.applicants.length} applicant{statusChangeData.applicants.length !== 1 ? "s" : ""}?</span>
+                <span>
+                  Change status for {statusChangeData.applicants.length}{" "}
+                  applicant{statusChangeData.applicants.length !== 1 ? "s" : ""}
+                  ?
+                </span>
                 <ul className="list-disc list-inside text-sm">
-                  {statusChangeData.applicants.map(a => (
-                    <li>{a.user?.first_name} {a.user?.last_name}</li>
+                  {statusChangeData.applicants.map((a) => (
+                    <li>
+                      {a.user?.first_name} {a.user?.last_name}
+                    </li>
                   ))}
                 </ul>
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={handleCancelStatusChange}>Cancel</Button>
+                <Button variant="outline" onClick={handleCancelStatusChange}>
+                  Cancel
+                </Button>
                 <Button onClick={handleConfirmStatusChange}>Confirm</Button>
               </div>
             </div>
@@ -489,25 +533,29 @@ export default function JobTabs({
             </button>
           </div>
           <div className="flex flex-col flex-1 gap-4">
-            <div className={cn(
-              "flex flex-col px-4 py-4 bg-white border-gray-200 border-2 rounded-md",
-              isMobile ? "w-full gap-4" : "w-fit gap-2"
-            )}>
-              <h3 className={cn(
-                "leading-none tracking-tighter text-xl",
-                isMobile ? "pl-2" : ""
-              )}>
+            <div
+              className={cn(
+                "flex flex-col px-4 py-4 bg-white border-gray-200 border-2 rounded-md",
+                isMobile ? "w-full gap-4" : "w-fit gap-2",
+              )}
+            >
+              <h3
+                className={cn(
+                  "leading-none tracking-tighter text-xl",
+                  isMobile ? "pl-2" : "",
+                )}
+              >
                 {selectedJob?.title}
               </h3>
-              <div className={cn(
-                isMobile
-                ? "flex flex-col justify-between gap-4"
-                : "grid grid-cols-2 grid-rows-2 gap-x-2 gap-y-1"
-              )}>
+              <div
+                className={cn(
+                  isMobile
+                    ? "flex flex-col justify-between gap-4"
+                    : "grid grid-cols-2 grid-rows-2 gap-x-2 gap-y-1",
+                )}
+              >
                 <div className="flex items-center gap-2">
-                  <div className={cn(
-                    isMobile ? "pl-2" : ""
-                  )}>
+                  <div className={cn(isMobile ? "pl-2" : "")}>
                     <Toggle
                       state={selectedJob!.is_active}
                       onClick={handleToggleActive}
@@ -516,19 +564,22 @@ export default function JobTabs({
                   <span
                     className={cn(
                       "text-sm transition px-2 py-1 rounded-[0.33rem]",
-                      selectedJob!.is_active ? "bg-supportive text-white" : "bg-muted text-muted-foreground"
+                      selectedJob!.is_active
+                        ? "bg-supportive text-white"
+                        : "bg-muted text-muted-foreground",
                     )}
                   >
                     {selectedJob!.is_active ? "Active" : "Paused"}
                   </span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Link href={{
-                    pathname:"/listings/details",
-                    query: {
-                      jobId: selectedJob!.id,
-                    }
-                  }}
+                  <Link
+                    href={{
+                      pathname: "/listings/details",
+                      query: {
+                        jobId: selectedJob!.id,
+                      },
+                    }}
                   >
                     <Button
                       key="edit"
@@ -540,12 +591,13 @@ export default function JobTabs({
                       Preview
                     </Button>
                   </Link>
-                  <Link href={{
-                    pathname:"/listings/edit",
-                    query: {
-                      jobId: selectedJob!.id,
-                    }
-                  }}
+                  <Link
+                    href={{
+                      pathname: "/listings/edit",
+                      query: {
+                        jobId: selectedJob!.id,
+                      },
+                    }}
                   >
                     <Button
                       key="edit"
@@ -568,39 +620,38 @@ export default function JobTabs({
                     Delete
                   </Button>
                 </div>
-                <p className={cn(
-                  "items-center col-span-2 text-gray-600 text-sm",
-                  isMobile
-                  ? "hidden"
-                  : "flex"
-                )}>
-                  {selectedJob!.is_active 
+                <p
+                  className={cn(
+                    "items-center col-span-2 text-gray-600 text-sm",
+                    isMobile ? "hidden" : "flex",
+                  )}
+                >
+                  {selectedJob!.is_active
                     ? "This listing is currently accepting applicants."
-                    : "This listing is invisible and not currently accepting applicants."
-                  }
+                    : "This listing is invisible and not currently accepting applicants."}
                 </p>
               </div>
             </div>
-                {/* we need to add filtering here :D */}
-                <ApplicationsContent
-                  ref={applicationContentRef}
-                  applications={filteredApplications}
-                  statusId={[0, 1, 2, 3, 4, 5, 6]}
-                  isLoading={isLoading}
-                  openChatModal={openChatModal}
-                  updateConversationId={updateConversationId}
-                  onApplicationClick={handleApplicationClick}
-                  onNotesClick={handleNotesClick}
-                  onScheduleClick={handleScheduleClick}
-                  onStatusChange={handleStatusChange}
-                  setSelectedApplication={setSelectedApplication}
-                  onRequestArchiveApplicant={handleRequestApplicantArchive}
-                  onRequestDeleteApplicant={handleRequestApplicantDelete}
-                  onRequestStatusChange={handleRequestStatusChange}
-                  applicantToArchive={applicantToArchive}
-                  applicantToDelete={applicantToDelete}
-                ></ApplicationsContent>
-            </div>
+            {/* we need to add filtering here :D */}
+            <ApplicationsContent
+              ref={applicationContentRef}
+              applications={filteredApplications}
+              statusId={[0, 1, 2, 3, 4, 5, 6]}
+              isLoading={isLoading}
+              openChatModal={openChatModal}
+              updateConversationId={updateConversationId}
+              onApplicationClick={handleApplicationClick}
+              onNotesClick={handleNotesClick}
+              onScheduleClick={handleScheduleClick}
+              onStatusChange={handleStatusChange}
+              setSelectedApplication={setSelectedApplication}
+              onRequestArchiveApplicant={handleRequestApplicantArchive}
+              onRequestDeleteApplicant={handleRequestApplicantDelete}
+              onRequestStatusChange={handleRequestStatusChange}
+              applicantToArchive={applicantToArchive}
+              applicantToDelete={applicantToDelete}
+            ></ApplicationsContent>
+          </div>
         </div>
 
         <ApplicantModal className="max-w-7xl w-full">
@@ -613,8 +664,11 @@ export default function JobTabs({
             pfp_route={`/users/${selectedApplication?.user_id}/pic`}
             applicant={{
               ...selectedApplication?.user,
-              internship_preferences: selectedApplication?.user?.internship_preferences as InternshipPreferences ?? undefined
-              }}
+              internship_preferences:
+                (selectedApplication?.user
+                  ?.internship_preferences as InternshipPreferences) ??
+                undefined,
+            }}
             open_calendar={async () => {
               closeApplicantModal();
               window
@@ -668,161 +722,183 @@ export default function JobTabs({
 
         <ChatModal>
           <div className="relative p-6 pb-20 h-full w-full">
-              <div className="flex flex-col h-[100%] w-full">
-                <div className="justify-between sticky top-0 z-10 py-2 border-b bg-white/90 backdrop-blur">
-                  <div className="flex items-center justify-between gap-2 font-medium text-lg">
-                    {getFullName(selectedApplication?.user)}
-                  </div>
-                    <div className="text-gray-500 text-sm max-w-[40vh] mb-2 flex truncate">
-                      <p className="text-sm text-primary"> Applied for: </p>
-                      {applications?.employer_applications.filter(a => a.user_id === selectedApplication?.user_id).map((a) => 
-                        <p className="text-sm ml-1">
-                          {a.job?.title}
-                          {a !== applications?.employer_applications.filter(a => a.user_id === selectedApplication?.user_id).at(-1) &&
-                            <>, </>
-                          }
-                        </p>
-                        )
-                      }
-                    </div>
-                    <button
-                    className="flex items-center bg-primary text-white text-sm p-2 rounded-[0.33em] gap-2 hover:opacity-70"
-                    onClick={onChatClick}
-                    >
-                      <SquareArrowOutUpRight className="h-5 w-5"/>
-                      Go to Chat Page
-                    </button>
+            <div className="flex flex-col h-[100%] w-full">
+              <div className="justify-between sticky top-0 z-10 py-2 border-b bg-white/90 backdrop-blur">
+                <div className="flex items-center justify-between gap-2 font-medium text-lg">
+                  {getFullName(selectedApplication?.user)}
                 </div>
-                <div className="overflow-y-hidden flex-1 max-h-[75%] mb-6 pb-2 px-2 border-r border-l border-b">
-                  <div className="flex flex-col-reverse max-h-full min-h-full overflow-y-scroll p-0 gap-1">
-                    <div ref={chatAnchorRef} />
-                    {(conversation?.loading ?? true) ? (
-                      <div className="w-full h-full mb-[50%] flex items-center justify-center">
-                        <div className="text-center">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-                          <p className="text-gray-600">Loading Conversation...</p>
-                        </div>
+                <div className="text-gray-500 text-sm max-w-[40vh] mb-2 flex truncate">
+                  <p className="text-sm text-primary"> Applied for: </p>
+                  {applications?.employer_applications
+                    .filter((a) => a.user_id === selectedApplication?.user_id)
+                    .map((a) => (
+                      <p className="text-sm ml-1">
+                        {a.job?.title}
+                        {a !==
+                          applications?.employer_applications
+                            .filter(
+                              (a) => a.user_id === selectedApplication?.user_id,
+                            )
+                            .at(-1) && <>, </>}
+                      </p>
+                    ))}
+                </div>
+                <button
+                  className="flex items-center bg-primary text-white text-sm p-2 rounded-[0.33em] gap-2 hover:opacity-70"
+                  onClick={onChatClick}
+                >
+                  <SquareArrowOutUpRight className="h-5 w-5" />
+                  Go to Chat Page
+                </button>
+              </div>
+              <div className="overflow-y-hidden flex-1 max-h-[75%] mb-6 pb-2 px-2 border-r border-l border-b">
+                <div className="flex flex-col-reverse max-h-full min-h-full overflow-y-scroll p-0 gap-1">
+                  <div ref={chatAnchorRef} />
+                  {(conversation?.loading ?? true) ? (
+                    <div className="w-full h-full mb-[50%] flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading Conversation...</p>
                       </div>
-                      ) : (
-                      conversation?.messages?.length ? (
-                        conversation.messages
-                          ?.map((message: any, idx: number) => {
-                            if (!idx) lastSelf = false;
-                            const oldLastSelf = lastSelf;
-                            lastSelf = message.sender_id === profile.data?.id;
-                            return {
-                              key: idx,
-                              message: message.message,
-                              self: message.sender_id === profile.data?.id,
-                              prevSelf: oldLastSelf,
-                              them: getFullName(selectedApplication?.user),
-                            };
-                          })
-                          ?.toReversed()
-                          ?.map((d: any) => (
-                            <Message
-                              key={d.key}
-                              message={d.message}
-                              self={d.self}
-                              prevSelf={d.prevSelf}
-                              them={d.them}
-                            />
-                          ))
-                      ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center">
-                          <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            <Card className="flex flex-col p-4 px-6 border-transparent">
-                              <MessageCirclePlus className="w-8 h-8 my-2 opacity-50" />
-                              <div className="text-base font-bold">
-                                No Messages Yet
-                              </div>
-                              <p className="text-gray-500 text-sm">Start a conversation to see your messages.</p>
-                            </Card>
-                          </motion.div>
-                        </div>
-                      ))}
                     </div>
-                  </div>
-                  <div 
-                  className="flex gap-2"
-                  onSubmit={(e) => {
-                      e.preventDefault();
-                      if (!selectedApplication?.user_id || !messageInputRef.current?.value?.trim() || sending) return;
-                      
-                      const message = messageInputRef.current.value;
-                      messageInputRef.current.value = "";
-                      handleMessage(selectedApplication.user_id, message);
-                    }}
-                  >
-                    <Textarea
-                      ref={messageInputRef}
-                      placeholder="Send a message here..."
-                      className="w-full h-10 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          if (!selectedApplication?.user_id) return;
-                          if (messageInputRef.current?.value) {
-                            handleMessage(
-                              selectedApplication.user_id,
-                              messageInputRef.current.value,
-                            );
-                          }
-                        }
-                      }}
-                      maxLength={1000}
-                    />
-                    <button 
-                      disabled={sending}
-                      onClick={() => {
-                        if (!selectedApplication?.user_id) return;
-                        if (messageInputRef.current?.value) {
-                          handleMessage(
-                            selectedApplication?.user_id,
-                            messageInputRef.current?.value,
-                          );
-                        }
-                      }}
-                      className={cn("text-primary px-2",
-                        (sending) ? "opacity-50" : "hover:opacity-70"
-                      )}
-                    >
-                        <SendHorizonal className="w-7 h-7" />
-                  </button>
-                  </div>
+                  ) : conversation?.messages?.length ? (
+                    conversation.messages
+                      ?.map((message: any, idx: number) => {
+                        if (!idx) lastSelf = false;
+                        const oldLastSelf = lastSelf;
+                        lastSelf = message.sender_id === profile.data?.id;
+                        return {
+                          key: idx,
+                          message: message.message,
+                          self: message.sender_id === profile.data?.id,
+                          prevSelf: oldLastSelf,
+                          them: getFullName(selectedApplication?.user),
+                        };
+                      })
+                      ?.toReversed()
+                      ?.map((d: any) => (
+                        <Message
+                          key={d.key}
+                          message={d.message}
+                          self={d.self}
+                          prevSelf={d.prevSelf}
+                          them={d.them}
+                        />
+                      ))
+                  ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center">
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <Card className="flex flex-col p-4 px-6 border-transparent">
+                          <MessageCirclePlus className="w-8 h-8 my-2 opacity-50" />
+                          <div className="text-base font-bold">
+                            No Messages Yet
+                          </div>
+                          <p className="text-gray-500 text-sm">
+                            Start a conversation to see your messages.
+                          </p>
+                        </Card>
+                      </motion.div>
+                    </div>
+                  )}
                 </div>
-            </div>
-        </ChatModal>
+              </div>
+              <div
+                className="flex gap-2"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (
+                    !selectedApplication?.user_id ||
+                    !messageInputRef.current?.value?.trim() ||
+                    sending
+                  )
+                    return;
 
+                  const message = messageInputRef.current.value;
+                  messageInputRef.current.value = "";
+                  handleMessage(selectedApplication.user_id, message);
+                }}
+              >
+                <Textarea
+                  ref={messageInputRef}
+                  placeholder="Send a message here..."
+                  className="w-full h-10 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      if (!selectedApplication?.user_id) return;
+                      if (messageInputRef.current?.value) {
+                        handleMessage(
+                          selectedApplication.user_id,
+                          messageInputRef.current.value,
+                        );
+                      }
+                    }
+                  }}
+                  maxLength={1000}
+                />
+                <button
+                  disabled={sending}
+                  onClick={() => {
+                    if (!selectedApplication?.user_id) return;
+                    if (messageInputRef.current?.value) {
+                      handleMessage(
+                        selectedApplication?.user_id,
+                        messageInputRef.current?.value,
+                      );
+                    }
+                  }}
+                  className={cn(
+                    "text-primary px-2",
+                    sending ? "opacity-50" : "hover:opacity-70",
+                  )}
+                >
+                  <SendHorizonal className="w-7 h-7" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </ChatModal>
 
         <NewChatModal>
           <div className="p-8">
             <div className="mb-4 flex flex-col items-center justify-center text-center">
-              <MessageSquarePlus className="text-primary h-8 w-8 mb-4"/>
+              <MessageSquarePlus className="text-primary h-8 w-8 mb-4" />
               <div className="flex flex-col items-center">
                 <h3 className="text-lg">New Conversation</h3>
                 <p className="text-gray-500 text-sm">
-                  No conversation history with <span className="text-primary">{getFullName(selectedApplication?.user)}</span>.
+                  No conversation history with{" "}
+                  <span className="text-primary">
+                    {getFullName(selectedApplication?.user)}
+                  </span>
+                  .
                 </p>
-                <p className="text-gray-500 text-sm">Initiate new conversation?</p>
+                <p className="text-gray-500 text-sm">
+                  Initiate new conversation?
+                </p>
               </div>
               <div className="flex justify-center gap-6 mt-2">
-                <Button 
-                className="bg-white text-primary hover:bg-gray-100 border-solid border-2"
-                onClick={closeNewChatModal}
+                <Button
+                  className="bg-white text-primary hover:bg-gray-100 border-solid border-2"
+                  onClick={closeNewChatModal}
                 >
                   Cancel
                 </Button>
-                <Button 
-                onClick={async () => {
-                  if (!selectedApplication?.user_id) return;
-                  const response = await EmployerConversationService.createConversation(selectedApplication.user_id);
-                  if(response?.success && response.conversation?.id) router.push(`/conversations?conversationId=${response.conversation.id}`)
-                }}
+                <Button
+                  onClick={async () => {
+                    if (!selectedApplication?.user_id) return;
+                    const response =
+                      await EmployerConversationService.createConversation(
+                        selectedApplication.user_id,
+                      );
+                    if (response?.success && response.conversation?.id)
+                      router.push(
+                        `/conversations?conversationId=${response.conversation.id}`,
+                      );
+                  }}
                 >
                   Start chatting
                 </Button>
@@ -834,27 +910,37 @@ export default function JobTabs({
         <OldChatModal>
           <div className="p-8">
             <div className="mb-4 flex flex-col items-center justify-center text-center">
-              <MessageSquareText className="text-primary h-8 w-8 mb-4"/>
+              <MessageSquareText className="text-primary h-8 w-8 mb-4" />
               <div className="flex flex-col items-center">
                 <h3 className="text-lg">Go to Conversations</h3>
                 <p className="text-gray-500 text-sm">
-                  You have existing chat history with <span className="text-primary">{getFullName(selectedApplication?.user)}</span>!
+                  You have existing chat history with{" "}
+                  <span className="text-primary">
+                    {getFullName(selectedApplication?.user)}
+                  </span>
+                  !
                 </p>
-                <p className="text-gray-500 text-sm">Redirect to conversations?</p>
+                <p className="text-gray-500 text-sm">
+                  Redirect to conversations?
+                </p>
               </div>
               <div className="flex justify-center gap-6 mt-2">
-                <Button 
-                className="bg-white text-primary hover:bg-gray-100 border-solid border-2"
-                onClick={closeOldChatModal}
+                <Button
+                  className="bg-white text-primary hover:bg-gray-100 border-solid border-2"
+                  onClick={closeOldChatModal}
                 >
                   Cancel
                 </Button>
-                <Button 
-                onClick={async () => {
-                  const findChat = conversations.data.find((convo) => 
-                      convo.subscribers?.includes(selectedApplication?.user_id)
-                  );
-                  if(findChat) router.push(`/conversations?conversationId=${findChat.id}`)}}
+                <Button
+                  onClick={async () => {
+                    const findChat = conversations.data.find((convo) =>
+                      convo.subscribers?.includes(selectedApplication?.user_id),
+                    );
+                    if (findChat)
+                      router.push(
+                        `/conversations?conversationId=${findChat.id}`,
+                      );
+                  }}
                 >
                   Go to chat
                 </Button>
