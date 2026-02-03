@@ -149,10 +149,9 @@ export function AutoApplyCard({
         {/* Status */}
         {enabled ? (
           <p className="text-sm text-emerald-800">
-            {isBusy ? "Saving…" : 
-              daysRemaining > 0 ? 
-              `Apply for Me is currently active, ${daysRemaining} days remaining.` :
-              "Apply for Me has expired. Toggle to renew for 14 days."}
+            {daysRemaining > 0 ? 
+            (isBusy ? "Saving…" : `Apply for Me is currently active, ${daysRemaining} days remaining.`) :
+              "Apply for Me has expired."}
           </p>
         ) : (
           <p className="text-sm text-red-800">
