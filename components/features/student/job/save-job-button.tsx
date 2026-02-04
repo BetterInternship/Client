@@ -24,13 +24,13 @@ export const SaveJobButton = ({ job }: { job: Job }) => {
       variant="outline"
       onClick={() => handleSave()}
       size={"md"}
-      className="text-md"
+      className="!p-4"
       scheme={jobs.isJobSaved(job.id ?? "") ? "destructive" : "default"}
     >
       <Heart
         className={cn(
           "w-4 h-4",
-          jobs.isJobSaved(job.id ?? "") ? "fill-current" : ""
+          jobs.isJobSaved(job.id ?? "") ? "fill-current" : "",
         )}
       />
       {jobs.isJobSaved(job.id ?? "")
@@ -38,8 +38,8 @@ export const SaveJobButton = ({ job }: { job: Job }) => {
           ? "Unsaving..."
           : "Saved"
         : jobActions.toggleSave.isPending
-        ? "Saving..."
-        : "Save"}
+          ? "Saving..."
+          : "Save"}
     </Button>
   );
 };
