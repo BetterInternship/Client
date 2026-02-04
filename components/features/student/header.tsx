@@ -17,7 +17,6 @@ import {
   CheckSquare,
   Square,
   Newspaper,
-  Home,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -499,13 +498,15 @@ export const Header: React.FC = () => {
         )}
         style={{ overflow: "visible", position: "relative", zIndex: 100 }}
       >
-        <div className="flex items-center gap-6 flex-1">
-          <div className="flex-shrink-0">
-            <HeaderTitle />
-          </div>
+        {/* Left: Brand */}
+        <div className="flex items-center gap-3">
+          <HeaderTitle />
+        </div>
 
-          {!isMobile && showProfileButton && showFilters && (
-            <div className="flex items-center gap-4 w-full max-w-xl">
+        {/* Center: Desktop search + filters (only on /search) */}
+        {!isMobile && showProfileButton && (
+          <div className="flex items-center gap-4 w-full max-w-2xl">
+            {showFilters && (
               <SearchInput
                 value={searchTerm}
                 onChange={setSearchTerm}
@@ -516,13 +517,15 @@ export const Header: React.FC = () => {
                   pushSearch({ moa: v });
                 }}
               />
+            )}
 
+            {showFilters && (
               <JobFilterProvider initial={initialFromUrl}>
                 <JobFilters isDesktop onApply={onApplyFilters} />
               </JobFilterProvider>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* Right: Desktop profile / Mobile burger */}
         {showProfileButton ? (
@@ -548,25 +551,6 @@ export const Header: React.FC = () => {
             )
           ) : (
             <div className="flex items-center gap-6">
-              <div className="flex">
-                <Button
-                  variant="ghost"
-                  className="px-3 py-2 flex-col gap-1 h-auto w-auto items-center opacity-80"
-                  onClick={() => router.push("/search")}
-                >
-                  <Home className="!h-5 !w-5" strokeWidth={1.7} />
-                  <span className="text-xs">Home</span>
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  className="px-3 py-2 flex-col gap-1 h-auto w-auto opacity-80 items-center"
-                  onClick={() => router.push("/forms")}
-                >
-                  <Newspaper className="!h-5 !w-5" strokeWidth={1.7} />
-                  <span className="text-xs">Forms</span>
-                </Button>
-              </div>
               <ProfileButton />
             </div>
           )
