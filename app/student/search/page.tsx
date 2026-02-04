@@ -8,7 +8,12 @@ import React, {
   useCallback,
 } from "react";
 import { useSearchParams } from "next/navigation";
-import { ArrowUpRightFromSquare, CheckSquare, Link, Square } from "lucide-react";
+import {
+  ArrowUpRightFromSquare,
+  CheckSquare,
+  Link,
+  Square,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useJobsData, useProfileData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "@/lib/ctx-auth";
@@ -32,6 +37,7 @@ import useModalRegistry from "@/components/modals/modal-registry";
 import { Loader } from "@/components/ui/loader";
 import { ShareJobButton } from "@/components/features/student/job/share-job-button";
 import { ViewPageButton } from "@/components/features/student/job/view-page-button";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -130,6 +136,13 @@ export default function SearchPage() {
       setSelectedJob(jobsPage[0]);
     }
   }, [jobsPage.length, searchParams, selectedJob]);
+
+  // Auto-close toolbar when all selections are cleared
+  useEffect(() => {
+    if (selectedIds.size === 0 && selectMode) {
+      setSelectMode(false);
+    }
+  }, [selectedIds.size, selectMode]);
 
   const toggleSelect = (jobId: string) =>
     setSelectedIds((prev) => {
@@ -332,82 +345,73 @@ export default function SearchPage() {
       UI
     ====================================================================================== */
 
-  // page toolbar (under the global header)
-  const PageToolbar = (
-    <div className="border-b bg-white/80">
-      <div className="flex items-center justify-between gap-3 px-7 py-2">
-        <div className="flex items-center gap-8">
-          {(selectMode || selectedIds.size > 0) && (
-            <>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={selectAllOnPage}
-                  className="h-8"
-                >
-                  <CheckSquare className="w-4 h-4 mr-2" />
-                  Select page
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={unselectAllOnPage}
-                  className="h-8"
-                >
-                  <Square className="w-4 h-4 mr-2" />
-                  Unselect page
-                </Button>
-                <span className="text-sm text-gray-600">
-                  {selectedIds.size} selected
-                </span>
-              </div>
-            </>
-          )}
-        </div>
+  // page toolbar (floating action bar)
+  const FloatingActionBar = (
+    <AnimatePresence>
+      {selectMode && (
+        <motion.div
+          className="fixed bottom-6 z-50 bg-gray-100 border border-gray-300 rounded-[0.33em] shadow-2xl p-4 flex items-center gap-4 w-fit max-w-[90vw] mx-auto left-0 right-0"
+          initial={{ scale: 0.95, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.95, opacity: 0, y: 20 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+        >
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={selectAllOnPage}
+              className="h-8"
+            >
+              <CheckSquare className="w-4 h-4 mr-2" />
+              Select page
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={unselectAllOnPage}
+              className="h-8"
+            >
+              <Square className="w-4 h-4 mr-2" />
+              Unselect page
+            </Button>
+            <span className="text-sm text-gray-700 px-2">
+              {selectedIds.size} selected
+            </span>
+          </div>
 
-        <div className="flex items-center gap-2">
-          {selectMode ? (
-            <>
-              <Button
-                size="sm"
-                onClick={openMassApply}
-                className="h-8"
-                disabled={selectedIds.size === 0}
-              >
-                Apply to {selectedIds.size || 0} selected
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8"
-                onClick={() => {
-                  setSelectMode(false);
-                  clearSelection();
-                }}
-              >
-                Cancel
-              </Button>
-            </>
-          ) : (
+          <div className="h-6 w-px bg-gray-300" />
+
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              onClick={openMassApply}
+              className="h-8"
+              disabled={selectedIds.size === 0}
+            >
+              Apply to {selectedIds.size || 0}
+            </Button>
             <Button
               variant="outline"
               size="sm"
               className="h-8"
-              onClick={() => setSelectMode(true)}
+              onClick={() => {
+                setSelectMode(false);
+                clearSelection();
+              }}
             >
-              Mass apply
+              Cancel
             </Button>
-          )}
-        </div>
-      </div>
-    </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 
   return (
     <>
-      {/* In-page toolbar */}
-      {!isMobile && PageToolbar}
+      {/* Floating action bar */}
+      {!isMobile && FloatingActionBar}
 
       <div className="flex-1 flex overflow-hidden min-h-0 max-h-100">
         {jobs.isPending ? (
@@ -514,11 +518,8 @@ export default function SearchPage() {
                           isSelected(job.id) ? "Unselect job" : "Select job"
                         }
                         className={cn(
-                          "absolute right-3 top-3 z-20 h-6 w-6 bg-white/95 backdrop-blur",
-                          "flex items-center justify-center shadow-sm transition-opacity",
-                          selectMode
-                            ? "opacity-100"
-                            : "opacity-0 group-hover:opacity-100",
+                          "absolute right-5 top-6 z-20 h-6 w-6 bg-white/95 backdrop-blur",
+                          "flex items-center justify-center transition-opacity",
                         )}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -527,16 +528,23 @@ export default function SearchPage() {
                         }}
                       >
                         {isSelected(job.id) ? (
-                          <CheckSquare className="w-5 h-5 text-blue-600" />
+                          <CheckSquare
+                            className="w-5 h-5 text-warning transition-all duration-200 scale-100"
+                            strokeWidth={2}
+                          />
                         ) : (
-                          <Square className="w-5 h-5 text-gray-400" />
+                          <Square
+                            className="w-5 h-5 text-gray-400 transition-all duration-200 scale-100"
+                            strokeWidth={2}
+                          />
                         )}
                       </button>
 
                       <div
                         className={cn(
+                          "transition-all duration-300",
                           isSelected(job.id) &&
-                            "ring-1 ring-primary ring-offset-[2px] rounded-[0.4em]",
+                            "ring-1 ring-primary ring-offset-[2px] rounded-[0.4em] shadow-sm",
                         )}
                         onClick={() => handleJobCardClick(job)}
                       >
@@ -577,9 +585,7 @@ export default function SearchPage() {
                   }}
                   job={selectedJob}
                   actions={[
-                    <ShareJobButton
-                      id={selectedJob?.id}
-                    />,
+                    <ShareJobButton id={selectedJob?.id} />,
                     <SaveJobButton job={selectedJob} />,
                     <ApplyToJobButton
                       profile={profile.data}
