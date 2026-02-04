@@ -225,38 +225,6 @@ export function useJobsData(
       return true;
     });
 
-    // Log summary
-    console.group("🔍 Job Filter Summary");
-    console.log(
-      `Total Jobs: ${stats.total} | Passed: ${stats.passed} | Rejected: ${stats.total - stats.passed}`,
-    );
-    console.log("📋 Params Position:", params.position);
-    if (stats.search.rejected > 0)
-      console.log(
-        `  ❌ Search: ${stats.search.rejected} rejected - Examples: ${stats.search.examples.join(", ")}`,
-      );
-    if (stats.moa.rejected > 0)
-      console.log(
-        `  ❌ MOA: ${stats.moa.rejected} rejected - Examples: ${stats.moa.examples.join(", ")}`,
-      );
-    if (stats.mode.rejected > 0)
-      console.log(
-        `  ❌ Mode: ${stats.mode.rejected} rejected - Examples: ${stats.mode.examples.join(", ")}`,
-      );
-    if (stats.workload.rejected > 0)
-      console.log(
-        `  ❌ Workload: ${stats.workload.rejected} rejected - Examples: ${stats.workload.examples.join(", ")}`,
-      );
-    if (stats.allowance.rejected > 0)
-      console.log(
-        `  ❌ Allowance: ${stats.allowance.rejected} rejected - Examples: ${stats.allowance.examples.join(", ")}`,
-      );
-    if (stats.category.rejected > 0)
-      console.log(
-        `  ❌ Categories: ${stats.category.rejected} rejected - Examples: ${stats.category.examples.join(", ")}`,
-      );
-    console.groupEnd();
-
     return filtered;
   }, [data, params]);
 

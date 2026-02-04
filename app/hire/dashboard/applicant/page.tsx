@@ -37,7 +37,7 @@ function ApplicantPageContent () {
             try {
                 setLoading(true);
                 const response = await UserService.getUserById(userId); //change
-                console.log(response)
+                // console.log(response)
                 if(response?.success && response.users){
                     setUserData(userApplication)
                 }
