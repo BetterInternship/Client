@@ -68,7 +68,7 @@ export const ApplyToJobButton = ({
       className={className}
     >
       {applied && <CheckCircle className="w-4 h-4" />}
-      {applied ? "Applied" : "Apply Now"}
+      {applied ? "Applied" : "Apply"}
     </Button>
   );
 };
