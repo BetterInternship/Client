@@ -29,26 +29,23 @@ const nextConfig = {
       },
     ];
 
-    const beforeFiles = [];
+    const rewrites = [];
 
     routes.forEach(({ hosts, destination }) => {
       hosts.forEach((host) => {
-        // Root path
-        beforeFiles.push({
-          source: "/",
-          has: [{ type: "host", value: host }],
-          destination: `/${destination}`,
-        });
-        // All other paths (excluding static assets)
-        beforeFiles.push({
-          source: "/:path((?!_next|api|favicon.ico|.*\\..*).*)",
+        // Rewrite everything except _next and root-level common files
+        rewrites.push({
+          source:
+            "/:path((?!_next|BetterInternshipLogo|resume-loader|PrivacyPolicy|TermsConditions|Student_MOA|Company_Information).*)*",
           has: [{ type: "host", value: host }],
           destination: `/${destination}/:path*`,
         });
       });
     });
 
-    return { beforeFiles };
+    return {
+      beforeFiles: rewrites,
+    };
   },
 };
 
