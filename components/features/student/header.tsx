@@ -18,6 +18,8 @@ import {
   Square,
   Newspaper,
   Home,
+  User,
+  ChevronDown,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -29,6 +31,11 @@ import { MyUserPfp } from "@/components/shared/pfp";
 import { useMobile } from "@/hooks/use-mobile";
 import { useRoute } from "@/hooks/use-route";
 import { useConversations } from "@/hooks/use-conversation";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useProfileData } from "@/lib/api/student.data.api";
@@ -310,15 +317,99 @@ function MobileDrawer({
 /* =======================================================================================
    Profile Button (desktop)
 ======================================================================================= */
+/* =======================================================================================
+   Hover Dropdown (using Popover with proper z-index)
+======================================================================================= */
+interface HoverDropdownProps {
+  trigger: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+}
+
+interface DropdownMenuItemProps {
+  onClick?: () => void;
+  href?: string;
+  children: React.ReactNode;
+}
+
+function DropdownMenuItem({ onClick, href, children }: DropdownMenuItemProps) {
+  const router = useRouter();
+
+  const handleClick = () => {
+    if (href) {
+      router.push(href);
+    } else if (onClick) {
+      onClick();
+    }
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm"
+    >
+      {children}
+    </button>
+  );
+}
+
+function HoverDropdown({
+  trigger,
+  children,
+  className = "",
+}: HoverDropdownProps) {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const closeTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const handleClose = () => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setIsOpen(false);
+    }, 100);
+  };
+
+  const handleOpenCancel = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setIsOpen(true);
+  };
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger
+        asChild
+        onMouseEnter={handleOpenCancel}
+        onMouseLeave={handleClose}
+      >
+        {trigger}
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-max p-1 bg-white border border-gray-200 rounded-[0.33em] shadow-lg"
+        align="end"
+        side="bottom"
+        sideOffset={8}
+        onMouseEnter={handleOpenCancel}
+        onMouseLeave={handleClose}
+        style={{ zIndex: 9999 }}
+      >
+        <div className="flex flex-col gap-0">{children}</div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+/* =======================================================================================
+   Profile Button (icon over text with hover dropdown)
+======================================================================================= */
 export const ProfileButton: React.FC = () => {
   const profile = useProfileData();
-  const conversations = useConversations();
   const { isAuthenticated, logout } = useAuthContext();
   const router = useRouter();
-  const modalRegistry = useModalRegistry();
+  const pathname = usePathname();
   const handleLogout = () => logout().then(() => router.push("/"));
 
-  const handleIncompleteProfileClick = (link: string) => {
+  const handleProfileClick = () => {
     if (!isProfileVerified(profile.data)) {
       router.push(`/register/verify`);
     } else if (
@@ -327,7 +418,7 @@ export const ProfileButton: React.FC = () => {
     ) {
       router.push(`profile/complete-profile`);
     } else {
-      router.push(`/${link}`);
+      router.push(`/profile`);
     }
   };
 
@@ -348,63 +439,41 @@ export const ProfileButton: React.FC = () => {
   }
 
   return (
-    <div className="relative flex items-center gap-2">
-      {/* <Link href="/conversations">
-        <Button variant="ghost" className="relative">
-          <MessageCircleMore className="w-7 h-7" />
-          {conversations?.unreads?.length ? (
-            <div className="absolute w-3 h-3 top-[-0.33em] right-[-0.4em] rounded-full bg-warning opacity-70" />
-          ) : null}
-        </Button>
-      </Link> */}
-      <GroupableNavDropdown
-        display={
-          <>
-            <div className="overflow-hidden rounded-full flex items-center justify-center">
-              <MyUserPfp size="6" />
-            </div>
-            {getFullName(profile.data, false)}
-          </>
-        }
-        content={
-          <div className="px-9 py-3 border-b border-gray-200">
-            <p className="align-left text-xs text-gray-500 text-ellipsis overflow-hidden">
-              {profile.data?.email}
-            </p>
-          </div>
-        }
-        className="z-[200] w-fit"
-      >
-        <DropdownOption
-          on_click={() => {
-            handleIncompleteProfileClick("profile");
-          }}
+    <HoverDropdown
+      trigger={
+        <Button
+          variant="ghost"
+          className={cn(
+            "group w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-md",
+            pathname === "/profile"
+              ? "text-primary"
+              : "opacity-80 hover:opacity-100 hover:bg-gray-100",
+          )}
         >
+          <div className="overflow-hidden rounded-full flex items-center justify-center h-6 w-6">
+            <MyUserPfp size="6" />
+          </div>
+          <div className="flex items-center gap-0.5">
+            <span className="text-xs">Account</span>
+            <ChevronDown className="!h-3 !w-3 transition-transform group-hover:rotate-180" />
+          </div>
+        </Button>
+      }
+    >
+      <DropdownMenuItem onClick={handleProfileClick}>
+        <div className="flex items-center">
           <Settings className="w-4 h-4 inline-block mr-2 text-primary" />
           <span className="text-primary">Profile</span>
-        </DropdownOption>
-        <DropdownOption href="/applications">
-          <BookA className="w-4 h-4 inline-block mr-2 text-primary" />
-          <span className="text-primary">Applications</span>
-        </DropdownOption>
-        <DropdownOption href="/saved">
-          <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
-          <span className="text-primary">Saved Jobs</span>
-        </DropdownOption>
-        <DropdownOption
-          on_click={() => {
-            handleIncompleteProfileClick("forms");
-          }}
-        >
-          <Newspaper className="w-4 h-4 inline-block mr-2 text-primary" />
-          <span className="text-primary">Forms</span>
-        </DropdownOption>
-        <DropdownOption href="/" on_click={() => void handleLogout()}>
+        </div>
+      </DropdownMenuItem>
+      <div className="h-px bg-gray-200 my-1 mx-2" />
+      <DropdownMenuItem onClick={() => handleLogout()}>
+        <div className="flex items-center">
           <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />
           <span className="text-red-500">Sign Out</span>
-        </DropdownOption>
-      </GroupableNavDropdown>
-    </div>
+        </div>
+      </DropdownMenuItem>
+    </HoverDropdown>
   );
 };
 
@@ -547,25 +616,69 @@ export const Header: React.FC = () => {
               </Button>
             )
           ) : (
-            <div className="flex items-center gap-6">
-              <div className="flex">
+            <div className="flex items-center gap-1">
+              <div className="flex gap-1">
                 <Button
                   variant="ghost"
-                  className="px-3 py-2 flex-col gap-1 h-auto w-auto items-center opacity-80"
+                  className={cn(
+                    "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-md",
+                    pathname === "/search"
+                      ? "text-primary"
+                      : "opacity-80 hover:opacity-100 hover:bg-gray-100",
+                  )}
                   onClick={() => router.push("/search")}
                 >
-                  <Home className="!h-5 !w-5" strokeWidth={1.7} />
-                  <span className="text-xs">Home</span>
+                  <Search className="!h-6 !w-6" strokeWidth={1.7} />
+                  <span className="text-xs">Search</span>
                 </Button>
 
                 <Button
                   variant="ghost"
-                  className="px-3 py-2 flex-col gap-1 h-auto w-auto opacity-80 items-center"
+                  className={cn(
+                    "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-md",
+                    pathname === "/forms"
+                      ? "text-primary"
+                      : "opacity-80 hover:opacity-100 hover:bg-gray-100",
+                  )}
                   onClick={() => router.push("/forms")}
                 >
-                  <Newspaper className="!h-5 !w-5" strokeWidth={1.7} />
+                  <Newspaper className="!h-6 !w-6" strokeWidth={1.7} />
                   <span className="text-xs">Forms</span>
                 </Button>
+
+                <HoverDropdown
+                  trigger={
+                    <Button
+                      variant="ghost"
+                      className={cn(
+                        "group w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-md",
+                        pathname?.startsWith("/applications") ||
+                          pathname?.startsWith("/saved")
+                          ? "text-primary"
+                          : "opacity-80 hover:opacity-100 hover:bg-gray-100",
+                      )}
+                    >
+                      <BookA className="!h-6 !w-6" strokeWidth={1.7} />
+                      <div className="flex items-center gap-0.5">
+                        <span className="text-xs">My Jobs</span>
+                        <ChevronDown className="!h-3 !w-3 transition-transform group-hover:rotate-180" />
+                      </div>
+                    </Button>
+                  }
+                >
+                  <DropdownMenuItem href="/applications">
+                    <div className="flex items-center">
+                      <CheckSquare className="w-4 h-4 inline-block mr-2 text-primary" />
+                      <span className="text-primary">Applications</span>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem href="/saved">
+                    <div className="flex items-center">
+                      <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
+                      <span className="text-primary">Saved Jobs</span>
+                    </div>
+                  </DropdownMenuItem>
+                </HoverDropdown>
               </div>
               <ProfileButton />
             </div>
