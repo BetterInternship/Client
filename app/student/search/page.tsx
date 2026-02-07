@@ -411,7 +411,7 @@ export default function SearchPage() {
           <Loader>Loading...</Loader>
         ) : isMobile ? (
           // Mobile list
-          <div className="w-full flex flex-col h-full pb-[2.5rem]">
+          <div className="w-full flex flex-col h-full">
             <div ref={listRef} className="flex-1 overflow-y-auto pt-2 px-3">
               {jobsPage.length ? (
                 <div className="space-y-4">
