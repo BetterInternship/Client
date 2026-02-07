@@ -11,6 +11,7 @@ import {
   LogOut,
   CheckSquare,
   Heart,
+  LogIn,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -79,8 +80,34 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { logout } = useAuthContext();
+  const { logout, isAuthenticated } = useAuthContext();
 
+  // Not logged in: show minimal nav with Search and Sign In
+  if (!isAuthenticated()) {
+    return (
+      <div className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white shadow-lg flex justify-around items-center h-16">
+        {/* Search Button */}
+        <NavButton
+          icon={<Search className="w-6 h-6" />}
+          label="Search"
+          isActive={pathname === "/search"}
+          onClick={() => router.push("/search")}
+        />
+
+        {/* Sign In Button */}
+        <NavButton
+          icon={<LogIn className="w-6 h-6" />}
+          label="Sign In"
+          isActive={false}
+          onClick={() =>
+            router.push(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`)
+          }
+        />
+      </div>
+    );
+  }
+
+  // Logged in: show full navigation
   return (
     <div className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white shadow-lg flex justify-around items-center h-16">
       {/* Search Button */}
