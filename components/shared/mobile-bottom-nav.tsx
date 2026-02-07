@@ -36,6 +36,7 @@ interface NavButtonProps {
   isActive: boolean;
   onClick?: () => void;
   children?: React.ReactNode;
+  variant?: "default" | "accent";
 }
 
 /**
@@ -47,15 +48,20 @@ const NavButton: React.FC<NavButtonProps> = ({
   isActive,
   onClick,
   children,
+  variant = "default",
 }) => {
+  const isAccent = variant === "accent";
+
   const buttonContent = (
     <button
       onClick={onClick}
       className={cn(
-        "flex-1 flex flex-col items-center justify-center h-full gap-0.5 text-xs font-medium transition-colors",
-        isActive
-          ? "text-primary"
-          : "text-gray-600 hover:text-primary hover:bg-gray-100",
+        "flex-1 flex flex-col items-center justify-center h-full gap-0.5 text-xs font-medium transition-colors border rounded",
+        isAccent
+          ? "bg-primary/10 text-primary border-transparent hover:bg-primary/15"
+          : isActive
+            ? "border-transparent text-primary"
+            : "border-transparent text-gray-600 hover:text-primary hover:bg-gray-100",
       )}
     >
       {icon}
@@ -99,6 +105,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           icon={<LogIn className="w-6 h-6" />}
           label="Sign In"
           isActive={false}
+          variant="accent"
           onClick={() =>
             router.push(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`)
           }
