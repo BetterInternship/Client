@@ -29,7 +29,7 @@ export const HeaderTitle = () => {
           className="w-8 h-8 aspect-square object-contain"
           alt="BetterInternship logo"
         ></img>
-          <span className="xl:inline-block hidden">BetterInternship</span>
+        <span className="xl:inline-block hidden">BetterInternship</span>
       </h1>
     </Link>
   );

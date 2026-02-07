@@ -1,24 +1,20 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Settings,
-  BookA,
-  Heart,
   LogOut,
   Search,
-  ChevronRight,
-  X as XIcon,
   CheckSquare,
   Square,
-  Newspaper,
   ChevronDown,
+  BookA,
+  Heart,
+  Newspaper,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { HeaderTitle } from "@/components/shared/header";
 import { MyUserPfp } from "@/components/shared/pfp";
 
@@ -33,7 +29,6 @@ import {
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { cn } from "@/lib/utils";
-import { getFullName } from "@/lib/profile";
 import {
   isProfileBaseComplete,
   isProfileResume,
@@ -46,9 +41,10 @@ import {
 } from "@/components/features/student/search/JobFilters";
 
 /* =======================================================================================
-   Small UI Primitives
+   SHARED COMPONENTS
 ======================================================================================= */
-const SearchInput = ({
+
+export const SearchInput = ({
   value,
   onChange,
   onEnter,
@@ -56,6 +52,7 @@ const SearchInput = ({
   className = "",
   moaOnly,
   onToggleMoa,
+  showForCredit = true,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -64,6 +61,7 @@ const SearchInput = ({
   className?: string;
   moaOnly: boolean;
   onToggleMoa: (v: boolean) => void;
+  showForCredit?: boolean;
 }) => {
   return (
     <div
@@ -74,10 +72,8 @@ const SearchInput = ({
         className,
       )}
     >
-      {/* Left icon */}
       <Search className="h-4 w-4 text-gray-400 pointer-events-none ml-3" />
 
-      {/* Text input */}
       <input
         type="text"
         value={value}
@@ -91,232 +87,37 @@ const SearchInput = ({
         )}
       />
 
-      {/* Divider */}
-      <div className="h-6 w-0.5 bg-gray-300" />
-
-      {/* For Credit Checkbox */}
-      <button
-        type="button"
-        onClick={() => onToggleMoa(!moaOnly)}
-        className="flex items-center gap-2 px-3 h-10 hover:bg-gray-50  transition-all"
-        aria-pressed={moaOnly}
-      >
-        {moaOnly ? (
-          <CheckSquare className="h-5 w-5 text-primary" />
-        ) : (
-          <Square className="h-5 w-5 text-gray-400" />
-        )}
-        <label className="text-xs font-medium text-gray-700 cursor-pointer whitespace-nowrap">
-          For Credit
-        </label>
-      </button>
+      {showForCredit && (
+        <>
+          <div className="h-6 w-0.5 bg-gray-300" />
+          <button
+            type="button"
+            onClick={() => onToggleMoa(!moaOnly)}
+            className="flex items-center gap-2 px-3 h-10 hover:bg-gray-50 transition-all"
+            aria-pressed={moaOnly}
+          >
+            {moaOnly ? (
+              <CheckSquare className="h-5 w-5 text-primary" />
+            ) : (
+              <Square className="h-5 w-5 text-gray-400" />
+            )}
+            <label className="text-xs font-medium text-gray-700 cursor-pointer whitespace-nowrap">
+              For Credit
+            </label>
+          </button>
+        </>
+      )}
     </div>
   );
 };
 
 /* =======================================================================================
-   Mobile Drawer (account on top → chats → links → bottom sign out)
+   DROPDOWN UTILITIES
 ======================================================================================= */
-function _MobileDrawer({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
-  const profile = useProfileData();
-  const { isAuthenticated, logout } = useAuthContext();
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
 
-  const handleLogout = () => {
-    void logout();
-    router.push("/");
-  };
-
-  const handleIncompleteProfileClick = (link: string) => {
-    if (!isProfileVerified(profile.data)) {
-      router.push(`/register/verify`);
-    } else if (
-      !isProfileResume(profile.data) ||
-      !isProfileBaseComplete(profile.data)
-    ) {
-      router.push(`profile/complete-profile`);
-    } else {
-      router.push(`/${link}`);
-    }
-  };
-  useEffect(() => {
-    if (open) onClose();
-  }, [pathname, searchParams?.toString(), onClose]);
-
-  return (
-    <>
-      {/* Backdrop */}
-      <div
-        className={cn(
-          "fixed inset-0 z-[120] bg-black/30 backdrop-blur-[2px] transition-opacity duration-200",
-          open
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none",
-        )}
-        onClick={onClose}
-      />
-
-      {/* Drawer */}
-      <aside
-        className={cn(
-          "fixed right-0 top-0 z-[121] h-[100svh] w-full max-w-[92%] sm:max-w-[420px] bg-white shadow-xl border-l border-gray-200",
-          "transition-transform duration-250 ease-out",
-          open ? "translate-x-0" : "translate-x-full",
-        )}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Mobile menu"
-      >
-        {/* Shell uses column layout so footer can pin to bottom */}
-        <div className="flex h-full flex-col">
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-3 border-b">
-            <div className="font-semibold">Menu</div>
-            <button
-              type="button"
-              aria-label="Close menu"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-gray-100"
-              onClick={onClose}
-            >
-              <XIcon className="h-5 w-5" />
-            </button>
-          </div>
-
-          {isAuthenticated() && (
-            <div className="flex-1 overflow-y-auto p-4">
-              <div className="flex items-center gap-3">
-                <div className="overflow-hidden rounded-full flex items-center justify-center">
-                  <MyUserPfp size="9" />
-                </div>
-                <div className="flex flex-col leading-tight">
-                  <span className="font-medium">
-                    {getFullName(profile.data)}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    {profile.data?.email}
-                  </span>
-                </div>
-              </div>
-              <Separator className="my-4" />
-              {/* Navigation */}
-              <nav>
-                <ul className="grid gap-1">
-                  {/* ! Disabled chat for now */}
-                  {/* {isAuthenticated() && (
-                    <li>
-                      <Link href="/conversations" className="block w-full">
-                        <button className="w-full flex items-center justify-between rounded-md py-2">
-                          <span className="inline-flex items-center text-sm">
-                            <MessageCircleMore className="w-4 h-4" /> Chats
-                          </span>
-                          {conversations?.unreads?.length ? (
-                            <span className="text-[10px] leading-none bg-warning/80 px-2 py-1 rounded-full">
-                              {conversations.unreads.length}
-                            </span>
-                          ) : (
-                            <ChevronRight className="w-4 h-4 text-gray-300" />
-                          )}
-                        </button>
-                      </Link>
-                    </li>
-                  )} */}
-                  <li>
-                    <Link href="/search" className="block w-full">
-                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                        <div>
-                          <Search className="w-4 h-4 inline-block mr-2" />
-                          <span>Browse</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-gray-300" />
-                      </button>
-                    </Link>
-                  </li>
-                  <li>
-                    <button
-                      onClick={() => handleIncompleteProfileClick("profile")}
-                      className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary"
-                    >
-                      <div>
-                        <Settings className="w-4 h-4 inline-block mr-2" />
-                        <span>Profile</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-gray-300" />
-                    </button>
-                  </li>
-                  <li>
-                    <Link href="/applications" className="block w-full">
-                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                        <div>
-                          <BookA className="w-4 h-4 inline-block mr-2" />
-                          <span>Applications</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-gray-300" />
-                      </button>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/saved" className="block w-full">
-                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                        <div>
-                          <Heart className="w-4 h-4 inline-block mr-2" />
-                          <span>Saved Jobs</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-gray-300" />
-                      </button>
-                    </Link>
-                  </li>
-                  <li>
-                    <button
-                      onClick={() => handleIncompleteProfileClick("forms")}
-                      className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary"
-                    >
-                      <div>
-                        <Newspaper className="w-4 h-4 inline-block mr-2" />
-                        <span>Forms</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-gray-300" />
-                    </button>
-                  </li>
-                </ul>
-              </nav>
-            </div>
-          )}
-
-          {/* Footer pinned to bottom */}
-          {isAuthenticated() && (
-            <div className="mt-auto border-t px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3">
-              <button
-                onClick={() => void handleLogout()}
-                className="w-full flex items-center justify-center gap-2 text-red-600 font-medium py-2 rounded-md hover:bg-red-50"
-              >
-                <LogOut className="w-4 h-4" /> Sign Out
-              </button>
-            </div>
-          )}
-        </div>
-      </aside>
-    </>
-  );
-}
-
-/* =======================================================================================
-   Profile Button (desktop)
-======================================================================================= */
-/* =======================================================================================
-   Hover Dropdown (using Popover with proper z-index)
-======================================================================================= */
 interface HoverDropdownProps {
   trigger: React.ReactNode;
   children: React.ReactNode;
-  className?: string;
 }
 
 interface DropdownMenuItemProps {
@@ -389,8 +190,9 @@ function HoverDropdown({ trigger, children }: HoverDropdownProps) {
 }
 
 /* =======================================================================================
-   Profile Button (icon over text with hover dropdown)
+   PROFILE BUTTON (shared between mobile & desktop)
 ======================================================================================= */
+
 export const ProfileButton: React.FC = () => {
   const profile = useProfileData();
   const { isAuthenticated, logout } = useAuthContext();
@@ -467,8 +269,196 @@ export const ProfileButton: React.FC = () => {
 };
 
 /* =======================================================================================
-   Header (top bar + search + filters + mobile drawer)
+   MOBILE HEADER
 ======================================================================================= */
+
+interface MobileHeaderProps {
+  searchTerm: string;
+  moaOnly: boolean;
+  onSearchChange: (value: string) => void;
+  onMoaToggle: (value: boolean) => void;
+  onSearch: () => void;
+  onApplyFilters: (filters: JobFilter) => void;
+  initialFilterValues: Partial<JobFilter>;
+  showFilters: boolean;
+}
+
+const MobileHeader: React.FC<MobileHeaderProps> = ({
+  searchTerm,
+  moaOnly,
+  onSearchChange,
+  onMoaToggle,
+  onSearch,
+  onApplyFilters,
+  initialFilterValues,
+  showFilters,
+}) => {
+  return (
+    <JobFilterProvider initial={initialFilterValues}>
+      <div className="flex gap-2 items-center px-4 py-3 bg-white/80 border-b h-16">
+        {/* Logo */}
+        <div className="flex-shrink-0">
+          <HeaderTitle />
+        </div>
+
+        {/* Search + Filter - only on search page */}
+        {showFilters ? (
+          <>
+            <SearchInput
+              value={searchTerm}
+              onChange={onSearchChange}
+              onEnter={onSearch}
+              moaOnly={moaOnly}
+              onToggleMoa={onMoaToggle}
+              className="flex-1"
+              showForCredit={false}
+            />
+            <div className="flex-shrink-0">
+              <JobFilters onApply={onApplyFilters} isDesktop={false} />
+            </div>
+          </>
+        ) : null}
+      </div>
+    </JobFilterProvider>
+  );
+};
+
+/* =======================================================================================
+   DESKTOP HEADER
+======================================================================================= */
+
+interface DesktopHeaderProps {
+  searchTerm: string;
+  moaOnly: boolean;
+  onSearchChange: (value: string) => void;
+  onMoaToggle: (value: boolean) => void;
+  onSearch: () => void;
+  onApplyFilters: (filters: JobFilter) => void;
+  initialFilterValues: Partial<JobFilter>;
+  showFilters: boolean;
+}
+
+const DesktopHeader: React.FC<DesktopHeaderProps> = ({
+  searchTerm,
+  moaOnly,
+  onSearchChange,
+  onMoaToggle,
+  onSearch,
+  onApplyFilters,
+  initialFilterValues,
+  showFilters,
+}) => {
+  const pathname = usePathname();
+  const router = useRouter();
+
+  return (
+    <div
+      className="flex gap-2 justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90] py-4 px-8"
+      style={{ overflow: "visible", position: "relative", zIndex: 100 }}
+    >
+      <div className="flex items-center gap-6 flex-1">
+        <div className="flex-shrink-0">
+          <HeaderTitle />
+        </div>
+
+        {/* Search + Filters - only on search page */}
+        {showFilters && (
+          <div className="flex items-center gap-4 w-full max-w-xl">
+            <SearchInput
+              value={searchTerm}
+              onChange={onSearchChange}
+              onEnter={onSearch}
+              moaOnly={moaOnly}
+              onToggleMoa={onMoaToggle}
+            />
+
+            <JobFilterProvider initial={initialFilterValues}>
+              <JobFilters isDesktop onApply={onApplyFilters} />
+            </JobFilterProvider>
+          </div>
+        )}
+      </div>
+
+      {/* Right side: Navigation buttons + Profile */}
+      <div className="flex items-center gap-1">
+        <div className="flex gap-1">
+          {/* Search Button */}
+          <Button
+            variant="ghost"
+            className={cn(
+              "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-md",
+              pathname === "/search"
+                ? "text-primary"
+                : "opacity-80 hover:opacity-100 hover:bg-gray-100",
+            )}
+            onClick={() => router.push("/search")}
+          >
+            <Search className="!h-6 !w-6" strokeWidth={1.7} />
+            <span className="text-xs">Search</span>
+          </Button>
+
+          {/* Forms Button */}
+          <Button
+            variant="ghost"
+            className={cn(
+              "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-md",
+              pathname === "/forms"
+                ? "text-primary"
+                : "opacity-80 hover:opacity-100 hover:bg-gray-100",
+            )}
+            onClick={() => router.push("/forms")}
+          >
+            <Newspaper className="!h-6 !w-6" strokeWidth={1.7} />
+            <span className="text-xs">Forms</span>
+          </Button>
+
+          {/* My Jobs Dropdown */}
+          <HoverDropdown
+            trigger={
+              <Button
+                variant="ghost"
+                className={cn(
+                  "group w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-md",
+                  pathname?.startsWith("/applications") ||
+                    pathname?.startsWith("/saved")
+                    ? "text-primary"
+                    : "opacity-80 hover:opacity-100 hover:bg-gray-100",
+                )}
+              >
+                <BookA className="!h-6 !w-6" strokeWidth={1.7} />
+                <div className="flex items-center gap-0.5">
+                  <span className="text-xs">My Jobs</span>
+                  <ChevronDown className="!h-3 !w-3 transition-transform group-hover:rotate-180" />
+                </div>
+              </Button>
+            }
+          >
+            <DropdownMenuItem href="/applications">
+              <div className="flex items-center">
+                <CheckSquare className="w-4 h-4 inline-block mr-2 text-primary" />
+                <span className="text-primary">Applications</span>
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuItem href="/saved">
+              <div className="flex items-center">
+                <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
+                <span className="text-primary">Saved Jobs</span>
+              </div>
+            </DropdownMenuItem>
+          </HoverDropdown>
+        </div>
+
+        {/* Profile Button */}
+        <ProfileButton />
+      </div>
+    </div>
+  );
+};
+
+/* =======================================================================================
+   MAIN HEADER (Orchestrator)
+======================================================================================= */
+
 export const Header: React.FC = () => {
   const { isMobile } = useMobile();
   const { routeExcluded } = useRoute();
@@ -482,16 +472,16 @@ export const Header: React.FC = () => {
   const noProfileRoutes = ["/register", "/register/verify"];
   const noHeaderRoutes = ["/register", "/register/verify"];
   const showProfileButton = routeExcluded(noProfileRoutes);
-
-  // only show filters on /search (allow subpaths like /search/results)
   const showFilters = pathname?.startsWith("/search") === true;
 
+  // Sync search params on mount and when route changes
   useEffect(() => {
     if (!showFilters) return;
     setSearchTerm(searchParams.get("query") || "");
     setMoaOnly(searchParams.get("moa") === "Has MOA");
   }, [searchParams, showFilters]);
 
+  // Parse initial filter values from URL
   const initialFromUrl: Partial<JobFilter> = {
     position: (searchParams.get("position") || "").split(",").filter(Boolean),
     jobMode: (searchParams.get("mode") || "").split(",").filter(Boolean),
@@ -504,6 +494,9 @@ export const Header: React.FC = () => {
     jobMoa: (searchParams.get("moa") || "").split(",").filter(Boolean),
   };
 
+  /**
+   * Push search query to /search with optional overrides
+   */
   const pushSearch = (override?: { moa?: boolean; q?: string }) => {
     const params = new URLSearchParams();
     const q = override?.q ?? searchTerm;
@@ -523,8 +516,14 @@ export const Header: React.FC = () => {
     router.push(`/search/?${params.toString()}`);
   };
 
+  /**
+   * Perform search
+   */
   const doSearch = () => pushSearch();
 
+  /**
+   * Apply selected filters
+   */
   const onApplyFilters = (f: JobFilter) => {
     const params = new URLSearchParams();
     if (searchTerm) params.set("query", searchTerm);
@@ -537,152 +536,47 @@ export const Header: React.FC = () => {
     router.push(`/search/?${params.toString()}`);
   };
 
-  return routeExcluded(noHeaderRoutes) ? (
-    <div className="flex flex-col">
-      {/* Top Bar */}
-      <div
-        className={cn(
-          "flex gap-2 justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
-          isMobile ? "px-4 py-3 hidden" : "py-4 px-8 flex",
-        )}
-        style={{ overflow: "visible", position: "relative", zIndex: 100 }}
-      >
-        <div className="flex items-center gap-6 flex-1">
-          {!isMobile && (
-            <div className="flex-shrink-0">
-              <HeaderTitle />
-            </div>
-          )}
+  // Hide header on register/verify pages
+  if (!routeExcluded(noHeaderRoutes)) {
+    return <></>;
+  }
 
-          {!isMobile && showProfileButton && showFilters && (
-            <div className="flex items-center gap-4 w-full max-w-xl">
-              <SearchInput
-                value={searchTerm}
-                onChange={setSearchTerm}
-                onEnter={doSearch}
-                moaOnly={moaOnly}
-                onToggleMoa={(v) => {
-                  setMoaOnly(v);
-                  pushSearch({ moa: v });
-                }}
-              />
-
-              <JobFilterProvider initial={initialFromUrl}>
-                <JobFilters isDesktop onApply={onApplyFilters} />
-              </JobFilterProvider>
-            </div>
-          )}
-        </div>
-
-        {/* Right: Mobile (nothing) - Desktop profile/nav buttons */}
-        {showProfileButton ? (
-          !isMobile ? (
-            <div className="flex items-center gap-1">
-              <div className="flex gap-1">
-                <Button
-                  variant="ghost"
-                  className={cn(
-                    "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-md",
-                    pathname === "/search"
-                      ? "text-primary"
-                      : "opacity-80 hover:opacity-100 hover:bg-gray-100",
-                  )}
-                  onClick={() => router.push("/search")}
-                >
-                  <Search className="!h-6 !w-6" strokeWidth={1.7} />
-                  <span className="text-xs">Search</span>
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  className={cn(
-                    "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-md",
-                    pathname === "/forms"
-                      ? "text-primary"
-                      : "opacity-80 hover:opacity-100 hover:bg-gray-100",
-                  )}
-                  onClick={() => router.push("/forms")}
-                >
-                  <Newspaper className="!h-6 !w-6" strokeWidth={1.7} />
-                  <span className="text-xs">Forms</span>
-                </Button>
-
-                <HoverDropdown
-                  trigger={
-                    <Button
-                      variant="ghost"
-                      className={cn(
-                        "group w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-md",
-                        pathname?.startsWith("/applications") ||
-                          pathname?.startsWith("/saved")
-                          ? "text-primary"
-                          : "opacity-80 hover:opacity-100 hover:bg-gray-100",
-                      )}
-                    >
-                      <BookA className="!h-6 !w-6" strokeWidth={1.7} />
-                      <div className="flex items-center gap-0.5">
-                        <span className="text-xs">My Jobs</span>
-                        <ChevronDown className="!h-3 !w-3 transition-transform group-hover:rotate-180" />
-                      </div>
-                    </Button>
-                  }
-                >
-                  <DropdownMenuItem href="/applications">
-                    <div className="flex items-center">
-                      <CheckSquare className="w-4 h-4 inline-block mr-2 text-primary" />
-                      <span className="text-primary">Applications</span>
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem href="/saved">
-                    <div className="flex items-center">
-                      <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
-                      <span className="text-primary">Saved Jobs</span>
-                    </div>
-                  </DropdownMenuItem>
-                </HoverDropdown>
-              </div>
-              <ProfileButton />
-            </div>
-          ) : (
-            <></>
-          )
-        ) : (
-          <div className="w-1 h-10 bg-transparent" />
-        )}
-      </div>
-
-      {/* Mobile: logo + search + filter icon only */}
+  return (
+    <>
+      {/* Mobile Header */}
       {isMobile && showProfileButton && (
-        <JobFilterProvider initial={initialFromUrl}>
-          <div className="flex gap-2 items-center px-4 py-3 bg-white/80 border-b h-16">
-            {/* Search input - only shown on search page */}
-            {showFilters && (
-              <>
-                <SearchInput
-                  value={searchTerm}
-                  onChange={setSearchTerm}
-                  onEnter={doSearch}
-                  moaOnly={moaOnly}
-                  onToggleMoa={(v) => {
-                    setMoaOnly(v);
-                    pushSearch({ moa: v });
-                  }}
-                  className="flex-1"
-                />
-                {/* Mobile filter button - icon only */}
-                <div className="flex-shrink-0">
-                  <JobFilters onApply={onApplyFilters} isDesktop={false} />
-                </div>
-              </>
-            )}
-          </div>
-        </JobFilterProvider>
+        <MobileHeader
+          searchTerm={searchTerm}
+          moaOnly={moaOnly}
+          onSearchChange={setSearchTerm}
+          onMoaToggle={(v) => {
+            setMoaOnly(v);
+            pushSearch({ moa: v });
+          }}
+          onSearch={doSearch}
+          onApplyFilters={onApplyFilters}
+          initialFilterValues={initialFromUrl}
+          showFilters={showFilters}
+        />
       )}
 
-      {/* Mobile drawer - removed, using bottom nav instead */}
-    </div>
-  ) : (
-    <></>
+      {/* Desktop Header */}
+      {!isMobile && showProfileButton && (
+        <DesktopHeader
+          searchTerm={searchTerm}
+          moaOnly={moaOnly}
+          onSearchChange={setSearchTerm}
+          onMoaToggle={(v) => {
+            setMoaOnly(v);
+            pushSearch({ moa: v });
+          }}
+          onSearch={doSearch}
+          onApplyFilters={onApplyFilters}
+          initialFilterValues={initialFromUrl}
+          showFilters={showFilters}
+        />
+      )}
+    </>
   );
 };
 
