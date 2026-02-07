@@ -58,7 +58,7 @@ export const JobLocation = ({
   return location ? (
     <div className="flex items-center text-sm text-gray-500">
       <Building className="w-4 h-4 mr-1 flex-shrink-0" />
-      <span className="truncate">{location}</span>
+      <div className="truncate">{location}</div>
     </div>
   ) : (
     <></>
@@ -314,7 +314,7 @@ export const MobileJobCard = ({
           </h3>
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
             <Building className="w-4 h-4 flex-shrink-0" />
-            <span className="font-medium">{job.employer?.name}</span>
+            <span className="font-medium truncate">{job.employer?.name}</span>
           </div>
         </div>
       </div>
@@ -322,8 +322,10 @@ export const MobileJobCard = ({
       <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
         {job.description || "No description available."}
       </p>
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-        <JobLocation location={job.location} />{" "}
+      <div className="flex items-center justify-between pt-3 border-t border-gray-100 min-w-0">
+        <div className="flex-1 min-w-0">
+          <JobLocation location={job.location} />
+        </div>
       </div>
     </div>
   );
