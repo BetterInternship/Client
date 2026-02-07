@@ -7,6 +7,7 @@ import { JobService } from "@/lib/api/services";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { Loader } from "@/components/ui/loader";
+import JobHeader from "@/components/features/hire/dashboard/JobHeader";
 
 function ManageContent() {
   const searchParams = useSearchParams();
@@ -52,12 +53,18 @@ function ManageContent() {
   }
 
   return (
-    <ContentLayout>
-      <div className="w-full h-full">
-        <JobTabs 
-          selectedJob={jobData} 
+    <ContentLayout className="!p-0">
+      <div className="w-full h-full flex flex-col">
+        <JobHeader
+          job={jobData}
           onJobUpdate={handleJobUpdate}
         />
+        <div className="flex-1 overflow-auto pt-4 px-2 sm:px-8">
+          <JobTabs 
+            selectedJob={jobData} 
+            onJobUpdate={handleJobUpdate}
+          />
+        </div>
       </div>
     </ContentLayout>
   );
