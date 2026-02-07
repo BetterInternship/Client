@@ -718,12 +718,11 @@ export function JobFilters({
     <>
       <Button
         variant="outline"
-        size="md"
-        className="w-full min-w-0 sm:w-auto"
+        size={"md"}
+        className="justify-between p-2 px-3"
         onClick={() => setOpen(true)}
       >
-        <FilterIcon className="mr-2" />
-        Filters
+        <FilterIcon />
       </Button>
 
       {open && (

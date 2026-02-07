@@ -10,6 +10,7 @@ import AllowLanding from "./allowLanding";
 import { ConversationsContextProvider } from "@/hooks/use-conversation";
 import { PocketbaseProvider } from "@/lib/pocketbase";
 import { ModalProvider } from "@/components/providers/ModalProvider";
+import MobileNavWrapper from "@/components/shared/mobile-nav-wrapper";
 
 export const metadata: Metadata = {
   title: "BetterInternship",
@@ -92,6 +93,7 @@ const HTMLContent = ({
                         <div className="relative flex-grow max-h-[100svh] max-w-[100svw] overflow-auto flex flex-col">
                           {children}
                         </div>
+                        <MobileNavWrapper />
                       </div>
                     </AllowLanding>
                   </ModalProvider>

@@ -8,29 +8,22 @@ import {
   BookA,
   Heart,
   LogOut,
-  MessageCircleMore,
   Search,
   ChevronRight,
   X as XIcon,
-  Menu,
-  Check as CheckIcon,
   CheckSquare,
   Square,
   Newspaper,
-  Home,
-  User,
   ChevronDown,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { GroupableNavDropdown, DropdownOption } from "@/components/ui/dropdown";
 import { Separator } from "@/components/ui/separator";
 import { HeaderTitle } from "@/components/shared/header";
 import { MyUserPfp } from "@/components/shared/pfp";
 
 import { useMobile } from "@/hooks/use-mobile";
 import { useRoute } from "@/hooks/use-route";
-import { useConversations } from "@/hooks/use-conversation";
 import {
   Popover,
   PopoverContent,
@@ -51,7 +44,6 @@ import {
   JobFilters,
   JobFilter,
 } from "@/components/features/student/search/JobFilters";
-import useModalRegistry from "@/components/modals/modal-registry";
 
 /* =======================================================================================
    Small UI Primitives
@@ -125,7 +117,7 @@ const SearchInput = ({
 /* =======================================================================================
    Mobile Drawer (account on top → chats → links → bottom sign out)
 ======================================================================================= */
-function MobileDrawer({
+function _MobileDrawer({
   open,
   onClose,
 }: {
@@ -134,13 +126,14 @@ function MobileDrawer({
 }) {
   const profile = useProfileData();
   const { isAuthenticated, logout } = useAuthContext();
-  const conversations = useConversations();
   const router = useRouter();
   const pathname = usePathname();
-  const params = useSearchParams();
-  const modalRegistry = useModalRegistry();
+  const searchParams = useSearchParams();
 
-  const handleLogout = () => logout().then(() => router.push("/"));
+  const handleLogout = () => {
+    void logout();
+    router.push("/");
+  };
 
   const handleIncompleteProfileClick = (link: string) => {
     if (!isProfileVerified(profile.data)) {
@@ -156,7 +149,7 @@ function MobileDrawer({
   };
   useEffect(() => {
     if (open) onClose();
-  }, [pathname, params?.toString()]);
+  }, [pathname, searchParams?.toString(), onClose]);
 
   return (
     <>
@@ -353,11 +346,7 @@ function DropdownMenuItem({ onClick, href, children }: DropdownMenuItemProps) {
   );
 }
 
-function HoverDropdown({
-  trigger,
-  children,
-  className = "",
-}: HoverDropdownProps) {
+function HoverDropdown({ trigger, children }: HoverDropdownProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const closeTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -467,7 +456,7 @@ export const ProfileButton: React.FC = () => {
         </div>
       </DropdownMenuItem>
       <div className="h-px bg-gray-200 my-1 mx-2" />
-      <DropdownMenuItem onClick={() => handleLogout()}>
+      <DropdownMenuItem onClick={() => void handleLogout()}>
         <div className="flex items-center">
           <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />
           <span className="text-red-500">Sign Out</span>
@@ -486,11 +475,9 @@ export const Header: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const auth = useAuthContext();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [moaOnly, setMoaOnly] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const noProfileRoutes = ["/register", "/register/verify"];
   const noHeaderRoutes = ["/register", "/register/verify"];
@@ -498,14 +485,6 @@ export const Header: React.FC = () => {
 
   // only show filters on /search (allow subpaths like /search/results)
   const showFilters = pathname?.startsWith("/search") === true;
-
-  // lock body scroll when drawer open
-  useEffect(() => {
-    document.body.style.overflow = isMenuOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isMenuOpen]);
 
   useEffect(() => {
     if (!showFilters) return;
@@ -564,14 +543,16 @@ export const Header: React.FC = () => {
       <div
         className={cn(
           "flex gap-2 justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
-          isMobile ? "px-4 py-3" : "py-4 px-8",
+          isMobile ? "px-4 py-3 hidden" : "py-4 px-8 flex",
         )}
         style={{ overflow: "visible", position: "relative", zIndex: 100 }}
       >
         <div className="flex items-center gap-6 flex-1">
-          <div className="flex-shrink-0">
-            <HeaderTitle />
-          </div>
+          {!isMobile && (
+            <div className="flex-shrink-0">
+              <HeaderTitle />
+            </div>
+          )}
 
           {!isMobile && showProfileButton && showFilters && (
             <div className="flex items-center gap-4 w-full max-w-xl">
@@ -593,29 +574,9 @@ export const Header: React.FC = () => {
           )}
         </div>
 
-        {/* Right: Desktop profile / Mobile burger */}
+        {/* Right: Mobile (nothing) - Desktop profile/nav buttons */}
         {showProfileButton ? (
-          isMobile ? (
-            auth.isAuthenticated() ? (
-              <button
-                type="button"
-                aria-label="Open menu"
-                className="inline-flex items-center justify-center h-10 w-10 rounded-md border border-gray-300 hover:bg-gray-50"
-                onClick={() => setIsMenuOpen(true)}
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-            ) : (
-              <Button
-                variant="outline"
-                onClick={() =>
-                  router.push(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`)
-                }
-              >
-                Sign in
-              </Button>
-            )
-          ) : (
+          !isMobile ? (
             <div className="flex items-center gap-1">
               <div className="flex gap-1">
                 <Button
@@ -682,36 +643,43 @@ export const Header: React.FC = () => {
               </div>
               <ProfileButton />
             </div>
+          ) : (
+            <></>
           )
         ) : (
           <div className="w-1 h-10 bg-transparent" />
         )}
       </div>
 
-      {/* Mobile: search + (filters only on /search) */}
-      {isMobile && showProfileButton && showFilters && (
+      {/* Mobile: logo + search + filter icon only */}
+      {isMobile && showProfileButton && (
         <JobFilterProvider initial={initialFromUrl}>
-          <div className="flex flex-col max-w-2xl w-full gap-2 items-center px-4 pt-3 bg-white/80">
-            <SearchInput
-              value={searchTerm}
-              onChange={setSearchTerm}
-              onEnter={doSearch}
-              moaOnly={moaOnly}
-              onToggleMoa={(v) => {
-                setMoaOnly(v);
-                pushSearch({ moa: v });
-              }}
-            />
-            {/* Mobile button opening bottom sheet */}
-            <JobFilters onApply={onApplyFilters} />
+          <div className="flex gap-2 items-center px-4 py-3 bg-white/80 border-b h-16">
+            {/* Search input - only shown on search page */}
+            {showFilters && (
+              <>
+                <SearchInput
+                  value={searchTerm}
+                  onChange={setSearchTerm}
+                  onEnter={doSearch}
+                  moaOnly={moaOnly}
+                  onToggleMoa={(v) => {
+                    setMoaOnly(v);
+                    pushSearch({ moa: v });
+                  }}
+                  className="flex-1"
+                />
+                {/* Mobile filter button - icon only */}
+                <div className="flex-shrink-0">
+                  <JobFilters onApply={onApplyFilters} isDesktop={false} />
+                </div>
+              </>
+            )}
           </div>
         </JobFilterProvider>
       )}
 
-      {/* Mobile drawer */}
-      {isMobile && showProfileButton && (
-        <MobileDrawer open={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
-      )}
+      {/* Mobile drawer - removed, using bottom nav instead */}
     </div>
   ) : (
     <></>

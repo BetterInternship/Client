@@ -1,0 +1,193 @@
+"use client";
+
+import React from "react";
+import { useRouter, usePathname } from "next/navigation";
+import {
+  Search,
+  Newspaper,
+  BookA,
+  User,
+  Settings,
+  LogOut,
+  CheckSquare,
+  Heart,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  isProfileBaseComplete,
+  isProfileResume,
+  isProfileVerified,
+} from "@/lib/profile";
+import { useAuthContext } from "@/lib/ctx-auth";
+
+interface MobileBottomNavProps {
+  profileData?: any;
+}
+
+export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
+  profileData,
+}) => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { logout } = useAuthContext();
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white shadow-lg flex justify-around items-center h-16">
+      {/* Search Button */}
+      <button
+        onClick={() => router.push("/search")}
+        className={cn(
+          "flex-1 flex flex-col items-center justify-center py-3 gap-1 text-xs font-medium transition-colors",
+          pathname === "/search"
+            ? "text-primary"
+            : "text-gray-600 hover:text-primary hover:bg-gray-50",
+        )}
+      >
+        <Search className="w-6 h-6" />
+        <span>Search</span>
+      </button>
+
+      {/* Forms Button */}
+      <button
+        onClick={() => router.push("/forms")}
+        className={cn(
+          "flex-1 flex flex-col items-center justify-center py-3 gap-1 text-xs font-medium transition-colors",
+          pathname === "/forms"
+            ? "text-primary"
+            : "text-gray-600 hover:text-primary hover:bg-gray-50",
+        )}
+      >
+        <Newspaper className="w-6 h-6" />
+        <span>Forms</span>
+      </button>
+
+      {/* My Jobs Button with Popover Menu */}
+      <Popover>
+        <PopoverTrigger asChild>
+          <button
+            className={cn(
+              "flex-1 flex flex-col items-center justify-center py-3 gap-1 text-xs font-medium transition-colors",
+              pathname?.startsWith("/applications") ||
+                pathname?.startsWith("/saved")
+                ? "text-primary"
+                : "text-gray-600 hover:text-primary hover:bg-gray-50",
+            )}
+          >
+            <BookA className="w-6 h-6" />
+            <span>My Jobs</span>
+          </button>
+        </PopoverTrigger>
+        <PopoverContent
+          className="w-max p-1 bg-white border border-gray-200 rounded-[0.33em] shadow-lg"
+          side="top"
+          sideOffset={8}
+          style={{ zIndex: 9999 }}
+        >
+          <div className="flex flex-col gap-0">
+            <button
+              onClick={() => {
+                router.push("/applications");
+              }}
+              className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm"
+            >
+              <div className="flex items-center">
+                <CheckSquare className="w-4 h-4 inline-block mr-2 text-primary" />
+                <span>Applications</span>
+              </div>
+            </button>
+            <button
+              onClick={() => {
+                router.push("/saved");
+              }}
+              className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm"
+            >
+              <div className="flex items-center">
+                <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
+                <span>Saved Jobs</span>
+              </div>
+            </button>
+          </div>
+        </PopoverContent>
+      </Popover>
+
+      {/* Account Button with Popover Menu */}
+      <Popover>
+        <PopoverTrigger asChild>
+          <button
+            className={cn(
+              "flex-1 flex flex-col items-center justify-center py-3 gap-1 text-xs font-medium transition-colors",
+              pathname === "/profile"
+                ? "text-primary"
+                : "text-gray-600 hover:text-primary hover:bg-gray-50",
+            )}
+          >
+            <User className="w-6 h-6" />
+            <span>Account</span>
+          </button>
+        </PopoverTrigger>
+        <PopoverContent
+          className="w-max p-1 bg-white border border-gray-200 rounded-[0.33em] shadow-lg"
+          side="top"
+          sideOffset={8}
+          style={{ zIndex: 9999 }}
+        >
+          <div className="flex flex-col gap-0">
+            <button
+              onClick={() => {
+                try {
+                  if (profileData && "data" in profileData) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    const profile = profileData.data;
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                    if (!isProfileVerified(profile || null)) {
+                      router.push(`/register/verify`);
+                    } else if (
+                      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                      !isProfileResume(profile || null) ||
+                      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                      !isProfileBaseComplete(profile || null)
+                    ) {
+                      router.push(`/register/complete-profile`);
+                    } else {
+                      router.push(`/profile`);
+                    }
+                  } else {
+                    router.push(`/profile`);
+                  }
+                } catch {
+                  router.push(`/profile`);
+                }
+              }}
+              className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm"
+            >
+              <div className="flex items-center">
+                <Settings className="w-4 h-4 inline-block mr-2 text-primary" />
+                <span>Profile</span>
+              </div>
+            </button>
+            <div className="h-px bg-gray-200 my-1 mx-2" />
+            <button
+              onClick={() => {
+                void logout();
+                router.push("/");
+              }}
+              className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm"
+            >
+              <div className="flex items-center">
+                <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />
+                <span className="text-red-500">Sign Out</span>
+              </div>
+            </button>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+};
+
+export default MobileBottomNav;
