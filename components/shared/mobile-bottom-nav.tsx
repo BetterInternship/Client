@@ -29,6 +29,51 @@ interface MobileBottomNavProps {
   profileData?: any;
 }
 
+interface NavButtonProps {
+  icon: React.ReactNode;
+  label: string;
+  isActive: boolean;
+  onClick?: () => void;
+  children?: React.ReactNode;
+}
+
+/**
+ * Reusable nav button component for mobile bottom navigation
+ */
+const NavButton: React.FC<NavButtonProps> = ({
+  icon,
+  label,
+  isActive,
+  onClick,
+  children,
+}) => {
+  const buttonContent = (
+    <button
+      onClick={onClick}
+      className={cn(
+        "flex-1 flex flex-col items-center justify-center h-full gap-0.5 text-xs font-medium transition-colors",
+        isActive
+          ? "text-primary"
+          : "text-gray-600 hover:text-primary hover:bg-gray-100",
+      )}
+    >
+      {icon}
+      <span>{label}</span>
+    </button>
+  );
+
+  if (children) {
+    return (
+      <Popover>
+        <PopoverTrigger asChild>{buttonContent}</PopoverTrigger>
+        {children}
+      </Popover>
+    );
+  }
+
+  return buttonContent;
+};
+
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   profileData,
 }) => {
@@ -39,49 +84,30 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   return (
     <div className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white shadow-lg flex justify-around items-center h-16">
       {/* Search Button */}
-      <button
+      <NavButton
+        icon={<Search className="w-6 h-6" />}
+        label="Search"
+        isActive={pathname === "/search"}
         onClick={() => router.push("/search")}
-        className={cn(
-          "flex-1 flex flex-col items-center justify-center py-3 gap-1 text-xs font-medium transition-colors",
-          pathname === "/search"
-            ? "text-primary"
-            : "text-gray-600 hover:text-primary hover:bg-gray-50",
-        )}
-      >
-        <Search className="w-6 h-6" />
-        <span>Search</span>
-      </button>
+      />
 
       {/* Forms Button */}
-      <button
+      <NavButton
+        icon={<Newspaper className="w-6 h-6" />}
+        label="Forms"
+        isActive={pathname === "/forms"}
         onClick={() => router.push("/forms")}
-        className={cn(
-          "flex-1 flex flex-col items-center justify-center py-3 gap-1 text-xs font-medium transition-colors",
-          pathname === "/forms"
-            ? "text-primary"
-            : "text-gray-600 hover:text-primary hover:bg-gray-50",
-        )}
-      >
-        <Newspaper className="w-6 h-6" />
-        <span>Forms</span>
-      </button>
+      />
 
       {/* My Jobs Button with Popover Menu */}
-      <Popover>
-        <PopoverTrigger asChild>
-          <button
-            className={cn(
-              "flex-1 flex flex-col items-center justify-center py-3 gap-1 text-xs font-medium transition-colors",
-              pathname?.startsWith("/applications") ||
-                pathname?.startsWith("/saved")
-                ? "text-primary"
-                : "text-gray-600 hover:text-primary hover:bg-gray-50",
-            )}
-          >
-            <BookA className="w-6 h-6" />
-            <span>My Jobs</span>
-          </button>
-        </PopoverTrigger>
+      <NavButton
+        icon={<BookA className="w-6 h-6" />}
+        label="My Jobs"
+        isActive={
+          pathname?.startsWith("/applications") ||
+          pathname?.startsWith("/saved")
+        }
+      >
         <PopoverContent
           className="w-max p-1 bg-white border border-gray-200 rounded-[0.33em] shadow-lg"
           side="top"
@@ -113,23 +139,14 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             </button>
           </div>
         </PopoverContent>
-      </Popover>
+      </NavButton>
 
       {/* Account Button with Popover Menu */}
-      <Popover>
-        <PopoverTrigger asChild>
-          <button
-            className={cn(
-              "flex-1 flex flex-col items-center justify-center py-3 gap-1 text-xs font-medium transition-colors",
-              pathname === "/profile"
-                ? "text-primary"
-                : "text-gray-600 hover:text-primary hover:bg-gray-50",
-            )}
-          >
-            <User className="w-6 h-6" />
-            <span>Account</span>
-          </button>
-        </PopoverTrigger>
+      <NavButton
+        icon={<User className="w-6 h-6" />}
+        label="Account"
+        isActive={pathname === "/profile"}
+      >
         <PopoverContent
           className="w-max p-1 bg-white border border-gray-200 rounded-[0.33em] shadow-lg"
           side="top"
@@ -185,7 +202,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             </button>
           </div>
         </PopoverContent>
-      </Popover>
+      </NavButton>
     </div>
   );
 };

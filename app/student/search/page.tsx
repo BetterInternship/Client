@@ -406,12 +406,12 @@ export default function SearchPage() {
       {/* Floating action bar */}
       {!isMobile && FloatingActionBar}
 
-      <div className="flex-1 flex overflow-hidden min-h-0 max-h-100">
+      <div className="flex-1 flex overflow-hidden border-primary ">
         {jobs.isPending ? (
           <Loader>Loading...</Loader>
         ) : isMobile ? (
           // Mobile list
-          <div className="w-full flex flex-col h-full pb-24">
+          <div className="w-full flex flex-col h-full pb-[2.5rem]">
             <div ref={listRef} className="flex-1 overflow-y-auto pt-2 px-3">
               {jobsPage.length ? (
                 <div className="space-y-4">
@@ -425,7 +425,7 @@ export default function SearchPage() {
                       <button
                         type="button"
                         className={cn(
-                          "absolute right-3 top-3 z-10 bg-white p-1",
+                          "absolute right-4 top-5 z-10 bg-white p-1",
                           "hover:shadow transition",
                         )}
                         onClick={(e) => {
@@ -435,9 +435,9 @@ export default function SearchPage() {
                         }}
                       >
                         {isSelected(job.id) ? (
-                          <CheckSquare className="w-5 h-5 text-primary" />
+                          <CheckSquare className="w-6 h-6 text-primary" />
                         ) : (
-                          <Square className="w-5 h-5 text-gray-400" />
+                          <Square className="w-6 h-6 text-gray-400" />
                         )}
                       </button>
 
@@ -454,7 +454,7 @@ export default function SearchPage() {
                 </div>
               )}
 
-              <div className="mt-6">
+              <div className="my-2">
                 <Paginator
                   totalItems={jobs.filteredJobs.length}
                   itemsPerPage={jobsPageSize}
