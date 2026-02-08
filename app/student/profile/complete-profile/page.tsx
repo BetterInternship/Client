@@ -30,7 +30,7 @@ import { Job } from "@/lib/db/db.types";
 import { isValidRequiredUserName } from "@/lib/utils/name-utils";
 import { DropdownGroup } from "@/components/ui/dropdown";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useModal } from "@/hooks/use-modal";
 
@@ -44,6 +44,7 @@ export default function IncompleteProfileContent({
   job?: Job | null;
 }) {
   const router = useRouter();
+
   return (
     <div className="flex flex-col justify-start items-center p-6 h-full overflow-y-auto sm:max-w-2xl mx-auto pt-20">
       <div className="text-center mb-10 w-full shrink-0">
@@ -107,6 +108,10 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   const [showComplete, setShowComplete] = useState(false);
   const queryClient = useQueryClient();
   const router = useRouter();
+  
+  // track where to redirect the user after completion
+  const params = useSearchParams();
+  const destination = params.get('dest');
 
   // profile being edited
   const [profile, setProfile] = useState<ProfileDraft>(() => ({
@@ -128,6 +133,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [parsedReady, setParsedReady] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
+  const [uploadPromise, setUploadPromise] = useState<Promise<any> | null>(null);
 
   const {
     open: openFileFailModal,
@@ -136,7 +142,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   } = useModal("file-fail-modal", { showCloseButton: false });
 
   // analyze
-  const { upload, fileInputRef, response } = useAnalyzeResume(file);
+  const { upload, fileInputRef, response } = useAnalyzeResume();
   const handledResponseRef = useRef<any>(null);
 
   // upload on file
@@ -145,7 +151,9 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     setParseError(null);
     setParsedReady(false);
     setIsParsing(true);
-    void upload(file);
+
+    const promise = upload(file);
+    setUploadPromise(promise);
   }, [file]);
 
   // hydrate once per promise
@@ -166,9 +174,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     setParsedReady(true);
     setIsParsing(false);
 
-    if (success) {
-      setStep(1);
-    } else if (!success && message) {
+    if (!success && message) {
       setStep(0);
       openFileFailModal();
       setParseError(message || "Failed to analyze resume.");
@@ -193,7 +199,10 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
         title: "Upload your resume",
         subtitle: "Upload a PDF and we'll auto-fill what we can.",
         icon: Upload,
-        canNext: () => !!file && !isParsing && uploadSuccess,
+        canNext: () => {
+          const result = !!file && !isParsing && parsedReady && (response?.success ?? false);
+          return result;
+        },
         component: (
           <StepResume
             file={file}
@@ -204,7 +213,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
             fileInputRef={
               fileInputRef as unknown as RefObject<HTMLInputElement>
             }
-            response={response ?? null}
+            response={uploadPromise}
           />
         ),
       });
@@ -249,6 +258,8 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     parsedReady,
     parseError,
     response,
+    file,
+    uploadPromise,
     existingProfile.data,
     profile,
     isUpdating,
@@ -270,7 +281,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     if (!current) return;
 
     if (current.id === "resume") {
-      if (!uploadSuccess) {
+      if (!response?.success) {
         return;
       }
       setStep(step + 1);
@@ -344,7 +355,10 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   };
 
   if (showComplete) {
-    return <StepComplete onDone={onFinish} />;
+    return <StepComplete 
+      onDone={onFinish} 
+      destination={destination}
+    />;
   }
 
   return (
@@ -699,11 +713,28 @@ function StepAutoApply({
 
 /* ---------------------- Completion (rendered OUTSIDE stepper) ---------------------- */
 
-function StepComplete({ onDone }: { onDone: () => void }) {
+function StepComplete({ 
+  onDone,
+  destination,
+} : { 
+  onDone: () => void;
+  destination: string | null;
+}) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
   useEffect(() => {
-    const t = setTimeout(() => onDone(), 1400);
+    const t = setTimeout(async () => {
+      if (destination) {
+        // invalidate profile cache before redirecting.
+        await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+        router.push(`/${destination}`);
+      } else {
+        onDone();
+      }
+    }, 1400);
     return () => clearTimeout(t);
-  }, [onDone]);
+  }, [onDone, destination, router, queryClient]);
 
   return (
     <div className="flex flex-col items-center justify-center py-8">

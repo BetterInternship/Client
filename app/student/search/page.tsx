@@ -190,7 +190,7 @@ export default function SearchPage() {
       profile.data?.acknowledged_auto_apply === false
     ) {
       if (isMobile) {
-        return router.push(`profile/complete-profile`);
+        return router.push(`profile/complete-profile?dest=search`);
       } else {
         return modalRegistry.incompleteProfile.open();
       }

@@ -203,7 +203,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                       !isProfileBaseComplete(profile || null)
                     ) {
-                      router.push(`/register/complete-profile`);
+                      router.push(`/profile/complete-profile?dest=profile`);
                     } else {
                       router.push(`/profile`);
                     }
