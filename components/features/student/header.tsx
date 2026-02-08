@@ -207,7 +207,7 @@ export const ProfileButton: React.FC = () => {
       !isProfileResume(profile.data) ||
       !isProfileBaseComplete(profile.data)
     ) {
-      router.push(`profile/complete-profile`);
+      router.push(`profile/complete-profile?dest=profile`);
     } else {
       router.push(`/profile`);
     }

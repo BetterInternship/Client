@@ -45,7 +45,7 @@ export const ApplyToJobButton = ({
       profile.acknowledged_auto_apply === false
     ) {
       if(isMobile) {
-        return router.push(`/profile/complete-profile`);
+        return router.push(`/profile/complete-profile?dest=search/${job.id}`);
       } else {
         return modalRegistry.incompleteProfile.open();
       }
