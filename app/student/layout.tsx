@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "../globals.css";
 import { AuthContextProvider } from "@/lib/ctx-auth";
+import { HeaderContextProvider } from "@/lib/ctx-header";
 import { RefsContextProvider } from "@/lib/db/use-refs";
 import { AppContextProvider } from "@/lib/ctx-app";
 import { BIMoaContextProvider } from "@/lib/db/use-bi-moa";
@@ -84,22 +85,24 @@ const HTMLContent = ({
       <PocketbaseProvider type={"user"}>
         <AppContextProvider>
           <AuthContextProvider>
-            <ConversationsContextProvider type="user">
-              <html lang="en" className="h-full">
-                <body className="h-full overflow-x-hidden m-0 p-0 antialiased">
-                  <ModalProvider>
-                    <AllowLanding>
-                      <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
-                        <div className="relative flex-grow max-h-[100svh] max-w-[100svw] overflow-auto flex flex-col mb-10">
-                          {children}
+            <HeaderContextProvider>
+              <ConversationsContextProvider type="user">
+                <html lang="en" className="h-full">
+                  <body className="h-full overflow-x-hidden m-0 p-0 antialiased">
+                    <ModalProvider>
+                      <AllowLanding>
+                        <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
+                          <div className="relative flex-grow max-h-[100svh] max-w-[100svw] overflow-auto flex flex-col mb-10">
+                            {children}
+                          </div>
+                          <MobileNavWrapper />
                         </div>
-                        <MobileNavWrapper />
-                      </div>
-                    </AllowLanding>
-                  </ModalProvider>
-                </body>
-              </html>
-            </ConversationsContextProvider>
+                      </AllowLanding>
+                    </ModalProvider>
+                  </body>
+                </html>
+              </ConversationsContextProvider>
+            </HeaderContextProvider>
           </AuthContextProvider>
         </AppContextProvider>
       </PocketbaseProvider>

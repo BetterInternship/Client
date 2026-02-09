@@ -2,9 +2,17 @@
 
 import React, { createContext, useContext, useState } from "react";
 
+export interface MobileAddonConfig {
+  show: boolean;
+  activeView?: "generate" | "history";
+  onViewChange?: (view: "generate" | "history") => void;
+  currentFormName?: string | null;
+  currentFormLabel?: string | null;
+}
+
 interface HeaderContextType {
-  mobileHeaderAddon: React.ReactNode | null;
-  setMobileHeaderAddon: (content: React.ReactNode | null) => void;
+  mobileAddonConfig: MobileAddonConfig;
+  setMobileAddonConfig: (config: MobileAddonConfig) => void;
 }
 
 const HeaderContext = createContext<HeaderContextType | undefined>(undefined);
@@ -24,14 +32,15 @@ export const HeaderContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [mobileHeaderAddon, setMobileHeaderAddon] =
-    useState<React.ReactNode | null>(null);
+  const [mobileAddonConfig, setMobileAddonConfig] = useState<MobileAddonConfig>(
+    { show: false },
+  );
 
   return (
     <HeaderContext.Provider
       value={{
-        mobileHeaderAddon,
-        setMobileHeaderAddon,
+        mobileAddonConfig,
+        setMobileAddonConfig,
       }}
     >
       {children}

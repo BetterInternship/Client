@@ -27,6 +27,8 @@ import {
 } from "@/components/ui/popover";
 
 import { useAuthContext } from "@/lib/ctx-auth";
+import { useHeaderContext } from "@/lib/ctx-header";
+import { FormsNavigation } from "@/components/features/student/forms/FormsNavigation";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { cn } from "@/lib/utils";
 import {
@@ -293,6 +295,8 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
   initialFilterValues,
   showFilters,
 }) => {
+  const { mobileAddonConfig } = useHeaderContext();
+
   return (
     <JobFilterProvider initial={initialFilterValues}>
       <div className="flex gap-2 items-center px-4 py-3 bg-white/80 border-b h-16">
@@ -300,6 +304,19 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
         <div className="flex-shrink-0">
           <HeaderTitle />
         </div>
+
+        {/* Mobile addon - conditionally render FormsNavigation based on config */}
+        {mobileAddonConfig?.show && mobileAddonConfig.activeView && (
+          <div className="ml-2">
+            <FormsNavigation
+              activeView={mobileAddonConfig.activeView}
+              onViewChange={mobileAddonConfig.onViewChange || (() => {})}
+              currentFormName={mobileAddonConfig.currentFormName}
+              currentFormLabel={mobileAddonConfig.currentFormLabel}
+              variant="inline"
+            />
+          </div>
+        )}
 
         {/* Search + Filter - only on search page */}
         {showFilters ? (
