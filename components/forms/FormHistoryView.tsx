@@ -29,47 +29,49 @@ interface FormHistoryViewProps {
  */
 export function FormHistoryView({ forms }: FormHistoryViewProps) {
   return (
-    <div className="container max-w-5xl pt-8 mx-auto overflow-y-auto h-full">
-      <div className="animate-fade-in">
-        <div className="flex flex-row items-center gap-3 mb-2">
-          <HeaderIcon icon={Newspaper}></HeaderIcon>
-          <HeaderText>Form History</HeaderText>
-        </div>
-        <Badge>{forms.length} generated forms</Badge>
-      </div>
-      <Separator className="mt-4" />
-
-      <div className="animate-fade-in">
-        {forms.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <p className="text-lg font-medium text-gray-600">No forms yet</p>
-            <p className="text-sm text-gray-500 mt-1">
-              You haven't generated any forms yet. Create your first form to get
-              started!
-            </p>
+    <div className="h-full overflow-y-auto px-4">
+      <div className="max-w-5xl pt-8 mx-auto">
+        <div className="animate-fade-in">
+          <div className="flex flex-row items-center gap-3 mb-2">
+            <HeaderIcon icon={Newspaper}></HeaderIcon>
+            <HeaderText>Form History</HeaderText>
           </div>
-        ) : (
-          forms
-            .toSorted(
-              (a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp),
-            )
-            .map((form, index) => (
-              <FormLog
-                formProcessId={form.form_process_id}
-                key={form.timestamp}
-                label={form.label}
-                documentId={
-                  form.signed_document_id ?? form.prefilled_document_id
-                }
-                timestamp={formatDate(form.timestamp)}
-                downloadUrl={form.latest_document_url}
-                signingParties={form.signing_parties}
-                status={form.status}
-                rejectionReason={form.rejection_reason}
-                index={index}
-              />
-            ))
-        )}
+          <Badge>{forms.length} generated forms</Badge>
+        </div>
+        <Separator className="mt-4" />
+
+        <div className="animate-fade-in">
+          {forms.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <p className="text-lg font-medium text-gray-600">No forms yet</p>
+              <p className="text-sm text-gray-500 mt-1">
+                You haven't generated any forms yet. Create your first form to
+                get started!
+              </p>
+            </div>
+          ) : (
+            forms
+              .toSorted(
+                (a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp),
+              )
+              .map((form, index) => (
+                <FormLog
+                  formProcessId={form.form_process_id}
+                  key={form.timestamp}
+                  label={form.label}
+                  documentId={
+                    form.signed_document_id ?? form.prefilled_document_id
+                  }
+                  timestamp={formatDate(form.timestamp)}
+                  downloadUrl={form.latest_document_url}
+                  signingParties={form.signing_parties}
+                  status={form.status}
+                  rejectionReason={form.rejection_reason}
+                  index={index}
+                />
+              ))
+          )}
+        </div>
       </div>
     </div>
   );
