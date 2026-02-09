@@ -221,7 +221,7 @@ const FieldRendererDropdown = <T extends any[]>({
   return (
     <div className="relative space-y-1.5 overflow-visible">
       <FormDropdown
-        required={false}
+        required={true}
         label={field.label}
         value={value}
         options={options}
@@ -265,7 +265,7 @@ const FieldRendererDate = <T extends any[]>({
   return (
     <div className="space-y-1.5">
       <FormDatePicker
-        required={false}
+        required={true}
         label={field.label}
         date={numericalValue}
         setter={(v) => {
@@ -317,7 +317,7 @@ const FieldRendererTime = <T extends any[]>({
   return (
     <div className="space-y-1.5">
       <TimeInputNative
-        required={false}
+        required={true}
         label={field.label}
         value={value}
         tooltip={field.tooltip_label}
@@ -355,7 +355,7 @@ const FieldRendererCheckbox = <T extends any[]>({
   return (
     <div className="space-y-1.5">
       <FormCheckbox
-        required={false}
+        required={true}
         label={field.label}
         checked={!!value}
         tooltip={field.tooltip_label}
@@ -395,7 +395,7 @@ const FieldRendererInput = <T extends any[]>({
   return (
     <div className="space-y-1.5">
       <FormInput
-        required={false}
+        required={true}
         label={field.label}
         value={value ?? ""}
         setter={(v) => {
@@ -505,7 +505,7 @@ const FieldRendererTextarea = <T extends any[]>({
   return (
     <div className="space-y-1.5">
       <FormTextarea
-        required={false}
+        required={true}
         label={field.label}
         value={value ?? ""}
         setter={onChange}
@@ -546,7 +546,7 @@ const FieldRendererMultiselect = <T extends any[]>({
   return (
     <div className="space-y-1.5" onBlur={() => onBlur?.()}>
       <AutocompleteTreeMulti
-        required={false}
+        required={true}
         label={field.label}
         value={values ?? []}
         setter={onChange}
