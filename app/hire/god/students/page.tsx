@@ -299,7 +299,7 @@ export default function StudentsPage() {
 
   /* ---------- Rows ---------- */
 
-  const rows = filtered.map((u: any) => {
+  const rows = filtered.map((u: any, index: number) => {
     const userApplications = applications.filter((a) => a.user_id === u.id);
     const isRowPending = impersonate.isPending && impUserId === u.id;
     const isSelected = selectedStudentIds.has(u.id);
@@ -327,7 +327,14 @@ export default function StudentsPage() {
     return (
       <RowCard
         key={u.id}
-        title={getFullName(u)}
+        title={
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400 text-sm font-medium min-w-[1rem]">
+              {index + 1}
+            </span>
+            <span>{getFullName(u)}</span>
+          </div>
+        }
         subtitle={<span className="text-xs text-slate-500">{u.email}</span>}
         metas={
           <div className="space-y-1">
