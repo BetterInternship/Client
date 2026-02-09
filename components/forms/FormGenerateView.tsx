@@ -22,8 +22,8 @@ export function FormGenerateView({
   const router = useRouter();
 
   return (
-    <div className="h-full overflow-y-auto px-4">
-      <div className="max-w-5xl pt-8 mx-auto">
+    <div className="h-full overflow-y-auto py-3 px-4">
+      <div className="max-w-5xl mx-auto">
         <div className="mb-6 sm:mb-8 animate-fade-in">
           <div className="flex flex-row items-center gap-3 mb-2">
             <HeaderIcon icon={Newspaper}></HeaderIcon>

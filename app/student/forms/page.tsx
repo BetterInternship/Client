@@ -26,7 +26,8 @@ export default function FormsPage() {
   const { activeView } = useFormsLayout();
 
   useEffect(() => {
-    if (!profile.data?.department && !profile.isPending) router.push("/profile");
+    if (!profile.data?.department && !profile.isPending)
+      router.push("/profile");
   }, [profile.data?.department, profile.isPending, router]);
 
   // Query 1: Check for updates (cheap query - just a timestamp)
@@ -50,7 +51,6 @@ export default function FormsPage() {
     refetchOnWindowFocus: true, // Refetch when user switches back to tab
     // enabled: !!updateInfo, // Only fetch after we have update info
   });
-
 
   return (
     <>

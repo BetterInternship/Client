@@ -23,7 +23,7 @@ export default function SavedJobsPage() {
   redirectIfNotLoggedIn();
 
   return (
-    <div className="container max-w-5xl p-10 pt-16 mx-auto">
+    <div className="py-3 px-4">
       <div className="mb-6 sm:mb-8 animate-fade-in">
         <div>
           <div className="flex flex-row items-center gap-3 mb-2">
