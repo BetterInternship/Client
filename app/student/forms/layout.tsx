@@ -122,6 +122,13 @@ function FormsLayoutContent({ children }: { children: React.ReactNode }) {
     mobileAddonConfig.currentFormLabel,
   ]);
 
+  // Clear addon config when layout unmounts
+  useLayoutEffect(() => {
+    return () => {
+      setMobileAddonConfig({ show: false });
+    };
+  }, [setMobileAddonConfig]);
+
   return (
     <FormsLayoutContext.Provider
       value={{
