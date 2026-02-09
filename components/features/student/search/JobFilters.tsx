@@ -133,8 +133,8 @@ const ALLOWANCE_OPTIONS: SubOption[] = [
 ];
 
 const MOA_OPTIONS: SubOption[] = [
-  { name: "Has MOA", value: "Has MOA" },
-  { name: "No MOA", value: "No MOA" },
+  { name: "Credited", value: "Has MOA" },
+  { name: "Voluntary", value: "No MOA" },
 ];
 
 /* ================= UI primitives ================= */
@@ -618,6 +618,7 @@ function DetailsPanel() {
         keyName="jobAllowance"
         options={ALLOWANCE_OPTIONS}
       />
+      <Group title="Internship Tyoe" keyName="jobMoa" options={MOA_OPTIONS} />
     </div>
   );
 }
