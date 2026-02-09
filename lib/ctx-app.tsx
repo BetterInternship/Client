@@ -38,7 +38,7 @@ const detectMobile = (): boolean => {
 
   // Checks
   const isPortrait = height > width;
-  const isNarrowScreen = width <= 768;
+  const isNarrowScreen = width < 640; // Match Tailwind sm: breakpoint (640px)
   const hasTouchScreen =
     "ontouchstart" in window || navigator.maxTouchPoints > 0;
   const mobileUserAgent =
@@ -52,8 +52,8 @@ const detectMobile = (): boolean => {
   // - Touch device with mobile user agent
   return (
     isNarrowScreen ||
-    (width <= 1024 && hasTouchScreen && (isPortrait || mobileUserAgent)) ||
-    (mobileUserAgent && hasTouchScreen && width <= 1024)
+    (width < 1024 && hasTouchScreen && (isPortrait || mobileUserAgent)) ||
+    (mobileUserAgent && hasTouchScreen && width < 1024)
   );
 };
 
