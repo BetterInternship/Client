@@ -11,9 +11,12 @@ import { MobileBottomNav } from "@/components/shared/mobile-bottom-nav";
 export default function MobileNavWrapper() {
   const { isMobile } = useMobile();
   const pathname = usePathname();
-  const isHomepage = pathname === "/" || pathname === "/student";
+  const hide =
+    pathname === "/" ||
+    pathname === "/student" ||
+    pathname.startsWith("/forms/");
 
-  if (!isMobile || isHomepage) {
+  if (!isMobile || hide) {
     return null;
   }
 

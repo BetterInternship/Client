@@ -91,7 +91,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   // Not logged in: show minimal nav with Search and Sign In
   if (!isAuthenticated()) {
     return (
-      <div className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white shadow-lg flex justify-around items-center h-16">
+      <div className="border-t border-gray-200 bg-white shadow-lg flex justify-around items-center h-16">
         {/* Search Button */}
         <NavButton
           icon={<Search className="w-6 h-6" />}
@@ -116,7 +116,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 
   // Logged in: show full navigation
   return (
-    <div className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white shadow-lg flex justify-around items-center h-16">
+    <div className="border-t border-gray-200 bg-white shadow-lg flex justify-around items-center h-16">
       {/* Search Button */}
       <NavButton
         icon={<Search className="w-6 h-6" />}
