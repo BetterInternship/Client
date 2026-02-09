@@ -43,7 +43,7 @@ const detectMobile = (): boolean => {
     "ontouchstart" in window || navigator.maxTouchPoints > 0;
   const mobileUserAgent =
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
+      navigator.userAgent,
     );
 
   // Mobile if:
@@ -89,7 +89,7 @@ export const AppContextProvider = ({
         ? hostname[0] === "hire"
           ? "hire"
           : "student"
-        : "student"
+        : "student",
     );
 
     window?.addEventListener("resize", handleResize);
