@@ -48,7 +48,7 @@ export function FormsNavigation({
     <>
       {variant === "bar" ? (
         <div className="sticky top-0 z-40 border-b border-gray-200 bg-white shadow-sm">
-          <div className="px-5 mx-auto">
+          <div className="px-8 mx-auto">
             {/* Desktop Navigation */}
             <div className="hidden sm:flex gap-1">
               {navItems.map((item) => {
