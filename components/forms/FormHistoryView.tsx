@@ -53,7 +53,7 @@ export function FormHistoryView({ forms }: FormHistoryViewProps) {
             .toSorted(
               (a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp),
             )
-            .map((form) => (
+            .map((form, index) => (
               <FormLog
                 formProcessId={form.form_process_id}
                 key={form.timestamp}
@@ -66,6 +66,7 @@ export function FormHistoryView({ forms }: FormHistoryViewProps) {
                 signingParties={form.signing_parties}
                 status={form.status}
                 rejectionReason={form.rejection_reason}
+                index={index}
               />
             ))
         )}

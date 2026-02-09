@@ -88,6 +88,7 @@ export const SigningStatusTimeline = ({
                   window.open(downloadUrl, "_blank", "noopener,noreferrer");
                 }}
                 title="Download signed form"
+                className="text-xs h-8"
               >
                 <DownloadIcon className="w-3.5 h-3.5" />
                 Download Latest Form
