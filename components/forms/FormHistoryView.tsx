@@ -37,7 +37,7 @@ export function FormHistoryView({ forms }: FormHistoryViewProps) {
         </div>
         <Badge>{forms.length} generated forms</Badge>
       </div>
-      <Separator className="mt-8" />
+      <Separator className="mt-4" />
 
       <div className="animate-fade-in">
         {forms.length === 0 ? (
