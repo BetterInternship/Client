@@ -403,7 +403,7 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
           <Button
             variant="ghost"
             className={cn(
-              "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-md",
+              "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-[0.33em]",
               pathname === "/search"
                 ? "text-primary"
                 : "opacity-80 hover:opacity-100 hover:bg-gray-100",
@@ -418,7 +418,7 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
           <Button
             variant="ghost"
             className={cn(
-              "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-md",
+              "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-[0.33em]",
               pathname === "/forms"
                 ? "text-primary"
                 : "opacity-80 hover:opacity-100 hover:bg-gray-100",
@@ -435,7 +435,7 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
               <Button
                 variant="ghost"
                 className={cn(
-                  "group w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-md",
+                  "group w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-[0.33em]",
                   pathname?.startsWith("/applications") ||
                     pathname?.startsWith("/saved")
                     ? "text-primary"
@@ -463,10 +463,9 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
               </div>
             </DropdownMenuItem>
           </HoverDropdown>
-        </div>
 
-        {/* Profile Button */}
-        <ProfileButton />
+          <ProfileButton />
+        </div>
       </div>
     </div>
   );
