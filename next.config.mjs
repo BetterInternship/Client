@@ -31,21 +31,6 @@ const nextConfig = {
 
     const rewrites = [];
 
-    // Explicit rules for production domain
-    rewrites.push(
-      {
-        source:
-          "/:path((?!_next|BetterInternshipLogo|resume-loader|PrivacyPolicy|TermsConditions|Student_MOA|Company_Information).+)",
-        has: [{ type: "host", value: "betterinternship.com" }],
-        destination: "/student/:path*",
-      },
-      {
-        source: "/",
-        has: [{ type: "host", value: "betterinternship.com" }],
-        destination: "/student/",
-      },
-    );
-
     routes.forEach(({ hosts, destination }) => {
       hosts.forEach((host) => {
         // Rewrite everything except _next and root-level common files
