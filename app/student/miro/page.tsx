@@ -407,7 +407,7 @@ export default function MiroThonLandingPage() {
                 </h1>
               </>
             ) : (
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.05] tracking-tight relative">
+              <h1 className="text-5xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.05] tracking-tight relative">
                 Fight for an internship at{" "}
                 <a
                   href="https://miro.com"
