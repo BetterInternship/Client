@@ -107,6 +107,197 @@ function MagneticButton({
   );
 }
 
+/* Remote Cursor Component */
+interface RemoteCursorProps {
+  x: number;
+  y: number;
+  name: string;
+  color: string;
+}
+
+function RemoteCursor({ x, y, name, color }: RemoteCursorProps) {
+  return (
+    <motion.div
+      className="pointer-events-none absolute z-50"
+      animate={{ x, y }}
+      transition={{ type: "spring", stiffness: 70, damping: 25 }}
+    >
+      <svg
+        width="24"
+        height="32"
+        viewBox="0 0 24 32"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="drop-shadow-lg"
+      >
+        <path
+          d="M5.65 1.65L23.39 17.35L14.77 19.38L13.73 27.5L9.54 24.35L5.65 1.65Z"
+          fill={color}
+        />
+      </svg>
+      <div
+        className="absolute top-7 left-2 px-2 py-1 rounded text-xs font-bold text-white whitespace-nowrap"
+        style={{ backgroundColor: color }}
+      >
+        {name}
+      </div>
+    </motion.div>
+  );
+}
+
+/* Animated Cursors Demo */
+function RemoteCursorsDemo() {
+  // Helper to generate random duration
+  const randomDuration = () => Math.random() * 2 + 2; // 2-4 seconds
+
+  // Helper to generate random position within bounds (0-100 percentage scale)
+  const randomPos = (
+    minXPercent: number,
+    maxXPercent: number,
+    minYPercent: number,
+    maxYPercent: number,
+  ) => {
+    const width = typeof window !== "undefined" ? window.innerWidth : 1920;
+    const height = typeof window !== "undefined" ? window.innerHeight : 1080;
+
+    return {
+      x:
+        (Math.random() * (maxXPercent - minXPercent) + minXPercent) *
+        (width / 100),
+      y:
+        (Math.random() * (maxYPercent - minYPercent) + minYPercent) *
+        (height / 100),
+      duration: randomDuration(),
+    };
+  };
+
+  const cursorData = [
+    {
+      name: "Jana",
+      color: "#FF1744",
+      path: [
+        randomPos(0, 15, 5, 20),
+        randomPos(0, 15, 5, 20),
+        randomPos(0, 15, 5, 20),
+        randomPos(0, 15, 5, 20),
+        randomPos(0, 15, 5, 20),
+      ],
+    },
+    {
+      name: "Mo",
+      color: "#00E676",
+      path: [
+        randomPos(85, 94, 5, 20),
+        randomPos(85, 94, 5, 20),
+        randomPos(85, 94, 5, 20),
+        randomPos(85, 94, 5, 20),
+        randomPos(85, 94, 5, 20),
+      ],
+    },
+    {
+      name: "Sherwin",
+      color: "#1E88E5",
+      path: [
+        randomPos(0, 15, 70, 100),
+        randomPos(0, 15, 70, 100),
+        randomPos(0, 15, 70, 100),
+        randomPos(0, 15, 70, 100),
+        randomPos(0, 15, 70, 100),
+      ],
+    },
+    {
+      name: "Paul",
+      color: "#D500F9",
+      path: [
+        randomPos(80, 94, 130, 150),
+        randomPos(80, 94, 130, 150),
+        randomPos(80, 94, 130, 150),
+        randomPos(80, 94, 130, 150),
+        randomPos(80, 94, 130, 150),
+        randomPos(80, 94, 130, 150),
+      ],
+    },
+    {
+      name: "Jay",
+      color: "#D3869B",
+      path: [
+        randomPos(85, 94, 25, 45),
+        randomPos(85, 94, 25, 45),
+        randomPos(85, 94, 25, 45),
+        randomPos(85, 94, 25, 45),
+        randomPos(85, 94, 25, 45),
+      ],
+    },
+    {
+      name: "Erin",
+      color: "#FF6D00",
+      path: [
+        randomPos(0, 15, 120, 140),
+        randomPos(0, 15, 120, 140),
+        randomPos(0, 15, 120, 140),
+        randomPos(0, 15, 120, 140),
+        randomPos(0, 15, 120, 140),
+      ],
+    },
+    {
+      name: "Bowei",
+      color: "#00D4FF",
+      path: [
+        randomPos(45, 65, 60, 80),
+        randomPos(45, 65, 60, 80),
+        randomPos(45, 65, 60, 80),
+        randomPos(45, 65, 60, 80),
+        randomPos(45, 65, 60, 80),
+      ],
+    },
+  ];
+
+  const [positions, setPositions] = useState(
+    cursorData.map(() => ({ x: 0, y: 0 })),
+  );
+
+  useEffect(() => {
+    const intervals = cursorData.map((cursor, idx) => {
+      let pathIndex = 0;
+
+      const moveToNextPoint = () => {
+        const point = cursor.path[pathIndex];
+        setPositions((prev) => {
+          const newPos = [...prev];
+          newPos[idx] = { x: point.x, y: point.y };
+          return newPos;
+        });
+
+        pathIndex = (pathIndex + 1) % cursor.path.length;
+      };
+
+      moveToNextPoint();
+      return setInterval(
+        moveToNextPoint,
+        (cursor.path[0]?.duration || 3) * 1000,
+      );
+    });
+
+    return () => {
+      intervals.forEach((interval) => clearInterval(interval));
+    };
+  }, []);
+
+  return (
+    <div className="pointer-events-none absolute inset-0 z-40 hidden lg:block">
+      {cursorData.map((cursor, idx) => (
+        <RemoteCursor
+          key={cursor.name}
+          x={positions[idx]?.x || 0}
+          y={positions[idx]?.y || 0}
+          name={cursor.name}
+          color={cursor.color}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function MiroThonLandingPage() {
   const discordLink = "https://discord.gg/QZ9mXJQm";
   const eventPage = "https://betterinternship.ph/miro";
@@ -163,6 +354,9 @@ export default function MiroThonLandingPage() {
 
       {/* HERO */}
       <section className="relative isolate w-full min-h-dvh flex flex-col items-center justify-center px-4 sm:px-6 text-center pb-6 sm:pb-10">
+        {/* Animated Collaborative Cursors Demo - Hero Section */}
+        <RemoteCursorsDemo />
+
         {/* Hero Section Background */}
         <div className="pointer-events-none absolute inset-0 -z-20" aria-hidden>
           <InteractiveGridPattern
@@ -281,7 +475,10 @@ export default function MiroThonLandingPage() {
       </section>
 
       {/* DETAILS */}
-      <section id="details" className="mx-auto w-full max-w-6xl px-6 pb-20">
+      <section
+        id="details"
+        className="relative mx-auto w-full max-w-6xl px-6 pb-20"
+      >
         <div className="mt-14 grid gap-6 md:grid-cols-2">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -377,7 +574,7 @@ export default function MiroThonLandingPage() {
         </div>
 
         <motion.div
-          className="mt-10"
+          className="mt-6"
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
