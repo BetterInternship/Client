@@ -293,14 +293,17 @@ function RemoteCursorsDemo() {
 export default function MiroThonLandingPage() {
   const discordLink = "https://discord.gg/QZ9mXJQm";
 
-  const eventStart = useMemo(() => new Date("2026-02-13T18:00:00+08:00"), []);
+  const eventStart = useMemo(() => new Date("2026-02-09T18:00:00+08:00"), []);
   const eventEnd = useMemo(() => new Date("2026-02-14T23:59:00+08:00"), []);
 
   const [countdown, setCountdown] = useState<Countdown>(
     getCountdown(eventStart),
   );
 
-  const [isEventLive, setIsEventLive] = useState(false);
+  const [isEventLive, setIsEventLive] = useState(() => {
+    const now = new Date().getTime();
+    return now >= eventStart.getTime() && now < eventEnd.getTime();
+  });
 
   useEffect(() => {
     const interval = setInterval(() => {
