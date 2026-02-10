@@ -464,7 +464,10 @@ export default function MiroThonLandingPage() {
       </section>
 
       {/* DETAILS */}
-      <section id="details" className="mx-auto w-full max-w-6xl px-6 pb-20">
+      <section
+        id="details"
+        className="relative mx-auto w-full max-w-6xl px-6 pb-20 z-0"
+      >
         <div className="mt-14 grid gap-6 md:grid-cols-2">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
