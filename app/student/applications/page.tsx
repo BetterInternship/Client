@@ -28,55 +28,57 @@ export default function ApplicationsPage() {
   redirectIfNotLoggedIn();
 
   return (
-    <div className="py-3 px-4">
-      <div className="mb-6 sm:mb-8 animate-fade-in">
-        <div className="flex flex-row items-center gap-3 mb-2">
-          <HeaderIcon icon={BookA}></HeaderIcon>
-          <HeaderText>My Applications</HeaderText>
-        </div>
-        <div className="flex-1 flex-row">
-          <p className="text-gray-600 text-sm sm:text-base mb-2">
-            Track your internship applications and their status
-          </p>
-          <Badge>
-            {applications.data.length}{" "}
-            {applications.data.length === 1 ? "application" : "applications"}
-          </Badge>
-        </div>
-      </div>
-      <Separator className="mt-4 mb-8" />
-
-      {applications.isPending ? (
-        <Loader>Loading your applications...</Loader>
-      ) : applications.error ? (
-        <PageError
-          title="Failed to load applications"
-          description={applications.error.message}
-        />
-      ) : applications.data.length === 0 ? (
-        <div className="text-center py-16 animate-fade-in">
-          <Card className="max-w-md m-auto">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              No applications yet
-            </h3>
-            <p className="text-gray-500 mb-6 leading-relaxed">
-              Ready to start your internship journey? Browse our job listings
-              and submit your first application.
+    <div className="h-full overflow-y-auto py-6 px-4">
+      <div className="max-w-5xl mx-auto">
+        <div className="mb-6 sm:mb-8 animate-fade-in">
+          <div className="flex flex-row items-center gap-3 mb-2">
+            <HeaderIcon icon={BookA}></HeaderIcon>
+            <HeaderText>My Applications</HeaderText>
+          </div>
+          <div className="flex-1 flex-row">
+            <p className="text-gray-600 text-sm sm:text-base mb-2">
+              Track your internship applications and their status
             </p>
-            <Link href="/search">
-              <Button className="bg-primary hover:bg-primary/90">
-                Browse Jobs
-              </Button>
-            </Link>
-          </Card>
+            <Badge>
+              {applications.data.length}{" "}
+              {applications.data.length === 1 ? "application" : "applications"}
+            </Badge>
+          </div>
         </div>
-      ) : (
-        <div className="space-y-3">
-          {applications?.data.map((application) => (
-            <ApplicationCard application={application} />
-          ))}
-        </div>
-      )}
+        <Separator className="mt-4 mb-8" />
+
+        {applications.isPending ? (
+          <Loader>Loading your applications...</Loader>
+        ) : applications.error ? (
+          <PageError
+            title="Failed to load applications"
+            description={applications.error.message}
+          />
+        ) : applications.data.length === 0 ? (
+          <div className="text-center py-16 animate-fade-in">
+            <Card className="max-w-md m-auto">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                No applications yet
+              </h3>
+              <p className="text-gray-500 mb-6 leading-relaxed">
+                Ready to start your internship journey? Browse our job listings
+                and submit your first application.
+              </p>
+              <Link href="/search">
+                <Button className="bg-primary hover:bg-primary/90">
+                  Browse Jobs
+                </Button>
+              </Link>
+            </Card>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {applications?.data.map((application) => (
+              <ApplicationCard application={application} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

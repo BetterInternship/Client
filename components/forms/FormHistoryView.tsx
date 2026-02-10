@@ -29,8 +29,8 @@ interface FormHistoryViewProps {
  */
 export function FormHistoryView({ forms }: FormHistoryViewProps) {
   return (
-    <div className="h-full overflow-y-auto py-3 px-4">
-      <div className="max-w-5xl  mx-auto">
+    <div className="h-full overflow-y-auto py-6 px-4">
+      <div className="max-w-5xl mx-auto">
         <div className="animate-fade-in">
           <div className="flex flex-row items-center gap-3 mb-2">
             <HeaderIcon icon={Newspaper}></HeaderIcon>
