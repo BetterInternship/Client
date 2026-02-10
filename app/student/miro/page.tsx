@@ -535,7 +535,7 @@ export default function MiroThonLandingPage() {
                 Anyone.
               </p>
               <p className="mt-2 text-sm text-gray-500 font-mono">
-                Any school. Any age.
+                Current participants: DLSU, Ateneo, UP
               </p>
             </Card>
           </motion.div>
