@@ -5,6 +5,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes pulse-red {
+  0%,
+  100% {
+    background-color: rgb(254 226 226); /* red-100 */
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  50% {
+    background-color: rgb(254 202 202); /* red-200 */
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -59,12 +71,12 @@
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1),
-      0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
-      0 4px 6px -4px rgb(0 0 0 / 0.1);
-    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1),
-      0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --shadow-md:
+      0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg:
+      0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl:
+      0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   }
 
   .dark {
@@ -414,14 +426,19 @@
 
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4), 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow:
+      0 0 0 0 rgba(59, 130, 246, 0.4),
+      0 4px 12px rgba(0, 0, 0, 0.15);
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.2),
+    box-shadow:
+      0 0 0 8px rgba(59, 130, 246, 0.2),
       0 4px 12px rgba(0, 0, 0, 0.15);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4), 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow:
+      0 0 0 0 rgba(59, 130, 246, 0.4),
+      0 4px 12px rgba(0, 0, 0, 0.15);
   }
 }
 
@@ -646,7 +663,6 @@ button[role="checkbox"]:checked {
     }
   }
 }
-
 
 .shiny-text {
   color: #b5b5b5a4; /* Adjust this color to change intensity/style */

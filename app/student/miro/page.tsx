@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { HeaderTitle } from "@/components/shared/header";
 import { InteractiveGridPattern } from "@/components/landingStudent/sections/1stSection/interactive-grid-pattern";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Circle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type Countdown = {
   days: number;
@@ -167,11 +168,11 @@ function RemoteCursorsDemo() {
       name: "Jana",
       color: "#FF1744",
       path: [
-        randomPos(0, 15, 5, 20),
-        randomPos(0, 15, 5, 20),
-        randomPos(0, 15, 5, 20),
-        randomPos(0, 15, 5, 20),
-        randomPos(0, 15, 5, 20),
+        randomPos(15, 30, 5, 20),
+        randomPos(15, 30, 5, 20),
+        randomPos(15, 30, 5, 20),
+        randomPos(15, 30, 5, 20),
+        randomPos(15, 30, 5, 20),
       ],
     },
     {
@@ -189,11 +190,11 @@ function RemoteCursorsDemo() {
       name: "Sherwin",
       color: "#1E88E5",
       path: [
-        randomPos(0, 15, 70, 100),
-        randomPos(0, 15, 70, 100),
-        randomPos(0, 15, 70, 100),
-        randomPos(0, 15, 70, 100),
-        randomPos(0, 15, 70, 100),
+        randomPos(0, 15, 80, 100),
+        randomPos(0, 15, 80, 100),
+        randomPos(0, 15, 80, 100),
+        randomPos(0, 15, 80, 100),
+        randomPos(0, 15, 80, 100),
       ],
     },
     {
@@ -212,11 +213,11 @@ function RemoteCursorsDemo() {
       name: "Jay",
       color: "#D3869B",
       path: [
-        randomPos(85, 94, 25, 45),
-        randomPos(85, 94, 25, 45),
-        randomPos(85, 94, 25, 45),
-        randomPos(85, 94, 25, 45),
-        randomPos(85, 94, 25, 45),
+        randomPos(40, 60, 180, 200),
+        randomPos(40, 60, 180, 200),
+        randomPos(40, 60, 180, 200),
+        randomPos(40, 60, 180, 200),
+        randomPos(40, 60, 180, 200),
       ],
     },
     {
@@ -234,11 +235,11 @@ function RemoteCursorsDemo() {
       name: "Bowei",
       color: "#00D4FF",
       path: [
-        randomPos(45, 65, 60, 80),
-        randomPos(45, 65, 60, 80),
-        randomPos(45, 65, 60, 80),
-        randomPos(45, 65, 60, 80),
-        randomPos(45, 65, 60, 80),
+        randomPos(70, 85, 60, 80),
+        randomPos(70, 85, 60, 80),
+        randomPos(70, 85, 60, 80),
+        randomPos(70, 85, 60, 80),
+        randomPos(70, 85, 60, 80),
       ],
     },
   ];
@@ -299,13 +300,19 @@ export default function MiroThonLandingPage() {
     getCountdown(eventStart),
   );
 
+  const [isEventLive, setIsEventLive] = useState(false);
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setCountdown(getCountdown(eventStart));
+      const now = new Date().getTime();
+      const isLive = now >= eventStart.getTime() && now < eventEnd.getTime();
+      setIsEventLive(isLive);
+      // Show countdown to event end when live, otherwise countdown to event start
+      setCountdown(getCountdown(isLive ? eventEnd : eventStart));
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [eventStart]);
+  }, [eventStart, eventEnd]);
 
   function openDiscord() {
     window.open(discordLink, "_blank");
@@ -331,15 +338,27 @@ export default function MiroThonLandingPage() {
       </div>
 
       {/* HEADER */}
-      <header className="sticky top-0 flex items-center justify-between px-6 py-4 z-[9999] bg-white/20 backdrop-blur-sm">
-        <HeaderTitle />
-        <Button
-          size="sm"
-          className="bg-blue-600 text-white hover:bg-blue-500"
-          onClick={openDiscord}
-        >
-          Join the Miro-thon!
-        </Button>
+      <header className="sticky top-0 flex items-center justify-between px-6 pt-4 z-[9999] bg-white/20 backdrop-blur-sm">
+        {/* LOGO SECTION - BIGGER */}
+        <div className="flex items-center gap-3 sm:gap-4">
+          <Image
+            src="/BetterInternshipLogo.png"
+            alt="BetterInternship"
+            width={40}
+            height={40}
+            className="h-10 w-10 sm:h-12 sm:w-12"
+          />
+          <span className="text-xl sm:text-2xl font-black text-black/30">
+            ×
+          </span>
+          <Image
+            src={miroIcon}
+            alt="Miro"
+            width={40}
+            height={40}
+            className="h-10 w-10 sm:h-12 sm:w-12"
+          />
+        </div>
       </header>
 
       {/* HERO */}
@@ -364,51 +383,50 @@ export default function MiroThonLandingPage() {
           transition={{ duration: 0.6 }}
           className="flex w-full flex-col items-center gap-4 sm:gap-6"
         >
-          {/* LOGO SECTION - BIGGER */}
-          <div className="flex items-center gap-3 sm:gap-4">
-            <Image
-              src="/BetterInternshipLogo.png"
-              alt="BetterInternship"
-              width={40}
-              height={40}
-              className="h-10 w-10 sm:h-16 sm:w-16"
-            />
-            <span className="text-xl sm:text-2xl font-black text-black/30">
-              ×
-            </span>
-            <Image
-              src={miroIcon}
-              alt="Miro"
-              width={40}
-              height={40}
-              className="h-10 w-10 sm:h-16 sm:w-16"
-            />
-          </div>
-
           {/* HEADLINE WITH INLINE LOGO */}
           <div className="max-w-5xl relative">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.05] tracking-tight relative">
-              Fight for an internship at{" "}
-              <a
-                href="https://miro.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 sm:gap-2 align-middle hover:brightness-90 transition-all duration-200 -mt-2"
-                style={{ color: "#ffdc33" }}
-              >
-                <Image
-                  src={miroIcon}
-                  alt="Miro"
-                  width={80}
-                  height={80}
-                  className="h-[0.85em] w-[0.85em] inline-block align-middle"
-                />
-                Miro
-              </a>
-            </h1>
+            {isEventLive ? (
+              <>
+                <div
+                  className="inline-block mb-6 border border-red-600 rounded-full px-6 py-3 bg-red-100"
+                  style={{
+                    animation:
+                      "pulse-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                  }}
+                >
+                  <span className="text-red-600 font-black text-sm uppercase tracking-widest flex items-center gap-2">
+                    <Circle className="h-5 w-5 fill-white -mt-0.5" />
+                    Live NOW
+                  </span>
+                </div>
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.05] tracking-tight relative text-red-600">
+                  The Miro-thon is happening NOW!
+                </h1>
+              </>
+            ) : (
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.05] tracking-tight relative">
+                Fight for an internship at{" "}
+                <a
+                  href="https://miro.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 sm:gap-2 align-middle hover:brightness-90 transition-all duration-200 -mt-2"
+                  style={{ color: "#ffdc33" }}
+                >
+                  <Image
+                    src={miroIcon}
+                    alt="Miro"
+                    width={80}
+                    height={80}
+                    className="h-[0.85em] w-[0.85em] inline-block align-middle"
+                  />
+                  Miro
+                </a>
+              </h1>
+            )}
             {/* Sticky Note - Desktop: positioned bottom-right, Mobile: below */}
             <motion.div
-              className="relative sm:absolute sm:top-[11rem] sm:right-[13rem] sm:translate-y-1/3 mt-2 sm:mt-0 flex justify-center sm:justify-end"
+              className={`relative sm:absolute mt-2 sm:mt-0 flex justify-center sm:justify-end ${isEventLive ? "sm:top-[15.5rem] sm:right-[5rem] sm:translate-y-1/3" : "sm:top-[11rem] sm:right-[13rem] sm:translate-y-1/3"}`}
               style={{ rotate: "-3deg" }}
               animate={{ rotate: [-3, 1, -2] }}
               transition={{
@@ -417,28 +435,30 @@ export default function MiroThonLandingPage() {
                 repeatType: "reverse",
               }}
             >
-              <span
-                className="inline-block text-black/60 text-lg sm:text-xl md:text-2xl bg-yellow-100 px-3 py-1 sm:px-4 sm:py-2 rounded-lg shadow-lg"
-                style={{
-                  boxShadow:
-                    "0 4px 6px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05)",
-                }}
-              >
-                (yes, that{" "}
-                <a
-                  href="https://miro.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:underline transition-all duration-200"
+              {!isEventLive && (
+                <span
+                  className="inline-block text-black/60 text-lg sm:text-xl md:text-2xl bg-yellow-100 px-3 py-1 sm:px-4 sm:py-2 rounded-[0.33em] shadow-lg"
+                  style={{
+                    boxShadow:
+                      "0 4px 6px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05)",
+                  }}
                 >
-                  Miro
-                </a>
-                )
-              </span>
+                  (yes, that{" "}
+                  <a
+                    href="https://miro.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline transition-all duration-200"
+                  >
+                    Miro
+                  </a>
+                  )
+                </span>
+              )}
             </motion.div>
           </div>
 
-          {/* COUNTDOWN - RIGHT UNDER HEADLINE */}
+          {/* COUNTDOWN/COUNTDOWN TIMER */}
           <div className="mt-4 sm:mt-8 flex w-full max-w-full items-end justify-center gap-1 sm:gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-2">
             <CountdownBlock label="Days" value={countdown.days} />
             <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-black/20 flex-shrink-0 mb-6">
@@ -457,7 +477,9 @@ export default function MiroThonLandingPage() {
 
           {/* DESCRIPTION */}
           <p className="mt-4 sm:mt-6 max-w-2xl text-sm sm:text-base md:text-lg leading-relaxed text-black/70 font-mono">
-            Can you build something in 30 hours that will impress Miro?
+            {isEventLive
+              ? "Submit your work on Discord. Good luck!"
+              : "Can you build something in 30 hours that will impress Miro?"}
           </p>
 
           {/* CTA BUTTONS */}
@@ -465,10 +487,10 @@ export default function MiroThonLandingPage() {
             <MagneticButton className="w-full sm:w-auto">
               <Button
                 size="lg"
-                className="w-full h-14 bg-blue-600 text-lg font-bold text-white hover:bg-blue-500"
+                className={`w-full h-14 text-lg font-bold bg-blue-600 text-white hover:bg-blue-500`}
                 onClick={openDiscord}
               >
-                Join the Miro-thon!
+                {isEventLive ? "Join Discord" : "Join the Miro-thon!"}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </MagneticButton>
@@ -602,7 +624,7 @@ export default function MiroThonLandingPage() {
         </motion.div>
       </section>
 
-      {/* TIME IS TICKING SECTION */}
+      {/* TIME IS TICKING / EVENT LIVE SECTION */}
       <section className="mx-auto w-full max-w-6xl px-6 pb-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -610,53 +632,94 @@ export default function MiroThonLandingPage() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <div className="relative overflow-hidden rounded-[0.33em] border border-gray-800 bg-black p-8 sm:p-12">
+          <div
+            className={`relative overflow-hidden rounded-[0.33em] border p-8 sm:p-12 ${isEventLive ? "border-red-600 bg-red-950" : "border-gray-800 bg-black"}`}
+          >
             {/* Gradient background effect */}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-blue-600/10 via-transparent to-blue-600/10" />
+            <div
+              className={`pointer-events-none absolute inset-0 ${isEventLive ? "bg-gradient-to-r from-red-600/10 via-transparent to-red-600/10" : "bg-gradient-to-r from-blue-600/10 via-transparent to-blue-600/10"}`}
+            />
 
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12">
               {/* Left: Title and Timer */}
               <div className="flex flex-col gap-4 lg:gap-6 flex-1 w-full md:w-auto md:items-start items-center md:text-left text-center">
                 <div>
-                  <h2 className="text-3xl md:text-4xl font-black text-white">
-                    Time is <span className="text-yellow-300">ticking</span>
-                  </h2>
+                  {isEventLive ? (
+                    <h2 className="text-3xl md:text-4xl font-black text-white">
+                      The event is{" "}
+                      <span className="text-red-400">LIVE NOW</span>
+                    </h2>
+                  ) : (
+                    <h2 className="text-3xl md:text-4xl font-black text-white">
+                      Time is <span className="text-yellow-300">ticking</span>
+                    </h2>
+                  )}
                 </div>
 
                 {/* Countdown Timer */}
                 <div className="flex items-center justify-center md:justify-start gap-1 sm:gap-2 md:gap-3">
                   <div className="flex flex-col items-center">
-                    <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white font-mono">
+                    <p
+                      className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-mono ${isEventLive ? "text-red-400" : "text-white"}`}
+                    >
                       {String(countdown.days).padStart(2, "0")}
                     </p>
-                    <p className="mt-1 text-xs font-bold text-white/40">D</p>
+                    <p
+                      className={`mt-1 text-xs font-bold ${isEventLive ? "text-red-300/60" : "text-white/40"}`}
+                    >
+                      D
+                    </p>
                   </div>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white/50 -mt-2">
+                  <p
+                    className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black -mt-2 ${isEventLive ? "text-red-600/50" : "text-white/50"}`}
+                  >
                     :
                   </p>
                   <div className="flex flex-col items-center">
-                    <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white font-mono">
+                    <p
+                      className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-mono ${isEventLive ? "text-red-400" : "text-white"}`}
+                    >
                       {String(countdown.hours).padStart(2, "0")}
                     </p>
-                    <p className="mt-1 text-xs font-bold text-white/40">H</p>
+                    <p
+                      className={`mt-1 text-xs font-bold ${isEventLive ? "text-red-300/60" : "text-white/40"}`}
+                    >
+                      H
+                    </p>
                   </div>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white/50 -mt-2">
+                  <p
+                    className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black -mt-2 ${isEventLive ? "text-red-600/50" : "text-white/50"}`}
+                  >
                     :
                   </p>
                   <div className="flex flex-col items-center">
-                    <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white font-mono">
+                    <p
+                      className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-mono ${isEventLive ? "text-red-400" : "text-white"}`}
+                    >
                       {String(countdown.minutes).padStart(2, "0")}
                     </p>
-                    <p className="mt-1 text-xs font-bold text-white/40">M</p>
+                    <p
+                      className={`mt-1 text-xs font-bold ${isEventLive ? "text-red-300/60" : "text-white/40"}`}
+                    >
+                      M
+                    </p>
                   </div>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white/50 -mt-2">
+                  <p
+                    className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black -mt-2 ${isEventLive ? "text-red-600/50" : "text-white/50"}`}
+                  >
                     :
                   </p>
                   <div className="flex flex-col items-center">
-                    <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white font-mono">
+                    <p
+                      className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-mono ${isEventLive ? "text-red-400" : "text-white"}`}
+                    >
                       {String(countdown.seconds).padStart(2, "0")}
                     </p>
-                    <p className="mt-1 text-xs font-bold text-white/40">S</p>
+                    <p
+                      className={`mt-1 text-xs font-bold ${isEventLive ? "text-red-300/60" : "text-white/40"}`}
+                    >
+                      S
+                    </p>
                   </div>
                 </div>
               </div>
@@ -665,10 +728,10 @@ export default function MiroThonLandingPage() {
               <MagneticButton className="w-full md:w-auto">
                 <Button
                   size="lg"
-                  className="w-full md:w-auto h-14 bg-yellow-400 text-lg font-bold text-black hover:bg-yellow-300 transition-colors duration-200"
+                  className={`w-full md:w-auto h-14 text-lg font-bold transition-colors duration-200 ${isEventLive ? "bg-red-600 text-white hover:bg-red-500" : "bg-yellow-400 text-black hover:bg-yellow-300"}`}
                   onClick={openDiscord}
                 >
-                  Join Now
+                  {isEventLive ? "View Submissions" : "Join Now"}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </MagneticButton>
