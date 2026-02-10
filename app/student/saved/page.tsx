@@ -23,55 +23,57 @@ export default function SavedJobsPage() {
   redirectIfNotLoggedIn();
 
   return (
-    <div className="container max-w-5xl p-10 pt-16 mx-auto">
-      <div className="mb-6 sm:mb-8 animate-fade-in">
-        <div>
-          <div className="flex flex-row items-center gap-3 mb-2">
-            <HeaderIcon icon={Heart} />
-            <HeaderText>Saved Jobs</HeaderText>
+    <div className="h-full overflow-y-auto py-6 px-4">
+      <div className="max-w-5xl mx-auto">
+        <div className="mb-6 sm:mb-8 animate-fade-in">
+          <div>
+            <div className="flex flex-row items-center gap-3 mb-2">
+              <HeaderIcon icon={Heart} />
+              <HeaderText>Saved Jobs</HeaderText>
+            </div>
+            <Badge>{jobs.savedJobs?.length} saved</Badge>
           </div>
-          <Badge>{jobs.savedJobs?.length} saved</Badge>
         </div>
-      </div>
-      <Separator className="mt-4 mb-8" />
+        <Separator className="mt-4 mb-8" />
 
-      {jobs.isPending || !isAuthenticated() ? (
-        <Loader>Loading saved jobs...</Loader>
-      ) : jobs.error ? (
-        <PageError
-          title="Failed to load saved jobs."
-          description={jobs.error.message}
-        />
-      ) : jobs.savedJobs.length === 0 ? (
-        <div className="text-center py-16 animate-fade-in">
-          <Card className="max-w-md m-auto">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              No saved jobs yet
-            </h3>
-            <p className="text-gray-500 mb-6 leading-relaxed">
-              Save jobs by clicking the heart icon on job listings to see them
-              here.
-            </p>
-            <Link href="/search">
-              <Button className="bg-primary hover:bg-primary/90">
-                Browse Jobs
-              </Button>
-            </Link>
-          </Card>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {jobs.savedJobs.map((savedJob) => (
-            <SavedJobCard
-              savedJob={savedJob}
-              handleUnsaveJob={async () =>
-                await jobActions.toggleSave.mutateAsync(savedJob.id ?? "")
-              }
-              saving={jobActions.toggleSave.isPending}
-            />
-          ))}
-        </div>
-      )}
+        {jobs.isPending || !isAuthenticated() ? (
+          <Loader>Loading saved jobs...</Loader>
+        ) : jobs.error ? (
+          <PageError
+            title="Failed to load saved jobs."
+            description={jobs.error.message}
+          />
+        ) : jobs.savedJobs.length === 0 ? (
+          <div className="text-center py-16 animate-fade-in">
+            <Card className="max-w-md m-auto">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                No saved jobs yet
+              </h3>
+              <p className="text-gray-500 mb-6 leading-relaxed">
+                Save jobs by clicking the heart icon on job listings to see them
+                here.
+              </p>
+              <Link href="/search">
+                <Button className="bg-primary hover:bg-primary/90">
+                  Browse Jobs
+                </Button>
+              </Link>
+            </Card>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {jobs.savedJobs.map((savedJob) => (
+              <SavedJobCard
+                savedJob={savedJob}
+                handleUnsaveJob={async () =>
+                  await jobActions.toggleSave.mutateAsync(savedJob.id ?? "")
+                }
+                saving={jobActions.toggleSave.isPending}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

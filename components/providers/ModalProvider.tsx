@@ -199,7 +199,7 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
 
                   {/* Content area */}
                   <div className="h-full flex flex-col">
-                    <div className="px-4 pb-4 overflow-visible max-h-[calc(var(--vh,1vh)*100-4rem)] sm:max-h-[calc(90vh-4rem)]">
+                    <div className="px-4 pb-4 overflow-auto visible max-h-[calc(var(--vh,1vh)*100-4rem)] sm:max-h-[calc(90vh-4rem)]">
                       {node}
                     </div>
                   </div>

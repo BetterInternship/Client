@@ -17,7 +17,6 @@ export default function AllowLanding({
     <div className="h-[100svh] bg-gray-50 flex flex-col overflow-y-auto">
       <Suspense>{!isStudentLanding && <Header />}</Suspense>
       <div className="flex-grow overflow-auto flex flex-col">{children}</div>
-      {!isStudentLanding && <Footer />}
     </div>
   );
 }

@@ -38,12 +38,12 @@ const detectMobile = (): boolean => {
 
   // Checks
   const isPortrait = height > width;
-  const isNarrowScreen = width <= 768;
+  const isNarrowScreen = width < 640; // Match Tailwind sm: breakpoint (640px)
   const hasTouchScreen =
     "ontouchstart" in window || navigator.maxTouchPoints > 0;
   const mobileUserAgent =
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
+      navigator.userAgent,
     );
 
   // Mobile if:
@@ -52,8 +52,8 @@ const detectMobile = (): boolean => {
   // - Touch device with mobile user agent
   return (
     isNarrowScreen ||
-    (width <= 1024 && hasTouchScreen && (isPortrait || mobileUserAgent)) ||
-    (mobileUserAgent && hasTouchScreen && width <= 1024)
+    (width < 1024 && hasTouchScreen && (isPortrait || mobileUserAgent)) ||
+    (mobileUserAgent && hasTouchScreen && width < 1024)
   );
 };
 
@@ -89,7 +89,7 @@ export const AppContextProvider = ({
         ? hostname[0] === "hire"
           ? "hire"
           : "student"
-        : "student"
+        : "student",
     );
 
     window?.addEventListener("resize", handleResize);

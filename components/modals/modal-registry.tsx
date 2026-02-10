@@ -215,11 +215,13 @@ export const useModalRegistry = () => {
     // Duplicate form warning
     duplicateFormWarning: {
       open: ({
+        formLabel,
         hasPendingInstance,
         hasCompletedInstance: _hasCompletedInstance,
         onGenerateAnother,
         onGoBack,
       }: {
+        formLabel: string;
         hasPendingInstance: boolean;
         hasCompletedInstance: boolean;
         onGenerateAnother: () => void;
@@ -228,12 +230,16 @@ export const useModalRegistry = () => {
         const isPending = hasPendingInstance;
 
         const title = isPending
-          ? "You already have an outgoing instance of this form"
-          : "You've already generated this form before";
+          ? "You already have an outgoing instance of this form: " +
+            "\n" +
+            formLabel
+          : "You've already generated this form before: " + formLabel;
 
         const message = isPending
           ? "This form is currently being filled out by other signatories. It is highly recommended to cancel the pending attempt before starting a new one. Multiple outgoing versions may cause confusion."
-          : "You already have a completed version of this form. Are you sure you want another one?";
+          : "You already have a completed version of this form: " +
+            formLabel +
+            ". Are you sure you want another one?";
 
         return open(
           "duplicate-form-warning",

@@ -28,6 +28,7 @@ export const FormLog = ({
   signingParties,
   status,
   rejectionReason,
+  index = -1,
 }: {
   formProcessId: string;
   label: string;
@@ -37,10 +38,11 @@ export const FormLog = ({
   signingParties?: IFormSigningParty[];
   status?: string | null;
   rejectionReason?: string;
+  index?: number;
 }) => {
   const modalRegistry = useModalRegistry();
   const [downloading, setDownloading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(index === 0);
 
   const handleDownload = () => {
     if (!documentId) return;
@@ -61,7 +63,7 @@ export const FormLog = ({
 
   return (
     <div
-      className="hover:bg-slate-50 hover:shadow-sm hover:cursor-pointer transition-all border-b "
+      className="hover:bg-slate-100 hover:cursor-pointer transition-all border-b "
       onClick={() => (documentId ? handleDownload() : setIsOpen(!isOpen))}
     >
       <div className="px-4 sm:px-6 py-4 text-xs sm:text-sm text-gray-700 space-y-3">

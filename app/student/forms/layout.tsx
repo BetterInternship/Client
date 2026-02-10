@@ -1,6 +1,14 @@
 "use client";
 
-import { useState, createContext, useContext, useMemo, useEffect } from "react";
+import {
+  useState,
+  useEffect,
+  createContext,
+  useContext,
+  useMemo,
+  useCallback,
+  useLayoutEffect,
+} from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { MyFormsContextProvider } from "./myforms.ctx";
 import { FormRendererContextProvider } from "@/components/features/student/forms/form-renderer.ctx";
@@ -9,6 +17,8 @@ import { FormsNavigation } from "@/components/features/student/forms/FormsNaviga
 import { useMyForms } from "./myforms.ctx";
 import { SignContextProvider } from "@/components/providers/sign.ctx";
 import { SonnerToaster } from "@/components/ui/sonner-toast";
+import { useMobile } from "@/hooks/use-mobile";
+import { useHeaderContext, MobileAddonConfig } from "@/lib/ctx-header";
 
 interface FormsLayoutContextType {
   activeView: "generate" | "history";
@@ -34,6 +44,8 @@ export const useFormsLayout = () => {
 function FormsLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const isMobile = useMobile();
+  const { setMobileAddonConfig } = useHeaderContext();
   const myForms = useMyForms();
   const [manualActiveView, setManualActiveView] = useState<
     "generate" | "history" | null
@@ -68,13 +80,54 @@ function FormsLayoutContent({ children }: { children: React.ReactNode }) {
     }
   }, [pathname]);
 
-  const handleViewChange = (view: "generate" | "history") => {
-    setManualActiveView(view);
-    // If we're on a detail page, navigate back to /forms
-    if (pathname !== "/forms") {
-      router.push("/forms");
+  const handleViewChange = useCallback(
+    (view: "generate" | "history") => {
+      setManualActiveView(view);
+      // If we're on a detail page, navigate back to /forms
+      if (pathname !== "/forms") {
+        router.push("/forms");
+      }
+    },
+    [pathname, router],
+  );
+
+  // Compute mobile addon config directly based on current state
+  const mobileAddonConfig: MobileAddonConfig = useMemo(() => {
+    if (!isMobile || !isInitialized) {
+      return { show: false };
     }
-  };
+    return {
+      show: true,
+      activeView,
+      onViewChange: handleViewChange,
+      currentFormName,
+      currentFormLabel,
+    };
+  }, [
+    isMobile,
+    isInitialized,
+    activeView,
+    handleViewChange,
+    currentFormName,
+    currentFormLabel,
+  ]);
+
+  // Sync config to context after render
+  useLayoutEffect(() => {
+    setMobileAddonConfig(mobileAddonConfig);
+  }, [
+    mobileAddonConfig.show,
+    mobileAddonConfig.activeView,
+    mobileAddonConfig.currentFormName,
+    mobileAddonConfig.currentFormLabel,
+  ]);
+
+  // Clear addon config when layout unmounts
+  useLayoutEffect(() => {
+    return () => {
+      setMobileAddonConfig({ show: false });
+    };
+  }, [setMobileAddonConfig]);
 
   return (
     <FormsLayoutContext.Provider
@@ -91,19 +144,19 @@ function FormsLayoutContent({ children }: { children: React.ReactNode }) {
         suppressHydrationWarning
         className="h-full flex flex-col overflow-hidden"
       >
-        {!isInitialized ? (
-          <div className="flex-1" />
-        ) : (
-          <>
-            <FormsNavigation
-              activeView={activeView}
-              onViewChange={handleViewChange}
-              currentFormName={currentFormName}
-              currentFormLabel={currentFormLabel}
-            />
-            <div className="flex-1 overflow-hidden">{children}</div>
-          </>
-        )}
+        <div className="hidden sm:block">
+          <FormsNavigation
+            activeView={activeView}
+            onViewChange={handleViewChange}
+            currentFormName={currentFormName}
+            currentFormLabel={currentFormLabel}
+            variant="bar"
+          />
+        </div>
+
+        <div className="flex-1 overflow-hidden">
+          {!isInitialized ? <div /> : children}
+        </div>
       </div>
     </FormsLayoutContext.Provider>
   );

@@ -58,7 +58,7 @@ export const JobLocation = ({
   return location ? (
     <div className="flex items-center text-sm text-gray-500">
       <Building className="w-4 h-4 mr-1 flex-shrink-0" />
-      <span className="truncate">{location}</span>
+      <div className="truncate">{location}</div>
     </div>
   ) : (
     <></>
@@ -314,7 +314,7 @@ export const MobileJobCard = ({
           </h3>
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
             <Building className="w-4 h-4 flex-shrink-0" />
-            <span className="font-medium">{job.employer?.name}</span>
+            <span className="font-medium truncate">{job.employer?.name}</span>
           </div>
         </div>
       </div>
@@ -322,8 +322,10 @@ export const MobileJobCard = ({
       <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
         {job.description || "No description available."}
       </p>
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-        <JobLocation location={job.location} />{" "}
+      <div className="flex items-center justify-between pt-3 border-t border-gray-100 min-w-0">
+        <div className="flex-1 min-w-0">
+          <JobLocation location={job.location} />
+        </div>
       </div>
     </div>
   );
@@ -343,14 +345,16 @@ function HeaderWithActions({
   actions: React.ReactNode[];
   disabled?: boolean;
 }) {
-  const {isMobile} = useMobile();
+  const { isMobile } = useMobile();
   return (
-    <div className={cn("items-start justify-between gap-3", 
-      isMobile ? "" : "flex"
-    )}>
-
+    <div
+      className={cn(
+        "items-start justify-between gap-3",
+        isMobile ? "" : "flex",
+      )}
+    >
       {/* ctas on top for mobile */}
-      {isMobile && 
+      {isMobile && (
         <div className="shrink-0 mb-4">
           <div className="flex items-center gap-2">
             {actions.map((a, i) => (
@@ -360,18 +364,24 @@ function HeaderWithActions({
             ))}
           </div>
         </div>
-        }
+      )}
 
       {/* left: title/employer/location */}
       <div className="min-w-0">
-        <h1 className={cn("font-semibold text-gray-900 leading-tight truncate",
-          isMobile ? "text-xl" : "text-4xl"
-        )}>
+        <h1
+          className={cn(
+            "font-semibold text-gray-900 leading-tight truncate",
+            isMobile ? "text-xl" : "text-4xl",
+          )}
+        >
           {job.title}
         </h1>
-        <p className={cn("text-gray-600 truncate",
-          isMobile ? "text-base" : "text-xl"
-        )}>
+        <p
+          className={cn(
+            "text-gray-600 truncate",
+            isMobile ? "text-base" : "text-xl",
+          )}
+        >
           {job.employer?.name}
         </p>
         {job.location && (
@@ -386,7 +396,7 @@ function HeaderWithActions({
       </div>
 
       {/* right: CTAs */}
-      {!isMobile && 
+      {!isMobile && (
         <div className="shrink-0 sm:mt-1">
           <div className="flex items-center gap-2">
             {actions.map((a, i) => (
@@ -396,7 +406,7 @@ function HeaderWithActions({
             ))}
           </div>
         </div>
-        }
+      )}
     </div>
   );
 }
@@ -434,15 +444,12 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
                 <label className="flex items-center text-sm text-gray-700">
                   Work Mode:
                 </label>
-                <Property
-                  key="work_modes"
-                  value={workModes}
-                />
+                <Property key="work_modes" value={workModes} />
               </div>
             </div>
-            ) : (
-              <></>
-            )}
+          ) : (
+            <></>
+          )}
 
           {workLoads ? (
             <div className="flex items-start gap-2">
@@ -451,40 +458,36 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
                 <label className="flex items-center text-sm text-gray-700">
                   Work Load:
                 </label>
-                <Property 
-                  key="workload"
-                  value={workLoads}
-                />
+                <Property key="workload" value={workLoads} />
               </div>
             </div>
-            ) : (
-              <></>
-            )}
+          ) : (
+            <></>
+          )}
 
           {job.allowance === 0 ? (
             <div className="flex items-start gap-2">
-            <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-            <div>
-              <label className="flex items-center text-sm text-gray-700">
-                Allowance:
-              </label>
-              <div className="flex">
-                {job.salary ? <span className=" mr-1">₱</span> : <></>}
-                <Property
-                  key="salary"
-                  value={
-                    job.salary
-                      ? (to_job_pay_freq_name(job.salary_freq) !== "Not specified" ? (
-                          `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
-                        ) : (
-                          `${job.salary}`
-                        ))
-                      : "With pay"
-                  }
-                />
+              <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+              <div>
+                <label className="flex items-center text-sm text-gray-700">
+                  Allowance:
+                </label>
+                <div className="flex">
+                  {job.salary ? <span className=" mr-1">₱</span> : <></>}
+                  <Property
+                    key="salary"
+                    value={
+                      job.salary
+                        ? to_job_pay_freq_name(job.salary_freq) !==
+                          "Not specified"
+                          ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
+                          : `${job.salary}`
+                        : "With pay"
+                    }
+                  />
+                </div>
               </div>
             </div>
-          </div>
           ) : (
             <></>
           )}
@@ -496,10 +499,7 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
                 <label className="flex items-center text-sm text-gray-700">
                   Accepting:
                 </label>
-                <Property 
-                  key="internship_type"
-                  value={internshipTypes}
-                />
+                <Property key="internship_type" value={internshipTypes} />
               </div>
             </div>
           ) : (
@@ -1046,12 +1046,12 @@ export function JobDetails({
           needsPortfolio={needsPortfolio && !hasPortfolio}
         />
       )}
-      <div className={cn(
-        "flex-1 overflow-y-auto space-y-5",
-        isMobile 
-          ? "px-3 py-4" 
-          : "px-8 pt-7"
-      )}>
+      <div
+        className={cn(
+          "flex-1 overflow-y-auto space-y-5",
+          isMobile ? "px-3 py-4" : "px-8 pt-7",
+        )}
+      >
         <HeaderWithActions
           job={job}
           actions={actions}

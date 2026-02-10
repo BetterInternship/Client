@@ -12,6 +12,7 @@ import {
   FORM_TEMPLATES_STALE_TIME,
   FORM_TEMPLATES_GC_TIME,
 } from "@/lib/consts/cache";
+import { useEffect } from "react";
 
 /**
  * The forms page component - shows either history or generate based on form count
@@ -23,6 +24,11 @@ export default function FormsPage() {
   const router = useRouter();
   const myForms = useMyForms();
   const { activeView } = useFormsLayout();
+
+  useEffect(() => {
+    if (!profile.data?.department && !profile.isPending)
+      router.push("/profile");
+  }, [profile.data?.department, profile.isPending, router]);
 
   // Query 1: Check for updates (cheap query - just a timestamp)
   // TODO: Enable this later for smart cache invalidation
@@ -45,8 +51,6 @@ export default function FormsPage() {
     refetchOnWindowFocus: true, // Refetch when user switches back to tab
     // enabled: !!updateInfo, // Only fetch after we have update info
   });
-
-  if (!profile.data?.department && !profile.isPending) router.push("/profile");
 
   return (
     <>

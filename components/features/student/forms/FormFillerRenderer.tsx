@@ -169,6 +169,43 @@ export function FormFillerRenderer({
     }
   }, [form.selectedPreviewId]);
 
+  // Scroll to first field with error
+  useEffect(() => {
+    const errorFields = Object.keys(formFiller.errors);
+    if (errorFields.length === 0) return;
+
+    const firstErrorField = errorFields[0];
+    const firstFieldElement = fieldRefs.current[firstErrorField];
+
+    if (firstFieldElement && scrollContainerRef.current) {
+      // Scroll the first field into view
+      firstFieldElement.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+
+    // Add red background to ALL fields with errors
+    errorFields.forEach((fieldKey) => {
+      const fieldElement = fieldRefs.current[fieldKey];
+      if (fieldElement) {
+        fieldElement.classList.add("bg-red-100");
+      }
+    });
+
+    // Auto-remove background after 2 seconds
+    const timer = setTimeout(() => {
+      errorFields.forEach((fieldKey) => {
+        const fieldElement = fieldRefs.current[fieldKey];
+        if (fieldElement) {
+          fieldElement.classList.remove("bg-red-100");
+        }
+      });
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [formFiller.errors]);
+
   return (
     <div className="relative h-full flex flex-col">
       <div

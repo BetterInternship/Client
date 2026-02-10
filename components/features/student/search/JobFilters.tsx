@@ -133,8 +133,8 @@ const ALLOWANCE_OPTIONS: SubOption[] = [
 ];
 
 const MOA_OPTIONS: SubOption[] = [
-  { name: "Has MOA", value: "Has MOA" },
-  { name: "No MOA", value: "No MOA" },
+  { name: "Credited", value: "Has MOA" },
+  { name: "Voluntary", value: "No MOA" },
 ];
 
 /* ================= UI primitives ================= */
@@ -618,6 +618,7 @@ function DetailsPanel() {
         keyName="jobAllowance"
         options={ALLOWANCE_OPTIONS}
       />
+      <Group title="Internship Type" keyName="jobMoa" options={MOA_OPTIONS} />
     </div>
   );
 }
@@ -718,12 +719,11 @@ export function JobFilters({
     <>
       <Button
         variant="outline"
-        size="md"
-        className="w-full min-w-0 sm:w-auto"
+        size={"md"}
+        className="justify-between p-2 px-3"
         onClick={() => setOpen(true)}
       >
-        <FilterIcon className="mr-2" />
-        Filters
+        <FilterIcon />
       </Button>
 
       {open && (

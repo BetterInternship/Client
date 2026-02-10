@@ -1,38 +1,36 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Settings,
-  BookA,
-  Heart,
   LogOut,
-  MessageCircleMore,
   Search,
-  ChevronRight,
-  X as XIcon,
-  Menu,
-  Check as CheckIcon,
   CheckSquare,
   Square,
+  ChevronDown,
+  BookA,
+  Heart,
   Newspaper,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { GroupableNavDropdown, DropdownOption } from "@/components/ui/dropdown";
-import { Separator } from "@/components/ui/separator";
 import { HeaderTitle } from "@/components/shared/header";
 import { MyUserPfp } from "@/components/shared/pfp";
 
 import { useMobile } from "@/hooks/use-mobile";
 import { useRoute } from "@/hooks/use-route";
-import { useConversations } from "@/hooks/use-conversation";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 import { useAuthContext } from "@/lib/ctx-auth";
+import { useHeaderContext } from "@/lib/ctx-header";
+import { FormsNavigation } from "@/components/features/student/forms/FormsNavigation";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { cn } from "@/lib/utils";
-import { getFullName } from "@/lib/profile";
 import {
   isProfileBaseComplete,
   isProfileResume,
@@ -43,12 +41,12 @@ import {
   JobFilters,
   JobFilter,
 } from "@/components/features/student/search/JobFilters";
-import useModalRegistry from "@/components/modals/modal-registry";
 
 /* =======================================================================================
-   Small UI Primitives
+   SHARED COMPONENTS
 ======================================================================================= */
-const SearchInput = ({
+
+export const SearchInput = ({
   value,
   onChange,
   onEnter,
@@ -56,6 +54,7 @@ const SearchInput = ({
   className = "",
   moaOnly,
   onToggleMoa,
+  showForCredit = true,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -64,6 +63,7 @@ const SearchInput = ({
   className?: string;
   moaOnly: boolean;
   onToggleMoa: (v: boolean) => void;
+  showForCredit?: boolean;
 }) => {
   return (
     <div
@@ -74,10 +74,8 @@ const SearchInput = ({
         className,
       )}
     >
-      {/* Left icon */}
       <Search className="h-4 w-4 text-gray-400 pointer-events-none ml-3" />
 
-      {/* Text input */}
       <input
         type="text"
         value={value}
@@ -91,242 +89,129 @@ const SearchInput = ({
         )}
       />
 
-      {/* Divider */}
-      <div className="h-6 w-0.5 bg-gray-300" />
-
-      {/* For Credit Checkbox */}
-      <button
-        type="button"
-        onClick={() => onToggleMoa(!moaOnly)}
-        className="flex items-center gap-2 px-3 h-10 hover:bg-gray-50  transition-all"
-        aria-pressed={moaOnly}
-      >
-        {moaOnly ? (
-          <CheckSquare className="h-5 w-5 text-primary" />
-        ) : (
-          <Square className="h-5 w-5 text-gray-400" />
-        )}
-        <label className="text-xs font-medium text-gray-700 cursor-pointer whitespace-nowrap">
-          For Credit
-        </label>
-      </button>
+      {showForCredit && (
+        <>
+          <div className="h-6 w-0.5 bg-gray-300" />
+          <button
+            type="button"
+            onClick={() => onToggleMoa(!moaOnly)}
+            className="flex items-center gap-2 px-3 h-10 hover:bg-gray-50 transition-all"
+            aria-pressed={moaOnly}
+          >
+            {moaOnly ? (
+              <CheckSquare className="h-5 w-5 text-primary" />
+            ) : (
+              <Square className="h-5 w-5 text-gray-400" />
+            )}
+            <label className="text-xs font-medium text-gray-700 cursor-pointer whitespace-nowrap">
+              For Credit
+            </label>
+          </button>
+        </>
+      )}
     </div>
   );
 };
 
 /* =======================================================================================
-   Mobile Drawer (account on top → chats → links → bottom sign out)
+   DROPDOWN UTILITIES
 ======================================================================================= */
-function MobileDrawer({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
-  const profile = useProfileData();
-  const { isAuthenticated, logout } = useAuthContext();
-  const conversations = useConversations();
+
+interface HoverDropdownProps {
+  trigger: React.ReactNode;
+  children: React.ReactNode;
+}
+
+interface DropdownMenuItemProps {
+  onClick?: () => void;
+  href?: string;
+  children: React.ReactNode;
+}
+
+function DropdownMenuItem({ onClick, href, children }: DropdownMenuItemProps) {
   const router = useRouter();
-  const pathname = usePathname();
-  const params = useSearchParams();
-  const modalRegistry = useModalRegistry();
 
-  const handleLogout = () => logout().then(() => router.push("/"));
-
-  const handleIncompleteProfileClick = (link: string) => {
-    if (!isProfileVerified(profile.data)) {
-      router.push(`/register/verify`);
-    } else if (
-      !isProfileResume(profile.data) ||
-      !isProfileBaseComplete(profile.data)
-    ) {
-      router.push(`profile/complete-profile`);
-    } else {
-      router.push(`/${link}`);
+  const handleClick = () => {
+    if (href) {
+      router.push(href);
+    } else if (onClick) {
+      onClick();
     }
   };
-  useEffect(() => {
-    if (open) onClose();
-  }, [pathname, params?.toString()]);
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className={cn(
-          "fixed inset-0 z-[120] bg-black/30 backdrop-blur-[2px] transition-opacity duration-200",
-          open
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none",
-        )}
-        onClick={onClose}
-      />
+    <button
+      onClick={handleClick}
+      className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm"
+    >
+      {children}
+    </button>
+  );
+}
 
-      {/* Drawer */}
-      <aside
-        className={cn(
-          "fixed right-0 top-0 z-[121] h-[100svh] w-full max-w-[92%] sm:max-w-[420px] bg-white shadow-xl border-l border-gray-200",
-          "transition-transform duration-250 ease-out",
-          open ? "translate-x-0" : "translate-x-full",
-        )}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Mobile menu"
+function HoverDropdown({ trigger, children }: HoverDropdownProps) {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const closeTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const handleClose = () => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setIsOpen(false);
+    }, 100);
+  };
+
+  const handleOpenCancel = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setIsOpen(true);
+  };
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger
+        asChild
+        onMouseEnter={handleOpenCancel}
+        onMouseLeave={handleClose}
       >
-        {/* Shell uses column layout so footer can pin to bottom */}
-        <div className="flex h-full flex-col">
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-3 border-b">
-            <div className="font-semibold">Menu</div>
-            <button
-              type="button"
-              aria-label="Close menu"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-gray-100"
-              onClick={onClose}
-            >
-              <XIcon className="h-5 w-5" />
-            </button>
-          </div>
-
-          {isAuthenticated() && (
-            <div className="flex-1 overflow-y-auto p-4">
-              <div className="flex items-center gap-3">
-                <div className="overflow-hidden rounded-full flex items-center justify-center">
-                  <MyUserPfp size="9" />
-                </div>
-                <div className="flex flex-col leading-tight">
-                  <span className="font-medium">
-                    {getFullName(profile.data)}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    {profile.data?.email}
-                  </span>
-                </div>
-              </div>
-              <Separator className="my-4" />
-              {/* Navigation */}
-              <nav>
-                <ul className="grid gap-1">
-                  {/* ! Disabled chat for now */}
-                  {/* {isAuthenticated() && (
-                    <li>
-                      <Link href="/conversations" className="block w-full">
-                        <button className="w-full flex items-center justify-between rounded-md py-2">
-                          <span className="inline-flex items-center text-sm">
-                            <MessageCircleMore className="w-4 h-4" /> Chats
-                          </span>
-                          {conversations?.unreads?.length ? (
-                            <span className="text-[10px] leading-none bg-warning/80 px-2 py-1 rounded-full">
-                              {conversations.unreads.length}
-                            </span>
-                          ) : (
-                            <ChevronRight className="w-4 h-4 text-gray-300" />
-                          )}
-                        </button>
-                      </Link>
-                    </li>
-                  )} */}
-                  <li>
-                    <Link href="/search" className="block w-full">
-                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                        <div>
-                          <Search className="w-4 h-4 inline-block mr-2" />
-                          <span>Browse</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-gray-300" />
-                      </button>
-                    </Link>
-                  </li>
-                  <li>
-                    <button
-                      onClick={() => handleIncompleteProfileClick("profile")}
-                      className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary"
-                    >
-                      <div>
-                        <Settings className="w-4 h-4 inline-block mr-2" />
-                        <span>Profile</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-gray-300" />
-                    </button>
-                  </li>
-                  <li>
-                    <Link href="/applications" className="block w-full">
-                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                        <div>
-                          <BookA className="w-4 h-4 inline-block mr-2" />
-                          <span>Applications</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-gray-300" />
-                      </button>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/saved" className="block w-full">
-                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                        <div>
-                          <Heart className="w-4 h-4 inline-block mr-2" />
-                          <span>Saved Jobs</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-gray-300" />
-                      </button>
-                    </Link>
-                  </li>
-                  <li>
-                    <button
-                      onClick={() => handleIncompleteProfileClick("forms")}
-                      className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary"
-                    >
-                      <div>
-                        <Newspaper className="w-4 h-4 inline-block mr-2" />
-                        <span>Forms</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-gray-300" />
-                    </button>
-                  </li>
-                </ul>
-              </nav>
-            </div>
-          )}
-
-          {/* Footer pinned to bottom */}
-          {isAuthenticated() && (
-            <div className="mt-auto border-t px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3">
-              <button
-                onClick={() => void handleLogout()}
-                className="w-full flex items-center justify-center gap-2 text-red-600 font-medium py-2 rounded-md hover:bg-red-50"
-              >
-                <LogOut className="w-4 h-4" /> Sign Out
-              </button>
-            </div>
-          )}
-        </div>
-      </aside>
-    </>
+        {trigger}
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-max p-1 bg-white border border-gray-200 rounded-[0.33em] shadow-lg"
+        align="end"
+        side="bottom"
+        sideOffset={8}
+        onMouseEnter={handleOpenCancel}
+        onMouseLeave={handleClose}
+        style={{ zIndex: 9999 }}
+      >
+        <div className="flex flex-col gap-0">{children}</div>
+      </PopoverContent>
+    </Popover>
   );
 }
 
 /* =======================================================================================
-   Profile Button (desktop)
+   PROFILE BUTTON (shared between mobile & desktop)
 ======================================================================================= */
+
 export const ProfileButton: React.FC = () => {
   const profile = useProfileData();
-  const conversations = useConversations();
   const { isAuthenticated, logout } = useAuthContext();
   const router = useRouter();
-  const modalRegistry = useModalRegistry();
+  const pathname = usePathname();
   const handleLogout = () => logout().then(() => router.push("/"));
 
-  const handleIncompleteProfileClick = (link: string) => {
+  const handleProfileClick = () => {
     if (!isProfileVerified(profile.data)) {
       router.push(`/register/verify`);
     } else if (
       !isProfileResume(profile.data) ||
       !isProfileBaseComplete(profile.data)
     ) {
-      router.push(`profile/complete-profile`);
+      router.push(`profile/complete-profile?dest=profile`);
     } else {
-      router.push(`/${link}`);
+      router.push(`/profile`);
     }
   };
 
@@ -347,102 +232,272 @@ export const ProfileButton: React.FC = () => {
   }
 
   return (
-    <div className="relative flex items-center gap-2">
-      {/* <Link href="/conversations">
-        <Button variant="ghost" className="relative">
-          <MessageCircleMore className="w-7 h-7" />
-          {conversations?.unreads?.length ? (
-            <div className="absolute w-3 h-3 top-[-0.33em] right-[-0.4em] rounded-full bg-warning opacity-70" />
-          ) : null}
-        </Button>
-      </Link> */}
-      <GroupableNavDropdown
-        display={
-          <>
-            <div className="overflow-hidden rounded-full flex items-center justify-center">
-              <MyUserPfp size="6" />
-            </div>
-            {getFullName(profile.data, false)}
-          </>
-        }
-        content={
-          <div className="px-9 py-3 border-b border-gray-200">
-            <p className="align-left text-xs text-gray-500 text-ellipsis overflow-hidden">
-              {profile.data?.email}
-            </p>
-          </div>
-        }
-        className="z-[200] w-fit"
-      >
-        <DropdownOption
-          on_click={() => {
-            handleIncompleteProfileClick("profile");
-          }}
+    <HoverDropdown
+      trigger={
+        <Button
+          variant="ghost"
+          className={cn(
+            "group w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-md",
+            pathname === "/profile"
+              ? "text-primary"
+              : "opacity-80 hover:opacity-100 hover:bg-gray-100",
+          )}
         >
+          <div className="overflow-hidden rounded-full flex items-center justify-center h-6 w-6">
+            <MyUserPfp size="6" />
+          </div>
+          <div className="flex items-center gap-0.5">
+            <span className="text-xs">Account</span>
+            <ChevronDown className="!h-3 !w-3 transition-transform group-hover:rotate-180" />
+          </div>
+        </Button>
+      }
+    >
+      <DropdownMenuItem onClick={handleProfileClick}>
+        <div className="flex items-center">
           <Settings className="w-4 h-4 inline-block mr-2 text-primary" />
           <span className="text-primary">Profile</span>
-        </DropdownOption>
-        <DropdownOption href="/applications">
-          <BookA className="w-4 h-4 inline-block mr-2 text-primary" />
-          <span className="text-primary">Applications</span>
-        </DropdownOption>
-        <DropdownOption href="/saved">
-          <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
-          <span className="text-primary">Saved Jobs</span>
-        </DropdownOption>
-        <DropdownOption
-          on_click={() => {
-            handleIncompleteProfileClick("forms");
-          }}
-        >
-          <Newspaper className="w-4 h-4 inline-block mr-2 text-primary" />
-          <span className="text-primary">Forms</span>
-        </DropdownOption>
-        <DropdownOption href="/" on_click={() => void handleLogout()}>
+        </div>
+      </DropdownMenuItem>
+      <div className="h-px bg-gray-200 my-1 mx-2" />
+      <DropdownMenuItem onClick={() => void handleLogout()}>
+        <div className="flex items-center">
           <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />
           <span className="text-red-500">Sign Out</span>
-        </DropdownOption>
-      </GroupableNavDropdown>
+        </div>
+      </DropdownMenuItem>
+    </HoverDropdown>
+  );
+};
+
+/* =======================================================================================
+   MOBILE HEADER
+======================================================================================= */
+
+interface MobileHeaderProps {
+  searchTerm: string;
+  moaOnly: boolean;
+  onSearchChange: (value: string) => void;
+  onMoaToggle: (value: boolean) => void;
+  onSearch: () => void;
+  onApplyFilters: (filters: JobFilter) => void;
+  initialFilterValues: Partial<JobFilter>;
+  showFilters: boolean;
+}
+
+const MobileHeader: React.FC<MobileHeaderProps> = ({
+  searchTerm,
+  moaOnly,
+  onSearchChange,
+  onMoaToggle,
+  onSearch,
+  onApplyFilters,
+  initialFilterValues,
+  showFilters,
+}) => {
+  const { mobileAddonConfig } = useHeaderContext();
+
+  return (
+    <JobFilterProvider initial={initialFilterValues}>
+      <div className="flex gap-2 items-center px-4 py-3 bg-white/80 border-b h-16">
+        {/* Logo */}
+        <div className="flex-shrink-0">
+          <HeaderTitle />
+        </div>
+
+        {/* Mobile addon - conditionally render FormsNavigation based on config */}
+        {mobileAddonConfig?.show && mobileAddonConfig.activeView && (
+          <div className="ml-2">
+            <FormsNavigation
+              activeView={mobileAddonConfig.activeView}
+              onViewChange={mobileAddonConfig.onViewChange || (() => {})}
+              currentFormName={mobileAddonConfig.currentFormName}
+              currentFormLabel={mobileAddonConfig.currentFormLabel}
+              variant="inline"
+            />
+          </div>
+        )}
+
+        {/* Search + Filter - only on search page */}
+        {showFilters ? (
+          <>
+            <SearchInput
+              value={searchTerm}
+              onChange={onSearchChange}
+              onEnter={onSearch}
+              moaOnly={moaOnly}
+              onToggleMoa={onMoaToggle}
+              className="flex-1"
+              showForCredit={false}
+            />
+            <div className="flex-shrink-0">
+              <JobFilters onApply={onApplyFilters} isDesktop={false} />
+            </div>
+          </>
+        ) : null}
+      </div>
+    </JobFilterProvider>
+  );
+};
+
+/* =======================================================================================
+   DESKTOP HEADER
+======================================================================================= */
+
+interface DesktopHeaderProps {
+  searchTerm: string;
+  moaOnly: boolean;
+  onSearchChange: (value: string) => void;
+  onMoaToggle: (value: boolean) => void;
+  onSearch: () => void;
+  onApplyFilters: (filters: JobFilter) => void;
+  initialFilterValues: Partial<JobFilter>;
+  showFilters: boolean;
+}
+
+const DesktopHeader: React.FC<DesktopHeaderProps> = ({
+  searchTerm,
+  moaOnly,
+  onSearchChange,
+  onMoaToggle,
+  onSearch,
+  onApplyFilters,
+  initialFilterValues,
+  showFilters,
+}) => {
+  const pathname = usePathname();
+  const router = useRouter();
+
+  return (
+    <div
+      className="flex gap-2 justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90] py-4 px-8"
+      style={{ overflow: "visible", position: "relative", zIndex: 100 }}
+    >
+      <div className="flex items-center gap-6 flex-1">
+        <div className="flex-shrink-0">
+          <HeaderTitle />
+        </div>
+
+        {/* Search + Filters - only on search page */}
+        {showFilters && (
+          <div className="flex items-center gap-4 w-full max-w-xl">
+            <SearchInput
+              value={searchTerm}
+              onChange={onSearchChange}
+              onEnter={onSearch}
+              moaOnly={moaOnly}
+              onToggleMoa={onMoaToggle}
+            />
+
+            <JobFilterProvider initial={initialFilterValues}>
+              <JobFilters isDesktop onApply={onApplyFilters} />
+            </JobFilterProvider>
+          </div>
+        )}
+      </div>
+
+      {/* Right side: Navigation buttons + Profile */}
+      <div className="flex items-center gap-1">
+        <div className="flex gap-1">
+          {/* Search Button */}
+          <Button
+            variant="ghost"
+            className={cn(
+              "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-[0.33em]",
+              pathname === "/search"
+                ? "text-primary"
+                : "opacity-80 hover:opacity-100 hover:bg-gray-100",
+            )}
+            onClick={() => router.push("/search")}
+          >
+            <Search className="!h-6 !w-6" strokeWidth={1.7} />
+            <span className="text-xs">Search</span>
+          </Button>
+
+          {/* Forms Button */}
+          <Button
+            variant="ghost"
+            className={cn(
+              "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-[0.33em]",
+              pathname === "/forms"
+                ? "text-primary"
+                : "opacity-80 hover:opacity-100 hover:bg-gray-100",
+            )}
+            onClick={() => router.push("/forms")}
+          >
+            <Newspaper className="!h-6 !w-6" strokeWidth={1.7} />
+            <span className="text-xs">Forms</span>
+          </Button>
+
+          {/* My Jobs Dropdown */}
+          <HoverDropdown
+            trigger={
+              <Button
+                variant="ghost"
+                className={cn(
+                  "group w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-[0.33em]",
+                  pathname?.startsWith("/applications") ||
+                    pathname?.startsWith("/saved")
+                    ? "text-primary"
+                    : "opacity-80 hover:opacity-100 hover:bg-gray-100",
+                )}
+              >
+                <BookA className="!h-6 !w-6" strokeWidth={1.7} />
+                <div className="flex items-center gap-0.5">
+                  <span className="text-xs">My Jobs</span>
+                  <ChevronDown className="!h-3 !w-3 transition-transform group-hover:rotate-180" />
+                </div>
+              </Button>
+            }
+          >
+            <DropdownMenuItem href="/applications">
+              <div className="flex items-center">
+                <CheckSquare className="w-4 h-4 inline-block mr-2 text-primary" />
+                <span className="text-primary">Applications</span>
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuItem href="/saved">
+              <div className="flex items-center">
+                <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
+                <span className="text-primary">Saved Jobs</span>
+              </div>
+            </DropdownMenuItem>
+          </HoverDropdown>
+
+          <ProfileButton />
+        </div>
+      </div>
     </div>
   );
 };
 
 /* =======================================================================================
-   Header (top bar + search + filters + mobile drawer)
+   MAIN HEADER (Orchestrator)
 ======================================================================================= */
+
 export const Header: React.FC = () => {
   const { isMobile } = useMobile();
   const { routeExcluded } = useRoute();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const auth = useAuthContext();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [moaOnly, setMoaOnly] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const noProfileRoutes = ["/register", "/register/verify"];
-  const noHeaderRoutes = ["/register", "/register/verify"];
+  const noProfileRoutes = ["/register", "/register/verify", "/miro"];
+  const noHeaderRoutes = ["/register", "/register/verify", "/miro"];
   const showProfileButton = routeExcluded(noProfileRoutes);
-
-  // only show filters on /search (allow subpaths like /search/results)
   const showFilters = pathname?.startsWith("/search") === true;
 
-  // lock body scroll when drawer open
-  useEffect(() => {
-    document.body.style.overflow = isMenuOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isMenuOpen]);
-
+  // Sync search params on mount and when route changes
   useEffect(() => {
     if (!showFilters) return;
     setSearchTerm(searchParams.get("query") || "");
     setMoaOnly(searchParams.get("moa") === "Has MOA");
   }, [searchParams, showFilters]);
 
+  // Parse initial filter values from URL
   const initialFromUrl: Partial<JobFilter> = {
     position: (searchParams.get("position") || "").split(",").filter(Boolean),
     jobMode: (searchParams.get("mode") || "").split(",").filter(Boolean),
@@ -455,6 +510,9 @@ export const Header: React.FC = () => {
     jobMoa: (searchParams.get("moa") || "").split(",").filter(Boolean),
   };
 
+  /**
+   * Push search query to /search with optional overrides
+   */
   const pushSearch = (override?: { moa?: boolean; q?: string }) => {
     const params = new URLSearchParams();
     const q = override?.q ?? searchTerm;
@@ -474,8 +532,14 @@ export const Header: React.FC = () => {
     router.push(`/search/?${params.toString()}`);
   };
 
+  /**
+   * Perform search
+   */
   const doSearch = () => pushSearch();
 
+  /**
+   * Apply selected filters
+   */
   const onApplyFilters = (f: JobFilter) => {
     const params = new URLSearchParams();
     if (searchTerm) params.set("query", searchTerm);
@@ -488,104 +552,47 @@ export const Header: React.FC = () => {
     router.push(`/search/?${params.toString()}`);
   };
 
-  return routeExcluded(noHeaderRoutes) ? (
-    <div className="flex flex-col">
-      {/* Top Bar */}
-      <div
-        className={cn(
-          "flex gap-2 justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
-          isMobile ? "px-4 py-3" : "py-4 px-8",
-        )}
-        style={{ overflow: "visible", position: "relative", zIndex: 100 }}
-      >
-        {/* Left: Brand */}
-        <div className="flex items-center gap-3">
-          <HeaderTitle />
-        </div>
+  // Hide header on register/verify pages
+  if (!routeExcluded(noHeaderRoutes)) {
+    return <></>;
+  }
 
-        {/* Center: Desktop search + filters (only on /search) */}
-        {!isMobile && showProfileButton && (
-          <div className="flex items-center gap-4 w-full max-w-2xl">
-            {showFilters && (
-              <SearchInput
-                value={searchTerm}
-                onChange={setSearchTerm}
-                onEnter={doSearch}
-                moaOnly={moaOnly}
-                onToggleMoa={(v) => {
-                  setMoaOnly(v);
-                  pushSearch({ moa: v });
-                }}
-              />
-            )}
-
-            {showFilters && (
-              <JobFilterProvider initial={initialFromUrl}>
-                <JobFilters isDesktop onApply={onApplyFilters} />
-              </JobFilterProvider>
-            )}
-          </div>
-        )}
-
-        {/* Right: Desktop profile / Mobile burger */}
-        {showProfileButton ? (
-          isMobile ? (
-            auth.isAuthenticated() ? (
-              <button
-                type="button"
-                aria-label="Open menu"
-                className="inline-flex items-center justify-center h-10 w-10 rounded-md border border-gray-300 hover:bg-gray-50"
-                onClick={() => setIsMenuOpen(true)}
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-            ) : (
-              <Button
-                variant="outline"
-                onClick={() =>
-                  router.push(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`)
-                }
-              >
-                Sign in
-              </Button>
-            )
-          ) : (
-            <div className="flex items-center gap-6">
-              <ProfileButton />
-            </div>
-          )
-        ) : (
-          <div className="w-1 h-10 bg-transparent" />
-        )}
-      </div>
-
-      {/* Mobile: search + (filters only on /search) */}
-      {isMobile && showProfileButton && showFilters && (
-        <JobFilterProvider initial={initialFromUrl}>
-          <div className="flex flex-col max-w-2xl w-full gap-2 items-center px-4 pt-3 bg-white/80">
-            <SearchInput
-              value={searchTerm}
-              onChange={setSearchTerm}
-              onEnter={doSearch}
-              moaOnly={moaOnly}
-              onToggleMoa={(v) => {
-                setMoaOnly(v);
-                pushSearch({ moa: v });
-              }}
-            />
-            {/* Mobile button opening bottom sheet */}
-            <JobFilters onApply={onApplyFilters} />
-          </div>
-        </JobFilterProvider>
-      )}
-
-      {/* Mobile drawer */}
+  return (
+    <>
+      {/* Mobile Header */}
       {isMobile && showProfileButton && (
-        <MobileDrawer open={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+        <MobileHeader
+          searchTerm={searchTerm}
+          moaOnly={moaOnly}
+          onSearchChange={setSearchTerm}
+          onMoaToggle={(v) => {
+            setMoaOnly(v);
+            pushSearch({ moa: v });
+          }}
+          onSearch={doSearch}
+          onApplyFilters={onApplyFilters}
+          initialFilterValues={initialFromUrl}
+          showFilters={showFilters}
+        />
       )}
-    </div>
-  ) : (
-    <></>
+
+      {/* Desktop Header */}
+      {!isMobile && showProfileButton && (
+        <DesktopHeader
+          searchTerm={searchTerm}
+          moaOnly={moaOnly}
+          onSearchChange={setSearchTerm}
+          onMoaToggle={(v) => {
+            setMoaOnly(v);
+            pushSearch({ moa: v });
+          }}
+          onSearch={doSearch}
+          onApplyFilters={onApplyFilters}
+          initialFilterValues={initialFromUrl}
+          showFilters={showFilters}
+        />
+      )}
+    </>
   );
 };
 
