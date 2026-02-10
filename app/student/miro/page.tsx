@@ -579,7 +579,6 @@ export default function MiroThonLandingPage() {
             <ul className="relative mt-6 space-y-2 text-gray-700 font-medium font-mono">
               <li>• Submit a public link/prototype/file</li>
               <li>• A 60-second demo video</li>
-              <li>• Team info included if applicable</li>
             </ul>
 
             <p className="relative mt-6 text-sm text-gray-500 font-mono">
