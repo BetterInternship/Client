@@ -618,7 +618,7 @@ function DetailsPanel() {
         keyName="jobAllowance"
         options={ALLOWANCE_OPTIONS}
       />
-      <Group title="Internship Tyoe" keyName="jobMoa" options={MOA_OPTIONS} />
+      <Group title="Internship Type" keyName="jobMoa" options={MOA_OPTIONS} />
     </div>
   );
 }
