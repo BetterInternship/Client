@@ -344,23 +344,37 @@ export default function MiroThonLandingPage() {
       <header className="sticky top-0 flex items-center justify-between px-6 pt-4 z-[9999] bg-white/20 backdrop-blur-sm">
         {/* LOGO SECTION - BIGGER */}
         <div className="flex items-center gap-3 sm:gap-4">
-          <Image
-            src="/BetterInternshipLogo.png"
-            alt="BetterInternship"
-            width={40}
-            height={40}
-            className="h-10 w-10 sm:h-12 sm:w-12"
-          />
+          <a
+            href="/"
+            className="hover:opacity-70 transition-opacity duration-200"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              src="/BetterInternshipLogo.png"
+              alt="BetterInternship"
+              width={40}
+              height={40}
+              className="h-10 w-10 sm:h-12 sm:w-12"
+            />
+          </a>
           <span className="text-xl sm:text-2xl font-black text-black/30">
             ×
           </span>
-          <Image
-            src={miroIcon}
-            alt="Miro"
-            width={40}
-            height={40}
-            className="h-10 w-10 sm:h-12 sm:w-12"
-          />
+          <a
+            href="https://miro.com"
+            className="hover:opacity-70 transition-opacity duration-200"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              src={miroIcon}
+              alt="Miro"
+              width={40}
+              height={40}
+              className="h-10 w-10 sm:h-12 sm:w-12"
+            />
+          </a>
         </div>
       </header>
 
