@@ -109,6 +109,7 @@ function RemoteCursor({ x, y, name, color }: RemoteCursorProps) {
   return (
     <motion.div
       className="pointer-events-none absolute z-50"
+      initial={{ x, y }}
       animate={{ x, y }}
       transition={{ type: "spring", stiffness: 70, damping: 25 }}
     >
@@ -243,7 +244,7 @@ function RemoteCursorsDemo() {
   ];
 
   const [positions, setPositions] = useState(
-    cursorData.map(() => ({ x: 0, y: 0 })),
+    cursorData.map((cursor) => cursor.path[0]),
   );
 
   useEffect(() => {
