@@ -389,8 +389,11 @@ export default function MiroThonLandingPage() {
           <div className="max-w-5xl relative">
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.05] tracking-tight relative">
               Fight for an internship at{" "}
-              <span
-                className="inline-flex items-center gap-1 sm:gap-2 align-middle"
+              <a
+                href="https://miro.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 sm:gap-2 align-middle hover:brightness-90 transition-all duration-200 -mt-2"
                 style={{ color: "#ffdc33" }}
               >
                 <Image
@@ -401,7 +404,7 @@ export default function MiroThonLandingPage() {
                   className="h-[0.85em] w-[0.85em] inline-block align-middle"
                 />
                 Miro
-              </span>
+              </a>
             </h1>
             {/* Sticky Note - Desktop: positioned bottom-right, Mobile: below */}
             <motion.div
@@ -421,7 +424,16 @@ export default function MiroThonLandingPage() {
                     "0 4px 6px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05)",
                 }}
               >
-                (yes, that Miro)
+                (yes, that{" "}
+                <a
+                  href="https://miro.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline transition-all duration-200"
+                >
+                  Miro
+                </a>
+                )
               </span>
             </motion.div>
           </div>
@@ -578,14 +590,90 @@ export default function MiroThonLandingPage() {
             </div>
 
             <ul className="relative mt-6 space-y-2 text-gray-700 font-medium font-mono">
-              <li>• Submit a public link/prototype/file</li>
-              <li>• A 60-second demo video</li>
+              <li>* Demo URL</li>
+              <li>* Proof of work (eg. Figma, GitHub)</li>
+              <li>* A 60-seconds pitch</li>
             </ul>
 
             <p className="relative mt-6 text-sm text-gray-500 font-mono">
               Done is better than perfect. Just ship something.
             </p>
           </Card>
+        </motion.div>
+      </section>
+
+      {/* TIME IS TICKING SECTION */}
+      <section className="mx-auto w-full max-w-6xl px-6 pb-20">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="relative overflow-hidden rounded-[0.33em] border border-gray-800 bg-black p-8 sm:p-12">
+            {/* Gradient background effect */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-blue-600/10 via-transparent to-blue-600/10" />
+
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12">
+              {/* Left: Title and Timer */}
+              <div className="flex flex-col gap-4 lg:gap-6 flex-1 w-full md:w-auto md:items-start items-center md:text-left text-center">
+                <div>
+                  <h2 className="text-3xl md:text-4xl font-black text-white">
+                    Time is <span className="text-yellow-300">ticking</span>
+                  </h2>
+                </div>
+
+                {/* Countdown Timer */}
+                <div className="flex items-center justify-center md:justify-start gap-1 sm:gap-2 md:gap-3">
+                  <div className="flex flex-col items-center">
+                    <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white font-mono">
+                      {String(countdown.days).padStart(2, "0")}
+                    </p>
+                    <p className="mt-1 text-xs font-bold text-white/40">D</p>
+                  </div>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white/50 -mt-2">
+                    :
+                  </p>
+                  <div className="flex flex-col items-center">
+                    <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white font-mono">
+                      {String(countdown.hours).padStart(2, "0")}
+                    </p>
+                    <p className="mt-1 text-xs font-bold text-white/40">H</p>
+                  </div>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white/50 -mt-2">
+                    :
+                  </p>
+                  <div className="flex flex-col items-center">
+                    <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white font-mono">
+                      {String(countdown.minutes).padStart(2, "0")}
+                    </p>
+                    <p className="mt-1 text-xs font-bold text-white/40">M</p>
+                  </div>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white/50 -mt-2">
+                    :
+                  </p>
+                  <div className="flex flex-col items-center">
+                    <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white font-mono">
+                      {String(countdown.seconds).padStart(2, "0")}
+                    </p>
+                    <p className="mt-1 text-xs font-bold text-white/40">S</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: CTA Button */}
+              <MagneticButton className="w-full md:w-auto">
+                <Button
+                  size="lg"
+                  className="w-full md:w-auto h-14 bg-yellow-400 text-lg font-bold text-black hover:bg-yellow-300 transition-colors duration-200"
+                  onClick={openDiscord}
+                >
+                  Join Now
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </MagneticButton>
+            </div>
+          </div>
         </motion.div>
       </section>
     </div>
