@@ -34,12 +34,19 @@ const nextConfig = {
     routes.forEach(({ hosts, destination }) => {
       hosts.forEach((host) => {
         // Rewrite everything except _next and root-level common files
-        rewrites.push({
-          source:
-            "/:path((?!_next|BetterInternshipLogo|resume-loader|PrivacyPolicy|TermsConditions|Student_MOA|Company_Information).*)*",
-          has: [{ type: "host", value: host }],
-          destination: `/${destination}/:path*`,
-        });
+        rewrites.push(
+          {
+            source:
+              "/:path((?!_next|BetterInternshipLogo|resume-loader|PrivacyPolicy|TermsConditions|Student_MOA|Company_Information).+)",
+            has: [{ type: "host", value: host }],
+            destination: `/${destination}/:path*`,
+          },
+          {
+            source: "/",
+            has: [{ type: "host", value: host }],
+            destination: `/${destination}/`,
+          },
+        );
       });
     });
 
