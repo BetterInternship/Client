@@ -311,7 +311,7 @@ export default function MiroThonLandingPage() {
   }
 
   return (
-    <div className="min-h-screen text-black">
+    <div className="min-h-screen text-black overflow-x-hidden">
       {/* texture */}
       <div className="pointer-events-none fixed inset-0 -z-20" aria-hidden>
         <InteractiveGridPattern
@@ -330,7 +330,7 @@ export default function MiroThonLandingPage() {
       </div>
 
       {/* HEADER */}
-      <header className="sticky top-0 flex items-center justify-between px-6 py-4">
+      <header className="sticky top-0 flex items-center justify-between px-6 py-4 z-[9999] bg-white/20 backdrop-blur-sm">
         <HeaderTitle />
         <Button
           size="sm"
@@ -342,7 +342,7 @@ export default function MiroThonLandingPage() {
       </header>
 
       {/* HERO */}
-      <section className="relative isolate w-full min-h-dvh flex flex-col items-center justify-center px-4 sm:px-6 text-center pb-6 sm:pb-10">
+      <section className="relative w-full min-h-dvh flex flex-col items-center justify-center px-4 sm:px-6 text-center pb-6 sm:pb-10 z-10">
         {/* Animated Collaborative Cursors Demo - Hero Section */}
         <RemoteCursorsDemo />
 
@@ -426,17 +426,17 @@ export default function MiroThonLandingPage() {
           </div>
 
           {/* COUNTDOWN - RIGHT UNDER HEADLINE */}
-          <div className="mt-4 sm:mt-8 flex w-full max-w-full items-center justify-center gap-1 sm:gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-2">
+          <div className="mt-4 sm:mt-8 flex w-full max-w-full items-end justify-center gap-1 sm:gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-2">
             <CountdownBlock label="Days" value={countdown.days} />
-            <div className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-black/20 flex-shrink-0">
+            <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-black/20 flex-shrink-0 mb-6">
               :
             </div>
             <CountdownBlock label="Hours" value={countdown.hours} />
-            <div className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-black/20 flex-shrink-0">
+            <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-black/20 flex-shrink-0 mb-6">
               :
             </div>
             <CountdownBlock label="Mins" value={countdown.minutes} />
-            <div className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-black/20 flex-shrink-0">
+            <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-black/20 flex-shrink-0 mb-6">
               :
             </div>
             <CountdownBlock label="Secs" value={countdown.seconds} />
@@ -464,10 +464,7 @@ export default function MiroThonLandingPage() {
       </section>
 
       {/* DETAILS */}
-      <section
-        id="details"
-        className="relative mx-auto w-full max-w-6xl px-6 pb-20"
-      >
+      <section id="details" className="mx-auto w-full max-w-6xl px-6 pb-20">
         <div className="mt-14 grid gap-6 md:grid-cols-2">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
