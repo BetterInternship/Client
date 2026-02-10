@@ -168,11 +168,11 @@ function RemoteCursorsDemo() {
       name: "Jana",
       color: "#FF1744",
       path: [
-        randomPos(15, 30, 5, 20),
-        randomPos(15, 30, 5, 20),
-        randomPos(15, 30, 5, 20),
-        randomPos(15, 30, 5, 20),
-        randomPos(15, 30, 5, 20),
+        randomPos(5, 10, 40, 60),
+        randomPos(5, 10, 40, 60),
+        randomPos(5, 10, 40, 60),
+        randomPos(5, 10, 40, 60),
+        randomPos(5, 10, 40, 60),
       ],
     },
     {
