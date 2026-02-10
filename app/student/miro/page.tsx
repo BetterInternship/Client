@@ -5,20 +5,10 @@ import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import miroIcon from "./miro-icon.svg";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Card } from "@/components/ui/card";
 import { HeaderTitle } from "@/components/shared/header";
 import { InteractiveGridPattern } from "@/components/landingStudent/sections/1stSection/interactive-grid-pattern";
-import {
-  ArrowRight,
-  CalendarDays,
-  Clock,
-  Laptop,
-  Trophy,
-  Users,
-  Video,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 type Countdown = {
   days: number;
@@ -300,7 +290,6 @@ function RemoteCursorsDemo() {
 
 export default function MiroThonLandingPage() {
   const discordLink = "https://discord.gg/QZ9mXJQm";
-  const eventPage = "https://betterinternship.ph/miro";
 
   const eventStart = useMemo(() => new Date("2026-02-13T18:00:00+08:00"), []);
   const eventEnd = useMemo(() => new Date("2026-02-14T23:59:00+08:00"), []);
@@ -341,7 +330,7 @@ export default function MiroThonLandingPage() {
       </div>
 
       {/* HEADER */}
-      <header className="flex items-center justify-between px-6 py-4">
+      <header className="sticky top-0 flex items-center justify-between px-6 py-4">
         <HeaderTitle />
         <Button
           size="sm"
