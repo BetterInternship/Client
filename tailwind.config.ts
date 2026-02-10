@@ -97,6 +97,7 @@ const config: Config = {
           "sans-serif",
         ],
         mono: [
+          '"Fira Code"',
           '"JetBrains Mono"',
           "Menlo",
           "Monaco",

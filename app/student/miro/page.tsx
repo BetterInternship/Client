@@ -54,10 +54,10 @@ function CountdownBlock({
 }) {
   return (
     <div className="flex flex-col items-center">
-      <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-black">
+      <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-black font-mono">
         {String(value).padStart(2, "0")}
       </p>
-      <p className="mt-1 text-[10px] sm:text-xs font-semibold uppercase tracking-widest text-black/40">
+      <p className="mt-1 text-[10px] sm:text-xs font-semibold uppercase tracking-widest text-black/40 font-mono">
         {label}
       </p>
     </div>
@@ -260,7 +260,7 @@ export default function MiroThonLandingPage() {
           </div>
 
           {/* DESCRIPTION */}
-          <p className="mt-4 sm:mt-6 max-w-2xl text-sm sm:text-base md:text-lg leading-relaxed text-black/70">
+          <p className="mt-4 sm:mt-6 max-w-2xl text-sm sm:text-base md:text-lg leading-relaxed text-black/70 font-mono">
             Can you build something in 30 hours that will impress Miro?
           </p>
 
@@ -295,10 +295,12 @@ export default function MiroThonLandingPage() {
                   When
                 </h3>
               </div>
-              <p className="relative mt-6 text-base text-gray-700 font-semibold">
+              <p className="relative mt-6 text-base text-gray-700 font-semibold font-mono">
                 Feb 13 (Thu) 6:00 PM → Feb 14 (Fri) 11:59 PM
               </p>
-              <p className="mt-2 text-sm text-gray-500">30 hours total.</p>
+              <p className="mt-2 text-sm text-gray-500 font-mono">
+                30 hours total.
+              </p>
             </Card>
           </motion.div>
 
@@ -314,10 +316,10 @@ export default function MiroThonLandingPage() {
                   Where
                 </h3>
               </div>
-              <p className="relative mt-6 text-base text-gray-700 font-semibold">
+              <p className="relative mt-6 text-base text-gray-700 font-semibold font-mono">
                 Online.
               </p>
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mt-2 text-sm text-gray-500 font-mono">
                 Join our{" "}
                 <a
                   href="https://discord.gg/QZ9mXJQm"
@@ -343,10 +345,12 @@ export default function MiroThonLandingPage() {
                   Who can join
                 </h3>
               </div>
-              <p className="relative mt-6 text-base text-gray-700 font-semibold">
+              <p className="relative mt-6 text-base text-gray-700 font-semibold font-mono">
                 Anyone.
               </p>
-              <p className="mt-2 text-sm text-gray-500">Any school. Any age.</p>
+              <p className="mt-2 text-sm text-gray-500 font-mono">
+                Any school. Any age.
+              </p>
             </Card>
           </motion.div>
 
@@ -362,10 +366,10 @@ export default function MiroThonLandingPage() {
                   What's at stake
                 </h3>
               </div>
-              <p className="relative mt-6 text-base text-gray-700 font-semibold">
+              <p className="relative mt-6 text-base text-gray-700 font-semibold font-mono">
                 An internship opportunity at Miro
               </p>
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mt-2 text-sm text-gray-500 font-mono">
                 (and maybe become a full time hire)
               </p>
             </Card>
@@ -386,13 +390,13 @@ export default function MiroThonLandingPage() {
               </h3>
             </div>
 
-            <ul className="relative mt-6 space-y-2 text-gray-700 font-medium">
+            <ul className="relative mt-6 space-y-2 text-gray-700 font-medium font-mono">
               <li>• Submit a public link/prototype/file</li>
               <li>• A 60-second demo video</li>
               <li>• Team info included if applicable</li>
             </ul>
 
-            <p className="relative mt-6 text-sm text-gray-500">
+            <p className="relative mt-6 text-sm text-gray-500 font-mono">
               Done is better than perfect. Just ship something.
             </p>
           </Card>
