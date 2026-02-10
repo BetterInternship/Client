@@ -14,7 +14,8 @@ export default function MobileNavWrapper() {
   const hide =
     pathname === "/" ||
     pathname === "/student" ||
-    pathname.startsWith("/forms/");
+    pathname.startsWith("/forms/") ||
+    pathname === "/miro";
 
   if (!isMobile || hide) {
     return null;
