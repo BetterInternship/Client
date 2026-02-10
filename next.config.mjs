@@ -21,7 +21,7 @@ const nextConfig = {
       },
       {
         hosts: [
-          "betterinternship.com",
+          "www.betterinternship.com",
           "dev.betterinternship.com",
           "localhost",
         ],
