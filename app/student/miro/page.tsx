@@ -187,7 +187,7 @@ export default function MiroThonLandingPage() {
               alt="BetterInternship"
               width={40}
               height={40}
-              className="h-10 w-10 sm:h-12 sm:w-12"
+              className="h-10 w-10 sm:h-16 sm:w-16"
             />
             <span className="text-xl sm:text-2xl font-black text-black/30">
               ×
@@ -197,14 +197,14 @@ export default function MiroThonLandingPage() {
               alt="Miro"
               width={40}
               height={40}
-              className="h-10 w-10 sm:h-12 sm:w-12"
+              className="h-10 w-10 sm:h-16 sm:w-16"
             />
           </div>
 
           {/* HEADLINE WITH INLINE LOGO */}
           <div className="max-w-5xl relative">
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.05] tracking-tight relative">
-              Fight for an Internship at{" "}
+              Fight for an internship at{" "}
               <span
                 className="inline-flex items-center gap-1 sm:gap-2 align-middle"
                 style={{ color: "#ffdc33" }}
