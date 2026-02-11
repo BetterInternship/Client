@@ -14,6 +14,11 @@ import { PocketbaseProvider, usePocketbase } from "@/lib/pocketbase";
 import { ModalProvider } from "@/components/providers/ModalProvider";
 import { NotificationListener } from "./notification-listener";
 
+const baseUrl =
+  process.env.NEXT_PUBLIC_CLIENT_HIRE_URL?.replace(/\/$/, "") ||
+  "https://hire.betterinternship.com";
+const ogImage = `${baseUrl}/student-preview.png`;
+
 export const metadata: Metadata = {
   title: "Recruiter Dashboard - BetterInternship",
   description: "Manage applications and candidates",
@@ -23,10 +28,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Recruiter Dashboard - BetterInternship",
     description: "Manage applications and candidates",
-    url: "https://hire.betterinternship.com",
+    url: baseUrl,
     images: [
       {
-        url: "https://hire.betterinternship.com/student-preview.png",
+        url: ogImage,
         width: 1200,
         height: 630,
         alt: "BetterInternship",
@@ -39,7 +44,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Recruiter Dashboard - BetterInternship",
     description: "Manage applications and candidates",
-    images: ["https://hire.betterinternship.com/student-preview.png"],
+    images: [ogImage],
   },
 };
 

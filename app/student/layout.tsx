@@ -13,6 +13,10 @@ import { PocketbaseProvider } from "@/lib/pocketbase";
 import { ModalProvider } from "@/components/providers/ModalProvider";
 import MobileNavWrapper from "@/components/shared/mobile-nav-wrapper";
 
+const baseUrl =
+  process.env.NEXT_PUBLIC_CLIENT_URL || "https://betterinternship.com";
+const ogImage = `${baseUrl}/student-preview.png`;
+
 export const metadata: Metadata = {
   title: "BetterInternship",
   description: "Better Internships Start Here.",
@@ -22,10 +26,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "BetterInternship",
     description: "Better Internships Start Here.",
-    url: "https://betterinternship.com",
+    url: baseUrl,
     images: [
       {
-        url: "https://betterinternship.com/student-preview.png",
+        url: ogImage,
         width: 1200,
         height: 630,
         alt: "BetterInternship",
@@ -38,7 +42,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "BetterInternship",
     description: "Better Internships Start Here.",
-    images: ["https://betterinternship.com/student-preview.png"],
+    images: [ogImage],
   },
 };
 
