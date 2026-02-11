@@ -36,7 +36,7 @@ const nextConfig = {
         // Rewrite everything except _next and root-level common files
         rewrites.push({
           source:
-            "/:path((?!_next|BetterInternshipLogo|resume-loader|PrivacyPolicy|TermsConditions|Student_MOA|Company_Information).*)*",
+            "/:path((?!_next|BetterInternshipLogo|resume-loader|PrivacyPolicy|TermsConditions|Student_MOA|Company_Information|student-preview|hire-preview).*)*",
           has: [{ type: "host", value: host }],
           destination: `/${destination}/:path*`,
         });
