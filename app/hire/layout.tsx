@@ -24,6 +24,14 @@ export const metadata: Metadata = {
     title: "Recruiter Dashboard - BetterInternship",
     description: "Manage applications and candidates",
     url: "https://hire.betterinternship.com",
+    images: [
+      {
+        url: "https://hire.betterinternship.com/student-preview.png",
+        width: 1200,
+        height: 630,
+        alt: "BetterInternship",
+      },
+    ],
     siteName: "BetterInternship",
     type: "website",
   },
@@ -31,6 +39,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Recruiter Dashboard - BetterInternship",
     description: "Manage applications and candidates",
+    images: ["https://hire.betterinternship.com/student-preview.png"],
   },
 };
 

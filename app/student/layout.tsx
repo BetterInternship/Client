@@ -23,6 +23,14 @@ export const metadata: Metadata = {
     title: "BetterInternship",
     description: "Better Internships Start Here.",
     url: "https://betterinternship.com",
+    images: [
+      {
+        url: "https://betterinternship.com/student-preview.png",
+        width: 1200,
+        height: 630,
+        alt: "BetterInternship",
+      },
+    ],
     siteName: "BetterInternship",
     type: "website",
   },
@@ -30,6 +38,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "BetterInternship",
     description: "Better Internships Start Here.",
+    images: ["https://betterinternship.com/student-preview.png"],
   },
 };
 
