@@ -534,7 +534,7 @@ export default function MiroThonLandingPage() {
                 </h3>
               </div>
               <p className="relative mt-6 text-base text-gray-700 font-semibold font-mono">
-                Feb 13 (Thu) 6:00 PM → Feb 14 (Fri) 11:59 PM
+                Feb 13 (Friday) 6:00 PM → Feb 14 (Saturday) 11:59 PM
               </p>
               <p className="mt-2 text-sm text-gray-500 font-mono">
                 30 hours total.
