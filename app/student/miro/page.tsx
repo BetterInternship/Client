@@ -587,7 +587,8 @@ export default function MiroThonLandingPage() {
                 Anyone.
               </p>
               <p className="mt-2 text-sm text-gray-500 font-mono">
-                Current participants: DLSU, Ateneo, UP
+                Current participants: DLSU, Ateneo, UP, Philippine Science High
+                School
               </p>
             </Card>
           </motion.div>
