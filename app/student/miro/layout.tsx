@@ -5,6 +5,8 @@ const baseUrl =
 const ogImageUrl = `${baseUrl}/miro-preview.png`;
 
 export const metadata: Metadata = {
+  title: "BetterInternship x Miro: Miro-thon!",
+  description: "Fight for an internship at Miro",
   openGraph: {
     images: [
       {
