@@ -1,4 +1,3 @@
-
 import type { Metadata } from "next";
 import "../globals.css";
 import { AuthContextProvider } from "./authctx";
@@ -20,6 +19,27 @@ export const metadata: Metadata = {
   description: "Manage applications and candidates",
   icons: {
     icon: "/BetterInternshipLogo.ico",
+  },
+  openGraph: {
+    title: "Recruiter Dashboard - BetterInternship",
+    description: "Manage applications and candidates",
+    url: "https://hire.betterinternship.com",
+    images: [
+      {
+        url: "https://hire.betterinternship.com/logo.png",
+        width: 512,
+        height: 512,
+        alt: "BetterInternship Logo",
+      },
+    ],
+    siteName: "BetterInternship",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Recruiter Dashboard - BetterInternship",
+    description: "Manage applications and candidates",
+    images: ["https://hire.betterinternship.com/logo.png"],
   },
 };
 
@@ -62,31 +82,28 @@ const HTMLContent = ({
         <AppContextProvider>
           <AuthContextProvider>
             <TooltipProvider>
-                <ConversationsContextProvider type="employer">
-                  <html
-                    lang="en"
-                    className="h-full"
-                  >
-                    <Head>
-                      <meta
-                        name="viewport"
-                        content="width=device-width, initial-scale=1.0"
-                      />
-                    </Head>
-                    <body className="h-full overflow-x-hidden m-0 p-0 antialiased">
-                      <ModalProvider>
-                        <AllowLanding>
-                          <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
-                            <div className="flex-grow max-h-[100svh] max-w-[100svw] overflow-auto flex flex-col">
-                              <NotificationListener />
-                              {children}
-                            </div>
+              <ConversationsContextProvider type="employer">
+                <html lang="en" className="h-full">
+                  <Head>
+                    <meta
+                      name="viewport"
+                      content="width=device-width, initial-scale=1.0"
+                    />
+                  </Head>
+                  <body className="h-full overflow-x-hidden m-0 p-0 antialiased">
+                    <ModalProvider>
+                      <AllowLanding>
+                        <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
+                          <div className="flex-grow max-h-[100svh] max-w-[100svw] overflow-auto flex flex-col">
+                            <NotificationListener />
+                            {children}
                           </div>
-                        </AllowLanding>
-                      </ModalProvider>
-                    </body>
-                  </html>
-                </ConversationsContextProvider>
+                        </div>
+                      </AllowLanding>
+                    </ModalProvider>
+                  </body>
+                </html>
+              </ConversationsContextProvider>
             </TooltipProvider>
           </AuthContextProvider>
         </AppContextProvider>
