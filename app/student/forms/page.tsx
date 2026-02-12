@@ -13,6 +13,7 @@ import {
   FORM_TEMPLATES_GC_TIME,
 } from "@/lib/consts/cache";
 import { useEffect } from "react";
+import { useAuthContext } from "@/lib/ctx-auth";
 
 /**
  * The forms page component - shows either history or generate based on form count
@@ -24,11 +25,18 @@ export default function FormsPage() {
   const router = useRouter();
   const myForms = useMyForms();
   const { activeView } = useFormsLayout();
+  const { redirectIfNotLoggedIn, isAuthenticated } = useAuthContext();
 
+  // Auth redirect at body level (runs first)
+  redirectIfNotLoggedIn();
+
+  // Profile check only runs if authenticated
   useEffect(() => {
+    if (!isAuthenticated()) return; // Exit if not authenticated
+
     if (!profile.data?.department && !profile.isPending)
       router.push("/profile");
-  }, [profile.data?.department, profile.isPending, router]);
+  }, [isAuthenticated, profile.data?.department, profile.isPending, router]);
 
   // Query 1: Check for updates (cheap query - just a timestamp)
   // TODO: Enable this later for smart cache invalidation
