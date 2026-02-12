@@ -225,14 +225,16 @@ function getCountdown(targetDate: Date): Countdown {
 function CountdownBlock({
   label,
   value,
+  isUrgent,
 }: {
   label: string;
   value: number;
   accent?: "blue" | "yellow" | "red" | "neutral";
+  isUrgent?: boolean;
 }) {
   return (
     <div className="flex flex-col items-center">
-      <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-black font-mono">
+      <p className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight font-mono transition-colors duration-300 ${isUrgent ? "text-red-600" : "text-black"}`}>
         {String(value).padStart(2, "0")}
       </p>
       <p className="mt-1 text-[10px] sm:text-xs font-semibold uppercase tracking-widest text-black/40 font-mono">
@@ -481,7 +483,7 @@ export default function MiroThonLandingPage() {
   const discordLink = "https://discord.gg/QZ9mXJQm";
 
   // const eventStart = useMemo(() => new Date("2026-02-13T18:00:00+08:00"), []); // REAL DATE
-  const eventStart = useMemo(() => new Date("2026-02-12T19:55:00+08:00"), []); // TEST DATE
+  const eventStart = useMemo(() => new Date("2026-02-12T20:29:20+08:00"), []); // TEST DATE
   const eventEnd = useMemo(() => new Date("2026-02-14T23:59:00+08:00"), []);
 
   const [countdown, setCountdown] = useState<Countdown>(
@@ -565,7 +567,7 @@ export default function MiroThonLandingPage() {
       </div>
 
       {/* HEADER */}
-      <header className="sticky top-0 flex items-center justify-between px-6 pt-4 z-[9999] bg-white/20 backdrop-blur-sm">
+      <header className="sticky top-0 flex items-center justify-between px-6 pt-4 z-[9999]  backdrop-blur-sm pb-2">
         {/* LOGO SECTION - BIGGER */}
         <div className="flex items-center gap-3 sm:gap-4">
           <a
@@ -617,6 +619,33 @@ export default function MiroThonLandingPage() {
             squaresClassName="border border-gray-200/10"
           />
         </div>
+
+        {/* Broadway spotlight effect when 1 minute left */}
+        {(() => {
+          const totalSeconds =
+            countdown.days * 86400 +
+            countdown.hours * 3600 +
+            countdown.minutes * 60 +
+            countdown.seconds;
+          const isUrgent = totalSeconds <= 60 && !isEventLive;
+
+          return (
+            <motion.div
+              className="pointer-events-none fixed inset-0 z-[10000]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: isUrgent ? 1 : 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    "radial-gradient(circle 900px at 50% 50%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.03) 50%, rgba(0,0,0,0.08) 70%, rgba(0,0,0,0.5) 80%, rgba(0,0,0,0.6) 100%)",
+                }}
+              />
+            </motion.div>
+          );
+        })()}
 
         <motion.div
           initial={{ opacity: 0, y: 18 }}
@@ -717,19 +746,48 @@ export default function MiroThonLandingPage() {
 
           {/* COUNTDOWN/COUNTDOWN TIMER */}
           <div className="mt-4 sm:mt-8 flex w-full max-w-full items-end justify-center gap-1 sm:gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-2">
-            <CountdownBlock label="Days" value={countdown.days} />
-            <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-black/20 flex-shrink-0 mb-6">
-              :
-            </div>
-            <CountdownBlock label="Hours" value={countdown.hours} />
-            <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-black/20 flex-shrink-0 mb-6">
-              :
-            </div>
-            <CountdownBlock label="Mins" value={countdown.minutes} />
-            <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-black/20 flex-shrink-0 mb-6">
-              :
-            </div>
-            <CountdownBlock label="Secs" value={countdown.seconds} />
+            {(() => {
+              const totalSeconds =
+                countdown.days * 86400 +
+                countdown.hours * 3600 +
+                countdown.minutes * 60 +
+                countdown.seconds;
+              const isUrgent = totalSeconds <= 60 && !isEventLive;
+
+              return (
+                <>
+                  <CountdownBlock
+                    label="Days"
+                    value={countdown.days}
+                    isUrgent={isUrgent}
+                  />
+                  <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-black/20 flex-shrink-0 mb-6">
+                    :
+                  </div>
+                  <CountdownBlock
+                    label="Hours"
+                    value={countdown.hours}
+                    isUrgent={isUrgent}
+                  />
+                  <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-black/20 flex-shrink-0 mb-6">
+                    :
+                  </div>
+                  <CountdownBlock
+                    label="Mins"
+                    value={countdown.minutes}
+                    isUrgent={isUrgent}
+                  />
+                  <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-black/20 flex-shrink-0 mb-6">
+                    :
+                  </div>
+                  <CountdownBlock
+                    label="Secs"
+                    value={countdown.seconds}
+                    isUrgent={isUrgent}
+                  />
+                </>
+              );
+            })()}
           </div>
 
           {/* DESCRIPTION */}
