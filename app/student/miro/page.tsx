@@ -480,6 +480,78 @@ function RemoteCursorsDemo() {
   );
 }
 
+function FireEmojisEffect({ isActive }: { isActive: boolean }) {
+  const [fires, setFires] = useState<
+    Array<{
+      id: number;
+      x: number;
+      y: number;
+      duration: number;
+      delay: number;
+    }>
+  >([]);
+  const fireIdRef = useRef(0);
+
+  useEffect(() => {
+    if (!isActive) {
+      setFires([]);
+      return;
+    }
+
+    // Generate initial batch of fires
+    const generateFires = () => {
+      const newFires = Array.from({ length: 5 }, (_, i) => ({
+        id: fireIdRef.current + i,
+        // Bias towards edges (left or right side)
+        x: Math.random() > 0.5 ? Math.random() * 20 : 80 + Math.random() * 20,
+        y: Math.random() * 100,
+        duration: 3 + Math.random() * 2, // 3-5 seconds
+        delay: Math.random() * 0.5, // stagger start times
+      }));
+      fireIdRef.current += 5;
+      return newFires;
+    };
+
+    setFires(generateFires());
+
+    // Continuously spawn new fires every 2.5 seconds
+    const interval = setInterval(() => {
+      setFires((prev) => [...prev, ...generateFires()]);
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, [isActive]);
+
+  return (
+    <AnimatePresence>
+      {isActive &&
+        fires.map((fire) => (
+          <motion.div
+            key={fire.id}
+            className="pointer-events-none absolute text-4xl sm:text-5xl md:text-6xl"
+            style={{
+              left: `${fire.x}%`,
+              top: `${fire.y}%`,
+            }}
+            initial={{ opacity: 0, scale: 0.5, y: 0 }}
+            animate={{
+              opacity: [0, 1, 1, 0],
+              scale: [0.5, 1, 1, 0.5],
+              y: [-100, -200, -300],
+            }}
+            transition={{
+              duration: fire.duration,
+              delay: fire.delay,
+              ease: "easeInOut",
+            }}
+          >
+            🔥
+          </motion.div>
+        ))}
+    </AnimatePresence>
+  );
+}
+
 export default function MiroThonLandingPage() {
   const discordLink = "https://discord.gg/QZ9mXJQm";
 
@@ -567,7 +639,7 @@ export default function MiroThonLandingPage() {
       </div>
 
       {/* HEADER */}
-      <header className="sticky top-0 flex items-center justify-between px-6 pt-4 z-[9999]  backdrop-blur-sm pb-2">
+      <header className="sticky top-0 flex items-center justify-between px-6 pt-4 z-[9999] pb-2">
         {/* LOGO SECTION - BIGGER */}
         <div className="flex items-center gap-3 sm:gap-4">
           <a
@@ -607,7 +679,10 @@ export default function MiroThonLandingPage() {
       {/* HERO */}
       <section className="relative w-full min-h-dvh flex flex-col items-center justify-center px-4 sm:px-6 text-center pb-6 sm:pb-10 z-10">
         {/* Animated Collaborative Cursors Demo - Hero Section */}
-        <RemoteCursorsDemo />
+        {!isEventLive && <RemoteCursorsDemo />}
+
+        {/* Fire Emojis Effect when event is live */}
+        <FireEmojisEffect isActive={isEventLive} />
 
         {/* Hero Section Background */}
         <div className="pointer-events-none absolute inset-0 -z-20" aria-hidden>
