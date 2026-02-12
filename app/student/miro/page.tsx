@@ -481,7 +481,7 @@ export default function MiroThonLandingPage() {
   const discordLink = "https://discord.gg/QZ9mXJQm";
 
   // const eventStart = useMemo(() => new Date("2026-02-13T18:00:00+08:00"), []); // REAL DATE
-  const eventStart = useMemo(() => new Date("2026-02-12T19:50:00+08:00"), []); // TEST DATE
+  const eventStart = useMemo(() => new Date("2026-02-12T19:55:00+08:00"), []); // TEST DATE
   const eventEnd = useMemo(() => new Date("2026-02-14T23:59:00+08:00"), []);
 
   const [countdown, setCountdown] = useState<Countdown>(
@@ -507,9 +507,16 @@ export default function MiroThonLandingPage() {
       const newCountdown = getCountdown(isLive ? eventEnd : eventStart);
       setCountdown(newCountdown);
 
-      // Trigger animation when countdown reaches exactly 3 seconds
+      // Calculate total remaining seconds until eventStart
+      const totalRemainingSeconds =
+        newCountdown.days * 86400 +
+        newCountdown.hours * 3600 +
+        newCountdown.minutes * 60 +
+        newCountdown.seconds;
+
+      // Trigger animation when 3 seconds remain before eventStart
       if (
-        newCountdown.seconds === 3 &&
+        totalRemainingSeconds === 3 &&
         !animationTriggeredRef.current &&
         !isEventLive
       ) {
@@ -517,8 +524,8 @@ export default function MiroThonLandingPage() {
         animationTriggeredRef.current = true;
       }
 
-      // Reset animation trigger when countdown resets
-      if (newCountdown.seconds > 3) {
+      // Reset animation trigger only when event goes live
+      if (isLive && !wasLiveRef.current) {
         animationTriggeredRef.current = false;
       }
 
