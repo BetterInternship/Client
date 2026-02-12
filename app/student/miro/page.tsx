@@ -483,7 +483,7 @@ export default function MiroThonLandingPage() {
   const discordLink = "https://discord.gg/QZ9mXJQm";
 
   // const eventStart = useMemo(() => new Date("2026-02-13T18:00:00+08:00"), []); // REAL DATE
-  const eventStart = useMemo(() => new Date("2026-02-12T20:45:20+08:00"), []); // TEST DATE
+  const eventStart = useMemo(() => new Date("2026-02-12T21:03:20+08:00"), []); // TEST DATE
   const eventEnd = useMemo(() => new Date("2026-02-14T23:59:00+08:00"), []);
 
   const [countdown, setCountdown] = useState<Countdown>(
