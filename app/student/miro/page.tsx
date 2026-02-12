@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useRef } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import miroIcon from "./miro-icon.svg";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,193 @@ import { HeaderTitle } from "@/components/shared/header";
 import { InteractiveGridPattern } from "@/components/landingStudent/sections/1stSection/interactive-grid-pattern";
 import { ArrowRight, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import confetti from "canvas-confetti";
+
+function CountdownDisplayAnimation({
+  show,
+  onDone,
+}: {
+  show: boolean;
+  onDone?: () => void;
+}) {
+  const [step, setStep] = useState<3 | 2 | 1 | 0>(3);
+  const isAnimatingRef = useRef(false);
+
+  useEffect(() => {
+    if (!show || isAnimatingRef.current) return;
+
+    isAnimatingRef.current = true;
+    setStep(3);
+
+    const timeline = [
+      { t: 0, value: 3 },
+      { t: 1000, value: 2 },
+      { t: 2000, value: 1 },
+      { t: 3000, value: 0 },
+    ];
+
+    const timeouts: NodeJS.Timeout[] = [];
+
+    timeline.forEach((item) => {
+      timeouts.push(setTimeout(() => setStep(item.value as any), item.t));
+    });
+
+    // confetti at GO
+    timeouts.push(
+      setTimeout(() => {
+        confetti({
+          particleCount: 200,
+          spread: 90,
+          startVelocity: 55,
+          scalar: 1.1,
+          origin: { y: 0.6 },
+        });
+
+        confetti({
+          particleCount: 120,
+          spread: 120,
+          startVelocity: 40,
+          scalar: 0.9,
+          origin: { y: 0.7 },
+        });
+      }, 3000),
+    );
+
+    timeouts.push(
+      setTimeout(() => {
+        isAnimatingRef.current = false;
+        onDone?.();
+      }, 4200),
+    );
+
+    return () => {
+      timeouts.forEach(clearTimeout);
+    };
+  }, [show]);
+
+
+  const number = step === 0 ? "GO!" : step;
+
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          className="fixed inset-0 z-[10000] flex items-center justify-center pointer-events-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
+        >
+          {/* Dark overlay */}
+          <motion.div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          />
+
+          {/* Light flash pulse */}
+          <motion.div
+            className="absolute inset-0 bg-white"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: step === 0 ? [0, 0.35, 0] : 0 }}
+            transition={{ duration: 0.35 }}
+          />
+
+          {/* Big number */}
+          <motion.div
+            key={number}
+            initial={{
+              scale: 0.2,
+              opacity: 0,
+              rotate: -12,
+              filter: "blur(12px)",
+            }}
+            animate={{
+              scale: [0.2, 1.35, 1],
+              opacity: [0, 1, 1],
+              rotate: [0, 0, 0],
+              filter: ["blur(12px)", "blur(0px)", "blur(0px)"],
+            }}
+            exit={{
+              scale: 2,
+              opacity: 0,
+              filter: "blur(16px)",
+            }}
+            transition={{
+              duration: 0.65,
+              ease: [0.2, 0.8, 0.2, 1],
+            }}
+            className="relative flex items-center justify-center"
+          >
+            {/* Glow ring */}
+            <motion.div
+              className="absolute rounded-full border border-white/30"
+              style={{
+                width: "min(65vw, 380px)",
+                height: "min(65vw, 380px)",
+              }}
+              animate={{
+                scale: [1, 1.15, 1],
+                opacity: [0.4, 0.7, 0.4],
+              }}
+              transition={{
+                duration: 1,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+
+            {/* Rotating neon ring */}
+            <motion.div
+              className="absolute rounded-full border-[5px] border-transparent border-t-yellow-400 border-r-yellow-300"
+              style={{
+                width: "min(70vw, 420px)",
+                height: "min(70vw, 420px)",
+              }}
+              animate={{ rotate: 360 }}
+              transition={{
+                duration: 1,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+            />
+
+            {/* Text */}
+            <motion.span
+              className="font-black tracking-tight drop-shadow-[0_0_25px_rgba(255,215,0,0.8)]"
+              style={{
+                fontSize: step === 0 ? "min(18vw, 160px)" : "min(30vw, 220px)",
+                lineHeight: 1,
+                color: "#FFD700",
+              }}
+              animate={{
+                x: step === 0 ? [0, -8, 8, -8, 8, 0] : 0,
+                y: step === 0 ? [0, -5, 5, -5, 5, 0] : 0,
+              }}
+              transition={{
+                duration: 0.5,
+                repeat: step === 0 ? 6 : 0,
+              }}
+            >
+              {number}
+            </motion.span>
+          </motion.div>
+
+          {/* Bottom caption */}
+          <motion.p
+            className="absolute bottom-16 text-sm sm:text-base font-mono text-white/60"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+          >
+            {step === 0 ? "Miro-thon is LIVE." : "Get ready..."}
+          </motion.p>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
 
 type Countdown = {
   days: number;
@@ -293,7 +480,8 @@ function RemoteCursorsDemo() {
 export default function MiroThonLandingPage() {
   const discordLink = "https://discord.gg/QZ9mXJQm";
 
-  const eventStart = useMemo(() => new Date("2026-02-13T18:00:00+08:00"), []);
+  // const eventStart = useMemo(() => new Date("2026-02-13T18:00:00+08:00"), []); // REAL DATE
+  const eventStart = useMemo(() => new Date("2026-02-12T19:50:00+08:00"), []); // TEST DATE
   const eventEnd = useMemo(() => new Date("2026-02-14T23:59:00+08:00"), []);
 
   const [countdown, setCountdown] = useState<Countdown>(
@@ -305,14 +493,37 @@ export default function MiroThonLandingPage() {
     return now >= eventStart.getTime() && now < eventEnd.getTime();
   });
 
+  const [showLaunchAnimation, setShowLaunchAnimation] = useState(false);
+  const wasLiveRef = useRef(false);
+  const animationTriggeredRef = useRef(false);
+
   useEffect(() => {
     const interval = setInterval(() => {
       const now = new Date().getTime();
       const isLive = now >= eventStart.getTime() && now < eventEnd.getTime();
       setIsEventLive(isLive);
-      // Show countdown to event end when live, otherwise countdown to event start
-      setCountdown(getCountdown(isLive ? eventEnd : eventStart));
-    }, 1000);
+
+      // Calculate countdown, switching between start and end times
+      const newCountdown = getCountdown(isLive ? eventEnd : eventStart);
+      setCountdown(newCountdown);
+
+      // Trigger animation when countdown reaches exactly 3 seconds
+      if (
+        newCountdown.seconds === 3 &&
+        !animationTriggeredRef.current &&
+        !isEventLive
+      ) {
+        setShowLaunchAnimation(true);
+        animationTriggeredRef.current = true;
+      }
+
+      // Reset animation trigger when countdown resets
+      if (newCountdown.seconds > 3) {
+        animationTriggeredRef.current = false;
+      }
+
+      wasLiveRef.current = isLive;
+    }, 100);
 
     return () => clearInterval(interval);
   }, [eventStart, eventEnd]);
@@ -323,6 +534,12 @@ export default function MiroThonLandingPage() {
 
   return (
     <div className="min-h-screen text-black overflow-x-hidden">
+      {/* Synced Countdown Display */}
+      <CountdownDisplayAnimation
+        show={showLaunchAnimation}
+        onDone={() => setShowLaunchAnimation(false)}
+      />
+
       {/* texture */}
       <div className="pointer-events-none fixed inset-0 -z-20" aria-hidden>
         <InteractiveGridPattern
@@ -402,45 +619,61 @@ export default function MiroThonLandingPage() {
         >
           {/* HEADLINE WITH INLINE LOGO */}
           <div className="max-w-5xl relative">
-            {isEventLive ? (
-              <>
-                <div
-                  className="inline-block mb-6 border border-red-600 rounded-full px-6 py-3 bg-red-100"
-                  style={{
-                    animation:
-                      "pulse-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-                  }}
+            <AnimatePresence mode="wait">
+              {isEventLive ? (
+                <motion.div
+                  key="live"
+                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
                 >
-                  <span className="text-red-600 font-black text-sm uppercase tracking-widest flex items-center gap-2">
-                    <Circle className="h-5 w-5 fill-white -mt-0.5" />
-                    Live NOW
-                  </span>
-                </div>
-                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.05] tracking-tight relative text-red-600">
-                  The Miro-thon is happening NOW!
-                </h1>
-              </>
-            ) : (
-              <h1 className="text-5xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.05] tracking-tight relative">
-                Fight for an internship at{" "}
-                <a
-                  href="https://miro.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 sm:gap-2 align-middle hover:brightness-90 transition-all duration-200 -mt-2"
-                  style={{ color: "#ffdc33" }}
+                  <div
+                    className="inline-block mb-6 border border-red-600 rounded-full px-6 py-3 bg-red-100"
+                    style={{
+                      animation:
+                        "pulse-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                    }}
+                  >
+                    <span className="text-red-600 font-black text-sm uppercase tracking-widest flex items-center gap-2">
+                      <Circle className="h-5 w-5 fill-white -mt-0.5" />
+                      Live NOW
+                    </span>
+                  </div>
+                  <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.05] tracking-tight relative text-red-600">
+                    The Miro-thon is happening NOW!
+                  </h1>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="before"
+                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
                 >
-                  <Image
-                    src={miroIcon}
-                    alt="Miro"
-                    width={80}
-                    height={80}
-                    className="h-[0.85em] w-[0.85em] inline-block align-middle"
-                  />
-                  Miro
-                </a>
-              </h1>
-            )}
+                  <h1 className="text-5xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.05] tracking-tight relative">
+                    Fight for an internship at{" "}
+                    <a
+                      href="https://miro.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 sm:gap-2 align-middle hover:brightness-90 transition-all duration-200 -mt-2"
+                      style={{ color: "#ffdc33" }}
+                    >
+                      <Image
+                        src={miroIcon}
+                        alt="Miro"
+                        width={80}
+                        height={80}
+                        className="h-[0.85em] w-[0.85em] inline-block align-middle"
+                      />
+                      Miro
+                    </a>
+                  </h1>
+                </motion.div>
+              )}
+            </AnimatePresence>
             {/* Sticky Note - Desktop: positioned bottom-right, Mobile: below */}
             <motion.div
               className={`relative sm:absolute mt-2 sm:mt-0 flex justify-center sm:justify-end ${isEventLive ? "sm:top-[15.5rem] sm:right-[5rem] sm:translate-y-1/3" : "sm:top-[11rem] sm:right-[13rem] sm:translate-y-1/3"}`}

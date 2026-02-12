@@ -59,6 +59,7 @@
     "@vercel/og": "^0.8.6",
     "@yornaath/batshit": "^0.11.1",
     "autoprefixer": "^10.4.20",
+    "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "1.0.4",
