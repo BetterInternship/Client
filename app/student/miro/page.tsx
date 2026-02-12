@@ -712,7 +712,7 @@ export default function MiroThonLandingPage() {
             </AnimatePresence>
             {/* Sticky Note - Desktop: positioned bottom-right, Mobile: below */}
             <motion.div
-              className={`relative sm:absolute mt-2 sm:mt-0 flex justify-center sm:justify-end ${isEventLive ? "sm:top-[15.5rem] sm:right-[5rem] sm:translate-y-1/3" : "sm:top-[11rem] sm:right-[13rem] sm:translate-y-1/3"}`}
+              className={`relative lg:absolute mt-2 lg:mt-0 flex justify-center lg:justify-end ${isEventLive ? "lg:top-[15.5rem] lg:right-[5rem] lg:translate-y-1/3" : "lg:top-[11rem] lg:right-[13rem] lg:translate-y-1/3"}`}
               style={{ rotate: "-3deg" }}
               animate={{ rotate: [-3, 1, -2] }}
               transition={{
