@@ -74,7 +74,6 @@ function CountdownDisplayAnimation({
     };
   }, [show]);
 
-
   const number = step === 0 ? "GO!" : step;
 
   return (
@@ -234,7 +233,9 @@ function CountdownBlock({
 }) {
   return (
     <div className="flex flex-col items-center">
-      <p className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight font-mono transition-colors duration-300 ${isUrgent ? "text-red-600" : "text-black"}`}>
+      <p
+        className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight font-mono transition-colors duration-300 ${isUrgent ? "text-red-600" : "text-black"}`}
+      >
         {String(value).padStart(2, "0")}
       </p>
       <p className="mt-1 text-[10px] sm:text-xs font-semibold uppercase tracking-widest text-black/40 font-mono">
@@ -483,7 +484,7 @@ export default function MiroThonLandingPage() {
   const discordLink = "https://discord.gg/QZ9mXJQm";
 
   // const eventStart = useMemo(() => new Date("2026-02-13T18:00:00+08:00"), []); // REAL DATE
-  const eventStart = useMemo(() => new Date("2026-02-12T21:03:20+08:00"), []); // TEST DATE
+  const eventStart = useMemo(() => new Date("2026-02-12T21:10:20+08:00"), []); // TEST DATE
   const eventEnd = useMemo(() => new Date("2026-02-14T23:59:00+08:00"), []);
 
   const [countdown, setCountdown] = useState<Countdown>(
