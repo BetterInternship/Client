@@ -1305,7 +1305,7 @@ export default function MiroThonLandingPage() {
               // Miro-thon Concluded State
               <div className="relative z-10 flex flex-col items-center justify-center text-center">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4">
-                  Miro-thon Concluded
+                  Miro-thon concluded
                 </h2>
                 <p className="text-white/70 font-mono text-base md:text-lg">
                   Thank you for participating in the Miro-thon!
