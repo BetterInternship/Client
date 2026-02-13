@@ -26,7 +26,7 @@ export const ActionButton = ({
         className="
           group
           relative
-          flex justify-center items-center p-2 transition rounded-sm
+          flex justify-center items-center p-2 transition rounded-[0.33em]
           enabled:data-[destructive=true]:hover:text-red-600
           enabled:data-[destructive=true]:hover:bg-destructive/25
           enabled:data-[destructive=false]:hover:bg-primary/25

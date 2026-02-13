@@ -37,12 +37,6 @@ const JobDetailsPage = ({
           isMobile ? "px-1" : ""
         )}
       >
-        <button
-          onClick={handleBack}
-          className="flex items-center text-gray-600 hover:text-gray-900 transition-colors m-4"
-        >
-          <ArrowLeft className="s-8" />
-        </button>
         <Card>
           <JobDetails
             job={job}

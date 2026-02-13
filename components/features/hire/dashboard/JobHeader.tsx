@@ -4,9 +4,9 @@ import { useOwnedJobs } from "@/hooks/use-employer-api";
 import { useModal } from "@/hooks/use-modal";
 import { Job } from "@/lib/db/db.types";
 import { cn, formatDateWithoutTime } from "@/lib/utils";
-import { ArrowLeft, Edit, Info, Trash2 } from "lucide-react";
+import { ArrowLeft, Edit, Info, Trash2, Users } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { ListingsDeleteModal } from "../listings";
 import { useListingsBusinessLogic } from "@/hooks/hire/listings/use-listings-business-logic";
@@ -56,6 +56,7 @@ export default function JobHeader({
   };
 
   const { isMobile } = useAppContext();
+  const pathname = usePathname();
 
   return (
     <div className="sticky top-0 z-40 border-b border-gray-200 bg-white shadow-sm">
@@ -73,10 +74,10 @@ export default function JobHeader({
         <div className={cn(
           "flex items-center justify-between gap-4",
           isMobile
-          ? "flex-col"
+          ? "flex-col items-start"
           : ""
         )}>
-          <div className="flex gap-4">
+          <div className="flex justify-between gap-4">
             {/* back button */}
             <button
               onClick={handleJobBack}
@@ -111,51 +112,75 @@ export default function JobHeader({
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <div className="flex items-center gap-1">
-              <Link
-                href={{
-                  pathname: "/listings/details",
-                  query: { jobId: job.id },
-                }}
-              >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={saving}
-                  className="hover:bg-primary/10 gap-1"
-                >
-                  <Info size={16} />
-                  <span>Preview</span>
-                </Button>
-              </Link>
-              <Link
-                href={{
-                  pathname: "/listings/edit",
-                  query: { jobId: job.id },
-                }}
-              >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={saving}
-                  className="hover:bg-primary/10 gap-1"
-                >
-                  <Edit size={16} />
-                  <span>Edit</span>
-                </Button>
-              </Link>
+          <div className="flex gap-1">
+            <Link
+              href={{
+                pathname: "/dashboard/manage",
+                query: { jobId: job.id },
+              }}
+            >
               <Button
                 variant="ghost"
                 size="sm"
                 disabled={saving}
-                className="hover:bg-destructive/10 hover:text-destructive gap-1"
-                onClick={handleJobDelete}
+                className={cn(
+                  "hover:bg-primary/10 gap-1",
+                  pathname === "/dashboard/manage"
+                  ? "bg-primary/10 text-primary"
+                  : ""
+                )}
               >
-                <Trash2 size={16} />
-                <span>Delete</span>
+                <Users size={16} />
+                <span>Applicants</span>
               </Button>
-            </div>
+            </Link>
+            <Link
+              href={{
+                pathname: "/listings/details",
+                query: { jobId: job.id },
+              }}
+            >
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={saving}
+                className={cn(
+                  "hover:bg-primary/10 gap-1",
+                  pathname === "/listings/details"
+                  ? "bg-primary/10 text-primary"
+                  : ""
+                )}
+              >
+                <Info size={16} />
+                <span>Preview</span>
+              </Button>
+            </Link>
+            <Link
+              href={{
+                pathname: "/listings/edit",
+                query: { jobId: job.id },
+              }}
+            >
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={saving}
+                className="hover:bg-primary/10 gap-1"
+              >
+                <Edit size={16} />
+                <span>Edit</span>
+              </Button>
+            </Link>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={saving}
+              className="hover:bg-destructive/10 hover:text-destructive gap-1"
+              onClick={handleJobDelete}
+            >
+              <Trash2 size={16} />
+              <span>Delete</span>
+            </Button>
           </div>
         </div>
       </div>

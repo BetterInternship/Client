@@ -10,7 +10,7 @@ import { Loader } from "@/components/ui/loader";
 import { useEmployerApplications, useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { Bell, Plus } from "lucide-react";
+import { Bell, Briefcase, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { useAuthContext } from "../authctx";
@@ -18,6 +18,7 @@ import { Job } from "@/lib/db/db.types";
 import { FadeIn } from "@/components/animata/fade";
 import { useModal } from "@/hooks/use-modal";
 import { getNotificationPermission, requestNotificationPermission, checkNotificationSupport, shouldShowNotification, sendNotification } from "@/lib/notification-service";
+import { HeaderIcon, HeaderText } from "@/components/ui/text";
 
 function DashboardContent() {
   const { isMobile } = useMobile();
@@ -86,31 +87,34 @@ function DashboardContent() {
         </div>
       </NotifPermsModal>
       <div className={cn("flex-1 flex flex-col w-full py-4", isMobile ? "px-1" : "px-4")}>
-        <h3 className="text-primary tracking-tighter">Welcome back, {profile.data?.name}</h3>
+        <div className="flex flex-row items-center gap-3 mb-2">
+          <HeaderIcon icon={Briefcase} />
+          <HeaderText>Job listings</HeaderText>
+        </div>
         <div className="flex flex-col flex-1">
-              <div>
-                <div className="flex gap-4 mb-4">
-                  <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{activeJobs.length}</span> active listing{activeJobs.length !== 1 ? "s" : ""}</span>
-                  <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{inactiveJobs.length}</span> inactive listing{inactiveJobs.length !== 1 ? "s" : ""}</span>
-                </div>
-                <JobsContent
-                  applications={applications.employer_applications}
-                  jobs={ownedJobs}
-                  employerId={profile.data?.id || ""}
-                  updateJob={handleUpdateJob}
-                  isLoading={isLoading}
-                />
-                {isMobile && (
-                  <Link href="listings/create">
-                    <button
-                      aria-label="Create new listing"
-                      className="fixed bottom-8 right-2 bg-primary rounded-full p-5 z-10 shadow-xl z-[1000]"
-                    >
-                      <Plus className="h-5 w-5 text-white"/>
-                    </button>
-                  </Link>
-                )}
-              </div>
+          <div>
+            <div className="flex gap-4 mb-4">
+              <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{activeJobs.length}</span> active listing{activeJobs.length !== 1 ? "s" : ""}</span>
+              <span className="text-gray-500 pb-2"><span className="text-primary font-bold">{inactiveJobs.length}</span> inactive listing{inactiveJobs.length !== 1 ? "s" : ""}</span>
+            </div>
+            <JobsContent
+              applications={applications.employer_applications}
+              jobs={ownedJobs}
+              employerId={profile.data?.id || ""}
+              updateJob={handleUpdateJob}
+              isLoading={isLoading}
+            />
+            {isMobile && (
+              <Link href="listings/create">
+                <button
+                  aria-label="Create new listing"
+                  className="fixed bottom-8 right-2 bg-primary rounded-full p-5 z-10 shadow-xl z-[1000]"
+                >
+                  <Plus className="h-5 w-5 text-white"/>
+                </button>
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </ContentLayout>

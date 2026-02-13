@@ -20,8 +20,9 @@ import { Loader } from "@/components/ui/loader";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
 import Link from "next/link";
-import { TriangleAlert } from "lucide-react";
+import { TriangleAlert, User } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { HeaderIcon, HeaderText } from "@/components/ui/text";
 
 const [EmployerRegisterForm, useEmployerRegisterForm] =
   createEditForm<Employer>();
@@ -189,14 +190,13 @@ const EmployerEditor = ({
           className="w-full"
         >
           <Card>
-            <div className="mb-4">
-              <h2 className="text-3xl tracking-tighter font-bold text-gray-700">
-                Employer Registration
-              </h2>
+            <div className="flex flex-row items-center gap-3 mb-2">
+              <HeaderIcon icon={User} />
+              <HeaderText>Register</HeaderText>
             </div>
             {missingFields.length > 0 && (
               <div className={cn(
-                "flex gap-2 items-center mb-4 p-3 bg-destructive/10 text-destructive border border-destructive/50 rounded-lg",
+                "flex gap-2 items-center mb-4 p-3 bg-destructive/10 text-destructive border border-destructive/50 rounded-[0.33em]",
                 isMobile ? "flex-col items-start" : ""
               )}>
                 <TriangleAlert size={isMobile ? 24 : 20} />
@@ -231,7 +231,6 @@ const EmployerEditor = ({
                 )}
               />
               <div>
-                <ErrorLabel value={formErrors.phone_number} />
                 <FormInput
                   label="Phone Number"
                   value={formData.phone_number ?? ""}
@@ -240,9 +239,9 @@ const EmployerEditor = ({
                     missingFields.find((field) => field === "Phone number") ? "border-destructive" : ""
                   )}
                 />
+                <ErrorLabel value={formErrors.phone_number} />
               </div>
               <div>
-                <ErrorLabel value={formErrors.email} />
                 <FormInput
                   label="Email"
                   value={formData.email ?? ""}
@@ -251,6 +250,7 @@ const EmployerEditor = ({
                     missingFields.find((field) => field === "Contact email") ? "border-destructive" : ""
                   )}
                 />
+                <ErrorLabel value={formErrors.email} />
               </div>
               <div>
                 <FormInput
@@ -269,16 +269,6 @@ const EmployerEditor = ({
             <div className="mb-4 flex flex-col space-y-3">
               <div>
                 <FormInput
-                  label="Company Name (optional)"
-                  value={formData.name ?? ""}
-                  setter={fieldSetter("name")}
-                  required={false}
-                  maxLength={100}
-                />
-              </div>
-              <div>
-                <ErrorLabel value={formErrors.legal_entity_name} />
-                <FormInput
                   label="Legal Entity Name"
                   value={formData.legal_entity_name ?? ""}
                   setter={fieldSetter("legal_entity_name")}
@@ -287,6 +277,16 @@ const EmployerEditor = ({
                   className={cn(
                     missingFields.find((field) => field === "Legal entity name") ? "border-destructive" : ""
                   )}
+                />
+                <ErrorLabel value={formErrors.legal_entity_name} />
+              </div>
+              <div>
+                <FormInput
+                  label="Company Name (optional)"
+                  value={formData.name ?? ""}
+                  setter={fieldSetter("name")}
+                  required={false}
+                  maxLength={100}
                 />
               </div>
               <FormInput

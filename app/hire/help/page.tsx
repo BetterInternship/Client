@@ -3,9 +3,10 @@ import ContentLayout from "@/components/features/hire/content-layout";
 import { Card } from "@/components/ui/card";
 import { useAppContext } from "@/lib/ctx-app";
 import { cn } from "@/lib/utils";
-import { BadgeInfo, Bug, Calendar, Facebook, LucideMessageCircleMore, Mail, Phone } from "lucide-react";
+import { BadgeInfo, Bug, Calendar, Facebook, HelpCircle, LucideMessageCircleMore, Mail, Phone } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
+import { HeaderIcon, HeaderText } from "@/components/ui/text";
 
 export default function HelpPage() {
   const { isMobile } = useAppContext();
@@ -25,7 +26,10 @@ export default function HelpPage() {
           transition={{ duration: 0.3, ease: "easeOut" }}
         >
 
-          <h3 className="text-primary tracking-tighter">Help center</h3>
+          <div className="flex flex-row items-center gap-3 mb-2">
+            <HeaderIcon icon={HelpCircle} />
+            <HeaderText>Help</HeaderText>
+          </div>
           <div className="grid gap-2 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1">
             <Card
               className="flex flex-col gap-2"

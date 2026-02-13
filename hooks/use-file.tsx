@@ -196,19 +196,32 @@ export const useFileUpload = ({
    */
   const upload = async (file?: File | null) => {
     if (!file) return false;
+    
+    try {
+      // Perform the file upload
+      setIsUploading(true);
+      const form = FileUploadFormBuilder.new(filename);
+      form.file(file);
+  
+      // Check for success
+      const result = (await uploader(form.build())) as { success?: boolean };
+      setResponse(result);
+  
+      if (!result.success) {
+        if (!silent) alert("Upload failed.");
+        return false;
+      };
 
-    // Perform the file upload
-    setIsUploading(true);
-    const form = FileUploadFormBuilder.new(filename);
-    form.file(file);
-
-    // Check for success
-    const result = (await uploader(form.build())) as { success?: boolean };
-    setResponse(result);
-
-    if (!result.success) return;
-    if (!silent) alert("File uploaded successfully!");
-    setIsUploading(false);
+      if (!silent) alert("File uploaded successfully!");
+      return true;
+    } catch (error) {
+      console.error("Upload failed: ", error);
+      setResponse({ success: false });
+      
+      if (!silent) alert("Upload failed. Please try again later.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return {

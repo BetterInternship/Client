@@ -154,7 +154,7 @@ export default function ProfilePage() {
       !isProfileBaseComplete(profile.data) ||
       profile.data?.acknowledged_auto_apply === false
     ) {
-      router.push(`profile/complete-profile?dest=forms`);
+      router.push(`/forms`);
     }
   }, []);
 
