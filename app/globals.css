@@ -17,6 +17,31 @@
   }
 }
 
+@keyframes shiny {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.shiny-text {
+  background: linear-gradient(
+    90deg,
+    #ffd700 0%,
+    #fff44f 25%,
+    #ffeb3b 50%,
+    #fff44f 75%,
+    #ffd700 100%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shiny 3s linear infinite;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

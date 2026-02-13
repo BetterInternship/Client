@@ -10,12 +10,7 @@ export function AnimatedShinyText({
 }) {
   // Inherits font-size/weight from parent; just paints the text
   return (
-    <span
-      className={cn(
-        "shiny-text bg-clip-text text-transparent inline-block align-baseline",
-        className
-      )}
-    >
+    <span className={cn("shiny-text inline-block align-baseline", className)}>
       {children}
     </span>
   );

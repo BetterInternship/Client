@@ -11,6 +11,194 @@ import { InteractiveGridPattern } from "@/components/landingStudent/sections/1st
 import { ArrowRight, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
+import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
+
+function EventEndAnimation({
+  show,
+  onDone,
+}: {
+  show: boolean;
+  onDone?: () => void;
+}) {
+  const [step, setStep] = useState<5 | 4 | 3 | 2 | 1 | 0>(5);
+  const isAnimatingRef = useRef(false);
+
+  useEffect(() => {
+    if (!show || isAnimatingRef.current) return;
+
+    isAnimatingRef.current = true;
+    setStep(5);
+
+    const timeline = [
+      { t: 0, value: 5 },
+      { t: 1000, value: 4 },
+      { t: 2000, value: 3 },
+      { t: 3000, value: 2 },
+      { t: 4000, value: 1 },
+      { t: 5000, value: 0 },
+    ];
+
+    const timeouts: NodeJS.Timeout[] = [];
+
+    timeline.forEach((item) => {
+      timeouts.push(setTimeout(() => setStep(item.value as any), item.t));
+    });
+
+    // confetti at TIME'S UP
+    timeouts.push(
+      setTimeout(() => {
+        confetti({
+          particleCount: 300,
+          spread: 90,
+          startVelocity: 60,
+          scalar: 1.2,
+          origin: { y: 0.6 },
+        });
+
+        confetti({
+          particleCount: 180,
+          spread: 120,
+          startVelocity: 50,
+          scalar: 1,
+          origin: { y: 0.7 },
+        });
+      }, 5000),
+    );
+
+    timeouts.push(
+      setTimeout(() => {
+        isAnimatingRef.current = false;
+        onDone?.();
+      }, 6700),
+    );
+
+    return () => {
+      timeouts.forEach(clearTimeout);
+    };
+  }, [show]);
+
+  const text = step === 0 ? "TIME'S UP!" : step;
+
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          className="fixed inset-0 z-[10000] flex items-center justify-center pointer-events-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
+        >
+          {/* Dark overlay */}
+          <motion.div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          />
+
+          {/* Red flash pulse */}
+          <motion.div
+            className="absolute inset-0 bg-red-600"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: step === 0 ? [0, 0.4, 0] : 0 }}
+            transition={{ duration: 0.4 }}
+          />
+
+          {/* Big countdown/text */}
+          <motion.div
+            key={text}
+            initial={{
+              scale: 0.2,
+              opacity: 0,
+              rotate: -12,
+              filter: "blur(12px)",
+            }}
+            animate={{
+              scale: [0.2, 1.35, 1],
+              opacity: [0, 1, 1],
+              rotate: [0, 0, 0],
+              filter: ["blur(12px)", "blur(0px)", "blur(0px)"],
+            }}
+            exit={{
+              scale: 2,
+              opacity: 0,
+              filter: "blur(16px)",
+            }}
+            transition={{
+              duration: 0.65,
+              ease: [0.2, 0.8, 0.2, 1],
+            }}
+            className="relative flex items-center justify-center"
+          >
+            {/* Glow ring */}
+            <motion.div
+              className="absolute rounded-full border border-red-400/30"
+              style={{
+                width: "min(65vw, 380px)",
+                height: "min(65vw, 380px)",
+              }}
+              animate={{
+                scale: [1, 1.15, 1],
+                opacity: [0.4, 0.7, 0.4],
+              }}
+              transition={{
+                duration: 1,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+
+            {/* Rotating red ring */}
+            <motion.div
+              className="absolute rounded-full border-[5px] border-transparent border-t-red-500 border-r-red-400"
+              style={{
+                width: "min(70vw, 420px)",
+                height: "min(70vw, 420px)",
+              }}
+              animate={{ rotate: 360 }}
+              transition={{
+                duration: 1,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+            />
+
+            {/* Text */}
+            <motion.span
+              className="font-black tracking-tight drop-shadow-[0_0_25px_rgba(220,38,38,0.8)]"
+              style={{
+                fontSize: step === 0 ? "min(18vw, 160px)" : "min(30vw, 220px)",
+                lineHeight: 1,
+                color: "#DC2626",
+              }}
+              animate={{
+                x: step === 0 ? [0, -8, 8, -8, 8, 0] : 0,
+                y: step === 0 ? [0, -5, 5, -5, 5, 0] : 0,
+              }}
+              transition={{
+                duration: 0.5,
+                repeat: step === 0 ? 6 : 0,
+              }}
+            >
+              {text}
+            </motion.span>
+          </motion.div>
+
+          {/* Bottom caption */}
+          <motion.p
+            className="absolute bottom-16 text-sm sm:text-base font-mono text-white/60"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+          >
+            {step === 0 ? "Event has concluded." : "Time left..."}
+          </motion.p>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
 
 function CountdownDisplayAnimation({
   show,
@@ -556,7 +744,7 @@ export default function MiroThonLandingPage() {
   const discordLink = "https://discord.gg/QZ9mXJQm";
 
   const eventStart = useMemo(() => new Date("2026-02-13T18:00:00+08:00"), []); // REAL DATE
-  const eventEnd = useMemo(() => new Date("2026-02-14T23:59:00+08:00"), []);
+  const eventEnd = useMemo(() => new Date("2026-02-15T00:00:00+08:00"), []);
 
   const [countdown, setCountdown] = useState<Countdown>(
     getCountdown(eventStart),
@@ -567,18 +755,29 @@ export default function MiroThonLandingPage() {
     return now >= eventStart.getTime() && now < eventEnd.getTime();
   });
 
+  const [isEventPast, setIsEventPast] = useState(() => {
+    const now = new Date().getTime();
+    return now > eventEnd.getTime();
+  });
+
   const [showLaunchAnimation, setShowLaunchAnimation] = useState(false);
+  const [showEndAnimation, setShowEndAnimation] = useState(false);
   const wasLiveRef = useRef(false);
   const animationTriggeredRef = useRef(false);
+  const endAnimationTriggeredRef = useRef(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
       const now = new Date().getTime();
       const isLive = now >= eventStart.getTime() && now < eventEnd.getTime();
+      const isPast = now > eventEnd.getTime();
       setIsEventLive(isLive);
+      setIsEventPast(isPast);
 
       // Calculate countdown, switching between start and end times
-      const newCountdown = getCountdown(isLive ? eventEnd : eventStart);
+      const newCountdown = getCountdown(
+        isPast ? eventStart : isLive ? eventEnd : eventStart,
+      );
       setCountdown(newCountdown);
 
       // Calculate total remaining seconds until eventStart
@@ -596,6 +795,22 @@ export default function MiroThonLandingPage() {
       ) {
         setShowLaunchAnimation(true);
         animationTriggeredRef.current = true;
+      }
+
+      // Trigger animation when 5 seconds remain before eventEnd
+      const secondsUntilEnd = eventEnd.getTime() - now;
+      const secondsUntilEndValue = Math.max(
+        0,
+        Math.floor(secondsUntilEnd / 1000),
+      );
+
+      if (
+        secondsUntilEndValue === 5 &&
+        !endAnimationTriggeredRef.current &&
+        isEventLive
+      ) {
+        setShowEndAnimation(true);
+        endAnimationTriggeredRef.current = true;
       }
 
       // Reset animation trigger only when event goes live
@@ -619,6 +834,12 @@ export default function MiroThonLandingPage() {
       <CountdownDisplayAnimation
         show={showLaunchAnimation}
         onDone={() => setShowLaunchAnimation(false)}
+      />
+
+      {/* Event End Animation */}
+      <EventEndAnimation
+        show={showEndAnimation}
+        onDone={() => setShowEndAnimation(false)}
       />
 
       {/* texture */}
@@ -702,7 +923,7 @@ export default function MiroThonLandingPage() {
             countdown.hours * 3600 +
             countdown.minutes * 60 +
             countdown.seconds;
-          const isUrgent = totalSeconds <= 60 && !isEventLive;
+          const isUrgent = totalSeconds <= 60;
 
           return (
             <motion.div
@@ -731,7 +952,22 @@ export default function MiroThonLandingPage() {
           {/* HEADLINE WITH INLINE LOGO */}
           <div className="max-w-5xl relative">
             <AnimatePresence mode="wait">
-              {isEventLive ? (
+              {isEventPast ? (
+                <motion.div
+                  key="past"
+                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                  className="flex flex-col items-center gap-4"
+                >
+                  <h1 className="text-5xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.05] tracking-tight relative">
+                    <AnimatedShinyText>
+                      You've crossed the finish line
+                    </AnimatedShinyText>
+                  </h1>
+                </motion.div>
+              ) : isEventLive ? (
                 <motion.div
                   key="live"
                   initial={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -786,90 +1022,96 @@ export default function MiroThonLandingPage() {
               )}
             </AnimatePresence>
             {/* Sticky Note - Desktop: positioned bottom-right, Mobile: below */}
-            <motion.div
-              className={`relative xl:absolute mt-2 xl:mt-0 flex justify-center xl:justify-end ${isEventLive ? "xl:top-[15.5rem] xl:right-[5rem] xl:translate-y-1/3" : "xl:top-[11rem] xl:right-[13rem] xl:translate-y-1/3"}`}
-              style={{ rotate: "-3deg" }}
-              animate={{ rotate: [-3, 1, -2] }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                repeatType: "reverse",
-              }}
-            >
-              {!isEventLive && (
-                <span
-                  className="inline-block text-black/60 text-lg sm:text-xl md:text-2xl bg-yellow-100 px-3 py-1 sm:px-4 sm:py-2 rounded-[0.33em] shadow-lg"
-                  style={{
-                    boxShadow:
-                      "0 4px 6px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05)",
-                  }}
-                >
-                  (yes, that{" "}
-                  <a
-                    href="https://miro.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline transition-all duration-200"
+            {!isEventPast && (
+              <motion.div
+                className={`relative xl:absolute mt-2 xl:mt-0 flex justify-center xl:justify-end ${isEventLive ? "xl:top-[15.5rem] xl:right-[5rem] xl:translate-y-1/3" : "xl:top-[11rem] xl:right-[13rem] xl:translate-y-1/3"}`}
+                style={{ rotate: "-3deg" }}
+                animate={{ rotate: [-3, 1, -2] }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                }}
+              >
+                {!isEventLive && (
+                  <span
+                    className="inline-block text-black/60 text-lg sm:text-xl md:text-2xl bg-yellow-100 px-3 py-1 sm:px-4 sm:py-2 rounded-[0.33em] shadow-lg"
+                    style={{
+                      boxShadow:
+                        "0 4px 6px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05)",
+                    }}
                   >
-                    Miro
-                  </a>
-                  )
-                </span>
-              )}
-            </motion.div>
+                    (yes, that{" "}
+                    <a
+                      href="https://miro.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline transition-all duration-200"
+                    >
+                      Miro
+                    </a>
+                    )
+                  </span>
+                )}
+              </motion.div>
+            )}
           </div>
 
-          {/* COUNTDOWN/COUNTDOWN TIMER */}
-          <div className="mt-4 sm:mt-8 flex w-full max-w-full items-end justify-center gap-1 sm:gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-2">
-            {(() => {
-              const totalSeconds =
-                countdown.days * 86400 +
-                countdown.hours * 3600 +
-                countdown.minutes * 60 +
-                countdown.seconds;
-              const isUrgent = totalSeconds <= 60 && !isEventLive;
+          {/* COUNTDOWN/COUNTDOWN TIMER - Only show when event is live or before it starts */}
+          {!isEventPast && (
+            <div className="mt-4 sm:mt-8 flex w-full max-w-full items-end justify-center gap-1 sm:gap-3 md:gap-4 lg:gap-6 overflow-x-auto pb-2">
+              {(() => {
+                const totalSeconds =
+                  countdown.days * 86400 +
+                  countdown.hours * 3600 +
+                  countdown.minutes * 60 +
+                  countdown.seconds;
+                const isUrgent = totalSeconds <= 60;
 
-              return (
-                <>
-                  <CountdownBlock
-                    label="Days"
-                    value={countdown.days}
-                    isUrgent={isUrgent}
-                  />
-                  <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-black/20 flex-shrink-0 mb-6">
-                    :
-                  </div>
-                  <CountdownBlock
-                    label="Hours"
-                    value={countdown.hours}
-                    isUrgent={isUrgent}
-                  />
-                  <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-black/20 flex-shrink-0 mb-6">
-                    :
-                  </div>
-                  <CountdownBlock
-                    label="Mins"
-                    value={countdown.minutes}
-                    isUrgent={isUrgent}
-                  />
-                  <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-black/20 flex-shrink-0 mb-6">
-                    :
-                  </div>
-                  <CountdownBlock
-                    label="Secs"
-                    value={countdown.seconds}
-                    isUrgent={isUrgent}
-                  />
-                </>
-              );
-            })()}
-          </div>
+                return (
+                  <>
+                    <CountdownBlock
+                      label="Days"
+                      value={countdown.days}
+                      isUrgent={isUrgent}
+                    />
+                    <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-black/20 flex-shrink-0 mb-6">
+                      :
+                    </div>
+                    <CountdownBlock
+                      label="Hours"
+                      value={countdown.hours}
+                      isUrgent={isUrgent}
+                    />
+                    <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-black/20 flex-shrink-0 mb-6">
+                      :
+                    </div>
+                    <CountdownBlock
+                      label="Mins"
+                      value={countdown.minutes}
+                      isUrgent={isUrgent}
+                    />
+                    <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-black/20 flex-shrink-0 mb-6">
+                      :
+                    </div>
+                    <CountdownBlock
+                      label="Secs"
+                      value={countdown.seconds}
+                      isUrgent={isUrgent}
+                    />
+                  </>
+                );
+              })()}
+            </div>
+          )}
 
           {/* DESCRIPTION */}
           <p className="mt-4 sm:mt-6 max-w-2xl text-sm sm:text-base md:text-lg leading-relaxed text-black/70 font-mono">
             {isEventLive
               ? "Submit your work on Discord. Good luck!"
-              : "Can you build something in 30 hours that will impress Miro?"}
+              : isEventPast
+                ? "Thank you for participating in the Miro-thon"
+                : "Can you build something in 30 hours that will impress Miro?"}
           </p>
 
           {/* CTA BUTTONS */}
@@ -880,7 +1122,7 @@ export default function MiroThonLandingPage() {
                 className={`w-full h-14 text-lg font-bold bg-blue-600 text-white hover:bg-blue-500`}
                 onClick={openDiscord}
               >
-                {isEventLive ? "Join Discord" : "Join the Miro-thon!"}
+                Join Discord
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </MagneticButton>
@@ -1015,7 +1257,7 @@ export default function MiroThonLandingPage() {
         </motion.div>
       </section>
 
-      {/* TIME IS TICKING / EVENT LIVE SECTION */}
+      {/* TIME IS TICKING / EVENT LIVE / MIRO-THON CONCLUDED SECTION */}
       <section className="mx-auto w-full max-w-6xl px-6 pb-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -1024,109 +1266,134 @@ export default function MiroThonLandingPage() {
           transition={{ duration: 0.6 }}
         >
           <div
-            className={`relative overflow-hidden rounded-[0.33em] border p-8 sm:p-12 ${isEventLive ? "border-red-600 bg-red-950" : "border-gray-800 bg-black"}`}
+            className={`relative overflow-hidden rounded-[0.33em] border p-8 sm:p-12 ${
+              isEventPast
+                ? "border-gray-800 bg-black"
+                : isEventLive
+                  ? "border-red-600 bg-red-950"
+                  : "border-gray-800 bg-black"
+            }`}
           >
             {/* Gradient background effect */}
             <div
-              className={`pointer-events-none absolute inset-0 ${isEventLive ? "bg-gradient-to-r from-red-600/10 via-transparent to-red-600/10" : "bg-gradient-to-r from-blue-600/10 via-transparent to-blue-600/10"}`}
+              className={`pointer-events-none absolute inset-0 ${
+                isEventPast
+                  ? "bg-gradient-to-r from-yellow-600/10 via-transparent to-yellow-600/10"
+                  : isEventLive
+                    ? "bg-gradient-to-r from-red-600/10 via-transparent to-red-600/10"
+                    : "bg-gradient-to-r from-blue-600/10 via-transparent to-blue-600/10"
+              }`}
             />
 
-            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12">
-              {/* Left: Title and Timer */}
-              <div className="flex flex-col gap-4 lg:gap-6 flex-1 w-full md:w-auto md:items-start items-center md:text-left text-center">
-                <div>
-                  {isEventLive ? (
-                    <h2 className="text-3xl md:text-4xl font-black text-white">
-                      The event is{" "}
-                      <span className="text-red-400">LIVE NOW</span>
-                    </h2>
-                  ) : (
-                    <h2 className="text-3xl md:text-4xl font-black text-white">
-                      Time is <span className="text-yellow-300">ticking</span>
-                    </h2>
-                  )}
-                </div>
-
-                {/* Countdown Timer */}
-                <div className="flex items-center justify-center md:justify-start gap-1 sm:gap-2 md:gap-3">
-                  <div className="flex flex-col items-center">
-                    <p
-                      className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-mono ${isEventLive ? "text-red-400" : "text-white"}`}
-                    >
-                      {String(countdown.days).padStart(2, "0")}
-                    </p>
-                    <p
-                      className={`mt-1 text-xs font-bold ${isEventLive ? "text-red-300/60" : "text-white/40"}`}
-                    >
-                      D
-                    </p>
-                  </div>
-                  <p
-                    className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black -mt-2 ${isEventLive ? "text-red-600/50" : "text-white/50"}`}
-                  >
-                    :
-                  </p>
-                  <div className="flex flex-col items-center">
-                    <p
-                      className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-mono ${isEventLive ? "text-red-400" : "text-white"}`}
-                    >
-                      {String(countdown.hours).padStart(2, "0")}
-                    </p>
-                    <p
-                      className={`mt-1 text-xs font-bold ${isEventLive ? "text-red-300/60" : "text-white/40"}`}
-                    >
-                      H
-                    </p>
-                  </div>
-                  <p
-                    className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black -mt-2 ${isEventLive ? "text-red-600/50" : "text-white/50"}`}
-                  >
-                    :
-                  </p>
-                  <div className="flex flex-col items-center">
-                    <p
-                      className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-mono ${isEventLive ? "text-red-400" : "text-white"}`}
-                    >
-                      {String(countdown.minutes).padStart(2, "0")}
-                    </p>
-                    <p
-                      className={`mt-1 text-xs font-bold ${isEventLive ? "text-red-300/60" : "text-white/40"}`}
-                    >
-                      M
-                    </p>
-                  </div>
-                  <p
-                    className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black -mt-2 ${isEventLive ? "text-red-600/50" : "text-white/50"}`}
-                  >
-                    :
-                  </p>
-                  <div className="flex flex-col items-center">
-                    <p
-                      className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-mono ${isEventLive ? "text-red-400" : "text-white"}`}
-                    >
-                      {String(countdown.seconds).padStart(2, "0")}
-                    </p>
-                    <p
-                      className={`mt-1 text-xs font-bold ${isEventLive ? "text-red-300/60" : "text-white/40"}`}
-                    >
-                      S
-                    </p>
-                  </div>
-                </div>
+            {isEventPast ? (
+              // Miro-thon Concluded State
+              <div className="relative z-10 flex flex-col items-center justify-center text-center">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4">
+                  Miro-thon Concluded
+                </h2>
+                <p className="text-white/70 font-mono text-base md:text-lg">
+                  Thank you for participating in the Miro-thon!
+                </p>
               </div>
+            ) : (
+              // Live or Before Event State
+              <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12">
+                {/* Left: Title and Timer */}
+                <div className="flex flex-col gap-4 lg:gap-6 flex-1 w-full md:w-auto md:items-start items-center md:text-left text-center">
+                  <div>
+                    {isEventLive ? (
+                      <h2 className="text-3xl md:text-4xl font-black text-white">
+                        The event is{" "}
+                        <span className="text-red-400">LIVE NOW</span>
+                      </h2>
+                    ) : (
+                      <h2 className="text-3xl md:text-4xl font-black text-white">
+                        Time is <span className="text-yellow-300">ticking</span>
+                      </h2>
+                    )}
+                  </div>
 
-              {/* Right: CTA Button */}
-              <MagneticButton className="w-full md:w-auto">
-                <Button
-                  size="lg"
-                  className={`w-full md:w-auto h-14 text-lg font-bold transition-colors duration-200 ${isEventLive ? "bg-red-600 text-white hover:bg-red-500" : "bg-yellow-400 text-black hover:bg-yellow-300"}`}
-                  onClick={openDiscord}
-                >
-                  {isEventLive ? "View Submissions" : "Join Now"}
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </MagneticButton>
-            </div>
+                  {/* Countdown Timer */}
+                  <div className="flex items-center justify-center md:justify-start gap-1 sm:gap-2 md:gap-3">
+                    <div className="flex flex-col items-center">
+                      <p
+                        className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-mono ${isEventLive ? "text-red-400" : "text-white"}`}
+                      >
+                        {String(countdown.days).padStart(2, "0")}
+                      </p>
+                      <p
+                        className={`mt-1 text-xs font-bold ${isEventLive ? "text-red-300/60" : "text-white/40"}`}
+                      >
+                        D
+                      </p>
+                    </div>
+                    <p
+                      className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black -mt-2 ${isEventLive ? "text-red-600/50" : "text-white/50"}`}
+                    >
+                      :
+                    </p>
+                    <div className="flex flex-col items-center">
+                      <p
+                        className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-mono ${isEventLive ? "text-red-400" : "text-white"}`}
+                      >
+                        {String(countdown.hours).padStart(2, "0")}
+                      </p>
+                      <p
+                        className={`mt-1 text-xs font-bold ${isEventLive ? "text-red-300/60" : "text-white/40"}`}
+                      >
+                        H
+                      </p>
+                    </div>
+                    <p
+                      className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black -mt-2 ${isEventLive ? "text-red-600/50" : "text-white/50"}`}
+                    >
+                      :
+                    </p>
+                    <div className="flex flex-col items-center">
+                      <p
+                        className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-mono ${isEventLive ? "text-red-400" : "text-white"}`}
+                      >
+                        {String(countdown.minutes).padStart(2, "0")}
+                      </p>
+                      <p
+                        className={`mt-1 text-xs font-bold ${isEventLive ? "text-red-300/60" : "text-white/40"}`}
+                      >
+                        M
+                      </p>
+                    </div>
+                    <p
+                      className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black -mt-2 ${isEventLive ? "text-red-600/50" : "text-white/50"}`}
+                    >
+                      :
+                    </p>
+                    <div className="flex flex-col items-center">
+                      <p
+                        className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-mono ${isEventLive ? "text-red-400" : "text-white"}`}
+                      >
+                        {String(countdown.seconds).padStart(2, "0")}
+                      </p>
+                      <p
+                        className={`mt-1 text-xs font-bold ${isEventLive ? "text-red-300/60" : "text-white/40"}`}
+                      >
+                        S
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right: CTA Button */}
+                <MagneticButton className="w-full md:w-auto">
+                  <Button
+                    size="lg"
+                    className={`w-full md:w-auto h-14 text-lg font-bold transition-colors duration-200 ${isEventLive ? "bg-red-600 text-white hover:bg-red-500" : "bg-yellow-400 text-black hover:bg-yellow-300"}`}
+                    onClick={openDiscord}
+                  >
+                    {isEventLive ? "View Submissions" : "Join Now"}
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </MagneticButton>
+              </div>
+            )}
           </div>
         </motion.div>
       </section>
