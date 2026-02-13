@@ -1,7 +1,10 @@
 import { RefObject, useRef, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { ProcessingTransition } from "./ProcessingTransition";
-import { UploadIcon } from "lucide-react";
+import { TriangleAlert, UploadIcon } from "lucide-react";
+import { Toast } from "@/components/ui/toast";
+import { cn } from "@/lib/utils";
+import { useAppContext } from "@/lib/ctx-app";
 
 const ResumeUpload = ({
   ref,
@@ -10,7 +13,7 @@ const ResumeUpload = ({
   onComplete,
   isParsing,
   accept = ".pdf,application/pdf",
-  maxSizeMB = 5,
+  maxSizeMB = 2.5,
 }: {
   ref: RefObject<HTMLInputElement>;
   promise?: Promise<any>;
@@ -22,6 +25,8 @@ const ResumeUpload = ({
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [fileTooBig, setFileTooBig] = useState(false);
+  const [noFile, setNoFile] = useState(false);
   const dragCounter = useRef(0);
 
   const triggerFileDialog = () => ref.current?.click();
@@ -31,7 +36,7 @@ const ResumeUpload = ({
     // simple checks
     const tooBig = f.size > maxSizeMB * 1024 * 1024;
     if (tooBig) {
-      alert(`File must be ≤ ${maxSizeMB}MB.`);
+      setFileTooBig(true);
       return;
     }
     // accept check (relies on extension or mime)
@@ -43,10 +48,12 @@ const ResumeUpload = ({
       (a) => !a.startsWith(".") && f.type.toLowerCase() === a
     );
     if (!(nameOk || mimeOk)) {
-      alert("Please upload a PDF file.");
+      setNoFile(true);
       return;
     }
 
+    setFileTooBig(false);
+    setNoFile(false);
     setFile(f);
     onSelect(f);
   };
@@ -83,12 +90,32 @@ const ResumeUpload = ({
     handleChosenFile(f);
   };
 
+  const { isMobile } = useAppContext();
+
   return (
     <AnimatePresence>
       {isParsing ? (
         <ProcessingTransition promise={promise} onComplete={onComplete} />
       ) : (
         <div className="flex flex-col items-center w-full mx-auto">
+          {fileTooBig &&
+            <div className={cn(
+              "flex gap-2 items-center mb-4 p-3 bg-destructive/10 text-destructive border border-destructive/50 rounded-[0.33em] w-full",
+              isMobile ? "flex-col items-start" : ""
+            )}>
+              <TriangleAlert size={isMobile ? 24 : 20} />
+              <span className="text-sm justify-center">Please upload a file smaller than 2.5 MB.</span>
+            </div>
+          }
+          {noFile &&
+            <div className={cn(
+              "flex gap-2 items-center mb-4 p-3 bg-destructive/10 text-destructive border border-destructive/50 rounded-[0.33em] w-full",
+              isMobile ? "flex-col items-start" : ""
+            )}>
+              <TriangleAlert size={isMobile ? 24 : 20} />
+              <span className="text-sm justify-center">Please upload your resume.</span>
+            </div>
+          }
           <div
             className={
               "flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-[0.33em] cursor-pointer transition-colors " +
