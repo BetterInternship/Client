@@ -32,10 +32,12 @@ export default function FormsPage() {
 
   // Profile check only runs if authenticated
   useEffect(() => {
-    if (!isAuthenticated()) return; // Exit if not authenticated
+    if (!isAuthenticated()) {
+      return; // Exit if not authenticated
+    }
 
     if (!profile.data?.department && !profile.isPending)
-      router.push("/profile");
+      router.push("/profile/complete-profile");
   }, [isAuthenticated, profile.data?.department, profile.isPending, router]);
 
   // Query 1: Check for updates (cheap query - just a timestamp)
