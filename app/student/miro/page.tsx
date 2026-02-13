@@ -12,6 +12,7 @@ import { ArrowRight, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
+import { CheckeredFinishFlag } from "@/components/shared/checkered-finish-flag";
 
 function EventEndAnimation({
   show,
@@ -961,6 +962,7 @@ export default function MiroThonLandingPage() {
                   transition={{ duration: 0.5, ease: "easeInOut" }}
                   className="flex flex-col items-center gap-4"
                 >
+                  <CheckeredFinishFlag />
                   <h1 className="text-5xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.05] tracking-tight relative">
                     <AnimatedShinyText>
                       You've crossed the finish line
