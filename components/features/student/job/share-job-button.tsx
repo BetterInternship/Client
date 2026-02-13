@@ -30,7 +30,7 @@ export const ShareJobButton = ({ id }: { id: string }) => {
         "!p-4", 
         clicked 
         ? "text-supportive border-supportive"
-        : "text-gray-500"
+        : ""
       )}
     >
       {clicked ? <CopyCheck /> : <Copy />}
