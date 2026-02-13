@@ -1,6 +1,7 @@
 "use client";
 
 import ContentLayout from "@/components/features/hire/content-layout";
+import JobHeader from "@/components/features/hire/dashboard/JobHeader";
 import JobDetailsPage from "@/components/features/hire/listings/jobDetails";
 import { Loader } from "@/components/ui/loader";
 import { JobService } from "@/lib/api/services";
@@ -46,6 +47,10 @@ function JobDetailsPageRouteContent() {
       fetchJobData();
     }, [jobId]);
 
+  const handleJobUpdate = (updates: Partial<Job>) => {
+    setJobData(prev => prev ? { ...prev, ...updates } : null);
+  };
+
   if (loading || !jobData) {
     return (
       <ContentLayout>
@@ -55,11 +60,17 @@ function JobDetailsPageRouteContent() {
   }
 
   return (
-    <ContentLayout>
+    <ContentLayout className="!p-0">
       <div className="w-full h-full">
-        <JobDetailsPage
+        <JobHeader
           job={jobData}
+          onJobUpdate={handleJobUpdate}
         />
+        <div className="flex-1 overflow-auto pt-4 px-2 sm:px-8">
+          <JobDetailsPage
+            job={jobData}
+          />
+        </div>
       </div>
     </ContentLayout>
   )

@@ -43,7 +43,7 @@ export const CommandMenu = ({
               onClick={item.onClick}
               disabled={item.disabled}
               className={cn(
-                "flex justify-center items-center rounded-sm gap-2 p-2",
+                "flex justify-center items-center rounded-[0.33em] gap-2 p-2",
                 "data-[button-layout=vertical]:flex-col",
                 item.destructive
                   ? "text-red-700 hover:bg-red-300/50 active:bg-red-400/75"
@@ -75,7 +75,7 @@ export const CommandMenu = ({
       role="toolbar"
       onClick={(e) => e.stopPropagation()}
       className={cn(
-        "flex gap-4 px-6 py-2 justify-center items-stretch text-xs bg-white border border-gray-300 rounded-md transition bg-clip-padding bg-clip-border",
+        "flex gap-4 px-6 py-2 justify-center items-stretch text-xs bg-white border border-gray-300 rounded-[0.33em] transition bg-clip-padding bg-clip-border",
         className,
       )}
     >

@@ -18,7 +18,7 @@ export default function StatusBadge({
 
   return (
     <div className={cn(
-      "flex justify-center items-center gap-1 w-fit px-2 py-1 rounded-sm text-xs transition",
+      "flex justify-center items-center gap-1 w-fit px-2 py-1 rounded-[0.33em] text-xs transition",
       status.bgColor,
       status.fgColor,
     )}>

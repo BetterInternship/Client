@@ -12,9 +12,10 @@ import {
 } from "@/components/EditForm";
 
 import { Card } from "@/components/ui/card";
-import { MailCheck, TriangleAlert } from "lucide-react";
+import { MailCheck, TriangleAlert, User } from "lucide-react";
 import { Loader } from "@/components/ui/loader";
 import { AnimatePresence, motion } from "framer-motion";
+import { HeaderIcon, HeaderText } from "@/components/ui/text";
 
 export default function LoginPage() {
   return (
@@ -108,13 +109,14 @@ function LoginContent() {
         <div className="flex items-center w-full max-w-2xl h-full">
           <Card className="w-full">
             {/* Welcome Message */}
-            <div className="text-3xl tracking-tighter font-bold text-gray-700 mb-4">
-              Employer Login
+            <div className="flex flex-row items-center gap-3 mb-2">
+              <HeaderIcon icon={User} />
+              <HeaderText>Log in</HeaderText>
             </div>
             {/* Error Message */}
             {error && (
               <div className={cn(
-                "flex gap-2 items-center mb-4 p-3 bg-destructive/10 text-destructive border border-destructive/50 rounded-lg",
+                "flex gap-2 items-center mb-4 p-3 bg-destructive/10 text-destructive border border-destructive/50 rounded-[0.33em]",
                 isMobile ? "flex-col items-start" : ""
               )}>
                 <TriangleAlert size={isMobile ? 24 : 20} />

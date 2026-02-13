@@ -86,7 +86,7 @@ export function ApplicationsCommandBar({
       {visible && (
         <>
         <motion.div
-          className="fixed bottom-4 z-[100] shadow-xl w-max overflow-hidden rounded-md"
+          className="fixed bottom-4 z-[100] shadow-xl w-max overflow-hidden rounded-0.33em"
           initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
           animate={{ scale: 1, filter: "blur(0px)", opacity: 1, x: "-50%", backdropFilter: "blur(50%)" }}
           exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
