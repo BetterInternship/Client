@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Check, Share } from "lucide-react";
+import { Check, Copy, CopyCheck, Share } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export const ShareJobButton = ({ id }: { id: string }) => {
@@ -21,15 +21,20 @@ export const ShareJobButton = ({ id }: { id: string }) => {
 
   return (
     <Button
-      variant="ghost"
+      variant="outline"
       onClick={copyJobLink}
       name="Copy link"
       scheme="default"
       size="md"
-      className={cn("!p-4", clicked ? "text-supportive" : "text-gray-500")}
+      className={cn(
+        "!p-4", 
+        clicked 
+        ? "text-supportive border-supportive"
+        : "text-gray-500"
+      )}
     >
-      {clicked ? <Check /> : <Share />}
-      {clicked ? "Copied link" : "Share"}
+      {clicked ? <CopyCheck /> : <Copy />}
+      {clicked ? "Copied link" : "Copy link"}
     </Button>
   );
 };
