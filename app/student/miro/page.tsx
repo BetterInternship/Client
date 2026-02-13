@@ -747,9 +747,12 @@ export default function MiroThonLandingPage() {
   const eventStart = useMemo(() => new Date("2026-02-13T18:00:00+08:00"), []); // REAL DATE
   const eventEnd = useMemo(() => new Date("2026-02-15T00:00:00+08:00"), []);
 
-  const [countdown, setCountdown] = useState<Countdown>(
-    getCountdown(eventStart),
-  );
+  const [countdown, setCountdown] = useState<Countdown>(() => {
+    const now = new Date().getTime();
+    const isLive = now >= eventStart.getTime() && now < eventEnd.getTime();
+    const isPast = now > eventEnd.getTime();
+    return getCountdown(isPast ? eventStart : isLive ? eventEnd : eventStart);
+  });
 
   const [isEventLive, setIsEventLive] = useState(() => {
     const now = new Date().getTime();
@@ -768,6 +771,17 @@ export default function MiroThonLandingPage() {
   const endAnimationTriggeredRef = useRef(false);
 
   useEffect(() => {
+    // Immediately calculate correct countdown on first render
+    const now = new Date().getTime();
+    const isLive = now >= eventStart.getTime() && now < eventEnd.getTime();
+    const isPast = now > eventEnd.getTime();
+    const initialCountdown = getCountdown(
+      isPast ? eventStart : isLive ? eventEnd : eventStart,
+    );
+    setCountdown(initialCountdown);
+    setIsEventLive(isLive);
+    setIsEventPast(isPast);
+
     const interval = setInterval(() => {
       const now = new Date().getTime();
       const isLive = now >= eventStart.getTime() && now < eventEnd.getTime();
