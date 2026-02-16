@@ -6,6 +6,14 @@ import { useFormsLayout } from "../layout";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import {
+  config,
+  configure,
+  useAsyncProcess,
+} from "@betterinternship/components";
+
+// ! move this to the topmost client component you can find
+configure({ orchestratorApi: "https://orca.betterinternship.com/process" });
 
 /**
  * The individual form page.
@@ -14,7 +22,14 @@ import { toast } from "sonner";
 export default function FormPage() {
   const params = useParams();
   const form = useFormRendererContext();
+
   const { setCurrentFormName, setCurrentFormLabel } = useFormsLayout();
+
+  // ? We will be using this to keep track of async processes on any client we have
+  const test = useAsyncProcess({
+    processId: "00000000-0000-0000-0000-000000000000",
+  });
+  console.log("TEST", test, config);
 
   // Show mobile notice toast on mount
   useEffect(() => {
