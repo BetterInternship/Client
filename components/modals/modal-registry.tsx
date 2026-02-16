@@ -189,7 +189,7 @@ export const useModalRegistry = () => {
             hasClose: false,
             allowBackdropClick: false,
             closeOnEsc: false,
-            showHeaderDivider,
+            showHeaderDivider: true,
           },
         ),
       close: () => close("cancel-form-request"),
