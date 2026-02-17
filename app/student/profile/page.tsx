@@ -789,7 +789,6 @@ const ProfileEditor = forwardRef<
         },
       };
       updateProfile(updatedProfile);
-      await qc.refetchQueries({ queryKey: ["my-profile"] });
       return true;
     },
   }));

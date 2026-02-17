@@ -68,7 +68,7 @@ export const useProfileActions = () => {
     update: useMutation({
       mutationFn: UserService.updateMyProfile,
       onSettled: () =>
-        queryClient.invalidateQueries({ queryKey: ["my-profile"] }),
+        queryClient.invalidateQueries({ queryKey: ["my-profile", "my-form-templates"] }),
     }),
   };
 
