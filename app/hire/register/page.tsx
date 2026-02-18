@@ -6,11 +6,7 @@ import { useAuthContext } from "../authctx";
 import { useRouter } from "next/navigation";
 import { isValidRequiredURL, toURL } from "@/lib/utils/url-utils";
 import { Employer } from "@/lib/db/db.types";
-import {
-  createEditForm,
-  FormCheckbox,
-  FormInput,
-} from "@/components/EditForm";
+import { createEditForm, FormCheckbox, FormInput } from "@/components/EditForm";
 import { Card } from "@/components/ui/card";
 import { ErrorLabel } from "@/components/ui/labels";
 import { Button } from "@/components/ui/button";
@@ -39,12 +35,12 @@ export default function RegisterPage() {
   const { isMobile } = useAppContext();
 
   return (
-    <div className={cn(
-      "flex-1 flex justify-center py-12 pt-12 overflow-y-auto",
-      isMobile
-        ? "px-2"
-        : "px-6"
-    )}>
+    <div
+      className={cn(
+        "flex-1 flex justify-center py-12 pt-12 overflow-y-auto",
+        isMobile ? "px-2" : "px-6",
+      )}
+    >
       <div className="w-full max-w-2xl h-full">
         <EmployerRegisterForm data={{}}>
           <EmployerEditor registerProfile={register} />
@@ -79,7 +75,7 @@ const EmployerEditor = ({
   const { industries, universities, get_university_by_name } = useDbRefs();
   const [isRegistering, setIsRegistering] = useState(false);
   const [additionalFields, setAdditionalFields] = useState<AdditionalFields>(
-    {} as AdditionalFields
+    {} as AdditionalFields,
   );
   const [missingFields, setMissingFields] = useState<string[]>([]);
 
@@ -87,7 +83,10 @@ const EmployerEditor = ({
     // Validate required fields before submitting
     const newMissing: string[] = [];
 
-    if (!formData.legal_entity_name || formData.legal_entity_name.trim().length < 3) {
+    if (
+      !formData.legal_entity_name ||
+      formData.legal_entity_name.trim().length < 3
+    ) {
       newMissing.push("Legal entity name");
     }
     if (
@@ -158,25 +157,25 @@ const EmployerEditor = ({
   useEffect(() => {
     addValidator(
       "name",
-      (name: string) => name && name.length < 3 && `Company Name is not valid.`
+      (name: string) => name && name.length < 3 && `Company Name is not valid.`,
     );
     addValidator(
       "website",
       (link: string) =>
-        link && !isValidRequiredURL(link) && "Invalid website link."
+        link && !isValidRequiredURL(link) && "Invalid website link.",
     );
     addValidator(
       "phone_number",
       (number: string) =>
-        number && !isValidPHNumber(number) && "Invalid PH number."
+        number && !isValidPHNumber(number) && "Invalid PH number.",
     );
     addValidator(
       "email",
-      (email: string) => email && !isValidEmail(email) && "Invalid email."
+      (email: string) => email && !isValidEmail(email) && "Invalid email.",
     );
     addValidator(
       "location",
-      (location: string) => !location && `Provide your main office's location.`
+      (location: string) => !location && `Provide your main office's location.`,
     );
   }, []);
 
@@ -195,18 +194,18 @@ const EmployerEditor = ({
               <HeaderText>Register</HeaderText>
             </div>
             {missingFields.length > 0 && (
-              <div className={cn(
-                "flex gap-2 items-center mb-4 p-3 bg-destructive/10 text-destructive border border-destructive/50 rounded-[0.33em]",
-                isMobile ? "flex-col items-start" : ""
-              )}>
+              <div
+                className={cn(
+                  "flex gap-2 items-center mb-4 p-3 bg-destructive/10 text-destructive border border-destructive/50 rounded-[0.33em]",
+                  isMobile ? "flex-col items-start" : "",
+                )}
+              >
                 <TriangleAlert size={isMobile ? 24 : 20} />
                 <span className="text-sm justify-center">
                   You need to provide values for these fields:
                   <ul>
                     {missingFields.map((field) => (
-                      <li className="text-sm list-disc list-inside">
-                        {field}
-                      </li>
+                      <li className="text-sm list-disc list-inside">{field}</li>
                     ))}
                   </ul>
                 </span>
@@ -227,7 +226,9 @@ const EmployerEditor = ({
                   })
                 }
                 className={cn(
-                  missingFields.find((field) => field === "Contact name") ? "border-destructive" : ""
+                  missingFields.find((field) => field === "Contact name")
+                    ? "border-destructive"
+                    : "",
                 )}
               />
               <div>
@@ -236,7 +237,9 @@ const EmployerEditor = ({
                   value={formData.phone_number ?? ""}
                   setter={fieldSetter("phone_number")}
                   className={cn(
-                    missingFields.find((field) => field === "Phone number") ? "border-destructive" : ""
+                    missingFields.find((field) => field === "Phone number")
+                      ? "border-destructive"
+                      : "",
                   )}
                 />
                 <ErrorLabel value={formErrors.phone_number} />
@@ -247,7 +250,9 @@ const EmployerEditor = ({
                   value={formData.email ?? ""}
                   setter={fieldSetter("email")}
                   className={cn(
-                    missingFields.find((field) => field === "Contact email") ? "border-destructive" : ""
+                    missingFields.find((field) => field === "Contact email")
+                      ? "border-destructive"
+                      : "",
                   )}
                 />
                 <ErrorLabel value={formErrors.email} />
@@ -258,7 +263,9 @@ const EmployerEditor = ({
                   value={formData.website ?? ""}
                   setter={fieldSetter("website")} // invalid type
                   className={cn(
-                    missingFields.find((field) => field === "Company website") ? "border-destructive" : ""
+                    missingFields.find((field) => field === "Company website")
+                      ? "border-destructive"
+                      : "",
                   )}
                 />
               </div>
@@ -275,7 +282,9 @@ const EmployerEditor = ({
                   required={true}
                   maxLength={100}
                   className={cn(
-                    missingFields.find((field) => field === "Legal entity name") ? "border-destructive" : ""
+                    missingFields.find((field) => field === "Legal entity name")
+                      ? "border-destructive"
+                      : "",
                   )}
                 />
                 <ErrorLabel value={formErrors.legal_entity_name} />
@@ -295,7 +304,9 @@ const EmployerEditor = ({
                 setter={fieldSetter("location")}
                 maxLength={100}
                 className={cn(
-                  missingFields.find((field) => field === "Main office city") ? "border-destructive" : ""
+                  missingFields.find((field) => field === "Main office city")
+                    ? "border-destructive"
+                    : "",
                 )}
               />
             </div>
@@ -337,7 +348,13 @@ const EmployerEditor = ({
             </div>
             <div className="flex justify-between items-center w-full pb-2">
               <span className="text-sm text-gray-500">
-                Already have an account? <a className="text-blue-600 hover:text-blue-800 underline font-medium" href="/login">Log in here.</a>
+                Already have an account?{" "}
+                <a
+                  className="text-blue-600 hover:text-blue-800 underline font-medium"
+                  href="/login"
+                >
+                  Log in here.
+                </a>
               </span>
               <Button
                 onClick={register}
@@ -347,7 +364,21 @@ const EmployerEditor = ({
               </Button>
             </div>
             <span className="text-muted-foreground text-sm">
-              Need help? Contact us at <a href="tel://09276604999" className="text-blue-600 hover:text-blue-800 underline font-medium">0927 660 4999</a> or on <a href="viber://add?number=639276604999" className="text-blue-600 hover:text-blue-800 underline font-medium">Viber</a>.
+              Need help? Contact us at{" "}
+              <a
+                href="tel://09276604999"
+                className="text-blue-600 hover:text-blue-800 underline font-medium"
+              >
+                0927 660 4999
+              </a>{" "}
+              or on{" "}
+              <a
+                href="viber://add?number=639276604999"
+                className="text-blue-600 hover:text-blue-800 underline font-medium"
+              >
+                Viber
+              </a>
+              .
             </span>
           </Card>
         </motion.div>

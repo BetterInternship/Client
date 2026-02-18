@@ -7,9 +7,7 @@ import { useAuthContext } from "../authctx";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
 
-import {
-  FormInput,
-} from "@/components/EditForm";
+import { FormInput } from "@/components/EditForm";
 
 import { Card } from "@/components/ui/card";
 import { MailCheck, TriangleAlert, User } from "lucide-react";
@@ -22,7 +20,7 @@ export default function LoginPage() {
     <Suspense fallback={<Loader>Loading login...</Loader>}>
       <LoginContent />
     </Suspense>
-  )
+  );
 }
 
 function LoginContent() {
@@ -92,18 +90,15 @@ function LoginContent() {
     }
   };
 
-  
   return (
     <AnimatePresence>
-      <motion.div 
+      <motion.div
         initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
         animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
         className={cn(
           "flex justify-center py-12 pt-12 h-fit overflow-y-auto",
-          isMobile
-            ? "px-2"
-            : "px-6"
+          isMobile ? "px-2" : "px-6",
         )}
       >
         <div className="flex items-center w-full max-w-2xl h-full">
@@ -115,10 +110,12 @@ function LoginContent() {
             </div>
             {/* Error Message */}
             {error && (
-              <div className={cn(
-                "flex gap-2 items-center mb-4 p-3 bg-destructive/10 text-destructive border border-destructive/50 rounded-[0.33em]",
-                isMobile ? "flex-col items-start" : ""
-              )}>
+              <div
+                className={cn(
+                  "flex gap-2 items-center mb-4 p-3 bg-destructive/10 text-destructive border border-destructive/50 rounded-[0.33em]",
+                  isMobile ? "flex-col items-start" : "",
+                )}
+              >
                 <TriangleAlert size={isMobile ? 24 : 20} />
                 <span className="text-sm justify-center">{error}</span>
               </div>
@@ -126,12 +123,17 @@ function LoginContent() {
 
             {/* check email message on successful register */}
             {status === "success" && !error && (
-              <div className={cn(
-                "flex gap-2 items-center mb-4 p-3 bg-supportive/10 text-supportive border border-supportive/50 rounded-lg",
-                isMobile ? "flex-col items-start" : ""
-              )}>
+              <div
+                className={cn(
+                  "flex gap-2 items-center mb-4 p-3 bg-supportive/10 text-supportive border border-supportive/50 rounded-[0.33em]",
+                  isMobile ? "flex-col items-start" : "",
+                )}
+              >
                 <MailCheck size={isMobile ? 24 : 20} />
-                <span className="text-sm justify-center">Registration successful. Please check your email for the password.</span>
+                <span className="text-sm justify-center">
+                  Registration successful. Please check your email for the
+                  password.
+                </span>
               </div>
             )}
 
@@ -154,19 +156,41 @@ function LoginContent() {
                   required
                 />
                 <div className="flex justify-between items-center w-full text-sm text-gray-500">
-                  <a className="text-blue-600 hover:text-blue-800 underline font-medium" href="/forgot-password">Forgot password?</a>
-                  <Button
-                    type="submit"
-                    disabled={isLoading}
+                  <a
+                    className="text-blue-600 hover:text-blue-800 underline font-medium"
+                    href="/forgot-password"
                   >
+                    Forgot password?
+                  </a>
+                  <Button type="submit" disabled={isLoading}>
                     {isLoading ? "Logging in..." : "Log in"}
                   </Button>
                 </div>
                 <span className="text-sm text-gray-500">
-                  Don't have an account? <a className="text-blue-600 hover:text-blue-800 underline font-medium" href="/register">Register here.</a>
+                  Don't have an account?{" "}
+                  <a
+                    className="text-blue-600 hover:text-blue-800 underline font-medium"
+                    href="/register"
+                  >
+                    Register here.
+                  </a>
                 </span>
                 <span className="text-muted-foreground text-sm">
-                  Need help? Contact us at <a href="tel://09276604999" className="text-blue-600 hover:text-blue-800 underline font-medium">0927 660 4999</a> or on <a href="viber://add?number=639276604999" className="text-blue-600 hover:text-blue-800 underline font-medium">Viber</a>.
+                  Need help? Contact us at{" "}
+                  <a
+                    href="tel://09276604999"
+                    className="text-blue-600 hover:text-blue-800 underline font-medium"
+                  >
+                    0927 660 4999
+                  </a>{" "}
+                  or on{" "}
+                  <a
+                    href="viber://add?number=639276604999"
+                    className="text-blue-600 hover:text-blue-800 underline font-medium"
+                  >
+                    Viber
+                  </a>
+                  .
                 </span>
               </div>
             </form>
