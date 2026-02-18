@@ -227,7 +227,7 @@ export const FormService = {
   async getForm(formName: string) {
     const form = await APIClient.get<
       {
-        formDocument: {
+        formTemplate: {
           name: string;
           label: string;
           version: number;
@@ -332,7 +332,6 @@ export const UserService = {
       APIRouteBuilder("users").r(userId).build(),
     );
   },
-
 };
 
 // Job Services
