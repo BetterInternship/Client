@@ -162,14 +162,14 @@ export const FormRendererContextProvider = ({
     const fm = new FormMetadata(form.formMetadata);
     const newFormName = form.formMetadata.name;
     const newFormLabel = form.formMetadata.label;
-    const newFormVersion = form.formDocument.version;
+    const newFormVersion = form.formTemplate.version;
 
     // Only update form if it's new
     setFormMetadata(fm);
     setFormName(newFormName);
     setFormLabel(newFormLabel);
     setFormVersion(newFormVersion);
-    setDocumentName(form.formDocument.name);
+    setDocumentName(form.formMetadata.label);
     setDocumentUrl(form.documentUrl);
     const loadedFields = fm.getFieldsForClientService("initiator");
 
