@@ -63,9 +63,19 @@ export function FormActionButtons() {
     },
   });
 
-  const noEsign = !form.formMetadata.mayInvolveEsign();
-  const initiateFormLabel = "Sign via BetterInternship";
-  const filloutFormLabel = !noEsign ? "Print for Wet Signature" : "Print form";
+  const hasSignatureFields = form.formMetadata.mayInvolveEsign();
+  const hasAdditionalSigningParties = form.formMetadata
+    .getSigningParties()
+    .some((party) => party._id !== "initiator");
+  const canSubmitToBetterInternship =
+    hasSignatureFields || hasAdditionalSigningParties;
+  const initiateFormLabel = hasSignatureFields
+    ? "Sign via BetterInternship"
+    : "Submit to BetterInternship";
+  const initiateFormLabelMobile = hasSignatureFields ? "E-Sign" : "Submit";
+  const filloutFormLabel = canSubmitToBetterInternship
+    ? "Print for Wet Signature"
+    : "Print form";
 
   const [busy, setBusy] = useState<boolean>(false);
   const onWithoutEsignClick = () => void handleSubmit(false);
@@ -179,7 +189,7 @@ export function FormActionButtons() {
   return (
     <TooltipProvider>
       <div className="flex flex-row items-stretch gap-2 w-full sm:w-auto sm:justify-end">
-        {noEsign ? (
+        {!canSubmitToBetterInternship ? (
           <Button
             onClick={onWithoutEsignClick}
             variant="default"
@@ -217,7 +227,7 @@ export function FormActionButtons() {
           </Tooltip>
         )}
 
-        {!noEsign && (
+        {canSubmitToBetterInternship && (
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -227,7 +237,7 @@ export function FormActionButtons() {
               >
                 <TextLoader loading={busy}>
                   <div className="flex items-center gap-1.5">
-                    <span className="sm:hidden">E-Sign</span>
+                    <span className="sm:hidden">{initiateFormLabelMobile}</span>
                     <span className="hidden sm:inline">
                       {initiateFormLabel}
                     </span>
