@@ -4,15 +4,14 @@ import { useEffect, useMemo, useState } from "react";
 import { ChevronRight, SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import { cn } from "@/lib/utils";
 import { Divider } from "@/components/ui/divider";
 import { FormTemplate } from "@/lib/db/use-moa-backend";
 import { Loader } from "@/components/ui/loader";
-import { IFormSignatory } from "@betterinternship/core/forms";
 import { FormInput } from "@/components/EditForm";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
+import { FlowTestPreviewModal } from "./FlowTestPreviewModal";
 
 export default function FlowTestPage({
   formTemplates,
@@ -30,6 +29,7 @@ export default function FlowTestPage({
     [formTemplates, selectedTemplateName],
   );
   const [searchQuery, setSearchQuery] = useState("");
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const form = useFormRendererContext();
   const recipients = form.formMetadata.getSigningParties();
   const filteredTemplates = useMemo(
@@ -39,7 +39,7 @@ export default function FlowTestPage({
           searchQuery
             .toLowerCase()
             .split(" ")
-            .some((q) => template.formLabel.toLowerCase().includes(q)),
+            .every((q) => template.formLabel.toLowerCase().includes(q)),
         )
         .toSorted((a, b) => {
           const aLabel = a.formLabel.replaceAll(/[()[\]\-,]/g, "");
@@ -48,10 +48,6 @@ export default function FlowTestPage({
         }),
     [formTemplates, searchQuery],
   );
-
-  useEffect(() => {
-    if (selectedTemplateName) form.updateFormName(selectedTemplateName);
-  }, [selectedTemplateName, form]);
 
   if (isLoading) return <Loader>Loading form templates...</Loader>;
 
@@ -87,7 +83,10 @@ export default function FlowTestPage({
                   <button
                     key={template.formName}
                     type="button"
-                    onClick={() => setSelectedTemplateName(template.formName)}
+                    onClick={() => {
+                      setSelectedTemplateName(template.formName);
+                      form.updateFormName(template.formName);
+                    }}
                     className="w-full text-left"
                   >
                     <Card
@@ -129,7 +128,7 @@ export default function FlowTestPage({
 
         <section className="flex min-h-0 flex-col bg-background">
           <div className="min-h-0 flex-1 overflow-y-auto px-4 bg-gray-100">
-            {form.loading ? (
+            {form.loading || form.document.name !== selectedTemplateName ? (
               <Loader>Loading form template...</Loader>
             ) : (
               <div className="mx-auto flex max-w-4xl flex-col gap-4 bg-white h-full px-12 py-20">
@@ -172,6 +171,7 @@ export default function FlowTestPage({
                     <Button
                       size="lg"
                       className="w-full sm:w-auto bg-black opacity-80 hover:bg-black/70 text-lg"
+                      onClick={() => setIsPreviewOpen(true)}
                     >
                       Preview PDF
                     </Button>
@@ -188,6 +188,13 @@ export default function FlowTestPage({
           </div>
         </section>
       </div>
+      {form.document.url && (
+        <FlowTestPreviewModal
+          documentUrl={form.document.url}
+          isOpen={isPreviewOpen}
+          onClose={() => setIsPreviewOpen(false)}
+        />
+      )}
     </div>
   );
 }
