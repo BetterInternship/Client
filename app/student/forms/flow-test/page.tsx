@@ -12,6 +12,9 @@ import { Loader } from "@/components/ui/loader";
 import { FormInput } from "@/components/EditForm";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
 import { FlowTestPreviewModal } from "./FlowTestPreviewModal";
+import useModalRegistry from "@/components/modals/modal-registry";
+import { useFormFiller } from "@/components/features/student/forms/form-filler.ctx";
+import { useMyAutofill } from "@/hooks/use-my-autofill";
 
 export default function FlowTestPage({
   formTemplates,
@@ -28,24 +31,31 @@ export default function FlowTestPage({
       ) ?? null,
     [formTemplates, selectedTemplateName],
   );
+
   const [searchQuery, setSearchQuery] = useState("");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const form = useFormRendererContext();
+  const formFiller = useFormFiller();
   const recipients = form.formMetadata.getSigningParties();
+  const signingPartyBlocks =
+    form.formMetadata.getSigningPartyBlocks("initiator");
+
+  const modalRegistry = useModalRegistry();
+  const autofillValues = useMyAutofill();
   const filteredTemplates = useMemo(
     () =>
       formTemplates
-        .filter((template) =>
+        ?.filter((template) =>
           searchQuery
             .toLowerCase()
             .split(" ")
             .every((q) => template.formLabel.toLowerCase().includes(q)),
         )
-        .toSorted((a, b) => {
+        ?.toSorted((a, b) => {
           const aLabel = a.formLabel.replaceAll(/[()[\]\-,]/g, "");
           const bLabel = b.formLabel.replaceAll(/[()[\]\-,]/g, "");
           return aLabel.localeCompare(bLabel);
-        }),
+        }) ?? [],
     [formTemplates, searchQuery],
   );
 
@@ -175,7 +185,20 @@ export default function FlowTestPage({
                     >
                       Preview PDF
                     </Button>
-                    <Button size="lg" className="w-full sm:w-auto text-lg">
+                    <Button
+                      size="lg"
+                      className="w-full sm:w-auto text-lg"
+                      onClick={() =>
+                        modalRegistry.specifySigningParties.open(
+                          form.fields,
+                          formFiller,
+                          signingPartyBlocks,
+                          () => Promise.resolve(),
+                          autofillValues,
+                          form.formMetadata.getSigningParties(),
+                        )
+                      }
+                    >
                       Sign via BetterInternship
                     </Button>
                   </div>

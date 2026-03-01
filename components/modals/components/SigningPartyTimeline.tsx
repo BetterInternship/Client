@@ -21,7 +21,7 @@ export const SigningPartyTimeline = ({
           const sourceParty = signingParties.find(
             (p) => p._id === party.signatory_source?._id,
           );
-          sourceTitle = sourceParty?.signatory_title.trim() || "";
+          sourceTitle = sourceParty?.signatory_title?.trim?.() || "";
         }
 
         const isSourceFromYou = sourceTitle === "Student";
