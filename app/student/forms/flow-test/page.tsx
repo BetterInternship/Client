@@ -4,15 +4,14 @@ import { useEffect, useMemo, useState } from "react";
 import { ChevronRight, SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import { cn } from "@/lib/utils";
 import { Divider } from "@/components/ui/divider";
 import { FormTemplate } from "@/lib/db/use-moa-backend";
 import { Loader } from "@/components/ui/loader";
-import { IFormSignatory } from "@betterinternship/core/forms";
 import { FormInput } from "@/components/EditForm";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
+import { FlowTestPreviewModal } from "./FlowTestPreviewModal";
 
 export default function FlowTestPage({
   formTemplates,
@@ -30,6 +29,7 @@ export default function FlowTestPage({
     [formTemplates, selectedTemplateName],
   );
   const [searchQuery, setSearchQuery] = useState("");
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const form = useFormRendererContext();
   const recipients = form.formMetadata.getSigningParties();
   const filteredTemplates = useMemo(
@@ -39,7 +39,7 @@ export default function FlowTestPage({
           searchQuery
             .toLowerCase()
             .split(" ")
-            .some((q) => template.formLabel.toLowerCase().includes(q)),
+            .every((q) => template.formLabel.toLowerCase().includes(q)),
         )
         .toSorted((a, b) => {
           const aLabel = a.formLabel.replaceAll(/[()[\]\-,]/g, "");
@@ -172,6 +172,7 @@ export default function FlowTestPage({
                     <Button
                       size="lg"
                       className="w-full sm:w-auto bg-black opacity-80 hover:bg-black/70 text-lg"
+                      onClick={() => setIsPreviewOpen(true)}
                     >
                       Preview PDF
                     </Button>
@@ -188,6 +189,13 @@ export default function FlowTestPage({
           </div>
         </section>
       </div>
+      {form.document.url && (
+        <FlowTestPreviewModal
+          documentUrl={form.document.url}
+          isOpen={isPreviewOpen}
+          onClose={() => setIsPreviewOpen(false)}
+        />
+      )}
     </div>
   );
 }
