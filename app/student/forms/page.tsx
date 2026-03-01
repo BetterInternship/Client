@@ -15,6 +15,7 @@ import {
 import { useEffect, useMemo } from "react";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useClientProcess } from "@betterinternship/components";
+import FlowTestPage from "./flow-test/page";
 
 // ! MOVE THIS ELSEWHERE
 export interface FilloutFormProcessResult {
@@ -126,7 +127,10 @@ export default function FormsPage() {
           forms={[...myForms.forms, ...handledForms, ...pendingForms]}
         />
       ) : (
-        <FormGenerateView formTemplates={formTemplates} isLoading={isLoading} />
+        <FlowTestPage
+          formTemplates={formTemplates?.filter((ft) => !!ft) ?? []}
+          isLoading={isLoading}
+        />
       )}
     </>
   );
