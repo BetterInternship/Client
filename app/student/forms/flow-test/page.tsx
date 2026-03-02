@@ -1,13 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  PenLineIcon,
-  SearchIcon,
-} from "lucide-react";
+import { ChevronRight, Eye, PenLineIcon, SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
@@ -21,12 +15,28 @@ import { FlowTestPreviewModal } from "./FlowTestPreviewModal";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { useFormFiller } from "@/components/features/student/forms/form-filler.ctx";
 import { useMyAutofill } from "@/hooks/use-my-autofill";
-import { FormAndDocumentLayout } from "@/components/features/student/forms/FormFlowRouter";
+import { FlowTestSigningLayout } from "./FlowTestSigningLayout";
+import { IFormSigningParty } from "@betterinternship/core/forms";
+import { FormHistoryView } from "@/components/forms/FormHistoryView";
 
 export default function FlowTestPage({
+  generatedForms,
   formTemplates,
   isLoading,
 }: {
+  generatedForms: {
+    form_process_id?: string;
+    label: string;
+    prefilled_document_id?: string | null;
+    pending_document_id?: string | null;
+    signed_document_id?: string | null;
+    latest_document_url?: string | null;
+    timestamp: string;
+    signing_parties?: IFormSigningParty[];
+    status?: string | null;
+    rejection_reason?: string;
+    pending?: boolean;
+  }[];
   formTemplates: FormTemplate[];
   isLoading: boolean;
 }) {
@@ -185,19 +195,13 @@ export default function FlowTestPage({
                   : "opacity-0 pointer-events-none",
               )}
             >
-              <div className="relative h-full min-h-0 flex flex-col">
-                <Button
-                  variant="outline"
-                  className="absolute text-sm my-6 mx-10"
-                  onClick={() => setIsSigningFlow(false)}
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  Back
-                </Button>
-                <div className="min-h-0 flex-1">
-                  <FormAndDocumentLayout formName={selectedTemplateName} />
-                </div>
-              </div>
+              <FlowTestSigningLayout
+                formLabel={selectedTemplate?.formLabel}
+                generatedForms={generatedForms}
+                documentUrl={form.document.url}
+                recipients={recipients}
+                onBack={() => setIsSigningFlow(false)}
+              />
             </div>
 
             <div
@@ -246,7 +250,7 @@ export default function FlowTestPage({
                       />
                     ))}
                   </Timeline>
-                  <div className="flex flex-col items-start gap-3 border-t border-gray-200 pt-4 mt-8">
+                  <div className="flex flex-col items-start gap-3 border-b border-gray-200 pt-4 pb-8 mt-8">
                     <div className="flex flex-row gap-2">
                       <Button
                         size="lg"
@@ -278,6 +282,11 @@ export default function FlowTestPage({
                       or print for wet signature instead
                     </Button>
                   </div>
+
+                  <FormHistoryView
+                    forms={generatedForms ?? []}
+                    formLabel={form.formLabel}
+                  ></FormHistoryView>
                 </div>
               )}
             </div>
