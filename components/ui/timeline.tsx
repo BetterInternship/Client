@@ -40,7 +40,7 @@ export const TimelineItem = ({
       {/* Content */}
       <div className="flex-1 flex items-start justify-between gap-2">
         <div className="flex-1">
-          <div className="text-sm text-gray-900 opacity-80">{title}</div>
+          <div className="text-sm">{title}</div>
           {subtitle && (
             <div className="text-xs text-gray-500 mb-1.5">{subtitle}</div>
           )}

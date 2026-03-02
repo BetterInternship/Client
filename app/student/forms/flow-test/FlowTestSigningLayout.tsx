@@ -4,8 +4,6 @@ import { ChevronLeft } from "lucide-react";
 import { FormPreviewPdfDisplay } from "@/components/features/student/forms/previewer";
 import { Button } from "@/components/ui/button";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
-import { FormHistoryView } from "@/components/forms/FormHistoryView";
-import { IFormSigningParty } from "@betterinternship/core/forms";
 
 interface SigningRecipient {
   signatory_title: string;
@@ -16,19 +14,6 @@ interface SigningRecipient {
 
 interface FlowTestSigningLayoutProps {
   formLabel?: string;
-  generatedForms?: {
-    form_process_id?: string;
-    label: string;
-    prefilled_document_id?: string | null;
-    pending_document_id?: string | null;
-    signed_document_id?: string | null;
-    latest_document_url?: string | null;
-    timestamp: string;
-    signing_parties?: IFormSigningParty[];
-    status?: string | null;
-    rejection_reason?: string;
-    pending?: boolean;
-  }[];
   documentUrl?: string;
   recipients: SigningRecipient[];
   onBack: () => void;
@@ -36,7 +21,6 @@ interface FlowTestSigningLayoutProps {
 
 export function FlowTestSigningLayout({
   formLabel,
-  generatedForms,
   documentUrl,
   recipients,
   onBack,
@@ -78,7 +62,7 @@ export function FlowTestSigningLayout({
                   <h3 className="text-xl font-semibold text-gray-900 sm:text-2xl">
                     {formLabel}
                   </h3>
-                  <p className="mt-2 text-sm text-gray-600 sm:text-base">
+                  <p className="my-4 text-sm text-gray-600 sm:text-base">
                     These people will receive a copy of this form, in this
                     order:
                   </p>
