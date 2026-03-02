@@ -289,7 +289,7 @@ export default function FlowTestPage({
                       <>
                         <div className="text-xl mt-4">
                           {recipients.length
-                            ? "These people will receive a copy of this form, in this order:"
+                            ? "These people will receive this form, in this order:"
                             : "This form does not require any signatures."}
                         </div>
 
