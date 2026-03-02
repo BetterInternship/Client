@@ -44,7 +44,7 @@ export function FormHistoryView({ forms, formLabel }: FormHistoryViewProps) {
         {filteredForms.length === 0 ? (
           <></>
         ) : (
-          forms
+          filteredForms
             .toSorted(
               (a, b) =>
                 Date.parse(b.timestamp ?? "") - Date.parse(a.timestamp ?? ""),

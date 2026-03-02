@@ -18,9 +18,6 @@ import { Loader } from "@/components/ui/loader";
 import { FormInput } from "@/components/EditForm";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
 import { FlowTestPreviewModal } from "./FlowTestPreviewModal";
-import useModalRegistry from "@/components/modals/modal-registry";
-import { useFormFiller } from "@/components/features/student/forms/form-filler.ctx";
-import { useMyAutofill } from "@/hooks/use-my-autofill";
 import { FlowTestSigningLayout } from "./FlowTestSigningLayout";
 import { IFormSigningParty } from "@betterinternship/core/forms";
 import { FormHistoryView } from "@/components/forms/FormHistoryView";
@@ -59,13 +56,7 @@ export default function FlowTestPage({
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isSigningFlow, setIsSigningFlow] = useState(false);
   const form = useFormRendererContext();
-  const formFiller = useFormFiller();
   const recipients = form.formMetadata.getSigningParties();
-  const signingPartyBlocks =
-    form.formMetadata.getSigningPartyBlocks("initiator");
-
-  const modalRegistry = useModalRegistry();
-  const autofillValues = useMyAutofill();
   const filteredTemplates = useMemo(
     () =>
       formTemplates
@@ -188,10 +179,10 @@ export default function FlowTestPage({
 
         <section
           className={cn(
-            "flex min-h-0 flex-col bg-background overflow-hidden transition-[transform,opacity] duration-500 ease-in-out will-change-transform",
+            "flex min-h-0 flex-col bg-background overflow-hidden transition-[transform,opacity] duration-500 ease-in-out will-change-transform w-full",
             isSigningFlow
-              ? "md:-translate-x-2 opacity-100"
-              : "md:translate-x-0 opacity-100",
+              ? "md:-translate-x-2 opacity-100 max-w-7xl mx-auto"
+              : "md:translate-x-0 opacity-100 max-w-5xl mx-auto",
           )}
         >
           <div
@@ -234,36 +225,37 @@ export default function FlowTestPage({
                     </h3>
                     <Divider />
                   </div>
-
                   {hasHistoryLogs ? (
                     <Accordion type="single" collapsible>
                       <AccordionItem value="generate-another">
-                        <AccordionTrigger className="text-xl px-8 font-semibold text-gray-800 hover:no-underline bg-gray-50 aria-expanded:rounded-b-none border-gray-300 border">
+                        <AccordionTrigger className="text-xl px-6 font-semibold text-gray-800 hover:no-underline bg-gray-50 aria-expanded:rounded-b-none border-gray-300 border">
                           Generate another
                         </AccordionTrigger>
-                        <AccordionContent className="px-8 py-8 pt-12 rounded-b-[0.33em] border-gray-300 border border-t-0">
-                          <Timeline>
-                            {recipients.map((recipient, index) => (
-                              <TimelineItem
-                                key={recipient.signatory_title}
-                                number={index + 1}
-                                title={
-                                  <span className="text-base text-gray-700 sm:text-lg">
-                                    {recipient.signatory_title}
-                                  </span>
-                                }
-                                subtitle={
-                                  recipient.signatory_source?._id ===
-                                    "initiator" && (
-                                    <span className="text-warning font-bold text-sm">
-                                      {"you will specify this email"}
+                        <AccordionContent className="p-6 rounded-b-[0.33em] border-gray-300 border border-t-0">
+                          {recipients.length > 1 && (
+                            <Timeline>
+                              {recipients.map((recipient, index) => (
+                                <TimelineItem
+                                  key={recipient.signatory_title}
+                                  number={index + 1}
+                                  title={
+                                    <span className="text-base text-gray-700 sm:text-lg">
+                                      {recipient.signatory_title}
                                     </span>
-                                  )
-                                }
-                                isLast={index === recipients.length - 1}
-                              />
-                            ))}
-                          </Timeline>
+                                  }
+                                  subtitle={
+                                    recipient.signatory_source?._id ===
+                                      "initiator" && (
+                                      <span className="text-warning font-bold text-sm">
+                                        {"you will specify this email"}
+                                      </span>
+                                    )
+                                  }
+                                  isLast={index === recipients.length - 1}
+                                />
+                              ))}
+                            </Timeline>
+                          )}
                           <div className="mt-8 flex flex-col items-start gap-3 py-4">
                             <div className="flex flex-row gap-2">
                               <Button
@@ -279,13 +271,7 @@ export default function FlowTestPage({
                                 size="lg"
                                 className="w-full sm:w-auto text-lg"
                                 onClick={() =>
-                                  modalRegistry.specifySigningParties.open(
-                                    form.fields,
-                                    formFiller,
-                                    signingPartyBlocks,
-                                    handleSigningPartiesSubmit,
-                                    autofillValues,
-                                  )
+                                  void handleSigningPartiesSubmit()
                                 }
                               >
                                 <PenLineIcon className="w-5 h-5" />
@@ -346,15 +332,7 @@ export default function FlowTestPage({
                           <Button
                             size="lg"
                             className="w-full sm:w-auto text-lg"
-                            onClick={() =>
-                              modalRegistry.specifySigningParties.open(
-                                form.fields,
-                                formFiller,
-                                signingPartyBlocks,
-                                handleSigningPartiesSubmit,
-                                autofillValues,
-                              )
-                            }
+                            onClick={() => void handleSigningPartiesSubmit()}
                           >
                             <PenLineIcon className="w-5 h-5" />
                             Sign via BetterInternship
@@ -369,7 +347,6 @@ export default function FlowTestPage({
                       </div>
                     </>
                   )}
-
                   <FormHistoryView
                     forms={generatedForms ?? []}
                     formLabel={form.formLabel}
