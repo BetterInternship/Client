@@ -1,7 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronRight, Eye, PenLineIcon, SearchIcon } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  PenLineIcon,
+  SearchIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
@@ -157,84 +163,124 @@ export default function FlowTestPage({
           </div>
         </aside>
 
-        <section className="flex min-h-0 flex-col bg-background">
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 bg-gray-100">
-            {isSigningFlow ? (
-              <div className="h-full py-6">
-                <FormAndDocumentLayout formName={selectedTemplateName} />
+        <section
+          className={cn(
+            "flex min-h-0 flex-col bg-background overflow-hidden transition-[transform,opacity] duration-500 ease-in-out will-change-transform",
+            isSigningFlow
+              ? "md:-translate-x-2 opacity-100"
+              : "md:translate-x-0 opacity-100",
+          )}
+        >
+          <div
+            className={cn(
+              "relative min-h-0 flex-1 bg-gray-100 transition-[padding] duration-500 ease-in-out",
+              isSigningFlow ? "px-2 sm:px-4" : "px-4",
+            )}
+          >
+            <div
+              className={cn(
+                "absolute inset-0 min-h-0 overflow-y-auto transition-opacity duration-300 ease-in-out",
+                isSigningFlow
+                  ? "opacity-100 pointer-events-auto"
+                  : "opacity-0 pointer-events-none",
+              )}
+            >
+              <div className="relative h-full min-h-0 flex flex-col">
+                <Button
+                  variant="outline"
+                  className="absolute text-sm my-6 mx-10"
+                  onClick={() => setIsSigningFlow(false)}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Back
+                </Button>
+                <div className="min-h-0 flex-1">
+                  <FormAndDocumentLayout formName={selectedTemplateName} />
+                </div>
               </div>
-            ) : form.loading || form.document.name !== selectedTemplateName ? (
-              <Loader>Loading form template...</Loader>
-            ) : (
-              <div className="mx-auto flex max-w-4xl flex-col gap-4 bg-white h-full px-12 py-20">
-                <div>
-                  <h3 className="text-2xl font-semibold text-gray-900 sm:text-3xl">
-                    {selectedTemplate?.formLabel}
-                  </h3>
-                  <Divider />
-                </div>
+            </div>
 
-                <div className="text-xl mt-4">
-                  {recipients.length
-                    ? "These people will receive a copy of this form, in this order:"
-                    : "This form does not require any signatures."}
-                </div>
+            <div
+              className={cn(
+                "absolute inset-0 min-h-0 overflow-y-auto transition-opacity duration-300 ease-in-out",
+                isSigningFlow
+                  ? "opacity-0 pointer-events-none"
+                  : "opacity-100 pointer-events-auto",
+              )}
+            >
+              {form.loading || form.document.name !== selectedTemplateName ? (
+                <Loader>Loading form template...</Loader>
+              ) : (
+                <div className="mx-auto flex max-w-4xl flex-col gap-4 bg-white h-full px-12 py-20">
+                  <div>
+                    <h3 className="text-2xl font-semibold text-gray-900 sm:text-3xl">
+                      {selectedTemplate?.formLabel}
+                    </h3>
+                    <Divider />
+                  </div>
 
-                <Timeline>
-                  {recipients.map((recipient, index) => (
-                    <TimelineItem
-                      key={recipient.signatory_title}
-                      number={index + 1}
-                      title={
-                        <span className="text-base text-gray-700 sm:text-lg">
-                          {recipient.signatory_title}
-                        </span>
-                      }
-                      subtitle={
-                        recipient.signatory_source?._id === "initiator" && (
-                          <span className="text-warning font-bold text-sm">
-                            {"you will specify this email"}
+                  <div className="text-xl mt-4">
+                    {recipients.length
+                      ? "These people will receive a copy of this form, in this order:"
+                      : "This form does not require any signatures."}
+                  </div>
+
+                  <Timeline>
+                    {recipients.map((recipient, index) => (
+                      <TimelineItem
+                        key={recipient.signatory_title}
+                        number={index + 1}
+                        title={
+                          <span className="text-base text-gray-700 sm:text-lg">
+                            {recipient.signatory_title}
                           </span>
-                        )
-                      }
-                      isLast={index === recipients.length - 1}
-                    />
-                  ))}
-                </Timeline>
-                <div className="flex flex-col items-start gap-3 border-t border-gray-200 pt-4 mt-8">
-                  <div className="flex flex-row gap-2">
-                    <Button
-                      size="lg"
-                      className="w-full sm:w-auto text-lg"
-                      variant="outline"
-                      onClick={() => setIsPreviewOpen(true)}
-                    >
-                      <Eye className="w-5 h-5" />
-                      Preview PDF
-                    </Button>
-                    <Button
-                      size="lg"
-                      className="w-full sm:w-auto text-lg"
-                      onClick={() =>
-                        modalRegistry.specifySigningParties.open(
-                          form.fields,
-                          formFiller,
-                          signingPartyBlocks,
-                          handleSigningPartiesSubmit,
-                          autofillValues,
-                        )
-                      }
-                    >
-                      <PenLineIcon className="w-5 h-5" />
-                      Sign via BetterInternship
+                        }
+                        subtitle={
+                          recipient.signatory_source?._id === "initiator" && (
+                            <span className="text-warning font-bold text-sm">
+                              {"you will specify this email"}
+                            </span>
+                          )
+                        }
+                        isLast={index === recipients.length - 1}
+                      />
+                    ))}
+                  </Timeline>
+                  <div className="flex flex-col items-start gap-3 border-t border-gray-200 pt-4 mt-8">
+                    <div className="flex flex-row gap-2">
+                      <Button
+                        size="lg"
+                        className="w-full sm:w-auto text-lg"
+                        variant="outline"
+                        onClick={() => setIsPreviewOpen(true)}
+                      >
+                        <Eye className="w-5 h-5" />
+                        Preview PDF
+                      </Button>
+                      <Button
+                        size="lg"
+                        className="w-full sm:w-auto text-lg"
+                        onClick={() =>
+                          modalRegistry.specifySigningParties.open(
+                            form.fields,
+                            formFiller,
+                            signingPartyBlocks,
+                            handleSigningPartiesSubmit,
+                            autofillValues,
+                          )
+                        }
+                      >
+                        <PenLineIcon className="w-5 h-5" />
+                        Sign via BetterInternship
+                      </Button>
+                    </div>
+                    <Button variant="link" className="h-auto p-0 sm:text-base">
+                      or print for wet signature instead
                     </Button>
                   </div>
-                  <Button variant="link" className="h-auto p-0 sm:text-base">
-                    or print for wet signature instead
-                  </Button>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </section>
       </div>
