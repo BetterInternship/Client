@@ -1,7 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronRight, Eye, PenLineIcon, SearchIcon } from "lucide-react";
+import {
+  ChevronRight,
+  Eye,
+  FileSearch,
+  PenLineIcon,
+  SearchIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
@@ -15,7 +21,6 @@ import {
 } from "@/components/ui/accordion";
 import { FormTemplate } from "@/lib/db/use-moa-backend";
 import { Loader } from "@/components/ui/loader";
-import { FormInput } from "@/components/EditForm";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
 import { FlowTestPreviewModal } from "./FlowTestPreviewModal";
 import { FlowTestSigningLayout } from "./FlowTestSigningLayout";
@@ -52,26 +57,18 @@ export default function FlowTestPage({
     [formTemplates, selectedTemplateName],
   );
 
-  const [searchQuery, setSearchQuery] = useState("");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isSigningFlow, setIsSigningFlow] = useState(false);
   const form = useFormRendererContext();
   const recipients = form.formMetadata.getSigningParties();
-  const filteredTemplates = useMemo(
+  const sortedTemplates = useMemo(
     () =>
-      formTemplates
-        ?.filter((template) =>
-          searchQuery
-            .toLowerCase()
-            .split(" ")
-            .every((q) => template.formLabel.toLowerCase().includes(q)),
-        )
-        ?.toSorted((a, b) => {
-          const aLabel = a.formLabel.replaceAll(/[()[\]\-,]/g, "");
-          const bLabel = b.formLabel.replaceAll(/[()[\]\-,]/g, "");
-          return aLabel.localeCompare(bLabel);
-        }) ?? [],
-    [formTemplates, searchQuery],
+      formTemplates?.toSorted((a, b) => {
+        const aLabel = a.formLabel.replaceAll(/[()[\]\-,]/g, "");
+        const bLabel = b.formLabel.replaceAll(/[()[\]\-,]/g, "");
+        return aLabel.localeCompare(bLabel);
+      }) ?? [],
+    [formTemplates],
   );
   const hasHistoryLogs = useMemo(
     () =>
@@ -108,57 +105,48 @@ export default function FlowTestPage({
               : "translate-x-0 opacity-100",
           )}
         >
-          <div className="flex h-28 items-center bg-gray-50 border-b border-gray-200 px-10">
+          <div className="flex h-20 items-center bg-gray-100 border-b border-gray-200 px-10">
             <div className="flex flex-col w-full gap-2">
               <h1 className="text-2xl tracking-tight text-gray-700 sm:text-2xl font-bold">
                 Form Templates
               </h1>
-              <div className="flex flex-row w-full">
-                <FormInput
-                  className="flex-1 rounded-r-none border-r-0"
-                  value={searchQuery}
-                  setter={(value) => setSearchQuery(value)}
-                ></FormInput>
-                <Button className="rounded-l-none border-l-0 bg-slate-700 pointer-events-none">
-                  <SearchIcon className="w-4 h-4" />
-                </Button>
-              </div>
             </div>
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto p-6">
-            <div className="space-y-4">
-              {filteredTemplates?.map((template) => {
-                const isActive = template.formName === selectedTemplateName;
-                return (
-                  <button
-                    key={template.formName}
-                    type="button"
-                    onClick={() => {
-                      setSelectedTemplateName(template.formName);
-                      form.updateFormName(template.formName);
-                    }}
-                    className="w-full text-left"
-                  >
-                    <Card
-                      className={cn(
-                        "border transition",
-                        isActive
-                          ? "border-primary/40 ring-1 ring-primary/30 bg-primary/15"
-                          : "border-gray-200 hover:bg-primary/5",
-                      )}
+            {sortedTemplates.length ? (
+              <div className="space-y-4">
+                {sortedTemplates?.map((template) => {
+                  const isActive = template.formName === selectedTemplateName;
+                  return (
+                    <button
+                      key={template.formName}
+                      type="button"
+                      onClick={() => {
+                        setSelectedTemplateName(template.formName);
+                        form.updateFormName(template.formName);
+                      }}
+                      className="w-full text-left"
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <h2 className="text-lg font-semibold leading-tight text-gray-900 sm:text-xl">
-                            {template.formLabel}
-                          </h2>
+                      <Card
+                        className={cn(
+                          "border transition",
+                          isActive
+                            ? "border-primary/40 ring-1 ring-primary/30 bg-primary/15"
+                            : "border-gray-200 hover:bg-primary/5",
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <h2 className="text-lg font-semibold leading-tight text-gray-900 sm:text-xl">
+                              {template.formLabel}
+                            </h2>
+                          </div>
+                          <ChevronRight className="mt-0.5 h-5 w-5 shrink-0 text-gray-400" />
                         </div>
-                        <ChevronRight className="mt-0.5 h-5 w-5 shrink-0 text-gray-400" />
-                      </div>
 
-                      {/* // ! ADD BACK TAGS ONCE IMPLEMENTED */}
-                      {/* <div className="mt-4 flex flex-wrap gap-2">
+                        {/* // ! ADD BACK TAGS ONCE IMPLEMENTED */}
+                        {/* <div className="mt-4 flex flex-wrap gap-2">
                         {template.tags.map((tag) => (
                           <Badge
                             key={tag}
@@ -169,11 +157,25 @@ export default function FlowTestPage({
                           </Badge>
                         ))}
                       </div> */}
-                    </Card>
-                  </button>
-                );
-              })}
-            </div>
+                      </Card>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="p-4">
+                We currently don't automate forms for your department. <br />
+                <br />
+                Have a copy of your department's form templates? <br />
+                <a
+                  href="https://facebook.com/shi.sherwin"
+                  className="underline"
+                  target="_blank"
+                >
+                  Message us so we can help you out!
+                </a>
+              </div>
+            )}
           </div>
         </aside>
 
@@ -185,176 +187,191 @@ export default function FlowTestPage({
               : "md:translate-x-0 opacity-100 max-w-5xl mx-auto",
           )}
         >
-          <div
-            className={cn(
-              "relative min-h-0 flex-1 bg-gray-100 transition-[padding] duration-500 ease-in-out",
-              isSigningFlow ? "px-2 sm:px-4" : "px-4",
-            )}
-          >
+          {selectedTemplateName ? (
             <div
               className={cn(
-                "absolute inset-0 min-h-0 overflow-y-auto transition-opacity duration-300 ease-in-out",
-                isSigningFlow
-                  ? "opacity-100 pointer-events-auto"
-                  : "opacity-0 pointer-events-none",
+                "relative min-h-0 flex-1 bg-gray-100 transition-[padding] duration-500 ease-in-out",
+                isSigningFlow ? "px-2 sm:px-4" : "px-4",
               )}
             >
-              <FlowTestSigningLayout
-                formLabel={selectedTemplate?.formLabel}
-                documentUrl={form.document.url}
-                recipients={recipients}
-                onBack={() => setIsSigningFlow(false)}
-              />
-            </div>
+              <div
+                className={cn(
+                  "absolute inset-0 min-h-0 overflow-y-auto transition-opacity duration-300 ease-in-out",
+                  isSigningFlow
+                    ? "opacity-100 pointer-events-auto"
+                    : "opacity-0 pointer-events-none",
+                )}
+              >
+                <FlowTestSigningLayout
+                  formLabel={selectedTemplate?.formLabel}
+                  documentUrl={form.document.url}
+                  recipients={recipients}
+                  onBack={() => setIsSigningFlow(false)}
+                />
+              </div>
 
-            <div
-              className={cn(
-                "absolute inset-0 min-h-0 overflow-y-auto bg-white transition-opacity duration-300 ease-in-out",
-                isSigningFlow
-                  ? "opacity-0 pointer-events-none"
-                  : "opacity-100 pointer-events-auto",
-              )}
-            >
-              {form.loading || form.document.name !== selectedTemplateName ? (
-                <Loader>Loading form template...</Loader>
-              ) : (
-                <div className="mx-auto flex min-h-full max-w-4xl flex-col gap-4 bg-white px-12 py-20">
-                  <div>
-                    <h3 className="text-2xl font-semibold text-gray-900 sm:text-3xl">
-                      {selectedTemplate?.formLabel}
-                    </h3>
-                    <Divider />
-                  </div>
-                  {hasHistoryLogs ? (
-                    <Accordion type="single" collapsible>
-                      <AccordionItem value="generate-another">
-                        <AccordionTrigger className="text-xl px-6 font-semibold text-gray-800 hover:no-underline bg-gray-50 aria-expanded:rounded-b-none border-gray-300 border">
-                          Generate another
-                        </AccordionTrigger>
-                        <AccordionContent className="p-6 rounded-b-[0.33em] border-gray-300 border border-t-0">
-                          {recipients.length > 1 && (
-                            <Timeline>
-                              {recipients.map((recipient, index) => (
-                                <TimelineItem
-                                  key={recipient.signatory_title}
-                                  number={index + 1}
-                                  title={
-                                    <span className="text-base text-gray-700 sm:text-lg">
-                                      {recipient.signatory_title}
-                                    </span>
-                                  }
-                                  subtitle={
-                                    recipient.signatory_source?._id ===
-                                      "initiator" && (
-                                      <span className="text-warning font-bold text-sm">
-                                        {"you will specify this email"}
+              <div
+                className={cn(
+                  "absolute inset-0 min-h-0 overflow-y-auto bg-white transition-opacity duration-300 ease-in-out [scrollbar-gutter:stable]",
+                  isSigningFlow
+                    ? "opacity-0 pointer-events-none"
+                    : "opacity-100 pointer-events-auto",
+                )}
+              >
+                {form.loading || form.document.name !== selectedTemplateName ? (
+                  <Loader>Loading form template...</Loader>
+                ) : (
+                  <div className="mx-auto flex min-h-full max-w-4xl flex-col gap-4 bg-white px-12 py-20">
+                    <div>
+                      <h3 className="text-2xl font-semibold text-gray-900 sm:text-3xl">
+                        {selectedTemplate?.formLabel}
+                      </h3>
+                      <Divider />
+                    </div>
+                    {hasHistoryLogs ? (
+                      <Accordion type="single" collapsible>
+                        <AccordionItem value="generate-another">
+                          <AccordionTrigger className="text-xl px-6 font-semibold text-gray-800 hover:no-underline bg-gray-50 aria-expanded:rounded-b-none border-gray-300 border">
+                            Generate another
+                          </AccordionTrigger>
+                          <AccordionContent className="p-6 rounded-b-[0.33em] border-gray-300 border border-t-0">
+                            {recipients.length > 1 && (
+                              <Timeline>
+                                {recipients.map((recipient, index) => (
+                                  <TimelineItem
+                                    key={recipient.signatory_title}
+                                    number={index + 1}
+                                    title={
+                                      <span className="text-base text-gray-700 sm:text-lg">
+                                        {recipient.signatory_title}
                                       </span>
-                                    )
+                                    }
+                                    subtitle={
+                                      recipient.signatory_source?._id ===
+                                        "initiator" && (
+                                        <span className="text-warning font-bold text-sm">
+                                          {"you will specify this email"}
+                                        </span>
+                                      )
+                                    }
+                                    isLast={index === recipients.length - 1}
+                                  />
+                                ))}
+                              </Timeline>
+                            )}
+                            <div className="mt-8 flex flex-col items-start gap-3 py-4">
+                              <div className="flex flex-row gap-2">
+                                <Button
+                                  size="lg"
+                                  className="w-full sm:w-auto text-lg"
+                                  variant="outline"
+                                  onClick={() => setIsPreviewOpen(true)}
+                                >
+                                  <Eye className="w-5 h-5" />
+                                  Preview PDF
+                                </Button>
+                                <Button
+                                  size="lg"
+                                  className="w-full sm:w-auto text-lg"
+                                  onClick={() =>
+                                    void handleSigningPartiesSubmit()
                                   }
-                                  isLast={index === recipients.length - 1}
-                                />
-                              ))}
-                            </Timeline>
-                          )}
-                          <div className="mt-8 flex flex-col items-start gap-3 py-4">
-                            <div className="flex flex-row gap-2">
+                                >
+                                  <PenLineIcon className="w-5 h-5" />
+                                  Sign via BetterInternship
+                                </Button>
+                              </div>
                               <Button
-                                size="lg"
-                                className="w-full sm:w-auto text-lg"
-                                variant="outline"
-                                onClick={() => setIsPreviewOpen(true)}
+                                variant="link"
+                                className="h-auto p-0 sm:text-base"
                               >
-                                <Eye className="w-5 h-5" />
-                                Preview PDF
-                              </Button>
-                              <Button
-                                size="lg"
-                                className="w-full sm:w-auto text-lg"
-                                onClick={() =>
-                                  void handleSigningPartiesSubmit()
-                                }
-                              >
-                                <PenLineIcon className="w-5 h-5" />
-                                Sign via BetterInternship
+                                or print for wet signature instead
                               </Button>
                             </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
+                    ) : (
+                      <>
+                        <div className="text-xl mt-4">
+                          {recipients.length
+                            ? "These people will receive a copy of this form, in this order:"
+                            : "This form does not require any signatures."}
+                        </div>
+
+                        <Timeline>
+                          {recipients.map((recipient, index) => (
+                            <TimelineItem
+                              key={recipient.signatory_title}
+                              number={index + 1}
+                              title={
+                                <span className="text-base text-gray-700 sm:text-lg">
+                                  {recipient.signatory_title}
+                                </span>
+                              }
+                              subtitle={
+                                recipient.signatory_source?._id ===
+                                  "initiator" && (
+                                  <span className="text-warning font-bold text-sm">
+                                    {"you will specify this email"}
+                                  </span>
+                                )
+                              }
+                              isLast={index === recipients.length - 1}
+                            />
+                          ))}
+                        </Timeline>
+                        <div className="mt-8 flex flex-col items-start gap-3 border-b border-gray-200 pt-4 pb-8">
+                          <div className="flex flex-row gap-2">
                             <Button
-                              variant="link"
-                              className="h-auto p-0 sm:text-base"
+                              size="lg"
+                              className="w-full sm:w-auto text-lg"
+                              variant="outline"
+                              onClick={() => setIsPreviewOpen(true)}
                             >
-                              or print for wet signature instead
+                              <Eye className="w-5 h-5" />
+                              Preview PDF
+                            </Button>
+                            <Button
+                              size="lg"
+                              className="w-full sm:w-auto text-lg"
+                              onClick={() => void handleSigningPartiesSubmit()}
+                            >
+                              <PenLineIcon className="w-5 h-5" />
+                              Sign via BetterInternship
                             </Button>
                           </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  ) : (
-                    <>
-                      <div className="text-xl mt-4">
-                        {recipients.length
-                          ? "These people will receive a copy of this form, in this order:"
-                          : "This form does not require any signatures."}
-                      </div>
-
-                      <Timeline>
-                        {recipients.map((recipient, index) => (
-                          <TimelineItem
-                            key={recipient.signatory_title}
-                            number={index + 1}
-                            title={
-                              <span className="text-base text-gray-700 sm:text-lg">
-                                {recipient.signatory_title}
-                              </span>
-                            }
-                            subtitle={
-                              recipient.signatory_source?._id ===
-                                "initiator" && (
-                                <span className="text-warning font-bold text-sm">
-                                  {"you will specify this email"}
-                                </span>
-                              )
-                            }
-                            isLast={index === recipients.length - 1}
-                          />
-                        ))}
-                      </Timeline>
-                      <div className="mt-8 flex flex-col items-start gap-3 border-b border-gray-200 pt-4 pb-8">
-                        <div className="flex flex-row gap-2">
                           <Button
-                            size="lg"
-                            className="w-full sm:w-auto text-lg"
-                            variant="outline"
-                            onClick={() => setIsPreviewOpen(true)}
+                            variant="link"
+                            className="h-auto p-0 sm:text-base"
                           >
-                            <Eye className="w-5 h-5" />
-                            Preview PDF
-                          </Button>
-                          <Button
-                            size="lg"
-                            className="w-full sm:w-auto text-lg"
-                            onClick={() => void handleSigningPartiesSubmit()}
-                          >
-                            <PenLineIcon className="w-5 h-5" />
-                            Sign via BetterInternship
+                            or print for wet signature instead
                           </Button>
                         </div>
-                        <Button
-                          variant="link"
-                          className="h-auto p-0 sm:text-base"
-                        >
-                          or print for wet signature instead
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                  <FormHistoryView
-                    forms={generatedForms ?? []}
-                    formLabel={form.formLabel}
-                  ></FormHistoryView>
+                      </>
+                    )}
+                    <FormHistoryView
+                      forms={generatedForms ?? []}
+                      formLabel={form.formLabel}
+                    ></FormHistoryView>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="mx-auto my-auto flex flex-col items-center gap-7">
+              <FileSearch className="w-20 h-20 opacity-40" />
+              {sortedTemplates.length ? (
+                <div className="opacity-50">
+                  Click on a form template to view.
+                </div>
+              ) : (
+                <div className="opacity-50">
+                  We don't have form templates for your department.
                 </div>
               )}
             </div>
-          </div>
+          )}
         </section>
       </div>
       {form.document.url && (
