@@ -231,26 +231,30 @@ export default function FlowTestPage({
                           <AccordionContent className="p-6 rounded-b-[0.33em] border-gray-300 border border-t-0">
                             {recipients.length > 1 && (
                               <Timeline>
-                                {recipients.map((recipient, index) => (
-                                  <TimelineItem
-                                    key={recipient.signatory_title}
-                                    number={index + 1}
-                                    title={
-                                      <span className="text-base text-gray-700 sm:text-lg">
-                                        {recipient.signatory_title}
-                                      </span>
-                                    }
-                                    subtitle={
-                                      recipient.signatory_source?._id ===
-                                        "initiator" && (
-                                        <span className="text-warning font-bold text-sm">
-                                          {"you will specify this email"}
+                                {recipients.map((recipient, index) => {
+                                  const fromMe =
+                                    recipient.signatory_source?._id ===
+                                    "initiator";
+                                  return (
+                                    <TimelineItem
+                                      key={recipient.signatory_title}
+                                      number={index + 1}
+                                      title={
+                                        <span className="text-base text-gray-700 sm:text-lg">
+                                          {recipient.signatory_title}
                                         </span>
-                                      )
-                                    }
-                                    isLast={index === recipients.length - 1}
-                                  />
-                                ))}
+                                      }
+                                      subtitle={
+                                        fromMe && (
+                                          <span className="text-warning font-bold text-sm">
+                                            {"you will specify this email"}
+                                          </span>
+                                        )
+                                      }
+                                      isLast={index === recipients.length - 1}
+                                    />
+                                  );
+                                })}
                               </Timeline>
                             )}
                             <div className="mt-8 flex flex-col items-start gap-3 py-4">
@@ -272,7 +276,13 @@ export default function FlowTestPage({
                                   }
                                 >
                                   <PenLineIcon className="w-5 h-5" />
-                                  Sign via BetterInternship
+                                  {recipients.some(
+                                    (recipient) =>
+                                      recipient.signatory_source?._id ===
+                                      "initiator",
+                                  )
+                                    ? "Sign via BetterInternship"
+                                    : "Fillout Document"}
                                 </Button>
                               </div>
                               <Button
@@ -332,7 +342,13 @@ export default function FlowTestPage({
                               onClick={() => void handleSigningPartiesSubmit()}
                             >
                               <PenLineIcon className="w-5 h-5" />
-                              Sign via BetterInternship
+                              {recipients.some(
+                                (recipient) =>
+                                  recipient.signatory_source?._id ===
+                                  "initiator",
+                              )
+                                ? "Sign via BetterInternship"
+                                : "Fillout Document"}
                             </Button>
                           </div>
                           <Button

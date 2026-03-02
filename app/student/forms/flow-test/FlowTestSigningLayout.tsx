@@ -7,13 +7,18 @@ import { Button } from "@/components/ui/button";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import { FormInput } from "@/components/EditForm";
 import { cn } from "@/lib/utils";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
 import {
   getBlockField,
   isBlockField,
 } from "@/components/features/student/forms/utils";
 import { Badge } from "@/components/ui/badge";
+import { useFormFiller } from "@/components/features/student/forms/form-filler.ctx";
+import { useMyAutofill, useMyAutofillUpdate } from "@/hooks/use-my-autofill";
+import { toast } from "sonner";
+import { toastPresets } from "@/components/ui/sonner-toast";
+import { FormValues } from "@betterinternship/core/forms";
 
 interface SigningRecipient {
   signatory_title: string;
@@ -36,7 +41,10 @@ export function FlowTestSigningLayout({
   onBack,
 }: FlowTestSigningLayoutProps) {
   const form = useFormRendererContext();
-  const [values, setValues] = useState({});
+  const formFiller = useFormFiller();
+  const autofillValues = useMyAutofill();
+  const updateAutofill = useMyAutofillUpdate();
+  const [values, setValues] = useState<FormValues>({});
   const [recipientEmails, setRecipientEmails] = useState<
     Record<string, string>
   >({});
@@ -66,6 +74,19 @@ export function FlowTestSigningLayout({
   }, [form.keyedFields, manualBlocks]);
 
   const nextEnabled = useMemo(() => {
+    console.log(
+      "VALS",
+      form.fields.reduce(
+        (acc, cur) => ((acc[cur.field] = values[cur.field]), acc),
+        {} as Record<string, string>,
+      ),
+      form.fields.every(
+        (field) =>
+          field.signing_party_id !== "initiator" ||
+          field.source !== "manual" ||
+          !!values[field.field],
+      ),
+    );
     switch (rightPaneStep) {
       case "timeline":
         return recipients.every(
@@ -74,22 +95,58 @@ export function FlowTestSigningLayout({
             recipient.signatory_source?._id !== "initiator",
         );
       case "fields":
-        return true;
+        return form.fields.every(
+          (field) =>
+            field.signing_party_id !== "initiator" ||
+            field.source !== "manual" ||
+            !!values[field.field],
+        );
       case "confirm":
         return true;
     }
-  }, [recipients, recipientEmails, rightPaneStep]);
+  }, [recipients, recipientEmails, rightPaneStep, form, values]);
+
+  const handleNext = useCallback(async () => {
+    const finalValues = formFiller.getFinalValues(autofillValues);
+    const errors = formFiller.validate(form.fields, autofillValues);
+
+    const signingPartyBlocks =
+      form.formMetadata.getSigningPartyBlocks("initiator");
+    console.log(signingPartyBlocks);
+
+    switch (rightPaneStep) {
+      case "timeline":
+        setRightPaneStep("fields");
+        break;
+      case "fields":
+        if (Object.keys(errors).length) {
+          toast.error(
+            "Some information is missing or incorrect",
+            toastPresets.destructive,
+          );
+        } else {
+          await updateAutofill(form.formName, form.fields, finalValues);
+          setRightPaneStep("confirm");
+        }
+        break;
+      case "confirm":
+        return true;
+    }
+  }, [recipients, recipientEmails, rightPaneStep, form, values]);
+
   const fromMe = recipients.some(
     (recipient) => recipient.signatory_source?._id === "initiator",
   );
-  const stepNumber =
-    rightPaneStep === "timeline" ? 1 : rightPaneStep === "fields" ? 2 : 3;
+  const steps = fromMe
+    ? ["timeline", "fields", "confirm"]
+    : ["fields", "confirm"];
 
   // Clean up when switching form
   useEffect(() => {
     setRecipientEmails({});
     setValues({});
-  }, [formLabel]);
+    setRightPaneStep(fromMe ? "timeline" : "fields");
+  }, [formLabel, recipients]);
 
   return (
     <div className="h-full min-h-0 flex flex-col">
@@ -163,7 +220,7 @@ export function FlowTestSigningLayout({
             >
               <div className="flex h-[58px] items-center border-b border-gray-300 px-6">
                 <span className="text-sm font-medium text-gray-700">
-                  Step {stepNumber} of 3
+                  Step {steps.indexOf(rightPaneStep) + 1} of {steps.length}
                 </span>
               </div>
               <div className="relative min-h-0 flex-1 overflow-hidden">
@@ -230,16 +287,12 @@ export function FlowTestSigningLayout({
                       <Button
                         size="lg"
                         className="pointer-events-none flex-1 whitespace-nowrap opacity-0 sm:min-w-[140px]"
-                      >
-                        Next
-                      </Button>
+                      />
                       <Button
                         size="lg"
                         disabled={!nextEnabled}
                         className="flex-1 whitespace-nowrap sm:min-w-[140px]"
-                        onClick={() => {
-                          setRightPaneStep("fields");
-                        }}
+                        onClick={() => void handleNext()}
                       >
                         Next
                       </Button>
@@ -271,7 +324,8 @@ export function FlowTestSigningLayout({
                         <Button
                           size="lg"
                           className="flex-1 whitespace-nowrap sm:min-w-[140px]"
-                          onClick={() => setRightPaneStep("confirm")}
+                          disabled={!nextEnabled}
+                          onClick={() => void handleNext()}
                         >
                           Next
                         </Button>
