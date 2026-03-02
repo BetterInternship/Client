@@ -86,8 +86,8 @@ export function FlowTestSigningLayout({
       <div className="bg-white shadow-sm flex-shrink-0">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <h3 className="text-xl font-semibold text-gray-900 sm:text-2xl">
+            <div className="flex min-w-0 items-center gap-3">
+              <h3 className="truncate whitespace-nowrap text-xl font-semibold text-gray-900 sm:text-2xl">
                 {formLabel}
               </h3>
             </div>
@@ -97,7 +97,7 @@ export function FlowTestSigningLayout({
                 setRightPaneStep("timeline");
                 onBack();
               }}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 transition-colors"
+              className="flex shrink-0 items-center gap-2 whitespace-nowrap px-3 py-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Templates
@@ -108,8 +108,8 @@ export function FlowTestSigningLayout({
 
       <div
         className={cn(
-          "min-h-0 flex-1 px-6 py-4 max-w-7xl mx-auto",
-          rightPaneStep === "confirm" ? "" : "w-full",
+          "min-h-0 flex-1 px-6 py-4 mx-auto w-full transition-[max-width] duration-500 ease-in-out",
+          rightPaneStep === "confirm" ? "max-w-3xl" : "max-w-7xl",
         )}
       >
         <div className="mx-auto flex h-full w-full max-w-7xl flex-col overflow-hidden rounded-[0.33em] border border-gray-300 ">
@@ -145,7 +145,7 @@ export function FlowTestSigningLayout({
 
             <div
               className={cn(
-                "relative min-h-0 flex flex-1 flex-col overflow-hidden bg-white transition-[opacity,transform] duration-300 ease-in-out",
+                "relative min-h-0 flex flex-1 flex-col overflow-hidden bg-white transition-[opacity,transform] duration-500 ease-in-out",
                 rightPaneStep === "confirm"
                   ? "opacity-0 pointer-events-none translate-x-6"
                   : "opacity-100 pointer-events-auto translate-x-0",
@@ -158,7 +158,7 @@ export function FlowTestSigningLayout({
               </div>
               <div className="relative min-h-0 flex-1 overflow-hidden">
                 <div
-                  className={`absolute inset-0 flex min-h-0 flex-col transition-all duration-300 ease-in-out ${
+                  className={`absolute inset-0 flex min-h-0 flex-col transition-all duration-500 ease-in-out ${
                     rightPaneStep === "timeline"
                       ? "translate-x-0 opacity-100 pointer-events-auto"
                       : "-translate-x-6 opacity-0 pointer-events-none"
@@ -217,14 +217,14 @@ export function FlowTestSigningLayout({
                     <div className="flex w-full justify-between gap-2">
                       <Button
                         size="lg"
-                        className="flex-1 opacity-0 pointer-events-none"
+                        className="pointer-events-none flex-1 whitespace-nowrap opacity-0 sm:min-w-[140px]"
                       >
                         Next
                       </Button>
                       <Button
                         size="lg"
                         disabled={!nextEnabled}
-                        className="flex-1"
+                        className="flex-1 whitespace-nowrap sm:min-w-[140px]"
                         onClick={() => {
                           setRightPaneStep("fields");
                         }}
@@ -236,7 +236,7 @@ export function FlowTestSigningLayout({
                 </div>
 
                 <div
-                  className={`absolute inset-0 min-h-0 transition-all duration-300 ease-in-out ${
+                  className={`absolute inset-0 min-h-0 transition-all duration-500 ease-in-out ${
                     rightPaneStep === "fields"
                       ? "translate-x-0 opacity-100 pointer-events-auto"
                       : "translate-x-6 opacity-0 pointer-events-none"
@@ -251,14 +251,14 @@ export function FlowTestSigningLayout({
                         <Button
                           size="lg"
                           variant="outline"
-                          className="flex-1"
+                          className="flex-1 whitespace-nowrap sm:min-w-[140px]"
                           onClick={() => setRightPaneStep("timeline")}
                         >
                           Previous
                         </Button>
                         <Button
                           size="lg"
-                          className="flex-1"
+                          className="flex-1 whitespace-nowrap sm:min-w-[140px]"
                           onClick={() => setRightPaneStep("confirm")}
                         >
                           Next
@@ -270,27 +270,32 @@ export function FlowTestSigningLayout({
               </div>
             </div>
           </div>
-          {rightPaneStep === "confirm" && (
-            <div className="border-t border-gray-300 bg-gray-200 p-3">
-              <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full sm:w-auto"
-                  onClick={() => setRightPaneStep("fields")}
-                >
-                  Go back and edit details
-                </Button>
-                <Button
-                  size="lg"
-                  className="w-full sm:w-auto"
-                  scheme="supportive"
-                >
-                  I confirm the details are correct
-                </Button>
-              </div>
+          <div
+            className={cn(
+              "border-t border-gray-300 bg-gray-200 p-3 transition-[opacity,transform,max-height] duration-500 ease-in-out",
+              rightPaneStep === "confirm"
+                ? "opacity-100 translate-y-0 max-h-32 pointer-events-auto"
+                : "opacity-0 translate-y-2 max-h-0 pointer-events-none p-0 border-t-0",
+            )}
+          >
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full whitespace-nowrap sm:w-auto"
+                onClick={() => setRightPaneStep("fields")}
+              >
+                Go back and edit details
+              </Button>
+              <Button
+                size="lg"
+                className="w-full whitespace-nowrap sm:w-auto"
+                scheme="supportive"
+              >
+                I confirm the details are correct
+              </Button>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

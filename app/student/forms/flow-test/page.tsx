@@ -132,7 +132,7 @@ export default function FlowTestPage({
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <h2 className="text-lg font-semibold leading-tight text-gray-900 sm:text-xl">
+                            <h2 className="truncate whitespace-nowrap text-lg font-semibold leading-tight text-gray-900 sm:text-xl">
                               {template.formLabel}
                             </h2>
                           </div>
