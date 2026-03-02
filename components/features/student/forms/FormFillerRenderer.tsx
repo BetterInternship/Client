@@ -5,7 +5,6 @@ import { ClientBlock } from "@betterinternship/core/forms";
 import { FieldRenderer } from "./FieldRenderer";
 import { HeaderRenderer, ParagraphRenderer } from "./BlockRenderer";
 import { useFormRendererContext } from "./form-renderer.ctx";
-import { FormActionButtons } from "./FormActionButtons";
 import { getBlockField, isBlockField } from "./utils";
 import { useFormFiller } from "./form-filler.ctx";
 import { useMyAutofill } from "@/hooks/use-my-autofill";
@@ -223,7 +222,7 @@ export function FormFillerRenderer({
             onChange={formFiller.setValue}
             errors={formFiller.errors}
             setSelected={form.setSelectedPreviewId}
-            onBlurValidate={(fieldKey, field) => {
+            onBlurValidate={(fieldKey) => {
               // Before validating, sync form values to params so validators can access them
               const currentValues = formFiller.getFinalValues(autofillValues);
 
@@ -256,9 +255,6 @@ export function FormFillerRenderer({
           />
         </div>
       </div>
-      <div className="hidden sm:block p-2 bg-gray-100 border-t border-r border-gray-300">
-        <FormActionButtons />
-      </div>
     </div>
   );
 }
@@ -280,7 +276,7 @@ const BlocksRenderer = <T extends any[]>({
   onChange: (key: string, value: any) => void;
   errors: Record<string, string>;
   setSelected: (selected: string) => void;
-  onBlurValidate?: (fieldKey: string, field: any) => void;
+  onBlurValidate?: (fieldKey: string) => void;
   fieldRefs: Record<string, HTMLDivElement | null>;
   selectedFieldId?: string;
 }) => {
@@ -323,9 +319,7 @@ const BlocksRenderer = <T extends any[]>({
                   field={actualField}
                   value={values[actualField.field]}
                   onChange={(v) => onChange(actualField.field, v)}
-                  onBlur={() =>
-                    onBlurValidate?.(actualField.field, actualField)
-                  }
+                  onBlur={() => onBlurValidate?.(actualField.field)}
                   error={errors[actualField.field]}
                   allValues={values}
                   isPhantom={isPhantom}
