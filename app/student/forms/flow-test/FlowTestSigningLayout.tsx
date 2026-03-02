@@ -7,12 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import { FormInput } from "@/components/EditForm";
 import { cn } from "@/lib/utils";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
 import {
   getBlockField,
   isBlockField,
 } from "@/components/features/student/forms/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface SigningRecipient {
   signatory_title: string;
@@ -78,8 +79,17 @@ export function FlowTestSigningLayout({
         return true;
     }
   }, [recipients, recipientEmails, rightPaneStep]);
+  const fromMe = recipients.some(
+    (recipient) => recipient.signatory_source?._id === "initiator",
+  );
   const stepNumber =
     rightPaneStep === "timeline" ? 1 : rightPaneStep === "fields" ? 2 : 3;
+
+  // Clean up when switching form
+  useEffect(() => {
+    setRecipientEmails({});
+    setValues({});
+  }, [formLabel]);
 
   return (
     <div className="h-full min-h-0 flex flex-col">
@@ -204,12 +214,14 @@ export function FlowTestSigningLayout({
                     </div>
                     <div className="my-4 mt-8">
                       <p className="text-sm text-gray-600 sm:text-base">
-                        <span className="text-primary italic">
-                          Don't know the recipient emails? That's okay:
-                          <br />
-                          Enter a contact who can forward it to the correct
-                          address.
-                        </span>
+                        {fromMe && (
+                          <span className="text-primary italic">
+                            Don't know the recipient emails? That's okay:
+                            <br />
+                            Enter a contact who can forward it to the correct
+                            address.
+                          </span>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -272,13 +284,30 @@ export function FlowTestSigningLayout({
           </div>
           <div
             className={cn(
-              "border-t border-gray-300 bg-gray-200 p-3 transition-[opacity,transform,max-height] duration-500 ease-in-out",
+              "border-t border-gray-300 bg-gray-200 transition-[opacity,transform,max-height] duration-500 ease-in-out ",
               rightPaneStep === "confirm"
-                ? "opacity-100 translate-y-0 max-h-32 pointer-events-auto"
+                ? "opacity-100 translate-y-0 pointer-events-auto max-h-96"
                 : "opacity-0 translate-y-2 max-h-0 pointer-events-none p-0 border-t-0",
             )}
           >
-            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <div className="flex flex-col w-full border-b border-b-gray-400 bg-white p-5 px-7 gap-2">
+              These emails will receive the form at some point:
+              {Object.entries(recipientEmails).map(
+                ([recipientTitle, recipientEmail]) => {
+                  return (
+                    <div className="flex flex-row">
+                      <Badge className="rounded-r-none gap-1">
+                        <span className="text-gray-500">{recipientTitle}:</span>
+                        <span className="font-bold text-primary">
+                          {recipientEmail}
+                        </span>
+                      </Badge>
+                    </div>
+                  );
+                },
+              )}
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end p-3">
               <Button
                 size="lg"
                 variant="outline"
