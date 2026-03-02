@@ -177,7 +177,7 @@ export default function FlowTestPage({
           className={cn(
             "flex min-h-0 flex-col bg-background overflow-hidden transition-[transform,opacity] duration-500 ease-in-out will-change-transform w-full",
             isSigningFlow
-              ? "md:-translate-x-2 opacity-100 max-w-7xl mx-auto"
+              ? "md:-translate-x-2 opacity-100"
               : "md:translate-x-0 opacity-100 max-w-5xl mx-auto",
           )}
         >

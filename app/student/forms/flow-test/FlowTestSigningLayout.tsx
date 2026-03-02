@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { FormPreviewPdfDisplay } from "@/components/features/student/forms/previewer";
 import { FormFillerRenderer } from "@/components/features/student/forms/FormFillerRenderer";
 import { Button } from "@/components/ui/button";
@@ -82,27 +82,37 @@ export function FlowTestSigningLayout({
     rightPaneStep === "timeline" ? 1 : rightPaneStep === "fields" ? 2 : 3;
 
   return (
-    <div className="h-full min-h-0 flex flex-col bg-white">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
-        <h3 className="text-xl font-semibold text-gray-900 sm:text-2xl">
-          {formLabel}
-        </h3>
-        <Button
-          variant="outline"
-          className="text-sm"
-          scheme="primary"
-          onClick={() => {
-            setRightPaneStep("timeline");
-            onBack();
-          }}
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Back to Templates
-        </Button>
+    <div className="h-full min-h-0 flex flex-col">
+      <div className="bg-white shadow-sm flex-shrink-0">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h3 className="text-xl font-semibold text-gray-900 sm:text-2xl">
+                {formLabel}
+              </h3>
+            </div>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setRightPaneStep("timeline");
+                onBack();
+              }}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Templates
+            </Button>
+          </div>
+        </div>
       </div>
 
-      <div className="min-h-0 flex-1 px-6 mt-4">
-        <div className="mx-auto flex h-full w-full max-w-7xl flex-col overflow-hidden rounded-[0.33em] border border-gray-300 bg-white">
+      <div
+        className={cn(
+          "min-h-0 flex-1 px-6 py-4 max-w-7xl mx-auto",
+          rightPaneStep === "confirm" ? "" : "w-full",
+        )}
+      >
+        <div className="mx-auto flex h-full w-full max-w-7xl flex-col overflow-hidden rounded-[0.33em] border border-gray-300 ">
           <div
             className="grid min-h-0 flex-1 grid-cols-1 transition-[grid-template-columns] duration-500 ease-in-out xl:[grid-template-columns:minmax(0,1fr)_var(--right-pane-width)]"
             style={
@@ -232,7 +242,7 @@ export function FlowTestSigningLayout({
                       : "translate-x-6 opacity-0 pointer-events-none"
                   }`}
                 >
-                  <div className="min-h-0 flex h-full flex-1 flex-col">
+                  <div className="min-h-0 flex h-full flex-1 flex-col pt-8">
                     <div className="min-h-0 flex-1">
                       <FormFillerRenderer onValuesChange={setValues} />
                     </div>
