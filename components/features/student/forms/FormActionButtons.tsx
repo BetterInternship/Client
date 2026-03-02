@@ -131,7 +131,6 @@ export function FormActionButtons() {
                 audit: getClientAudit(),
               }),
             autofillValues,
-            form.formMetadata.getSigningParties(),
           );
 
           // Just e-sign and fill-out right away

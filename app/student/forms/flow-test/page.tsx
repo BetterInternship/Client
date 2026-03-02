@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { ChevronRight, SearchIcon } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ChevronRight, Eye, PenLineIcon, SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
@@ -15,6 +15,7 @@ import { FlowTestPreviewModal } from "./FlowTestPreviewModal";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { useFormFiller } from "@/components/features/student/forms/form-filler.ctx";
 import { useMyAutofill } from "@/hooks/use-my-autofill";
+import { FormAndDocumentLayout } from "@/components/features/student/forms/FormFlowRouter";
 
 export default function FlowTestPage({
   formTemplates,
@@ -34,6 +35,7 @@ export default function FlowTestPage({
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isSigningFlow, setIsSigningFlow] = useState(false);
   const form = useFormRendererContext();
   const formFiller = useFormFiller();
   const recipients = form.formMetadata.getSigningParties();
@@ -61,12 +63,31 @@ export default function FlowTestPage({
 
   if (isLoading) return <Loader>Loading form templates...</Loader>;
 
+  const handleSigningPartiesSubmit = async () => {
+    setIsSigningFlow(true);
+    return Promise.resolve({ success: true });
+  };
+
   return (
     <div className="h-full min-h-0 w-full bg-gray-50">
       <div className="h-[2px] w-full bg-gray/60" />
 
-      <div className="grid h-[calc(100%-2px)] min-h-0 grid-cols-[480px_minmax(0,1fr)]">
-        <aside className="flex min-h-0 flex-col border-b border-gray-300 bg-white md:border-b-0 md:border-r">
+      <div
+        className={cn(
+          "grid h-[calc(100%-2px)] min-h-0 transition-[grid-template-columns] duration-500 ease-in-out",
+          isSigningFlow
+            ? "grid-cols-[0px_minmax(0,1fr)]"
+            : "grid-cols-[480px_minmax(0,1fr)]",
+        )}
+      >
+        <aside
+          className={cn(
+            "flex min-h-0 flex-col border-b border-gray-300 bg-white md:border-b-0 md:border-r transition-all duration-500 ease-in-out overflow-hidden",
+            isSigningFlow
+              ? "-translate-x-8 opacity-0 pointer-events-none"
+              : "translate-x-0 opacity-100",
+          )}
+        >
           <div className="flex h-28 items-center bg-gray-50 border-b border-gray-200 px-10">
             <div className="flex flex-col w-full gap-2">
               <h1 className="text-2xl tracking-tight text-gray-700 sm:text-2xl font-bold">
@@ -138,7 +159,11 @@ export default function FlowTestPage({
 
         <section className="flex min-h-0 flex-col bg-background">
           <div className="min-h-0 flex-1 overflow-y-auto px-4 bg-gray-100">
-            {form.loading || form.document.name !== selectedTemplateName ? (
+            {isSigningFlow ? (
+              <div className="h-full py-6">
+                <FormAndDocumentLayout formName={selectedTemplateName} />
+              </div>
+            ) : form.loading || form.document.name !== selectedTemplateName ? (
               <Loader>Loading form template...</Loader>
             ) : (
               <div className="mx-auto flex max-w-4xl flex-col gap-4 bg-white h-full px-12 py-20">
@@ -180,9 +205,11 @@ export default function FlowTestPage({
                   <div className="flex flex-row gap-2">
                     <Button
                       size="lg"
-                      className="w-full sm:w-auto bg-black opacity-80 hover:bg-black/70 text-lg"
+                      className="w-full sm:w-auto text-lg"
+                      variant="outline"
                       onClick={() => setIsPreviewOpen(true)}
                     >
+                      <Eye className="w-5 h-5" />
                       Preview PDF
                     </Button>
                     <Button
@@ -193,12 +220,12 @@ export default function FlowTestPage({
                           form.fields,
                           formFiller,
                           signingPartyBlocks,
-                          () => Promise.resolve(),
+                          handleSigningPartiesSubmit,
                           autofillValues,
-                          form.formMetadata.getSigningParties(),
                         )
                       }
                     >
+                      <PenLineIcon className="w-5 h-5" />
                       Sign via BetterInternship
                     </Button>
                   </div>
