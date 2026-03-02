@@ -4,6 +4,8 @@ import { ChevronLeft } from "lucide-react";
 import { FormPreviewPdfDisplay } from "@/components/features/student/forms/previewer";
 import { Button } from "@/components/ui/button";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
+import { FormInput } from "@/components/EditForm";
+import { useState } from "react";
 
 interface SigningRecipient {
   signatory_title: string;
@@ -25,6 +27,10 @@ export function FlowTestSigningLayout({
   recipients,
   onBack,
 }: FlowTestSigningLayoutProps) {
+  const [recipientEmails, setRecipientEmails] = useState<
+    Record<string, string>
+  >({});
+
   return (
     <div className="h-full min-h-0 flex flex-col bg-white">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-start px-4 py-4 sm:px-6">
@@ -62,33 +68,47 @@ export function FlowTestSigningLayout({
                   <h3 className="text-xl font-semibold text-gray-900 sm:text-2xl">
                     {formLabel}
                   </h3>
-                  <p className="my-4 text-sm text-gray-600 sm:text-base">
-                    These people will receive a copy of this form, in this
-                    order:
-                  </p>
                 </div>
 
                 <Timeline>
-                  {recipients.map((recipient, index) => (
-                    <TimelineItem
-                      key={`${recipient.signatory_title}-${index}`}
-                      number={index + 1}
-                      title={
-                        <span className="text-base text-gray-700 sm:text-lg">
-                          {recipient.signatory_title}
-                        </span>
-                      }
-                      subtitle={
-                        recipient.signatory_source?._id === "initiator" && (
-                          <span className="text-warning text-sm font-bold">
-                            you will specify this email
-                          </span>
-                        )
-                      }
-                      isLast={index === recipients.length - 1}
-                    />
-                  ))}
+                  {recipients.map((recipient, index) => {
+                    const fromMe =
+                      recipient.signatory_source?._id === "initiator";
+                    return (
+                      <TimelineItem
+                        key={`${recipient.signatory_title}-${index}`}
+                        number={index + 1}
+                        fromMe={fromMe}
+                        title={recipient.signatory_title}
+                        subtitle={
+                          fromMe && (
+                            <FormInput
+                              value={recipientEmails[recipient.signatory_title]}
+                              placeholder={"recipient@email.com"}
+                              className="mt-1"
+                              setter={(value) =>
+                                setRecipientEmails({
+                                  ...recipientEmails,
+                                  [recipient.signatory_title]: value,
+                                })
+                              }
+                            />
+                          )
+                        }
+                        isLast={index === recipients.length - 1}
+                      />
+                    );
+                  })}
                 </Timeline>
+              </div>
+              <div className="my-4 mt-8">
+                <p className="text-sm text-gray-600 sm:text-base">
+                  <span className="text-primary italic">
+                    Don't know the recipient emails? That's okay:
+                    <br />
+                    Enter a contact who can forward it to the correct address.
+                  </span>
+                </p>
               </div>
             </div>
           </div>

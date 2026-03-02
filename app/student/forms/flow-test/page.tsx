@@ -1,13 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  ChevronRight,
-  Eye,
-  FileSearch,
-  PenLineIcon,
-  SearchIcon,
-} from "lucide-react";
+import { ChevronRight, Eye, FileSearch, PenLineIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
