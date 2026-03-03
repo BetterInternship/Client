@@ -46,6 +46,7 @@ export function FlowTestSigningLayout({
   const autofillValues = useMyAutofill();
   const updateAutofill = useMyAutofillUpdate();
   const [values, setValues] = useState<FormValues>({});
+  const [nextLoading, setNextLoading] = useState(false);
   const [recipientEmails, setRecipientEmails] = useState<
     Record<string, string>
   >({});
@@ -114,11 +115,14 @@ export function FlowTestSigningLayout({
 
     const signingPartyBlocks =
       form.formMetadata.getSigningPartyBlocks("initiator");
-    console.log(signingPartyBlocks);
+
+    // So it doesn't look like it's hanging
+    setNextLoading(true);
 
     switch (rightPaneStep) {
       case "timeline":
         setRightPaneStep("fields");
+        setNextLoading(false);
         break;
       case "fields":
         if (Object.keys(errors).length) {
@@ -130,9 +134,12 @@ export function FlowTestSigningLayout({
           await updateAutofill(form.formName, form.fields, finalValues);
           setRightPaneStep("confirm");
         }
+
+        setNextLoading(false);
         break;
       case "confirm":
-        return true;
+        setNextLoading(false);
+        break;
     }
   }, [recipients, recipientEmails, rightPaneStep, form, values]);
 
@@ -153,7 +160,7 @@ export function FlowTestSigningLayout({
   // Buffer
   useEffect(() => {
     if (rightPaneStep === "confirm") setConfirmStepBuffering(true);
-    const timeout = setTimeout(() => setConfirmStepBuffering(false), 1500);
+    const timeout = setTimeout(() => setConfirmStepBuffering(false), 2000);
     return () => clearTimeout(timeout);
   }, [rightPaneStep]);
 
@@ -296,11 +303,11 @@ export function FlowTestSigningLayout({
                       />
                       <Button
                         size="lg"
-                        disabled={!nextEnabled}
+                        disabled={!nextEnabled || nextLoading}
                         className="flex-1 whitespace-nowrap sm:min-w-[140px]"
                         onClick={() => void handleNext()}
                       >
-                        Next
+                        <TextLoader loading={nextLoading}>Next</TextLoader>
                       </Button>
                     </div>
                   </div>
@@ -322,6 +329,7 @@ export function FlowTestSigningLayout({
                         <Button
                           size="lg"
                           variant="outline"
+                          disabled={nextLoading}
                           className={cn(
                             "flex-1 whitespace-nowrap sm:min-w-[140px]",
                             !fromMe ? "opacity-0 pointer-events-none" : "",
@@ -333,10 +341,10 @@ export function FlowTestSigningLayout({
                         <Button
                           size="lg"
                           className="flex-1 whitespace-nowrap sm:min-w-[140px]"
-                          disabled={!nextEnabled}
+                          disabled={!nextEnabled || nextLoading}
                           onClick={() => void handleNext()}
                         >
-                          Next
+                          <TextLoader loading={nextLoading}>Next</TextLoader>
                         </Button>
                       </div>
                     </div>
@@ -385,6 +393,7 @@ export function FlowTestSigningLayout({
                           size="lg"
                           variant="outline"
                           className="flex-1 whitespace-nowrap sm:min-w-[140px]"
+                          disabled={confirmStepBuffering}
                           onClick={() => setRightPaneStep("fields")}
                         >
                           Go back and edit details
