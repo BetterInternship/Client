@@ -18,20 +18,21 @@ import { useFormFiller } from "@/components/features/student/forms/form-filler.c
 import { useMyAutofill, useMyAutofillUpdate } from "@/hooks/use-my-autofill";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
-import { FormValues } from "@betterinternship/core/forms";
+import { FormValues, IFormSigningParty } from "@betterinternship/core/forms";
 import { TextLoader } from "@/components/ui/loader";
-
-interface SigningRecipient {
-  signatory_title: string;
-  signatory_source?: {
-    _id?: string;
-  };
-}
+import { useClientProcess } from "@betterinternship/components";
+import { FormService } from "@/lib/api/services";
+import { FilloutFormProcessResult } from "../page";
+import { useMyForms } from "../myforms.ctx";
+import useModalRegistry from "@/components/modals/modal-registry";
+import { getClientAudit } from "@/lib/audit";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface FlowTestSigningLayoutProps {
   formLabel?: string;
   documentUrl?: string;
-  recipients: SigningRecipient[];
+  recipients: IFormSigningParty[];
+  noEsign?: boolean;
   onBack: () => void;
 }
 
@@ -39,12 +40,16 @@ export function FlowTestSigningLayout({
   formLabel,
   documentUrl,
   recipients,
+  noEsign,
   onBack,
 }: FlowTestSigningLayoutProps) {
   const form = useFormRendererContext();
+  const myForms = useMyForms();
+  const modalRegistry = useModalRegistry();
   const formFiller = useFormFiller();
   const autofillValues = useMyAutofill();
   const updateAutofill = useMyAutofillUpdate();
+  const queryClient = useQueryClient();
   const [values, setValues] = useState<FormValues>({});
   const [nextLoading, setNextLoading] = useState(false);
   const [recipientEmails, setRecipientEmails] = useState<
@@ -54,6 +59,49 @@ export function FlowTestSigningLayout({
   const [rightPaneStep, setRightPaneStep] = useState<
     "timeline" | "fields" | "confirm"
   >("timeline");
+
+  const formFilloutProcess = useClientProcess({
+    filterKey: "form-fillout",
+    caller: FormService.filloutForm.bind(FormService),
+    invalidator: useCallback(
+      (result: FilloutFormProcessResult) => {
+        return myForms.forms.some(
+          (form) => form.form_process_id === result.formProcessId,
+        );
+      },
+      [myForms.forms],
+    ),
+    onSuccess: (processId, _processName, result) => {
+      toast.success(`Generated ${form.formLabel}!`, {
+        id: processId,
+        duration: 2000,
+      });
+      console.log("RESULT: ", result);
+    },
+    onFailure: (processId, _processName, error) => {
+      toast.error(`Could not generate ${form.formLabel}: ${error}`, {
+        id: processId,
+        duration: 2000,
+      });
+      console.log("ERROR: ", error);
+    },
+  });
+
+  const fromMe = useMemo(
+    () =>
+      recipients.some(
+        (recipient) => recipient.signatory_source?._id === "initiator",
+      ),
+    [recipients],
+  );
+  const noRecipientStep = useMemo(() => !fromMe || noEsign, [fromMe, noEsign]);
+  const generateWithNoSignature = useMemo(
+    () => !recipients.length || noEsign,
+    [recipients, noEsign],
+  );
+  const steps = noRecipientStep
+    ? ["fields", "confirm"]
+    : ["timeline", "fields", "confirm"];
 
   const manualBlocks = useMemo(
     () =>
@@ -94,8 +142,9 @@ export function FlowTestSigningLayout({
       case "timeline":
         return recipients.every(
           (recipient) =>
-            !!recipientEmails[recipient.signatory_title] ||
-            recipient.signatory_source?._id !== "initiator",
+            !!recipientEmails[
+              form.formMetadata.getSigningPartyFieldName(recipient._id)
+            ] || recipient.signatory_source?._id !== "initiator",
         );
       case "fields":
         return form.fields.every(
@@ -110,11 +159,9 @@ export function FlowTestSigningLayout({
   }, [recipients, recipientEmails, rightPaneStep, form, values]);
 
   const handleNext = useCallback(async () => {
-    const finalValues = formFiller.getFinalValues(autofillValues);
-    const errors = formFiller.validate(form.fields, autofillValues);
-
-    const signingPartyBlocks =
-      form.formMetadata.getSigningPartyBlocks("initiator");
+    const additionalValues = { ...autofillValues, ...recipientEmails };
+    const finalValues = formFiller.getFinalValues(additionalValues);
+    const errors = formFiller.validate(form.fields, additionalValues);
 
     // So it doesn't look like it's hanging
     setNextLoading(true);
@@ -143,19 +190,58 @@ export function FlowTestSigningLayout({
     }
   }, [recipients, recipientEmails, rightPaneStep, form, values]);
 
-  const fromMe = recipients.some(
-    (recipient) => recipient.signatory_source?._id === "initiator",
-  );
-  const steps = fromMe
-    ? ["timeline", "fields", "confirm"]
-    : ["fields", "confirm"];
+  const handleSubmit = useCallback(async () => {
+    setNextLoading(true);
+    const finalValues = formFiller.getFinalValues(autofillValues);
+
+    if (generateWithNoSignature) {
+      const response = await formFilloutProcess.run(
+        {
+          formName: form.formName,
+          formVersion: form.formVersion,
+          values: finalValues,
+        },
+        {
+          label: form.formLabel,
+          timestamp: new Date().toISOString(),
+        },
+      );
+
+      if (!response.success) {
+        setNextLoading(false);
+        alert("Something went wrong, please try again.");
+        console.error(response.message);
+        return;
+      }
+
+      modalRegistry.formSubmissionSuccess.open("manual");
+    } else {
+      const response = await FormService.initiateForm({
+        formName: form.formName,
+        formVersion: form.formVersion,
+        values: finalValues,
+        audit: getClientAudit(),
+      });
+
+      if (!response.success) {
+        setNextLoading(false);
+        alert("Something went wrong, please try again.");
+        console.error(response.message);
+        return;
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
+      modalRegistry.formSubmissionSuccess.open("esign");
+    }
+    setNextLoading(false);
+  }, [form, generateWithNoSignature, autofillValues]);
 
   // Clean up when switching form
   useEffect(() => {
     setRecipientEmails({});
     setValues({});
-    setRightPaneStep(fromMe ? "timeline" : "fields");
-  }, [formLabel, recipients]);
+    setRightPaneStep(noRecipientStep ? "fields" : "timeline");
+  }, [formLabel, noEsign, noRecipientStep]);
 
   // Buffer
   useEffect(() => {
@@ -253,24 +339,26 @@ export function FlowTestSigningLayout({
                         {recipients.map((recipient, index) => {
                           const fromMe =
                             recipient.signatory_source?._id === "initiator";
+                          const fieldName =
+                            form.formMetadata.getSigningPartyFieldName(
+                              recipient._id,
+                            );
                           return (
                             <TimelineItem
-                              key={`${recipient.signatory_title}-${index}`}
+                              key={`${fieldName}-${index}`}
                               number={index + 1}
                               fromMe={fromMe}
                               title={recipient.signatory_title}
                               subtitle={
                                 fromMe && (
                                   <FormInput
-                                    value={
-                                      recipientEmails[recipient.signatory_title]
-                                    }
+                                    value={recipientEmails[fieldName]}
                                     placeholder={"recipient@email.com"}
                                     className="mt-1"
                                     setter={(value) =>
                                       setRecipientEmails({
                                         ...recipientEmails,
-                                        [recipient.signatory_title]: value,
+                                        [fieldName]: value,
                                       })
                                     }
                                   />
@@ -284,7 +372,7 @@ export function FlowTestSigningLayout({
                     </div>
                     <div className="my-4 mt-8">
                       <p className="text-sm text-gray-600 sm:text-base">
-                        {fromMe && (
+                        {!noRecipientStep && (
                           <span className="text-primary italic">
                             Don't know the recipient emails? That's okay:
                             <br />
@@ -332,7 +420,9 @@ export function FlowTestSigningLayout({
                           disabled={nextLoading}
                           className={cn(
                             "flex-1 whitespace-nowrap sm:min-w-[140px]",
-                            !fromMe ? "opacity-0 pointer-events-none" : "",
+                            noRecipientStep
+                              ? "opacity-0 pointer-events-none"
+                              : "",
                           )}
                           onClick={() => setRightPaneStep("timeline")}
                         >
@@ -362,7 +452,7 @@ export function FlowTestSigningLayout({
                     <div className="min-h-0 flex-1 overflow-y-auto p-10 flex flex-col items-start justify-start pt-20 gap-4">
                       <LucideClipboardCheck className="w-16 h-16 opacity-40" />
                       Please check that all your inputs are correct
-                      {fromMe && (
+                      {!noRecipientStep && (
                         <div className="space-y-3 mt-8">
                           Make sure these emails are right:
                           <div className="space-y-2 mt-2">
@@ -402,9 +492,12 @@ export function FlowTestSigningLayout({
                           size="lg"
                           className="flex-1 whitespace-nowrap sm:min-w-[140px]"
                           scheme="supportive"
-                          disabled={confirmStepBuffering}
+                          disabled={confirmStepBuffering || nextLoading}
+                          onClick={() => void handleSubmit()}
                         >
-                          <TextLoader loading={confirmStepBuffering}>
+                          <TextLoader
+                            loading={confirmStepBuffering || nextLoading}
+                          >
                             I confirm the details are correct
                           </TextLoader>
                         </Button>

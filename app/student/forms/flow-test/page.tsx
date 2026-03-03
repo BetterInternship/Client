@@ -51,6 +51,7 @@ export default function FlowTestPage({
     [formTemplates, selectedTemplateName],
   );
 
+  const [noEsign, setNoEsign] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isSigningFlow, setIsSigningFlow] = useState(false);
   const form = useFormRendererContext();
@@ -74,9 +75,14 @@ export default function FlowTestPage({
 
   if (isLoading) return <Loader>Loading form templates...</Loader>;
 
-  const handleSigningPartiesSubmit = async () => {
+  const handleSignViaBetterInternship = () => {
     setIsSigningFlow(true);
-    return Promise.resolve({ success: true });
+    setNoEsign(false);
+  };
+
+  const handlePrintForWetSignature = () => {
+    setIsSigningFlow(true);
+    setNoEsign(true);
   };
 
   return (
@@ -200,6 +206,7 @@ export default function FlowTestPage({
                   formLabel={selectedTemplate?.formLabel}
                   documentUrl={form.document.url}
                   recipients={recipients}
+                  noEsign={noEsign}
                   onBack={() => setIsSigningFlow(false)}
                 />
               </div>
@@ -271,9 +278,7 @@ export default function FlowTestPage({
                                 <Button
                                   size="lg"
                                   className="w-full sm:w-auto text-lg"
-                                  onClick={() =>
-                                    void handleSigningPartiesSubmit()
-                                  }
+                                  onClick={handleSignViaBetterInternship}
                                 >
                                   <PenLineIcon className="w-5 h-5" />
                                   {recipients.some(
@@ -288,6 +293,7 @@ export default function FlowTestPage({
                               <Button
                                 variant="link"
                                 className="h-auto p-0 sm:text-base"
+                                onClick={handlePrintForWetSignature}
                               >
                                 or print for wet signature instead
                               </Button>
@@ -298,32 +304,33 @@ export default function FlowTestPage({
                     ) : (
                       <>
                         <div className="text-xl mt-4">
-                          {recipients.length
+                          {recipients.length > 1
                             ? "These people will receive this form, in this order:"
                             : "This form does not require any signatures."}
                         </div>
 
                         <Timeline>
-                          {recipients.map((recipient, index) => (
-                            <TimelineItem
-                              key={recipient.signatory_title}
-                              number={index + 1}
-                              title={
-                                <span className="text-base text-gray-700 sm:text-lg">
-                                  {recipient.signatory_title}
-                                </span>
-                              }
-                              subtitle={
-                                recipient.signatory_source?._id ===
-                                  "initiator" && (
-                                  <span className="text-warning font-bold text-sm">
-                                    {"you will specify this email"}
+                          {recipients.length > 1 &&
+                            recipients.map((recipient, index) => (
+                              <TimelineItem
+                                key={recipient.signatory_title}
+                                number={index + 1}
+                                title={
+                                  <span className="text-base text-gray-700 sm:text-lg">
+                                    {recipient.signatory_title}
                                   </span>
-                                )
-                              }
-                              isLast={index === recipients.length - 1}
-                            />
-                          ))}
+                                }
+                                subtitle={
+                                  recipient.signatory_source?._id ===
+                                    "initiator" && (
+                                    <span className="text-warning font-bold text-sm">
+                                      {"you will specify this email"}
+                                    </span>
+                                  )
+                                }
+                                isLast={index === recipients.length - 1}
+                              />
+                            ))}
                         </Timeline>
                         <div className="mt-8 flex flex-col items-start gap-3 border-b border-gray-200 pt-4 pb-8">
                           <div className="flex flex-row gap-2">
@@ -339,7 +346,7 @@ export default function FlowTestPage({
                             <Button
                               size="lg"
                               className="w-full sm:w-auto text-lg"
-                              onClick={() => void handleSigningPartiesSubmit()}
+                              onClick={handleSignViaBetterInternship}
                             >
                               <PenLineIcon className="w-5 h-5" />
                               {recipients.some(
@@ -354,6 +361,7 @@ export default function FlowTestPage({
                           <Button
                             variant="link"
                             className="h-auto p-0 sm:text-base"
+                            onClick={handlePrintForWetSignature}
                           >
                             or print for wet signature instead
                           </Button>

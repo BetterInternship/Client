@@ -123,39 +123,6 @@ export const useModalRegistry = () => {
       close: () => close("mass-apply-results"),
     },
 
-    // Email confirmation modal
-    specifySigningParties: {
-      open: (
-        fields: (
-          | ClientField<[PublicUser]>
-          | ClientPhantomField<[PublicUser]>
-        )[],
-        formFiller: IFormFiller,
-        signingPartyBlocks: ClientBlock<[PublicUser]>[],
-        handleSubmit: (signingPartyValues: FormValues) => Promise<any>,
-        autofillValues?: FormValues,
-      ) =>
-        open(
-          "specify-signing-parties",
-          <SpecifySigningPartiesModal
-            fields={fields}
-            formFiller={formFiller}
-            signingPartyBlocks={signingPartyBlocks}
-            handleSubmit={handleSubmit}
-            close={() => close("specify-signing-parties")}
-            autofillValues={autofillValues}
-          />,
-          {
-            title: "Who Will Sign This Form?",
-            closeOnEsc: false,
-            allowBackdropClick: false,
-            hasClose: false,
-            showHeaderDivider: true,
-          },
-        ),
-      close: () => close("specify-signing-parties"),
-    },
-
     // Form submission success modal
     formSubmissionSuccess: {
       open: (submissionType: "esign" | "manual" | null) =>
