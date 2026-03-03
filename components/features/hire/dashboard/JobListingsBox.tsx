@@ -6,7 +6,7 @@ import { Loader } from "@/components/ui/loader";
 import { useMobile } from "@/hooks/use-mobile";
 import { EmployerApplication, Job } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { Building, Check, Pause } from 'lucide-react';
 import { useRouter } from "next/navigation";
 
@@ -83,7 +83,7 @@ export function JobListingsBox({
                         <br/>
                     }
                     {(job.salary !== undefined && job.allowance === 0) ?
-                        <span className="text-sm mt-2">₱{job.salary}/{to_job_pay_freq_name(job.salary_freq)}</span> :
+                        <span className="text-sm mt-2">{formatCurrency(job.salary!)}/{to_job_pay_freq_name(job.salary_freq)}</span> :
                         <br/>
                     }
                 </div>

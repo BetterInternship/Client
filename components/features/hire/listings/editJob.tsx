@@ -25,6 +25,7 @@ import { useMobile } from "@/hooks/use-mobile";
 import { useModal } from "@/hooks/use-modal";
 import { TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { editorRootElementRef$ } from "@mdxeditor/editor";
 
 interface EditJobPageProps {
   job: Job;
@@ -735,7 +736,9 @@ const EditJobPage = ({
                             tasks, projects, or roles in your company
                           </p>
                         </div>
-                        <div className="relative">
+                        <div 
+                          className="relative mdx-click-area"
+                        >
                           <MDXEditor
                             className="min-h-[250px] border border-gray-200 rounded-[0.33em] overflow-y-auto"
                             markdown={formData.description ?? ""}
