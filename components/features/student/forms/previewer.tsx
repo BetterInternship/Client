@@ -6,15 +6,22 @@ import {
   getDocument,
   version as pdfjsVersion,
 } from "pdfjs-dist";
+import { type IFormSigningParty } from "@betterinternship/core/forms";
 import type {
   PDFDocumentProxy,
   PDFPageProxy,
   RenderTask,
 } from "pdfjs-dist/types/src/display/api";
 import type { PageViewport } from "pdfjs-dist/types/src/display/display_utils";
-import { type IFormBlock } from "@betterinternship/core/forms";
 import { Loader } from "@/components/ui/loader";
 import { ZoomIn, ZoomOut } from "lucide-react";
+import { useDbRefs } from "@/lib/db/use-refs";
+import {
+  groupFieldsByPage,
+  normalizePreviewFields,
+  type PreviewField,
+  type PreviewFieldLike,
+} from "@/lib/form-previewer-model";
 
 // Load Roboto font from Google Fonts and wait for it to load
 if (typeof window !== "undefined") {
@@ -59,10 +66,14 @@ function getSharedContext(): CanvasRenderingContext2D | null {
 }
 
 // Measure text width using Canvas (used by wrapText)
-function measureTextWidth(text: string, fontSize: number): number {
+function measureTextWidth(
+  text: string,
+  fontSize: number,
+  fontFamily = "Roboto",
+): number {
   const ctx = getSharedContext();
   if (!ctx) return 0;
-  ctx.font = `${fontSize}px Roboto`;
+  ctx.font = `${fontSize}px ${fontFamily}`;
   return ctx.measureText(text).width;
 }
 
@@ -83,15 +94,18 @@ function wrapText({
   fontSize,
   maxWidth,
   zoom = 1,
+  fontFamily = "Roboto",
 }: {
   text: string;
   fontSize: number;
   maxWidth: number;
   zoom?: number;
+  fontFamily?: string;
 }): string[] {
   const paragraphs = String(text ?? "").split(/\r?\n/);
   const lines: string[] = [];
-  const measure = (s: string) => measureTextWidth(s, fontSize) * zoom;
+  const measure = (s: string) =>
+    measureTextWidth(s, fontSize, fontFamily) * zoom;
 
   const breakLongWord = (word: string): string[] => {
     const parts: string[] = [];
@@ -155,15 +169,17 @@ function layoutWrappedBlock({
   lineHeight,
   maxWidth,
   zoom = 1,
+  fontFamily = "Roboto",
 }: {
   text: string;
   fontSize: number;
   lineHeight: number;
   maxWidth: number;
   zoom?: number;
+  fontFamily?: string;
 }) {
   const { ascent, descent } = getFontMetricsAtSize(fontSize);
-  const lines = wrapText({ text, fontSize, maxWidth, zoom });
+  const lines = wrapText({ text, fontSize, maxWidth, zoom, fontFamily });
   const n = lines.length;
   const blockHeight = (n > 0 ? (n - 1) * lineHeight : 0) + (ascent - descent);
   return { lines, ascent, descent, blockHeight };
@@ -176,6 +192,7 @@ function fitWrapped({
   startSize,
   lineHeightMult = 1.2,
   zoom = 1,
+  fontFamily = "Roboto",
 }: {
   text: string;
   maxWidth: number;
@@ -183,6 +200,7 @@ function fitWrapped({
   startSize: number;
   lineHeightMult?: number;
   zoom?: number;
+  fontFamily?: string;
 }) {
   const fits = (size: number): boolean => {
     const lh = size * lineHeightMult;
@@ -192,6 +210,7 @@ function fitWrapped({
       lineHeight: lh,
       maxWidth,
       zoom,
+      fontFamily,
     });
     return blockHeight <= maxHeight + 1e-6;
   };
@@ -204,6 +223,7 @@ function fitWrapped({
       lineHeight: lh,
       maxWidth,
       zoom,
+      fontFamily,
     });
     return { fontSize: startSize, lineHeight: lh, ...laid };
   }
@@ -229,6 +249,7 @@ function fitWrapped({
     lineHeight: bestLineHeight,
     maxWidth,
     zoom,
+    fontFamily,
   });
   return { fontSize: bestSize, lineHeight: bestLineHeight, ...laid };
 }
@@ -239,11 +260,13 @@ function fitNoWrap({
   maxWidth,
   maxHeight,
   startSize,
+  fontFamily = "Roboto",
 }: {
   text: string;
   maxWidth: number;
   maxHeight: number;
   startSize: number;
+  fontFamily?: string;
 }) {
   const line = String(text ?? "").replace(/\r?\n/g, " ");
 
@@ -262,9 +285,8 @@ function fitNoWrap({
 
   const fits = (size: number): boolean => {
     if (!ctx) return false;
-    ctx.font = `${size}px Roboto`;
-    // Measure text width with a small correction factor for safety
-    const w = ctx.measureText(line).width * 0.7;
+    ctx.font = `${size}px ${fontFamily}`;
+    const w = ctx.measureText(line).width;
     const { height } = getFontMetricsAtSize(size);
     return w <= maxWidth - SAFETY_MARGIN && height <= maxHeight - SAFETY_MARGIN;
   };
@@ -307,11 +329,16 @@ function fitNoWrap({
 
 interface FormPreviewPdfDisplayProps {
   documentUrl: string;
-  blocks: any[]; // ServerField[] with coordinates (x, y, w, h, page, field)
+  fields?: PreviewFieldLike[];
+  blocks?: PreviewFieldLike[]; // Backward-compatible alias
   values: Record<string, string>;
   scale?: number;
   onFieldClick?: (fieldName: string) => void;
   selectedFieldId?: string;
+  selectionTick?: number;
+  autoScrollToSelectedField?: boolean;
+  fieldErrors?: Record<string, string>;
+  signingParties?: IFormSigningParty[];
 }
 
 const clamp = (value: number, min: number, max: number) =>
@@ -324,40 +351,152 @@ const clamp = (value: number, min: number, max: number) =>
  */
 export const FormPreviewPdfDisplay = ({
   documentUrl,
+  fields,
   blocks,
   values,
   scale: initialScale = 1.0,
   onFieldClick,
   selectedFieldId,
+  selectionTick = 0,
+  autoScrollToSelectedField = true,
+  fieldErrors = {},
+  signingParties = [],
 }: FormPreviewPdfDisplayProps) => {
+  const refs = useDbRefs();
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [pageCount, setPageCount] = useState<number>(0);
   const [scale, setScale] = useState<number>(initialScale);
   const [visiblePage, setVisiblePage] = useState<number>(1);
-  const [selectedPage, setSelectedPage] = useState<number>(1);
   const [isLoadingDoc, setIsLoadingDoc] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [animatingFieldId, setAnimatingFieldId] = useState<string | null>(null);
 
   const pageRefs = useRef<Map<number, HTMLDivElement | null>>(new Map());
+  const fieldRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const normalizedFields = useMemo(
+    () => normalizePreviewFields(fields?.length ? fields : (blocks ?? [])),
+    [fields, blocks],
+  );
+  const fieldsByPage = useMemo(
+    () => groupFieldsByPage(normalizedFields),
+    [normalizedFields],
+  );
+  const signingPartyLabelById = useMemo(() => {
+    const partyLabelById = new Map<string, string>();
+    signingParties.forEach((party) => {
+      partyLabelById.set(party._id, party.signatory_title || party._id);
+    });
+    return partyLabelById;
+  }, [signingParties]);
+
+  const resolveDisplayValue = useCallback(
+    (fieldName: string, rawValue: unknown): string => {
+      const value = Array.isArray(rawValue)
+        ? rawValue.join(", ")
+        : typeof rawValue === "string"
+          ? rawValue
+          : "";
+      if (!value) return "";
+      const trimmedValue = value.trim();
+
+      const tryResolveRefName = (candidate: string): string | null => {
+        const college = refs.get_college?.(candidate)?.name;
+        if (college) return college;
+        const department = refs.get_department?.(candidate)?.name;
+        if (department) return department;
+        const university = refs.get_university?.(candidate)?.name;
+        if (university) return university;
+        return null;
+      };
+
+      const loweredFieldName = fieldName.toLowerCase();
+      if (
+        loweredFieldName.includes("college") &&
+        typeof refs.to_college_name === "function"
+      ) {
+        return refs.to_college_name(trimmedValue, trimmedValue) ?? trimmedValue;
+      }
+      if (
+        loweredFieldName.includes("department") &&
+        typeof refs.to_department_name === "function"
+      ) {
+        return (
+          refs.to_department_name(trimmedValue, trimmedValue) ?? trimmedValue
+        );
+      }
+      if (
+        loweredFieldName.includes("university") &&
+        typeof refs.to_university_name === "function"
+      ) {
+        return (
+          refs.to_university_name(trimmedValue, trimmedValue) ?? trimmedValue
+        );
+      }
+
+      const directRefMatch = tryResolveRefName(trimmedValue);
+      if (directRefMatch) return directRefMatch;
+
+      return value;
+    },
+    [refs],
+  );
+
+  const registerFieldRef = useCallback(
+    (fieldName: string, node: HTMLDivElement | null) => {
+      if (!node) {
+        fieldRefs.current.delete(fieldName);
+        return;
+      }
+      fieldRefs.current.set(fieldName, node);
+    },
+    [],
+  );
 
   // Jump to field's page and trigger animation when selected from form
   useEffect(() => {
     if (!selectedFieldId) return;
 
-    const selectedField = blocks.find((b) => b.field === selectedFieldId);
-    if (selectedField && selectedField.page) {
-      const fieldPage = selectedField.page;
-      setSelectedPage(fieldPage);
-      const pageNode = pageRefs.current.get(fieldPage);
-      pageNode?.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (autoScrollToSelectedField) {
+      const selectedFieldNode = fieldRefs.current.get(selectedFieldId);
+      const scrollContainer = scrollContainerRef.current;
+
+      if (selectedFieldNode && scrollContainer) {
+        const containerRect = scrollContainer.getBoundingClientRect();
+        const fieldRect = selectedFieldNode.getBoundingClientRect();
+        const isVisible =
+          fieldRect.top >= containerRect.top &&
+          fieldRect.bottom <= containerRect.bottom;
+
+        if (!isVisible) {
+          selectedFieldNode.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+            inline: "nearest",
+          });
+        }
+      } else {
+        const selectedField = normalizedFields.find(
+          (field) => field.field === selectedFieldId,
+        );
+        if (selectedField && selectedField.page) {
+          const fieldPage = selectedField.page;
+          const pageNode = pageRefs.current.get(fieldPage);
+          pageNode?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
     }
 
     // Trigger bump animation
     setAnimatingFieldId(selectedFieldId);
     const timeout = setTimeout(() => setAnimatingFieldId(null), 600);
     return () => clearTimeout(timeout);
-  }, [selectedFieldId, blocks]);
+  }, [
+    selectedFieldId,
+    selectionTick,
+    normalizedFields,
+    autoScrollToSelectedField,
+  ]);
 
   // Initialize PDF.js worker
   useEffect(() => {
@@ -386,7 +525,13 @@ export const FormPreviewPdfDisplay = ({
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err.message || "Failed to load PDF");
+          const message =
+            err && typeof err === "object" && "message" in err
+              ? String(
+                  (err as { message?: string }).message || "Failed to load PDF",
+                )
+              : "Failed to load PDF";
+          setError(message);
           setPdfDoc(null);
         }
       })
@@ -396,7 +541,7 @@ export const FormPreviewPdfDisplay = ({
 
     return () => {
       cancelled = true;
-      loadingTask.destroy();
+      void loadingTask.destroy();
     };
   }, [documentUrl]);
 
@@ -410,13 +555,6 @@ export const FormPreviewPdfDisplay = ({
   const handleZoom = (direction: "in" | "out") => {
     const delta = direction === "in" ? 0.1 : -0.1;
     setScale((prev) => clamp(parseFloat((prev + delta).toFixed(2)), 0.5, 3));
-  };
-
-  const handleJumpToPage = (page: number) => {
-    if (!page || page < 1 || page > pageCount) return;
-    setSelectedPage(page);
-    const node = pageRefs.current.get(page);
-    node?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const pagesArray = useMemo(
@@ -446,37 +584,42 @@ export const FormPreviewPdfDisplay = ({
   return (
     <div className="flex h-full w-full flex-col overflow-hidden rounded-[0.33em] border border-slate-300">
       {/* Top Controls */}
-      <div className="flex-shrink-0 border-b border-slate-300 bg-white px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-slate-700">
-              Page {visiblePage} of {pageCount}
+      <div className="flex-shrink-0 border-b border-slate-300 bg-white px-3 py-2">
+        <div className="flex items-center justify-end gap-3">
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-medium text-slate-700">
+              {visiblePage}/{pageCount}
             </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handleZoom("out")}
-              className="rounded p-2 hover:bg-slate-100"
-              title="Zoom out"
-            >
-              <ZoomOut className="h-4 w-4" />
-            </button>
-            <span className="w-12 text-center text-sm font-medium text-slate-700">
+            <div className="ml-1 inline-flex items-center gap-1">
+              <button
+                onClick={() => handleZoom("out")}
+                className="rounded p-1.5 hover:bg-slate-100"
+                title="Zoom out"
+                aria-label="Zoom out"
+              >
+                <ZoomOut className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => handleZoom("in")}
+                className="rounded p-1.5 hover:bg-slate-100"
+                title="Zoom in"
+                aria-label="Zoom in"
+              >
+                <ZoomIn className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <span className="w-10 text-center text-[11px] font-medium text-slate-700">
               {Math.round(scale * 100)}%
             </span>
-            <button
-              onClick={() => handleZoom("in")}
-              className="rounded p-2 hover:bg-slate-100"
-              title="Zoom in"
-            >
-              <ZoomIn className="h-4 w-4" />
-            </button>
           </div>
         </div>
       </div>
 
       {/* Pages container */}
-      <div className="flex-1 overflow-x-auto overflow-y-auto bg-slate-100 p-4">
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 overflow-x-auto overflow-y-auto bg-slate-100 p-4"
+      >
         <div className="mx-auto space-y-6">
           {pagesArray.map((pageNumber) => (
             <PdfPageWithFields
@@ -487,15 +630,15 @@ export const FormPreviewPdfDisplay = ({
               isVisible={Math.abs(visiblePage - pageNumber) <= 1}
               onVisible={() => setVisiblePage(pageNumber)}
               registerPageRef={registerPageRef}
-              blocks={blocks.filter((b) => {
-                // Handle both IFormBlock and ServerField formats
-                const page = b.page || b.field_schema?.page;
-                return page === pageNumber;
-              })}
+              fields={fieldsByPage.get(pageNumber) || []}
               values={values}
               onFieldClick={onFieldClick}
               animatingFieldId={animatingFieldId}
               selectedFieldId={selectedFieldId}
+              registerFieldRef={registerFieldRef}
+              fieldErrors={fieldErrors}
+              resolveDisplayValue={resolveDisplayValue}
+              signingPartyLabelById={signingPartyLabelById}
             />
           ))}
         </div>
@@ -511,31 +654,47 @@ interface PdfPageWithFieldsProps {
   isVisible: boolean;
   onVisible: (page: number) => void;
   registerPageRef: (page: number, node: HTMLDivElement | null) => void;
-  blocks: IFormBlock[];
+  fields: PreviewField[];
   values: Record<string, string>;
   onFieldClick?: (fieldName: string) => void;
   animatingFieldId?: string | null;
   selectedFieldId?: string;
+  registerFieldRef: (fieldName: string, node: HTMLDivElement | null) => void;
+  fieldErrors: Record<string, string>;
+  resolveDisplayValue: (fieldName: string, rawValue: unknown) => string;
+  signingPartyLabelById: Map<string, string>;
 }
 
 const PdfPageWithFields = ({
   pdf,
   pageNumber,
   scale,
-  isVisible,
+  isVisible: _isVisible,
   onVisible,
   registerPageRef,
-  blocks,
+  fields,
   values,
   onFieldClick,
   animatingFieldId,
   selectedFieldId,
+  registerFieldRef,
+  fieldErrors,
+  resolveDisplayValue,
+  signingPartyLabelById,
 }: PdfPageWithFieldsProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const viewportRef = useRef<PageViewport | null>(null);
   const [rendering, setRendering] = useState<boolean>(false);
   const [forceRender, setForceRender] = useState<number>(0);
+  const [hoveredFieldId, setHoveredFieldId] = useState<string | null>(null);
+  const [activeTouchFieldId, setActiveTouchFieldId] = useState<string | null>(
+    null,
+  );
+  const [isTouchInteraction, setIsTouchInteraction] = useState(false);
+  const [clickedHighlightFieldId, setClickedHighlightFieldId] = useState<
+    string | null
+  >(null);
 
   // offscreen canvas for text measurement
 
@@ -548,6 +707,15 @@ const PdfPageWithFields = ({
   useEffect(() => {
     setForceRender((prev) => prev + 1);
   }, [scale]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const media = window.matchMedia("(hover: none), (pointer: coarse)");
+    const update = () => setIsTouchInteraction(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
 
   // Setup intersection observer for visibility
   useEffect(() => {
@@ -654,16 +822,20 @@ const PdfPageWithFields = ({
       <canvas ref={canvasRef} className="block" />
 
       {/* Field boxes overlay */}
-      <div className="absolute inset-0" key={forceRender}>
-        {blocks.map((block) => {
-          const x = block.x || 0;
-          const y = block.y || 0;
-          const w = block.w || 0;
-          const h = block.h || 0;
-          const fieldName = block.field;
-          const label = block.label || fieldName;
-
-          if (!x || !y || !w || !h) {
+      <div
+        className="absolute inset-0"
+        key={forceRender}
+        onClick={() => {
+          if (isTouchInteraction) setActiveTouchFieldId(null);
+        }}
+      >
+        {fields.map((field) => {
+          const x = field.x;
+          const y = field.y;
+          const w = field.w;
+          const h = field.h;
+          const fieldName = field.field;
+          if (w <= 0 || h <= 0) {
             return null;
           }
 
@@ -682,24 +854,16 @@ const PdfPageWithFields = ({
           const heightPixels = h * scale;
 
           const rawValue = values[fieldName];
-          // Handle different value types (string, array, object, etc)
-          const valueStr = Array.isArray(rawValue)
-            ? rawValue.join(", ")
-            : typeof rawValue === "string"
-              ? rawValue
-              : "";
+          const valueStr = resolveDisplayValue(fieldName, rawValue);
           const isFilled = valueStr.trim().length > 0;
 
           // Get alignment and wrapping from field schema
-          const align_h = block.align_h ?? "left";
-          const align_v = block.align_v ?? "top";
-          const shouldWrap = block.wrap ?? true;
+          const align_h = field.align_h ?? "left";
+          const align_v = field.align_v ?? "top";
+          const shouldWrap = field.wrap ?? true;
 
           // Calculate optimal font size using PDF engine algorithm
-          const fieldType =
-            block.field_schema?.type ||
-            block.phantom_field_schema?.type ||
-            block.type;
+          const fieldType = field.type;
 
           let fontSize: number;
           let lineHeight: number;
@@ -712,9 +876,10 @@ const PdfPageWithFields = ({
                 text: valueStr,
                 maxWidth: widthPixels,
                 maxHeight: heightPixels,
-                startSize: block.field_schema?.size ?? 11,
+                startSize: field.size ?? 11,
                 lineHeightMult: 1.0,
                 zoom: scale,
+                fontFamily: fieldType === "signature" ? "Italianno" : "Roboto",
               });
               fontSize = fitted.fontSize;
               lineHeight = fitted.lineHeight;
@@ -726,7 +891,8 @@ const PdfPageWithFields = ({
                 text: valueStr,
                 maxWidth: widthPixels,
                 maxHeight: heightPixels,
-                startSize: block.field_schema?.size ?? defaultSize,
+                startSize: field.size ?? defaultSize,
+                fontFamily: fieldType === "signature" ? "Italianno" : "Roboto",
               });
 
               fontSize = fitted.fontSize;
@@ -734,18 +900,70 @@ const PdfPageWithFields = ({
               displayLines = [fitted.line];
             }
           } else {
-            fontSize = block.field_schema?.size ?? 11;
+            fontSize = field.size ?? 11;
             lineHeight = fontSize * 1.0;
           }
 
           const isSelected =
-            animatingFieldId === fieldName || selectedFieldId === fieldName;
+            animatingFieldId === fieldName ||
+            selectedFieldId === fieldName ||
+            clickedHighlightFieldId === field.id;
+          const isOwnedByInitiator = field.signing_party_id === "initiator";
+          const hasFieldError = !!fieldErrors[fieldName];
+          const isFieldValid = isFilled && !hasFieldError;
+          const borderColor = isOwnedByInitiator
+            ? isFieldValid
+              ? "#16a34a"
+              : "#dc2626"
+            : "#d1d5db";
+          const fillColor = isOwnedByInitiator
+            ? isFieldValid
+              ? "rgba(34, 197, 94, 0.2)"
+              : "rgba(239, 68, 68, 0.2)"
+            : "transparent";
+          const isClickable = isOwnedByInitiator;
+          const ownerLabel = field.signing_party_id
+            ? (signingPartyLabelById.get(field.signing_party_id) ??
+              "Unassigned")
+            : "Unassigned";
+          const showOwnerTooltip =
+            !isClickable &&
+            (hoveredFieldId === field.id ||
+              (isTouchInteraction && activeTouchFieldId === field.id));
 
           return (
             <div
-              key={fieldName}
-              onClick={() => onFieldClick?.(fieldName)}
-              className={`absolute cursor-pointer text-black transition-all ${isSelected ? "bg-green-300" : "bg-blue-200"} `}
+              key={field.id}
+              onMouseEnter={() => {
+                if (!isClickable) setHoveredFieldId(field.id);
+              }}
+              onMouseLeave={() => {
+                if (hoveredFieldId === field.id) setHoveredFieldId(null);
+              }}
+              onClick={(event) => {
+                event.stopPropagation();
+                if (isTouchInteraction) {
+                  if (activeTouchFieldId !== field.id) {
+                    setActiveTouchFieldId(field.id);
+                    return;
+                  }
+                  setActiveTouchFieldId(null);
+                }
+                setClickedHighlightFieldId(field.id);
+                setTimeout(
+                  () =>
+                    setClickedHighlightFieldId((prev) =>
+                      prev === field.id ? null : prev,
+                    ),
+                  550,
+                );
+                if (!isClickable) return;
+                onFieldClick?.(fieldName);
+              }}
+              ref={(node) => registerFieldRef(fieldName, node)}
+              className={`absolute text-black transition-all ${
+                isClickable ? "cursor-pointer" : "cursor-default"
+              }`}
               style={{
                 left: `${displayPos.displayX}px`,
                 top: `${displayPos.displayY}px`,
@@ -753,6 +971,10 @@ const PdfPageWithFields = ({
                 minHeight: `${Math.max(heightPixels, 10)}px`,
                 overflow: "visible",
                 display: "flex",
+                backgroundColor: fillColor,
+                border: isSelected
+                  ? `2px solid ${borderColor}`
+                  : `1px solid ${borderColor}`,
                 alignItems:
                   align_v === "middle"
                     ? "center"
@@ -766,7 +988,6 @@ const PdfPageWithFields = ({
                       ? "flex-end"
                       : "flex-start",
               }}
-              title={`${label}: ${valueStr}`}
             >
               {isFilled && (
                 <div
@@ -798,6 +1019,9 @@ const PdfPageWithFields = ({
                   {displayLines.length > 0 ? displayLines.join("\n") : valueStr}
                 </div>
               )}
+              {showOwnerTooltip ? (
+                <AssignedOwnerTooltip ownerLabel={ownerLabel} />
+              ) : null}
             </div>
           );
         })}
@@ -805,3 +1029,9 @@ const PdfPageWithFields = ({
     </div>
   );
 };
+
+const AssignedOwnerTooltip = ({ ownerLabel }: { ownerLabel: string }) => (
+  <div className="pointer-events-none absolute -top-8 left-0 z-20 max-w-56 rounded border border-slate-200 bg-white px-2 py-1 text-[10px] text-slate-700 shadow-lg">
+    <span className="leading-[1.2] break-words">{ownerLabel}</span>
+  </div>
+);

@@ -9,10 +9,6 @@ import { FormInput } from "@/components/EditForm";
 import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
-import {
-  getBlockField,
-  isBlockField,
-} from "@/components/features/student/forms/utils";
 import { Badge } from "@/components/ui/badge";
 import { useFormFiller } from "@/components/features/student/forms/form-filler.ctx";
 import { useMyAutofill, useMyAutofillUpdate } from "@/hooks/use-my-autofill";
@@ -59,6 +55,22 @@ export function FlowTestSigningLayout({
   const [rightPaneStep, setRightPaneStep] = useState<
     "timeline" | "fields" | "confirm"
   >("timeline");
+  const [selectedFieldSource, setSelectedFieldSource] = useState<
+    "form" | "pdf" | null
+  >(null);
+  const [selectionTick, setSelectionTick] = useState(0);
+
+  const fieldOwnerByName = useMemo(() => {
+    const ownerMap = new Map<string, string>();
+    const allBlocks = form.formMetadata.getBlocksForEditorService();
+    allBlocks.forEach((block) => {
+      const fieldName =
+        block.field_schema?.field ?? block.phantom_field_schema?.field;
+      if (!fieldName || ownerMap.has(fieldName)) return;
+      ownerMap.set(fieldName, block.signing_party_id);
+    });
+    return ownerMap;
+  }, [form.formMetadata, form.formName]);
 
   const formFilloutProcess = useClientProcess({
     filterKey: "form-fillout",
@@ -103,26 +115,29 @@ export function FlowTestSigningLayout({
     ? ["fields", "confirm"]
     : ["timeline", "fields", "confirm"];
 
-  const manualBlocks = useMemo(
+  const previewKeyedFields = useMemo(
     () =>
-      form.blocks.filter(
-        (block) =>
-          isBlockField(block) && getBlockField(block)?.source === "manual",
-      ),
-    [form.blocks],
+      (form.keyedFields ?? []).map((field) => ({
+        ...field,
+        signing_party_id: fieldOwnerByName.get(field.field),
+      })),
+    [form.keyedFields, fieldOwnerByName],
   );
 
-  const manualKeyedFields = useMemo(() => {
-    if (!form.keyedFields || form.keyedFields.length === 0) return [];
+  const handlePdfFieldSelect = (fieldName: string) => {
+    setSelectedFieldSource("pdf");
+    setSelectionTick((prev) => prev + 1);
+    form.setSelectedPreviewId(fieldName);
+    if (rightPaneStep !== "fields") {
+      setRightPaneStep("fields");
+    }
+  };
 
-    // Get field names from manual blocks
-    const manualFieldNames = new Set(
-      manualBlocks.map((block) => getBlockField(block)?.field).filter(Boolean),
-    );
-
-    // Filter keyedFields to only those in manual blocks
-    return form.keyedFields.filter((kf) => manualFieldNames.has(kf.field));
-  }, [form.keyedFields, manualBlocks]);
+  const handleFormFieldSelect = (fieldName: string) => {
+    setSelectedFieldSource("form");
+    setSelectionTick((prev) => prev + 1);
+    form.setSelectedPreviewId(fieldName);
+  };
 
   const nextEnabled = useMemo(() => {
     console.log(
@@ -301,8 +316,14 @@ export function FlowTestSigningLayout({
               {documentUrl ? (
                 <FormPreviewPdfDisplay
                   documentUrl={documentUrl}
-                  blocks={manualKeyedFields}
+                  blocks={previewKeyedFields}
                   values={values}
+                  fieldErrors={formFiller.errors}
+                  selectionTick={selectionTick}
+                  autoScrollToSelectedField={selectedFieldSource === "form"}
+                  signingParties={recipients}
+                  onFieldClick={handlePdfFieldSelect}
+                  selectedFieldId={form.selectedPreviewId}
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-sm text-gray-500">
@@ -410,7 +431,14 @@ export function FlowTestSigningLayout({
                 >
                   <div className="min-h-0 flex h-full flex-1 flex-col pt-8">
                     <div className="min-h-0 flex-1">
-                      <FormFillerRenderer onValuesChange={setValues} />
+                      <FormFillerRenderer
+                        onValuesChange={setValues}
+                        selectionTick={selectionTick}
+                        autoScrollToSelectedField={
+                          selectedFieldSource === "pdf"
+                        }
+                        onFieldSelect={handleFormFieldSelect}
+                      />
                     </div>
                     <div className="border-t border-gray-300 bg-gray-200 p-3">
                       <div className="flex items-center justify-between gap-2">

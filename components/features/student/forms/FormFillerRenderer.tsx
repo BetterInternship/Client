@@ -15,8 +15,14 @@ import { formatTimestampDateWithoutTime } from "@/lib/utils";
 
 export function FormFillerRenderer({
   onValuesChange,
+  onFieldSelect,
+  selectionTick = 0,
+  autoScrollToSelectedField = true,
 }: {
   onValuesChange?: (values: Record<string, string>) => void;
+  onFieldSelect?: (fieldId: string) => void;
+  selectionTick?: number;
+  autoScrollToSelectedField?: boolean;
 }) {
   const form = useFormRendererContext();
   const formFiller = useFormFiller();
@@ -140,15 +146,27 @@ export function FormFillerRenderer({
 
   // Scroll to selected field
   useEffect(() => {
-    if (!form.selectedPreviewId || !fieldRefs.current[form.selectedPreviewId])
+    if (
+      !autoScrollToSelectedField ||
+      !form.selectedPreviewId ||
+      !fieldRefs.current[form.selectedPreviewId] ||
+      !scrollContainerRef.current
+    )
       return;
 
     const fieldElement = fieldRefs.current[form.selectedPreviewId];
     const scrollContainer = scrollContainerRef.current;
 
     if (fieldElement && scrollContainer) {
-      // Scroll the field into view with a small padding
-      fieldElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      const containerRect = scrollContainer.getBoundingClientRect();
+      const fieldRect = fieldElement.getBoundingClientRect();
+      const isVisible =
+        fieldRect.top >= containerRect.top &&
+        fieldRect.bottom <= containerRect.bottom;
+
+      if (!isVisible) {
+        fieldElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
 
       // Add a highlight animation
       fieldElement.classList.add(
@@ -166,7 +184,7 @@ export function FormFillerRenderer({
         );
       }, 1500);
     }
-  }, [form.selectedPreviewId]);
+  }, [autoScrollToSelectedField, form.selectedPreviewId, selectionTick]);
 
   // Scroll to first field with error
   useEffect(() => {
@@ -221,7 +239,13 @@ export function FormFillerRenderer({
             values={finalValues}
             onChange={formFiller.setValue}
             errors={formFiller.errors}
-            setSelected={form.setSelectedPreviewId}
+            setSelected={(fieldId) => {
+              if (onFieldSelect) {
+                onFieldSelect(fieldId);
+                return;
+              }
+              form.setSelectedPreviewId(fieldId);
+            }}
             onBlurValidate={(fieldKey) => {
               // Before validating, sync form values to params so validators can access them
               const currentValues = formFiller.getFinalValues(autofillValues);

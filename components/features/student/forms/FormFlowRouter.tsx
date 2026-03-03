@@ -4,13 +4,11 @@ import { useEffect, useState, useMemo } from "react";
 import { FormFillerRenderer } from "./FormFillerRenderer";
 import { Loader } from "@/components/ui/loader";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { FormPreviewPdfDisplay } from "./previewer";
 import { Loader2, ChevronLeft } from "lucide-react";
 import { useFormRendererContext } from "./form-renderer.ctx";
 import { useFormFiller } from "./form-filler.ctx";
 import { useMyAutofill } from "@/hooks/use-my-autofill";
-import { getBlockField, isBlockField } from "./utils";
 import { FormActionButtons } from "./FormActionButtons";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
@@ -23,33 +21,52 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
     "preview",
   );
   const [values, setValues] = useState<Record<string, string>>({});
-
-  // Filter blocks to only include manual source fields (same as FormFillerRenderer)
-  const manualBlocks = useMemo(
-    () =>
-      form.blocks.filter(
-        (block) =>
-          isBlockField(block) && getBlockField(block)?.source === "manual",
-      ),
-    [form.blocks],
+  const [selectedFieldSource, setSelectedFieldSource] = useState<
+    "form" | "pdf" | null
+  >(null);
+  const [selectionTick, setSelectionTick] = useState(0);
+  const signingParties = useMemo(
+    () => form.formMetadata.getSigningParties(),
+    [form.formMetadata, form.formName],
   );
 
-  // Get keyedFields that correspond to manual blocks (for PDF preview with coordinates)
-  const manualKeyedFields = useMemo(() => {
-    if (!form.keyedFields || form.keyedFields.length === 0) return [];
+  const fieldOwnerByName = useMemo(() => {
+    const ownerMap = new Map<string, string>();
+    const allBlocks = form.formMetadata.getBlocksForEditorService();
+    allBlocks.forEach((block) => {
+      const fieldName =
+        block.field_schema?.field ?? block.phantom_field_schema?.field;
+      if (!fieldName || ownerMap.has(fieldName)) return;
+      ownerMap.set(fieldName, block.signing_party_id);
+    });
+    return ownerMap;
+  }, [form.formMetadata, form.formName]);
 
-    // Get field names from manual blocks
-    const manualFieldNames = new Set(
-      manualBlocks.map((block) => getBlockField(block)?.field).filter(Boolean),
-    );
-
-    // Filter keyedFields to only those in manual blocks
-    return form.keyedFields.filter((kf) => manualFieldNames.has(kf.field));
-  }, [form.keyedFields, manualBlocks]);
+  // Use all keyed fields in PDF preview so non-initiator fields can appear as gray boxes.
+  const previewKeyedFields = useMemo(
+    () =>
+      (form.keyedFields ?? []).map((field) => ({
+        ...field,
+        signing_party_id: fieldOwnerByName.get(field.field),
+      })),
+    [form.keyedFields, fieldOwnerByName],
+  );
 
   useEffect(() => {
     form.updateFormName(formName);
   }, [formName]);
+
+  const handlePdfFieldSelect = (fieldName: string) => {
+    setSelectedFieldSource("pdf");
+    setSelectionTick((prev) => prev + 1);
+    form.setSelectedPreviewId(fieldName);
+  };
+
+  const handleFormFieldSelect = (fieldName: string) => {
+    setSelectedFieldSource("form");
+    setSelectionTick((prev) => prev + 1);
+    form.setSelectedPreviewId(fieldName);
+  };
 
   // Loader
   if (!form.formMetadata || form.loading)
@@ -66,11 +83,13 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
               {form.document.url ? (
                 <FormPreviewPdfDisplay
                   documentUrl={form.document.url}
-                  blocks={manualKeyedFields}
+                  blocks={previewKeyedFields}
                   values={values}
-                  onFieldClick={(fieldName) =>
-                    form.setSelectedPreviewId(fieldName)
-                  }
+                  fieldErrors={formFiller.errors}
+                  selectionTick={selectionTick}
+                  autoScrollToSelectedField={selectedFieldSource === "form"}
+                  signingParties={signingParties}
+                  onFieldClick={handlePdfFieldSelect}
                   selectedFieldId={form.selectedPreviewId}
                   scale={0.7}
                 />
@@ -105,7 +124,12 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
                   </span>
                 </div>
               ) : (
-                <FormFillerRenderer onValuesChange={setValues} />
+                <FormFillerRenderer
+                  onValuesChange={setValues}
+                  selectionTick={selectionTick}
+                  autoScrollToSelectedField={selectedFieldSource === "pdf"}
+                  onFieldSelect={handleFormFieldSelect}
+                />
               )}
             </div>
 
@@ -148,11 +172,13 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
               {form.document.url ? (
                 <FormPreviewPdfDisplay
                   documentUrl={form.document.url}
-                  blocks={manualKeyedFields}
+                  blocks={previewKeyedFields}
                   values={values}
-                  onFieldClick={(fieldName) =>
-                    form.setSelectedPreviewId(fieldName)
-                  }
+                  fieldErrors={formFiller.errors}
+                  selectionTick={selectionTick}
+                  autoScrollToSelectedField={selectedFieldSource === "form"}
+                  signingParties={signingParties}
+                  onFieldClick={handlePdfFieldSelect}
                   selectedFieldId={form.selectedPreviewId}
                   scale={0.7}
                 />
@@ -192,7 +218,12 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
               </span>
             </div>
           ) : (
-            <FormFillerRenderer onValuesChange={setValues} />
+            <FormFillerRenderer
+              onValuesChange={setValues}
+              selectionTick={selectionTick}
+              autoScrollToSelectedField={selectedFieldSource === "pdf"}
+              onFieldSelect={handleFormFieldSelect}
+            />
           )}
         </div>
 
@@ -202,11 +233,13 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
             <div className="relative h-full w-full">
               <FormPreviewPdfDisplay
                 documentUrl={form.document.url}
-                blocks={manualKeyedFields}
+                blocks={previewKeyedFields}
                 values={values}
-                onFieldClick={(fieldName) =>
-                  form.setSelectedPreviewId(fieldName)
-                }
+                fieldErrors={formFiller.errors}
+                selectionTick={selectionTick}
+                autoScrollToSelectedField={selectedFieldSource === "form"}
+                signingParties={signingParties}
+                onFieldClick={handlePdfFieldSelect}
                 selectedFieldId={form.selectedPreviewId}
               />
             </div>
