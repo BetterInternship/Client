@@ -19,14 +19,11 @@ export const HeaderTitle = () => {
       className="block outline-none focus:outline-none border-none"
     >
       <h1
-        className={cn(
-          "font-display font-bold text-gray-900 flex flex-row space-x-2 items-center",
-          isMobile ? "text-lg" : "text-xl",
-        )}
+        className={"font-display font-bold text-gray-900 flex flex-row space-x-2 items-center text-lg"}
       >
         <img
           src="/BetterInternshipLogo.png"
-          className="w-8 h-8 aspect-square object-contain"
+          className="w-8 h-8 flex-shrink-0 aspect-square object-contain"
           alt="BetterInternship logo"
         ></img>
         <span className="xl:inline-block hidden">BetterInternship</span>
