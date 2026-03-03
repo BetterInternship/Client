@@ -1017,6 +1017,7 @@ export function JobDetails({
   user,
   actions = [],
   applyDisabledText = "Complete required items to apply.",
+  isAuthenticated,
 }: {
   job: Job;
   user?: {
@@ -1025,6 +1026,7 @@ export function JobDetails({
   };
   actions?: React.ReactNode[];
   applyDisabledText?: string;
+  isAuthenticated: boolean;
 }) {
   const hasGithub = !!user?.github_link?.trim();
   const hasPortfolio = !!user?.portfolio_link?.trim();
@@ -1037,11 +1039,10 @@ export function JobDetails({
     (needsGithub && !hasGithub) || (needsPortfolio && !hasPortfolio);
 
   const { isMobile } = useAppContext();
-  const { isAuthenticated } = useAuthContext();
 
   return (
     <>
-      {isAuthenticated() && (
+      {isAuthenticated && (
         <MissingNotice
           show={missingRequired}
           needsGithub={needsGithub && !hasGithub}
