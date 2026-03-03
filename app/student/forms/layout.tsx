@@ -3,8 +3,6 @@
 import {
   useState,
   useEffect,
-  createContext,
-  useContext,
   useMemo,
   useCallback,
   useLayoutEffect,
@@ -13,32 +11,10 @@ import { useRouter, usePathname } from "next/navigation";
 import { MyFormsContextProvider } from "./myforms.ctx";
 import { FormRendererContextProvider } from "@/components/features/student/forms/form-renderer.ctx";
 import { FormFillerContextProvider } from "@/components/features/student/forms/form-filler.ctx";
-import { FormsNavigation } from "@/components/features/student/forms/FormsNavigation";
 import { useMyForms } from "./myforms.ctx";
 import { SignContextProvider } from "@/components/providers/sign.ctx";
 import { useMobile } from "@/hooks/use-mobile";
 import { useHeaderContext, MobileAddonConfig } from "@/lib/ctx-header";
-
-interface FormsLayoutContextType {
-  activeView: "generate" | "history";
-  setActiveView: (view: "generate" | "history") => void;
-  currentFormName: string | null;
-  setCurrentFormName: (name: string | null) => void;
-  currentFormLabel: string | null;
-  setCurrentFormLabel: (label: string | null) => void;
-}
-
-const FormsLayoutContext = createContext<FormsLayoutContextType | undefined>(
-  undefined,
-);
-
-export const useFormsLayout = () => {
-  const context = useContext(FormsLayoutContext);
-  if (!context) {
-    throw new Error("useFormsLayout must be used within FormsLayout");
-  }
-  return context;
-};
 
 function FormsLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -50,8 +26,6 @@ function FormsLayoutContent({ children }: { children: React.ReactNode }) {
     "generate" | "history" | null
   >(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [currentFormName, setCurrentFormName] = useState<string | null>(null);
-  const [currentFormLabel, setCurrentFormLabel] = useState<string | null>(null);
 
   const hasFormsToShow = (myForms?.forms?.length ?? 0) > 0;
 
@@ -99,17 +73,8 @@ function FormsLayoutContent({ children }: { children: React.ReactNode }) {
       show: true,
       activeView,
       onViewChange: handleViewChange,
-      currentFormName,
-      currentFormLabel,
     };
-  }, [
-    isMobile,
-    isInitialized,
-    activeView,
-    handleViewChange,
-    currentFormName,
-    currentFormLabel,
-  ]);
+  }, [isMobile, isInitialized, activeView, handleViewChange]);
 
   // Sync config to context after render
   useLayoutEffect(() => {
@@ -128,37 +93,7 @@ function FormsLayoutContent({ children }: { children: React.ReactNode }) {
     };
   }, [setMobileAddonConfig]);
 
-  return (
-    <FormsLayoutContext.Provider
-      value={{
-        activeView,
-        setActiveView: setManualActiveView,
-        currentFormName,
-        setCurrentFormName,
-        currentFormLabel,
-        setCurrentFormLabel,
-      }}
-    >
-      <div
-        suppressHydrationWarning
-        className="h-full flex flex-col overflow-hidden"
-      >
-        <div className="hidden sm:block">
-          <FormsNavigation
-            activeView={activeView}
-            onViewChange={handleViewChange}
-            currentFormName={currentFormName}
-            currentFormLabel={currentFormLabel}
-            variant="bar"
-          />
-        </div>
-
-        <div className="flex-1 overflow-hidden">
-          {!isInitialized ? <div /> : children}
-        </div>
-      </div>
-    </FormsLayoutContext.Provider>
-  );
+  return children;
 }
 
 const FormsLayout = ({ children }: { children: React.ReactNode }) => {

@@ -5,9 +5,6 @@ import { useRouter } from "next/navigation";
 import { FormService } from "@/lib/api/services";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMyForms } from "./myforms.ctx";
-import { FormGenerateView } from "../../../components/forms/FormGenerateView";
-import { FormHistoryView } from "../../../components/forms/FormHistoryView";
-import { useFormsLayout } from "./layout";
 import {
   FORM_TEMPLATES_STALE_TIME,
   FORM_TEMPLATES_GC_TIME,
@@ -15,6 +12,7 @@ import {
 import { useEffect, useMemo } from "react";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useClientProcess } from "@betterinternship/components";
+import FlowTestPage from "./flow-test/page";
 
 // ! MOVE THIS ELSEWHERE
 export interface FilloutFormProcessResult {
@@ -33,8 +31,6 @@ export default function FormsPage() {
   const router = useRouter();
   const myForms = useMyForms();
   const queryClient = useQueryClient();
-
-  const { activeView } = useFormsLayout();
   const { redirectIfNotLoggedIn, isAuthenticated } = useAuthContext();
 
   // Auth redirect at body level (runs first)
@@ -119,15 +115,10 @@ export default function FormsPage() {
   }, [formFilloutProcess.getAllPending()]);
 
   return (
-    <>
-      {/* Show the active view */}
-      {activeView === "history" ? (
-        <FormHistoryView
-          forms={[...myForms.forms, ...handledForms, ...pendingForms]}
-        />
-      ) : (
-        <FormGenerateView formTemplates={formTemplates} isLoading={isLoading} />
-      )}
-    </>
+    <FlowTestPage
+      generatedForms={[...myForms.forms, ...handledForms, ...pendingForms]}
+      formTemplates={formTemplates?.filter((ft) => !!ft) ?? []}
+      isLoading={isLoading}
+    />
   );
 }

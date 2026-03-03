@@ -60,7 +60,7 @@ export const FormLog = ({
 
   if (pending) {
     return (
-      <div className="bg-slate-200 transition-all border-b opacity-65">
+      <div className="bg-slate-200 transition-all border-t opacity-65">
         <div className="px-4 sm:px-6 py-4 text-xs sm:text-sm text-gray-700 space-y-3">
           {/* Status Badge */}
           <div className="flex items-center gap-2">
@@ -91,13 +91,12 @@ export const FormLog = ({
 
   return (
     <div
-      className="hover:bg-slate-100 hover:cursor-pointer transition-all border-b "
+      className="hover:bg-slate-100 hover:cursor-pointer transition-all border-t"
       onClick={() =>
         downloadUrl && status === "done" ? handleDownload() : setIsOpen(!isOpen)
       }
     >
       <div className="px-4 sm:px-6 py-4 text-xs sm:text-sm text-gray-700 space-y-3">
-        {/* Status Badge */}
         <div className="flex items-center gap-2">
           {status === "rejected" ? (
             <Badge
