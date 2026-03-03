@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, LucideClipboardCheck } from "lucide-react";
 import { FormPreviewPdfDisplay } from "@/components/features/student/forms/previewer";
 import { FormFillerRenderer } from "@/components/features/student/forms/FormFillerRenderer";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import { useMyAutofill, useMyAutofillUpdate } from "@/hooks/use-my-autofill";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
 import { FormValues } from "@betterinternship/core/forms";
+import { TextLoader } from "@/components/ui/loader";
 
 interface SigningRecipient {
   signatory_title: string;
@@ -48,6 +49,7 @@ export function FlowTestSigningLayout({
   const [recipientEmails, setRecipientEmails] = useState<
     Record<string, string>
   >({});
+  const [confirmStepBuffering, setConfirmStepBuffering] = useState(false);
   const [rightPaneStep, setRightPaneStep] = useState<
     "timeline" | "fields" | "confirm"
   >("timeline");
@@ -148,6 +150,13 @@ export function FlowTestSigningLayout({
     setRightPaneStep(fromMe ? "timeline" : "fields");
   }, [formLabel, recipients]);
 
+  // Buffer
+  useEffect(() => {
+    if (rightPaneStep === "confirm") setConfirmStepBuffering(true);
+    const timeout = setTimeout(() => setConfirmStepBuffering(false), 1500);
+    return () => clearTimeout(timeout);
+  }, [rightPaneStep]);
+
   return (
     <div className="h-full min-h-0 flex flex-col">
       <div className="bg-white shadow-sm flex-shrink-0">
@@ -176,7 +185,7 @@ export function FlowTestSigningLayout({
       <div
         className={cn(
           "min-h-0 flex-1 px-6 py-4 mx-auto w-full transition-[max-width] duration-500 ease-in-out",
-          rightPaneStep === "confirm" ? "max-w-3xl" : "max-w-7xl",
+          "max-w-7xl",
         )}
       >
         <div className="mx-auto flex h-full w-full max-w-7xl flex-col overflow-hidden rounded-[0.33em] border border-gray-300 ">
@@ -184,8 +193,7 @@ export function FlowTestSigningLayout({
             className="grid min-h-0 flex-1 grid-cols-1 transition-[grid-template-columns] duration-500 ease-in-out xl:[grid-template-columns:minmax(0,1fr)_var(--right-pane-width)]"
             style={
               {
-                "--right-pane-width":
-                  rightPaneStep === "confirm" ? "0px" : "600px",
+                "--right-pane-width": "600px",
               } as React.CSSProperties
             }
           >
@@ -193,7 +201,7 @@ export function FlowTestSigningLayout({
               className={cn(
                 "min-h-0 bg-white rounded-r-none transition-[transform] duration-500 ease-in-out",
                 rightPaneStep === "confirm"
-                  ? "xl:scale-[1.01]"
+                  ? "xl:scale-[1.005]"
                   : "xl:scale-100",
               )}
             >
@@ -213,9 +221,7 @@ export function FlowTestSigningLayout({
             <div
               className={cn(
                 "relative min-h-0 flex flex-1 flex-col overflow-hidden bg-white transition-[opacity,transform] duration-500 ease-in-out",
-                rightPaneStep === "confirm"
-                  ? "opacity-0 pointer-events-none translate-x-6"
-                  : "opacity-100 pointer-events-auto translate-x-0",
+                "opacity-100 pointer-events-auto translate-x-0",
               )}
             >
               <div className="flex h-[58px] items-center border-b border-gray-300 px-6">
@@ -316,7 +322,10 @@ export function FlowTestSigningLayout({
                         <Button
                           size="lg"
                           variant="outline"
-                          className="flex-1 whitespace-nowrap sm:min-w-[140px]"
+                          className={cn(
+                            "flex-1 whitespace-nowrap sm:min-w-[140px]",
+                            !fromMe ? "opacity-0 pointer-events-none" : "",
+                          )}
                           onClick={() => setRightPaneStep("timeline")}
                         >
                           Previous
@@ -333,50 +342,68 @@ export function FlowTestSigningLayout({
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-          <div
-            className={cn(
-              "border-t border-gray-300 bg-gray-200 transition-[opacity,transform,max-height] duration-500 ease-in-out ",
-              rightPaneStep === "confirm"
-                ? "opacity-100 translate-y-0 pointer-events-auto max-h-96"
-                : "opacity-0 translate-y-2 max-h-0 pointer-events-none p-0 border-t-0",
-            )}
-          >
-            <div className="flex flex-col w-full border-b border-b-gray-400 bg-white p-5 px-7 gap-2">
-              These emails will receive the form at some point:
-              {Object.entries(recipientEmails).map(
-                ([recipientTitle, recipientEmail]) => {
-                  return (
-                    <div className="flex flex-row">
-                      <Badge className="rounded-r-none gap-1">
-                        <span className="text-gray-500">{recipientTitle}:</span>
-                        <span className="font-bold text-primary">
-                          {recipientEmail}
-                        </span>
-                      </Badge>
+
+                <div
+                  className={`absolute inset-0 min-h-0 transition-all duration-500 ease-in-out ${
+                    rightPaneStep === "confirm"
+                      ? "translate-x-0 opacity-100 pointer-events-auto"
+                      : "translate-x-6 opacity-0 pointer-events-none"
+                  }`}
+                >
+                  <div className="min-h-0 flex h-full flex-1 flex-col">
+                    <div className="min-h-0 flex-1 overflow-y-auto p-10 flex flex-col items-start justify-start pt-20 gap-4">
+                      <LucideClipboardCheck className="w-16 h-16 opacity-40" />
+                      Please check that all your inputs are correct
+                      {fromMe && (
+                        <div className="space-y-3 mt-8">
+                          Make sure these emails are right:
+                          <div className="space-y-2 mt-2">
+                            {Object.entries(recipientEmails).map(
+                              ([recipientTitle, recipientEmail], index) => (
+                                <div
+                                  key={`${recipientTitle}-${index}`}
+                                  className="flex flex-row"
+                                >
+                                  <Badge className="rounded-r-none gap-1">
+                                    <span className="text-gray-500">
+                                      {index + 1}. {recipientTitle}:
+                                    </span>
+                                    <span className="font-bold text-primary">
+                                      {recipientEmail}
+                                    </span>
+                                  </Badge>
+                                </div>
+                              ),
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  );
-                },
-              )}
-            </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end p-3">
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full whitespace-nowrap sm:w-auto"
-                onClick={() => setRightPaneStep("fields")}
-              >
-                Go back and edit details
-              </Button>
-              <Button
-                size="lg"
-                className="w-full whitespace-nowrap sm:w-auto"
-                scheme="supportive"
-              >
-                I confirm the details are correct
-              </Button>
+                    <div className="border-t border-gray-300 bg-gray-200 p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <Button
+                          size="lg"
+                          variant="outline"
+                          className="flex-1 whitespace-nowrap sm:min-w-[140px]"
+                          onClick={() => setRightPaneStep("fields")}
+                        >
+                          Go back and edit details
+                        </Button>
+                        <Button
+                          size="lg"
+                          className="flex-1 whitespace-nowrap sm:min-w-[140px]"
+                          scheme="supportive"
+                          disabled={confirmStepBuffering}
+                        >
+                          <TextLoader loading={confirmStepBuffering}>
+                            I confirm the details are correct
+                          </TextLoader>
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
