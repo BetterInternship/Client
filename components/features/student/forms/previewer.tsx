@@ -733,9 +733,9 @@ const PdfPageWithFields = ({
 };
 
 const AssignedOwnerTooltip = ({ ownerLabel }: { ownerLabel: string }) => (
-  <div className="pointer-events-none absolute -top-8 left-0 z-20 max-w-56 rounded border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 shadow-lg">
-    <span className=" break-words">
-      Filled by <strong className=" text-slate-900">{ownerLabel}</strong>
+  <div className="pointer-events-none absolute -top-12 left-0 z-20 max-w-56 rounded border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 shadow-lg">
+    <span className="break-words">
+      Filled by <strong className="text-slate-900">{ownerLabel}</strong>
     </span>
   </div>
 );
