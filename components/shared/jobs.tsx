@@ -21,6 +21,7 @@ import { Property } from "../ui/labels";
 import { Toggle } from "../ui/toggle";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAppContext } from "@/lib/ctx-app";
+import { useAuthContext } from "@/lib/ctx-auth";
 
 export const JobHead = ({
   title,
@@ -1036,10 +1037,11 @@ export function JobDetails({
     (needsGithub && !hasGithub) || (needsPortfolio && !hasPortfolio);
 
   const { isMobile } = useAppContext();
+  const { isAuthenticated } = useAuthContext();
 
   return (
     <>
-      {user !== undefined && (
+      {isAuthenticated() && (
         <MissingNotice
           show={missingRequired}
           needsGithub={needsGithub && !hasGithub}
