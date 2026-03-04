@@ -534,8 +534,7 @@ const PdfPageWithFields = ({
           let fontSizeDoc: number;
           let lineHeightDoc: number;
           let displayLines: string[] = [];
-          const safeScale = Math.max(scale, 0.001);
-          const fitSafetyUnits = 2 / safeScale;
+          const fitSafetyUnits = 2;
           const fitMaxWidthDoc = Math.max(0, w - fitSafetyUnits);
           const fitMaxHeightDoc = Math.max(0, h - fitSafetyUnits);
 
@@ -671,8 +670,9 @@ const PdfPageWithFields = ({
                     fontSize: `${fontSize}px`,
                     lineHeight: `${lineHeight}px`,
                     overflow: "hidden",
-                    whiteSpace: shouldWrap ? "pre-wrap" : "nowrap",
-                    wordWrap: shouldWrap ? "break-word" : "normal",
+                    whiteSpace: shouldWrap ? "pre" : "nowrap",
+                    wordWrap: "normal",
+                    overflowWrap: "normal",
                     width: "100%",
                     maxWidth: "100%",
                     maxHeight: "100%",
