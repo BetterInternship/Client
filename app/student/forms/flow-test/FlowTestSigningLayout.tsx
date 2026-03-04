@@ -16,13 +16,12 @@ import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
 import { FormValues, IFormSigningParty } from "@betterinternship/core/forms";
 import { TextLoader } from "@/components/ui/loader";
-import { useClientProcess } from "@betterinternship/components";
 import { FormService } from "@/lib/api/services";
-import { FilloutFormProcessResult } from "../page";
-import { useMyForms } from "../myforms.ctx";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { getClientAudit } from "@/lib/audit";
 import { useQueryClient } from "@tanstack/react-query";
+import { useStateRecord } from "@/hooks/base/useStateRecord";
+import { useFormFilloutProcessRunner } from "@/hooks/forms/filloutFormProcess";
 
 interface FlowTestSigningLayoutProps {
   formLabel?: string;
@@ -40,7 +39,6 @@ export function FlowTestSigningLayout({
   onBack,
 }: FlowTestSigningLayoutProps) {
   const form = useFormRendererContext();
-  const myForms = useMyForms();
   const modalRegistry = useModalRegistry();
   const formFiller = useFormFiller();
   const autofillValues = useMyAutofill();
@@ -48,12 +46,8 @@ export function FlowTestSigningLayout({
   const queryClient = useQueryClient();
   const [values, setValues] = useState<FormValues>({});
   const [nextLoading, setNextLoading] = useState(false);
-  const [recipientEmails, setRecipientEmails] = useState<
-    Record<string, string>
-  >({});
-  const [recipientEmailErrors, setRecipientEmailErrors] = useState<
-    Record<string, string>
-  >({});
+  const [recipientEmails, recipientEmailActions] = useStateRecord({});
+  const [recipientErrors, recipientErrorActions] = useStateRecord({});
   const [confirmStepBuffering, setConfirmStepBuffering] = useState(false);
   const [rightPaneStep, setRightPaneStep] = useState<
     "timeline" | "fields" | "confirm"
@@ -74,34 +68,7 @@ export function FlowTestSigningLayout({
     });
     return ownerMap;
   }, [form.formMetadata, form.formName]);
-
-  const formFilloutProcess = useClientProcess({
-    filterKey: "form-fillout",
-    caller: FormService.filloutForm.bind(FormService),
-    invalidator: useCallback(
-      (result: FilloutFormProcessResult) => {
-        return myForms.forms.some(
-          (form) => form.form_process_id === result.formProcessId,
-        );
-      },
-      [myForms.forms],
-    ),
-    onSuccess: (processId, _processName, result) => {
-      toast.success(`Generated ${form.formLabel}!`, {
-        id: processId,
-        duration: 2000,
-      });
-      console.log("RESULT: ", result);
-    },
-    onFailure: (processId, _processName, error) => {
-      toast.error(`Could not generate ${form.formLabel}: ${error}`, {
-        id: processId,
-        duration: 2000,
-      });
-      console.log("ERROR: ", error);
-    },
-  });
-
+  const formFilloutProcess = useFormFilloutProcessRunner();
   const fromMe = useMemo(
     () =>
       recipients.some(
@@ -201,13 +168,13 @@ export function FlowTestSigningLayout({
     switch (rightPaneStep) {
       case "timeline":
         if (Object.keys(emailErrors).length) {
-          setRecipientEmailErrors(emailErrors);
+          recipientErrorActions.overwrite(emailErrors);
           toast.error(
             "Some information is missing or incorrect",
             toastPresets.destructive,
           );
         } else {
-          setRecipientEmailErrors({});
+          recipientErrorActions.clearAll();
           setRightPaneStep("fields");
         }
 
@@ -283,7 +250,7 @@ export function FlowTestSigningLayout({
 
   // Clean up when switching form
   useEffect(() => {
-    setRecipientEmails({});
+    recipientEmailActions.clearAll();
     setValues({});
     setRightPaneStep(noRecipientStep ? "fields" : "timeline");
   }, [formLabel, noEsign, noRecipientStep]);
@@ -407,15 +374,15 @@ export function FlowTestSigningLayout({
                                     placeholder={"recipient@email.com"}
                                     className={cn(
                                       "mt-1",
-                                      recipientEmailErrors[fieldName]
+                                      recipientErrors[fieldName]
                                         ? "text-destructive"
                                         : "",
                                     )}
                                     setter={(value) =>
-                                      setRecipientEmails({
-                                        ...recipientEmails,
-                                        [fieldName]: value,
-                                      })
+                                      recipientEmailActions.setOne(
+                                        fieldName,
+                                        value,
+                                      )
                                     }
                                   />
                                 )

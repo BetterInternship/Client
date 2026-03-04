@@ -9,17 +9,14 @@ import {
   FORM_TEMPLATES_STALE_TIME,
   FORM_TEMPLATES_GC_TIME,
 } from "@/lib/consts/cache";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { useClientProcess } from "@betterinternship/components";
 import FlowTestPage from "./flow-test/page";
-
-// ! MOVE THIS ELSEWHERE
-export interface FilloutFormProcessResult {
-  formId: string;
-  formProcessId: string;
-  downloadUrl: string;
-}
+import {
+  useFormFilloutProcessHandled,
+  useFormFilloutProcessPending,
+  useFormFilloutProcessReader,
+} from "@/hooks/forms/filloutFormProcess";
 
 /**
  * The forms page component - shows either history or generate based on form count
@@ -75,37 +72,9 @@ export default function FormsPage() {
   // ? SO handled forms are also temporarily rendered WHILE they're not part of the pulled forms yet
   // ? All the logic below really does is make sure that once the handled forms are in the pulled forms, they're not rendered anymore
   // ? There has to be a better way to do this repeatably
-  const formFilloutProcess = useClientProcess({ filterKey: "form-fillout" });
-  const pendingForms = useMemo(
-    () =>
-      formFilloutProcess.getAllPending().map((pendingForm) => ({
-        label: pendingForm.metadata?.metadata?.label ?? "",
-        timestamp: pendingForm.metadata?.metadata?.timestamp ?? "",
-        pending: true,
-      })),
-    [myForms.forms],
-  );
-  const handledForms = useMemo(
-    () =>
-      formFilloutProcess
-        .getAllHandled()
-        .filter((handledForm) =>
-          myForms.forms.every(
-            (form) =>
-              form.form_process_id !==
-              (handledForm.result as FilloutFormProcessResult).formProcessId,
-          ),
-        )
-        .map((handledForm) => ({
-          label: handledForm.metadata?.metadata?.label ?? "",
-          timestamp: handledForm.metadata?.metadata?.timestamp ?? "",
-          downloadUrl: (handledForm.result as FilloutFormProcessResult)
-            .downloadUrl,
-          pending: false,
-          status: "done",
-        })),
-    [myForms.forms],
-  );
+  const formFilloutProcess = useFormFilloutProcessReader();
+  const pendingForms = useFormFilloutProcessPending();
+  const handledForms = useFormFilloutProcessHandled();
 
   // Refetch forms when no more pending left
   // Yeppers kinda janky I know
