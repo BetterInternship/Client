@@ -6,6 +6,7 @@ import { JobCard, JobDetails } from "@/components/shared/jobs";
 import { useJobsData } from "@/lib/api/student.data.api";
 import { useMassApply } from "@/lib/api/god.api";
 import { Job } from "@/lib/db/db.types";
+import { useAuthContext } from "@/lib/ctx-auth";
 
 interface MassApplyJobsSelectorProps {
   selectedStudentIds: Set<string>;
@@ -22,6 +23,7 @@ export function MassApplyJobsSelector({
   const [jobsPage, setJobsPage] = useState(1);
   const jobsPageSize = 10;
   const massApply = useMassApply();
+  const { isAuthenticated } = useAuthContext();
 
   // Use the same hook as student search page to fetch jobs
   const jobs = useJobsData({
@@ -161,7 +163,10 @@ export function MassApplyJobsSelector({
           {selectedJob ? (
             <>
               <div className="flex-1 overflow-y-auto border-b min-h-0 px-3 py-2 text-sm">
-                <JobDetails job={selectedJob} />
+                <JobDetails 
+                  job={selectedJob}
+                  isAuthenticated={isAuthenticated()}
+                />
               </div>
 
               <div className="px-3 py-1.5 border-t flex-shrink-0 bg-white">

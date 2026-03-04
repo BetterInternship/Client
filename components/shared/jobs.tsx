@@ -2,7 +2,7 @@ import { Badge, BoolBadge } from "@/components/ui/badge";
 import { Job } from "@/lib/db/db.types";
 import { useDbMoa } from "@/lib/db/use-bi-moa";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import {
   AlertTriangle,
   Building,
@@ -21,6 +21,7 @@ import { Property } from "../ui/labels";
 import { Toggle } from "../ui/toggle";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAppContext } from "@/lib/ctx-app";
+import { useAuthContext } from "@/lib/ctx-auth";
 
 export const JobHead = ({
   title,
@@ -438,7 +439,7 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
       <div className="grid sm:grid-cols-4 gap-2">
         <DropdownGroup>
           {workModes ? (
-            <div className="flex items-start gap-2">
+            <div className="flex items-center gap-2">
               <Monitor className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
               <div>
                 <label className="flex items-center text-sm text-gray-700">
@@ -452,7 +453,7 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
           )}
 
           {workLoads ? (
-            <div className="flex items-start gap-2">
+            <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
               <div>
                 <label className="flex items-center text-sm text-gray-700">
@@ -466,22 +467,21 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
           )}
 
           {job.allowance === 0 ? (
-            <div className="flex items-start gap-2">
+            <div className="flex items-center gap-2">
               <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
               <div>
                 <label className="flex items-center text-sm text-gray-700">
                   Allowance:
                 </label>
                 <div className="flex">
-                  {job.salary ? <span className=" mr-1">₱</span> : <></>}
                   <Property
                     key="salary"
                     value={
                       job.salary
                         ? to_job_pay_freq_name(job.salary_freq) !==
                           "Not specified"
-                          ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
-                          : `${job.salary}`
+                          ? `${formatCurrency(job.salary)}/${to_job_pay_freq_name(job.salary_freq)}`
+                          : `${formatCurrency(job.salary)}`
                         : "With pay"
                     }
                   />
@@ -493,7 +493,7 @@ export const JobDetailsSummary = ({ job }: { job: Job }) => {
           )}
 
           {internshipTypes ? (
-            <div className="flex items-start gap-2">
+            <div className="flex items-center gap-2">
               <UserCheck className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
               <div>
                 <label className="flex items-center text-sm text-gray-700">
@@ -1016,6 +1016,7 @@ export function JobDetails({
   user,
   actions = [],
   applyDisabledText = "Complete required items to apply.",
+  isAuthenticated,
 }: {
   job: Job;
   user?: {
@@ -1024,6 +1025,7 @@ export function JobDetails({
   };
   actions?: React.ReactNode[];
   applyDisabledText?: string;
+  isAuthenticated: boolean;
 }) {
   const hasGithub = !!user?.github_link?.trim();
   const hasPortfolio = !!user?.portfolio_link?.trim();
@@ -1039,7 +1041,7 @@ export function JobDetails({
 
   return (
     <>
-      {user !== undefined && (
+      {isAuthenticated && (
         <MissingNotice
           show={missingRequired}
           needsGithub={needsGithub && !hasGithub}

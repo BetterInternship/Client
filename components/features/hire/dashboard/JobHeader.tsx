@@ -112,7 +112,7 @@ export default function JobHeader({
               </span>
             </div>
           </div>
-          <div className="flex gap-1">
+          <div className="flex gap-1 flex-wrap">
             <Link
               href={{
                 pathname: "/dashboard/manage",

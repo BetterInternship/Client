@@ -42,13 +42,13 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
   const [creating, set_creating] = useState(false);
   const [isMissing, setMissing] = useState(false);
   const { formData, setField, fieldSetter } = useFormData<Job>();
-  const { job_pay_freq } = useDbRefs();
+  const { job_pay_freq, isNotNull } = useDbRefs();
   const router = useRouter();
   const profile = useProfile();
   const { isMobile } = useMobile();
 
   const isSalaryFilled = typeof formData.salary === "number" && formData.salary;
-  const payFreqMissing = isSalaryFilled && !formData.salary_freq;
+  const payFreqMissing = isSalaryFilled && !isNotNull(formData.salary_freq);
 
   const { job_categories } = useDbRefs();
 
@@ -128,7 +128,7 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
       missingFields.push("Category");
     }
 
-    if (isSalaryFilled && !formData.salary_freq) {
+    if (isSalaryFilled && formData.salary_freq === null && formData.salary_freq === undefined) {
       missingFields.push("Pay Frequency");
     }
 
@@ -170,7 +170,7 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
   }, []);
 
   useEffect(() => {
-    const missing =
+    const missing = !!(
       !formData.title?.trim() ||
       !formData.location?.trim() ||
       !formData.description?.trim() ||
@@ -180,7 +180,8 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
       !formData.internship_preferences?.job_commitment_ids?.length ||
       !formData.internship_preferences?.job_setup_ids?.length ||
       !formData.internship_preferences?.job_category_ids?.length ||
-      payFreqMissing;
+      payFreqMissing
+    );
 
     setMissing(missing);
   }, [

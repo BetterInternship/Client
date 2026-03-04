@@ -597,6 +597,7 @@ export default function SearchPage() {
                       openAppModal={() => applyConfirmModalRef.current?.open()}
                     />,
                   ]}
+                  isAuthenticated={isAuthenticated()}
                 />
               ) : (
                 <div className="h-full m-auto">
