@@ -12,6 +12,7 @@ import { useMyAutofill } from "@/hooks/use-my-autofill";
 import { FormActionButtons } from "./FormActionButtons";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
+import { type PreviewField } from "@/lib/form-previewer-model";
 
 export function FormAndDocumentLayout({ formName }: { formName: string }) {
   const form = useFormRendererContext();
@@ -50,7 +51,7 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
   }, [form.formMetadata, form.formName]);
 
   // Use all keyed fields in PDF preview so non-initiator fields can appear as gray boxes.
-  const previewKeyedFields = useMemo(
+  const previewKeyedFields = useMemo<PreviewField[]>(
     () =>
       (form.keyedFields ?? []).map((field) => {
         const normalizedFieldName = String(field.field ?? "").replace(
@@ -61,8 +62,22 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
           fieldMetaByName.get(field.field) ??
           fieldMetaByName.get(`${normalizedFieldName}:default`) ??
           fieldMetaByName.get(normalizedFieldName);
+
         return {
-          ...field,
+          id: field._id,
+          field: field.field,
+          label: field.field,
+          page: field.page,
+          x: field.x,
+          y: field.y,
+          w: field.w,
+          h: field.h,
+          size: field.size,
+          wrap: field.wrap,
+          align_h: field.align_h,
+          align_v: field.align_v,
+          font: field.font,
+          type: field.type,
           signing_party_id: meta?.signing_party_id,
           source: meta?.source,
           prefiller: meta?.prefiller,
