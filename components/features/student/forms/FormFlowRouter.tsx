@@ -30,26 +30,45 @@ export function FormAndDocumentLayout({ formName }: { formName: string }) {
     [form.formMetadata, form.formName],
   );
 
-  const fieldOwnerByName = useMemo(() => {
-    const ownerMap = new Map<string, string>();
+  const fieldMetaByName = useMemo(() => {
+    const metaMap = new Map<
+      string,
+      { signing_party_id?: string; source?: string; prefiller?: unknown }
+    >();
     const allBlocks = form.formMetadata.getBlocksForEditorService();
     allBlocks.forEach((block) => {
-      const fieldName =
-        block.field_schema?.field ?? block.phantom_field_schema?.field;
-      if (!fieldName || ownerMap.has(fieldName)) return;
-      ownerMap.set(fieldName, block.signing_party_id);
+      const schema = block.field_schema ?? block.phantom_field_schema;
+      const fieldName = schema?.field;
+      if (!fieldName || metaMap.has(fieldName)) return;
+      metaMap.set(fieldName, {
+        signing_party_id: block.signing_party_id,
+        source: schema?.source,
+        prefiller: schema?.prefiller,
+      });
     });
-    return ownerMap;
+    return metaMap;
   }, [form.formMetadata, form.formName]);
 
   // Use all keyed fields in PDF preview so non-initiator fields can appear as gray boxes.
   const previewKeyedFields = useMemo(
     () =>
-      (form.keyedFields ?? []).map((field) => ({
-        ...field,
-        signing_party_id: fieldOwnerByName.get(field.field),
-      })),
-    [form.keyedFields, fieldOwnerByName],
+      (form.keyedFields ?? []).map((field) => {
+        const normalizedFieldName = String(field.field ?? "").replace(
+          /:default$/i,
+          "",
+        );
+        const meta =
+          fieldMetaByName.get(field.field) ??
+          fieldMetaByName.get(`${normalizedFieldName}:default`) ??
+          fieldMetaByName.get(normalizedFieldName);
+        return {
+          ...field,
+          signing_party_id: meta?.signing_party_id,
+          source: meta?.source,
+          prefiller: meta?.prefiller,
+        };
+      }),
+    [form.keyedFields, fieldMetaByName],
   );
 
   useEffect(() => {

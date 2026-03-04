@@ -16,8 +16,11 @@ import type { PageViewport } from "pdfjs-dist/types/src/display/display_utils";
 import { Loader } from "@/components/ui/loader";
 import { ZoomIn, ZoomOut } from "lucide-react";
 import { useDbRefs } from "@/lib/db/use-refs";
+import { useProfileData } from "@/lib/api/student.data.api";
 import {
+  createPreviewDisplayValueResolver,
   groupFieldsByPage,
+  normalizePreviewFieldKey,
   normalizePreviewFields,
   type PreviewField,
   type PreviewFieldLike,
@@ -65,6 +68,7 @@ export const FormPreviewPdfDisplay = ({
   signingParties = [],
 }: FormPreviewPdfDisplayProps) => {
   const refs = useDbRefs();
+  const profile = useProfileData();
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [pageCount, setPageCount] = useState<number>(0);
   const [scale, setScale] = useState<number>(initialScale);
@@ -92,56 +96,13 @@ export const FormPreviewPdfDisplay = ({
     return partyLabelById;
   }, [signingParties]);
 
-  const resolveDisplayValue = useCallback(
-    (fieldName: string, rawValue: unknown): string => {
-      const value = Array.isArray(rawValue)
-        ? rawValue.join(", ")
-        : typeof rawValue === "string"
-          ? rawValue
-          : "";
-      if (!value) return "";
-      const trimmedValue = value.trim();
-
-      const tryResolveRefName = (candidate: string): string | null => {
-        const college = refs.get_college?.(candidate)?.name;
-        if (college) return college;
-        const department = refs.get_department?.(candidate)?.name;
-        if (department) return department;
-        const university = refs.get_university?.(candidate)?.name;
-        if (university) return university;
-        return null;
-      };
-
-      const loweredFieldName = fieldName.toLowerCase();
-      if (
-        loweredFieldName.includes("college") &&
-        typeof refs.to_college_name === "function"
-      ) {
-        return refs.to_college_name(trimmedValue, trimmedValue) ?? trimmedValue;
-      }
-      if (
-        loweredFieldName.includes("department") &&
-        typeof refs.to_department_name === "function"
-      ) {
-        return (
-          refs.to_department_name(trimmedValue, trimmedValue) ?? trimmedValue
-        );
-      }
-      if (
-        loweredFieldName.includes("university") &&
-        typeof refs.to_university_name === "function"
-      ) {
-        return (
-          refs.to_university_name(trimmedValue, trimmedValue) ?? trimmedValue
-        );
-      }
-
-      const directRefMatch = tryResolveRefName(trimmedValue);
-      if (directRefMatch) return directRefMatch;
-
-      return value;
-    },
-    [refs],
+  const resolveDisplayValue = useMemo(
+    () =>
+      createPreviewDisplayValueResolver({
+        refs,
+        user: profile.data as Record<string, unknown> | null,
+      }),
+    [refs, profile.data],
   );
 
   const registerFieldRef = useCallback(
@@ -367,7 +328,7 @@ interface PdfPageWithFieldsProps {
   selectedFieldId?: string;
   registerFieldRef: (fieldName: string, node: HTMLDivElement | null) => void;
   fieldErrors: Record<string, string>;
-  resolveDisplayValue: (fieldName: string, rawValue: unknown) => string;
+  resolveDisplayValue: (field: PreviewField, rawValue: unknown) => string;
   signingPartyLabelById: Map<string, string>;
 }
 
@@ -553,8 +514,12 @@ const PdfPageWithFields = ({
           const widthPixels = w * scale;
           const heightPixels = h * scale;
 
-          const rawValue = values[fieldName];
-          const valueStr = resolveDisplayValue(fieldName, rawValue);
+          const normalizedFieldName = normalizePreviewFieldKey(fieldName);
+          const rawValue =
+            values[fieldName] ??
+            values[`${normalizedFieldName}:default`] ??
+            values[normalizedFieldName];
+          const valueStr = resolveDisplayValue(field, rawValue);
           const isFilled = valueStr.trim().length > 0;
 
           // Get alignment and wrapping from field schema
@@ -615,7 +580,9 @@ const PdfPageWithFields = ({
             animatingFieldId === fieldName ||
             selectedFieldId === fieldName ||
             clickedHighlightFieldId === field.id;
-          const isOwnedByInitiator = field.signing_party_id === "initiator";
+          const owner = String(field.signing_party_id ?? "").toLowerCase();
+          const isOwnedByInitiator =
+            owner === "initiator" || owner === "student";
           const hasFieldError = !!fieldErrors[fieldName];
           const isFieldValid = isFilled && !hasFieldError;
           const borderColor = isOwnedByInitiator
