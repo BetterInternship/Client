@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-12-18 15:17:08
- * @ Modified time: 2026-02-25 22:59:26
+ * @ Modified time: 2026-03-04 17:03:50
  * @ Description:
  *
  * These are the forms a user has generated or initiated.
@@ -25,7 +25,7 @@ interface IMyForms {
     timestamp: string;
     rejection_reason?: string;
     signing_parties?: IFormSigningParty[];
-    status?: string;
+    status?: string | null;
   }[];
   loading: boolean;
   error?: string;

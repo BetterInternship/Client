@@ -47,7 +47,7 @@ export const useModalRegistry = () => {
             }}
           />,
           {
-            allowBackdropClick: false,
+            closeOnBackdropClick: false,
             showHeaderDivider: true,
             title: "Complete your profile",
             onClose: () => close("incomplete-profile"),
@@ -87,7 +87,7 @@ export const useModalRegistry = () => {
           />,
           {
             title: `Apply to ${selectedCount} selected`,
-            allowBackdropClick: false,
+            closeOnBackdropClick: false,
           },
         ),
       close: () => close("mass-apply-compose"),
@@ -133,9 +133,9 @@ export const useModalRegistry = () => {
             onClose={() => close("form-submission-success")}
           />,
           {
-            closeOnEsc: false,
-            allowBackdropClick: false,
-            hasClose: false,
+            closeOnEscapeKey: false,
+            closeOnBackdropClick: false,
+            showCloseButton: false,
             onClose: () => close("form-submission-success"),
           },
         ),
@@ -150,9 +150,9 @@ export const useModalRegistry = () => {
           <CancelFormModal formProcessId={formProcessId} />,
           {
             title: "Cancel this form request?",
-            hasClose: false,
-            allowBackdropClick: false,
-            closeOnEsc: false,
+            showCloseButton: false,
+            closeOnBackdropClick: false,
+            closeOnEscapeKey: false,
             showHeaderDivider: true,
           },
         ),
@@ -167,9 +167,9 @@ export const useModalRegistry = () => {
           <ResendFormModal formProcessId={formProcessId} />,
           {
             title: "Resend form email?",
-            hasClose: false,
-            allowBackdropClick: false,
-            closeOnEsc: false,
+            showCloseButton: false,
+            closeOnBackdropClick: false,
+            closeOnEscapeKey: false,
             showHeaderDivider: true,
           },
         ),
@@ -221,9 +221,9 @@ export const useModalRegistry = () => {
           />,
           {
             title: " ",
-            allowBackdropClick: false,
-            closeOnEsc: false,
-            hasClose: false,
+            closeOnBackdropClick: false,
+            closeOnEscapeKey: false,
+            showCloseButton: false,
           },
         );
       },
@@ -260,9 +260,9 @@ export const useModalRegistry = () => {
           />,
           {
             title: " ",
-            allowBackdropClick: false,
-            closeOnEsc: false,
-            hasClose: false,
+            closeOnBackdropClick: false,
+            closeOnEscapeKey: false,
+            showCloseButton: false,
           },
         ),
       close: () => close("warning"),
@@ -298,9 +298,9 @@ export const useModalRegistry = () => {
           />,
           {
             title: " ",
-            allowBackdropClick: false,
-            closeOnEsc: false,
-            hasClose: false,
+            closeOnBackdropClick: false,
+            closeOnEscapeKey: false,
+            showCloseButton: false,
           },
         ),
       close: () => close("success"),

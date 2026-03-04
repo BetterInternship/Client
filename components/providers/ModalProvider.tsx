@@ -1,3 +1,10 @@
+/**
+ * @ Author: BetterInternship
+ * @ Create Time: 2025-12-21 02:46:39
+ * @ Modified time: 2026-03-04 17:09:01
+ * @ Description:
+ */
+
 "use client";
 
 import React, {
@@ -13,10 +20,19 @@ import { X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 type ModalOptions = {
-  allowBackdropClick?: boolean; // default: true
-  closeOnEsc?: boolean; // default: true
-  hasClose?: boolean; // default: true
-  onClose?: () => void; // called AFTER the modal is removed
+  // Allow exiting by clicking outside modal; default: true
+  closeOnBackdropClick?: boolean;
+
+  // Allow exiting by usign escape key; default true
+  closeOnEscapeKey?: boolean; // default: true
+
+  // Show a close (X) button; default: true
+  showCloseButton?: boolean;
+
+  // Called AFTER the modal is unmounted
+  onClose?: () => void;
+
+  // ! Hmm this should not be done this way
   backdropClassName?: string;
   panelClassName?: string;
   title?: React.ReactNode;
@@ -93,7 +109,7 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
       const entries = Object.entries(registry);
       if (!entries.length) return;
       const [lastName, lastEntry] = entries[entries.length - 1];
-      if (lastEntry.opts.closeOnEsc !== false) close(lastName);
+      if (lastEntry.opts.closeOnEscapeKey !== false) close(lastName);
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
@@ -129,11 +145,11 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
                 height: "calc(var(--vh, 1vh) * 100)",
               }}
               onClick={(e) => {
-                if (opts.allowBackdropClick === false) return;
+                if (opts.closeOnBackdropClick === false) return;
                 if (e.target === backdropRef.current) close(name);
               }}
               onTouchEnd={(e) => {
-                if (opts.allowBackdropClick === false) return;
+                if (opts.closeOnBackdropClick === false) return;
                 if (e.target === backdropRef.current) close(name);
               }}
             >
@@ -163,7 +179,7 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
                   onClick={(e) => e.stopPropagation()}
                 >
                   {/* Header row: title (left) + close (right) */}
-                  {(opts.title || opts.hasClose !== false) && (
+                  {(opts.title || opts.showCloseButton !== false) && (
                     <div
                       className={[
                         "flex items-center justify-between gap-3 px-4 py-3",
@@ -185,7 +201,7 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
                       )}
 
                       {/* Close button (optional) */}
-                      {opts.hasClose !== false && (
+                      {opts.showCloseButton !== false && (
                         <button
                           aria-label="Close"
                           onClick={() => close(name)}
