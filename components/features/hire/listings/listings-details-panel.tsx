@@ -1,3 +1,4 @@
+import { useAuthContext } from "@/app/hire/authctx";
 import { JobDetails } from "@/components/shared/jobs";
 import { Button } from "@/components/ui/button";
 import { Job } from "@/lib/db/db.types";
@@ -28,6 +29,8 @@ export function ListingsDetailsPanel({
   updateJob,
   setIsEditing,
 }: ListingsDetailsPanelProps) {
+  const { isAuthenticated } = useAuthContext();
+
   if (!selectedJob?.id) {
     return (
       <div className="h-full m-auto max-w-[1024px] mx-auto">
@@ -58,6 +61,7 @@ export function ListingsDetailsPanel({
         job={selectedJob}
         // @ts-ignore
         update_job={updateJob}
+        isAuthenticated={isAuthenticated()}
         actions={
           isEditing
             ? [

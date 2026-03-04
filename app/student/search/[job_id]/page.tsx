@@ -27,6 +27,7 @@ import { ApplyConfirmModal } from "@/components/modals/ApplyConfirmModal";
 import { applyToJob } from "@/lib/application";
 import { useApplicationActions } from "@/lib/api/student.actions.api";
 import { ShareJobButton } from "@/components/features/student/job/share-job-button";
+import { useAuthContext } from "@/lib/ctx-auth";
 
 /**
  * The individual job page.
@@ -44,6 +45,7 @@ export default function JobPage() {
 
   const profile = useProfileData();
   const { universities } = useDbRefs();
+  const { isAuthenticated } = useAuthContext();
 
   const goProfile = useCallback(() => {
     applyConfirmModalRef.current?.close();
@@ -134,7 +136,8 @@ export default function JobPage() {
                         portfolio_link: profile.data?.portfolio_link ?? null,
                       }}
                       job={job.data}
-                    />
+                      isAuthenticated={isAuthenticated()}
+                  />
                   </div>
                 </div>
               </div>
