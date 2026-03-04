@@ -6,7 +6,7 @@ import { FormFillerRenderer } from "@/components/features/student/forms/FormFill
 import { Button } from "@/components/ui/button";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import { FormInput } from "@/components/EditForm";
-import { cn } from "@/lib/utils";
+import { cn, isValidEmail } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
 import { Badge } from "@/components/ui/badge";
@@ -49,6 +49,9 @@ export function FlowTestSigningLayout({
   const [values, setValues] = useState<FormValues>({});
   const [nextLoading, setNextLoading] = useState(false);
   const [recipientEmails, setRecipientEmails] = useState<
+    Record<string, string>
+  >({});
+  const [recipientEmailErrors, setRecipientEmailErrors] = useState<
     Record<string, string>
   >({});
   const [confirmStepBuffering, setConfirmStepBuffering] = useState(false);
@@ -173,17 +176,41 @@ export function FlowTestSigningLayout({
     }
   }, [recipients, recipientEmails, rightPaneStep, form, values]);
 
+  const checkRecipientErrors = (recipientEmails: Record<string, string>) => {
+    const emailErrors: Record<string, string> = {};
+
+    for (const [recipientKey, recipientEmail] of Object.entries(
+      recipientEmails,
+    )) {
+      if (!isValidEmail(recipientEmail))
+        emailErrors[recipientKey] = `${recipientEmail} is not a valid email.`;
+    }
+
+    return emailErrors;
+  };
+
   const handleNext = useCallback(async () => {
     const additionalValues = { ...autofillValues, ...recipientEmails };
     const finalValues = formFiller.getFinalValues(additionalValues);
     const errors = formFiller.validate(form.fields, additionalValues);
+    const emailErrors = checkRecipientErrors(recipientEmails);
 
     // So it doesn't look like it's hanging
     setNextLoading(true);
 
     switch (rightPaneStep) {
       case "timeline":
-        setRightPaneStep("fields");
+        if (Object.keys(emailErrors).length) {
+          setRecipientEmailErrors(emailErrors);
+          toast.error(
+            "Some information is missing or incorrect",
+            toastPresets.destructive,
+          );
+        } else {
+          setRecipientEmailErrors({});
+          setRightPaneStep("fields");
+        }
+
         setNextLoading(false);
         break;
       case "fields":
@@ -207,7 +234,10 @@ export function FlowTestSigningLayout({
 
   const handleSubmit = useCallback(async () => {
     setNextLoading(true);
-    const finalValues = formFiller.getFinalValues(autofillValues);
+    const finalValues = formFiller.getFinalValues({
+      ...autofillValues,
+      ...recipientEmails,
+    });
 
     if (generateWithNoSignature) {
       const response = await formFilloutProcess.run(
@@ -323,7 +353,7 @@ export function FlowTestSigningLayout({
                   autoScrollToSelectedField={selectedFieldSource === "form"}
                   signingParties={recipients}
                   onFieldClick={handlePdfFieldSelect}
-                  selectedFieldId={form.selectedPreviewId}
+                  selectedFieldId={form.selectedPreviewId ?? undefined}
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-sm text-gray-500">
@@ -375,7 +405,12 @@ export function FlowTestSigningLayout({
                                   <FormInput
                                     value={recipientEmails[fieldName]}
                                     placeholder={"recipient@email.com"}
-                                    className="mt-1"
+                                    className={cn(
+                                      "mt-1",
+                                      recipientEmailErrors[fieldName]
+                                        ? "text-destructive"
+                                        : "",
+                                    )}
                                     setter={(value) =>
                                       setRecipientEmails({
                                         ...recipientEmails,
@@ -485,21 +520,27 @@ export function FlowTestSigningLayout({
                           Make sure these emails are right:
                           <div className="space-y-2 mt-2">
                             {Object.entries(recipientEmails).map(
-                              ([recipientTitle, recipientEmail], index) => (
-                                <div
-                                  key={`${recipientTitle}-${index}`}
-                                  className="flex flex-row"
-                                >
-                                  <Badge className="rounded-r-none gap-1">
-                                    <span className="text-gray-500">
-                                      {index + 1}. {recipientTitle}:
-                                    </span>
-                                    <span className="font-bold text-primary">
-                                      {recipientEmail}
-                                    </span>
-                                  </Badge>
-                                </div>
-                              ),
+                              ([recipientFieldName, recipientEmail], index) => {
+                                const recipientTitle =
+                                  form.formMetadata.getSigningPartyTitleFromFieldName(
+                                    recipientFieldName,
+                                  );
+                                return (
+                                  <div
+                                    key={`${recipientFieldName}-${index}`}
+                                    className="flex flex-row"
+                                  >
+                                    <Badge className="rounded-r-none gap-1">
+                                      <span className="text-gray-500">
+                                        {index + 1}. {recipientTitle}:
+                                      </span>
+                                      <span className="font-bold text-primary">
+                                        {recipientEmail}
+                                      </span>
+                                    </Badge>
+                                  </div>
+                                );
+                              },
                             )}
                           </div>
                         </div>
