@@ -9,6 +9,7 @@ import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import { useAuthContext } from "@/app/hire/authctx";
 
 interface JobDetailsPageProps {
   job: Job;
@@ -19,6 +20,7 @@ const JobDetailsPage = ({
 }: JobDetailsPageProps) => {
   const router = useRouter();
   const { isMobile } = useAppContext();
+  const { isAuthenticated } = useAuthContext();
   const [exitingBack, setExitingBack] = useState(false);
 
   const handleBack = () => {
@@ -40,6 +42,7 @@ const JobDetailsPage = ({
         <Card>
           <JobDetails
             job={job}
+            isAuthenticated={isAuthenticated()}
           />
         </Card>
       </motion.div>
