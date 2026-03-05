@@ -17,7 +17,6 @@ import { Autocomplete } from "@/components/ui/autocomplete";
 export type ModalRendererProps = {
   children?: React.ReactNode;
   className?: string;
-  backdropClassName?: string;
 };
 
 export function RegisterEmployerButton({ onOpen }: { onOpen: () => void }) {

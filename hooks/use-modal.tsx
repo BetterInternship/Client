@@ -30,10 +30,24 @@ import { useMobile } from "./use-mobile"; // touch helpers
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 
-/** Exposed for optional imperative usage */
+/**
+ * Old modal handle.
+ *
+ * @param name
+ * @param options
+ * @deprecated use useGlobalModal() instead.
+ * @returns
+ */
 export type ModalHandle = { open: () => void; close: () => void };
 
-/** The main hook */
+/**
+ * Old modal impl.
+ *
+ * @param name
+ * @param options
+ * @deprecated use useGlobalModal() instead.
+ * @returns
+ */
 export const useModal = (
   name: string,
   options?: {
@@ -127,11 +141,9 @@ export const useModal = (
   const Modal = ({
     children,
     className,
-    backdropClassName,
   }: {
     children?: React.ReactNode;
-    className?: string; // e.g. "max-w-7xl w-full"
-    backdropClassName?: string;
+    className?: string;
   }) => {
     useEffect(() => {
       if (!isOpen) setHasMounted(isOpen);
@@ -146,7 +158,6 @@ export const useModal = (
           isMobile
             ? "items-end justify-center p-0"
             : "items-center justify-center p-4",
-          backdropClassName,
         )}
         onClick={handleBackdropClick}
         onTouchEnd={() => {
@@ -249,7 +260,6 @@ const ModalTemplate = (
     {
       children?: React.ReactNode;
       className?: string;
-      backdropClassName?: string;
     }
   >((props, ref) => {
     useImperativeHandle(ref, () => ({ open, close }));
@@ -257,6 +267,13 @@ const ModalTemplate = (
   });
 };
 
+/**
+ * Old modal component.
+ *
+ * @deprecated use useGlobalModal() instead.
+ * @param
+ * @returns
+ */
 export const ModalComponent = ({
   children,
   ref,
@@ -268,4 +285,11 @@ export const ModalComponent = ({
   return <M ref={ref} />;
 };
 
+/**
+ * Old modal component.
+ *
+ * @deprecated use useGlobalModal() instead.
+ * @param
+ * @returns
+ */
 export const useModalRef = () => useRef<ModalHandle | null>(null);

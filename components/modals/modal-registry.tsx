@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useGlobalModal } from "../providers/ModalProvider";
+import { useGlobalModal } from "../providers/modal-provider/ModalProvider";
 import { AlertCircle, CheckCircle, LucideIcon } from "lucide-react";
 
 import { IncompleteProfileContent } from "./components/IncompleteProfileModal";
@@ -8,16 +8,7 @@ import {
   MassApplyResults,
   MassApplyResultsData,
 } from "./components/MassApplyResults";
-import { SpecifySigningPartiesModal } from "./components/SpecifySigningPartiesModal";
 import { FormSubmissionSuccessModal } from "./components/FormSubmissionSuccessModal";
-import {
-  ClientBlock,
-  ClientField,
-  ClientPhantomField,
-  FormValues,
-} from "@betterinternship/core/forms";
-import { PublicUser } from "@/lib/db/db.types";
-import { IFormFiller } from "../features/student/forms/form-filler.ctx";
 import { ResendFormModal } from "./components/ResendFormModal";
 import { CancelFormModal } from "./components/CancelFormModal";
 import { WarningModal } from "./components/WarningModal";
@@ -30,7 +21,7 @@ import { MassApplyJobsSelector } from "./components/MassApplyJobsSelector";
  * @returns
  */
 export const useModalRegistry = () => {
-  const { open, close } = useGlobalModal();
+  const { openModal: open, closeModal: close } = useGlobalModal();
   const queryClient = useQueryClient();
 
   const modalRegistry = {

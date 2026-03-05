@@ -10,7 +10,7 @@ import TanstackProvider from "../tanstack-provider";
 import AllowLanding from "./allowLanding";
 import { ConversationsContextProvider } from "@/hooks/use-conversation";
 import { PocketbaseProvider } from "@/lib/pocketbase";
-import { ModalProvider } from "@/components/providers/ModalProvider";
+import { ModalProvider } from "@/components/providers/modal-provider/ModalProvider";
 import MobileNavWrapper from "@/components/shared/mobile-nav-wrapper";
 import { SonnerToaster } from "@/components/ui/sonner-toast";
 import { ClientProcessesProvider } from "@betterinternship/components";
