@@ -1,19 +1,17 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { useGlobalModal } from "../providers/modal-provider/ModalProvider";
-import { AlertCircle, CheckCircle, LucideIcon } from "lucide-react";
-
-import { IncompleteProfileContent } from "./components/IncompleteProfileModal";
+import { LucideIcon } from "lucide-react";
 import { MassApplyComposer } from "./components/MassApplyComposer";
-import {
-  MassApplyResults,
-  MassApplyResultsData,
-} from "./components/MassApplyResults";
 import { FormSubmissionSuccessModal } from "./components/FormSubmissionSuccessModal";
 import { ResendFormModal } from "./components/ResendFormModal";
 import { CancelFormModal } from "./components/CancelFormModal";
 import { WarningModal } from "./components/WarningModal";
 import { SuccessModal } from "./components/SuccessModal";
 import { MassApplyJobsSelector } from "./components/MassApplyJobsSelector";
+import { DefaultModalLayout } from "../providers/modal-provider/ModalLayout";
+import {
+  MassApplyResults,
+  MassApplyResultsData,
+} from "./components/MassApplyResults";
 
 /**
  * Simplifies modal config since we usually reuse each of these modal stuffs.
@@ -22,31 +20,8 @@ import { MassApplyJobsSelector } from "./components/MassApplyJobsSelector";
  */
 export const useModalRegistry = () => {
   const { openModal: open, closeModal: close } = useGlobalModal();
-  const queryClient = useQueryClient();
 
   const modalRegistry = {
-    // The modal shown when someone's profile is incomplete
-    incompleteProfile: {
-      open: () =>
-        open(
-          "incomplete-profile",
-          <IncompleteProfileContent
-            onFinish={() => {
-              void queryClient
-                .invalidateQueries({ queryKey: ["my-profile"] })
-                .then(() => close("incomplete-profile"));
-            }}
-          />,
-          {
-            closeOnBackdropClick: false,
-            showHeaderDivider: true,
-            title: "Complete your profile",
-            onClose: () => close("incomplete-profile"),
-          },
-        ),
-      close: () => close("incomplete-profile"),
-    },
-
     // Mass apply fill-out modal
     massApplyCompose: {
       open: ({
@@ -64,6 +39,7 @@ export const useModalRegistry = () => {
       }) =>
         open(
           "mass-apply-compose",
+          DefaultModalLayout,
           <MassApplyComposer
             initialText={bulkCoverLetter}
             disabled={massApplying}
@@ -97,6 +73,7 @@ export const useModalRegistry = () => {
       }) =>
         open(
           "mass-apply-results",
+          DefaultModalLayout,
           <MassApplyResults
             data={massApplyResultsData}
             onClose={() => close("mass-apply-results")}
@@ -119,6 +96,7 @@ export const useModalRegistry = () => {
       open: (submissionType: "esign" | "manual" | null) =>
         open(
           "form-submission-success",
+          DefaultModalLayout,
           <FormSubmissionSuccessModal
             submissionType={submissionType}
             onClose={() => close("form-submission-success")}
@@ -138,6 +116,7 @@ export const useModalRegistry = () => {
       open: (formProcessId: string) =>
         open(
           "cancel-form-request",
+          DefaultModalLayout,
           <CancelFormModal formProcessId={formProcessId} />,
           {
             title: "Cancel this form request?",
@@ -155,6 +134,7 @@ export const useModalRegistry = () => {
       open: (formProcessId: string) =>
         open(
           "resend-form-request",
+          DefaultModalLayout,
           <ResendFormModal formProcessId={formProcessId} />,
           {
             title: "Resend form email?",
@@ -165,60 +145,6 @@ export const useModalRegistry = () => {
           },
         ),
       close: () => close("resend-form-request"),
-    },
-
-    // Duplicate form warning
-    duplicateFormWarning: {
-      open: ({
-        formLabel,
-        hasPendingInstance,
-        hasCompletedInstance: _hasCompletedInstance,
-        onGenerateAnother,
-        onGoBack,
-      }: {
-        formLabel: string;
-        hasPendingInstance: boolean;
-        hasCompletedInstance: boolean;
-        onGenerateAnother: () => void;
-        onGoBack: () => void;
-      }) => {
-        const isPending = hasPendingInstance;
-
-        const title = isPending
-          ? "You already have an outgoing instance of this form: " +
-            "\n" +
-            formLabel
-          : "You've already generated this form before: " + formLabel;
-
-        const message = isPending
-          ? "This form is currently being filled out by other signatories. It is highly recommended to cancel the pending attempt before starting a new one. Multiple outgoing versions may cause confusion."
-          : "You already have a completed version of this form: " +
-            formLabel +
-            ". Are you sure you want another one?";
-
-        return open(
-          "duplicate-form-warning",
-          <WarningModal
-            icon={isPending ? AlertCircle : CheckCircle}
-            iconColor={isPending ? "text-amber-600" : "text-emerald-600"}
-            title={title}
-            message={message}
-            primaryAction={{ label: "Go back", onClick: onGoBack }}
-            secondaryAction={{
-              label: "Generate another copy",
-              onClick: onGenerateAnother,
-            }}
-            close={() => close("duplicate-form-warning")}
-          />,
-          {
-            title: " ",
-            closeOnBackdropClick: false,
-            closeOnEscapeKey: false,
-            showCloseButton: false,
-          },
-        );
-      },
-      close: () => close("duplicate-form-warning"),
     },
 
     // Generic warning modal for reuse
@@ -240,6 +166,7 @@ export const useModalRegistry = () => {
       }) =>
         open(
           "warning",
+          DefaultModalLayout,
           <WarningModal
             icon={icon}
             iconColor={iconColor}
@@ -278,6 +205,7 @@ export const useModalRegistry = () => {
       }) =>
         open(
           "success",
+          DefaultModalLayout,
           <SuccessModal
             icon={icon}
             iconColor={iconColor}
@@ -310,6 +238,7 @@ export const useModalRegistry = () => {
       }) =>
         open(
           "mass-apply-job-selector",
+          DefaultModalLayout,
           <MassApplyJobsSelector
             selectedStudentIds={selectedStudentIds}
             onClose={() => {

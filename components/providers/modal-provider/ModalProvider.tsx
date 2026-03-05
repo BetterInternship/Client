@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-12-21 02:46:39
- * @ Modified time: 2026-03-04 17:50:11
+ * @ Modified time: 2026-03-05 14:01:13
  * @ Description:
  */
 
@@ -16,7 +16,6 @@ import React, {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
-import { X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +28,7 @@ interface ModalInstance {
 }
 type ModalInstanceOpener = (
   name: string,
+  layout: React.FC<ModalInjectedParams & ModalContext>,
   content: React.ReactNode,
   opts?: ModalOptions,
 ) => void;
@@ -81,8 +81,23 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
   const [registry, setRegistry] = useState<Record<string, ModalInstance>>({});
 
   const openModal = useCallback<ModalInstanceOpener>(
-    (name, content, opts = {}) => {
-      setRegistry((m) => ({ ...m, [name]: { node: content, opts } }));
+    (name, Layout, content, opts = {}) => {
+      setRegistry((m) => ({
+        ...m,
+        [name]: {
+          node: (
+            <Layout
+              name={name}
+              openModal={openModal}
+              closeModal={closeModal}
+              {...opts}
+            >
+              {content}
+            </Layout>
+          ),
+          opts,
+        },
+      }));
     },
     [],
   );
@@ -176,74 +191,7 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
                 if (e.target === backdropRef.current) closeModal(name);
               }}
             >
-              <motion.div
-                // Panel entrance: bottom-sheet slide on mobile, scale/raise on desktop
-                initial={{ opacity: 0, y: 24, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 16, scale: 0.98 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 320,
-                  damping: 28,
-                  mass: 0.8,
-                }}
-                className={[
-                  // Base panel
-                  "bg-white overflow-visible shadow-2xl relative border",
-                  // Mobile: full-width bottom sheet, rounded top only
-                  "w-full max-w-full min-w-[100svw] rounded-t-[0.33em] rounded-b-none",
-                  // Let content grow but cap height properly
-                  "max-h-[calc(var(--vh,1vh)*100)]",
-                  // Desktop+: classic centered card
-                  "sm:rounded-[0.33em] sm:w-auto sm:max-w-2xl sm:min-w-0 sm:max-h-[90vh]",
-                  opts.panelClassName ?? "",
-                ].join(" ")}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* Header row: title (left) + close (right) */}
-                {(opts.title || opts.showCloseButton !== false) && (
-                  <div
-                    className={[
-                      "flex items-center justify-between gap-3 px-4 py-3",
-                      opts.showHeaderDivider ? "border-b" : "",
-                    ].join(" ")}
-                  >
-                    {/* Title (optional) */}
-                    {opts.title ? (
-                      typeof opts.title === "string" ? (
-                        <h2 className="text-base font-semibold truncate">
-                          {opts.title}
-                        </h2>
-                      ) : (
-                        <div className="flex-1 min-w-0">{opts.title}</div>
-                      )
-                    ) : (
-                      <div className="flex-1" />
-                    )}
-
-                    {/* Close button (optional) */}
-                    {opts.showCloseButton !== false && (
-                      <button
-                        aria-label="Close"
-                        onClick={() => closeModal(name)}
-                        className="h-8 w-8 rounded-full hover:bg-gray-100 active:bg-gray-200 flex items-center justify-center shrink-0"
-                      >
-                        <X className="h-4 w-4 text-gray-500" />
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {/* Content area */}
-                <div className="h-full flex flex-col">
-                  <div className="px-4 pb-4 overflow-auto visible max-h-[calc(var(--vh,1vh)*100-4rem)] sm:max-h-[calc(90vh-4rem)]">
-                    {node}
-                  </div>
-                </div>
-
-                {/* Mobile safe area spacer */}
-                <div className="pb-safe h-4 sm:hidden" />
-              </motion.div>
+              {node}
             </motion.div>
           );
         })}
