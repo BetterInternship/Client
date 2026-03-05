@@ -1,25 +1,19 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Eye, FileSearch, PenLineIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Timeline, TimelineItem } from "@/components/ui/timeline";
+import { FileSearch } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Divider } from "@/components/ui/divider";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { FormTemplate } from "@/lib/db/use-moa-backend";
 import { Loader } from "@/components/ui/loader";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
 import { FormSigningLayout } from "./FormSigningLayout";
 import { IFormSigningParty } from "@betterinternship/core/forms";
 import { FormHistoryView } from "@/components/forms/FormHistoryView";
-import useModalRegistry from "@/components/modals/modal-registry";
 import { FormTemplatesList } from "./FormTemplatesList";
+import { FormActionButtons } from "./FormActionButtons";
+import { FormActionAccordion } from "./FormActionAccordion";
+import { FormSigningPartyTimeline } from "./FormSigningPartyTimeline";
 
 export default function FormDashboard({
   generatedForms,
@@ -46,7 +40,6 @@ export default function FormDashboard({
   const [noEsign, setNoEsign] = useState(false);
   const [isSigningFlow, setIsSigningFlow] = useState(false);
   const form = useFormRendererContext();
-  const modalRegistry = useModalRegistry();
   const recipients = form.formMetadata.getSigningParties();
   const sortedTemplates = useMemo(
     () =>
@@ -181,87 +174,12 @@ export default function FormDashboard({
                       <Divider />
                     </div>
                     {hasHistoryLogs ? (
-                      <Accordion type="single" collapsible>
-                        <AccordionItem value="generate-another">
-                          <AccordionTrigger className="text-xl px-6 font-semibold text-gray-800 hover:no-underline bg-gray-50 aria-expanded:rounded-b-none border-gray-300 border">
-                            Generate another
-                          </AccordionTrigger>
-                          <AccordionContent className="p-6 rounded-b-[0.33em] border-gray-300 border border-t-0">
-                            {recipients.length > 1 && (
-                              <Timeline>
-                                {recipients.map((recipient, index) => {
-                                  const fromMe =
-                                    recipient.signatory_source?._id ===
-                                    "initiator";
-                                  return (
-                                    <TimelineItem
-                                      key={recipient.signatory_title}
-                                      number={index + 1}
-                                      title={
-                                        <span className="text-base text-gray-700 sm:text-lg">
-                                          {recipient.signatory_title}
-                                        </span>
-                                      }
-                                      subtitle={
-                                        fromMe && (
-                                          <span className="text-warning font-bold text-sm">
-                                            {"you will specify this email"}
-                                          </span>
-                                        )
-                                      }
-                                      isLast={index === recipients.length - 1}
-                                    />
-                                  );
-                                })}
-                              </Timeline>
-                            )}
-                            <div className="mt-8 flex flex-col items-start gap-3 py-4">
-                              <div className="flex flex-row gap-2">
-                                <Button
-                                  size="lg"
-                                  className="w-full sm:w-auto text-lg"
-                                  variant="outline"
-                                  onClick={() => {
-                                    if (form.document.url) {
-                                      modalRegistry.previewFormPdf.open({
-                                        documentUrl: form.document.url,
-                                      });
-                                    } else {
-                                      alert(
-                                        "No document url provided for preview.",
-                                      );
-                                    }
-                                  }}
-                                >
-                                  <Eye className="w-5 h-5" />
-                                  Preview PDF
-                                </Button>
-                                <Button
-                                  size="lg"
-                                  className="w-full sm:w-auto text-lg"
-                                  onClick={handleSignViaBetterInternship}
-                                >
-                                  <PenLineIcon className="w-5 h-5" />
-                                  {recipients.some(
-                                    (recipient) =>
-                                      recipient.signatory_source?._id ===
-                                      "initiator",
-                                  )
-                                    ? "Sign via BetterInternship"
-                                    : "Fillout Document"}
-                                </Button>
-                              </div>
-                              <Button
-                                variant="link"
-                                className="h-auto p-0 sm:text-base"
-                                onClick={handlePrintForWetSignature}
-                              >
-                                or print for wet signature instead
-                              </Button>
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
+                      <FormActionAccordion
+                        handleSignViaBetterInternship={
+                          handleSignViaBetterInternship
+                        }
+                        handlePrintForWetSignature={handlePrintForWetSignature}
+                      />
                     ) : (
                       <>
                         <div className="text-xl mt-4">
@@ -270,79 +188,23 @@ export default function FormDashboard({
                             : "This form does not require any signatures."}
                         </div>
 
-                        <Timeline>
-                          {recipients.length > 1 &&
-                            recipients.map((recipient, index) => (
-                              <TimelineItem
-                                key={recipient.signatory_title}
-                                number={index + 1}
-                                title={
-                                  <span className="text-base text-gray-700 sm:text-lg">
-                                    {recipient.signatory_title}
-                                  </span>
-                                }
-                                subtitle={
-                                  recipient.signatory_source?._id ===
-                                    "initiator" && (
-                                    <span className="text-warning font-bold text-sm">
-                                      {"you will specify this email"}
-                                    </span>
-                                  )
-                                }
-                                isLast={index === recipients.length - 1}
-                              />
-                            ))}
-                        </Timeline>
+                        <FormSigningPartyTimeline />
                         <div className="mt-8 flex flex-col items-start gap-3 border-b border-gray-200 pt-4 pb-8">
-                          <div className="flex flex-row gap-2">
-                            <Button
-                              size="lg"
-                              className="w-full sm:w-auto text-lg"
-                              variant="outline"
-                              onClick={() => {
-                                if (form.document.url) {
-                                  modalRegistry.previewFormPdf.open({
-                                    documentUrl: form.document.url,
-                                  });
-                                } else {
-                                  alert(
-                                    "No document url provided for preview.",
-                                  );
-                                }
-                              }}
-                            >
-                              <Eye className="w-5 h-5" />
-                              Preview PDF
-                            </Button>
-                            <Button
-                              size="lg"
-                              className="w-full sm:w-auto text-lg"
-                              onClick={handleSignViaBetterInternship}
-                            >
-                              <PenLineIcon className="w-5 h-5" />
-                              {recipients.some(
-                                (recipient) =>
-                                  recipient.signatory_source?._id ===
-                                  "initiator",
-                              )
-                                ? "Sign via BetterInternship"
-                                : "Fillout Document"}
-                            </Button>
-                          </div>
-                          <Button
-                            variant="link"
-                            className="h-auto p-0 sm:text-base"
-                            onClick={handlePrintForWetSignature}
-                          >
-                            or print for wet signature instead
-                          </Button>
+                          <FormActionButtons
+                            handleSignViaBetterInternship={
+                              handleSignViaBetterInternship
+                            }
+                            handlePrintForWetSignature={
+                              handlePrintForWetSignature
+                            }
+                          />
                         </div>
                       </>
                     )}
                     <FormHistoryView
                       forms={generatedForms ?? []}
                       formLabel={form.formLabel}
-                    ></FormHistoryView>
+                    />
                   </div>
                 )}
               </div>
