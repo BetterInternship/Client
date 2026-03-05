@@ -156,7 +156,11 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
   }, [registry, closeModal]);
 
   const portals = useMemo(() => {
+    if (typeof document === "undefined") return null;
+
     const entries = Object.entries(registry);
+    if (!entries.length) return null;
+
     return createPortal(
       <AnimatePresence>
         {entries.map(([name, { node, opts }]) => {
