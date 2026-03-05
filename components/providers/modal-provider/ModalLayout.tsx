@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2026-03-04 17:30:31
- * @ Modified time: 2026-03-05 13:41:26
+ * @ Modified time: 2026-03-05 14:32:52
  * @ Description:
  *
  * This file contains reusable modal layouts so we don't have to pass too many options when opening modals.
@@ -108,53 +108,45 @@ export const SlideUpModalLayout = ({
 }: SlideUpModalLayout & ModalInjectedParams & ModalContext) => {
   return (
     <AnimatePresence>
+      {showCloseButton && (
+        <button
+          type="button"
+          onClick={() => closeModal()}
+          className="absolute inset-0 h-full w-full bg-black/50"
+          aria-label="Close modal"
+        />
+      )}
       <motion.div
-        className="fixed inset-0 z-50"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
+        className="absolute bottom-0 left-0 right-0 h-[90vh] rounded-t-2xl bg-white shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{
+          type: "spring",
+          stiffness: 320,
+          damping: 30,
+          mass: 0.8,
+        }}
       >
-        {showCloseButton && (
-          <button
-            type="button"
-            onClick={() => closeModal()}
-            className="absolute inset-0 h-full w-full bg-black/50"
-            aria-label="Close modal"
-          />
-        )}
-        <motion.div
-          className="absolute bottom-0 left-0 right-0 h-[90vh] rounded-t-2xl bg-white shadow-2xl"
-          role="dialog"
-          aria-modal="true"
-          initial={{ y: "100%" }}
-          animate={{ y: 0 }}
-          exit={{ y: "100%" }}
-          transition={{
-            type: "spring",
-            stiffness: 320,
-            damping: 30,
-            mass: 0.8,
-          }}
-        >
-          <div className="flex h-full flex-col overflow-hidden">
-            <div className="flex items-center justify-between border-b px-4 py-3">
-              <h2 className="text-base font-semibold text-slate-900">
-                PDF Preview
-              </h2>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => closeModal()}
-                aria-label="Close preview"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="min-h-0 flex-1 p-4">{children}</div>
+        <div className="flex h-full flex-col overflow-hidden">
+          <div className="flex items-center justify-between border-b px-4 py-3">
+            <h2 className="text-base font-semibold text-slate-900">
+              PDF Preview
+            </h2>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => closeModal()}
+              aria-label="Close preview"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
-        </motion.div>
+          <div className="min-h-0 flex-1 p-4">{children}</div>
+        </div>
       </motion.div>
     </AnimatePresence>
   );

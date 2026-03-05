@@ -7,11 +7,15 @@ import { CancelFormModal } from "./components/CancelFormModal";
 import { WarningModal } from "./components/WarningModal";
 import { SuccessModal } from "./components/SuccessModal";
 import { MassApplyJobsSelector } from "./components/MassApplyJobsSelector";
-import { DefaultModalLayout } from "../providers/modal-provider/ModalLayout";
+import {
+  DefaultModalLayout,
+  SlideUpModalLayout,
+} from "../providers/modal-provider/ModalLayout";
 import {
   MassApplyResults,
   MassApplyResultsData,
 } from "./components/MassApplyResults";
+import { FormPreviewPdfDisplay } from "../features/student/forms/previewer";
 
 /**
  * Simplifies modal config since we usually reuse each of these modal stuffs.
@@ -252,6 +256,23 @@ export const useModalRegistry = () => {
           },
         ),
       close: () => close("mass-apply-job-selector"),
+    },
+
+    previewFormPdf: {
+      open: ({ documentUrl }: { documentUrl: string }) =>
+        open(
+          "preview-form-pdf",
+          SlideUpModalLayout,
+          <FormPreviewPdfDisplay
+            documentUrl={documentUrl}
+            blocks={[]}
+            values={{}}
+          />,
+          {
+            title: " ",
+          },
+        ),
+      close: () => close("preview-form-pdf"),
     },
   };
 

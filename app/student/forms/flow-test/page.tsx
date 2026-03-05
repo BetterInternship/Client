@@ -16,10 +16,10 @@ import {
 import { FormTemplate } from "@/lib/db/use-moa-backend";
 import { Loader } from "@/components/ui/loader";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
-import { FlowTestPreviewModal } from "./FlowTestPreviewModal";
 import { FlowTestSigningLayout } from "./FlowTestSigningLayout";
 import { IFormSigningParty } from "@betterinternship/core/forms";
 import { FormHistoryView } from "@/components/forms/FormHistoryView";
+import useModalRegistry from "@/components/modals/modal-registry";
 
 export default function FlowTestPage({
   generatedForms,
@@ -52,9 +52,9 @@ export default function FlowTestPage({
   );
 
   const [noEsign, setNoEsign] = useState(false);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isSigningFlow, setIsSigningFlow] = useState(false);
   const form = useFormRendererContext();
+  const modalRegistry = useModalRegistry();
   const recipients = form.formMetadata.getSigningParties();
   const sortedTemplates = useMemo(
     () =>
@@ -270,7 +270,17 @@ export default function FlowTestPage({
                                   size="lg"
                                   className="w-full sm:w-auto text-lg"
                                   variant="outline"
-                                  onClick={() => setIsPreviewOpen(true)}
+                                  onClick={() => {
+                                    if (form.document.url) {
+                                      modalRegistry.previewFormPdf.open({
+                                        documentUrl: form.document.url,
+                                      });
+                                    } else {
+                                      alert(
+                                        "No document url provided for preview.",
+                                      );
+                                    }
+                                  }}
                                 >
                                   <Eye className="w-5 h-5" />
                                   Preview PDF
@@ -338,7 +348,17 @@ export default function FlowTestPage({
                               size="lg"
                               className="w-full sm:w-auto text-lg"
                               variant="outline"
-                              onClick={() => setIsPreviewOpen(true)}
+                              onClick={() => {
+                                if (form.document.url) {
+                                  modalRegistry.previewFormPdf.open({
+                                    documentUrl: form.document.url,
+                                  });
+                                } else {
+                                  alert(
+                                    "No document url provided for preview.",
+                                  );
+                                }
+                              }}
                             >
                               <Eye className="w-5 h-5" />
                               Preview PDF
@@ -392,13 +412,6 @@ export default function FlowTestPage({
           )}
         </section>
       </div>
-      {form.document.url && (
-        <FlowTestPreviewModal
-          documentUrl={form.document.url}
-          isOpen={isPreviewOpen}
-          onClose={() => setIsPreviewOpen(false)}
-        />
-      )}
     </div>
   );
 }
