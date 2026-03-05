@@ -11,6 +11,7 @@ import {
   DefaultModalLayout,
   SlideUpModalLayout,
 } from "../providers/modal-provider/ModalLayout";
+import { ReactNode } from "react";
 import {
   MassApplyResults,
   MassApplyResultsData,
@@ -269,11 +270,30 @@ export const useModalRegistry = () => {
             values={{}}
           />,
           {
-            title: " ",
+            title: "PDF Preview",
           },
         ),
       close: () => close("preview-form-pdf"),
     },
+
+    formTemplateDetails: {
+      open: ({
+        title,
+        content,
+        onClose,
+      }: {
+        title?: ReactNode;
+        content: ReactNode;
+        onClose?: () => void;
+      }) =>
+        open("form-template-details", SlideUpModalLayout, content, {
+          title,
+          onClose,
+        }),
+      close: () => close("form-template-details"),
+    },
+
+    closeAll: () => close(),
   };
 
   return modalRegistry;

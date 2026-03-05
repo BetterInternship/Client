@@ -1,9 +1,9 @@
 import {
   Accordion,
+  AccordionItem,
   AccordionContent,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { AccordionItem } from "@radix-ui/react-accordion";
 import { FormActionButtons } from "./FormActionButtons";
 import { FormSigningPartyTimeline } from "./FormSigningPartyTimeline";
 

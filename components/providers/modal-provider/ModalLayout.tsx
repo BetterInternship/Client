@@ -12,7 +12,7 @@
  */
 
 import { cn } from "@/lib/utils";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { ModalContext, ModalInjectedParams } from "./ModalProvider";
 import { Button } from "@/components/ui/button";
@@ -101,13 +101,16 @@ interface SlideUpModalLayout {
 
 export const SlideUpModalLayout = ({
   name,
+  title,
   children,
   showCloseButton,
   closeModal,
 }: SlideUpModalLayout & ModalInjectedParams & ModalContext) => {
+  const shouldShowCloseButton = showCloseButton !== false;
+
   return (
     <>
-      {showCloseButton && (
+      {shouldShowCloseButton && (
         <motion.button
           type="button"
           onClick={() => closeModal(name)}
@@ -136,19 +139,21 @@ export const SlideUpModalLayout = ({
         <div className="flex h-full flex-col overflow-hidden">
           <div className="flex items-center justify-between border-b px-4 py-3">
             <h2 className="text-base font-semibold text-slate-900">
-              PDF Preview
+              {title ?? "Details"}
             </h2>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => closeModal(name)}
-              aria-label="Close preview"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            {shouldShowCloseButton && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => closeModal(name)}
+                aria-label="Close preview"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </div>
-          <div className="min-h-0 flex-1 p-4">{children}</div>
+          <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
         </div>
       </motion.div>
     </>

@@ -17,10 +17,10 @@ export const FormActionButtons = ({
 
   return (
     <>
-      <div className="flex flex-row gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row">
         <Button
           size="lg"
-          className="w-full sm:w-auto text-lg"
+          className="w-full text-lg sm:w-auto"
           variant="outline"
           onClick={() => {
             if (form.document.url) {
@@ -37,7 +37,7 @@ export const FormActionButtons = ({
         </Button>
         <Button
           size="lg"
-          className="w-full sm:w-auto text-lg"
+          className="w-full text-lg sm:w-auto"
           onClick={handleSignViaBetterInternship}
         >
           <PenLineIcon className="w-5 h-5" />
@@ -50,7 +50,7 @@ export const FormActionButtons = ({
       </div>
       <Button
         variant="link"
-        className="h-auto p-0 sm:text-base"
+        className="h-auto w-full justify-start p-0 text-left sm:w-auto sm:text-base"
         onClick={handlePrintForWetSignature}
       >
         or print for wet signature instead

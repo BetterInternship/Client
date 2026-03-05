@@ -71,6 +71,20 @@ const FormRendererContext = createContext<IFormRendererContext<[PublicUser]>>(
 );
 export const useFormRendererContext = () => useContext(FormRendererContext);
 
+export const FormRendererContextBridge = ({
+  value,
+  children,
+}: {
+  value: IFormRendererContext<[PublicUser]>;
+  children: React.ReactNode;
+}) => {
+  return (
+    <FormRendererContext.Provider value={value}>
+      {children}
+    </FormRendererContext.Provider>
+  );
+};
+
 /**
  * Gives access to form context api
  *

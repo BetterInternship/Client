@@ -32,6 +32,20 @@ const FormFillerContext = createContext({} as IFormFiller);
 
 export const useFormFiller = () => useContext(FormFillerContext);
 
+export const FormFillerContextBridge = ({
+  value,
+  children,
+}: {
+  value: IFormFiller;
+  children: React.ReactNode;
+}) => {
+  return (
+    <FormFillerContext.Provider value={value}>
+      {children}
+    </FormFillerContext.Provider>
+  );
+};
+
 export const FormFillerContextProvider = ({
   children,
 }: {

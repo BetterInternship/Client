@@ -22,6 +22,8 @@ import { getClientAudit } from "@/lib/audit";
 import { useQueryClient } from "@tanstack/react-query";
 import { useStateRecord } from "@/hooks/base/useStateRecord";
 import { useFormFilloutProcessRunner } from "@/hooks/forms/filloutFormProcess";
+import { useAppContext } from "@/lib/ctx-app";
+import { FormSigningLayoutMobile } from "./FormSigningLayoutMobile";
 
 interface FlowTestSigningLayoutProps {
   formLabel?: string;
@@ -44,6 +46,7 @@ export function FormSigningLayout({
   const autofillValues = useMyAutofill();
   const updateAutofill = useMyAutofillUpdate();
   const queryClient = useQueryClient();
+  const { isMobile } = useAppContext();
   const [values, setValues] = useState<FormValues>({});
   const [nextLoading, setNextLoading] = useState(false);
   const [recipientEmails, recipientEmailActions] = useStateRecord({});
@@ -52,6 +55,9 @@ export function FormSigningLayout({
   const [rightPaneStep, setRightPaneStep] = useState<
     "timeline" | "fields" | "confirm"
   >("timeline");
+  const [mobileActiveTab, setMobileActiveTab] = useState<"step" | "preview">(
+    "step",
+  );
   const [selectedFieldSource, setSelectedFieldSource] = useState<
     "form" | "pdf" | null
   >(null);
@@ -98,6 +104,7 @@ export function FormSigningLayout({
     setSelectedFieldSource("pdf");
     setSelectionTick((prev) => prev + 1);
     form.setSelectedPreviewId(fieldName);
+    if (isMobile) setMobileActiveTab("step");
     if (rightPaneStep !== "fields") {
       setRightPaneStep("fields");
     }
@@ -253,6 +260,7 @@ export function FormSigningLayout({
     recipientEmailActions.clearAll();
     setValues({});
     setRightPaneStep(noRecipientStep ? "fields" : "timeline");
+    setMobileActiveTab("step");
   }, [formLabel, noEsign, noRecipientStep]);
 
   // Buffer
@@ -264,38 +272,50 @@ export function FormSigningLayout({
 
   return (
     <div className="h-full min-h-0 flex flex-col">
-      <div className="bg-white shadow-sm flex-shrink-0">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex min-w-0 items-center gap-3">
-              <h3 className="truncate whitespace-nowrap text-xl font-semibold text-gray-900 sm:text-2xl">
-                {formLabel}
-              </h3>
+      {!isMobile && (
+        <div className="bg-white shadow-sm flex-shrink-0">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex min-w-0 items-center gap-3">
+                <h3 className="truncate whitespace-nowrap text-xl font-semibold text-gray-900 sm:text-2xl">
+                  {formLabel}
+                </h3>
+              </div>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setRightPaneStep("timeline");
+                  onBack();
+                }}
+                className="flex shrink-0 items-center gap-2 whitespace-nowrap px-3 py-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Templates
+              </Button>
             </div>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setRightPaneStep("timeline");
-                onBack();
-              }}
-              className="flex shrink-0 items-center gap-2 whitespace-nowrap px-3 py-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Templates
-            </Button>
           </div>
         </div>
-      </div>
+      )}
 
       <div
         className={cn(
-          "min-h-0 flex-1 px-6 py-4 mx-auto w-full transition-[max-width] duration-500 ease-in-out",
+          "min-h-0 flex-1 px-0 py-0 mx-auto w-full transition-[max-width] duration-500 ease-in-out sm:px-6 sm:py-4",
           "max-w-7xl",
         )}
       >
         <div className="mx-auto flex h-full w-full max-w-7xl flex-col overflow-hidden rounded-[0.33em] border border-gray-300 ">
+          {isMobile && (
+            <FormSigningLayoutMobile
+              activeTab={mobileActiveTab}
+              onTabChange={setMobileActiveTab}
+              stepLabel={`Step ${steps.indexOf(rightPaneStep) + 1} of ${steps.length}`}
+            />
+          )}
           <div
-            className="grid min-h-0 flex-1 grid-cols-1 transition-[grid-template-columns] duration-500 ease-in-out xl:[grid-template-columns:minmax(0,1fr)_var(--right-pane-width)]"
+            className={cn(
+              "grid min-h-0 flex-1 grid-cols-1 transition-[grid-template-columns] duration-500 ease-in-out xl:[grid-template-columns:minmax(0,1fr)_var(--right-pane-width)]",
+              isMobile ? "relative overflow-hidden" : "",
+            )}
             style={
               {
                 "--right-pane-width": "600px",
@@ -305,6 +325,14 @@ export function FormSigningLayout({
             <div
               className={cn(
                 "min-h-0 bg-white rounded-r-none transition-[transform] duration-500 ease-in-out",
+                isMobile
+                  ? cn(
+                      "absolute inset-0 z-10 transition-[transform,opacity] duration-300 ease-in-out",
+                      mobileActiveTab === "preview"
+                        ? "translate-x-0 opacity-100 pointer-events-auto"
+                        : "translate-x-full opacity-0 pointer-events-none",
+                    )
+                  : "",
                 rightPaneStep === "confirm"
                   ? "xl:scale-[1.005]"
                   : "xl:scale-100",
@@ -332,14 +360,23 @@ export function FormSigningLayout({
             <div
               className={cn(
                 "relative min-h-0 flex flex-1 flex-col overflow-hidden bg-white transition-[opacity,transform] duration-500 ease-in-out",
-                "opacity-100 pointer-events-auto translate-x-0",
+                isMobile
+                  ? cn(
+                      "absolute inset-0 z-20 transition-[transform,opacity] duration-300 ease-in-out",
+                      mobileActiveTab === "step"
+                        ? "translate-x-0 opacity-100 pointer-events-auto"
+                        : "-translate-x-full opacity-0 pointer-events-none",
+                    )
+                  : "opacity-100 pointer-events-auto translate-x-0",
               )}
             >
-              <div className="flex h-[58px] items-center border-b border-gray-300 px-6">
-                <span className="text-sm font-medium text-gray-700">
-                  Step {steps.indexOf(rightPaneStep) + 1} of {steps.length}
-                </span>
-              </div>
+              {!isMobile && (
+                <div className="flex h-[58px] items-center border-b border-gray-300 px-6">
+                  <span className="text-sm font-medium text-gray-700">
+                    Step {steps.indexOf(rightPaneStep) + 1} of {steps.length}
+                  </span>
+                </div>
+              )}
               <div className="relative min-h-0 flex-1 overflow-hidden">
                 <div
                   className={`absolute inset-0 flex min-h-0 flex-col transition-all duration-500 ease-in-out ${
@@ -410,12 +447,12 @@ export function FormSigningLayout({
                     <div className="flex w-full justify-between gap-2">
                       <Button
                         size="lg"
-                        className="pointer-events-none flex-1 whitespace-nowrap opacity-0 sm:min-w-[140px]"
+                        className="pointer-events-none sm:flex-1 whitespace-nowrap opacity-0 w-full sm:min-w-[140px]"
                       />
                       <Button
                         size="lg"
                         disabled={!nextEnabled || nextLoading}
-                        className="flex-1 whitespace-nowrap sm:min-w-[140px]"
+                        className="sm:flex-1 whitespace-nowrap w-full sm:min-w-[140px]"
                         onClick={() => void handleNext()}
                       >
                         <TextLoader loading={nextLoading}>Next</TextLoader>
@@ -443,13 +480,13 @@ export function FormSigningLayout({
                       />
                     </div>
                     <div className="border-t border-gray-300 bg-gray-200 p-3">
-                      <div className="flex items-center justify-between gap-2">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <Button
                           size="lg"
                           variant="outline"
                           disabled={nextLoading}
                           className={cn(
-                            "flex-1 whitespace-nowrap sm:min-w-[140px]",
+                            "w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1",
                             noRecipientStep
                               ? "opacity-0 pointer-events-none"
                               : "",
@@ -460,7 +497,7 @@ export function FormSigningLayout({
                         </Button>
                         <Button
                           size="lg"
-                          className="flex-1 whitespace-nowrap sm:min-w-[140px]"
+                          className="w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1"
                           disabled={!nextEnabled || nextLoading}
                           onClick={() => void handleNext()}
                         >
@@ -497,7 +534,14 @@ export function FormSigningLayout({
                                     key={`${recipientFieldName}-${index}`}
                                     className="flex flex-row"
                                   >
-                                    <Badge className="rounded-r-none gap-1">
+                                    <Badge
+                                      className={cn(
+                                        "rounded-r-none gap-1",
+                                        isMobile
+                                          ? "flex flex-col items-start"
+                                          : "",
+                                      )}
+                                    >
                                       <span className="text-gray-500">
                                         {index + 1}. {recipientTitle}:
                                       </span>
@@ -514,11 +558,11 @@ export function FormSigningLayout({
                       )}
                     </div>
                     <div className="border-t border-gray-300 bg-gray-200 p-3">
-                      <div className="flex items-center justify-between gap-2">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <Button
                           size="lg"
                           variant="outline"
-                          className="flex-1 whitespace-nowrap sm:min-w-[140px]"
+                          className="w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1"
                           disabled={confirmStepBuffering}
                           onClick={() => setRightPaneStep("fields")}
                         >
@@ -526,7 +570,7 @@ export function FormSigningLayout({
                         </Button>
                         <Button
                           size="lg"
-                          className="flex-1 whitespace-nowrap sm:min-w-[140px]"
+                          className="w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1"
                           scheme="supportive"
                           disabled={confirmStepBuffering || nextLoading}
                           onClick={() => void handleSubmit()}

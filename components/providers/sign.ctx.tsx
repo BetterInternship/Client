@@ -29,6 +29,16 @@ const SignContext = createContext({} as ISignContext);
 
 export const useSignContext = () => useContext(SignContext);
 
+export const SignContextBridge = ({
+  value,
+  children,
+}: {
+  value: ISignContext;
+  children: React.ReactNode;
+}) => {
+  return <SignContext.Provider value={value}>{children}</SignContext.Provider>;
+};
+
 export const SignContextProvider = ({
   children,
 }: {

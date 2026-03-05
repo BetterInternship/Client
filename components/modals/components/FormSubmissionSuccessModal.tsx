@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import useModalRegistry from "../modal-registry";
 
 function AnimatedCheck() {
   return (
@@ -31,7 +32,7 @@ export function FormSubmissionSuccessModal({
   submissionType: "esign" | "manual" | null;
   onClose: () => void;
 }) {
-  const router = useRouter();
+  const modalRegistry = useModalRegistry();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -40,8 +41,7 @@ export function FormSubmissionSuccessModal({
   }, []);
 
   const handleNavigateToForms = () => {
-    onClose();
-    router.push("/forms?view=history");
+    modalRegistry.closeAll();
   };
 
   const process = submissionType == "esign" ? "sent" : "generated";
