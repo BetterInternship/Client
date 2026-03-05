@@ -1,9 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronRight, Eye, FileSearch, PenLineIcon } from "lucide-react";
+import { Eye, FileSearch, PenLineIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import { cn } from "@/lib/utils";
 import { Divider } from "@/components/ui/divider";
@@ -16,12 +15,13 @@ import {
 import { FormTemplate } from "@/lib/db/use-moa-backend";
 import { Loader } from "@/components/ui/loader";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
-import { FlowTestSigningLayout } from "./FlowTestSigningLayout";
+import { FormSigningLayout } from "./FormSigningLayout";
 import { IFormSigningParty } from "@betterinternship/core/forms";
 import { FormHistoryView } from "@/components/forms/FormHistoryView";
 import useModalRegistry from "@/components/modals/modal-registry";
+import { FormTemplatesList } from "./FormTemplatesList";
 
-export default function FlowTestPage({
+export default function FormDashboard({
   generatedForms,
   formTemplates,
   isLoading,
@@ -42,15 +42,7 @@ export default function FlowTestPage({
   formTemplates: FormTemplate[];
   isLoading: boolean;
 }) {
-  const [selectedTemplateName, setSelectedTemplateName] = useState<string>("");
-  const selectedTemplate = useMemo<FormTemplate | null>(
-    () =>
-      formTemplates?.find(
-        (template) => template.formName === selectedTemplateName,
-      ) ?? null,
-    [formTemplates, selectedTemplateName],
-  );
-
+  const [selectedTemplate, setSelectedTemplate] = useState<FormTemplate>();
   const [noEsign, setNoEsign] = useState(false);
   const [isSigningFlow, setIsSigningFlow] = useState(false);
   const form = useFormRendererContext();
@@ -115,53 +107,11 @@ export default function FlowTestPage({
 
           <div className="min-h-0 flex-1 overflow-y-auto p-6">
             {sortedTemplates.length ? (
-              <div className="space-y-4">
-                {sortedTemplates?.map((template) => {
-                  const isActive = template.formName === selectedTemplateName;
-                  return (
-                    <button
-                      key={template.formName}
-                      type="button"
-                      onClick={() => {
-                        setSelectedTemplateName(template.formName);
-                        form.updateFormName(template.formName);
-                      }}
-                      className="w-full text-left"
-                    >
-                      <Card
-                        className={cn(
-                          "border transition",
-                          isActive
-                            ? "border-primary/40 ring-1 ring-primary/30 bg-primary/15"
-                            : "border-gray-200 hover:bg-primary/5",
-                        )}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <h2 className="truncate whitespace-nowrap text-lg font-semibold leading-tight text-gray-900 sm:text-xl">
-                              {template.formLabel}
-                            </h2>
-                          </div>
-                          <ChevronRight className="mt-0.5 h-5 w-5 shrink-0 text-gray-400" />
-                        </div>
-
-                        {/* // ! ADD BACK TAGS ONCE IMPLEMENTED */}
-                        {/* <div className="mt-4 flex flex-wrap gap-2">
-                        {template.tags.map((tag) => (
-                          <Badge
-                            key={tag}
-                            type="accent"
-                            className="border-gray-400 opacity-75"
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div> */}
-                      </Card>
-                    </button>
-                  );
-                })}
-              </div>
+              <FormTemplatesList
+                templates={sortedTemplates}
+                selectedTemplate={selectedTemplate}
+                setSelectedTemplate={setSelectedTemplate}
+              />
             ) : (
               <div className="p-4">
                 We currently don't automate forms for your department. <br />
@@ -187,7 +137,7 @@ export default function FlowTestPage({
               : "md:translate-x-0 opacity-100 max-w-5xl mx-auto",
           )}
         >
-          {selectedTemplateName ? (
+          {selectedTemplate ? (
             <div
               className={cn(
                 "relative min-h-0 flex-1 bg-gray-100 transition-[padding] duration-500 ease-in-out",
@@ -202,7 +152,7 @@ export default function FlowTestPage({
                     : "opacity-0 pointer-events-none",
                 )}
               >
-                <FlowTestSigningLayout
+                <FormSigningLayout
                   formLabel={selectedTemplate?.formLabel}
                   documentUrl={form.document.url}
                   recipients={recipients}
@@ -219,7 +169,8 @@ export default function FlowTestPage({
                     : "opacity-100 pointer-events-auto",
                 )}
               >
-                {form.loading || form.document.name !== selectedTemplateName ? (
+                {form.loading ||
+                form.document.name !== selectedTemplate.formName ? (
                   <Loader>Loading form template...</Loader>
                 ) : (
                   <div className="mx-auto flex min-h-full max-w-4xl flex-col gap-4 bg-white px-12 py-20">

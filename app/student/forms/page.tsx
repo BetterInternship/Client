@@ -11,7 +11,7 @@ import {
 } from "@/lib/consts/cache";
 import { useEffect } from "react";
 import { useAuthContext } from "@/lib/ctx-auth";
-import FlowTestPage from "./flow-test/page";
+import FormDashboard from "./components/FormDashboard";
 import {
   useFormFilloutProcessHandled,
   useFormFilloutProcessPending,
@@ -84,7 +84,7 @@ export default function FormsPage() {
   }, [formFilloutProcess.getAllPending()]);
 
   return (
-    <FlowTestPage
+    <FormDashboard
       generatedForms={[...myForms.forms, ...handledForms, ...pendingForms]}
       formTemplates={formTemplates?.filter((ft) => !!ft) ?? []}
       isLoading={isLoading}

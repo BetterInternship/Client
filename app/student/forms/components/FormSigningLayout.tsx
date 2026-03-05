@@ -31,7 +31,7 @@ interface FlowTestSigningLayoutProps {
   onBack: () => void;
 }
 
-export function FlowTestSigningLayout({
+export function FormSigningLayout({
   formLabel,
   documentUrl,
   recipients,
