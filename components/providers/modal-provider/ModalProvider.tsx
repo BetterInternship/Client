@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-12-21 02:46:39
- * @ Modified time: 2026-03-05 14:34:45
+ * @ Modified time: 2026-03-05 16:48:33
  * @ Description:
  */
 
@@ -108,6 +108,7 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
         Object.values(m).forEach((e) => e.opts.onClose?.());
         return {};
       }
+
       const entry = m[name];
       entry?.opts.onClose?.();
       const { [name]: _removed, ...rest } = m;
@@ -156,8 +157,6 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
 
   const portals = useMemo(() => {
     const entries = Object.entries(registry);
-    if (!entries.length) return null;
-
     return createPortal(
       <AnimatePresence>
         {entries.map(([name, { node, opts }]) => {
@@ -169,6 +168,11 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{
+                duration: 0.2,
+                ease: "easeOut",
+                when: "afterChildren",
+              }}
               className={cn(
                 // Backdrop container
                 "fixed inset-0 z-[1000] bg-black/10 backdrop-blur-sm",
