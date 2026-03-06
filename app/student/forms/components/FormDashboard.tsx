@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { FileSearch, FileText } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Divider } from "@/components/ui/divider";
 import { FormTemplate } from "@/lib/db/use-moa-backend";
 import { Loader } from "@/components/ui/loader";
 import {
@@ -182,7 +181,7 @@ export default function FormDashboard({
           )}
         >
           <div className="  p-4 sm:px-4 md:px-6">
-            <div className="flex w-full flex-col  animate-fade-in">
+            <div className="flex w-full flex-col py-2 animate-fade-in">
               <div className="flex flex-row items-center gap-3 mb-2">
                 <HeaderIcon icon={FileText} />
                 <HeaderText>Form Templates</HeaderText>
@@ -261,12 +260,11 @@ export default function FormDashboard({
                 form.document.name !== selectedTemplate.formName ? (
                   <Loader>Loading form template...</Loader>
                 ) : (
-                  <div className="mx-auto flex min-h-full max-w-4xl flex-col gap-4 bg-white px-12 py-20">
-                    <div>
-                      <h3 className="text-2xl font-semibold text-gray-900 sm:text-3xl">
+                  <div className="mx-auto flex min-h-full max-w-4xl flex-col gap-8 bg-white px-10 pb-14 pt-10">
+                    <div className="space-y-2">
+                      <h3 className="text-2xl font-semibold text-primary sm:text-3xl">
                         {selectedTemplate?.formLabel}
                       </h3>
-                      <Divider />
                     </div>
                     {hasHistoryLogs ? (
                       <FormActionAccordion
@@ -284,7 +282,7 @@ export default function FormDashboard({
                         </div>
 
                         <FormSigningPartyTimeline />
-                        <div className="mt-8 flex flex-col items-start gap-3 border-b border-gray-200 pt-4 pb-8">
+                        <div className="mt-8 flex w-full flex-col items-start gap-3 pt-2">
                           <FormActionButtons
                             handleSignViaBetterInternship={
                               handleSignViaBetterInternship
@@ -292,14 +290,27 @@ export default function FormDashboard({
                             handlePrintForWetSignature={
                               handlePrintForWetSignature
                             }
+                            align="end"
                           />
                         </div>
                       </>
                     )}
-                    <FormHistoryView
-                      forms={generatedForms ?? []}
-                      formLabel={form.formLabel}
-                    />
+                    {hasHistoryLogs && (
+                      <>
+                        <div className="space-y-1 pt-2">
+                          <h4 className="text-xl font-semibold text-gray-900">
+                            History
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            Previously generated versions of this form.
+                          </p>
+                        </div>
+                        <FormHistoryView
+                          forms={generatedForms ?? []}
+                          formLabel={form.formLabel}
+                        />
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -406,7 +417,7 @@ function MobileFormTemplateDetailsContent({
             form.document.name !== selectedTemplate.formName ? (
               <Loader>Loading form template...</Loader>
             ) : (
-              <div className="mx-auto flex min-h-full max-w-4xl flex-col gap-4 bg-white px-4 py-6 sm:px-8 sm:py-10">
+              <div className="mx-auto flex min-h-full max-w-4xl flex-col gap-6 bg-white px-4 py-6 sm:px-8 sm:py-10">
                 {hasHistoryLogs ? (
                   <FormActionAccordion
                     handleSignViaBetterInternship={
@@ -423,20 +434,33 @@ function MobileFormTemplateDetailsContent({
                     </div>
 
                     <FormSigningPartyTimeline />
-                    <div className="mt-8 flex flex-col items-start gap-3 border-b border-gray-200 pt-4 pb-8">
+                    <div className="mt-8 flex w-full flex-col items-start gap-3 pt-2">
                       <FormActionButtons
                         handleSignViaBetterInternship={
                           handleSignViaBetterInternship
                         }
                         handlePrintForWetSignature={handlePrintForWetSignature}
+                        align="end"
                       />
                     </div>
                   </>
                 )}
-                <FormHistoryView
-                  forms={generatedForms ?? []}
-                  formLabel={form.formLabel}
-                />
+                {hasHistoryLogs && (
+                  <>
+                    <div className="space-y-1 pt-2">
+                      <h4 className="text-xl font-semibold text-gray-900">
+                        History
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        Previously generated versions of this form.
+                      </p>
+                    </div>
+                    <FormHistoryView
+                      forms={generatedForms ?? []}
+                      formLabel={form.formLabel}
+                    />
+                  </>
+                )}
               </div>
             )}
           </motion.div>
