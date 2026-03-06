@@ -17,6 +17,7 @@ import {
   MassApplyResultsData,
 } from "./components/MassApplyResults";
 import { FormPreviewPdfDisplay } from "../features/student/forms/previewer";
+import { IFormSigningParty } from "@betterinternship/core/forms";
 
 /**
  * Simplifies modal config since we usually reuse each of these modal stuffs.
@@ -98,13 +99,18 @@ export const useModalRegistry = () => {
 
     // Form submission success modal
     formSubmissionSuccess: {
-      open: (submissionType: "esign" | "manual" | null, onClose: () => void) =>
+      open: (
+        submissionType: "esign" | "manual" | null,
+        onClose: () => void,
+        firstRecipient?: IFormSigningParty,
+      ) =>
         open(
           "form-submission-success",
           DefaultModalLayout,
           <FormSubmissionSuccessModal
             submissionType={submissionType}
             onClose={onClose}
+            firstRecipient={firstRecipient}
           />,
           {
             closeOnEscapeKey: false,

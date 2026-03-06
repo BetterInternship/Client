@@ -4,8 +4,6 @@ import { ArrowLeft, LucideClipboardCheck } from "lucide-react";
 import { FormPreviewPdfDisplay } from "@/components/features/student/forms/previewer";
 import { FormFillerRenderer } from "@/components/features/student/forms/FormFillerRenderer";
 import { Button } from "@/components/ui/button";
-import { Timeline, TimelineItem } from "@/components/ui/timeline";
-import { FormInput } from "@/components/EditForm";
 import { cn, isValidEmail } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";

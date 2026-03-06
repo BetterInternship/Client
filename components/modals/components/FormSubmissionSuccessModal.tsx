@@ -1,16 +1,17 @@
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import useModalRegistry from "../modal-registry";
+import { IFormSigningParty } from "@betterinternship/core/forms";
+import { Badge } from "@/components/ui/badge";
 
 function AnimatedCheck() {
   return (
     <svg
-      width="64"
-      height="64"
+      width="50"
+      height="50"
       viewBox="0 0 52 52"
       fill="none"
-      className="text-green-700"
+      className="text-supportive"
     >
       <path
         d="M14 27 L22 35 L38 18"
@@ -26,9 +27,11 @@ function AnimatedCheck() {
 }
 
 export function FormSubmissionSuccessModal({
+  firstRecipient,
   submissionType,
   onClose,
 }: {
+  firstRecipient?: IFormSigningParty;
   submissionType: "esign" | "manual" | null;
   onClose: () => void;
 }) {
@@ -75,21 +78,51 @@ export function FormSubmissionSuccessModal({
         }
       `}</style>
 
-      <div
-        className={`flex h-24 w-24 items-center justify-center rounded-full bg-green-100 ${
-          show ? "animate-[pop_220ms_ease-out]" : "opacity-0"
-        }`}
-      >
-        <AnimatedCheck />
-      </div>
-
       <div className="">
-        <h2 className="text-2xl font-semibold text-foreground">
-          Form {process} successfully
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          You can now view and manage it in your forms.
-        </p>
+        {submissionType === "manual" ? (
+          <>
+            <h2 className="flex flex-row items-center text-left text-3xl font-semibold text-foreground">
+              <span className="mr-2 mt-1">Form {process} successfully</span>
+              <AnimatedCheck />
+            </h2>
+            <p className="text-gray-500 text-left mt-4">
+              You can now view and download it in your forms.
+            </p>
+          </>
+        ) : (
+          <div className="flex flex-col gap-2 items-start pt-4">
+            <h2 className="flex flex-row items-center text-left text-3xl font-semibold text-foreground">
+              <span className="mr-2 mt-1">Form {process} successfully</span>
+              <AnimatedCheck />
+            </h2>
+            <div className="flex flex-col bg-gray-100 w-full p-5 px-6 items-start rounded-[0.33em] mt-8">
+              <div className="text-left">
+                An initial email has been sent to the following address:
+              </div>
+              <Badge className="text-sm my-2" type="supportive">
+                <pre>
+                  {firstRecipient?.signatory_account?.email}test-email.com
+                </pre>
+              </Badge>
+              <div className="text-left mt-5">
+                Kindly ask them to check their Inbox or Spam folder.
+              </div>
+            </div>
+            <div>
+              <div className="mt-10 italic text-left text-gray-500">
+                Note: If they did not receive the email, there may be an issue
+                with the recipient's mailbox.
+              </div>
+              <div className="mt-4 mb-2 italic text-left text-gray-500">
+                For help, contact us at{" "}
+                <a href="https://facebook.com/shi.sherwin">
+                  facebook.com/shi.sherwin
+                </a>
+                .
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <Button
