@@ -205,6 +205,25 @@ export function FormSigningLayout({
     }
   }, [recipients, recipientEmails, rightPaneStep, form, values]);
 
+  const getFirstRecipient = useCallback((): IFormSigningParty | undefined => {
+    const firstRecipient = recipients.find(
+      (recipient) =>
+        recipient.signatory_source?._id === "initiator" ||
+        !!recipient.signatory_account?.email,
+    );
+    if (!firstRecipient) return;
+    const fieldName = form.formMetadata.getSigningPartyFieldName(
+      firstRecipient._id,
+    );
+
+    return {
+      ...firstRecipient,
+      signatory_account: {
+        email: recipientEmails[fieldName],
+      },
+    };
+  }, [form, recipients, recipientEmails]);
+
   const handleSubmit = useCallback(async () => {
     setNextLoading(true);
     const finalValues = formFiller.getFinalValues({
@@ -252,10 +271,14 @@ export function FormSigningLayout({
       }
 
       await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
-      modalRegistry.formSubmissionSuccess.open("esign", () => {
-        setRightPaneStep("timeline");
-        onBack();
-      });
+      modalRegistry.formSubmissionSuccess.open(
+        "esign",
+        () => {
+          setRightPaneStep("timeline");
+          onBack();
+        },
+        getFirstRecipient(),
+      );
     }
     setNextLoading(false);
   }, [form, generateWithNoSignature, autofillValues]);

@@ -100,9 +100,7 @@ export function FormSubmissionSuccessModal({
                 An initial email has been sent to the following address:
               </div>
               <Badge className="text-sm my-2" type="supportive">
-                <pre>
-                  {firstRecipient?.signatory_account?.email}test-email.com
-                </pre>
+                <pre>{firstRecipient?.signatory_account?.email}</pre>
               </Badge>
               <div className="text-left mt-5">
                 Kindly ask them to check their Inbox or Spam folder.
