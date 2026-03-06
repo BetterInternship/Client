@@ -97,6 +97,7 @@ interface SlideUpModalLayout {
   title?: React.ReactNode;
   showHeaderDivider?: boolean;
   showCloseButton?: boolean;
+  onRequestClose?: () => void;
 }
 
 export const SlideUpModalLayout = ({
@@ -104,16 +105,24 @@ export const SlideUpModalLayout = ({
   title,
   children,
   showCloseButton,
+  onRequestClose,
   closeModal,
 }: SlideUpModalLayout & ModalInjectedParams & ModalContext) => {
   const shouldShowCloseButton = showCloseButton !== false;
+  const handleClose = () => {
+    if (onRequestClose) {
+      onRequestClose();
+      return;
+    }
+    closeModal(name);
+  };
 
   return (
     <>
       {shouldShowCloseButton && (
         <motion.button
           type="button"
-          onClick={() => closeModal(name)}
+          onClick={handleClose}
           className="absolute inset-0 h-full w-full bg-black/50"
           aria-label="Close modal"
           initial={{ opacity: 0 }}
@@ -146,7 +155,7 @@ export const SlideUpModalLayout = ({
                 type="button"
                 variant="ghost"
                 size="icon"
-                onClick={() => closeModal(name)}
+                onClick={handleClose}
                 aria-label="Close preview"
               >
                 <X className="h-4 w-4" />

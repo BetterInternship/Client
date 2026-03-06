@@ -49,6 +49,7 @@ interface ModalOptions {
 
   // Called AFTER the modal is unmounted
   onClose?: () => void;
+  onRequestClose?: () => void;
 
   // ! Hmm this should not be done this way
   panelClassName?: string;

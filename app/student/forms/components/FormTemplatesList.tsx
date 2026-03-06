@@ -3,6 +3,7 @@ import { FormTemplate } from "@/lib/db/use-moa-backend";
 import { ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useAppContext } from "@/lib/ctx-app";
 
 export const FormTemplatesList = ({
   templates,
@@ -14,6 +15,7 @@ export const FormTemplatesList = ({
   setSelectedTemplate: (template: FormTemplate) => void;
 }) => {
   const form = useFormRendererContext();
+  const { isMobile } = useAppContext();
 
   return (
     <div className="space-y-4">
@@ -39,7 +41,12 @@ export const FormTemplatesList = ({
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <h2 className="truncate whitespace-nowrap text-lg font-semibold leading-tight text-gray-900 sm:text-xl">
+                  <h2
+                    className={cn(
+                      "text-lg font-semibold leading-tight text-gray-900 sm:text-xl",
+                      isMobile ? "" : "truncate whitespace-nowrap",
+                    )}
+                  >
                     {template.formLabel}
                   </h2>
                 </div>

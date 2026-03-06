@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { cn, isValidEmail } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
-import { Badge } from "@/components/ui/badge";
 import { useFormFiller } from "@/components/features/student/forms/form-filler.ctx";
 import { useMyAutofill, useMyAutofillUpdate } from "@/hooks/use-my-autofill";
 import { toast } from "sonner";
@@ -513,9 +512,9 @@ export function FormSigningLayout({
                 >
                   <div className="min-h-0 flex h-full flex-1 flex-col">
                     <div className="min-h-0 flex-1 overflow-y-auto p-10 flex flex-col items-start justify-start pt-20 gap-4">
-                      <LucideClipboardCheck className="w-16 h-16 opacity-40" />
+                      <LucideClipboardCheck className="w-16 h-16 min-h-16 opacity-40" />
                       <span className="text-gray-700 font-bold">
-                        Please check that all your inputs are correct:
+                        Please check that all your inputs are correct
                       </span>
                       {!noRecipientStep && (
                         <FormSigningPartyTimeline
