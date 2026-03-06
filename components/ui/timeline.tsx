@@ -46,7 +46,7 @@ export const TimelineItem = ({
 
       {/* Content */}
       <div className="flex-1 flex items-start justify-between gap-2">
-        <div className="flex-1">
+        <div className="flex-1 mt-1">
           {fromMe ? (
             <div className="text-sm font-semibold text-primary">{title}</div>
           ) : (

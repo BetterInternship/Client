@@ -326,7 +326,7 @@ export function FormSigningLayout({
           >
             <div
               className={cn(
-                "min-h-0 bg-white rounded-r-none transition-[transform] duration-500 ease-in-out",
+                "min-h-0 bg-white rounded-r-none transition-[transform] duration-500 ease-in-out xl:border-r xl:border-gray-200",
                 isMobile
                   ? cn(
                       "absolute inset-0 z-10 transition-[transform,opacity] duration-300 ease-in-out",
@@ -509,10 +509,10 @@ export function FormSigningLayout({
                   }`}
                 >
                   <div className="min-h-0 flex h-full flex-1 flex-col">
-                    <div className="min-h-0 flex-1 overflow-y-auto p-10 flex flex-col items-start justify-start pt-20 gap-4">
-                      <LucideClipboardCheck className="w-16 h-16 min-h-16 opacity-40" />
+                    <div className="min-h-0 flex-1 overflow-y-auto p-6 flex flex-col items-start justify-start  gap-4">
+                      <LucideClipboardCheck className="w-16 h-16 min-h-16 opacity-30 -ml-2" />
                       <span className="text-gray-700 font-bold">
-                        Please check that all your inputs are correct
+                        Please check if all your inputs are correct
                       </span>
                       {!noRecipientStep && (
                         <FormSigningPartyTimeline
