@@ -32,18 +32,18 @@ export const FormSigningPartyTimeline = ({
               key={recipient.signatory_title}
               number={index + 1}
               title={
-                <span className="text-base text-gray-700 sm:text-lg">
+                <span className="text-sm text-gray-700">
                   {recipient.signatory_title}
                 </span>
               }
               subtitle={
                 fromMe ? (
                   !recipientInputAPI?.recipientEmails ? (
-                    <span className="text-warning font-bold text-sm">
+                    <span className="text-warning text-xs font-semibold">
                       you will specify this email
                     </span>
                   ) : isConfirmingRecipients ? (
-                    <Badge type="supportive" className="text-sm">
+                    <Badge type="supportive" className="text-xs">
                       {recipientInputAPI.recipientEmails[fieldName]}
                     </Badge>
                   ) : (
@@ -65,11 +65,11 @@ export const FormSigningPartyTimeline = ({
                     />
                   )
                 ) : recipient.signatory_account?.email ? (
-                  <span className="text-sm text-primary">
-                    <pre>{recipient.signatory_account.email ?? ""}</pre>
+                  <span className="text-xs text-primary">
+                    {recipient.signatory_account.email ?? ""}
                   </span>
                 ) : (
-                  <span className="text-sm italic text-gray-400">
+                  <span className="text-xs italic text-gray-400">
                     this email will come from someone else
                   </span>
                 )

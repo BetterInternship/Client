@@ -260,7 +260,7 @@ export default function FormDashboard({
                 form.document.name !== selectedTemplate.formName ? (
                   <Loader>Loading form template...</Loader>
                 ) : (
-                  <div className="mx-auto flex min-h-full max-w-4xl flex-col gap-8 bg-white px-10 pb-14 pt-10">
+                  <div className="mx-auto flex min-h-full max-w-4xl flex-col gap-8 bg-white px-10  p-6">
                     <div className="space-y-2">
                       <h3 className="text-2xl font-semibold text-primary sm:text-3xl">
                         {selectedTemplate?.formLabel}

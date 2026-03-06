@@ -1,15 +1,18 @@
-import { Eye, PenLineIcon } from "lucide-react";
+import { Eye, PenLineIcon, Printer } from "lucide-react";
 
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
 import { Button } from "@/components/ui/button";
 import useModalRegistry from "@/components/modals/modal-registry";
+import { cn } from "@/lib/utils";
 
 export const FormActionButtons = ({
   handleSignViaBetterInternship,
   handlePrintForWetSignature,
+  align = "start",
 }: {
   handleSignViaBetterInternship: () => void;
   handlePrintForWetSignature: () => void;
+  align?: "start" | "end";
 }) => {
   const form = useFormRendererContext();
   const modalRegistry = useModalRegistry();
@@ -17,7 +20,12 @@ export const FormActionButtons = ({
 
   return (
     <>
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div
+        className={cn(
+          "flex w-full flex-col gap-2 sm:flex-row",
+          align === "end" ? "sm:justify-end" : "",
+        )}
+      >
         <Button
           size="lg"
           className="w-full text-lg sm:w-auto"
@@ -50,9 +58,13 @@ export const FormActionButtons = ({
       </div>
       <Button
         variant="link"
-        className="h-auto w-full justify-start p-0 text-left sm:w-auto sm:text-base"
+        className={cn(
+          "text-left text-xs text-gray-500 hover:bg-transparent hover:text-primary sm:w-auto sm:text-sm p-0",
+          align === "end" ? "sm:ml-auto" : "",
+        )}
         onClick={handlePrintForWetSignature}
       >
+        <Printer className="h-4 w-4" />
         or print for wet signature instead
       </Button>
     </>

@@ -22,10 +22,11 @@ export const FormActionAccordion = ({
         </AccordionTrigger>
         <AccordionContent className="p-6 rounded-b-[0.33em] border-gray-300 border border-t-0">
           <FormSigningPartyTimeline />
-          <div className="mt-8 flex flex-col items-start gap-3 py-4">
+          <div className="mt-8 flex w-full flex-col items-stretch gap-1 ">
             <FormActionButtons
               handleSignViaBetterInternship={handleSignViaBetterInternship}
               handlePrintForWetSignature={handlePrintForWetSignature}
+              align="end"
             />
           </div>
         </AccordionContent>
