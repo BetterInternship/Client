@@ -415,7 +415,7 @@ export function FormSigningLayout({
                 >
                   <div className="min-h-0 flex-1 overflow-y-auto px-10 py-16">
                     <div className="space-y-6">
-                      <p className="text-sm text-gray-600 sm:text-base">
+                      <p className="text-gray-700 sm:text-base font-bold">
                         These people will receive this form, in this order:
                       </p>
                       <FormSigningPartyTimeline
@@ -514,43 +514,18 @@ export function FormSigningLayout({
                   <div className="min-h-0 flex h-full flex-1 flex-col">
                     <div className="min-h-0 flex-1 overflow-y-auto p-10 flex flex-col items-start justify-start pt-20 gap-4">
                       <LucideClipboardCheck className="w-16 h-16 opacity-40" />
-                      Please check that all your inputs are correct
+                      <span className="text-gray-700 font-bold">
+                        Please check that all your inputs are correct:
+                      </span>
                       {!noRecipientStep && (
-                        <div className="space-y-3 mt-8">
-                          Make sure these emails are right:
-                          <div className="space-y-2 mt-2">
-                            {Object.entries(recipientEmails).map(
-                              ([recipientFieldName, recipientEmail], index) => {
-                                const recipientTitle =
-                                  form.formMetadata.getSigningPartyTitleFromFieldName(
-                                    recipientFieldName,
-                                  );
-                                return (
-                                  <div
-                                    key={`${recipientFieldName}-${index}`}
-                                    className="flex flex-row"
-                                  >
-                                    <Badge
-                                      className={cn(
-                                        "rounded-r-none gap-1",
-                                        isMobile
-                                          ? "flex flex-col items-start"
-                                          : "",
-                                      )}
-                                    >
-                                      <span className="text-gray-500">
-                                        {index + 1}. {recipientTitle}:
-                                      </span>
-                                      <span className="font-bold text-primary">
-                                        {recipientEmail}
-                                      </span>
-                                    </Badge>
-                                  </div>
-                                );
-                              },
-                            )}
-                          </div>
-                        </div>
+                        <FormSigningPartyTimeline
+                          recipientInputAPI={{
+                            recipientEmails,
+                            recipientErrors,
+                            recipientEmailActions,
+                          }}
+                          isConfirmingRecipients
+                        />
                       )}
                     </div>
                     <div className="border-t border-gray-300 bg-gray-200 p-3">

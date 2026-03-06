@@ -248,7 +248,7 @@ export default function FormDashboard({
                       />
                     ) : (
                       <>
-                        <div className="text-xl mt-4">
+                        <div className="text-xl mt-4 text-gray-700 font-bold">
                           {recipients.length > 1
                             ? "These people will receive this form, in this order:"
                             : "This form does not require any signatures."}
@@ -351,7 +351,7 @@ function MobileFormTemplateDetailsContent({
             />
           ) : (
             <>
-              <div className="text-xl mt-4">
+              <div className="text-xl mt-4 text-gray-700 font-bold">
                 {recipients.length > 1
                   ? "These people will receive this form, in this order:"
                   : "This form does not require any signatures."}
