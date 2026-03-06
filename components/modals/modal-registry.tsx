@@ -287,14 +287,26 @@ export const useModalRegistry = () => {
         title,
         content,
         onClose,
+        onRequestClose,
+        showCloseButton,
+        closeOnBackdropClick,
+        closeOnEscapeKey,
       }: {
         title?: ReactNode;
         content: ReactNode;
         onClose?: () => void;
+        onRequestClose?: () => void;
+        showCloseButton?: boolean;
+        closeOnBackdropClick?: boolean;
+        closeOnEscapeKey?: boolean;
       }) =>
         open("form-template-details", SlideUpModalLayout, content, {
           title,
           onClose,
+          onRequestClose,
+          showCloseButton,
+          closeOnBackdropClick,
+          closeOnEscapeKey,
         }),
       close: () => close("form-template-details"),
     },

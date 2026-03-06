@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FileSearch } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Divider } from "@/components/ui/divider";
 import { FormTemplate } from "@/lib/db/use-moa-backend";
@@ -25,6 +26,7 @@ import { FormTemplatesList } from "./FormTemplatesList";
 import { FormActionButtons } from "./FormActionButtons";
 import { FormActionAccordion } from "./FormActionAccordion";
 import { FormSigningPartyTimeline } from "./FormSigningPartyTimeline";
+import { FormMobileCloseConfirmation } from "./FormMobileCloseConfirmation";
 import { useMobile } from "@/hooks/use-mobile";
 import useModalRegistry from "@/components/modals/modal-registry";
 
@@ -54,6 +56,9 @@ export default function FormDashboard({
   const { isMobile } = useMobile();
   const modalRegistry = useModalRegistry();
   const [selectedTemplate, setSelectedTemplate] = useState<FormTemplate>();
+  const [isMobileSigningFlow, setIsMobileSigningFlow] = useState(false);
+  const [isMobileExitConfirmationOpen, setIsMobileExitConfirmationOpen] =
+    useState(false);
   const [noEsign, setNoEsign] = useState(false);
   const [isSigningFlow, setIsSigningFlow] = useState(false);
   const form = useFormRendererContext();
@@ -100,11 +105,13 @@ export default function FormDashboard({
   useEffect(() => {
     if (!isMobile) {
       modalRegistry.formTemplateDetails.close();
+      setIsMobileSigningFlow(false);
       return;
     }
 
     if (!selectedTemplate) {
       modalRegistry.formTemplateDetails.close();
+      setIsMobileSigningFlow(false);
       return;
     }
 
@@ -117,17 +124,36 @@ export default function FormDashboard({
               <MobileFormTemplateDetailsContent
                 selectedTemplate={selectedTemplate}
                 generatedForms={generatedForms}
+                isSigningFlow={isMobileSigningFlow}
+                setIsSigningFlow={setIsMobileSigningFlow}
+                showExitConfirmation={isMobileExitConfirmationOpen}
+                setShowExitConfirmation={setIsMobileExitConfirmationOpen}
               />
             </FormFillerContextBridge>
           </SignContextBridge>
         </FormRendererContextBridge>
       ),
-      onClose: () => setSelectedTemplate(undefined),
+      onRequestClose: () => {
+        if (isMobileSigningFlow) {
+          setIsMobileExitConfirmationOpen(true);
+          return;
+        }
+        setSelectedTemplate(undefined);
+      },
+      closeOnBackdropClick: !isMobileSigningFlow,
+      closeOnEscapeKey: !isMobileSigningFlow,
+      onClose: () => {
+        setSelectedTemplate(undefined);
+        setIsMobileSigningFlow(false);
+        setIsMobileExitConfirmationOpen(false);
+      },
     });
   }, [
     isMobile,
     selectedTemplate,
     generatedForms,
+    isMobileSigningFlow,
+    isMobileExitConfirmationOpen,
     form,
     form.loading,
     form.document.name,
@@ -298,13 +324,20 @@ export default function FormDashboard({
 function MobileFormTemplateDetailsContent({
   selectedTemplate,
   generatedForms,
+  isSigningFlow,
+  setIsSigningFlow,
+  showExitConfirmation,
+  setShowExitConfirmation,
 }: {
   selectedTemplate: FormTemplate;
   generatedForms: GeneratedFormItem[];
+  isSigningFlow: boolean;
+  setIsSigningFlow: (value: boolean | ((prev: boolean) => boolean)) => void;
+  showExitConfirmation: boolean;
+  setShowExitConfirmation: (value: boolean) => void;
 }) {
   const form = useFormRendererContext();
   const [noEsign, setNoEsign] = useState(false);
-  const [isSigningFlow, setIsSigningFlow] = useState(false);
   const recipients = form.formMetadata.getSigningParties();
   const hasHistoryLogs = useMemo(
     () =>
@@ -324,54 +357,88 @@ function MobileFormTemplateDetailsContent({
     setNoEsign(true);
   };
 
-  if (isSigningFlow) {
-    return (
-      <div className="h-full min-h-0 bg-gray-100">
-        <FormSigningLayout
-          formLabel={selectedTemplate?.formLabel}
-          documentUrl={form.document.url}
-          recipients={recipients}
-          noEsign={noEsign}
-          onBack={() => setIsSigningFlow(false)}
-        />
-      </div>
-    );
-  }
-
   return (
-    <div className="h-full min-h-0 overflow-y-auto bg-white [scrollbar-gutter:stable]">
-      {form.loading || form.document.name !== selectedTemplate.formName ? (
-        <Loader>Loading form template...</Loader>
-      ) : (
-        <div className="mx-auto flex min-h-full max-w-4xl flex-col gap-4 bg-white px-4 py-6 sm:px-8 sm:py-10">
-          {hasHistoryLogs ? (
-            <FormActionAccordion
-              handleSignViaBetterInternship={handleSignViaBetterInternship}
-              handlePrintForWetSignature={handlePrintForWetSignature}
+    <div className="relative h-full min-h-0 overflow-hidden bg-white">
+      <AnimatePresence initial={false} mode="wait">
+        {isSigningFlow ? (
+          <motion.div
+            key="mobile-signing-flow"
+            className="absolute inset-0 h-full min-h-0 bg-gray-100"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{
+              type: "spring",
+              stiffness: 300,
+              damping: 32,
+              mass: 0.9,
+            }}
+          >
+            <FormSigningLayout
+              formLabel={selectedTemplate?.formLabel}
+              documentUrl={form.document.url}
+              recipients={recipients}
+              noEsign={noEsign}
+              onBack={() => setIsSigningFlow(false)}
             />
-          ) : (
-            <>
-              <div className="text-xl mt-4 text-gray-700 font-bold">
-                {recipients.length > 1
-                  ? "These people will receive this form, in this order:"
-                  : "This form does not require any signatures."}
-              </div>
+            <FormMobileCloseConfirmation
+              open={showExitConfirmation}
+              onCancel={() => setShowExitConfirmation(false)}
+              onConfirm={() => {
+                setShowExitConfirmation(false);
+                setIsSigningFlow(false);
+              }}
+            />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="mobile-template-details"
+            className="absolute inset-0 h-full min-h-0 overflow-y-auto bg-white [scrollbar-gutter:stable]"
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0.98 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+          >
+            {form.loading ||
+            form.document.name !== selectedTemplate.formName ? (
+              <Loader>Loading form template...</Loader>
+            ) : (
+              <div className="mx-auto flex min-h-full max-w-4xl flex-col gap-4 bg-white px-4 py-6 sm:px-8 sm:py-10">
+                {hasHistoryLogs ? (
+                  <FormActionAccordion
+                    handleSignViaBetterInternship={
+                      handleSignViaBetterInternship
+                    }
+                    handlePrintForWetSignature={handlePrintForWetSignature}
+                  />
+                ) : (
+                  <>
+                    <div className="text-xl mt-4 text-gray-700 font-bold">
+                      {recipients.length > 1
+                        ? "These people will receive this form, in this order:"
+                        : "This form does not require any signatures."}
+                    </div>
 
-              <FormSigningPartyTimeline />
-              <div className="mt-8 flex flex-col items-start gap-3 border-b border-gray-200 pt-4 pb-8">
-                <FormActionButtons
-                  handleSignViaBetterInternship={handleSignViaBetterInternship}
-                  handlePrintForWetSignature={handlePrintForWetSignature}
+                    <FormSigningPartyTimeline />
+                    <div className="mt-8 flex flex-col items-start gap-3 border-b border-gray-200 pt-4 pb-8">
+                      <FormActionButtons
+                        handleSignViaBetterInternship={
+                          handleSignViaBetterInternship
+                        }
+                        handlePrintForWetSignature={handlePrintForWetSignature}
+                      />
+                    </div>
+                  </>
+                )}
+                <FormHistoryView
+                  forms={generatedForms ?? []}
+                  formLabel={form.formLabel}
                 />
               </div>
-            </>
-          )}
-          <FormHistoryView
-            forms={generatedForms ?? []}
-            formLabel={form.formLabel}
-          />
-        </div>
-      )}
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
