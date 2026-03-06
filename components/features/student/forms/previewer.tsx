@@ -35,6 +35,7 @@ interface FormPreviewPdfDisplayProps {
   documentUrl: string;
   blocks?: PreviewFieldInput[];
   values: Record<string, string>;
+  headerLeft?: React.ReactNode;
   scale?: number;
   onFieldClick?: (fieldName: string) => void;
   selectedFieldId?: string;
@@ -56,6 +57,7 @@ export const FormPreviewPdfDisplay = ({
   documentUrl,
   blocks,
   values,
+  headerLeft,
   scale: initialScale = 1.0,
   onFieldClick,
   selectedFieldId,
@@ -245,8 +247,9 @@ export const FormPreviewPdfDisplay = ({
     <div className="flex h-full w-full flex-col overflow-hidden rounded-[0.33em] border border-slate-300">
       {/* Top Controls */}
       <div className="flex-shrink-0 border-b border-slate-300 bg-white px-3 py-2">
-        <div className="flex items-center justify-end gap-3">
-          <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-3">
+          {headerLeft ? <div className="min-w-0">{headerLeft}</div> : null}
+          <div className="ml-auto flex items-center gap-1.5">
             <span className="text-xs font-medium text-slate-700">
               {visiblePage}/{pageCount}
             </span>

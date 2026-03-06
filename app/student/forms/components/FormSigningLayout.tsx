@@ -299,31 +299,6 @@ export function FormSigningLayout({
 
   return (
     <div className="h-full min-h-0 flex flex-col">
-      {!isMobile && (
-        <div className="bg-white shadow-sm flex-shrink-0">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex min-w-0 items-center gap-3">
-                <h3 className="truncate whitespace-nowrap text-xl font-semibold text-gray-900 sm:text-2xl">
-                  {formLabel}
-                </h3>
-              </div>
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setRightPaneStep("timeline");
-                  onBack();
-                }}
-                className="flex shrink-0 items-center gap-2 whitespace-nowrap px-3 py-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back to Templates
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div
         className={cn(
           "min-h-0 flex-1 px-0 py-0 mx-auto w-full transition-[max-width] duration-500 ease-in-out sm:px-6 sm:py-4",
@@ -370,6 +345,21 @@ export function FormSigningLayout({
                   documentUrl={documentUrl}
                   blocks={previewKeyedFields}
                   values={values}
+                  headerLeft={
+                    !isMobile ? (
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setRightPaneStep("timeline");
+                          onBack();
+                        }}
+                        className="h-8 gap-2 px-2 text-xs text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to Templates
+                      </Button>
+                    ) : undefined
+                  }
                   fieldErrors={formFiller.errors}
                   selectionTick={selectionTick}
                   autoScrollToSelectedField={selectedFieldSource === "form"}
@@ -398,8 +388,16 @@ export function FormSigningLayout({
               )}
             >
               {!isMobile && (
-                <div className="flex h-[58px] items-center border-b border-gray-300 px-6">
-                  <span className="text-sm font-medium text-gray-700">
+                <div className="flex items-start gap-3 px-6 pt-4">
+                  <div className="min-w-0 flex-1">
+                    <span
+                      className="block whitespace-normal break-words text-xl font-semibold leading-tight text-primary"
+                      title={formLabel ?? ""}
+                    >
+                      {formLabel}
+                    </span>
+                  </div>
+                  <span className="shrink-0 pt-0.5 text-xs font-medium text-gray-700">
                     Step {steps.indexOf(rightPaneStep) + 1} of {steps.length}
                   </span>
                 </div>
@@ -412,7 +410,7 @@ export function FormSigningLayout({
                       : "-translate-x-6 opacity-0 pointer-events-none"
                   }`}
                 >
-                  <div className="min-h-0 flex-1 overflow-y-auto px-10 py-16">
+                  <div className="min-h-0 flex-1 overflow-y-auto p-6">
                     <div className="space-y-6">
                       <p className="text-gray-700 sm:text-base font-bold">
                         These people will receive this form, in this order:
@@ -438,7 +436,7 @@ export function FormSigningLayout({
                       </p>
                     </div>
                   </div>
-                  <div className="border-t border-gray-300 bg-gray-200 p-3">
+                  <div className="bg-white p-3">
                     <div className="flex w-full justify-between gap-2">
                       <Button
                         size="lg"
@@ -474,7 +472,7 @@ export function FormSigningLayout({
                         onFieldSelect={handleFormFieldSelect}
                       />
                     </div>
-                    <div className="border-t border-gray-300 bg-gray-200 p-3">
+                    <div className="bg-white p-3">
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <Button
                           size="lg"
@@ -527,7 +525,7 @@ export function FormSigningLayout({
                         />
                       )}
                     </div>
-                    <div className="border-t border-gray-300 bg-gray-200 p-3">
+                    <div className="bg-white p-3">
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <Button
                           size="lg"
