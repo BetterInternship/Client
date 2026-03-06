@@ -41,6 +41,7 @@ export function FormSubmissionSuccessModal({
   }, []);
 
   const handleNavigateToForms = () => {
+    onClose();
     modalRegistry.closeAll();
   };
 

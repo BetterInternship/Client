@@ -234,7 +234,10 @@ export function FormSigningLayout({
         return;
       }
 
-      modalRegistry.formSubmissionSuccess.open("manual");
+      modalRegistry.formSubmissionSuccess.open("manual", () => {
+        setRightPaneStep("timeline");
+        onBack();
+      });
     } else {
       const response = await FormService.initiateForm({
         formName: form.formName,
@@ -251,7 +254,10 @@ export function FormSigningLayout({
       }
 
       await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
-      modalRegistry.formSubmissionSuccess.open("esign");
+      modalRegistry.formSubmissionSuccess.open("esign", () => {
+        setRightPaneStep("timeline");
+        onBack();
+      });
     }
     setNextLoading(false);
   }, [form, generateWithNoSignature, autofillValues]);
