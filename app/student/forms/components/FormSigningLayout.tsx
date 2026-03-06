@@ -24,6 +24,7 @@ import { useStateRecord } from "@/hooks/base/useStateRecord";
 import { useFormFilloutProcessRunner } from "@/hooks/forms/filloutFormProcess";
 import { useAppContext } from "@/lib/ctx-app";
 import { FormSigningLayoutMobile } from "./FormSigningLayoutMobile";
+import { FormSigningPartyTimeline } from "./FormSigningPartyTimeline";
 
 interface FlowTestSigningLayoutProps {
   formLabel?: string;
@@ -390,45 +391,13 @@ export function FormSigningLayout({
                       <p className="text-sm text-gray-600 sm:text-base">
                         These people will receive this form, in this order:
                       </p>
-                      <Timeline>
-                        {recipients.map((recipient, index) => {
-                          const fromMe =
-                            recipient.signatory_source?._id === "initiator";
-                          const fieldName =
-                            form.formMetadata.getSigningPartyFieldName(
-                              recipient._id,
-                            );
-                          return (
-                            <TimelineItem
-                              key={`${fieldName}-${index}`}
-                              number={index + 1}
-                              fromMe={fromMe}
-                              title={recipient.signatory_title}
-                              subtitle={
-                                fromMe && (
-                                  <FormInput
-                                    value={recipientEmails[fieldName]}
-                                    placeholder={"recipient@email.com"}
-                                    className={cn(
-                                      "mt-1",
-                                      recipientErrors[fieldName]
-                                        ? "text-destructive"
-                                        : "",
-                                    )}
-                                    setter={(value) =>
-                                      recipientEmailActions.setOne(
-                                        fieldName,
-                                        value,
-                                      )
-                                    }
-                                  />
-                                )
-                              }
-                              isLast={index === recipients.length - 1}
-                            />
-                          );
-                        })}
-                      </Timeline>
+                      <FormSigningPartyTimeline
+                        recipientInputAPI={{
+                          recipientEmails,
+                          recipientErrors,
+                          recipientEmailActions,
+                        }}
+                      />
                     </div>
                     <div className="my-4 mt-8">
                       <p className="text-sm text-gray-600 sm:text-base">

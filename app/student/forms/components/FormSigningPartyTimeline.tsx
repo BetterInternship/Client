@@ -1,7 +1,18 @@
+import { FormInput } from "@/components/EditForm";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
+import { StateRecord, StateRecordActions } from "@/hooks/base/useStateRecord";
+import { cn } from "@/lib/utils";
 
-export const FormSigningPartyTimeline = () => {
+export const FormSigningPartyTimeline = ({
+  recipientInputAPI,
+}: {
+  recipientInputAPI?: {
+    recipientEmails: StateRecord;
+    recipientErrors: StateRecord;
+    recipientEmailActions: StateRecordActions;
+  };
+}) => {
   const form = useFormRendererContext();
   const recipients = form.formMetadata.getSigningParties();
 
@@ -10,6 +21,9 @@ export const FormSigningPartyTimeline = () => {
       <Timeline>
         {recipients.map((recipient, index) => {
           const fromMe = recipient.signatory_source?._id === "initiator";
+          const fieldName = form.formMetadata.getSigningPartyFieldName(
+            recipient._id,
+          );
           return (
             <TimelineItem
               key={recipient.signatory_title}
@@ -20,9 +34,36 @@ export const FormSigningPartyTimeline = () => {
                 </span>
               }
               subtitle={
-                fromMe && (
-                  <span className="text-warning font-bold text-sm">
-                    {"you will specify this email"}
+                fromMe ? (
+                  !recipientInputAPI?.recipientEmails ? (
+                    <span className="text-warning font-bold text-sm">
+                      you will specify this email
+                    </span>
+                  ) : (
+                    <FormInput
+                      value={recipientInputAPI.recipientEmails[fieldName]}
+                      placeholder={"recipient@email.com"}
+                      className={cn(
+                        "mt-1",
+                        recipientInputAPI.recipientErrors[fieldName]
+                          ? "text-destructive"
+                          : "",
+                      )}
+                      setter={(value) =>
+                        recipientInputAPI.recipientEmailActions.setOne(
+                          fieldName,
+                          value,
+                        )
+                      }
+                    />
+                  )
+                ) : recipient.signatory_account?.email ? (
+                  <span className="text-sm text-supportive">
+                    <pre>{recipient.signatory_account.email ?? ""}</pre>
+                  </span>
+                ) : (
+                  <span className="text-sm italic">
+                    this email will come from someone else
                   </span>
                 )
               }
