@@ -1,5 +1,3 @@
-import { type IFormBlock } from "@betterinternship/core/forms";
-
 export type PreviewFieldType = "text" | "signature" | "image";
 
 export interface PreviewField {
@@ -22,74 +20,62 @@ export interface PreviewField {
   prefiller?: unknown;
 }
 
-export type PreviewFieldLike = PreviewField | IFormBlock;
-
-const isPreviewField = (input: PreviewFieldLike): input is PreviewField => {
-  return "id" in input && "field" in input && !("block_type" in input);
+// Incoming student preview payload shape.
+export type PreviewFieldInput = {
+  _id?: string;
+  id?: string;
+  field: string;
+  label?: string;
+  page?: number;
+  x?: number;
+  y?: number;
+  w?: number;
+  h?: number;
+  size?: number;
+  wrap?: boolean;
+  align_h?: "left" | "center" | "right";
+  align_v?: "top" | "middle" | "bottom";
+  font?: string;
+  type?: PreviewFieldType;
+  signing_party_id?: string;
+  source?: string;
+  prefiller?: unknown;
 };
 
-export function normalizePreviewFields(
-  inputs: PreviewFieldLike[],
-): PreviewField[] {
-  const normalized: PreviewField[] = [];
+export function toPreviewFields(inputs: PreviewFieldInput[]): PreviewField[] {
+  return (inputs ?? [])
+    .filter((input) => input?.field && input.type !== "image")
+    .map((input, idx) => {
+      const page = typeof input.page === "number" ? input.page : 1;
+      const x = typeof input.x === "number" ? input.x : 0;
+      const y = typeof input.y === "number" ? input.y : 0;
+      const w = typeof input.w === "number" ? input.w : 0;
+      const h = typeof input.h === "number" ? input.h : 0;
+      const id =
+        (typeof input.id === "string" && input.id) ||
+        (typeof input._id === "string" && input._id) ||
+        `${input.field}:${page}:${x}:${y}:${idx}`;
 
-  for (const input of inputs) {
-    if (isPreviewField(input)) {
-      if (input.type === "image") continue;
-      normalized.push(input);
-      continue;
-    }
-
-    const block = input;
-    const schema = block.field_schema ?? block.phantom_field_schema;
-    if (!schema?.field) continue;
-    if (schema.type === "image") continue;
-
-    const sizedSchema = schema as {
-      page?: number;
-      x?: number;
-      y?: number;
-      w?: number;
-      h?: number;
-      size?: number;
-      wrap?: boolean;
-      align_h?: "left" | "center" | "right";
-      align_v?: "top" | "middle" | "bottom";
-      font?: string;
-      type?: PreviewFieldType;
-      source?: string;
-      prefiller?: unknown;
-      signing_party_id?: string;
-    };
-
-    const page = typeof sizedSchema.page === "number" ? sizedSchema.page : 1;
-    const x = typeof sizedSchema.x === "number" ? sizedSchema.x : 0;
-    const y = typeof sizedSchema.y === "number" ? sizedSchema.y : 0;
-    const w = typeof sizedSchema.w === "number" ? sizedSchema.w : 0;
-    const h = typeof sizedSchema.h === "number" ? sizedSchema.h : 0;
-
-    normalized.push({
-      id: block._id || `${schema.field}:${page}:${x}:${y}:${normalized.length}`,
-      field: schema.field,
-      label: schema.label || schema.field,
-      page,
-      x,
-      y,
-      w,
-      h,
-      size: sizedSchema.size,
-      wrap: sizedSchema.wrap,
-      align_h: sizedSchema.align_h,
-      align_v: sizedSchema.align_v,
-      font: sizedSchema.font,
-      type: sizedSchema.type,
-      signing_party_id: sizedSchema.signing_party_id ?? block.signing_party_id,
-      source: sizedSchema.source,
-      prefiller: sizedSchema.prefiller,
+      return {
+        id,
+        field: input.field,
+        label: input.label || input.field,
+        page,
+        x,
+        y,
+        w,
+        h,
+        size: input.size,
+        wrap: input.wrap,
+        align_h: input.align_h,
+        align_v: input.align_v,
+        font: input.font,
+        type: input.type,
+        signing_party_id: input.signing_party_id,
+        source: input.source,
+        prefiller: input.prefiller,
+      };
     });
-  }
-
-  return normalized;
 }
 
 export function groupFieldsByPage(fields: PreviewField[]) {
@@ -103,7 +89,6 @@ export function groupFieldsByPage(fields: PreviewField[]) {
 
   return byPage;
 }
-
 type PreviewRefRecord = { name?: string } | null;
 
 export interface PreviewValueRefs {
@@ -289,3 +274,4 @@ export const createPreviewDisplayValueResolver = ({
     return value;
   };
 };
+

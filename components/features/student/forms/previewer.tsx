@@ -21,9 +21,9 @@ import {
   createPreviewDisplayValueResolver,
   groupFieldsByPage,
   normalizePreviewFieldKey,
-  normalizePreviewFields,
+  toPreviewFields,
   type PreviewField,
-  type PreviewFieldLike,
+  type PreviewFieldInput,
 } from "@/lib/form-previewer-model";
 import {
   ensurePreviewFontsLoaded,
@@ -31,11 +31,9 @@ import {
   fitWrappedText,
   resolvePreviewFont,
 } from "@/lib/form-previewer-rendering";
-
 interface FormPreviewPdfDisplayProps {
   documentUrl: string;
-  fields?: PreviewFieldLike[];
-  blocks?: PreviewFieldLike[]; // Backward-compatible alias
+  blocks?: PreviewFieldInput[];
   values: Record<string, string>;
   scale?: number;
   onFieldClick?: (fieldName: string) => void;
@@ -56,7 +54,6 @@ const clamp = (value: number, min: number, max: number) =>
  */
 export const FormPreviewPdfDisplay = ({
   documentUrl,
-  fields,
   blocks,
   values,
   scale: initialScale = 1.0,
@@ -80,10 +77,7 @@ export const FormPreviewPdfDisplay = ({
   const pageRefs = useRef<Map<number, HTMLDivElement | null>>(new Map());
   const fieldRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const normalizedFields = useMemo(
-    () => normalizePreviewFields(fields?.length ? fields : (blocks ?? [])),
-    [fields, blocks],
-  );
+  const normalizedFields = useMemo(() => toPreviewFields(blocks ?? []), [blocks]);
   const fieldsByPage = useMemo(
     () => groupFieldsByPage(normalizedFields),
     [normalizedFields],
@@ -104,7 +98,6 @@ export const FormPreviewPdfDisplay = ({
       }),
     [refs, profile.data],
   );
-
   const registerFieldRef = useCallback(
     (fieldName: string, node: HTMLDivElement | null) => {
       if (!node) {
@@ -514,12 +507,19 @@ const PdfPageWithFields = ({
           const widthPixels = w * scale;
           const heightPixels = h * scale;
 
+          const owner = String(field.signing_party_id ?? "").toLowerCase();
+          const hasAssignedOwner = owner.length > 0;
+          const isOwnedByInitiator =
+            !hasAssignedOwner || owner === "initiator" || owner === "student";
           const normalizedFieldName = normalizePreviewFieldKey(fieldName);
-          const rawValue =
-            values[fieldName] ??
-            values[`${normalizedFieldName}:default`] ??
-            values[normalizedFieldName];
-          const valueStr = resolveDisplayValue(field, rawValue);
+          const rawValue = isOwnedByInitiator
+            ? (values[fieldName] ??
+              values[normalizedFieldName + ":default"] ??
+              values[normalizedFieldName])
+            : "";
+          const valueStr = isOwnedByInitiator
+            ? resolveDisplayValue(field, rawValue)
+            : "";
           const isFilled = valueStr.trim().length > 0;
 
           // Get alignment and wrapping from field schema
@@ -579,9 +579,7 @@ const PdfPageWithFields = ({
             animatingFieldId === fieldName ||
             selectedFieldId === fieldName ||
             clickedHighlightFieldId === field.id;
-          const owner = String(field.signing_party_id ?? "").toLowerCase();
-          const isOwnedByInitiator =
-            owner === "initiator" || owner === "student";
+
           const hasFieldError = !!fieldErrors[fieldName];
           const isFieldValid = isFilled && !hasFieldError;
           const borderColor = isOwnedByInitiator
@@ -706,3 +704,10 @@ const AssignedOwnerTooltip = ({ ownerLabel }: { ownerLabel: string }) => (
     </span>
   </div>
 );
+
+
+
+
+
+
+
