@@ -461,7 +461,7 @@ export function FormSigningLayout({
                       : "translate-x-6 opacity-0 pointer-events-none"
                   }`}
                 >
-                  <div className="min-h-0 flex h-full flex-1 flex-col pt-8">
+                  <div className="min-h-0 flex h-full flex-1 flex-col">
                     <div className="min-h-0 flex-1">
                       <FormFillerRenderer
                         onValuesChange={setValues}
@@ -486,7 +486,7 @@ export function FormSigningLayout({
                           )}
                           onClick={() => setRightPaneStep("timeline")}
                         >
-                          Previous
+                          Back
                         </Button>
                         <Button
                           size="lg"
