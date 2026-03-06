@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FileSearch } from "lucide-react";
+import { FileSearch, FileText } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Divider } from "@/components/ui/divider";
@@ -29,6 +29,7 @@ import { FormSigningPartyTimeline } from "./FormSigningPartyTimeline";
 import { FormMobileCloseConfirmation } from "./FormMobileCloseConfirmation";
 import { useMobile } from "@/hooks/use-mobile";
 import useModalRegistry from "@/components/modals/modal-registry";
+import { HeaderIcon, HeaderText } from "@/components/ui/text";
 
 type GeneratedFormItem = {
   form_process_id?: string;
@@ -163,34 +164,36 @@ export default function FormDashboard({
 
   return (
     <div className="h-full min-h-0 w-full bg-gray-50">
-      <div className="h-[2px] w-full bg-gray/60" />
-
       <div
         className={cn(
           "grid h-[calc(100%-2px)] min-h-0 transition-[grid-template-columns] duration-500 ease-in-out",
           "grid-cols-1",
           isSigningFlow
             ? "md:grid-cols-[0px_minmax(0,1fr)]"
-            : "md:grid-cols-[480px_minmax(0,1fr)]",
+            : "md:grid-cols-[minmax(380px,520px)_minmax(0,1fr)]",
         )}
       >
         <aside
           className={cn(
-            "flex min-h-0 flex-col border-b border-gray-300 bg-white md:border-b-0 md:border-r transition-all duration-500 ease-in-out overflow-hidden",
+            "flex min-h-0 flex-col overflow-hidden border-gray-200 md:border-r  transition-all duration-500 ease-in-out",
             isSigningFlow
               ? "-translate-x-8 opacity-0 pointer-events-none"
               : "translate-x-0 opacity-100",
           )}
         >
-          <div className="flex h-20 items-center bg-gray-100 border-b border-gray-200 px-4 sm:px-6 md:px-10">
-            <div className="flex flex-col w-full gap-2">
-              <h1 className="text-2xl tracking-tight text-gray-700 sm:text-2xl font-bold">
-                Form Templates
-              </h1>
+          <div className="  p-4 sm:px-4 md:px-6">
+            <div className="flex w-full flex-col  animate-fade-in">
+              <div className="flex flex-row items-center gap-3 mb-2">
+                <HeaderIcon icon={FileText} />
+                <HeaderText>Form Templates</HeaderText>
+              </div>
+              <p className="text-sm text-gray-600">
+                Select a form to preview and start the signing flow.
+              </p>
             </div>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
+          <div className="min-h-0 flex-1 overflow-y-auto md:pt-0 p-3 sm:p-4 md:p-5">
             {sortedTemplates.length ? (
               <FormTemplatesList
                 templates={sortedTemplates}
@@ -198,13 +201,13 @@ export default function FormDashboard({
                 setSelectedTemplate={handleTemplateSelect}
               />
             ) : (
-              <div className="p-4">
+              <div className="rounded-[0.33em] border border-dashed border-gray-300 bg-white p-4 text-sm text-gray-700">
                 We currently don't automate forms for your department. <br />
                 <br />
                 Have a copy of your department's form templates? <br />
                 <a
                   href="https://facebook.com/shi.sherwin"
-                  className="underline"
+                  className="text-primary underline"
                   target="_blank"
                 >
                   Message us so we can help you out!
