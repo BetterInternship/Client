@@ -82,8 +82,6 @@ export default function FormDashboard({
     [generatedForms, form.formLabel],
   );
 
-  if (isLoading) return <Loader>Loading form templates...</Loader>;
-
   const handleSignViaBetterInternship = () => {
     setIsSigningFlow(true);
     setNoEsign(false);
@@ -160,6 +158,8 @@ export default function FormDashboard({
     form.document.url,
     form.formLabel,
   ]);
+
+  if (isLoading) return <Loader>Loading form templates...</Loader>;
 
   return (
     <div className="h-full min-h-0 w-full bg-gray-50">

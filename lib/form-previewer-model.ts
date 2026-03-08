@@ -1,3 +1,5 @@
+import { coerceAnyDate, formatTimestampDateWithoutTime } from "@/lib/utils";
+
 export type PreviewFieldType = "text" | "signature" | "image";
 
 export interface PreviewField {
@@ -119,7 +121,8 @@ export const resolveAutoPreviewValue = (
   now = new Date(),
 ): string => {
   const normalized = normalizePreviewFieldKey(fieldKey).toLowerCase();
-  if (normalized === "auto.current-date") return now.getTime().toString();
+  if (normalized === "auto.current-date")
+    return formatTimestampDateWithoutTime(now.getTime());
   if (normalized === "auto.current-day") return now.getDate().toString();
   if (normalized === "auto.current-month")
     return (now.getMonth() + 1).toString();
@@ -234,6 +237,8 @@ export const createPreviewDisplayValueResolver = ({
       ? rawValue.join(", ")
       : typeof rawValue === "string"
         ? rawValue
+        : typeof rawValue === "number"
+          ? String(rawValue)
         : "";
     const fallbackValue = rawString.trim()
       ? ""
@@ -243,6 +248,12 @@ export const createPreviewDisplayValueResolver = ({
 
     const trimmedValue = value.trim();
     if (!trimmedValue) return "";
+
+    const normalizedField = normalizePreviewFieldKey(field.field).toLowerCase();
+    if (normalizedField === "auto.current-date") {
+      const dateMs = coerceAnyDate(trimmedValue);
+      if (dateMs) return formatTimestampDateWithoutTime(dateMs);
+    }
 
     const loweredFieldName = field.field.toLowerCase();
     if (
@@ -274,4 +285,3 @@ export const createPreviewDisplayValueResolver = ({
     return value;
   };
 };
-
