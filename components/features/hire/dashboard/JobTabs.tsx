@@ -233,6 +233,7 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
               filteredStatus.includes(application.status)),
       )
     : applications.employer_applications;
+  const isSuperListing = Boolean(selectedJob?.challenge);
 
   redirectIfNotLoggedIn();
 
@@ -471,6 +472,7 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
             <ApplicationsContent
               ref={applicationContentRef}
               applications={filteredApplications}
+              isSuperListing={isSuperListing}
               statusId={[0, 1, 2, 3, 4, 5, 6]}
               isLoading={isLoading}
               openChatModal={openChatModal}

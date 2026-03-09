@@ -68,6 +68,7 @@ export interface EmployerApplication extends Partial<Tables<"applications">> {
   jobs?: Partial<Job>;
   user?: Partial<PrivateUser>;
   users?: Partial<PrivateUser>;
+  challenge_submission?: string | null;
 }
 
 export interface SavedJob extends Partial<Tables<"saved_jobs">> {
