@@ -138,16 +138,19 @@ export default function SearchPage() {
     }
   }, [selectedIds.size, selectMode]);
 
-  const toggleSelect = (jobId: string) =>
+  const toggleSelect = (job: Job) => {
+    if (!job.id || job.challenge) return;
+
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(jobId)) {
-        next.delete(jobId);
+      if (next.has(job.id)) {
+        next.delete(job.id);
       } else {
-        next.add(jobId);
+        next.add(job.id);
       }
       return next;
     });
+  };
 
   const isSelected = (jobId?: string) => !!jobId && selectedIds.has(jobId);
 
@@ -155,18 +158,25 @@ export default function SearchPage() {
 
   const selectAllOnPage = () => {
     const next = new Set(selectedIds);
-    jobsPage.forEach((j) => j.id && next.add(j.id));
+    jobsPage.forEach((j) => {
+      if (j.id && !j.challenge) next.add(j.id);
+    });
     setSelectedIds(next);
   };
 
   const unselectAllOnPage = () => {
     const next = new Set(selectedIds);
-    jobsPage.forEach((j) => j.id && next.delete(j.id));
+    jobsPage.forEach((j) => {
+      if (j.id && !j.challenge) next.delete(j.id);
+    });
     setSelectedIds(next);
   };
 
   const selectedJobsList = useMemo(
-    () => jobs.filteredJobs.filter((j) => j.id && selectedIds.has(j.id)),
+    () =>
+      jobs.filteredJobs.filter(
+        (j) => j.id && selectedIds.has(j.id) && !j.challenge,
+      ),
     [jobs.filteredJobs, selectedIds],
   );
 
@@ -417,25 +427,26 @@ export default function SearchPage() {
                       className="relative group"
                       onClick={() => handleJobCardClick(job)}
                     >
-                      {/* Checkbox for mass apply - always visible */}
-                      <button
-                        type="button"
-                        className={cn(
-                          "absolute right-4 top-5 z-10 bg-white p-1",
-                          "hover:shadow transition",
-                        )}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (!selectMode) setSelectMode(true);
-                          if (job.id) toggleSelect(job.id);
-                        }}
-                      >
-                        {isSelected(job.id) ? (
-                          <CheckSquare className="w-6 h-6 text-primary" />
-                        ) : (
-                          <Square className="w-6 h-6 text-gray-400" />
-                        )}
-                      </button>
+                      {!job.challenge && (
+                        <button
+                          type="button"
+                          className={cn(
+                            "absolute right-4 top-5 z-10 bg-white p-1",
+                            "hover:shadow transition",
+                          )}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!selectMode) setSelectMode(true);
+                            toggleSelect(job);
+                          }}
+                        >
+                          {isSelected(job.id) ? (
+                            <CheckSquare className="w-6 h-6 text-primary" />
+                          ) : (
+                            <Square className="w-6 h-6 text-gray-400" />
+                          )}
+                        </button>
+                      )}
 
                       <MobileJobCard
                         job={job}
@@ -512,33 +523,35 @@ export default function SearchPage() {
                 <div className="space-y-3">
                   {jobsPage.map((job) => (
                     <div key={job.id} className="relative group">
-                      <button
-                        type="button"
-                        aria-label={
-                          isSelected(job.id) ? "Unselect job" : "Select job"
-                        }
-                        className={cn(
-                          "absolute right-5 top-6 z-20 h-6 w-6 bg-white/95 backdrop-blur",
-                          "flex items-center justify-center transition-opacity",
-                        )}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (!selectMode) setSelectMode(true);
-                          if (job.id) toggleSelect(job.id);
-                        }}
-                      >
-                        {isSelected(job.id) ? (
-                          <CheckSquare
-                            className="w-5 h-5 text-warning transition-all duration-200 scale-100"
-                            strokeWidth={2}
-                          />
-                        ) : (
-                          <Square
-                            className="w-5 h-5 text-gray-400 transition-all duration-200 scale-100"
-                            strokeWidth={2}
-                          />
-                        )}
-                      </button>
+                      {!job.challenge && (
+                        <button
+                          type="button"
+                          aria-label={
+                            isSelected(job.id) ? "Unselect job" : "Select job"
+                          }
+                          className={cn(
+                            "absolute right-5 top-6 z-20 h-6 w-6 bg-white/95 backdrop-blur",
+                            "flex items-center justify-center transition-opacity",
+                          )}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!selectMode) setSelectMode(true);
+                            toggleSelect(job);
+                          }}
+                        >
+                          {isSelected(job.id) ? (
+                            <CheckSquare
+                              className="w-5 h-5 text-warning transition-all duration-200 scale-100"
+                              strokeWidth={2}
+                            />
+                          ) : (
+                            <Square
+                              className="w-5 h-5 text-gray-400 transition-all duration-200 scale-100"
+                              strokeWidth={2}
+                            />
+                          )}
+                        </button>
+                      )}
 
                       <div
                         className={cn(
