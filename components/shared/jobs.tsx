@@ -5,6 +5,7 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import { cn, formatCurrency } from "@/lib/utils";
 import {
   AlertTriangle,
+  ArrowRight,
   Building,
   CheckCircle,
   Clock,
@@ -12,6 +13,7 @@ import {
   Monitor,
   PhilippinePeso,
   UserCheck,
+  Zap,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Card } from "../ui/card";
@@ -204,6 +206,259 @@ export const EmployerMOA = ({
   );
 };
 
+function SuperListingDoodles({ mobile = false }: { mobile?: boolean }) {
+  return (
+    <>
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 360 220"
+        className="pointer-events-none absolute inset-0 h-full w-full text-amber-500/70"
+        fill="none"
+        preserveAspectRatio="none"
+      >
+        <rect
+          x="6.5"
+          y="6.5"
+          width="347"
+          height="207"
+          rx="7"
+          ry="7"
+          stroke="currentColor"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeDasharray={mobile ? "6 7" : "7 8"}
+        />
+      </svg>
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 120 36"
+        className={cn(
+          "pointer-events-none absolute left-0 top-0 w-32 text-amber-500/70",
+          mobile && "w-24",
+        )}
+        fill="none"
+      >
+        <path
+          d="M5 23C17 10 24 9 33 18C40 24 49 24 61 12C74 0 88 3 102 17"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M96 12L102 17L95 21"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 80 80"
+        className={cn(
+          "pointer-events-none absolute right-0 top-0 h-16 w-16 rotate-[8deg] text-amber-500/75",
+          mobile && "h-14 w-14",
+        )}
+        fill="none"
+      >
+        <path
+          d="M34 6L18 33H34L26 56L54 24H39L47 6Z"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 120 40"
+        className={cn(
+          "pointer-events-none absolute bottom-0 right-0 w-32 text-orange-400/70",
+          mobile && "w-24",
+        )}
+        fill="none"
+      >
+        <path
+          d="M10 10C31 28 53 31 84 18"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M78 13L84 18L77 24"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M62 17C71 21 77 22 84 18"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </svg>
+    </>
+  );
+}
+
+function SuperListingHeader({
+  title,
+  employer,
+  compact = false,
+}: {
+  title: string | null | undefined;
+  employer: string | null | undefined;
+  compact?: boolean;
+}) {
+  return (
+    <div className={cn("space-y-2", compact && "space-y-1.5")}>
+      <div className="space-y-1">
+        <div className="relative inline-block max-w-full">
+          <div className="absolute inset-x-0 bottom-1 h-4 rotate-[-1deg] rounded-sm bg-amber-200/55" />
+          <h3
+            className={cn(
+              "relative font-semibold leading-tight text-gray-900 break-words",
+              compact ? "text-lg" : "text-[1.35rem]",
+            )}
+          >
+            {title}
+          </h3>
+        </div>
+        <p className="text-sm font-medium text-gray-700">
+          {employer ?? "Unknown"}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function SuperListingBorderBadge({ mobile = false }: { mobile?: boolean }) {
+  return (
+    <div
+      className={cn(
+        "pointer-events-none absolute left-4 top-[1.25rem] z-20 inline-flex rotate-[-3deg] items-center gap-2 rounded-full border border-amber-300 bg-white/95 px-3 py-1 text-xs font-semibold text-amber-800 shadow-[0_6px_16px_rgba(245,158,11,0.14)]",
+        mobile && "left-4 top-2.5 px-2.5 py-0.5 text-[11px]",
+      )}
+    >
+      <Zap className="h-3.5 w-3.5 fill-current" />
+      <span>Responds in 24h</span>
+    </div>
+  );
+}
+
+function SuperJobCardContent({
+  job,
+  compact = false,
+}: {
+  job: Job;
+  compact?: boolean;
+}) {
+  return (
+    <div className={cn("relative z-10 space-y-4", compact ? "p-0" : "p-0")}>
+      <SuperListingHeader
+        title={job.title}
+        employer={job.employer?.name}
+        compact={compact}
+      />
+      <div className="space-y-3">
+        <JobBadges job={job} />
+      </div>
+      <SuperListingCTA
+        compact={compact}
+        challengeTitle={job.challenge?.title}
+      />
+    </div>
+  );
+}
+
+function SuperJobCard({
+  job,
+  onClick,
+  selected,
+  mobile = false,
+}: {
+  job: Job;
+  onClick?: () => void;
+  selected?: boolean;
+  mobile?: boolean;
+}) {
+  return (
+    <div
+      onClick={onClick}
+      className={cn(
+        "group relative isolate cursor-pointer overflow-hidden rounded-[0.33em] bg-[radial-gradient(circle_at_top_left,rgba(254,240,138,0.46),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(251,146,60,0.16),transparent_28%),linear-gradient(145deg,rgba(255,251,235,1)_0%,rgba(255,255,255,1)_42%,rgba(254,243,199,0.96)_100%)] shadow-[0_14px_34px_rgba(251,191,36,0.16)] transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(249,115,22,0.2)]",
+        mobile ? "p-0" : "p-0",
+        selected && "ring-1 ring-amber-400 ring-offset-1",
+      )}
+    >
+      <SuperListingDoodles mobile={mobile} />
+      <SuperListingBorderBadge mobile={mobile} />
+      <div
+        className={cn(
+          "relative z-10 space-y-4",
+          mobile ? "px-5 pb-5 pt-11" : "px-5 pb-[1.35rem] pt-[3.15rem]",
+        )}
+      >
+        <SuperJobCardContent job={job} compact={mobile} />
+      </div>
+    </div>
+  );
+}
+
+function SuperListingCTA({
+  compact = false,
+  challengeTitle,
+}: {
+  compact?: boolean;
+  challengeTitle?: string | null;
+}) {
+  const trimmedChallengeTitle = challengeTitle?.trim();
+
+  return (
+    <div className="relative pt-3">
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 110 32"
+        className={cn(
+          "pointer-events-none absolute right-3 top-0 h-8 w-24 text-amber-500/70",
+          compact && "right-2 top-0 h-7 w-20",
+        )}
+        fill="none"
+      >
+        <path
+          d="M6 22C25 7 46 6 70 15"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+        />
+        <path
+          d="M63 10L70 15L62 19"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <div
+        className={cn(
+          "w-full rotate-[-1deg] rounded-[1.15rem] border border-amber-500 bg-[linear-gradient(180deg,#f59e0b_0%,#f97316_100%)] px-4 py-3 text-sm font-semibold text-white shadow-[0_10px_18px_rgba(249,115,22,0.24)] transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5",
+          compact && "px-4 py-2.5 text-[13px]",
+        )}
+      >
+        <span className="flex items-center gap-2">
+          <Zap className="h-4 w-4 fill-current" />
+          <span className="min-w-0 flex-1 line-clamp-2 text-center">
+            {trimmedChallengeTitle || "Open Challenge"}
+          </span>
+          <ArrowRight className="h-4 w-4" />
+        </span>
+      </div>
+    </div>
+  );
+}
+
 /**
  * The scrollable job card component.
  * Used in both hire and student UI.
@@ -220,30 +475,30 @@ export const JobCard = ({
   on_click?: (job: Job) => void;
 }) => {
   const isSuperListing = Boolean(job.challenge);
+  if (isSuperListing) {
+    return (
+      <SuperJobCard
+        job={job}
+        selected={selected}
+        onClick={() => on_click && on_click(job)}
+      />
+    );
+  }
+
   return (
     <Card
       key={job.id}
       onClick={() => on_click && on_click(job)}
       className={cn(
-        "group relative overflow-hidden",
-        isSuperListing &&
-          "border-amber-300 bg-gradient-to-br from-amber-50 via-white to-amber-100/70",
+        "group relative isolate overflow-hidden",
         selected
-          ? cn(
-              "ring-1 ring-primary ring-offset-1",
-              isSuperListing && "ring-amber-400",
-            )
+          ? "ring-1 ring-primary ring-offset-1"
           : "hover:shadow-sm hover:border-gray-300 cursor-pointer",
       )}
     >
-      <div className="space-y-3">
+      <div className="relative z-10 space-y-3">
         <div className="flex items-start justify-between">
           <JobHead title={job.title} employer={job.employer?.name} />
-          {isSuperListing && (
-            <Badge className="border border-amber-300 bg-amber-100 text-amber-800">
-              Super Listing
-            </Badge>
-          )}
         </div>
         <JobLocation location={job.location} />
         <JobBadges job={job} />
@@ -318,40 +573,39 @@ export const MobileJobCard = ({
   on_click: () => void;
 }) => {
   const isSuperListing = Boolean(job.challenge);
+  if (isSuperListing) {
+    return <SuperJobCard job={job} onClick={on_click} mobile />;
+  }
+
   return (
     <div
       className={cn(
-        "card hover-lift p-6 animate-fade-in",
-        isSuperListing &&
-          "border border-amber-300 bg-gradient-to-br from-amber-50 via-white to-amber-100/70",
+        "card hover-lift relative isolate overflow-hidden p-6 animate-fade-in",
       )}
       onClick={on_click}
     >
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2 leading-tight truncate">
-            {job.title}
-          </h3>
-          <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-            <Building className="w-4 h-4 flex-shrink-0" />
-            <span className="font-medium truncate">{job.employer?.name}</span>
+      <>
+        <div className="mb-4">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2 leading-tight truncate">
+              {job.title}
+            </h3>
+            <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+              <Building className="w-4 h-4 flex-shrink-0" />
+              <span className="font-medium truncate">{job.employer?.name}</span>
+            </div>
           </div>
         </div>
-        {isSuperListing && (
-          <Badge className="border border-amber-300 bg-amber-100 text-amber-800">
-            Super Listing
-          </Badge>
-        )}
-      </div>
-      <JobBadges job={job} />
-      <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
-        {job.description || "No description available."}
-      </p>
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100 min-w-0">
-        <div className="flex-1 min-w-0">
-          <JobLocation location={job.location} />
+        <JobBadges job={job} />
+        <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
+          {job.description || "No description available."}
+        </p>
+        <div className="flex items-center justify-between pt-3 border-t border-gray-100 min-w-0">
+          <div className="flex-1 min-w-0">
+            <JobLocation location={job.location} />
+          </div>
         </div>
-      </div>
+      </>
     </div>
   );
 };
