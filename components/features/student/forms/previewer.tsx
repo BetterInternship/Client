@@ -305,6 +305,53 @@ function fitNoWrap({
   return result;
 }
 
+const toDateMs = (value: unknown): number | undefined => {
+  if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+    return value;
+  }
+
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+
+  if (/^\d{6,}$/.test(trimmed)) {
+    const parsed = Number(trimmed);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+  }
+
+  const parsed = Date.parse(trimmed);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+};
+
+const formatDateOnly = (dateMs: number): string =>
+  new Date(dateMs).toLocaleDateString("en-PH", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+const toDisplayValue = (fieldName: string, rawValue: unknown): string => {
+  const normalizedFieldName = fieldName.replace(/:[^:]+$/, "");
+  const isAutoCurrentDate =
+    normalizedFieldName === "auto.current-date" ||
+    normalizedFieldName === "auto.current-date:default";
+
+  if (Array.isArray(rawValue)) {
+    return rawValue.join(", ");
+  }
+
+  if (isAutoCurrentDate) {
+    const dateMs = toDateMs(rawValue);
+    if (dateMs) return formatDateOnly(dateMs);
+  }
+
+  if (typeof rawValue === "string") return rawValue;
+  if (typeof rawValue === "number" && Number.isFinite(rawValue)) {
+    return String(rawValue);
+  }
+
+  return "";
+};
 interface FormPreviewPdfDisplayProps {
   documentUrl: string;
   blocks: any[]; // ServerField[] with coordinates (x, y, w, h, page, field)
@@ -682,12 +729,7 @@ const PdfPageWithFields = ({
           const heightPixels = h * scale;
 
           const rawValue = values[fieldName];
-          // Handle different value types (string, array, object, etc)
-          const valueStr = Array.isArray(rawValue)
-            ? rawValue.join(", ")
-            : typeof rawValue === "string"
-              ? rawValue
-              : "";
+          const valueStr = toDisplayValue(fieldName, rawValue);
           const isFilled = valueStr.trim().length > 0;
 
           // Get alignment and wrapping from field schema
