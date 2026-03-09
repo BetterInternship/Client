@@ -219,20 +219,31 @@ export const JobCard = ({
   selected?: boolean;
   on_click?: (job: Job) => void;
 }) => {
+  const isSuperListing = Boolean(job.challenge);
   return (
     <Card
       key={job.id}
       onClick={() => on_click && on_click(job)}
       className={cn(
         "group relative overflow-hidden",
+        isSuperListing &&
+          "border-amber-300 bg-gradient-to-br from-amber-50 via-white to-amber-100/70",
         selected
-          ? "ring-1 ring-primary ring-offset-1"
+          ? cn(
+              "ring-1 ring-primary ring-offset-1",
+              isSuperListing && "ring-amber-400",
+            )
           : "hover:shadow-sm hover:border-gray-300 cursor-pointer",
       )}
     >
       <div className="space-y-3">
         <div className="flex items-start justify-between">
           <JobHead title={job.title} employer={job.employer?.name} />
+          {isSuperListing && (
+            <Badge className="border border-amber-300 bg-amber-100 text-amber-800">
+              Super Listing
+            </Badge>
+          )}
         </div>
         <JobLocation location={job.location} />
         <JobBadges job={job} />
@@ -306,8 +317,16 @@ export const MobileJobCard = ({
   job: Job;
   on_click: () => void;
 }) => {
+  const isSuperListing = Boolean(job.challenge);
   return (
-    <div className="card hover-lift p-6 animate-fade-in" onClick={on_click}>
+    <div
+      className={cn(
+        "card hover-lift p-6 animate-fade-in",
+        isSuperListing &&
+          "border border-amber-300 bg-gradient-to-br from-amber-50 via-white to-amber-100/70",
+      )}
+      onClick={on_click}
+    >
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1 min-w-0">
           <h3 className="text-lg font-semibold text-gray-900 mb-2 leading-tight truncate">
@@ -318,6 +337,11 @@ export const MobileJobCard = ({
             <span className="font-medium truncate">{job.employer?.name}</span>
           </div>
         </div>
+        {isSuperListing && (
+          <Badge className="border border-amber-300 bg-amber-100 text-amber-800">
+            Super Listing
+          </Badge>
+        )}
       </div>
       <JobBadges job={job} />
       <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
@@ -966,7 +990,7 @@ export function MissingNotice({
 }) {
   if (!show) return null;
   return (
-    <div className="flex items-start md:items-center gap-2 border-b border-gray-400 bg-warning px-5 py-3">
+    <div className="flex items-start md:items-center gap-2 bg-warning px-5 py-3">
       <AlertTriangle className="h-5 w-5 text-warning-foreground/90" />
       <p className="text-sm text-warning-foreground/90 leading-snug">
         This job requires{" "}
@@ -1007,6 +1031,24 @@ function MarkdownBlock({ text }: { text?: string | null }) {
   );
 }
 
+export function SuperChallengeDetails({ job }: { job: Job }) {
+  const superChallengeTitle = job.challenge?.title?.trim();
+  const superChallengeDescription = job.challenge?.description?.trim();
+
+  if (!job.challenge) return null;
+
+  return (
+    <div className="rounded-[0.33em] border border-amber-300 bg-amber-50/70 p-4">
+      <h3 className="text-base font-semibold text-amber-900">
+        {superChallengeTitle || "Challenge"}
+      </h3>
+      <div className="mt-2 text-sm text-amber-900/90 whitespace-pre-wrap break-words">
+        {superChallengeDescription || "No challenge description provided."}
+      </div>
+    </div>
+  );
+}
+
 /* ──────────────────────────────────────────────
    Main JobDetails
    ────────────────────────────────────────────── */
@@ -1029,6 +1071,7 @@ export function JobDetails({
 }) {
   const hasGithub = !!user?.github_link?.trim();
   const hasPortfolio = !!user?.portfolio_link?.trim();
+  const isSuperListing = Boolean(job.challenge);
 
   const needsCover = !!job.internship_preferences?.require_cover_letter;
   const needsGithub = !!job.internship_preferences?.require_github;
@@ -1063,6 +1106,11 @@ export function JobDetails({
         <Section title="Job Details">
           <JobDetailsSummary job={job} />
         </Section>
+        {isSuperListing && (
+          <Section title="Super Challenge">
+            <SuperChallengeDetails job={job} />
+          </Section>
+        )}
         <Divider />
 
         {/* sections */}

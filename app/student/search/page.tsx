@@ -640,8 +640,8 @@ export default function SearchPage() {
         job={selectedJob}
         onClose={() => applyConfirmModalRef.current?.close()}
         onAddNow={goProfile}
-        onSubmit={(text: string) => {
-          return applyToJob(applicationActions, selectedJob, text).then(
+        onSubmit={(payload) => {
+          return applyToJob(applicationActions, selectedJob, payload).then(
             (response) => {
               if (!response.success) return alert(response.message);
               applyConfirmModalRef.current?.close();

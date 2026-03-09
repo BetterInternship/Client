@@ -23,16 +23,23 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
   ref?: RefObject<ModalHandle | null>;
   onClose: () => void;
   onAddNow: () => void;
-  onSubmit: (text: string) => Promise<void>;
+  onSubmit: (payload: {
+    coverLetter: string;
+    challengeSubmission: string;
+  }) => Promise<void>;
 }) {
   const profile = useProfileData();
-  const coverRef = useRef<CoverLetterHandle | null>(null);
+  const coverRef = useRef<ApplicationTextInputHandle | null>(null);
+  const challengeRef = useRef<ApplicationTextInputHandle | null>(null);
   const [applying, setApplying] = useState(false);
   const [coverError, setCoverError] = useState<string | null>(null);
+  const [challengeError, setChallengeError] = useState<string | null>(null);
+  const isSuperListing = Boolean(job?.challenge);
 
   const needsGH = !!job?.internship_preferences?.require_github;
   const needsPF = !!job?.internship_preferences?.require_portfolio;
-  const needsCL = (job?.internship_preferences?.require_cover_letter ?? true) === true;
+  const needsCL =
+    (job?.internship_preferences?.require_cover_letter ?? true) === true;
 
   const hasGH = !!profile.data?.github_link?.trim();
   const hasPF = !!profile.data?.portfolio_link?.trim();
@@ -49,9 +56,19 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
 
   async function handleSubmit() {
     setCoverError(null);
-    const text = coverRef.current?.getValue().trim() ?? ""; // pull the latest text from the uncontrolled textarea
+    setChallengeError(null);
+    const coverText = coverRef.current?.getValue().trim() ?? "";
+    const challengeText = challengeRef.current?.getValue().trim() ?? "";
 
-    if (needsCL && text.length === 0) {
+    if (isSuperListing && challengeText.length === 0) {
+      setChallengeError(
+        "Please submit your challenge response before applying.",
+      );
+      challengeRef.current?.focus();
+      return;
+    }
+
+    if (needsCL && coverText.length === 0) {
       setCoverError("Please add a brief cover letter before submitting.");
       coverRef.current?.focus();
       return;
@@ -59,7 +76,10 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
 
     try {
       setApplying(true);
-      await onSubmit(text);
+      await onSubmit({
+        coverLetter: coverText,
+        challengeSubmission: challengeText,
+      });
     } finally {
       setApplying(false);
     }
@@ -90,7 +110,26 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
           </p>
         </div>
 
-        {/* Cover Letter */}
+        {/* Super Challenge Input */}
+        {isSuperListing && (
+          <div className="space-y-3">
+            <div className="rounded-[0.33em] border border-amber-200 bg-amber-50 text-amber-800 px-3 py-2 text-sm">
+              <span className="font-medium">Super Listing:</span> Submit your
+              challenge response below.
+            </div>
+            <ApplicationTextInput
+              ref={challengeRef}
+              defaultValue=""
+              error={challengeError}
+              label="Challenge Submission"
+              helper="Describe your proposed solution clearly."
+              maxLength={4000}
+              placeholder="Write your challenge submission here..."
+            />
+          </div>
+        )}
+
+        {/* Cover Letter Input */}
         {needsCL && (
           <div className="space-y-3">
             <div
@@ -100,11 +139,18 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
               <span className="font-medium">Note:</span> A cover letter is
               required for this application.
             </div>
-            <CoverLetterInput
+            <ApplicationTextInput
               ref={coverRef}
               defaultValue=""
               error={coverError}
+              label="Cover Letter"
               maxLength={500}
+              placeholder={`Dear Hiring Manager,
+
+I am excited to apply for this position because...
+
+Best regards,
+[Your name]`}
             />
           </div>
         )}
@@ -118,15 +164,15 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
           onAddNow={onAddNow}
         />
 
-        {/* Inline error (for missing cover letter on submit) */}
-        {coverError && (
+        {/* Inline error */}
+        {(challengeError || coverError) && (
           <div
             role="alert"
             aria-live="polite"
             className="mb-3 rounded-[0.33em] border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm"
           >
             <div className="font-medium mb-1">Incomplete requirements</div>
-            {coverError}
+            {challengeError ?? coverError}
           </div>
         )}
 
@@ -168,25 +214,29 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
   );
 });
 
-export type CoverLetterHandle = {
+export type ApplicationTextInputHandle = {
   getValue: () => string;
   focus: () => void;
 };
 
-const CoverLetterInput = React.memo(
-  React.forwardRef(function CoverLetterInput(
+const ApplicationTextInput = React.memo(
+  React.forwardRef(function ApplicationTextInput(
     {
       defaultValue,
       error,
+      label,
       helper,
       maxLength = 500,
+      placeholder,
     }: {
       defaultValue?: string;
       error?: string | null;
+      label?: string;
       helper?: string;
       maxLength?: number;
+      placeholder?: string;
     },
-    ref: React.Ref<CoverLetterHandle>
+    ref: React.Ref<ApplicationTextInputHandle>,
   ) {
     const taRef = useRef<HTMLTextAreaElement | null>(null);
     const [count, setCount] = useState(defaultValue?.length ?? 0);
@@ -197,23 +247,21 @@ const CoverLetterInput = React.memo(
         getValue: () => taRef.current?.value ?? "",
         focus: () => taRef.current?.focus(),
       }),
-      []
+      [],
     );
 
     return (
       <div className="space-y-2">
+        {label && (
+          <label className="text-sm font-medium text-gray-700">{label}</label>
+        )}
         <Textarea
           ref={taRef}
           defaultValue={defaultValue}
           onInput={(e) =>
             setCount((e.target as HTMLTextAreaElement).value.length)
           }
-          placeholder={`Dear Hiring Manager,
-
-I am excited to apply for this position because...
-
-Best regards,
-[Your name]`}
+          placeholder={placeholder}
           className={
             "w-full h-24 p-3 border rounded-[0.33em] resize-none text-sm overflow-y-auto " +
             (error
@@ -232,7 +280,7 @@ Best regards,
         </div>
       </div>
     );
-  })
+  }),
 );
 
 const RequirementsChecklist = React.memo(function RequirementsChecklist({

@@ -163,7 +163,10 @@ const CreateJobPage = ({
       salary: formData.allowance === 0 ? formData.salary : undefined,
       salary_freq: formData.allowance === 0 ? formData.salary_freq : undefined,
       is_unlisted: formData.is_unlisted ?? false,
-      internship_preferences: formData.internship_preferences,
+      internship_preferences: {
+        ...formData.internship_preferences,
+        ...(isSuperListing ? { require_cover_letter: false } : {}),
+      },
     };
 
     set_creating(true);
@@ -205,6 +208,15 @@ const CreateJobPage = ({
   useEffect(() => {
     setField("location", profile.data?.location);
   }, []);
+
+  useEffect(() => {
+    if (!isSuperListing) return;
+    if (!formData.internship_preferences?.require_cover_letter) return;
+    setField("internship_preferences", {
+      ...formData.internship_preferences,
+      require_cover_letter: false,
+    });
+  }, [isSuperListing, formData.internship_preferences?.require_cover_letter]);
 
   useEffect(() => {
     const missing = !!(
@@ -929,37 +941,45 @@ const CreateJobPage = ({
                           </div>
 
                           <div
-                            onClick={() =>
+                            onClick={() => {
+                              if (isSuperListing) return;
                               setField("internship_preferences", {
                                 ...formData.internship_preferences,
                                 require_cover_letter:
                                   !formData.internship_preferences
                                     ?.require_cover_letter,
-                              })
-                            }
-                            className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors cursor-pointer h-fit
-                        ${formData.internship_preferences?.require_cover_letter ? "border-primary border-opacity-85" : "border-gray-200 hover:border-gray-300"}`}
+                              });
+                            }}
+                            className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors h-fit
+                        ${isSuperListing ? "cursor-not-allowed opacity-60 border-gray-200 bg-gray-50" : "cursor-pointer"}
+                        ${!isSuperListing && formData.internship_preferences?.require_cover_letter ? "border-primary border-opacity-85" : ""}
+                        ${!isSuperListing && !formData.internship_preferences?.require_cover_letter ? "border-gray-200 hover:border-gray-300" : ""}`}
                           >
                             <FormCheckbox
                               checked={
-                                formData.internship_preferences
-                                  ?.require_cover_letter ?? false
+                                isSuperListing
+                                  ? false
+                                  : (formData.internship_preferences
+                                      ?.require_cover_letter ?? false)
                               }
-                              setter={() =>
+                              setter={() => {
+                                if (isSuperListing) return;
                                 setField("internship_preferences", {
                                   ...formData.internship_preferences,
                                   require_cover_letter:
                                     !formData.internship_preferences
                                       ?.require_cover_letter,
-                                })
-                              }
+                                });
+                              }}
                             />
                             <div className="grid grid-rows-1 md:grid-rows-2">
                               <Label className="text-xs font-medium text-gray-900">
                                 Cover Letter
                               </Label>
                               <p className="text-xs text-gray-500">
-                                Require cover letter
+                                {isSuperListing
+                                  ? "Disabled for super listings"
+                                  : "Require cover letter"}
                               </p>
                             </div>
                           </div>

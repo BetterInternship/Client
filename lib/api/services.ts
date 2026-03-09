@@ -487,7 +487,11 @@ export const ApplicationService = {
     );
   },
 
-  async createApplication(data: { job_id: string; cover_letter?: string }) {
+  async createApplication(data: {
+    job_id: string;
+    cover_letter?: string;
+    challenge_submission?: string;
+  }) {
     return APIClient.post<CreateApplicationResponse>(
       APIRouteBuilder("applications").r("create").build(),
       data,
