@@ -339,7 +339,7 @@ function SuperListingBorderBadge({ mobile = false }: { mobile?: boolean }) {
     <div
       className={cn(
         "pointer-events-none absolute left-4 top-[1.25rem] z-20 inline-flex rotate-[-3deg] items-center gap-2 rounded-full border border-amber-300 bg-white/95 px-3 py-1 text-xs font-semibold text-amber-800 shadow-[0_6px_16px_rgba(245,158,11,0.14)]",
-        mobile && "left-4 top-2.5 px-2.5 py-0.5 text-[11px]",
+        mobile && "left-4 top-4 px-2.5 py-0.5 text-xs  rotate-[-2.5deg]",
       )}
     >
       <Zap className="h-3.5 w-3.5 fill-current" />
