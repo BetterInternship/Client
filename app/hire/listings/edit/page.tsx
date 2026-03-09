@@ -4,7 +4,7 @@ import ContentLayout from "@/components/features/hire/content-layout";
 import EditJobPage from "@/components/features/hire/listings/editJob";
 import { Loader } from "@/components/ui/loader";
 import { JobService } from "@/lib/api/services";
-import { Job } from "@/lib/db/db.types";
+import { Job, UpdateJobChallengeListingPayload } from "@/lib/db/db.types";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
@@ -26,7 +26,7 @@ function EditJobPageRouteContent() {
 
   const updateJob = async (
     job_id: string,
-    job: Partial<Job>,
+    job: UpdateJobChallengeListingPayload,
   ): Promise<{ success: boolean }> => {
     try {
       setSaving(true);

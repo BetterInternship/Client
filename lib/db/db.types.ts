@@ -56,6 +56,10 @@ export type CreateJobChallengeListingPayload = Partial<Job> & {
   challenge: JobChallengePayload;
 };
 
+export type UpdateJobChallengeListingPayload = Partial<Job> & {
+  challenge?: JobChallengePayload | Partial<JobChallenge> | null;
+};
+
 export interface UserApplication extends Partial<Tables<"applications">> {
   job?: Partial<Job>;
   jobs?: Partial<Job>;

@@ -2,6 +2,7 @@ import { FormTemplate } from "../db/use-moa-backend";
 import {
   Conversation,
   CreateJobChallengeListingPayload,
+  UpdateJobChallengeListingPayload,
   Employer,
   Job,
   PublicUser,
@@ -406,7 +407,7 @@ export const JobService = {
     );
   },
 
-  async updateJob(jobId: string, job: Partial<Job>) {
+  async updateJob(jobId: string, job: UpdateJobChallengeListingPayload) {
     return APIClient.put<FetchResponse>(
       APIRouteBuilder("jobs").r(jobId).build(),
       job,
