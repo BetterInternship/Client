@@ -18,6 +18,7 @@ interface JobsContentProps {
     jobs: Job[];
     employerId: string;
     updateJob: (jobId: string, job: Partial<Job>) => Promise<any>;
+    onAddListingClick?: () => void;
     isLoading?: boolean;
 }
 
@@ -26,6 +27,7 @@ export function JobsContent({
     jobs,
     employerId,
     updateJob, 
+    onAddListingClick,
     isLoading
 }: JobsContentProps) {
     const [exiting, setExiting] = useState(false);
@@ -94,17 +96,13 @@ export function JobsContent({
                                 ? "flex-col items-center"
                                 : ""
                             )}>
-                                <Link
-                                    href="/listings/create"
-                                    className=""
+                                <Button
+                                    className="px-8 py-6"
+                                    onClick={onAddListingClick}
                                 >
-                                    <Button
-                                        className="px-8 py-6"
-                                    >
-                                        <Plus />
-                                        Add a listing to get started.
-                                    </Button>
-                                </Link>
+                                    <Plus />
+                                    Add a listing to get started.
+                                </Button>
                                 <Link
                                     href="https://calendar.app.google/boXRU8HEkisZT95D6"
                                 >

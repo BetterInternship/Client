@@ -1,6 +1,7 @@
 import { FormTemplate } from "../db/use-moa-backend";
 import {
   Conversation,
+  CreateJobChallengeListingPayload,
   Employer,
   Job,
   PublicUser,
@@ -394,6 +395,13 @@ export const JobService = {
   async createJob(job: Partial<Job>) {
     return APIClient.post<FetchResponse>(
       APIRouteBuilder("jobs").r("create").build(),
+      job,
+    );
+  },
+
+  async createSuperJob(job: CreateJobChallengeListingPayload) {
+    return APIClient.post<FetchResponse>(
+      APIRouteBuilder("jobs").r("create-super").build(),
       job,
     );
   },
