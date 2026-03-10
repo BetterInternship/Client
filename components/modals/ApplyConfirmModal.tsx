@@ -12,6 +12,7 @@ import React, {
 import { useProfileData } from "@/lib/api/student.data.api";
 import { Textarea } from "../ui/textarea";
 import { SuperChallengeDetails } from "../shared/jobs";
+import { useMobile } from "@/hooks/use-mobile";
 
 export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
   job,
@@ -36,6 +37,7 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
   const [coverError, setCoverError] = useState<string | null>(null);
   const [challengeError, setChallengeError] = useState<string | null>(null);
   const isSuperListing = Boolean(job?.challenge);
+  const isMobile = useMobile();
 
   const needsGH = !!job?.internship_preferences?.require_github;
   const needsPF = !!job?.internship_preferences?.require_portfolio;
@@ -87,10 +89,17 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
   }
 
   return (
-    <ModalComponent ref={ref} className={isSuperListing ? "max-w-4xl w-[56rem]" : undefined}>
-      <div className={`${isSuperListing ? "" : "max-w-lg mx-auto"} p-6 pt-0 overflow-auto space-y-4`}>
+    <ModalComponent
+      ref={ref}
+      className={isSuperListing ? "max-w-4xl w-[min(56rem,calc(100vw-2rem))]" : undefined}
+    >
+      <div
+        className={`${isSuperListing ? "" : "max-w-lg mx-auto"} p-6 pt-0 overflow-auto space-y-4`}
+      >
         <div className="text-center">
-          <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${isSuperListing ? "bg-amber-100" : "bg-blue-100"}`}>
+          <div
+            className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${isSuperListing ? "bg-amber-100" : "bg-blue-100"}`}
+          >
             {isSuperListing ? (
               <span className="text-3xl">⚡</span>
             ) : (
@@ -118,7 +127,7 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
         {/* Super Challenge Section */}
         {isSuperListing && job && (
           <div className="space-y-4">
-            <SuperChallengeDetails job={job} />
+            <SuperChallengeDetails job={job} mobile={isMobile} />
 
             {/* Challenge Submission Input */}
             <ApplicationTextInput

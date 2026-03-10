@@ -239,20 +239,30 @@ function SuperListingHeader({
   );
 }
 
-function SuperListingBadge({ className }: { className?: string }) {
+function SuperListingBadge({
+  className,
+  compact = false,
+}: {
+  className?: string;
+  compact?: boolean;
+}) {
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full bg-white super-header-badge px-3 py-1.5 text-xs font-bold text-amber-900",
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-white super-header-badge px-3 py-1.5 text-xs font-bold text-amber-900",
         className,
       )}
     >
       <span className="text-sm leading-none">⚡</span>
       <span className="tracking-wide">Super Listing</span>
-      <span className="text-amber-600/80">·</span>
-      <span className="font-semibold text-amber-700">
-        Get a response in 24h
-      </span>
+      {!compact && (
+        <>
+          <span className="text-amber-600/80">·</span>
+          <span className="font-semibold text-amber-700">
+            Get a response in 24h
+          </span>
+        </>
+      )}
     </div>
   );
 }
@@ -285,11 +295,15 @@ function LightningEmojiBorder({
       aria-hidden
       className="pointer-events-none absolute inset-0 z-[15] overflow-visible"
     >
-      {/* Top-left (card) / Top-center (hero — avoid badge) */}
+      {/* Top-left (card) / repositioned for hero */}
       <span
         className={cn(
-          "absolute top-0 -translate-y-1/2 rotate-[-14deg] leading-none select-none super-sticker",
-          isHero ? "right-[40%]" : "left-3",
+          "absolute -translate-y-1/2 rotate-[-14deg] leading-none select-none super-sticker",
+          isHero
+            ? mobile
+              ? "bottom-0 left-3 translate-y-1/2"
+              : "top-0 right-[40%]"
+            : "top-0 left-3",
           sm,
         )}
       >
@@ -306,11 +320,14 @@ function LightningEmojiBorder({
         ⚡
       </span>
 
-      {/* Top-right — hero only */}
+      {/* Third sticker — different position for mobile vs desktop hero */}
       {isHero && (
         <span
           className={cn(
-            "absolute top-0 right-[15%] -translate-y-1/2 rotate-[10deg] leading-none select-none super-sticker-delayed",
+            "absolute leading-none select-none super-sticker-delayed",
+            mobile
+              ? "top-1/2 right-0 translate-x-1/2 -translate-y-1/2 rotate-[8deg]"
+              : "top-0 right-[15%] -translate-y-1/2 rotate-[10deg]",
             "text-sm md:text-base",
           )}
         >
@@ -1246,7 +1263,13 @@ function MarkdownBlock({ text }: { text?: string | null }) {
   );
 }
 
-export function SuperChallengeDetails({ job }: { job: Job }) {
+export function SuperChallengeDetails({
+  job,
+  mobile = false,
+}: {
+  job: Job;
+  mobile?: boolean;
+}) {
   const superChallengeTitle = job.challenge?.title?.trim();
   const superChallengeDescription = job.challenge?.description?.trim();
 
@@ -1255,7 +1278,7 @@ export function SuperChallengeDetails({ job }: { job: Job }) {
   return (
     <div className="relative py-3">
       {/* Stickers sit outside the clipped card, on the border */}
-      <LightningEmojiBorder variant="hero" />
+      <LightningEmojiBorder variant="hero" mobile={mobile} />
 
       <div
         className={cn(
@@ -1264,8 +1287,15 @@ export function SuperChallengeDetails({ job }: { job: Job }) {
         )}
       >
         {/* Badge on the border */}
-        <div className="absolute left-4 top-0 -translate-y-1/2 z-20">
-          <SuperListingBadge />
+        <div
+          className={cn(
+            "absolute top-0 -translate-y-1/2 z-20",
+            mobile ? "left-1/2 -translate-x-1/2" : "left-4",
+          )}
+        >
+          <SuperListingBadge
+            className={cn(mobile && "px-2.5 py-1 text-[11px]")}
+          />
         </div>
 
         {/* Ambient glow orbs */}
