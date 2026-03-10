@@ -10,6 +10,7 @@ import {
   CheckCircle,
   Clock,
   EyeOff,
+  MapPin,
   Monitor,
   PhilippinePeso,
   UserCheck,
@@ -206,129 +207,36 @@ export const EmployerMOA = ({
   );
 };
 
-function SuperListingDoodles({ mobile = false }: { mobile?: boolean }) {
-  return (
-    <>
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 360 220"
-        className="pointer-events-none absolute inset-0 h-full w-full text-amber-500/70"
-        fill="none"
-        preserveAspectRatio="none"
-      >
-        <rect
-          x="6.5"
-          y="6.5"
-          width="347"
-          height="207"
-          rx="7"
-          ry="7"
-          stroke="currentColor"
-          strokeWidth="2.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeDasharray={mobile ? "6 7" : "7 8"}
-        />
-      </svg>
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 120 36"
-        className={cn(
-          "pointer-events-none absolute left-0 top-0 w-32 text-amber-500/70",
-          mobile && "w-24",
-        )}
-        fill="none"
-      >
-        <path
-          d="M5 23C17 10 24 9 33 18C40 24 49 24 61 12C74 0 88 3 102 17"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-        />
-        <path
-          d="M96 12L102 17L95 21"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 80 80"
-        className={cn(
-          "pointer-events-none absolute right-0 top-0 h-16 w-16 rotate-[8deg] text-amber-500/75",
-          mobile && "h-14 w-14",
-        )}
-        fill="none"
-      >
-        <path
-          d="M34 6L18 33H34L26 56L54 24H39L47 6Z"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 120 40"
-        className={cn(
-          "pointer-events-none absolute bottom-0 right-0 w-32 text-orange-400/70",
-          mobile && "w-24",
-        )}
-        fill="none"
-      >
-        <path
-          d="M10 10C31 28 53 31 84 18"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-        />
-        <path
-          d="M78 13L84 18L77 24"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M62 17C71 21 77 22 84 18"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-      </svg>
-    </>
-  );
-}
-
 function SuperListingHeader({
   title,
   employer,
+  location,
   compact = false,
 }: {
   title: string | null | undefined;
   employer: string | null | undefined;
+  location?: string | null;
   compact?: boolean;
 }) {
   return (
     <div className={cn("space-y-2", compact && "space-y-1.5")}>
       <div className="space-y-1">
         <div className="relative inline-block max-w-full">
-          <div className="absolute inset-x-0 bottom-1 h-4 rotate-[-1deg] rounded-sm bg-amber-200/55" />
+          <div className="absolute inset-x-0 bottom-0.5 h-[0.45em] rotate-[-0.8deg] rounded-sm bg-gradient-to-r from-amber-200/70 via-amber-300/50 to-amber-200/30" />
           <h3
             className={cn(
-              "relative font-semibold leading-tight text-gray-900 break-words",
-              compact ? "text-lg" : "text-[1.35rem]",
+              "relative font-bold leading-tight text-gray-900 break-words tracking-tight",
+              compact ? "text-lg" : "text-xl",
             )}
           >
             {title}
           </h3>
         </div>
-        <p className="text-sm font-medium text-gray-700">
-          {employer ?? "Unknown"}
-        </p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-sm font-semibold text-amber-900/80">
+            {employer ?? "Unknown"}
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -338,12 +246,77 @@ function SuperListingBorderBadge({ mobile = false }: { mobile?: boolean }) {
   return (
     <div
       className={cn(
-        "pointer-events-none absolute left-4 top-[1.25rem] z-20 inline-flex rotate-[-3deg] items-center gap-2 rounded-full border border-amber-300 bg-white/95 px-3 py-1 text-xs font-semibold text-amber-800 shadow-[0_6px_16px_rgba(245,158,11,0.14)]",
-        mobile && "left-4 top-4 px-2.5 py-0.5 text-xs  rotate-[-2.5deg]",
+        "pointer-events-none absolute left-4 top-[1.25rem] z-20 inline-flex items-center gap-1.5 rounded-full bg-white super-header-badge px-3 py-1.5 text-xs font-bold text-amber-900",
+        mobile && "left-4 top-4 px-2.5 py-1 text-[11px]",
       )}
     >
-      <Zap className="h-3.5 w-3.5 fill-current" />
-      <span>Responds in 24h</span>
+      <Zap className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+      <span className="tracking-wide">Super Listing</span>
+      <span className="text-amber-600/80">·</span>
+      <span className="font-semibold text-amber-700">
+        Get a response in 24h
+      </span>
+    </div>
+  );
+}
+
+function LightningEmojiBorder({
+  mobile = false,
+  variant = "card",
+}: {
+  mobile?: boolean;
+  variant?: "card" | "hero";
+}) {
+  const isHero = variant === "hero";
+  const lg = isHero ? "text-xl md:text-2xl" : mobile ? "text-lg" : "text-xl";
+  const sm = isHero ? "text-base md:text-lg" : mobile ? "text-sm" : "text-base";
+
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-0 z-[15] overflow-visible"
+    >
+      {/* Top-left corner — centered on the border */}
+      <span
+        className={cn(
+          "absolute top-0 left-3 -translate-y-1/2 rotate-[-14deg] leading-none select-none super-sticker",
+          lg,
+        )}
+      >
+        ⚡
+      </span>
+
+      {/* Top-right — offset for asymmetry */}
+      <span
+        className={cn(
+          "absolute top-0 right-[15%] -translate-y-1/2 rotate-[10deg] leading-none select-none super-sticker-delayed",
+          sm,
+        )}
+      >
+        ⚡
+      </span>
+
+      {/* Bottom-right corner */}
+      <span
+        className={cn(
+          "absolute bottom-0 right-3 translate-y-1/2 rotate-[12deg] leading-none select-none super-sticker-slow",
+          lg,
+        )}
+      >
+        ⚡
+      </span>
+
+      {/* Bottom-left — smaller, keeps it balanced */}
+      {isHero && (
+        <span
+          className={cn(
+            "absolute bottom-0 left-[18%] translate-y-1/2 rotate-[-8deg] leading-none select-none super-sticker-delayed",
+            sm,
+          )}
+        >
+          ⚡
+        </span>
+      )}
     </div>
   );
 }
@@ -356,10 +329,11 @@ function SuperJobCardContent({
   compact?: boolean;
 }) {
   return (
-    <div className={cn("relative z-10 space-y-4", compact ? "p-0" : "p-0")}>
+    <div className={cn("relative z-10 space-y-3.5", compact ? "p-0" : "p-0")}>
       <SuperListingHeader
         title={job.title}
         employer={job.employer?.name}
+        location={job.location}
         compact={compact}
       />
       <div className="space-y-3">
@@ -385,23 +359,29 @@ function SuperJobCard({
   mobile?: boolean;
 }) {
   return (
-    <div
-      onClick={onClick}
-      className={cn(
-        "group relative isolate cursor-pointer overflow-hidden rounded-[0.33em] bg-[radial-gradient(circle_at_top_left,rgba(254,240,138,0.46),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(251,146,60,0.16),transparent_28%),linear-gradient(145deg,rgba(255,251,235,1)_0%,rgba(255,255,255,1)_42%,rgba(254,243,199,0.96)_100%)] shadow-[0_14px_34px_rgba(251,191,36,0.16)] transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(249,115,22,0.2)]",
-        mobile ? "p-0" : "p-0",
-        selected && "ring-1 ring-amber-400 ring-offset-1",
-      )}
-    >
-      <SuperListingDoodles mobile={mobile} />
-      <SuperListingBorderBadge mobile={mobile} />
+    <div className="relative py-3">
+      {/* Stickers live outside the clipped card so they sit ON the border */}
+      <LightningEmojiBorder mobile={mobile} />
+
       <div
+        onClick={onClick}
         className={cn(
-          "relative z-10 space-y-4",
-          mobile ? "px-5 pb-5 pt-11" : "px-5 pb-[1.35rem] pt-[3.15rem]",
+          "super-card group relative isolate cursor-pointer overflow-hidden rounded-[0.33em]",
+          "bg-[radial-gradient(ellipse_at_top_left,rgba(254,240,138,0.5),transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(251,146,60,0.18),transparent_35%),linear-gradient(150deg,rgba(255,251,235,1)_0%,rgba(255,255,255,1)_45%,rgba(254,243,199,0.98)_100%)]",
+          "transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_40px_rgba(245,158,11,0.25),0_0_80px_rgba(245,158,11,0.12),0_20px_40px_rgba(249,115,22,0.15)]",
+          selected &&
+            "shadow-[0_0_24px_rgba(245,158,11,0.25)] border-amber-500/70",
         )}
       >
-        <SuperJobCardContent job={job} compact={mobile} />
+        <SuperListingBorderBadge mobile={mobile} />
+        <div
+          className={cn(
+            "relative z-10 space-y-4",
+            mobile ? "px-5 pb-5 pt-12" : "px-5 pb-5 pt-[3.5rem]",
+          )}
+        >
+          <SuperJobCardContent job={job} compact={mobile} />
+        </div>
       </div>
     </div>
   );
@@ -418,41 +398,21 @@ function SuperListingCTA({
 
   return (
     <div className="relative pt-3">
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 110 32"
-        className={cn(
-          "pointer-events-none absolute right-3 top-0 h-8 w-24 text-amber-500/70",
-          compact && "right-2 top-0 h-7 w-20",
-        )}
-        fill="none"
-      >
-        <path
-          d="M6 22C25 7 46 6 70 15"
-          stroke="currentColor"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-        />
-        <path
-          d="M63 10L70 15L62 19"
-          stroke="currentColor"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
       <div
         className={cn(
-          "w-full rotate-[-1deg] rounded-[1.15rem] border border-amber-500 bg-[linear-gradient(180deg,#f59e0b_0%,#f97316_100%)] px-4 py-3 text-sm font-semibold text-white shadow-[0_10px_18px_rgba(249,115,22,0.24)] transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5",
+          "super-cta-glow w-full rotate-[-0.8deg] rounded-2xl border border-amber-400/80",
+          "bg-[linear-gradient(135deg,#f59e0b_0%,#f97316_60%,#ea580c_100%)]",
+          "px-4 py-3 text-sm font-bold text-white",
+          "transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-1 group-hover:rotate-[-0.3deg]",
           compact && "px-4 py-2.5 text-[13px]",
         )}
       >
         <span className="flex items-center gap-2">
-          <Zap className="h-4 w-4 fill-current" />
-          <span className="min-w-0 flex-1 line-clamp-2 text-center">
+          <Zap className="h-4 w-4 fill-current drop-shadow-[0_0_4px_rgba(255,255,255,0.5)]" />
+          <span className="min-w-0 flex-1 line-clamp-2 text-center drop-shadow-[0_1px_2px_rgba(0,0,0,0.15)]">
             {trimmedChallengeTitle || "Open Challenge"}
           </span>
-          <ArrowRight className="h-4 w-4" />
+          <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
         </span>
       </div>
     </div>
@@ -625,67 +585,87 @@ function HeaderWithActions({
   disabled?: boolean;
 }) {
   const { isMobile } = useMobile();
+  const isSuperListing = Boolean(job.challenge);
   return (
-    <div
-      className={cn(
-        "items-start justify-between gap-3",
-        isMobile ? "" : "flex",
-      )}
-    >
-      {/* ctas on top for mobile */}
-      {isMobile && (
-        <div className="shrink-0 mb-4">
-          <div className="flex items-center gap-2">
-            {actions.map((a, i) => (
-              <div key={i} className="inline-flex">
-                {a}
-              </div>
-            ))}
+    <div>
+      {/* Super listing badge — above the header row so title stays aligned */}
+      {isSuperListing && (
+        <div className="mb-4">
+          <div className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-amber-50 via-amber-100/80 to-amber-50 border border-amber-300/50 px-5 py-2.5 shadow-[0_2px_12px_rgba(245,158,11,0.12)]">
+            <Zap className="h-4.5 w-4.5 fill-amber-500 text-amber-500 super-zap" />
+            <span className="text-sm font-bold tracking-wide text-amber-900">
+              Super Listing
+            </span>
+            <span className="text-amber-400">·</span>
+            <span className="text-sm font-semibold text-amber-700">
+              24h Guaranteed Reply
+            </span>
+            <Zap className="h-3.5 w-3.5 fill-amber-400/50 text-amber-400/50 super-zap-delayed" />
           </div>
         </div>
       )}
 
-      {/* left: title/employer/location */}
-      <div className="min-w-0">
-        <h1
-          className={cn(
-            "font-semibold text-gray-900 leading-tight truncate",
-            isMobile ? "text-xl" : "text-4xl",
-          )}
-        >
-          {job.title}
-        </h1>
-        <p
-          className={cn(
-            "text-gray-600 truncate",
-            isMobile ? "text-base" : "text-xl",
-          )}
-        >
-          {job.employer?.name}
-        </p>
-        {job.location && (
-          <div className="flex items-center gap-1.5 text-gray-600">
-            <Building className="h-4 w-4" />
-            <span className="truncate">{job.location}</span>
+      <div
+        className={cn(
+          "items-start justify-between gap-3",
+          isMobile ? "" : "flex",
+        )}
+      >
+        {/* ctas on top for mobile */}
+        {isMobile && (
+          <div className="shrink-0 mb-4">
+            <div className="flex items-center gap-2">
+              {actions.map((a, i) => (
+                <div key={i} className="inline-flex">
+                  {a}
+                </div>
+              ))}
+            </div>
           </div>
         )}
-        {/* <p className="text-s text-gray-500 mt-1">
+
+        {/* left: title/employer/location */}
+        <div className="min-w-0">
+          <h1
+            className={cn(
+              "font-semibold text-gray-900 leading-tight truncate",
+              isMobile ? "text-xl" : "text-4xl",
+            )}
+          >
+            {job.title}
+          </h1>
+          <p
+            className={cn(
+              "text-gray-600 truncate",
+              isMobile ? "text-base" : "text-xl",
+            )}
+          >
+            {job.employer?.name}
+          </p>
+          {job.location && (
+            <div className="flex items-center gap-1.5 text-gray-600">
+              <Building className="h-4 w-4" />
+              <span className="truncate">{job.location}</span>
+            </div>
+          )}
+          {/* <p className="text-s text-gray-500 mt-1">
           Listed on {formatDate(job.created_at ?? "")}
         </p> */}
-      </div>
-
-      {/* right: CTAs */}
-      {!isMobile && (
-        <div className="shrink-0 sm:mt-1">
-          <div className="flex items-center gap-2">
-            {actions.map((a, i) => (
-              <div key={i} className="inline-flex">
-                {a}
-              </div>
-            ))}
-          </div>
         </div>
-      )}
+
+        {/* right: CTAs */}
+        {!isMobile && (
+          <div className="shrink-0 sm:mt-1">
+            <div className="flex items-center gap-2">
+              {actions.map((a, i) => (
+                <div key={i} className="inline-flex">
+                  {a}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -1292,12 +1272,36 @@ export function SuperChallengeDetails({ job }: { job: Job }) {
   if (!job.challenge) return null;
 
   return (
-    <div className="rounded-[0.33em] border border-amber-300 bg-amber-50/70 p-4">
-      <h3 className="text-base font-semibold text-amber-900">
-        {superChallengeTitle || "Challenge"}
-      </h3>
-      <div className="mt-2 text-sm text-amber-900/90 whitespace-pre-wrap break-words">
-        {superChallengeDescription || "No challenge description provided."}
+    <div className="relative py-3">
+      {/* Stickers sit outside the clipped card, on the border */}
+      <LightningEmojiBorder variant="hero" />
+
+      <div
+        className={cn(
+          "super-challenge-card group relative isolate rounded-[0.33em] p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_40px_rgba(245,158,11,0.25),0_0_80px_rgba(245,158,11,0.12),0_20px_40px_rgba(249,115,22,0.15)]",
+          "bg-[radial-gradient(ellipse_at_top_left,rgba(254,240,138,0.5),transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(251,146,60,0.18),transparent_35%),linear-gradient(150deg,rgba(255,251,235,1)_0%,rgba(255,255,255,1)_45%,rgba(254,243,199,0.98)_100%)]",
+        )}
+      >
+        {/* Ambient glow orbs */}
+        <div className="pointer-events-none absolute -left-8 top-4 h-32 w-32 rounded-full bg-amber-300/20 blur-3xl" />
+        <div className="pointer-events-none absolute -right-6 bottom-2 h-24 w-24 rounded-full bg-orange-300/15 blur-2xl" />
+
+        <div className="relative z-10 space-y-4">
+          {/* Section label */}
+          <div className="flex items-center gap-2">
+            <Zap className="h-4 w-4 fill-amber-500 text-amber-500" />
+            <span className="text-xs font-bold uppercase tracking-[0.12em] text-amber-800">
+              Challenge
+            </span>
+          </div>
+
+          <h3 className="relative text-2xl font-bold leading-tight text-gray-900 tracking-tight">
+            {superChallengeTitle || "Tell us your funniest joke."}
+          </h3>
+          <div className="relative whitespace-pre-wrap break-words text-sm leading-relaxed text-gray-700">
+            {superChallengeDescription || "No challenge description provided."}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1360,11 +1364,7 @@ export function JobDetails({
         <Section title="Job Details">
           <JobDetailsSummary job={job} />
         </Section>
-        {isSuperListing && (
-          <Section title="Super Challenge">
-            <SuperChallengeDetails job={job} />
-          </Section>
-        )}
+        {isSuperListing && <SuperChallengeDetails job={job} />}
         <Divider />
 
         {/* sections */}

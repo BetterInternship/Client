@@ -8,6 +8,7 @@ import {
   MapPin,
   CheckCircle2,
   AlertTriangle,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
@@ -91,11 +92,7 @@ export const JobModal = ({
                 <Section title="Job Details">
                   <JobDetailsSummary job={job} />
                 </Section>
-                {isSuperListing && (
-                  <Section title="Super Challenge">
-                    <SuperChallengeDetails job={job} />
-                  </Section>
-                )}
+                {isSuperListing && <SuperChallengeDetails job={job} />}
 
                 <Divider />
 
@@ -156,17 +153,31 @@ function HeaderCompact({ job }: { job: Job }) {
   return (
     <div className="mb-1">
       {/* Title */}
-      <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 leading-tight max-w-full break-words hyphens-auto line-clamp-2 sm:line-clamp-none">
-        {job.title}
-      </h1>
       {isSuperListing && (
-        <div className="mt-2">
-          <span className="inline-flex rounded-[0.33em] border border-amber-300 bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
-            Super Listing
-          </span>
+        <div className="relative mb-3">
+          <div className="inline-flex items-center gap-2 rounded-full super-header-badge px-3.5 py-1.5 text-xs font-bold text-amber-900">
+            <Zap className="h-3.5 w-3.5 fill-amber-500 text-amber-500 super-zap" />
+            <span className="tracking-wide">Super Listing</span>
+            <span className="text-amber-600/60">·</span>
+            <span className="font-semibold text-amber-700">24h Reply</span>
+            <Zap className="h-3 w-3 fill-amber-400/50 text-amber-400/50 super-zap-delayed" />
+          </div>
         </div>
       )}
-      <div className="flex items-center gap-2 text-gray-600">
+      <h1
+        className={cn(
+          "text-2xl sm:text-3xl font-semibold text-gray-900 leading-tight max-w-full break-words hyphens-auto line-clamp-2 sm:line-clamp-none",
+          isSuperListing && "font-bold tracking-tight",
+        )}
+      >
+        {job.title}
+      </h1>
+      <div
+        className={cn(
+          "flex items-center gap-2",
+          isSuperListing ? "text-amber-900/70" : "text-gray-600",
+        )}
+      >
         <Building className="w-4 h-4 flex-shrink-0" />
         <span className="truncate">{job.employer?.name}</span>
       </div>
@@ -176,9 +187,6 @@ function HeaderCompact({ job }: { job: Job }) {
           <span className="truncate">{job.location}</span>
         </div>
       )}
-      {/* <p className="text-[11px] text-gray-500 mt-1">
-        Listed on {formatDate(job.created_at ?? "")}
-      </p> */}
     </div>
   );
 }
