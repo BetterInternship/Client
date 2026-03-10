@@ -902,7 +902,7 @@ button[role="checkbox"]:checked {
   border: 1.5px solid rgba(245, 158, 11, 0.35);
   animation: super-border-glow 3s ease-in-out infinite;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .super-challenge-card::before {

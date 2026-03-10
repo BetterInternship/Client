@@ -10,7 +10,6 @@ import {
   CheckCircle,
   Clock,
   EyeOff,
-  MapPin,
   Monitor,
   PhilippinePeso,
   UserCheck,
@@ -210,12 +209,10 @@ export const EmployerMOA = ({
 function SuperListingHeader({
   title,
   employer,
-  location,
   compact = false,
 }: {
   title: string | null | undefined;
   employer: string | null | undefined;
-  location?: string | null;
   compact?: boolean;
 }) {
   return (
@@ -242,20 +239,33 @@ function SuperListingHeader({
   );
 }
 
-function SuperListingBorderBadge({ mobile = false }: { mobile?: boolean }) {
+function SuperListingBadge({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "pointer-events-none absolute left-4 top-[1.25rem] z-20 inline-flex items-center gap-1.5 rounded-full bg-white super-header-badge px-3 py-1.5 text-xs font-bold text-amber-900",
-        mobile && "left-4 top-4 px-2.5 py-1 text-[11px]",
+        "inline-flex items-center gap-1.5 rounded-full bg-white super-header-badge px-3 py-1.5 text-xs font-bold text-amber-900",
+        className,
       )}
     >
-      <Zap className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+      <span className="text-sm leading-none">⚡</span>
       <span className="tracking-wide">Super Listing</span>
       <span className="text-amber-600/80">·</span>
       <span className="font-semibold text-amber-700">
         Get a response in 24h
       </span>
+    </div>
+  );
+}
+
+function SuperListingBorderBadge({ mobile = false }: { mobile?: boolean }) {
+  return (
+    <div
+      className={cn(
+        "pointer-events-none absolute left-4 top-[1.25rem] z-20",
+        mobile && "left-4 top-4",
+      )}
+    >
+      <SuperListingBadge className={cn(mobile && "px-2.5 py-1 text-[11px]")} />
     </div>
   );
 }
@@ -268,7 +278,6 @@ function LightningEmojiBorder({
   variant?: "card" | "hero";
 }) {
   const isHero = variant === "hero";
-  const lg = isHero ? "text-xl md:text-2xl" : mobile ? "text-lg" : "text-xl";
   const sm = isHero ? "text-base md:text-lg" : mobile ? "text-sm" : "text-base";
 
   return (
@@ -276,20 +285,11 @@ function LightningEmojiBorder({
       aria-hidden
       className="pointer-events-none absolute inset-0 z-[15] overflow-visible"
     >
-      {/* Top-left corner — centered on the border */}
+      {/* Top-left (card) / Top-center (hero — avoid badge) */}
       <span
         className={cn(
-          "absolute top-0 left-3 -translate-y-1/2 rotate-[-14deg] leading-none select-none super-sticker",
-          lg,
-        )}
-      >
-        ⚡
-      </span>
-
-      {/* Top-right — offset for asymmetry */}
-      <span
-        className={cn(
-          "absolute top-0 right-[15%] -translate-y-1/2 rotate-[10deg] leading-none select-none super-sticker-delayed",
+          "absolute top-0 -translate-y-1/2 rotate-[-14deg] leading-none select-none super-sticker",
+          isHero ? "right-[40%]" : "left-3",
           sm,
         )}
       >
@@ -300,18 +300,18 @@ function LightningEmojiBorder({
       <span
         className={cn(
           "absolute bottom-0 right-3 translate-y-1/2 rotate-[12deg] leading-none select-none super-sticker-slow",
-          lg,
+          sm,
         )}
       >
         ⚡
       </span>
 
-      {/* Bottom-left — smaller, keeps it balanced */}
+      {/* Top-right — hero only */}
       {isHero && (
         <span
           className={cn(
-            "absolute bottom-0 left-[18%] translate-y-1/2 rotate-[-8deg] leading-none select-none super-sticker-delayed",
-            sm,
+            "absolute top-0 right-[15%] -translate-y-1/2 rotate-[10deg] leading-none select-none super-sticker-delayed",
+            "text-sm md:text-base",
           )}
         >
           ⚡
@@ -333,7 +333,6 @@ function SuperJobCardContent({
       <SuperListingHeader
         title={job.title}
         employer={job.employer?.name}
-        location={job.location}
         compact={compact}
       />
       <div className="space-y-3">
@@ -585,26 +584,8 @@ function HeaderWithActions({
   disabled?: boolean;
 }) {
   const { isMobile } = useMobile();
-  const isSuperListing = Boolean(job.challenge);
   return (
     <div>
-      {/* Super listing badge — above the header row so title stays aligned */}
-      {isSuperListing && (
-        <div className="mb-4">
-          <div className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-amber-50 via-amber-100/80 to-amber-50 border border-amber-300/50 px-5 py-2.5 shadow-[0_2px_12px_rgba(245,158,11,0.12)]">
-            <Zap className="h-4.5 w-4.5 fill-amber-500 text-amber-500 super-zap" />
-            <span className="text-sm font-bold tracking-wide text-amber-900">
-              Super Listing
-            </span>
-            <span className="text-amber-400">·</span>
-            <span className="text-sm font-semibold text-amber-700">
-              24h Guaranteed Reply
-            </span>
-            <Zap className="h-3.5 w-3.5 fill-amber-400/50 text-amber-400/50 super-zap-delayed" />
-          </div>
-        </div>
-      )}
-
       <div
         className={cn(
           "items-start justify-between gap-3",
@@ -1278,26 +1259,30 @@ export function SuperChallengeDetails({ job }: { job: Job }) {
 
       <div
         className={cn(
-          "super-challenge-card group relative isolate rounded-[0.33em] p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_40px_rgba(245,158,11,0.25),0_0_80px_rgba(245,158,11,0.12),0_20px_40px_rgba(249,115,22,0.15)]",
+          "super-challenge-card group relative isolate rounded-[0.33em] p-6 pt-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_40px_rgba(245,158,11,0.25),0_0_80px_rgba(245,158,11,0.12),0_20px_40px_rgba(249,115,22,0.15)]",
           "bg-[radial-gradient(ellipse_at_top_left,rgba(254,240,138,0.5),transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(251,146,60,0.18),transparent_35%),linear-gradient(150deg,rgba(255,251,235,1)_0%,rgba(255,255,255,1)_45%,rgba(254,243,199,0.98)_100%)]",
         )}
       >
+        {/* Badge on the border */}
+        <div className="absolute left-4 top-0 -translate-y-1/2 z-20">
+          <SuperListingBadge />
+        </div>
+
         {/* Ambient glow orbs */}
         <div className="pointer-events-none absolute -left-8 top-4 h-32 w-32 rounded-full bg-amber-300/20 blur-3xl" />
         <div className="pointer-events-none absolute -right-6 bottom-2 h-24 w-24 rounded-full bg-orange-300/15 blur-2xl" />
 
         <div className="relative z-10 space-y-4">
           {/* Section label */}
-          <div className="flex items-center gap-2">
-            <Zap className="h-4 w-4 fill-amber-500 text-amber-500" />
+          <div>
             <span className="text-xs font-bold uppercase tracking-[0.12em] text-amber-800">
               Challenge
             </span>
-          </div>
 
-          <h3 className="relative text-2xl font-bold leading-tight text-gray-900 tracking-tight">
-            {superChallengeTitle || "Tell us your funniest joke."}
-          </h3>
+            <h3 className="relative mt-1 text-2xl font-bold leading-tight text-gray-900 tracking-tight">
+              {superChallengeTitle || "Tell us your funniest joke."}
+            </h3>
+          </div>
           <div className="relative whitespace-pre-wrap break-words text-sm leading-relaxed text-gray-700">
             {superChallengeDescription || "No challenge description provided."}
           </div>
