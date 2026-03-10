@@ -11,6 +11,7 @@ import React, {
 } from "react";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { Textarea } from "../ui/textarea";
+import { SuperChallengeDetails } from "../shared/jobs";
 
 export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
   job,
@@ -86,14 +87,18 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
   }
 
   return (
-    <ModalComponent ref={ref}>
-      <div className="max-w-lg mx-auto p-6 pt-0 overflow-auto space-y-4">
+    <ModalComponent ref={ref} className={isSuperListing ? "max-w-4xl w-[56rem]" : undefined}>
+      <div className={`${isSuperListing ? "" : "max-w-lg mx-auto"} p-6 pt-0 overflow-auto space-y-4`}>
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-            <Clipboard className="w-8 h-8 text-blue-600" />
+          <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${isSuperListing ? "bg-amber-100" : "bg-blue-100"}`}>
+            {isSuperListing ? (
+              <span className="text-3xl">⚡</span>
+            ) : (
+              <Clipboard className="w-8 h-8 text-blue-600" />
+            )}
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-3">
-            Ready to Apply?
+            {isSuperListing ? "Apply to Super Listing" : "Ready to Apply?"}
           </h2>
           <p className="text-gray-600 leading-relaxed">
             You're applying for{" "}
@@ -110,18 +115,17 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
           </p>
         </div>
 
-        {/* Super Challenge Input */}
-        {isSuperListing && (
-          <div className="space-y-3">
-            <div className="rounded-[0.33em] border border-amber-200 bg-amber-50 text-amber-800 px-3 py-2 text-sm">
-              <span className="font-medium">Super Listing:</span> Submit your
-              challenge response below.
-            </div>
+        {/* Super Challenge Section */}
+        {isSuperListing && job && (
+          <div className="space-y-4">
+            <SuperChallengeDetails job={job} />
+
+            {/* Challenge Submission Input */}
             <ApplicationTextInput
               ref={challengeRef}
               defaultValue=""
               error={challengeError}
-              label="Challenge Submission"
+              label="Your Submission"
               helper="Describe your proposed solution clearly."
               maxLength={4000}
               placeholder="Write your challenge submission here..."
@@ -188,7 +192,7 @@ Best regards,
           </Button>
           <Button
             onClick={handleSubmit}
-            className="flex-1 h-12"
+            className={`flex-1 h-12 ${isSuperListing ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border-amber-400/50 shadow-[0_4px_14px_rgba(245,158,11,0.3)] font-bold" : ""}`}
             disabled={preSubmitDisabled || applying}
             title={
               preSubmitDisabled

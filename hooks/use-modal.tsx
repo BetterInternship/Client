@@ -277,12 +277,14 @@ const ModalTemplate = (
 export const ModalComponent = ({
   children,
   ref,
+  className,
 }: {
   children?: React.ReactNode;
   ref?: Ref<ModalHandle | null>;
+  className?: string;
 }) => {
   const M = ModalTemplate("IncompleteProfileModal", { content: children });
-  return <M ref={ref} />;
+  return <M ref={ref} className={className} />;
 };
 
 /**
