@@ -4,9 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
 import { EmployerApplication, Job } from "@/lib/db/db.types";
-import { useDbRefs } from "@/lib/db/use-refs";
-import { cn, formatCurrency } from "@/lib/utils";
-import { ArrowRight, Building, Check, Pause, Zap } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ArrowRight, Check, Pause, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface JobListingProps {
@@ -20,7 +19,6 @@ export function JobListingsBox({
   applications,
   isLoading,
 }: JobListingProps) {
-  const { to_job_pay_freq_name } = useDbRefs();
   const isSuperListing = Boolean(job.challenge);
   const applicants = applications.filter(
     (application) =>
@@ -60,19 +58,19 @@ export function JobListingsBox({
         )}
         onClick={handleClick}
       >
-        <div className="flex flex-col w-full">
-          {isSuperListing && (
-            <div className="mb-2">
-              <div className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-white super-header-badge px-3 py-1.5 text-xs font-bold text-amber-900">
-                <span className="text-sm leading-none">⚡</span>
-                <span className="tracking-wide">Super Listing</span>
-              </div>
+        {isSuperListing && (
+          <div className="pointer-events-none absolute top-0 z-20 -translate-y-1/2 left-4">
+            <div className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-white super-header-badge px-3 py-1.5 text-xs font-bold text-amber-900">
+              <span className="text-sm leading-none">⚡</span>
+              <span className="tracking-wide">Super Listing</span>
             </div>
-          )}
-          <div className="flex justify-between gap-2">
+          </div>
+        )}
+        <div className="flex min-h-0 flex-1 flex-col w-full">
+          <div className="flex items-start justify-between gap-2">
             <h1
               className={cn(
-                "text-base truncate",
+                "flex-1 text-base line-clamp-2 leading-snug min-h-12 break-words",
                 isSuperListing && job.is_active
                   ? "font-bold text-amber-700"
                   : job.is_active
@@ -82,12 +80,12 @@ export function JobListingsBox({
             >
               {job.title}
             </h1>
-            <div className="flex items-center gap-2">
+            <div className="-mt-0.5 flex shrink-0 items-start gap-2">
               <Badge
                 strength="default"
                 type="accent"
                 className={cn(
-                  "flex gap-1",
+                  "flex items-center gap-1",
                   job.is_active
                     ? "bg-supportive text-white"
                     : "text-muted-foreground flex items-center font-normal",
@@ -102,26 +100,10 @@ export function JobListingsBox({
               </Badge>
             </div>
           </div>
-          {job.location ? (
-            <div className="flex items-center text-sm text-gray-500 mt-2">
-              <Building className="w-4 h-4 mr-1 flex-shrink-0" />
-              <span className="truncate">{job.location}</span>
-            </div>
-          ) : (
-            <br />
-          )}
-          {job.salary !== undefined && job.allowance === 0 ? (
-            <span className="text-sm mt-2">
-              {formatCurrency(job.salary!)}/
-              {to_job_pay_freq_name(job.salary_freq)}
-            </span>
-          ) : (
-            <br />
-          )}
         </div>
         {isSuperListing ? (
-          <div className="flex w-full rounded-sm">
-            <div className="super-cta-glow flex min-w-0 w-full items-center gap-2 rounded-xl border border-amber-400/80 bg-[linear-gradient(135deg,#f59e0b_0%,#f97316_60%,#ea580c_100%)] px-3 py-2 text-xs font-bold text-white transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-1">
+          <div className="flex min-h-8 w-full rounded-sm">
+            <div className="super-cta-glow flex min-w-0 w-full items-center gap-2 rounded-xl border border-amber-400/80 bg-[linear-gradient(135deg,#f59e0b_0%,#f97316_60%,#ea580c_100%)] px-3 py-1.5 text-xs font-bold text-white transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-1">
               <Zap className="h-3.5 w-3.5 shrink-0 fill-current drop-shadow-[0_0_4px_rgba(255,255,255,0.45)]" />
               <span className="min-w-0 flex-1 text-center drop-shadow-[0_1px_2px_rgba(0,0,0,0.15)]">
                 Action needed
@@ -130,7 +112,7 @@ export function JobListingsBox({
             </div>
           </div>
         ) : (
-          <div className="flex flex-row gap-2 rounded-sm">
+          <div className="flex min-h-8 flex-row items-center gap-2 rounded-sm">
             <Badge strength={"medium"}>
               {applicants.length} total applicant
               {applicants.length !== 1 ? "s" : ""}

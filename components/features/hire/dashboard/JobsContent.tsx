@@ -83,7 +83,7 @@ export function JobsContent({
         transition={{ duration: 0.3, ease: "easeOut" }}
       >
         {sortedJobs && sortedJobs.length > 0 && !showLoader && !isLoading ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2">
+          <div className="grid grid-cols-1 items-end gap-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {sortedJobs
               .filter((job) => job.employer_id === employerId)
               .map((job) => (
