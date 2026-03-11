@@ -362,7 +362,9 @@ export function FormSigningLayout({
                   }
                   fieldErrors={formFiller.errors}
                   selectionTick={selectionTick}
-                  autoScrollToSelectedField={selectedFieldSource === "form"}
+                  autoScrollToSelectedField={
+                    !isMobile && selectedFieldSource === "form"
+                  }
                   signingParties={recipients}
                   onFieldClick={handlePdfFieldSelect}
                   selectedFieldId={form.selectedPreviewId ?? undefined}
