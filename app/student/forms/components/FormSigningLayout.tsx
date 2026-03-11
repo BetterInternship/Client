@@ -4,6 +4,7 @@ import { ArrowLeft, LucideClipboardCheck } from "lucide-react";
 import { FormPreviewPdfDisplay } from "@/components/features/student/forms/previewer";
 import { FormFillerRenderer } from "@/components/features/student/forms/FormFillerRenderer";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn, isValidEmail } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
@@ -49,7 +50,7 @@ export function FormSigningLayout({
   const [nextLoading, setNextLoading] = useState(false);
   const [recipientEmails, recipientEmailActions] = useStateRecord({});
   const [recipientErrors, recipientErrorActions] = useStateRecord({});
-  const [confirmStepBuffering, setConfirmStepBuffering] = useState(false);
+  const [hasConfirmedDetails, setHasConfirmedDetails] = useState(false);
   const [rightPaneStep, setRightPaneStep] = useState<
     "timeline" | "fields" | "confirm"
   >("timeline");
@@ -286,15 +287,15 @@ export function FormSigningLayout({
   useEffect(() => {
     recipientEmailActions.clearAll();
     setValues({});
+    setHasConfirmedDetails(false);
     setRightPaneStep(noRecipientStep ? "fields" : "timeline");
     setMobileActiveTab("step");
   }, [formLabel, noEsign, noRecipientStep]);
 
-  // Buffer
   useEffect(() => {
-    if (rightPaneStep === "confirm") setConfirmStepBuffering(true);
-    const timeout = setTimeout(() => setConfirmStepBuffering(false), 2000);
-    return () => clearTimeout(timeout);
+    if (rightPaneStep === "confirm") {
+      setHasConfirmedDetails(false);
+    }
   }, [rightPaneStep]);
 
   return (
@@ -387,10 +388,7 @@ export function FormSigningLayout({
               {!isMobile && (
                 <div className="flex items-start gap-3 px-6 pt-4">
                   <div className="min-w-0 flex-1">
-                    <span
-                      className="block whitespace-normal break-words text-xl font-semibold leading-tight text-primary"
-                      title={formLabel ?? ""}
-                    >
+                    <span className="block whitespace-normal break-words text-xl font-semibold tracking-tight text-primary">
                       {formLabel}
                     </span>
                   </div>
@@ -529,7 +527,7 @@ export function FormSigningLayout({
                   <div className="min-h-0 flex h-full flex-1 flex-col">
                     <div className="min-h-0 flex-1 overflow-y-auto p-6 flex flex-col items-start justify-start  gap-4">
                       <LucideClipboardCheck className="w-16 h-16 min-h-16 opacity-30 -ml-2" />
-                      <span className="text-gray-700 font-bold">
+                      <span className="text-gray-700 font-semibold">
                         Please check if all your inputs are correct
                       </span>
                       {!noRecipientStep && (
@@ -542,6 +540,21 @@ export function FormSigningLayout({
                           isConfirmingRecipients
                         />
                       )}
+                      <label className="flex cursor-pointer items-center gap-3 rounded-[0.33em] border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                        <Checkbox
+                          checked={hasConfirmedDetails}
+                          className={cn(
+                            "h-5 w-5 rounded-[0.33em] border",
+                            hasConfirmedDetails
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-gray-300 bg-white",
+                          )}
+                          onCheckedChange={(checked) =>
+                            setHasConfirmedDetails(checked === true)
+                          }
+                        />
+                        <span>I confirm all the details are correct</span>
+                      </label>
                     </div>
                     <div className="bg-white p-3">
                       {isMobile ? (
@@ -550,7 +563,6 @@ export function FormSigningLayout({
                             size="icon"
                             variant="outline"
                             className="h-11 w-11 shrink-0"
-                            disabled={confirmStepBuffering}
                             onClick={() => setRightPaneStep("fields")}
                             aria-label="Go back and edit details"
                           >
@@ -560,13 +572,11 @@ export function FormSigningLayout({
                             size="lg"
                             className="flex-1 whitespace-nowrap"
                             scheme="supportive"
-                            disabled={confirmStepBuffering || nextLoading}
+                            disabled={!hasConfirmedDetails || nextLoading}
                             onClick={() => void handleSubmit()}
                           >
-                            <TextLoader
-                              loading={confirmStepBuffering || nextLoading}
-                            >
-                              I confirm the details are correct
+                            <TextLoader loading={nextLoading}>
+                              Suibmit
                             </TextLoader>
                           </Button>
                         </div>
@@ -576,7 +586,6 @@ export function FormSigningLayout({
                             size="lg"
                             variant="outline"
                             className="w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1"
-                            disabled={confirmStepBuffering}
                             onClick={() => setRightPaneStep("fields")}
                           >
                             Go back and edit details
@@ -585,13 +594,11 @@ export function FormSigningLayout({
                             size="lg"
                             className="w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1"
                             scheme="supportive"
-                            disabled={confirmStepBuffering || nextLoading}
+                            disabled={!hasConfirmedDetails || nextLoading}
                             onClick={() => void handleSubmit()}
                           >
-                            <TextLoader
-                              loading={confirmStepBuffering || nextLoading}
-                            >
-                              I confirm the details are correct
+                            <TextLoader loading={nextLoading}>
+                              Suibmit
                             </TextLoader>
                           </Button>
                         </div>
