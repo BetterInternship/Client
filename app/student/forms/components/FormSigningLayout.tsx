@@ -315,18 +315,13 @@ export function FormSigningLayout({
           )}
           <div
             className={cn(
-              "grid min-h-0 flex-1 grid-cols-1 transition-[grid-template-columns] duration-500 ease-in-out xl:[grid-template-columns:minmax(0,1fr)_var(--right-pane-width)]",
+              "grid min-h-0 flex-1 grid-cols-1 transition-[grid-template-columns] duration-500 ease-in-out xl:grid-cols-2 xl:divide-x xl:divide-gray-300",
               isMobile ? "relative overflow-hidden" : "",
             )}
-            style={
-              {
-                "--right-pane-width": "600px",
-              } as React.CSSProperties
-            }
           >
             <div
               className={cn(
-                "min-h-0 bg-white rounded-r-none transition-[transform] duration-500 ease-in-out xl:border-r xl:border-gray-200",
+                "min-h-0 min-w-0 bg-white rounded-r-none transition-[transform] duration-500 ease-in-out",
                 isMobile
                   ? cn(
                       "absolute inset-0 z-10 transition-[transform,opacity] duration-300 ease-in-out",
@@ -378,7 +373,7 @@ export function FormSigningLayout({
 
             <div
               className={cn(
-                "relative min-h-0 flex flex-1 flex-col overflow-hidden bg-white transition-[opacity,transform] duration-500 ease-in-out",
+                "relative min-h-0 min-w-0 flex flex-1 flex-col overflow-hidden bg-white transition-[opacity,transform] duration-500 ease-in-out",
                 isMobile
                   ? cn(
                       "absolute inset-0 z-20 transition-[transform,opacity] duration-300 ease-in-out",
