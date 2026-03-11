@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
 import useModalRegistry from "../modal-registry";
 import { IFormSigningParty } from "@betterinternship/core/forms";
 import { Badge } from "@/components/ui/badge";
@@ -36,12 +35,6 @@ export function FormSubmissionSuccessModal({
   onClose: () => void;
 }) {
   const modalRegistry = useModalRegistry();
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setShow(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
 
   const handleNavigateToForms = () => {
     onClose();
@@ -52,7 +45,7 @@ export function FormSubmissionSuccessModal({
   console.log("FormSubmissionSuccessModal rendered with type:", submissionType);
 
   return (
-    <div className="flex flex-col items-center gap-6 px-6 py-10 text-center mt-2">
+    <div className="flex w-full flex-col items-center gap-4 px-1 py-6 text-center sm:gap-6 sm:px-6 sm:py-10">
       <style>{`
         .check-path {
           stroke-dasharray: 1;
@@ -78,7 +71,7 @@ export function FormSubmissionSuccessModal({
         }
       `}</style>
 
-      <div className="">
+      <div className="w-full">
         {submissionType === "manual" ? (
           <>
             <h2 className="flex flex-row items-center text-left text-3xl font-semibold text-foreground">
@@ -90,12 +83,12 @@ export function FormSubmissionSuccessModal({
             </p>
           </>
         ) : (
-          <div className="flex flex-col gap-2 items-start pt-4">
+          <div className="flex flex-col gap-2 items-start pt-2 sm:pt-4">
             <h2 className="flex flex-row items-center text-left text-3xl font-semibold text-foreground">
               <span className="mr-2 mt-1">Form {process} successfully</span>
               <AnimatedCheck />
             </h2>
-            <div className="flex flex-col bg-gray-100 w-full p-5 px-6 items-start rounded-[0.33em] mt-8">
+            <div className="mt-5 flex w-full flex-col items-start rounded-[0.33em] bg-gray-100 p-4 sm:mt-8 sm:p-5 sm:px-6">
               <div className="text-left">
                 An initial email has been sent to the following address:
               </div>
@@ -107,7 +100,7 @@ export function FormSubmissionSuccessModal({
               </div>
             </div>
             <div>
-              <div className="mt-10 italic text-left text-gray-500">
+              <div className="mt-6 italic text-left text-gray-500 sm:mt-10">
                 Note: If they did not receive the email, there may be an issue
                 with the recipient's mailbox.
               </div>
@@ -125,7 +118,7 @@ export function FormSubmissionSuccessModal({
 
       <Button
         size="lg"
-        className="mt-2 w-full "
+        className="mt-1 w-full sm:mt-2"
         onClick={handleNavigateToForms}
       >
         Go to Forms
