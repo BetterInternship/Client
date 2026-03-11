@@ -17,6 +17,7 @@ import { Loader } from "@/components/ui/loader";
 import { ZoomIn, ZoomOut } from "lucide-react";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useProfileData } from "@/lib/api/student.data.api";
+import { useAppContext } from "@/lib/ctx-app";
 import {
   createPreviewDisplayValueResolver,
   groupFieldsByPage,
@@ -58,7 +59,7 @@ export const FormPreviewPdfDisplay = ({
   blocks,
   values,
   headerLeft,
-  scale: initialScale = 1.0,
+  scale: initialScale,
   onFieldClick,
   selectedFieldId,
   selectionTick = 0,
@@ -66,11 +67,13 @@ export const FormPreviewPdfDisplay = ({
   fieldErrors = {},
   signingParties = [],
 }: FormPreviewPdfDisplayProps) => {
+  const { isMobile } = useAppContext();
   const refs = useDbRefs();
   const profile = useProfileData();
+  const defaultScale = isMobile ? 0.5 : 0.9;
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [pageCount, setPageCount] = useState<number>(0);
-  const [scale, setScale] = useState<number>(initialScale);
+  const [scale, setScale] = useState<number>(initialScale ?? defaultScale);
   const [visiblePage, setVisiblePage] = useState<number>(1);
   const [isLoadingDoc, setIsLoadingDoc] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,7 +82,10 @@ export const FormPreviewPdfDisplay = ({
   const pageRefs = useRef<Map<number, HTMLDivElement | null>>(new Map());
   const fieldRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const normalizedFields = useMemo(() => toPreviewFields(blocks ?? []), [blocks]);
+  const normalizedFields = useMemo(
+    () => toPreviewFields(blocks ?? []),
+    [blocks],
+  );
   const fieldsByPage = useMemo(
     () => groupFieldsByPage(normalizedFields),
     [normalizedFields],
@@ -110,6 +116,11 @@ export const FormPreviewPdfDisplay = ({
     },
     [],
   );
+
+  // Re-apply default zoom when a new document is opened.
+  useEffect(() => {
+    setScale(initialScale ?? defaultScale);
+  }, [documentUrl, initialScale, defaultScale]);
 
   // Jump to field's page and trigger animation when selected from form
   useEffect(() => {
@@ -707,10 +718,3 @@ const AssignedOwnerTooltip = ({ ownerLabel }: { ownerLabel: string }) => (
     </span>
   </div>
 );
-
-
-
-
-
-
-
