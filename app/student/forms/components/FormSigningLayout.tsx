@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, LucideClipboardCheck } from "lucide-react";
+import { ArrowLeft, LucideClipboardCheck, MailWarningIcon } from "lucide-react";
 import { FormPreviewPdfDisplay } from "@/components/features/student/forms/previewer";
 import { FormFillerRenderer } from "@/components/features/student/forms/FormFillerRenderer";
 import { Button } from "@/components/ui/button";
@@ -407,7 +407,7 @@ export function FormSigningLayout({
                 >
                   <div className="min-h-0 flex-1 overflow-y-auto p-6">
                     <div className="space-y-6">
-                      <p className="text-gray-700 sm:text-base font-bold">
+                      <p className="text-gray-700 sm:text-base font-semibold tracking-tight">
                         These people will receive this form, in this order:
                       </p>
                       <FormSigningPartyTimeline
@@ -421,12 +421,15 @@ export function FormSigningLayout({
                     <div className="my-4 mt-8">
                       <p className="text-sm text-gray-600 sm:text-base">
                         {!noRecipientStep && (
-                          <span className="text-primary italic">
-                            Don't know the recipient emails? That's okay:
-                            <br />
-                            Enter a contact who can forward it to the correct
-                            address.
-                          </span>
+                          <div className="flex flex-row gap-2 border border-primary bg-primary/5 p-4 rounded-[0.33em]">
+                            <MailWarningIcon />
+                            <span className="text-primary tracking-tight">
+                              Don't know the recipient emails? That's okay:
+                              <br />
+                              Enter a contact who can forward it to the correct
+                              address.
+                            </span>
+                          </div>
                         )}
                       </p>
                     </div>

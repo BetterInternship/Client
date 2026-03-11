@@ -32,14 +32,14 @@ export const FormSigningPartyTimeline = ({
               key={recipient.signatory_title}
               number={index + 1}
               title={
-                <span className="text-sm text-gray-700">
+                <span className="text-sm text-gray-700 font-light">
                   {recipient.signatory_title}
                 </span>
               }
               subtitle={
                 fromMe ? (
                   !recipientInputAPI?.recipientEmails ? (
-                    <span className="text-warning text-xs font-semibold">
+                    <span className="text-warning text-xs tracking-normal">
                       you will specify this email
                     </span>
                   ) : isConfirmingRecipients ? (
@@ -65,13 +65,15 @@ export const FormSigningPartyTimeline = ({
                     />
                   )
                 ) : recipient.signatory_account?.email ? (
-                  <span className="text-xs text-primary">
+                  <span className="text-xs text-primary tracking-wide">
                     {recipient.signatory_account.email ?? ""}
                   </span>
-                ) : (
+                ) : recipient._id !== "initiator" ? (
                   <span className="text-xs italic text-gray-400">
                     this email will come from someone else
                   </span>
+                ) : (
+                  <span></span>
                 )
               }
               isLast={index === recipients.length - 1}
