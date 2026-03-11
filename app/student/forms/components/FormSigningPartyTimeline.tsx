@@ -39,7 +39,7 @@ export const FormSigningPartyTimeline = ({
               subtitle={
                 fromMe ? (
                   !recipientInputAPI?.recipientEmails ? (
-                    <span className="text-warning text-xs tracking-normal">
+                    <span className="text-warning text-xs tracking-normal text-semibold">
                       you will specify this email
                     </span>
                   ) : isConfirmingRecipients ? (
