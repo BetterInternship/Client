@@ -38,7 +38,7 @@ export function FormSubmissionSuccessModal({
 
   const handleNavigateToForms = () => {
     onClose();
-    modalRegistry.closeAll();
+    modalRegistry.formSubmissionSuccess.close();
   };
 
   const process = submissionType == "esign" ? "sent" : "generated";
