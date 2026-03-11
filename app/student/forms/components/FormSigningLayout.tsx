@@ -440,10 +440,6 @@ export function FormSigningLayout({
                     <div className="flex w-full justify-between gap-2">
                       <Button
                         size="lg"
-                        className="pointer-events-none sm:flex-1 whitespace-nowrap opacity-0 w-full sm:min-w-[140px]"
-                      />
-                      <Button
-                        size="lg"
                         disabled={!nextEnabled || nextLoading}
                         className="sm:flex-1 whitespace-nowrap w-full sm:min-w-[140px]"
                         onClick={() => void handleNext()}
@@ -473,30 +469,55 @@ export function FormSigningLayout({
                       />
                     </div>
                     <div className="bg-white p-3">
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <Button
-                          size="lg"
-                          variant="outline"
-                          disabled={nextLoading}
-                          className={cn(
-                            "w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1",
-                            noRecipientStep
-                              ? "opacity-0 pointer-events-none"
-                              : "",
+                      {isMobile ? (
+                        <div className="flex items-center gap-2">
+                          {!noRecipientStep && (
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              disabled={nextLoading}
+                              className="h-11 w-11 shrink-0"
+                              onClick={() => setRightPaneStep("timeline")}
+                              aria-label="Back"
+                            >
+                              <ArrowLeft className="h-4 w-4" />
+                            </Button>
                           )}
-                          onClick={() => setRightPaneStep("timeline")}
-                        >
-                          Back
-                        </Button>
-                        <Button
-                          size="lg"
-                          className="w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1"
-                          disabled={!nextEnabled || nextLoading}
-                          onClick={() => void handleNext()}
-                        >
-                          <TextLoader loading={nextLoading}>Next</TextLoader>
-                        </Button>
-                      </div>
+                          <Button
+                            size="lg"
+                            className="flex-1 whitespace-nowrap"
+                            disabled={!nextEnabled || nextLoading}
+                            onClick={() => void handleNext()}
+                          >
+                            <TextLoader loading={nextLoading}>Next</TextLoader>
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                          <Button
+                            size="lg"
+                            variant="outline"
+                            disabled={nextLoading}
+                            className={cn(
+                              "w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1",
+                              noRecipientStep
+                                ? "opacity-0 pointer-events-none"
+                                : "",
+                            )}
+                            onClick={() => setRightPaneStep("timeline")}
+                          >
+                            Back
+                          </Button>
+                          <Button
+                            size="lg"
+                            className="w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1"
+                            disabled={!nextEnabled || nextLoading}
+                            onClick={() => void handleNext()}
+                          >
+                            <TextLoader loading={nextLoading}>Next</TextLoader>
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -526,30 +547,58 @@ export function FormSigningLayout({
                       )}
                     </div>
                     <div className="bg-white p-3">
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <Button
-                          size="lg"
-                          variant="outline"
-                          className="w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1"
-                          disabled={confirmStepBuffering}
-                          onClick={() => setRightPaneStep("fields")}
-                        >
-                          Go back and edit details
-                        </Button>
-                        <Button
-                          size="lg"
-                          className="w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1"
-                          scheme="supportive"
-                          disabled={confirmStepBuffering || nextLoading}
-                          onClick={() => void handleSubmit()}
-                        >
-                          <TextLoader
-                            loading={confirmStepBuffering || nextLoading}
+                      {isMobile ? (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-11 w-11 shrink-0"
+                            disabled={confirmStepBuffering}
+                            onClick={() => setRightPaneStep("fields")}
+                            aria-label="Go back and edit details"
                           >
-                            I confirm the details are correct
-                          </TextLoader>
-                        </Button>
-                      </div>
+                            <ArrowLeft className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="lg"
+                            className="flex-1 whitespace-nowrap"
+                            scheme="supportive"
+                            disabled={confirmStepBuffering || nextLoading}
+                            onClick={() => void handleSubmit()}
+                          >
+                            <TextLoader
+                              loading={confirmStepBuffering || nextLoading}
+                            >
+                              I confirm the details are correct
+                            </TextLoader>
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                          <Button
+                            size="lg"
+                            variant="outline"
+                            className="w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1"
+                            disabled={confirmStepBuffering}
+                            onClick={() => setRightPaneStep("fields")}
+                          >
+                            Go back and edit details
+                          </Button>
+                          <Button
+                            size="lg"
+                            className="w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1"
+                            scheme="supportive"
+                            disabled={confirmStepBuffering || nextLoading}
+                            onClick={() => void handleSubmit()}
+                          >
+                            <TextLoader
+                              loading={confirmStepBuffering || nextLoading}
+                            >
+                              I confirm the details are correct
+                            </TextLoader>
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
