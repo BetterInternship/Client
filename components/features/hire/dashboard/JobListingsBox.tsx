@@ -102,14 +102,21 @@ export function JobListingsBox({
           </div>
         </div>
         {isSuperListing ? (
-          <div className="flex min-h-8 w-full rounded-sm">
-            <div className="super-cta-glow flex min-w-0 w-full items-center gap-2 rounded-xl border border-amber-400/80 bg-[linear-gradient(135deg,#f59e0b_0%,#f97316_60%,#ea580c_100%)] px-3 py-1.5 text-xs font-bold text-white transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-1">
-              <Zap className="h-3.5 w-3.5 shrink-0 fill-current drop-shadow-[0_0_4px_rgba(255,255,255,0.45)]" />
-              <span className="min-w-0 flex-1 text-center drop-shadow-[0_1px_2px_rgba(0,0,0,0.15)]">
-                Action needed
-              </span>
-              <ArrowRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-200 group-hover:translate-x-1" />
-            </div>
+          <div className="flex min-h-8 flex-row items-center gap-2 rounded-sm">
+            {newApplicants > 0 ? (
+              <div className="super-cta-glow flex min-w-0 w-full items-center gap-2 rounded-xl border border-amber-400/80 bg-[linear-gradient(135deg,#f59e0b_0%,#f97316_60%,#ea580c_100%)] px-3 py-1.5 text-xs font-bold text-white transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-1">
+                <Zap className="h-3.5 w-3.5 shrink-0 fill-current drop-shadow-[0_0_4px_rgba(255,255,255,0.45)]" />
+                <span className="min-w-0 flex-1 text-center drop-shadow-[0_1px_2px_rgba(0,0,0,0.15)]">
+                  Action needed
+                </span>
+                <ArrowRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-200 group-hover:translate-x-1" />
+              </div>
+            ) : (
+              <Badge strength={"medium"}>
+                {applicants.length} total applicant
+                {applicants.length !== 1 ? "s" : ""}
+              </Badge>
+            )}
           </div>
         ) : (
           <div className="flex min-h-8 flex-row items-center gap-2 rounded-sm">
