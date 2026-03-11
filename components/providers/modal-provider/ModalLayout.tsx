@@ -98,6 +98,7 @@ interface SlideUpModalLayout {
   showHeaderDivider?: boolean;
   showCloseButton?: boolean;
   onRequestClose?: () => void;
+  mobileFullscreen?: boolean;
 }
 
 export const SlideUpModalLayout = ({
@@ -106,6 +107,7 @@ export const SlideUpModalLayout = ({
   children,
   showCloseButton,
   onRequestClose,
+  mobileFullscreen,
   closeModal,
 }: SlideUpModalLayout & ModalInjectedParams & ModalContext) => {
   const shouldShowCloseButton = showCloseButton !== false;
@@ -132,7 +134,12 @@ export const SlideUpModalLayout = ({
         />
       )}
       <motion.div
-        className="absolute bottom-0 left-0 right-0 h-[90vh] rounded-t-2xl bg-white shadow-2xl"
+        className={cn(
+          "absolute left-0 right-0 bg-white shadow-2xl",
+          mobileFullscreen
+            ? "inset-0 h-[calc(var(--vh,1vh)*100)] rounded-none"
+            : "bottom-0 h-[90vh] rounded-t-2xl",
+        )}
         role="dialog"
         aria-modal="true"
         initial={{ y: "100%" }}

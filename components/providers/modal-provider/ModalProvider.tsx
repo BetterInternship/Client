@@ -55,6 +55,7 @@ interface ModalOptions {
   panelClassName?: string;
   title?: React.ReactNode;
   showHeaderDivider?: boolean;
+  mobileFullscreen?: boolean;
 }
 
 /**

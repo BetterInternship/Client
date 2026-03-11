@@ -140,6 +140,7 @@ export default function FormDashboard({
       },
       closeOnBackdropClick: !isMobileSigningFlow,
       closeOnEscapeKey: !isMobileSigningFlow,
+      mobileFullscreen: isMobileSigningFlow,
       onClose: () => {
         setSelectedTemplate(undefined);
         setIsMobileSigningFlow(false);
