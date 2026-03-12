@@ -713,7 +713,7 @@ export function FormSigningLayout({
                             onClick={() => void handleSubmit()}
                           >
                             <TextLoader loading={nextLoading}>
-                              Suibmit
+                              Submit
                             </TextLoader>
                           </Button>
                         </div>
@@ -735,7 +735,7 @@ export function FormSigningLayout({
                             onClick={() => void handleSubmit()}
                           >
                             <TextLoader loading={nextLoading}>
-                              Suibmit
+                              Submit
                             </TextLoader>
                           </Button>
                         </div>
