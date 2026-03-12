@@ -10,14 +10,8 @@ import {
   FormRendererContextBridge,
   useFormRendererContext,
 } from "@/components/features/student/forms/form-renderer.ctx";
-import {
-  FormFillerContextBridge,
-  useFormFiller,
-} from "@/components/features/student/forms/form-filler.ctx";
-import {
-  SignContextBridge,
-  useSignContext,
-} from "@/components/providers/sign.ctx";
+import { FormFillerContextProvider } from "@/components/features/student/forms/form-filler.ctx";
+import { SignContextProvider } from "@/components/providers/sign.ctx";
 import { FormSigningLayout } from "./FormSigningLayout";
 import { IFormSigningParty } from "@betterinternship/core/forms";
 import { FormHistoryView } from "@/components/forms/FormHistoryView";
@@ -62,8 +56,6 @@ export default function FormDashboard({
   const [noEsign, setNoEsign] = useState(false);
   const [isSigningFlow, setIsSigningFlow] = useState(false);
   const form = useFormRendererContext();
-  const formFiller = useFormFiller();
-  const signContext = useSignContext();
   const recipients = form.formMetadata.getSigningParties();
   const sortedTemplates = useMemo(
     () =>
@@ -117,8 +109,8 @@ export default function FormDashboard({
       title: selectedTemplate.formLabel,
       content: (
         <FormRendererContextBridge value={form}>
-          <SignContextBridge value={signContext}>
-            <FormFillerContextBridge value={formFiller}>
+          <SignContextProvider>
+            <FormFillerContextProvider>
               <MobileFormTemplateDetailsContent
                 selectedTemplate={selectedTemplate}
                 generatedForms={generatedForms}
@@ -127,8 +119,8 @@ export default function FormDashboard({
                 showExitConfirmation={isMobileExitConfirmationOpen}
                 setShowExitConfirmation={setIsMobileExitConfirmationOpen}
               />
-            </FormFillerContextBridge>
-          </SignContextBridge>
+            </FormFillerContextProvider>
+          </SignContextProvider>
         </FormRendererContextBridge>
       ),
       onRequestClose: () => {
