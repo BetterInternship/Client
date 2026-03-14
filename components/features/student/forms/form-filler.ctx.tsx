@@ -64,10 +64,9 @@ export const FormFillerContextProvider = ({
       value === null || value === undefined ? "" : String(value);
     _setValues({ ...values, [field]: stringValue });
     _setErrors((prev) => {
-      if (!prev[field] && !prev[`${field}:default`]) return prev;
+      if (!prev[field]) return prev;
       const next = { ...prev };
       delete next[field];
-      delete next[`${field}:default`];
       return next;
     });
   };
@@ -190,12 +189,12 @@ const getFieldValue = (allValues: FormValues, fieldKey: string) => {
     return valuesRecord[defaultKey];
   }
 
-  if (fieldKey.endsWith(":default")) {
-    const baseKey = fieldKey.slice(0, -8);
-    if (Object.prototype.hasOwnProperty.call(allValues, baseKey)) {
-      return valuesRecord[baseKey];
-    }
-  }
+  // if (fieldKey.endsWith(":default")) {
+  //   const baseKey = fieldKey.slice(0, -8);
+  //   if (Object.prototype.hasOwnProperty.call(allValues, baseKey)) {
+  //     return valuesRecord[baseKey];
+  //   }
+  // }
 
   return undefined;
 };
