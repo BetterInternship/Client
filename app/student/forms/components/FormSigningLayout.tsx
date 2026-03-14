@@ -32,6 +32,26 @@ interface FlowTestSigningLayoutProps {
   onBack: () => void;
 }
 
+const getFieldValue = (values: Record<string, string>, fieldKey: string) => {
+  if (Object.prototype.hasOwnProperty.call(values, fieldKey)) {
+    return values[fieldKey];
+  }
+
+  const defaultKey = `${fieldKey}:default`;
+  if (Object.prototype.hasOwnProperty.call(values, defaultKey)) {
+    return values[defaultKey];
+  }
+
+  if (fieldKey.endsWith(":default")) {
+    const baseKey = fieldKey.slice(0, -8);
+    if (Object.prototype.hasOwnProperty.call(values, baseKey)) {
+      return values[baseKey];
+    }
+  }
+
+  return undefined;
+};
+
 type SigningStep =
   | "preview-start"
   | "timeline"
@@ -169,14 +189,17 @@ export function FormSigningLayout({
     console.log(
       "VALS",
       form.fields.reduce(
-        (acc, cur) => ((acc[cur.field] = values[cur.field]), acc),
+        (acc, cur) => (
+          (acc[cur.field] = getFieldValue(values, cur.field)),
+          acc
+        ),
         {} as Record<string, string>,
       ),
       form.fields.every(
         (field) =>
           field.signing_party_id !== "initiator" ||
           field.source !== "manual" ||
-          !!values[field.field],
+          !!getFieldValue(values, field.field),
       ),
     );
     switch (currentStep) {
@@ -194,7 +217,7 @@ export function FormSigningLayout({
           (field) =>
             field.signing_party_id !== "initiator" ||
             field.source !== "manual" ||
-            !!values[field.field],
+            !!getFieldValue(values, field.field),
         );
       case "preview-review":
         return true;

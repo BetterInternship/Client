@@ -61,7 +61,7 @@ export function FormFillerRenderer({
     const valuesWithPrefilledSignatures =
       form.formMetadata.setSignatureValueForSigningParty(
         finalValues,
-        isFreshFormsModeEnabled ? "" : getFullName(profile.data),
+        getFullName(profile.data),
         "initiator",
       );
 
@@ -69,7 +69,7 @@ export function FormFillerRenderer({
     signContext.setRequiredSignatures(
       signatureFields.map((signatureField) => signatureField.field),
     );
-  }, [form, isFreshFormsModeEnabled]);
+  }, [form]);
 
   // Initialize form values whenever form changes or profile loads
   useEffect(() => {
@@ -231,7 +231,15 @@ export function FormFillerRenderer({
       });
     }, 2000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      errorFields.forEach((fieldKey) => {
+        const fieldElement = fieldRefs.current[fieldKey];
+        if (fieldElement) {
+          fieldElement.classList.remove("bg-red-100");
+        }
+      });
+    };
   }, [formFiller.errors]);
 
   return (
