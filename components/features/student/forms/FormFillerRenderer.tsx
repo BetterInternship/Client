@@ -12,6 +12,7 @@ import { useProfileData } from "@/lib/api/student.data.api";
 import { getFullName } from "@/lib/profile";
 import { useSignContext } from "@/components/providers/sign.ctx";
 import { formatTimestampDateWithoutTime } from "@/lib/utils";
+import { getFreshHistoryCutoffMsFromStorage } from "@/app/student/forms/fresh-history";
 
 export function FormFillerRenderer({
   onValuesChange,
@@ -29,6 +30,7 @@ export function FormFillerRenderer({
   const profile = useProfileData();
   const signContext = useSignContext();
   const autofillValues = useMyAutofill();
+  const isFreshFormsModeEnabled = getFreshHistoryCutoffMsFromStorage() !== null;
   const filteredBlocks = form.blocks;
   const fieldRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -59,7 +61,7 @@ export function FormFillerRenderer({
     const valuesWithPrefilledSignatures =
       form.formMetadata.setSignatureValueForSigningParty(
         finalValues,
-        getFullName(profile.data),
+        isFreshFormsModeEnabled ? "" : getFullName(profile.data),
         "initiator",
       );
 
@@ -67,7 +69,7 @@ export function FormFillerRenderer({
     signContext.setRequiredSignatures(
       signatureFields.map((signatureField) => signatureField.field),
     );
-  }, [form]);
+  }, [form, isFreshFormsModeEnabled]);
 
   // Initialize form values whenever form changes or profile loads
   useEffect(() => {
@@ -95,7 +97,11 @@ export function FormFillerRenderer({
         if (stringValue.length > 0) {
           defaultValues[field.field] = stringValue;
         }
-      } else if (field.prefiller && typeof field.prefiller === "function") {
+      } else if (
+        !isFreshFormsModeEnabled &&
+        field.prefiller &&
+        typeof field.prefiller === "function"
+      ) {
         try {
           const prefillerValue = field.prefiller({ user: profile.data });
           if (prefillerValue !== null && prefillerValue !== undefined) {
@@ -113,7 +119,12 @@ export function FormFillerRenderer({
     if (Object.keys(defaultValues).length > 0) {
       formFiller.initializeValues(defaultValues);
     }
-  }, [form.formName, form.fields.length, profile.data]);
+  }, [
+    form.formName,
+    form.fields.length,
+    isFreshFormsModeEnabled,
+    profile.data,
+  ]);
 
   const formatValues = (values: Record<string, any>) => {
     const formatted: Record<string, string> = {};

@@ -22,6 +22,7 @@ import { useStateRecord } from "@/hooks/base/useStateRecord";
 import { useFormFilloutProcessRunner } from "@/hooks/forms/filloutFormProcess";
 import { useAppContext } from "@/lib/ctx-app";
 import { FormSigningPartyTimeline } from "./FormSigningPartyTimeline";
+import { getFreshHistoryCutoffMsFromStorage } from "../fresh-history";
 
 interface FlowTestSigningLayoutProps {
   formLabel?: string;
@@ -52,6 +53,7 @@ export function FormSigningLayout({
   const updateAutofill = useMyAutofillUpdate();
   const queryClient = useQueryClient();
   const { isMobile } = useAppContext();
+  const isFreshFormsModeEnabled = getFreshHistoryCutoffMsFromStorage() !== null;
   const hasInitiatorRecipient = recipients.some(
     (recipient) => recipient.signatory_source?._id === "initiator",
   );
@@ -249,7 +251,8 @@ export function FormSigningLayout({
             toastPresets.destructive,
           );
         } else {
-          await updateAutofill(form.formName, form.fields, finalValues);
+          if (!isFreshFormsModeEnabled)
+            await updateAutofill(form.formName, form.fields, finalValues);
           goToStep(isMobile ? "preview-review" : "confirm");
         }
 
@@ -268,6 +271,7 @@ export function FormSigningLayout({
     currentStep,
     form,
     formFiller,
+    isFreshFormsModeEnabled,
     isMobile,
     noRecipientStep,
     recipientEmailActions,

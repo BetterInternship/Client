@@ -8,6 +8,7 @@ import {
   FormValues,
 } from "@betterinternship/core/forms";
 import { useCallback, useMemo } from "react";
+import { getFreshHistoryCutoffMsFromStorage } from "@/app/student/forms/fresh-history";
 
 /**
  * Makes it easier to use the autofill, derived from profile data.
@@ -18,7 +19,10 @@ import { useCallback, useMemo } from "react";
 export const useMyAutofill = () => {
   const profile = useProfileData();
   const form = useFormRendererContext();
+  const freshHistoryCutoffMs = getFreshHistoryCutoffMsFromStorage();
   const autofillValues = useMemo(() => {
+    if (freshHistoryCutoffMs) return {};
+
     const internshipMoaFields = profile.data?.internship_moa_fields as Record<
       string,
       Record<string, string>
@@ -46,7 +50,7 @@ export const useMyAutofill = () => {
     }
 
     return autofillValues;
-  }, [profile.data]);
+  }, [freshHistoryCutoffMs, form.fields, form.formName, profile.data]);
 
   return autofillValues;
 };
