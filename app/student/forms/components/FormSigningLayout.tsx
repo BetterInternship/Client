@@ -6,7 +6,7 @@ import { FormFillerRenderer } from "@/components/features/student/forms/FormFill
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn, isValidEmail } from "@/lib/utils";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
 import { useFormFiller } from "@/components/features/student/forms/form-filler.ctx";
 import { useMyAutofill, useMyAutofillUpdate } from "@/hooks/use-my-autofill";
@@ -52,6 +52,18 @@ const getFieldValue = (values: Record<string, string>, fieldKey: string) => {
   return undefined;
 };
 
+const areFormValuesEqual = (
+  left: Record<string, string>,
+  right: Record<string, string>,
+) => {
+  const leftEntries = Object.entries(left);
+  const rightEntries = Object.entries(right);
+
+  if (leftEntries.length !== rightEntries.length) return false;
+
+  return leftEntries.every(([key, value]) => right[key] === value);
+};
+
 type SigningStep =
   | "preview-start"
   | "timeline"
@@ -83,12 +95,14 @@ export function FormSigningLayout({
     : initialNoRecipientStep
       ? "fields"
       : "timeline";
-  const [values, setValues] = useState<FormValues>({});
+  const latestValuesRef = useRef<FormValues>({});
+  const [previewValues, setPreviewValues] = useState<FormValues>({});
   const [nextLoading, setNextLoading] = useState(false);
   const [recipientEmails, recipientEmailActions] = useStateRecord({});
   const [recipientErrors, recipientErrorActions] = useStateRecord({});
   const [hasConfirmedDetails, setHasConfirmedDetails] = useState(false);
-  const [previousStep, setPreviousStep] = useState<SigningStep>(initialStep);
+  const [areRequiredFieldsComplete, setAreRequiredFieldsComplete] =
+    useState(false);
   const [currentStep, setCurrentStep] = useState<SigningStep>(initialStep);
   const [selectedFieldSource, setSelectedFieldSource] = useState<
     "form" | "pdf" | null
@@ -125,11 +139,6 @@ export function FormSigningLayout({
   const mobileSteps: SigningStep[] = noRecipientStep
     ? ["preview-start", "fields", "preview-review", "confirm"]
     : ["preview-start", "timeline", "fields", "preview-review", "confirm"];
-  const resetStep: SigningStep = isMobile
-    ? "preview-start"
-    : noRecipientStep
-      ? "fields"
-      : "timeline";
   const steps = isMobile ? mobileSteps : desktopSteps;
   const isMobilePreviewStep =
     isMobile &&
@@ -153,13 +162,9 @@ export function FormSigningLayout({
     [currentStep, mobileStepIndexByStep],
   );
 
-  const goToStep = useCallback(
-    (nextStep: SigningStep) => {
-      setPreviousStep(currentStep);
-      setCurrentStep(nextStep);
-    },
-    [currentStep],
-  );
+  const goToStep = useCallback((nextStep: SigningStep) => {
+    setCurrentStep(nextStep);
+  }, []);
 
   const previewKeyedFields = useMemo(
     () =>
@@ -169,6 +174,53 @@ export function FormSigningLayout({
       })),
     [form.keyedFields, fieldOwnerByName],
   );
+  const initiatorManualFieldKeys = useMemo(
+    () =>
+      form.fields
+        .filter(
+          (field) =>
+            field.signing_party_id === "initiator" && field.source === "manual",
+        )
+        .map((field) => field.field),
+    [form.fields],
+  );
+
+  const computeRequiredFieldsComplete = useCallback(
+    (nextValues: FormValues) =>
+      initiatorManualFieldKeys.every(
+        (fieldKey) => !!getFieldValue(nextValues, fieldKey),
+      ),
+    [initiatorManualFieldKeys],
+  );
+
+  const handleValuesChange = useCallback(
+    (nextValues: FormValues) => {
+      latestValuesRef.current = nextValues;
+      const nextRequiredFieldsComplete =
+        computeRequiredFieldsComplete(nextValues);
+
+      setAreRequiredFieldsComplete((prev) =>
+        prev === nextRequiredFieldsComplete ? prev : nextRequiredFieldsComplete,
+      );
+
+      if (!isMobile || currentStep !== "fields") {
+        setPreviewValues((prev) =>
+          areFormValuesEqual(prev, nextValues) ? prev : nextValues,
+        );
+      }
+    },
+    [computeRequiredFieldsComplete, currentStep, isMobile],
+  );
+
+  useEffect(() => {
+    if (!isMobile || currentStep === "fields") return;
+
+    setPreviewValues((prev) =>
+      areFormValuesEqual(prev, latestValuesRef.current)
+        ? prev
+        : latestValuesRef.current,
+    );
+  }, [currentStep, isMobile]);
 
   const handlePdfFieldSelect = (fieldName: string) => {
     setSelectedFieldSource("pdf");
@@ -186,22 +238,6 @@ export function FormSigningLayout({
   };
 
   const nextEnabled = useMemo(() => {
-    console.log(
-      "VALS",
-      form.fields.reduce(
-        (acc, cur) => (
-          (acc[cur.field] = getFieldValue(values, cur.field)),
-          acc
-        ),
-        {} as Record<string, string>,
-      ),
-      form.fields.every(
-        (field) =>
-          field.signing_party_id !== "initiator" ||
-          field.source !== "manual" ||
-          !!getFieldValue(values, field.field),
-      ),
-    );
     switch (currentStep) {
       case "preview-start":
         return true;
@@ -213,18 +249,19 @@ export function FormSigningLayout({
             ] || recipient.signatory_source?._id !== "initiator",
         );
       case "fields":
-        return form.fields.every(
-          (field) =>
-            field.signing_party_id !== "initiator" ||
-            field.source !== "manual" ||
-            !!getFieldValue(values, field.field),
-        );
+        return areRequiredFieldsComplete;
       case "preview-review":
         return true;
       case "confirm":
         return true;
     }
-  }, [currentStep, recipients, recipientEmails, form, values]);
+  }, [
+    areRequiredFieldsComplete,
+    currentStep,
+    recipients,
+    recipientEmails,
+    form,
+  ]);
 
   const checkRecipientErrors = (recipientEmails: Record<string, string>) => {
     const emailErrors: Record<string, string> = {};
@@ -350,7 +387,6 @@ export function FormSigningLayout({
       }
 
       modalRegistry.formSubmissionSuccess.open("manual", () => {
-        setPreviousStep(initialStep);
         setCurrentStep(initialStep);
         onBack();
       });
@@ -373,7 +409,6 @@ export function FormSigningLayout({
       modalRegistry.formSubmissionSuccess.open(
         "esign",
         () => {
-          setPreviousStep(initialStep);
           setCurrentStep(initialStep);
           onBack();
         },
@@ -397,11 +432,12 @@ export function FormSigningLayout({
   // Clean up when switching form
   useEffect(() => {
     recipientEmailActions.clearAll();
-    setValues({});
+    latestValuesRef.current = {};
+    setPreviewValues({});
     setHasConfirmedDetails(false);
-    setPreviousStep(initialStep);
+    setAreRequiredFieldsComplete(initiatorManualFieldKeys.length === 0);
     setCurrentStep(initialStep);
-  }, [formLabel, initialStep, noEsign]);
+  }, [formLabel, initialStep, initiatorManualFieldKeys.length, noEsign]);
 
   useEffect(() => {
     if (currentStep === "confirm") {
@@ -458,13 +494,12 @@ export function FormSigningLayout({
                     key={isMobile ? currentStep : "desktop-preview"}
                     documentUrl={documentUrl}
                     blocks={previewKeyedFields}
-                    values={values}
+                    values={previewValues}
                     headerLeft={
                       !isMobile ? (
                         <Button
                           variant="ghost"
                           onClick={() => {
-                            setPreviousStep(initialStep);
                             setCurrentStep(initialStep);
                             onBack();
                           }}
@@ -615,7 +650,7 @@ export function FormSigningLayout({
                   <div className="min-h-0 flex h-full flex-1 flex-col">
                     <div className="min-h-0 flex-1">
                       <FormFillerRenderer
-                        onValuesChange={setValues}
+                        onValuesChange={handleValuesChange}
                         selectionTick={selectionTick}
                         autoScrollToSelectedField={
                           selectedFieldSource === "pdf"

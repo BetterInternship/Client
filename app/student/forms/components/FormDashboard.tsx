@@ -250,6 +250,8 @@ export default function FormDashboard({
     isMobileSigningFlow,
     isMobileExitConfirmationOpen,
     form,
+    formFiller,
+    signContext,
     form.loading,
     form.document.name,
     form.document.url,

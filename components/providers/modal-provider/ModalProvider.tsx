@@ -105,16 +105,24 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
   );
 
   const closeModal = useCallback<ModalInstanceCloser>((name) => {
+    const onCloseCallbacks: Array<() => void> = [];
+
     setRegistry((m) => {
       if (!name) {
-        Object.values(m).forEach((e) => e.opts.onClose?.());
+        Object.values(m).forEach((e) => {
+          if (e.opts.onClose) onCloseCallbacks.push(e.opts.onClose);
+        });
         return {};
       }
 
       const entry = m[name];
-      entry?.opts.onClose?.();
+      if (entry?.opts.onClose) onCloseCallbacks.push(entry.opts.onClose);
       const { [name]: _removed, ...rest } = m;
       return rest;
+    });
+
+    queueMicrotask(() => {
+      onCloseCallbacks.forEach((callback) => callback());
     });
   }, []);
 
