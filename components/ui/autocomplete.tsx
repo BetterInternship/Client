@@ -205,8 +205,8 @@ function AutocompleteBase<ID extends number | string>({
           <ul
             className={cn(
               isMobile
-                ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 max-h-[70vh] overflow-auto rounded-t-2xl border border-b-0 border-gray-200 bg-white pb-3 pt-2 text-sm shadow-2xl ring-1 ring-black/10"
-                : "absolute left-0 right-0 z-50 mt-1 max-h-60 overflow-auto rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5",
+                ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 max-h-[70vh] overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] rounded-t-2xl border border-b-0 border-gray-200 bg-white pb-3 pt-2 text-sm shadow-2xl ring-1 ring-black/10"
+                : "absolute left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto overscroll-contain rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5",
             )}
           >
             {filtered.length ? (
@@ -520,8 +520,8 @@ export function AutocompleteTreeMulti({
           <ul
             className={cn(
               isMobile
-                ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 max-h-[70vh] overflow-auto rounded-t-2xl border border-b-0 border-gray-200 bg-white pb-3 pt-2 text-sm shadow-2xl ring-1 ring-black/10"
-                : "absolute left-0 right-0 z-50 mt-1 max-h-40 overflow-auto rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5",
+                ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 max-h-[70vh] overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] rounded-t-2xl border border-b-0 border-gray-200 bg-white pb-3 pt-2 text-sm shadow-2xl ring-1 ring-black/10"
+                : "absolute left-0 right-0 z-50 mt-1 max-h-40 overflow-y-auto overscroll-contain rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5",
             )}
           >
             {filteredTree.length ? (
