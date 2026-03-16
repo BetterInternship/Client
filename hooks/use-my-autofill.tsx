@@ -19,22 +19,19 @@ import { getFreshHistoryCutoffMsFromStorage } from "@/app/student/forms/fresh-hi
 export const useMyAutofill = () => {
   const profile = useProfileData();
   const form = useFormRendererContext();
-  const freshHistoryCutoffMs = getFreshHistoryCutoffMsFromStorage();
+  const isFreshFormsModeEnabled = getFreshHistoryCutoffMsFromStorage() !== null;
   const autofillValues = useMemo(() => {
-    if (freshHistoryCutoffMs) return {};
-
     const internshipMoaFields = profile.data?.internship_moa_fields as Record<
       string,
       Record<string, string>
     >;
-    if (!internshipMoaFields) return;
-
-    // Destructure to isolate only shared fields or fields for that form
-    const autofillValues = {
-      ...(internshipMoaFields.base ?? {}),
-      ...internshipMoaFields.shared,
-      ...(internshipMoaFields[form.formName] ?? {}),
-    };
+    const autofillValues: FormValues = isFreshFormsModeEnabled
+      ? {}
+      : {
+          ...(internshipMoaFields?.base ?? {}),
+          ...(internshipMoaFields?.shared ?? {}),
+          ...(internshipMoaFields?.[form.formName] ?? {}),
+        };
 
     // Populate with prefillers as well
     for (const field of form.fields) {
@@ -43,14 +40,20 @@ export const useMyAutofill = () => {
           user: profile.data,
         });
 
-        // ! Tentative fix for spaces, move to abstraction later on
-        autofillValues[field.field] =
-          typeof s === "string" ? s.trim().replace("  ", " ") : s;
+        const normalizedValue =
+          s === null || s === undefined
+            ? ""
+            : String(s)
+                .trim()
+                .replace(/\s{2,}/g, " ");
+        if (normalizedValue.length > 0) {
+          autofillValues[field.field] = normalizedValue;
+        }
       }
     }
 
     return autofillValues;
-  }, [freshHistoryCutoffMs, form.fields, form.formName, profile.data]);
+  }, [form.fields, form.formName, isFreshFormsModeEnabled, profile.data]);
 
   return autofillValues;
 };
