@@ -5,7 +5,7 @@ import { FormPreviewPdfDisplay } from "@/components/features/student/forms/previ
 import { FormFillerRenderer } from "@/components/features/student/forms/FormFillerRenderer";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { cn, isValidEmail } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
 import { useFormFiller } from "@/components/features/student/forms/form-filler.ctx";
@@ -23,6 +23,7 @@ import { useFormFilloutProcessRunner } from "@/hooks/forms/filloutFormProcess";
 import { useAppContext } from "@/lib/ctx-app";
 import { FormSigningPartyTimeline } from "./FormSigningPartyTimeline";
 import { getFreshHistoryCutoffMsFromStorage } from "../fresh-history";
+import { getRecipientEmailErrors } from "./recipient-email-validation";
 
 interface FlowTestSigningLayoutProps {
   formLabel?: string;
@@ -263,24 +264,11 @@ export function FormSigningLayout({
     form,
   ]);
 
-  const checkRecipientErrors = (recipientEmails: Record<string, string>) => {
-    const emailErrors: Record<string, string> = {};
-
-    for (const [recipientKey, recipientEmail] of Object.entries(
-      recipientEmails,
-    )) {
-      if (!isValidEmail(recipientEmail))
-        emailErrors[recipientKey] = `${recipientEmail} is not a valid email.`;
-    }
-
-    return emailErrors;
-  };
-
   const handleNext = useCallback(async () => {
     const additionalValues = { ...autofillValues, ...recipientEmails };
     const finalValues = formFiller.getFinalValues(additionalValues);
     const errors = formFiller.validate(form.fields, additionalValues);
-    const emailErrors = checkRecipientErrors(recipientEmails);
+    const emailErrors = getRecipientEmailErrors(recipientEmails);
 
     // So it doesn't look like it's hanging
     setNextLoading(true);
@@ -595,6 +583,7 @@ export function FormSigningLayout({
                           recipientEmails,
                           recipientErrors,
                           recipientEmailActions,
+                          recipientErrorActions,
                         }}
                       />
                     </div>
@@ -733,6 +722,7 @@ export function FormSigningLayout({
                             recipientEmails,
                             recipientErrors,
                             recipientEmailActions,
+                            recipientErrorActions,
                           }}
                           isConfirmingRecipients
                         />

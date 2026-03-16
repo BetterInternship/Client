@@ -4,6 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import { StateRecord, StateRecordActions } from "@/hooks/base/useStateRecord";
 import { cn } from "@/lib/utils";
+import { useEffect } from "react";
+import {
+  getRecipientEmailErrors,
+  RECIPIENT_EMAIL_VALIDATION_DEBOUNCE_MS,
+} from "./recipient-email-validation";
 
 export const FormSigningPartyTimeline = ({
   recipientInputAPI,
@@ -13,11 +18,30 @@ export const FormSigningPartyTimeline = ({
     recipientEmails: StateRecord;
     recipientErrors: StateRecord;
     recipientEmailActions: StateRecordActions;
+    recipientErrorActions: StateRecordActions;
   };
   isConfirmingRecipients?: boolean;
 }) => {
   const form = useFormRendererContext();
   const recipients = form.formMetadata.getSigningParties();
+
+  useEffect(() => {
+    if (!recipientInputAPI?.recipientErrorActions || isConfirmingRecipients) {
+      return;
+    }
+
+    const validationTimeout = window.setTimeout(() => {
+      recipientInputAPI.recipientErrorActions.overwrite(
+        getRecipientEmailErrors(recipientInputAPI.recipientEmails),
+      );
+    }, RECIPIENT_EMAIL_VALIDATION_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(validationTimeout);
+  }, [
+    isConfirmingRecipients,
+    recipientInputAPI?.recipientEmails,
+    recipientInputAPI?.recipientErrorActions,
+  ]);
 
   return (
     recipients.length > 1 && (
@@ -49,22 +73,33 @@ export const FormSigningPartyTimeline = ({
                       {recipientInputAPI.recipientEmails[fieldName]}
                     </Badge>
                   ) : (
-                    <FormInput
-                      value={recipientInputAPI.recipientEmails[fieldName]}
-                      placeholder={"recipient@email.com"}
-                      className={cn(
-                        "mt-1",
-                        recipientInputAPI.recipientErrors[fieldName]
-                          ? "text-destructive"
-                          : "",
+                    <div className="mt-1">
+                      <FormInput
+                        onInput={() =>
+                          recipientInputAPI?.recipientErrorActions.clearOne(
+                            fieldName,
+                          )
+                        }
+                        value={recipientInputAPI.recipientEmails[fieldName]}
+                        placeholder={"Enter email..."}
+                        className={cn(
+                          recipientInputAPI.recipientErrors[fieldName]
+                            ? "border-destructive text-destructive"
+                            : "",
+                        )}
+                        setter={(value) =>
+                          recipientInputAPI.recipientEmailActions.setOne(
+                            fieldName,
+                            value,
+                          )
+                        }
+                      />
+                      {recipientInputAPI.recipientErrors[fieldName] && (
+                        <span className="mt-1 block text-xs text-destructive">
+                          {recipientInputAPI.recipientErrors[fieldName]}
+                        </span>
                       )}
-                      setter={(value) =>
-                        recipientInputAPI.recipientEmailActions.setOne(
-                          fieldName,
-                          value,
-                        )
-                      }
-                    />
+                    </div>
                   )
                 ) : recipient.signatory_account?.email ? (
                   <span className="text-xs text-primary tracking-wide">
