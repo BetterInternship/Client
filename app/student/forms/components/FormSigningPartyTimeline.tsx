@@ -23,6 +23,7 @@ export const FormSigningPartyTimeline = ({
     recipients.length > 1 && (
       <Timeline>
         {recipients.map((recipient, index) => {
+          const isMe = recipient._id === "initiator";
           const fromMe = recipient.signatory_source?._id === "initiator";
           const fieldName = form.formMetadata.getSigningPartyFieldName(
             recipient._id,
@@ -31,6 +32,7 @@ export const FormSigningPartyTimeline = ({
             <TimelineItem
               key={recipient.signatory_title}
               number={index + 1}
+              isMe={isMe}
               title={
                 <span className="text-sm text-gray-700 font-light">
                   {recipient.signatory_title}
