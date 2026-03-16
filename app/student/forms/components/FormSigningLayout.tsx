@@ -5,6 +5,7 @@ import { FormPreviewPdfDisplay } from "@/components/features/student/forms/previ
 import { FormFillerRenderer } from "@/components/features/student/forms/FormFillerRenderer";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
@@ -71,6 +72,8 @@ type SigningStep =
   | "fields"
   | "preview-review"
   | "confirm";
+
+const DESKTOP_BACK_STEP_RESET_DELAY_MS = 320;
 
 export function FormSigningLayout({
   formLabel,
@@ -145,6 +148,18 @@ export function FormSigningLayout({
     isMobile &&
     (currentStep === "preview-start" || currentStep === "preview-review");
   const stepNumber = Math.max(steps.indexOf(currentStep) + 1, 1);
+  const desktopStepNumber = Math.max(desktopSteps.indexOf(currentStep) + 1, 1);
+  const desktopTotalSteps = desktopSteps.length;
+  const desktopCurrentTaskTitle =
+    currentStep === "timeline"
+      ? "Recipients"
+      : currentStep === "confirm"
+        ? "Review"
+        : "Fill Details";
+  const desktopProgressPercent =
+    desktopTotalSteps <= 1
+      ? 100
+      : (desktopStepNumber / desktopTotalSteps) * 100;
   const mobileStepIndexByStep = useMemo(
     () => new Map(mobileSteps.map((step, index) => [step, index])),
     [mobileSteps],
@@ -442,6 +457,42 @@ export function FormSigningLayout({
         )}
       >
         <div className="mx-auto flex h-full w-full max-w-7xl flex-col overflow-hidden rounded-[0.33em] border border-gray-300 ">
+          {!isMobile && (
+            <div className="animate-fade-in border-b border-gray-300 bg-white">
+              <div className="flex items-center gap-2 px-3 py-2.5 sm:px-4">
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    onBack();
+                    setTimeout(
+                      () => setCurrentStep(initialStep),
+                      DESKTOP_BACK_STEP_RESET_DELAY_MS,
+                    );
+                  }}
+                  className="h-7 w-7 shrink-0 p-0 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+                  aria-label="Back to templates"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                </Button>
+                <div className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold tracking-tight text-primary">
+                    {formLabel}
+                  </span>
+                </div>
+                <div className="hidden md:flex min-w-[210px] flex-col items-end gap-1">
+                  <span className="text-[11px] font-medium text-gray-500">
+                    {desktopCurrentTaskTitle}
+                    <span className="px-1.5 text-gray-300">•</span>
+                    Step {desktopStepNumber} of {desktopTotalSteps}
+                  </span>
+                  <Progress
+                    value={desktopProgressPercent}
+                    className="h-[3px] w-[210px] bg-gray-200 [&>div]:bg-primary/75"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
           {isMobile && (
             <div className="border-b border-gray-300 bg-gray-100 px-4 py-3">
               <div className="text-xs font-medium text-gray-700">
@@ -483,21 +534,6 @@ export function FormSigningLayout({
                     documentUrl={documentUrl}
                     blocks={previewKeyedFields}
                     values={previewValues}
-                    headerLeft={
-                      !isMobile ? (
-                        <Button
-                          variant="ghost"
-                          onClick={() => {
-                            setCurrentStep(initialStep);
-                            onBack();
-                          }}
-                          className="h-8 gap-2 px-2 text-xs text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
-                        >
-                          <ArrowLeft className="h-4 w-4" />
-                          Back to Templates
-                        </Button>
-                      ) : undefined
-                    }
                     fieldErrors={formFiller.errors}
                     selectionTick={selectionTick}
                     autoScrollToSelectedField={
@@ -553,18 +589,6 @@ export function FormSigningLayout({
                   : "opacity-100 pointer-events-auto translate-x-0",
               )}
             >
-              {!isMobile && (
-                <div className="flex items-start gap-3 px-6 pt-4">
-                  <div className="min-w-0 flex-1">
-                    <span className="block whitespace-normal break-words text-xl font-semibold tracking-tight text-primary">
-                      {formLabel}
-                    </span>
-                  </div>
-                  <span className="shrink-0 pt-0.5 text-xs font-medium text-gray-700">
-                    Step {stepNumber} of {steps.length}
-                  </span>
-                </div>
-              )}
               <div className="relative min-h-0 flex-1 overflow-hidden">
                 <div
                   className={`absolute inset-0 flex min-h-0 flex-col transition-all duration-500 ease-in-out ${

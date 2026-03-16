@@ -13,6 +13,8 @@ export interface MobileAddonConfig {
 interface HeaderContextType {
   mobileAddonConfig: MobileAddonConfig;
   setMobileAddonConfig: (config: MobileAddonConfig) => void;
+  desktopHeaderHidden: boolean;
+  setDesktopHeaderHidden: (hidden: boolean) => void;
 }
 
 const HeaderContext = createContext<HeaderContextType | undefined>(undefined);
@@ -35,12 +37,15 @@ export const HeaderContextProvider = ({
   const [mobileAddonConfig, setMobileAddonConfig] = useState<MobileAddonConfig>(
     { show: false },
   );
+  const [desktopHeaderHidden, setDesktopHeaderHidden] = useState(false);
 
   return (
     <HeaderContext.Provider
       value={{
         mobileAddonConfig,
         setMobileAddonConfig,
+        desktopHeaderHidden,
+        setDesktopHeaderHidden,
       }}
     >
       {children}

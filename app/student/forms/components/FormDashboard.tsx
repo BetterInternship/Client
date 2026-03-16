@@ -31,6 +31,7 @@ import useModalRegistry from "@/components/modals/modal-registry";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { useHeaderContext } from "@/lib/ctx-header";
 import {
   FRESH_FORMS_QUERY_PARAM,
   clearFreshHistoryCutoffMsInStorage,
@@ -67,6 +68,7 @@ export default function FormDashboard({
   isLoading: boolean;
 }) {
   const { isMobile } = useMobile();
+  const { setDesktopHeaderHidden } = useHeaderContext();
   const searchParams = useSearchParams();
   const modalRegistry = useModalRegistry();
   const headerTapStateRef = useRef<{
@@ -153,6 +155,11 @@ export default function FormDashboard({
       }
     };
   }, []);
+
+  useEffect(() => {
+    setDesktopHeaderHidden(!isMobile && isSigningFlow);
+    return () => setDesktopHeaderHidden(false);
+  }, [isMobile, isSigningFlow, setDesktopHeaderHidden]);
 
   const handleHeaderSecretTap = useCallback(() => {
     const tapState = headerTapStateRef.current;
@@ -334,10 +341,10 @@ export default function FormDashboard({
             >
               <div
                 className={cn(
-                  "absolute inset-0 min-h-0 overflow-y-auto transition-opacity duration-300 ease-in-out",
+                  "absolute inset-0 min-h-0 overflow-y-auto transition-[opacity,transform] duration-300 ease-out",
                   isSigningFlow
-                    ? "opacity-100 pointer-events-auto"
-                    : "opacity-0 pointer-events-none",
+                    ? "opacity-100 translate-y-0 pointer-events-auto"
+                    : "opacity-0 translate-y-1 pointer-events-none",
                 )}
               >
                 <FormSigningLayout
@@ -351,10 +358,10 @@ export default function FormDashboard({
 
               <div
                 className={cn(
-                  "absolute inset-0 min-h-0 overflow-y-auto bg-white transition-opacity duration-300 ease-in-out [scrollbar-gutter:stable]",
+                  "absolute inset-0 min-h-0 overflow-y-auto bg-white transition-[opacity,transform] duration-300 ease-out [scrollbar-gutter:stable]",
                   isSigningFlow
-                    ? "opacity-0 pointer-events-none"
-                    : "opacity-100 pointer-events-auto",
+                    ? "opacity-0 -translate-y-1 pointer-events-none"
+                    : "opacity-100 translate-y-0 pointer-events-auto",
                 )}
               >
                 {form.loading ||
