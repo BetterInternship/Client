@@ -253,16 +253,27 @@ export function FormSigningLayout({
     form.setSelectedPreviewId(fieldName);
   };
 
+  const recipientEmailErrors = useMemo(
+    () => getRecipientEmailErrors(recipientEmails),
+    [recipientEmails],
+  );
+
   const nextEnabled = useMemo(() => {
     switch (currentStep) {
       case "preview-start":
         return true;
       case "timeline":
-        return recipients.every(
-          (recipient) =>
-            !!recipientEmails[
-              form.formMetadata.getSigningPartyFieldName(recipient._id)
-            ] || recipient.signatory_source?._id !== "initiator",
+        return (
+          recipients.every((recipient) => {
+            if (recipient.signatory_source?._id !== "initiator") return true;
+
+            const recipientEmail =
+              recipientEmails[
+                form.formMetadata.getSigningPartyFieldName(recipient._id)
+              ];
+
+            return !!recipientEmail?.trim();
+          }) && Object.keys(recipientEmailErrors).length === 0
         );
       case "fields":
         return areRequiredFieldsComplete;
@@ -275,6 +286,7 @@ export function FormSigningLayout({
     areRequiredFieldsComplete,
     currentStep,
     recipients,
+    recipientEmailErrors,
     recipientEmails,
     form,
   ]);
@@ -283,7 +295,7 @@ export function FormSigningLayout({
     const additionalValues = { ...autofillValues, ...recipientEmails };
     const finalValues = formFiller.getFinalValues(additionalValues);
     const errors = formFiller.validate(form.fields, additionalValues);
-    const emailErrors = getRecipientEmailErrors(recipientEmails);
+    const emailErrors = recipientEmailErrors;
 
     // So it doesn't look like it's hanging
     setNextLoading(true);
@@ -338,6 +350,7 @@ export function FormSigningLayout({
     isMobile,
     noRecipientStep,
     recipientEmailActions,
+    recipientEmailErrors,
     recipientEmails,
     recipientErrorActions,
     updateAutofill,
