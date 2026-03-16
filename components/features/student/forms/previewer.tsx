@@ -255,9 +255,9 @@ export const FormPreviewPdfDisplay = ({
   }
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden rounded-[0.33em] border border-slate-300">
+    <div className="flex h-full w-full flex-col overflow-hidden rounded-[0.33em]">
       {/* Top Controls */}
-      <div className="flex-shrink-0 border-b border-slate-300 bg-white px-3 py-2">
+      <div className="flex-shrink-0 bg-white px-3 py-2">
         <div className="flex items-center gap-3">
           {headerLeft ? <div className="min-w-0">{headerLeft}</div> : null}
           <div className="ml-auto flex items-center gap-1.5">
