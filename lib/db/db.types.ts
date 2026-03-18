@@ -1,4 +1,8 @@
-import { Database as _Database, Json, Tables } from "@betterinternship/schema.base";
+import {
+  Database as _Database,
+  Json,
+  Tables,
+} from "@betterinternship/schema.base";
 
 export type Database = _Database;
 export type College = Tables<"ref_colleges">;
@@ -8,6 +12,7 @@ export type JobAllowance = Tables<"ref_job_allowances">;
 export type JobCategory = Tables<"ref_job_categories">;
 export type JobPayFreq = Tables<"ref_job_pay_freq">;
 export type JobMode = Tables<"ref_job_modes">;
+export type JobChallenge = Tables<"jobs_challenge">;
 export type AppStatus = Tables<"ref_app_statuses">;
 export type Industry = Tables<"ref_industries">;
 export type Department = Tables<"ref_departments">;
@@ -32,11 +37,28 @@ export type PublicEmployerUser = Omit<
 >;
 export interface MoA extends Partial<Tables<"moa">> {}
 
-export interface Job extends Omit<Partial<Tables<"jobs">>, "internship_preferences"> {
+export interface Job extends Omit<
+  Partial<Tables<"jobs">>,
+  "internship_preferences"
+> {
   employer?: Partial<Employer>;
   employers?: Partial<Employer>;
+  challenge?: Partial<JobChallenge> | null;
   internship_preferences?: ListingInternshipPreferences;
 }
+
+export type JobChallengePayload = {
+  title: string;
+  description?: string | null;
+};
+
+export type CreateJobChallengeListingPayload = Partial<Job> & {
+  challenge: JobChallengePayload;
+};
+
+export type UpdateJobChallengeListingPayload = Partial<Job> & {
+  challenge?: JobChallengePayload | Partial<JobChallenge> | null;
+};
 
 export interface UserApplication extends Partial<Tables<"applications">> {
   job?: Partial<Job>;
@@ -50,6 +72,7 @@ export interface EmployerApplication extends Partial<Tables<"applications">> {
   jobs?: Partial<Job>;
   user?: Partial<PrivateUser>;
   users?: Partial<PrivateUser>;
+  challenge_submission?: string | null;
 }
 
 export interface SavedJob extends Partial<Tables<"saved_jobs">> {

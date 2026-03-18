@@ -14,8 +14,12 @@ import { GroupableRadioDropdown } from "@/components/ui/dropdown";
 import { BooleanCheckIcon } from "@/components/ui/icons";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useProfile } from "@/hooks/use-employer-api";
-import { Job } from "@/lib/db/db.types";
+import {
+  Job,
+  UpdateJobChallengeListingPayload,
+} from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useFormData } from "@/lib/form-data";
 import Head from "next/head";
@@ -34,7 +38,7 @@ interface EditJobPageProps {
   saving?: boolean;
   update_job: (
     job_id: string,
-    job: Partial<Job>,
+    job: UpdateJobChallengeListingPayload,
   ) => Promise<{ success: boolean }>;
   actions?: React.ReactNode[];
 }
@@ -59,10 +63,13 @@ const EditJobPage = ({
   const { isMobile } = useMobile();
   const [editing, set_editing] = useState(false);
   const [isMissing, setMissing] = useState(false);
+  const [challengeTitle, setChallengeTitle] = useState("");
+  const [challengeDescription, setChallengeDescription] = useState("");
   const { formData, setField, setFields, fieldSetter } = useFormData<Job>();
   const router = useRouter();
   const profile = useProfile();
   const searchParams = useSearchParams();
+  const isSuperListing = Boolean(job.challenge);
 
   const refreshFlag = searchParams.get("refresh");
 
@@ -139,7 +146,12 @@ const EditJobPage = ({
       return;
     }
 
-    const edited_job: Partial<Job> = {
+    if (isSuperListing && !challengeTitle.trim()) {
+      alert("Challenge title is required");
+      return;
+    }
+
+    const edited_job: UpdateJobChallengeListingPayload = {
       title: formData.title,
       description: formData.description ?? "",
       requirements: formData.requirements ?? "",
@@ -148,7 +160,18 @@ const EditJobPage = ({
       salary: formData.allowance === 0 ? formData.salary : undefined,
       salary_freq: formData.allowance === 0 ? formData.salary_freq : undefined,
       is_unlisted: formData.is_unlisted ?? false,
-      internship_preferences: formData.internship_preferences,
+      internship_preferences: {
+        ...formData.internship_preferences,
+        ...(isSuperListing ? { require_cover_letter: false } : {}),
+      },
+      ...(isSuperListing
+        ? {
+            challenge: {
+              title: challengeTitle.trim(),
+              description: challengeDescription.trim() || null,
+            },
+          }
+        : {}),
     };
 
     set_editing(true);
@@ -164,12 +187,23 @@ const EditJobPage = ({
   useEffect(() => {
     if (job) {
       setFields(job);
+      setChallengeTitle(job.challenge?.title ?? "");
+      setChallengeDescription(job.challenge?.description ?? "");
     }
   }, [job]);
 
   useEffect(() => {
+    if (!isSuperListing) return;
+    if (!formData.internship_preferences?.require_cover_letter) return;
+    setField("internship_preferences", {
+      ...formData.internship_preferences,
+      require_cover_letter: false,
+    });
+  }, [isSuperListing, formData.internship_preferences?.require_cover_letter]);
+
+  useEffect(() => {
     if (job && saving) {
-      const edited_job: Partial<Job> = {
+      const edited_job: UpdateJobChallengeListingPayload = {
         id: formData.id,
         title: formData.title ?? "",
         description: formData.description ?? "",
@@ -179,7 +213,18 @@ const EditJobPage = ({
         salary: formData.salary ?? null,
         salary_freq: formData.salary_freq ?? undefined,
         is_unlisted: formData.is_unlisted,
-        internship_preferences: formData.internship_preferences ?? {},
+        internship_preferences: {
+          ...(formData.internship_preferences ?? {}),
+          ...(isSuperListing ? { require_cover_letter: false } : {}),
+        },
+        ...(isSuperListing
+          ? {
+              challenge: {
+                title: challengeTitle.trim(),
+                description: challengeDescription.trim() || null,
+              },
+            }
+          : {}),
       };
 
       update_job(edited_job.id ?? "", edited_job).then(
@@ -201,7 +246,8 @@ const EditJobPage = ({
       formData.allowance === undefined ||
       !formData.internship_preferences?.internship_types?.length ||
       !formData.internship_preferences?.job_commitment_ids?.length ||
-      !formData.internship_preferences?.job_setup_ids?.length;
+      !formData.internship_preferences?.job_setup_ids?.length ||
+      (isSuperListing && !challengeTitle.trim());
 
     setMissing(missing);
   }, [
@@ -213,6 +259,8 @@ const EditJobPage = ({
     formData.internship_preferences?.internship_types,
     formData.internship_preferences?.job_commitment_ids,
     formData.internship_preferences?.job_setup_ids,
+    challengeTitle,
+    isSuperListing,
   ]);
 
   return (
@@ -300,6 +348,56 @@ const EditJobPage = ({
         <div>
           <div className={cn(isMobile ? "p-0 mt-18 pb-16" : "p-6 mt-20")}>
             <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200">
+              {isSuperListing && (
+                <div
+                  className={cn(
+                    "py-5 border-b border-gray-200 bg-yellow-50/50",
+                    isMobile ? "px-2" : "px-6",
+                  )}
+                >
+                  <div className="space-y-4">
+                    <div>
+                      <h2 className="flex flex-row text-lg font-bold text-gray-800 mb-2 break-words overflow-wrap-anywhere leading-tight">
+                        <StepCheckIndicator
+                          checked={challengeTitle.trim().length > 0}
+                        />
+                        Challenge Title{" "}
+                        <span className="text-destructive text-sm">*</span>
+                      </h2>
+                      <Input
+                        value={challengeTitle}
+                        onChange={(e) => setChallengeTitle(e.target.value)}
+                        className="text-base font-medium h-10"
+                        placeholder="Enter challenge title..."
+                        maxLength={120}
+                        required={true}
+                      />
+                      <p className="text-xs text-gray-500 text-right mt-1">
+                        {challengeTitle.length}/120 characters
+                      </p>
+                    </div>
+
+                    <div>
+                      <h2 className="flex flex-row text-lg font-bold text-gray-800 mb-2 break-words overflow-wrap-anywhere leading-tight">
+                        <StepCheckIndicator
+                          checked={challengeDescription.trim().length > 0}
+                        />
+                        Challenge Description
+                      </h2>
+                      <Textarea
+                        value={challengeDescription}
+                        onChange={(e) => setChallengeDescription(e.target.value)}
+                        className="text-sm min-h-[140px]"
+                        placeholder="Describe the challenge submission expected from applicants..."
+                        maxLength={4000}
+                      />
+                      <p className="text-xs text-gray-500 text-right mt-1">
+                        {challengeDescription.length}/4000 characters
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
               {/* Title Section */}
               <div
                 className={cn(
@@ -836,37 +934,45 @@ const EditJobPage = ({
                           </div>
 
                           <div
-                            onClick={() =>
+                            onClick={() => {
+                              if (isSuperListing) return;
                               setField("internship_preferences", {
                                 ...formData.internship_preferences,
                                 require_cover_letter:
                                   !formData.internship_preferences
                                     ?.require_cover_letter,
-                              })
-                            }
-                            className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors cursor-pointer h-fit
-                            ${formData.internship_preferences?.require_cover_letter ? "border-primary border-opacity-85" : "border-gray-200 hover:border-gray-300"}`}
+                              });
+                            }}
+                            className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors h-fit
+                            ${isSuperListing ? "cursor-not-allowed opacity-60 border-gray-200 bg-gray-50" : "cursor-pointer"}
+                            ${!isSuperListing && formData.internship_preferences?.require_cover_letter ? "border-primary border-opacity-85" : ""}
+                            ${!isSuperListing && !formData.internship_preferences?.require_cover_letter ? "border-gray-200 hover:border-gray-300" : ""}`}
                           >
                             <FormCheckbox
                               checked={
-                                formData.internship_preferences
-                                  ?.require_cover_letter ?? false
+                                isSuperListing
+                                  ? false
+                                  : (formData.internship_preferences
+                                      ?.require_cover_letter ?? false)
                               }
-                              setter={() =>
+                              setter={() => {
+                                if (isSuperListing) return;
                                 setField("internship_preferences", {
                                   ...formData.internship_preferences,
                                   require_cover_letter:
                                     !formData.internship_preferences
                                       ?.require_cover_letter,
-                                })
-                              }
+                                });
+                              }}
                             />
                             <div className="grid grid-rows-1 md:grid-rows-2">
                               <Label className="text-xs font-medium text-gray-900">
                                 Cover Letter
                               </Label>
                               <p className="text-xs text-gray-500">
-                                Require cover letter
+                                {isSuperListing
+                                  ? "Disabled for super listings"
+                                  : "Require cover letter"}
                               </p>
                             </div>
                           </div>

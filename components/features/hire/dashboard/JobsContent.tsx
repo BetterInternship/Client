@@ -14,112 +14,112 @@ import { useState, useEffect } from "react";
 
 //maybe add employers id to cross check
 interface JobsContentProps {
-    applications: EmployerApplication[];
-    jobs: Job[];
-    employerId: string;
-    updateJob: (jobId: string, job: Partial<Job>) => Promise<any>;
-    isLoading?: boolean;
+  applications: EmployerApplication[];
+  jobs: Job[];
+  employerId: string;
+  updateJob: (jobId: string, job: Partial<Job>) => Promise<any>;
+  onAddListingClick?: () => void;
+  isLoading?: boolean;
 }
 
 export function JobsContent({
-    applications,
-    jobs,
-    employerId,
-    updateJob, 
-    isLoading
+  applications,
+  jobs,
+  employerId,
+  updateJob: _updateJob,
+  onAddListingClick,
+  isLoading,
 }: JobsContentProps) {
-    const [exiting, setExiting] = useState(false);
-    const [showLoader, setShowLoader] = useState(true);
+  const [showLoader, setShowLoader] = useState(true);
 
-    const { isMobile } = useAppContext();
+  const { isMobile } = useAppContext();
 
-    const sortedJobs = jobs.sort(
-        (a,b) => 
-       ((b.created_at ?? "") > (a.created_at ?? "")) ? 1 : -1
-    );
+  const sortedJobs = jobs.toSorted((a, b) => {
+    const aIsSuper = Boolean(a.challenge);
+    const bIsSuper = Boolean(b.challenge);
 
-    const hasJobs = jobs.length
-
-    useEffect(() => {
-        let t: ReturnType<typeof setTimeout> | undefined;
-
-        if (!sortedJobs && hasJobs) {
-            t = setTimeout(() => setShowLoader(true), 200);
-        } else {
-            setShowLoader(false);
-        }
-
-        return () => t && clearTimeout(t);
-    }, [isLoading]);
-
-    if (showLoader || isLoading) {
-        return (
-        <div className="w-full flex items-center justify-center">
-            <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading Listings...</p>
-            </div>
-        </div>
-        );
+    if (aIsSuper !== bIsSuper) {
+      return aIsSuper ? -1 : 1;
     }
 
+    const aCreatedAt = Date.parse(a.created_at ?? "");
+    const bCreatedAt = Date.parse(b.created_at ?? "");
+    const aTimestamp = Number.isNaN(aCreatedAt) ? 0 : aCreatedAt;
+    const bTimestamp = Number.isNaN(bCreatedAt) ? 0 : bCreatedAt;
+
+    return bTimestamp - aTimestamp;
+  });
+
+  const hasJobs = jobs.length;
+
+  useEffect(() => {
+    let t: ReturnType<typeof setTimeout> | undefined;
+
+    if (!sortedJobs && hasJobs) {
+      t = setTimeout(() => setShowLoader(true), 200);
+    } else {
+      setShowLoader(false);
+    }
+
+    return () => t && clearTimeout(t);
+  }, [isLoading]);
+
+  if (showLoader || isLoading) {
     return (
-        <>
-            <motion.div
-                initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-                animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-            >
-                {sortedJobs && sortedJobs.length > 0 && !showLoader && !isLoading
-                    ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2">
-                        {
-                            sortedJobs.filter(job => job.employer_id === employerId
-                            ).map((job) => (
-                                <JobListingsBox
-                                    key={job.id}
-                                    job={job}
-                                    applications={applications}
-                                    isLoading={isLoading}
-                                />
-                            ))
-                        }
-                    </div>
-                    ) : (
-                        <div className="w-full h-full flex flex-col justify-center items-center gap-2">
-                            <span className="text-muted-foreground">You haven't created any job listings.</span>
-                            <div className={cn(
-                                "flex gap-2",
-                                isMobile
-                                ? "flex-col items-center"
-                                : ""
-                            )}>
-                                <Link
-                                    href="/listings/create"
-                                    className=""
-                                >
-                                    <Button
-                                        className="px-8 py-6"
-                                    >
-                                        <Plus />
-                                        Add a listing to get started.
-                                    </Button>
-                                </Link>
-                                <Link
-                                    href="https://calendar.app.google/boXRU8HEkisZT95D6"
-                                >
-                                    <Button
-                                        className="px-8 py-6"
-                                        variant="outline"
-                                    >
-                                        <Calendar />
-                                        Need help? Book a demo.
-                                    </Button>
-                                </Link>
-                            </div>
-                        </div>
-                    )}
-            </motion.div>
-        </>
+      <div className="w-full flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading Listings...</p>
+        </div>
+      </div>
     );
+  }
+
+  return (
+    <>
+      <motion.div
+        initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+        animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
+        {sortedJobs && sortedJobs.length > 0 && !showLoader && !isLoading ? (
+          <div className="grid grid-cols-1 items-end gap-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            {sortedJobs
+              .filter((job) => job.employer_id === employerId)
+              .map((job) => (
+                <JobListingsBox
+                  key={job.id}
+                  job={job}
+                  applications={applications}
+                  isLoading={isLoading}
+                />
+              ))}
+          </div>
+        ) : (
+          <div className="w-full h-full flex flex-col justify-center items-center gap-2">
+            <span className="text-muted-foreground">
+              You haven't created any job listings.
+            </span>
+            <div
+              className={cn(
+                "flex gap-2",
+                isMobile ? "flex-col items-center" : "",
+              )}
+            >
+              <Button className="px-8 py-6" onClick={onAddListingClick}>
+                <Plus />
+                Add a listing to get started.
+              </Button>
+              <Link href="https://calendar.app.google/boXRU8HEkisZT95D6">
+                <Button className="px-8 py-6" variant="outline">
+                  <Calendar />
+                  Need help? Book a demo.
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
+      </motion.div>
+    </>
+  );
 }

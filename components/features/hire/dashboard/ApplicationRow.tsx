@@ -2,9 +2,7 @@
 // Props in (application data), events out (onView, onNotes, etc.)
 // No business logic - just presentation and event emission
 import { ActionItem } from "@/components/ui/action-item";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useConversations } from "@/hooks/use-conversation";
 import { useAppContext } from "@/lib/ctx-app";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
@@ -20,7 +18,6 @@ import {
   Calendar,
   ContactRound,
   GraduationCap,
-  MessageCircle,
   School,
   Trash2,
 } from "lucide-react";
@@ -31,6 +28,7 @@ import { DropdownMenu } from "@/components/ui/dropdown-menu";
 interface ApplicationRowProps {
   index?: number;
   application: EmployerApplication;
+  isSuperListing?: boolean;
   onView: (v: any) => void;
   onNotes: () => void;
   onSchedule: () => void;
@@ -57,6 +55,7 @@ interface InternshipPreferences {
 export function ApplicationRow({
   index = 0,
   application,
+  isSuperListing = false,
   onView,
   openChatModal,
   updateConversationId,
@@ -68,7 +67,6 @@ export function ApplicationRow({
   statuses,
 }: ApplicationRowProps) {
   const { to_university_name, get_app_status } = useDbRefs();
-  const conversations = useConversations();
   const { isMobile } = useAppContext();
   const preferences = (application.user?.internship_preferences ||
     {}) as InternshipPreferences;
@@ -87,6 +85,8 @@ export function ApplicationRow({
     highlighted: true,
     highlightColor: statusMap.get(application.status!)?.bgColor,
   };
+  const challengeSubmission = application.challenge_submission?.trim() ?? "";
+  const hasChallengeSubmission = challengeSubmission.length > 0;
 
   return isMobile ? (
     <motion.div
@@ -97,61 +97,160 @@ export function ApplicationRow({
       transition={{ duration: 0.3, delay: staggerDelay, ease: "easeOut" }}
     >
       <Card
-        className="flex flex-col hover:cursor-pointer hover:bg-primary/25 transition-colors"
+        className={`flex flex-col hover:cursor-pointer transition-colors ${
+          isSuperListing
+            ? "border-amber-300 bg-amber-50/40 hover:bg-amber-100/50"
+            : "hover:bg-primary/25"
+        }`}
         onClick={onView}
       >
         <div
           onClick={(e) => e.stopPropagation()}
-          className="flex items-center gap-2 pb-2"
+          className="flex items-center justify-between gap-2 pb-2"
+        >
+          <div className="flex items-center gap-2">
+            <FormCheckbox
+              checked={checkboxSelected}
+              setter={(v: boolean) => onToggleSelect?.(!!v)}
+            />
+            <h4 className="text-gray-900 text-base">
+              {getFullName(application.user)}
+            </h4>
+          </div>
+          {isSuperListing && (
+            <DropdownMenu items={statuses} defaultItem={defaultStatus} />
+          )}
+        </div>
+        {isSuperListing ? (
+          <div className="rounded-[0.33em] border border-amber-200 bg-amber-50/70 p-3">
+            <p className="text-xs font-medium text-amber-700">Submission</p>
+            <p
+              className={`mt-1 text-sm whitespace-pre-wrap break-words ${
+                hasChallengeSubmission
+                  ? "text-gray-700 line-clamp-3"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {hasChallengeSubmission
+                ? challengeSubmission
+                : "No challenge submission provided."}
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col text-gray-500">
+            <div className="flex items-center gap-2">
+              <School size={16} />
+              <span className="text-sm">
+                {to_university_name(application.user?.university) || ""}{" "}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <GraduationCap size={16} />
+              <span className="text-sm">{application.user?.degree}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <ContactRound size={16} />
+              <span className="text-sm">{preferences.internship_type}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar size={16} />
+              <span className="text-sm">
+                {formatTimestampDateWithoutTime(
+                  preferences.expected_start_date,
+                )}
+              </span>
+            </div>
+          </div>
+        )}
+        {!isSuperListing && (
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <DropdownMenu items={statuses} defaultItem={defaultStatus} />
+          </div>
+        )}
+      </Card>
+    </motion.div>
+  ) : isSuperListing ? (
+    <>
+      <motion.tr
+        key={application.id}
+        initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+        animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
+        exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
+        transition={{
+          duration: 0.3,
+          delay: staggerDelay,
+          ease: "easeOut",
+        }}
+        className="group hover:cursor-pointer transition-colors odd:bg-white even:bg-gray-50 hover:bg-amber-100/50"
+        onClick={onView}
+      >
+        <td
+          className="px-4 py-2"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleSelect?.(!checkboxSelected);
+          }}
         >
           <FormCheckbox
             checked={checkboxSelected}
             setter={(v: boolean) => onToggleSelect?.(!!v)}
           />
-          <h4 className="text-gray-900 text-base">
-            {getFullName(application.user)}
-          </h4>
-        </div>
-        <div className="flex flex-col text-gray-500">
-          <div className="flex items-center gap-2">
-            <School size={16} />
-            <span className="text-sm">
-              {to_university_name(application.user?.university) || ""}{" "}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <GraduationCap size={16} />
-            <span className="text-sm">{application.user?.degree}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <ContactRound size={16} />
-            <span className="text-sm">{preferences.internship_type}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Calendar size={16} />
-            <span className="text-sm">
-              {formatTimestampDateWithoutTime(preferences.expected_start_date)}
-            </span>
-          </div>
-        </div>
-        <div className="flex items-center justify-end gap-2 pt-2">
+        </td>
+        <td className="px-4 py-2">{getFullName(application.user)} </td>
+        <td className="px-4 py-2">
+          {formatDateWithoutTime(application.applied_at)}
+        </td>
+        <td className="px-4 py-2 overflow-visible">
           <DropdownMenu items={statuses} defaultItem={defaultStatus} />
-          {/* <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              openChatModal();
-              setSelectedApplication(application);
-              updateConversationId(application.user_id ?? "");
-            }}
-          >
-            <MessageCircle className="h-6 w-6" />
-            Chat
-          </Button> */}
-        </div>
-      </Card>
-    </motion.div>
+        </td>
+        <td>
+          <div className="flex items-center gap-2 pr-2 flex-row justify-end">
+            {application.status !== 7 && (
+              <ActionButton
+                icon={Archive}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onArchiveButtonClick(application);
+                }}
+                enabled={application.status! !== 7}
+              />
+            )}
+            {application.status === 7 && (
+              <ActionButton
+                icon={Trash2}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteButtonClick(application);
+                }}
+                enabled={application.status! === 7}
+              />
+            )}
+          </div>
+        </td>
+      </motion.tr>
+      <tr
+        className="bg-amber-50/40 hover:bg-amber-100/50 hover:cursor-pointer transition-colors"
+        onClick={onView}
+      >
+        <td className="px-4 pb-3 pt-0" />
+        <td colSpan={4} className="pr-4 pb-3 pt-0">
+          <div className="rounded-[0.33em] border border-amber-200 bg-amber-50/70 p-3">
+            <p className="text-xs font-medium text-amber-700">Submission</p>
+            <p
+              className={`mt-1 text-sm whitespace-pre-wrap break-words ${
+                hasChallengeSubmission
+                  ? "text-gray-700 line-clamp-4"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {hasChallengeSubmission
+                ? challengeSubmission
+                : "No challenge submission provided."}
+            </p>
+          </div>
+        </td>
+      </tr>
+    </>
   ) : (
     // desktop
     <motion.tr
@@ -164,7 +263,7 @@ export function ApplicationRow({
         delay: staggerDelay,
         ease: "easeOut",
       }}
-      className="group hover:bg-primary/25 odd:bg-white even:bg-gray-50 hover:cursor-pointer transition-colors"
+      className="group hover:cursor-pointer transition-colors odd:bg-white even:bg-gray-50 hover:bg-primary/25"
       onClick={onView}
     >
       <td
@@ -197,18 +296,6 @@ export function ApplicationRow({
       </td>
       <td>
         <div className="flex items-center gap-2 pr-2 flex-row justify-end">
-          {/* <ActionButton
-            icon={MessageCircle}
-            onClick={(e) => {
-              e.stopPropagation();
-              openChatModal();
-              setSelectedApplication(application);
-              updateConversationId(application.user_id ?? "");
-            }}
-            notification={conversations.unreads.some((unread) =>
-                unread.subscribers.includes(application.user_id))}
-          >
-          </ActionButton> */}
           {application.status !== 7 && (
             <ActionButton
               icon={Archive}
