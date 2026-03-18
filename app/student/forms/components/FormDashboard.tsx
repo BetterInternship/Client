@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FileSearch, FileText } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -29,6 +29,15 @@ import { FormMobileCloseConfirmation } from "./FormMobileCloseConfirmation";
 import { useMobile } from "@/hooks/use-mobile";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
+import { useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+import { useHeaderContext } from "@/lib/ctx-header";
+import {
+  FRESH_FORMS_QUERY_PARAM,
+  clearFreshHistoryCutoffMsInStorage,
+  getFreshHistoryCutoffMsFromStorage,
+  setFreshHistoryCutoffMsInStorage,
+} from "../fresh-history";
 
 type GeneratedFormItem = {
   form_process_id?: string;
@@ -44,6 +53,11 @@ type GeneratedFormItem = {
   pending?: boolean;
 };
 
+const getTimestampMs = (timestamp?: string) => {
+  const parsed = Date.parse(timestamp ?? "");
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
 export default function FormDashboard({
   generatedForms,
   formTemplates,
@@ -54,17 +68,35 @@ export default function FormDashboard({
   isLoading: boolean;
 }) {
   const { isMobile } = useMobile();
+  const { setDesktopHeaderHidden } = useHeaderContext();
+  const searchParams = useSearchParams();
   const modalRegistry = useModalRegistry();
+  const headerTapStateRef = useRef<{
+    count: number;
+    timer: ReturnType<typeof setTimeout> | null;
+  }>({ count: 0, timer: null });
   const [selectedTemplate, setSelectedTemplate] = useState<FormTemplate>();
   const [isMobileSigningFlow, setIsMobileSigningFlow] = useState(false);
   const [isMobileExitConfirmationOpen, setIsMobileExitConfirmationOpen] =
     useState(false);
   const [noEsign, setNoEsign] = useState(false);
   const [isSigningFlow, setIsSigningFlow] = useState(false);
+  const [freshHistoryCutoffMs, setFreshHistoryCutoffMs] = useState<
+    number | null
+  >(null);
   const form = useFormRendererContext();
   const formFiller = useFormFiller();
   const signContext = useSignContext();
   const recipients = form.formMetadata.getSigningParties();
+  const filteredGeneratedForms = useMemo(() => {
+    if (!freshHistoryCutoffMs) return generatedForms ?? [];
+
+    return (generatedForms ?? []).filter((entry) => {
+      const timestampMs = getTimestampMs(entry.timestamp);
+      if (timestampMs === null) return true;
+      return timestampMs >= freshHistoryCutoffMs;
+    });
+  }, [generatedForms, freshHistoryCutoffMs]);
   const sortedTemplates = useMemo(
     () =>
       formTemplates?.toSorted((a, b) => {
@@ -76,11 +108,82 @@ export default function FormDashboard({
   );
   const hasHistoryLogs = useMemo(
     () =>
-      (generatedForms ?? []).some(
+      filteredGeneratedForms.some(
         (entry) => entry.label === form.formLabel || !form.formLabel,
       ),
-    [generatedForms, form.formLabel],
+    [filteredGeneratedForms, form.formLabel],
   );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const mode = searchParams.get(FRESH_FORMS_QUERY_PARAM);
+
+    if (mode === "0" || mode === "off") {
+      clearFreshHistoryCutoffMsInStorage();
+      setFreshHistoryCutoffMs(null);
+      return;
+    }
+
+    if (mode === "reset") {
+      const cutoff = Date.now();
+      setFreshHistoryCutoffMsInStorage(cutoff);
+      setFreshHistoryCutoffMs(cutoff);
+      return;
+    }
+
+    if (mode === "1") {
+      const existing = getFreshHistoryCutoffMsFromStorage();
+      if (existing) {
+        setFreshHistoryCutoffMs(existing);
+        return;
+      }
+
+      const cutoff = Date.now();
+      setFreshHistoryCutoffMsInStorage(cutoff);
+      setFreshHistoryCutoffMs(cutoff);
+      return;
+    }
+
+    setFreshHistoryCutoffMs(getFreshHistoryCutoffMsFromStorage());
+  }, [searchParams]);
+
+  useEffect(() => {
+    return () => {
+      if (headerTapStateRef.current.timer) {
+        clearTimeout(headerTapStateRef.current.timer);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    setDesktopHeaderHidden(!isMobile && isSigningFlow);
+    return () => setDesktopHeaderHidden(false);
+  }, [isMobile, isSigningFlow, setDesktopHeaderHidden]);
+
+  const handleHeaderSecretTap = useCallback(() => {
+    const tapState = headerTapStateRef.current;
+    tapState.count += 1;
+
+    if (tapState.timer) clearTimeout(tapState.timer);
+
+    if (tapState.count >= 5) {
+      const cutoff = Date.now();
+      setFreshHistoryCutoffMsInStorage(cutoff);
+      setFreshHistoryCutoffMs(cutoff);
+      tapState.count = 0;
+      tapState.timer = null;
+      toast.success(
+        "Fresh testing mode enabled. Old history is hidden until new forms are created.",
+      );
+      return;
+    }
+
+    tapState.timer = setTimeout(() => {
+      tapState.count = 0;
+      tapState.timer = null;
+    }, 2000);
+  }, []);
 
   const handleSignViaBetterInternship = () => {
     setIsSigningFlow(true);
@@ -121,7 +224,7 @@ export default function FormDashboard({
             <FormFillerContextBridge value={formFiller}>
               <MobileFormTemplateDetailsContent
                 selectedTemplate={selectedTemplate}
-                generatedForms={generatedForms}
+                generatedForms={filteredGeneratedForms}
                 isSigningFlow={isMobileSigningFlow}
                 setIsSigningFlow={setIsMobileSigningFlow}
                 showExitConfirmation={isMobileExitConfirmationOpen}
@@ -140,6 +243,7 @@ export default function FormDashboard({
       },
       closeOnBackdropClick: !isMobileSigningFlow,
       closeOnEscapeKey: !isMobileSigningFlow,
+      mobileFullscreen: isMobileSigningFlow,
       onClose: () => {
         setSelectedTemplate(undefined);
         setIsMobileSigningFlow(false);
@@ -149,10 +253,12 @@ export default function FormDashboard({
   }, [
     isMobile,
     selectedTemplate,
-    generatedForms,
+    filteredGeneratedForms,
     isMobileSigningFlow,
     isMobileExitConfirmationOpen,
     form,
+    formFiller,
+    signContext,
     form.loading,
     form.document.name,
     form.document.url,
@@ -184,7 +290,9 @@ export default function FormDashboard({
             <div className="flex w-full flex-col py-2 animate-fade-in">
               <div className="flex flex-row items-center gap-3 mb-2">
                 <HeaderIcon icon={FileText} />
-                <HeaderText>Form Templates</HeaderText>
+                <div onClick={handleHeaderSecretTap}>
+                  <HeaderText>Form Templates</HeaderText>
+                </div>
               </div>
               <p className="text-sm text-gray-600">
                 Select a form to preview and start the signing flow.
@@ -233,10 +341,10 @@ export default function FormDashboard({
             >
               <div
                 className={cn(
-                  "absolute inset-0 min-h-0 overflow-y-auto transition-opacity duration-300 ease-in-out",
+                  "absolute inset-0 min-h-0 overflow-y-auto transition-[opacity,transform] duration-300 ease-out",
                   isSigningFlow
-                    ? "opacity-100 pointer-events-auto"
-                    : "opacity-0 pointer-events-none",
+                    ? "opacity-100 translate-y-0 pointer-events-auto"
+                    : "opacity-0 translate-y-1 pointer-events-none",
                 )}
               >
                 <FormSigningLayout
@@ -250,10 +358,10 @@ export default function FormDashboard({
 
               <div
                 className={cn(
-                  "absolute inset-0 min-h-0 overflow-y-auto bg-white transition-opacity duration-300 ease-in-out [scrollbar-gutter:stable]",
+                  "absolute inset-0 min-h-0 overflow-y-auto bg-white transition-[opacity,transform] duration-300 ease-out [scrollbar-gutter:stable]",
                   isSigningFlow
-                    ? "opacity-0 pointer-events-none"
-                    : "opacity-100 pointer-events-auto",
+                    ? "opacity-0 -translate-y-1 pointer-events-none"
+                    : "opacity-100 translate-y-0 pointer-events-auto",
                 )}
               >
                 {form.loading ||
@@ -306,7 +414,7 @@ export default function FormDashboard({
                           </p>
                         </div>
                         <FormHistoryView
-                          forms={generatedForms ?? []}
+                          forms={filteredGeneratedForms}
                           formLabel={form.formLabel}
                         />
                       </>
@@ -456,7 +564,7 @@ function MobileFormTemplateDetailsContent({
                       </p>
                     </div>
                     <FormHistoryView
-                      forms={generatedForms ?? []}
+                      forms={generatedForms}
                       formLabel={form.formLabel}
                     />
                   </>

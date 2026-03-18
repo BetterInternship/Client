@@ -481,6 +481,7 @@ export const Header: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { desktopHeaderHidden } = useHeaderContext();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [moaOnly, setMoaOnly] = useState(false);
@@ -578,19 +579,28 @@ export const Header: React.FC = () => {
 
       {/* Desktop Header */}
       {!isMobile && showProfileButton && (
-        <DesktopHeader
-          searchTerm={searchTerm}
-          moaOnly={moaOnly}
-          onSearchChange={setSearchTerm}
-          onMoaToggle={(v) => {
-            setMoaOnly(v);
-            pushSearch({ moa: v });
-          }}
-          onSearch={doSearch}
-          onApplyFilters={onApplyFilters}
-          initialFilterValues={initialFromUrl}
-          showFilters={showFilters}
-        />
+        <div
+          className={cn(
+            "overflow-hidden transition-all duration-300 ease-out",
+            desktopHeaderHidden
+              ? "max-h-0 -translate-y-2 opacity-0 pointer-events-none"
+              : "max-h-32 translate-y-0 opacity-100",
+          )}
+        >
+          <DesktopHeader
+            searchTerm={searchTerm}
+            moaOnly={moaOnly}
+            onSearchChange={setSearchTerm}
+            onMoaToggle={(v) => {
+              setMoaOnly(v);
+              pushSearch({ moa: v });
+            }}
+            onSearch={doSearch}
+            onApplyFilters={onApplyFilters}
+            initialFilterValues={initialFromUrl}
+            showFilters={showFilters}
+          />
+        </div>
       )}
     </>
   );

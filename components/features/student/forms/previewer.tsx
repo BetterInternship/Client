@@ -17,6 +17,7 @@ import { Loader } from "@/components/ui/loader";
 import { ZoomIn, ZoomOut } from "lucide-react";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useProfileData } from "@/lib/api/student.data.api";
+import { useAppContext } from "@/lib/ctx-app";
 import {
   createPreviewDisplayValueResolver,
   groupFieldsByPage,
@@ -58,7 +59,7 @@ export const FormPreviewPdfDisplay = ({
   blocks,
   values,
   headerLeft,
-  scale: initialScale = 1.0,
+  scale: initialScale,
   onFieldClick,
   selectedFieldId,
   selectionTick = 0,
@@ -66,20 +67,38 @@ export const FormPreviewPdfDisplay = ({
   fieldErrors = {},
   signingParties = [],
 }: FormPreviewPdfDisplayProps) => {
+  const { isMobile } = useAppContext();
   const refs = useDbRefs();
   const profile = useProfileData();
+  const defaultScale = isMobile ? 0.5 : 0.9;
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [pageCount, setPageCount] = useState<number>(0);
-  const [scale, setScale] = useState<number>(initialScale);
+  const [scale, setScale] = useState<number>(initialScale ?? defaultScale);
   const [visiblePage, setVisiblePage] = useState<number>(1);
   const [isLoadingDoc, setIsLoadingDoc] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [animatingFieldId, setAnimatingFieldId] = useState<string | null>(null);
+  const [contextLabelFieldId, setContextLabelFieldId] = useState<string | null>(
+    null,
+  );
+  const [isContextLabelVisible, setIsContextLabelVisible] = useState(false);
+  const CONTEXT_LABEL_VISIBLE_MS = 900;
+  const CONTEXT_LABEL_TOTAL_MS = 1150;
+  const previousValuesRef = useRef<Record<string, string>>({});
+  const hasInitializedValueDiffRef = useRef(false);
+  const contextLabelFadeTimeoutRef = useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
+  const contextLabelClearTimeoutRef = useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
 
   const pageRefs = useRef<Map<number, HTMLDivElement | null>>(new Map());
   const fieldRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const normalizedFields = useMemo(() => toPreviewFields(blocks ?? []), [blocks]);
+  const normalizedFields = useMemo(
+    () => toPreviewFields(blocks ?? []),
+    [blocks],
+  );
   const fieldsByPage = useMemo(
     () => groupFieldsByPage(normalizedFields),
     [normalizedFields],
@@ -110,6 +129,50 @@ export const FormPreviewPdfDisplay = ({
     },
     [],
   );
+
+  const triggerContextLabel = useCallback((fieldId: string) => {
+    setContextLabelFieldId(fieldId);
+    setIsContextLabelVisible(true);
+
+    if (contextLabelFadeTimeoutRef.current)
+      clearTimeout(contextLabelFadeTimeoutRef.current);
+    if (contextLabelClearTimeoutRef.current)
+      clearTimeout(contextLabelClearTimeoutRef.current);
+
+    contextLabelFadeTimeoutRef.current = setTimeout(
+      () => setIsContextLabelVisible(false),
+      CONTEXT_LABEL_VISIBLE_MS,
+    );
+    contextLabelClearTimeoutRef.current = setTimeout(
+      () => setContextLabelFieldId(null),
+      CONTEXT_LABEL_TOTAL_MS,
+    );
+  }, []);
+
+  // Re-apply default zoom when a new document is opened.
+  useEffect(() => {
+    setScale(initialScale ?? defaultScale);
+  }, [documentUrl, initialScale, defaultScale]);
+
+  // Show contextual label when a mapped field value changes.
+  useEffect(() => {
+    if (!hasInitializedValueDiffRef.current) {
+      hasInitializedValueDiffRef.current = true;
+      previousValuesRef.current = values;
+      return;
+    }
+
+    const previousValues = previousValuesRef.current;
+    const changedKeys = Object.keys(values).filter(
+      (key) => previousValues[key] !== values[key],
+    );
+    previousValuesRef.current = values;
+
+    if (!changedKeys.length || isMobile) return;
+
+    const changedFieldId = normalizePreviewFieldKey(changedKeys[0]);
+    triggerContextLabel(changedFieldId);
+  }, [values, isMobile, triggerContextLabel]);
 
   // Jump to field's page and trigger animation when selected from form
   useEffect(() => {
@@ -145,15 +208,16 @@ export const FormPreviewPdfDisplay = ({
       }
     }
 
-    // Trigger bump animation
-    setAnimatingFieldId(selectedFieldId);
-    const timeout = setTimeout(() => setAnimatingFieldId(null), 600);
-    return () => clearTimeout(timeout);
+    if (!isMobile && autoScrollToSelectedField) {
+      triggerContextLabel(selectedFieldId);
+    }
   }, [
     selectedFieldId,
     selectionTick,
     normalizedFields,
     autoScrollToSelectedField,
+    isMobile,
+    triggerContextLabel,
   ]);
 
   // Initialize PDF.js worker
@@ -167,6 +231,15 @@ export const FormPreviewPdfDisplay = ({
 
   useEffect(() => {
     ensurePreviewFontsLoaded();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (contextLabelFadeTimeoutRef.current)
+        clearTimeout(contextLabelFadeTimeoutRef.current);
+      if (contextLabelClearTimeoutRef.current)
+        clearTimeout(contextLabelClearTimeoutRef.current);
+    };
   }, []);
 
   // Load PDF document
@@ -244,9 +317,9 @@ export const FormPreviewPdfDisplay = ({
   }
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden rounded-[0.33em] border border-slate-300">
+    <div className="flex h-full w-full flex-col overflow-hidden rounded-[0.33em]">
       {/* Top Controls */}
-      <div className="flex-shrink-0 border-b border-slate-300 bg-white px-3 py-2">
+      <div className="flex-shrink-0 bg-white px-3 py-2">
         <div className="flex items-center gap-3">
           {headerLeft ? <div className="min-w-0">{headerLeft}</div> : null}
           <div className="ml-auto flex items-center gap-1.5">
@@ -296,8 +369,9 @@ export const FormPreviewPdfDisplay = ({
               fields={fieldsByPage.get(pageNumber) || []}
               values={values}
               onFieldClick={onFieldClick}
-              animatingFieldId={animatingFieldId}
               selectedFieldId={selectedFieldId}
+              contextLabelFieldId={contextLabelFieldId}
+              isContextLabelVisible={isContextLabelVisible}
               registerFieldRef={registerFieldRef}
               fieldErrors={fieldErrors}
               resolveDisplayValue={resolveDisplayValue}
@@ -320,8 +394,9 @@ interface PdfPageWithFieldsProps {
   fields: PreviewField[];
   values: Record<string, string>;
   onFieldClick?: (fieldName: string) => void;
-  animatingFieldId?: string | null;
   selectedFieldId?: string;
+  contextLabelFieldId?: string | null;
+  isContextLabelVisible?: boolean;
   registerFieldRef: (fieldName: string, node: HTMLDivElement | null) => void;
   fieldErrors: Record<string, string>;
   resolveDisplayValue: (field: PreviewField, rawValue: unknown) => string;
@@ -338,8 +413,9 @@ const PdfPageWithFields = ({
   fields,
   values,
   onFieldClick,
-  animatingFieldId,
   selectedFieldId,
+  contextLabelFieldId,
+  isContextLabelVisible,
   registerFieldRef,
   fieldErrors,
   resolveDisplayValue,
@@ -579,9 +655,12 @@ const PdfPageWithFields = ({
           const lineHeight = lineHeightDoc * scale;
 
           const isSelected =
-            animatingFieldId === fieldName ||
             selectedFieldId === fieldName ||
             clickedHighlightFieldId === field.id;
+          const isContextLabelForField =
+            !!contextLabelFieldId &&
+            normalizePreviewFieldKey(contextLabelFieldId) ===
+              normalizePreviewFieldKey(fieldName);
 
           const hasFieldError = !!fieldErrors[fieldName];
           const isFieldValid = isFilled && !hasFieldError;
@@ -664,6 +743,20 @@ const PdfPageWithFields = ({
                       : "flex-start",
               }}
             >
+              {isContextLabelForField && (
+                <div
+                  className={`pointer-events-none absolute left-0 -top-9 z-30 transition-all duration-200 ${
+                    isContextLabelVisible
+                      ? "translate-y-0 opacity-100"
+                      : "-translate-y-1 opacity-0"
+                  }`}
+                >
+                  <div className="max-w-[220px] truncate rounded-[0.33em] bg-black px-2.5 py-1 text-[11px] font-semibold text-white shadow-lg">
+                    Updating
+                  </div>
+                  <div className="ml-2 h-0 w-0 border-x-4 border-x-transparent border-t-4 border-t-black" />
+                </div>
+              )}
               {isFilled && (
                 <div
                   className="text-black"
@@ -707,10 +800,3 @@ const AssignedOwnerTooltip = ({ ownerLabel }: { ownerLabel: string }) => (
     </span>
   </div>
 );
-
-
-
-
-
-
-

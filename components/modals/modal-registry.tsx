@@ -291,6 +291,7 @@ export const useModalRegistry = () => {
         showCloseButton,
         closeOnBackdropClick,
         closeOnEscapeKey,
+        mobileFullscreen,
       }: {
         title?: ReactNode;
         content: ReactNode;
@@ -299,6 +300,7 @@ export const useModalRegistry = () => {
         showCloseButton?: boolean;
         closeOnBackdropClick?: boolean;
         closeOnEscapeKey?: boolean;
+        mobileFullscreen?: boolean;
       }) =>
         open("form-template-details", SlideUpModalLayout, content, {
           title,
@@ -307,6 +309,7 @@ export const useModalRegistry = () => {
           showCloseButton,
           closeOnBackdropClick,
           closeOnEscapeKey,
+          mobileFullscreen,
         }),
       close: () => close("form-template-details"),
     },

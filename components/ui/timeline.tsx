@@ -1,5 +1,7 @@
 import React from "react";
 import { CheckIcon, MailWarningIcon } from "lucide-react";
+import { type } from "../../.next/types/routes";
+import { Badge } from "./badge";
 
 export const Timeline = ({ children }: { children: React.ReactNode }) => {
   return <div className="space-y-1">{children}</div>;
@@ -12,6 +14,7 @@ interface TimelineItemProps {
   isLast?: boolean;
   children?: React.ReactNode;
   fromMe?: boolean;
+  isMe?: boolean;
 }
 
 export const TimelineItem = ({
@@ -21,6 +24,7 @@ export const TimelineItem = ({
   isLast = false,
   children,
   fromMe,
+  isMe,
 }: TimelineItemProps) => {
   const isCheckmark = number === -1;
   const isExclamation = fromMe;
@@ -47,11 +51,14 @@ export const TimelineItem = ({
       {/* Content */}
       <div className="flex-1 flex items-start justify-between gap-2">
         <div className="flex-1 mt-1">
-          {fromMe ? (
-            <div className="text-sm font-semibold text-primary">{title}</div>
-          ) : (
-            <div className="text-sm text-gray-700">{title}</div>
-          )}
+          <div className="flex flex-row items-center gap-2">
+            {fromMe ? (
+              <div className="text-sm font-semibold text-primary">{title}</div>
+            ) : (
+              <div className="text-sm text-gray-700">{title}</div>
+            )}
+            {isMe && <Badge type="primary">You</Badge>}
+          </div>
           {subtitle && (
             <div className="text-xs text-gray-500 mb-1.5">{subtitle}</div>
           )}
