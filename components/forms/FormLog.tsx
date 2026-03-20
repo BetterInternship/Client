@@ -128,7 +128,7 @@ export const FormLog = ({
               className="gap-1 flex items-center font-medium"
             >
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              Pending
+              Waiting for recipients...
             </Badge>
           )}
         </div>
