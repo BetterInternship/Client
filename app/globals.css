@@ -609,6 +609,46 @@ button[role="checkbox"]:checked {
   } /* move right */
 }
 
+@keyframes tab-attention-jitter {
+  0%,
+  72%,
+  100% {
+    transform: translateX(0);
+  }
+  76% {
+    transform: translateX(4px);
+  }
+  82% {
+    transform: translateX(-3px);
+  }
+  88% {
+    transform: translateX(4px);
+  }
+  94% {
+    transform: translateX(-2px);
+  }
+}
+
+@keyframes tab-attention-dot-jitter {
+  0%,
+  72%,
+  100% {
+    transform: translateX(0) scale(1);
+  }
+  76% {
+    transform: translateX(4px) scale(1.16);
+  }
+  82% {
+    transform: translateX(-3px) scale(0.92);
+  }
+  88% {
+    transform: translateX(4px) scale(1.16);
+  }
+  94% {
+    transform: translateX(-2px) scale(0.96);
+  }
+}
+
 /* Mobile-specific utilities */
 @layer utilities {
   .pb-safe {
@@ -629,6 +669,14 @@ button[role="checkbox"]:checked {
 
   .webkit-overflow-scrolling-touch {
     -webkit-overflow-scrolling: touch;
+  }
+
+  .tab-attention-jitter {
+    animation: tab-attention-jitter 1.8s ease-in-out infinite;
+  }
+
+  .tab-attention-dot-jitter {
+    animation: tab-attention-dot-jitter 1.8s ease-in-out infinite;
   }
 }
 
@@ -715,6 +763,11 @@ button[role="checkbox"]:checked {
 
 @media (prefers-reduced-motion: reduce) {
   .shiny-text {
+    animation: none;
+  }
+
+  .tab-attention-jitter,
+  .tab-attention-dot-jitter {
     animation: none;
   }
 }

@@ -66,12 +66,7 @@ const areFormValuesEqual = (
   return leftEntries.every(([key, value]) => right[key] === value);
 };
 
-type SigningStep =
-  | "preview-start"
-  | "timeline"
-  | "fields"
-  | "preview-review"
-  | "confirm";
+type SigningStep = "timeline" | "fields" | "confirm";
 
 const DESKTOP_BACK_STEP_RESET_DELAY_MS = 320;
 
@@ -95,10 +90,13 @@ export function FormSigningLayout({
   );
   const initialNoRecipientStep = !hasInitiatorRecipient || !!noEsign;
   const initialStep: SigningStep = isMobile
-    ? "preview-start"
+    ? initialNoRecipientStep
+      ? "fields"
+      : "timeline"
     : initialNoRecipientStep
       ? "fields"
       : "timeline";
+  const hasInitializedFieldValuesRef = useRef(false);
   const latestValuesRef = useRef<FormValues>({});
   const [previewValues, setPreviewValues] = useState<FormValues>({});
   const [nextLoading, setNextLoading] = useState(false);
@@ -108,6 +106,11 @@ export function FormSigningLayout({
   const [areRequiredFieldsComplete, setAreRequiredFieldsComplete] =
     useState(false);
   const [currentStep, setCurrentStep] = useState<SigningStep>(initialStep);
+  const [mobileFieldsTab, setMobileFieldsTab] = useState<"form" | "preview">(
+    "form",
+  );
+  const [mobilePreviewNeedsAttention, setMobilePreviewNeedsAttention] =
+    useState(false);
   const [selectedFieldSource, setSelectedFieldSource] = useState<
     "form" | "pdf" | null
   >(null);
@@ -141,12 +144,11 @@ export function FormSigningLayout({
     ? ["fields", "confirm"]
     : ["timeline", "fields", "confirm"];
   const mobileSteps: SigningStep[] = noRecipientStep
-    ? ["preview-start", "fields", "preview-review", "confirm"]
-    : ["preview-start", "timeline", "fields", "preview-review", "confirm"];
+    ? ["fields", "confirm"]
+    : ["timeline", "fields", "confirm"];
   const steps = isMobile ? mobileSteps : desktopSteps;
-  const isMobilePreviewStep =
-    isMobile &&
-    (currentStep === "preview-start" || currentStep === "preview-review");
+  const isMobilePreviewTabActive =
+    isMobile && currentStep === "fields" && mobileFieldsTab === "preview";
   const stepNumber = Math.max(steps.indexOf(currentStep) + 1, 1);
   const desktopStepNumber = Math.max(desktopSteps.indexOf(currentStep) + 1, 1);
   const desktopTotalSteps = desktopSteps.length;
@@ -182,6 +184,22 @@ export function FormSigningLayout({
     setCurrentStep(nextStep);
   }, []);
 
+  const handleMobileFieldsTabChange = useCallback(
+    (nextTab: "form" | "preview") => {
+      setMobileFieldsTab(nextTab);
+
+      if (nextTab === "preview") {
+        setPreviewValues((prev) =>
+          areFormValuesEqual(prev, latestValuesRef.current)
+            ? prev
+            : latestValuesRef.current,
+        );
+        setMobilePreviewNeedsAttention(false);
+      }
+    },
+    [],
+  );
+
   const previewKeyedFields = useMemo(
     () =>
       (form.keyedFields ?? []).map((field) => ({
@@ -211,7 +229,13 @@ export function FormSigningLayout({
 
   const handleValuesChange = useCallback(
     (nextValues: FormValues) => {
+      const didValuesChange = !areFormValuesEqual(
+        latestValuesRef.current,
+        nextValues,
+      );
+      const hasInitializedFieldValues = hasInitializedFieldValuesRef.current;
       latestValuesRef.current = nextValues;
+      hasInitializedFieldValuesRef.current = true;
       const nextRequiredFieldsComplete =
         computeRequiredFieldsComplete(nextValues);
 
@@ -219,13 +243,21 @@ export function FormSigningLayout({
         prev === nextRequiredFieldsComplete ? prev : nextRequiredFieldsComplete,
       );
 
-      if (!isMobile || currentStep !== "fields") {
-        setPreviewValues((prev) =>
-          areFormValuesEqual(prev, nextValues) ? prev : nextValues,
-        );
+      setPreviewValues((prev) =>
+        areFormValuesEqual(prev, nextValues) ? prev : nextValues,
+      );
+
+      if (
+        hasInitializedFieldValues &&
+        didValuesChange &&
+        isMobile &&
+        currentStep === "fields" &&
+        mobileFieldsTab !== "preview"
+      ) {
+        setMobilePreviewNeedsAttention(true);
       }
     },
-    [computeRequiredFieldsComplete, currentStep, isMobile],
+    [computeRequiredFieldsComplete, currentStep, isMobile, mobileFieldsTab],
   );
 
   useEffect(() => {
@@ -242,7 +274,9 @@ export function FormSigningLayout({
     setSelectedFieldSource("pdf");
     setSelectionTick((prev) => prev + 1);
     form.setSelectedPreviewId(fieldName);
-    if (currentStep !== "fields") {
+    if (isMobile && currentStep === "fields") {
+      handleMobileFieldsTabChange("form");
+    } else if (currentStep !== "fields") {
       goToStep("fields");
     }
   };
@@ -260,8 +294,6 @@ export function FormSigningLayout({
 
   const nextEnabled = useMemo(() => {
     switch (currentStep) {
-      case "preview-start":
-        return true;
       case "timeline":
         return (
           recipients.every((recipient) => {
@@ -277,8 +309,6 @@ export function FormSigningLayout({
         );
       case "fields":
         return areRequiredFieldsComplete;
-      case "preview-review":
-        return true;
       case "confirm":
         return true;
     }
@@ -301,10 +331,6 @@ export function FormSigningLayout({
     setNextLoading(true);
 
     switch (currentStep) {
-      case "preview-start":
-        goToStep(noRecipientStep ? "fields" : "timeline");
-        setNextLoading(false);
-        break;
       case "timeline":
         if (Object.keys(emailErrors).length) {
           recipientErrorActions.overwrite(emailErrors);
@@ -314,6 +340,7 @@ export function FormSigningLayout({
           );
         } else {
           recipientErrorActions.clearAll();
+          handleMobileFieldsTabChange("form");
           goToStep("fields");
         }
 
@@ -328,13 +355,9 @@ export function FormSigningLayout({
         } else {
           if (!isFreshFormsModeEnabled)
             await updateAutofill(form.formName, form.fields, finalValues);
-          goToStep(isMobile ? "preview-review" : "confirm");
+          goToStep("confirm");
         }
 
-        setNextLoading(false);
-        break;
-      case "preview-review":
-        goToStep("confirm");
         setNextLoading(false);
         break;
       case "confirm":
@@ -347,9 +370,7 @@ export function FormSigningLayout({
     form,
     formFiller,
     isFreshFormsModeEnabled,
-    isMobile,
-    noRecipientStep,
-    recipientEmailActions,
+    handleMobileFieldsTabChange,
     recipientEmailErrors,
     recipientEmails,
     recipientErrorActions,
@@ -451,8 +472,11 @@ export function FormSigningLayout({
   // Clean up when switching form
   useEffect(() => {
     recipientEmailActions.clearAll();
+    hasInitializedFieldValuesRef.current = false;
     latestValuesRef.current = {};
     setPreviewValues({});
+    setMobileFieldsTab("form");
+    setMobilePreviewNeedsAttention(false);
     setHasConfirmedDetails(false);
     setAreRequiredFieldsComplete(initiatorManualFieldKeys.length === 0);
     setCurrentStep(initialStep);
@@ -463,6 +487,79 @@ export function FormSigningLayout({
       setHasConfirmedDetails(false);
     }
   }, [currentStep]);
+
+  const renderMobileFieldsTabs = () =>
+    isMobile && currentStep === "fields" ? (
+      <div className="border-b border-gray-200 bg-white">
+        <div className="grid grid-cols-2 border-b border-gray-200 bg-gray-100">
+          <button
+            type="button"
+            className={cn(
+              "flex items-center justify-center border-r border-gray-200 px-3 py-2 text-sm font-medium transition-colors",
+              mobileFieldsTab === "form"
+                ? "bg-slate-50 text-primary"
+                : "text-gray-600",
+            )}
+            onClick={() => handleMobileFieldsTabChange("form")}
+          >
+            <span
+              className={cn(
+                "inline-flex items-center justify-center rounded-full px-4 py-1.5 transition-colors",
+                mobileFieldsTab === "form" ? "bg-primary/10" : "bg-transparent",
+              )}
+            >
+              Fill Details
+            </span>
+          </button>
+          <button
+            type="button"
+            className={cn(
+              "flex items-center justify-center px-3 py-2 text-sm font-medium transition-colors",
+              mobileFieldsTab === "preview" ? "text-primary" : "text-gray-600",
+              mobileFieldsTab === "preview"
+                ? "bg-slate-50"
+                : mobilePreviewNeedsAttention
+                  ? "bg-blue-100"
+                  : "bg-transparent",
+            )}
+            onClick={() => handleMobileFieldsTabChange("preview")}
+          >
+            <span
+              className={cn(
+                "relative inline-flex items-center justify-center rounded-full px-4 py-1.5 transition-[transform,background-color] duration-200",
+                mobileFieldsTab === "preview"
+                  ? "bg-primary/10"
+                  : "bg-transparent",
+                mobilePreviewNeedsAttention
+                  ? "translate-x-1.5"
+                  : "translate-x-0",
+              )}
+            >
+              <span
+                className="absolute -left-4 top-1/2 -translate-y-1/2"
+                aria-hidden="true"
+              >
+                <span
+                  className={cn(
+                    "block h-2.5 w-2.5 rounded-full bg-primary transition-all duration-200",
+                    mobilePreviewNeedsAttention
+                      ? "tab-attention-dot-jitter scale-100 opacity-100"
+                      : "scale-75 opacity-0",
+                  )}
+                />
+              </span>
+              <span
+                className={cn(
+                  mobilePreviewNeedsAttention && "tab-attention-jitter",
+                )}
+              >
+                PDF Preview
+              </span>
+            </span>
+          </button>
+        </div>
+      </div>
+    ) : null;
 
   return (
     <div className="h-full min-h-0 flex flex-col">
@@ -528,7 +625,7 @@ export function FormSigningLayout({
                 isMobile
                   ? cn(
                       "absolute inset-0 z-10 min-h-0 bg-white",
-                      isMobilePreviewStep
+                      isMobilePreviewTabActive
                         ? "flex flex-col pointer-events-auto"
                         : "hidden pointer-events-none",
                     )
@@ -536,17 +633,11 @@ export function FormSigningLayout({
                 currentStep === "confirm" ? "xl:scale-[1.005]" : "xl:scale-100",
               )}
             >
+              {renderMobileFieldsTabs()}
               {documentUrl ? (
                 <>
-                  {isMobile && currentStep === "preview-review" && (
-                    <div className="border-b border-gray-200 bg-white px-4 py-3">
-                      <div className="text-sm font-semibold text-gray-900">
-                        Please review your inputs
-                      </div>
-                    </div>
-                  )}
                   <FormPreviewPdfDisplay
-                    key={isMobile ? currentStep : "desktop-preview"}
+                    key={isMobile ? "mobile-preview" : "desktop-preview"}
                     documentUrl={documentUrl}
                     blocks={previewKeyedFields}
                     values={previewValues}
@@ -565,31 +656,6 @@ export function FormSigningLayout({
                   PDF preview unavailable.
                 </div>
               )}
-              {isMobilePreviewStep && (
-                <div className="border-t border-gray-200 bg-white p-3">
-                  <div className="flex items-center gap-2">
-                    {currentStep === "preview-review" && (
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        className="h-11 w-11 shrink-0"
-                        onClick={() => goToStep("fields")}
-                        aria-label="Back to form fields"
-                      >
-                        <ArrowLeft className="h-4 w-4" />
-                      </Button>
-                    )}
-                    <Button
-                      size="lg"
-                      className="flex-1 whitespace-nowrap"
-                      disabled={nextLoading}
-                      onClick={() => void handleNext()}
-                    >
-                      <TextLoader loading={nextLoading}>Next</TextLoader>
-                    </Button>
-                  </div>
-                </div>
-              )}
             </div>
 
             <div
@@ -598,7 +664,7 @@ export function FormSigningLayout({
                 isMobile
                   ? cn(
                       "absolute inset-0 z-20 transition-[transform,opacity] duration-300 ease-in-out",
-                      !isMobilePreviewStep
+                      !isMobilePreviewTabActive
                         ? "translate-x-0 opacity-100 pointer-events-auto"
                         : mobileStepPaneHiddenClass,
                     )
@@ -651,7 +717,10 @@ export function FormSigningLayout({
                           variant="outline"
                           disabled={nextLoading}
                           className="h-11 w-11 shrink-0"
-                          onClick={() => goToStep("preview-start")}
+                          onClick={() => {
+                            onBack();
+                            setCurrentStep(initialStep);
+                          }}
                           aria-label="Back"
                         >
                           <ArrowLeft className="h-4 w-4" />
@@ -677,6 +746,7 @@ export function FormSigningLayout({
                   }`}
                 >
                   <div className="min-h-0 flex h-full flex-1 flex-col">
+                    {renderMobileFieldsTabs()}
                     <div className="min-h-0 flex-1">
                       <FormFillerRenderer
                         onValuesChange={handleValuesChange}
@@ -687,19 +757,33 @@ export function FormSigningLayout({
                         onFieldSelect={handleFormFieldSelect}
                       />
                     </div>
-                    <div className="bg-white p-3">
+                    <div
+                      className={cn(
+                        isMobile
+                          ? "overflow-hidden bg-white transition-all duration-300 ease-in-out"
+                          : "bg-white p-3",
+                        isMobile &&
+                          (isMobilePreviewTabActive
+                            ? "max-h-0 translate-y-full opacity-0 pointer-events-none"
+                            : "max-h-24 translate-y-0 opacity-100"),
+                      )}
+                    >
                       {isMobile ? (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 p-3">
                           <Button
                             size="icon"
                             variant="outline"
                             disabled={nextLoading}
                             className="h-11 w-11 shrink-0"
-                            onClick={() =>
-                              goToStep(
-                                noRecipientStep ? "preview-start" : "timeline",
-                              )
-                            }
+                            onClick={() => {
+                              if (noRecipientStep) {
+                                onBack();
+                                setCurrentStep(initialStep);
+                                return;
+                              }
+
+                              goToStep("timeline");
+                            }}
                             aria-label="Back"
                           >
                             <ArrowLeft className="h-4 w-4" />
@@ -790,9 +874,12 @@ export function FormSigningLayout({
                             size="icon"
                             variant="outline"
                             className="h-11 w-11 shrink-0"
-                            onClick={() =>
-                              goToStep(isMobile ? "preview-review" : "fields")
-                            }
+                            onClick={() => {
+                              if (isMobile) {
+                                handleMobileFieldsTabChange("form");
+                              }
+                              goToStep("fields");
+                            }}
                             aria-label="Go back and edit details"
                           >
                             <ArrowLeft className="h-4 w-4" />
