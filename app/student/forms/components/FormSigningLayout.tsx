@@ -370,7 +370,10 @@ export function FormSigningLayout({
     return {
       ...firstRecipient,
       signatory_account: {
-        email: recipientEmails[fieldName],
+        email:
+          (recipientEmails[fieldName] ||
+            firstRecipient.signatory_account?.email) ??
+          "",
       },
     };
   }, [form, recipients, recipientEmails]);
