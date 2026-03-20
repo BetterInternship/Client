@@ -155,10 +155,10 @@ export const FormLog = ({
                     onClick={(e) => {
                       e.stopPropagation();
                       if (formProcessId)
-                        modalRegistry.resendFormRequest.open(formProcessId);
+                        modalRegistry.followUpFormRequest.open(formProcessId);
                     }}
                   >
-                    Resend
+                    Follow Up
                   </Button>
                   <Button
                     className="text-xs h-8"
@@ -256,10 +256,10 @@ export const FormLog = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   if (formProcessId)
-                    modalRegistry.resendFormRequest.open(formProcessId);
+                    modalRegistry.followUpFormRequest.open(formProcessId);
                 }}
               >
-                Resend
+                Follow Up
               </Button>
               <Button
                 className="text-xs h-8 flex-1"

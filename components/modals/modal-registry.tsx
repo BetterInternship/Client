@@ -2,7 +2,7 @@ import { useGlobalModal } from "../providers/modal-provider/ModalProvider";
 import { LucideIcon } from "lucide-react";
 import { MassApplyComposer } from "./components/MassApplyComposer";
 import { FormSubmissionSuccessModal } from "./components/FormSubmissionSuccessModal";
-import { ResendFormModal } from "./components/ResendFormModal";
+import { FollowUpFormModal } from "./components/ResendFormModal";
 import { CancelFormModal } from "./components/CancelFormModal";
 import { WarningModal } from "./components/WarningModal";
 import { SuccessModal } from "./components/SuccessModal";
@@ -140,15 +140,15 @@ export const useModalRegistry = () => {
       close: () => close("cancel-form-request"),
     },
 
-    // Resend form request
-    resendFormRequest: {
+    // Follow up form request
+    followUpFormRequest: {
       open: (formProcessId: string) =>
         open(
           "resend-form-request",
           DefaultModalLayout,
-          <ResendFormModal formProcessId={formProcessId} />,
+          <FollowUpFormModal formProcessId={formProcessId} />,
           {
-            title: "Resend form email?",
+            title: "Send follow-up email?",
             showCloseButton: false,
             closeOnBackdropClick: false,
             closeOnEscapeKey: false,
