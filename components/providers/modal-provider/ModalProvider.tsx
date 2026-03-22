@@ -133,22 +133,44 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
 
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    let focusUpdateTimeout: ReturnType<typeof setTimeout> | null = null;
 
-    const setVH = () =>
+    const setVH = () => {
+      const viewportHeight =
+        window.visualViewport?.height &&
+        Number.isFinite(window.visualViewport.height)
+          ? window.visualViewport.height
+          : window.innerHeight;
       document.documentElement.style.setProperty(
         "--vh",
-        `${window.innerHeight * 0.01}px`,
+        `${viewportHeight * 0.01}px`,
       );
+    };
+
+    const handleFocusChange = () => {
+      // Defer once so mobile keyboard close/open settles before measuring.
+      if (focusUpdateTimeout) clearTimeout(focusUpdateTimeout);
+      focusUpdateTimeout = window.setTimeout(setVH, 60);
+    };
 
     setVH();
     window.addEventListener("resize", setVH);
     window.addEventListener("orientationchange", setVH);
+    window.visualViewport?.addEventListener("resize", setVH);
+    window.visualViewport?.addEventListener("scroll", setVH);
+    document.addEventListener("focusin", handleFocusChange);
+    document.addEventListener("focusout", handleFocusChange);
 
     return () => {
       document.body.style.overflow = originalOverflow;
       document.documentElement.style.removeProperty("--vh");
       window.removeEventListener("resize", setVH);
       window.removeEventListener("orientationchange", setVH);
+      window.visualViewport?.removeEventListener("resize", setVH);
+      window.visualViewport?.removeEventListener("scroll", setVH);
+      document.removeEventListener("focusin", handleFocusChange);
+      document.removeEventListener("focusout", handleFocusChange);
+      if (focusUpdateTimeout) clearTimeout(focusUpdateTimeout);
     };
   }, [registry]);
 
