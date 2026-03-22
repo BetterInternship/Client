@@ -70,6 +70,7 @@ const areFormValuesEqual = (
 type SigningStep = "timeline" | "fields" | "preview-review" | "confirm";
 
 const DESKTOP_BACK_STEP_RESET_DELAY_MS = 320;
+const COMPACT_SIGNING_LAYOUT_BREAKPOINT_PX = 1150;
 
 export function FormSigningLayout({
   formLabel,
@@ -86,12 +87,14 @@ export function FormSigningLayout({
   const queryClient = useQueryClient();
   const signContext = useSignContext();
   const { isMobile } = useAppContext();
+  const [isCompactSigningLayout, setIsCompactSigningLayout] = useState(false);
+  const isMobileLayout = isMobile || isCompactSigningLayout;
   const isFreshFormsModeEnabled = getFreshHistoryCutoffMsFromStorage() !== null;
   const hasInitiatorRecipient = recipients.some(
     (recipient) => recipient.signatory_source?._id === "initiator",
   );
   const initialNoRecipientStep = !hasInitiatorRecipient || !!noEsign;
-  const initialStep: SigningStep = isMobile
+  const initialStep: SigningStep = isMobileLayout
     ? initialNoRecipientStep
       ? "fields"
       : "timeline"
@@ -117,6 +120,21 @@ export function FormSigningLayout({
     "form" | "pdf" | null
   >(null);
   const [selectionTick, setSelectionTick] = useState(0);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const updateCompactSigningLayout = () => {
+      setIsCompactSigningLayout(
+        window.innerWidth < COMPACT_SIGNING_LAYOUT_BREAKPOINT_PX,
+      );
+    };
+
+    updateCompactSigningLayout();
+    window.addEventListener("resize", updateCompactSigningLayout);
+    return () =>
+      window.removeEventListener("resize", updateCompactSigningLayout);
+  }, []);
 
   const fieldOwnerByName = useMemo(() => {
     const ownerMap = new Map<string, string>();
@@ -148,13 +166,13 @@ export function FormSigningLayout({
   const mobileSteps: SigningStep[] = noRecipientStep
     ? ["fields", "preview-review", "confirm"]
     : ["timeline", "fields", "preview-review", "confirm"];
-  const steps = isMobile ? mobileSteps : desktopSteps;
+  const steps = isMobileLayout ? mobileSteps : desktopSteps;
   const isMobilePreviewTabActive =
-    isMobile && currentStep === "fields" && mobileFieldsTab === "preview";
+    isMobileLayout && currentStep === "fields" && mobileFieldsTab === "preview";
   const isMobilePreviewReviewStep =
-    isMobile && currentStep === "preview-review";
+    isMobileLayout && currentStep === "preview-review";
   const isMobilePreviewPaneActive =
-    isMobile && (isMobilePreviewTabActive || isMobilePreviewReviewStep);
+    isMobileLayout && (isMobilePreviewTabActive || isMobilePreviewReviewStep);
   const stepNumber = Math.max(steps.indexOf(currentStep) + 1, 1);
   const desktopStepNumber = Math.max(desktopSteps.indexOf(currentStep) + 1, 1);
   const desktopTotalSteps = desktopSteps.length;
@@ -271,28 +289,39 @@ export function FormSigningLayout({
       if (
         hasInitializedFieldValues &&
         didValuesChange &&
-        isMobile &&
+        isMobileLayout &&
         currentStep === "fields" &&
         mobileFieldsTab !== "preview"
       ) {
         setMobilePreviewNeedsAttention(true);
       }
     },
-    [computeRequiredFieldsComplete, currentStep, isMobile, mobileFieldsTab],
+    [
+      computeRequiredFieldsComplete,
+      currentStep,
+      isMobileLayout,
+      mobileFieldsTab,
+    ],
   );
 
   useEffect(() => {
-    if (!isMobile || currentStep === "fields") return;
+    if (!isMobileLayout || currentStep === "fields") return;
 
     setPreviewValues((prev) =>
       areFormValuesEqual(prev, latestValuesRef.current)
         ? prev
         : latestValuesRef.current,
     );
-  }, [currentStep, isMobile]);
+  }, [currentStep, isMobileLayout]);
 
   useEffect(() => {
-    if (!isMobile) return;
+    if (isMobileLayout) return;
+    if (currentStep !== "preview-review") return;
+    setCurrentStep("confirm");
+  }, [currentStep, isMobileLayout]);
+
+  useEffect(() => {
+    if (!isMobileLayout) return;
     const shouldBlur =
       currentStep !== "fields" ||
       mobileFieldsTab === "preview" ||
@@ -301,7 +330,7 @@ export function FormSigningLayout({
   }, [
     blurActiveFormControl,
     currentStep,
-    isMobile,
+    isMobileLayout,
     isMobilePreviewReviewStep,
     mobileFieldsTab,
   ]);
@@ -310,7 +339,7 @@ export function FormSigningLayout({
     setSelectedFieldSource("pdf");
     setSelectionTick((prev) => prev + 1);
     form.setSelectedPreviewId(fieldName);
-    if (isMobile && currentStep === "fields") {
+    if (isMobileLayout && currentStep === "fields") {
       handleMobileFieldsTabChange("form");
     } else if (currentStep !== "fields") {
       goToStep("fields");
@@ -394,7 +423,7 @@ export function FormSigningLayout({
         } else {
           if (!isFreshFormsModeEnabled)
             await updateAutofill(form.formName, form.fields, finalValues);
-          if (isMobile) {
+          if (isMobileLayout) {
             setMobilePreviewNeedsAttention(false);
             goToStep("preview-review");
           } else {
@@ -419,7 +448,7 @@ export function FormSigningLayout({
     formFiller,
     isFreshFormsModeEnabled,
     handleMobileFieldsTabChange,
-    isMobile,
+    isMobileLayout,
     recipientEmailErrors,
     recipientEmails,
     recipientErrorActions,
@@ -538,7 +567,7 @@ export function FormSigningLayout({
   }, [currentStep]);
 
   const renderMobileFieldsTabs = () =>
-    isMobile && currentStep === "fields" ? (
+    isMobileLayout && currentStep === "fields" ? (
       <div className="border-b border-gray-200 bg-white">
         <div className="grid grid-cols-2 border-b border-gray-200 bg-gray-100">
           <button
@@ -619,7 +648,7 @@ export function FormSigningLayout({
         )}
       >
         <div className="mx-auto flex h-full w-full max-w-7xl flex-col overflow-hidden rounded-[0.33em] border border-gray-300 ">
-          {!isMobile && (
+          {!isMobileLayout && (
             <div className="animate-fade-in border-b border-gray-300 bg-white">
               <div className="flex items-center gap-2 px-3 py-2.5 sm:px-4">
                 <Button
@@ -655,7 +684,7 @@ export function FormSigningLayout({
               </div>
             </div>
           )}
-          {isMobile && (
+          {isMobileLayout && (
             <div className="border-b border-gray-300 bg-gray-100 px-4 py-3">
               <div className="text-xs font-medium text-gray-700">
                 Step {stepNumber} of {steps.length}
@@ -664,14 +693,17 @@ export function FormSigningLayout({
           )}
           <div
             className={cn(
-              "grid min-h-0 flex-1 grid-cols-1 transition-[grid-template-columns] duration-500 ease-in-out xl:grid-cols-2 xl:divide-x xl:divide-gray-300",
-              isMobile ? "relative overflow-hidden" : "",
+              "grid min-h-0 flex-1 transition-[grid-template-columns] duration-500 ease-in-out",
+              isMobileLayout
+                ? "grid-cols-1"
+                : "grid-cols-2 divide-x divide-gray-300",
+              isMobileLayout ? "relative overflow-hidden" : "",
             )}
           >
             <div
               className={cn(
                 "min-h-0 min-w-0 bg-white rounded-r-none transition-[transform] duration-500 ease-in-out",
-                isMobile
+                isMobileLayout
                   ? cn(
                       "absolute inset-0 z-10 min-h-0 bg-white",
                       isMobilePreviewPaneActive
@@ -679,7 +711,9 @@ export function FormSigningLayout({
                         : "hidden pointer-events-none",
                     )
                   : "",
-                currentStep === "confirm" ? "xl:scale-[1.005]" : "xl:scale-100",
+                !isMobileLayout && currentStep === "confirm"
+                  ? "scale-[1.005]"
+                  : "scale-100",
               )}
             >
               {renderMobileFieldsTabs()}
@@ -693,14 +727,14 @@ export function FormSigningLayout({
               {documentUrl ? (
                 <>
                   <FormPreviewPdfDisplay
-                    key={isMobile ? "mobile-preview" : "desktop-preview"}
+                    key={isMobileLayout ? "mobile-preview" : "desktop-preview"}
                     documentUrl={documentUrl}
                     blocks={previewKeyedFields}
                     values={previewValues}
                     fieldErrors={formFiller.errors}
                     selectionTick={selectionTick}
                     autoScrollToSelectedField={
-                      !isMobile && selectedFieldSource === "form"
+                      !isMobileLayout && selectedFieldSource === "form"
                     }
                     signingParties={recipients}
                     onFieldClick={handlePdfFieldSelect}
@@ -743,7 +777,7 @@ export function FormSigningLayout({
             <div
               className={cn(
                 "relative min-h-0 min-w-0 flex flex-1 flex-col overflow-hidden bg-white transition-[opacity,transform] duration-500 ease-in-out",
-                isMobile
+                isMobileLayout
                   ? cn(
                       "absolute inset-0 z-20 transition-[transform,opacity] duration-300 ease-in-out",
                       !isMobilePreviewPaneActive
@@ -793,7 +827,7 @@ export function FormSigningLayout({
                   </div>
                   <div className="bg-white p-3">
                     <div className="flex w-full justify-between gap-2">
-                      {isMobile && (
+                      {isMobileLayout && (
                         <Button
                           size="icon"
                           variant="outline"
@@ -841,16 +875,16 @@ export function FormSigningLayout({
                     </div>
                     <div
                       className={cn(
-                        isMobile
+                        isMobileLayout
                           ? "overflow-hidden bg-white transition-all duration-300 ease-in-out"
                           : "bg-white p-3",
-                        isMobile &&
+                        isMobileLayout &&
                           (isMobilePreviewTabActive
                             ? "max-h-0 translate-y-full opacity-0 pointer-events-none"
                             : "max-h-24 translate-y-0 opacity-100"),
                       )}
                     >
-                      {isMobile ? (
+                      {isMobileLayout ? (
                         <div className="flex items-center gap-2 p-3">
                           <Button
                             size="icon"
@@ -950,14 +984,14 @@ export function FormSigningLayout({
                       </label>
                     </div>
                     <div className="bg-white p-3">
-                      {isMobile ? (
+                      {isMobileLayout ? (
                         <div className="flex items-center gap-2">
                           <Button
                             size="icon"
                             variant="outline"
                             className="h-11 w-11 shrink-0"
                             onClick={() => {
-                              if (isMobile) {
+                              if (isMobileLayout) {
                                 goToStep("preview-review");
                                 return;
                               }
