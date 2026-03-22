@@ -25,6 +25,7 @@ import { useAppContext } from "@/lib/ctx-app";
 import { FormSigningPartyTimeline } from "./FormSigningPartyTimeline";
 import { getFreshHistoryCutoffMsFromStorage } from "../fresh-history";
 import { getRecipientEmailErrors } from "./recipient-email-validation";
+import { useSignContext } from "@/components/providers/sign.ctx";
 
 interface FlowTestSigningLayoutProps {
   formLabel?: string;
@@ -83,6 +84,7 @@ export function FormSigningLayout({
   const autofillValues = useMyAutofill();
   const updateAutofill = useMyAutofillUpdate();
   const queryClient = useQueryClient();
+  const signContext = useSignContext();
   const { isMobile } = useAppContext();
   const isFreshFormsModeEnabled = getFreshHistoryCutoffMsFromStorage() !== null;
   const hasInitiatorRecipient = recipients.some(
@@ -312,7 +314,7 @@ export function FormSigningLayout({
           }) && Object.keys(recipientEmailErrors).length === 0
         );
       case "fields":
-        return areRequiredFieldsComplete;
+        return areRequiredFieldsComplete && signContext.hasAgreed;
       case "preview-review":
         return true;
       case "confirm":
@@ -324,6 +326,7 @@ export function FormSigningLayout({
     recipients,
     recipientEmailErrors,
     recipientEmails,
+    signContext,
     form,
   ]);
 
