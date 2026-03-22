@@ -49,7 +49,7 @@ export default function IncompleteProfileContent({
     <div className="flex flex-col justify-start items-center p-6 h-full overflow-y-auto sm:max-w-2xl mx-auto pt-20">
       <div className="text-center mb-10 w-full shrink-0">
         <div className="flex justify-start">
-          <Button variant="ghost" size="sm" onClick={router.back}>
+          <Button variant="ghost" size="sm" onClick={() => router.back()}>
             <ArrowLeft className="!h-6 !w-6 text-gray-500" />
           </Button>
         </div>
@@ -108,10 +108,10 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   const [showComplete, setShowComplete] = useState(false);
   const queryClient = useQueryClient();
   const router = useRouter();
-  
+
   // track where to redirect the user after completion
   const params = useSearchParams();
-  const destination = params.get('dest');
+  const destination = params.get("dest");
 
   // profile being edited
   const [profile, setProfile] = useState<ProfileDraft>(() => ({
@@ -200,7 +200,8 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
         subtitle: "Upload a PDF and we'll auto-fill what we can.",
         icon: Upload,
         canNext: () => {
-          const result = !!file && !isParsing && parsedReady && (response?.success ?? false);
+          const result =
+            !!file && !isParsing && parsedReady && (response?.success ?? false);
           return result;
         },
         component: (
@@ -320,7 +321,10 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
           },
         },
       })
-        .then(() => {
+        .then(async () => {
+          await queryClient.invalidateQueries({
+            queryKey: ["my-profile"],
+          });
           setIsUpdating(false);
           const isLast = step + 1 >= steps.length;
           if (isLast) setShowComplete(true);
@@ -355,10 +359,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   };
 
   if (showComplete) {
-    return <StepComplete 
-      onDone={onFinish} 
-      destination={destination}
-    />;
+    return <StepComplete onDone={onFinish} destination={destination} />;
   }
 
   return (
@@ -466,7 +467,6 @@ function StepBasicIdentity({
     departments,
     get_departments_by_college,
     to_department_name,
-    to_university_name,
     get_colleges_by_university,
     to_college_name,
   } = useDbRefs();
@@ -500,12 +500,15 @@ function StepBasicIdentity({
 
     if (collegeId) {
       const list = get_departments_by_college?.(collegeId);
-      setDepartmentOptions(
-        list.map((d) => ({
-          id: d,
-          name: to_department_name(d) ?? "",
-        })),
-      );
+      const mapped = list.map((d) => ({
+        id: d,
+        name: to_department_name(d) ?? "",
+      }));
+      setDepartmentOptions(mapped);
+
+      if (value.department && !mapped.some((d) => d.id === value.department)) {
+        onChange({ ...value, department: undefined });
+      }
     } else {
       // no college selected -> empty department options
       setDepartmentOptions(
@@ -543,7 +546,7 @@ function StepBasicIdentity({
         onChange({ ...value, college: undefined, department: undefined });
       }
     } else {
-      // no university selected -> show all colleges and clear college/department
+      // no university selected -> show all colleges without forcing a reset
       setCollegesOptions(
         colleges.map((d) => ({
           id: d.id,
@@ -552,11 +555,6 @@ function StepBasicIdentity({
           university_id: d.university_id,
         })),
       );
-
-      // Clear selected college and department because no university is chosen
-      if (value.college || value.department) {
-        onChange({ ...value, college: undefined, department: undefined });
-      }
     }
   }, [
     value.university,
@@ -647,7 +645,7 @@ function StepBasicIdentity({
               }
               options={departmentOptions}
               placeholder="Select department…"
-              disabled={value.college === ""}
+              disabled={!value.college}
             />
           </div>
           <div>
@@ -657,7 +655,7 @@ function StepBasicIdentity({
               value={value.degree ?? ""}
               setter={(val) => onChange({ ...value, degree: val.toString() })}
               placeholder="Select degree / program…"
-              disabled={value.department === ""}
+              disabled={!value.department}
             />
           </div>
         </div>
@@ -713,10 +711,10 @@ function StepAutoApply({
 
 /* ---------------------- Completion (rendered OUTSIDE stepper) ---------------------- */
 
-function StepComplete({ 
+function StepComplete({
   onDone,
   destination,
-} : { 
+}: {
   onDone: () => void;
   destination: string | null;
 }) {
@@ -724,14 +722,16 @@ function StepComplete({
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const t = setTimeout(async () => {
-      if (destination) {
-        // invalidate profile cache before redirecting.
-        await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-        router.push(`/${destination}`);
-      } else {
-        onDone();
-      }
+    const t = setTimeout(() => {
+      void (async () => {
+        if (destination) {
+          // invalidate profile cache before redirecting.
+          await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+          router.push(`/${destination}`);
+        } else {
+          onDone();
+        }
+      })();
     }, 1400);
     return () => clearTimeout(t);
   }, [onDone, destination, router, queryClient]);
