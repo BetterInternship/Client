@@ -326,16 +326,16 @@ export default function FormDashboard({
 
         <section
           className={cn(
-            "hidden min-h-0 flex-col bg-background overflow-hidden transition-[transform,opacity] duration-500 ease-in-out will-change-transform w-full md:flex",
+            "hidden min-h-0 flex-col overflow-hidden transition-[transform,opacity] duration-500 ease-in-out will-change-transform w-full md:flex",
             isSigningFlow
               ? "md:-translate-x-2 opacity-100"
-              : "md:translate-x-0 opacity-100 max-w-5xl mx-auto",
+              : "md:translate-x-0 opacity-100",
           )}
         >
           {selectedTemplate ? (
             <div
               className={cn(
-                "relative min-h-0 flex-1 bg-gray-100 transition-[padding] duration-500 ease-in-out",
+                "relative min-h-0 flex-1  transition-[padding] duration-500 ease-in-out",
                 isSigningFlow ? "px-2 sm:px-4" : "px-4",
               )}
             >
@@ -358,7 +358,7 @@ export default function FormDashboard({
 
               <div
                 className={cn(
-                  "absolute inset-0 min-h-0 overflow-y-auto bg-white transition-[opacity,transform] duration-300 ease-out [scrollbar-gutter:stable]",
+                  "absolute inset-0 min-h-0 overflow-y-auto transition-[opacity,transform] duration-300 ease-out [scrollbar-gutter:stable]",
                   isSigningFlow
                     ? "opacity-0 -translate-y-1 pointer-events-none"
                     : "opacity-100 translate-y-0 pointer-events-auto",
@@ -368,7 +368,7 @@ export default function FormDashboard({
                 form.document.name !== selectedTemplate.formName ? (
                   <Loader>Loading form template...</Loader>
                 ) : (
-                  <div className="mx-auto flex min-h-full max-w-4xl flex-col gap-8 bg-white px-10  p-6">
+                  <div className="flex min-h-full w-full flex-col gap-8 p-6 lg:p-8 xl:mx-auto xl:max-w-6xl">
                     <div className="space-y-2">
                       <h3 className="text-2xl font-semibold text-primary sm:text-3xl">
                         {selectedTemplate?.formLabel}
