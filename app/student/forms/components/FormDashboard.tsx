@@ -32,6 +32,7 @@ import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useHeaderContext } from "@/lib/ctx-header";
+import { useGlobalModal } from "@/components/providers/modal-provider/ModalProvider";
 import {
   FRESH_FORMS_QUERY_PARAM,
   clearFreshHistoryCutoffMsInStorage,
@@ -69,6 +70,7 @@ export default function FormDashboard({
 }) {
   const { isMobile } = useMobile();
   const { setDesktopHeaderHidden } = useHeaderContext();
+  const { closeModal } = useGlobalModal();
   const searchParams = useSearchParams();
   const modalRegistry = useModalRegistry();
   const headerTapStateRef = useRef<{
@@ -272,12 +274,18 @@ export default function FormDashboard({
       setIsMobileSigningFlow(false);
       setIsMobileExitConfirmationOpen(false);
       setSelectedTemplate(undefined);
-      modalRegistry.formTemplateDetails.close();
+      closeModal("form-template-details");
     };
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [isMobile, modalRegistry]);
+  }, [isMobile, closeModal]);
+
+  useEffect(() => {
+    return () => {
+      closeModal("form-template-details");
+    };
+  }, [closeModal]);
 
   if (isLoading) return <Loader>Loading form templates...</Loader>;
 
