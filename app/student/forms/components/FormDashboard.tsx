@@ -275,7 +275,7 @@ export default function FormDashboard({
           "grid-cols-1",
           isSigningFlow
             ? "md:grid-cols-[0px_minmax(0,1fr)]"
-            : "md:grid-cols-[minmax(380px,520px)_minmax(0,1fr)]",
+            : "md:grid-cols-[clamp(260px,32vw,460px)_minmax(0,1fr)]",
         )}
       >
         <aside
