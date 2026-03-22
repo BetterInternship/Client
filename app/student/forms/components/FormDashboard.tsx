@@ -265,6 +265,21 @@ export default function FormDashboard({
     form.formLabel,
   ]);
 
+  useEffect(() => {
+    if (!isMobile) return;
+    if (!selectedTemplate && !isMobileSigningFlow) return;
+
+    const handlePopState = () => {
+      setIsMobileSigningFlow(false);
+      setIsMobileExitConfirmationOpen(false);
+      setSelectedTemplate(undefined);
+      modalRegistry.formTemplateDetails.close();
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [isMobile, selectedTemplate, isMobileSigningFlow, modalRegistry]);
+
   if (isLoading) return <Loader>Loading form templates...</Loader>;
 
   return (
