@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type TouchEvent as ReactTouchEvent,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   GlobalWorkerOptions,
   getDocument,
@@ -56,16 +49,6 @@ interface FormPreviewPdfDisplayProps {
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
-const getTouchDistance = (
-  touches: ReactTouchEvent<HTMLDivElement>["touches"],
-) => {
-  if (touches.length < 2) return 0;
-  const [touchA, touchB] = [touches[0], touches[1]];
-  const deltaX = touchA.clientX - touchB.clientX;
-  const deltaY = touchA.clientY - touchB.clientY;
-  return Math.hypot(deltaX, deltaY);
-};
-
 /**
  * PDF display component that shows form fields as boxes overlaid on the PDF
  * Similar to PdfViewer but in read-only preview mode
@@ -112,10 +95,6 @@ export const FormPreviewPdfDisplay = ({
   const pageRefs = useRef<Map<number, HTMLDivElement | null>>(new Map());
   const fieldRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const pinchStateRef = useRef<{
-    startDistance: number;
-    startScale: number;
-  } | null>(null);
   const normalizedFields = useMemo(
     () => toPreviewFields(blocks ?? []),
     [blocks],
@@ -313,52 +292,6 @@ export const FormPreviewPdfDisplay = ({
     setScale((prev) => clamp(parseFloat((prev + delta).toFixed(2)), 0.5, 3));
   };
 
-  const handlePinchStart = useCallback(
-    (e: ReactTouchEvent<HTMLDivElement>) => {
-      if (!isMobile || e.touches.length !== 2) return;
-      const startDistance = getTouchDistance(e.touches);
-      if (startDistance <= 0) return;
-
-      pinchStateRef.current = {
-        startDistance,
-        startScale: scale,
-      };
-    },
-    [isMobile, scale],
-  );
-
-  const handlePinchMove = useCallback(
-    (e: ReactTouchEvent<HTMLDivElement>) => {
-      if (!isMobile || e.touches.length !== 2) return;
-      const pinchState = pinchStateRef.current;
-      if (!pinchState || pinchState.startDistance <= 0) return;
-
-      const currentDistance = getTouchDistance(e.touches);
-      if (currentDistance <= 0) return;
-
-      if (e.cancelable) e.preventDefault();
-
-      const nextScale = clamp(
-        parseFloat(
-          (
-            (pinchState.startScale * currentDistance) /
-            pinchState.startDistance
-          ).toFixed(2),
-        ),
-        0.5,
-        3,
-      );
-      setScale(nextScale);
-    },
-    [isMobile],
-  );
-
-  const handlePinchEnd = useCallback((e: ReactTouchEvent<HTMLDivElement>) => {
-    if (e.touches.length < 2) {
-      pinchStateRef.current = null;
-    }
-  }, []);
-
   const pagesArray = useMemo(
     () => Array.from({ length: pageCount }, (_, idx) => idx + 1),
     [pageCount],
@@ -423,10 +356,6 @@ export const FormPreviewPdfDisplay = ({
         ref={scrollContainerRef}
         className="flex-1 min-h-0 overflow-x-auto overflow-y-auto overscroll-contain bg-slate-100 p-4"
         style={{ WebkitOverflowScrolling: "touch" }}
-        onTouchStart={handlePinchStart}
-        onTouchMove={handlePinchMove}
-        onTouchEnd={handlePinchEnd}
-        onTouchCancel={handlePinchEnd}
       >
         <div className="mx-auto space-y-6">
           {pagesArray.map((pageNumber) => (
