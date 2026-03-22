@@ -172,7 +172,7 @@ export function FormSigningLayout({
     () => new Map(mobileSteps.map((step, index) => [step, index])),
     [mobileSteps],
   );
-  const mobileStepPaneHiddenClass = "opacity-0 pointer-events-none";
+  const mobileStepPaneHiddenClass = "opacity-0 pointer-events-none invisible";
 
   const getMobileStepHiddenClass = useCallback(
     (step: SigningStep) => {
@@ -180,11 +180,26 @@ export function FormSigningLayout({
       const stepIndex = mobileStepIndexByStep.get(step) ?? 0;
 
       return stepIndex < currentIndex
-        ? "-translate-x-6 opacity-0 pointer-events-none"
-        : "translate-x-6 opacity-0 pointer-events-none";
+        ? "-translate-x-6 opacity-0 pointer-events-none invisible"
+        : "translate-x-6 opacity-0 pointer-events-none invisible";
     },
     [currentStep, mobileStepIndexByStep],
   );
+
+  const blurActiveFormControl = useCallback(() => {
+    if (typeof document === "undefined") return;
+    const activeElement = document.activeElement as HTMLElement | null;
+    if (!activeElement) return;
+
+    const tagName = activeElement.tagName;
+    const isFormControl =
+      tagName === "INPUT" ||
+      tagName === "TEXTAREA" ||
+      tagName === "SELECT" ||
+      activeElement.isContentEditable;
+
+    if (isFormControl) activeElement.blur();
+  }, []);
 
   const goToStep = useCallback((nextStep: SigningStep) => {
     setCurrentStep(nextStep);
@@ -275,6 +290,21 @@ export function FormSigningLayout({
         : latestValuesRef.current,
     );
   }, [currentStep, isMobile]);
+
+  useEffect(() => {
+    if (!isMobile) return;
+    const shouldBlur =
+      currentStep !== "fields" ||
+      mobileFieldsTab === "preview" ||
+      isMobilePreviewReviewStep;
+    if (shouldBlur) blurActiveFormControl();
+  }, [
+    blurActiveFormControl,
+    currentStep,
+    isMobile,
+    isMobilePreviewReviewStep,
+    mobileFieldsTab,
+  ]);
 
   const handlePdfFieldSelect = (fieldName: string) => {
     setSelectedFieldSource("pdf");
