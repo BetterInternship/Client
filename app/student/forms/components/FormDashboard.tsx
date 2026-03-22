@@ -267,7 +267,6 @@ export default function FormDashboard({
 
   useEffect(() => {
     if (!isMobile) return;
-    if (!selectedTemplate && !isMobileSigningFlow) return;
 
     const handlePopState = () => {
       setIsMobileSigningFlow(false);
@@ -278,7 +277,7 @@ export default function FormDashboard({
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [isMobile, selectedTemplate, isMobileSigningFlow, modalRegistry]);
+  }, [isMobile, modalRegistry]);
 
   if (isLoading) return <Loader>Loading form templates...</Loader>;
 
