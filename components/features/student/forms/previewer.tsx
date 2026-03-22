@@ -317,7 +317,7 @@ export const FormPreviewPdfDisplay = ({
   }
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden rounded-[0.33em]">
+    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-[0.33em]">
       {/* Top Controls */}
       <div className="flex-shrink-0 bg-white px-3 py-2">
         <div className="flex items-center gap-3">
@@ -354,7 +354,8 @@ export const FormPreviewPdfDisplay = ({
       {/* Pages container */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 overflow-x-auto overflow-y-auto bg-slate-100 p-4"
+        className="flex-1 min-h-0 overflow-x-auto overflow-y-auto overscroll-contain touch-pan-y bg-slate-100 p-4"
+        style={{ WebkitOverflowScrolling: "touch" }}
       >
         <div className="mx-auto space-y-6">
           {pagesArray.map((pageNumber) => (
@@ -562,7 +563,7 @@ const PdfPageWithFields = ({
 
       {/* Field boxes overlay */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 touch-pan-y"
         key={forceRender}
         onClick={() => {
           if (isTouchInteraction) setActiveTouchFieldId(null);
