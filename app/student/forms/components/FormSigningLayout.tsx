@@ -173,6 +173,7 @@ export function FormSigningLayout({
     isMobileLayout && currentStep === "preview-review";
   const isMobilePreviewPaneActive =
     isMobileLayout && (isMobilePreviewTabActive || isMobilePreviewReviewStep);
+  const showDesktopPreviewPane = !isMobileLayout && currentStep !== "timeline";
   const stepNumber = Math.max(steps.indexOf(currentStep) + 1, 1);
   const desktopStepNumber = Math.max(desktopSteps.indexOf(currentStep) + 1, 1);
   const desktopTotalSteps = desktopSteps.length;
@@ -647,7 +648,19 @@ export function FormSigningLayout({
           "max-w-7xl",
         )}
       >
-        <div className="mx-auto flex h-full w-full max-w-7xl flex-col overflow-hidden rounded-[0.33em] border border-gray-300 ">
+        <div
+          className={cn(
+            "flex h-full w-full flex-col overflow-hidden rounded-[0.33em] border border-gray-300 transition-[max-width] duration-500 ease-in-out",
+            isMobileLayout
+              ? "mx-auto max-w-7xl"
+              : cn(
+                  "mx-auto",
+                  showDesktopPreviewPane
+                    ? "max-w-7xl"
+                    : "max-w-[calc(50%-0.5px)]",
+                ),
+          )}
+        >
           {!isMobileLayout && (
             <div className="animate-fade-in border-b border-gray-300 bg-white">
               <div className="flex items-center gap-2 px-3 py-2.5 sm:px-4">
@@ -696,13 +709,15 @@ export function FormSigningLayout({
               "grid min-h-0 flex-1 transition-[grid-template-columns] duration-500 ease-in-out",
               isMobileLayout
                 ? "grid-cols-1"
-                : "grid-cols-2 divide-x divide-gray-300",
+                : showDesktopPreviewPane
+                  ? "grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
+                  : "grid-cols-[minmax(0,0fr)_minmax(0,1fr)]",
               isMobileLayout ? "relative overflow-hidden" : "",
             )}
           >
             <div
               className={cn(
-                "min-h-0 min-w-0 bg-white rounded-r-none transition-[transform] duration-500 ease-in-out",
+                "min-h-0 min-w-0 overflow-hidden bg-white rounded-r-none transition-[transform,opacity,border-color] duration-500 ease-in-out",
                 isMobileLayout
                   ? cn(
                       "absolute inset-0 z-10 min-h-0 bg-white",
@@ -710,7 +725,12 @@ export function FormSigningLayout({
                         ? "flex flex-col pointer-events-auto"
                         : "hidden pointer-events-none",
                     )
-                  : "",
+                  : cn(
+                      "border-r",
+                      showDesktopPreviewPane
+                        ? "translate-x-0 opacity-100 border-gray-300 pointer-events-auto"
+                        : "-translate-x-8 opacity-0 border-transparent pointer-events-none",
+                    ),
                 !isMobileLayout && currentStep === "confirm"
                   ? "scale-[1.005]"
                   : "scale-100",
@@ -784,7 +804,12 @@ export function FormSigningLayout({
                         ? "translate-x-0 opacity-100 pointer-events-auto"
                         : mobileStepPaneHiddenClass,
                     )
-                  : "opacity-100 pointer-events-auto translate-x-0",
+                  : cn(
+                      "opacity-100 pointer-events-auto",
+                      showDesktopPreviewPane
+                        ? "translate-x-0"
+                        : "-translate-x-2",
+                    ),
               )}
             >
               <div className="relative min-h-0 flex-1 overflow-hidden">
@@ -825,7 +850,12 @@ export function FormSigningLayout({
                       </p>
                     </div>
                   </div>
-                  <div className="bg-white p-3">
+                  <div
+                    className={cn(
+                      "bg-white",
+                      isMobileLayout ? "p-3" : "px-6 pb-6 pt-0",
+                    )}
+                  >
                     <div className="flex w-full justify-between gap-2">
                       {isMobileLayout && (
                         <Button
