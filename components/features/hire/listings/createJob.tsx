@@ -52,13 +52,11 @@ const CreateJobPage = ({
   const [challengeDescription, setChallengeDescription] = useState("");
   const { formData, setField, fieldSetter } = useFormData<Job>();
   const { job_pay_freq, isNotNull } = useDbRefs();
-  const { job_pay_freq, isNotNull } = useDbRefs();
   const router = useRouter();
   const profile = useProfile();
   const { isMobile } = useMobile();
 
   const isSalaryFilled = typeof formData.salary === "number" && formData.salary;
-  const payFreqMissing = isSalaryFilled && !isNotNull(formData.salary_freq);
   const payFreqMissing = isSalaryFilled && !isNotNull(formData.salary_freq);
 
   const { job_categories } = useDbRefs();
@@ -139,7 +137,11 @@ const CreateJobPage = ({
       missingFields.push("Category");
     }
 
-    if (isSalaryFilled && formData.salary_freq === null && formData.salary_freq === undefined) {
+    if (
+      isSalaryFilled &&
+      formData.salary_freq === null &&
+      formData.salary_freq === undefined
+    ) {
       missingFields.push("Pay Frequency");
     }
 
@@ -300,8 +302,10 @@ const CreateJobPage = ({
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                         Publishing...
                       </>
+                    ) : isSuperListing ? (
+                      "Publish Super Listing"
                     ) : (
-                      isSuperListing ? "Publish Super Listing" : "Publish Listing"
+                      "Publish Listing"
                     )}
                   </Button>
                 </>
@@ -327,8 +331,10 @@ const CreateJobPage = ({
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                           Publishing...
                         </>
+                      ) : isSuperListing ? (
+                        "Publish Super Listing"
                       ) : (
-                        isSuperListing ? "Publish Super Listing" : "Publish Listing"
+                        "Publish Listing"
                       )}
                     </Button>
                   </div>
@@ -352,8 +358,11 @@ const CreateJobPage = ({
                   <div className="space-y-4">
                     <div>
                       <h2 className="flex flex-row text-lg font-bold text-gray-800 mb-2 break-words overflow-wrap-anywhere leading-tight">
-                        <StepCheckIndicator checked={challengeTitle.trim().length > 0} />
-                        Challenge Title <span className="text-destructive text-sm">*</span>
+                        <StepCheckIndicator
+                          checked={challengeTitle.trim().length > 0}
+                        />
+                        Challenge Title{" "}
+                        <span className="text-destructive text-sm">*</span>
                       </h2>
                       <Input
                         value={challengeTitle}
@@ -378,7 +387,9 @@ const CreateJobPage = ({
                       </h2>
                       <Textarea
                         value={challengeDescription}
-                        onChange={(e) => setChallengeDescription(e.target.value)}
+                        onChange={(e) =>
+                          setChallengeDescription(e.target.value)
+                        }
                         className="text-sm min-h-[140px]"
                         placeholder="Describe the challenge submission expected from applicants..."
                         maxLength={4000}
