@@ -52,11 +52,13 @@ const CreateJobPage = ({
   const [challengeDescription, setChallengeDescription] = useState("");
   const { formData, setField, fieldSetter } = useFormData<Job>();
   const { job_pay_freq, isNotNull } = useDbRefs();
+  const { job_pay_freq, isNotNull } = useDbRefs();
   const router = useRouter();
   const profile = useProfile();
   const { isMobile } = useMobile();
 
   const isSalaryFilled = typeof formData.salary === "number" && formData.salary;
+  const payFreqMissing = isSalaryFilled && !isNotNull(formData.salary_freq);
   const payFreqMissing = isSalaryFilled && !isNotNull(formData.salary_freq);
 
   const { job_categories } = useDbRefs();
