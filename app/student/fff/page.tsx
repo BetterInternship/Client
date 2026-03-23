@@ -19,6 +19,7 @@ import { SuperListingBadge } from "@/components/shared/jobs";
 import { cn } from "@/lib/utils";
 import { Loader } from "@/components/ui/loader";
 import { Turnstile } from "@marsidev/react-turnstile";
+import { Badge } from "@/components/ui/badge";
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],
@@ -96,6 +97,7 @@ export default function FFFPage() {
   const [isError, setIsError] = useState(false);
   const [submitModalOpen, setSubmitModalOpen] = useState(false);
   const [token, setToken] = useState("");
+  const [tokenFail, setTokenFail] = useState(false);
 
   const challengeRef = useRef<HTMLElement | null>(null);
 
@@ -123,7 +125,7 @@ export default function FFFPage() {
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, "cf-token": token }),
       });
 
       const data = (await response.json()) as FffSubmissionResponse;
@@ -478,12 +480,24 @@ export default function FFFPage() {
                 )}
               </div>
             ) : (
-              <div className="relative flex w-full flex-col items-center">
-                <Loader>Validating browser...</Loader>
+              <div className="relative flex w-full flex-col items-center my-2">
+                {!tokenFail ? (
+                  <Loader>Validating browser...</Loader>
+                ) : (
+                  <Badge type="destructive" className="m-4">
+                    Something went wrong.
+                  </Badge>
+                )}
                 <Turnstile
                   siteKey={process.env.NEXT_PUBLIC_SERVER_API_KEY_TURNSTILE!}
-                  onSuccess={(t) => setToken(t)}
-                  onError={() => setToken("")}
+                  onSuccess={(t) => {
+                    setToken(t);
+                    setTokenFail(false);
+                  }}
+                  onError={() => {
+                    setToken("");
+                    setTokenFail(true);
+                  }}
                 />
               </div>
             )}
