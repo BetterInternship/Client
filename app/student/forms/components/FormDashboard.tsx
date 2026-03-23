@@ -282,6 +282,33 @@ export default function FormDashboard({
   }, [isMobile, closeModal]);
 
   useEffect(() => {
+    if (!isMobile) return;
+
+    const resetMobileTemplateModalState = () => {
+      setIsMobileSigningFlow(false);
+      setIsMobileExitConfirmationOpen(false);
+      setSelectedTemplate(undefined);
+      closeModal("form-template-details");
+    };
+
+    const handlePageHide = () => {
+      resetMobileTemplateModalState();
+    };
+
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (!event.persisted) return;
+      resetMobileTemplateModalState();
+    };
+
+    window.addEventListener("pagehide", handlePageHide);
+    window.addEventListener("pageshow", handlePageShow);
+    return () => {
+      window.removeEventListener("pagehide", handlePageHide);
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, [isMobile, closeModal]);
+
+  useEffect(() => {
     return () => {
       closeModal("form-template-details");
     };
