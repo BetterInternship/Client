@@ -106,7 +106,7 @@ export default function JobPage() {
                   </Button>
 
                   {job.data && (
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
                       <ShareJobButton
                         id={job.data.id ?? ""}
                       />
@@ -152,9 +152,9 @@ export default function JobPage() {
         job={job.data}
         onClose={() => applyConfirmModalRef.current?.close()}
         onAddNow={goProfile}
-        onSubmit={async (text: string) => {
+        onSubmit={async (payload) => {
           applyConfirmModalRef.current?.close();
-          await applyToJob(applicationActions, job.data, text).then(
+          await applyToJob(applicationActions, job.data, payload).then(
             (response) => {
               if (!response.success) return alert(response.message);
               applySuccessModalRef.current?.open();

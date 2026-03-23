@@ -1,29 +1,23 @@
-import { useQueryClient } from "@tanstack/react-query";
-import { useGlobalModal } from "../providers/ModalProvider";
-import { AlertCircle, CheckCircle, LucideIcon } from "lucide-react";
-
-import { IncompleteProfileContent } from "./components/IncompleteProfileModal";
+import { useGlobalModal } from "../providers/modal-provider/ModalProvider";
+import { LucideIcon } from "lucide-react";
 import { MassApplyComposer } from "./components/MassApplyComposer";
-import {
-  MassApplyResults,
-  MassApplyResultsData,
-} from "./components/MassApplyResults";
-import { SpecifySigningPartiesModal } from "./components/SpecifySigningPartiesModal";
 import { FormSubmissionSuccessModal } from "./components/FormSubmissionSuccessModal";
-import {
-  ClientBlock,
-  ClientField,
-  ClientPhantomField,
-  FormValues,
-  IFormSigningParty,
-} from "@betterinternship/core/forms";
-import { PublicUser } from "@/lib/db/db.types";
-import { IFormFiller } from "../features/student/forms/form-filler.ctx";
-import { ResendFormModal } from "./components/ResendFormModal";
+import { FollowUpFormModal } from "./components/ResendFormModal";
 import { CancelFormModal } from "./components/CancelFormModal";
 import { WarningModal } from "./components/WarningModal";
 import { SuccessModal } from "./components/SuccessModal";
 import { MassApplyJobsSelector } from "./components/MassApplyJobsSelector";
+import {
+  DefaultModalLayout,
+  SlideUpModalLayout,
+} from "../providers/modal-provider/ModalLayout";
+import { ReactNode } from "react";
+import {
+  MassApplyResults,
+  MassApplyResultsData,
+} from "./components/MassApplyResults";
+import { FormPreviewPdfDisplay } from "../features/student/forms/previewer";
+import { IFormSigningParty } from "@betterinternship/core/forms";
 
 /**
  * Simplifies modal config since we usually reuse each of these modal stuffs.
@@ -31,32 +25,9 @@ import { MassApplyJobsSelector } from "./components/MassApplyJobsSelector";
  * @returns
  */
 export const useModalRegistry = () => {
-  const { open, close } = useGlobalModal();
-  const queryClient = useQueryClient();
+  const { openModal: open, closeModal: close } = useGlobalModal();
 
   const modalRegistry = {
-    // The modal shown when someone's profile is incomplete
-    incompleteProfile: {
-      open: () =>
-        open(
-          "incomplete-profile",
-          <IncompleteProfileContent
-            onFinish={() => {
-              void queryClient
-                .invalidateQueries({ queryKey: ["my-profile"] })
-                .then(() => close("incomplete-profile"));
-            }}
-          />,
-          {
-            allowBackdropClick: false,
-            showHeaderDivider: true,
-            title: "Complete your profile",
-            onClose: () => close("incomplete-profile"),
-          },
-        ),
-      close: () => close("incomplete-profile"),
-    },
-
     // Mass apply fill-out modal
     massApplyCompose: {
       open: ({
@@ -74,6 +45,7 @@ export const useModalRegistry = () => {
       }) =>
         open(
           "mass-apply-compose",
+          DefaultModalLayout,
           <MassApplyComposer
             initialText={bulkCoverLetter}
             disabled={massApplying}
@@ -88,7 +60,7 @@ export const useModalRegistry = () => {
           />,
           {
             title: `Apply to ${selectedCount} selected`,
-            allowBackdropClick: false,
+            closeOnBackdropClick: false,
           },
         ),
       close: () => close("mass-apply-compose"),
@@ -107,6 +79,7 @@ export const useModalRegistry = () => {
       }) =>
         open(
           "mass-apply-results",
+          DefaultModalLayout,
           <MassApplyResults
             data={massApplyResultsData}
             onClose={() => close("mass-apply-results")}
@@ -124,54 +97,25 @@ export const useModalRegistry = () => {
       close: () => close("mass-apply-results"),
     },
 
-    // Email confirmation modal
-    specifySigningParties: {
-      open: (
-        fields: (
-          | ClientField<[PublicUser]>
-          | ClientPhantomField<[PublicUser]>
-        )[],
-        formFiller: IFormFiller,
-        signingPartyBlocks: ClientBlock<[PublicUser]>[],
-        handleSubmit: (signingPartyValues: FormValues) => Promise<any>,
-        autofillValues?: FormValues,
-        signingParties?: IFormSigningParty[],
-      ) =>
-        open(
-          "specify-signing-parties",
-          <SpecifySigningPartiesModal
-            fields={fields}
-            formFiller={formFiller}
-            signingPartyBlocks={signingPartyBlocks}
-            handleSubmit={handleSubmit}
-            close={() => close("specify-signing-parties")}
-            autofillValues={autofillValues}
-            signingParties={signingParties}
-          />,
-          {
-            title: "Next Signing Parties",
-            closeOnEsc: false,
-            allowBackdropClick: false,
-            hasClose: false,
-            showHeaderDivider: true,
-          },
-        ),
-      close: () => close("specify-signing-parties"),
-    },
-
     // Form submission success modal
     formSubmissionSuccess: {
-      open: (submissionType: "esign" | "manual" | null) =>
+      open: (
+        submissionType: "esign" | "manual" | null,
+        onClose: () => void,
+        firstRecipient?: IFormSigningParty,
+      ) =>
         open(
           "form-submission-success",
+          DefaultModalLayout,
           <FormSubmissionSuccessModal
             submissionType={submissionType}
-            onClose={() => close("form-submission-success")}
+            onClose={onClose}
+            firstRecipient={firstRecipient}
           />,
           {
-            closeOnEsc: false,
-            allowBackdropClick: false,
-            hasClose: false,
+            closeOnEscapeKey: false,
+            closeOnBackdropClick: false,
+            showCloseButton: false,
             onClose: () => close("form-submission-success"),
           },
         ),
@@ -183,87 +127,35 @@ export const useModalRegistry = () => {
       open: (formProcessId: string) =>
         open(
           "cancel-form-request",
+          DefaultModalLayout,
           <CancelFormModal formProcessId={formProcessId} />,
           {
             title: "Cancel this form request?",
-            hasClose: false,
-            allowBackdropClick: false,
-            closeOnEsc: false,
+            showCloseButton: false,
+            closeOnBackdropClick: false,
+            closeOnEscapeKey: false,
             showHeaderDivider: true,
           },
         ),
       close: () => close("cancel-form-request"),
     },
 
-    // Resend form request
-    resendFormRequest: {
+    // Follow up form request
+    followUpFormRequest: {
       open: (formProcessId: string) =>
         open(
           "resend-form-request",
-          <ResendFormModal formProcessId={formProcessId} />,
+          DefaultModalLayout,
+          <FollowUpFormModal formProcessId={formProcessId} />,
           {
-            title: "Resend form email?",
-            hasClose: false,
-            allowBackdropClick: false,
-            closeOnEsc: false,
+            title: "Send follow-up email?",
+            showCloseButton: false,
+            closeOnBackdropClick: false,
+            closeOnEscapeKey: false,
             showHeaderDivider: true,
           },
         ),
       close: () => close("resend-form-request"),
-    },
-
-    // Duplicate form warning
-    duplicateFormWarning: {
-      open: ({
-        formLabel,
-        hasPendingInstance,
-        hasCompletedInstance: _hasCompletedInstance,
-        onGenerateAnother,
-        onGoBack,
-      }: {
-        formLabel: string;
-        hasPendingInstance: boolean;
-        hasCompletedInstance: boolean;
-        onGenerateAnother: () => void;
-        onGoBack: () => void;
-      }) => {
-        const isPending = hasPendingInstance;
-
-        const title = isPending
-          ? "You already have an outgoing instance of this form: " +
-            "\n" +
-            formLabel
-          : "You've already generated this form before: " + formLabel;
-
-        const message = isPending
-          ? "This form is currently being filled out by other signatories. It is highly recommended to cancel the pending attempt before starting a new one. Multiple outgoing versions may cause confusion."
-          : "You already have a completed version of this form: " +
-            formLabel +
-            ". Are you sure you want another one?";
-
-        return open(
-          "duplicate-form-warning",
-          <WarningModal
-            icon={isPending ? AlertCircle : CheckCircle}
-            iconColor={isPending ? "text-amber-600" : "text-emerald-600"}
-            title={title}
-            message={message}
-            primaryAction={{ label: "Go back", onClick: onGoBack }}
-            secondaryAction={{
-              label: "Generate another copy",
-              onClick: onGenerateAnother,
-            }}
-            close={() => close("duplicate-form-warning")}
-          />,
-          {
-            title: " ",
-            allowBackdropClick: false,
-            closeOnEsc: false,
-            hasClose: false,
-          },
-        );
-      },
-      close: () => close("duplicate-form-warning"),
     },
 
     // Generic warning modal for reuse
@@ -285,6 +177,7 @@ export const useModalRegistry = () => {
       }) =>
         open(
           "warning",
+          DefaultModalLayout,
           <WarningModal
             icon={icon}
             iconColor={iconColor}
@@ -296,9 +189,9 @@ export const useModalRegistry = () => {
           />,
           {
             title: " ",
-            allowBackdropClick: false,
-            closeOnEsc: false,
-            hasClose: false,
+            closeOnBackdropClick: false,
+            closeOnEscapeKey: false,
+            showCloseButton: false,
           },
         ),
       close: () => close("warning"),
@@ -323,6 +216,7 @@ export const useModalRegistry = () => {
       }) =>
         open(
           "success",
+          DefaultModalLayout,
           <SuccessModal
             icon={icon}
             iconColor={iconColor}
@@ -334,9 +228,9 @@ export const useModalRegistry = () => {
           />,
           {
             title: " ",
-            allowBackdropClick: false,
-            closeOnEsc: false,
-            hasClose: false,
+            closeOnBackdropClick: false,
+            closeOnEscapeKey: false,
+            showCloseButton: false,
           },
         ),
       close: () => close("success"),
@@ -355,6 +249,7 @@ export const useModalRegistry = () => {
       }) =>
         open(
           "mass-apply-job-selector",
+          DefaultModalLayout,
           <MassApplyJobsSelector
             selectedStudentIds={selectedStudentIds}
             onClose={() => {
@@ -369,6 +264,57 @@ export const useModalRegistry = () => {
         ),
       close: () => close("mass-apply-job-selector"),
     },
+
+    previewFormPdf: {
+      open: ({ documentUrl }: { documentUrl: string }) =>
+        open(
+          "preview-form-pdf",
+          SlideUpModalLayout,
+          <FormPreviewPdfDisplay
+            documentUrl={documentUrl}
+            blocks={[]}
+            values={{}}
+          />,
+          {
+            title: "PDF Preview",
+          },
+        ),
+      close: () => close("preview-form-pdf"),
+    },
+
+    formTemplateDetails: {
+      open: ({
+        title,
+        content,
+        onClose,
+        onRequestClose,
+        showCloseButton,
+        closeOnBackdropClick,
+        closeOnEscapeKey,
+        mobileFullscreen,
+      }: {
+        title?: ReactNode;
+        content: ReactNode;
+        onClose?: () => void;
+        onRequestClose?: () => void;
+        showCloseButton?: boolean;
+        closeOnBackdropClick?: boolean;
+        closeOnEscapeKey?: boolean;
+        mobileFullscreen?: boolean;
+      }) =>
+        open("form-template-details", SlideUpModalLayout, content, {
+          title,
+          onClose,
+          onRequestClose,
+          showCloseButton,
+          closeOnBackdropClick,
+          closeOnEscapeKey,
+          mobileFullscreen,
+        }),
+      close: () => close("form-template-details"),
+    },
+
+    closeAll: () => close(),
   };
 
   return modalRegistry;

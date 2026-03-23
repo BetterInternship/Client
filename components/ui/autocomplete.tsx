@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useMemo, useRef, useId } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import { Input } from "./input";
 import { useDetectClickOutside } from "react-detect-click-outside";
 import { cn } from "@/lib/utils";
 import { PlusCircleIcon, X } from "lucide-react";
 import { LabelWithTooltip } from "../EditForm";
 import { Button } from "./button";
+import { useAppContext } from "@/lib/ctx-app";
 
 export interface IAutocompleteOption<ID extends number | string> {
   id: ID;
@@ -40,6 +41,7 @@ function AutocompleteBase<ID extends number | string>({
 }) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const { isMobile } = useAppContext();
   const ref = useDetectClickOutside({ onTriggered: () => setIsOpen(false) });
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -191,47 +193,63 @@ function AutocompleteBase<ID extends number | string>({
       )}
 
       {isOpen && (
-        <ul className="absolute left-0 right-0 z-50 mt-1 max-h-60 overflow-auto rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5">
-          {filtered.length ? (
-            filtered.map((option) => {
-              const active = selectedSet.has(option.id);
-              return (
-                <li
-                  key={String(option.id)}
-                  onClick={() => {
-                    toggle(option.id);
-                    if (multiple) {
-                      // keep open for rapid multi-pick
-                      setQuery("");
-                      inputRef.current?.focus();
-                    } else {
-                      setQuery("");
-                      setIsOpen(false);
-                    }
-                  }}
-                  className={cn(
-                    "w-full text-left px-4 py-2 text-sm text-gray-700 transition-colors flex items-center gap-2 cursor-pointer hover:bg-gray-100",
-                    active && "bg-blue-50",
-                  )}
-                >
-                  {multiple ? (
-                    <input
-                      type="checkbox"
-                      readOnly
-                      checked={active}
-                      className="mr-2"
-                    />
-                  ) : null}
-                  {option.name}
-                </li>
-              );
-            })
-          ) : (
-            <li className="w-full text-left px-4 py-2 text-sm text-gray-700">
-              No matching results.
-            </li>
+        <>
+          {isMobile && (
+            <button
+              type="button"
+              aria-label="Close options"
+              className="fixed inset-0 z-[1090] bg-black/25 backdrop-blur-[1px]"
+              onClick={() => setIsOpen(false)}
+            />
           )}
-        </ul>
+          <ul
+            className={cn(
+              isMobile
+                ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 max-h-[70vh] overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] rounded-t-2xl border border-b-0 border-gray-200 bg-white pb-3 pt-2 text-sm shadow-2xl ring-1 ring-black/10"
+                : "absolute left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto overscroll-contain rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5",
+            )}
+          >
+            {filtered.length ? (
+              filtered.map((option) => {
+                const active = selectedSet.has(option.id);
+                return (
+                  <li
+                    key={String(option.id)}
+                    onClick={() => {
+                      toggle(option.id);
+                      if (multiple) {
+                        // keep open for rapid multi-pick
+                        setQuery("");
+                        inputRef.current?.focus();
+                      } else {
+                        setQuery("");
+                        setIsOpen(false);
+                      }
+                    }}
+                    className={cn(
+                      "w-full text-left px-4 py-2 text-sm text-gray-700 transition-colors flex items-center gap-2 cursor-pointer hover:bg-gray-100",
+                      active && "bg-blue-50",
+                    )}
+                  >
+                    {multiple ? (
+                      <input
+                        type="checkbox"
+                        readOnly
+                        checked={active}
+                        className="mr-2"
+                      />
+                    ) : null}
+                    {option.name}
+                  </li>
+                );
+              })
+            ) : (
+              <li className="w-full text-left px-4 py-2 text-sm text-gray-700">
+                No matching results.
+              </li>
+            )}
+          </ul>
+        </>
       )}
     </div>
   );
@@ -339,6 +357,7 @@ export function AutocompleteTreeMulti({
 }) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const { isMobile } = useAppContext();
   const ref = useDetectClickOutside({ onTriggered: () => setIsOpen(false) });
   const inputRef = useRef<HTMLButtonElement | null>(null);
 
@@ -460,7 +479,7 @@ export function AutocompleteTreeMulti({
           "py-1 flex flex-wrap items-center gap-1 hover:bg-gray-50 hover:cursor-pointer",
           "focus-within:border-primary focus-within:border-opacity-50 transition-all",
         )}
-        onClick={(e) => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen(!isOpen)}
       >
         {chips.map(([id, label]) => (
           <span
@@ -489,84 +508,100 @@ export function AutocompleteTreeMulti({
       </div>
 
       {isOpen && (
-        <ul className="absolute left-0 right-0 z-50 mt-1 max-h-40 overflow-auto rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5">
-          {filteredTree.length ? (
-            filteredTree.map((p) => {
-              const info = counts.get(p.value)!;
-              const hasKids = !!p.children?.length;
-              const all = hasKids && info.sel === info.total;
-              const some = hasKids && info.sel > 0 && info.sel < info.total;
-              const parentChecked = !hasKids && info.sel === 1;
-
-              return (
-                <li key={p.value} className="w-full">
-                  {/* Parent row */}
-                  <button
-                    type="button"
-                    className={cn(
-                      "w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-100",
-                    )}
-                    onClick={() => toggleParent(p)}
-                  >
-                    <span className="inline-flex items-center justify-center w-4 h-4">
-                      <input
-                        type="checkbox"
-                        readOnly
-                        checked={all || parentChecked}
-                        ref={(el) => {
-                          if (el) el.indeterminate = Boolean(some);
-                        }}
-                        className="align-middle"
-                      />
-                    </span>
-                    <span className="font-medium">{p.name}</span>
-                    {hasKids && (
-                      <span className="ml-auto text-xs text-gray-500">
-                        {info.sel}/{info.total}
-                      </span>
-                    )}
-                  </button>
-
-                  {/* Children */}
-                  {hasKids && (
-                    <ul className="pl-8">
-                      {p.children!.map((c) => {
-                        const active = selectedSet.has(c.value);
-                        return (
-                          <li key={c.value}>
-                            <button
-                              type="button"
-                              className={cn(
-                                "w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-100",
-                              )}
-                              onClick={() => {
-                                toggleChild(c.value);
-                                setIsOpen(true);
-                                setQuery("");
-                                inputRef.current?.focus();
-                              }}
-                            >
-                              <input
-                                type="checkbox"
-                                readOnly
-                                checked={active}
-                              />
-                              {c.name}
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                </li>
-              );
-            })
-          ) : (
-            <li className="w-full text-left px-4 py-2 text-sm text-gray-700">
-              No matching results.
-            </li>
+        <>
+          {isMobile && (
+            <button
+              type="button"
+              aria-label="Close options"
+              className="fixed inset-0 z-[1090] bg-black/25 backdrop-blur-[1px]"
+              onClick={() => setIsOpen(false)}
+            />
           )}
-        </ul>
+          <ul
+            className={cn(
+              isMobile
+                ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 max-h-[70vh] overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] rounded-t-2xl border border-b-0 border-gray-200 bg-white pb-3 pt-2 text-sm shadow-2xl ring-1 ring-black/10"
+                : "absolute left-0 right-0 z-50 mt-1 max-h-40 overflow-y-auto overscroll-contain rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5",
+            )}
+          >
+            {filteredTree.length ? (
+              filteredTree.map((p) => {
+                const info = counts.get(p.value)!;
+                const hasKids = !!p.children?.length;
+                const all = hasKids && info.sel === info.total;
+                const some = hasKids && info.sel > 0 && info.sel < info.total;
+                const parentChecked = !hasKids && info.sel === 1;
+
+                return (
+                  <li key={p.value} className="w-full">
+                    {/* Parent row */}
+                    <button
+                      type="button"
+                      className={cn(
+                        "w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-100",
+                      )}
+                      onClick={() => toggleParent(p)}
+                    >
+                      <span className="inline-flex items-center justify-center w-4 h-4">
+                        <input
+                          type="checkbox"
+                          readOnly
+                          checked={all || parentChecked}
+                          ref={(el) => {
+                            if (el) el.indeterminate = Boolean(some);
+                          }}
+                          className="align-middle"
+                        />
+                      </span>
+                      <span className="font-medium">{p.name}</span>
+                      {hasKids && (
+                        <span className="ml-auto text-xs text-gray-500">
+                          {info.sel}/{info.total}
+                        </span>
+                      )}
+                    </button>
+
+                    {/* Children */}
+                    {hasKids && (
+                      <ul className="pl-8">
+                        {p.children!.map((c) => {
+                          const active = selectedSet.has(c.value);
+                          return (
+                            <li key={c.value}>
+                              <button
+                                type="button"
+                                className={cn(
+                                  "w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-100",
+                                )}
+                                onClick={() => {
+                                  toggleChild(c.value);
+                                  setIsOpen(true);
+                                  setQuery("");
+                                  inputRef.current?.focus();
+                                }}
+                              >
+                                <input
+                                  type="checkbox"
+                                  readOnly
+                                  checked={active}
+                                />
+                                {c.name}
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </li>
+                );
+              })
+            ) : (
+              <li className="w-full text-left px-4 py-2 text-sm text-gray-700">
+                No matching results.
+              </li>
+            )}
+          </ul>
+        </>
       )}
     </div>
   );

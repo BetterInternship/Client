@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-12-18 15:17:08
- * @ Modified time: 2026-01-06 19:30:02
+ * @ Modified time: 2026-03-04 17:03:50
  * @ Description:
  *
  * These are the forms a user has generated or initiated.
@@ -25,7 +25,7 @@ interface IMyForms {
     timestamp: string;
     rejection_reason?: string;
     signing_parties?: IFormSigningParty[];
-    status?: string;
+    status?: string | null;
   }[];
   loading: boolean;
   error?: string;
@@ -55,7 +55,7 @@ export const MyFormsContextProvider = ({
   } = useQuery({
     queryKey: ["my-forms"],
     queryFn: () => FormService.getMyGeneratedForms(),
-    staleTime: 0,
+    staleTime: Infinity,
     gcTime: 60 * 60 * 1000,
   });
 

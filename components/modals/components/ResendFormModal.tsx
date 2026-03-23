@@ -5,8 +5,9 @@ import { useState } from "react";
 import { TextLoader } from "@/components/ui/loader";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
+import { RefreshCwIcon } from "lucide-react";
 
-export const ResendFormModal = ({
+export const FollowUpFormModal = ({
   formProcessId,
 }: {
   formProcessId: string;
@@ -16,20 +17,22 @@ export const ResendFormModal = ({
 
   return (
     <div className="flex flex-col w-full gap-3 mt-2 text-sm text-gray-600 leading-relaxed text-justify">
-      This will resend an email to the latest signatory. Only do this if you are
-      sure they have not recieved it, or enough time has passed since the last
-      follow-up.
+      This will resend an email to the latest signatory.
+      <span className="text-destructive font-semibold">
+        Only do this if you are sure they have not recieved it, or enough time
+        has passed since the last follow-up.
+      </span>
       <div className="flex flex-row gap-2 self-end">
         <Button
           disabled={loading}
           variant="outline"
-          onClick={() => modalRegistry.resendFormRequest.close()}
+          onClick={() => modalRegistry.followUpFormRequest.close()}
         >
           <TextLoader loading={loading}>Close</TextLoader>
         </Button>
         <Button
           disabled={loading}
-          scheme="destructive"
+          scheme="primary"
           onClick={() => {
             setLoading(true);
             void FormService.resendForm(formProcessId)
@@ -40,7 +43,7 @@ export const ResendFormModal = ({
                     toastPresets.success,
                   );
 
-                  modalRegistry.resendFormRequest.close();
+                  modalRegistry.followUpFormRequest.close();
                 } else {
                   toast.error(
                     "Could not resend form: " + r.message,
@@ -57,7 +60,8 @@ export const ResendFormModal = ({
               );
           }}
         >
-          <TextLoader loading={loading}>Resend Form</TextLoader>
+          <RefreshCwIcon />
+          <TextLoader loading={loading}>Send Follow-Up Email</TextLoader>
         </Button>
       </div>
     </div>

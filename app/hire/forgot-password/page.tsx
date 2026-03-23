@@ -49,12 +49,12 @@ const ForgotPasswordForm = ({}) => {
     setMessage("");
 
     try {
-      const r = await EmployerUserService.requestPasswordReset(email);
+      const r = await EmployerUserService.requestPasswordReset(email.toLowerCase());
 
       // @ts-ignore
       setMessage(r.message);
     } catch (err: any) {
-      setError(err.message ?? "Something went wrong. Please try again later.");
+      setError(err.response?.data?.message ?? err.message ?? "Something went wrong. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -75,12 +75,12 @@ const ForgotPasswordForm = ({}) => {
             <HeaderText>Reset password</HeaderText>
           </div>
             {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <div className="mb-2 p-3 bg-red-50 border border-red-200 rounded-lg">
                 <p className="text-sm text-red-600 justify-center">{error}</p>
               </div>
             )}
             {message && (
-              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="mb-2 p-3 bg-green-50 border border-green-200 rounded-lg">
                 <p className="text-sm text-green-600 justify-center">{message}</p>
               </div>
             )}

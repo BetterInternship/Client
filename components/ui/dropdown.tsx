@@ -263,37 +263,48 @@ export const GroupableRadioDropdown = <ID extends number | string>({
       </Button>
 
       {isOpen && (
-        <div
-          className={cn(
-            "absolute left-0 right-0 top-full mt-1 bg-white rounded-md shadow-xl overflow-hidden border border-gray-100",
-            "z-[9999] duration-200 ease-out transition-all max-w-full",
+        <>
+          {isMobile && (
+            <button
+              type="button"
+              aria-label="Close options"
+              className="fixed inset-0 z-[1090] bg-black/25 backdrop-blur-[1px]"
+              onClick={() => setIsOpen(false)}
+            />
           )}
-          role="listbox"
-        >
           <div
             className={cn(
-              "relative z-[100] max-h-40 overflow-y-auto overscroll-contain",
-              "scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
+              isMobile
+                ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 max-h-[70vh] overflow-hidden rounded-t-2xl border border-b-0 border-gray-200 bg-white pb-3 pt-2 shadow-2xl ring-1 ring-black/10"
+                : "absolute left-0 right-0 top-full mt-1 bg-white rounded-md shadow-xl overflow-hidden border border-gray-100 z-[9999] duration-200 ease-out transition-all max-w-full",
             )}
+            role="listbox"
           >
-            {options.map((option, index) => (
-              <DropdownOptionButton
-                key={index}
-                set_is_open={setIsOpen}
-                size={size}
-              >
-                <DropdownOption
-                  highlighted={value === option.id}
-                  on_click={() => handleChange(option.id)}
+            <div
+              className={cn(
+                "relative z-[100] overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
+                isMobile ? "max-h-[calc(70vh-0.5rem)]" : "max-h-40",
+              )}
+            >
+              {options.map((option, index) => (
+                <DropdownOptionButton
+                  key={index}
+                  set_is_open={setIsOpen}
+                  size={size}
                 >
-                  <span className="block whitespace-normal break-words pr-2">
-                    {option.name}
-                  </span>
-                </DropdownOption>
-              </DropdownOptionButton>
-            ))}
+                  <DropdownOption
+                    highlighted={value === option.id}
+                    on_click={() => handleChange(option.id)}
+                  >
+                    <span className="block whitespace-normal break-words pr-2">
+                      {option.name}
+                    </span>
+                  </DropdownOption>
+                </DropdownOptionButton>
+              ))}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

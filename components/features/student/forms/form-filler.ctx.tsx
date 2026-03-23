@@ -32,13 +32,27 @@ const FormFillerContext = createContext({} as IFormFiller);
 
 export const useFormFiller = () => useContext(FormFillerContext);
 
+export const FormFillerContextBridge = ({
+  value,
+  children,
+}: {
+  value: IFormFiller;
+  children: React.ReactNode;
+}) => {
+  return (
+    <FormFillerContext.Provider value={value}>
+      {children}
+    </FormFillerContext.Provider>
+  );
+};
+
 export const FormFillerContextProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
-  const [values, _setValues] = useState({});
-  const [errors, _setErrors] = useState({});
+  const [values, _setValues] = useState<Record<string, string>>({});
+  const [errors, _setErrors] = useState<FormErrors>({});
 
   const getFinalValues = (additionalValues?: FormValues) => {
     return { ...additionalValues, ...values };
@@ -48,7 +62,13 @@ export const FormFillerContextProvider = ({
     // Convert all values to strings for consistency
     const stringValue =
       value === null || value === undefined ? "" : String(value);
-    _setValues({ ...values, [field]: stringValue });
+    _setValues((prev) => ({ ...prev, [field]: stringValue }));
+    _setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
   };
 
   const setValues = (newValues: Record<string, any>) => {
@@ -60,32 +80,35 @@ export const FormFillerContextProvider = ({
       },
       {} as Record<string, string>,
     );
-    _setValues({ ...values, ...stringifiedValues });
+    _setValues((prev) => ({ ...prev, ...stringifiedValues }));
   };
 
   const initializeValues = (defaultValues: Record<string, any>) => {
     // Initialize form with default values
     // Only set fields that don't already have user-entered values
-    const stringifiedValues = Object.entries(defaultValues).reduce(
-      (acc, [key, val]) => {
-        const currentValue = values[key];
-        // Don't overwrite if user already has a value
-        const hasExistingValue =
-          currentValue !== null &&
-          currentValue !== undefined &&
-          String(currentValue).trim().length > 0;
+    _setValues((prev) => {
+      const stringifiedValues = Object.entries(defaultValues).reduce(
+        (acc, [key, val]) => {
+          const currentValue = prev[key];
+          // Don't overwrite if user already has a value
+          const hasExistingValue =
+            currentValue !== null &&
+            currentValue !== undefined &&
+            String(currentValue).trim().length > 0;
 
-        if (!hasExistingValue) {
-          acc[key] = val === null || val === undefined ? "" : String(val);
-        } else {
-          // Keep existing user value
-          acc[key] = currentValue;
-        }
-        return acc;
-      },
-      {} as Record<string, string>,
-    );
-    _setValues({ ...values, ...stringifiedValues });
+          if (!hasExistingValue) {
+            acc[key] = val === null || val === undefined ? "" : String(val);
+          } else {
+            // Keep existing user value
+            acc[key] = currentValue;
+          }
+          return acc;
+        },
+        {} as Record<string, string>,
+      );
+
+      return { ...prev, ...stringifiedValues };
+    });
   };
   const resetErrors = () => {
     _setErrors({});
@@ -157,6 +180,28 @@ export const FormFillerContextProvider = ({
   );
 };
 
+const getFieldValue = (allValues: FormValues, fieldKey: string) => {
+  const valuesRecord = allValues as Record<string, string | undefined>;
+
+  if (Object.prototype.hasOwnProperty.call(allValues, fieldKey)) {
+    return valuesRecord[fieldKey];
+  }
+
+  const defaultKey = `${fieldKey}:default`;
+  if (Object.prototype.hasOwnProperty.call(allValues, defaultKey)) {
+    return valuesRecord[defaultKey];
+  }
+
+  // if (fieldKey.endsWith(":default")) {
+  //   const baseKey = fieldKey.slice(0, -8);
+  //   if (Object.prototype.hasOwnProperty.call(allValues, baseKey)) {
+  //     return valuesRecord[baseKey];
+  //   }
+  // }
+
+  return undefined;
+};
+
 /**
  * Validates a specific field, given the specified values.
  *
@@ -180,7 +225,7 @@ const validateFieldHelper = <T extends any[]>(
   if (field.signing_party_id !== "initiator" || field.source !== "manual")
     return;
 
-  const value = allValues[field.field];
+  const value = getFieldValue(allValues, field.field);
   const coerced = field.coerce(value);
 
   const result = field.validator?.safeParse(coerced);

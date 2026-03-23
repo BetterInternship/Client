@@ -11,7 +11,7 @@ import Head from "next/head";
 import AllowLanding from "./allowLanding";
 import { ConversationsContextProvider } from "@/hooks/use-conversation";
 import { PocketbaseProvider, usePocketbase } from "@/lib/pocketbase";
-import { ModalProvider } from "@/components/providers/ModalProvider";
+import { ModalProvider } from "@/components/providers/modal-provider/ModalProvider";
 import { NotificationListener } from "./notification-listener";
 
 const baseUrl =

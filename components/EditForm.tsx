@@ -231,7 +231,10 @@ export const FormInput = ({
       <Input
         value={value ?? ""}
         onChange={(e) => setter && setter(e.target.value)}
-        className={className}
+        className={cn(
+          className,
+          "placeholder:text-gray-400 placeholder:italic focus:placeholder:text-primary/70",
+        )}
         {...props}
       />
     </div>
@@ -241,8 +244,7 @@ export const FormInput = ({
 /**
  * Big input
  */
-interface FormTextareaProps
-  extends React.InputHTMLAttributes<HTMLTextAreaElement> {
+interface FormTextareaProps extends React.InputHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   setter?: (value: string) => void;
   required?: boolean;
@@ -292,8 +294,7 @@ export const FormTextarea = ({
  *
  * @component
  */
-interface FormDropdownProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+interface FormDropdownProps extends React.InputHTMLAttributes<HTMLInputElement> {
   options: { id: number | string; name: string }[];
   label?: string;
   value?: string | number | string[];
@@ -345,8 +346,7 @@ export const FormDropdown = ({
  *
  * @component
  */
-interface FormCheckboxProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+interface FormCheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
   checked?: boolean;
   indeterminate?: boolean;
   label?: string;
@@ -414,8 +414,7 @@ export const FormCheckbox = ({
   );
 };
 
-interface FormCheckBoxGroupProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+interface FormCheckBoxGroupProps extends React.InputHTMLAttributes<HTMLInputElement> {
   options: { value: string | number; label: string; description?: string }[];
   values: (string | number)[];
   setter: (value: any) => void;
@@ -581,8 +580,7 @@ export const FormRadio = <T extends string | boolean = string>({
  *
  * Accepts/returns a number timestamp (ms) via `date` / `setter`.
  */
-interface FormDatePickerProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+interface FormDatePickerProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   date?: number;
   setter?: (value?: number) => void;
@@ -692,8 +690,7 @@ export const FormDatePicker = ({
  *
  * Accepts/returns a number timestamp (ms) via `date` / `setter`.
  */
-interface FormMonthPickerProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+interface FormMonthPickerProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   /** ms since epoch; will be normalized to the first day of the month */
   date?: number;

@@ -6,6 +6,7 @@ import { TextLoader } from "@/components/ui/loader";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { FileXIcon } from "lucide-react";
 
 export const CancelFormModal = ({
   formProcessId,
@@ -63,7 +64,8 @@ export const CancelFormModal = ({
               );
           }}
         >
-          <TextLoader loading={loading}>Cancel Request</TextLoader>
+          <FileXIcon />
+          <TextLoader loading={loading}>Cancel This Form</TextLoader>
         </Button>
       </div>
     </div>

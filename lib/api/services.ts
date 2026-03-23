@@ -1,6 +1,8 @@
 import { FormTemplate } from "../db/use-moa-backend";
 import {
   Conversation,
+  CreateJobChallengeListingPayload,
+  UpdateJobChallengeListingPayload,
   Employer,
   Job,
   PublicUser,
@@ -12,10 +14,22 @@ import {
 import { APIClient, APIRouteBuilder } from "./api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { IFormMetadata, IFormSigningParty } from "@betterinternship/core/forms";
-import { Tables } from "@betterinternship/schema.base";
 
 interface EmployerResponse extends FetchResponse {
   employer: Partial<Employer>;
+}
+
+export interface ProcessCallbackDto {
+  processId: string;
+  processName: string;
+}
+
+export interface ProcessResponse {
+  processId: string;
+  processName: string;
+  processCallbackUrl: string;
+  success: boolean;
+  message?: string;
 }
 
 export const EmployerService = {
@@ -180,13 +194,10 @@ export const FormService = {
     values: Record<string, string>;
     disableEsign?: boolean;
   }) {
-    return APIClient.post<{
-      formProcessId: string;
-      documentId?: string;
-      documentUrl?: string;
-      success?: boolean;
-      message?: string;
-    }>(APIRouteBuilder("users").r("me/fillout-form").build(), data);
+    return APIClient.post<ProcessResponse>(
+      APIRouteBuilder("users").r("me/fillout-form").build(),
+      data,
+    );
   },
 
   async getMyFormTemplates() {
@@ -227,7 +238,7 @@ export const FormService = {
   async getForm(formName: string) {
     const form = await APIClient.get<
       {
-        formDocument: {
+        formTemplate: {
           name: string;
           label: string;
           version: number;
@@ -332,7 +343,6 @@ export const UserService = {
       APIRouteBuilder("users").r(userId).build(),
     );
   },
-
 };
 
 // Job Services
@@ -390,7 +400,14 @@ export const JobService = {
     );
   },
 
-  async updateJob(jobId: string, job: Partial<Job>) {
+  async createSuperJob(job: CreateJobChallengeListingPayload) {
+    return APIClient.post<FetchResponse>(
+      APIRouteBuilder("jobs").r("create-super").build(),
+      job,
+    );
+  },
+
+  async updateJob(jobId: string, job: UpdateJobChallengeListingPayload) {
     return APIClient.put<FetchResponse>(
       APIRouteBuilder("jobs").r(jobId).build(),
       job,
@@ -471,7 +488,11 @@ export const ApplicationService = {
     );
   },
 
-  async createApplication(data: { job_id: string; cover_letter?: string }) {
+  async createApplication(data: {
+    job_id: string;
+    cover_letter?: string;
+    challenge_submission?: string;
+  }) {
     return APIClient.post<CreateApplicationResponse>(
       APIRouteBuilder("applications").r("create").build(),
       data,

@@ -3,17 +3,20 @@
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useRouter } from "next/navigation";
 import { FormService } from "@/lib/api/services";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMyForms } from "./myforms.ctx";
-import { FormGenerateView } from "../../../components/forms/FormGenerateView";
-import { FormHistoryView } from "../../../components/forms/FormHistoryView";
-import { useFormsLayout } from "./layout";
 import {
   FORM_TEMPLATES_STALE_TIME,
   FORM_TEMPLATES_GC_TIME,
 } from "@/lib/consts/cache";
 import { useEffect } from "react";
 import { useAuthContext } from "@/lib/ctx-auth";
+import FormDashboard from "./components/FormDashboard";
+import {
+  useFormFilloutProcessHandled,
+  useFormFilloutProcessPending,
+  useFormFilloutProcessReader,
+} from "@/hooks/forms/filloutFormProcess";
 
 /**
  * The forms page component - shows either history or generate based on form count
@@ -24,7 +27,7 @@ export default function FormsPage() {
   const profile = useProfileData();
   const router = useRouter();
   const myForms = useMyForms();
-  const { activeView } = useFormsLayout();
+  const queryClient = useQueryClient();
   const { redirectIfNotLoggedIn, isAuthenticated } = useAuthContext();
 
   // Auth redirect at body level (runs first)
@@ -62,14 +65,29 @@ export default function FormsPage() {
     // enabled: !!updateInfo, // Only fetch after we have update info
   });
 
+  // ? I think I can abstract this somehow in the future
+  // ? How it works right now:
+  // ? The form history renders a combination of the pulled forms (from the db) AND the pending forms (from the client process manager)
+  // ? BUT when a pending form turns into a handled form, the pulled forms doesn't update right away
+  // ? SO handled forms are also temporarily rendered WHILE they're not part of the pulled forms yet
+  // ? All the logic below really does is make sure that once the handled forms are in the pulled forms, they're not rendered anymore
+  // ? There has to be a better way to do this repeatably
+  const formFilloutProcess = useFormFilloutProcessReader();
+  const pendingForms = useFormFilloutProcessPending();
+  const handledForms = useFormFilloutProcessHandled();
+
+  // Refetch forms when no more pending left
+  // Yeppers kinda janky I know
+  useEffect(() => {
+    if (!formFilloutProcess.getAllPending().length)
+      void queryClient.invalidateQueries({ queryKey: ["my-forms"] });
+  }, [formFilloutProcess.getAllPending()]);
+
   return (
-    <>
-      {/* Show the active view */}
-      {activeView === "history" ? (
-        <FormHistoryView forms={myForms?.forms ?? []} />
-      ) : (
-        <FormGenerateView formTemplates={formTemplates} isLoading={isLoading} />
-      )}
-    </>
+    <FormDashboard
+      generatedForms={[...myForms.forms, ...handledForms, ...pendingForms]}
+      formTemplates={formTemplates?.filter((ft) => !!ft) ?? []}
+      isLoading={isLoading}
+    />
   );
 }

@@ -30,21 +30,35 @@ import { useMobile } from "./use-mobile"; // touch helpers
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 
-/** Exposed for optional imperative usage */
+/**
+ * Old modal handle.
+ *
+ * @param name
+ * @param options
+ * @deprecated use useGlobalModal() instead.
+ * @returns
+ */
 export type ModalHandle = { open: () => void; close: () => void };
 
-/** The main hook */
+/**
+ * Old modal impl.
+ *
+ * @param name
+ * @param options
+ * @deprecated use useGlobalModal() instead.
+ * @returns
+ */
 export const useModal = (
   name: string,
   options?: {
     onClose?: () => void;
     showCloseButton?: boolean;
-    allowBackdropClick?: boolean;
-  }
+    closeOnBackdropClick?: boolean;
+  },
 ) => {
   const [isOpen, setIsOpen] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
-  const { showCloseButton = true, allowBackdropClick = true } = options || {};
+  const { showCloseButton = true, closeOnBackdropClick = true } = options || {};
   const { isMobile } = useAppContext();
   const { isTouchOnSingleElement, isTouchEndOnElement, isSwipe } = useMobile();
 
@@ -60,14 +74,14 @@ export const useModal = (
 
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {
-      if (!allowBackdropClick) return;
+      if (!closeOnBackdropClick) return;
       if (isMobile) return;
       if (e.target === backdropRef.current) {
         console.debug(`[useModal:${name}] backdrop click -> close`);
         setIsOpen(false);
       }
     },
-    [isMobile, name, allowBackdropClick]
+    [isMobile, name, closeOnBackdropClick],
   );
 
   // Lock body scroll + iOS --vh fix when open
@@ -82,7 +96,7 @@ export const useModal = (
       const setVH = () => {
         document.documentElement.style.setProperty(
           "--vh",
-          `${window.innerHeight * 0.01}px`
+          `${window.innerHeight * 0.01}px`,
         );
       };
       setVH();
@@ -127,11 +141,9 @@ export const useModal = (
   const Modal = ({
     children,
     className,
-    backdropClassName,
   }: {
     children?: React.ReactNode;
-    className?: string; // e.g. "max-w-7xl w-full"
-    backdropClassName?: string;
+    className?: string;
   }) => {
     useEffect(() => {
       if (!isOpen) setHasMounted(isOpen);
@@ -146,7 +158,6 @@ export const useModal = (
           isMobile
             ? "items-end justify-center p-0"
             : "items-center justify-center p-4",
-          backdropClassName
         )}
         onClick={handleBackdropClick}
         onTouchEnd={() => {
@@ -181,7 +192,7 @@ export const useModal = (
                 isMobile
                   ? "max-w-full min-w-[100svw] mx-0 rounded-t-md rounded-b-none min-h-[200px]"
                   : "max-w-2xl rounded-md",
-                className
+                className,
               )}
             >
               {showCloseButton && (
@@ -200,7 +211,7 @@ export const useModal = (
                     }}
                     className={cn(
                       "h-8 w-8 p-0 hover:bg-gray-100 rounded-full transition-colors",
-                      isMobile && "active:bg-gray-200"
+                      isMobile && "active:bg-gray-200",
                     )}
                     aria-label="Close modal"
                   >
@@ -213,7 +224,7 @@ export const useModal = (
               <div
                 className={cn(
                   showCloseButton && isMobile ? "pt-0" : "",
-                  "flex-1 overflow-hidden h-full min-h-0"
+                  "flex-1 overflow-hidden h-full min-h-0",
                 )}
               >
                 {children}
@@ -241,7 +252,7 @@ const ModalTemplate = (
   }: {
     content?: React.ReactNode;
     onClose?: () => void;
-  }
+  },
 ) => {
   const { open, close, Modal } = useModal(name, { onClose });
   return forwardRef<
@@ -249,7 +260,6 @@ const ModalTemplate = (
     {
       children?: React.ReactNode;
       className?: string;
-      backdropClassName?: string;
     }
   >((props, ref) => {
     useImperativeHandle(ref, () => ({ open, close }));
@@ -257,15 +267,31 @@ const ModalTemplate = (
   });
 };
 
+/**
+ * Old modal component.
+ *
+ * @deprecated use useGlobalModal() instead.
+ * @param
+ * @returns
+ */
 export const ModalComponent = ({
   children,
   ref,
+  className,
 }: {
   children?: React.ReactNode;
   ref?: Ref<ModalHandle | null>;
+  className?: string;
 }) => {
   const M = ModalTemplate("IncompleteProfileModal", { content: children });
-  return <M ref={ref} />;
+  return <M ref={ref} className={className} />;
 };
 
+/**
+ * Old modal component.
+ *
+ * @deprecated use useGlobalModal() instead.
+ * @param
+ * @returns
+ */
 export const useModalRef = () => useRef<ModalHandle | null>(null);

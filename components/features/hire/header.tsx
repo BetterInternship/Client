@@ -5,33 +5,23 @@ import { useAuthContext } from "@/app/hire/authctx";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   LogOut,
-  Building,
-  UserPlus,
   XIcon,
-  MessageCircleMore,
   ChevronRight,
-  Search,
-  Settings,
   LayoutDashboard,
   Menu,
-  FileUser,
   Plus,
   HelpCircle,
 } from "lucide-react";
-import { useAppContext } from "@/lib/ctx-app";
 import { DropdownOption, GroupableNavDropdown } from "@/components/ui/dropdown";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { HeaderTitle } from "@/components/shared/header";
 import { useRoute } from "@/hooks/use-route";
 import Link from "next/link";
-import { getFullName } from "@/lib/profile";
 import { MyEmployerPfp } from "@/components/shared/pfp";
 import { useProfile } from "@/hooks/use-employer-api";
 import { useMobile } from "@/hooks/use-mobile";
 import { useConversations } from "@/hooks/use-conversation";
-import { useGlobalModal } from "@/components/providers/ModalProvider";
-import { useQueryClient } from "@tanstack/react-query";
 import { MyUserPfp } from "@/components/shared/pfp";
 import { Separator } from "@/components/ui/separator";
 

@@ -8,13 +8,14 @@ import {
   MapPin,
   CheckCircle2,
   AlertTriangle,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Job } from "@/lib/db/db.types";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { ModalComponent, ModalHandle } from "@/hooks/use-modal";
-import { JobDetailsSummary } from "../shared/jobs";
+import { JobDetailsSummary, SuperChallengeDetails } from "../shared/jobs";
 import { SaveJobButton } from "../features/student/job/save-job-button";
 import { ApplyToJobButton } from "../features/student/job/apply-to-job-button";
 import { MissingNotice } from "../shared/jobs";
@@ -37,6 +38,7 @@ export const JobModal = ({
 }) => {
   const profile = useProfileData();
 
+  const isSuperListing = Boolean(job?.challenge);
   const hasGithub = !!user?.github_link?.trim();
   const hasPortfolio = !!user?.portfolio_link?.trim();
   const needsCover = !!job?.internship_preferences?.require_cover_letter;
@@ -90,6 +92,7 @@ export const JobModal = ({
                 <Section title="Job Details">
                   <JobDetailsSummary job={job} />
                 </Section>
+                {isSuperListing && <SuperChallengeDetails job={job} mobile />}
 
                 <Divider />
 
@@ -146,14 +149,18 @@ export const JobModal = ({
 };
 
 function HeaderCompact({ job }: { job: Job }) {
+  const isSuperListing = Boolean(job.challenge);
   return (
     <div className="mb-1">
-      {/* Title */}
-      <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 leading-tight max-w-full break-words hyphens-auto line-clamp-2 sm:line-clamp-none">
+      <h1
+        className={cn(
+          "text-2xl sm:text-3xl font-semibold text-gray-900 leading-tight max-w-full break-words hyphens-auto line-clamp-2 sm:line-clamp-none",
+          isSuperListing && "font-bold tracking-tight",
+        )}
+      >
         {job.title}
       </h1>
       <div className="flex items-center gap-2 text-gray-600">
-        <Building className="w-4 h-4 flex-shrink-0" />
         <span className="truncate">{job.employer?.name}</span>
       </div>
       {job.location && (
@@ -162,9 +169,6 @@ function HeaderCompact({ job }: { job: Job }) {
           <span className="truncate">{job.location}</span>
         </div>
       )}
-      {/* <p className="text-[11px] text-gray-500 mt-1">
-        Listed on {formatDate(job.created_at ?? "")}
-      </p> */}
     </div>
   );
 }

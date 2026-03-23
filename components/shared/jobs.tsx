@@ -5,6 +5,7 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import { cn, formatCurrency } from "@/lib/utils";
 import {
   AlertTriangle,
+  ArrowRight,
   Building,
   CheckCircle,
   Clock,
@@ -12,6 +13,7 @@ import {
   Monitor,
   PhilippinePeso,
   UserCheck,
+  Zap,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Card } from "../ui/card";
@@ -204,6 +206,235 @@ export const EmployerMOA = ({
   );
 };
 
+function SuperListingHeader({
+  title,
+  employer,
+  compact = false,
+}: {
+  title: string | null | undefined;
+  employer: string | null | undefined;
+  compact?: boolean;
+}) {
+  return (
+    <div className={cn("space-y-2", compact && "space-y-1.5")}>
+      <div className="space-y-1">
+        <div className="relative inline-block max-w-full">
+          <div className="absolute inset-x-0 bottom-0.5 h-[0.45em] rotate-[-0.8deg] rounded-sm bg-gradient-to-r from-amber-200/70 via-amber-300/50 to-amber-200/30" />
+          <h3
+            className={cn(
+              "relative font-bold leading-tight text-gray-900 break-words tracking-tight",
+              compact ? "text-lg" : "text-xl",
+            )}
+          >
+            {title}
+          </h3>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <p className="text-sm font-semibold text-amber-900/80">
+            {employer ?? "Unknown"}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SuperListingBadge({
+  className,
+  compact = false,
+}: {
+  className?: string;
+  compact?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-white super-header-badge px-3 py-1.5 text-xs font-bold text-amber-900",
+        className,
+      )}
+    >
+      <span className="text-sm leading-none">⚡</span>
+      <span className="tracking-wide">Super Listing</span>
+      {!compact && (
+        <>
+          <span className="text-amber-600/80">·</span>
+          <span className="font-semibold text-amber-700">
+            Get a response in 24h
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
+function SuperListingBorderBadge({ mobile = false }: { mobile?: boolean }) {
+  return (
+    <div
+      className={cn(
+        "pointer-events-none absolute left-4 top-[1.25rem] z-20",
+        mobile && "left-4 top-4",
+      )}
+    >
+      <SuperListingBadge className={cn(mobile && "px-2.5 py-1 text-[11px]")} />
+    </div>
+  );
+}
+
+function LightningEmojiBorder({
+  mobile = false,
+  variant = "card",
+}: {
+  mobile?: boolean;
+  variant?: "card" | "hero";
+}) {
+  const isHero = variant === "hero";
+  const sm = isHero ? "text-base md:text-lg" : mobile ? "text-sm" : "text-base";
+
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-0 z-[15] overflow-visible"
+    >
+      {/* Top-left (card) / repositioned for hero */}
+      <span
+        className={cn(
+          "absolute -translate-y-1/2 rotate-[-14deg] leading-none select-none super-sticker",
+          isHero
+            ? mobile
+              ? "bottom-0 left-3 translate-y-1/2"
+              : "top-0 right-[40%]"
+            : "top-0 left-3",
+          sm,
+        )}
+      >
+        ⚡
+      </span>
+
+      {/* Bottom-right corner */}
+      <span
+        className={cn(
+          "absolute bottom-0 right-3 translate-y-1/2 rotate-[12deg] leading-none select-none super-sticker-slow",
+          sm,
+        )}
+      >
+        ⚡
+      </span>
+
+      {/* Third sticker — different position for mobile vs desktop hero */}
+      {isHero && (
+        <span
+          className={cn(
+            "absolute leading-none select-none super-sticker-delayed",
+            mobile
+              ? "top-1/2 right-0 translate-x-1/2 -translate-y-1/2 rotate-[8deg]"
+              : "top-0 right-[15%] -translate-y-1/2 rotate-[10deg]",
+            "text-sm md:text-base",
+          )}
+        >
+          ⚡
+        </span>
+      )}
+    </div>
+  );
+}
+
+function SuperJobCardContent({
+  job,
+  compact = false,
+}: {
+  job: Job;
+  compact?: boolean;
+}) {
+  return (
+    <div className={cn("relative z-10 space-y-3.5", compact ? "p-0" : "p-0")}>
+      <SuperListingHeader
+        title={job.title}
+        employer={job.employer?.name}
+        compact={compact}
+      />
+      <div className="space-y-3">
+        <JobBadges job={job} />
+      </div>
+      <SuperListingCTA
+        compact={compact}
+        challengeTitle={job.challenge?.title}
+      />
+    </div>
+  );
+}
+
+function SuperJobCard({
+  job,
+  onClick,
+  selected,
+  mobile = false,
+}: {
+  job: Job;
+  onClick?: () => void;
+  selected?: boolean;
+  mobile?: boolean;
+}) {
+  return (
+    <div className="relative py-3">
+      {/* Stickers live outside the clipped card so they sit ON the border */}
+      <LightningEmojiBorder mobile={mobile} />
+
+      <div
+        onClick={onClick}
+        className={cn(
+          "super-card group relative isolate cursor-pointer overflow-hidden rounded-[0.33em]",
+          "bg-[radial-gradient(ellipse_at_top_left,rgba(254,240,138,0.5),transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(251,146,60,0.18),transparent_35%),linear-gradient(150deg,rgba(255,251,235,1)_0%,rgba(255,255,255,1)_45%,rgba(254,243,199,0.98)_100%)]",
+          "transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_40px_rgba(245,158,11,0.25),0_0_80px_rgba(245,158,11,0.12),0_20px_40px_rgba(249,115,22,0.15)]",
+          selected &&
+            "shadow-[0_0_24px_rgba(245,158,11,0.25)] border-amber-500/70",
+        )}
+      >
+        <SuperListingBorderBadge mobile={mobile} />
+        <div
+          className={cn(
+            "relative z-10 space-y-4",
+            mobile ? "px-5 pb-5 pt-12" : "px-5 pb-5 pt-[3.5rem]",
+          )}
+        >
+          <SuperJobCardContent job={job} compact={mobile} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SuperListingCTA({
+  compact = false,
+  challengeTitle,
+}: {
+  compact?: boolean;
+  challengeTitle?: string | null;
+}) {
+  const trimmedChallengeTitle = challengeTitle?.trim();
+
+  return (
+    <div className="relative pt-3">
+      <div
+        className={cn(
+          "super-cta-glow w-full rotate-[-0.8deg] rounded-2xl border border-amber-400/80",
+          "bg-[linear-gradient(135deg,#f59e0b_0%,#f97316_60%,#ea580c_100%)]",
+          "px-4 py-3 text-sm font-bold text-white",
+          "transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-1 group-hover:rotate-[-0.3deg]",
+          compact && "px-4 py-2.5 text-[13px]",
+        )}
+      >
+        <span className="flex items-center gap-2">
+          <Zap className="h-4 w-4 fill-current drop-shadow-[0_0_4px_rgba(255,255,255,0.5)]" />
+          <span className="min-w-0 flex-1 line-clamp-2 text-center drop-shadow-[0_1px_2px_rgba(0,0,0,0.15)]">
+            {trimmedChallengeTitle || "Open Challenge"}
+          </span>
+          <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+        </span>
+      </div>
+    </div>
+  );
+}
+
 /**
  * The scrollable job card component.
  * Used in both hire and student UI.
@@ -219,18 +450,29 @@ export const JobCard = ({
   selected?: boolean;
   on_click?: (job: Job) => void;
 }) => {
+  const isSuperListing = Boolean(job.challenge);
+  if (isSuperListing) {
+    return (
+      <SuperJobCard
+        job={job}
+        selected={selected}
+        onClick={() => on_click && on_click(job)}
+      />
+    );
+  }
+
   return (
     <Card
       key={job.id}
       onClick={() => on_click && on_click(job)}
       className={cn(
-        "group relative overflow-hidden",
+        "group relative isolate overflow-hidden",
         selected
           ? "ring-1 ring-primary ring-offset-1"
           : "hover:shadow-sm hover:border-gray-300 cursor-pointer",
       )}
     >
-      <div className="space-y-3">
+      <div className="relative z-10 space-y-3">
         <div className="flex items-start justify-between">
           <JobHead title={job.title} employer={job.employer?.name} />
         </div>
@@ -306,28 +548,40 @@ export const MobileJobCard = ({
   job: Job;
   on_click: () => void;
 }) => {
+  const isSuperListing = Boolean(job.challenge);
+  if (isSuperListing) {
+    return <SuperJobCard job={job} onClick={on_click} mobile />;
+  }
+
   return (
-    <div className="card hover-lift p-6 animate-fade-in" onClick={on_click}>
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2 leading-tight truncate">
-            {job.title}
-          </h3>
-          <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-            <Building className="w-4 h-4 flex-shrink-0" />
-            <span className="font-medium truncate">{job.employer?.name}</span>
+    <div
+      className={cn(
+        "card hover-lift relative isolate overflow-hidden p-6 animate-fade-in",
+      )}
+      onClick={on_click}
+    >
+      <>
+        <div className="mb-4">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2 leading-tight truncate">
+              {job.title}
+            </h3>
+            <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+              <Building className="w-4 h-4 flex-shrink-0" />
+              <span className="font-medium truncate">{job.employer?.name}</span>
+            </div>
           </div>
         </div>
-      </div>
-      <JobBadges job={job} />
-      <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
-        {job.description || "No description available."}
-      </p>
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100 min-w-0">
-        <div className="flex-1 min-w-0">
-          <JobLocation location={job.location} />
+        <JobBadges job={job} />
+        <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
+          {job.description || "No description available."}
+        </p>
+        <div className="flex items-center justify-between pt-3 border-t border-gray-100 min-w-0">
+          <div className="flex-1 min-w-0">
+            <JobLocation location={job.location} />
+          </div>
         </div>
-      </div>
+      </>
     </div>
   );
 };
@@ -348,66 +602,68 @@ function HeaderWithActions({
 }) {
   const { isMobile } = useMobile();
   return (
-    <div
-      className={cn(
-        "items-start justify-between gap-3",
-        isMobile ? "" : "flex",
-      )}
-    >
-      {/* ctas on top for mobile */}
-      {isMobile && (
-        <div className="shrink-0 mb-4">
-          <div className="flex items-center gap-2">
-            {actions.map((a, i) => (
-              <div key={i} className="inline-flex">
-                {a}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* left: title/employer/location */}
-      <div className="min-w-0">
-        <h1
-          className={cn(
-            "font-semibold text-gray-900 leading-tight truncate",
-            isMobile ? "text-xl" : "text-4xl",
-          )}
-        >
-          {job.title}
-        </h1>
-        <p
-          className={cn(
-            "text-gray-600 truncate",
-            isMobile ? "text-base" : "text-xl",
-          )}
-        >
-          {job.employer?.name}
-        </p>
-        {job.location && (
-          <div className="flex items-center gap-1.5 text-gray-600">
-            <Building className="h-4 w-4" />
-            <span className="truncate">{job.location}</span>
+    <div>
+      <div
+        className={cn(
+          "items-start justify-between gap-3",
+          isMobile ? "" : "flex",
+        )}
+      >
+        {/* ctas on top for mobile */}
+        {isMobile && (
+          <div className="shrink-0 mb-4">
+            <div className="flex items-center gap-2">
+              {actions.map((a, i) => (
+                <div key={i} className="inline-flex">
+                  {a}
+                </div>
+              ))}
+            </div>
           </div>
         )}
-        {/* <p className="text-s text-gray-500 mt-1">
+
+        {/* left: title/employer/location */}
+        <div className="min-w-0">
+          <h1
+            className={cn(
+              "font-semibold text-gray-900 leading-tight truncate",
+              isMobile ? "text-xl" : "text-4xl",
+            )}
+          >
+            {job.title}
+          </h1>
+          <p
+            className={cn(
+              "text-gray-600 truncate",
+              isMobile ? "text-base" : "text-xl",
+            )}
+          >
+            {job.employer?.name}
+          </p>
+          {job.location && (
+            <div className="flex items-center gap-1.5 text-gray-600">
+              <Building className="h-4 w-4" />
+              <span className="truncate">{job.location}</span>
+            </div>
+          )}
+          {/* <p className="text-s text-gray-500 mt-1">
           Listed on {formatDate(job.created_at ?? "")}
         </p> */}
-      </div>
-
-      {/* right: CTAs */}
-      {!isMobile && (
-        <div className="shrink-0 sm:mt-1">
-          <div className="flex items-center gap-2">
-            {actions.map((a, i) => (
-              <div key={i} className="inline-flex">
-                {a}
-              </div>
-            ))}
-          </div>
         </div>
-      )}
+
+        {/* right: CTAs */}
+        {!isMobile && (
+          <div className="shrink-0 sm:mt-1">
+            <div className="flex items-center gap-2">
+              {actions.map((a, i) => (
+                <div key={i} className="inline-flex">
+                  {a}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -966,7 +1222,7 @@ export function MissingNotice({
 }) {
   if (!show) return null;
   return (
-    <div className="flex items-start md:items-center gap-2 border-b border-gray-400 bg-warning px-5 py-3">
+    <div className="flex items-start md:items-center gap-2 bg-warning px-5 py-3">
       <AlertTriangle className="h-5 w-5 text-warning-foreground/90" />
       <p className="text-sm text-warning-foreground/90 leading-snug">
         This job requires{" "}
@@ -1007,6 +1263,65 @@ function MarkdownBlock({ text }: { text?: string | null }) {
   );
 }
 
+export function SuperChallengeDetails({
+  job,
+  mobile = false,
+}: {
+  job: Job;
+  mobile?: boolean;
+}) {
+  const superChallengeTitle = job.challenge?.title?.trim();
+  const superChallengeDescription = job.challenge?.description?.trim();
+
+  if (!job.challenge) return null;
+
+  return (
+    <div className="relative py-3">
+      {/* Stickers sit outside the clipped card, on the border */}
+      <LightningEmojiBorder variant="hero" mobile={mobile} />
+
+      <div
+        className={cn(
+          "super-challenge-card group relative isolate rounded-[0.33em] p-6 pt-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_40px_rgba(245,158,11,0.25),0_0_80px_rgba(245,158,11,0.12),0_20px_40px_rgba(249,115,22,0.15)]",
+          "bg-[radial-gradient(ellipse_at_top_left,rgba(254,240,138,0.5),transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(251,146,60,0.18),transparent_35%),linear-gradient(150deg,rgba(255,251,235,1)_0%,rgba(255,255,255,1)_45%,rgba(254,243,199,0.98)_100%)]",
+        )}
+      >
+        {/* Badge on the border */}
+        <div
+          className={cn(
+            "absolute top-0 -translate-y-1/2 z-20",
+            mobile ? "left-1/2 -translate-x-1/2" : "left-4",
+          )}
+        >
+          <SuperListingBadge
+            className={cn(mobile && "px-2.5 py-1 text-[11px]")}
+          />
+        </div>
+
+        {/* Ambient glow orbs */}
+        <div className="pointer-events-none absolute -left-8 top-4 h-32 w-32 rounded-full bg-amber-300/20 blur-3xl" />
+        <div className="pointer-events-none absolute -right-6 bottom-2 h-24 w-24 rounded-full bg-orange-300/15 blur-2xl" />
+
+        <div className="relative z-10 space-y-4">
+          {/* Section label */}
+          <div>
+            <span className="text-xs font-bold uppercase tracking-[0.12em] text-amber-800">
+              Challenge
+            </span>
+
+            <h3 className="relative mt-1 text-2xl font-bold leading-tight text-gray-900 tracking-tight">
+              {superChallengeTitle || "Tell us your funniest joke."}
+            </h3>
+          </div>
+          <div className="relative whitespace-pre-wrap break-words text-sm leading-relaxed text-gray-700">
+            {superChallengeDescription || "No challenge description provided."}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ──────────────────────────────────────────────
    Main JobDetails
    ────────────────────────────────────────────── */
@@ -1029,6 +1344,7 @@ export function JobDetails({
 }) {
   const hasGithub = !!user?.github_link?.trim();
   const hasPortfolio = !!user?.portfolio_link?.trim();
+  const isSuperListing = Boolean(job.challenge);
 
   const needsCover = !!job.internship_preferences?.require_cover_letter;
   const needsGithub = !!job.internship_preferences?.require_github;
@@ -1063,6 +1379,7 @@ export function JobDetails({
         <Section title="Job Details">
           <JobDetailsSummary job={job} />
         </Section>
+        {isSuperListing && <SuperChallengeDetails job={job} />}
         <Divider />
 
         {/* sections */}

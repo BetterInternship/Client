@@ -14,8 +14,9 @@ import { GroupableRadioDropdown } from "@/components/ui/dropdown";
 import { BooleanCheckIcon } from "@/components/ui/icons";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useProfile } from "@/hooks/use-employer-api";
-import { Job } from "@/lib/db/db.types";
+import { CreateJobChallengeListingPayload, Job } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useFormData } from "@/lib/form-data";
 import Head from "next/head";
@@ -27,7 +28,9 @@ import { TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CreateJobPageProps {
-  createJob: (job: Partial<Job>) => Promise<any>;
+  createJob?: (job: Partial<Job>) => Promise<any>;
+  createSuperJob?: (job: CreateJobChallengeListingPayload) => Promise<any>;
+  isSuperListing?: boolean;
 }
 
 const StepCheckIndicator = ({ checked }: { checked: boolean }) => {
@@ -38,9 +41,15 @@ const StepCheckIndicator = ({ checked }: { checked: boolean }) => {
   );
 };
 
-const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
+const CreateJobPage = ({
+  createJob,
+  createSuperJob,
+  isSuperListing = false,
+}: CreateJobPageProps) => {
   const [creating, set_creating] = useState(false);
   const [isMissing, setMissing] = useState(false);
+  const [challengeTitle, setChallengeTitle] = useState("");
+  const [challengeDescription, setChallengeDescription] = useState("");
   const { formData, setField, fieldSetter } = useFormData<Job>();
   const { job_pay_freq, isNotNull } = useDbRefs();
   const router = useRouter();
@@ -128,8 +137,20 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
       missingFields.push("Category");
     }
 
-    if (isSalaryFilled && formData.salary_freq === null && formData.salary_freq === undefined) {
+    if (
+      isSalaryFilled &&
+      formData.salary_freq === null &&
+      formData.salary_freq === undefined
+    ) {
       missingFields.push("Pay Frequency");
+    }
+
+    if (isSuperListing && !challengeTitle.trim()) {
+      missingFields.push("Challenge Title");
+    }
+
+    if (isSuperListing && !challengeDescription.trim()) {
+      missingFields.push("Challenge Description");
     }
 
     if (missingFields.length > 0) {
@@ -146,12 +167,35 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
       salary: formData.allowance === 0 ? formData.salary : undefined,
       salary_freq: formData.allowance === 0 ? formData.salary_freq : undefined,
       is_unlisted: formData.is_unlisted ?? false,
-      internship_preferences: formData.internship_preferences,
+      internship_preferences: {
+        ...formData.internship_preferences,
+        ...(isSuperListing ? { require_cover_letter: false } : {}),
+      },
     };
 
     set_creating(true);
     try {
-      const response = await createJob(job);
+      if (isSuperListing && !createSuperJob) {
+        alert("Super listing creator is not configured.");
+        set_creating(false);
+        return;
+      }
+
+      if (!isSuperListing && !createJob) {
+        alert("Listing creator is not configured.");
+        set_creating(false);
+        return;
+      }
+
+      const response = isSuperListing
+        ? await createSuperJob?.({
+            ...job,
+            challenge: {
+              title: challengeTitle.trim(),
+              description: challengeDescription.trim(),
+            },
+          })
+        : await createJob(job);
       if (!response?.success) {
         alert(response?.error || "Could not create job");
         set_creating(false);
@@ -170,6 +214,15 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
   }, []);
 
   useEffect(() => {
+    if (!isSuperListing) return;
+    if (!formData.internship_preferences?.require_cover_letter) return;
+    setField("internship_preferences", {
+      ...formData.internship_preferences,
+      require_cover_letter: false,
+    });
+  }, [isSuperListing, formData.internship_preferences?.require_cover_letter]);
+
+  useEffect(() => {
     const missing = !!(
       !formData.title?.trim() ||
       !formData.location?.trim() ||
@@ -180,6 +233,8 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
       !formData.internship_preferences?.job_commitment_ids?.length ||
       !formData.internship_preferences?.job_setup_ids?.length ||
       !formData.internship_preferences?.job_category_ids?.length ||
+      (isSuperListing && !challengeTitle.trim()) ||
+      (isSuperListing && !challengeDescription.trim()) ||
       payFreqMissing
     );
 
@@ -196,6 +251,9 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
     formData.internship_preferences?.job_category_ids,
     formData.salary,
     formData.salary_freq,
+    challengeTitle,
+    challengeDescription,
+    isSuperListing,
   ]);
 
   return (
@@ -219,7 +277,7 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                 isMobile ? "text-lg" : "text-2xl",
               )}
             >
-              Create New Job:{" "}
+              {isSuperListing ? "Create New Super Listing:" : "Create New Job:"}{" "}
               <span className="font-bold">
                 {formData.title || "Untitled Job"}
               </span>
@@ -244,6 +302,8 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                         Publishing...
                       </>
+                    ) : isSuperListing ? (
+                      "Publish Super Listing"
                     ) : (
                       "Publish Listing"
                     )}
@@ -271,6 +331,8 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                           Publishing...
                         </>
+                      ) : isSuperListing ? (
+                        "Publish Super Listing"
                       ) : (
                         "Publish Listing"
                       )}
@@ -286,6 +348,60 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
         <div>
           <div className={cn(isMobile ? "p-0 mt-18 pb-16" : "p-6 mt-20")}>
             <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200">
+              {isSuperListing && (
+                <div
+                  className={cn(
+                    "py-5 border-b border-gray-200 bg-yellow-50/50",
+                    isMobile ? "px-2" : "px-6",
+                  )}
+                >
+                  <div className="space-y-4">
+                    <div>
+                      <h2 className="flex flex-row text-lg font-bold text-gray-800 mb-2 break-words overflow-wrap-anywhere leading-tight">
+                        <StepCheckIndicator
+                          checked={challengeTitle.trim().length > 0}
+                        />
+                        Challenge Title{" "}
+                        <span className="text-destructive text-sm">*</span>
+                      </h2>
+                      <Input
+                        value={challengeTitle}
+                        onChange={(e) => setChallengeTitle(e.target.value)}
+                        className="text-base font-medium h-10"
+                        placeholder="Enter challenge title..."
+                        maxLength={120}
+                        required={true}
+                      />
+                      <p className="text-xs text-gray-500 text-right mt-1">
+                        {challengeTitle.length}/120 characters
+                      </p>
+                    </div>
+
+                    <div>
+                      <h2 className="flex flex-row text-lg font-bold text-gray-800 mb-2 break-words overflow-wrap-anywhere leading-tight">
+                        <StepCheckIndicator
+                          checked={challengeDescription.trim().length > 0}
+                        />
+                        Challenge Description{" "}
+                        <span className="text-destructive text-sm">*</span>
+                      </h2>
+                      <Textarea
+                        value={challengeDescription}
+                        onChange={(e) =>
+                          setChallengeDescription(e.target.value)
+                        }
+                        className="text-sm min-h-[140px]"
+                        placeholder="Describe the challenge submission expected from applicants..."
+                        maxLength={4000}
+                        required={true}
+                      />
+                      <p className="text-xs text-gray-500 text-right mt-1">
+                        {challengeDescription.length}/4000 characters
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
               {/* Title Section */}
               <div
                 className={cn(
@@ -838,37 +954,45 @@ const CreateJobPage = ({ createJob }: CreateJobPageProps) => {
                           </div>
 
                           <div
-                            onClick={() =>
+                            onClick={() => {
+                              if (isSuperListing) return;
                               setField("internship_preferences", {
                                 ...formData.internship_preferences,
                                 require_cover_letter:
                                   !formData.internship_preferences
                                     ?.require_cover_letter,
-                              })
-                            }
-                            className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors cursor-pointer h-fit
-                        ${formData.internship_preferences?.require_cover_letter ? "border-primary border-opacity-85" : "border-gray-200 hover:border-gray-300"}`}
+                              });
+                            }}
+                            className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors h-fit
+                        ${isSuperListing ? "cursor-not-allowed opacity-60 border-gray-200 bg-gray-50" : "cursor-pointer"}
+                        ${!isSuperListing && formData.internship_preferences?.require_cover_letter ? "border-primary border-opacity-85" : ""}
+                        ${!isSuperListing && !formData.internship_preferences?.require_cover_letter ? "border-gray-200 hover:border-gray-300" : ""}`}
                           >
                             <FormCheckbox
                               checked={
-                                formData.internship_preferences
-                                  ?.require_cover_letter ?? false
+                                isSuperListing
+                                  ? false
+                                  : (formData.internship_preferences
+                                      ?.require_cover_letter ?? false)
                               }
-                              setter={() =>
+                              setter={() => {
+                                if (isSuperListing) return;
                                 setField("internship_preferences", {
                                   ...formData.internship_preferences,
                                   require_cover_letter:
                                     !formData.internship_preferences
                                       ?.require_cover_letter,
-                                })
-                              }
+                                });
+                              }}
                             />
                             <div className="grid grid-rows-1 md:grid-rows-2">
                               <Label className="text-xs font-medium text-gray-900">
                                 Cover Letter
                               </Label>
                               <p className="text-xs text-gray-500">
-                                Require cover letter
+                                {isSuperListing
+                                  ? "Disabled for super listings"
+                                  : "Require cover letter"}
                               </p>
                             </div>
                           </div>

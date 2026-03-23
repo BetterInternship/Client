@@ -21,7 +21,7 @@ const asyncStoragePersister = createAsyncStoragePersister({
   storage: typeof window === "undefined" ? undefined : AsyncStorage,
 });
 
-persistQueryClient({
+void persistQueryClient({
   queryClient,
   persister: asyncStoragePersister,
   maxAge: 24 * 60 * 60 * 1000,

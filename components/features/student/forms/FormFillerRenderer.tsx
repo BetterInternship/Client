@@ -5,7 +5,6 @@ import { ClientBlock } from "@betterinternship/core/forms";
 import { FieldRenderer } from "./FieldRenderer";
 import { HeaderRenderer, ParagraphRenderer } from "./BlockRenderer";
 import { useFormRendererContext } from "./form-renderer.ctx";
-import { FormActionButtons } from "./FormActionButtons";
 import { getBlockField, isBlockField } from "./utils";
 import { useFormFiller } from "./form-filler.ctx";
 import { useMyAutofill } from "@/hooks/use-my-autofill";
@@ -16,8 +15,14 @@ import { formatTimestampDateWithoutTime } from "@/lib/utils";
 
 export function FormFillerRenderer({
   onValuesChange,
+  onFieldSelect,
+  selectionTick = 0,
+  autoScrollToSelectedField = true,
 }: {
   onValuesChange?: (values: Record<string, string>) => void;
+  onFieldSelect?: (fieldId: string) => void;
+  selectionTick?: number;
+  autoScrollToSelectedField?: boolean;
 }) {
   const form = useFormRendererContext();
   const formFiller = useFormFiller();
@@ -141,15 +146,27 @@ export function FormFillerRenderer({
 
   // Scroll to selected field
   useEffect(() => {
-    if (!form.selectedPreviewId || !fieldRefs.current[form.selectedPreviewId])
+    if (
+      !autoScrollToSelectedField ||
+      !form.selectedPreviewId ||
+      !fieldRefs.current[form.selectedPreviewId] ||
+      !scrollContainerRef.current
+    )
       return;
 
     const fieldElement = fieldRefs.current[form.selectedPreviewId];
     const scrollContainer = scrollContainerRef.current;
 
     if (fieldElement && scrollContainer) {
-      // Scroll the field into view with a small padding
-      fieldElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      const containerRect = scrollContainer.getBoundingClientRect();
+      const fieldRect = fieldElement.getBoundingClientRect();
+      const isVisible =
+        fieldRect.top >= containerRect.top &&
+        fieldRect.bottom <= containerRect.bottom;
+
+      if (!isVisible) {
+        fieldElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
 
       // Add a highlight animation
       fieldElement.classList.add(
@@ -167,7 +184,7 @@ export function FormFillerRenderer({
         );
       }, 1500);
     }
-  }, [form.selectedPreviewId]);
+  }, [autoScrollToSelectedField, form.selectedPreviewId, selectionTick]);
 
   // Scroll to first field with error
   useEffect(() => {
@@ -203,7 +220,15 @@ export function FormFillerRenderer({
       });
     }, 2000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      errorFields.forEach((fieldKey) => {
+        const fieldElement = fieldRefs.current[fieldKey];
+        if (fieldElement) {
+          fieldElement.classList.remove("bg-red-100");
+        }
+      });
+    };
   }, [formFiller.errors]);
 
   return (
@@ -212,9 +237,6 @@ export function FormFillerRenderer({
         ref={scrollContainerRef}
         className="relative flex-1 overflow-auto flex flex-col"
       >
-        <div className="px-7 py-5 sm:hidden">
-          <h2 className="text-2xl font-bold text-primary">{form.formLabel}</h2>
-        </div>
         <div className="space-y-3 px-7 flex-1 mb-5">
           <BlocksRenderer
             formKey={form.formName}
@@ -222,8 +244,14 @@ export function FormFillerRenderer({
             values={finalValues}
             onChange={formFiller.setValue}
             errors={formFiller.errors}
-            setSelected={form.setSelectedPreviewId}
-            onBlurValidate={(fieldKey, field) => {
+            setSelected={(fieldId) => {
+              if (onFieldSelect) {
+                onFieldSelect(fieldId);
+                return;
+              }
+              form.setSelectedPreviewId(fieldId);
+            }}
+            onBlurValidate={(fieldKey) => {
               // Before validating, sync form values to params so validators can access them
               const currentValues = formFiller.getFinalValues(autofillValues);
 
@@ -256,9 +284,6 @@ export function FormFillerRenderer({
           />
         </div>
       </div>
-      <div className="hidden sm:block p-2 bg-gray-100 border-t border-r border-gray-300">
-        <FormActionButtons />
-      </div>
     </div>
   );
 }
@@ -280,7 +305,7 @@ const BlocksRenderer = <T extends any[]>({
   onChange: (key: string, value: any) => void;
   errors: Record<string, string>;
   setSelected: (selected: string) => void;
-  onBlurValidate?: (fieldKey: string, field: any) => void;
+  onBlurValidate?: (fieldKey: string) => void;
   fieldRefs: Record<string, HTMLDivElement | null>;
   selectedFieldId?: string;
 }) => {
@@ -323,9 +348,7 @@ const BlocksRenderer = <T extends any[]>({
                   field={actualField}
                   value={values[actualField.field]}
                   onChange={(v) => onChange(actualField.field, v)}
-                  onBlur={() =>
-                    onBlurValidate?.(actualField.field, actualField)
-                  }
+                  onBlur={() => onBlurValidate?.(actualField.field)}
                   error={errors[actualField.field]}
                   allValues={values}
                   isPhantom={isPhantom}
