@@ -42,9 +42,9 @@ export default function OpenGraphImage() {
       <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
         <div
           style={{
-            display: "inline-flex",
+            display: "flex",
             alignItems: "center",
-            width: "fit-content",
+            alignSelf: "flex-start",
             gap: "8px",
             border: "1px solid #111111",
             borderRadius: "999px",
@@ -76,7 +76,7 @@ export default function OpenGraphImage() {
           style={{
             border: "1px solid #111111",
             background: "#ffffff",
-            width: "fit-content",
+            alignSelf: "flex-start",
             padding: "10px 14px",
             fontSize: 24,
             fontWeight: 800,
