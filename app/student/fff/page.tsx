@@ -439,8 +439,7 @@ export default function FFFPage() {
 
                 <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
                   <p className="[font-family:var(--font-fff-mono)] text-xs leading-5 text-black/65">
-                    We will send the confirmation to your email and include the
-                    BetterInternship team in CC.
+                    We will send the confirmation to your email.
                   </p>
 
                   <Button
