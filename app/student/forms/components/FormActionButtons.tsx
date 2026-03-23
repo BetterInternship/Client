@@ -56,7 +56,7 @@ export const FormActionButtons = ({
             : "Fillout Document"}
         </Button>
       </div>
-      {/* <Button
+      <Button
         variant="link"
         className={cn(
           "text-left text-xs text-gray-500 hover:bg-transparent hover:text-primary sm:w-auto sm:text-sm p-0",
@@ -66,7 +66,7 @@ export const FormActionButtons = ({
       >
         <Printer className="h-4 w-4" />
         or print for wet signature instead
-      </Button> */}
+      </Button>
     </>
   );
 };
