@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { SuperListingBadge } from "@/components/shared/jobs";
 import { cn } from "@/lib/utils";
 
 const headingFont = Space_Grotesk({
@@ -160,14 +161,14 @@ export default function FFFPage() {
   return (
     <main
       className={cn(
-        "relative isolate min-h-full overflow-x-hidden bg-white text-black",
+        "relative isolate min-h-screen overflow-x-hidden bg-white text-black",
         headingFont.variable,
         monoFont.variable,
       )}
     >
-      <div className="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(circle_at_16%_18%,rgba(0,0,0,0.12),transparent_35%),radial-gradient(circle_at_84%_2%,rgba(0,0,0,0.09),transparent_33%),radial-gradient(circle_at_50%_90%,rgba(0,0,0,0.07),transparent_40%)]" />
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.05)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(122deg,rgba(0,0,0,0.09)_0%,transparent_34%,rgba(0,0,0,0.07)_54%,transparent_74%)] opacity-55" />
+      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_16%_18%,rgba(0,0,0,0.12),transparent_35%),radial-gradient(circle_at_84%_2%,rgba(0,0,0,0.09),transparent_33%),radial-gradient(circle_at_50%_90%,rgba(0,0,0,0.07),transparent_40%)]" />
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.05)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(122deg,rgba(0,0,0,0.09)_0%,transparent_34%,rgba(0,0,0,0.07)_54%,transparent_74%)] opacity-55" />
 
       <header className="sticky top-0 z-50 flex items-center justify-between px-6 pb-2 pt-4 sm:px-8 lg:px-10">
         <div className="flex items-center gap-3 sm:gap-4">
@@ -201,20 +202,56 @@ export default function FFFPage() {
       <section className="relative mx-auto flex min-h-[calc(100svh-73px)] w-full max-w-6xl flex-col justify-center px-6 py-12 sm:px-8 lg:px-10">
         <div className="mx-auto grid w-full max-w-5xl items-center gap-10 lg:grid-cols-[1.15fr_0.85fr]">
           <div className="relative text-left">
-            <div className="inline-flex items-center gap-2 border border-black/20 bg-white/90 px-3 py-1 [font-family:var(--font-fff-mono)] text-[10px] uppercase tracking-[0.22em] text-black/75 backdrop-blur">
-              Startup Accelerator Intern
-            </div>
+            <SuperListingBadge
+              compact
+              className="[font-family:var(--font-fff-mono)] text-[11px] font-semibold uppercase tracking-[0.12em]"
+            />
             <h1 className="mt-6 [font-family:var(--font-fff-heading)] text-[clamp(2.9rem,9vw,6.2rem)] font-black uppercase leading-[0.86] tracking-[-0.05em]">
               <span className="block">Scout.</span>
               <span className="block text-black/80">Network.</span>
               <span className="block">Scale.</span>
             </h1>
-            <p className="mt-7 max-w-2xl [font-family:var(--font-fff-mono)] text-sm leading-7 text-black/65 sm:text-[15px]">
-              s16vc and Ellipsis Ventures are building the successor to YC,
-              backed by founders and execs from Miro, Pitch, and WeTransfer.
-              This internship is for builders who move fast, spot signal early,
-              and can help compound leverage for the whole ecosystem.
-            </p>
+            <div className="mt-5 inline-flex items-center border border-black bg-white px-3 py-1.5">
+              <span className="[font-family:var(--font-fff-heading)] text-[clamp(0.95rem,2.2vw,1.2rem)] font-black uppercase tracking-[0.08em] text-black">
+                Startup Accelerator Intern
+              </span>
+            </div>
+            <div className="mt-7 max-w-2xl space-y-4 [font-family:var(--font-fff-mono)] text-sm leading-7 text-black/65 sm:text-[15px]">
+              <p>
+                <Link
+                  href="https://www.s16vc.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 font-semibold text-black underline underline-offset-2"
+                >
+                  s16vc
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </Link>{" "}
+                x{" "}
+                <Link
+                  href="https://www.ellipsis-venture.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 font-semibold text-black underline underline-offset-2"
+                >
+                  Ellipsis Ventures
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </Link>{" "}
+                is building a new startup accelerator designed to outbuild
+                legacy programs. Backed by founders from Miro, Pitch, Supercell,
+                and WeTransfer.
+              </p>
+              <p>
+                The hard part is not building the accelerator. It is finding the
+                right founders.
+              </p>
+              <div className="pt-1">
+                <p className="font-semibold text-black/85">
+                  In this role, you will drive developer evangelism by SCOUT,
+                  NETWORK, SCALE.
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="mx-auto w-full max-w-xl space-y-4">
@@ -230,7 +267,7 @@ export default function FFFPage() {
                 <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#000_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
                 <div className="relative border border-black/20 bg-white p-5 shadow-[0_8px_24px_-18px_rgba(0,0,0,0.55)] transition-all group-hover:-translate-y-1">
                   <p className="[font-family:var(--font-fff-mono)] text-[10px] uppercase tracking-[0.22em] text-black/55">
-                    Track {String(index + 1).padStart(2, "0")}
+                    {String(index + 1).padStart(2, "0")}
                   </p>
                   <p className="mt-1 [font-family:var(--font-fff-heading)] text-2xl font-black uppercase tracking-[-0.03em]">
                     {item.title}
@@ -264,19 +301,20 @@ export default function FFFPage() {
         ref={challengeRef}
         className="relative mx-auto flex min-h-[calc(100svh-73px)] w-full max-w-6xl flex-col justify-center px-6 py-10 sm:px-8 lg:px-10"
       >
+        <div>
+          <SuperListingBadge
+            compact
+            className="mb-4 [font-family:var(--font-fff-mono)] text-[11px] font-semibold uppercase tracking-[0.12em]"
+          />
+        </div>
+
         <div className="relative">
           <div className="pointer-events-none absolute inset-0 translate-x-[10px] translate-y-[10px] bg-[repeating-linear-gradient(135deg,#000_0_2px,transparent_2px_7px)] opacity-15" />
           <div className="relative border-2 border-black bg-white shadow-[0_20px_45px_-30px_rgba(0,0,0,0.8)]">
             <div className="border-b-2 border-black bg-black px-6 py-6 sm:px-8 sm:py-8">
-              <p className="[font-family:var(--font-fff-mono)] text-xs uppercase tracking-[0.2em] text-white/80">
-                Challenge
-              </p>
               <h2 className="mt-3 [font-family:var(--font-fff-heading)] text-3xl font-black uppercase tracking-[-0.04em] text-white sm:text-5xl">
                 What You Need To Ship
               </h2>
-              <p className="mt-2 [font-family:var(--font-fff-mono)] text-[11px] uppercase tracking-[0.16em] text-white/65">
-                Brief 001 - Submit your signal, community plan, and systems idea
-              </p>
             </div>
 
             <div className="p-6 sm:p-8">
@@ -351,9 +389,6 @@ export default function FFFPage() {
               <h2 className="mt-3 pr-10 [font-family:var(--font-fff-heading)] text-3xl font-black uppercase tracking-[-0.04em] text-black sm:text-5xl">
                 Throw Your Hat In
               </h2>
-              <p className="mt-2 [font-family:var(--font-fff-mono)] text-xs uppercase tracking-[0.15em] text-black/65">
-                If this sounds like you, ship your pitch.
-              </p>
             </div>
 
             <div className="relative p-6 sm:p-8">
