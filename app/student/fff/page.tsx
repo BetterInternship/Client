@@ -168,42 +168,31 @@ export default function FFFPage() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(0,0,0,0.08),transparent_36%),radial-gradient(circle_at_85%_0%,rgba(0,0,0,0.06),transparent_35%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.05)_1px,transparent_1px)] bg-[size:40px_40px] opacity-30" />
 
-      <header className="sticky top-0 z-50 border-b border-black/15 bg-white/90 px-6 py-3 backdrop-blur sm:px-8 lg:px-10">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <Link href="/" className="transition-opacity hover:opacity-80">
-              <Image
-                src="/BetterInternshipLogo.png"
-                alt="BetterInternship"
-                width={40}
-                height={40}
-                className="h-8 w-8 sm:h-10 sm:w-10"
-              />
-            </Link>
-            <span className="[font-family:var(--font-fff-heading)] text-lg font-bold text-black/35">
-              x
-            </span>
-            <Link
-              href="https://fff-hub.com/"
-              target="_blank"
-              className="transition-opacity hover:opacity-80"
-            >
-              <span className="[font-family:var(--font-fff-heading)] text-xl font-black uppercase tracking-tight text-black sm:text-2xl">
-                FFF
-              </span>
-            </Link>
-            <p className="hidden [font-family:var(--font-fff-mono)] text-xs uppercase tracking-[0.2em] text-black/65 sm:block">
-              BetterInternship x FFF
-            </p>
-          </div>
-
+      <header className="sticky top-0 z-50 flex items-center justify-between px-6 pb-2 pt-4 sm:px-8 lg:px-10">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <Link
+            href="/"
+            className="transition-opacity duration-200 hover:opacity-70"
+          >
+            <Image
+              src="/BetterInternshipLogo.png"
+              alt="BetterInternship"
+              width={40}
+              height={40}
+              className="h-10 w-10 sm:h-12 sm:w-12"
+            />
+          </Link>
+          <span className="[font-family:var(--font-fff-heading)] text-xl font-black text-black/30 sm:text-2xl">
+            x
+          </span>
           <Link
             href="https://fff-hub.com/"
             target="_blank"
-            className="inline-flex items-center gap-2 [font-family:var(--font-fff-mono)] text-xs uppercase tracking-[0.18em] text-black/75 hover:text-black"
+            className="transition-opacity duration-200 hover:opacity-70"
           >
-            Founders for Founders
-            <ArrowUpRight className="h-3.5 w-3.5" />
+            <span className="[font-family:var(--font-fff-heading)] text-[clamp(0.88rem,2.4vw,1.4rem)] font-black uppercase tracking-tight text-black">
+              Founders For Founders
+            </span>
           </Link>
         </div>
       </header>
