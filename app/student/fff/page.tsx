@@ -130,7 +130,7 @@ export default function FFFPage() {
 
       setForm(INITIAL_FORM_STATE);
       setResultMessage(
-        "Submission sent. We also emailed a confirmation to your inbox.",
+        "Submission sent to your email with the BetterInternship team in CC.",
       );
     } catch (error) {
       setIsError(true);
@@ -402,8 +402,8 @@ export default function FFFPage() {
 
                 <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
                   <p className="[font-family:var(--font-fff-mono)] text-xs leading-5 text-black/65">
-                    Your submission will be emailed to the BetterInternship team
-                    and a confirmation will be sent to your email.
+                    We will send the confirmation to your email and include the
+                    BetterInternship team in CC.
                   </p>
 
                   <Button
