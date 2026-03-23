@@ -174,6 +174,9 @@ export function FormSigningLayout({
   const isMobilePreviewPaneActive =
     isMobileLayout && (isMobilePreviewTabActive || isMobilePreviewReviewStep);
   const showDesktopPreviewPane = !isMobileLayout && currentStep !== "timeline";
+  const shouldMountTimelinePane = !isMobileLayout || currentStep === "timeline";
+  const shouldMountFieldsPane = !isMobileLayout || currentStep === "fields";
+  const shouldMountConfirmPane = !isMobileLayout || currentStep === "confirm";
   const stepNumber = Math.max(steps.indexOf(currentStep) + 1, 1);
   const desktopStepNumber = Math.max(desktopSteps.indexOf(currentStep) + 1, 1);
   const desktopTotalSteps = desktopSteps.length;
@@ -813,180 +816,19 @@ export function FormSigningLayout({
               )}
             >
               <div className="relative min-h-0 flex-1 overflow-hidden">
-                <div
-                  className={`absolute inset-0 flex min-h-0 flex-col transition-all duration-500 ease-in-out ${
-                    currentStep === "timeline"
-                      ? "translate-x-0 opacity-100 pointer-events-auto"
-                      : getMobileStepHiddenClass("timeline")
-                  }`}
-                >
-                  <div className="min-h-0 flex-1 overflow-y-auto p-6">
-                    <div className="space-y-6">
-                      <p className="text-gray-700 sm:text-base font-semibold tracking-tight">
-                        These people will receive this form, in this order:
-                      </p>
-                      <FormSigningPartyTimeline
-                        recipientInputAPI={{
-                          recipientEmails,
-                          recipientErrors,
-                          recipientEmailActions,
-                          recipientErrorActions,
-                        }}
-                      />
-                    </div>
-                    <div className="my-4 mt-8">
-                      <p className="text-sm text-gray-600 sm:text-base">
-                        {!noRecipientStep && (
-                          <div className="flex flex-row gap-2 border border-primary bg-primary/5 p-4 rounded-[0.33em]">
-                            <MailWarningIcon />
-                            <span className="text-primary tracking-tight">
-                              Don't know the recipient emails? That's okay!
-                              <br />
-                              Enter a contact who can forward it to the correct
-                              address.
-                            </span>
-                          </div>
-                        )}
-                      </p>
-                    </div>
-                  </div>
+                {shouldMountTimelinePane && (
                   <div
-                    className={cn(
-                      "bg-white",
-                      isMobileLayout ? "p-3" : "px-6 pb-6 pt-0",
-                    )}
+                    className={`absolute inset-0 flex min-h-0 flex-col transition-all duration-500 ease-in-out ${
+                      currentStep === "timeline"
+                        ? "translate-x-0 opacity-100 pointer-events-auto"
+                        : getMobileStepHiddenClass("timeline")
+                    }`}
                   >
-                    <div className="flex w-full justify-between gap-2">
-                      {isMobileLayout && (
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          disabled={nextLoading}
-                          className="h-11 w-11 shrink-0"
-                          onClick={() => {
-                            onBack();
-                            setCurrentStep(initialStep);
-                          }}
-                          aria-label="Back"
-                        >
-                          <ArrowLeft className="h-4 w-4" />
-                        </Button>
-                      )}
-                      <Button
-                        size="lg"
-                        disabled={!nextEnabled || nextLoading}
-                        className="sm:flex-1 whitespace-nowrap w-full sm:min-w-[140px]"
-                        onClick={() => void handleNext()}
-                      >
-                        <TextLoader loading={nextLoading}>Next</TextLoader>
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  className={`absolute inset-0 min-h-0 transition-all duration-500 ease-in-out ${
-                    currentStep === "fields"
-                      ? "translate-x-0 opacity-100 pointer-events-auto"
-                      : getMobileStepHiddenClass("fields")
-                  }`}
-                >
-                  <div className="min-h-0 flex h-full flex-1 flex-col">
-                    {renderMobileFieldsTabs()}
-                    <div className="min-h-0 flex-1">
-                      <FormFillerRenderer
-                        onValuesChange={handleValuesChange}
-                        selectionTick={selectionTick}
-                        autoScrollToSelectedField={
-                          selectedFieldSource === "pdf"
-                        }
-                        onFieldSelect={handleFormFieldSelect}
-                      />
-                    </div>
-                    <div
-                      className={cn(
-                        isMobileLayout
-                          ? "overflow-hidden bg-white transition-all duration-300 ease-in-out"
-                          : "bg-white p-3",
-                        isMobileLayout &&
-                          (isMobilePreviewTabActive
-                            ? "max-h-0 translate-y-full opacity-0 pointer-events-none"
-                            : "max-h-24 translate-y-0 opacity-100"),
-                      )}
-                    >
-                      {isMobileLayout ? (
-                        <div className="flex items-center gap-2 p-3">
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            disabled={nextLoading}
-                            className="h-11 w-11 shrink-0"
-                            onClick={() => {
-                              if (noRecipientStep) {
-                                onBack();
-                                setCurrentStep(initialStep);
-                                return;
-                              }
-
-                              goToStep("timeline");
-                            }}
-                            aria-label="Back"
-                          >
-                            <ArrowLeft className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="lg"
-                            className="flex-1 whitespace-nowrap"
-                            disabled={!nextEnabled || nextLoading}
-                            onClick={() => void handleNext()}
-                          >
-                            <TextLoader loading={nextLoading}>Next</TextLoader>
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                          <Button
-                            size="lg"
-                            variant="outline"
-                            disabled={nextLoading}
-                            className={cn(
-                              "w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1",
-                              noRecipientStep
-                                ? "opacity-0 pointer-events-none"
-                                : "",
-                            )}
-                            onClick={() => goToStep("timeline")}
-                          >
-                            Back
-                          </Button>
-                          <Button
-                            size="lg"
-                            className="w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1"
-                            disabled={!nextEnabled || nextLoading}
-                            onClick={() => void handleNext()}
-                          >
-                            <TextLoader loading={nextLoading}>Next</TextLoader>
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  className={`absolute inset-0 min-h-0 transition-all duration-500 ease-in-out ${
-                    currentStep === "confirm"
-                      ? "translate-x-0 opacity-100 pointer-events-auto"
-                      : getMobileStepHiddenClass("confirm")
-                  }`}
-                >
-                  <div className="min-h-0 flex h-full flex-1 flex-col">
-                    <div className="min-h-0 flex-1 overflow-y-auto p-6 flex flex-col items-start justify-start  gap-4">
-                      <LucideClipboardCheck className="w-16 h-16 min-h-16 opacity-30 -ml-2" />
-                      <span className="text-gray-700 font-semibold">
-                        Please check if all your inputs are correct
-                      </span>
-                      {!noRecipientStep && (
+                    <div className="min-h-0 flex-1 overflow-y-auto p-6">
+                      <div className="space-y-6">
+                        <p className="text-gray-700 sm:text-base font-semibold tracking-tight">
+                          These people will receive this form, in this order:
+                        </p>
                         <FormSigningPartyTimeline
                           recipientInputAPI={{
                             recipientEmails,
@@ -994,82 +836,249 @@ export function FormSigningLayout({
                             recipientEmailActions,
                             recipientErrorActions,
                           }}
-                          isConfirmingRecipients
                         />
-                      )}
-                      <label className="flex cursor-pointer items-center gap-3 rounded-[0.33em] border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
-                        <Checkbox
-                          checked={hasConfirmedDetails}
-                          className={cn(
-                            "h-5 w-5 rounded-[0.33em] border",
-                            hasConfirmedDetails
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-gray-300 bg-white",
+                      </div>
+                      <div className="my-4 mt-8">
+                        <p className="text-sm text-gray-600 sm:text-base">
+                          {!noRecipientStep && (
+                            <div className="flex flex-row gap-2 border border-primary bg-primary/5 p-4 rounded-[0.33em]">
+                              <MailWarningIcon />
+                              <span className="text-primary tracking-tight">
+                                Don't know the recipient emails? That's okay!
+                                <br />
+                                Enter a contact who can forward it to the correct
+                                address.
+                              </span>
+                            </div>
                           )}
-                          onCheckedChange={(checked) =>
-                            setHasConfirmedDetails(checked === true)
-                          }
-                        />
-                        <span>I confirm all the details are correct</span>
-                      </label>
+                        </p>
+                      </div>
                     </div>
-                    <div className="bg-white p-3">
-                      {isMobileLayout ? (
-                        <div className="flex items-center gap-2">
+                    <div
+                      className={cn(
+                        "bg-white",
+                        isMobileLayout ? "p-3" : "px-6 pb-6 pt-0",
+                      )}
+                    >
+                      <div className="flex w-full justify-between gap-2">
+                        {isMobileLayout && (
                           <Button
                             size="icon"
                             variant="outline"
+                            disabled={nextLoading}
                             className="h-11 w-11 shrink-0"
                             onClick={() => {
-                              if (isMobileLayout) {
-                                goToStep("preview-review");
-                                return;
-                              }
-
-                              goToStep("fields");
+                              onBack();
+                              setCurrentStep(initialStep);
                             }}
-                            aria-label="Go back and edit details"
+                            aria-label="Back"
                           >
                             <ArrowLeft className="h-4 w-4" />
                           </Button>
-                          <Button
-                            size="lg"
-                            className="flex-1 whitespace-nowrap"
-                            scheme="supportive"
-                            disabled={!hasConfirmedDetails || nextLoading}
-                            onClick={() => void handleSubmit()}
-                          >
-                            <TextLoader loading={nextLoading}>
-                              Submit
-                            </TextLoader>
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                          <Button
-                            size="lg"
-                            variant="outline"
-                            className="w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1"
-                            onClick={() => goToStep("fields")}
-                          >
-                            Go back and edit details
-                          </Button>
-                          <Button
-                            size="lg"
-                            className="w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1"
-                            scheme="supportive"
-                            disabled={!hasConfirmedDetails || nextLoading}
-                            onClick={() => void handleSubmit()}
-                          >
-                            <TextLoader loading={nextLoading}>
-                              Submit
-                            </TextLoader>
-                          </Button>
-                        </div>
-                      )}
+                        )}
+                        <Button
+                          size="lg"
+                          disabled={!nextEnabled || nextLoading}
+                          className="sm:flex-1 whitespace-nowrap w-full sm:min-w-[140px]"
+                          onClick={() => void handleNext()}
+                        >
+                          <TextLoader loading={nextLoading}>Next</TextLoader>
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
+
+                {shouldMountFieldsPane && (
+                  <div
+                    className={`absolute inset-0 min-h-0 transition-all duration-500 ease-in-out ${
+                      currentStep === "fields"
+                        ? "translate-x-0 opacity-100 pointer-events-auto"
+                        : getMobileStepHiddenClass("fields")
+                    }`}
+                  >
+                    <div className="min-h-0 flex h-full flex-1 flex-col">
+                      {renderMobileFieldsTabs()}
+                      <div className="min-h-0 flex-1">
+                        <FormFillerRenderer
+                          onValuesChange={handleValuesChange}
+                          selectionTick={selectionTick}
+                          autoScrollToSelectedField={
+                            selectedFieldSource === "pdf"
+                          }
+                          onFieldSelect={handleFormFieldSelect}
+                        />
+                      </div>
+                      <div
+                        className={cn(
+                          isMobileLayout
+                            ? "overflow-hidden bg-white transition-all duration-300 ease-in-out"
+                            : "bg-white p-3",
+                          isMobileLayout &&
+                            (isMobilePreviewTabActive
+                              ? "max-h-0 translate-y-full opacity-0 pointer-events-none"
+                              : "max-h-24 translate-y-0 opacity-100"),
+                        )}
+                      >
+                        {isMobileLayout ? (
+                          <div className="flex items-center gap-2 p-3">
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              disabled={nextLoading}
+                              className="h-11 w-11 shrink-0"
+                              onClick={() => {
+                                if (noRecipientStep) {
+                                  onBack();
+                                  setCurrentStep(initialStep);
+                                  return;
+                                }
+
+                                goToStep("timeline");
+                              }}
+                              aria-label="Back"
+                            >
+                              <ArrowLeft className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="lg"
+                              className="flex-1 whitespace-nowrap"
+                              disabled={!nextEnabled || nextLoading}
+                              onClick={() => void handleNext()}
+                            >
+                              <TextLoader loading={nextLoading}>Next</TextLoader>
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <Button
+                              size="lg"
+                              variant="outline"
+                              disabled={nextLoading}
+                              className={cn(
+                                "w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1",
+                                noRecipientStep
+                                  ? "opacity-0 pointer-events-none"
+                                  : "",
+                              )}
+                              onClick={() => goToStep("timeline")}
+                            >
+                              Back
+                            </Button>
+                            <Button
+                              size="lg"
+                              className="w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1"
+                              disabled={!nextEnabled || nextLoading}
+                              onClick={() => void handleNext()}
+                            >
+                              <TextLoader loading={nextLoading}>Next</TextLoader>
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {shouldMountConfirmPane && (
+                  <div
+                    className={`absolute inset-0 min-h-0 transition-all duration-500 ease-in-out ${
+                      currentStep === "confirm"
+                        ? "translate-x-0 opacity-100 pointer-events-auto"
+                        : getMobileStepHiddenClass("confirm")
+                    }`}
+                  >
+                    <div className="min-h-0 flex h-full flex-1 flex-col">
+                      <div className="min-h-0 flex-1 overflow-y-auto p-6 flex flex-col items-start justify-start  gap-4">
+                        <LucideClipboardCheck className="w-16 h-16 min-h-16 opacity-30 -ml-2" />
+                        <span className="text-gray-700 font-semibold">
+                          Please check if all your inputs are correct
+                        </span>
+                        {!noRecipientStep && (
+                          <FormSigningPartyTimeline
+                            recipientInputAPI={{
+                              recipientEmails,
+                              recipientErrors,
+                              recipientEmailActions,
+                              recipientErrorActions,
+                            }}
+                            isConfirmingRecipients
+                          />
+                        )}
+                        <label className="flex cursor-pointer items-center gap-3 rounded-[0.33em] border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                          <Checkbox
+                            checked={hasConfirmedDetails}
+                            className={cn(
+                              "h-5 w-5 rounded-[0.33em] border",
+                              hasConfirmedDetails
+                                ? "border-primary bg-primary text-primary-foreground"
+                                : "border-gray-300 bg-white",
+                            )}
+                            onCheckedChange={(checked) =>
+                              setHasConfirmedDetails(checked === true)
+                            }
+                          />
+                          <span>I confirm all the details are correct</span>
+                        </label>
+                      </div>
+                      <div className="bg-white p-3">
+                        {isMobileLayout ? (
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              className="h-11 w-11 shrink-0"
+                              onClick={() => {
+                                if (isMobileLayout) {
+                                  goToStep("preview-review");
+                                  return;
+                                }
+
+                                goToStep("fields");
+                              }}
+                              aria-label="Go back and edit details"
+                            >
+                              <ArrowLeft className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="lg"
+                              className="flex-1 whitespace-nowrap"
+                              scheme="supportive"
+                              disabled={!hasConfirmedDetails || nextLoading}
+                              onClick={() => void handleSubmit()}
+                            >
+                              <TextLoader loading={nextLoading}>
+                                Submit
+                              </TextLoader>
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <Button
+                              size="lg"
+                              variant="outline"
+                              className="w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1"
+                              onClick={() => goToStep("fields")}
+                            >
+                              Go back and edit details
+                            </Button>
+                            <Button
+                              size="lg"
+                              className="w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1"
+                              scheme="supportive"
+                              disabled={!hasConfirmedDetails || nextLoading}
+                              onClick={() => void handleSubmit()}
+                            >
+                              <TextLoader loading={nextLoading}>
+                                Submit
+                              </TextLoader>
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

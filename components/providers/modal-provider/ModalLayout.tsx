@@ -137,7 +137,7 @@ export const SlideUpModalLayout = ({
         className={cn(
           "absolute left-0 right-0 bg-white shadow-2xl",
           mobileFullscreen
-            ? "inset-0 h-[calc(var(--vh,1vh)*100)] rounded-none"
+            ? "inset-0 h-full rounded-none"
             : "bottom-0 h-[calc(var(--vh,1vh)*90)] rounded-t-2xl",
         )}
         role="dialog"

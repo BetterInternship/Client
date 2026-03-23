@@ -219,9 +219,13 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
               ref={backdropRef}
               role="dialog"
               aria-modal="true"
-              style={{
-                height: "calc(var(--vh, 1vh) * 100)",
-              }}
+              style={
+                opts.mobileFullscreen
+                  ? undefined
+                  : {
+                      height: "calc(var(--vh, 1vh) * 100)",
+                    }
+              }
               onClick={(e) => {
                 if (opts.closeOnBackdropClick === false) return;
                 if (e.target === backdropRef.current) closeModal(name);
