@@ -20,6 +20,7 @@
     "@dnd-kit/modifiers": "^9.0.0",
     "@dnd-kit/sortable": "^10.0.0",
     "@hookform/resolvers": "^3.10.0",
+    "@marsidev/react-turnstile": "^1.4.2",
     "@mdxeditor/editor": "^3.35.1",
     "@posthog/react": "^1.8.1",
     "@radix-ui/react-accordion": "1.2.2",

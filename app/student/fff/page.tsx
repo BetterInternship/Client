@@ -17,6 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { SuperListingBadge } from "@/components/shared/jobs";
 import { cn } from "@/lib/utils";
+import { Loader } from "@/components/ui/loader";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],
@@ -93,6 +95,7 @@ export default function FFFPage() {
   const [resultMessage, setResultMessage] = useState("");
   const [isError, setIsError] = useState(false);
   const [submitModalOpen, setSubmitModalOpen] = useState(false);
+  const [token, setToken] = useState("");
 
   const challengeRef = useRef<HTMLElement | null>(null);
 
@@ -391,88 +394,99 @@ export default function FFFPage() {
               </h2>
             </div>
 
-            <div className="relative p-6 sm:p-8">
-              <form
-                className="grid gap-4"
-                onSubmit={(e) => void handleSubmit(e)}
-              >
-                <div className="grid gap-4 md:grid-cols-2">
-                  <Input
-                    required
-                    value={form.fullName}
-                    onChange={updateField("fullName")}
-                    placeholder="Full name"
-                    className="h-12 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-black placeholder:text-black/35 focus:border-black"
-                  />
-                  <Input
-                    required
-                    type="email"
-                    value={form.email}
-                    onChange={updateField("email")}
-                    placeholder="Email address"
-                    className="h-12 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-black placeholder:text-black/35 focus:border-black"
-                  />
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <Input
-                    value={form.portfolioUrl}
-                    onChange={updateField("portfolioUrl")}
-                    placeholder="Portfolio or project URL (optional)"
-                    className="h-12 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-black placeholder:text-black/35 focus:border-black"
-                  />
-                  <Input
-                    value={form.linkedinUrl}
-                    onChange={updateField("linkedinUrl")}
-                    placeholder="LinkedIn URL (optional)"
-                    className="h-12 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-black placeholder:text-black/35 focus:border-black"
-                  />
-                </div>
-
-                <Textarea
-                  required
-                  value={form.whyFit}
-                  onChange={updateField("whyFit")}
-                  placeholder="Why are you a strong fit for this internship?"
-                  className="min-h-36 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-sm text-black placeholder:text-black/35 focus-visible:ring-1 focus-visible:ring-black focus-visible:ring-offset-0"
-                />
-
-                <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
-                  <p className="[font-family:var(--font-fff-mono)] text-xs leading-5 text-black/65">
-                    We will send the confirmation to your email.
-                  </p>
-
-                  <Button
-                    type="submit"
-                    size="lg"
-                    disabled={isSubmitting}
-                    className="h-12 rounded-none border border-black bg-black px-7 [font-family:var(--font-fff-heading)] text-sm font-bold uppercase tracking-[0.09em] text-white transition-colors hover:bg-black/90"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Sending
-                      </>
-                    ) : (
-                      "Submit"
-                    )}
-                  </Button>
-                </div>
-              </form>
-
-              {resultMessage && (
-                <p
-                  className={cn(
-                    "mt-5 border px-4 py-3 [font-family:var(--font-fff-mono)] text-sm",
-                    isError
-                      ? "border-red-300 bg-red-50 text-red-700"
-                      : "border-emerald-300 bg-emerald-50 text-emerald-700",
-                  )}
+            {token ? (
+              <div className="relative p-6 sm:p-8">
+                <form
+                  className="grid gap-4"
+                  onSubmit={(e) => void handleSubmit(e)}
                 >
-                  {resultMessage}
-                </p>
-              )}
-            </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Input
+                      required
+                      value={form.fullName}
+                      onChange={updateField("fullName")}
+                      placeholder="Full name"
+                      className="h-12 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-black placeholder:text-black/35 focus:border-black"
+                    />
+                    <Input
+                      required
+                      type="email"
+                      value={form.email}
+                      onChange={updateField("email")}
+                      placeholder="Email address"
+                      className="h-12 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-black placeholder:text-black/35 focus:border-black"
+                    />
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Input
+                      value={form.portfolioUrl}
+                      onChange={updateField("portfolioUrl")}
+                      placeholder="Portfolio or project URL (optional)"
+                      className="h-12 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-black placeholder:text-black/35 focus:border-black"
+                    />
+                    <Input
+                      value={form.linkedinUrl}
+                      onChange={updateField("linkedinUrl")}
+                      placeholder="LinkedIn URL (optional)"
+                      className="h-12 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-black placeholder:text-black/35 focus:border-black"
+                    />
+                  </div>
+
+                  <Textarea
+                    required
+                    value={form.whyFit}
+                    onChange={updateField("whyFit")}
+                    placeholder="Why are you a strong fit for this internship?"
+                    className="min-h-36 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-sm text-black placeholder:text-black/35 focus-visible:ring-1 focus-visible:ring-black focus-visible:ring-offset-0"
+                  />
+
+                  <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
+                    <p className="[font-family:var(--font-fff-mono)] text-xs leading-5 text-black/65">
+                      We will send the confirmation to your email.
+                    </p>
+
+                    <Button
+                      type="submit"
+                      size="lg"
+                      disabled={isSubmitting}
+                      className="h-12 rounded-none border border-black bg-black px-7 [font-family:var(--font-fff-heading)] text-sm font-bold uppercase tracking-[0.09em] text-white transition-colors hover:bg-black/90"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Sending
+                        </>
+                      ) : (
+                        "Submit"
+                      )}
+                    </Button>
+                  </div>
+                </form>
+
+                {resultMessage && (
+                  <p
+                    className={cn(
+                      "mt-5 border px-4 py-3 [font-family:var(--font-fff-mono)] text-sm",
+                      isError
+                        ? "border-red-300 bg-red-50 text-red-700"
+                        : "border-emerald-300 bg-emerald-50 text-emerald-700",
+                    )}
+                  >
+                    {resultMessage}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="relative flex w-full flex-col items-center">
+                <Loader>Validating browser...</Loader>
+                <Turnstile
+                  siteKey={process.env.NEXT_PUBLIC_SERVER_API_KEY_TURNSTILE!}
+                  onSuccess={(t) => setToken(t)}
+                  onError={() => setToken("")}
+                />
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
