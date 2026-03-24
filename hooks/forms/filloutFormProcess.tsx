@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2026-03-04 16:35:00
- * @ Modified time: 2026-03-24 14:47:06
+ * @ Modified time: 2026-03-24 14:56:33
  * @ Description:
  *
  * Client process implementation for the form fillout process
@@ -69,7 +69,7 @@ export const useFormFilloutProcessPending = () => {
         timestamp: pendingForm.metadata?.metadata?.timestamp ?? "",
         pending: true,
       })),
-    [myForms.forms],
+    [formFilloutProcessReader, myForms.forms],
   );
 };
 
@@ -96,6 +96,6 @@ export const useFormFilloutProcessHandled = () => {
           pending: false,
           status: "done",
         })),
-    [myForms.forms],
+    [formFilloutProcessReader, myForms.forms],
   );
 };
