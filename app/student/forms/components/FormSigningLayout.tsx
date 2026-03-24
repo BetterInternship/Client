@@ -509,8 +509,12 @@ export function FormSigningLayout({
       }
 
       modalRegistry.formSubmissionSuccess.open("manual", () => {
-        setCurrentStep(initialStep);
-        onBack();
+        void queryClient
+          .invalidateQueries({ queryKey: ["my-forms"] })
+          .then(() => {
+            setCurrentStep(initialStep);
+            onBack();
+          });
       });
     } else {
       const response = await FormService.initiateForm({
@@ -846,8 +850,8 @@ export function FormSigningLayout({
                               <span className="text-primary tracking-tight">
                                 Don't know the recipient emails? That's okay!
                                 <br />
-                                Enter a contact who can forward it to the correct
-                                address.
+                                Enter a contact who can forward it to the
+                                correct address.
                               </span>
                             </div>
                           )}
@@ -946,7 +950,9 @@ export function FormSigningLayout({
                               disabled={!nextEnabled || nextLoading}
                               onClick={() => void handleNext()}
                             >
-                              <TextLoader loading={nextLoading}>Next</TextLoader>
+                              <TextLoader loading={nextLoading}>
+                                Next
+                              </TextLoader>
                             </Button>
                           </div>
                         ) : (
@@ -971,7 +977,9 @@ export function FormSigningLayout({
                               disabled={!nextEnabled || nextLoading}
                               onClick={() => void handleNext()}
                             >
-                              <TextLoader loading={nextLoading}>Next</TextLoader>
+                              <TextLoader loading={nextLoading}>
+                                Next
+                              </TextLoader>
                             </Button>
                           </div>
                         )}
