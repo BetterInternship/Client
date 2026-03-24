@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2026-03-04 16:35:00
- * @ Modified time: 2026-03-04 16:46:09
+ * @ Modified time: 2026-03-24 14:31:23
  * @ Description:
  *
  * Client process implementation for the form fillout process
@@ -31,9 +31,14 @@ export const useFormFilloutProcessRunner = () => {
     caller: FormService.filloutForm.bind(FormService),
     invalidator: useCallback(
       (result: FilloutFormProcessResult) => {
-        return myForms.forms.some(
+        const retval = myForms.forms.some(
           (form) => form.form_process_id === result.formProcessId,
         );
+        console.log(
+          `INVALIDATION check for ${result.formId} ${result.formProcessId}`,
+          retval,
+        );
+        return retval;
       },
       [myForms.forms],
     ),
