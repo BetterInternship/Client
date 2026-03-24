@@ -79,6 +79,8 @@ export default function FormsPage() {
   // Refetch forms when no more pending left
   // Yeppers kinda janky I know
   useEffect(() => {
+    console.log("PENDING FORMS CHANGED: ", formFilloutProcess.getAllPending());
+    console.log("ALL FORMS: ", formFilloutProcess.getAll());
     if (!formFilloutProcess.getAllPending().length)
       void queryClient.invalidateQueries({ queryKey: ["my-forms"] });
   }, [formFilloutProcess.getAllPending()]);
