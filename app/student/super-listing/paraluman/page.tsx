@@ -131,8 +131,8 @@ export default function ParalumanPage() {
 
   const endpoint = useMemo(() => {
     const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
-    if (!base) return "/api/super-listings/paraluman-submission";
-    return `${base}/super-listings/paraluman-submission`;
+    if (!base) return "/api/super-listings/fff-submission";
+    return `${base}/super-listings/fff-submission`;
   }, []);
 
   const updateField =
