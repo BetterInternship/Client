@@ -16,11 +16,12 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import { formatTimeAgo } from "@/lib/utils";
 import { Loader } from "@/components/ui/loader";
 import { Card } from "@/components/ui/card";
-import { JobHead } from "@/components/shared/jobs";
+import { JobHead, SuperListingBadge } from "@/components/shared/jobs";
 import { UserApplication } from "@/lib/db/db.types";
 import { HeaderText, HeaderIcon } from "@/components/ui/text";
 import { Separator } from "@/components/ui/separator";
 import { PageError } from "@/components/ui/error";
+import { cn } from "@/lib/utils";
 
 export default function ApplicationsPage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
@@ -85,31 +86,40 @@ export default function ApplicationsPage() {
 
 const ApplicationCard = ({ application }: { application: UserApplication }) => {
   const { to_app_status_name } = useDbRefs();
+  const job = application.job ?? application.jobs;
+  const jobRecord = job as Record<string, unknown> | undefined;
+  const employer = application.employer ?? application.employers;
+  const challengeTitleFromJoin = (
+    jobRecord?.jobs_challenge as { title?: unknown } | undefined
+  )?.title;
+  const isSuperListing =
+    typeof challengeTitleFromJoin === "string" &&
+    challengeTitleFromJoin.trim().length > 0;
 
   return (
-    <Card key={application.id} className="hover:shadow-lg transition-all">
+    <Card
+      key={application.id}
+      className={cn(
+        "hover:shadow-lg transition-all",
+        isSuperListing &&
+          "super-card relative isolate overflow-hidden bg-[radial-gradient(ellipse_at_top_left,rgba(254,240,138,0.5),transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(251,146,60,0.18),transparent_35%),linear-gradient(150deg,rgba(255,251,235,1)_0%,rgba(255,255,255,1)_45%,rgba(254,243,199,0.98)_100%)]",
+      )}
+    >
       <div className="flex flex-col gap-1">
-        <JobHead
-          title={application.job?.title}
-          employer={application.employer?.name}
-        />
+        {isSuperListing && <SuperListingBadge compact className="mb-2 w-fit" />}
+        <JobHead title={job?.title} employer={employer?.name} />
         <div className="flex items-center gap-2 text-gray-600 mb-4">
           <Badge type="accent">
             Applied {formatTimeAgo(application.applied_at ?? "")}
           </Badge>
           <Badge type="accent">{to_app_status_name(application.status)}</Badge>
-          {(!application.job?.is_active || application.job?.is_deleted) && (
+          {(!job?.is_active || job?.is_deleted) && (
             <Badge type="destructive">Job no longer available.</Badge>
           )}
         </div>
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pt-3 border-t border-gray-100">
-          <Link href={`/search/${application.job?.id}`}>
-            <Button
-              disabled={
-                !application.job?.is_active || application.job?.is_deleted
-              }
-              size="sm"
-            >
+          <Link href={`/search/${job?.id}`}>
+            <Button disabled={!job?.is_active || job?.is_deleted} size="sm">
               View Details
             </Button>
           </Link>

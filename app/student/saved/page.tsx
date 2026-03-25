@@ -8,12 +8,13 @@ import { useJobsData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Loader } from "@/components/ui/loader";
 import { Card } from "@/components/ui/card";
-import { JobHead } from "@/components/shared/jobs";
+import { JobHead, SuperListingBadge } from "@/components/shared/jobs";
 import { Job } from "@/lib/db/db.types";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { Separator } from "@/components/ui/separator";
 import { PageError } from "@/components/ui/error";
 import { useJobActions } from "@/lib/api/student.actions.api";
+import { cn } from "@/lib/utils";
 
 export default function SavedJobsPage() {
   const { isAuthenticated, redirectIfNotLoggedIn } = useAuthContext();
@@ -65,9 +66,9 @@ export default function SavedJobsPage() {
             {jobs.savedJobs.map((savedJob) => (
               <SavedJobCard
                 savedJob={savedJob}
-                handleUnsaveJob={async () =>
-                  await jobActions.toggleSave.mutateAsync(savedJob.id ?? "")
-                }
+                handleUnsaveJob={() => {
+                  void jobActions.toggleSave.mutateAsync(savedJob.id ?? "");
+                }}
                 saving={jobActions.toggleSave.isPending}
               />
             ))}
@@ -87,9 +88,19 @@ const SavedJobCard = ({
   handleUnsaveJob: () => void;
   saving: boolean;
 }) => {
+  const superListingTitle = savedJob.challenge?.title?.trim();
+  const isSuperListing = Boolean(superListingTitle);
+
   return (
-    <Card key={savedJob.id}>
+    <Card
+      key={savedJob.id}
+      className={cn(
+        isSuperListing &&
+          "super-card relative isolate overflow-hidden bg-[radial-gradient(ellipse_at_top_left,rgba(254,240,138,0.5),transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(251,146,60,0.18),transparent_35%),linear-gradient(150deg,rgba(255,251,235,1)_0%,rgba(255,255,255,1)_45%,rgba(254,243,199,0.98)_100%)]",
+      )}
+    >
       <div className="flex flex-col gap-1">
+        {isSuperListing && <SuperListingBadge compact className="mb-2 w-fit" />}
         <JobHead title={savedJob.title} employer={savedJob.employer?.name} />
         <p className="text-gray-500 text-sm leading-relaxed line-clamp-2 mt-2 mb-4">
           {savedJob.description}
