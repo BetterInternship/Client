@@ -299,7 +299,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
 
   return (
     <JobFilterProvider initial={initialFilterValues}>
-      <div className="flex gap-2 items-center px-4 py-3 bg-white/80 border-b h-16">
+      <div className="flex h-16 items-center gap-2 border-b border-transparent bg-transparent px-4 py-3">
         {/* Logo */}
         <div className="flex-shrink-0">
           <HeaderTitle />
@@ -370,7 +370,7 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
 
   return (
     <div
-      className="flex gap-2 justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90] py-4 px-8"
+      className="z-[90] flex items-center justify-between gap-2 border-b border-transparent bg-transparent px-8 py-4"
       style={{ overflow: "visible", position: "relative", zIndex: 100 }}
     >
       <div className="flex items-center gap-6 flex-1">
@@ -493,7 +493,12 @@ export const Header: React.FC = () => {
     "/miro",
     "/fff",
     "/super-listing",
+    "/super-listing/paraluman",
   ];
+  const isSuperListingRoute =
+    pathname === "/super-listing" ||
+    pathname === "/student/super-listing" ||
+    pathname?.startsWith("/super-listing/");
   const showProfileButton = routeExcluded(noProfileRoutes);
   const showFilters = pathname?.startsWith("/search") === true;
 
@@ -560,7 +565,7 @@ export const Header: React.FC = () => {
   };
 
   // Hide header on register/verify pages
-  if (!routeExcluded(noHeaderRoutes)) {
+  if (isSuperListingRoute || !routeExcluded(noHeaderRoutes)) {
     return <></>;
   }
 
