@@ -251,15 +251,25 @@ export function FormFillerRenderer({
               }
               form.setSelectedPreviewId(fieldId);
             }}
-            onBlurValidate={(fieldKey) => {
+            onBlurValidate={(fieldKey, nextValue) => {
               // Before validating, sync form values to params so validators can access them
               const currentValues = formFiller.getFinalValues(autofillValues);
+              const valuesForParams =
+                nextValue === undefined
+                  ? currentValues
+                  : {
+                      ...currentValues,
+                      [fieldKey]:
+                        nextValue === null || nextValue === undefined
+                          ? ""
+                          : String(nextValue),
+                    };
 
               // Use form values directly as params (already in correct format)
-              const mergedParams = { ...form.params, ...currentValues };
+              const mergedParams = { ...form.params, ...valuesForParams };
 
               // Update form renderer state (for future renders)
-              form.updateFieldsWithParams(currentValues);
+              form.updateFieldsWithParams(valuesForParams);
 
               // Recreate the field with merged params using formMetadata
               const fieldsWithMergedParams =
@@ -277,7 +287,7 @@ export function FormFillerRenderer({
               }
 
               // Validate with the updated field that has fresh params
-              formFiller.validateField(fieldKey, updatedField, autofillValues);
+              formFiller.validateField(fieldKey, updatedField, autofillValues, nextValue);
             }}
             fieldRefs={fieldRefs.current}
             selectedFieldId={form.selectedPreviewId}
@@ -305,7 +315,7 @@ const BlocksRenderer = <T extends any[]>({
   onChange: (key: string, value: any) => void;
   errors: Record<string, string>;
   setSelected: (selected: string) => void;
-  onBlurValidate?: (fieldKey: string) => void;
+  onBlurValidate?: (fieldKey: string, nextValue?: unknown) => void;
   fieldRefs: Record<string, HTMLDivElement | null>;
   selectedFieldId?: string;
 }) => {
@@ -348,7 +358,7 @@ const BlocksRenderer = <T extends any[]>({
                   field={actualField}
                   value={values[actualField.field]}
                   onChange={(v) => onChange(actualField.field, v)}
-                  onBlur={() => onBlurValidate?.(actualField.field)}
+                  onBlur={(nextValue) => onBlurValidate?.(actualField.field, nextValue)}
                   error={errors[actualField.field]}
                   allValues={values}
                   isPhantom={isPhantom}

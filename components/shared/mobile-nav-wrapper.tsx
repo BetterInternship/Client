@@ -16,6 +16,7 @@ export default function MobileNavWrapper() {
     pathname === "/student" ||
     pathname.startsWith("/forms/") ||
     pathname === "/miro" ||
+    pathname === "/fff" ||
     pathname === "/register" ||
     pathname === "/register/verify";
 

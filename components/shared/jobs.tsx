@@ -239,7 +239,7 @@ function SuperListingHeader({
   );
 }
 
-function SuperListingBadge({
+export function SuperListingBadge({
   className,
   compact = false,
 }: {

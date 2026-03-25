@@ -1,5 +1,5 @@
 import z from "zod";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useRef, useState } from "react";
 import { PublicUser } from "@/lib/db/db.types";
 
 import {
@@ -19,6 +19,7 @@ export interface IFormFiller {
     fieldKey: string,
     field: ClientField<any> | ClientPhantomField<any>,
     autofillValues?: FormValues,
+    nextValue?: unknown,
   ) => void;
 
   errors: FormErrors;
@@ -51,18 +52,21 @@ export const FormFillerContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [values, _setValues] = useState<Record<string, string>>({});
+  const [, _setValues] = useState<Record<string, string>>({});
   const [errors, _setErrors] = useState<FormErrors>({});
+  const valuesRef = useRef<Record<string, string>>({});
 
   const getFinalValues = (additionalValues?: FormValues) => {
-    return { ...additionalValues, ...values };
+    return { ...additionalValues, ...valuesRef.current };
   };
 
   const setValue = (field: string, value: any) => {
     // Convert all values to strings for consistency
     const stringValue =
       value === null || value === undefined ? "" : String(value);
-    _setValues((prev) => ({ ...prev, [field]: stringValue }));
+    const next = { ...valuesRef.current, [field]: stringValue };
+    valuesRef.current = next;
+    _setValues(next);
     _setErrors((prev) => {
       if (!prev[field]) return prev;
       const next = { ...prev };
@@ -80,35 +84,38 @@ export const FormFillerContextProvider = ({
       },
       {} as Record<string, string>,
     );
-    _setValues((prev) => ({ ...prev, ...stringifiedValues }));
+    const next = { ...valuesRef.current, ...stringifiedValues };
+    valuesRef.current = next;
+    _setValues(next);
   };
 
   const initializeValues = (defaultValues: Record<string, any>) => {
     // Initialize form with default values
     // Only set fields that don't already have user-entered values
-    _setValues((prev) => {
-      const stringifiedValues = Object.entries(defaultValues).reduce(
-        (acc, [key, val]) => {
-          const currentValue = prev[key];
-          // Don't overwrite if user already has a value
-          const hasExistingValue =
-            currentValue !== null &&
-            currentValue !== undefined &&
-            String(currentValue).trim().length > 0;
+    const prev = valuesRef.current;
+    const stringifiedValues = Object.entries(defaultValues).reduce(
+      (acc, [key, val]) => {
+        const currentValue = prev[key];
+        // Don't overwrite if user already has a value
+        const hasExistingValue =
+          currentValue !== null &&
+          currentValue !== undefined &&
+          String(currentValue).trim().length > 0;
 
-          if (!hasExistingValue) {
-            acc[key] = val === null || val === undefined ? "" : String(val);
-          } else {
-            // Keep existing user value
-            acc[key] = currentValue;
-          }
-          return acc;
-        },
-        {} as Record<string, string>,
-      );
+        if (!hasExistingValue) {
+          acc[key] = val === null || val === undefined ? "" : String(val);
+        } else {
+          // Keep existing user value
+          acc[key] = currentValue;
+        }
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
 
-      return { ...prev, ...stringifiedValues };
-    });
+    const next = { ...prev, ...stringifiedValues };
+    valuesRef.current = next;
+    _setValues(next);
   };
   const resetErrors = () => {
     _setErrors({});
@@ -117,16 +124,13 @@ export const FormFillerContextProvider = ({
     fields: (ClientField<[PublicUser]> | ClientPhantomField<[PublicUser]>)[],
     autofillValues?: FormValues,
   ) => {
-    const finalValues = { ...autofillValues, ...values };
     const errors: Record<string, string> = {};
     for (const field of fields) {
       const error = validateFieldHelper(
         field,
-        values,
+        valuesRef.current,
         autofillValues ?? {},
-        finalValues,
       );
-      console.log("err", error, field);
       if (error) errors[field.field] = error;
     }
 
@@ -139,26 +143,33 @@ export const FormFillerContextProvider = ({
     fieldKey: string,
     field: ClientField<any> | ClientPhantomField<any>,
     autofillValues?: FormValues,
+    nextValue?: unknown,
   ) => {
-    _setValues((currentValues) => {
-      const finalValues = { ...autofillValues, ...currentValues };
-      const error = validateFieldHelper(
-        field,
-        currentValues,
-        autofillValues ?? {},
-        finalValues,
-      );
-      if (error) {
-        _setErrors((prev) => ({ ...prev, [fieldKey]: error }));
-      } else {
-        _setErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors[fieldKey];
-          return newErrors;
-        });
-      }
-      return currentValues;
-    });
+    const valuesForValidation =
+      nextValue === undefined
+        ? valuesRef.current
+        : {
+            ...valuesRef.current,
+            [fieldKey]:
+              nextValue === null || nextValue === undefined
+                ? ""
+                : String(nextValue),
+          };
+
+    const error = validateFieldHelper(
+      field,
+      valuesForValidation,
+      autofillValues ?? {},
+    );
+    if (error) {
+      _setErrors((prev) => ({ ...prev, [fieldKey]: error }));
+    } else {
+      _setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldKey];
+        return newErrors;
+      });
+    }
   };
 
   return (
@@ -219,9 +230,8 @@ const validateFieldHelper = <T extends any[]>(
   field: ClientField<T>,
   values: FormValues,
   autofillValues: FormValues,
-  finalValues?: FormValues,
 ) => {
-  const allValues = finalValues || { ...autofillValues, ...values };
+  const allValues = { ...autofillValues, ...values };
   if (field.signing_party_id !== "initiator" || field.source !== "manual")
     return;
 
