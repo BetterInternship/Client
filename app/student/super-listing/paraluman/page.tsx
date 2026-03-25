@@ -3,6 +3,7 @@
 import {
   type ChangeEvent,
   type FormEvent,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -98,8 +99,35 @@ export default function ParalumanPage() {
   const [submitModalOpen, setSubmitModalOpen] = useState(false);
   const [token, setToken] = useState("");
   const [tokenFail, setTokenFail] = useState(false);
+  const [isAtTop, setIsAtTop] = useState(true);
 
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const topSentinelRef = useRef<HTMLDivElement | null>(null);
   const challengeRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const sentinel = topSentinelRef.current;
+    const root = scrollContainerRef.current;
+    if (!sentinel || !root) return;
+
+    setIsAtTop(root.scrollTop <= 1);
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsAtTop(entry.isIntersecting);
+      },
+      {
+        root,
+        threshold: 1,
+      },
+    );
+
+    observer.observe(sentinel);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   const endpoint = useMemo(() => {
     const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
@@ -166,7 +194,7 @@ export default function ParalumanPage() {
   return (
     <main
       className={cn(
-        "relative isolate min-h-screen overflow-x-hidden bg-white text-black",
+        "relative isolate h-full min-h-screen bg-white text-black",
         headingFont.variable,
         monoFont.variable,
       )}
@@ -174,207 +202,220 @@ export default function ParalumanPage() {
       <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_16%_18%,rgba(147,51,234,0.14),transparent_35%),radial-gradient(circle_at_84%_2%,rgba(76,29,149,0.12),transparent_33%),radial-gradient(circle_at_50%_90%,rgba(168,85,247,0.08),transparent_40%)]" />
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.05)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(122deg,rgba(147,51,234,0.08)_0%,transparent_34%,rgba(192,132,252,0.08)_54%,transparent_74%)] opacity-55" />
+      <div
+        ref={scrollContainerRef}
+        className="relative h-full overflow-x-hidden overflow-y-auto"
+      >
+        <div ref={topSentinelRef} aria-hidden className="h-px w-full" />
 
-      <header className="flex items-center justify-between bg-transparent px-6 pb-2 pt-4 sm:px-8 lg:px-10">
-        <div className="flex items-center gap-3 sm:gap-4">
-          <Link
-            href="/"
-            className="transition-opacity duration-200 hover:opacity-70"
-          >
-            <Image
-              src="/BetterInternshipLogo.png"
-              alt="BetterInternship"
-              width={40}
-              height={40}
-              className="h-10 w-10 sm:h-12 sm:w-12"
-            />
-          </Link>
-          <span className="text-xl font-black text-black/30 sm:text-2xl">
-            ×
-          </span>
-          <span className="[font-family:var(--font-paraluman-heading)] text-[clamp(0.88rem,2.4vw,1.4rem)] font-black uppercase tracking-tight text-black">
-            Paraluman News
-          </span>
-        </div>
-      </header>
+        <header
+          className={cn(
+            "sticky top-0 z-[9999] flex items-center justify-between px-6 pb-2 pt-2 transition-all duration-300 sm:px-8 lg:px-10",
+            isAtTop
+              ? "border-b border-transparent bg-transparent shadow-none backdrop-blur-0"
+              : "backdrop-blur-md",
+          )}
+        >
+          <div className="flex items-center gap-3 sm:gap-4">
+            <Link
+              href="/"
+              className="transition-opacity duration-200 hover:opacity-70"
+            >
+              <Image
+                src="/BetterInternshipLogo.png"
+                alt="BetterInternship"
+                width={40}
+                height={40}
+                className="h-10 w-10 sm:h-12 sm:w-12"
+              />
+            </Link>
+            <span className="text-xl font-black text-black/30 sm:text-2xl">
+              ×
+            </span>
+            <span className="[font-family:var(--font-paraluman-heading)] text-[clamp(0.88rem,2.4vw,1.4rem)] font-black uppercase tracking-tight text-black">
+              Paraluman News
+            </span>
+          </div>
+        </header>
 
-      <section className="relative mx-auto flex min-h-[calc(100svh-73px)] w-full max-w-6xl flex-col justify-center px-6 py-12 sm:px-8 lg:px-10">
-        <div className="mx-auto w-full max-w-4xl">
-          <div className="relative text-center">
+        <section className="relative mx-auto flex min-h-[calc(100svh-73px)] w-full max-w-6xl flex-col justify-center px-6 py-12 sm:px-8 lg:px-10">
+          <div className="mx-auto w-full max-w-4xl">
+            <div className="relative text-center">
+              <SuperListingBadge
+                compact
+                className="justify-center [font-family:var(--font-paraluman-mono)] text-[11px] font-semibold uppercase tracking-[0.12em]"
+              />
+
+              <h1 className="mt-8 [font-family:var(--font-paraluman-heading)] text-[clamp(2.5rem,9vw,5.5rem)] font-black uppercase leading-[0.88] tracking-[-0.05em]">
+                <span className="block">Build the</span>
+                <span className="block bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
+                  Future of
+                </span>
+                <span className="block">Journalism</span>
+              </h1>
+
+              <div className="mt-6 inline-flex items-center rounded-lg border-2 border-purple-600 bg-white px-5 py-2">
+                <span className="[font-family:var(--font-paraluman-heading)] text-[clamp(0.9rem,2vw,1.1rem)] font-black uppercase tracking-[0.08em] text-purple-700">
+                  Multilingual Publishing Challenge
+                </span>
+              </div>
+
+              <div className="mt-8 mx-auto max-w-2xl space-y-4 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/65 sm:text-[15px]">
+                <p>
+                  Make{" "}
+                  <span className="font-semibold text-purple-700">
+                    journalism accessible across languages
+                  </span>
+                  . Build a real system that publishes articles in English and
+                  Filipino simultaneously, with human review at every step.
+                </p>
+                <p className="font-semibold text-purple-800">
+                  Build something real. Ship it.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-12 flex justify-center">
+              <div className="group relative inline-block">
+                <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
+                <Button
+                  size="lg"
+                  type="button"
+                  onClick={scrollToChallenge}
+                  className="relative h-16 rounded-none border-2 border-purple-700 bg-gradient-to-r from-purple-600 to-purple-800 px-11 [font-family:var(--font-paraluman-heading)] text-base font-black uppercase tracking-[0.12em] text-white transition-all hover:-translate-y-1 hover:from-purple-700 hover:to-purple-900"
+                >
+                  View Challenge
+                  <ArrowUpRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+          ref={challengeRef}
+          className="relative mx-auto flex min-h-[calc(100svh-73px)] w-full max-w-6xl flex-col justify-center px-6 py-10 sm:px-8 lg:px-10"
+        >
+          <div>
             <SuperListingBadge
               compact
-              className="justify-center [font-family:var(--font-paraluman-mono)] text-[11px] font-semibold uppercase tracking-[0.12em]"
+              className="mb-4 [font-family:var(--font-paraluman-mono)] text-[11px] font-semibold uppercase tracking-[0.12em]"
             />
-
-            <h1 className="mt-8 [font-family:var(--font-paraluman-heading)] text-[clamp(2.5rem,9vw,5.5rem)] font-black uppercase leading-[0.88] tracking-[-0.05em]">
-              <span className="block">Build the</span>
-              <span className="block bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
-                Future of
-              </span>
-              <span className="block">Journalism</span>
-            </h1>
-
-            <div className="mt-6 inline-flex items-center rounded-lg border-2 border-purple-600 bg-white px-5 py-2">
-              <span className="[font-family:var(--font-paraluman-heading)] text-[clamp(0.9rem,2vw,1.1rem)] font-black uppercase tracking-[0.08em] text-purple-700">
-                Multilingual Publishing Challenge
-              </span>
-            </div>
-
-            <div className="mt-8 mx-auto max-w-2xl space-y-4 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/65 sm:text-[15px]">
-              <p>
-                Make{" "}
-                <span className="font-semibold text-purple-700">
-                  journalism accessible across languages
-                </span>
-                . Build a real system that publishes articles in English and
-                Filipino simultaneously, with human review at every step.
-              </p>
-              <p className="font-semibold text-purple-800">
-                Build something real. Ship it.
-              </p>
-            </div>
           </div>
 
-          <div className="mt-12 flex justify-center">
-            <div className="group relative inline-block">
-              <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-              <Button
-                size="lg"
-                type="button"
-                onClick={scrollToChallenge}
-                className="relative h-16 rounded-none border-2 border-purple-700 bg-gradient-to-r from-purple-600 to-purple-800 px-11 [font-family:var(--font-paraluman-heading)] text-base font-black uppercase tracking-[0.12em] text-white transition-all hover:-translate-y-1 hover:from-purple-700 hover:to-purple-900"
-              >
-                View Challenge
-                <ArrowUpRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section
-        ref={challengeRef}
-        className="relative mx-auto flex min-h-[calc(100svh-73px)] w-full max-w-6xl flex-col justify-center px-6 py-10 sm:px-8 lg:px-10"
-      >
-        <div>
-          <SuperListingBadge
-            compact
-            className="mb-4 [font-family:var(--font-paraluman-mono)] text-[11px] font-semibold uppercase tracking-[0.12em]"
-          />
-        </div>
-
-        <div className="relative">
-          <div className="pointer-events-none absolute inset-0 translate-x-[10px] translate-y-[10px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_7px)] opacity-15" />
-          <div className="relative border-2 border-purple-600 bg-white shadow-[0_20px_45px_-30px_rgba(168,85,247,0.8)]">
-            <div className="border-b-2 border-purple-600 bg-gradient-to-r from-purple-700 to-purple-900 px-6 py-6 sm:px-8 sm:py-8">
-              <h2 className="mt-3 [font-family:var(--font-paraluman-heading)] text-3xl font-black uppercase tracking-[-0.04em] text-white sm:text-5xl">
-                What You Build
-              </h2>
-              <p className="mt-3 max-w-3xl [font-family:var(--font-paraluman-mono)] text-sm leading-6 text-purple-100">
-                A system that publishes a news article in English and Filipino
-                at the same time.
-              </p>
-            </div>
-
-            <div className="p-6 sm:p-8">
-              <div className="grid gap-4 md:grid-cols-4">
-                {CHALLENGE_WORKFLOW.map((item) => (
-                  <div key={item.title} className="group relative h-full">
-                    <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                    <div className="relative flex h-full flex-col border-2 border-purple-200 bg-white p-5 transition-all group-hover:-translate-y-1">
-                      <p className="mt-2 [font-family:var(--font-paraluman-heading)] text-lg font-black uppercase tracking-[-0.03em] text-purple-700">
-                        {item.title}
-                      </p>
-                      <p className="mt-2 flex-1 [font-family:var(--font-paraluman-mono)] text-sm leading-6 text-black/65">
-                        {item.body}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-6 space-y-4">
-                <div className="group relative">
-                  <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                  <div className="relative border-2 border-purple-200 bg-white p-5 transition-all group-hover:-translate-y-1">
-                    <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.17em] text-purple-700">
-                      Deliverables
-                    </p>
-                    <ul className="mt-4 space-y-2 [font-family:var(--font-paraluman-mono)] text-sm text-black/80">
-                      {DELIVERABLES.map((item) => (
-                        <li key={item}>- {item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <div className="group relative">
-                  <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                  <div className="relative border-2 border-purple-200 bg-white p-5 transition-all group-hover:-translate-y-1">
-                    <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.17em] text-purple-700">
-                      Prototype Must Allow
-                    </p>
-                    <ul className="mt-4 space-y-2 [font-family:var(--font-paraluman-mono)] text-sm text-black/80">
-                      {REQUIRED_FEATURES.map((item) => (
-                        <li key={item}>- {item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <div className="group relative">
-                  <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                  <div className="relative border-2 border-purple-200 bg-white p-5 transition-all group-hover:-translate-y-1">
-                    <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.17em] text-purple-700">
-                      Evaluation Criteria
-                    </p>
-                    <p className="mt-4 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80">
-                      {EVALUATION_CRITERIA.join(" • ")}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="group relative">
-                  <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                  <div className="relative border-2 border-purple-200 bg-white p-5 transition-all group-hover:-translate-y-1">
-                    <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.17em] text-purple-700">
-                      Constraint
-                    </p>
-                    <p className="mt-4 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80">
-                      Small team. Limited budget. Keep it simple.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-8 rounded-lg border-l-4 border-purple-600 bg-purple-50 p-6">
-                <p className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80">
-                  <span className="font-semibold text-purple-800">
-                    The Challenge:
-                  </span>{" "}
-                  How do you make reliable journalism accessible across
-                  languages—without slowing it down?
+          <div className="relative">
+            <div className="pointer-events-none absolute inset-0 translate-x-[10px] translate-y-[10px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_7px)] opacity-15" />
+            <div className="relative border-2 border-purple-600 bg-white shadow-[0_20px_45px_-30px_rgba(168,85,247,0.8)]">
+              <div className="border-b-2 border-purple-600 bg-gradient-to-r from-purple-700 to-purple-900 px-6 py-6 sm:px-8 sm:py-8">
+                <h2 className="mt-3 [font-family:var(--font-paraluman-heading)] text-3xl font-black uppercase tracking-[-0.04em] text-white sm:text-5xl">
+                  What You Build
+                </h2>
+                <p className="mt-3 max-w-3xl [font-family:var(--font-paraluman-mono)] text-sm leading-6 text-purple-100">
+                  A system that publishes a news article in English and Filipino
+                  at the same time.
                 </p>
               </div>
 
-              <div className="mt-6 flex justify-end">
-                <div className="group relative inline-block">
-                  <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                  <Button
-                    type="button"
-                    size="lg"
-                    onClick={openSubmitModal}
-                    className="relative h-14 rounded-none border-2 border-purple-700 bg-gradient-to-r from-purple-600 to-purple-800 px-9 [font-family:var(--font-paraluman-heading)] text-sm font-black uppercase tracking-[0.12em] text-white transition-all hover:-translate-y-1 hover:from-purple-700 hover:to-purple-900"
-                  >
-                    Submit
-                    <ArrowUpRight className="h-4 w-4" />
-                  </Button>
+              <div className="p-6 sm:p-8">
+                <div className="grid gap-4 md:grid-cols-4">
+                  {CHALLENGE_WORKFLOW.map((item) => (
+                    <div key={item.title} className="group relative h-full">
+                      <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
+                      <div className="relative flex h-full flex-col border-2 border-purple-200 bg-white p-5 transition-all group-hover:-translate-y-1">
+                        <p className="mt-2 [font-family:var(--font-paraluman-heading)] text-lg font-black uppercase tracking-[-0.03em] text-purple-700">
+                          {item.title}
+                        </p>
+                        <p className="mt-2 flex-1 [font-family:var(--font-paraluman-mono)] text-sm leading-6 text-black/65">
+                          {item.body}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-6 space-y-4">
+                  <div className="group relative">
+                    <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
+                    <div className="relative border-2 border-purple-200 bg-white p-5 transition-all group-hover:-translate-y-1">
+                      <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.17em] text-purple-700">
+                        Deliverables
+                      </p>
+                      <ul className="mt-4 space-y-2 [font-family:var(--font-paraluman-mono)] text-sm text-black/80">
+                        {DELIVERABLES.map((item) => (
+                          <li key={item}>- {item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="group relative">
+                    <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
+                    <div className="relative border-2 border-purple-200 bg-white p-5 transition-all group-hover:-translate-y-1">
+                      <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.17em] text-purple-700">
+                        Prototype Must Allow
+                      </p>
+                      <ul className="mt-4 space-y-2 [font-family:var(--font-paraluman-mono)] text-sm text-black/80">
+                        {REQUIRED_FEATURES.map((item) => (
+                          <li key={item}>- {item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="group relative">
+                    <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
+                    <div className="relative border-2 border-purple-200 bg-white p-5 transition-all group-hover:-translate-y-1">
+                      <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.17em] text-purple-700">
+                        Evaluation Criteria
+                      </p>
+                      <p className="mt-4 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80">
+                        {EVALUATION_CRITERIA.join(" • ")}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="group relative">
+                    <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
+                    <div className="relative border-2 border-purple-200 bg-white p-5 transition-all group-hover:-translate-y-1">
+                      <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.17em] text-purple-700">
+                        Constraint
+                      </p>
+                      <p className="mt-4 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80">
+                        Small team. Limited budget. Keep it simple.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-8 rounded-lg border-l-4 border-purple-600 bg-purple-50 p-6">
+                  <p className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80">
+                    <span className="font-semibold text-purple-800">
+                      The Challenge:
+                    </span>{" "}
+                    How do you make reliable journalism accessible across
+                    languages—without slowing it down?
+                  </p>
+                </div>
+
+                <div className="mt-6 flex justify-end">
+                  <div className="group relative inline-block">
+                    <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
+                    <Button
+                      type="button"
+                      size="lg"
+                      onClick={openSubmitModal}
+                      className="relative h-14 rounded-none border-2 border-purple-700 bg-gradient-to-r from-purple-600 to-purple-800 px-9 [font-family:var(--font-paraluman-heading)] text-sm font-black uppercase tracking-[0.12em] text-white transition-all hover:-translate-y-1 hover:from-purple-700 hover:to-purple-900"
+                    >
+                      Submit
+                      <ArrowUpRight className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       <Dialog
         open={submitModalOpen}
