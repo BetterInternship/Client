@@ -175,7 +175,7 @@ export default function ParalumanPage() {
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.05)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(122deg,rgba(147,51,234,0.08)_0%,transparent_34%,rgba(192,132,252,0.08)_54%,transparent_74%)] opacity-55" />
 
-      <header className="sticky top-0 z-[9999] flex items-center justify-between px-6 pb-2 pt-4 sm:px-8">
+      <header className="flex items-center justify-between bg-transparent px-6 pb-2 pt-4 sm:px-8 lg:px-10">
         <div className="flex items-center gap-3 sm:gap-4">
           <Link
             href="/"
