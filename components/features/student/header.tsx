@@ -487,7 +487,13 @@ export const Header: React.FC = () => {
   const [moaOnly, setMoaOnly] = useState(false);
 
   const noProfileRoutes = ["/register", "/register/verify", "/miro", "/fff"];
-  const noHeaderRoutes = ["/register", "/register/verify", "/miro", "/fff"];
+  const noHeaderRoutes = [
+    "/register",
+    "/register/verify",
+    "/miro",
+    "/fff",
+    "/super-listing",
+  ];
   const showProfileButton = routeExcluded(noProfileRoutes);
   const showFilters = pathname?.startsWith("/search") === true;
 
