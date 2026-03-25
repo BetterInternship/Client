@@ -3,11 +3,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Zap, Target } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   motion,
   useScroll,
-  useSpring,
   useTransform,
   useReducedMotion,
 } from "framer-motion";
@@ -111,15 +110,38 @@ function MagneticButton({
 
 export default function SuperListingStoryPage() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [randomPositions, setRandomPositions] = useState<{
+    tl: { top: string; left: string };
+    tr: { top: string; right: string };
+    bl: { bottom: string; left: string };
+    br: { bottom: string; right: string };
+  } | null>(null);
+
+  useEffect(() => {
+    // Generate random positions on mount
+    setRandomPositions({
+      tl: {
+        top: `${15 + Math.random() * 15}%`,
+        left: `${5 + Math.random() * 10}%`,
+      },
+      tr: {
+        top: `${20 + Math.random() * 20}%`,
+        right: `${5 + Math.random() * 10}%`,
+      },
+      bl: {
+        bottom: `${15 + Math.random() * 15}%`,
+        left: `${8 + Math.random() * 12}%`,
+      },
+      br: {
+        bottom: `${20 + Math.random() * 15}%`,
+        right: `${8 + Math.random() * 12}%`,
+      },
+    });
+  }, []);
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
-  });
-
-  const progress = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    mass: 0.1,
   });
 
   // Parallax values
@@ -158,31 +180,27 @@ export default function SuperListingStoryPage() {
       </div>
 
       {/* HEADER */}
-      <header className="sticky top-0 z-[9999] flex items-center justify-between px-6 pb-2 pt-4 sm:px-8">
-        <div className="flex items-center gap-3 sm:gap-4">
-          <Link
-            href="/"
-            className="flex items-center gap-3 transition-opacity duration-200 hover:opacity-70"
-          >
-            <Image
-              src="/BetterInternshipLogo.png"
-              alt="BetterInternship"
-              width={40}
-              height={40}
-              className="h-10 w-10 sm:h-12 sm:w-12"
-            />
-            <span className="text-base font-black tracking-tight text-black sm:text-lg">
-              BetterInternship
-            </span>
-          </Link>
+      <header className="fixed inset-x-0 top-0 z-[9999]">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 sm:px-8">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <Link
+              href="/"
+              className="flex items-center gap-3 transition-opacity duration-200 hover:opacity-70"
+            >
+              <Image
+                src="/BetterInternshipLogo.png"
+                alt="BetterInternship"
+                width={40}
+                height={40}
+                className="h-10 w-10 sm:h-12 sm:w-12"
+              />
+              <span className="text-base font-black tracking-tight text-black sm:text-lg">
+                BetterInternship
+              </span>
+            </Link>
+          </div>
         </div>
       </header>
-
-      {/* Scroll Progress Bar */}
-      <motion.div
-        style={{ scaleX: progress }}
-        className="fixed left-0 right-0 top-0 z-50 h-1.5 origin-left bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
-      />
 
       {/* Hero Section with Parallax */}
       <motion.section
@@ -191,46 +209,95 @@ export default function SuperListingStoryPage() {
           scale: heroScale,
           opacity: heroOpacity,
         }}
-        className="relative min-h-screen flex items-center justify-center overflow-visible pt-[calc(env(safe-area-inset-top)+1rem)] sm:pt-10"
+        className="h-screen flex items-center justify-center overflow-visible"
       >
         {/* Lightning Icons - Top Left */}
         <motion.div
-          className="absolute top-1/4 left-4 sm:left-12 text-amber-400/70 pointer-events-none"
-          animate={{ y: [0, -20, 0], rotate: [0, 10, 0] }}
-          transition={{ duration: 3, repeat: Infinity }}
+          style={randomPositions?.tl}
+          className="absolute text-amber-400/70 pointer-events-none"
+          animate={{ y: [0, -25, 0], rotate: [0, 12, 0], scale: [1, 1.1, 1] }}
+          transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
         >
           <Zap className="w-12 h-12 sm:w-16 sm:h-16 filter drop-shadow-lg" />
         </motion.div>
 
         {/* Lightning Icons - Top Right */}
         <motion.div
-          className="absolute top-1/3 right-4 sm:right-12 text-amber-400/70 pointer-events-none"
-          animate={{ y: [0, 20, 0], rotate: [0, -10, 0] }}
-          transition={{ duration: 3.5, repeat: Infinity, delay: 0.5 }}
+          style={randomPositions?.tr}
+          className="absolute text-amber-400/80 pointer-events-none"
+          animate={{ y: [0, 22, 0], rotate: [0, -15, 0], scale: [1, 0.95, 1] }}
+          transition={{
+            duration: 3.7,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 0.3,
+          }}
         >
           <Zap className="w-10 h-10 sm:w-14 sm:h-14 filter drop-shadow-lg" />
         </motion.div>
 
         {/* Lightning Icons - Bottom Left */}
         <motion.div
-          className="absolute bottom-1/4 left-8 sm:left-20 text-amber-400/60 pointer-events-none"
-          animate={{ y: [0, -15, 0], rotate: [0, 15, 0] }}
-          transition={{ duration: 4, repeat: Infinity, delay: 1 }}
+          style={randomPositions?.bl}
+          className="absolute text-amber-400/60 pointer-events-none"
+          animate={{ y: [0, -18, 0], rotate: [0, 18, 0], scale: [1, 1.15, 1] }}
+          transition={{
+            duration: 3.4,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 0.8,
+          }}
         >
           <Zap className="w-8 h-8 sm:w-12 sm:h-12 filter drop-shadow-lg" />
         </motion.div>
 
         {/* Lightning Icons - Bottom Right */}
         <motion.div
-          className="absolute bottom-1/3 right-8 sm:right-20 text-amber-400/60 pointer-events-none"
-          animate={{ y: [0, 15, 0], rotate: [0, -15, 0] }}
-          transition={{ duration: 4, repeat: Infinity, delay: 1.5 }}
+          style={randomPositions?.br}
+          className="absolute text-amber-400/75 pointer-events-none"
+          animate={{ y: [0, 20, 0], rotate: [0, -12, 0], scale: [1, 1.05, 1] }}
+          transition={{
+            duration: 4.1,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1.2,
+          }}
         >
           <Zap className="w-8 h-8 sm:w-12 sm:h-12 filter drop-shadow-lg" />
         </motion.div>
 
         {/* Animated background gradient */}
         <div className="absolute inset-0 -z-10">
+          {/* Moving orbital circles */}
+          <motion.div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full border border-amber-400/20 pointer-events-none"
+            animate={{ rotate: 360, scale: [1, 1.05, 1] }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          />
+          <motion.div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full border border-amber-300/15 pointer-events-none"
+            animate={{ rotate: -360, scale: [1.05, 1, 1.05] }}
+            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+          />
+
+          {/* Dynamic gradient blobs */}
+          <motion.div
+            className="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-gradient-to-r from-amber-300/20 to-orange-300/10 blur-3xl pointer-events-none"
+            animate={{ x: [0, 30, -20, 0], y: [0, -20, 30, 0] }}
+            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute bottom-1/4 -right-20 w-96 h-96 rounded-full bg-gradient-to-l from-blue-300/15 to-purple-300/10 blur-3xl pointer-events-none"
+            animate={{ x: [0, -30, 20, 0], y: [0, 20, -30, 0] }}
+            transition={{
+              duration: 14,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 0.5,
+            }}
+          />
+
+          {/* Original animated orbs */}
           <motion.div
             className="absolute top-0 right-1/4 w-96 h-96 rounded-full bg-blue-200/20 blur-3xl"
             animate={{ y: [0, 30, 0], x: [0, 20, 0] }}
@@ -241,6 +308,23 @@ export default function SuperListingStoryPage() {
             animate={{ y: [0, -30, 0], x: [0, -20, 0] }}
             transition={{ duration: 10, repeat: Infinity, delay: 1 }}
           />
+
+          {/* Pulsing accent circles */}
+          <motion.div
+            className="absolute top-20 right-1/3 w-64 h-64 rounded-full border-2 border-amber-400/10 pointer-events-none"
+            animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.1, 0.3] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute bottom-20 left-1/3 w-56 h-56 rounded-full border border-orange-400/10 pointer-events-none"
+            animate={{ scale: [1.2, 1, 1.2], opacity: [0.1, 0.3, 0.1] }}
+            transition={{
+              duration: 7,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 0.3,
+            }}
+          />
         </div>
 
         <div className="relative z-10 w-full max-w-6xl mx-auto px-6 sm:px-8">
@@ -248,7 +332,7 @@ export default function SuperListingStoryPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-center"
+            className="text-center -translate-y-16 sm:-translate-y-24 lg:-translate-y-28"
           >
             <motion.p
               initial={{ opacity: 0 }}
@@ -272,15 +356,11 @@ export default function SuperListingStoryPage() {
               )}
             </p>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-              <MagneticButton className="inline-block">
+              <MagneticButton className="inline-block group">
                 <Link href="/student/search">
-                  <Button className="h-14 rounded-[0.33em] border-2 border-black bg-black px-8 text-lg font-black text-white hover:bg-black/80 shadow-2xl transition-all duration-300">
-                    Explore
-                    <SuperListingBadge
-                      compact
-                      className={superListingBadgeSizeClasses.button}
-                    />
-                    <ArrowRight className="ml-3 h-6 w-6" />
+                  <Button className="relative h-14 rounded-2xl border border-amber-400/80 bg-[linear-gradient(135deg,#f59e0b_0%,#f97316_60%,#ea580c_100%)] px-8 text-lg font-bold text-white shadow-xl transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-1 rotate-[-0.8deg] group-hover:rotate-[-0.3deg]">
+                    Explore Super Listings
+                    <Zap className="ml-3 h-5 w-5 drop-shadow-[0_0_4px_rgba(255,255,255,0.5)]" />
                   </Button>
                 </Link>
               </MagneticButton>
