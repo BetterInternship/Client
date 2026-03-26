@@ -592,10 +592,10 @@ export const Header: React.FC = () => {
       {!isMobile && showProfileButton && (
         <div
           className={cn(
-            "overflow-hidden transition-all duration-300 ease-out",
+            "relative z-[200] transition-all duration-300 ease-out",
             desktopHeaderHidden
-              ? "max-h-0 -translate-y-2 opacity-0 pointer-events-none"
-              : "max-h-32 translate-y-0 opacity-100",
+              ? "max-h-0 -translate-y-2 opacity-0 pointer-events-none overflow-hidden"
+              : "max-h-32 translate-y-0 opacity-100 overflow-visible",
           )}
         >
           <DesktopHeader
