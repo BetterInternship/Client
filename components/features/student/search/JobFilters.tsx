@@ -638,7 +638,10 @@ export function JobFilters({
   const apply = () => {
     onApply(state);
     setOpen(false);
-    toast.success("Filters applied", toastPresets.success);
+    toast.success("Filters applied", {
+      ...toastPresets.success,
+      duration: 1000,
+    });
   };
   const clearAll = () => dispatch({ type: "CLEAR" });
 
