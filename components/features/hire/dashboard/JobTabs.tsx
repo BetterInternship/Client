@@ -16,14 +16,10 @@ import { EmployerApplication, InternshipPreferences } from "@/lib/db/db.types";
 import {
   Archive,
   Check,
-  Ellipsis,
-  Inbox,
   List,
   MessageSquarePlus,
   MessageSquareText,
-  Trash,
   Trash2,
-  User,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Job } from "@/lib/db/db.types";
