@@ -46,6 +46,7 @@ interface ApplicationsContentProps {
   setSelectedApplication: (application: EmployerApplication) => void;
   onRequestArchiveApplicant: (application: EmployerApplication) => void;
   onRequestDeleteApplicant: (application: EmployerApplication) => void;
+  onRequestAcceptApplicant: (application: EmployerApplication) => void;
   onRequestStatusChange: (
     applications: EmployerApplication[],
     status: number,
@@ -71,9 +72,8 @@ export const ApplicationsContent = forwardRef<
     setSelectedApplication,
     onRequestDeleteApplicant,
     onRequestArchiveApplicant,
+    onRequestAcceptApplicant,
     onRequestStatusChange,
-    applicantToArchive,
-    applicantToDelete,
   },
   ref,
 ) {
@@ -122,6 +122,14 @@ export const ApplicationsContent = forwardRef<
     }
   };
 
+  const acceptSingleApplicant = async (id: string) => {
+    const application = sortedApplications.find((a) => a.id === id);
+
+    if (!application) return;
+
+    onRequestAcceptApplicant(application);
+  };
+
   if (!app_statuses) return null;
 
   const statuses = app_statuses
@@ -153,11 +161,16 @@ export const ApplicationsContent = forwardRef<
       .filter((status) => status.id !== 7 && status.id !== 5 && status.id !== 0)
       .map((status): ActionItem => {
         const uiProps = statusMap.get(status.id);
+
+        const handleClick = status.id === 4
+          ? () => acceptSingleApplicant(applicationId)
+          : () => updateSingleStatus(applicationId, status.id);
+
         return {
           id: status.id.toString(),
           label: status.name,
           icon: uiProps?.icon,
-          onClick: () => updateSingleStatus(applicationId, status.id),
+          onClick: handleClick,
           destructive: uiProps?.destructive,
           bgColor: uiProps?.bgColor,
           fgColor: uiProps?.fgColor,
@@ -288,7 +301,7 @@ export const ApplicationsContent = forwardRef<
         visibleApplicationsCount={visibleApplications.length}
         statuses={remove_unused_statuses}
         onUnselectAll={unselectAll}
-        onSelectAll={selectAll}
+        onSelectAll={selectAll} 
         onDelete={() => {
           const appToDelete = Array.from(selectedApplications)
             .map((id) => sortedApplications.find((app) => app.id === id))
