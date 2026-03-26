@@ -657,7 +657,7 @@ export function JobFilters({
 
         {open && (
           <div
-            className="absolute right-0 z-[60] mt-2 w-[35vw] max-h-[72vh] bg-white border rounded-md shadow-lg
+            className="absolute right-0 z-[260] mt-2 w-[35vw] max-h-[72vh] bg-white border rounded-md shadow-lg
                      flex flex-col"
           >
             {/* Tabs Header */}
