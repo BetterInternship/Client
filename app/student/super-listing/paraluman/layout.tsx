@@ -6,20 +6,15 @@ export const metadata: Metadata = {
   description:
     "Design a practical multilingual publishing solution for Paraluman News that balances speed, accuracy, editorial integrity, and reader trust.",
   openGraph: {
-    title:
-      "BetterInternship x Paraluman News: Multilingual News Delivery Challenge",
-    description:
-      "Design a practical multilingual publishing solution for Paraluman News that balances speed, accuracy, editorial integrity, and reader trust.",
+    title: "BetterInternship x Paraluman News Super Listing",
+
     url: "/super-listing/paraluman",
     siteName: "BetterInternship",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title:
-      "BetterInternship x Paraluman News: Multilingual News Delivery Challenge",
-    description:
-      "Design a practical multilingual publishing solution for Paraluman News that balances speed, accuracy, editorial integrity, and reader trust.",
+    title: "BetterInternship x Paraluman News Super Listing",
   },
 };
 
