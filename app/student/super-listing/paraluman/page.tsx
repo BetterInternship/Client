@@ -13,7 +13,6 @@ import Image from "next/image";
 import { ArrowUpRight, Loader2 } from "lucide-react";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { SuperListingBadge } from "@/components/shared/jobs";
@@ -34,47 +33,21 @@ const monoFont = JetBrains_Mono({
   variable: "--font-paraluman-mono",
 });
 
-const CHALLENGE_WORKFLOW = [
-  {
-    title: "Input",
-    body: "Submit English article",
-  },
-  {
-    title: "Generate",
-    body: "Create Filipino version",
-  },
-  {
-    title: "Review",
-    body: "Approve before publish",
-  },
-  {
-    title: "Publish",
-    body: "Release both versions",
-  },
-];
+const CEO_PROFILE = {
+  name: "Anna Mae YU Lamentillo",
+  role: "Paraluman CEO",
+  imageSrc:
+    "https://images.gmanews.tv/webpics/2024/10/Untitled_design_(28)_2024_10_03_15_20_56.jpg",
+  profileUrl: "https://www.annamaeyulamentillo.com/",
+};
 
-const REQUIRED_FEATURES = [
-  "Login system",
-  "Submit & view articles",
-  "See Filipino translation",
-  "Approve/reject versions",
-  "View published results",
-];
+const CHALLENGE_PDF_URL =
+  "https://drive.google.com/file/d/1Tdbc4EdhBkY3lOInAvE3YSaKhSQyWPwx/view?usp=sharing";
 
-const DELIVERABLES = [
-  "1-page design note",
-  "Working prototype",
-  "Demo login credentials",
-];
-
-const EVALUATION_CRITERIA = ["Clarity", "Practicality", "Flow", "Tradeoffs"];
-
-type ParalumanSubmissionPayload = {
-  fullName: string;
+type ParalumanSubmissionForm = {
   email: string;
-  portfolioUrl: string;
-  linkedinUrl: string;
-  whyFit: string;
+  submissionLink: string;
+  submissionNotes: string;
 };
 
 type ParalumanSubmissionResponse = {
@@ -82,21 +55,17 @@ type ParalumanSubmissionResponse = {
   message?: string;
 };
 
-const INITIAL_FORM_STATE: ParalumanSubmissionPayload = {
-  fullName: "",
+const INITIAL_FORM_STATE: ParalumanSubmissionForm = {
   email: "",
-  portfolioUrl: "",
-  linkedinUrl: "",
-  whyFit: "",
+  submissionLink: "",
+  submissionNotes: "",
 };
 
 export default function ParalumanPage() {
-  const [form, setForm] =
-    useState<ParalumanSubmissionPayload>(INITIAL_FORM_STATE);
+  const [form, setForm] = useState<ParalumanSubmissionForm>(INITIAL_FORM_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const [isError, setIsError] = useState(false);
-  const [submitModalOpen, setSubmitModalOpen] = useState(false);
   const [token, setToken] = useState("");
   const [tokenFail, setTokenFail] = useState(false);
   const [isAtTop, setIsAtTop] = useState(true);
@@ -136,7 +105,7 @@ export default function ParalumanPage() {
   }, []);
 
   const updateField =
-    (field: keyof ParalumanSubmissionPayload) =>
+    (field: keyof ParalumanSubmissionForm) =>
     (
       event: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
     ) => {
@@ -147,13 +116,30 @@ export default function ParalumanPage() {
     event.preventDefault();
     setResultMessage("");
     setIsError(false);
+
+    if (!token) {
+      setIsError(true);
+      setResultMessage("Please complete the browser verification first.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
+      // Backend currently expects FFF fields; map new Paraluman fields safely.
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, "cf-token": token }),
+        body: JSON.stringify({
+          fullName: "Paraluman Candidate",
+          email: form.email,
+          portfolioUrl: form.submissionLink,
+          linkedinUrl: "",
+          whyFit:
+            form.submissionNotes.trim() ||
+            `Submission link: ${form.submissionLink}`,
+          "cf-token": token,
+        }),
       });
 
       const data = (await response.json()) as ParalumanSubmissionResponse;
@@ -163,9 +149,7 @@ export default function ParalumanPage() {
       }
 
       setForm(INITIAL_FORM_STATE);
-      setResultMessage(
-        "Submission sent to your email with the BetterInternship team in CC.",
-      );
+      setResultMessage("Submission sent. Please check your email.");
     } catch (error) {
       setIsError(true);
       setResultMessage(
@@ -178,18 +162,14 @@ export default function ParalumanPage() {
     }
   };
 
-  const openSubmitModal = () => {
-    setResultMessage("");
-    setIsError(false);
-    setSubmitModalOpen(true);
-  };
-
   const scrollToChallenge = () => {
     challengeRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "start",
     });
   };
+
+  const hasChallengePdf = CHALLENGE_PDF_URL.trim().length > 0;
 
   return (
     <main
@@ -202,6 +182,7 @@ export default function ParalumanPage() {
       <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_16%_18%,rgba(147,51,234,0.14),transparent_35%),radial-gradient(circle_at_84%_2%,rgba(76,29,149,0.12),transparent_33%),radial-gradient(circle_at_50%_90%,rgba(168,85,247,0.08),transparent_40%)]" />
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.05)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(122deg,rgba(147,51,234,0.08)_0%,transparent_34%,rgba(192,132,252,0.08)_54%,transparent_74%)] opacity-55" />
+
       <div
         ref={scrollContainerRef}
         className="relative h-full overflow-x-hidden overflow-y-auto"
@@ -230,7 +211,7 @@ export default function ParalumanPage() {
               />
             </Link>
             <span className="text-xl font-black text-black/30 sm:text-2xl">
-              ×
+              x
             </span>
             <span className="[font-family:var(--font-paraluman-heading)] text-[clamp(0.88rem,2.4vw,1.4rem)] font-black uppercase tracking-tight text-black">
               Paraluman News
@@ -247,35 +228,37 @@ export default function ParalumanPage() {
               />
 
               <h1 className="mt-8 [font-family:var(--font-paraluman-heading)] text-[clamp(2.5rem,9vw,5.5rem)] font-black uppercase leading-[0.88] tracking-[-0.05em]">
-                <span className="block">Build the</span>
                 <span className="block bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
-                  Future of
+                  Paraluman
                 </span>
-                <span className="block">Journalism</span>
+                <span className="block">is challenging you</span>
               </h1>
 
               <div className="mt-6 inline-flex items-center rounded-lg border-2 border-purple-600 bg-white px-5 py-2">
                 <span className="[font-family:var(--font-paraluman-heading)] text-[clamp(0.9rem,2vw,1.1rem)] font-black uppercase tracking-[0.08em] text-purple-700">
-                  Multilingual Publishing Challenge
+                  Web Dev Interns
                 </span>
               </div>
 
               <div className="mt-8 mx-auto max-w-2xl space-y-4 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/65 sm:text-[15px]">
                 <p>
-                  Make{" "}
                   <span className="font-semibold text-purple-700">
-                    journalism accessible across languages
-                  </span>
-                  . Build a real system that publishes articles in English and
-                  Filipino simultaneously, with human review at every step.
+                    Paraluman
+                  </span>{" "}
+                  is a youth-led Philippine news platform making every story
+                  accessible in both English and Filipino.
                 </p>
-                <p className="font-semibold text-purple-800">
-                  Build something real. Ship it.
+                <p>
+                  We are looking for a{" "}
+                  <span className="font-semibold text-purple-700">
+                    web development intern
+                  </span>{" "}
+                  to improve how multilingual stories are created and published.
                 </p>
               </div>
             </div>
 
-            <div className="mt-12 flex justify-center">
+            <div className="mt-12 flex flex-col items-center gap-3">
               <div className="group relative inline-block">
                 <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
                 <Button
@@ -288,6 +271,56 @@ export default function ParalumanPage() {
                   <ArrowUpRight className="h-4 w-4" />
                 </Button>
               </div>
+              <p className="[font-family:var(--font-paraluman-mono)] text-xs  text-black/65">
+                No resume needed
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="relative mx-auto w-full max-w-6xl px-6 py-8 sm:px-8 lg:px-10">
+          <div className="space-y-6">
+            <div className="flex ">
+              <div className="border border-purple-300 bg-white px-4 py-2">
+                <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.2em] text-purple-700">
+                  Work with
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end">
+              <div className="relative h-44 w-44 overflow-hidden rounded-xl border border-purple-200 shadow-[0_14px_28px_-18px_rgba(109,40,217,0.45)] sm:h-52 sm:w-52">
+                <Image
+                  src={CEO_PROFILE.imageSrc}
+                  alt={CEO_PROFILE.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="pb-1 text-left">
+                <Link
+                  href={CEO_PROFILE.profileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 [font-family:var(--font-paraluman-heading)] text-3xl font-black uppercase tracking-tight text-purple-900 underline underline-offset-4 hover:text-purple-700 sm:text-4xl"
+                >
+                  {CEO_PROFILE.name}
+                  <ArrowUpRight className="h-6 w-6" />
+                </Link>
+                <p className="[font-family:var(--font-paraluman-mono)] mt-2 text-xs uppercase tracking-[0.18em] text-black/60">
+                  {CEO_PROFILE.role}
+                </p>
+              </div>
+            </div>
+
+            <div className="ml-auto max-w-4xl border-2 border-purple-300 bg-gradient-to-br from-purple-700 via-purple-800 to-purple-900 p-6 text-white shadow-[0_24px_50px_-28px_rgba(109,40,217,0.9)] sm:p-8">
+              <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.4rem,3.2vw,2.4rem)] font-black leading-tight tracking-[-0.03em] text-white">
+                Even though you are just an intern, you'll be working with the
+                impact makers of this country.
+              </p>
+              <p className="mt-3 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-purple-50/95 sm:text-[15px]">
+                What you build will be used by real readers.
+              </p>
             </div>
           </div>
         </section>
@@ -305,156 +338,49 @@ export default function ParalumanPage() {
 
           <div className="relative">
             <div className="pointer-events-none absolute inset-0 translate-x-[10px] translate-y-[10px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_7px)] opacity-15" />
-            <div className="relative border-2 border-purple-600 bg-white shadow-[0_20px_45px_-30px_rgba(168,85,247,0.8)]">
+            <div className="relative border-2 border-purple-600 bg-gradient-to-b from-purple-50 via-purple-50/70 to-white shadow-[0_20px_45px_-30px_rgba(168,85,247,0.8)]">
               <div className="border-b-2 border-purple-600 bg-gradient-to-r from-purple-700 to-purple-900 px-6 py-6 sm:px-8 sm:py-8">
-                <h2 className="mt-3 [font-family:var(--font-paraluman-heading)] text-3xl font-black uppercase tracking-[-0.04em] text-white sm:text-5xl">
-                  What You Build
+                <h2 className="[font-family:var(--font-paraluman-mono)] text-xs font-semibold uppercase tracking-[0.2em] text-purple-100">
+                  Challenge
                 </h2>
-                <p className="mt-3 max-w-3xl [font-family:var(--font-paraluman-mono)] text-sm leading-6 text-purple-100">
+                <p className="mt-3 max-w-4xl [font-family:var(--font-paraluman-heading)] text-xl font-black uppercase leading-[1.1] tracking-[-0.02em] text-white sm:text-[2.1rem]">
                   A system that publishes a news article in English and Filipino
                   at the same time.
                 </p>
-              </div>
 
-              <div className="p-6 sm:p-8">
-                <div className="grid gap-4 md:grid-cols-4">
-                  {CHALLENGE_WORKFLOW.map((item) => (
-                    <div key={item.title} className="group relative h-full">
-                      <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                      <div className="relative flex h-full flex-col border-2 border-purple-200 bg-white p-5 transition-all group-hover:-translate-y-1">
-                        <p className="mt-2 [font-family:var(--font-paraluman-heading)] text-lg font-black uppercase tracking-[-0.03em] text-purple-700">
-                          {item.title}
-                        </p>
-                        <p className="mt-2 flex-1 [font-family:var(--font-paraluman-mono)] text-sm leading-6 text-black/65">
-                          {item.body}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-6 space-y-4">
-                  <div className="group relative">
-                    <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                    <div className="relative border-2 border-purple-200 bg-white p-5 transition-all group-hover:-translate-y-1">
-                      <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.17em] text-purple-700">
-                        Deliverables
-                      </p>
-                      <ul className="mt-4 space-y-2 [font-family:var(--font-paraluman-mono)] text-sm text-black/80">
-                        {DELIVERABLES.map((item) => (
-                          <li key={item}>- {item}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-
-                  <div className="group relative">
-                    <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                    <div className="relative border-2 border-purple-200 bg-white p-5 transition-all group-hover:-translate-y-1">
-                      <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.17em] text-purple-700">
-                        Prototype Must Allow
-                      </p>
-                      <ul className="mt-4 space-y-2 [font-family:var(--font-paraluman-mono)] text-sm text-black/80">
-                        {REQUIRED_FEATURES.map((item) => (
-                          <li key={item}>- {item}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-
-                  <div className="group relative">
-                    <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                    <div className="relative border-2 border-purple-200 bg-white p-5 transition-all group-hover:-translate-y-1">
-                      <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.17em] text-purple-700">
-                        Evaluation Criteria
-                      </p>
-                      <p className="mt-4 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80">
-                        {EVALUATION_CRITERIA.join(" • ")}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="group relative">
-                    <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                    <div className="relative border-2 border-purple-200 bg-white p-5 transition-all group-hover:-translate-y-1">
-                      <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.17em] text-purple-700">
-                        Constraint
-                      </p>
-                      <p className="mt-4 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80">
-                        Small team. Limited budget. Keep it simple.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-8 rounded-lg border-l-4 border-purple-600 bg-purple-50 p-6">
-                  <p className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80">
-                    <span className="font-semibold text-purple-800">
-                      The Challenge:
-                    </span>{" "}
-                    How do you make reliable journalism accessible across
-                    languages—without slowing it down?
+                <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-md border border-purple-300/40 bg-black/15 px-4 py-3">
+                  <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.14em] text-purple-100">
+                    Full challenge brief
                   </p>
-                </div>
 
-                <div className="mt-6 flex justify-end">
-                  <div className="group relative inline-block">
-                    <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                    <Button
-                      type="button"
-                      size="lg"
-                      onClick={openSubmitModal}
-                      className="relative h-14 rounded-none border-2 border-purple-700 bg-gradient-to-r from-purple-600 to-purple-800 px-9 [font-family:var(--font-paraluman-heading)] text-sm font-black uppercase tracking-[0.12em] text-white transition-all hover:-translate-y-1 hover:from-purple-700 hover:to-purple-900"
+                  {hasChallengePdf ? (
+                    <Link
+                      href={CHALLENGE_PDF_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 border-2 border-white bg-white px-4 py-2 [font-family:var(--font-paraluman-heading)] text-xs font-black uppercase tracking-[0.1em] text-purple-800 shadow-[0_8px_20px_-12px_rgba(0,0,0,0.65)] transition-colors hover:bg-purple-50"
                     >
-                      Submit
+                      View
                       <ArrowUpRight className="h-4 w-4" />
-                    </Button>
-                  </div>
+                    </Link>
+                  ) : (
+                    <span className="inline-flex items-center border border-white/60 bg-white/20 px-3 py-2 [font-family:var(--font-paraluman-mono)] text-[11px] uppercase tracking-[0.12em] text-purple-100/90">
+                      Link coming soon
+                    </span>
+                  )}
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
-      </div>
 
-      <Dialog
-        open={submitModalOpen}
-        onOpenChange={(open) => {
-          setSubmitModalOpen(open);
-          if (!open) {
-            setResultMessage("");
-            setIsError(false);
-          }
-        }}
-      >
-        <DialogContent className="w-[min(980px,calc(100vw-1.5rem))] max-w-none overflow-hidden rounded-none border-purple-200 bg-white p-0 [&>button]:bg-white [&>button]:text-black [&>button]:opacity-100 [&>button]:hover:opacity-70">
-          <div className="relative max-h-[88svh] overflow-auto">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_15%,rgba(147,51,234,0.08),transparent_38%),radial-gradient(circle_at_90%_0%,rgba(76,29,149,0.06),transparent_35%)]" />
-            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.05)_1px,transparent_1px)] bg-[size:34px_34px] opacity-30" />
+              <div className="space-y-6 p-6 sm:p-8">
+                <div className="relative border-2 border-purple-200 bg-white p-5">
+                  <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.17em] text-purple-700">
+                    Submission
+                  </p>
 
-            <div className="relative border-b border-purple-200 px-6 py-6 sm:px-8 sm:py-8">
-              <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.2em] text-purple-700">
-                Candidate Submission
-              </p>
-              <h2 className="mt-3 pr-10 [font-family:var(--font-paraluman-heading)] text-3xl font-black uppercase tracking-[-0.04em] text-black sm:text-5xl">
-                Ship Your Proposal
-              </h2>
-            </div>
-
-            {token ? (
-              <div className="relative p-6 sm:p-8">
-                <form
-                  className="grid gap-4"
-                  onSubmit={(e) => void handleSubmit(e)}
-                >
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <Input
-                      required
-                      value={form.fullName}
-                      onChange={updateField("fullName")}
-                      placeholder="Full name"
-                      className="h-12 rounded-none border-purple-200 bg-white [font-family:var(--font-paraluman-mono)] text-black placeholder:text-black/35 focus:border-purple-600"
-                    />
+                  <form
+                    className="mt-4 grid gap-4"
+                    onSubmit={(e) => void handleSubmit(e)}
+                  >
                     <Input
                       required
                       type="email"
@@ -463,92 +389,92 @@ export default function ParalumanPage() {
                       placeholder="Email address"
                       className="h-12 rounded-none border-purple-200 bg-white [font-family:var(--font-paraluman-mono)] text-black placeholder:text-black/35 focus:border-purple-600"
                     />
-                  </div>
 
-                  <div className="grid gap-4 md:grid-cols-2">
                     <Input
-                      value={form.portfolioUrl}
-                      onChange={updateField("portfolioUrl")}
-                      placeholder="Portfolio or project URL (optional)"
+                      required
+                      value={form.submissionLink}
+                      onChange={updateField("submissionLink")}
+                      placeholder="Submission link (GitHub, Loom, or demo URL)"
                       className="h-12 rounded-none border-purple-200 bg-white [font-family:var(--font-paraluman-mono)] text-black placeholder:text-black/35 focus:border-purple-600"
                     />
-                    <Input
-                      value={form.linkedinUrl}
-                      onChange={updateField("linkedinUrl")}
-                      placeholder="LinkedIn URL (optional)"
-                      className="h-12 rounded-none border-purple-200 bg-white [font-family:var(--font-paraluman-mono)] text-black placeholder:text-black/35 focus:border-purple-600"
+
+                    <Textarea
+                      value={form.submissionNotes}
+                      onChange={updateField("submissionNotes")}
+                      placeholder="Submission notes (optional)"
+                      className="min-h-28 rounded-none border-purple-200 bg-white [font-family:var(--font-paraluman-mono)] text-sm text-black placeholder:text-black/35 focus-visible:ring-1 focus-visible:ring-purple-600 focus-visible:ring-offset-0"
                     />
-                  </div>
 
-                  <Textarea
-                    required
-                    value={form.whyFit}
-                    onChange={updateField("whyFit")}
-                    placeholder="Tell us about your proposal and why you're the right person to build it."
-                    className="min-h-36 rounded-none border-purple-200 bg-white [font-family:var(--font-paraluman-mono)] text-sm text-black placeholder:text-black/35 focus-visible:ring-1 focus-visible:ring-purple-600 focus-visible:ring-offset-0"
-                  />
-
-                  <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
-                    <p className="[font-family:var(--font-paraluman-mono)] text-xs leading-5 text-black/65">
-                      We will send the confirmation to your email.
-                    </p>
-
-                    <Button
-                      type="submit"
-                      size="lg"
-                      disabled={isSubmitting}
-                      className="h-12 rounded-none border-2 border-purple-700 bg-gradient-to-r from-purple-600 to-purple-800 px-7 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.09em] text-white transition-colors hover:from-purple-700 hover:to-purple-900"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Sending
-                        </>
-                      ) : (
-                        "Submit"
-                      )}
-                    </Button>
-                  </div>
-                </form>
-
-                {resultMessage && (
-                  <p
-                    className={cn(
-                      "mt-5 border px-4 py-3 [font-family:var(--font-paraluman-mono)] text-sm",
-                      isError
-                        ? "border-red-300 bg-red-50 text-red-700"
-                        : "border-emerald-300 bg-emerald-50 text-emerald-700",
+                    {!token ? (
+                      <div className="relative my-1 flex w-full flex-col items-center">
+                        {!tokenFail ? (
+                          <Loader>Validating browser...</Loader>
+                        ) : (
+                          <Badge type="destructive" className="m-4">
+                            Unable to validate captcha.
+                          </Badge>
+                        )}
+                        <Turnstile
+                          siteKey={
+                            process.env.NEXT_PUBLIC_SERVER_API_KEY_TURNSTILE!
+                          }
+                          onSuccess={(t) => {
+                            setToken(t);
+                            setTokenFail(false);
+                          }}
+                          onError={() => {
+                            setToken("");
+                            setTokenFail(true);
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <p className="[font-family:var(--font-paraluman-mono)] text-xs text-emerald-700">
+                        Browser verification complete.
+                      </p>
                     )}
-                  >
-                    {resultMessage}
-                  </p>
-                )}
+
+                    <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
+                      <p className="[font-family:var(--font-paraluman-mono)] text-xs leading-5 text-black/65">
+                        We will send a confirmation to your email.
+                      </p>
+
+                      <Button
+                        type="submit"
+                        size="lg"
+                        disabled={isSubmitting}
+                        className="h-12 rounded-none border-2 border-purple-700 bg-gradient-to-r from-purple-600 to-purple-800 px-7 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.09em] text-white transition-colors hover:from-purple-700 hover:to-purple-900"
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Sending
+                          </>
+                        ) : (
+                          "Submit"
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+
+                  {resultMessage && (
+                    <p
+                      className={cn(
+                        "mt-5 border px-4 py-3 [font-family:var(--font-paraluman-mono)] text-sm",
+                        isError
+                          ? "border-red-300 bg-red-50 text-red-700"
+                          : "border-emerald-300 bg-emerald-50 text-emerald-700",
+                      )}
+                    >
+                      {resultMessage}
+                    </p>
+                  )}
+                </div>
               </div>
-            ) : (
-              <div className="relative flex w-full flex-col items-center my-2">
-                {!tokenFail ? (
-                  <Loader>Validating browser...</Loader>
-                ) : (
-                  <Badge type="destructive" className="m-4">
-                    Something went wrong.
-                  </Badge>
-                )}
-                <Turnstile
-                  siteKey={process.env.NEXT_PUBLIC_SERVER_API_KEY_TURNSTILE!}
-                  onSuccess={(t) => {
-                    setToken(t);
-                    setTokenFail(false);
-                  }}
-                  onError={() => {
-                    setToken("");
-                    setTokenFail(true);
-                  }}
-                />
-              </div>
-            )}
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </section>
+      </div>
     </main>
   );
 }
