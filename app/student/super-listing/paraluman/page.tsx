@@ -260,8 +260,9 @@ export default function ParalumanPage() {
               </h1>
 
               <div className="mt-6 inline-flex items-center rounded-lg border-2 border-purple-600 bg-white px-5 py-2">
-                <span className="[font-family:var(--font-paraluman-heading)] text-[clamp(0.9rem,2vw,1.1rem)] font-black uppercase tracking-[0.08em] text-purple-700">
-                  Web Dev Interns
+                <span className="[font-family:var(--font-paraluman-heading)] text-[clamp(0.9rem,2vw,1.1rem)]  uppercase tracking-[0.08em] text-purple-700">
+                  Looking for: {""}
+                  <span className="font-black">Web Dev Interns</span>
                 </span>
               </div>
 
