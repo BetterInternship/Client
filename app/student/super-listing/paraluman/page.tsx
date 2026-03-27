@@ -304,49 +304,60 @@ export default function ParalumanPage() {
           </div>
         </section>
 
-        <section className="relative mx-auto w-full max-w-6xl px-6 py-8 sm:px-8 lg:px-10">
-          <div className="space-y-6">
-            <div className="flex ">
-              <div className="border border-purple-300 bg-white px-4 py-2">
-                <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.2em] text-purple-700">
-                  Work with
+        <section className="relative mx-auto w-full max-w-6xl px-6 py-12 sm:px-8 lg:px-10">
+          <div className="space-y-16">
+            <div className="space-y-3">
+              <div className="flex">
+                <div className="border border-purple-300 bg-white px-4 py-2">
+                  <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.2em] text-purple-700 font-semibold">
+                    The opportunity
+                  </p>
+                </div>
+              </div>
+              <div className="max-w-3xl border-2 border-purple-300 bg-gradient-to-br from-purple-700 via-purple-800 to-purple-900 p-6 text-white shadow-[0_24px_50px_-28px_rgba(109,40,217,0.9)] sm:p-8">
+                <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.3rem,2.8vw,2.1rem)] font-black leading-tight tracking-[-0.03em] text-white">
+                  Even though you are just an intern, you'll be working with the
+                  impact makers of this country.
+                </p>
+                <p className="mt-3 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-purple-50/95 sm:text-[15px]">
+                  What you build will be used by real readers.
                 </p>
               </div>
             </div>
 
-            <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end">
-              <div className="relative h-44 w-44 overflow-hidden rounded-xl border border-purple-200 shadow-[0_14px_28px_-18px_rgba(109,40,217,0.45)] sm:h-52 sm:w-52">
-                <Image
-                  src={CEO_PROFILE.imageSrc}
-                  alt={CEO_PROFILE.name}
-                  fill
-                  className="object-cover"
-                />
+            <div className="ml-auto w-fit space-y-6">
+              <div className="flex justify-end">
+                <div className="border border-purple-300 bg-white px-4 py-2">
+                  <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.2em] text-purple-700 font-semibold">
+                    Work with
+                  </p>
+                </div>
               </div>
-              <div className="pb-1 text-left">
-                <Link
-                  href={CEO_PROFILE.profileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 [font-family:var(--font-paraluman-heading)] text-3xl font-black uppercase tracking-tight text-purple-900 underline underline-offset-4 hover:text-purple-700 sm:text-4xl"
-                >
-                  {CEO_PROFILE.name}
-                  <ArrowUpRight className="h-6 w-6" />
-                </Link>
-                <p className="[font-family:var(--font-paraluman-mono)] mt-2 text-xs uppercase tracking-[0.18em] text-black/60">
-                  {CEO_PROFILE.role}
-                </p>
-              </div>
-            </div>
 
-            <div className="ml-auto max-w-4xl border-2 border-purple-300 bg-gradient-to-br from-purple-700 via-purple-800 to-purple-900 p-6 text-white shadow-[0_24px_50px_-28px_rgba(109,40,217,0.9)] sm:p-8">
-              <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.4rem,3.2vw,2.4rem)] font-black leading-tight tracking-[-0.03em] text-white">
-                Even though you are just an intern, you'll be working with the
-                impact makers of this country.
-              </p>
-              <p className="mt-3 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-purple-50/95 sm:text-[15px]">
-                What you build will be used by real readers.
-              </p>
+              <div className="flex flex-col items-end gap-4 text-right">
+                <div className="relative h-52 w-52 overflow-hidden rounded-xl border border-purple-200 shadow-[0_14px_28px_-18px_rgba(109,40,217,0.45)] sm:h-80 sm:w-80">
+                  <Image
+                    src={CEO_PROFILE.imageSrc}
+                    alt={CEO_PROFILE.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="text-right">
+                  <Link
+                    href={CEO_PROFILE.profileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 [font-family:var(--font-paraluman-heading)] text-2xl font-black uppercase tracking-tight text-purple-900 underline underline-offset-4 hover:text-purple-700 sm:text-3xl"
+                  >
+                    {CEO_PROFILE.name}
+                    <ArrowUpRight className="h-5 w-5" />
+                  </Link>
+                  <p className="[font-family:var(--font-paraluman-mono)] mt-2 text-xs uppercase tracking-[0.18em] text-black/60">
+                    {CEO_PROFILE.role}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
