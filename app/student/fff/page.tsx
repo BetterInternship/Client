@@ -71,11 +71,9 @@ const SUBMISSION_REQUIREMENTS = [
 ];
 
 type FffSubmissionPayload = {
-  fullName: string;
   email: string;
-  portfolioUrl: string;
-  linkedinUrl: string;
-  whyFit: string;
+  submissionLink: string;
+  submissionNotes: string;
 };
 
 type FffSubmissionResponse = {
@@ -84,11 +82,9 @@ type FffSubmissionResponse = {
 };
 
 const INITIAL_FORM_STATE: FffSubmissionPayload = {
-  fullName: "",
   email: "",
-  portfolioUrl: "",
-  linkedinUrl: "",
-  whyFit: "",
+  submissionLink: "",
+  submissionNotes: "",
 };
 
 export default function FFFPage() {
@@ -131,8 +127,8 @@ export default function FFFPage() {
 
   const endpoint = useMemo(() => {
     const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
-    if (!base) return "/api/super-listings/fff-submission";
-    return `${base}/super-listings/fff-submission`;
+    if (!base) return "/api/super-listings/submission/fff";
+    return `${base}/super-listings/submission/fff`;
   }, []);
 
   const updateField =
@@ -443,44 +439,27 @@ export default function FFFPage() {
                   className="grid gap-4"
                   onSubmit={(e) => void handleSubmit(e)}
                 >
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <Input
-                      required
-                      value={form.fullName}
-                      onChange={updateField("fullName")}
-                      placeholder="Full name"
-                      className="h-12 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-black placeholder:text-black/35 focus:border-black"
-                    />
-                    <Input
-                      required
-                      type="email"
-                      value={form.email}
-                      onChange={updateField("email")}
-                      placeholder="Email address"
-                      className="h-12 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-black placeholder:text-black/35 focus:border-black"
-                    />
-                  </div>
+                  <Input
+                    required
+                    type="email"
+                    value={form.email}
+                    onChange={updateField("email")}
+                    placeholder="Email address"
+                    className="h-12 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-black placeholder:text-black/35 focus:border-black"
+                  />
 
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <Input
-                      value={form.portfolioUrl}
-                      onChange={updateField("portfolioUrl")}
-                      placeholder="Portfolio or project URL (optional)"
-                      className="h-12 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-black placeholder:text-black/35 focus:border-black"
-                    />
-                    <Input
-                      value={form.linkedinUrl}
-                      onChange={updateField("linkedinUrl")}
-                      placeholder="LinkedIn URL (optional)"
-                      className="h-12 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-black placeholder:text-black/35 focus:border-black"
-                    />
-                  </div>
+                  <Input
+                    required
+                    value={form.submissionLink}
+                    onChange={updateField("submissionLink")}
+                    placeholder="Submission link (GitHub, Loom, or demo URL)"
+                    className="h-12 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-black placeholder:text-black/35 focus:border-black"
+                  />
 
                   <Textarea
-                    required
-                    value={form.whyFit}
-                    onChange={updateField("whyFit")}
-                    placeholder="Why are you a strong fit for this internship?"
+                    value={form.submissionNotes}
+                    onChange={updateField("submissionNotes")}
+                    placeholder="Submission notes (optional)"
                     className="min-h-36 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-sm text-black placeholder:text-black/35 focus-visible:ring-1 focus-visible:ring-black focus-visible:ring-offset-0"
                   />
 

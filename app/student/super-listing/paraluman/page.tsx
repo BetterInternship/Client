@@ -103,8 +103,8 @@ export default function ParalumanPage() {
 
   const endpoint = useMemo(() => {
     const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
-    if (!base) return "/api/super-listings/fff-submission";
-    return `${base}/super-listings/fff-submission`;
+    if (!base) return "/api/super-listings/submission/paraluman";
+    return `${base}/super-listings/submission/paraluman`;
   }, []);
 
   const updateField =
@@ -129,18 +129,11 @@ export default function ParalumanPage() {
     setIsSubmitting(true);
 
     try {
-      // Backend currently expects FFF fields; map new Paraluman fields safely.
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          fullName: "Paraluman Candidate",
-          email: form.email,
-          portfolioUrl: form.submissionLink,
-          linkedinUrl: "",
-          whyFit:
-            form.submissionNotes.trim() ||
-            `Submission link: ${form.submissionLink}`,
+          ...form,
           "cf-token": isDevelopment ? "dev-bypass" : token,
         }),
       });
@@ -152,7 +145,9 @@ export default function ParalumanPage() {
       }
 
       setForm(INITIAL_FORM_STATE);
-      setResultMessage("Submission sent. Please check your email.");
+      setResultMessage(
+        "Submission sent to your email with the BetterInternship team in CC.",
+      );
     } catch (error) {
       setIsError(true);
       setResultMessage(
