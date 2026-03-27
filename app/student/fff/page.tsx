@@ -13,7 +13,6 @@ import Image from "next/image";
 import { ArrowUpRight, Loader2 } from "lucide-react";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { SuperListingBadge } from "@/components/shared/jobs";
@@ -49,26 +48,8 @@ const RESPONSIBILITIES = [
   },
 ];
 
-const CHALLENGE_ITEMS = [
-  {
-    title: "Scout Signal Early",
-    body: "Find AI-native builders before they become obvious. Prioritize quality of insight over quantity.",
-  },
-  {
-    title: "Build Community Gravity",
-    body: "Design and run lightweight initiatives that attract serious founders and keep them engaged.",
-  },
-  {
-    title: "Scale The Accelerator",
-    body: "Identify one bottleneck in the accelerator workflow and ship an improvement with measurable impact.",
-  },
-];
-
-const SUBMISSION_REQUIREMENTS = [
-  "Your scouting framework or thesis (short write-up or deck).",
-  "A sample list of high-signal builders you would prioritize.",
-  "A concrete idea you would implement to make the accelerator better.",
-];
+const CHALLENGE_PDF_URL =
+  "https://drive.google.com/file/d/1dRzxouQEAr4BzugNCJ-4hKE9t8K3jL4O/view?usp=sharing";
 
 type FffSubmissionPayload = {
   email: string;
@@ -88,11 +69,12 @@ const INITIAL_FORM_STATE: FffSubmissionPayload = {
 };
 
 export default function FFFPage() {
+  const isDevelopment = process.env.NODE_ENV === "development";
+
   const [form, setForm] = useState<FffSubmissionPayload>(INITIAL_FORM_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const [isError, setIsError] = useState(false);
-  const [submitModalOpen, setSubmitModalOpen] = useState(false);
   const [token, setToken] = useState("");
   const [tokenFail, setTokenFail] = useState(false);
   const [isAtTop, setIsAtTop] = useState(true);
@@ -143,13 +125,23 @@ export default function FFFPage() {
     event.preventDefault();
     setResultMessage("");
     setIsError(false);
+
+    if (!isDevelopment && !token) {
+      setIsError(true);
+      setResultMessage("Please complete the browser verification first.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, "cf-token": token }),
+        body: JSON.stringify({
+          ...form,
+          "cf-token": isDevelopment ? "dev-bypass" : token,
+        }),
       });
 
       const data = (await response.json()) as FffSubmissionResponse;
@@ -159,9 +151,7 @@ export default function FFFPage() {
       }
 
       setForm(INITIAL_FORM_STATE);
-      setResultMessage(
-        "Submission sent to your email with the BetterInternship team in CC.",
-      );
+      setResultMessage("Submission sent to your email.");
     } catch (error) {
       setIsError(true);
       setResultMessage(
@@ -174,18 +164,14 @@ export default function FFFPage() {
     }
   };
 
-  const openSubmitModal = () => {
-    setResultMessage("");
-    setIsError(false);
-    setSubmitModalOpen(true);
-  };
-
   const scrollToChallenge = () => {
     challengeRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "start",
     });
   };
+
+  const hasChallengePdf = CHALLENGE_PDF_URL.trim().length > 0;
 
   return (
     <main
@@ -253,7 +239,7 @@ export default function FFFPage() {
                 <span className="block">Scale.</span>
               </h1>
               <div className="mt-5 inline-flex items-center border border-black bg-white px-3 py-1.5">
-                <span className="[font-family:var(--font-fff-heading)] text-[clamp(0.95rem,2.2vw,1.2rem)] font-black uppercase tracking-[0.08em] text-black">
+                <span className="[font-family:var(--font-fff-heading)] text-[clamp(0.95rem,2.2vw,1.2rem)] uppercase tracking-[0.08em] text-black">
                   Startup Accelerator Intern
                 </span>
               </div>
@@ -353,177 +339,145 @@ export default function FFFPage() {
             <div className="pointer-events-none absolute inset-0 translate-x-[10px] translate-y-[10px] bg-[repeating-linear-gradient(135deg,#000_0_2px,transparent_2px_7px)] opacity-15" />
             <div className="relative border-2 border-black bg-white shadow-[0_20px_45px_-30px_rgba(0,0,0,0.8)]">
               <div className="border-b-2 border-black bg-black px-6 py-6 sm:px-8 sm:py-8">
-                <h2 className="mt-3 [font-family:var(--font-fff-heading)] text-3xl font-black uppercase tracking-[-0.04em] text-white sm:text-5xl">
-                  What You Need To Ship
+                <h2 className="[font-family:var(--font-fff-mono)] text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
+                  Challenge
                 </h2>
+                <p className="mt-3 max-w-4xl [font-family:var(--font-fff-heading)] text-xl font-black uppercase leading-[1.1] tracking-[-0.02em] text-white sm:text-[2.1rem]">
+                  Find us the builders.
+                </p>
+
+                {hasChallengePdf ? (
+                  <div className="group relative mt-5 w-full">
+                    <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#000_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
+                    <Link
+                      href={CHALLENGE_PDF_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative z-10 flex w-full items-center justify-between rounded-none border-2 border-white bg-white px-5 py-3 [font-family:var(--font-fff-heading)] text-sm font-black uppercase tracking-[0.1em] text-black shadow-[0_10px_24px_-14px_rgba(0,0,0,0.65)] transition-all hover:-translate-y-1 hover:bg-white"
+                    >
+                      <span>View challenge details</span>
+                      <ArrowUpRight className="h-4 w-4" />
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="mt-5 flex w-full items-center justify-between rounded-none border border-white/60 bg-white/20 px-5 py-3 [font-family:var(--font-fff-mono)] text-[11px] uppercase tracking-[0.12em] text-white/90">
+                    <span>View full challenge brief</span>
+                    <span>Link coming soon</span>
+                  </div>
+                )}
               </div>
 
-              <div className="p-6 sm:p-8">
-                <div className="grid gap-4 md:grid-cols-3">
-                  {CHALLENGE_ITEMS.map((item) => (
-                    <div key={item.title} className="group relative h-full">
-                      <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#000_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                      <div className="relative flex h-full flex-col border border-black/25 bg-white p-5 transition-all group-hover:-translate-y-1">
-                        <p className="mt-2 [font-family:var(--font-fff-heading)] text-xl font-black uppercase tracking-[-0.03em]">
-                          {item.title}
-                        </p>
-                        <p className="mt-2 flex-1 [font-family:var(--font-fff-mono)] text-sm leading-6 text-black/65">
-                          {item.body}
-                        </p>
+              <div className="space-y-6 p-6 sm:p-8">
+                <div className="relative border border-black/20 bg-white p-5">
+                  <p className="[font-family:var(--font-fff-mono)] text-xs uppercase tracking-[0.17em] text-black/65">
+                    Submission
+                  </p>
+
+                  <form
+                    className="mt-4 grid gap-4"
+                    onSubmit={(e) => void handleSubmit(e)}
+                  >
+                    <Input
+                      required
+                      type="email"
+                      value={form.email}
+                      onChange={updateField("email")}
+                      placeholder="Email address"
+                      className="h-12 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-black placeholder:text-black/35 focus:border-black"
+                    />
+
+                    <Input
+                      required
+                      value={form.submissionLink}
+                      onChange={updateField("submissionLink")}
+                      placeholder="Submission link (GitHub, Loom, or demo URL)"
+                      className="h-12 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-black placeholder:text-black/35 focus:border-black"
+                    />
+
+                    <Textarea
+                      value={form.submissionNotes}
+                      onChange={updateField("submissionNotes")}
+                      placeholder="Submission notes (optional)"
+                      className="min-h-28 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-sm text-black placeholder:text-black/35 focus-visible:ring-1 focus-visible:ring-black focus-visible:ring-offset-0"
+                    />
+
+                    {isDevelopment ? (
+                      <p className="[font-family:var(--font-fff-mono)] text-xs text-black/70">
+                        Captcha is disabled in development mode.
+                      </p>
+                    ) : !token ? (
+                      <div className="relative my-1 flex w-full flex-col items-center">
+                        {!tokenFail ? (
+                          <Loader>Validating browser...</Loader>
+                        ) : (
+                          <Badge type="destructive" className="m-4">
+                            Unable to validate captcha.
+                          </Badge>
+                        )}
+                        <Turnstile
+                          siteKey={
+                            process.env.NEXT_PUBLIC_SERVER_API_KEY_TURNSTILE!
+                          }
+                          onSuccess={(t) => {
+                            setToken(t);
+                            setTokenFail(false);
+                          }}
+                          onError={() => {
+                            setToken("");
+                            setTokenFail(true);
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <p className="[font-family:var(--font-fff-mono)] text-xs text-emerald-700">
+                        Browser verification complete.
+                      </p>
+                    )}
+
+                    <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
+                      <p className="[font-family:var(--font-fff-mono)] text-xs leading-5 text-black/65">
+                        We will send a confirmation to your email.
+                      </p>
+
+                      <div className="group relative inline-block">
+                        <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#000_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
+                        <Button
+                          type="submit"
+                          size="lg"
+                          disabled={isSubmitting}
+                          className="relative h-12 rounded-none border border-black bg-black px-7 [font-family:var(--font-fff-heading)] text-sm font-bold uppercase tracking-[0.09em] text-white transition-all hover:-translate-y-1 hover:bg-black/90 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:bg-black"
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Sending
+                            </>
+                          ) : (
+                            "Submit"
+                          )}
+                        </Button>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </form>
 
-                <div className="group relative mt-6">
-                  <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#000_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                  <div className="relative border border-black/20 bg-white p-5 transition-all group-hover:-translate-y-1">
-                    <p className="[font-family:var(--font-fff-mono)] text-xs uppercase tracking-[0.17em] text-black/65">
-                      Submission Requirements
-                    </p>
-                    <ul className="mt-4 space-y-2 [font-family:var(--font-fff-mono)] text-sm text-black/80">
-                      {SUBMISSION_REQUIREMENTS.map((item) => (
-                        <li key={item}>- {item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <div className="mt-6 flex justify-end">
-                  <div className="group relative inline-block">
-                    <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#000_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                    <Button
-                      type="button"
-                      size="lg"
-                      onClick={openSubmitModal}
-                      className="relative h-14 rounded-none border border-black bg-black px-9 [font-family:var(--font-fff-heading)] text-sm font-black uppercase tracking-[0.12em] text-white transition-all hover:-translate-y-1 hover:bg-black/90"
+                  {resultMessage && (
+                    <p
+                      className={cn(
+                        "mt-5 border px-4 py-3 [font-family:var(--font-fff-mono)] text-sm",
+                        isError
+                          ? "border-red-300 bg-red-50 text-red-700"
+                          : "border-emerald-300 bg-emerald-50 text-emerald-700",
+                      )}
                     >
-                      Submit
-                      <ArrowUpRight className="h-4 w-4" />
-                    </Button>
-                  </div>
+                      {resultMessage}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </section>
       </div>
-
-      <Dialog
-        open={submitModalOpen}
-        onOpenChange={(open) => {
-          setSubmitModalOpen(open);
-          if (!open) {
-            setResultMessage("");
-            setIsError(false);
-          }
-        }}
-      >
-        <DialogContent className="w-[min(980px,calc(100vw-1.5rem))] max-w-none overflow-hidden rounded-none border-black/20 bg-white p-0 [&>button]:bg-white [&>button]:text-black [&>button]:opacity-100 [&>button]:hover:opacity-70">
-          <div className="relative max-h-[88svh] overflow-auto">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_15%,rgba(0,0,0,0.08),transparent_38%),radial-gradient(circle_at_90%_0%,rgba(0,0,0,0.06),transparent_35%)]" />
-            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.05)_1px,transparent_1px)] bg-[size:34px_34px] opacity-30" />
-
-            <div className="relative border-b border-black/20 px-6 py-6 sm:px-8 sm:py-8">
-              <p className="[font-family:var(--font-fff-mono)] text-xs uppercase tracking-[0.2em] text-black/70">
-                Candidate Submission
-              </p>
-              <h2 className="mt-3 pr-10 [font-family:var(--font-fff-heading)] text-3xl font-black uppercase tracking-[-0.04em] text-black sm:text-5xl">
-                Throw Your Hat In
-              </h2>
-            </div>
-
-            {token ? (
-              <div className="relative p-6 sm:p-8">
-                <form
-                  className="grid gap-4"
-                  onSubmit={(e) => void handleSubmit(e)}
-                >
-                  <Input
-                    required
-                    type="email"
-                    value={form.email}
-                    onChange={updateField("email")}
-                    placeholder="Email address"
-                    className="h-12 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-black placeholder:text-black/35 focus:border-black"
-                  />
-
-                  <Input
-                    required
-                    value={form.submissionLink}
-                    onChange={updateField("submissionLink")}
-                    placeholder="Submission link (GitHub, Loom, or demo URL)"
-                    className="h-12 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-black placeholder:text-black/35 focus:border-black"
-                  />
-
-                  <Textarea
-                    value={form.submissionNotes}
-                    onChange={updateField("submissionNotes")}
-                    placeholder="Submission notes (optional)"
-                    className="min-h-36 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-sm text-black placeholder:text-black/35 focus-visible:ring-1 focus-visible:ring-black focus-visible:ring-offset-0"
-                  />
-
-                  <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
-                    <p className="[font-family:var(--font-fff-mono)] text-xs leading-5 text-black/65">
-                      We will send the confirmation to your email.
-                    </p>
-
-                    <Button
-                      type="submit"
-                      size="lg"
-                      disabled={isSubmitting}
-                      className="h-12 rounded-none border border-black bg-black px-7 [font-family:var(--font-fff-heading)] text-sm font-bold uppercase tracking-[0.09em] text-white transition-colors hover:bg-black/90"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Sending
-                        </>
-                      ) : (
-                        "Submit"
-                      )}
-                    </Button>
-                  </div>
-                </form>
-
-                {resultMessage && (
-                  <p
-                    className={cn(
-                      "mt-5 border px-4 py-3 [font-family:var(--font-fff-mono)] text-sm",
-                      isError
-                        ? "border-red-300 bg-red-50 text-red-700"
-                        : "border-emerald-300 bg-emerald-50 text-emerald-700",
-                    )}
-                  >
-                    {resultMessage}
-                  </p>
-                )}
-              </div>
-            ) : (
-              <div className="relative flex w-full flex-col items-center my-2">
-                {!tokenFail ? (
-                  <Loader>Validating browser...</Loader>
-                ) : (
-                  <Badge type="destructive" className="m-4">
-                    Something went wrong.
-                  </Badge>
-                )}
-                <Turnstile
-                  siteKey={process.env.NEXT_PUBLIC_SERVER_API_KEY_TURNSTILE!}
-                  onSuccess={(t) => {
-                    setToken(t);
-                    setTokenFail(false);
-                  }}
-                  onError={() => {
-                    setToken("");
-                    setTokenFail(true);
-                  }}
-                />
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </main>
   );
 }
