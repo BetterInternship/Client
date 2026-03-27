@@ -10,7 +10,7 @@ export const metadata: Metadata = {
       "BetterInternship x Paraluman News: Multilingual News Delivery Challenge",
     description:
       "Design a practical multilingual publishing solution for Paraluman News that balances speed, accuracy, editorial integrity, and reader trust.",
-    url: "/student/super-listing/paraluman",
+    url: "/super-listing/paraluman",
     siteName: "BetterInternship",
     type: "website",
   },
