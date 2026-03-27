@@ -317,7 +317,7 @@ export default function FFFPage() {
                 onClick={scrollToChallenge}
                 className="relative h-16 rounded-none border border-black bg-black px-11 [font-family:var(--font-fff-heading)] text-base font-black uppercase tracking-[0.12em] text-white transition-all hover:-translate-y-1 hover:bg-black/90"
               >
-                Join Challenge
+                View Challenge
                 <ArrowUpRight className="h-4 w-4" />
               </Button>
             </div>
