@@ -212,10 +212,7 @@ export default function AnteriorePage() {
 
         <section className="relative mx-auto flex min-h-[calc(100svh-73px)] w-full max-w-6xl flex-col justify-center px-6 py-12 sm:px-8 lg:px-10">
           <div className="mx-auto w-full max-w-4xl text-left">
-            <SuperListingBadge
-              compact
-              className="[font-family:var(--font-anteriore-mono)] text-[11px] font-semibold uppercase tracking-[0.12em]"
-            />
+            <SuperListingBadge variant="gold" />
 
             <h1 className="mt-8 [font-family:var(--font-anteriore-heading)] text-[clamp(2.5rem,9vw,5.5rem)] font-black uppercase leading-[0.88] tracking-[-0.05em]">
               <span className="block text-[#274b7d]">Anteriore is</span>
@@ -318,10 +315,7 @@ export default function AnteriorePage() {
           className="relative mx-auto flex min-h-[calc(100svh-73px)] w-full max-w-6xl flex-col justify-center px-6 py-10 sm:px-8 lg:px-10"
         >
           <div>
-            <SuperListingBadge
-              compact
-              className="mb-4 [font-family:var(--font-anteriore-mono)] text-[11px] font-semibold uppercase tracking-[0.12em]"
-            />
+            <SuperListingBadge className="mb-4" variant="gold" />
           </div>
 
           <div className="relative">

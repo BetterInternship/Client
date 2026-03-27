@@ -229,10 +229,7 @@ export default function FFFPage() {
         <section className="relative mx-auto flex min-h-[calc(100svh-73px)] w-full max-w-6xl flex-col justify-center px-6 py-12 sm:px-8 lg:px-10">
           <div className="mx-auto grid w-full max-w-5xl items-center gap-10 lg:grid-cols-[1.15fr_0.85fr]">
             <div className="relative text-left">
-              <SuperListingBadge
-                compact
-                className="[font-family:var(--font-fff-mono)] text-[11px] font-semibold uppercase tracking-[0.12em]"
-              />
+              <SuperListingBadge variant="gold" />
               <h1 className="mt-6 [font-family:var(--font-fff-heading)] text-[clamp(2.9rem,9vw,6.2rem)] font-black uppercase leading-[0.86] tracking-[-0.05em]">
                 <span className="block">Scout.</span>
                 <span className="block text-black/80">Network.</span>
@@ -329,10 +326,7 @@ export default function FFFPage() {
           className="relative mx-auto flex min-h-[calc(100svh-73px)] w-full max-w-6xl flex-col justify-center px-6 py-10 sm:px-8 lg:px-10"
         >
           <div>
-            <SuperListingBadge
-              compact
-              className="mb-4 [font-family:var(--font-fff-mono)] text-[11px] font-semibold uppercase tracking-[0.12em]"
-            />
+            <SuperListingBadge variant="gold" className="mb-4" />
           </div>
 
           <div className="relative">
