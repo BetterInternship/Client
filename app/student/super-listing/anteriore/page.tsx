@@ -182,7 +182,7 @@ export default function AnteriorePage() {
             "sticky top-0 z-[9999] flex items-center justify-between px-6 pb-2 pt-2 transition-all duration-300 sm:px-8 lg:px-10",
             isAtTop
               ? "border-b border-transparent bg-transparent shadow-none backdrop-blur-0"
-              : "backdrop-blur-md",
+              : "backdrop-blur-md bg-white/50 shadow-sm",
           )}
         >
           <div className="flex items-center gap-3 sm:gap-4">

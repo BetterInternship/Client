@@ -36,7 +36,8 @@ const monoFont = JetBrains_Mono({
 
 const CEO_PROFILE = {
   name: "Anna Mae YU Lamentillo",
-  role: "Paraluman CEO",
+  role: "Paraluman CEO, Former Undersecretary of DICT, \n Former Chairperson of Build, Build, Build program",
+
   imageSrc:
     "https://images.gmanews.tv/webpics/2024/10/Untitled_design_(28)_2024_10_03_15_20_56.jpg",
   profileUrl: "https://www.annamaeyulamentillo.com/",
@@ -190,7 +191,7 @@ export default function ParalumanPage() {
             "sticky top-0 z-[9999] flex items-center justify-between px-6 pb-2 pt-2 transition-all duration-300 sm:px-8 lg:px-10",
             isAtTop
               ? "border-b border-transparent bg-transparent shadow-none backdrop-blur-0"
-              : "backdrop-blur-md",
+              : "backdrop-blur-md bg-white/50 shadow-sm",
           )}
         >
           <div className="flex items-center gap-3 sm:gap-4">
@@ -364,7 +365,7 @@ export default function ParalumanPage() {
                     {CEO_PROFILE.name}
                     <ArrowUpRight className="h-5 w-5" />
                   </Link>
-                  <p className="[font-family:var(--font-paraluman-mono)] mt-2 text-xs uppercase tracking-[0.18em] text-black/60">
+                  <p className="mt-2 text-[clamp(0.7rem,1.2vw,0.8rem)]  text-black/60 leading-relaxed sm:max-w-sm whitespace-pre-line">
                     {CEO_PROFILE.role}
                   </p>
                 </div>
