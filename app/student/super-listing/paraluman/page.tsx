@@ -145,9 +145,7 @@ export default function ParalumanPage() {
       }
 
       setForm(INITIAL_FORM_STATE);
-      setResultMessage(
-        "Submission sent to your email with the BetterInternship team in CC.",
-      );
+      setResultMessage("Submission sent to your email.");
     } catch (error) {
       setIsError(true);
       setResultMessage(
