@@ -34,7 +34,8 @@ const monoFont = JetBrains_Mono({
   variable: "--font-anteriore-mono",
 });
 
-const CHALLENGE_PDF_URL = "";
+const CHALLENGE_PDF_URL =
+  "https://drive.google.com/file/d/1A7k32JC_jdpHV6vQpEtcFNH9UdwSZtVG/view?usp=sharing";
 
 type AnterioreSubmissionForm = {
   email: string;
@@ -136,9 +137,7 @@ export default function AnteriorePage() {
       }
 
       setForm(INITIAL_FORM_STATE);
-      setResultMessage(
-        "Submission sent to your email with the BetterInternship team in CC.",
-      );
+      setResultMessage("Submission sent to your email.");
     } catch (error) {
       setIsError(true);
       setResultMessage(
@@ -151,7 +150,7 @@ export default function AnteriorePage() {
     }
   };
 
-  const scrollToChallenge = () => {
+  const scrollToSubmission = () => {
     challengeRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "start",
@@ -236,7 +235,7 @@ export default function AnteriorePage() {
             <div className="mt-12 grid gap-12 lg:grid-cols-[2fr_1.2fr]">
               <div></div>
 
-              <div className="w-full max-w-sm">
+              <div className="w-full max-w-sm bg-white">
                 <div className="relative border-2 border-[#274b7d] bg-gradient-to-br from-[#274b7d]/8 to-[#1b3458]/5 p-6 shadow-[0_12px_35px_-25px_rgba(39,75,125,0.75)]">
                   <div className="absolute -top-4 -left-3 text-5xl font-black leading-none text-[#274b7d]/20">
                     "
@@ -258,21 +257,41 @@ export default function AnteriorePage() {
             </div>
 
             <div className="mt-8 flex justify-end">
-              <div className="flex flex-col items-end gap-3">
-                <div className="group relative inline-block">
-                  <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#274b7d_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                  <Button
-                    size="lg"
-                    type="button"
-                    onClick={scrollToChallenge}
-                    className="relative h-16 rounded-none border-2 border-[#274b7d] bg-gradient-to-r from-[#274b7d] to-[#1b3458] px-11 [font-family:var(--font-anteriore-heading)] text-base font-black uppercase tracking-[0.12em] text-white transition-all hover:-translate-y-1 hover:from-[#203e68] hover:to-[#162c49]"
-                  >
-                    View Challenge
-                    <ArrowUpRight className="h-4 w-4" />
-                  </Button>
+              <div className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:items-end">
+                <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-end">
+                  {hasChallengePdf ? (
+                    <div className="group relative isolate block w-full sm:w-auto">
+                      <div className="pointer-events-none absolute inset-0 z-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#274b7d_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
+                      <Link
+                        href={CHALLENGE_PDF_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="relative z-10 flex h-16 w-full items-center justify-center gap-2 rounded-none border-2 border-[#274b7d] bg-white px-11 [font-family:var(--font-anteriore-heading)] text-base font-black uppercase tracking-[0.12em] text-[#1b3458] transition-all hover:-translate-y-1 hover:bg-[#edf3fa] sm:inline-flex sm:w-auto"
+                      >
+                        View Challenge
+                        <ArrowUpRight className="h-4 w-4" />
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="relative flex h-16 w-full items-center justify-center gap-2 rounded-none border-2 border-[#274b7d]/40 bg-white px-11 [font-family:var(--font-anteriore-heading)] text-base font-black uppercase tracking-[0.12em] text-[#274b7d]/50 sm:inline-flex sm:w-auto">
+                      View Challenge
+                    </div>
+                  )}
+
+                  <div className="group relative block w-full sm:w-auto">
+                    <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#274b7d_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
+                    <Button
+                      size="lg"
+                      type="button"
+                      onClick={scrollToSubmission}
+                      className="relative flex h-16 w-full rounded-none border-2 border-[#274b7d] bg-gradient-to-r from-[#274b7d] to-[#1b3458] px-11 [font-family:var(--font-anteriore-heading)] text-base font-black uppercase tracking-[0.12em] text-white transition-all hover:-translate-y-1 hover:from-[#203e68] hover:to-[#162c49] sm:inline-flex sm:w-auto"
+                    >
+                      Submit
+                    </Button>
+                  </div>
                 </div>
                 <p className="[font-family:var(--font-anteriore-mono)] text-xs text-black/65">
-                  No resume needed
+                  No resume needed. Get a response in 24 hours
                 </p>
               </div>
             </div>
@@ -320,16 +339,13 @@ export default function AnteriorePage() {
 
           <div className="relative">
             <div className="relative border-2 border-[#274b7d] bg-gradient-to-b from-[#274b7d]/8 via-[#274b7d]/5 to-white shadow-[0_20px_45px_-30px_rgba(39,75,125,0.8)]">
-              <div className="border-b-2 border-[#274b7d] bg-gradient-to-r from-[#203e68] to-[#162c49] px-6 py-6 sm:px-8 sm:py-8">
+              <div className="border-b-2 border-[#274b7d] bg-gradient-to-r from-[#203e68] to-[#162c49] p-3 sm:px-8 sm:py-8">
                 <h2 className="[font-family:var(--font-anteriore-mono)] text-xs font-semibold uppercase tracking-[0.2em] text-[#dbe7f5]">
                   Challenge
                 </h2>
-                <p className="mt-3 max-w-4xl [font-family:var(--font-anteriore-heading)] text-xl font-black uppercase leading-[1.1] tracking-[-0.02em] text-white sm:text-[2.1rem]">
-                  Challenge details will be in the PDF.
-                </p>
 
                 {hasChallengePdf ? (
-                  <div className="group relative mt-5 w-full">
+                  <div className="group relative mt-2 w-full">
                     <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#274b7d_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
                     <Link
                       href={CHALLENGE_PDF_URL}
@@ -337,7 +353,7 @@ export default function AnteriorePage() {
                       rel="noopener noreferrer"
                       className="relative flex w-full items-center justify-between border-2 border-white bg-white px-5 py-3 [font-family:var(--font-anteriore-heading)] text-sm font-black uppercase tracking-[0.1em] text-[#1f3e67] shadow-[0_10px_24px_-14px_rgba(0,0,0,0.65)] transition-all hover:-translate-y-1 hover:bg-[#274b7d]/8"
                     >
-                      <span>View challenge details</span>
+                      <span>View challenge </span>
                       <ArrowUpRight className="h-4 w-4" />
                     </Link>
                   </div>
@@ -349,8 +365,8 @@ export default function AnteriorePage() {
                 )}
               </div>
 
-              <div className="space-y-6 p-6 sm:p-8">
-                <div className="relative border-2 border-[#274b7d]/20 bg-white p-5">
+              <div className="space-y-6 p-0 sm:p-8">
+                <div className="relative sm:border-2 border-[#274b7d]/20 bg-white p-3 sm:p-5">
                   <p className="[font-family:var(--font-anteriore-mono)] text-xs uppercase tracking-[0.17em] text-[#274b7d]">
                     Submission
                   </p>
@@ -425,7 +441,7 @@ export default function AnteriorePage() {
                         type="submit"
                         size="lg"
                         disabled={isSubmitting}
-                        className="h-12 rounded-none border-2 border-[#274b7d] bg-gradient-to-r from-[#274b7d] to-[#1b3458] px-7 [font-family:var(--font-anteriore-heading)] text-sm font-bold uppercase tracking-[0.09em] text-white transition-colors hover:from-[#203e68] hover:to-[#162c49]"
+                        className="h-12 rounded-none border-2 border-[#274b7d] bg-gradient-to-r from-[#274b7d] to-[#1b3458] px-7 [font-family:var(--font-anteriore-heading)] text-sm font-bold uppercase tracking-[0.09em] text-white transition-colors hover:from-[#203e68] hover:to-[#162c49] w-full sm:w-auto"
                       >
                         {isSubmitting ? (
                           <>
