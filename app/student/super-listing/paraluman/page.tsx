@@ -12,6 +12,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowUpRight, Loader2 } from "lucide-react";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import paralumanLogo from "./logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -62,6 +63,8 @@ const INITIAL_FORM_STATE: ParalumanSubmissionForm = {
 };
 
 export default function ParalumanPage() {
+  const isDevelopment = process.env.NODE_ENV === "development";
+
   const [form, setForm] = useState<ParalumanSubmissionForm>(INITIAL_FORM_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
@@ -117,7 +120,7 @@ export default function ParalumanPage() {
     setResultMessage("");
     setIsError(false);
 
-    if (!token) {
+    if (!isDevelopment && !token) {
       setIsError(true);
       setResultMessage("Please complete the browser verification first.");
       return;
@@ -138,7 +141,7 @@ export default function ParalumanPage() {
           whyFit:
             form.submissionNotes.trim() ||
             `Submission link: ${form.submissionLink}`,
-          "cf-token": token,
+          "cf-token": isDevelopment ? "dev-bypass" : token,
         }),
       });
 
@@ -213,9 +216,19 @@ export default function ParalumanPage() {
             <span className="text-xl font-black text-black/30 sm:text-2xl">
               x
             </span>
-            <span className="[font-family:var(--font-paraluman-heading)] text-[clamp(0.88rem,2.4vw,1.4rem)] font-black uppercase tracking-tight text-black">
-              Paraluman News
-            </span>
+            <Link
+              href="https://www.paraluman.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center transition-opacity duration-200 hover:opacity-80 mt-1 sm:mt-2"
+            >
+              <Image
+                src={paralumanLogo}
+                alt="Paraluman"
+                className="h-auto w-[clamp(8.5rem,12vw,12rem)]"
+                priority
+              />
+            </Link>
           </div>
         </header>
 
@@ -228,8 +241,20 @@ export default function ParalumanPage() {
               />
 
               <h1 className="mt-8 [font-family:var(--font-paraluman-heading)] text-[clamp(2.5rem,9vw,5.5rem)] font-black uppercase leading-[0.88] tracking-[-0.05em]">
-                <span className="block bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
-                  Paraluman
+                <span className="block">
+                  <Link
+                    href="https://www.paraluman.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group inline-block transition-transform duration-200 "
+                  >
+                    <Image
+                      src={paralumanLogo}
+                      alt="Paraluman"
+                      className="mx-auto h-auto w-[clamp(19rem,44vw,30rem)] transition-[filter] duration-200 group-hover:brightness-75"
+                      priority
+                    />
+                  </Link>
                 </span>
                 <span className="block">is challenging you</span>
               </h1>
@@ -253,7 +278,8 @@ export default function ParalumanPage() {
                   <span className="font-semibold text-purple-700">
                     web development intern
                   </span>{" "}
-                  to improve how multilingual stories are created and published.
+                  to build and improve how articles are created, processed, and
+                  published on the platform.
                 </p>
               </div>
             </div>
@@ -337,7 +363,6 @@ export default function ParalumanPage() {
           </div>
 
           <div className="relative">
-            <div className="pointer-events-none absolute inset-0 translate-x-[10px] translate-y-[10px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_7px)] opacity-15" />
             <div className="relative border-2 border-purple-600 bg-gradient-to-b from-purple-50 via-purple-50/70 to-white shadow-[0_20px_45px_-30px_rgba(168,85,247,0.8)]">
               <div className="border-b-2 border-purple-600 bg-gradient-to-r from-purple-700 to-purple-900 px-6 py-6 sm:px-8 sm:py-8">
                 <h2 className="[font-family:var(--font-paraluman-mono)] text-xs font-semibold uppercase tracking-[0.2em] text-purple-100">
@@ -348,27 +373,25 @@ export default function ParalumanPage() {
                   at the same time.
                 </p>
 
-                <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-md border border-purple-300/40 bg-black/15 px-4 py-3">
-                  <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.14em] text-purple-100">
-                    Full challenge brief
-                  </p>
-
-                  {hasChallengePdf ? (
+                {hasChallengePdf ? (
+                  <div className="group relative mt-5 w-full">
+                    <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
                     <Link
                       href={CHALLENGE_PDF_URL}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 border-2 border-white bg-white px-4 py-2 [font-family:var(--font-paraluman-heading)] text-xs font-black uppercase tracking-[0.1em] text-purple-800 shadow-[0_8px_20px_-12px_rgba(0,0,0,0.65)] transition-colors hover:bg-purple-50"
+                      className="relative flex w-full items-center justify-between border-2 border-white bg-white px-5 py-3 [font-family:var(--font-paraluman-heading)] text-sm font-black uppercase tracking-[0.1em] text-purple-800 shadow-[0_10px_24px_-14px_rgba(0,0,0,0.65)] transition-all hover:-translate-y-1 hover:bg-purple-50"
                     >
-                      View
+                      <span>View challenge details</span>
                       <ArrowUpRight className="h-4 w-4" />
                     </Link>
-                  ) : (
-                    <span className="inline-flex items-center border border-white/60 bg-white/20 px-3 py-2 [font-family:var(--font-paraluman-mono)] text-[11px] uppercase tracking-[0.12em] text-purple-100/90">
-                      Link coming soon
-                    </span>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <div className="mt-5 flex w-full items-center justify-between border border-white/60 bg-white/20 px-5 py-3 [font-family:var(--font-paraluman-mono)] text-[11px] uppercase tracking-[0.12em] text-purple-100/90">
+                    <span>View full challenge brief</span>
+                    <span>Link coming soon</span>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-6 p-6 sm:p-8">
@@ -405,7 +428,11 @@ export default function ParalumanPage() {
                       className="min-h-28 rounded-none border-purple-200 bg-white [font-family:var(--font-paraluman-mono)] text-sm text-black placeholder:text-black/35 focus-visible:ring-1 focus-visible:ring-purple-600 focus-visible:ring-offset-0"
                     />
 
-                    {!token ? (
+                    {isDevelopment ? (
+                      <p className="[font-family:var(--font-paraluman-mono)] text-xs text-purple-700">
+                        Captcha is disabled in development mode.
+                      </p>
+                    ) : !token ? (
                       <div className="relative my-1 flex w-full flex-col items-center">
                         {!tokenFail ? (
                           <Loader>Validating browser...</Loader>
