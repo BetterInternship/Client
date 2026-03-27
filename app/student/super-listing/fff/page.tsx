@@ -164,7 +164,7 @@ export default function FFFPage() {
     }
   };
 
-  const scrollToChallenge = () => {
+  const scrollToSubmission = () => {
     challengeRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "start",
@@ -306,17 +306,42 @@ export default function FFFPage() {
           </div>
 
           <div className="mt-12 flex justify-end">
-            <div className="group relative inline-block">
-              <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#000_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-              <Button
-                size="lg"
-                type="button"
-                onClick={scrollToChallenge}
-                className="relative h-16 rounded-none border border-black bg-black px-11 [font-family:var(--font-fff-heading)] text-base font-black uppercase tracking-[0.12em] text-white transition-all hover:-translate-y-1 hover:bg-black/90"
-              >
-                View Challenge
-                <ArrowUpRight className="h-4 w-4" />
-              </Button>
+            <div className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:items-end">
+              <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-end">
+                {hasChallengePdf ? (
+                  <div className="group relative isolate block w-full sm:w-auto">
+                    <div className="pointer-events-none absolute inset-0 z-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#000_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
+                    <Link
+                      href={CHALLENGE_PDF_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative z-10 flex h-16 w-full items-center justify-center gap-2 rounded-none border border-black bg-white px-11 [font-family:var(--font-fff-heading)] text-base font-black uppercase tracking-[0.12em] text-black transition-all hover:-translate-y-1 hover:bg-neutral-100 sm:inline-flex sm:w-auto"
+                    >
+                      View Challenge
+                      <ArrowUpRight className="h-4 w-4" />
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="relative flex h-16 w-full items-center justify-center gap-2 rounded-none border border-black/30 bg-white px-11 [font-family:var(--font-fff-heading)] text-base font-black uppercase tracking-[0.12em] text-black/40 sm:inline-flex sm:w-auto">
+                    View Challenge
+                  </div>
+                )}
+
+                <div className="group relative block w-full sm:w-auto">
+                  <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#000_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
+                  <Button
+                    size="lg"
+                    type="button"
+                    onClick={scrollToSubmission}
+                    className="relative flex h-16 w-full rounded-none border border-black bg-black px-11 [font-family:var(--font-fff-heading)] text-base font-black uppercase tracking-[0.12em] text-white transition-all hover:-translate-y-1 hover:bg-black/90 sm:inline-flex sm:w-auto"
+                  >
+                    Submit
+                  </Button>
+                </div>
+              </div>
+              <p className="[font-family:var(--font-fff-mono)] text-xs text-black/65">
+                No resume needed. Get a response in 24 hours
+              </p>
             </div>
           </div>
         </section>
@@ -332,16 +357,13 @@ export default function FFFPage() {
           <div className="relative">
             <div className="pointer-events-none absolute inset-0 translate-x-[10px] translate-y-[10px] bg-[repeating-linear-gradient(135deg,#000_0_2px,transparent_2px_7px)] opacity-15" />
             <div className="relative border-2 border-black bg-white shadow-[0_20px_45px_-30px_rgba(0,0,0,0.8)]">
-              <div className="border-b-2 border-black bg-black px-6 py-6 sm:px-8 sm:py-8">
+              <div className="border-b-2 border-black bg-black p-3 sm:px-8 sm:py-8">
                 <h2 className="[font-family:var(--font-fff-mono)] text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
                   Challenge
                 </h2>
-                <p className="mt-3 max-w-4xl [font-family:var(--font-fff-heading)] text-xl font-black uppercase leading-[1.1] tracking-[-0.02em] text-white sm:text-[2.1rem]">
-                  Find us the builders.
-                </p>
 
                 {hasChallengePdf ? (
-                  <div className="group relative mt-5 w-full">
+                  <div className="group relative mt-2 w-full">
                     <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#000_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
                     <Link
                       href={CHALLENGE_PDF_URL}
@@ -349,7 +371,7 @@ export default function FFFPage() {
                       rel="noopener noreferrer"
                       className="relative z-10 flex w-full items-center justify-between rounded-none border-2 border-white bg-white px-5 py-3 [font-family:var(--font-fff-heading)] text-sm font-black uppercase tracking-[0.1em] text-black shadow-[0_10px_24px_-14px_rgba(0,0,0,0.65)] transition-all hover:-translate-y-1 hover:bg-white"
                     >
-                      <span>View challenge details</span>
+                      <span>View challenge</span>
                       <ArrowUpRight className="h-4 w-4" />
                     </Link>
                   </div>
@@ -361,8 +383,8 @@ export default function FFFPage() {
                 )}
               </div>
 
-              <div className="space-y-6 p-6 sm:p-8">
-                <div className="relative border border-black/20 bg-white p-5">
+              <div className="space-y-6 p-0 sm:p-8">
+                <div className="relative sm:border border-black/20 bg-white p-3 sm:p-5">
                   <p className="[font-family:var(--font-fff-mono)] text-xs uppercase tracking-[0.17em] text-black/65">
                     Submission
                   </p>
@@ -428,18 +450,18 @@ export default function FFFPage() {
                       </p>
                     )}
 
-                    <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
+                    <div className="mt-1 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                       <p className="[font-family:var(--font-fff-mono)] text-xs leading-5 text-black/65">
                         We will send a confirmation to your email.
                       </p>
 
-                      <div className="group relative inline-block">
+                      <div className="group relative isolate block w-full sm:w-auto">
                         <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#000_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
                         <Button
                           type="submit"
                           size="lg"
                           disabled={isSubmitting}
-                          className="relative h-12 rounded-none border border-black bg-black px-7 [font-family:var(--font-fff-heading)] text-sm font-bold uppercase tracking-[0.09em] text-white transition-all hover:-translate-y-1 hover:bg-black/90 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:bg-black"
+                          className="relative flex h-12 w-full rounded-none border border-black bg-black px-7 [font-family:var(--font-fff-heading)] text-sm font-bold uppercase tracking-[0.09em] text-white transition-all hover:-translate-y-1 hover:bg-black/90 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:bg-black sm:inline-flex sm:w-auto"
                         >
                           {isSubmitting ? (
                             <>

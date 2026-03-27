@@ -158,7 +158,7 @@ export default function ParalumanPage() {
     }
   };
 
-  const scrollToChallenge = () => {
+  const scrollToSubmission = () => {
     challengeRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "start",
@@ -275,21 +275,41 @@ export default function ParalumanPage() {
               </div>
             </div>
 
-            <div className="mt-12 flex flex-col items-center gap-3">
-              <div className="group relative inline-block">
-                <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                <Button
-                  size="lg"
-                  type="button"
-                  onClick={scrollToChallenge}
-                  className="relative h-16 rounded-none border-2 border-purple-700 bg-gradient-to-r from-purple-600 to-purple-800 px-11 [font-family:var(--font-paraluman-heading)] text-base font-black uppercase tracking-[0.12em] text-white transition-all hover:-translate-y-1 hover:from-purple-700 hover:to-purple-900"
-                >
-                  View Challenge
-                  <ArrowUpRight className="h-4 w-4" />
-                </Button>
+            <div className="mt-12 flex w-full flex-col items-stretch gap-3 sm:items-center">
+              <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+                {hasChallengePdf ? (
+                  <div className="group relative isolate block w-full sm:w-auto">
+                    <div className="pointer-events-none absolute inset-0 z-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
+                    <Link
+                      href={CHALLENGE_PDF_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative z-10 flex h-16 w-full items-center justify-center gap-2 rounded-none border-2 border-purple-700 bg-white px-11 [font-family:var(--font-paraluman-heading)] text-base font-black uppercase tracking-[0.12em] text-purple-800 transition-all hover:-translate-y-1 hover:bg-purple-50 sm:inline-flex sm:w-auto"
+                    >
+                      View Challenge
+                      <ArrowUpRight className="h-4 w-4" />
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="relative flex h-16 w-full items-center justify-center gap-2 rounded-none border-2 border-purple-300 bg-white px-11 [font-family:var(--font-paraluman-heading)] text-base font-black uppercase tracking-[0.12em] text-purple-400/80 sm:inline-flex sm:w-auto">
+                    View Challenge
+                  </div>
+                )}
+
+                <div className="group relative block w-full sm:w-auto">
+                  <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
+                  <Button
+                    size="lg"
+                    type="button"
+                    onClick={scrollToSubmission}
+                    className="relative flex h-16 w-full rounded-none border-2 border-purple-700 bg-gradient-to-r from-purple-600 to-purple-800 px-11 [font-family:var(--font-paraluman-heading)] text-base font-black uppercase tracking-[0.12em] text-white transition-all hover:-translate-y-1 hover:from-purple-700 hover:to-purple-900 sm:inline-flex sm:w-auto"
+                  >
+                    Submit
+                  </Button>
+                </div>
               </div>
               <p className="[font-family:var(--font-paraluman-mono)] text-xs  text-black/65">
-                No resume needed
+                No resume needed. Get a response in 24 hours
               </p>
             </div>
           </div>
@@ -363,17 +383,13 @@ export default function ParalumanPage() {
 
           <div className="relative">
             <div className="relative border-2 border-purple-600 bg-gradient-to-b from-purple-50 via-purple-50/70 to-white shadow-[0_20px_45px_-30px_rgba(168,85,247,0.8)]">
-              <div className="border-b-2 border-purple-600 bg-gradient-to-r from-purple-700 to-purple-900 px-6 py-6 sm:px-8 sm:py-8">
+              <div className="border-b-2 border-purple-600 bg-gradient-to-r from-purple-700 to-purple-900 p-3 sm:px-8 sm:py-8">
                 <h2 className="[font-family:var(--font-paraluman-mono)] text-xs font-semibold uppercase tracking-[0.2em] text-purple-100">
                   Challenge
                 </h2>
-                <p className="mt-3 max-w-4xl [font-family:var(--font-paraluman-heading)] text-xl font-black uppercase leading-[1.1] tracking-[-0.02em] text-white sm:text-[2.1rem]">
-                  A system that publishes a news article in English and Filipino
-                  at the same time.
-                </p>
 
                 {hasChallengePdf ? (
-                  <div className="group relative mt-5 w-full">
+                  <div className="group relative mt-2 w-full">
                     <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
                     <Link
                       href={CHALLENGE_PDF_URL}
@@ -381,7 +397,7 @@ export default function ParalumanPage() {
                       rel="noopener noreferrer"
                       className="relative flex w-full items-center justify-between border-2 border-white bg-white px-5 py-3 [font-family:var(--font-paraluman-heading)] text-sm font-black uppercase tracking-[0.1em] text-purple-800 shadow-[0_10px_24px_-14px_rgba(0,0,0,0.65)] transition-all hover:-translate-y-1 hover:bg-purple-50"
                     >
-                      <span>View challenge details</span>
+                      <span>View challenge</span>
                       <ArrowUpRight className="h-4 w-4" />
                     </Link>
                   </div>
@@ -393,8 +409,8 @@ export default function ParalumanPage() {
                 )}
               </div>
 
-              <div className="space-y-6 p-6 sm:p-8">
-                <div className="relative border-2 border-purple-200 bg-white p-5">
+              <div className="space-y-6 p-0 sm:p-8">
+                <div className="relative sm:border-2 border-purple-200 bg-white p-3 sm:p-5">
                   <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.17em] text-purple-700">
                     Submission
                   </p>
@@ -469,7 +485,7 @@ export default function ParalumanPage() {
                         type="submit"
                         size="lg"
                         disabled={isSubmitting}
-                        className="h-12 rounded-none border-2 border-purple-700 bg-gradient-to-r from-purple-600 to-purple-800 px-7 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.09em] text-white transition-colors hover:from-purple-700 hover:to-purple-900"
+                        className="h-12 rounded-none border-2 border-purple-700 bg-gradient-to-r from-purple-600 to-purple-800 px-7 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.09em] text-white transition-colors hover:from-purple-700 hover:to-purple-900 w-full sm:w-auto"
                       >
                         {isSubmitting ? (
                           <>
