@@ -299,7 +299,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
 
   return (
     <JobFilterProvider initial={initialFilterValues}>
-      <div className="flex h-16 items-center gap-2 border-b border-transparent bg-transparent px-4 py-3">
+      <div className="flex gap-2 items-center px-4 py-3 bg-white/80 border-b h-16">
         {/* Logo */}
         <div className="flex-shrink-0">
           <HeaderTitle />
@@ -370,7 +370,7 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
 
   return (
     <div
-      className="z-[90] flex items-center justify-between gap-2 border-b border-transparent bg-transparent px-8 py-4"
+      className="flex gap-2 justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90] py-4 px-8"
       style={{ overflow: "visible", position: "relative", zIndex: 100 }}
     >
       <div className="flex items-center gap-6 flex-1">
