@@ -494,11 +494,13 @@ export const Header: React.FC = () => {
     "/fff",
     "/super-listing",
     "/super-listing/paraluman",
+    "/super-listing/anteriore",
   ];
   const isSuperListingRoute =
     pathname === "/super-listing" ||
     pathname === "/student/super-listing" ||
-    pathname?.startsWith("/super-listing/");
+    pathname?.startsWith("/super-listing/") ||
+    pathname?.startsWith("/student/super-listing/");
   const showProfileButton = routeExcluded(noProfileRoutes);
   const showFilters = pathname?.startsWith("/search") === true;
 
