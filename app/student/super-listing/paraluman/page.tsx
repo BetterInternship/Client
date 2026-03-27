@@ -228,10 +228,7 @@ export default function ParalumanPage() {
         <section className="relative mx-auto flex min-h-[calc(100svh-73px)] w-full max-w-6xl flex-col justify-center px-6 py-12 sm:px-8 lg:px-10">
           <div className="mx-auto w-full max-w-4xl">
             <div className="relative text-center">
-              <SuperListingBadge
-                compact
-                className="justify-center [font-family:var(--font-paraluman-mono)] text-[11px] font-semibold uppercase tracking-[0.12em]"
-              />
+              <SuperListingBadge variant="gold" className="justify-center" />
 
               <h1 className="mt-8 [font-family:var(--font-paraluman-heading)] text-[clamp(2.5rem,9vw,5.5rem)] font-black uppercase leading-[0.88] tracking-[-0.05em]">
                 <span className="block">
@@ -361,10 +358,7 @@ export default function ParalumanPage() {
           className="relative mx-auto flex min-h-[calc(100svh-73px)] w-full max-w-6xl flex-col justify-center px-6 py-10 sm:px-8 lg:px-10"
         >
           <div>
-            <SuperListingBadge
-              compact
-              className="mb-4 [font-family:var(--font-paraluman-mono)] text-[11px] font-semibold uppercase tracking-[0.12em]"
-            />
+            <SuperListingBadge variant="gold" className="mb-4 " />
           </div>
 
           <div className="relative">
