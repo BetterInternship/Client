@@ -66,6 +66,8 @@ import { Badge } from "@/components/ui/badge";
 import { AutoApplyCard } from "@/components/features/student/profile/AutoApplyCard";
 import { useProfileActions } from "@/lib/api/student.actions.api";
 import useModalRegistry from "@/components/modals/modal-registry";
+import { toast } from "sonner";
+import { toastPresets } from "@/components/ui/sonner-toast";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
@@ -114,7 +116,7 @@ export default function ProfilePage() {
       await UserService.updateMyProfile({
         apply_for_me: newEnabled,
         auto_apply_enabled_at: newEnabled ? new Date().toISOString() : null,
-      })
+      });
       void queryClient.invalidateQueries({ queryKey: ["my-profile"] });
 
       // console.log("apply_for_me: ", profile?.data?.apply_for_me);
@@ -135,6 +137,7 @@ export default function ProfilePage() {
   } = useFileUpload({
     uploader: UserService.updateMyPfp,
     filename: "pfp",
+    silent: true,
   });
 
   const data = profile.data as PublicUser | undefined;
@@ -147,6 +150,20 @@ export default function ProfilePage() {
   useEffect(() => {
     if (data?.resume) void syncResumeURL();
   }, [data?.resume, syncResumeURL]);
+
+  useEffect(() => {
+    if (!isEditing) return;
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isEditing]);
 
   useEffect(() => {
     if (
@@ -216,12 +233,18 @@ export default function ProfilePage() {
                   ref={pfpFileInputRef}
                   allowedTypes={["image/jpeg", "image/png", "image/webp"]}
                   maxSize={1}
-                  onSelect={(file) => (
-                    pfpUpload(file),
-                    void queryClient.invalidateQueries({
-                      queryKey: ["my-profile"],
-                    })
-                  )}
+                  onSelect={async (file) => {
+                    const success = await pfpUpload(file);
+                    if (success) {
+                      void queryClient.invalidateQueries({
+                        queryKey: ["my-profile"],
+                      });
+                      toast.success(
+                        "Profile photo uploaded successfully.",
+                        toastPresets.success,
+                      );
+                    }
+                  }}
                 />
               </div>
 
@@ -288,8 +311,13 @@ export default function ProfilePage() {
                           const success =
                             await profileEditorRef.current?.save();
                           setSaving(false);
-                          if (success) setIsEditing(false);
-                          else
+                          if (success) {
+                            setIsEditing(false);
+                            toast.success(
+                              "Profile saved successfully.",
+                              toastPresets.success,
+                            );
+                          } else
                             setSaveError(
                               "Please fix the errors in the form before saving.", // TODO: Make this a toast
                             );
@@ -1401,6 +1429,7 @@ const ResumeBox = ({
   } = useFileUpload({
     uploader: UserService.updateMyResume,
     filename: "resume",
+    silent: true,
   });
 
   const hasResume = !!profile.resume;
@@ -1454,10 +1483,14 @@ const ResumeBox = ({
         onSelect={async (file) => {
           // filename display removed by design
           const success = await resumeUpload(file);
-          
-          if(success) {
+
+          if (success) {
             queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-          } 
+            toast.success(
+              "Resume uploaded successfully.",
+              toastPresets.success,
+            );
+          }
         }}
       />
 
