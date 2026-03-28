@@ -3,15 +3,16 @@
 import React, {
   createContext,
   useContext,
-  useMemo,
   useReducer,
   useState,
   useEffect,
 } from "react";
-import { Filter as FilterIcon, ChevronDown, Check } from "lucide-react";
+import { Filter as FilterIcon, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useDbRefs } from "@/lib/db/use-refs";
+import { toast } from "sonner";
+import { toastPresets } from "@/components/ui/sonner-toast";
 
 /* ================= Types & Reducer ================= */
 
@@ -637,6 +638,10 @@ export function JobFilters({
   const apply = () => {
     onApply(state);
     setOpen(false);
+    toast.success("Filters applied", {
+      ...toastPresets.success,
+      duration: 1000,
+    });
   };
   const clearAll = () => dispatch({ type: "CLEAR" });
 
@@ -657,7 +662,7 @@ export function JobFilters({
 
         {open && (
           <div
-            className="absolute right-0 z-[60] mt-2 w-[35vw] max-h-[72vh] bg-white border rounded-md shadow-lg
+            className="absolute right-0 z-[260] mt-2 w-[35vw] max-h-[72vh] bg-white border rounded-md shadow-lg
                      flex flex-col"
           >
             {/* Tabs Header */}

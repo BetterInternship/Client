@@ -22,6 +22,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useStateRecord } from "@/hooks/base/useStateRecord";
 import { useFormFilloutProcessRunner } from "@/hooks/forms/filloutFormProcess";
 import { useAppContext } from "@/lib/ctx-app";
+import { withDerivedFormValues } from "@/lib/derived-form-values";
 import { FormSigningPartyTimeline } from "./FormSigningPartyTimeline";
 import { getFreshHistoryCutoffMsFromStorage } from "../fresh-history";
 import { getRecipientEmailErrors } from "./recipient-email-validation";
@@ -260,6 +261,10 @@ export function FormSigningLayout({
         )
         .map((field) => field.field),
     [form.fields],
+  );
+  const previewValuesWithDerived = useMemo(
+    () => withDerivedFormValues(form.formMetadata, previewValues),
+    [form.formMetadata, previewValues],
   );
 
   const computeRequiredFieldsComplete = useCallback(
@@ -757,7 +762,7 @@ export function FormSigningLayout({
                     key={isMobileLayout ? "mobile-preview" : "desktop-preview"}
                     documentUrl={documentUrl}
                     blocks={previewKeyedFields}
-                    values={previewValues}
+                    values={previewValuesWithDerived}
                     fieldErrors={formFiller.errors}
                     selectionTick={selectionTick}
                     autoScrollToSelectedField={

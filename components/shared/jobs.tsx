@@ -1,4 +1,4 @@
-import { Badge, BoolBadge } from "@/components/ui/badge";
+﻿import { Badge, BoolBadge } from "@/components/ui/badge";
 import { Job } from "@/lib/db/db.types";
 import { useDbMoa } from "@/lib/db/use-bi-moa";
 import { useDbRefs } from "@/lib/db/use-refs";
@@ -105,7 +105,7 @@ export const JobSalary = ({
   const { to_job_pay_freq_name } = useDbRefs();
   return salary ? (
     <Badge>
-      ₱{salary}/{to_job_pay_freq_name(salary_freq)}
+      â‚±{salary}/{to_job_pay_freq_name(salary_freq)}
     </Badge>
   ) : (
     <></>
@@ -239,26 +239,39 @@ function SuperListingHeader({
   );
 }
 
-function SuperListingBadge({
+type SuperListingBadgeVariant = "default" | "gold";
+
+export function SuperListingBadge({
   className,
   compact = false,
+  variant = "default",
 }: {
   className?: string;
   compact?: boolean;
+  variant?: SuperListingBadgeVariant;
 }) {
+  const isGold = variant === "gold";
+
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-white super-header-badge px-3 py-1.5 text-xs font-bold text-amber-900",
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-bold",
+        isGold
+          ? "super-header-badge super-badge-gold text-amber-950"
+          : "bg-white super-header-badge text-amber-900",
         className,
       )}
     >
-      <span className="text-sm leading-none">⚡</span>
+      <Zap className="h-3.5 w-3.5" />
       <span className="tracking-wide">Super Listing</span>
       {!compact && (
         <>
-          <span className="text-amber-600/80">·</span>
-          <span className="font-semibold text-amber-700">
+          <span
+            className={cn(isGold ? "text-amber-900/80" : "text-amber-600/80")}
+          >
+            ·
+          </span>
+          <span className={cn("font-semibold", isGold && "text-amber-900")}>
             Get a response in 24h
           </span>
         </>

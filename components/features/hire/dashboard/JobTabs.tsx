@@ -14,8 +14,12 @@ import { useSideModal } from "@/hooks/use-side-modal";
 import { EmployerConversationService, UserService } from "@/lib/api/services";
 import { EmployerApplication, InternshipPreferences } from "@/lib/db/db.types";
 import {
+  Archive,
+  Check,
+  List,
   MessageSquarePlus,
   MessageSquareText,
+  Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Job } from "@/lib/db/db.types";
@@ -68,6 +72,8 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
   const [applicantToArchive, setApplicantToArchive] =
     useState<EmployerApplication | null>(null);
   const [applicantToDelete, setApplicantToDelete] =
+    useState<EmployerApplication | null>(null);
+  const [applicantToAccept, setApplicantToAccept] =
     useState<EmployerApplication | null>(null);
   const [statusChangeData, setStatusChangeData] = useState<{
     applicants: EmployerApplication[];
@@ -210,6 +216,12 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
     Modal: StatusChangeModal,
   } = useModal("mass-change-modal");
 
+  const {
+    open: openApplicantAcceptModal,
+    close: closeApplicantAcceptModal,
+    Modal: ApplicantAcceptModal,
+  } = useModal("applicant-accept-modal");
+
   // Wrapper for review function to match expected signature
   const reviewApp = (
     id: string,
@@ -271,6 +283,11 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
     openApplicantDeleteModal();
   };
 
+  const handleRequestApplicantAccept = (application: EmployerApplication) => {
+    setApplicantToAccept(application);
+    openApplicantAcceptModal();
+  };
+
   const handleConfirmApplicantArchive = async () => {
     if (!applicantToArchive?.id) return;
     await applications.review(applicantToArchive.id, { status: 7 });
@@ -287,6 +304,14 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
     applicationContentRef.current?.unselectAll();
   };
 
+  const handleConfirmApplicantAccept = async () => {
+    if (!applicantToAccept?.id) return;
+    await applications.review(applicantToAccept.id, { status: 4 });
+    setApplicantToAccept(null);
+    closeApplicantAcceptModal();
+    applicationContentRef.current?.unselectAll();
+  };
+
   const handleCancelApplicantArchive = () => {
     setApplicantToArchive(null);
     closeApplicantArchiveModal();
@@ -295,6 +320,11 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
   const handleCancelApplicantDelete = () => {
     setApplicantToDelete(null);
     closeApplicantDeleteModal();
+  };
+
+  const handleCancelApplicantAccept = () => {
+    setApplicantToAccept(null);
+    closeApplicantAcceptModal();
   };
 
   const onChatClick = async () => {
@@ -392,8 +422,10 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
         <ApplicantArchiveModal>
           {applicantToArchive && (
             <div className="p-8 pt-0 h-full">
-              <div className="text-lg mb-4">
-                Archive applicant "{getFullName(applicantToArchive.user)}"?
+              <div className="flex flex-col gap-2 mb-4">
+                <Archive className="w-8 h-8" />
+                <h1 className="text-xl">Archive applicant "{getFullName(applicantToArchive.user)}"?</h1>
+                <span>This applicant will only appear in the "archived" section. You can change their status after this.</span>
               </div>
               <div className="flex justify-end gap-2">
                 <Button
@@ -413,16 +445,41 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
           )}
         </ApplicantArchiveModal>
 
+        <ApplicantAcceptModal>
+          {applicantToAccept && (
+            <div className="p-8 pt-0 h-full">
+              <div className="flex flex-col gap-2 mb-4">
+                <Check className="w-8 h-8" />
+                <h1 className="text-xl">Accept applicant "{getFullName(applicantToAccept.user)}"?</h1>
+                <span>
+                  This will notify them.
+                </span>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={handleCancelApplicantAccept}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={handleConfirmApplicantAccept}
+                >
+                  Accept
+                </Button>
+              </div>
+            </div>
+          )}
+        </ApplicantAcceptModal>
+
         <ApplicantDeleteModal>
           {applicantToDelete && (
             <div className="p-8 pt-0 h-full">
               <div className="flex flex-col gap-2 mb-4">
-                <span className="text-lg">
-                  Delete applicant "{getFullName(applicantToDelete.user)}"?
-                </span>
+                <Trash2 className="w-8 h-8" />
+                <h1 className="text-xl">Delete applicant "{getFullName(applicantToDelete.user)}"?</h1>
                 <span>This action is permanent and cannot be reversed.</span>
               </div>
-
+              
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={handleCancelApplicantDelete}>
                   Cancel
@@ -442,12 +499,13 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
         <StatusChangeModal>
           {statusChangeData && (
             <div className="p-8 pt-0 h-full">
-              <div className="text-lg mb-4">
-                <span>
+              <div className="flex flex-col gap-2 mb-4">
+                <List className="w-8 h-8" />
+                <h1 className="text-xl">
                   Change status for {statusChangeData.applicants.length}{" "}
                   applicant{statusChangeData.applicants.length !== 1 ? "s" : ""}
                   ?
-                </span>
+                </h1>
                 <ul className="list-disc list-inside text-sm">
                   {statusChangeData.applicants.map((a) => (
                     <li>
@@ -456,6 +514,7 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
                   ))}
                 </ul>
               </div>
+              
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={handleCancelStatusChange}>
                   Cancel
@@ -484,6 +543,7 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
               setSelectedApplication={setSelectedApplication}
               onRequestArchiveApplicant={handleRequestApplicantArchive}
               onRequestDeleteApplicant={handleRequestApplicantDelete}
+              onRequestAcceptApplicant={handleRequestApplicantAccept}
               onRequestStatusChange={handleRequestStatusChange}
               applicantToArchive={applicantToArchive}
               applicantToDelete={applicantToDelete}
