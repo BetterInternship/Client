@@ -242,6 +242,8 @@ export const ProfileButton: React.FC = () => {
               ? "text-primary"
               : "opacity-80 hover:opacity-100 hover:bg-gray-100",
           )}
+          onClick={(e) => e.preventDefault()}
+          onPointerDown={(e) => e.preventDefault()}
         >
           <div className="overflow-hidden rounded-full flex items-center justify-center h-6 w-6">
             <MyUserPfp size="6" />
@@ -366,7 +368,6 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
   showFilters,
 }) => {
   const pathname = usePathname();
-  const router = useRouter();
 
   return (
     <div
@@ -408,7 +409,7 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
                 ? "text-primary"
                 : "opacity-80 hover:opacity-100 hover:bg-gray-100",
             )}
-            onClick={() => router.push("/search")}
+            onClick={(e) => e.preventDefault()}
           >
             <Search className="!h-6 !w-6" strokeWidth={1.7} />
             <span className="text-xs">Search</span>
@@ -423,7 +424,7 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
                 ? "text-primary"
                 : "opacity-80 hover:opacity-100 hover:bg-gray-100",
             )}
-            onClick={() => router.push("/forms")}
+            onClick={(e) => e.preventDefault()}
           >
             <Newspaper className="!h-6 !w-6" strokeWidth={1.7} />
             <span className="text-xs">Forms</span>
@@ -441,6 +442,8 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
                     ? "text-primary"
                     : "opacity-80 hover:opacity-100 hover:bg-gray-100",
                 )}
+                onClick={(e) => e.preventDefault()}
+                onPointerDown={(e) => e.preventDefault()}
               >
                 <BookA className="!h-6 !w-6" strokeWidth={1.7} />
                 <div className="flex items-center gap-0.5">
