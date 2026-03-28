@@ -23,6 +23,7 @@ const monoFont = JetBrains_Mono({
 
 const CHALLENGE_PDF_URL =
   "https://drive.google.com/file/d/1A7k32JC_jdpHV6vQpEtcFNH9UdwSZtVG/view?usp=sharing";
+const ANTERIORE_SITE_URL = "https://anteriore.com.ph/";
 
 export default function AnteriorePage() {
   const [isAtTop, setIsAtTop] = useState(true);
@@ -98,11 +99,17 @@ export default function AnteriorePage() {
             <span className="text-xl font-black text-black/30 sm:text-2xl">
               x
             </span>
-            <Image
-              src={anterioreLogo}
-              alt="Anteriore"
-              className="h-auto w-[clamp(8rem,13vw,11rem)] [filter:brightness(0)_saturate(100%)_invert(21%)_sepia(17%)_saturate(1612%)_hue-rotate(184deg)_brightness(88%)_contrast(93%)]"
-            />
+            <Link
+              href={ANTERIORE_SITE_URL}
+              aria-label="Visit Anteriore website"
+              className="transition-all duration-200 hover:opacity-80 "
+            >
+              <Image
+                src={anterioreLogo}
+                alt="Anteriore"
+                className="h-auto w-[clamp(8rem,13vw,11rem)] [filter:brightness(0)_saturate(100%)_invert(21%)_sepia(17%)_saturate(1612%)_hue-rotate(184deg)_brightness(88%)_contrast(93%)]"
+              />
+            </Link>
           </div>
         </header>
 
@@ -111,7 +118,15 @@ export default function AnteriorePage() {
             <SuperListingBadge variant="gold" />
 
             <h1 className="mt-8 [font-family:var(--font-anteriore-heading)] text-[clamp(2.5rem,9vw,5.5rem)] font-black uppercase leading-[0.88] tracking-[-0.05em]">
-              <span className="block text-[#274b7d]">Anteriore is</span>
+              <div className="flex gap-5">
+                <Link
+                  href={ANTERIORE_SITE_URL}
+                  className="block w-fit text-[#274b7d] transition-all duration-200  hover:text-[#1b3458]"
+                >
+                  Anteriore
+                </Link>
+                is
+              </div>
               <span className="block">challenging you</span>
             </h1>
 
