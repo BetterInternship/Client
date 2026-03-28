@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Settings,
@@ -117,7 +118,7 @@ export const SearchInput = ({
    DROPDOWN UTILITIES
 ======================================================================================= */
 
-interface HoverDropdownProps {
+interface ClickDropdownProps {
   trigger: React.ReactNode;
   children: React.ReactNode;
 }
@@ -129,19 +130,20 @@ interface DropdownMenuItemProps {
 }
 
 function DropdownMenuItem({ onClick, href, children }: DropdownMenuItemProps) {
-  const router = useRouter();
-
-  const handleClick = () => {
-    if (href) {
-      router.push(href);
-    } else if (onClick) {
-      onClick();
-    }
-  };
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm block"
+      >
+        {children}
+      </Link>
+    );
+  }
 
   return (
     <button
-      onClick={handleClick}
+      onClick={onClick}
       className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm"
     >
       {children}
@@ -149,40 +151,17 @@ function DropdownMenuItem({ onClick, href, children }: DropdownMenuItemProps) {
   );
 }
 
-function HoverDropdown({ trigger, children }: HoverDropdownProps) {
+function ClickDropdown({ trigger, children }: ClickDropdownProps) {
   const [isOpen, setIsOpen] = React.useState(false);
-  const closeTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
-
-  const handleClose = () => {
-    closeTimeoutRef.current = setTimeout(() => {
-      setIsOpen(false);
-    }, 100);
-  };
-
-  const handleOpenCancel = () => {
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current);
-      closeTimeoutRef.current = null;
-    }
-    setIsOpen(true);
-  };
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger
-        asChild
-        onMouseEnter={handleOpenCancel}
-        onMouseLeave={handleClose}
-      >
-        {trigger}
-      </PopoverTrigger>
+      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent
         className="w-max p-1 bg-white border border-gray-200 rounded-[0.33em] shadow-lg"
         align="end"
         side="bottom"
         sideOffset={8}
-        onMouseEnter={handleOpenCancel}
-        onMouseLeave={handleClose}
         style={{ zIndex: 9999 }}
       >
         <div className="flex flex-col gap-0">{children}</div>
@@ -232,7 +211,7 @@ export const ProfileButton: React.FC = () => {
   }
 
   return (
-    <HoverDropdown
+    <ClickDropdown
       trigger={
         <Button
           variant="ghost"
@@ -242,15 +221,13 @@ export const ProfileButton: React.FC = () => {
               ? "text-primary"
               : "opacity-80 hover:opacity-100 hover:bg-gray-100",
           )}
-          onClick={(e) => e.preventDefault()}
-          onPointerDown={(e) => e.preventDefault()}
         >
           <div className="overflow-hidden rounded-full flex items-center justify-center h-6 w-6">
             <MyUserPfp size="6" />
           </div>
           <div className="flex items-center gap-0.5">
             <span className="text-xs">Account</span>
-            <ChevronDown className="!h-3 !w-3 transition-transform group-hover:rotate-180" />
+            <ChevronDown className="!h-3 !w-3 transition-transform group-data-[state=open]:rotate-180" />
           </div>
         </Button>
       }
@@ -268,7 +245,7 @@ export const ProfileButton: React.FC = () => {
           <span className="text-red-500">Sign Out</span>
         </div>
       </DropdownMenuItem>
-    </HoverDropdown>
+    </ClickDropdown>
   );
 };
 
@@ -402,6 +379,7 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
         <div className="flex gap-1">
           {/* Search Button */}
           <Button
+            asChild
             variant="ghost"
             className={cn(
               "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-[0.33em]",
@@ -409,14 +387,16 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
                 ? "text-primary"
                 : "opacity-80 hover:opacity-100 hover:bg-gray-100",
             )}
-            onClick={(e) => e.preventDefault()}
           >
-            <Search className="!h-6 !w-6" strokeWidth={1.7} />
-            <span className="text-xs">Search</span>
+            <Link href="/search">
+              <Search className="!h-6 !w-6" strokeWidth={1.7} />
+              <span className="text-xs">Search</span>
+            </Link>
           </Button>
 
           {/* Forms Button */}
           <Button
+            asChild
             variant="ghost"
             className={cn(
               "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-[0.33em]",
@@ -424,14 +404,15 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
                 ? "text-primary"
                 : "opacity-80 hover:opacity-100 hover:bg-gray-100",
             )}
-            onClick={(e) => e.preventDefault()}
           >
-            <Newspaper className="!h-6 !w-6" strokeWidth={1.7} />
-            <span className="text-xs">Forms</span>
+            <Link href="/forms">
+              <Newspaper className="!h-6 !w-6" strokeWidth={1.7} />
+              <span className="text-xs">Forms</span>
+            </Link>
           </Button>
 
           {/* My Jobs Dropdown */}
-          <HoverDropdown
+          <ClickDropdown
             trigger={
               <Button
                 variant="ghost"
@@ -442,13 +423,11 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
                     ? "text-primary"
                     : "opacity-80 hover:opacity-100 hover:bg-gray-100",
                 )}
-                onClick={(e) => e.preventDefault()}
-                onPointerDown={(e) => e.preventDefault()}
               >
                 <BookA className="!h-6 !w-6" strokeWidth={1.7} />
                 <div className="flex items-center gap-0.5">
                   <span className="text-xs">My Jobs</span>
-                  <ChevronDown className="!h-3 !w-3 transition-transform group-hover:rotate-180" />
+                  <ChevronDown className="!h-3 !w-3 transition-transform group-data-[state=open]:rotate-180" />
                 </div>
               </Button>
             }
@@ -465,7 +444,7 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
                 <span className="text-primary">Saved Jobs</span>
               </div>
             </DropdownMenuItem>
-          </HoverDropdown>
+          </ClickDropdown>
 
           <ProfileButton />
         </div>
