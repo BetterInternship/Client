@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Settings,
@@ -117,7 +118,7 @@ export const SearchInput = ({
    DROPDOWN UTILITIES
 ======================================================================================= */
 
-interface HoverDropdownProps {
+interface ClickDropdownProps {
   trigger: React.ReactNode;
   children: React.ReactNode;
 }
@@ -129,19 +130,20 @@ interface DropdownMenuItemProps {
 }
 
 function DropdownMenuItem({ onClick, href, children }: DropdownMenuItemProps) {
-  const router = useRouter();
-
-  const handleClick = () => {
-    if (href) {
-      router.push(href);
-    } else if (onClick) {
-      onClick();
-    }
-  };
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm block"
+      >
+        {children}
+      </Link>
+    );
+  }
 
   return (
     <button
-      onClick={handleClick}
+      onClick={onClick}
       className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm"
     >
       {children}
@@ -149,40 +151,17 @@ function DropdownMenuItem({ onClick, href, children }: DropdownMenuItemProps) {
   );
 }
 
-function HoverDropdown({ trigger, children }: HoverDropdownProps) {
+function ClickDropdown({ trigger, children }: ClickDropdownProps) {
   const [isOpen, setIsOpen] = React.useState(false);
-  const closeTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
-
-  const handleClose = () => {
-    closeTimeoutRef.current = setTimeout(() => {
-      setIsOpen(false);
-    }, 100);
-  };
-
-  const handleOpenCancel = () => {
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current);
-      closeTimeoutRef.current = null;
-    }
-    setIsOpen(true);
-  };
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger
-        asChild
-        onMouseEnter={handleOpenCancel}
-        onMouseLeave={handleClose}
-      >
-        {trigger}
-      </PopoverTrigger>
+      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent
         className="w-max p-1 bg-white border border-gray-200 rounded-[0.33em] shadow-lg"
         align="end"
         side="bottom"
         sideOffset={8}
-        onMouseEnter={handleOpenCancel}
-        onMouseLeave={handleClose}
         style={{ zIndex: 9999 }}
       >
         <div className="flex flex-col gap-0">{children}</div>
@@ -195,7 +174,7 @@ function HoverDropdown({ trigger, children }: HoverDropdownProps) {
    PROFILE BUTTON (shared between mobile & desktop)
 ======================================================================================= */
 
-export const ProfileButton: React.FC = () => {
+export const HeaderButtons: React.FC = () => {
   const profile = useProfileData();
   const { isAuthenticated, logout } = useAuthContext();
   const router = useRouter();
@@ -232,41 +211,112 @@ export const ProfileButton: React.FC = () => {
   }
 
   return (
-    <HoverDropdown
-      trigger={
-        <Button
-          variant="ghost"
-          className={cn(
-            "group w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-md",
-            pathname === "/profile"
-              ? "text-primary"
-              : "opacity-80 hover:opacity-100 hover:bg-gray-100",
-          )}
-        >
-          <div className="overflow-hidden rounded-full flex items-center justify-center h-6 w-6">
-            <MyUserPfp size="6" />
+    <div className="flex gap-1">
+      {/* Search Button */}
+      <Button
+        asChild
+        variant="ghost"
+        className={cn(
+          "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-[0.33em]",
+          pathname === "/search"
+            ? "text-primary"
+            : "opacity-80 hover:opacity-100 hover:bg-gray-100",
+        )}
+      >
+        <Link href="/search">
+          <Search className="!h-6 !w-6" strokeWidth={1.7} />
+          <span className="text-xs">Search</span>
+        </Link>
+      </Button>
+
+      {/* Forms Button */}
+      <Button
+        asChild
+        variant="ghost"
+        className={cn(
+          "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-[0.33em]",
+          pathname === "/forms"
+            ? "text-primary"
+            : "opacity-80 hover:opacity-100 hover:bg-gray-100",
+        )}
+      >
+        <Link href="/forms">
+          <Newspaper className="!h-6 !w-6" strokeWidth={1.7} />
+          <span className="text-xs">Forms</span>
+        </Link>
+      </Button>
+
+      {/* My Jobs Dropdown */}
+      <ClickDropdown
+        trigger={
+          <Button
+            variant="ghost"
+            className={cn(
+              "group w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-[0.33em]",
+              pathname?.startsWith("/applications") ||
+                pathname?.startsWith("/saved")
+                ? "text-primary"
+                : "opacity-80 hover:opacity-100 hover:bg-gray-100",
+            )}
+          >
+            <BookA className="!h-6 !w-6" strokeWidth={1.7} />
+            <div className="flex items-center gap-0.5">
+              <span className="text-xs">My Jobs</span>
+              <ChevronDown className="!h-3 !w-3 transition-transform group-data-[state=open]:rotate-180" />
+            </div>
+          </Button>
+        }
+      >
+        <DropdownMenuItem href="/applications">
+          <div className="flex items-center">
+            <CheckSquare className="w-4 h-4 inline-block mr-2 text-primary" />
+            <span className="text-primary">Applications</span>
           </div>
-          <div className="flex items-center gap-0.5">
-            <span className="text-xs">Account</span>
-            <ChevronDown className="!h-3 !w-3 transition-transform group-hover:rotate-180" />
+        </DropdownMenuItem>
+        <DropdownMenuItem href="/saved">
+          <div className="flex items-center">
+            <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
+            <span className="text-primary">Saved Jobs</span>
           </div>
-        </Button>
-      }
-    >
-      <DropdownMenuItem onClick={handleProfileClick}>
-        <div className="flex items-center">
-          <Settings className="w-4 h-4 inline-block mr-2 text-primary" />
-          <span className="text-primary">Profile</span>
-        </div>
-      </DropdownMenuItem>
-      <div className="h-px bg-gray-200 my-1 mx-2" />
-      <DropdownMenuItem onClick={() => void handleLogout()}>
-        <div className="flex items-center">
-          <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />
-          <span className="text-red-500">Sign Out</span>
-        </div>
-      </DropdownMenuItem>
-    </HoverDropdown>
+        </DropdownMenuItem>
+      </ClickDropdown>
+
+      <ClickDropdown
+        trigger={
+          <Button
+            variant="ghost"
+            className={cn(
+              "group w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-md",
+              pathname === "/profile"
+                ? "text-primary"
+                : "opacity-80 hover:opacity-100 hover:bg-gray-100",
+            )}
+          >
+            <div className="overflow-hidden rounded-full flex items-center justify-center h-6 w-6">
+              <MyUserPfp size="6" />
+            </div>
+            <div className="flex items-center gap-0.5">
+              <span className="text-xs">Account</span>
+              <ChevronDown className="!h-3 !w-3 transition-transform group-data-[state=open]:rotate-180" />
+            </div>
+          </Button>
+        }
+      >
+        <DropdownMenuItem onClick={handleProfileClick}>
+          <div className="flex items-center">
+            <Settings className="w-4 h-4 inline-block mr-2 text-primary" />
+            <span className="text-primary">Profile</span>
+          </div>
+        </DropdownMenuItem>
+        <div className="h-px bg-gray-200 my-1 mx-2" />
+        <DropdownMenuItem onClick={() => void handleLogout()}>
+          <div className="flex items-center">
+            <LogOut className="text-red-500 w-4 h-4 inline-block mr-2" />
+            <span className="text-red-500">Sign Out</span>
+          </div>
+        </DropdownMenuItem>
+      </ClickDropdown>
+    </div>
   );
 };
 
@@ -366,7 +416,6 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
   showFilters,
 }) => {
   const pathname = usePathname();
-  const router = useRouter();
 
   return (
     <div
@@ -397,76 +446,7 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
       </div>
 
       {/* Right side: Navigation buttons + Profile */}
-      <div className="flex items-center gap-1">
-        <div className="flex gap-1">
-          {/* Search Button */}
-          <Button
-            variant="ghost"
-            className={cn(
-              "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-[0.33em]",
-              pathname === "/search"
-                ? "text-primary"
-                : "opacity-80 hover:opacity-100 hover:bg-gray-100",
-            )}
-            onClick={() => router.push("/search")}
-          >
-            <Search className="!h-6 !w-6" strokeWidth={1.7} />
-            <span className="text-xs">Search</span>
-          </Button>
-
-          {/* Forms Button */}
-          <Button
-            variant="ghost"
-            className={cn(
-              "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-[0.33em]",
-              pathname === "/forms"
-                ? "text-primary"
-                : "opacity-80 hover:opacity-100 hover:bg-gray-100",
-            )}
-            onClick={() => router.push("/forms")}
-          >
-            <Newspaper className="!h-6 !w-6" strokeWidth={1.7} />
-            <span className="text-xs">Forms</span>
-          </Button>
-
-          {/* My Jobs Dropdown */}
-          <HoverDropdown
-            trigger={
-              <Button
-                variant="ghost"
-                className={cn(
-                  "group w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-[0.33em]",
-                  pathname?.startsWith("/applications") ||
-                    pathname?.startsWith("/saved")
-                    ? "text-primary"
-                    : "opacity-80 hover:opacity-100 hover:bg-gray-100",
-                )}
-              >
-                <BookA className="!h-6 !w-6" strokeWidth={1.7} />
-                <div className="flex items-center gap-0.5">
-                  <span className="text-xs">My Jobs</span>
-                  <ChevronDown className="!h-3 !w-3 transition-transform group-hover:rotate-180" />
-                </div>
-              </Button>
-            }
-          >
-            <DropdownMenuItem href="/applications">
-              <div className="flex items-center">
-                <CheckSquare className="w-4 h-4 inline-block mr-2 text-primary" />
-                <span className="text-primary">Applications</span>
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem href="/saved">
-              <div className="flex items-center">
-                <Heart className="w-4 h-4 inline-block mr-2 text-primary" />
-                <span className="text-primary">Saved Jobs</span>
-              </div>
-            </DropdownMenuItem>
-          </HoverDropdown>
-
-          <ProfileButton />
-        </div>
-      </div>
+      <HeaderButtons />
     </div>
   );
 };

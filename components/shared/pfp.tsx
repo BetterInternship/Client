@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Loader } from "../ui/loader";
 
+export const PFP_UPDATED_EVENT = "bi:pfp-updated";
+
 /**
  * A profile picture of a given user.
  * Accessible only to employers.
@@ -29,8 +31,19 @@ const Pfp = ({
   });
 
   useEffect(() => {
-    sync();
-  }, []);
+    void sync();
+  }, [sync]);
+
+  useEffect(() => {
+    const handlePfpUpdated = () => {
+      void sync();
+    };
+
+    window.addEventListener(PFP_UPDATED_EVENT, handlePfpUpdated);
+    return () => {
+      window.removeEventListener(PFP_UPDATED_EVENT, handlePfpUpdated);
+    };
+  }, [sync]);
 
   return (
     <Avatar

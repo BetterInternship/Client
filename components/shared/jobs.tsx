@@ -105,7 +105,7 @@ export const JobSalary = ({
   const { to_job_pay_freq_name } = useDbRefs();
   return salary ? (
     <Badge>
-      â‚±{salary}/{to_job_pay_freq_name(salary_freq)}
+      ₱{salary}/{to_job_pay_freq_name(salary_freq)}
     </Badge>
   ) : (
     <></>

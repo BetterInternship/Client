@@ -42,7 +42,7 @@ import {
 import { Loader } from "@/components/ui/loader";
 import { BoolBadge } from "@/components/ui/badge";
 import { cn, formatMonth, isValidPHNumber, toSafeString } from "@/lib/utils";
-import { MyUserPfp } from "@/components/shared/pfp";
+import { MyUserPfp, PFP_UPDATED_EVENT } from "@/components/shared/pfp";
 import { useAppContext } from "@/lib/ctx-app";
 import {
   createEditForm,
@@ -66,6 +66,9 @@ import { Badge } from "@/components/ui/badge";
 import { AutoApplyCard } from "@/components/features/student/profile/AutoApplyCard";
 import { useProfileActions } from "@/lib/api/student.actions.api";
 import useModalRegistry from "@/components/modals/modal-registry";
+import { toast } from "sonner";
+import { toastPresets } from "@/components/ui/sonner-toast";
+import { useBlockPageRefreshEffect } from "@/hooks/use-refresh-block";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
@@ -135,6 +138,7 @@ export default function ProfilePage() {
   } = useFileUpload({
     uploader: UserService.updateMyPfp,
     filename: "pfp",
+    silent: true,
   });
 
   const data = profile.data as PublicUser | undefined;
@@ -204,12 +208,19 @@ export default function ProfilePage() {
                   ref={pfpFileInputRef}
                   allowedTypes={["image/jpeg", "image/png", "image/webp"]}
                   maxSize={1}
-                  onSelect={(file) => (
-                    pfpUpload(file),
-                    void queryClient.invalidateQueries({
-                      queryKey: ["my-profile"],
-                    })
-                  )}
+                  onSelect={async (file) => {
+                    const success = await pfpUpload(file);
+                    if (success) {
+                      void queryClient.invalidateQueries({
+                        queryKey: ["my-profile"],
+                      });
+                      window.dispatchEvent(new Event(PFP_UPDATED_EVENT));
+                      toast.success(
+                        "Profile photo uploaded successfully.",
+                        toastPresets.success,
+                      );
+                    }
+                  }}
                 />
               </div>
 
@@ -276,8 +287,13 @@ export default function ProfilePage() {
                           const success =
                             await profileEditorRef.current?.save();
                           setSaving(false);
-                          if (success) setIsEditing(false);
-                          else
+                          if (success) {
+                            setIsEditing(false);
+                            toast.success(
+                              "Profile saved successfully.",
+                              toastPresets.success,
+                            );
+                          } else
                             setSaveError(
                               "Please fix the errors in the form before saving.", // TODO: Make this a toast
                             );
@@ -1389,6 +1405,7 @@ const ResumeBox = ({
   } = useFileUpload({
     uploader: UserService.updateMyResume,
     filename: "resume",
+    silent: true,
   });
 
   const hasResume = !!profile.resume;
