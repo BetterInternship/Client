@@ -1,26 +1,13 @@
 "use client";
 
-import {
-  type ChangeEvent,
-  type FormEvent,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowUpRight, Loader2 } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import anterioreLogo from "./logo.png";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { SuperListingBadge } from "@/components/shared/jobs";
 import { cn } from "@/lib/utils";
-import { Loader } from "@/components/ui/loader";
-import { Turnstile } from "@marsidev/react-turnstile";
-import { Badge } from "@/components/ui/badge";
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],
@@ -37,37 +24,11 @@ const monoFont = JetBrains_Mono({
 const CHALLENGE_PDF_URL =
   "https://drive.google.com/file/d/1A7k32JC_jdpHV6vQpEtcFNH9UdwSZtVG/view?usp=sharing";
 
-type AnterioreSubmissionForm = {
-  email: string;
-  submissionLink: string;
-  submissionNotes: string;
-};
-
-type AnterioreSubmissionResponse = {
-  success: boolean;
-  message?: string;
-};
-
-const INITIAL_FORM_STATE: AnterioreSubmissionForm = {
-  email: "",
-  submissionLink: "",
-  submissionNotes: "",
-};
-
 export default function AnteriorePage() {
-  const isDevelopment = process.env.NODE_ENV === "development";
-
-  const [form, setForm] = useState<AnterioreSubmissionForm>(INITIAL_FORM_STATE);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [resultMessage, setResultMessage] = useState("");
-  const [isError, setIsError] = useState(false);
-  const [token, setToken] = useState("");
-  const [tokenFail, setTokenFail] = useState(false);
   const [isAtTop, setIsAtTop] = useState(true);
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const topSentinelRef = useRef<HTMLDivElement | null>(null);
-  const challengeRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const sentinel = topSentinelRef.current;
@@ -92,70 +53,6 @@ export default function AnteriorePage() {
       observer.disconnect();
     };
   }, []);
-
-  const endpoint = useMemo(() => {
-    const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
-    if (!base) return "/api/super-listings/submission/anteriore";
-    return `${base}/super-listings/submission/anteriore`;
-  }, []);
-
-  const updateField =
-    (field: keyof AnterioreSubmissionForm) =>
-    (
-      event: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
-    ) => {
-      setForm((previous) => ({ ...previous, [field]: event.target.value }));
-    };
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setResultMessage("");
-    setIsError(false);
-
-    if (!isDevelopment && !token) {
-      setIsError(true);
-      setResultMessage("Please complete the browser verification first.");
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          "cf-token": isDevelopment ? "dev-bypass" : token,
-        }),
-      });
-
-      const data = (await response.json()) as AnterioreSubmissionResponse;
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.message || "Could not send your submission.");
-      }
-
-      setForm(INITIAL_FORM_STATE);
-      setResultMessage("Submission sent to your email.");
-    } catch (error) {
-      setIsError(true);
-      setResultMessage(
-        error instanceof Error
-          ? error.message
-          : "Something went wrong while sending your submission.",
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const scrollToSubmission = () => {
-    challengeRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  };
 
   const hasChallengePdf = CHALLENGE_PDF_URL.trim().length > 0;
 
@@ -266,7 +163,7 @@ export default function AnteriorePage() {
                         href={CHALLENGE_PDF_URL}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="relative z-10 flex h-16 w-full items-center justify-center gap-2 rounded-none border-2 border-[#274b7d] bg-white px-11 [font-family:var(--font-anteriore-heading)] text-base font-black uppercase tracking-[0.12em] text-[#1b3458] transition-all hover:-translate-y-1 hover:bg-[#edf3fa] sm:inline-flex sm:w-auto"
+                        className="relative z-10 flex h-16 w-full items-center justify-center gap-2 rounded-none border-2 border-[#274b7d] bg-[#274b7d] px-11 [font-family:var(--font-anteriore-heading)] text-base font-black uppercase tracking-[0.12em] text-white transition-all hover:-translate-y-1 hover:bg-[#1b3458] sm:inline-flex sm:w-auto"
                       >
                         View Challenge
                         <ArrowUpRight className="h-4 w-4" />
@@ -277,18 +174,6 @@ export default function AnteriorePage() {
                       View Challenge
                     </div>
                   )}
-
-                  <div className="group relative block w-full sm:w-auto">
-                    <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#274b7d_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                    <Button
-                      size="lg"
-                      type="button"
-                      onClick={scrollToSubmission}
-                      className="relative flex h-16 w-full rounded-none border-2 border-[#274b7d] bg-gradient-to-r from-[#274b7d] to-[#1b3458] px-11 [font-family:var(--font-anteriore-heading)] text-base font-black uppercase tracking-[0.12em] text-white transition-all hover:-translate-y-1 hover:from-[#203e68] hover:to-[#162c49] sm:inline-flex sm:w-auto"
-                    >
-                      Submit
-                    </Button>
-                  </div>
                 </div>
                 <p className="[font-family:var(--font-anteriore-mono)] text-xs text-black/65">
                   No resume needed. Get a response in 24 hours
@@ -325,150 +210,6 @@ export default function AnteriorePage() {
                 a lot of responsibilities. If you're serious about growth and
                 aspire to become a strong CTO in the future, you'll thrive here.
               </p>
-            </div>
-          </div>
-        </section>
-
-        <section
-          ref={challengeRef}
-          className="relative mx-auto flex min-h-[calc(100svh-73px)] w-full max-w-6xl flex-col justify-center px-6 py-10 sm:px-8 lg:px-10"
-        >
-          <div>
-            <SuperListingBadge className="mb-4" variant="gold" />
-          </div>
-
-          <div className="relative">
-            <div className="relative border-2 border-[#274b7d] bg-gradient-to-b from-[#274b7d]/8 via-[#274b7d]/5 to-white shadow-[0_20px_45px_-30px_rgba(39,75,125,0.8)]">
-              <div className="border-b-2 border-[#274b7d] bg-gradient-to-r from-[#203e68] to-[#162c49] p-3 sm:px-8 sm:py-8">
-                <h2 className="[font-family:var(--font-anteriore-mono)] text-xs font-semibold uppercase tracking-[0.2em] text-[#dbe7f5]">
-                  Challenge
-                </h2>
-
-                {hasChallengePdf ? (
-                  <div className="group relative mt-2 w-full">
-                    <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#274b7d_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                    <Link
-                      href={CHALLENGE_PDF_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="relative flex w-full items-center justify-between border-2 border-white bg-white px-5 py-3 [font-family:var(--font-anteriore-heading)] text-sm font-black uppercase tracking-[0.1em] text-[#1f3e67] shadow-[0_10px_24px_-14px_rgba(0,0,0,0.65)] transition-all hover:-translate-y-1 hover:bg-[#274b7d]/8"
-                    >
-                      <span>View challenge </span>
-                      <ArrowUpRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="mt-5 flex w-full items-center justify-between border border-white/60 bg-white/20 px-5 py-3 [font-family:var(--font-anteriore-mono)] text-[11px] uppercase tracking-[0.12em] text-[#dbe7f5]/90">
-                    <span>View full challenge brief</span>
-                    <span>Link coming soon</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-6 p-0 sm:p-8">
-                <div className="relative sm:border-2 border-[#274b7d]/20 bg-white p-3 sm:p-5">
-                  <p className="[font-family:var(--font-anteriore-mono)] text-xs uppercase tracking-[0.17em] text-[#274b7d]">
-                    Submission
-                  </p>
-
-                  <form
-                    className="mt-4 grid gap-4"
-                    onSubmit={(e) => void handleSubmit(e)}
-                  >
-                    <Input
-                      required
-                      type="email"
-                      value={form.email}
-                      onChange={updateField("email")}
-                      placeholder="Email address"
-                      className="h-12 rounded-none border-[#274b7d]/20 bg-white [font-family:var(--font-anteriore-mono)] text-black placeholder:text-black/35 focus:border-[#274b7d]"
-                    />
-
-                    <Input
-                      required
-                      value={form.submissionLink}
-                      onChange={updateField("submissionLink")}
-                      placeholder="Submission link (GitHub, Loom, or demo URL)"
-                      className="h-12 rounded-none border-[#274b7d]/20 bg-white [font-family:var(--font-anteriore-mono)] text-black placeholder:text-black/35 focus:border-[#274b7d]"
-                    />
-
-                    <Textarea
-                      value={form.submissionNotes}
-                      onChange={updateField("submissionNotes")}
-                      placeholder="Submission notes (optional)"
-                      className="min-h-28 rounded-none border-[#274b7d]/20 bg-white [font-family:var(--font-anteriore-mono)] text-sm text-black placeholder:text-black/35 focus-visible:ring-1 focus-visible:ring-[#274b7d] focus-visible:ring-offset-0"
-                    />
-
-                    {isDevelopment ? (
-                      <p className="[font-family:var(--font-anteriore-mono)] text-xs text-[#274b7d]">
-                        Captcha is disabled in development mode.
-                      </p>
-                    ) : !token ? (
-                      <div className="relative my-1 flex w-full flex-col items-center">
-                        {!tokenFail ? (
-                          <Loader>Validating browser...</Loader>
-                        ) : (
-                          <Badge type="destructive" className="m-4">
-                            Unable to validate captcha.
-                          </Badge>
-                        )}
-                        <Turnstile
-                          siteKey={
-                            process.env.NEXT_PUBLIC_SERVER_API_KEY_TURNSTILE!
-                          }
-                          onSuccess={(t) => {
-                            setToken(t);
-                            setTokenFail(false);
-                          }}
-                          onError={() => {
-                            setToken("");
-                            setTokenFail(true);
-                          }}
-                        />
-                      </div>
-                    ) : (
-                      <p className="[font-family:var(--font-anteriore-mono)] text-xs text-emerald-700">
-                        Browser verification complete.
-                      </p>
-                    )}
-
-                    <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
-                      <p className="[font-family:var(--font-anteriore-mono)] text-xs leading-5 text-black/65">
-                        We will send a confirmation to your email.
-                      </p>
-
-                      <Button
-                        type="submit"
-                        size="lg"
-                        disabled={isSubmitting}
-                        className="h-12 rounded-none border-2 border-[#274b7d] bg-gradient-to-r from-[#274b7d] to-[#1b3458] px-7 [font-family:var(--font-anteriore-heading)] text-sm font-bold uppercase tracking-[0.09em] text-white transition-colors hover:from-[#203e68] hover:to-[#162c49] w-full sm:w-auto"
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            Sending
-                          </>
-                        ) : (
-                          "Submit"
-                        )}
-                      </Button>
-                    </div>
-                  </form>
-
-                  {resultMessage && (
-                    <p
-                      className={cn(
-                        "mt-5 border px-4 py-3 [font-family:var(--font-anteriore-mono)] text-sm",
-                        isError
-                          ? "border-red-300 bg-red-50 text-red-700"
-                          : "border-emerald-300 bg-emerald-50 text-emerald-700",
-                      )}
-                    >
-                      {resultMessage}
-                    </p>
-                  )}
-                </div>
-              </div>
             </div>
           </div>
         </section>
