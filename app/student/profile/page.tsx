@@ -42,7 +42,7 @@ import {
 import { Loader } from "@/components/ui/loader";
 import { BoolBadge } from "@/components/ui/badge";
 import { cn, formatMonth, isValidPHNumber, toSafeString } from "@/lib/utils";
-import { MyUserPfp } from "@/components/shared/pfp";
+import { MyUserPfp, PFP_UPDATED_EVENT } from "@/components/shared/pfp";
 import { useAppContext } from "@/lib/ctx-app";
 import {
   createEditForm,
@@ -239,6 +239,7 @@ export default function ProfilePage() {
                       void queryClient.invalidateQueries({
                         queryKey: ["my-profile"],
                       });
+                      window.dispatchEvent(new Event(PFP_UPDATED_EVENT));
                       toast.success(
                         "Profile photo uploaded successfully.",
                         toastPresets.success,
