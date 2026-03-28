@@ -78,8 +78,6 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
   const [activating, setActivating] = useState(false);
   const [countdown, setCountdown] = useState(0);
 
-  console.log("profile details", profile.data);
-
   useEffect(() => {
     if (!eduEmail?.trim()) return setIsEmailValid(false);
     if (!eduEmail.endsWith(".edu.ph")) return setIsEmailValid(false);

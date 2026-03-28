@@ -97,7 +97,6 @@ export const Stepper = ({
   onBack?: (newStep: number) => void;
 }) => {
   const currentStep = steps[step];
-
   if (!currentStep) return <></>;
 
   return (
