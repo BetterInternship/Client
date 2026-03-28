@@ -154,16 +154,6 @@ export default function ProfilePage() {
 
   useBlockPageRefreshEffect(isEditing);
 
-  useEffect(() => {
-    if (
-      !isProfileResume(profile.data) ||
-      !isProfileBaseComplete(profile.data) ||
-      profile.data?.acknowledged_auto_apply === false
-    ) {
-      router.push(`/forms`);
-    }
-  }, []);
-
   if (profile.isPending) {
     return (
       <div className="min-h-screen grid place-items-center">
@@ -183,11 +173,7 @@ export default function ProfilePage() {
     );
   }
 
-  if (
-    !isProfileResume(profile.data) ||
-    !isProfileBaseComplete(profile.data) ||
-    profile.data?.acknowledged_auto_apply === false
-  ) {
+  if (!isProfileResume(profile.data) || !isProfileBaseComplete(profile.data)) {
     return (
       <div className="flex flex-col gap-4 items-center justify-center h-full">
         <FileQuestion className="text-warning w-20 h-20" />
