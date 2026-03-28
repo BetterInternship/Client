@@ -68,6 +68,7 @@ import { useProfileActions } from "@/lib/api/student.actions.api";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
+import { useBlockPageRefreshEffect } from "@/hooks/use-refresh-block";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
@@ -151,19 +152,7 @@ export default function ProfilePage() {
     if (data?.resume) void syncResumeURL();
   }, [data?.resume, syncResumeURL]);
 
-  useEffect(() => {
-    if (!isEditing) return;
-
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-      event.returnValue = "";
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [isEditing]);
+  useBlockPageRefreshEffect(isEditing);
 
   useEffect(() => {
     if (

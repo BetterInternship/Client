@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 06:01:21
- * @ Modified time: 2026-02-01 21:10:38
+ * @ Modified time: 2026-03-28 18:54:09
  * @ Description:
  *
  * Properly handles dealing with files stored in GCS and their local state.
@@ -9,16 +9,7 @@
  */
 
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
-import {
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from "react";
-import { useModal } from "@/hooks/use-modal";
-import { TriangleAlert } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useCallback, useImperativeHandle, useRef, useState } from "react";
 
 interface IUseFile {
   url: string;
@@ -196,28 +187,28 @@ export const useFileUpload = ({
    */
   const upload = async (file?: File | null) => {
     if (!file) return false;
-    
+
     try {
       // Perform the file upload
       setIsUploading(true);
       const form = FileUploadFormBuilder.new(filename);
       form.file(file);
-  
+
       // Check for success
       const result = (await uploader(form.build())) as { success?: boolean };
       setResponse(result);
-  
+
       if (!result.success) {
         if (!silent) alert("Upload failed.");
         return false;
-      };
+      }
 
       if (!silent) alert("File uploaded successfully!");
       return true;
     } catch (error) {
       console.error("Upload failed: ", error);
       setResponse({ success: false });
-      
+
       if (!silent) alert("Upload failed. Please try again later.");
     } finally {
       setIsUploading(false);
