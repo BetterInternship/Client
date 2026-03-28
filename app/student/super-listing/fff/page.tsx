@@ -262,8 +262,8 @@ export default function FFFPage() {
                     <ArrowUpRight className="h-3.5 w-3.5" />
                   </Link>{" "}
                   is building a new startup accelerator designed to outbuild
-                  legacy programs. Backed by founders from Miro, Pitch,
-                  Supercell, and WeTransfer.
+                  legacy programs. Backed by founders from Miro, Pitch, and
+                  WeTransfer.
                 </p>
                 <p>
                   The hard part is not building the accelerator. It is finding
