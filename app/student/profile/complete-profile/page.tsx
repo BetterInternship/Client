@@ -243,7 +243,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
       });
     }
 
-    if (existingProfile.data?.acknowledged_auto_apply === false) {
+    if (!existingProfile.data?.acknowledged_auto_apply) {
       s.push({
         id: "auto-apply",
         title: "Auto-apply settings",
@@ -261,7 +261,6 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
     response,
     file,
     uploadPromise,
-    existingProfile.data,
     profile,
     isUpdating,
     autoApply,
@@ -276,9 +275,6 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
   // Next behavior
   const onNext = async () => {
     const current = steps[step];
-
-    console.log(current);
-
     if (!current) return;
 
     if (current.id === "resume") {
@@ -321,10 +317,7 @@ function CompleteProfileStepper({ onFinish }: { onFinish: () => void }) {
           },
         },
       })
-        .then(async () => {
-          await queryClient.invalidateQueries({
-            queryKey: ["my-profile"],
-          });
+        .then(() => {
           setIsUpdating(false);
           const isLast = step + 1 >= steps.length;
           if (isLast) setShowComplete(true);
