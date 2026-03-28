@@ -69,11 +69,6 @@ export const Header: React.FC = () => {
             </Link>
           </div>
         )}
-        {/* {routeExcluded(noProfileRoutes) ? (
-          <ProfileButton />
-        ) : (
-          <div className="w-1 h-10 bg-transparent"></div>
-        )} */}
         {/* Right: Desktop profile / Mobile burger & floating action button*/}
         {showProfileButton ? (
           isMobile ? (

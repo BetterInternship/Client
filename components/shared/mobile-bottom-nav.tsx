@@ -56,7 +56,7 @@ const NavButton: React.FC<NavButtonProps> = ({
     <button
       onClick={onClick}
       className={cn(
-        "flex-1 flex flex-col items-center justify-center h-full gap-0.5 text-xs font-medium transition-colors border rounded",
+        "flex-1 flex flex-col items-center justify-center h-full gap-0.5 text-xs font-medium transition-colors border py-2",
         isAccent
           ? "bg-primary/10 text-primary border-transparent hover:bg-primary/15"
           : isActive
