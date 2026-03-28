@@ -114,7 +114,7 @@ export default function ProfilePage() {
       await UserService.updateMyProfile({
         apply_for_me: newEnabled,
         auto_apply_enabled_at: newEnabled ? new Date().toISOString() : null,
-      })
+      });
       void queryClient.invalidateQueries({ queryKey: ["my-profile"] });
 
       // console.log("apply_for_me: ", profile?.data?.apply_for_me);
@@ -148,15 +148,7 @@ export default function ProfilePage() {
     if (data?.resume) void syncResumeURL();
   }, [data?.resume, syncResumeURL]);
 
-  useEffect(() => {
-    if (
-      !isProfileResume(profile.data) ||
-      !isProfileBaseComplete(profile.data) ||
-      profile.data?.acknowledged_auto_apply === false
-    ) {
-      router.push(`/forms`);
-    }
-  }, []);
+  useBlockPageRefreshEffect(isEditing);
 
   if (profile.isPending) {
     return (
@@ -177,11 +169,7 @@ export default function ProfilePage() {
     );
   }
 
-  if (
-    !isProfileResume(profile.data) ||
-    !isProfileBaseComplete(profile.data) ||
-    profile.data?.acknowledged_auto_apply === false
-  ) {
+  if (!isProfileResume(profile.data) || !isProfileBaseComplete(profile.data)) {
     return (
       <div className="flex flex-col gap-4 items-center justify-center h-full">
         <FileQuestion className="text-warning w-20 h-20" />
@@ -1454,10 +1442,14 @@ const ResumeBox = ({
         onSelect={async (file) => {
           // filename display removed by design
           const success = await resumeUpload(file);
-          
-          if(success) {
+
+          if (success) {
             queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-          } 
+            toast.success(
+              "Resume uploaded successfully.",
+              toastPresets.success,
+            );
+          }
         }}
       />
 
