@@ -3,7 +3,6 @@
 import {
   type ChangeEvent,
   type FormEvent,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -20,7 +19,6 @@ import { cn } from "@/lib/utils";
 import { Loader } from "@/components/ui/loader";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Badge } from "@/components/ui/badge";
-import { useMobile } from "@/hooks/use-mobile";
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],
@@ -79,7 +77,6 @@ const PANEL_TABS: Array<{ key: PanelKey; label: string }> = [
 
 export default function ParalumanPage() {
   const isDevelopment = process.env.NODE_ENV === "development";
-  const { isMobile } = useMobile();
 
   const [form, setForm] = useState<ParalumanSubmissionForm>(INITIAL_FORM_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -89,37 +86,10 @@ export default function ParalumanPage() {
   const [tokenFail, setTokenFail] = useState(false);
   const [activePanel, setActivePanel] = useState<PanelKey>("overview");
   const [submissionStep, setSubmissionStep] = useState<SubmissionStep>(1);
-  const [isSubmissionInView, setIsSubmissionInView] = useState(false);
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const panelSectionRef = useRef<HTMLElement | null>(null);
   const submissionPanelRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const root = scrollContainerRef.current;
-    const target = submissionPanelRef.current;
-
-    if (!isMobile || !root || !target) {
-      setIsSubmissionInView(false);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsSubmissionInView(entry.isIntersecting);
-      },
-      {
-        root,
-        threshold: 0.2,
-      },
-    );
-
-    observer.observe(target);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [activePanel, isMobile, submissionStep]);
 
   const endpoint = useMemo(() => {
     const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
@@ -260,8 +230,6 @@ export default function ParalumanPage() {
 
   const hasChallengePdf = CHALLENGE_PDF_URL.trim().length > 0;
   const hasChallengeVideo = CHALLENGE_VIDEO_URL.trim().length > 0;
-  const showMobileStickySubmit =
-    isMobile && activePanel !== "submission" && !isSubmissionInView;
 
   return (
     <main
@@ -302,7 +270,7 @@ export default function ParalumanPage() {
         <section className="sticky top-0 z-40 px-4 py-2 sm:px-8 sm:py-3 lg:px-10">
           <div className="mx-auto max-w-lg rounded-[0.33em] border border-[rgba(114,6,140,0.3)] bg-white/80 p-2 shadow-[0_12px_30px_-24px_rgba(114,6,140,0.6)] backdrop-blur-md supports-[backdrop-filter]:bg-white/70">
             <div className="relative">
-              <div className="flex gap-1 overflow-x-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:grid sm:grid-cols-3 sm:pr-0">
+              <div className="grid grid-cols-3 gap-1">
                 {PANEL_TABS.map((tab) => {
                   const isActive = activePanel === tab.key;
                   return (
@@ -319,7 +287,7 @@ export default function ParalumanPage() {
                           : openPanel(tab.key)
                       }
                       className={cn(
-                        "relative min-w-[5.9rem] overflow-hidden rounded-[0.33em] px-2.5 py-2 text-center [font-family:var(--font-paraluman-mono)] text-[10px] font-semibold uppercase tracking-[0.06em] transition-all duration-200 transform-gpu active:scale-[0.97] after:pointer-events-none after:absolute after:inset-0 after:rounded-[0.33em] after:bg-white/20 after:opacity-0 after:transition-opacity after:duration-150 active:after:opacity-100 sm:min-w-0 sm:px-2.5 sm:py-2 sm:text-xs md:px-2.5 md:py-2 md:text-xs md:tracking-[0.06em]",
+                        "relative w-full overflow-hidden rounded-[0.33em] px-2.5 py-2 text-center [font-family:var(--font-paraluman-mono)] text-[10px] font-semibold uppercase tracking-[0.06em] transition-all duration-200 transform-gpu active:scale-[0.97] after:pointer-events-none after:absolute after:inset-0 after:rounded-[0.33em] after:bg-white/20 after:opacity-0 after:transition-opacity after:duration-150 active:after:opacity-100 sm:px-2.5 sm:py-2 sm:text-xs md:px-2.5 md:py-2 md:text-xs md:tracking-[0.06em]",
                         isActive
                           ? "bg-gradient-to-r from-[#72068c] to-[#5a0570] text-white shadow-[0_8px_16px_-12px_rgba(114,6,140,0.75)]"
                           : "text-black/70 hover:bg-white/70 hover:text-black",
@@ -689,19 +657,11 @@ export default function ParalumanPage() {
           </div>
         </section>
       </div>
-
-      {showMobileStickySubmit && (
-        <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[rgba(114,6,140,0.2)] bg-white/95 p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur sm:hidden">
-          <Button
-            type="button"
-            onClick={openSubmissionPanel}
-            className="h-12 w-full rounded-[0.33em] border-2 border-[#72068c] bg-gradient-to-r from-[#72068c] to-[#5a0570] [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.09em] text-white"
-          >
-            Apply
-          </Button>
-        </div>
-      )}
     </main>
   );
 }
+
+
+
+
 
