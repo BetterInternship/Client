@@ -9,7 +9,16 @@ import {
 } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowUpRight, Check, Loader2, Zap } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  FileText,
+  FolderOpen,
+  Globe,
+  Loader2,
+  Video,
+  Zap,
+} from "lucide-react";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import paralumanLogo from "./logo.png";
 import { Button } from "@/components/ui/button";
@@ -33,7 +42,7 @@ const monoFont = JetBrains_Mono({
 });
 
 const CEO_PROFILE = {
-  name: "Anna Mae YU Lamentillo",
+  name: "Anna Mae Yu Lamentillo",
   role: "Paraluman CEO, \nFormer Undersecretary of DICT,\nFormer Chairperson of Build, Build, Build program",
   imageSrc:
     "https://images.gmanews.tv/webpics/2024/10/Untitled_design_(28)_2024_10_03_15_20_56.jpg",
@@ -434,48 +443,35 @@ export default function ParalumanPage() {
               {activePanel === "submission" && (
                 <div ref={submissionPanelRef} className="w-full space-y-6">
                   <div className="rounded-[0.33em] border-2 border-[rgba(114,6,140,0.3)] bg-gradient-to-br from-[rgba(114,6,140,0.05)] to-white p-4 sm:p-8">
-                    <div className="mb-6 space-y-4">
-                      <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.2em] text-[#72068c]">
+                    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <p className="[font-family:var(--font-paraluman-mono)]  font-black uppercase  text-[#72068c]">
                         Apply
                       </p>
 
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                        <div className="flex items-center gap-2">
-                          <div
+                      <div className="w-full sm:w-64 sm:text-right">
+                        <p className="[font-family:var(--font-paraluman-mono)] text-[10px] font-semibold uppercase  text-black/55">
+                          Step {submissionStep} -{" "}
+                          {submissionStep === 1
+                            ? "Submission Link"
+                            : "Personal Info"}
+                        </p>
+                        <div className="mt-2 grid w-full grid-cols-2 gap-1.5 sm:ml-auto sm:w-40">
+                          <span
                             className={cn(
-                              "flex h-8 w-8 items-center justify-center rounded-[0.33em] border text-sm font-bold",
-                              submissionStep === 1
-                                ? "border-emerald-600 bg-emerald-600 text-white"
-                                : "border-emerald-600 bg-emerald-600 text-white",
+                              "h-1.5 w-full rounded-full transition-colors",
+                              submissionStep >= 1
+                                ? "bg-[#72068c]"
+                                : "bg-black/15",
                             )}
-                          >
-                            {submissionStep === 1 ? (
-                              "1"
-                            ) : (
-                              <Check className="h-4 w-4" />
-                            )}
-                          </div>
-                          <span className="[font-family:var(--font-paraluman-mono)] text-[10px] font-semibold uppercase tracking-[0.08em] text-black/70 sm:text-xs sm:tracking-[0.12em]">
-                            Apply
-                          </span>
-                        </div>
-
-                        <div className="h-6 w-px bg-[rgba(114,6,140,0.2)] sm:h-px sm:w-auto sm:flex-1" />
-
-                        <div className="flex items-center gap-2">
-                          <div
+                          />
+                          <span
                             className={cn(
-                              "flex h-8 w-8 items-center justify-center rounded-[0.33em] border text-sm font-bold",
-                              submissionStep === 2
-                                ? "border-[#72068c] bg-[#72068c] text-white"
-                                : "border-[rgba(114,6,140,0.3)] bg-white text-black/70",
+                              "h-1.5 w-full rounded-full transition-colors",
+                              submissionStep >= 2
+                                ? "bg-[#72068c]"
+                                : "bg-black/15",
                             )}
-                          >
-                            2
-                          </div>
-                          <span className="[font-family:var(--font-paraluman-mono)] text-[10px] font-semibold uppercase tracking-[0.08em] text-black/70 sm:text-xs sm:tracking-[0.12em]">
-                            Personal Info
-                          </span>
+                          />
                         </div>
                       </div>
                     </div>
@@ -497,9 +493,23 @@ export default function ParalumanPage() {
                               placeholder="https://github.com/yourname/project or demo URL"
                               className="h-11 border-2 border-[rgba(114,6,140,0.3)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
                             />
-                            <p className="[font-family:var(--font-paraluman-mono)] text-xs text-black/50">
-                              GitHub repo, live demo, Loom video, or project
-                              link.
+                            <p className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 [font-family:var(--font-paraluman-mono)] text-[10px] text-black/55 sm:text-[11px]">
+                              <span className="inline-flex items-center gap-1">
+                                <FolderOpen className="h-3 w-3 shrink-0" />
+                                Google Drive
+                              </span>
+                              <span className="inline-flex items-center gap-1">
+                                <FileText className="h-3 w-3 shrink-0" />
+                                Google Docs
+                              </span>
+                              <span className="inline-flex items-center gap-1">
+                                <Globe className="h-3 w-3 shrink-0" />
+                                Live Demo
+                              </span>
+                              <span className="inline-flex items-center gap-1">
+                                <Video className="h-3 w-3 shrink-0" />
+                                YouTube
+                              </span>
                             </p>
                           </div>
 
@@ -605,24 +615,25 @@ export default function ParalumanPage() {
                           <Button
                             type="button"
                             onClick={goToStepTwo}
-                            className="inline-flex w-full items-center justify-center gap-2 border-2 border-[#72068c] bg-gradient-to-r from-[#72068c] to-[#5a0570] px-8 py-3 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:shadow-lg sm:w-auto"
+                            className="inline-flex w-full items-center justify-center gap-2 border-2 border-[#72068c] bg-gradient-to-r from-[#72068c] to-[#5a0570]  [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:shadow-lg sm:w-auto"
                           >
                             Next Step
                           </Button>
                         ) : (
-                          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                          <div className="flex w-full gap-2 sm:w-auto sm:items-center">
                             <Button
                               type="button"
                               variant="outline"
                               onClick={() => setSubmissionStep(1)}
-                              className="w-full border-[rgba(114,6,140,0.4)] text-[#72068c] sm:w-auto"
+                              className="inline-flex h-11 w-1/3 items-center justify-center gap-1.5 rounded-[0.33em] border-2 border-[rgba(114,6,140,0.35)] bg-white/90 px-3 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.08em] text-[#72068c] transition-colors hover:bg-white sm:w-auto"
                             >
+                              <ArrowLeft className="h-4 w-4" />
                               Back
                             </Button>
                             <Button
                               type="submit"
                               disabled={isSubmitting}
-                              className="inline-flex w-full items-center justify-center gap-2 border-2 border-[#72068c] bg-gradient-to-r from-[#72068c] to-[#5a0570] px-8 py-3 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:shadow-lg disabled:opacity-50 sm:w-auto"
+                              className="inline-flex h-11 w-2/3 items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#72068c] bg-gradient-to-r from-[#72068c] to-[#5a0570] px-6 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:shadow-lg disabled:opacity-50 sm:min-w-36 sm:w-auto"
                             >
                               {isSubmitting ? (
                                 <>
@@ -660,8 +671,3 @@ export default function ParalumanPage() {
     </main>
   );
 }
-
-
-
-
-
