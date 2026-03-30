@@ -490,7 +490,6 @@ export default function ParalumanPage() {
                               required
                               value={form.submissionLink}
                               onChange={updateField("submissionLink")}
-                              placeholder="https://github.com/yourname/project or demo URL"
                               className="h-11 border-2 border-[rgba(114,6,140,0.3)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
                             />
                             <p className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 [font-family:var(--font-paraluman-mono)] text-[10px] text-black/55 sm:text-[11px]">
@@ -520,7 +519,6 @@ export default function ParalumanPage() {
                             <Textarea
                               value={form.submissionNotes}
                               onChange={updateField("submissionNotes")}
-                              placeholder="Tell us about your approach, challenges, or key learnings..."
                               className="min-h-28 border-2 border-[rgba(114,6,140,0.3)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
                             />
                           </div>
@@ -538,7 +536,6 @@ export default function ParalumanPage() {
                               type="email"
                               value={form.email}
                               onChange={updateField("email")}
-                              placeholder="name@example.com"
                               className="h-11 border-2 border-[rgba(114,6,140,0.3)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
                             />
                           </div>
@@ -551,7 +548,6 @@ export default function ParalumanPage() {
                               required
                               value={form.fullName}
                               onChange={updateField("fullName")}
-                              placeholder="Your full name"
                               className="h-11 border-2 border-[rgba(114,6,140,0.3)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
                             />
                           </div>
@@ -564,7 +560,6 @@ export default function ParalumanPage() {
                               required
                               value={form.facebookLink}
                               onChange={updateField("facebookLink")}
-                              placeholder="https://facebook.com/yourprofile"
                               className="h-11 border-2 border-[rgba(114,6,140,0.3)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
                             />
                           </div>
