@@ -16,10 +16,18 @@ export function HowToApplyPanel({
   return (
     <div className="space-y-6">
       <div className="overflow-hidden rounded-[0.33em] border-2 border-[rgba(114,6,140,0.22)] bg-white shadow-[0_24px_55px_-35px_rgba(114,6,140,0.75)]">
-        <div className="space-y-4 bg-gradient-to-br from-[#72068c] via-[#5a0570] to-[#4a0460] px-6 py-7 text-white sm:px-8 sm:py-8">
+        <div className=" flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between bg-gradient-to-br from-[#72068c] via-[#5a0570] to-[#4a0460] px-6 py-7 text-white sm:px-8 sm:py-8">
           <p className="[font-family:var(--font-paraluman-heading)] text-2xl text-white font-black uppercase tracking-[-0.02em] sm:text-3xl">
             Complete this challenge to apply
           </p>
+
+          <Button
+            type="button"
+            onClick={onGoToApply}
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-white bg-white/95 px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#72068c] transition-all duration-200 hover:bg-white hover:shadow-lg sm:w-auto"
+          >
+            Apply
+          </Button>
         </div>
 
         <div className="space-y-6 px-6 py-7 sm:px-8 sm:py-8">

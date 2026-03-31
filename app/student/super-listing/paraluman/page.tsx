@@ -9,6 +9,7 @@ import { OverviewPanel } from "./components/OverviewPanel";
 import { HowToApplyPanel } from "./components/HowToApplyPanel";
 import { ApplyPanel } from "./components/ApplyPanel";
 import { HeroPanel } from "./components/HeroPanel";
+import paralumanLogo from "./logo.png";
 import type {
   CEOProfile,
   PanelKey,
@@ -294,22 +295,42 @@ export default function ParalumanPage() {
       >
         <header
           className={cn(
-            " top-0 z-[9999] flex items-center justify-between px-6 py-3 transition-all duration-300 sm:px-8 lg:px-10 border-b border-transparent bg-transparent shadow-none backdrop-blur-0",
+            " top-0 z-[9999] flex items-center justify-between px-4 py-3 transition-all duration-300 sm:px-8 lg:px-10 border-b border-transparent bg-transparent shadow-none backdrop-blur-0",
           )}
         >
           {" "}
-          <Link
-            href="/"
-            className="transition-opacity duration-200 hover:opacity-70"
-          >
-            <Image
-              src="/BetterInternshipLogo.png"
-              alt="BetterInternship"
-              width={40}
-              height={40}
-              className="h-10 w-10 sm:h-12 sm:w-12"
-            />
-          </Link>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              href="/"
+              className="transition-opacity duration-200 hover:opacity-70"
+            >
+              <Image
+                src="/BetterInternshipLogo.png"
+                alt="BetterInternship"
+                width={40}
+                height={40}
+                className="h-10 w-10 sm:h-12 sm:w-12"
+              />
+            </Link>
+
+            <span className="text-xs font-semibold uppercase text-black/45">
+              x
+            </span>
+
+            <Link
+              href="https://www.paraluman.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-opacity duration-200 hover:opacity-75"
+            >
+              <Image
+                src={paralumanLogo}
+                alt="Paraluman"
+                className="h-7 w-auto sm:h-8"
+                priority
+              />
+            </Link>
+          </div>
         </header>
 
         <section className="sticky top-0 z-40 px-4 py-2 sm:px-8 sm:py-3 lg:px-10">
