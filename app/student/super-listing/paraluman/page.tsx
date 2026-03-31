@@ -298,15 +298,17 @@ export default function ParalumanPage() {
                       type="button"
                       onClick={() => openPanel(tab.key)}
                       className={cn(
-                        "relative w-full overflow-hidden rounded-[0.33em] px-1.5 py-2 text-center [font-family:var(--font-paraluman-mono)] font-semibold uppercase transition-all duration-200 transform-gpu active:scale-[0.97] after:pointer-events-none after:absolute after:inset-0 after:rounded-[0.33em] after:bg-white/20 after:opacity-0 after:transition-opacity after:duration-150 active:after:opacity-100 sm:px-2",
+                        "relative flex min-h-10 w-full items-center justify-center overflow-hidden rounded-[0.33em] px-1.5 py-2 text-center [font-family:var(--font-paraluman-mono)] font-semibold uppercase transition-all duration-200 transform-gpu active:scale-[0.97] after:pointer-events-none after:absolute after:inset-0 after:rounded-[0.33em] after:bg-white/20 after:opacity-0 after:transition-opacity after:duration-150 active:after:opacity-100 sm:min-h-[2.625rem] sm:px-2",
                         isActive
                           ? "bg-gradient-to-r from-[#72068c] to-[#5a0570] text-white shadow-[0_8px_16px_-12px_rgba(114,6,140,0.75)]"
                           : "text-black/70 hover:bg-white/70 hover:text-black",
                       )}
                     >
-                      <span className="inline-flex items-center justify-center gap-1 whitespace-nowrap text-[9px] tracking-[0.03em] sm:gap-2 sm:text-xs sm:tracking-[0.06em]">
-                        <span className="opacity-70">{tab.step}</span>
-                        <span>{tab.label}</span>
+                      <span className="inline-flex w-full items-center justify-center gap-1 whitespace-nowrap text-[9px] tracking-[0.02em] sm:gap-2 sm:text-xs sm:tracking-[0.06em]">
+                        <span className="inline-block min-w-[1.50em] text-center opacity-70">
+                          {tab.step}
+                        </span>
+                        <span className="text-center">{tab.label}</span>
                       </span>
                     </button>
                   );
