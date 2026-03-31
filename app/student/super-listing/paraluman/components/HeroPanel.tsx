@@ -76,26 +76,28 @@ export function HeroPanel({
             </div>
           </div>
 
-          <p className="mx-auto max-w-3xl [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/70 sm:text-base">
-            <Link
-              href="https://www.paraluman.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 font-semibold text-[#72068c] transition-opacity duration-200 hover:opacity-80"
-            >
-              Paraluman
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </Link>{" "}
-            is a youth-led Philippine news platform making every story
-            accessible in both English and Filipino.
-            <span className="mt-8 block">
-              Join our team to build and{" "}
-              <span className="font-bold text-[#72068c]">
-                improve how articles are created, processed, and published
-              </span>{" "}
-              to reach thousands of readers.
-            </span>
-          </p>
+          {showHowToApplyButton && (
+            <p className="mx-auto max-w-3xl [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/70 sm:text-base">
+              <Link
+                href="https://www.paraluman.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 font-semibold text-[#72068c] transition-opacity duration-200 hover:opacity-80"
+              >
+                Paraluman
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </Link>{" "}
+              is a youth-led Philippine news platform making every story
+              accessible in both English and Filipino.
+              <span className="mt-8 block">
+                Join our team to build and{" "}
+                <span className="font-bold text-[#72068c]">
+                  improve how articles are created, processed, and published
+                </span>{" "}
+                to reach thousands of readers.
+              </span>
+            </p>
+          )}
 
           {showHowToApplyButton && (
             <div className="pt-2">

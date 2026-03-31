@@ -59,9 +59,9 @@ const PANEL_TABS: Array<{
   label: string;
   step: string;
 }> = [
-  { key: "overview", label: "Overview", step: "01" },
-  { key: "challenge", label: "How to apply", step: "02" },
-  { key: "submission", label: "Apply", step: "03" },
+  { key: "overview", label: "Overview", step: "1" },
+  { key: "challenge", label: "How to apply", step: "2" },
+  { key: "submission", label: "Apply", step: "3" },
 ];
 
 export default function ParalumanPage() {
@@ -287,21 +287,31 @@ export default function ParalumanPage() {
         </header>
 
         <section className="sticky top-0 z-40 px-4 py-2 sm:px-8 sm:py-3 lg:px-10">
-          <div className="mx-auto max-w-3xl rounded-[0.33em] border border-[rgba(114,6,140,0.3)] bg-white/80 p-2 shadow-[0_12px_30px_-24px_rgba(114,6,140,0.6)] backdrop-blur-md supports-[backdrop-filter]:bg-white/70">
+          <div className="mx-auto max-w-3xl">
             <div className="relative">
-              <div className="grid grid-cols-3 items-center gap-1.5">
-                {PANEL_TABS.map((tab) => {
+              <div className="flex items-stretch overflow-hidden rounded-[0.33em] bg-white shadow-[0_12px_30px_-24px_rgba(114,6,140,0.6)]">
+                {PANEL_TABS.map((tab, index) => {
                   const isActive = activePanel === tab.key;
+                  const isFirst = index === 0;
+                  const isLast = index === PANEL_TABS.length - 1;
+                  const tabClipPath = isFirst
+                    ? "polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%)"
+                    : isLast
+                      ? "polygon(0 0, 100% 0, 100% 100%, 0 100%, 12px 50%)"
+                      : "polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%)";
+                  const tabZIndex = isActive ? 20 : index + 1;
                   return (
                     <button
                       key={tab.key}
                       type="button"
                       onClick={() => openPanel(tab.key)}
+                      style={{ clipPath: tabClipPath, zIndex: tabZIndex }}
                       className={cn(
-                        "relative flex min-h-10 w-full items-center justify-center overflow-hidden rounded-[0.33em] px-1.5 py-2 text-center [font-family:var(--font-paraluman-mono)] font-semibold uppercase transition-all duration-200 transform-gpu active:scale-[0.97] after:pointer-events-none after:absolute after:inset-0 after:rounded-[0.33em] after:bg-white/20 after:opacity-0 after:transition-opacity after:duration-150 active:after:opacity-100 sm:min-h-[2.625rem] sm:px-2",
+                        "relative flex min-h-10 flex-1 items-center justify-center overflow-hidden px-1.5 py-2 text-center [font-family:var(--font-paraluman-mono)] font-semibold uppercase transition-all duration-200 transform-gpu active:scale-[0.97] after:pointer-events-none after:absolute after:inset-0 after:bg-white/20 after:opacity-0 after:transition-opacity after:duration-150 active:after:opacity-100 sm:min-h-[2.625rem] sm:px-2",
+                        !isFirst && "-ml-3 sm:-ml-4",
                         isActive
                           ? "bg-gradient-to-r from-[#72068c] to-[#5a0570] text-white shadow-[0_8px_16px_-12px_rgba(114,6,140,0.75)]"
-                          : "text-black/70 hover:bg-white/70 hover:text-black",
+                          : "bg-white/85 text-black/70 hover:bg-white hover:text-black",
                       )}
                     >
                       <span className="inline-flex w-full items-center justify-center gap-1 whitespace-nowrap text-[9px] tracking-[0.02em] sm:gap-2 sm:text-xs sm:tracking-[0.06em]">
@@ -318,11 +328,13 @@ export default function ParalumanPage() {
           </div>
         </section>
 
-        <HeroPanel
-          hiringBadgeText={HIRING_BADGE_TEXT}
-          onHowToApply={openChallengePanel}
-          showHowToApplyButton={activePanel === "overview"}
-        />
+        {activePanel === "overview" && (
+          <HeroPanel
+            hiringBadgeText={HIRING_BADGE_TEXT}
+            onHowToApply={openChallengePanel}
+            showHowToApplyButton={activePanel === "overview"}
+          />
+        )}
 
         <section ref={panelSectionRef} className="relative">
           <div className="px-6 py-12 sm:px-8 sm:py-16 lg:px-10">

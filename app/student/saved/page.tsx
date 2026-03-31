@@ -15,15 +15,14 @@ import { Job, SavedJob } from "@/lib/db/db.types";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { Separator } from "@/components/ui/separator";
 import { PageError } from "@/components/ui/error";
-import { useJobActions } from "@/lib/api/student.actions.api";
-import { cn, formatTimeAgo } from "@/lib/utils";
+import { SaveJobButton } from "@/components/features/student/job/save-job-button";
+import { cn } from "@/lib/utils";
 
 type SavedJobItem = SavedJob & Partial<Job>;
 
 export default function SavedJobsPage() {
   const { isAuthenticated, redirectIfNotLoggedIn } = useAuthContext();
   const jobs = useJobsData();
-  const jobActions = useJobActions();
   const savedJobs = React.useMemo(
     () =>
       [...(jobs.savedJobs as SavedJobItem[])].sort((a, b) => {
@@ -92,16 +91,6 @@ export default function SavedJobsPage() {
               <SavedJobCard
                 key={savedJob.id ?? savedJob.job_id ?? `saved-job-${index}`}
                 savedJob={savedJob}
-                handleUnsaveJob={() => {
-                  const targetJobId =
-                    savedJob.job_id ??
-                    savedJob.id ??
-                    savedJob.job?.id ??
-                    savedJob.jobs?.id;
-                  if (!targetJobId) return;
-                  void jobActions.toggleSave.mutateAsync(targetJobId);
-                }}
-                saving={jobActions.toggleSave.isPending}
               />
             ))}
           </div>
@@ -111,15 +100,7 @@ export default function SavedJobsPage() {
   );
 }
 
-const SavedJobCard = ({
-  savedJob,
-  handleUnsaveJob,
-  saving,
-}: {
-  savedJob: SavedJobItem;
-  handleUnsaveJob: () => void;
-  saving: boolean;
-}) => {
+const SavedJobCard = ({ savedJob }: { savedJob: SavedJobItem }) => {
   const router = useRouter();
   const job = savedJob.job ?? savedJob.jobs ?? savedJob;
   const jobRecord = job as Record<string, unknown> | undefined;
@@ -131,16 +112,13 @@ const SavedJobCard = ({
     Boolean(superListingTitle) ||
     (typeof challengeTitleFromJoin === "string" &&
       challengeTitleFromJoin.trim().length > 0);
-  const isUnavailable = !job?.is_active || job?.is_deleted;
-  console.log("job", job);
+  const isUnavailable = job?.is_active === false || job?.is_deleted === true;
   const jobId = job.id ?? savedJob.job_id ?? savedJob.id;
   const canOpenListing = !!jobId && !isUnavailable;
-  const savedAt =
-    (savedJob as { saved_at?: string | null }).saved_at ??
-    savedJob.created_at ??
-    job.created_at ??
-    "";
-  const savedLabel = savedAt ? `Saved ${formatTimeAgo(savedAt)}` : "Saved";
+  const saveButtonJob = {
+    ...(job ?? {}),
+    id: jobId ?? "",
+  } as Job;
 
   return (
     <Card
@@ -170,25 +148,20 @@ const SavedJobCard = ({
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Badge type="accent">{savedLabel}</Badge>
             {isSuperListing && <SuperListingBadge compact className="w-fit" />}
             {isUnavailable && (
               <Badge type="destructive">Job no longer available.</Badge>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              size="xs"
-              variant="outline"
-              scheme="destructive"
-              disabled={saving}
-              onClick={(event) => {
-                event.stopPropagation();
-                handleUnsaveJob();
-              }}
-            >
-              Unsave
-            </Button>
+            {jobId ? (
+              <div
+                onClick={(event) => event.stopPropagation()}
+                onKeyDown={(event) => event.stopPropagation()}
+              >
+                <SaveJobButton job={saveButtonJob} />
+              </div>
+            ) : null}
             {canOpenListing && (
               <span className="inline-flex h-6 w-6 items-center justify-center rounded-[0.33em] bg-primary/5 text-primary/80">
                 <ArrowUpRight className="h-3.5 w-3.5" />

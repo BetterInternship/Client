@@ -50,33 +50,6 @@ export function OverviewPanel({
 }: OverviewPanelProps) {
   return (
     <div className="space-y-16 pt-4 sm:pt-8">
-      <div className="space-y-4">
-        <div className="inline-block rounded-[0.33em] border border-[rgba(114,6,140,0.4)] bg-white px-4 py-2">
-          <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.2em] text-[#72068c]">
-            Who We Are
-          </p>
-        </div>
-        <div className="max-w-3xl rounded-[0.33em] border-2 border-[rgba(114,6,140,0.2)] bg-white p-6 shadow-[0_16px_38px_-28px_rgba(114,6,140,0.65)] sm:p-8">
-          <p className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/75 sm:text-base">
-            Our newsroom product stack is built for fast bilingual publishing,
-            from drafting and translation to review and release.
-            <span className="mt-6 block">
-              As an intern, you will help design and ship tools that improve
-              editorial velocity, reduce manual steps, and raise story quality
-              for real readers.
-            </span>
-            <span className="mt-6 block">
-              We care about execution, ownership, and your ability to turn clear
-              problem statements into shipped systems.
-              <span className="font-bold text-[#72068c]">
-                {" "}
-                Build quickly. Iterate from feedback. Ship with impact.
-              </span>{" "}
-            </span>
-          </p>
-        </div>
-      </div>
-
       <div className="space-y-8">
         <div className="flex">
           <div className="inline-block rounded-[0.33em] border border-[rgba(114,6,140,0.4)] bg-white px-4 py-2">
