@@ -3,7 +3,7 @@
 // React imports
 import React from "react";
 import Link from "next/link";
-import { BookA } from "lucide-react";
+import { ArrowUpRight, BookA } from "lucide-react";
 
 // UI components
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,19 @@ import { cn } from "@/lib/utils";
 
 export default function ApplicationsPage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
-  const applications = useApplicationsData();
+  const rawApplications = useApplicationsData();
+
+  const applications = React.useMemo(
+    () => ({
+      ...rawApplications,
+      data: [...rawApplications.data].sort((a, b) => {
+        const firstDate = a.applied_at ? new Date(a.applied_at).getTime() : 0;
+        const secondDate = b.applied_at ? new Date(b.applied_at).getTime() : 0;
+        return secondDate - firstDate;
+      }),
+    }),
+    [rawApplications],
+  );
   redirectIfNotLoggedIn();
 
   return (
@@ -95,36 +107,62 @@ const ApplicationCard = ({ application }: { application: UserApplication }) => {
   const isSuperListing =
     typeof challengeTitleFromJoin === "string" &&
     challengeTitleFromJoin.trim().length > 0;
+  const isUnavailable = !job?.is_active || job?.is_deleted;
+  const canOpenListing = !!job?.id && !isUnavailable;
+  const statusLabel = to_app_status_name(application.status) ?? "Pending";
+  let statusBadgeType: "destructive" | "supportive" | "warning" = "warning";
+  if (statusLabel === "Rejected") statusBadgeType = "destructive";
+  else if (statusLabel === "Accepted" || statusLabel === "Hired")
+    statusBadgeType = "supportive";
+  else statusBadgeType = "warning";
 
-  return (
+  const cardContent = (
     <Card
-      key={application.id}
       className={cn(
-        "hover:shadow-lg transition-all",
+        canOpenListing &&
+          !isSuperListing &&
+          "cursor-pointer transition-colors hover:bg-primary/5 hover:border-primary/20",
+        canOpenListing &&
+          isSuperListing &&
+          "cursor-pointer hover:ring-1 hover:ring-primary/20",
         isSuperListing &&
           "super-card relative isolate overflow-hidden bg-[radial-gradient(ellipse_at_top_left,rgba(254,240,138,0.5),transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(251,146,60,0.18),transparent_35%),linear-gradient(150deg,rgba(255,251,235,1)_0%,rgba(255,255,255,1)_45%,rgba(254,243,199,0.98)_100%)]",
       )}
     >
-      <div className="flex flex-col gap-1">
-        {isSuperListing && <SuperListingBadge compact className="mb-2 w-fit" />}
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Badge type={statusBadgeType}>{statusLabel}</Badge>
+            {isSuperListing && <SuperListingBadge compact className="w-fit" />}
+          </div>
+          {canOpenListing ? (
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-[0.33em] bg-primary/5 text-primary/80">
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </span>
+          ) : (
+            isUnavailable && (
+              <Badge type="destructive">Job no longer available.</Badge>
+            )
+          )}
+        </div>
         <JobHead title={job?.title} employer={employer?.name} />
-        <div className="flex items-center gap-2 text-gray-600 mb-4">
+        <div className="flex items-center gap-2 text-gray-600">
           <Badge type="accent">
             Applied {formatTimeAgo(application.applied_at ?? "")}
           </Badge>
-          <Badge type="accent">{to_app_status_name(application.status)}</Badge>
-          {(!job?.is_active || job?.is_deleted) && (
-            <Badge type="destructive">Job no longer available.</Badge>
-          )}
-        </div>
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pt-3 border-t border-gray-100">
-          <Link href={`/search/${job?.id}`}>
-            <Button disabled={!job?.is_active || job?.is_deleted} size="sm">
-              View Details
-            </Button>
-          </Link>
         </div>
       </div>
     </Card>
+  );
+
+  if (!canOpenListing) return cardContent;
+
+  return (
+    <Link
+      href={`/search/${job?.id}`}
+      className="block rounded-[0.33em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+    >
+      {cardContent}
+    </Link>
   );
 };
