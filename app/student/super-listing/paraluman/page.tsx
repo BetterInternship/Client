@@ -55,10 +55,20 @@ const INITIAL_FORM_STATE: ParalumanSubmissionForm = {
   submissionNotes: "",
 };
 
-const PANEL_TABS: Array<{ key: PanelKey; label: string; step: string }> = [
-  { key: "overview", label: "Overview", step: "01" },
-  { key: "challenge", label: "How to apply", step: "02" },
-  { key: "submission", label: "Apply", step: "03" },
+const PANEL_TABS: Array<{
+  key: PanelKey;
+  label: string;
+  mobileLabel: string;
+  step: string;
+}> = [
+  { key: "overview", label: "Overview", mobileLabel: "Overview", step: "01" },
+  {
+    key: "challenge",
+    label: "How to apply",
+    mobileLabel: "Guide",
+    step: "02",
+  },
+  { key: "submission", label: "Apply", mobileLabel: "Apply", step: "03" },
 ];
 
 export default function ParalumanPage() {
@@ -156,42 +166,9 @@ export default function ParalumanPage() {
     });
   };
 
-  const goToStepThree = () => {
-    setResultMessage("");
-    setIsError(false);
-
-    if (
-      !form.email.trim() ||
-      !form.fullName.trim() ||
-      !form.facebookLink.trim()
-    ) {
-      setIsError(true);
-      setResultMessage("Please complete your personal information.");
-      return;
-    }
-
-    if (!isDevelopment && !token) {
-      setIsError(true);
-      setResultMessage("Please complete the browser verification first.");
-      return;
-    }
-
-    setSubmissionStep(3);
-    requestAnimationFrame(() => {
-      submissionPanelRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    });
-  };
-
   const goToNextStep = () => {
     if (submissionStep === 1) {
       goToStepTwo();
-      return;
-    }
-    if (submissionStep === 2) {
-      goToStepThree();
     }
   };
 
@@ -208,7 +185,7 @@ export default function ParalumanPage() {
     setResultMessage("");
     setIsError(false);
 
-    if (submissionStep !== 3) {
+    if (submissionStep !== 2) {
       setIsError(true);
       setResultMessage("Please complete all steps before submitting.");
       return;
@@ -334,9 +311,10 @@ export default function ParalumanPage() {
                             : "text-black/70 hover:bg-white/70 hover:text-black",
                         )}
                       >
-                        <span className="inline-flex items-center gap-3 text-[10px] tracking-[0.06em] sm:text-xs">
+                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[9px] tracking-[0.04em] sm:gap-3 sm:text-xs sm:tracking-[0.06em]">
                           <span className="opacity-70">{tab.step}</span>
-                          <span>{tab.label}</span>
+                          <span className="sm:hidden">{tab.mobileLabel}</span>
+                          <span className="hidden sm:inline">{tab.label}</span>
                         </span>
                       </button>
                       {index < PANEL_TABS.length - 1 && (

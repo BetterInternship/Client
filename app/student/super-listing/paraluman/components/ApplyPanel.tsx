@@ -1,9 +1,8 @@
 "use client";
 
-import { type ChangeEvent, type FormEvent } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useRef } from "react";
 import {
   ArrowLeft,
-  CheckCircle2,
   FileText,
   FolderOpen,
   Globe,
@@ -11,6 +10,8 @@ import {
   Video,
 } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
+import confetti from "canvas-confetti";
+import { motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -60,12 +61,45 @@ export function ApplyPanel({
   onTokenSuccess,
   onTokenError,
 }: ApplyPanelProps) {
-  const stepLabel =
-    submissionStep === 1
-      ? "Submission Link"
-      : submissionStep === 2
-        ? "Personal Info"
-        : "Review & Submit";
+  const prefersReduce = useReducedMotion();
+  const hasCelebratedRef = useRef(false);
+
+  useEffect(() => {
+    if (!hasSubmitted) {
+      hasCelebratedRef.current = false;
+      return;
+    }
+
+    if (hasCelebratedRef.current || prefersReduce) return;
+    if (typeof window === "undefined") return;
+
+    hasCelebratedRef.current = true;
+
+    type ConfettiFn = (
+      options?: Record<string, unknown>,
+    ) => Promise<null> | null;
+    const fireConfetti = confetti as unknown as ConfettiFn;
+
+    void fireConfetti({
+      particleCount: 90,
+      spread: 74,
+      startVelocity: 34,
+      origin: { y: 0.65 },
+      colors: ["#72068c", "#a855f7", "#f8b4ff", "#ffffff"],
+    });
+
+    window.setTimeout(() => {
+      void fireConfetti({
+        particleCount: 60,
+        spread: 60,
+        startVelocity: 28,
+        origin: { x: 0.75, y: 0.68 },
+        colors: ["#72068c", "#d946ef", "#ffffff"],
+      });
+    }, 180);
+  }, [hasSubmitted, prefersReduce]);
+
+  const stepLabel = submissionStep === 1 ? "Submission Link" : "Personal Info";
 
   const updateField =
     (field: keyof ParalumanSubmissionForm) =>
@@ -89,7 +123,7 @@ export function ApplyPanel({
             <p className="[font-family:var(--font-paraluman-mono)] text-[11px] font-semibold uppercase tracking-[0.08em] text-white/80">
               Step {submissionStep} - {stepLabel}
             </p>
-            <div className="mt-2 grid w-full grid-cols-3 gap-1.5 sm:ml-auto sm:w-48">
+            <div className="mt-2 grid w-full grid-cols-2 gap-1.5 sm:ml-auto sm:w-40">
               <span
                 className={cn(
                   "h-1.5 w-full rounded-full transition-colors",
@@ -102,12 +136,6 @@ export function ApplyPanel({
                   submissionStep >= 2 ? "bg-white" : "bg-white/30",
                 )}
               />
-              <span
-                className={cn(
-                  "h-1.5 w-full rounded-full transition-colors",
-                  submissionStep >= 3 ? "bg-white" : "bg-white/30",
-                )}
-              />
             </div>
           </div>
         )}
@@ -115,13 +143,22 @@ export function ApplyPanel({
 
       <div className="px-6 py-7 sm:px-8 sm:py-8">
         {hasSubmitted ? (
-          <div className="relative overflow-hidden rounded-[0.33em] border-2 border-[#72068c]/25 bg-white p-6 shadow-[0_18px_45px_-35px_rgba(114,6,140,0.85)] sm:p-8">
+          <motion.div
+            initial={prefersReduce ? false : { opacity: 0, y: 18, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.45, ease: "easeOut" }}
+            className="relative overflow-hidden rounded-[0.33em] border-2 border-[#72068c]/25 bg-white p-6 shadow-[0_18px_45px_-35px_rgba(114,6,140,0.85)] sm:p-8"
+          >
+            {!prefersReduce && (
+              <motion.div
+                className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,transparent_28%,rgba(255,255,255,0.6)_50%,transparent_72%)]"
+                initial={{ x: "-120%" }}
+                animate={{ x: "120%" }}
+                transition={{ duration: 0.9, ease: "easeOut", delay: 0.12 }}
+              />
+            )}
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(114,6,140,0.18),transparent_45%),radial-gradient(circle_at_bottom_left,rgba(114,6,140,0.1),transparent_50%)]" />
             <div className="relative z-10 flex flex-col gap-4">
-              <div className="inline-flex items-center gap-2 self-start rounded-full border border-[#72068c]/30 bg-[rgba(114,6,140,0.09)] px-3 py-1 [font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.12em] text-[#72068c]">
-                <CheckCircle2 className="h-4 w-4" />
-                Application sent
-              </div>
               <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black uppercase tracking-[-0.02em] text-[#72068c] sm:text-3xl">
                 You're in.
               </p>
@@ -142,7 +179,7 @@ export function ApplyPanel({
                 </Button>
               </div>
             </div>
-          </div>
+          </motion.div>
         ) : (
           <form className="space-y-5" onSubmit={(e) => void onSubmit(e)}>
             {submissionStep === 1 && (
@@ -257,46 +294,6 @@ export function ApplyPanel({
               </>
             )}
 
-            {submissionStep === 3 && (
-              <div className="space-y-4 rounded-[0.33em] border-2 border-[rgba(114,6,140,0.2)] bg-[rgba(114,6,140,0.04)] p-4 sm:p-5">
-                <p className="[font-family:var(--font-paraluman-heading)] text-base font-black uppercase tracking-[0.06em] text-[#72068c] sm:text-lg">
-                  Review your application
-                </p>
-                <div className="space-y-2 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/75">
-                  <p>
-                    <span className="font-semibold text-[#72068c]">Email:</span>{" "}
-                    {form.email}
-                  </p>
-                  <p>
-                    <span className="font-semibold text-[#72068c]">
-                      Full Name:
-                    </span>{" "}
-                    {form.fullName}
-                  </p>
-                  <p>
-                    <span className="font-semibold text-[#72068c]">
-                      Facebook Link:
-                    </span>{" "}
-                    {form.facebookLink}
-                  </p>
-                  <p>
-                    <span className="font-semibold text-[#72068c]">
-                      Application Link:
-                    </span>{" "}
-                    {form.submissionLink}
-                  </p>
-                  {form.submissionNotes.trim() ? (
-                    <p>
-                      <span className="font-semibold text-[#72068c]">
-                        Notes:
-                      </span>{" "}
-                      {form.submissionNotes}
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-            )}
-
             <div className="flex flex-col gap-3 border-t-2 border-[rgba(114,6,140,0.15)] pt-5 sm:flex-row sm:items-center sm:justify-between">
               <p className="[font-family:var(--font-paraluman-mono)] text-xs text-black/60">
                 We will send a confirmation to your email
@@ -310,25 +307,6 @@ export function ApplyPanel({
                 >
                   Next Step
                 </Button>
-              ) : submissionStep === 2 ? (
-                <div className="flex w-full gap-2 sm:w-auto sm:items-center">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={onBackStep}
-                    className="inline-flex h-11 w-1/3 items-center justify-center gap-1.5 rounded-[0.33em] border-2 border-[rgba(114,6,140,0.35)] bg-white/90 px-3 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.08em] text-[#72068c] transition-colors hover:bg-white sm:w-auto"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={onNextStep}
-                    className="inline-flex h-11 w-2/3 items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#72068c] bg-gradient-to-r from-[#72068c] to-[#5a0570] px-6 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:shadow-lg sm:min-w-36 sm:w-auto"
-                  >
-                    Review
-                  </Button>
-                </div>
               ) : (
                 <div className="flex w-full gap-2 sm:w-auto sm:items-center">
                   <Button
@@ -343,7 +321,7 @@ export function ApplyPanel({
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-flex h-11 w-2/3 items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#72068c] bg-gradient-to-r from-[#72068c] to-[#5a0570] px-6 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:shadow-lg disabled:opacity-50 sm:min-w-36 sm:w-auto"
+                    className="inline-flex h-11 w-2/3 items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#72068c] bg-gradient-to-r from-[#72068c] to-[#5a0570] px-6 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:shadow-lg sm:min-w-36 sm:w-auto"
                   >
                     {isSubmitting ? (
                       <>

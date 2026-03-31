@@ -1,6 +1,6 @@
 export type PanelKey = "overview" | "challenge" | "submission";
 
-export type SubmissionStep = 1 | 2 | 3;
+export type SubmissionStep = 1 | 2;
 
 export type ParalumanSubmissionForm = {
   email: string;
