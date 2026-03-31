@@ -151,7 +151,7 @@ export default function ParalumanPage() {
   };
 
   const openChallengePanel = () => {
-    openPanel("challenge", true);
+    openPanel("challenge");
   };
 
   const openSubmissionPanel = () => {
@@ -375,22 +375,20 @@ export default function ParalumanPage() {
           </div>
         </section>
 
-        {renderPanel === "overview" && (
-          <div
-            className={cn(
-              "transition-all duration-[220ms] ease-out",
-              panelPhase === "out"
-                ? "translate-y-1 opacity-0"
-                : "translate-y-0 opacity-100",
-            )}
-          >
-            <HeroPanel
-              hiringBadgeText={HIRING_BADGE_TEXT}
-              onHowToApply={openChallengePanel}
-              showHowToApplyButton={renderPanel === "overview"}
-            />
-          </div>
-        )}
+        <div
+          className={cn(
+            "transition-all duration-[220ms] ease-out",
+            panelPhase === "out"
+              ? "translate-y-1 opacity-0"
+              : "translate-y-0 opacity-100",
+          )}
+        >
+          <HeroPanel
+            hiringBadgeText={HIRING_BADGE_TEXT}
+            onHowToApply={openChallengePanel}
+            showHowToApplyButton={activePanel === "overview"}
+          />
+        </div>
 
         <section ref={panelSectionRef} className="relative">
           <div className="px-6 py-12 sm:px-8 sm:py-16 lg:px-10">
