@@ -13,36 +13,40 @@ export function HowToApplyPanel({
 }: HowToApplyPanelProps) {
   return (
     <div className="space-y-6">
-      <div className="overflow-hidden rounded-[0.33em] border-2 border-[rgba(114,6,140,0.22)] bg-white shadow-[0_24px_55px_-35px_rgba(114,6,140,0.75)]">
-        <div className=" flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between bg-gradient-to-br from-[#72068c] via-[#5a0570] to-[#4a0460] px-6 py-7 text-white sm:px-8 sm:py-8">
-          <p className="[font-family:var(--font-paraluman-heading)] text-2xl text-white font-black uppercase tracking-[-0.02em] sm:text-3xl">
-            Complete this challenge to apply
-          </p>
+      <div className="relative overflow-hidden rounded-[0.33em] border-2 border-[rgba(114,6,140,0.45)] bg-gradient-to-br from-[#72068c] via-[#5a0570] to-[#4a0460] px-6 py-10 text-white shadow-[0_24px_55px_-30px_rgba(114,6,140,0.88)] sm:px-8 sm:py-14">
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.16)_0%,transparent_38%,rgba(255,255,255,0.06)_72%,transparent_100%)]" />
+        <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center gap-6 text-center">
+          <div className="space-y-3">
+            <p className="[font-family:var(--font-paraluman-mono)] text-[11px] font-semibold uppercase tracking-[0.16em] text-white/80 sm:text-xs">
+              Challenge:
+            </p>
+            <h2 className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.8rem,6.8vw,4.2rem)] font-black uppercase leading-[0.9] tracking-[-0.03em] text-white">
+              Build the Future of Multilingual Journalism
+            </h2>
+          </div>
 
-          <div className="w-full sm:w-auto sm:text-right">
+          <div className="w-full sm:w-auto">
             <Button
               type="button"
               onClick={onGoToApply}
-              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-white bg-white/95 px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#72068c] transition-all duration-200 hover:bg-white hover:shadow-lg sm:w-auto"
+              className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-white bg-white/95 px-8 [font-family:var(--font-paraluman-heading)] text-base font-bold uppercase tracking-[0.1em] text-[#72068c] transition-all duration-200 hover:bg-white hover:shadow-lg sm:h-16 sm:w-auto sm:px-10 sm:text-lg"
             >
               Apply
             </Button>
-            <p className="mt-1.5 [font-family:var(--font-paraluman-mono)] text-[10px] leading-tight text-white/75 sm:text-[11px]">
+            <p className="mt-2 [font-family:var(--font-paraluman-mono)] text-[10px] leading-tight text-white/75 sm:text-[11px]">
               No resume needed. Response in 24 hours
             </p>
           </div>
         </div>
+      </div>
 
+      <div className="overflow-hidden rounded-[0.33em] border-2 border-[rgba(114,6,140,0.22)] bg-white shadow-[0_24px_55px_-35px_rgba(114,6,140,0.75)]">
         <div className="space-y-6 px-6 py-7 sm:px-8 sm:py-8">
           <section className="space-y-2 border-b border-[rgba(114,6,140,0.14)] pb-6">
-            <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase text-[#72068c]">
-              Challenge: Build the Future of Multilingual Journalism
-            </p>
             <p className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80 sm:text-base">
-              Make journalism accessible across languages. Build something real.
-              Ship it.
+              Complete this challenge to apply.
             </p>
-            <p className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80 sm:text-base">
+            <p className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-[#72068c] sm:text-base font-semibold">
               Build a system that publishes a news article in English and
               Filipino at the same time.
             </p>
