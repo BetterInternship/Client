@@ -31,7 +31,7 @@ export function HowToApplyPanel({
             Build something real. Ship it.
           </p>
 
-          {hasChallengePdf ? (
+          {/* {hasChallengePdf ? (
             <Link
               href={challengePdfUrl!}
               target="_blank"
@@ -41,7 +41,7 @@ export function HowToApplyPanel({
               Download Full Challenge PDF
               <ArrowUpRight className="h-4 w-4" />
             </Link>
-          ) : null}
+          ) : null} */}
         </div>
 
         <div className="space-y-6 px-6 py-7 sm:px-8 sm:py-8">
