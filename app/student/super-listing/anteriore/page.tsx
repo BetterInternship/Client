@@ -68,7 +68,6 @@ const PANEL_TABS: Array<{
 }> = [
   { key: "overview", label: "Overview", step: "1" },
   { key: "challenge", label: "How to apply", step: "2" },
-  { key: "submission", label: "Apply", step: "3" },
 ];
 
 const PANEL_TRANSITION_MS = 220;
@@ -158,20 +157,6 @@ export default function AnteriorePage() {
 
   const openChallengePanel = () => {
     openPanel("challenge");
-  };
-
-  const openSubmissionPanel = () => {
-    setActivePanel("submission");
-    setSubmissionStep(1);
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        submissionPanelRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      });
-    });
   };
 
   const goToStepTwo = () => {
@@ -341,7 +326,7 @@ export default function AnteriorePage() {
 
         <section className="sticky top-0 z-40 px-4 py-2 sm:px-8 sm:py-3 lg:px-10">
           <div className="mx-auto max-w-3xl">
-            <div className="relative rounded-[0.45em] border border-[#274b7d]/28 bg-white/92 p-1 shadow-[0_14px_34px_-26px_rgba(39,75,125,0.45)] backdrop-blur-sm">
+            <div className="relative rounded-[0.45em] border-2 border-[#274b7d]/35 bg-white/92 p-1 shadow-[0_14px_34px_-26px_rgba(39,75,125,0.45)] backdrop-blur-sm">
               <div className="relative flex items-stretch overflow-hidden rounded-[0.32em] bg-[#eaf0f8]">
                 {PANEL_TABS.map((tab, index) => {
                   const isActive = activePanel === tab.key;
@@ -419,10 +404,7 @@ export default function AnteriorePage() {
                 )}
 
                 {renderPanel === "challenge" && (
-                  <HowToApplyPanel
-                    challengePdfUrl={CHALLENGE_PDF_URL}
-                    onGoToApply={openSubmissionPanel}
-                  />
+                  <HowToApplyPanel challengePdfUrl={CHALLENGE_PDF_URL} />
                 )}
 
                 {renderPanel === "submission" && (

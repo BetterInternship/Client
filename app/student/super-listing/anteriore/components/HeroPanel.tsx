@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Zap } from "lucide-react";
+import { Zap, ArrowUpRight } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import anterioreLogo from "../logo.png";
@@ -80,12 +80,32 @@ export function HeroPanel({
             </div>
           </div>
 
-          {showHowToApplyButton && (
-            <p className="mx-auto max-w-3xl [font-family:var(--font-anteriore-mono)] text-sm leading-7 text-black/70 sm:text-base">
-              Anteriore is a startup that delivers tailor-made IT services that
-              drive businesses forward.
+          <div className="mx-auto max-w-3xl space-y-3 [font-family:var(--font-anteriore-mono)] text-sm leading-7 text-black/70 sm:text-base">
+            <p className="">
+              <Link
+                href="https://www.anteriore.com.ph/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 font-semibold text-[#274b7d] transition-opacity duration-200 hover:opacity-80"
+              >
+                Anteriore
+              </Link>{" "}
+              is a startup that delivers tailor-made IT services that drive
+              businesses forward.
             </p>
-          )}
+            <p className="">
+              To learn more about us, check out{" "}
+              <Link
+                href="https://anteriore.com.ph/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 font-semibold text-[#274b7d] transition-opacity duration-200 hover:opacity-80 hover:underline"
+              >
+                anteriore.com.ph
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </Link>
+            </p>
+          </div>
 
           {showHowToApplyButton && (
             <div className="pt-2">

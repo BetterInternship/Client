@@ -1,15 +1,11 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-
 type HowToApplyPanelProps = {
   challengePdfUrl?: string;
-  onGoToApply: () => void;
 };
 
 export function HowToApplyPanel({
   challengePdfUrl: _challengePdfUrl,
-  onGoToApply,
 }: HowToApplyPanelProps) {
   const stageOneQuestions = [
     "1) What is your goal in life?",
@@ -20,9 +16,9 @@ export function HowToApplyPanel({
   ];
 
   const stageTwoChecks = [
-    "● How you approach unfamiliar problems",
-    "● How you ask questions",
-    "● How much initiative you take",
+    "* How you approach unfamiliar problems",
+    "* How you ask questions",
+    "* How much initiative you take",
   ];
 
   return (
@@ -32,19 +28,6 @@ export function HowToApplyPanel({
           <p className="[font-family:var(--font-anteriore-heading)] text-2xl font-black uppercase tracking-[-0.02em] text-white sm:text-3xl">
             Complete this challenge to apply
           </p>
-
-          <div className="w-full sm:w-auto sm:text-right">
-            <Button
-              type="button"
-              onClick={onGoToApply}
-              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-white bg-white/95 px-5 [font-family:var(--font-anteriore-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#274b7d] transition-all duration-200 hover:bg-white hover:shadow-lg sm:w-auto"
-            >
-              Apply
-            </Button>
-            <p className="mt-1.5 [font-family:var(--font-anteriore-mono)] text-[10px] leading-tight text-white/75 sm:text-[11px]">
-              No resume needed. Response in 24 hours
-            </p>
-          </div>
         </div>
 
         <div className="space-y-6 px-6 py-7 sm:px-8 sm:py-8">
@@ -125,18 +108,12 @@ export function HowToApplyPanel({
               Ready to apply?
             </p>
           </div>
-          <div className="w-full sm:w-auto sm:text-right">
-            <Button
-              type="button"
-              onClick={onGoToApply}
-              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-white bg-white/95 px-5 [font-family:var(--font-anteriore-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#274b7d] transition-all duration-200 hover:bg-white hover:shadow-lg sm:w-auto"
-            >
-              Apply
-            </Button>
-            <p className="mt-1.5 [font-family:var(--font-anteriore-mono)] text-[10px] leading-tight text-white/75 sm:text-[11px]">
-              No resume needed. Response in 24 hours
-            </p>
-          </div>
+          <a
+            href="viber://chat?number=%2B639271273470"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-white bg-white/95 px-5 [font-family:var(--font-anteriore-heading)] text-sm font-bold uppercase tracking-[0.08em] text-[#274b7d] transition-all duration-200 hover:bg-white hover:shadow-lg sm:w-auto"
+          >
+            Message on Viber: +639271273470
+          </a>
         </div>
       </div>
     </div>
