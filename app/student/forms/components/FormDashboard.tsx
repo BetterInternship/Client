@@ -344,7 +344,16 @@ export default function FormDashboard({
                 </div>
               </div>
               <p className="text-sm text-gray-600">
-                Select a form to preview and start the signing flow.
+                Select a form to preview and start the signing flow. If you run
+                into any issues,{" "}
+                <a
+                  href="https://www.facebook.com/profile.php?id=61586110929431"
+                  className="text-primary underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  message us on Facebook.
+                </a>
               </p>
             </div>
           </div>
