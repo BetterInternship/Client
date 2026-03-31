@@ -76,13 +76,11 @@ export default function ProfilePage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
   const profile = useProfileData();
   const profileActions = useProfileActions();
-  const modalRegistry = useModalRegistry();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [autoApplySaving, setAutoApplySaving] = useState(false);
   const [autoApplyError, setAutoApplyError] = useState<string | null>(null);
-  const router = useRouter();
 
   const { url: resumeURL, sync: syncResumeURL } = useFile({
     fetcher: UserService.getMyResumeURL,
@@ -110,18 +108,12 @@ export default function ProfilePage() {
     setAutoApplySaving(true);
     setAutoApplyError(null);
 
-    const prev = !!profile.data?.apply_for_me;
-
     try {
-      // await profileActions.update.mutateAsync({ apply_for_me: !prev });
       await UserService.updateMyProfile({
         apply_for_me: newEnabled,
         auto_apply_enabled_at: newEnabled ? new Date().toISOString() : null,
       });
       void queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-
-      // console.log("apply_for_me: ", profile?.data?.apply_for_me);
-      // console.log("auto_apply_enabled_at:", profile.data?.auto_apply_enabled_at);
     } catch (e: any) {
       setAutoApplyError((e as string) ?? "Failed to update auto-apply");
     } finally {
