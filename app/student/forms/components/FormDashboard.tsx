@@ -348,7 +348,7 @@ export default function FormDashboard({
                 into any issues,{" "}
                 <a
                   href="https://www.facebook.com/profile.php?id=61586110929431"
-                  className="text-primary underline"
+                  className="text-primary hover:underline transition-all duration-200"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
