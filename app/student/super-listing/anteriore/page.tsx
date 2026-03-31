@@ -1,13 +1,21 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowUpRight } from "lucide-react";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
-import anterioreLogo from "./logo.png";
-import { SuperListingBadge } from "@/components/shared/jobs";
 import { cn } from "@/lib/utils";
+import anterioreLogo from "./logo.png";
+import { HeroPanel } from "./components/HeroPanel";
+import { OverviewPanel } from "./components/OverviewPanel";
+import { HowToApplyPanel } from "./components/HowToApplyPanel";
+import { ApplyPanel } from "./components/ApplyPanel";
+import type {
+  AnterioreSubmissionForm,
+  OverviewContent,
+  PanelKey,
+  SubmissionStep,
+} from "./components/types";
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],
@@ -23,39 +31,258 @@ const monoFont = JetBrains_Mono({
 
 const CHALLENGE_PDF_URL =
   "https://drive.google.com/file/d/1A7k32JC_jdpHV6vQpEtcFNH9UdwSZtVG/view?usp=sharing";
+const CHALLENGE_VIDEO_URL = "https://www.youtube.com/embed/KUCGr_XDh5M";
 const ANTERIORE_SITE_URL = "https://anteriore.com.ph/";
+const HIRING_BADGE_TEXT = "No resume needed. Response in 24 hours";
+
+const OVERVIEW_CONTENT: OverviewContent = {
+  whoWeAre:
+    "Anteriore is a startup that delivers tailor-made IT services that drive businesses forward.",
+  opportunity:
+    "You'll be working in a startup environment where you'll be given a lot of responsibilities. If you're serious about growth and aspire to become a strong CTO in the future, you'll thrive here.",
+  workWith: {
+    quote:
+      "All the interns I've hired got 6 figure offers after their internships.",
+    speaker: "Seaver",
+    speakerTitle: "Founder of Anteriore",
+  },
+};
+
+type AnterioreSubmissionResponse = {
+  success: boolean;
+  message?: string;
+};
+
+const INITIAL_FORM_STATE: AnterioreSubmissionForm = {
+  email: "",
+  fullName: "",
+  facebookLink: "",
+  submissionLink: "",
+  submissionNotes: "",
+};
+
+const PANEL_TABS: Array<{
+  key: PanelKey;
+  label: string;
+  step: string;
+}> = [
+  { key: "overview", label: "Overview", step: "1" },
+  { key: "challenge", label: "How to apply", step: "2" },
+  { key: "submission", label: "Apply", step: "3" },
+];
+
+const PANEL_TRANSITION_MS = 220;
 
 export default function AnteriorePage() {
-  const [isAtTop, setIsAtTop] = useState(true);
+  const isDevelopment = process.env.NODE_ENV === "development";
+
+  const [form, setForm] = useState<AnterioreSubmissionForm>(INITIAL_FORM_STATE);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [resultMessage, setResultMessage] = useState("");
+  const [isError, setIsError] = useState(false);
+  const [token, setToken] = useState("");
+  const [tokenFail, setTokenFail] = useState(false);
+  const [activePanel, setActivePanel] = useState<PanelKey>("overview");
+  const [renderPanel, setRenderPanel] = useState<PanelKey>("overview");
+  const [panelPhase, setPanelPhase] = useState<"in" | "out">("in");
+  const [submissionStep, setSubmissionStep] = useState<SubmissionStep>(1);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState("");
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const topSentinelRef = useRef<HTMLDivElement | null>(null);
+  const panelSectionRef = useRef<HTMLElement | null>(null);
+  const submissionPanelRef = useRef<HTMLDivElement | null>(null);
+  const panelTransitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   useEffect(() => {
-    const sentinel = topSentinelRef.current;
-    const root = scrollContainerRef.current;
-    if (!sentinel || !root) return;
+    if (activePanel === renderPanel) return;
 
-    setIsAtTop(root.scrollTop <= 1);
+    setPanelPhase("out");
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsAtTop(entry.isIntersecting);
-      },
-      {
-        root,
-        threshold: 1,
-      },
-    );
+    if (panelTransitionTimerRef.current) {
+      clearTimeout(panelTransitionTimerRef.current);
+    }
 
-    observer.observe(sentinel);
+    panelTransitionTimerRef.current = setTimeout(() => {
+      setRenderPanel(activePanel);
+      requestAnimationFrame(() => setPanelPhase("in"));
+    }, PANEL_TRANSITION_MS);
 
     return () => {
-      observer.disconnect();
+      if (panelTransitionTimerRef.current) {
+        clearTimeout(panelTransitionTimerRef.current);
+      }
+    };
+  }, [activePanel, renderPanel]);
+
+  useEffect(() => {
+    return () => {
+      if (panelTransitionTimerRef.current) {
+        clearTimeout(panelTransitionTimerRef.current);
+      }
     };
   }, []);
 
-  const hasChallengePdf = CHALLENGE_PDF_URL.trim().length > 0;
+  const endpoint = useMemo(() => {
+    const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+    if (!base) return "/api/super-listings/submission/anteriore";
+    return `${base}/super-listings/submission/anteriore`;
+  }, []);
+
+  const onFieldChange = (
+    field: keyof AnterioreSubmissionForm,
+    value: string,
+  ) => {
+    setForm((previous) => ({ ...previous, [field]: value }));
+  };
+
+  const openPanel = (panel: PanelKey, shouldScroll = false) => {
+    setActivePanel(panel);
+    if (panel === "submission") {
+      setSubmissionStep(1);
+    }
+
+    if (!shouldScroll) return;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        panelSectionRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+    });
+  };
+
+  const openChallengePanel = () => {
+    openPanel("challenge");
+  };
+
+  const openSubmissionPanel = () => {
+    setActivePanel("submission");
+    setSubmissionStep(1);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        submissionPanelRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+    });
+  };
+
+  const goToStepTwo = () => {
+    setResultMessage("");
+    setIsError(false);
+
+    if (!form.submissionLink.trim()) {
+      setIsError(true);
+      setResultMessage("Application link is required before proceeding.");
+      return;
+    }
+
+    setSubmissionStep(2);
+    requestAnimationFrame(() => {
+      submissionPanelRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  };
+
+  const goToNextStep = () => {
+    if (submissionStep === 1) {
+      goToStepTwo();
+    }
+  };
+
+  const goToPreviousStep = () => {
+    setResultMessage("");
+    setIsError(false);
+    setSubmissionStep((previous) =>
+      previous > 1 ? ((previous - 1) as SubmissionStep) : 1,
+    );
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setResultMessage("");
+    setIsError(false);
+
+    if (submissionStep !== 2) {
+      setIsError(true);
+      setResultMessage("Please complete all steps before submitting.");
+      return;
+    }
+
+    if (
+      !form.email.trim() ||
+      !form.fullName.trim() ||
+      !form.facebookLink.trim()
+    ) {
+      setIsError(true);
+      setResultMessage("Please complete your personal information.");
+      return;
+    }
+
+    if (!isDevelopment && !token) {
+      setIsError(true);
+      setResultMessage("Please complete the browser verification first.");
+      return;
+    }
+
+    const combinedNotes = [
+      form.submissionNotes.trim()
+        ? `Notes: ${form.submissionNotes.trim()}`
+        : "",
+      `Full Name: ${form.fullName.trim()}`,
+      `Facebook Link: ${form.facebookLink.trim()}`,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: form.email.trim(),
+          submissionLink: form.submissionLink.trim(),
+          submissionNotes: combinedNotes,
+          "cf-token": isDevelopment ? "dev-bypass" : token,
+        }),
+      });
+
+      const data = (await response.json()) as AnterioreSubmissionResponse;
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Could not send your application.");
+      }
+
+      const submittedEmailAddress = form.email.trim();
+      setForm(INITIAL_FORM_STATE);
+      setSubmissionStep(1);
+      setSubmittedEmail(submittedEmailAddress);
+      setHasSubmitted(true);
+      setResultMessage("");
+    } catch (error) {
+      setIsError(true);
+      setResultMessage(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while sending your application.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const hasChallengeVideo = CHALLENGE_VIDEO_URL.trim().length > 0;
 
   return (
     <main
@@ -71,19 +298,14 @@ export default function AnteriorePage() {
 
       <div
         ref={scrollContainerRef}
-        className="relative h-full overflow-x-hidden overflow-y-auto"
+        className="relative h-full overflow-x-hidden overflow-y-auto pb-24 sm:pb-0"
       >
-        <div ref={topSentinelRef} aria-hidden className="h-px w-full" />
-
         <header
           className={cn(
-            "sticky top-0 z-[9999] flex items-center justify-between px-6 pb-2 pt-2 transition-all duration-300 sm:px-8 lg:px-10",
-            isAtTop
-              ? "border-b border-transparent bg-transparent shadow-none backdrop-blur-0"
-              : "backdrop-blur-md bg-white/50 shadow-sm",
+            "top-0 z-[9999] flex items-center justify-between border-b border-transparent bg-transparent px-4 py-3 shadow-none backdrop-blur-0 transition-all duration-300 sm:px-8 lg:px-10",
           )}
         >
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/"
               className="transition-opacity duration-200 hover:opacity-70"
@@ -96,135 +318,148 @@ export default function AnteriorePage() {
                 className="h-10 w-10 sm:h-12 sm:w-12"
               />
             </Link>
-            <span className="text-xl font-black text-black/30 sm:text-2xl">
+
+            <span className="text-xs font-semibold uppercase text-black/45">
               x
             </span>
+
             <Link
               href={ANTERIORE_SITE_URL}
-              aria-label="Visit Anteriore website"
-              className="transition-all duration-200 hover:opacity-80 "
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-opacity duration-200 hover:opacity-75"
             >
               <Image
                 src={anterioreLogo}
                 alt="Anteriore"
-                className="h-auto w-[clamp(8rem,13vw,11rem)] [filter:brightness(0)_saturate(100%)_invert(21%)_sepia(17%)_saturate(1612%)_hue-rotate(184deg)_brightness(88%)_contrast(93%)]"
+                className="h-7 w-auto [filter:brightness(0)_saturate(100%)_invert(21%)_sepia(17%)_saturate(1612%)_hue-rotate(184deg)_brightness(88%)_contrast(93%)] sm:h-8"
+                priority
               />
             </Link>
           </div>
         </header>
 
-        <section className="relative mx-auto flex min-h-[calc(100svh-73px)] w-full max-w-6xl flex-col justify-center px-6 py-12 sm:px-8 lg:px-10">
-          <div className="mx-auto w-full max-w-4xl text-left">
-            <SuperListingBadge variant="gold" />
-
-            <h1 className="mt-8 [font-family:var(--font-anteriore-heading)] text-[clamp(2.5rem,9vw,5.5rem)] font-black uppercase leading-[0.88] tracking-[-0.05em]">
-              <div className="flex gap-5">
-                <Link
-                  href={ANTERIORE_SITE_URL}
-                  className="block w-fit text-[#274b7d] transition-all duration-200  hover:text-[#1b3458]"
-                >
-                  Anteriore
-                </Link>
-                is
-              </div>
-              <span className="block">challenging you</span>
-            </h1>
-
-            <div className="mt-6 inline-flex items-center rounded-lg border-2 border-[#274b7d] bg-white px-5 py-2">
-              <span className="[font-family:var(--font-anteriore-heading)] text-[clamp(0.9rem,2vw,1.1rem)] uppercase tracking-[0.08em] text-[#274b7d]">
-                Looking for: {""}
-                <span className="font-black">Web Dev Interns</span>
-              </span>
-            </div>
-
-            <div className="mt-8 max-w-2xl">
-              <p className="[font-family:var(--font-anteriore-mono)] text-sm leading-7 text-black/65 sm:text-[15px]">
-                Anteriore is a startup that delivers tailor-made IT services
-                that drive businesses forward.
-              </p>
-            </div>
-
-            <div className="mt-12 grid gap-12 lg:grid-cols-[2fr_1.2fr]">
-              <div></div>
-
-              <div className="w-full max-w-sm bg-white">
-                <div className="relative border-2 border-[#274b7d] bg-gradient-to-br from-[#274b7d]/8 to-[#1b3458]/5 p-6 shadow-[0_12px_35px_-25px_rgba(39,75,125,0.75)]">
-                  <div className="absolute -top-4 -left-3 text-5xl font-black leading-none text-[#274b7d]/20">
-                    "
-                  </div>
-                  <div className="relative z-10 space-y-3">
-                    <p className="[font-family:var(--font-anteriore-heading)] text-base font-black leading-tight text-[#274b7d]">
-                      All the interns I've hired got 6 figure offers after their
-                      internships.
-                    </p>
-                    <p className="[font-family:var(--font-anteriore-heading)] text-xs font-semibold tracking-[0.05em] text-[#1b3458]">
-                      - Seaver
-                      <span className="text-black/50">
-                        , Founder of Anteriore
+        <section className="sticky top-0 z-40 px-4 py-2 sm:px-8 sm:py-3 lg:px-10">
+          <div className="mx-auto max-w-3xl">
+            <div className="relative rounded-[0.45em] border border-[#274b7d]/28 bg-white/92 p-1 shadow-[0_14px_34px_-26px_rgba(39,75,125,0.45)] backdrop-blur-sm">
+              <div className="relative flex items-stretch overflow-hidden rounded-[0.32em] bg-[#eaf0f8]">
+                {PANEL_TABS.map((tab, index) => {
+                  const isActive = activePanel === tab.key;
+                  const isFirst = index === 0;
+                  const isLast = index === PANEL_TABS.length - 1;
+                  const tabClipPath = isFirst
+                    ? "polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%)"
+                    : isLast
+                      ? "polygon(0 0, 100% 0, 100% 100%, 0 100%, 12px 50%)"
+                      : "polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%)";
+                  const tabZIndex = isActive ? 20 : index + 1;
+                  return (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      onClick={() => openPanel(tab.key)}
+                      style={{ clipPath: tabClipPath, zIndex: tabZIndex }}
+                      className={cn(
+                        "relative flex min-h-10 flex-1 items-center justify-center overflow-hidden px-1.5 py-2 text-center [font-family:var(--font-anteriore-mono)] font-semibold uppercase transition-[background,color,box-shadow] duration-220 ease-[cubic-bezier(0.22,1,0.36,1)] after:pointer-events-none after:absolute after:inset-0 after:bg-white/20 after:opacity-0 after:transition-opacity after:duration-180 active:after:opacity-100 sm:min-h-[2.625rem] sm:px-2",
+                        !isFirst && "-ml-3 sm:-ml-4",
+                        isActive
+                          ? "bg-gradient-to-r from-[#274b7d] via-[#22416d] to-[#1b3458] text-white shadow-[0_10px_20px_-14px_rgba(39,75,125,0.75)]"
+                          : "bg-[#eaf0f8] text-black/70 hover:bg-[#dde7f3] hover:text-black",
+                      )}
+                    >
+                      <span className="inline-flex w-full items-center justify-center gap-1 whitespace-nowrap text-[9px] tracking-[0.02em] sm:gap-2 sm:text-xs sm:tracking-[0.06em]">
+                        <span className="inline-block min-w-[1.50em] text-center opacity-70">
+                          {tab.step}
+                        </span>
+                        <span className="text-center">{tab.label}</span>
                       </span>
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 flex justify-end">
-              <div className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:items-end">
-                <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-end">
-                  {hasChallengePdf ? (
-                    <div className="group relative isolate block w-full sm:w-auto">
-                      <div className="pointer-events-none absolute inset-0 z-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#274b7d_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                      <Link
-                        href={CHALLENGE_PDF_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="relative z-10 flex h-16 w-full items-center justify-center gap-2 rounded-none border-2 border-[#274b7d] bg-[#274b7d] px-11 [font-family:var(--font-anteriore-heading)] text-base font-black uppercase tracking-[0.12em] text-white transition-all hover:-translate-y-1 hover:bg-[#1b3458] sm:inline-flex sm:w-auto"
-                      >
-                        View Challenge
-                        <ArrowUpRight className="h-4 w-4" />
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="relative flex h-16 w-full items-center justify-center gap-2 rounded-none border-2 border-[#274b7d]/40 bg-white px-11 [font-family:var(--font-anteriore-heading)] text-base font-black uppercase tracking-[0.12em] text-[#274b7d]/50 sm:inline-flex sm:w-auto">
-                      View Challenge
-                    </div>
-                  )}
-                </div>
-                <p className="[font-family:var(--font-anteriore-mono)] text-xs text-black/65">
-                  No resume needed. Get a response in 24 hours
-                </p>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
         </section>
-        <section className="relative mx-auto w-full max-w-6xl px-6 py-12 sm:px-8 lg:px-10">
-          <div className="space-y-6">
-            <div className="border border-[#274b7d]/30 bg-white px-4 py-2 w-fit">
-              <p className="[font-family:var(--font-anteriore-mono)] text-xs uppercase tracking-[0.2em] text-[#274b7d] font-semibold">
-                The opportunity
-              </p>
-            </div>
 
-            <div className="overflow-hidden border-2 border-[#274b7d]/30 bg-white shadow-[0_24px_50px_-28px_rgba(39,75,125,0.45)]">
-              <div className="aspect-video w-full">
-                <iframe
-                  src="https://www.youtube.com/embed/KUCGr_XDh5M"
-                  title="Anteriore Founder Video"
-                  className="h-full w-full"
-                  loading="lazy"
-                  referrerPolicy="strict-origin-when-cross-origin"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
+        <section ref={panelSectionRef} className="relative">
+          <div className="px-6 py-12 sm:px-8 sm:py-16 lg:px-10">
+            <div className="mx-auto max-w-5xl">
+              <div
+                className={cn(
+                  "transition-all duration-[220ms] ease-out",
+                  panelPhase === "out"
+                    ? "translate-y-1 opacity-0"
+                    : "translate-y-0 opacity-100",
+                )}
+              >
+                {renderPanel === "overview" && (
+                  <>
+                    <div
+                      className={cn(
+                        "transition-all duration-[220ms] ease-out",
+                        panelPhase === "out"
+                          ? "translate-y-1 opacity-0"
+                          : "translate-y-0 opacity-100",
+                      )}
+                    >
+                      <HeroPanel
+                        hiringBadgeText={HIRING_BADGE_TEXT}
+                        siteUrl={ANTERIORE_SITE_URL}
+                        onHowToApply={openChallengePanel}
+                        showHowToApplyButton={activePanel === "overview"}
+                      />
+                    </div>
+                    <OverviewPanel
+                      hasChallengeVideo={hasChallengeVideo}
+                      challengeVideoUrl={CHALLENGE_VIDEO_URL}
+                      content={OVERVIEW_CONTENT}
+                      onGoToApply={openChallengePanel}
+                    />
+                  </>
+                )}
+
+                {renderPanel === "challenge" && (
+                  <HowToApplyPanel
+                    challengePdfUrl={CHALLENGE_PDF_URL}
+                    onGoToApply={openSubmissionPanel}
+                  />
+                )}
+
+                {renderPanel === "submission" && (
+                  <div ref={submissionPanelRef} className="w-full space-y-6">
+                    <ApplyPanel
+                      form={form}
+                      submissionStep={submissionStep}
+                      hasSubmitted={hasSubmitted}
+                      submittedEmail={submittedEmail}
+                      isSubmitting={isSubmitting}
+                      isError={isError}
+                      resultMessage={resultMessage}
+                      isDevelopment={isDevelopment}
+                      token={token}
+                      tokenFail={tokenFail}
+                      turnstileSiteKey={
+                        process.env.NEXT_PUBLIC_SERVER_API_KEY_TURNSTILE
+                      }
+                      onFieldChange={onFieldChange}
+                      onNextStep={goToNextStep}
+                      onBackStep={goToPreviousStep}
+                      onSubmit={(event) => {
+                        void handleSubmit(event);
+                      }}
+                      onBackToOverview={() => openPanel("overview", true)}
+                      onTokenSuccess={(t) => {
+                        setToken(t);
+                        setTokenFail(false);
+                      }}
+                      onTokenError={() => {
+                        setToken("");
+                        setTokenFail(true);
+                      }}
+                    />
+                  </div>
+                )}
               </div>
-            </div>
-
-            <div className="max-w-4xl border-2 border-[#274b7d]/30 bg-gradient-to-br from-[#203e68] via-[#1b3458] to-[#162c49] p-6 text-white shadow-[0_24px_50px_-28px_rgba(39,75,125,0.9)] sm:p-8">
-              <p className="[font-family:var(--font-anteriore-heading)] text-[clamp(1.2rem,2.6vw,1.9rem)] font-black leading-tight tracking-[-0.02em] text-white">
-                You'll be working in a startup environment where you'll be given
-                a lot of responsibilities. If you're serious about growth and
-                aspire to become a strong CTO in the future, you'll thrive here.
-              </p>
             </div>
           </div>
         </section>
