@@ -40,7 +40,7 @@ const CEO_PROFILE: CEOProfile = {
 const CHALLENGE_PDF_URL =
   "https://drive.google.com/file/d/1Tdbc4EdhBkY3lOInAvE3YSaKhSQyWPwx/view?usp=sharing";
 const CHALLENGE_VIDEO_URL = "";
-const HIRING_BADGE_TEXT = "No resume needed | Response in 24 hours";
+const HIRING_BADGE_TEXT = "No resume needed. Response in 24 hours";
 
 type ParalumanSubmissionResponse = {
   success: boolean;

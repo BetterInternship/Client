@@ -154,13 +154,18 @@ export function OverviewPanel({
               Be Part of Something Bigger
             </p>
           </div>
-          <Button
-            type="button"
-            onClick={onGoToHowToApply}
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-white bg-white/95 px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#72068c] transition-all duration-200 hover:bg-white hover:shadow-lg sm:w-auto"
-          >
-            How to apply?
-          </Button>
+          <div className="w-full sm:w-auto sm:text-right">
+            <Button
+              type="button"
+              onClick={onGoToHowToApply}
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-white bg-white/95 px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#72068c] transition-all duration-200 hover:bg-white hover:shadow-lg sm:w-auto"
+            >
+              How to apply?
+            </Button>
+            <p className="mt-1.5 [font-family:var(--font-paraluman-mono)] text-[10px] leading-tight text-white/75 sm:text-[11px]">
+              No resume needed. Response in 24 hours
+            </p>
+          </div>
         </div>
       </div>
     </div>

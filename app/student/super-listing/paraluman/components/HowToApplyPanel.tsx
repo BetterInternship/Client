@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type HowToApplyPanelProps = {
@@ -10,7 +8,7 @@ type HowToApplyPanelProps = {
 };
 
 export function HowToApplyPanel({
-  challengePdfUrl,
+  challengePdfUrl: _challengePdfUrl,
   onGoToApply,
 }: HowToApplyPanelProps) {
   return (
@@ -21,13 +19,18 @@ export function HowToApplyPanel({
             Complete this challenge to apply
           </p>
 
-          <Button
-            type="button"
-            onClick={onGoToApply}
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-white bg-white/95 px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#72068c] transition-all duration-200 hover:bg-white hover:shadow-lg sm:w-auto"
-          >
-            Apply
-          </Button>
+          <div className="w-full sm:w-auto sm:text-right">
+            <Button
+              type="button"
+              onClick={onGoToApply}
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-white bg-white/95 px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#72068c] transition-all duration-200 hover:bg-white hover:shadow-lg sm:w-auto"
+            >
+              Apply
+            </Button>
+            <p className="mt-1.5 [font-family:var(--font-paraluman-mono)] text-[10px] leading-tight text-white/75 sm:text-[11px]">
+              No resume needed. Response in 24 hours
+            </p>
+          </div>
         </div>
 
         <div className="space-y-6 px-6 py-7 sm:px-8 sm:py-8">
@@ -115,13 +118,18 @@ export function HowToApplyPanel({
               Ready to apply?
             </p>
           </div>
-          <Button
-            type="button"
-            onClick={onGoToApply}
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-white bg-white/95 px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#72068c] transition-all duration-200 hover:bg-white hover:shadow-lg sm:w-auto"
-          >
-            Apply
-          </Button>
+          <div className="w-full sm:w-auto sm:text-right">
+            <Button
+              type="button"
+              onClick={onGoToApply}
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-white bg-white/95 px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#72068c] transition-all duration-200 hover:bg-white hover:shadow-lg sm:w-auto"
+            >
+              Apply
+            </Button>
+            <p className="mt-1.5 [font-family:var(--font-paraluman-mono)] text-[10px] leading-tight text-white/75 sm:text-[11px]">
+              No resume needed. Response in 24 hours
+            </p>
+          </div>
         </div>
       </div>
     </div>

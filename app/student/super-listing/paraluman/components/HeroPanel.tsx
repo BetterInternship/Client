@@ -51,6 +51,7 @@ export function HeroPanel({
           <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold text-amber-950 shadow-[0_8px_20px_-14px_rgba(217,119,6,0.45)] super-header-badge super-badge-gold sm:text-sm">
             <Zap className="h-4 w-4" />
             <span>{hiringBadgeText}</span>
+            <Zap className="h-4 w-4" />
           </div>
         </div>
 
@@ -137,6 +138,9 @@ export function HeroPanel({
                   How to apply
                 </Button>
               </motion.div>
+              <p className="mt-3 text-center [font-family:var(--font-paraluman-mono)] text-[10px] leading-tight text-black/45 sm:text-[11px]">
+                No resume needed. Response in 24 hours
+              </p>
             </div>
           )}
         </div>
