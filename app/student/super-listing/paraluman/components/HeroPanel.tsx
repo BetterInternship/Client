@@ -96,6 +96,18 @@ export function HeroPanel({
                 </span>{" "}
                 to reach thousands of readers.
               </span>
+              <span className="mt-8 block">
+                To learn more about us, check out{" "}
+                <Link
+                  href="https://www.paraluman.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 font-semibold text-[#72068c] transition-opacity duration-200 hover:opacity-80"
+                >
+                  paraluman.com
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </Link>{" "}
+              </span>
             </p>
           )}
 

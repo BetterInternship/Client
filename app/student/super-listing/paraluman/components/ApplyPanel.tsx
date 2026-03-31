@@ -160,14 +160,14 @@ export function ApplyPanel({
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(114,6,140,0.18),transparent_45%),radial-gradient(circle_at_bottom_left,rgba(114,6,140,0.1),transparent_50%)]" />
             <div className="relative z-10 flex flex-col gap-4">
               <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black uppercase tracking-[-0.02em] text-[#72068c] sm:text-3xl">
-                You're in.
+                Submission sent
               </p>
               <p className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/70 sm:text-base">
                 Thank you for applying. We sent a confirmation to{" "}
                 <span className="font-bold text-[#72068c]">
                   {submittedEmail || "your email"}
                 </span>
-                . We'll review your submission and get back to you.
+                . We'll review your submission and get back to you in 24 hours.
               </p>
               <div className="pt-1">
                 <Button

@@ -13,41 +13,23 @@ export function HowToApplyPanel({
   challengePdfUrl,
   onGoToApply,
 }: HowToApplyPanelProps) {
-  const hasChallengePdf = Boolean(challengePdfUrl?.trim());
-
   return (
-    <div className="pt-6 sm:pt-10 space-y-6">
-      <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black text-[#72068c] uppercase tracking-[-0.02em] sm:text-3xl">
-        Complete this challenge to apply
-      </p>
+    <div className="space-y-6">
       <div className="overflow-hidden rounded-[0.33em] border-2 border-[rgba(114,6,140,0.22)] bg-white shadow-[0_24px_55px_-35px_rgba(114,6,140,0.75)]">
         <div className="space-y-4 bg-gradient-to-br from-[#72068c] via-[#5a0570] to-[#4a0460] px-6 py-7 text-white sm:px-8 sm:py-8">
-          <p className="[font-family:var(--font-paraluman-heading)] text-lg font-bold text-white/95 sm:text-xl">
-            Build the Future of Multilingual Journalism
+          <p className="[font-family:var(--font-paraluman-heading)] text-2xl text-white font-black uppercase tracking-[-0.02em] sm:text-3xl">
+            Complete this challenge to apply
           </p>
-          <p className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-white/90 sm:text-base">
-            Make journalism accessible across languages.
-            <br />
-            Build something real. Ship it.
-          </p>
-
-          {/* {hasChallengePdf ? (
-            <Link
-              href={challengePdfUrl!}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-[0.33em] border-2 border-white bg-white/95 px-4 py-2 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.08em] text-[#72068c] transition-all hover:bg-white"
-            >
-              Download Full Challenge PDF
-              <ArrowUpRight className="h-4 w-4" />
-            </Link>
-          ) : null} */}
         </div>
 
         <div className="space-y-6 px-6 py-7 sm:px-8 sm:py-8">
           <section className="space-y-2 border-b border-[rgba(114,6,140,0.14)] pb-6">
             <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase text-[#72068c]">
-              Challenge
+              Challenge: Build the Future of Multilingual Journalism
+            </p>
+            <p className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80 sm:text-base">
+              Make journalism accessible across languages. Build something real.
+              Ship it.
             </p>
             <p className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80 sm:text-base">
               Build a system that publishes a news article in English and
@@ -111,7 +93,7 @@ export function HowToApplyPanel({
 
           <div className="rounded-[0.33em] border border-[rgba(114,6,140,0.24)] bg-[#72068c]/5 px-4 py-3">
             <p className="[font-family:var(--font-paraluman-mono)] text-sm font-semibold leading-7 text-[#5a0570] sm:text-base">
-              How do you make reliable journalism accessible across languages -
+              How do you make reliable journalism accessible across languages
               without slowing it down?
             </p>
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useMemo, useRef, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
@@ -64,6 +64,8 @@ const PANEL_TABS: Array<{
   { key: "submission", label: "Apply", step: "3" },
 ];
 
+const PANEL_TRANSITION_MS = 220;
+
 export default function ParalumanPage() {
   const isDevelopment = process.env.NODE_ENV === "development";
 
@@ -74,6 +76,8 @@ export default function ParalumanPage() {
   const [token, setToken] = useState("");
   const [tokenFail, setTokenFail] = useState(false);
   const [activePanel, setActivePanel] = useState<PanelKey>("overview");
+  const [renderPanel, setRenderPanel] = useState<PanelKey>("overview");
+  const [panelPhase, setPanelPhase] = useState<"in" | "out">("in");
   const [submissionStep, setSubmissionStep] = useState<SubmissionStep>(1);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
@@ -81,6 +85,38 @@ export default function ParalumanPage() {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const panelSectionRef = useRef<HTMLElement | null>(null);
   const submissionPanelRef = useRef<HTMLDivElement | null>(null);
+  const panelTransitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (activePanel === renderPanel) return;
+
+    setPanelPhase("out");
+
+    if (panelTransitionTimerRef.current) {
+      clearTimeout(panelTransitionTimerRef.current);
+    }
+
+    panelTransitionTimerRef.current = setTimeout(() => {
+      setRenderPanel(activePanel);
+      requestAnimationFrame(() => setPanelPhase("in"));
+    }, PANEL_TRANSITION_MS);
+
+    return () => {
+      if (panelTransitionTimerRef.current) {
+        clearTimeout(panelTransitionTimerRef.current);
+      }
+    };
+  }, [activePanel, renderPanel]);
+
+  useEffect(() => {
+    return () => {
+      if (panelTransitionTimerRef.current) {
+        clearTimeout(panelTransitionTimerRef.current);
+      }
+    };
+  }, []);
 
   const endpoint = useMemo(() => {
     const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
@@ -115,15 +151,6 @@ export default function ParalumanPage() {
 
   const openChallengePanel = () => {
     openPanel("challenge", true);
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        submissionPanelRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      });
-    });
   };
 
   const openSubmissionPanel = () => {
@@ -258,9 +285,8 @@ export default function ParalumanPage() {
         monoFont.variable,
       )}
     >
-      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_16%_18%,rgba(114,6,140,0.14),transparent_35%),radial-gradient(circle_at_84%_2%,rgba(114,6,140,0.12),transparent_33%),radial-gradient(circle_at_50%_90%,rgba(114,6,140,0.08),transparent_40%)]" />
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.05)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(122deg,rgba(114,6,140,0.08)_0%,transparent_34%,rgba(114,6,140,0.08)_54%,transparent_74%)] opacity-55" />
+      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_14%_12%,rgba(114,6,140,0.12),transparent_38%),radial-gradient(circle_at_88%_4%,rgba(114,6,140,0.1),transparent_34%),radial-gradient(circle_at_50%_90%,rgba(114,6,140,0.06),transparent_42%)]" />
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.04)_1px,transparent_1px)] bg-[size:48px_48px] opacity-35" />
 
       <div
         ref={scrollContainerRef}
@@ -288,8 +314,8 @@ export default function ParalumanPage() {
 
         <section className="sticky top-0 z-40 px-4 py-2 sm:px-8 sm:py-3 lg:px-10">
           <div className="mx-auto max-w-3xl">
-            <div className="relative">
-              <div className="flex items-stretch overflow-hidden rounded-[0.33em] bg-white shadow-[0_12px_30px_-24px_rgba(114,6,140,0.6)]">
+            <div className="relative rounded-[0.45em] border border-[rgba(114,6,140,0.28)] bg-white/92 p-1 shadow-[0_14px_34px_-26px_rgba(114,6,140,0.45)] backdrop-blur-sm">
+              <div className="relative flex items-stretch overflow-hidden rounded-[0.32em] bg-[#f3edf9]">
                 {PANEL_TABS.map((tab, index) => {
                   const isActive = activePanel === tab.key;
                   const isFirst = index === 0;
@@ -307,11 +333,11 @@ export default function ParalumanPage() {
                       onClick={() => openPanel(tab.key)}
                       style={{ clipPath: tabClipPath, zIndex: tabZIndex }}
                       className={cn(
-                        "relative flex min-h-10 flex-1 items-center justify-center overflow-hidden px-1.5 py-2 text-center [font-family:var(--font-paraluman-mono)] font-semibold uppercase transition-all duration-200 transform-gpu active:scale-[0.97] after:pointer-events-none after:absolute after:inset-0 after:bg-white/20 after:opacity-0 after:transition-opacity after:duration-150 active:after:opacity-100 sm:min-h-[2.625rem] sm:px-2",
+                        "relative flex min-h-10 flex-1 items-center justify-center overflow-hidden px-1.5 py-2 text-center [font-family:var(--font-paraluman-mono)] font-semibold uppercase transition-[background,color,box-shadow] duration-220 ease-[cubic-bezier(0.22,1,0.36,1)] after:pointer-events-none after:absolute after:inset-0 after:bg-white/20 after:opacity-0 after:transition-opacity after:duration-180 active:after:opacity-100 sm:min-h-[2.625rem] sm:px-2",
                         !isFirst && "-ml-3 sm:-ml-4",
                         isActive
-                          ? "bg-gradient-to-r from-[#72068c] to-[#5a0570] text-white shadow-[0_8px_16px_-12px_rgba(114,6,140,0.75)]"
-                          : "bg-white/85 text-black/70 hover:bg-white hover:text-black",
+                          ? "bg-gradient-to-r from-[#72068c] via-[#68067f] to-[#56066e] text-white shadow-[0_10px_20px_-14px_rgba(114,6,140,0.75)]"
+                          : "bg-[#f3edf9] text-black/70 hover:bg-[#ece3f6] hover:text-black",
                       )}
                     >
                       <span className="inline-flex w-full items-center justify-center gap-1 whitespace-nowrap text-[9px] tracking-[0.02em] sm:gap-2 sm:text-xs sm:tracking-[0.06em]">
@@ -328,67 +354,85 @@ export default function ParalumanPage() {
           </div>
         </section>
 
-        {activePanel === "overview" && (
-          <HeroPanel
-            hiringBadgeText={HIRING_BADGE_TEXT}
-            onHowToApply={openChallengePanel}
-            showHowToApplyButton={activePanel === "overview"}
-          />
+        {renderPanel === "overview" && (
+          <div
+            className={cn(
+              "transition-all duration-[220ms] ease-out",
+              panelPhase === "out"
+                ? "translate-y-1 opacity-0"
+                : "translate-y-0 opacity-100",
+            )}
+          >
+            <HeroPanel
+              hiringBadgeText={HIRING_BADGE_TEXT}
+              onHowToApply={openChallengePanel}
+              showHowToApplyButton={renderPanel === "overview"}
+            />
+          </div>
         )}
 
         <section ref={panelSectionRef} className="relative">
           <div className="px-6 py-12 sm:px-8 sm:py-16 lg:px-10">
             <div className="mx-auto max-w-5xl">
-              {activePanel === "overview" && (
-                <OverviewPanel
-                  hasChallengeVideo={hasChallengeVideo}
-                  challengeVideoUrl={CHALLENGE_VIDEO_URL}
-                  ceoProfile={CEO_PROFILE}
-                  onGoToApply={openChallengePanel}
-                />
-              )}
-
-              {activePanel === "challenge" && (
-                <HowToApplyPanel
-                  challengePdfUrl={CHALLENGE_PDF_URL}
-                  onGoToApply={openSubmissionPanel}
-                />
-              )}
-
-              {activePanel === "submission" && (
-                <div ref={submissionPanelRef} className="w-full space-y-6">
-                  <ApplyPanel
-                    form={form}
-                    submissionStep={submissionStep}
-                    hasSubmitted={hasSubmitted}
-                    submittedEmail={submittedEmail}
-                    isSubmitting={isSubmitting}
-                    isError={isError}
-                    resultMessage={resultMessage}
-                    isDevelopment={isDevelopment}
-                    token={token}
-                    tokenFail={tokenFail}
-                    turnstileSiteKey={
-                      process.env.NEXT_PUBLIC_SERVER_API_KEY_TURNSTILE
-                    }
-                    onFieldChange={onFieldChange}
-                    onNextStep={goToNextStep}
-                    onBackStep={goToPreviousStep}
-                    onSubmit={(event) => {
-                      void handleSubmit(event);
-                    }}
-                    onBackToOverview={() => openPanel("overview", true)}
-                    onTokenSuccess={(t) => {
-                      setToken(t);
-                      setTokenFail(false);
-                    }}
-                    onTokenError={() => {
-                      setToken("");
-                      setTokenFail(true);
-                    }}
+              <div
+                className={cn(
+                  "transition-all duration-[220ms] ease-out",
+                  panelPhase === "out"
+                    ? "translate-y-1 opacity-0"
+                    : "translate-y-0 opacity-100",
+                )}
+              >
+                {renderPanel === "overview" && (
+                  <OverviewPanel
+                    hasChallengeVideo={hasChallengeVideo}
+                    challengeVideoUrl={CHALLENGE_VIDEO_URL}
+                    ceoProfile={CEO_PROFILE}
+                    onGoToApply={openChallengePanel}
                   />
-                </div>
-              )}
+                )}
+
+                {renderPanel === "challenge" && (
+                  <HowToApplyPanel
+                    challengePdfUrl={CHALLENGE_PDF_URL}
+                    onGoToApply={openSubmissionPanel}
+                  />
+                )}
+
+                {renderPanel === "submission" && (
+                  <div ref={submissionPanelRef} className="w-full space-y-6">
+                    <ApplyPanel
+                      form={form}
+                      submissionStep={submissionStep}
+                      hasSubmitted={hasSubmitted}
+                      submittedEmail={submittedEmail}
+                      isSubmitting={isSubmitting}
+                      isError={isError}
+                      resultMessage={resultMessage}
+                      isDevelopment={isDevelopment}
+                      token={token}
+                      tokenFail={tokenFail}
+                      turnstileSiteKey={
+                        process.env.NEXT_PUBLIC_SERVER_API_KEY_TURNSTILE
+                      }
+                      onFieldChange={onFieldChange}
+                      onNextStep={goToNextStep}
+                      onBackStep={goToPreviousStep}
+                      onSubmit={(event) => {
+                        void handleSubmit(event);
+                      }}
+                      onBackToOverview={() => openPanel("overview", true)}
+                      onTokenSuccess={(t) => {
+                        setToken(t);
+                        setTokenFail(false);
+                      }}
+                      onTokenError={() => {
+                        setToken("");
+                        setTokenFail(true);
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </section>
