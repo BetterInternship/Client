@@ -1,9 +1,8 @@
 "use client";
 
-import { Fragment, type FormEvent, useMemo, useRef, useState } from "react";
+import { type FormEvent, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronRight } from "lucide-react";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { OverviewPanel } from "./components/OverviewPanel";
@@ -58,17 +57,11 @@ const INITIAL_FORM_STATE: ParalumanSubmissionForm = {
 const PANEL_TABS: Array<{
   key: PanelKey;
   label: string;
-  mobileLabel: string;
   step: string;
 }> = [
-  { key: "overview", label: "Overview", mobileLabel: "Overview", step: "01" },
-  {
-    key: "challenge",
-    label: "How to apply",
-    mobileLabel: "Guide",
-    step: "02",
-  },
-  { key: "submission", label: "Apply", mobileLabel: "Apply", step: "03" },
+  { key: "overview", label: "Overview", step: "01" },
+  { key: "challenge", label: "How to apply", step: "02" },
+  { key: "submission", label: "Apply", step: "03" },
 ];
 
 export default function ParalumanPage() {
@@ -296,33 +289,26 @@ export default function ParalumanPage() {
         <section className="sticky top-0 z-40 px-4 py-2 sm:px-8 sm:py-3 lg:px-10">
           <div className="mx-auto max-w-3xl rounded-[0.33em] border border-[rgba(114,6,140,0.3)] bg-white/80 p-2 shadow-[0_12px_30px_-24px_rgba(114,6,140,0.6)] backdrop-blur-md supports-[backdrop-filter]:bg-white/70">
             <div className="relative">
-              <div className="grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-1">
-                {PANEL_TABS.map((tab, index) => {
+              <div className="grid grid-cols-3 items-center gap-1.5">
+                {PANEL_TABS.map((tab) => {
                   const isActive = activePanel === tab.key;
                   return (
-                    <Fragment key={tab.key}>
-                      <button
-                        type="button"
-                        onClick={() => openPanel(tab.key)}
-                        className={cn(
-                          "relative w-full overflow-hidden rounded-[0.33em] px-2 py-2 text-center [font-family:var(--font-paraluman-mono)] font-semibold uppercase transition-all duration-200 transform-gpu active:scale-[0.97] after:pointer-events-none after:absolute after:inset-0 after:rounded-[0.33em] after:bg-white/20 after:opacity-0 after:transition-opacity after:duration-150 active:after:opacity-100",
-                          isActive
-                            ? "bg-gradient-to-r from-[#72068c] to-[#5a0570] text-white shadow-[0_8px_16px_-12px_rgba(114,6,140,0.75)]"
-                            : "text-black/70 hover:bg-white/70 hover:text-black",
-                        )}
-                      >
-                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[9px] tracking-[0.04em] sm:gap-3 sm:text-xs sm:tracking-[0.06em]">
-                          <span className="opacity-70">{tab.step}</span>
-                          <span className="sm:hidden">{tab.mobileLabel}</span>
-                          <span className="hidden sm:inline">{tab.label}</span>
-                        </span>
-                      </button>
-                      {index < PANEL_TABS.length - 1 && (
-                        <span className="flex items-center justify-center text-[#72068c]/55">
-                          <ChevronRight className="h-4 w-4" />
-                        </span>
+                    <button
+                      key={tab.key}
+                      type="button"
+                      onClick={() => openPanel(tab.key)}
+                      className={cn(
+                        "relative w-full overflow-hidden rounded-[0.33em] px-1.5 py-2 text-center [font-family:var(--font-paraluman-mono)] font-semibold uppercase transition-all duration-200 transform-gpu active:scale-[0.97] after:pointer-events-none after:absolute after:inset-0 after:rounded-[0.33em] after:bg-white/20 after:opacity-0 after:transition-opacity after:duration-150 active:after:opacity-100 sm:px-2",
+                        isActive
+                          ? "bg-gradient-to-r from-[#72068c] to-[#5a0570] text-white shadow-[0_8px_16px_-12px_rgba(114,6,140,0.75)]"
+                          : "text-black/70 hover:bg-white/70 hover:text-black",
                       )}
-                    </Fragment>
+                    >
+                      <span className="inline-flex items-center justify-center gap-1 whitespace-nowrap text-[9px] tracking-[0.03em] sm:gap-2 sm:text-xs sm:tracking-[0.06em]">
+                        <span className="opacity-70">{tab.step}</span>
+                        <span>{tab.label}</span>
+                      </span>
+                    </button>
                   );
                 })}
               </div>
