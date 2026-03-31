@@ -24,7 +24,7 @@ export function HeroPanel({
   const [tx, setTx] = useState(0);
   const [ty, setTy] = useState(0);
 
-  const magneticRange = 8;
+  const magneticRange = 10;
 
   const handleMove = (event: React.MouseEvent<HTMLDivElement>) => {
     if (prefersReduce) return;
@@ -117,13 +117,16 @@ export function HeroPanel({
                 ref={magnetRef}
                 onMouseMove={handleMove}
                 onMouseLeave={resetMagnet}
-                animate={{ x: tx, y: ty, rotate: tx * 0.35 }}
+                initial={prefersReduce ? false : { opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                animate={{ x: tx, y: ty, rotate: tx * 0.3 }}
                 transition={{
                   type: "spring",
-                  stiffness: 210,
+                  stiffness: 120,
                   damping: 16,
-                  mass: 0.32,
+                  mass: 0.5,
                 }}
+                viewport={{ once: true, margin: "-50px" }}
                 className="inline-block w-full sm:w-auto"
               >
                 <Button
