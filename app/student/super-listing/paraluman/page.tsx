@@ -54,6 +54,37 @@ const CHALLENGE_PDF_URL =
 const CHALLENGE_VIDEO_URL = "";
 const HIRING_BADGE_TEXT = "No resume needed | Response in 24 hours";
 
+const GOOGLE_DRIVE_FILE_ID_PATTERNS = [/\/file\/d\/([^/?]+)/, /[?&]id=([^&]+)/];
+
+const getGoogleDriveFileId = (url: string) => {
+  for (const pattern of GOOGLE_DRIVE_FILE_ID_PATTERNS) {
+    const match = url.match(pattern);
+    if (match?.[1]) return match[1];
+  }
+
+  return null;
+};
+
+const appendPdfViewerHash = (url: string) => {
+  const [base, hash] = url.split("#", 2);
+  const viewerHash = "toolbar=0&navpanes=0&scrollbar=1";
+  return `${base}#${hash ? `${hash}&${viewerHash}` : viewerHash}`;
+};
+
+const getChallengeEmbedUrl = (url: string) => {
+  const trimmedUrl = url.trim();
+  if (!trimmedUrl) return "";
+
+  if (trimmedUrl.includes("drive.google.com")) {
+    const fileId = getGoogleDriveFileId(trimmedUrl);
+    if (fileId) {
+      return `https://drive.google.com/file/d/${fileId}/preview`;
+    }
+  }
+
+  return appendPdfViewerHash(trimmedUrl);
+};
+
 type ParalumanSubmissionForm = {
   email: string;
   fullName: string;
@@ -105,6 +136,10 @@ export default function ParalumanPage() {
     if (!base) return "/api/super-listings/submission/paraluman";
     return `${base}/super-listings/submission/paraluman`;
   }, []);
+  const challengeEmbedUrl = useMemo(
+    () => getChallengeEmbedUrl(CHALLENGE_PDF_URL),
+    [],
+  );
 
   const updateField =
     (field: keyof ParalumanSubmissionForm) =>
@@ -237,7 +272,7 @@ export default function ParalumanPage() {
     }
   };
 
-  const hasChallengePdf = CHALLENGE_PDF_URL.trim().length > 0;
+  const hasChallengePdf = challengeEmbedUrl.length > 0;
   const hasChallengeVideo = CHALLENGE_VIDEO_URL.trim().length > 0;
 
   return (
@@ -286,15 +321,7 @@ export default function ParalumanPage() {
                     <button
                       key={tab.key}
                       type="button"
-                      onClick={() =>
-                        tab.key === "challenge" && hasChallengePdf
-                          ? window.open(
-                              CHALLENGE_PDF_URL,
-                              "_blank",
-                              "noopener,noreferrer",
-                            )
-                          : openPanel(tab.key)
-                      }
+                      onClick={() => openPanel(tab.key)}
                       className={cn(
                         "relative w-full overflow-hidden rounded-[0.33em] px-2.5 py-2 text-center [font-family:var(--font-paraluman-mono)] text-[10px] font-semibold uppercase tracking-[0.06em] transition-all duration-200 transform-gpu active:scale-[0.97] after:pointer-events-none after:absolute after:inset-0 after:rounded-[0.33em] after:bg-white/20 after:opacity-0 after:transition-opacity after:duration-150 active:after:opacity-100 sm:px-2.5 sm:py-2 sm:text-xs md:px-2.5 md:py-2 md:text-xs md:tracking-[0.06em]",
                         isActive
@@ -437,6 +464,51 @@ export default function ParalumanPage() {
                       </div>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {activePanel === "challenge" && (
+                <div className="space-y-6 pt-6 sm:pt-10">
+                  <div className="flex flex-col gap-4 rounded-[0.33em] border-2 border-[rgba(114,6,140,0.2)] bg-white/80 p-5 shadow-[0_18px_45px_-35px_rgba(114,6,140,0.65)] sm:flex-row sm:items-end sm:justify-between sm:p-6">
+                    <div className="space-y-3">
+                      <div className="space-y-2">
+                        <h2 className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.5rem,3vw,2.2rem)] font-black uppercase tracking-[-0.03em] text-[#72068c]">
+                          Challenge Brief
+                        </h2>
+                        <p className="max-w-3xl [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/70 sm:text-base">
+                          Read the challenge below. Have a submission ready?
+                          send an application now!
+                        </p>
+                      </div>
+                    </div>
+
+                    <Button
+                      type="button"
+                      onClick={openSubmissionPanel}
+                      className="inline-flex h-11 w-full items-center justify-center rounded-[0.33em] border-2 border-[#72068c] bg-gradient-to-r from-[#72068c] to-[#5a0570] px-6 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:shadow-lg sm:w-auto"
+                    >
+                      Apply Now
+                    </Button>
+                  </div>
+
+                  {hasChallengePdf ? (
+                    <div className="-mx-6 -mb-12 overflow-hidden border-y-2 border-[rgba(114,6,140,0.22)] bg-white shadow-[0_30px_80px_-50px_rgba(114,6,140,0.75)] sm:mx-0 sm:mb-0 sm:rounded-[0.33em] sm:border-2">
+                      <iframe
+                        src={challengeEmbedUrl}
+                        title="Paraluman challenge brief"
+                        className="h-[70vh] min-h-[32rem] w-full bg-white"
+                        loading="lazy"
+                      >
+                        Challenge brief could not be loaded.
+                      </iframe>
+                    </div>
+                  ) : (
+                    <div className="rounded-[0.33em] border-2 border-dashed border-[rgba(114,6,140,0.28)] bg-white/70 px-6 py-10 text-center">
+                      <p className="[font-family:var(--font-paraluman-mono)] text-sm text-black/60">
+                        The challenge brief is not available yet.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
