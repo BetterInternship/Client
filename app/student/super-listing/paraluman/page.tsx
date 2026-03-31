@@ -375,21 +375,6 @@ export default function ParalumanPage() {
           </div>
         </section>
 
-        <div
-          className={cn(
-            "transition-all duration-[220ms] ease-out",
-            panelPhase === "out"
-              ? "translate-y-1 opacity-0"
-              : "translate-y-0 opacity-100",
-          )}
-        >
-          <HeroPanel
-            hiringBadgeText={HIRING_BADGE_TEXT}
-            onHowToApply={openChallengePanel}
-            showHowToApplyButton={activePanel === "overview"}
-          />
-        </div>
-
         <section ref={panelSectionRef} className="relative">
           <div className="px-6 py-12 sm:px-8 sm:py-16 lg:px-10">
             <div className="mx-auto max-w-5xl">
@@ -402,12 +387,28 @@ export default function ParalumanPage() {
                 )}
               >
                 {renderPanel === "overview" && (
-                  <OverviewPanel
-                    hasChallengeVideo={hasChallengeVideo}
-                    challengeVideoUrl={CHALLENGE_VIDEO_URL}
-                    ceoProfile={CEO_PROFILE}
-                    onGoToApply={openChallengePanel}
-                  />
+                  <>
+                    <div
+                      className={cn(
+                        "transition-all duration-[220ms] ease-out",
+                        panelPhase === "out"
+                          ? "translate-y-1 opacity-0"
+                          : "translate-y-0 opacity-100",
+                      )}
+                    >
+                      <HeroPanel
+                        hiringBadgeText={HIRING_BADGE_TEXT}
+                        onHowToApply={openChallengePanel}
+                        showHowToApplyButton={activePanel === "overview"}
+                      />
+                    </div>
+                    <OverviewPanel
+                      hasChallengeVideo={hasChallengeVideo}
+                      challengeVideoUrl={CHALLENGE_VIDEO_URL}
+                      ceoProfile={CEO_PROFILE}
+                      onGoToApply={openChallengePanel}
+                    />
+                  </>
                 )}
 
                 {renderPanel === "challenge" && (

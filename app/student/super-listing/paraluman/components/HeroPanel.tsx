@@ -45,7 +45,7 @@ export function HeroPanel({
   };
 
   return (
-    <section className="relative px-6 py-16 sm:px-8 lg:px-10">
+    <section className="relative px-6 py-6 sm:px-8 lg:px-10">
       <div className="mx-auto max-w-4xl space-y-8 text-center sm:space-y-10">
         <div className="flex justify-center">
           <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold text-amber-950 shadow-[0_8px_20px_-14px_rgba(217,119,6,0.45)] super-header-badge super-badge-gold sm:text-sm">
