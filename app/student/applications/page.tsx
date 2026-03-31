@@ -25,7 +25,19 @@ import { cn } from "@/lib/utils";
 
 export default function ApplicationsPage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
-  const applications = useApplicationsData();
+  const rawApplications = useApplicationsData();
+
+  const applications = React.useMemo(
+    () => ({
+      ...rawApplications,
+      data: [...rawApplications.data].sort((a, b) => {
+        const firstDate = a.applied_at ? new Date(a.applied_at).getTime() : 0;
+        const secondDate = b.applied_at ? new Date(b.applied_at).getTime() : 0;
+        return secondDate - firstDate;
+      }),
+    }),
+    [rawApplications],
+  );
   redirectIfNotLoggedIn();
 
   return (
