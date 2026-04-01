@@ -99,7 +99,7 @@ export function ApplyPanel({
     }, 180);
   }, [hasSubmitted, prefersReduce]);
 
-  const stepLabel = submissionStep === 1 ? "Submission Link" : "Personal Info";
+  const stepLabel = submissionStep === 1 ? "Proof Of Work" : "Contact Details";
 
   const updateField =
     (field: keyof ParalumanSubmissionForm) =>
@@ -111,10 +111,13 @@ export function ApplyPanel({
 
   return (
     <div className="overflow-hidden rounded-[0.33em] border-2 border-[rgba(114,6,140,0.24)] bg-white shadow-[0_24px_55px_-35px_rgba(114,6,140,0.75)]">
-      <div className="flex flex-col gap-4 bg-gradient-to-br from-[#72068c] via-[#5a0570] to-[#4a0460] px-6 py-6 text-white sm:flex-row sm:items-end sm:justify-between sm:px-8">
+      <div className="flex flex-col gap-4 bg-gradient-to-br from-[#72068c] via-[#5a0570] to-[#4a0460] px-6 py-6 text-white sm:flex-row sm:items-start sm:justify-between sm:px-8">
         <div>
           <p className="[font-family:var(--font-paraluman-heading)] text-2xl text-white font-black uppercase tracking-[-0.02em] sm:text-3xl">
             Apply
+          </p>
+          <p className="[font-family:var(--font-paraluman-mono)]  text-white">
+            No resume needed. Guaranteed response in 24 hours
           </p>
         </div>
 
@@ -172,6 +175,9 @@ export function ApplyPanel({
               <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black uppercase tracking-[-0.02em] text-[#72068c] sm:text-3xl">
                 Submission sent
               </p>
+              <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase tracking-[0.02em] text-[#72068c]/80 sm:text-xl">
+                You're in
+              </p>
               <motion.p
                 className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/70 sm:text-base"
                 initial={prefersReduce ? false : { opacity: 0, y: 8 }}
@@ -182,7 +188,7 @@ export function ApplyPanel({
                 <span className="font-bold text-[#72068c]">
                   {submittedEmail || "your email"}
                 </span>
-                . We'll review your submission and get back to you in 24 hours.
+                . You will receive a response within 24 hours.
               </motion.p>
               <motion.div
                 className="pt-1"
@@ -202,11 +208,24 @@ export function ApplyPanel({
           </motion.div>
         ) : (
           <form className="space-y-5" onSubmit={(e) => void onSubmit(e)}>
+            <div className="rounded-[0.33em] border border-[rgba(114,6,140,0.16)] bg-[#72068c]/5 px-4 py-3">
+              <p className="[font-family:var(--font-paraluman-heading)] text-base font-black uppercase text-[#72068c] sm:text-lg">
+                {submissionStep === 1
+                  ? "Step 1: Share your proof of work"
+                  : "Step 2: Confirm your details"}
+              </p>
+              <p className="mt-1 [font-family:var(--font-paraluman-mono)] text-xs leading-6 text-black/70 sm:text-sm">
+                {submissionStep === 1
+                  ? "One clear link is enough. Demo, docs, repo, or walkthrough all work."
+                  : "Final step. No resume needed. Guaranteed response in 24 hours."}
+              </p>
+            </div>
+
             {submissionStep === 1 && (
               <>
                 <div className="space-y-2">
                   <label className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.1em] text-black/70">
-                    Application Link *
+                    Project / Demo / Docs Link *
                   </label>
                   <Input
                     required
@@ -243,6 +262,10 @@ export function ApplyPanel({
                     onChange={updateField("submissionNotes")}
                     className="min-h-28 border-2 border-[rgba(114,6,140,0.3)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
                   />
+                  <p className="[font-family:var(--font-paraluman-mono)] text-[10px] text-black/55 sm:text-[11px]">
+                    Add context, constraints, or tradeoffs you want us to
+                    notice.
+                  </p>
                 </div>
               </>
             )}
@@ -314,18 +337,14 @@ export function ApplyPanel({
               </>
             )}
 
-            <div className="flex flex-col gap-3 border-t-2 border-[rgba(114,6,140,0.15)] pt-5 sm:flex-row sm:items-center sm:justify-between">
-              <p className="[font-family:var(--font-paraluman-mono)] text-xs text-black/60">
-                We will send a confirmation to your email
-              </p>
-
+            <div className="flex flex-col sm:flex-row justify-end">
               {submissionStep === 1 ? (
                 <Button
                   type="button"
                   onClick={onNextStep}
                   className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#72068c] bg-gradient-to-r from-[#72068c] to-[#5a0570] [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:shadow-lg sm:w-auto sm:px-8"
                 >
-                  Next Step
+                  Continue To Final Step
                 </Button>
               ) : (
                 <div className="flex w-full gap-2 sm:w-auto sm:items-center">
@@ -349,7 +368,7 @@ export function ApplyPanel({
                         Sending
                       </>
                     ) : (
-                      "Submit"
+                      "Send Application"
                     )}
                   </Button>
                 </div>
