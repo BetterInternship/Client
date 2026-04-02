@@ -21,7 +21,6 @@ import { cn } from "@/lib/utils";
 import type { ParalumanSubmissionForm, SubmissionStep } from "./types";
 
 type ApplyPanelProps = {
-  isClosed: boolean;
   form: ParalumanSubmissionForm;
   submissionStep: SubmissionStep;
   hasSubmitted: boolean;
@@ -43,7 +42,6 @@ type ApplyPanelProps = {
 };
 
 export function ApplyPanel({
-  isClosed,
   form,
   submissionStep,
   hasSubmitted,
@@ -65,7 +63,6 @@ export function ApplyPanel({
 }: ApplyPanelProps) {
   const prefersReduce = useReducedMotion();
   const hasCelebratedRef = useRef(false);
-  const isApplyDisabled = isClosed && !hasSubmitted;
 
   useEffect(() => {
     if (!hasSubmitted) {
@@ -114,23 +111,7 @@ export function ApplyPanel({
 
   return (
     <div className="relative overflow-hidden rounded-[0.33em] border-2 border-[rgba(114,6,140,0.24)] bg-white shadow-[0_24px_55px_-35px_rgba(114,6,140,0.75)]">
-      {isApplyDisabled ? (
-        <>
-          <div className="pointer-events-none absolute inset-0 z-20 bg-black/30 backdrop-blur-[3px]" />
-          <div className="my-52 absolute inset-x-4 top-4 z-30 rounded-[0.33em] border border-[#72068c]/20 bg-white px-4 py-3 text-center shadow-[0_18px_40px_-28px_rgba(114,6,140,0.65)]">
-            <p className="[font-family:var(--font-paraluman-mono)] text-xs font-semibold uppercase tracking-[0.12em] text-[#72068c]">
-              Submissions are no longer being accepted.
-            </p>
-          </div>
-        </>
-      ) : null}
-
-      <div
-        className={cn(
-          "relative",
-          isApplyDisabled && "pointer-events-none select-none blur-[2px]",
-        )}
-      >
+      <div className="relative">
         <div className="flex flex-col gap-4 bg-gradient-to-br from-[#72068c] via-[#5a0570] to-[#4a0460] px-6 py-6 text-white sm:flex-row sm:items-start sm:justify-between sm:px-8">
           <div>
             <p className="[font-family:var(--font-paraluman-heading)] text-2xl text-white font-black uppercase tracking-[-0.02em] sm:text-3xl">
@@ -251,7 +232,6 @@ export function ApplyPanel({
                     </label>
                     <Input
                       required
-                      disabled={isApplyDisabled}
                       value={form.submissionLink}
                       onChange={updateField("submissionLink")}
                       className="h-11 border-2 border-[rgba(114,6,140,0.3)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
@@ -281,7 +261,6 @@ export function ApplyPanel({
                       Application Notes (Optional)
                     </label>
                     <Textarea
-                      disabled={isApplyDisabled}
                       value={form.submissionNotes}
                       onChange={updateField("submissionNotes")}
                       className="min-h-28 border-2 border-[rgba(114,6,140,0.3)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
@@ -303,7 +282,6 @@ export function ApplyPanel({
                     <Input
                       required
                       type="email"
-                      disabled={isApplyDisabled}
                       value={form.email}
                       onChange={updateField("email")}
                       className="h-11 border-2 border-[rgba(114,6,140,0.3)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
@@ -316,7 +294,6 @@ export function ApplyPanel({
                     </label>
                     <Input
                       required
-                      disabled={isApplyDisabled}
                       value={form.fullName}
                       onChange={updateField("fullName")}
                       className="h-11 border-2 border-[rgba(114,6,140,0.3)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
@@ -329,18 +306,13 @@ export function ApplyPanel({
                     </label>
                     <Input
                       required
-                      disabled={isApplyDisabled}
                       value={form.facebookLink}
                       onChange={updateField("facebookLink")}
                       className="h-11 border-2 border-[rgba(114,6,140,0.3)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
                     />
                   </div>
 
-                  {isApplyDisabled ? (
-                    <p className="rounded-[0.33em] bg-[rgba(114,6,140,0.1)] px-3 py-2 [font-family:var(--font-paraluman-mono)] text-xs text-[#72068c]">
-                      Submissions are closed.
-                    </p>
-                  ) : isDevelopment ? (
+                  {isDevelopment ? (
                     <p className="rounded-[0.33em] bg-[rgba(114,6,140,0.1)] px-3 py-2 [font-family:var(--font-paraluman-mono)] text-xs text-[#72068c]">
                       Captcha disabled in development
                     </p>
@@ -372,7 +344,6 @@ export function ApplyPanel({
                 {submissionStep === 1 ? (
                   <Button
                     type="button"
-                    disabled={isApplyDisabled}
                     onClick={onNextStep}
                     className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#72068c] bg-gradient-to-r from-[#72068c] to-[#5a0570] [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:shadow-lg sm:w-auto sm:px-8"
                   >
@@ -383,7 +354,6 @@ export function ApplyPanel({
                     <Button
                       type="button"
                       variant="outline"
-                      disabled={isApplyDisabled}
                       onClick={onBackStep}
                       className="inline-flex h-11 w-1/3 items-center justify-center gap-1.5 rounded-[0.33em] border-2 border-[rgba(114,6,140,0.35)] bg-white/90 px-3 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.08em] text-[#72068c] transition-colors hover:bg-white sm:w-auto"
                     >
@@ -392,7 +362,7 @@ export function ApplyPanel({
                     </Button>
                     <Button
                       type="submit"
-                      disabled={isSubmitting || isApplyDisabled}
+                      disabled={isSubmitting}
                       className="inline-flex h-11 w-2/3 items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#72068c] bg-gradient-to-r from-[#72068c] to-[#5a0570] px-6 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:shadow-lg sm:min-w-36 sm:w-auto"
                     >
                       {isSubmitting ? (
