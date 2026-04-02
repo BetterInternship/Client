@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -181,7 +181,9 @@ export const HeaderButtons: React.FC = () => {
   const pathname = usePathname();
   const handleLogout = () => logout().then(() => router.push("/"));
 
-  const handleProfileClick = () => {
+  const handleProfileClick = useCallback(() => {
+    console.log("current profile: ", profile);
+
     if (!isProfileVerified(profile.data)) {
       router.push(`/register/verify`);
     } else if (
@@ -192,7 +194,7 @@ export const HeaderButtons: React.FC = () => {
     } else {
       router.push(`/profile`);
     }
-  };
+  }, [router, profile]);
 
   if (!isAuthenticated()) {
     return (

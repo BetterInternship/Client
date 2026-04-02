@@ -1,26 +1,23 @@
 "use client";
 
-import {
-  type ChangeEvent,
-  type FormEvent,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowUpRight, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
-import paralumanLogo from "./logo.png";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { SuperListingBadge } from "@/components/shared/jobs";
 import { cn } from "@/lib/utils";
-import { Loader } from "@/components/ui/loader";
-import { Turnstile } from "@marsidev/react-turnstile";
-import { Badge } from "@/components/ui/badge";
+import { OverviewPanel } from "./components/OverviewPanel";
+import { HowToApplyPanel } from "./components/HowToApplyPanel";
+import { ApplyPanel } from "./components/ApplyPanel";
+import { HeroPanel } from "./components/HeroPanel";
+import paralumanLogo from "./logo.png";
+import type {
+  CEOProfile,
+  PanelKey,
+  ParalumanSubmissionForm,
+  SubmissionStep,
+} from "./components/types";
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],
@@ -34,10 +31,9 @@ const monoFont = JetBrains_Mono({
   variable: "--font-paraluman-mono",
 });
 
-const CEO_PROFILE = {
-  name: "Anna Mae YU Lamentillo",
-  role: "Paraluman CEO, Former Undersecretary of DICT, \n Former Chairperson of Build, Build, Build program",
-
+const CEO_PROFILE: CEOProfile = {
+  name: "Anna Mae Yu Lamentillo",
+  role: "Paraluman CEO, \nFormer Undersecretary of DICT,\nFormer Chairperson of Build, Build, Build program",
   imageSrc:
     "https://images.gmanews.tv/webpics/2024/10/Untitled_design_(28)_2024_10_03_15_20_56.jpg",
   profileUrl: "https://www.annamaeyulamentillo.com/",
@@ -45,12 +41,8 @@ const CEO_PROFILE = {
 
 const CHALLENGE_PDF_URL =
   "https://drive.google.com/file/d/1Tdbc4EdhBkY3lOInAvE3YSaKhSQyWPwx/view?usp=sharing";
-
-type ParalumanSubmissionForm = {
-  email: string;
-  submissionLink: string;
-  submissionNotes: string;
-};
+const CHALLENGE_VIDEO_URL = "";
+const HIRING_BADGE_TEXT = "No resume needed. Response in 24 hours";
 
 type ParalumanSubmissionResponse = {
   success: boolean;
@@ -59,12 +51,28 @@ type ParalumanSubmissionResponse = {
 
 const INITIAL_FORM_STATE: ParalumanSubmissionForm = {
   email: "",
+  fullName: "",
+  facebookLink: "",
   submissionLink: "",
   submissionNotes: "",
 };
 
+const PANEL_TABS: Array<{
+  key: PanelKey;
+  label: string;
+  step: string;
+}> = [
+  { key: "overview", label: "Overview", step: "1" },
+  { key: "challenge", label: "How to apply", step: "2" },
+  { key: "submission", label: "Apply", step: "3" },
+];
+
+const PANEL_TRANSITION_MS = 220;
+const SUBMISSIONS_CLOSED = true;
+
 export default function ParalumanPage() {
   const isDevelopment = process.env.NODE_ENV === "development";
+  const router = useRouter();
 
   const [form, setForm] = useState<ParalumanSubmissionForm>(INITIAL_FORM_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -72,33 +80,47 @@ export default function ParalumanPage() {
   const [isError, setIsError] = useState(false);
   const [token, setToken] = useState("");
   const [tokenFail, setTokenFail] = useState(false);
-  const [isAtTop, setIsAtTop] = useState(true);
+  const [activePanel, setActivePanel] = useState<PanelKey>("overview");
+  const [renderPanel, setRenderPanel] = useState<PanelKey>("overview");
+  const [panelPhase, setPanelPhase] = useState<"in" | "out">("in");
+  const [submissionStep, setSubmissionStep] = useState<SubmissionStep>(1);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState("");
+  const [showClosedModal, setShowClosedModal] = useState(true);
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const topSentinelRef = useRef<HTMLDivElement | null>(null);
-  const challengeRef = useRef<HTMLElement | null>(null);
+  const panelSectionRef = useRef<HTMLElement | null>(null);
+  const submissionPanelRef = useRef<HTMLDivElement | null>(null);
+  const panelTransitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   useEffect(() => {
-    const sentinel = topSentinelRef.current;
-    const root = scrollContainerRef.current;
-    if (!sentinel || !root) return;
+    if (activePanel === renderPanel) return;
 
-    setIsAtTop(root.scrollTop <= 1);
+    setPanelPhase("out");
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsAtTop(entry.isIntersecting);
-      },
-      {
-        root,
-        threshold: 1,
-      },
-    );
+    if (panelTransitionTimerRef.current) {
+      clearTimeout(panelTransitionTimerRef.current);
+    }
 
-    observer.observe(sentinel);
+    panelTransitionTimerRef.current = setTimeout(() => {
+      setRenderPanel(activePanel);
+      requestAnimationFrame(() => setPanelPhase("in"));
+    }, PANEL_TRANSITION_MS);
 
     return () => {
-      observer.disconnect();
+      if (panelTransitionTimerRef.current) {
+        clearTimeout(panelTransitionTimerRef.current);
+      }
+    };
+  }, [activePanel, renderPanel]);
+
+  useEffect(() => {
+    return () => {
+      if (panelTransitionTimerRef.current) {
+        clearTimeout(panelTransitionTimerRef.current);
+      }
     };
   }, []);
 
@@ -108,24 +130,130 @@ export default function ParalumanPage() {
     return `${base}/super-listings/submission/paraluman`;
   }, []);
 
-  const updateField =
-    (field: keyof ParalumanSubmissionForm) =>
-    (
-      event: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
-    ) => {
-      setForm((previous) => ({ ...previous, [field]: event.target.value }));
-    };
+  const onFieldChange = (
+    field: keyof ParalumanSubmissionForm,
+    value: string,
+  ) => {
+    setForm((previous) => ({ ...previous, [field]: value }));
+  };
+
+  const openPanel = (panel: PanelKey, shouldScroll = false) => {
+    setActivePanel(panel);
+    if (panel === "submission") {
+      setSubmissionStep(1);
+    }
+
+    if (!shouldScroll) return;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        panelSectionRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+    });
+  };
+
+  const openChallengePanel = () => {
+    openPanel("challenge");
+  };
+
+  const openSubmissionPanel = () => {
+    setActivePanel("submission");
+    setSubmissionStep(1);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        submissionPanelRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+    });
+  };
+
+  const goToStepTwo = () => {
+    if (SUBMISSIONS_CLOSED) {
+      setIsError(true);
+      setResultMessage("Submissions are no longer being accepted.");
+      return;
+    }
+
+    setResultMessage("");
+    setIsError(false);
+
+    if (!form.submissionLink.trim()) {
+      setIsError(true);
+      setResultMessage("Application link is required before proceeding.");
+      return;
+    }
+
+    setSubmissionStep(2);
+    requestAnimationFrame(() => {
+      submissionPanelRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  };
+
+  const goToNextStep = () => {
+    if (submissionStep === 1) {
+      goToStepTwo();
+    }
+  };
+
+  const goToPreviousStep = () => {
+    setResultMessage("");
+    setIsError(false);
+    setSubmissionStep((previous) =>
+      previous > 1 ? ((previous - 1) as SubmissionStep) : 1,
+    );
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setResultMessage("");
     setIsError(false);
 
+    if (SUBMISSIONS_CLOSED) {
+      setIsError(true);
+      setResultMessage("Submissions are no longer being accepted.");
+      return;
+    }
+
+    if (submissionStep !== 2) {
+      setIsError(true);
+      setResultMessage("Please complete all steps before submitting.");
+      return;
+    }
+
+    if (
+      !form.email.trim() ||
+      !form.fullName.trim() ||
+      !form.facebookLink.trim()
+    ) {
+      setIsError(true);
+      setResultMessage("Please complete your personal information.");
+      return;
+    }
+
     if (!isDevelopment && !token) {
       setIsError(true);
       setResultMessage("Please complete the browser verification first.");
       return;
     }
+
+    const combinedNotes = [
+      form.submissionNotes.trim()
+        ? `Notes: ${form.submissionNotes.trim()}`
+        : "",
+      `Full Name: ${form.fullName.trim()}`,
+      `Facebook Link: ${form.facebookLink.trim()}`,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
 
     setIsSubmitting(true);
 
@@ -134,7 +262,9 @@ export default function ParalumanPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...form,
+          email: form.email.trim(),
+          submissionLink: form.submissionLink.trim(),
+          submissionNotes: combinedNotes,
           "cf-token": isDevelopment ? "dev-bypass" : token,
         }),
       });
@@ -142,59 +272,96 @@ export default function ParalumanPage() {
       const data = (await response.json()) as ParalumanSubmissionResponse;
 
       if (!response.ok || !data.success) {
-        throw new Error(data.message || "Could not send your submission.");
+        throw new Error(data.message || "Could not send your application.");
       }
 
+      const submittedEmailAddress = form.email.trim();
       setForm(INITIAL_FORM_STATE);
-      setResultMessage("Submission sent to your email.");
+      setSubmissionStep(1);
+      setSubmittedEmail(submittedEmailAddress);
+      setHasSubmitted(true);
+      setResultMessage("");
     } catch (error) {
       setIsError(true);
       setResultMessage(
         error instanceof Error
           ? error.message
-          : "Something went wrong while sending your submission.",
+          : "Something went wrong while sending your application.",
       );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const scrollToSubmission = () => {
-    challengeRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  };
-
-  const hasChallengePdf = CHALLENGE_PDF_URL.trim().length > 0;
+  const hasChallengeVideo = CHALLENGE_VIDEO_URL.trim().length > 0;
 
   return (
     <main
       className={cn(
-        "relative isolate h-full min-h-screen bg-white text-black",
+        "relative isolate h-full min-h-screen bg-[#f6f4fb] text-black",
         headingFont.variable,
         monoFont.variable,
       )}
     >
-      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_16%_18%,rgba(147,51,234,0.14),transparent_35%),radial-gradient(circle_at_84%_2%,rgba(76,29,149,0.12),transparent_33%),radial-gradient(circle_at_50%_90%,rgba(168,85,247,0.08),transparent_40%)]" />
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.05)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(122deg,rgba(147,51,234,0.08)_0%,transparent_34%,rgba(192,132,252,0.08)_54%,transparent_74%)] opacity-55" />
+      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_14%_12%,rgba(114,6,140,0.12),transparent_38%),radial-gradient(circle_at_88%_4%,rgba(114,6,140,0.1),transparent_34%),radial-gradient(circle_at_50%_90%,rgba(114,6,140,0.06),transparent_42%)]" />
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.04)_1px,transparent_1px)] bg-[size:48px_48px] opacity-35" />
 
       <div
         ref={scrollContainerRef}
-        className="relative h-full overflow-x-hidden overflow-y-auto"
+        className="relative h-full overflow-x-hidden overflow-y-auto pb-24 sm:pb-0"
       >
-        <div ref={topSentinelRef} aria-hidden className="h-px w-full" />
+        {showClosedModal ? (
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-white/30 px-4 backdrop-blur-md">
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="paraluman-closed-modal-title"
+              aria-describedby="paraluman-closed-modal-description"
+              className="w-full max-w-md rounded-[0.33em] border border-[rgba(114,6,140,0.16)] bg-white p-6 shadow-[0_24px_80px_-32px_rgba(114,6,140,0.55)] backdrop-blur-xl"
+            >
+              <div className="space-y-3">
+                <h2
+                  id="paraluman-closed-modal-title"
+                  className="text-xl font-semibold text-[#2d1236]"
+                >
+                  This challenge has already ended.
+                </h2>
+                <p
+                  id="paraluman-closed-modal-description"
+                  className="text-sm leading-6 text-black/70"
+                >
+                  View anyway?
+                </p>
+              </div>
+
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <Button
+                  type="button"
+                  onClick={() => setShowClosedModal(false)}
+                  className="h-11 rounded-xl bg-[#72068c] px-5 text-white hover:bg-[#5f0676]"
+                >
+                  View
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push("/search")}
+                  className="h-11 rounded-xl border-[rgba(114,6,140,0.22)] bg-white/75 px-5 text-[#5b2a68] hover:bg-[#f7effa]"
+                >
+                  Go home
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         <header
           className={cn(
-            "sticky top-0 z-[9999] flex items-center justify-between px-6 pb-2 pt-2 transition-all duration-300 sm:px-8 lg:px-10",
-            isAtTop
-              ? "border-b border-transparent bg-transparent shadow-none backdrop-blur-0"
-              : "backdrop-blur-md bg-white/50 shadow-sm",
+            " top-0 z-[9999] flex items-center justify-between px-4 py-3 transition-all duration-300 sm:px-8 lg:px-10 border-b border-transparent bg-transparent shadow-none backdrop-blur-0",
           )}
         >
-          <div className="flex items-center gap-3 sm:gap-4">
+          {" "}
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/"
               className="transition-opacity duration-200 hover:opacity-70"
@@ -207,312 +374,147 @@ export default function ParalumanPage() {
                 className="h-10 w-10 sm:h-12 sm:w-12"
               />
             </Link>
-            <span className="text-xl font-black text-black/30 sm:text-2xl">
+
+            <span className="text-xs font-semibold uppercase text-black/45">
               x
             </span>
+
             <Link
               href="https://www.paraluman.com/"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center transition-opacity duration-200 hover:opacity-80 mt-1 sm:mt-2"
+              className="transition-opacity duration-200 hover:opacity-75"
             >
               <Image
                 src={paralumanLogo}
                 alt="Paraluman"
-                className="h-auto w-[clamp(8.5rem,12vw,12rem)]"
+                className="h-7 w-auto sm:h-8"
                 priority
               />
             </Link>
           </div>
         </header>
 
-        <section className="relative mx-auto flex min-h-[calc(100svh-73px)] w-full max-w-6xl flex-col justify-center px-6 py-12 sm:px-8 lg:px-10">
-          <div className="mx-auto w-full max-w-4xl">
-            <div className="relative text-center">
-              <SuperListingBadge variant="gold" className="justify-center" />
-
-              <h1 className="mt-8 [font-family:var(--font-paraluman-heading)] text-[clamp(2.5rem,9vw,5.5rem)] font-black uppercase leading-[0.88] tracking-[-0.05em]">
-                <span className="block">
-                  <Link
-                    href="https://www.paraluman.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group inline-block transition-transform duration-200 "
-                  >
-                    <Image
-                      src={paralumanLogo}
-                      alt="Paraluman"
-                      className="mx-auto h-auto w-[clamp(19rem,44vw,30rem)] transition-[filter] duration-200 group-hover:brightness-75"
-                      priority
-                    />
-                  </Link>
-                </span>
-                <span className="block">is challenging you</span>
-              </h1>
-
-              <div className="mt-6 inline-flex items-center rounded-lg border-2 border-purple-600 bg-white px-5 py-2">
-                <span className="[font-family:var(--font-paraluman-heading)] text-[clamp(0.9rem,2vw,1.1rem)]  uppercase tracking-[0.08em] text-purple-700">
-                  Looking for: {""}
-                  <span className="font-black">Web Dev Interns</span>
-                </span>
-              </div>
-
-              <div className="mt-8 mx-auto max-w-2xl space-y-4 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/65 sm:text-[15px]">
-                <p>
-                  <span className="font-semibold text-purple-700">
-                    Paraluman
-                  </span>{" "}
-                  is a youth-led Philippine news platform making every story
-                  accessible in both English and Filipino.
-                </p>
-                <p>
-                  We are looking for a{" "}
-                  <span className="font-semibold text-purple-700">
-                    web development intern
-                  </span>{" "}
-                  to build and improve how articles are created, processed, and
-                  published on the platform.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-12 flex w-full flex-col items-stretch gap-3 sm:items-center">
-              <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
-                {hasChallengePdf ? (
-                  <div className="group relative isolate block w-full sm:w-auto">
-                    <div className="pointer-events-none absolute inset-0 z-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                    <Link
-                      href={CHALLENGE_PDF_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="relative z-10 flex h-16 w-full items-center justify-center gap-2 rounded-none border-2 border-purple-700 bg-white px-11 [font-family:var(--font-paraluman-heading)] text-base font-black uppercase tracking-[0.12em] text-purple-800 transition-all hover:-translate-y-1 hover:bg-purple-50 sm:inline-flex sm:w-auto"
-                    >
-                      View Challenge
-                      <ArrowUpRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="relative flex h-16 w-full items-center justify-center gap-2 rounded-none border-2 border-purple-300 bg-white px-11 [font-family:var(--font-paraluman-heading)] text-base font-black uppercase tracking-[0.12em] text-purple-400/80 sm:inline-flex sm:w-auto">
-                    View Challenge
-                  </div>
-                )}
-
-                <div className="group relative block w-full sm:w-auto">
-                  <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                  <Button
-                    size="lg"
-                    type="button"
-                    onClick={scrollToSubmission}
-                    className="relative flex h-16 w-full rounded-none border-2 border-purple-700 bg-gradient-to-r from-purple-600 to-purple-800 px-11 [font-family:var(--font-paraluman-heading)] text-base font-black uppercase tracking-[0.12em] text-white transition-all hover:-translate-y-1 hover:from-purple-700 hover:to-purple-900 sm:inline-flex sm:w-auto"
-                  >
-                    Submit
-                  </Button>
-                </div>
-              </div>
-              <p className="[font-family:var(--font-paraluman-mono)] text-xs  text-black/65">
-                No resume needed. Get a response in 24 hours
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section className="relative mx-auto w-full max-w-6xl px-6 py-12 sm:px-8 lg:px-10">
-          <div className="space-y-16">
-            <div className="space-y-3">
-              <div className="flex">
-                <div className="border border-purple-300 bg-white px-4 py-2">
-                  <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.2em] text-purple-700 font-semibold">
-                    The opportunity
-                  </p>
-                </div>
-              </div>
-              <div className="max-w-3xl border-2 border-purple-300 bg-gradient-to-br from-purple-700 via-purple-800 to-purple-900 p-6 text-white shadow-[0_24px_50px_-28px_rgba(109,40,217,0.9)] sm:p-8">
-                <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.3rem,2.8vw,2.1rem)] font-black leading-tight tracking-[-0.03em] text-white">
-                  Even though you are just an intern, you'll be working with the
-                  impact makers of this country.
-                </p>
-                <p className="mt-3 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-purple-50/95 sm:text-[15px]">
-                  What you build will be used by real readers.
-                </p>
-              </div>
-            </div>
-
-            <div className="ml-auto w-fit space-y-6">
-              <div className="flex justify-end">
-                <div className="border border-purple-300 bg-white px-4 py-2">
-                  <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.2em] text-purple-700 font-semibold">
-                    Work with
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col items-end gap-4 text-right">
-                <div className="relative h-52 w-52 overflow-hidden rounded-xl border border-purple-200 shadow-[0_14px_28px_-18px_rgba(109,40,217,0.45)] sm:h-80 sm:w-80">
-                  <Image
-                    src={CEO_PROFILE.imageSrc}
-                    alt={CEO_PROFILE.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div className="text-right">
-                  <Link
-                    href={CEO_PROFILE.profileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 [font-family:var(--font-paraluman-heading)] text-2xl font-black uppercase tracking-tight text-purple-900 underline underline-offset-4 hover:text-purple-700 sm:text-3xl"
-                  >
-                    {CEO_PROFILE.name}
-                    <ArrowUpRight className="h-5 w-5" />
-                  </Link>
-                  <p className="mt-2 text-[clamp(0.7rem,1.2vw,0.8rem)]  text-black/60 leading-relaxed sm:max-w-sm whitespace-pre-line">
-                    {CEO_PROFILE.role}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section
-          ref={challengeRef}
-          className="relative mx-auto flex min-h-[calc(100svh-73px)] w-full max-w-6xl flex-col justify-center px-6 py-10 sm:px-8 lg:px-10"
-        >
-          <div>
-            <SuperListingBadge variant="gold" className="mb-4 " />
-          </div>
-
-          <div className="relative">
-            <div className="relative border-2 border-purple-600 bg-gradient-to-b from-purple-50 via-purple-50/70 to-white shadow-[0_20px_45px_-30px_rgba(168,85,247,0.8)]">
-              <div className="border-b-2 border-purple-600 bg-gradient-to-r from-purple-700 to-purple-900 p-3 sm:px-8 sm:py-8">
-                <h2 className="[font-family:var(--font-paraluman-mono)] text-xs font-semibold uppercase tracking-[0.2em] text-purple-100">
-                  Challenge
-                </h2>
-
-                {hasChallengePdf ? (
-                  <div className="group relative mt-2 w-full">
-                    <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#a855f7_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-25" />
-                    <Link
-                      href={CHALLENGE_PDF_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="relative flex w-full items-center justify-between border-2 border-white bg-white px-5 py-3 [font-family:var(--font-paraluman-heading)] text-sm font-black uppercase tracking-[0.1em] text-purple-800 shadow-[0_10px_24px_-14px_rgba(0,0,0,0.65)] transition-all hover:-translate-y-1 hover:bg-purple-50"
-                    >
-                      <span>View challenge</span>
-                      <ArrowUpRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="mt-5 flex w-full items-center justify-between border border-white/60 bg-white/20 px-5 py-3 [font-family:var(--font-paraluman-mono)] text-[11px] uppercase tracking-[0.12em] text-purple-100/90">
-                    <span>View full challenge brief</span>
-                    <span>Link coming soon</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-6 p-0 sm:p-8">
-                <div className="relative sm:border-2 border-purple-200 bg-white p-3 sm:p-5">
-                  <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.17em] text-purple-700">
-                    Submission
-                  </p>
-
-                  <form
-                    className="mt-4 grid gap-4"
-                    onSubmit={(e) => void handleSubmit(e)}
-                  >
-                    <Input
-                      required
-                      type="email"
-                      value={form.email}
-                      onChange={updateField("email")}
-                      placeholder="Email address"
-                      className="h-12 rounded-none border-purple-200 bg-white [font-family:var(--font-paraluman-mono)] text-black placeholder:text-black/35 focus:border-purple-600"
-                    />
-
-                    <Input
-                      required
-                      value={form.submissionLink}
-                      onChange={updateField("submissionLink")}
-                      placeholder="Submission link (GitHub, Loom, or demo URL)"
-                      className="h-12 rounded-none border-purple-200 bg-white [font-family:var(--font-paraluman-mono)] text-black placeholder:text-black/35 focus:border-purple-600"
-                    />
-
-                    <Textarea
-                      value={form.submissionNotes}
-                      onChange={updateField("submissionNotes")}
-                      placeholder="Submission notes (optional)"
-                      className="min-h-28 rounded-none border-purple-200 bg-white [font-family:var(--font-paraluman-mono)] text-sm text-black placeholder:text-black/35 focus-visible:ring-1 focus-visible:ring-purple-600 focus-visible:ring-offset-0"
-                    />
-
-                    {isDevelopment ? (
-                      <p className="[font-family:var(--font-paraluman-mono)] text-xs text-purple-700">
-                        Captcha is disabled in development mode.
-                      </p>
-                    ) : !token ? (
-                      <div className="relative my-1 flex w-full flex-col items-center">
-                        {!tokenFail ? (
-                          <Loader>Validating browser...</Loader>
-                        ) : (
-                          <Badge type="destructive" className="m-4">
-                            Unable to validate captcha.
-                          </Badge>
-                        )}
-                        <Turnstile
-                          siteKey={
-                            process.env.NEXT_PUBLIC_SERVER_API_KEY_TURNSTILE!
-                          }
-                          onSuccess={(t) => {
-                            setToken(t);
-                            setTokenFail(false);
-                          }}
-                          onError={() => {
-                            setToken("");
-                            setTokenFail(true);
-                          }}
-                        />
-                      </div>
-                    ) : (
-                      <p className="[font-family:var(--font-paraluman-mono)] text-xs text-emerald-700">
-                        Browser verification complete.
-                      </p>
-                    )}
-
-                    <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
-                      <p className="[font-family:var(--font-paraluman-mono)] text-xs leading-5 text-black/65">
-                        We will send a confirmation to your email.
-                      </p>
-
-                      <Button
-                        type="submit"
-                        size="lg"
-                        disabled={isSubmitting}
-                        className="h-12 rounded-none border-2 border-purple-700 bg-gradient-to-r from-purple-600 to-purple-800 px-7 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.09em] text-white transition-colors hover:from-purple-700 hover:to-purple-900 w-full sm:w-auto"
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            Sending
-                          </>
-                        ) : (
-                          "Submit"
-                        )}
-                      </Button>
-                    </div>
-                  </form>
-
-                  {resultMessage && (
-                    <p
+        <section className="sticky top-0 z-40 px-4 py-2 sm:px-8 sm:py-3 lg:px-10">
+          <div className="mx-auto max-w-3xl">
+            <div className="relative rounded-[0.45em] border border-[rgba(114,6,140,0.28)] bg-white/92 p-1 shadow-[0_14px_34px_-26px_rgba(114,6,140,0.45)] backdrop-blur-sm">
+              <div className="relative flex items-stretch overflow-hidden rounded-[0.32em] bg-[#f3edf9]">
+                {PANEL_TABS.map((tab, index) => {
+                  const isActive = activePanel === tab.key;
+                  const isFirst = index === 0;
+                  const isLast = index === PANEL_TABS.length - 1;
+                  const tabClipPath = isFirst
+                    ? "polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%)"
+                    : isLast
+                      ? "polygon(0 0, 100% 0, 100% 100%, 0 100%, 12px 50%)"
+                      : "polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%)";
+                  const tabZIndex = isActive ? 20 : index + 1;
+                  return (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      onClick={() => openPanel(tab.key)}
+                      style={{ clipPath: tabClipPath, zIndex: tabZIndex }}
                       className={cn(
-                        "mt-5 border px-4 py-3 [font-family:var(--font-paraluman-mono)] text-sm",
-                        isError
-                          ? "border-red-300 bg-red-50 text-red-700"
-                          : "border-emerald-300 bg-emerald-50 text-emerald-700",
+                        "relative flex min-h-10 flex-1 items-center justify-center overflow-hidden px-1.5 py-2 text-center [font-family:var(--font-paraluman-mono)] font-semibold uppercase transition-[background,color,box-shadow] duration-220 ease-[cubic-bezier(0.22,1,0.36,1)] after:pointer-events-none after:absolute after:inset-0 after:bg-white/20 after:opacity-0 after:transition-opacity after:duration-180 active:after:opacity-100 sm:min-h-[2.625rem] sm:px-2",
+                        !isFirst && "-ml-3 sm:-ml-4",
+                        isActive
+                          ? "bg-gradient-to-r from-[#72068c] via-[#68067f] to-[#56066e] text-white shadow-[0_10px_20px_-14px_rgba(114,6,140,0.75)]"
+                          : "bg-[#f3edf9] text-black/70 hover:bg-[#ece3f6] hover:text-black",
                       )}
                     >
-                      {resultMessage}
-                    </p>
-                  )}
-                </div>
+                      <span className="inline-flex w-full items-center justify-center gap-1 whitespace-nowrap text-[9px] tracking-[0.02em] sm:gap-2 sm:text-xs sm:tracking-[0.06em]">
+                        <span className="inline-block min-w-[1.50em] text-center opacity-70">
+                          {tab.step}
+                        </span>
+                        <span className="text-center">{tab.label}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section ref={panelSectionRef} className="relative">
+          <div className="px-6 py-12 sm:px-8 sm:py-16 lg:px-10">
+            <div className="mx-auto max-w-5xl">
+              <div
+                className={cn(
+                  "transition-all duration-[220ms] ease-out",
+                  panelPhase === "out"
+                    ? "translate-y-1 opacity-0"
+                    : "translate-y-0 opacity-100",
+                )}
+              >
+                {renderPanel === "overview" && (
+                  <>
+                    <div
+                      className={cn(
+                        "transition-all duration-[220ms] ease-out",
+                        panelPhase === "out"
+                          ? "translate-y-1 opacity-0"
+                          : "translate-y-0 opacity-100",
+                      )}
+                    >
+                      <HeroPanel
+                        hiringBadgeText={HIRING_BADGE_TEXT}
+                        onHowToApply={openChallengePanel}
+                        showHowToApplyButton={activePanel === "overview"}
+                      />
+                    </div>
+                    <OverviewPanel
+                      hasChallengeVideo={hasChallengeVideo}
+                      challengeVideoUrl={CHALLENGE_VIDEO_URL}
+                      ceoProfile={CEO_PROFILE}
+                      onGoToApply={openChallengePanel}
+                    />
+                  </>
+                )}
+
+                {renderPanel === "challenge" && (
+                  <HowToApplyPanel
+                    challengePdfUrl={CHALLENGE_PDF_URL}
+                    onGoToApply={openSubmissionPanel}
+                  />
+                )}
+
+                {renderPanel === "submission" && (
+                  <div ref={submissionPanelRef} className="w-full space-y-6">
+                    <ApplyPanel
+                      isClosed={SUBMISSIONS_CLOSED}
+                      form={form}
+                      submissionStep={submissionStep}
+                      hasSubmitted={hasSubmitted}
+                      submittedEmail={submittedEmail}
+                      isSubmitting={isSubmitting}
+                      isError={isError}
+                      resultMessage={resultMessage}
+                      isDevelopment={isDevelopment}
+                      token={token}
+                      tokenFail={tokenFail}
+                      turnstileSiteKey={
+                        process.env.NEXT_PUBLIC_SERVER_API_KEY_TURNSTILE
+                      }
+                      onFieldChange={onFieldChange}
+                      onNextStep={goToNextStep}
+                      onBackStep={goToPreviousStep}
+                      onSubmit={(event) => {
+                        void handleSubmit(event);
+                      }}
+                      onBackToOverview={() => openPanel("overview", true)}
+                      onTokenSuccess={(t) => {
+                        setToken(t);
+                        setTokenFail(false);
+                      }}
+                      onTokenError={() => {
+                        setToken("");
+                        setTokenFail(true);
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
