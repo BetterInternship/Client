@@ -68,7 +68,6 @@ const PANEL_TABS: Array<{
 ];
 
 const PANEL_TRANSITION_MS = 220;
-const SUBMISSIONS_CLOSED = true;
 
 export default function ParalumanPage() {
   const isDevelopment = process.env.NODE_ENV === "development";
@@ -174,12 +173,6 @@ export default function ParalumanPage() {
   };
 
   const goToStepTwo = () => {
-    if (SUBMISSIONS_CLOSED) {
-      setIsError(true);
-      setResultMessage("Submissions are no longer being accepted.");
-      return;
-    }
-
     setResultMessage("");
     setIsError(false);
 
@@ -216,12 +209,6 @@ export default function ParalumanPage() {
     event.preventDefault();
     setResultMessage("");
     setIsError(false);
-
-    if (SUBMISSIONS_CLOSED) {
-      setIsError(true);
-      setResultMessage("Submissions are no longer being accepted.");
-      return;
-    }
 
     if (submissionStep !== 2) {
       setIsError(true);
@@ -324,14 +311,12 @@ export default function ParalumanPage() {
                   id="paraluman-closed-modal-title"
                   className="text-xl font-semibold text-[#2d1236]"
                 >
-                  This challenge has already ended.
+                  Oh noes! 😭😭😭 You missed it. View anyway?
                 </h2>
                 <p
                   id="paraluman-closed-modal-description"
                   className="text-sm leading-6 text-black/70"
-                >
-                  View anyway?
-                </p>
+                />
               </div>
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
@@ -483,7 +468,6 @@ export default function ParalumanPage() {
                 {renderPanel === "submission" && (
                   <div ref={submissionPanelRef} className="w-full space-y-6">
                     <ApplyPanel
-                      isClosed={SUBMISSIONS_CLOSED}
                       form={form}
                       submissionStep={submissionStep}
                       hasSubmitted={hasSubmitted}
