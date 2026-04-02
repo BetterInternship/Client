@@ -3,7 +3,9 @@
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { OverviewPanel } from "./components/OverviewPanel";
 import { HowToApplyPanel } from "./components/HowToApplyPanel";
@@ -66,9 +68,11 @@ const PANEL_TABS: Array<{
 ];
 
 const PANEL_TRANSITION_MS = 220;
+const SUBMISSIONS_CLOSED = true;
 
 export default function ParalumanPage() {
   const isDevelopment = process.env.NODE_ENV === "development";
+  const router = useRouter();
 
   const [form, setForm] = useState<ParalumanSubmissionForm>(INITIAL_FORM_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -82,6 +86,7 @@ export default function ParalumanPage() {
   const [submissionStep, setSubmissionStep] = useState<SubmissionStep>(1);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
+  const [showClosedModal, setShowClosedModal] = useState(true);
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const panelSectionRef = useRef<HTMLElement | null>(null);
@@ -169,6 +174,12 @@ export default function ParalumanPage() {
   };
 
   const goToStepTwo = () => {
+    if (SUBMISSIONS_CLOSED) {
+      setIsError(true);
+      setResultMessage("Submissions are no longer being accepted.");
+      return;
+    }
+
     setResultMessage("");
     setIsError(false);
 
@@ -205,6 +216,12 @@ export default function ParalumanPage() {
     event.preventDefault();
     setResultMessage("");
     setIsError(false);
+
+    if (SUBMISSIONS_CLOSED) {
+      setIsError(true);
+      setResultMessage("Submissions are no longer being accepted.");
+      return;
+    }
 
     if (submissionStep !== 2) {
       setIsError(true);
@@ -293,6 +310,51 @@ export default function ParalumanPage() {
         ref={scrollContainerRef}
         className="relative h-full overflow-x-hidden overflow-y-auto pb-24 sm:pb-0"
       >
+        {showClosedModal ? (
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-white/30 px-4 backdrop-blur-md">
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="paraluman-closed-modal-title"
+              aria-describedby="paraluman-closed-modal-description"
+              className="w-full max-w-md rounded-[0.33em] border border-[rgba(114,6,140,0.16)] bg-white p-6 shadow-[0_24px_80px_-32px_rgba(114,6,140,0.55)] backdrop-blur-xl"
+            >
+              <div className="space-y-3">
+                <h2
+                  id="paraluman-closed-modal-title"
+                  className="text-xl font-semibold text-[#2d1236]"
+                >
+                  This challenge has already ended.
+                </h2>
+                <p
+                  id="paraluman-closed-modal-description"
+                  className="text-sm leading-6 text-black/70"
+                >
+                  View anyway?
+                </p>
+              </div>
+
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <Button
+                  type="button"
+                  onClick={() => setShowClosedModal(false)}
+                  className="h-11 rounded-xl bg-[#72068c] px-5 text-white hover:bg-[#5f0676]"
+                >
+                  View
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push("/search")}
+                  className="h-11 rounded-xl border-[rgba(114,6,140,0.22)] bg-white/75 px-5 text-[#5b2a68] hover:bg-[#f7effa]"
+                >
+                  Go home
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
         <header
           className={cn(
             " top-0 z-[9999] flex items-center justify-between px-4 py-3 transition-all duration-300 sm:px-8 lg:px-10 border-b border-transparent bg-transparent shadow-none backdrop-blur-0",
@@ -421,6 +483,7 @@ export default function ParalumanPage() {
                 {renderPanel === "submission" && (
                   <div ref={submissionPanelRef} className="w-full space-y-6">
                     <ApplyPanel
+                      isClosed={SUBMISSIONS_CLOSED}
                       form={form}
                       submissionStep={submissionStep}
                       hasSubmitted={hasSubmitted}
