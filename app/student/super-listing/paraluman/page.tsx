@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
-import { Button } from "@/components/ui/button";
+import useModalRegistry from "@/components/modals/modal-registry";
 import { cn } from "@/lib/utils";
 import { OverviewPanel } from "./components/OverviewPanel";
 import { HowToApplyPanel } from "./components/HowToApplyPanel";
@@ -70,6 +70,7 @@ const PANEL_TRANSITION_MS = 220;
 export default function ParalumanPage() {
   const isDevelopment = process.env.NODE_ENV === "development";
   const router = useRouter();
+  const modalRegistry = useModalRegistry();
 
   const [form, setForm] = useState<ParalumanSubmissionForm>(INITIAL_FORM_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -120,6 +121,26 @@ export default function ParalumanPage() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (!showClosedModal) {
+      modalRegistry.superListingClosed.close();
+      return;
+    }
+
+    modalRegistry.superListingClosed.open({
+      accentColor: "#72068c",
+      onView: () => setShowClosedModal(false),
+      onLeave: () => {
+        setShowClosedModal(false);
+        router.push("/search");
+      },
+    });
+
+    return () => {
+      modalRegistry.superListingClosed.close();
+    };
+  }, [modalRegistry, router, showClosedModal]);
 
   const endpoint = useMemo(() => {
     const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
@@ -295,49 +316,6 @@ export default function ParalumanPage() {
         ref={scrollContainerRef}
         className="relative h-full overflow-x-hidden overflow-y-auto pb-24 sm:pb-0"
       >
-        {showClosedModal ? (
-          <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-white/30 px-4 backdrop-blur-md">
-            <div
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="paraluman-closed-modal-title"
-              aria-describedby="paraluman-closed-modal-description"
-              className="w-full max-w-md rounded-[0.33em] border border-[rgba(114,6,140,0.16)] bg-white p-6 shadow-[0_24px_80px_-32px_rgba(114,6,140,0.55)] backdrop-blur-xl"
-            >
-              <div className="space-y-3">
-                <h2
-                  id="paraluman-closed-modal-title"
-                  className="text-xl font-semibold text-[#2d1236]"
-                >
-                  Oh noes! 😭😭😭 You missed it. View anyway?
-                </h2>
-                <p
-                  id="paraluman-closed-modal-description"
-                  className="text-sm leading-6 text-black/70"
-                />
-              </div>
-
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-                <Button
-                  type="button"
-                  onClick={() => setShowClosedModal(false)}
-                  className="h-11 rounded-xl bg-[#72068c] px-5 text-white hover:bg-[#5f0676]"
-                >
-                  View
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.push("/search")}
-                  className="h-11 rounded-xl border-[rgba(114,6,140,0.22)] bg-white/75 px-5 text-[#5b2a68] hover:bg-[#f7effa]"
-                >
-                  Go home
-                </Button>
-              </div>
-            </div>
-          </div>
-        ) : null}
-
         <header
           className={cn(
             " top-0 z-[9999] flex items-center justify-between px-4 py-3 transition-all duration-300 sm:px-8 lg:px-10 border-b border-transparent bg-transparent shadow-none backdrop-blur-0",
