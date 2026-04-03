@@ -4,10 +4,7 @@ import { useAuthContext } from "@/app/hire/authctx";
 import { ApplicationsContent } from "@/components/features/hire/dashboard/ApplicationsContent";
 import { Card } from "@/components/ui/card";
 import { useConversation, useConversations } from "@/hooks/use-conversation";
-import {
-  useEmployerApplications,
-  useProfile,
-} from "@/hooks/use-employer-api";
+import { useEmployerApplications, useProfile } from "@/hooks/use-employer-api";
 import { useFile } from "@/hooks/use-file";
 import { useModal } from "@/hooks/use-modal";
 import { useSideModal } from "@/hooks/use-side-modal";
@@ -74,6 +71,8 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
   const [applicantToDelete, setApplicantToDelete] =
     useState<EmployerApplication | null>(null);
   const [applicantToAccept, setApplicantToAccept] =
+    useState<EmployerApplication | null>(null);
+  const [applicantToReject, setApplicantToReject] =
     useState<EmployerApplication | null>(null);
   const [statusChangeData, setStatusChangeData] = useState<{
     applicants: EmployerApplication[];
@@ -222,6 +221,12 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
     Modal: ApplicantAcceptModal,
   } = useModal("applicant-accept-modal");
 
+  const {
+    open: openApplicantRejectModal,
+    close: closeApplicantRejectModal,
+    Modal: ApplicantRejectModal,
+  } = useModal("applicant-reject-modal");
+
   // Wrapper for review function to match expected signature
   const reviewApp = (
     id: string,
@@ -288,6 +293,11 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
     openApplicantAcceptModal();
   };
 
+  const handleRequestApplicantReject = (application: EmployerApplication) => {
+    setApplicantToReject(application);
+    openApplicantRejectModal();
+  };
+
   const handleConfirmApplicantArchive = async () => {
     if (!applicantToArchive?.id) return;
     await applications.review(applicantToArchive.id, { status: 7 });
@@ -312,6 +322,14 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
     applicationContentRef.current?.unselectAll();
   };
 
+  const handleConfirmApplicantReject = async () => {
+    if (!applicantToReject?.id) return;
+    await applications.review(applicantToReject.id, { status: 6 });
+    setApplicantToReject(null);
+    closeApplicantRejectModal();
+    applicationContentRef.current?.unselectAll();
+  };
+
   const handleCancelApplicantArchive = () => {
     setApplicantToArchive(null);
     closeApplicantArchiveModal();
@@ -325,6 +343,11 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
   const handleCancelApplicantAccept = () => {
     setApplicantToAccept(null);
     closeApplicantAcceptModal();
+  };
+
+  const handleCancelApplicantReject = () => {
+    setApplicantToReject(null);
+    closeApplicantRejectModal();
   };
 
   const onChatClick = async () => {
@@ -424,8 +447,13 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
             <div className="p-8 pt-0 h-full">
               <div className="flex flex-col gap-2 mb-4">
                 <Archive className="w-8 h-8" />
-                <h1 className="text-xl">Archive applicant "{getFullName(applicantToArchive.user)}"?</h1>
-                <span>This applicant will only appear in the "archived" section. You can change their status after this.</span>
+                <h1 className="text-xl">
+                  Archive applicant "{getFullName(applicantToArchive.user)}"?
+                </h1>
+                <span>
+                  This applicant will only appear in the "archived" section. You
+                  can change their status after this.
+                </span>
               </div>
               <div className="flex justify-end gap-2">
                 <Button
@@ -450,10 +478,10 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
             <div className="p-8 pt-0 h-full">
               <div className="flex flex-col gap-2 mb-4">
                 <Check className="w-8 h-8" />
-                <h1 className="text-xl">Accept applicant "{getFullName(applicantToAccept.user)}"?</h1>
-                <span>
-                  This will notify them.
-                </span>
+                <h1 className="text-xl">
+                  Accept applicant "{getFullName(applicantToAccept.user)}"?
+                </h1>
+                <span>This action is irreversible and will notify them.</span>
               </div>
 
               <div className="flex justify-end gap-2">
@@ -471,15 +499,43 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
           )}
         </ApplicantAcceptModal>
 
+        <ApplicantRejectModal>
+          {applicantToReject && (
+            <div className="p-8 pt-0 h-full">
+              <div className="flex flex-col gap-2 mb-4">
+                <Check className="w-8 h-8" />
+                <h1 className="text-xl">
+                  Reject applicant "{getFullName(applicantToReject.user)}"?
+                </h1>
+                <span>This action is irreversible and will notify them.</span>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={handleCancelApplicantReject}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={handleConfirmApplicantReject}
+                >
+                  Reject
+                </Button>
+              </div>
+            </div>
+          )}
+        </ApplicantRejectModal>
+
         <ApplicantDeleteModal>
           {applicantToDelete && (
             <div className="p-8 pt-0 h-full">
               <div className="flex flex-col gap-2 mb-4">
                 <Trash2 className="w-8 h-8" />
-                <h1 className="text-xl">Delete applicant "{getFullName(applicantToDelete.user)}"?</h1>
+                <h1 className="text-xl">
+                  Delete applicant "{getFullName(applicantToDelete.user)}"?
+                </h1>
                 <span>This action is permanent and cannot be reversed.</span>
               </div>
-              
+
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={handleCancelApplicantDelete}>
                   Cancel
@@ -514,7 +570,7 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
                   ))}
                 </ul>
               </div>
-              
+
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={handleCancelStatusChange}>
                   Cancel
@@ -544,6 +600,7 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
               onRequestArchiveApplicant={handleRequestApplicantArchive}
               onRequestDeleteApplicant={handleRequestApplicantDelete}
               onRequestAcceptApplicant={handleRequestApplicantAccept}
+              onRequestRejectApplicant={handleRequestApplicantReject}
               onRequestStatusChange={handleRequestStatusChange}
               applicantToArchive={applicantToArchive}
               applicantToDelete={applicantToDelete}
