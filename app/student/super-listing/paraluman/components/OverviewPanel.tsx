@@ -17,6 +17,10 @@ type OverviewPanelProps = {
   onGoToApply: () => void;
 };
 
+type SectionTitleProps = {
+  title: string;
+};
+
 const WORK_STREAMS = [
   {
     title: "Build Real Features",
@@ -73,6 +77,17 @@ const FAQ_ITEMS = [
   },
 ];
 
+function SectionTitle({ title }: SectionTitleProps) {
+  return (
+    <div className="space-y-2">
+      <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.25rem,2.4vw,1.8rem)] font-black tracking-[-0.01em] text-[#4d1b5a]">
+        {title}
+      </p>
+      <div className="h-1.5 w-20 rounded-full bg-gradient-to-r from-[#72068c] via-[#8a2ea2] to-[#c084fc]" />
+    </div>
+  );
+}
+
 export function OverviewPanel({
   ceoProfile,
   onGoToApply: onGoToHowToApply,
@@ -80,18 +95,11 @@ export function OverviewPanel({
   return (
     <div className="space-y-16 pt-4 sm:pt-8">
       <section className="space-y-6">
-        <div className="inline-block rounded-[0.33em] border border-[rgba(114,6,140,0.4)] bg-white px-4 py-2">
-          <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.2em] text-[#72068c]">
-            What you'll work on
-          </p>
-        </div>
+        <SectionTitle
+          title="              You will build real tools used by a real newsroom team
+"
+        />
         <div className="rounded-[0.33em]">
-          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black uppercase tracking-[-0.02em] text-[#5a0570] sm:text-3xl">
-              You will build real tools used by a real newsroom team
-            </p>
-          </div>
-
           <div className="relative">
             <div className="grid gap-4 md:grid-cols-3">
               {WORK_STREAMS.map((item) => (
@@ -116,16 +124,11 @@ export function OverviewPanel({
       </section>
 
       <section className="space-y-6">
-        <div className="inline-block rounded-[0.33em] border border-[rgba(114,6,140,0.4)] bg-white px-4 py-2">
-          <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.2em] text-[#72068c]">
-            What you'll get
-          </p>
-        </div>
+        <SectionTitle
+          title="            Real experience, fast feedback, and proof of impact.
+"
+        />
         <div className="rounded-[0.33em] ">
-          <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black uppercase tracking-[-0.02em] text-[#5a0570] sm:text-3xl">
-            Real experience, fast feedback, and proof of impact.
-          </p>
-
           <div className="mt-4 overflow-hidden rounded-[0.33em] border border-[rgba(114,6,140,0.18)] bg-[#fbf8fd] shadow-[0_16px_32px_-22px_rgba(114,6,140,0.8)]">
             <ul className="divide-y divide-[rgba(114,6,140,0.14)]">
               {BENEFITS.map((item, index) => (
@@ -152,11 +155,7 @@ export function OverviewPanel({
       </section>
 
       <section className="space-y-8">
-        <div className="inline-block rounded-[0.33em] border border-[rgba(114,6,140,0.4)] bg-white px-4 py-2">
-          <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.2em] text-[#72068c]">
-            Work with
-          </p>
-        </div>
+        <SectionTitle title="Work with" />
         <div className="rounded-[0.33em] ">
           <div className="flex flex-col items-start gap-6 text-left sm:flex-row sm:items-end">
             <div className="relative h-52 w-52 flex-shrink-0 overflow-hidden rounded-[0.33em] border-2 border-[rgba(114,6,140,0.3)] shadow-xl sm:h-64 sm:w-64">
@@ -189,11 +188,7 @@ export function OverviewPanel({
       </section>
 
       <section className="space-y-6">
-        <div className="inline-block rounded-[0.33em] border border-[rgba(114,6,140,0.35)] bg-white px-4 py-2">
-          <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.2em] text-[#72068c]">
-            About Paraluman
-          </p>
-        </div>
+        <SectionTitle title="About Paraluman" />
         <div className="relative overflow-hidden rounded-[0.33em] border border-[rgba(114,6,140,0.26)] bg-gradient-to-br from-[#690580] via-[#5a0570] to-[#430556] p-6 text-white shadow-[0_24px_56px_-30px_rgba(114,6,140,0.9)] sm:p-8">
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.2)_0%,transparent_32%,rgba(255,255,255,0.1)_58%,transparent_100%)]" />
           <div className="relative z-10 space-y-3">
@@ -224,11 +219,7 @@ export function OverviewPanel({
       </section>
 
       <div className="space-y-4">
-        <div className="inline-block rounded-[0.33em] border border-[rgba(114,6,140,0.4)] bg-white px-4 py-2">
-          <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.2em] text-[#72068c]">
-            FAQs
-          </p>
-        </div>
+        <SectionTitle title="FAQs" />
         <div className="rounded-[0.33em] border-2 border-[rgba(114,6,140,0.2)] bg-white px-6 py-3 shadow-[0_16px_38px_-28px_rgba(114,6,140,0.65)]">
           <Accordion type="single" collapsible className="w-full">
             {FAQ_ITEMS.map((item, index) => (
