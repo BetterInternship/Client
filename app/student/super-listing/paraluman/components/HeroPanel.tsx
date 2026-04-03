@@ -128,9 +128,9 @@ export function HeroPanel({
               <Button
                 type="button"
                 onClick={onHowToApply}
-                className="inline-flex h-16 w-full items-center justify-center gap-3 rounded-lg border-2 border-[#72068c] bg-[#72068c] px-8 [font-family:var(--font-paraluman-heading)] text-lg font-black uppercase tracking-[0.09em] text-white transition-all duration-300 hover:bg-[#5a0570] hover:shadow-[0_24px_48px_-16px_rgba(114,6,140,0.6)] active:scale-95 sm:w-auto sm:px-12 sm:text-xl"
+                className="inline-flex h-16 w-full items-center justify-center gap-3 rounded-[0.33em] border-2 border-[#72068c] bg-[#72068c] px-8 [font-family:var(--font-paraluman-heading)] text-lg font-black uppercase tracking-[0.09em] text-white transition-all duration-300 hover:bg-[#5a0570] hover:shadow-[0_24px_48px_-16px_rgba(114,6,140,0.6)] active:scale-95 sm:w-auto sm:px-12 sm:text-xl"
               >
-                Apply now
+                Start Challenge
                 <ArrowRight className="h-5 w-5" />
               </Button>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-8 [font-family:var(--font-paraluman-mono)] text-sm font-semibold text-[#5d0476]/60">
