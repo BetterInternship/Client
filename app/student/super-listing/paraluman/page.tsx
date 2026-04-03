@@ -41,7 +41,6 @@ const CEO_PROFILE: CEOProfile = {
 
 const CHALLENGE_PDF_URL =
   "https://drive.google.com/file/d/1Tdbc4EdhBkY3lOInAvE3YSaKhSQyWPwx/view?usp=sharing";
-const CHALLENGE_VIDEO_URL = "";
 
 type ParalumanSubmissionResponse = {
   success: boolean;
@@ -279,8 +278,6 @@ export default function ParalumanPage() {
     }
   };
 
-  const hasChallengeVideo = CHALLENGE_VIDEO_URL.trim().length > 0;
-
   return (
     <main
       className={cn(
@@ -439,8 +436,6 @@ export default function ParalumanPage() {
                       showHowToApplyButton={activePanel === "overview"}
                     />
                     <OverviewPanel
-                      hasChallengeVideo={hasChallengeVideo}
-                      challengeVideoUrl={CHALLENGE_VIDEO_URL}
                       ceoProfile={CEO_PROFILE}
                       onGoToApply={openChallengePanel}
                     />
