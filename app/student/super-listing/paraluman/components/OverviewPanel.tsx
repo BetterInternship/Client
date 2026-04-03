@@ -13,11 +13,42 @@ import {
 import type { CEOProfile } from "./types";
 
 type OverviewPanelProps = {
-  hasChallengeVideo: boolean;
-  challengeVideoUrl: string;
   ceoProfile: CEOProfile;
   onGoToApply: () => void;
 };
+
+const WORK_STREAMS = [
+  {
+    title: "Build Real Features",
+    description:
+      "Create product features that are used by a real newsroom, not practice tasks.",
+  },
+  {
+    title: "Improve Story Flow",
+    description:
+      "Help the team draft, review, and publish stories faster in English and Filipino.",
+  },
+  {
+    title: "Make It Easy To Use",
+    description:
+      "Turn rough ideas into clear, simple tools that people can use right away.",
+  },
+];
+
+const BENEFITS = [
+  {
+    title: "Do Work That Matters",
+    description: "Your output reaches real readers, not just internal demos.",
+  },
+  {
+    title: "Get Fast Feedback",
+    description: "You get direct and quick feedback from the team and leaders.",
+  },
+  {
+    title: "Strengthen Your Portfolio",
+    description: "Leave with a strong real-world project you can proudly show.",
+  },
+];
 
 const FAQ_ITEMS = [
   {
@@ -43,87 +74,159 @@ const FAQ_ITEMS = [
 ];
 
 export function OverviewPanel({
-  hasChallengeVideo,
-  challengeVideoUrl,
   ceoProfile,
   onGoToApply: onGoToHowToApply,
 }: OverviewPanelProps) {
   return (
     <div className="space-y-16 pt-4 sm:pt-8">
-      <div className="space-y-8">
-        <div className="flex">
-          <div className="inline-block rounded-[0.33em] border border-[rgba(114,6,140,0.4)] bg-white px-4 py-2">
-            <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.2em] text-[#72068c]">
-              Work With
+      <section className="space-y-6">
+        <div className="inline-block rounded-[0.33em] border border-[rgba(114,6,140,0.4)] bg-white px-4 py-2">
+          <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.2em] text-[#72068c]">
+            What you'll work on
+          </p>
+        </div>
+        <div className="rounded-[0.33em]">
+          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black uppercase tracking-[-0.02em] text-[#5a0570] sm:text-3xl">
+              You will build real tools used by a real newsroom team
             </p>
           </div>
-        </div>
 
-        <div className="flex flex-col items-start gap-6 text-left sm:flex-row sm:items-end">
-          <div className="relative h-52 w-52 flex-shrink-0 overflow-hidden rounded-[0.33em] border-2 border-[rgba(114,6,140,0.3)] shadow-xl sm:h-72 sm:w-72">
-            <Image
-              src={ceoProfile.imageSrc}
-              alt={ceoProfile.name}
-              fill
-              className="object-cover"
-            />
+          <div className="relative">
+            <div className="grid gap-4 md:grid-cols-3">
+              {WORK_STREAMS.map((item) => (
+                <article
+                  key={item.title}
+                  className="relative isolate overflow-hidden rounded-[0.33em] border border-[rgba(114,6,140,0.58)] bg-gradient-to-br from-[#72068c] via-[#5a0570] to-[#4a0460] p-5 shadow-[0_18px_34px_-22px_rgba(114,6,140,0.92)]"
+                >
+                  <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.16)_0%,transparent_38%,rgba(255,255,255,0.06)_72%,transparent_100%)]" />
+                  <div className="relative z-10 flex items-center gap-3">
+                    <h3 className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase tracking-[0.01em] text-white">
+                      {item.title}
+                    </h3>
+                  </div>
+                  <p className="relative z-10 mt-3 [font-family:var(--font-paraluman-mono)] text-sm leading-6 text-white">
+                    {item.description}
+                  </p>
+                </article>
+              ))}
+            </div>
           </div>
+        </div>
+      </section>
 
-          <div className="max-w-md align-bottom">
-            <Link
-              href={ceoProfile.profileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-2 [font-family:var(--font-paraluman-heading)] text-2xl font-black uppercase tracking-tight sm:text-3xl"
+      <section className="space-y-6">
+        <div className="inline-block rounded-[0.33em] border border-[rgba(114,6,140,0.4)] bg-white px-4 py-2">
+          <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.2em] text-[#72068c]">
+            What you'll get
+          </p>
+        </div>
+        <div className="rounded-[0.33em] ">
+          <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black uppercase tracking-[-0.02em] text-[#5a0570] sm:text-3xl">
+            Real experience, fast feedback, and proof of impact.
+          </p>
+
+          <div className="mt-4 overflow-hidden rounded-[0.33em] border border-[rgba(114,6,140,0.18)] bg-[#fbf8fd] shadow-[0_16px_32px_-22px_rgba(114,6,140,0.8)]">
+            <ul className="divide-y divide-[rgba(114,6,140,0.14)]">
+              {BENEFITS.map((item, index) => (
+                <li
+                  key={item.title}
+                  className="flex items-start gap-4 px-4 py-4 sm:px-5 sm:py-5 "
+                >
+                  <span className="mt-0.5 inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-[rgba(114,6,140,0.25)] bg-white [font-family:var(--font-paraluman-mono)] text-[11px] font-bold text-[#72068c]">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <div>
+                    <h3 className="[font-family:var(--font-paraluman-heading)] text-base font-black uppercase tracking-[0.01em] text-[#5a0570] sm:text-lg">
+                      {item.title}
+                    </h3>
+                    <p className="mt-1.5 [font-family:var(--font-paraluman-mono)] text-sm leading-6 text-black/75">
+                      {item.description}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section className="space-y-8">
+        <div className="inline-block rounded-[0.33em] border border-[rgba(114,6,140,0.4)] bg-white px-4 py-2">
+          <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.2em] text-[#72068c]">
+            Work with
+          </p>
+        </div>
+        <div className="rounded-[0.33em] ">
+          <div className="flex flex-col items-start gap-6 text-left sm:flex-row sm:items-end">
+            <div className="relative h-52 w-52 flex-shrink-0 overflow-hidden rounded-[0.33em] border-2 border-[rgba(114,6,140,0.3)] shadow-xl sm:h-64 sm:w-64">
+              <Image
+                src={ceoProfile.imageSrc}
+                alt={ceoProfile.name}
+                fill
+                className="object-cover"
+              />
+            </div>
+
+            <div className=" align-bottom">
+              <Link
+                href={ceoProfile.profileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-2 [font-family:var(--font-paraluman-heading)] text-2xl font-black uppercase tracking-tight sm:text-3xl"
+              >
+                <span className="bg-gradient-to-r from-[#72068c] to-[#5a0570] bg-clip-text text-transparent transition-colors">
+                  {ceoProfile.name}
+                </span>
+                <ArrowUpRight className="h-5 w-5 text-[#72068c] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+              </Link>
+              <p className="mt-3 whitespace-pre-line text-base leading-relaxed text-black/65 sm:text-lg [font-family:var(--font-paraluman-mono)]">
+                {ceoProfile.role}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="space-y-6">
+        <div className="inline-block rounded-[0.33em] border border-[rgba(114,6,140,0.35)] bg-white px-4 py-2">
+          <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.2em] text-[#72068c]">
+            About Paraluman
+          </p>
+        </div>
+        <div className="relative overflow-hidden rounded-[0.33em] border border-[rgba(114,6,140,0.26)] bg-gradient-to-br from-[#690580] via-[#5a0570] to-[#430556] p-6 text-white shadow-[0_24px_56px_-30px_rgba(114,6,140,0.9)] sm:p-8">
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.2)_0%,transparent_32%,rgba(255,255,255,0.1)_58%,transparent_100%)]" />
+          <div className="relative z-10 space-y-3">
+            <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.4rem,3.2vw,2rem)] font-black uppercase tracking-[-0.02em] text-white">
+              Building Accessible Filipino Journalism
+            </p>
+            <p className="mt-4 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-white sm:text-base">
+              Paraluman is a youth-led Philippine news platform focused on
+              making journalism more accessible in both English and Filipino. We
+              build practical systems that help stories move from draft to
+              publication without losing clarity, speed, or integrity.
+            </p>
+            <Button
+              asChild
+              className="mt-1 inline-flex h-11 items-center gap-2 rounded-[0.33em] border border-white/55 bg-white/12 px-4 [font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.1em] text-white shadow-[0_12px_26px_-18px_rgba(0,0,0,0.45)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:text-[#72068c]"
             >
-              <span className="bg-gradient-to-r from-[#72068c] to-[#5a0570] bg-clip-text text-transparent transition-colors">
-                {ceoProfile.name}
-              </span>
-              <ArrowUpRight className="h-5 w-5 text-[#72068c] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
-            </Link>
-            <p className="mt-3 whitespace-pre-line text-base leading-relaxed text-black/65 sm:text-lg">
-              {ceoProfile.role}
-            </p>
+              <Link
+                href="https://www.paraluman.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Visit paraluman.com
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
+            </Button>
           </div>
         </div>
-      </div>
+      </section>
 
       <div className="space-y-4">
         <div className="inline-block rounded-[0.33em] border border-[rgba(114,6,140,0.4)] bg-white px-4 py-2">
           <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.2em] text-[#72068c]">
-            The Opportunity
-          </p>
-        </div>
-
-        {hasChallengeVideo && (
-          <div className="relative overflow-hidden rounded-[0.33em] border-2 border-[rgba(114,6,140,0.3)] bg-black pt-[56.25%] shadow-lg">
-            <iframe
-              src={challengeVideoUrl}
-              title="Paraluman challenge video"
-              className="absolute inset-0 h-full w-full"
-              loading="lazy"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            />
-          </div>
-        )}
-
-        <div className="max-w-3xl rounded-[0.33em] bg-gradient-to-br from-[#72068c] via-[#5a0570] to-[#4a0460] p-8 text-white shadow-[0_24px_55px_-30px_rgba(114,6,140,0.88)]">
-          <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.4rem,3vw,2rem)] font-black leading-tight text-white">
-            Even though you are just an intern, you will be working with the
-            impact makers of this country.
-          </p>
-          <p className="mt-4 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-white/85 sm:text-base">
-            What you build will be used by real readers across the Philippines.
-          </p>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <div className="inline-block rounded-[0.33em] border border-[rgba(114,6,140,0.4)] bg-white px-4 py-2">
-          <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.2em] text-[#72068c]">
-            FAQ
+            FAQs
           </p>
         </div>
         <div className="rounded-[0.33em] border-2 border-[rgba(114,6,140,0.2)] bg-white px-6 py-3 shadow-[0_16px_38px_-28px_rgba(114,6,140,0.65)]">
