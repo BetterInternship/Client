@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -11,14 +12,73 @@ type HeroPanelProps = {
   showHowToApplyButton?: boolean;
 };
 
+const HERO_TYPED_PHRASES = [
+  "Filipino journalism",
+  "Filipino voices",
+  "real stories",
+  "stories that matter",
+];
+
 export function HeroPanel({
   onHowToApply,
   showHowToApplyButton = true,
 }: HeroPanelProps) {
+  const [phraseIndex, setPhraseIndex] = useState(0);
+  const [typedText, setTypedText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isPhrasePopping, setIsPhrasePopping] = useState(true);
+
+  useEffect(() => {
+    setIsPhrasePopping(true);
+    const popTimer = window.setTimeout(() => setIsPhrasePopping(false), 340);
+    return () => window.clearTimeout(popTimer);
+  }, [phraseIndex]);
+
+  useEffect(() => {
+    const currentPhrase = HERO_TYPED_PHRASES[phraseIndex];
+
+    const delay = (() => {
+      if (!isDeleting && typedText === currentPhrase) return 1700;
+      if (isDeleting && typedText.length === 0) return 350;
+      return isDeleting ? 38 : 72;
+    })();
+
+    const timer = window.setTimeout(() => {
+      if (!isDeleting) {
+        if (typedText.length < currentPhrase.length) {
+          setTypedText(currentPhrase.slice(0, typedText.length + 1));
+          return;
+        }
+
+        setIsDeleting(true);
+        return;
+      }
+
+      if (typedText.length > 0) {
+        setTypedText(currentPhrase.slice(0, typedText.length - 1));
+        return;
+      }
+
+      setIsDeleting(false);
+      setPhraseIndex((previous) => (previous + 1) % HERO_TYPED_PHRASES.length);
+    }, delay);
+
+    return () => window.clearTimeout(timer);
+  }, [phraseIndex, typedText, isDeleting]);
+
   return (
-    <section className="relative mx-auto flex max-w-5xl justify-center overflow-hidden pb-20 pt-12 sm:pb-28 sm:pt-16 lg:pb-32 lg:pt-20">
-      <div className="relative mx-auto w-full max-w-4xl">
-        <div className="flex flex-col items-center space-y-6 text-center sm:space-y-7">
+    <section className="relative mx-auto flex min-h-[68vh] max-w-5xl items-center justify-center overflow-hidden py-14 sm:min-h-[72vh] sm:py-20 lg:min-h-[78vh] lg:py-24">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-20"
+      >
+        <div className="absolute left-1/2 top-[7%] h-[24rem] w-[24rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(114,6,140,0.26)_0%,rgba(114,6,140,0.14)_36%,rgba(114,6,140,0)_72%)] blur-3xl sm:h-[32rem] sm:w-[32rem]" />
+        <div className="absolute inset-x-[-12%] top-[42%] h-24 -rotate-[6deg] bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.82),transparent)] opacity-40 blur-2xl sm:h-28" />
+        <div className="absolute inset-0 opacity-[0.05] [background-image:radial-gradient(rgba(0,0,0,0.7)_0.9px,transparent_0.9px)] [background-size:3px_3px]" />
+      </div>
+
+      <div className="relative mx-auto w-full max-w-5xl">
+        <div className="flex flex-col items-center space-y-8 text-center sm:space-y-9">
           <Link
             href="https://www.paraluman.com/"
             target="_blank"
@@ -33,10 +93,28 @@ export function HeroPanel({
             />
           </Link>
 
-          <h1 className="[font-family:var(--font-paraluman-heading)] max-w-2xl text-[clamp(3.2rem,9vw,7.5rem)] font-black uppercase leading-[0.75] tracking-[-0.025em] text-black">
-            <span className="block text-[#72068c]">Shape</span>
-            <span className="block">Filipino</span>
-            <span className="block">Stories</span>
+          <h1 className="[font-family:var(--font-paraluman-heading)] w-full max-w-none font-black leading-[0.86] text-black">
+            <span className="block whitespace-nowrap text-[clamp(2.05rem,9.2vw,7.4rem)] leading-[0.88] tracking-[-0.045em] text-black">
+              Build tools for
+            </span>
+            <span className="mt-3 block min-h-[1.13em] whitespace-nowrap text-[clamp(2.05rem,9.2vw,7.4rem)] leading-[0.88] tracking-[-0.045em] text-[#72068c] [text-shadow:0_10px_28px_rgba(114,6,140,0.25)]">
+              <span
+                className={
+                  isPhrasePopping
+                    ? "phrase-pop inline-flex items-end"
+                    : "inline-flex items-end"
+                }
+              >
+                <span>{typedText}</span>
+                <span
+                  aria-hidden="true"
+                  className="ml-1 inline-block h-[0.92em] w-[3px] translate-y-[0.08em] rounded-full bg-[#72068c]"
+                  style={{
+                    animation: "caretBlink 1.05s steps(1, end) infinite",
+                  }}
+                />
+              </span>
+            </span>
           </h1>
 
           <div className="mx-auto inline-flex w-fit rounded-[0.33em] border border-[#72068c]/25 bg-white/70 px-4 py-2 backdrop-blur-sm">
@@ -44,24 +122,6 @@ export function HeroPanel({
               Looking for: Web Development Interns
             </span>
           </div>
-
-          <p className="[font-family:var(--font-paraluman-mono)] max-w-xl text-base leading-7 text-black/70 sm:text-lg sm:leading-8">
-            <span className="block font-bold text-[#72068c]">
-              Build real tools for a real newsroom
-            </span>
-            <span className="mt-4 block">
-              <span className="font-bold text-[#72068c]">Paraluman</span> is a
-              youth-led Philippine news platform making every story accessible
-              in both English and Filipino.
-            </span>
-            <span className="mt-4 block">
-              Join our team to build and{" "}
-              <span className="font-bold text-[#72068c]">
-                improvehow articles are created, processed, and published
-              </span>{" "}
-              to reach thousands of readers.
-            </span>
-          </p>
 
           {showHowToApplyButton && (
             <div className="flex flex-col items-center gap-3 pt-3">
@@ -73,23 +133,46 @@ export function HeroPanel({
                 Apply now
                 <ArrowRight className="h-5 w-5" />
               </Button>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-8">
-                <div className="flex items-center gap-2">
-                  <span className="text-[#72068c]">{"\u2022"}</span>
-                  <span className="[font-family:var(--font-paraluman-mono)] text-sm font-semibold text-[#5d0476]">
-                    No resume required
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[#72068c]">{"\u2022"}</span>
-                  <span className="[font-family:var(--font-paraluman-mono)] text-sm font-semibold text-[#5d0476]">
-                    24h response
-                  </span>
-                </div>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-8 [font-family:var(--font-paraluman-mono)] text-sm font-semibold text-[#5d0476]/60">
+                No resume required, 24h response
               </div>
             </div>
           )}
         </div>
+        <style jsx>{`
+          @keyframes caretBlink {
+            0%,
+            49% {
+              opacity: 1;
+            }
+            50%,
+            100% {
+              opacity: 0;
+            }
+          }
+
+          @keyframes phrasePop {
+            0% {
+              opacity: 0;
+              transform: translateY(8px) scale(0.985);
+              filter: blur(3px);
+            }
+            65% {
+              opacity: 1;
+              transform: translateY(0) scale(1.01);
+              filter: blur(0);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0) scale(1);
+              filter: blur(0);
+            }
+          }
+
+          .phrase-pop {
+            animation: phrasePop 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
+          }
+        `}</style>
       </div>
     </section>
   );
