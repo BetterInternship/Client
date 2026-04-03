@@ -252,9 +252,12 @@ export function OverviewPanel({
       <div className="relative overflow-hidden rounded-[0.33em] border-2 border-[rgba(114,6,140,0.45)] bg-gradient-to-br from-[#72068c] via-[#5a0570] to-[#4a0460] p-6 text-white shadow-[0_24px_55px_-30px_rgba(114,6,140,0.88)] sm:p-8">
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.16)_0%,transparent_38%,rgba(255,255,255,0.06)_72%,transparent_100%)]" />
         <div className="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-2">
+          <div className="">
             <p className="[font-family:var(--font-paraluman-heading)] text-2xl text-white uppercase tracking-[-0.02em] sm:text-3xl">
-              Be Part of Something Bigger
+              Up for the challenge?
+            </p>
+            <p className="[font-family:var(--font-paraluman-mono)] text-[10px] leading-tight text-white/75 sm:text-[11px]">
+              No resume needed. Response in 24 hours
             </p>
           </div>
           <div className="w-full sm:w-auto sm:text-right">
@@ -263,11 +266,8 @@ export function OverviewPanel({
               onClick={onGoToHowToApply}
               className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-white bg-white/95 px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#72068c] transition-all duration-200 hover:bg-white hover:shadow-lg sm:w-auto"
             >
-              How to apply?
+              Start challenge
             </Button>
-            <p className="mt-1.5 [font-family:var(--font-paraluman-mono)] text-[10px] leading-tight text-white/75 sm:text-[11px]">
-              No resume needed. Response in 24 hours
-            </p>
           </div>
         </div>
       </div>

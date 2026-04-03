@@ -99,7 +99,8 @@ export function ApplyPanel({
     }, 180);
   }, [hasSubmitted, prefersReduce]);
 
-  const stepLabel = submissionStep === 1 ? "Proof Of Work" : "Contact Details";
+  const stepLabel =
+    submissionStep === 1 ? "Challenge Output" : "Contact Details";
 
   const updateField =
     (field: keyof ParalumanSubmissionForm) =>
@@ -115,10 +116,10 @@ export function ApplyPanel({
         <div className="flex flex-col gap-4 bg-gradient-to-br from-[#72068c] via-[#5a0570] to-[#4a0460] px-6 py-6 text-white sm:flex-row sm:items-start sm:justify-between sm:px-8">
           <div>
             <p className="[font-family:var(--font-paraluman-heading)] text-2xl text-white font-black uppercase tracking-[-0.02em] sm:text-3xl">
-              Apply
+              Submit challenge
             </p>
             <p className="[font-family:var(--font-paraluman-mono)]  text-white">
-              No resume needed. Guaranteed response in 24 hours
+              No resume needed. Response in 24 hours
             </p>
           </div>
 
@@ -214,7 +215,7 @@ export function ApplyPanel({
               <div className="rounded-[0.33em] border border-[rgba(114,6,140,0.16)] bg-[#72068c]/5 px-4 py-3">
                 <p className="[font-family:var(--font-paraluman-heading)] text-base font-black uppercase text-[#72068c] sm:text-lg">
                   {submissionStep === 1
-                    ? "Step 1: Share your proof of work"
+                    ? "Step 1: Share your challenge output"
                     : "Step 2: Confirm your details"}
                 </p>
                 <p className="mt-1 [font-family:var(--font-paraluman-mono)] text-xs leading-6 text-black/70 sm:text-sm">
@@ -228,7 +229,7 @@ export function ApplyPanel({
                 <>
                   <div className="space-y-2">
                     <label className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.1em] text-black/70">
-                      Project / Demo / Docs Link *
+                      Challenge Submission Link *
                     </label>
                     <Input
                       required
@@ -347,7 +348,7 @@ export function ApplyPanel({
                     onClick={onNextStep}
                     className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#72068c] bg-gradient-to-r from-[#72068c] to-[#5a0570] [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:shadow-lg sm:w-auto sm:px-8"
                   >
-                    Continue To Final Step
+                    Continue to contact details
                   </Button>
                 ) : (
                   <div className="flex w-full gap-2 sm:w-auto sm:items-center">
@@ -368,10 +369,10 @@ export function ApplyPanel({
                       {isSubmitting ? (
                         <>
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          Sending
+                          Submitting
                         </>
                       ) : (
-                        "Send Application"
+                        "Submit challenge"
                       )}
                     </Button>
                   </div>

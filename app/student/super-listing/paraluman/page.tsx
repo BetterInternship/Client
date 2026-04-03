@@ -61,8 +61,8 @@ const PANEL_TABS: Array<{
   step: string;
 }> = [
   { key: "overview", label: "Overview", step: "1" },
-  { key: "challenge", label: "How to apply", step: "2" },
-  { key: "submission", label: "Apply", step: "3" },
+  { key: "challenge", label: "Challenge", step: "2" },
+  { key: "submission", label: "Submit", step: "3" },
 ];
 
 const PANEL_TRANSITION_MS = 220;
@@ -176,7 +176,9 @@ export default function ParalumanPage() {
 
     if (!form.submissionLink.trim()) {
       setIsError(true);
-      setResultMessage("Application link is required before proceeding.");
+      setResultMessage(
+        "Challenge submission link is required before proceeding.",
+      );
       return;
     }
 
@@ -376,9 +378,9 @@ export default function ParalumanPage() {
           </div>
         </header>
 
-        <section className="sticky top-0 z-40 px-4 py-2 sm:px-8 sm:py-3 lg:px-10">
+        <section className="sticky top-0 z-40 px-2 py-2 sm:px-8 sm:py-3 lg:px-10">
           <div className="mx-auto max-w-3xl">
-            <div className="relative rounded-[0.45em] border border-[rgba(114,6,140,0.28)] bg-white/92 p-1 shadow-[0_14px_34px_-26px_rgba(114,6,140,0.45)] backdrop-blur-sm">
+            <div className="relative rounded-[0.33em] border border-[rgba(114,6,140,0.28)] bg-white/92 p-1 shadow-[0_14px_34px_-26px_rgba(114,6,140,0.45)] backdrop-blur-sm">
               <div className="relative flex items-stretch overflow-hidden rounded-[0.32em] bg-[#f3edf9]">
                 {PANEL_TABS.map((tab, index) => {
                   const isActive = activePanel === tab.key;
