@@ -42,7 +42,6 @@ const CEO_PROFILE: CEOProfile = {
 const CHALLENGE_PDF_URL =
   "https://drive.google.com/file/d/1Tdbc4EdhBkY3lOInAvE3YSaKhSQyWPwx/view?usp=sharing";
 const CHALLENGE_VIDEO_URL = "";
-const HIRING_BADGE_TEXT = "No resume needed. Response in 24 hours";
 
 type ParalumanSubmissionResponse = {
   success: boolean;
@@ -285,13 +284,13 @@ export default function ParalumanPage() {
   return (
     <main
       className={cn(
-        "relative isolate h-full min-h-screen bg-[#f6f4fb] text-black",
+        "relative isolate h-full min-h-screen bg-[#f8f5fb] text-black",
         headingFont.variable,
         monoFont.variable,
       )}
     >
-      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_14%_12%,rgba(114,6,140,0.12),transparent_38%),radial-gradient(circle_at_88%_4%,rgba(114,6,140,0.1),transparent_34%),radial-gradient(circle_at_50%_90%,rgba(114,6,140,0.06),transparent_42%)]" />
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.04)_1px,transparent_1px)] bg-[size:48px_48px] opacity-35" />
+      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_8%_12%,rgba(114,6,140,0.12),transparent_38%),radial-gradient(circle_at_88%_8%,rgba(114,6,140,0.1),transparent_34%),radial-gradient(circle_at_50%_92%,rgba(114,6,140,0.07),transparent_44%)]" />
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.045)_1px,transparent_1px)] bg-[size:46px_46px] opacity-28" />
 
       <div
         ref={scrollContainerRef}
@@ -423,7 +422,7 @@ export default function ParalumanPage() {
         </section>
 
         <section ref={panelSectionRef} className="relative">
-          <div className="px-6 py-12 sm:px-8 sm:py-16 lg:px-10">
+          <div className="px-2">
             <div className="mx-auto max-w-5xl">
               <div
                 className={cn(
@@ -435,20 +434,10 @@ export default function ParalumanPage() {
               >
                 {renderPanel === "overview" && (
                   <>
-                    <div
-                      className={cn(
-                        "transition-all duration-[220ms] ease-out",
-                        panelPhase === "out"
-                          ? "translate-y-1 opacity-0"
-                          : "translate-y-0 opacity-100",
-                      )}
-                    >
-                      <HeroPanel
-                        hiringBadgeText={HIRING_BADGE_TEXT}
-                        onHowToApply={openChallengePanel}
-                        showHowToApplyButton={activePanel === "overview"}
-                      />
-                    </div>
+                    <HeroPanel
+                      onHowToApply={openChallengePanel}
+                      showHowToApplyButton={activePanel === "overview"}
+                    />
                     <OverviewPanel
                       hasChallengeVideo={hasChallengeVideo}
                       challengeVideoUrl={CHALLENGE_VIDEO_URL}
