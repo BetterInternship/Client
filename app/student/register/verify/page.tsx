@@ -17,22 +17,35 @@ import { AlertTriangle, Repeat } from "lucide-react";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { AuthService } from "@/lib/api/services";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuthContext } from "@/lib/ctx-auth";
+import { Loader } from "@/components/ui/loader";
 
 export default function VerifyPage() {
   const router = useRouter();
+  const { redirectIfNotLoggedIn } = useAuthContext();
   const nextUrl = "/search";
   const profile = useProfileData();
+  const [mounted, setMounted] = useState(false);
 
-  const deciding = profile.data === undefined;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  redirectIfNotLoggedIn();
 
   // Redirect only after we know the profile state
   useEffect(() => {
-    if (deciding) return;
+    if (profile.isPending) return;
     if (profile.data?.is_verified) router.replace(nextUrl);
-  }, [deciding, profile.data?.is_verified, router]);
+  }, [profile.isPending, profile.data?.is_verified, router]);
 
-  // Prevent any flash
-  if (deciding || profile.data?.is_verified) return null;
+  // Prevent hydration mismatch when client restores persisted query cache.
+  // Server render and first client render both return null.
+  if (!mounted) return null;
+
+  // Wait for profile and auth checks; unauthenticated users are redirected
+  if (profile.isPending) return <Loader>Loading...</Loader>;
+  if (!profile.data || profile.data?.is_verified) return null;
 
   return (
     <div className="">
@@ -79,6 +92,12 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
   const [countdown, setCountdown] = useState(0);
 
   useEffect(() => {
+    if (!eduEmail && profile.data?.edu_verification_email) {
+      setEduEmail(profile.data.edu_verification_email);
+    }
+  }, [eduEmail, profile.data?.edu_verification_email]);
+
+  useEffect(() => {
     if (!eduEmail?.trim()) return setIsEmailValid(false);
     if (!eduEmail.endsWith(".edu.ph")) return setIsEmailValid(false);
     setIsEmailValid(true);
@@ -90,18 +109,22 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
     setActivating(true);
     setOtpError("");
     AuthService.activate(eduEmail, otp)
-      .then(async (response: any) => {
+      .then(async (response) => {
         await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
 
-        if (response?.success) {
+        if (response?.success === true) {
           onFinish();
         } else {
-          setOtpError(response?.message?.trim() || "OTP not valid.");
+          setOtpError(
+            response?.message?.trim() ||
+              response?.error?.trim() ||
+              "OTP not valid.",
+          );
         }
       })
-      .catch(() => setOtpError("Couldn’t verify your code. Try again."))
+      .catch(() => setOtpError("Couldn't verify your code. Try again."))
       .finally(() => setActivating(false));
-  }, [otp, eduEmail, onFinish]);
+  }, [otp, eduEmail, onFinish, queryClient]);
 
   const {
     open: openOTPModal,
@@ -114,9 +137,14 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
     setSending(true);
     setOtpError("");
     AuthService.requestActivation(eduEmail)
-      .then((response: any) => {
-        if (response?.message && response?.success === false) {
-          alert(response.message);
+      .then((response) => {
+        if (response?.success !== true) {
+          console.log("OTP request failed:", response);
+          const err =
+            response?.message?.trim() ||
+            response?.error?.trim() ||
+            "Couldn't send OTP. Try again.";
+          setOtpError(err);
           return;
         }
         openOTPModal();
@@ -124,7 +152,7 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
         setIsCoolingDown(true);
         setCountdown(60);
       })
-      .catch(() => setOtpError("Couldn’t send OTP. Try again."))
+      .catch(() => setOtpError("Couldn't send OTP. Try again."))
       .finally(() => setSending(false));
   };
 
@@ -186,10 +214,11 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
                 )}
               </div>
 
-              <div className="mt-3 flex items-center justify-center gap-2 text-sm">
+              <div className="mt-3 flex justify-end gap-2 text-sm">
                 <Button
                   type="button"
                   onClick={requestOTP}
+                  size={"md"}
                   disabled={sending || !isEmailValid || isCoolingDown}
                 >
                   <Repeat className="h-4 w-4 mr-1" />
