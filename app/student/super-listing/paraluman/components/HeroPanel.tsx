@@ -68,15 +68,6 @@ export function HeroPanel({
 
   return (
     <section className="relative mx-auto flex min-h-[68vh] max-w-5xl items-center justify-center overflow-hidden py-14 sm:min-h-[72vh] sm:py-20 lg:min-h-[78vh] lg:py-24">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-20"
-      >
-        <div className="absolute left-1/2 top-[7%] h-[24rem] w-[24rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(114,6,140,0.26)_0%,rgba(114,6,140,0.14)_36%,rgba(114,6,140,0)_72%)] blur-3xl sm:h-[32rem] sm:w-[32rem]" />
-        <div className="absolute inset-x-[-12%] top-[42%] h-24 -rotate-[6deg] bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.82),transparent)] opacity-40 blur-2xl sm:h-28" />
-        <div className="absolute inset-0 opacity-[0.05] [background-image:radial-gradient(rgba(0,0,0,0.7)_0.9px,transparent_0.9px)] [background-size:3px_3px]" />
-      </div>
-
       <div className="relative mx-auto w-full max-w-5xl">
         <div className="flex flex-col items-center space-y-8 text-center sm:space-y-9">
           <Link
