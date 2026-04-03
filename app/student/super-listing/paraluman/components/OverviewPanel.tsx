@@ -95,25 +95,51 @@ export function OverviewPanel({
   return (
     <div className="space-y-16 pt-4 sm:pt-8">
       <section className="space-y-6">
-        <SectionTitle
-          title="              You will build real tools used by a real newsroom team
-"
-        />
+        <SectionTitle title="About Paraluman" />
+        <div className="relative overflow-hidden rounded-[0.33em] border border-[rgba(114,6,140,0.26)] bg-gradient-to-br from-[#690580] via-[#5a0570] to-[#430556] p-6 text-white shadow-[0_24px_56px_-30px_rgba(114,6,140,0.9)] sm:p-8">
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.2)_0%,transparent_32%,rgba(255,255,255,0.1)_58%,transparent_100%)]" />
+          <div className="relative z-10 space-y-3">
+            <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.4rem,3.2vw,2rem)] font-black uppercase tracking-[-0.02em] text-white">
+              Building Accessible Filipino Journalism
+            </p>
+            <p className="mt-4 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-white sm:text-base">
+              Paraluman is a youth-led Philippine news platform focused on
+              making journalism more accessible in both English and Filipino. We
+              build practical systems that help stories move from draft to
+              publication without losing clarity, speed, or integrity.
+            </p>
+            <Button
+              asChild
+              className="mt-1 inline-flex h-11 items-center gap-2 rounded-[0.33em] border border-white/55 bg-white/12 px-4 [font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.1em] text-white shadow-[0_12px_26px_-18px_rgba(0,0,0,0.45)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:text-[#72068c]"
+            >
+              <Link
+                href="https://www.paraluman.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Visit paraluman.com
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+      <section className="space-y-6">
+        <SectionTitle title="What you will work on" />
         <div className="rounded-[0.33em]">
           <div className="relative">
             <div className="grid gap-4 md:grid-cols-3">
               {WORK_STREAMS.map((item) => (
                 <article
                   key={item.title}
-                  className="relative isolate overflow-hidden rounded-[0.33em] border border-[rgba(114,6,140,0.58)] bg-gradient-to-br from-[#72068c] via-[#5a0570] to-[#4a0460] p-5 shadow-[0_18px_34px_-22px_rgba(114,6,140,0.92)]"
+                  className="rounded-[0.33em] border border-[rgba(114,6,140,0.24)] bg-white p-5 shadow-[0_16px_30px_-22px_rgba(114,6,140,0.62)]"
                 >
-                  <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.16)_0%,transparent_38%,rgba(255,255,255,0.06)_72%,transparent_100%)]" />
-                  <div className="relative z-10 flex items-center gap-3">
-                    <h3 className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase tracking-[0.01em] text-white">
+                  <div className="flex items-center gap-3">
+                    <h3 className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase tracking-[0.01em] text-[#5a0570]">
                       {item.title}
                     </h3>
                   </div>
-                  <p className="relative z-10 mt-3 [font-family:var(--font-paraluman-mono)] text-sm leading-6 text-white">
+                  <p className="mt-3 [font-family:var(--font-paraluman-mono)] text-sm leading-6 text-black/75">
                     {item.description}
                   </p>
                 </article>
@@ -124,26 +150,24 @@ export function OverviewPanel({
       </section>
 
       <section className="space-y-6">
-        <SectionTitle
-          title="            Real experience, fast feedback, and proof of impact.
-"
-        />
-        <div className="rounded-[0.33em] ">
-          <div className="mt-4 overflow-hidden rounded-[0.33em] border border-[rgba(114,6,140,0.18)] bg-[#fbf8fd] shadow-[0_16px_32px_-22px_rgba(114,6,140,0.8)]">
-            <ul className="divide-y divide-[rgba(114,6,140,0.14)]">
+        <SectionTitle title="What you will get" />
+        <div className="relative overflow-hidden rounded-[0.33em] border border-[rgba(114,6,140,0.4)] bg-gradient-to-br from-[#72068c] via-[#5a0570] to-[#4a0460] shadow-[0_20px_44px_-26px_rgba(114,6,140,0.9)]">
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.16)_0%,transparent_38%,rgba(255,255,255,0.06)_72%,transparent_100%)]" />
+          <div className="relative">
+            <ul className="divide-y divide-white/20">
               {BENEFITS.map((item, index) => (
                 <li
                   key={item.title}
-                  className="flex items-start gap-4 px-4 py-4 sm:px-5 sm:py-5 "
+                  className="flex items-start gap-4 px-4 py-4 sm:px-5 sm:py-5"
                 >
-                  <span className="mt-0.5 inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-[rgba(114,6,140,0.25)] bg-white [font-family:var(--font-paraluman-mono)] text-[11px] font-bold text-[#72068c]">
+                  <span className="mt-0.5 inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/12 [font-family:var(--font-paraluman-mono)] text-[11px] font-bold text-white">
                     {String(index + 1).padStart(2, "0")}
                   </span>
                   <div>
-                    <h3 className="[font-family:var(--font-paraluman-heading)] text-base font-black uppercase tracking-[0.01em] text-[#5a0570] sm:text-lg">
+                    <h3 className="[font-family:var(--font-paraluman-heading)] text-base font-black uppercase tracking-[0.01em] text-white sm:text-lg">
                       {item.title}
                     </h3>
-                    <p className="mt-1.5 [font-family:var(--font-paraluman-mono)] text-sm leading-6 text-black/75">
+                    <p className="mt-1.5 [font-family:var(--font-paraluman-mono)] text-sm leading-6 text-white/90">
                       {item.description}
                     </p>
                   </div>
@@ -183,37 +207,6 @@ export function OverviewPanel({
                 {ceoProfile.role}
               </p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="space-y-6">
-        <SectionTitle title="About Paraluman" />
-        <div className="relative overflow-hidden rounded-[0.33em] border border-[rgba(114,6,140,0.26)] bg-gradient-to-br from-[#690580] via-[#5a0570] to-[#430556] p-6 text-white shadow-[0_24px_56px_-30px_rgba(114,6,140,0.9)] sm:p-8">
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.2)_0%,transparent_32%,rgba(255,255,255,0.1)_58%,transparent_100%)]" />
-          <div className="relative z-10 space-y-3">
-            <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.4rem,3.2vw,2rem)] font-black uppercase tracking-[-0.02em] text-white">
-              Building Accessible Filipino Journalism
-            </p>
-            <p className="mt-4 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-white sm:text-base">
-              Paraluman is a youth-led Philippine news platform focused on
-              making journalism more accessible in both English and Filipino. We
-              build practical systems that help stories move from draft to
-              publication without losing clarity, speed, or integrity.
-            </p>
-            <Button
-              asChild
-              className="mt-1 inline-flex h-11 items-center gap-2 rounded-[0.33em] border border-white/55 bg-white/12 px-4 [font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.1em] text-white shadow-[0_12px_26px_-18px_rgba(0,0,0,0.45)] backdrop-blur-sm transition-all duration-200 hover:bg-white hover:text-[#72068c]"
-            >
-              <Link
-                href="https://www.paraluman.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Visit paraluman.com
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
-            </Button>
           </div>
         </div>
       </section>
