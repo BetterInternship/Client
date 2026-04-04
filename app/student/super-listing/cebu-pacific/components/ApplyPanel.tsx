@@ -118,7 +118,7 @@ export function ApplyPanel({
       <div className="relative">
         <div className="flex flex-col gap-4 bg-gradient-to-br from-[#f3d98a] via-[#e8c560] to-[#ddb04a] px-6 py-6 text-black sm:flex-row sm:items-start sm:justify-between sm:px-8">
           <div>
-            <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black uppercase tracking-[-0.02em] text-[#2574BB] sm:text-3xl">
+            <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black uppercase tracking-[-0.02em] sm:text-3xl">
               Submit challenge
             </p>
             <p className="[font-family:var(--font-paraluman-mono)] text-black">

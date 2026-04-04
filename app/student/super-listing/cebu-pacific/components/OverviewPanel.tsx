@@ -99,40 +99,36 @@ export function OverviewPanel({
       </section>
       <section className="space-y-6">
         <SectionTitle title="What you will work on" />
-        <div className="relative overflow-hidden rounded-[0.33em] border border-[#2574BB]/50 bg-gradient-to-br from-[#194f80] via-[#2574BB] to-[#133f67] p-6 text-white shadow-[0_28px_54px_-30px_rgba(19,63,103,0.85)] sm:p-8">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_12%,rgba(255,255,255,0.18)_0%,transparent_38%),linear-gradient(135deg,rgba(255,255,255,0.1)_0%,transparent_42%,rgba(255,255,255,0.05)_75%,transparent_100%)]" />
+        <div className="relative overflow-hidden rounded-[0.33em] border border-[#2574BB]/35 bg-gradient-to-br from-[#f2f8ff] via-[#ebf4ff] to-[#e2efff] p-6 text-[#173957] shadow-[0_20px_38px_-26px_rgba(37,116,187,0.35)] sm:p-8">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_12%,rgba(37,116,187,0.1)_0%,transparent_38%),linear-gradient(135deg,rgba(37,116,187,0.08)_0%,transparent_42%,rgba(37,116,187,0.05)_75%,transparent_100%)]" />
           <div className="relative z-10 space-y-5">
-            <div className="max-w-3xl space-y-4 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-white/95 sm:text-base">
-              <p className="text-base font-semibold leading-7 text-white sm:text-lg">
+            <div className="max-w-3xl space-y-4 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-[#153a5b]/92 sm:text-base">
+              <p className="text-base font-semibold leading-7 text-[#153a5b] sm:text-lg">
                 For this internship, we are not assigning roles upfront.
               </p>
-              <p className="text-white">
-                <span className="[font-family:var(--font-paraluman-heading)] text-base font-black uppercase tracking-[0.06em] text-[#e8c560] sm:text-lg">
+              <p className="text-[#153a5b]/92">
+                <span className="[font-family:var(--font-paraluman-heading)] text-base font-black uppercase tracking-[0.06em] text-[#2574BB] sm:text-lg">
                   Why?
                 </span>{" "}
                 Because we&apos;re not looking for someone to follow
                 instructions. We&apos;re looking for someone who will go through
                 their own initiatives to fix problems.
               </p>
-              <div className="h-px w-full bg-white/20" />
-              <p className="text-white">
+              <div className="h-px w-full bg-[#2574BB]/28" />
+              <p className="text-[#153a5b]/92">
                 Once you pass the challenge, we&apos;ll see what you&apos;re
                 capable of first, then we&apos;ll give you projects based on
                 your talents and strengths.
               </p>
-              <p className="text-white">
+              <p className="text-[#153a5b]/92">
                 Our plan is to let you work on real user problems - our website,
                 app, systems, and maybe even the actual experience of flying.
               </p>
             </div>
-            <div className="rounded-[0.33em] border border-[#e8c560]/45 bg-[#e8c560]/15 px-4 py-3">
-              <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black leading-tight tracking-[-0.01em] text-[#e8c560] sm:text-xl">
-                If you get in, you&apos;re here to build.
-              </p>
-              <p className="mt-1 [font-family:var(--font-paraluman-mono)] text-sm font-semibold text-white/90 sm:text-base">
-                And to make flying better for Every Juan.
-              </p>
-            </div>
+            <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black leading-tight tracking-[-0.02em] text-[#0f3f67] sm:text-3xl">
+              If you get in, you&apos;re here to build <br />
+              and to make flying better for Every Juan.
+            </p>
           </div>
         </div>
       </section>
