@@ -35,37 +35,55 @@ export async function GET(
         display: "flex",
         position: "relative",
         padding: "34px",
-        background:
-          "radial-gradient(circle at 12% 18%, rgba(14,116,144,0.14), transparent 34%), radial-gradient(circle at 88% 84%, rgba(59,130,246,0.15), transparent 40%), linear-gradient(rgba(148,163,184,0.16) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.16) 1px, transparent 1px), linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)",
-        backgroundSize: "auto, auto, 38px 38px, 38px 38px, auto",
+        background: "linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)",
         fontFamily:
-          "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial",
+          "Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial",
       }}
     >
       <div
         style={{
           position: "absolute",
-          top: "-90px",
-          right: "-100px",
-          width: "300px",
-          height: "300px",
-          borderRadius: "999px",
-          background: config.glow,
-          opacity: 0.26,
-          filter: "blur(42px)",
+          inset: 0,
+          backgroundImage:
+            "linear-gradient(rgba(148,163,184,0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.18) 1px, transparent 1px)",
+          backgroundSize: "36px 36px",
+          opacity: 0.55,
         }}
       />
       <div
         style={{
           position: "absolute",
-          bottom: "-120px",
-          left: "-120px",
-          width: "320px",
-          height: "320px",
+          top: "-130px",
+          left: "-110px",
+          width: "360px",
+          height: "360px",
           borderRadius: "999px",
-          background: "#0f4e8a",
-          opacity: 0.16,
-          filter: "blur(42px)",
+          background:
+            "linear-gradient(135deg, rgba(15,78,138,0.34), rgba(96,165,250,0.24))",
+          opacity: 0.85,
+          filter: "blur(56px)",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: "-140px",
+          right: "-120px",
+          width: "390px",
+          height: "390px",
+          borderRadius: "999px",
+          background:
+            "linear-gradient(135deg, rgba(12,74,110,0.3), rgba(59,130,246,0.2))",
+          opacity: 0.8,
+          filter: "blur(60px)",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "radial-gradient(120% 80% at 50% 40%, rgba(248,250,252,0), rgba(248,250,252,0.75))",
         }}
       />
 
@@ -80,7 +98,7 @@ export async function GET(
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          padding: "34px 38px",
+          padding: "36px 40px",
           color: "#0f172a",
         }}
       >
@@ -88,7 +106,6 @@ export async function GET(
           style={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
             width: "100%",
           }}
         >
@@ -122,82 +139,50 @@ export async function GET(
               <span style={{ fontSize: 24, fontWeight: 900, color: "#111827" }}>
                 BetterInternship
               </span>
-              <span
-                style={{
-                  marginTop: 4,
-                  fontSize: 14,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  color: "#334155",
-                  fontWeight: 700,
-                }}
-              >
-                Super Listings
-              </span>
             </div>
           </div>
+        </div>
 
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "16px",
+            marginTop: "18px",
+          }}
+        >
           <div
             style={{
               display: "flex",
               alignItems: "center",
+              alignSelf: "flex-start",
               borderRadius: "999px",
               border: "1px solid rgba(148,163,184,0.6)",
               background: "rgba(255,255,255,0.82)",
               color: "#0f172a",
               padding: "8px 14px",
               fontSize: 15,
-              fontWeight: 800,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
+              fontWeight: 700,
+              letterSpacing: "0.04em",
             }}
           >
             {config.badgeLabel || "Super Listing"}
-          </div>
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              color: "#334155",
-              fontSize: 22,
-              fontWeight: 700,
-            }}
-          >
-            {config.logoDataUrl ? (
-              <img
-                src={config.logoDataUrl}
-                alt={`${config.company} logo`}
-                width={28}
-                height={28}
-                style={{
-                  width: 28,
-                  height: 28,
-                  objectFit: "contain",
-                }}
-              />
-            ) : null}
-            <span>BetterInternship x {config.company}</span>
           </div>
 
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: "10px",
+              gap: "8px",
               maxWidth: "1000px",
             }}
           >
             <div
               style={{
-                fontSize: 72,
-                lineHeight: 0.92,
-                letterSpacing: "-0.045em",
-                fontWeight: 900,
-                textTransform: "uppercase",
+                fontSize: 78,
+                lineHeight: 0.94,
+                letterSpacing: "-0.03em",
+                fontWeight: 800,
                 color: "#0f172a",
               }}
             >
@@ -205,11 +190,11 @@ export async function GET(
             </div>
             <div
               style={{
-                fontSize: 34,
+                fontSize: 40,
                 lineHeight: 1.12,
                 letterSpacing: "-0.02em",
                 color: "#334155",
-                fontWeight: 700,
+                fontWeight: 600,
               }}
             >
               {config.role}
@@ -238,15 +223,10 @@ export async function GET(
           <div
             style={{
               display: "flex",
-              borderRadius: "12px",
-              border: `2px solid ${config.accent}`,
-              background: "white",
-              padding: "10px 14px",
-              fontSize: 16,
-              color: "#0f172a",
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              fontWeight: 800,
+              fontSize: 24,
+              color: "#475569",
+              letterSpacing: "0.01em",
+              fontWeight: 500,
               whiteSpace: "nowrap",
             }}
           >
