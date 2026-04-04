@@ -93,7 +93,7 @@ export function ApplicationRow({
         className={`flex flex-col hover:cursor-pointer transition-colors ${
           isSuperListing
             ? "border-amber-300 bg-amber-50/40 hover:bg-amber-100/50"
-            : "hover:bg-primary/25"
+            : "hover:bg-muted/50"
         }`}
         onClick={onView}
       >
@@ -256,7 +256,7 @@ export function ApplicationRow({
         delay: staggerDelay,
         ease: "easeOut",
       }}
-      className="group hover:cursor-pointer transition-colors odd:bg-white even:bg-gray-50 hover:bg-primary/25"
+      className="group hover:cursor-pointer transition-colors odd:bg-white even:bg-muted/50 hover:bg-muted/70"
       onClick={onView}
     >
       <td
@@ -297,6 +297,7 @@ export function ApplicationRow({
                 onArchiveButtonClick(application);
               }}
               enabled={application.status! !== 7}
+              label="Archive"
             />
           )}
           {application.status === 7 && (
@@ -307,6 +308,8 @@ export function ApplicationRow({
                 onDeleteButtonClick(application);
               }}
               enabled={application.status === 7}
+              destructive={true}
+              label="Delete"
             />
           )}
         </div>
