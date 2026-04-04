@@ -8,7 +8,15 @@ export const metadata: Metadata = {
     title: "BetterInternship x FFF: Startup Accelerator Intern",
     description:
       "Scout top AI-native builders, network deeply, and help scale the next startup accelerator.",
-    url: "/fff",
+    url: "/super-listing/fff",
+    images: [
+      {
+        url: "/super-listing/fff/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "BetterInternship x FFF: Startup Accelerator Intern",
+      },
+    ],
     siteName: "BetterInternship",
     type: "website",
   },
@@ -17,6 +25,7 @@ export const metadata: Metadata = {
     title: "BetterInternship x FFF: Startup Accelerator Intern",
     description:
       "Scout top AI-native builders, network deeply, and help scale the next startup accelerator.",
+    images: ["/super-listing/fff/opengraph-image"],
   },
 };
 
