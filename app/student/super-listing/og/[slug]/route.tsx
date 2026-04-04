@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import React from "react";
 import { ImageResponse } from "next/og";
 import { getSuperListingOgConfig } from "../../og-config";
 
@@ -86,7 +87,7 @@ export async function GET(
           position: "absolute",
           inset: 0,
           background:
-            "radial-gradient(120% 80% at 50% 40%, rgba(248,250,252,0), rgba(248,250,252,0.75))",
+            "radial-gradient(circle at 50% 40%, rgba(248,250,252,0), rgba(248,250,252,0.75))",
         }}
       />
 
@@ -184,24 +185,8 @@ export async function GET(
               alignSelf: "flex-start",
               borderRadius: "999px",
               border: "1px solid rgba(245, 158, 11, 0.4)",
-              background: `
-                radial-gradient(
-                  ellipse 400px 300px at 20% 30%,
-                  rgba(254, 240, 138, 0.55),
-                  transparent 42%
-                ),
-                radial-gradient(
-                  ellipse 350px 280px at 80% 70%,
-                  rgba(251, 146, 60, 0.2),
-                  transparent 36%
-                ),
-                linear-gradient(
-                  150deg,
-                  rgba(255, 251, 235, 1) 0%,
-                  rgba(255, 255, 255, 1) 45%,
-                  rgba(254, 243, 199, 0.98) 100%
-                )
-              `,
+              background:
+                "linear-gradient(180deg, rgba(255, 236, 153, 1) 0%, rgba(255, 204, 51, 1) 100%)",
               boxShadow:
                 "0 4px 12px rgba(245, 158, 11, 0.16), 0 0 0 1px rgba(245, 158, 11, 0.1)",
               color: "#78350f",
