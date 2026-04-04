@@ -4,6 +4,7 @@ import { statusMap } from "@/components/common/status-icon-map";
 import ContentLayout from "@/components/features/hire/content-layout";
 import { ApplicantPage } from "@/components/features/hire/dashboard/ApplicantPage";
 import { type ActionItem } from "@/components/ui/action-item";
+import useApplicationActions from "@/hooks/use-application-actions";
 import { useEmployerApplications } from "@/hooks/use-employer-api";
 import { updateApplicationStatus, UserService } from "@/lib/api/services";
 import { EmployerApplication } from "@/lib/db/db.types";
@@ -17,7 +18,17 @@ function ApplicantPageContent() {
   const jobId = searchParams.get("jobId");
   const isDummyProfile = searchParams.get("dummy") === "1";
   const [loading, setLoading] = useState(true);
+
   const applications = useEmployerApplications();
+  const { app_statuses } = useDbRefs();
+
+  const {
+    triggerAccept,
+    triggerReject,
+    triggerShortlist,
+    triggerArchive,
+    triggerDelete,
+  } = useApplicationActions(applications.review);
 
   const dummyApplication: EmployerApplication = {
     id: "dummy-super-application",
@@ -76,8 +87,6 @@ function ApplicantPageContent() {
     otherApplications = [];
   }
 
-  const { app_statuses } = useDbRefs();
-
   useEffect(() => {
     const fetchUserData = async () => {
       if (isDummyProfile) {
@@ -108,16 +117,37 @@ function ApplicantPageContent() {
     [],
   );
 
-  const getStatuses = (applicationId: string) => {
+  const getStatuses = (application: EmployerApplication) => {
     return unique_app_statuses
       .filter((status) => status.id !== 7 && status.id !== 5 && status.id !== 0)
       .map((status): ActionItem => {
         const uiProps = statusMap.get(status.id);
+
+        const handleClick = () => {
+          switch (status.id) {
+            case 1:
+              triggerShortlist(application);
+              break;
+            case 4:
+              triggerAccept(application);
+              break;
+            case 5:
+              triggerDelete(application);
+              break;
+            case 6:
+              triggerReject(application);
+              break;
+            case 7:
+              triggerArchive(application);
+              break;
+          }
+        };
+
         return {
           id: status.id.toString(),
           label: status.name,
           icon: uiProps?.icon,
-          onClick: () => updateApplicationStatus(applicationId, status.id),
+          onClick: handleClick,
           destructive: uiProps?.destructive,
         };
       });
@@ -129,10 +159,14 @@ function ApplicantPageContent() {
         <ApplicantPage
           application={userApplication}
           jobID={jobId || ""}
-          statuses={
-            isDummyProfile ? [] : getStatuses(userApplication?.id || "")
-          }
+          statuses={isDummyProfile ? [] : getStatuses(userApplication!)}
           userApplications={otherApplications}
+          onArchive={() => {
+            if (userApplication) triggerArchive(userApplication);
+          }}
+          onDelete={() => {
+            if (userApplication) triggerDelete(userApplication);
+          }}
         />
       </div>
     </ContentLayout>
