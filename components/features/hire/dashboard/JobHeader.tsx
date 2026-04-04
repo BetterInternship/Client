@@ -104,7 +104,7 @@ export default function JobHeader({
             </div>
             {/* active toggle */}
             <Tooltip>
-              <TooltipTrigger>
+              <TooltipTrigger asChild>
                 <div className="flex items-center gap-2">
                   <Toggle state={job.is_active} onClick={handleToggleActive} />
                   <span
