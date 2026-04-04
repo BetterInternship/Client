@@ -1,8 +1,5 @@
 import { ImageResponse } from "next/og";
-import {
-  getSuperListingOgConfig,
-  isSuperListingSlug,
-} from "../../og-config";
+import { getSuperListingOgConfig } from "../../og-config";
 
 export const contentType = "image/png";
 
@@ -16,11 +13,6 @@ export async function GET(
   context: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await context.params;
-
-  if (!isSuperListingSlug(slug)) {
-    return new Response("Not Found", { status: 404 });
-  }
-
   const config = getSuperListingOgConfig(slug);
 
   return new ImageResponse(
