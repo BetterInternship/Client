@@ -88,7 +88,7 @@ export function ApplyPanel({
       spread: 74,
       startVelocity: 34,
       origin: { y: 0.65 },
-      colors: ["#ffc100", "#ffd84d", "#7cc242", "#ffffff"],
+      colors: ["#e8c560", "#ffd84d", "#7cc242", "#ffffff"],
     });
 
     window.setTimeout(() => {
@@ -97,7 +97,7 @@ export function ApplyPanel({
         spread: 60,
         startVelocity: 28,
         origin: { x: 0.75, y: 0.68 },
-        colors: ["#ffc100", "#e4af00", "#ffffff"],
+        colors: ["#e8c560", "#ddb04a", "#ffffff"],
       });
     }, 180);
   }, [hasSubmitted, prefersReduce]);
@@ -114,9 +114,9 @@ export function ApplyPanel({
     };
 
   return (
-    <div className="relative overflow-hidden rounded-[0.33em] border-2 border-[rgba(255,193,0,0.3)] bg-white shadow-[0_24px_55px_-35px_rgba(255,193,0,0.75)]">
+    <div className="relative overflow-hidden rounded-[0.33em] border-2 border-[rgba(212,173,69,0.3)] bg-white shadow-[0_24px_55px_-35px_rgba(212,173,69,0.75)]">
       <div className="relative">
-        <div className="flex flex-col gap-4 bg-gradient-to-br from-[#ffc100] via-[#e4af00] to-[#c89400] px-6 py-6 text-black sm:flex-row sm:items-start sm:justify-between sm:px-8">
+        <div className="flex flex-col gap-4 bg-gradient-to-br from-[#f3d98a] via-[#e8c560] to-[#ddb04a] px-6 py-6 text-black sm:flex-row sm:items-start sm:justify-between sm:px-8">
           <div>
             <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black uppercase tracking-[-0.02em] text-[#2574BB] sm:text-3xl">
               Submit challenge
@@ -157,7 +157,7 @@ export function ApplyPanel({
               }
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
-              className="relative overflow-hidden rounded-[0.33em] border-2 border-[#ffc100]/45 bg-white p-6 shadow-[0_18px_45px_-35px_rgba(255,193,0,0.85)] sm:p-8"
+              className="relative overflow-hidden rounded-[0.33em] border-2 border-[#e8c560]/45 bg-white p-6 shadow-[0_18px_45px_-35px_rgba(212,173,69,0.85)] sm:p-8"
             >
               {!prefersReduce && (
                 <motion.div
@@ -168,7 +168,7 @@ export function ApplyPanel({
                 />
               )}
               <motion.div
-                className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,193,0,0.22),transparent_50%),radial-gradient(circle_at_bottom_left,rgba(255,193,0,0.1),transparent_55%)]"
+                className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(212,173,69,0.22),transparent_50%),radial-gradient(circle_at_bottom_left,rgba(212,173,69,0.1),transparent_55%)]"
                 initial={prefersReduce ? false : { opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.9, ease: "easeOut", delay: 0.4 }}
@@ -215,7 +215,7 @@ export function ApplyPanel({
             </motion.div>
           ) : (
             <form className="space-y-5" onSubmit={(e) => void onSubmit(e)}>
-              <div className="rounded-[0.33em] border border-[rgba(255,193,0,0.35)] bg-[#ffc100]/10 px-4 py-3">
+              <div className="rounded-[0.33em] border border-[rgba(212,173,69,0.35)] bg-[#e8c560]/10 px-4 py-3">
                 <p className="[font-family:var(--font-paraluman-heading)] text-base font-black uppercase text-[#6b5000] sm:text-lg">
                   {submissionStep === 1
                     ? "Step 1: Share your challenge output"
@@ -238,7 +238,7 @@ export function ApplyPanel({
                       required
                       value={form.submissionLink}
                       onChange={updateField("submissionLink")}
-                      className="h-11 border-2 border-[rgba(255,193,0,0.45)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
+                      className="h-11 border-2 border-[rgba(212,173,69,0.45)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
                     />
                     <p className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 [font-family:var(--font-paraluman-mono)] text-[10px] text-black/55 sm:text-[11px]">
                       <span className="inline-flex items-center gap-1">
@@ -267,7 +267,7 @@ export function ApplyPanel({
                     <Textarea
                       value={form.submissionNotes}
                       onChange={updateField("submissionNotes")}
-                      className="min-h-28 border-2 border-[rgba(255,193,0,0.45)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
+                      className="min-h-28 border-2 border-[rgba(212,173,69,0.45)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
                     />
                     <p className="[font-family:var(--font-paraluman-mono)] text-[10px] text-black/55 sm:text-[11px]">
                       Add context, constraints, or tradeoffs you want us to
@@ -288,7 +288,7 @@ export function ApplyPanel({
                       type="email"
                       value={form.email}
                       onChange={updateField("email")}
-                      className="h-11 border-2 border-[rgba(255,193,0,0.45)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
+                      className="h-11 border-2 border-[rgba(212,173,69,0.45)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
                     />
                   </div>
 
@@ -300,7 +300,7 @@ export function ApplyPanel({
                       required
                       value={form.fullName}
                       onChange={updateField("fullName")}
-                      className="h-11 border-2 border-[rgba(255,193,0,0.45)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
+                      className="h-11 border-2 border-[rgba(212,173,69,0.45)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
                     />
                   </div>
 
@@ -312,12 +312,12 @@ export function ApplyPanel({
                       required
                       value={form.facebookLink}
                       onChange={updateField("facebookLink")}
-                      className="h-11 border-2 border-[rgba(255,193,0,0.45)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
+                      className="h-11 border-2 border-[rgba(212,173,69,0.45)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
                     />
                   </div>
 
                   {isDevelopment ? (
-                    <p className="rounded-[0.33em] bg-[rgba(255,193,0,0.18)] px-3 py-2 [font-family:var(--font-paraluman-mono)] text-xs text-[#6b5000]">
+                    <p className="rounded-[0.33em] bg-[rgba(212,173,69,0.18)] px-3 py-2 [font-family:var(--font-paraluman-mono)] text-xs text-[#6b5000]">
                       Captcha disabled in development
                     </p>
                   ) : !token ? (
@@ -359,7 +359,7 @@ export function ApplyPanel({
                       type="button"
                       variant="outline"
                       onClick={onBackStep}
-                      className="inline-flex h-11 w-1/3 items-center justify-center gap-1.5 rounded-[0.33em] border-2 border-[rgba(255,193,0,0.5)] bg-white px-3 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.08em] text-[#6b5000] transition-colors hover:bg-[#fff7da] sm:w-auto"
+                      className="inline-flex h-11 w-1/3 items-center justify-center gap-1.5 rounded-[0.33em] border-2 border-[rgba(212,173,69,0.5)] bg-white px-3 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.08em] text-[#6b5000] transition-colors hover:bg-[#fff7da] sm:w-auto"
                     >
                       <ArrowLeft className="h-4 w-4" />
                       Back

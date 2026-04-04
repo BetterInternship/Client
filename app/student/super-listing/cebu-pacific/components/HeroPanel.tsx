@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -12,62 +11,12 @@ type HeroPanelProps = {
   showHowToApplyButton?: boolean;
 };
 
-const HERO_TYPED_PHRASES = [
-  "people going places",
-  "millions of travelers",
-  "Filipino journeys",
-  "everyday adventures",
-];
-
 export function HeroPanel({
   onHowToApply,
   showHowToApplyButton = true,
 }: HeroPanelProps) {
-  const [phraseIndex, setPhraseIndex] = useState(0);
-  const [typedText, setTypedText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isPhrasePopping, setIsPhrasePopping] = useState(true);
-
-  useEffect(() => {
-    setIsPhrasePopping(true);
-    const popTimer = window.setTimeout(() => setIsPhrasePopping(false), 340);
-    return () => window.clearTimeout(popTimer);
-  }, [phraseIndex]);
-
-  useEffect(() => {
-    const currentPhrase = HERO_TYPED_PHRASES[phraseIndex];
-
-    const delay = (() => {
-      if (!isDeleting && typedText === currentPhrase) return 1700;
-      if (isDeleting && typedText.length === 0) return 350;
-      return isDeleting ? 38 : 72;
-    })();
-
-    const timer = window.setTimeout(() => {
-      if (!isDeleting) {
-        if (typedText.length < currentPhrase.length) {
-          setTypedText(currentPhrase.slice(0, typedText.length + 1));
-          return;
-        }
-
-        setIsDeleting(true);
-        return;
-      }
-
-      if (typedText.length > 0) {
-        setTypedText(currentPhrase.slice(0, typedText.length - 1));
-        return;
-      }
-
-      setIsDeleting(false);
-      setPhraseIndex((previous) => (previous + 1) % HERO_TYPED_PHRASES.length);
-    }, delay);
-
-    return () => window.clearTimeout(timer);
-  }, [phraseIndex, typedText, isDeleting]);
-
   return (
-    <section className="relative mx-auto flex min-h-[68vh] max-w-5xl items-center justify-center overflow-hidden py-14 sm:min-h-[72vh] sm:py-20 lg:min-h-[78vh] lg:py-24">
+    <section className="relative mx-auto flex min-h-[68vh] max-w-5xl items-center justify-center overflow-hidden  sm:min-h-[72vh] lg:min-h-[78vh] ">
       <div className="relative mx-auto w-full max-w-5xl">
         <div className="flex flex-col items-center space-y-8 text-center sm:space-y-9">
           <Link
@@ -84,26 +33,15 @@ export function HeroPanel({
             />
           </Link>
 
-          <h1 className="[font-family:var(--font-paraluman-heading)] w-full max-w-[min(96vw,1100px)] font-black leading-[0.9] text-[#2574BB]">
-            <span className="block whitespace-nowrap text-[clamp(2rem,6.6vw,5.6rem)] leading-[0.9] tracking-[-0.03em] text-[#2574BB]">
-              Build for
-            </span>
-            <span className="mt-3 block min-h-[1.13em] whitespace-nowrap text-[clamp(2rem,6.6vw,5.6rem)] leading-[0.9] tracking-[-0.03em] text-[#d39f00] [text-shadow:0_10px_28px_rgba(255,193,0,0.35)]">
-              <span
-                className={
-                  isPhrasePopping
-                    ? "phrase-pop inline-flex items-end"
-                    : "inline-flex items-end"
-                }
-              >
-                <span>{typedText}</span>
-                <span
-                  aria-hidden="true"
-                  className="ml-1 inline-block h-[0.92em] w-[3px] translate-y-[0.08em] rounded-full bg-[#d39f00]"
-                  style={{
-                    animation: "caretBlink 1.05s steps(1, end) infinite",
-                  }}
-                />
+          <h1 className="[font-family:var(--font-paraluman-heading)] mx-auto w-full max-w-[min(86vw,800px)] leading-[0.92] text-[#2574BB]">
+            <span className="block text-[clamp(1.65rem,5.5vw,6rem)] leading-[0.96] tracking-[-0.03em] font-light">
+              <span className="block">Help Us</span>
+              <span className="inline-block bg-[#f3d98a] px-1.5 text-[#2574BB] [box-decoration-break:clone] font-black">
+                <span className="block">Build the Future</span>
+                <span className="block">of Air Travel</span>
+              </span>
+              <span className="block">
+                For <span className="italic  font-black">Every Juan</span>
               </span>
             </span>
           </h1>
@@ -112,6 +50,16 @@ export function HeroPanel({
             <span className="[font-family:var(--font-paraluman-mono)] font-black uppercase text-[#2574BB] text-lg tracking-[0.09em] sm:text-xl  ">
               Looking for: Product, Design, and Web Interns
             </span>
+          </div>
+
+          <div className="mx-auto w-full max-w-3xl [font-family:var(--font-paraluman-mono)] text-base leading-relaxed text-[#1f3a55] sm:text-lg">
+            <p>Millions of Filipinos fly every year.</p>
+            <p>And yet, the experience still isn&apos;t perfect.</p>
+            <p>Someone has to fix that.</p>
+            <p className="text-[#2574BB] font-black">
+              We&apos;re looking for an intern who&apos;s ready to step up and
+              do it.
+            </p>
           </div>
 
           {showHowToApplyButton && (
@@ -130,40 +78,6 @@ export function HeroPanel({
             </div>
           )}
         </div>
-        <style jsx>{`
-          @keyframes caretBlink {
-            0%,
-            49% {
-              opacity: 1;
-            }
-            50%,
-            100% {
-              opacity: 0;
-            }
-          }
-
-          @keyframes phrasePop {
-            0% {
-              opacity: 0;
-              transform: translateY(8px) scale(0.985);
-              filter: blur(3px);
-            }
-            65% {
-              opacity: 1;
-              transform: translateY(0) scale(1.01);
-              filter: blur(0);
-            }
-            100% {
-              opacity: 1;
-              transform: translateY(0) scale(1);
-              filter: blur(0);
-            }
-          }
-
-          .phrase-pop {
-            animation: phrasePop 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
-          }
-        `}</style>
       </div>
     </section>
   );
