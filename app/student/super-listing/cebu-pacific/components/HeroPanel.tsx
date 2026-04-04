@@ -13,10 +13,10 @@ type HeroPanelProps = {
 };
 
 const HERO_TYPED_PHRASES = [
-  "people going places",
-  "millions of travelers",
   "Filipino journeys",
-  "everyday adventures",
+  "going home",
+  "first flights",
+  "real travel",
 ];
 
 export function HeroPanel({
@@ -85,10 +85,11 @@ export function HeroPanel({
           </Link>
 
           <h1 className="[font-family:var(--font-paraluman-heading)] w-full max-w-[min(96vw,1100px)] font-black leading-[0.9] text-[#2574BB]">
-            <span className="block whitespace-nowrap text-[clamp(2rem,6.6vw,5.6rem)] leading-[0.9] tracking-[-0.03em] text-[#2574BB]">
-              Build for
+            <span className="block whitespace-nowrap text-[clamp(2.05rem,9.2vw,7.4rem)] leading-[0.88] tracking-[-0.045em] text-[#2574BB]">
+              Be part of
             </span>
-            <span className="mt-3 block min-h-[1.13em] whitespace-nowrap text-[clamp(2rem,6.6vw,5.6rem)] leading-[0.9] tracking-[-0.03em] text-[#d39f00] [text-shadow:0_10px_28px_rgba(255,193,0,0.35)]">
+
+            <span className="mt-3 block min-h-[1.13em] whitespace-nowrap text-[clamp(2.05rem,9.2vw,7.4rem)] leading-[0.88] tracking-[-0.045em] text-[#d39f00] [text-shadow:0_10px_28px_rgba(255,193,0,0.35)]">
               <span
                 className={
                   isPhrasePopping
