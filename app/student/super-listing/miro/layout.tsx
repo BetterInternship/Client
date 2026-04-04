@@ -1,25 +1,11 @@
 import type { Metadata } from "next";
+import { createSuperListingMetadata } from "../metadata-utils";
 
-const baseUrl =
-  process.env.NEXT_PUBLIC_CLIENT_URL || "https://betterinternship.com";
-const ogImageUrl = `${baseUrl}/miro-preview.png`;
-
-export const metadata: Metadata = {
+export const metadata: Metadata = createSuperListingMetadata({
+  slug: "miro",
   title: "BetterInternship x Miro: Miro-thon!",
   description: "Fight for an internship at Miro",
-  openGraph: {
-    images: [
-      {
-        url: ogImageUrl,
-        width: 1200,
-        height: 630,
-      },
-    ],
-  },
-  twitter: {
-    images: [ogImageUrl],
-  },
-};
+});
 
 export default function MiroLayout({
   children,
