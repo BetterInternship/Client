@@ -12,7 +12,10 @@ export const size = {
 
 const betterInternshipLogoDataUrl = (() => {
   try {
-    const logoPath = path.join(process.cwd(), "public/BetterInternshipLogo.png");
+    const logoPath = path.join(
+      process.cwd(),
+      "public/BetterInternshipLogo.png",
+    );
     const logoBuffer = fs.readFileSync(logoPath);
     return `data:image/png;base64,${logoBuffer.toString("base64")}`;
   } catch {
@@ -147,20 +150,21 @@ export async function GET(
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "8px",
+              gap: "6px",
               borderRadius: "999px",
-              border: "1px solid rgba(148,163,184,0.5)",
+              border: "1px solid rgba(245, 158, 11, 0.35)",
               background: "#ffffff",
-              boxShadow: "0 8px 20px -14px rgba(15,23,42,0.45)",
-              padding: "10px 16px",
-              fontSize: 18,
-              fontWeight: 800,
+              boxShadow:
+                "0 4px 12px rgba(245, 158, 11, 0.14), 0 0 0 1px rgba(245, 158, 11, 0.08)",
+              padding: "8px 14px",
+              fontSize: 16,
+              fontWeight: 700,
               color: "#78350f",
               letterSpacing: "0.02em",
               whiteSpace: "nowrap",
             }}
           >
-            <span style={{ fontSize: 20, lineHeight: 1 }}>⚡</span>
+            <span style={{ fontSize: 16, lineHeight: 1 }}>⚡</span>
             <span>Super Listing</span>
           </div>
         </div>
@@ -179,13 +183,32 @@ export async function GET(
               alignItems: "center",
               alignSelf: "flex-start",
               borderRadius: "999px",
-              border: "1px solid #d6a300",
-              background: "linear-gradient(180deg, #ffd96a 0%, #ffc100 100%)",
-              color: "#111827",
-              padding: "14px 20px",
-              fontSize: 28,
+              border: "1px solid rgba(245, 158, 11, 0.4)",
+              background: `
+                radial-gradient(
+                  ellipse 400px 300px at 20% 30%,
+                  rgba(254, 240, 138, 0.55),
+                  transparent 42%
+                ),
+                radial-gradient(
+                  ellipse 350px 280px at 80% 70%,
+                  rgba(251, 146, 60, 0.2),
+                  transparent 36%
+                ),
+                linear-gradient(
+                  150deg,
+                  rgba(255, 251, 235, 1) 0%,
+                  rgba(255, 255, 255, 1) 45%,
+                  rgba(254, 243, 199, 0.98) 100%
+                )
+              `,
+              boxShadow:
+                "0 4px 12px rgba(245, 158, 11, 0.16), 0 0 0 1px rgba(245, 158, 11, 0.1)",
+              color: "#78350f",
+              padding: "12px 18px",
+              fontSize: 26,
               fontWeight: 800,
-              letterSpacing: "0.02em",
+              letterSpacing: "0.01em",
               whiteSpace: "nowrap",
             }}
           >
