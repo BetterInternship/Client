@@ -1,30 +1,11 @@
 import type { Metadata } from "next";
+import { createSuperListingMetadata } from "../metadata-utils";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createSuperListingMetadata({
+  slug: "miro",
   title: "BetterInternship x Miro: Miro-thon!",
   description: "Fight for an internship at Miro",
-  openGraph: {
-    title: "BetterInternship x Miro: Miro-thon!",
-    description: "Fight for an internship at Miro",
-    url: "/super-listing/miro",
-    siteName: "BetterInternship",
-    type: "website",
-    images: [
-      {
-        url: "/miro-preview.png",
-        width: 1200,
-        height: 630,
-        alt: "BetterInternship x Miro: Miro-thon!",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "BetterInternship x Miro: Miro-thon!",
-    description: "Fight for an internship at Miro",
-    images: ["/miro-preview.png"],
-  },
-};
+});
 
 export default function MiroLayout({
   children,
