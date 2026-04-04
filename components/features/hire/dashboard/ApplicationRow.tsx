@@ -30,13 +30,9 @@ interface ApplicationRowProps {
   application: EmployerApplication;
   isSuperListing?: boolean;
   onView: (v: any) => void;
-  onNotes: () => void;
-  onSchedule: () => void;
   onStatusChange: (status: number) => void;
   onArchiveButtonClick: (application: EmployerApplication) => void;
   onDeleteButtonClick: (application: EmployerApplication) => void;
-  openChatModal: () => void;
-  updateConversationId: (conversationId: string) => void;
   setSelectedApplication: (application: EmployerApplication) => void;
   checkboxSelected?: boolean;
   onToggleSelect?: (next: boolean) => void;
@@ -57,9 +53,6 @@ export function ApplicationRow({
   application,
   isSuperListing = false,
   onView,
-  openChatModal,
-  updateConversationId,
-  setSelectedApplication,
   checkboxSelected = false,
   onToggleSelect,
   onArchiveButtonClick,
@@ -78,7 +71,7 @@ export function ApplicationRow({
   const currentStatusId = application.status?.toString() ?? "0";
   const defaultStatus: ActionItem = {
     id: currentStatusId,
-    label: get_app_status(application.status!)?.name,
+    label: get_app_status(application.status)?.name,
     active: true,
     disabled: false,
     destructive: false,
@@ -212,7 +205,7 @@ export function ApplicationRow({
                   e.stopPropagation();
                   onArchiveButtonClick(application);
                 }}
-                enabled={application.status! !== 7}
+                enabled={application.status !== 7}
               />
             )}
             {application.status === 7 && (
@@ -222,7 +215,7 @@ export function ApplicationRow({
                   e.stopPropagation();
                   onDeleteButtonClick(application);
                 }}
-                enabled={application.status! === 7}
+                enabled={application.status === 7}
               />
             )}
           </div>
@@ -313,7 +306,7 @@ export function ApplicationRow({
                 e.stopPropagation();
                 onDeleteButtonClick(application);
               }}
-              enabled={application.status! === 7}
+              enabled={application.status === 7}
             />
           )}
         </div>

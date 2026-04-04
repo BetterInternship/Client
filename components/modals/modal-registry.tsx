@@ -19,6 +19,9 @@ import {
 } from "./components/MassApplyResults";
 import { FormPreviewPdfDisplay } from "../features/student/forms/previewer";
 import { IFormSigningParty } from "@betterinternship/core/forms";
+import { ApplicationAction } from "@/hooks/use-application-actions";
+import { EmployerApplication } from "@/lib/db/db.types";
+import ApplicationActionModal from "./ApplicationActionModal";
 
 /**
  * Simplifies modal config since we usually reuse each of these modal stuffs.
@@ -30,6 +33,37 @@ export const useModalRegistry = () => {
 
   const modalRegistry = useMemo(
     () => ({
+      applicationAction: {
+        open: ({
+          type,
+          applicants,
+          isProcessing,
+          onConfirm,
+        }: {
+          type: ApplicationAction;
+          applicants: EmployerApplication[];
+          isProcessing: boolean;
+          onConfirm: () => Promise<void>;
+        }) =>
+          open(
+            "application-action",
+            DefaultModalLayout,
+            <ApplicationActionModal
+              type={type}
+              applicants={applicants}
+              isProcessing={isProcessing}
+              onConfirm={onConfirm}
+              onCancel={() => close("application-action")}
+            />,
+            {
+              title: `Change application status`,
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showHeaderDivider: true,
+            },
+          ),
+        close: () => close("application-action"),
+      },
       // Mass apply fill-out modal
       massApplyCompose: {
         open: ({

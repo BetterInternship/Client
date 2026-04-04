@@ -20,7 +20,6 @@ import {
   User2,
 } from "lucide-react";
 import { useEffect } from "react";
-import { updateApplicationStatus } from "@/lib/api/services";
 import { statusMap } from "@/components/common/status-icon-map";
 import { type ActionItem } from "@/components/ui/action-item";
 import { Toast } from "@/components/ui/toast";
@@ -35,25 +34,19 @@ const SHOW_SUPER_DUMMY_APPLICATION = true;
 interface ApplicationsContentProps {
   applications: EmployerApplication[];
   isSuperListing?: boolean;
-  statusId: number[];
   isLoading?: boolean;
-  openChatModal: () => void;
-  updateConversationId: (userId: string) => void;
   onApplicationClick: (application: EmployerApplication) => void;
-  onNotesClick: (application: EmployerApplication) => void;
-  onScheduleClick: (application: EmployerApplication) => void;
   onStatusChange: (application: EmployerApplication, status: number) => void;
   setSelectedApplication: (application: EmployerApplication) => void;
   onRequestArchiveApplicant: (application: EmployerApplication) => void;
   onRequestDeleteApplicant: (application: EmployerApplication) => void;
   onRequestAcceptApplicant: (application: EmployerApplication) => void;
+  onRequestShortlistApplicant: (application: EmployerApplication) => void;
   onRequestRejectApplicant: (application: EmployerApplication) => void;
   onRequestStatusChange: (
     applications: EmployerApplication[],
     status: number,
   ) => void;
-  applicantToDelete: EmployerApplication | null;
-  applicantToArchive: EmployerApplication | null;
 }
 
 export const ApplicationsContent = forwardRef<
@@ -64,11 +57,7 @@ export const ApplicationsContent = forwardRef<
     applications,
     isSuperListing = false,
     isLoading,
-    openChatModal,
-    updateConversationId,
     onApplicationClick,
-    onNotesClick,
-    onScheduleClick,
     onStatusChange,
     setSelectedApplication,
     onRequestDeleteApplicant,
@@ -106,19 +95,15 @@ export const ApplicationsContent = forwardRef<
     }
   }, [toastVisible]);
 
-  const updateSingleStatus = async (id: string, status: number) => {
+  const updateSingleStatus = (id: string, status: number) => {
     const application = sortedApplications.find((a) => a.id === id);
 
     if (!application) return;
 
     try {
-      const response = await updateApplicationStatus(id, status);
-
-      if (response) {
-        onStatusChange(application, status);
-        setToastMessage(`Applicant status changed.`);
-        setToastVisible(true);
-      }
+      onStatusChange(application, status);
+      setToastMessage(`Applicant status changed.`);
+      setToastVisible(true);
     } catch (error) {
       console.error("Critical error occurred during status update: ", error);
     }
@@ -338,12 +323,8 @@ export const ApplicationsContent = forwardRef<
                   toggleSelect(application.id!, v);
                 }
               }}
-              onNotes={() => onNotesClick(application)}
-              onSchedule={() => onScheduleClick(application)}
               onStatusChange={(status) => onStatusChange(application, status)}
-              openChatModal={openChatModal}
               setSelectedApplication={setSelectedApplication}
-              updateConversationId={updateConversationId}
               checkboxSelected={selectedApplications.has(application.id!)}
               onToggleSelect={(v) => toggleSelect(application.id!, v)}
               onArchiveButtonClick={onRequestArchiveApplicant}
@@ -500,14 +481,10 @@ export const ApplicationsContent = forwardRef<
                       toggleSelect(application.id!, v);
                     }
                   }}
-                  onNotes={() => onNotesClick(application)}
-                  onSchedule={() => onScheduleClick(application)}
                   onStatusChange={(status) =>
                     onStatusChange(application, status)
                   }
-                  openChatModal={openChatModal}
                   setSelectedApplication={setSelectedApplication}
-                  updateConversationId={updateConversationId}
                   checkboxSelected={selectedApplications.has(application.id!)}
                   onToggleSelect={(v) => toggleSelect(application.id!, v)}
                   onArchiveButtonClick={() =>
