@@ -90,7 +90,7 @@ export async function GET(
       <div
         style={{
           width: "100%",
-          borderRadius: "24px",
+          borderRadius: "0.33em",
           border: "1px solid rgba(148,163,184,0.45)",
           background:
             "linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.88))",
@@ -106,6 +106,7 @@ export async function GET(
           style={{
             display: "flex",
             alignItems: "center",
+            justifyContent: "space-between",
             width: "100%",
           }}
         >
@@ -120,11 +121,11 @@ export async function GET(
               <img
                 src={betterInternshipLogoDataUrl}
                 alt="BetterInternship logo"
-                width={44}
-                height={44}
+                width={68}
+                height={68}
                 style={{
-                  width: 44,
-                  height: 44,
+                  width: 68,
+                  height: 68,
                   objectFit: "contain",
                 }}
               />
@@ -136,10 +137,31 @@ export async function GET(
                 lineHeight: 1,
               }}
             >
-              <span style={{ fontSize: 24, fontWeight: 900, color: "#111827" }}>
+              <span style={{ fontSize: 52, fontWeight: 900, color: "#111827" }}>
                 BetterInternship
               </span>
             </div>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              borderRadius: "999px",
+              border: "1px solid rgba(148,163,184,0.5)",
+              background: "#ffffff",
+              boxShadow: "0 8px 20px -14px rgba(15,23,42,0.45)",
+              padding: "10px 16px",
+              fontSize: 18,
+              fontWeight: 800,
+              color: "#78350f",
+              letterSpacing: "0.02em",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <span style={{ fontSize: 20, lineHeight: 1 }}>⚡</span>
+            <span>Super Listing</span>
           </div>
         </div>
 
@@ -147,8 +169,8 @@ export async function GET(
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: "16px",
-            marginTop: "18px",
+            gap: "18px",
+            marginTop: "22px",
           }}
         >
           <div
@@ -157,16 +179,17 @@ export async function GET(
               alignItems: "center",
               alignSelf: "flex-start",
               borderRadius: "999px",
-              border: "1px solid rgba(148,163,184,0.6)",
-              background: "rgba(255,255,255,0.82)",
-              color: "#0f172a",
-              padding: "8px 14px",
-              fontSize: 15,
-              fontWeight: 700,
-              letterSpacing: "0.04em",
+              border: "1px solid #d6a300",
+              background: "linear-gradient(180deg, #ffd96a 0%, #ffc100 100%)",
+              color: "#111827",
+              padding: "14px 20px",
+              fontSize: 28,
+              fontWeight: 800,
+              letterSpacing: "0.02em",
+              whiteSpace: "nowrap",
             }}
           >
-            {config.badgeLabel || "Super Listing"}
+            No resume needed, 24h response
           </div>
 
           <div
@@ -179,7 +202,7 @@ export async function GET(
           >
             <div
               style={{
-                fontSize: 78,
+                fontSize: 96,
                 lineHeight: 0.94,
                 letterSpacing: "-0.03em",
                 fontWeight: 800,
@@ -190,7 +213,7 @@ export async function GET(
             </div>
             <div
               style={{
-                fontSize: 40,
+                fontSize: 54,
                 lineHeight: 1.12,
                 letterSpacing: "-0.02em",
                 color: "#334155",
@@ -205,28 +228,18 @@ export async function GET(
         <div
           style={{
             display: "flex",
-            alignItems: "flex-end",
-            justifyContent: "space-between",
+            alignItems: "center",
+            justifyContent: "flex-start",
             gap: "20px",
           }}
         >
           <div
             style={{
-              fontSize: 25,
-              lineHeight: 1.3,
-              color: "#334155",
-              maxWidth: "830px",
-            }}
-          >
-            {config.tagline}
-          </div>
-          <div
-            style={{
               display: "flex",
-              fontSize: 24,
+              fontSize: 32,
               color: "#475569",
               letterSpacing: "0.01em",
-              fontWeight: 500,
+              fontWeight: 600,
               whiteSpace: "nowrap",
             }}
           >
