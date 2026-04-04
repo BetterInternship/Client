@@ -102,7 +102,7 @@ export function OverviewPanel({
         <div className="relative overflow-hidden rounded-[0.33em] border border-[#2574BB]/35 bg-gradient-to-br from-[#f2f8ff] via-[#ebf4ff] to-[#e2efff] p-6 text-[#173957] shadow-[0_20px_38px_-26px_rgba(37,116,187,0.35)] sm:p-8">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_12%,rgba(37,116,187,0.1)_0%,transparent_38%),linear-gradient(135deg,rgba(37,116,187,0.08)_0%,transparent_42%,rgba(37,116,187,0.05)_75%,transparent_100%)]" />
           <div className="relative z-10 space-y-5">
-            <div className="max-w-3xl space-y-4 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-[#153a5b]/92 sm:text-base">
+            <div className="space-y-4 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-[#153a5b]/92 sm:text-base">
               <p className="text-base font-semibold leading-7 text-[#153a5b] sm:text-lg">
                 For this internship, we are not assigning roles upfront.
               </p>
@@ -114,7 +114,6 @@ export function OverviewPanel({
                 instructions. We&apos;re looking for someone who will go through
                 their own initiatives to fix problems.
               </p>
-              <div className="h-px w-full bg-[#2574BB]/28" />
               <p className="text-[#153a5b]/92">
                 Once you pass the challenge, we&apos;ll see what you&apos;re
                 capable of first, then we&apos;ll give you projects based on
