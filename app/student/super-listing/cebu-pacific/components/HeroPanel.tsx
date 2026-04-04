@@ -35,7 +35,6 @@ export function HeroPanel({
 
           <h1 className="[font-family:var(--font-paraluman-heading)] mx-auto w-full max-w-[min(86vw,800px)] leading-[0.92] text-[#2574BB]">
             <span className="block text-[clamp(1.65rem,5.5vw,6rem)] leading-[0.96] tracking-[-0.03em] font-light">
-              <span className="block">Help Us</span>
               <span className="inline-block bg-[#f3d98a] px-1.5 text-[#2574BB] [box-decoration-break:clone] font-black">
                 <span className="block">Build the Future</span>
                 <span className="block">of Air Travel</span>
