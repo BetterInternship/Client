@@ -13,7 +13,7 @@ type HeroPanelProps = {
 };
 
 const HERO_TYPED_PHRASES = [
-  "Filipino journeys",
+  "everyJuan's journey",
   "going home",
   "first flights",
   "real travel",
@@ -89,7 +89,7 @@ export function HeroPanel({
               Be part of
             </span>
 
-            <span className="mt-3 block min-h-[1.13em] whitespace-nowrap text-[clamp(2.05rem,9.2vw,7.4rem)] leading-[0.88] tracking-[-0.045em] text-[#d39f00] [text-shadow:0_10px_28px_rgba(255,193,0,0.35)]">
+            <span className="mt-3 block min-h-[1.13em] whitespace-nowrap text-[clamp(2rem,8.6vw,6.5rem)] leading-[0.9] tracking-[-0.03em] text-[#d39f00] [text-shadow:0_10px_28px_rgba(255,193,0,0.35)]">
               <span
                 className={
                   isPhrasePopping
