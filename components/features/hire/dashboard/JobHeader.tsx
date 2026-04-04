@@ -103,26 +103,26 @@ export default function JobHeader({
               </span>
             </div>
             {/* active toggle */}
-            <div className="flex items-center gap-2">
-              <Tooltip>
-                <TooltipTrigger>
+            <Tooltip>
+              <TooltipTrigger>
+                <div className="flex items-center gap-2">
                   <Toggle state={job.is_active} onClick={handleToggleActive} />
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  Toggle the visibility of the listing to students.
-                </TooltipContent>
-              </Tooltip>
-              <span
-                className={cn(
-                  "text-xs px-2 py-1 rounded transition",
-                  job.is_active
-                    ? "bg-supportive text-white"
-                    : "bg-muted text-muted-foreground",
-                )}
-              >
-                {job.is_active ? "Active" : "Paused"}
-              </span>
-            </div>
+                  <span
+                    className={cn(
+                      "text-xs px-2 py-1 rounded transition",
+                      job.is_active
+                        ? "bg-supportive text-white"
+                        : "bg-muted text-muted-foreground",
+                    )}
+                  >
+                    {job.is_active ? "Active" : "Paused"}
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                Toggle the visibility of the listing to students.
+              </TooltipContent>
+            </Tooltip>
           </div>
           <div className="flex gap-1 flex-wrap">
             <Link
