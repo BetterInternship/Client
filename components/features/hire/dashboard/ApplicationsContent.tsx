@@ -205,7 +205,9 @@ export const ApplicationsContent = forwardRef<
 
   const applyActiveFilter = (apps: typeof sortedApplications) => {
     if (activeFilter === -1) {
-      return apps.filter((application) => application.status !== 7);
+      return apps.filter(
+        (application) => application.status !== 7 && application.status !== 5,
+      );
     }
 
     return apps.filter((application) => application.status === activeFilter);

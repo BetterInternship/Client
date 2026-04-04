@@ -67,7 +67,7 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
     triggerReject,
     triggerShortlist,
     triggerMassStatusChange,
-  } = useApplicationActions(() => {
+  } = useApplicationActions(applications.review, () => {
     applicationContentRef.current?.unselectAll();
   });
 

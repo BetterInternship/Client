@@ -13,8 +13,10 @@ export type ApplicationAction =
   | "CHANGE_STATUS"
   | "NONE";
 
-export function useApplicationActions(onSuccess?: () => void) {
-  const { review } = useEmployerApplications();
+export function useApplicationActions(
+  review: (app_id: string, options: any) => Promise<any>,
+  onSuccess?: () => void,
+) {
   const modalRegistry = useModalRegistry();
 
   const [isProcessing, setIsProcessing] = useState(false);
