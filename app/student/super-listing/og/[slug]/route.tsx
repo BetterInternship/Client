@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { ImageResponse } from "next/og";
 import { getSuperListingOgConfig } from "../../og-config";
 
@@ -7,6 +9,16 @@ export const size = {
   width: 1200,
   height: 630,
 };
+
+const betterInternshipLogoDataUrl = (() => {
+  try {
+    const logoPath = path.join(process.cwd(), "public/BetterInternshipLogo.png");
+    const logoBuffer = fs.readFileSync(logoPath);
+    return `data:image/png;base64,${logoBuffer.toString("base64")}`;
+  } catch {
+    return undefined;
+  }
+})();
 
 export async function GET(
   _request: Request,
@@ -22,12 +34,10 @@ export async function GET(
         height: "100%",
         display: "flex",
         position: "relative",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        padding: "58px",
+        padding: "34px",
         background:
-          "radial-gradient(circle at 15% 15%, rgba(255,255,255,0.2), transparent 35%), radial-gradient(circle at 85% 80%, rgba(255,255,255,0.14), transparent 42%), linear-gradient(135deg, #0b1220 0%, #111827 50%, #030712 100%)",
-        color: "white",
+          "radial-gradient(circle at 12% 18%, rgba(14,116,144,0.14), transparent 34%), radial-gradient(circle at 88% 84%, rgba(59,130,246,0.15), transparent 40%), linear-gradient(rgba(148,163,184,0.16) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.16) 1px, transparent 1px), linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)",
+        backgroundSize: "auto, auto, 38px 38px, 38px 38px, auto",
         fontFamily:
           "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial",
       }}
@@ -35,135 +45,213 @@ export async function GET(
       <div
         style={{
           position: "absolute",
-          top: "-120px",
-          right: "-120px",
-          width: "340px",
-          height: "340px",
+          top: "-90px",
+          right: "-100px",
+          width: "300px",
+          height: "300px",
           borderRadius: "999px",
           background: config.glow,
-          opacity: 0.2,
-          filter: "blur(24px)",
+          opacity: 0.26,
+          filter: "blur(42px)",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: "-120px",
+          left: "-120px",
+          width: "320px",
+          height: "320px",
+          borderRadius: "999px",
+          background: "#0f4e8a",
+          opacity: 0.16,
+          filter: "blur(42px)",
         }}
       />
 
       <div
         style={{
+          width: "100%",
+          borderRadius: "24px",
+          border: "1px solid rgba(148,163,184,0.45)",
+          background:
+            "linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.88))",
+          boxShadow: "0 20px 60px rgba(15, 23, 42, 0.12)",
           display: "flex",
-          alignItems: "center",
-          gap: "14px",
-          fontSize: 26,
-          color: "#e5e7eb",
-          letterSpacing: "-0.01em",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          padding: "34px 38px",
+          color: "#0f172a",
         }}
       >
-        {config.logoDataUrl ? (
-          <img
-            src={config.logoDataUrl}
-            alt={`${config.company} logo`}
-            width={40}
-            height={40}
-            style={{
-              width: 40,
-              height: 40,
-              objectFit: "contain",
-              borderRadius: 10,
-              background: "rgba(17,24,39,0.65)",
-              padding: "4px",
-            }}
-          />
-        ) : null}
-        <span style={{ fontWeight: 800 }}>BetterInternship</span>
-        <span style={{ opacity: 0.55 }}>x</span>
-        <span style={{ fontWeight: 700 }}>{config.company}</span>
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
         <div
           style={{
-            alignSelf: "flex-start",
             display: "flex",
             alignItems: "center",
-            borderRadius: "999px",
-            border: `2px solid ${config.glow}`,
-            background: "rgba(17, 24, 39, 0.75)",
-            color: "#f9fafb",
-            padding: "10px 18px",
-            fontSize: 18,
-            fontWeight: 800,
-            letterSpacing: "0.09em",
-            textTransform: "uppercase",
-          }}
-        >
-          {config.badgeLabel || "Super Listing"}
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "12px",
-            maxWidth: "1000px",
+            justifyContent: "space-between",
+            width: "100%",
           }}
         >
           <div
             style={{
-              fontSize: 68,
-              lineHeight: 0.95,
-              letterSpacing: "-0.045em",
-              fontWeight: 900,
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+            }}
+          >
+            {betterInternshipLogoDataUrl ? (
+              <img
+                src={betterInternshipLogoDataUrl}
+                alt="BetterInternship logo"
+                width={44}
+                height={44}
+                style={{
+                  width: 44,
+                  height: 44,
+                  objectFit: "contain",
+                }}
+              />
+            ) : null}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                lineHeight: 1,
+              }}
+            >
+              <span style={{ fontSize: 24, fontWeight: 900, color: "#111827" }}>
+                BetterInternship
+              </span>
+              <span
+                style={{
+                  marginTop: 4,
+                  fontSize: 14,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "#334155",
+                  fontWeight: 700,
+                }}
+              >
+                Super Listings
+              </span>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              borderRadius: "999px",
+              border: "1px solid rgba(148,163,184,0.6)",
+              background: "rgba(255,255,255,0.82)",
+              color: "#0f172a",
+              padding: "8px 14px",
+              fontSize: 15,
+              fontWeight: 800,
+              letterSpacing: "0.08em",
               textTransform: "uppercase",
             }}
           >
-            {config.company}
+            {config.badgeLabel || "Super Listing"}
           </div>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           <div
             style={{
-              fontSize: 34,
-              lineHeight: 1.1,
-              letterSpacing: "-0.02em",
-              color: "#e5e7eb",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              color: "#334155",
+              fontSize: 22,
               fontWeight: 700,
             }}
           >
-            {config.role}
+            {config.logoDataUrl ? (
+              <img
+                src={config.logoDataUrl}
+                alt={`${config.company} logo`}
+                width={28}
+                height={28}
+                style={{
+                  width: 28,
+                  height: 28,
+                  objectFit: "contain",
+                }}
+              />
+            ) : null}
+            <span>BetterInternship x {config.company}</span>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
+              maxWidth: "1000px",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 72,
+                lineHeight: 0.92,
+                letterSpacing: "-0.045em",
+                fontWeight: 900,
+                textTransform: "uppercase",
+                color: "#0f172a",
+              }}
+            >
+              {config.company}
+            </div>
+            <div
+              style={{
+                fontSize: 34,
+                lineHeight: 1.12,
+                letterSpacing: "-0.02em",
+                color: "#334155",
+                fontWeight: 700,
+              }}
+            >
+              {config.role}
+            </div>
           </div>
         </div>
-      </div>
 
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "20px",
-        }}
-      >
-        <div
-          style={{
-            fontSize: 26,
-            lineHeight: 1.25,
-            color: "#d1d5db",
-            maxWidth: "840px",
-          }}
-        >
-          {config.tagline}
-        </div>
         <div
           style={{
             display: "flex",
-            borderRadius: "14px",
-            border: `2px solid ${config.accent}`,
-            background: "rgba(17, 24, 39, 0.8)",
-            padding: "10px 14px",
-            fontSize: 16,
-            color: "#f9fafb",
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            fontWeight: 700,
-            whiteSpace: "nowrap",
+            alignItems: "flex-end",
+            justifyContent: "space-between",
+            gap: "20px",
           }}
         >
-          betterinternship.com
+          <div
+            style={{
+              fontSize: 25,
+              lineHeight: 1.3,
+              color: "#334155",
+              maxWidth: "830px",
+            }}
+          >
+            {config.tagline}
+          </div>
+          <div
+            style={{
+              display: "flex",
+              borderRadius: "12px",
+              border: `2px solid ${config.accent}`,
+              background: "white",
+              padding: "10px 14px",
+              fontSize: 16,
+              color: "#0f172a",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              fontWeight: 800,
+              whiteSpace: "nowrap",
+            }}
+          >
+            betterinternship.com
+          </div>
         </div>
       </div>
     </div>,
