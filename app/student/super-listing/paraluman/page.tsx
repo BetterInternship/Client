@@ -66,6 +66,9 @@ const PANEL_TABS: Array<{
 ];
 
 const PANEL_TRANSITION_MS = 220;
+const SUBMISSIONS_DISABLED_MESSAGE =
+  "Submissions are currently closed for this listing.";
+const SUBMISSIONS_DISABLED = true;
 
 export default function ParalumanPage() {
   const isDevelopment = process.env.NODE_ENV === "development";
@@ -129,6 +132,8 @@ export default function ParalumanPage() {
     }
 
     modalRegistry.superListingClosed.open({
+      description:
+        "We’re sorry, but applications for this listing are now closed. Please explore our other listings to find more opportunities.",
       accentColor: "#72068c",
       onView: () => setShowClosedModal(false),
       onLeave: () => {
@@ -230,6 +235,13 @@ export default function ParalumanPage() {
     event.preventDefault();
     setResultMessage("");
     setIsError(false);
+
+    // Hard stop: prevent any submission payload from being sent.
+    if (SUBMISSIONS_DISABLED) {
+      setIsError(true);
+      setResultMessage(SUBMISSIONS_DISABLED_MESSAGE);
+      return;
+    }
 
     if (submissionStep !== 2) {
       setIsError(true);
@@ -401,6 +413,11 @@ export default function ParalumanPage() {
         <section ref={panelSectionRef} className="relative">
           <div className="px-2">
             <div className="mx-auto max-w-5xl">
+              {SUBMISSIONS_DISABLED ? (
+                <div className="mb-4 rounded-[0.33em] border border-[rgba(114,6,140,0.35)] bg-destructive px-4 py-3 [font-family:var(--font-paraluman-mono)] text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-[0_10px_24px_-18px_rgba(114,6,140,0.45)] sm:text-sm justify-center flex">
+                  {SUBMISSIONS_DISABLED_MESSAGE}
+                </div>
+              ) : null}
               <div
                 className={cn(
                   "transition-all duration-[220ms] ease-out",
@@ -433,6 +450,8 @@ export default function ParalumanPage() {
                   <div ref={submissionPanelRef} className="w-full space-y-6">
                     <ApplyPanel
                       form={form}
+                      submissionsDisabled={SUBMISSIONS_DISABLED}
+                      submissionsDisabledMessage={SUBMISSIONS_DISABLED_MESSAGE}
                       submissionStep={submissionStep}
                       hasSubmitted={hasSubmitted}
                       submittedEmail={submittedEmail}
