@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
-import { Button } from "@/components/ui/button";
+import useModalRegistry from "@/components/modals/modal-registry";
 import { cn } from "@/lib/utils";
 import { OverviewPanel } from "./components/OverviewPanel";
 import { HowToApplyPanel } from "./components/HowToApplyPanel";
@@ -41,8 +41,6 @@ const CEO_PROFILE: CEOProfile = {
 
 const CHALLENGE_PDF_URL =
   "https://drive.google.com/file/d/1Tdbc4EdhBkY3lOInAvE3YSaKhSQyWPwx/view?usp=sharing";
-const CHALLENGE_VIDEO_URL = "";
-const HIRING_BADGE_TEXT = "No resume needed. Response in 24 hours";
 
 type ParalumanSubmissionResponse = {
   success: boolean;
@@ -63,15 +61,19 @@ const PANEL_TABS: Array<{
   step: string;
 }> = [
   { key: "overview", label: "Overview", step: "1" },
-  { key: "challenge", label: "How to apply", step: "2" },
-  { key: "submission", label: "Apply", step: "3" },
+  { key: "challenge", label: "Challenge", step: "2" },
+  { key: "submission", label: "Submit", step: "3" },
 ];
 
 const PANEL_TRANSITION_MS = 220;
+const SUBMISSIONS_DISABLED_MESSAGE =
+  "Submissions are currently closed for this listing.";
+const SUBMISSIONS_DISABLED = true;
 
 export default function ParalumanPage() {
   const isDevelopment = process.env.NODE_ENV === "development";
   const router = useRouter();
+  const modalRegistry = useModalRegistry();
 
   const [form, setForm] = useState<ParalumanSubmissionForm>(INITIAL_FORM_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -122,6 +124,28 @@ export default function ParalumanPage() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (!showClosedModal) {
+      modalRegistry.superListingClosed.close();
+      return;
+    }
+
+    modalRegistry.superListingClosed.open({
+      description:
+        "We’re sorry, but applications for this listing are now closed. Please explore our other listings to find more opportunities.",
+      accentColor: "#72068c",
+      onView: () => setShowClosedModal(false),
+      onLeave: () => {
+        setShowClosedModal(false);
+        router.push("/search");
+      },
+    });
+
+    return () => {
+      modalRegistry.superListingClosed.close();
+    };
+  }, [modalRegistry, router, showClosedModal]);
 
   const endpoint = useMemo(() => {
     const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
@@ -178,7 +202,9 @@ export default function ParalumanPage() {
 
     if (!form.submissionLink.trim()) {
       setIsError(true);
-      setResultMessage("Application link is required before proceeding.");
+      setResultMessage(
+        "Challenge submission link is required before proceeding.",
+      );
       return;
     }
 
@@ -209,6 +235,13 @@ export default function ParalumanPage() {
     event.preventDefault();
     setResultMessage("");
     setIsError(false);
+
+    // Hard stop: prevent any submission payload from being sent.
+    if (SUBMISSIONS_DISABLED) {
+      setIsError(true);
+      setResultMessage(SUBMISSIONS_DISABLED_MESSAGE);
+      return;
+    }
 
     if (submissionStep !== 2) {
       setIsError(true);
@@ -280,66 +313,21 @@ export default function ParalumanPage() {
     }
   };
 
-  const hasChallengeVideo = CHALLENGE_VIDEO_URL.trim().length > 0;
-
   return (
     <main
       className={cn(
-        "relative isolate h-full min-h-screen bg-[#f6f4fb] text-black",
+        "relative isolate h-full min-h-screen bg-[#f8f5fb] text-black",
         headingFont.variable,
         monoFont.variable,
       )}
     >
-      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_14%_12%,rgba(114,6,140,0.12),transparent_38%),radial-gradient(circle_at_88%_4%,rgba(114,6,140,0.1),transparent_34%),radial-gradient(circle_at_50%_90%,rgba(114,6,140,0.06),transparent_42%)]" />
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.04)_1px,transparent_1px)] bg-[size:48px_48px] opacity-35" />
+      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_8%_12%,rgba(114,6,140,0.12),transparent_38%),radial-gradient(circle_at_88%_8%,rgba(114,6,140,0.1),transparent_34%),radial-gradient(circle_at_50%_92%,rgba(114,6,140,0.07),transparent_44%)]" />
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.045)_1px,transparent_1px)] bg-[size:46px_46px] opacity-28" />
 
       <div
         ref={scrollContainerRef}
         className="relative h-full overflow-x-hidden overflow-y-auto pb-24 sm:pb-0"
       >
-        {showClosedModal ? (
-          <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-white/30 px-4 backdrop-blur-md">
-            <div
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="paraluman-closed-modal-title"
-              aria-describedby="paraluman-closed-modal-description"
-              className="w-full max-w-md rounded-[0.33em] border border-[rgba(114,6,140,0.16)] bg-white p-6 shadow-[0_24px_80px_-32px_rgba(114,6,140,0.55)] backdrop-blur-xl"
-            >
-              <div className="space-y-3">
-                <h2
-                  id="paraluman-closed-modal-title"
-                  className="text-xl font-semibold text-[#2d1236]"
-                >
-                  Oh noes! 😭😭😭 You missed it. View anyway?
-                </h2>
-                <p
-                  id="paraluman-closed-modal-description"
-                  className="text-sm leading-6 text-black/70"
-                />
-              </div>
-
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-                <Button
-                  type="button"
-                  onClick={() => setShowClosedModal(false)}
-                  className="h-11 rounded-xl bg-[#72068c] px-5 text-white hover:bg-[#5f0676]"
-                >
-                  View
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.push("/search")}
-                  className="h-11 rounded-xl border-[rgba(114,6,140,0.22)] bg-white/75 px-5 text-[#5b2a68] hover:bg-[#f7effa]"
-                >
-                  Go home
-                </Button>
-              </div>
-            </div>
-          </div>
-        ) : null}
-
         <header
           className={cn(
             " top-0 z-[9999] flex items-center justify-between px-4 py-3 transition-all duration-300 sm:px-8 lg:px-10 border-b border-transparent bg-transparent shadow-none backdrop-blur-0",
@@ -380,9 +368,9 @@ export default function ParalumanPage() {
           </div>
         </header>
 
-        <section className="sticky top-0 z-40 px-4 py-2 sm:px-8 sm:py-3 lg:px-10">
+        <section className="sticky top-0 z-40 px-2 py-2 sm:px-8 sm:py-3 lg:px-10">
           <div className="mx-auto max-w-3xl">
-            <div className="relative rounded-[0.45em] border border-[rgba(114,6,140,0.28)] bg-white/92 p-1 shadow-[0_14px_34px_-26px_rgba(114,6,140,0.45)] backdrop-blur-sm">
+            <div className="relative rounded-[0.33em] border border-[rgba(114,6,140,0.28)] bg-white/92 p-1 shadow-[0_14px_34px_-26px_rgba(114,6,140,0.45)] backdrop-blur-sm">
               <div className="relative flex items-stretch overflow-hidden rounded-[0.32em] bg-[#f3edf9]">
                 {PANEL_TABS.map((tab, index) => {
                   const isActive = activePanel === tab.key;
@@ -423,8 +411,13 @@ export default function ParalumanPage() {
         </section>
 
         <section ref={panelSectionRef} className="relative">
-          <div className="px-6 py-12 sm:px-8 sm:py-16 lg:px-10">
+          <div className="px-2">
             <div className="mx-auto max-w-5xl">
+              {SUBMISSIONS_DISABLED ? (
+                <div className="mb-4 rounded-[0.33em] border border-[rgba(114,6,140,0.35)] bg-destructive px-4 py-3 [font-family:var(--font-paraluman-mono)] text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-[0_10px_24px_-18px_rgba(114,6,140,0.45)] sm:text-sm justify-center flex">
+                  {SUBMISSIONS_DISABLED_MESSAGE}
+                </div>
+              ) : null}
               <div
                 className={cn(
                   "transition-all duration-[220ms] ease-out",
@@ -435,23 +428,11 @@ export default function ParalumanPage() {
               >
                 {renderPanel === "overview" && (
                   <>
-                    <div
-                      className={cn(
-                        "transition-all duration-[220ms] ease-out",
-                        panelPhase === "out"
-                          ? "translate-y-1 opacity-0"
-                          : "translate-y-0 opacity-100",
-                      )}
-                    >
-                      <HeroPanel
-                        hiringBadgeText={HIRING_BADGE_TEXT}
-                        onHowToApply={openChallengePanel}
-                        showHowToApplyButton={activePanel === "overview"}
-                      />
-                    </div>
+                    <HeroPanel
+                      onHowToApply={openChallengePanel}
+                      showHowToApplyButton={activePanel === "overview"}
+                    />
                     <OverviewPanel
-                      hasChallengeVideo={hasChallengeVideo}
-                      challengeVideoUrl={CHALLENGE_VIDEO_URL}
                       ceoProfile={CEO_PROFILE}
                       onGoToApply={openChallengePanel}
                     />
@@ -469,6 +450,8 @@ export default function ParalumanPage() {
                   <div ref={submissionPanelRef} className="w-full space-y-6">
                     <ApplyPanel
                       form={form}
+                      submissionsDisabled={SUBMISSIONS_DISABLED}
+                      submissionsDisabledMessage={SUBMISSIONS_DISABLED_MESSAGE}
                       submissionStep={submissionStep}
                       hasSubmitted={hasSubmitted}
                       submittedEmail={submittedEmail}

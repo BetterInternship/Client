@@ -7,55 +7,37 @@ import { useRouter } from "next/navigation";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { cn } from "@/lib/utils";
-import anterioreLogo from "./logo.png";
-import { HeroPanel } from "./components/HeroPanel";
 import { OverviewPanel } from "./components/OverviewPanel";
 import { HowToApplyPanel } from "./components/HowToApplyPanel";
 import { ApplyPanel } from "./components/ApplyPanel";
+import { HeroPanel } from "./components/HeroPanel";
+import cebuPacificLogo from "./logo.png";
 import type {
-  AnterioreSubmissionForm,
-  OverviewContent,
   PanelKey,
+  CebuPacificSubmissionForm,
   SubmissionStep,
 } from "./components/types";
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],
   weight: ["500", "700"],
-  variable: "--font-anteriore-heading",
+  variable: "--font-paraluman-heading",
 });
 
 const monoFont = JetBrains_Mono({
   subsets: ["latin"],
   weight: ["400", "600"],
-  variable: "--font-anteriore-mono",
+  variable: "--font-paraluman-mono",
 });
 
-const CHALLENGE_PDF_URL =
-  "https://drive.google.com/file/d/1A7k32JC_jdpHV6vQpEtcFNH9UdwSZtVG/view?usp=sharing";
-const CHALLENGE_VIDEO_URL = "https://www.youtube.com/embed/KUCGr_XDh5M";
-const ANTERIORE_SITE_URL = "https://anteriore.com.ph/";
-const HIRING_BADGE_TEXT = "No resume needed. Response in 24 hours";
+const CHALLENGE_PDF_URL = "https://www.cebupacificair.com/";
 
-const OVERVIEW_CONTENT: OverviewContent = {
-  whoWeAre:
-    "Anteriore is a startup that delivers tailor-made IT services that drive businesses forward.",
-  opportunity:
-    "You'll be working in a startup environment where you'll be given a lot of responsibilities. If you're serious about growth and aspire to become a strong CTO in the future, you'll thrive here.",
-  workWith: {
-    quote:
-      "All the interns I've hired got 6 figure offers after their internships.",
-    speaker: "Seaver",
-    speakerTitle: "Founder of Anteriore",
-  },
-};
-
-type AnterioreSubmissionResponse = {
+type CebuPacificSubmissionResponse = {
   success: boolean;
   message?: string;
 };
 
-const INITIAL_FORM_STATE: AnterioreSubmissionForm = {
+const INITIAL_FORM_STATE: CebuPacificSubmissionForm = {
   email: "",
   fullName: "",
   facebookLink: "",
@@ -69,20 +51,19 @@ const PANEL_TABS: Array<{
   step: string;
 }> = [
   { key: "overview", label: "Overview", step: "1" },
-  { key: "challenge", label: "How to apply", step: "2" },
+  { key: "challenge", label: "Challenge", step: "2" },
+  { key: "submission", label: "Submit", step: "3" },
 ];
 
 const PANEL_TRANSITION_MS = 220;
-const SUBMISSIONS_DISABLED = true;
-const SUBMISSIONS_DISABLED_MESSAGE =
-  "Submissions are currently closed for this listing.";
 
-export default function AnteriorePage() {
+export default function CebuPacificPage() {
   const isDevelopment = process.env.NODE_ENV === "development";
   const router = useRouter();
   const modalRegistry = useModalRegistry();
 
-  const [form, setForm] = useState<AnterioreSubmissionForm>(INITIAL_FORM_STATE);
+  const [form, setForm] =
+    useState<CebuPacificSubmissionForm>(INITIAL_FORM_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const [isError, setIsError] = useState(false);
@@ -132,38 +113,34 @@ export default function AnteriorePage() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!SUBMISSIONS_DISABLED) return;
+  // useEffect(() => {
+  //   if (!showClosedModal) {
+  //     modalRegistry.superListingClosed.close();
+  //     return;
+  //   }
 
-    if (!showClosedModal) {
-      modalRegistry.superListingClosed.close();
-      return;
-    }
+  //   modalRegistry.superListingClosed.open({
+  //     accentColor: "#FFC100",
+  //     onView: () => setShowClosedModal(false),
+  //     onLeave: () => {
+  //       setShowClosedModal(false);
+  //       router.push("/search");
+  //     },
+  //   });
 
-    modalRegistry.superListingClosed.open({
-      description:
-        "We’re sorry, but applications for this listing are now closed. Please explore our other listings to find more opportunities.",
-      accentColor: "#274b7d",
-      onView: () => setShowClosedModal(false),
-      onLeave: () => {
-        setShowClosedModal(false);
-        router.push("/search");
-      },
-    });
-
-    return () => {
-      modalRegistry.superListingClosed.close();
-    };
-  }, [modalRegistry, router, showClosedModal]);
+  //   return () => {
+  //     modalRegistry.superListingClosed.close();
+  //   };
+  // }, [modalRegistry, router, showClosedModal]);
 
   const endpoint = useMemo(() => {
     const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
-    if (!base) return "/api/super-listings/submission/anteriore";
-    return `${base}/super-listings/submission/anteriore`;
+    if (!base) return "/api/super-listings/submission/cebu-pacific";
+    return `${base}/super-listings/submission/cebu-pacific`;
   }, []);
 
   const onFieldChange = (
-    field: keyof AnterioreSubmissionForm,
+    field: keyof CebuPacificSubmissionForm,
     value: string,
   ) => {
     setForm((previous) => ({ ...previous, [field]: value }));
@@ -191,13 +168,29 @@ export default function AnteriorePage() {
     openPanel("challenge");
   };
 
+  const openSubmissionPanel = () => {
+    setActivePanel("submission");
+    setSubmissionStep(1);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        submissionPanelRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+    });
+  };
+
   const goToStepTwo = () => {
     setResultMessage("");
     setIsError(false);
 
     if (!form.submissionLink.trim()) {
       setIsError(true);
-      setResultMessage("Application link is required before proceeding.");
+      setResultMessage(
+        "Challenge submission link is required before proceeding.",
+      );
       return;
     }
 
@@ -228,12 +221,6 @@ export default function AnteriorePage() {
     event.preventDefault();
     setResultMessage("");
     setIsError(false);
-
-    if (SUBMISSIONS_DISABLED) {
-      setIsError(true);
-      setResultMessage(SUBMISSIONS_DISABLED_MESSAGE);
-      return;
-    }
 
     if (submissionStep !== 2) {
       setIsError(true);
@@ -281,7 +268,7 @@ export default function AnteriorePage() {
         }),
       });
 
-      const data = (await response.json()) as AnterioreSubmissionResponse;
+      const data = (await response.json()) as CebuPacificSubmissionResponse;
 
       if (!response.ok || !data.success) {
         throw new Error(data.message || "Could not send your application.");
@@ -305,19 +292,16 @@ export default function AnteriorePage() {
     }
   };
 
-  const hasChallengeVideo = CHALLENGE_VIDEO_URL.trim().length > 0;
-
   return (
     <main
       className={cn(
-        "relative isolate h-full min-h-screen bg-white text-black",
+        "relative isolate h-full min-h-screen bg-[#fffdf5] text-black",
         headingFont.variable,
         monoFont.variable,
       )}
     >
-      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_16%_18%,rgba(39,75,125,0.14),transparent_35%),radial-gradient(circle_at_84%_2%,rgba(27,52,88,0.12),transparent_33%),radial-gradient(circle_at_50%_90%,rgba(39,75,125,0.08),transparent_40%)]" />
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.05)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(122deg,rgba(39,75,125,0.08)_0%,transparent_34%,rgba(39,75,125,0.08)_54%,transparent_74%)] opacity-55" />
+      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_8%_12%,rgba(255,193,0,0.17),transparent_38%),radial-gradient(circle_at_88%_8%,rgba(255,193,0,0.13),transparent_34%),radial-gradient(circle_at_50%_92%,rgba(255,193,0,0.1),transparent_44%)]" />
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.045)_1px,transparent_1px)] bg-[size:46px_46px] opacity-28" />
 
       <div
         ref={scrollContainerRef}
@@ -325,9 +309,10 @@ export default function AnteriorePage() {
       >
         <header
           className={cn(
-            "top-0 z-[9999] flex items-center justify-between border-b border-transparent bg-transparent px-4 py-3 shadow-none backdrop-blur-0 transition-all duration-300 sm:px-8 lg:px-10",
+            " top-0 z-[9999] flex items-center justify-between px-4 py-3 transition-all duration-300 sm:px-8 lg:px-10 border-b border-transparent bg-transparent shadow-none backdrop-blur-0",
           )}
         >
+          {" "}
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/"
@@ -347,25 +332,25 @@ export default function AnteriorePage() {
             </span>
 
             <Link
-              href={ANTERIORE_SITE_URL}
+              href="https://www.cebupacificair.com/"
               target="_blank"
               rel="noopener noreferrer"
-              className="transition-opacity duration-200 hover:opacity-75"
+              className="inline-flex items-center px-1 py-0.5 transition-opacity duration-200 hover:opacity-75"
             >
               <Image
-                src={anterioreLogo}
-                alt="Anteriore"
-                className="h-7 w-auto [filter:brightness(0)_saturate(100%)_invert(21%)_sepia(17%)_saturate(1612%)_hue-rotate(184deg)_brightness(88%)_contrast(93%)] sm:h-8"
+                src={cebuPacificLogo}
+                alt="Cebu Pacific"
+                className="h-7 w-auto sm:h-8"
                 priority
               />
             </Link>
           </div>
         </header>
 
-        <section className="sticky top-0 z-40 px-4 py-2 sm:px-8 sm:py-3 lg:px-10">
+        <section className="sticky top-0 z-40 px-2 py-2 sm:px-8 sm:py-3 lg:px-10">
           <div className="mx-auto max-w-3xl">
-            <div className="relative rounded-[0.45em] border-2 border-[#274b7d]/35 bg-white/92 p-1 shadow-[0_14px_34px_-26px_rgba(39,75,125,0.45)] backdrop-blur-sm">
-              <div className="relative flex items-stretch overflow-hidden rounded-[0.32em] bg-[#eaf0f8]">
+            <div className="relative rounded-[0.33em] border border-[rgba(255,193,0,0.38)] bg-white/95 p-1 shadow-[0_14px_34px_-26px_rgba(255,193,0,0.55)] backdrop-blur-sm">
+              <div className="relative flex items-stretch overflow-hidden rounded-[0.32em] bg-[#fff4c7]">
                 {PANEL_TABS.map((tab, index) => {
                   const isActive = activePanel === tab.key;
                   const isFirst = index === 0;
@@ -383,11 +368,11 @@ export default function AnteriorePage() {
                       onClick={() => openPanel(tab.key)}
                       style={{ clipPath: tabClipPath, zIndex: tabZIndex }}
                       className={cn(
-                        "relative flex min-h-10 flex-1 items-center justify-center overflow-hidden px-1.5 py-2 text-center [font-family:var(--font-anteriore-mono)] font-semibold uppercase transition-[background,color,box-shadow] duration-220 ease-[cubic-bezier(0.22,1,0.36,1)] after:pointer-events-none after:absolute after:inset-0 after:bg-white/20 after:opacity-0 after:transition-opacity after:duration-180 active:after:opacity-100 sm:min-h-[2.625rem] sm:px-2",
+                        "relative flex min-h-10 flex-1 items-center justify-center overflow-hidden px-1.5 py-2 text-center [font-family:var(--font-paraluman-mono)] font-semibold uppercase transition-[background,color,box-shadow] duration-220 ease-[cubic-bezier(0.22,1,0.36,1)] after:pointer-events-none after:absolute after:inset-0 after:bg-white/20 after:opacity-0 after:transition-opacity after:duration-180 active:after:opacity-100 sm:min-h-[2.625rem] sm:px-2",
                         !isFirst && "-ml-3 sm:-ml-4",
                         isActive
-                          ? "bg-gradient-to-r from-[#274b7d] via-[#22416d] to-[#1b3458] text-white shadow-[0_10px_20px_-14px_rgba(39,75,125,0.75)]"
-                          : "bg-[#eaf0f8] text-black/70 hover:bg-[#dde7f3] hover:text-black",
+                          ? "bg-gradient-to-r from-[#ffc100] via-[#e4af00] to-[#c89400] text-[#2a1f00] shadow-[0_10px_20px_-14px_rgba(255,193,0,0.85)]"
+                          : "bg-[#fff4c7] text-black/70 hover:bg-[#ffeeb8] hover:text-black",
                       )}
                     >
                       <span className="inline-flex w-full items-center justify-center gap-1 whitespace-nowrap text-[9px] tracking-[0.02em] sm:gap-2 sm:text-xs sm:tracking-[0.06em]">
@@ -405,13 +390,8 @@ export default function AnteriorePage() {
         </section>
 
         <section ref={panelSectionRef} className="relative">
-          <div className="px-6 py-12 sm:px-8 sm:py-16 lg:px-10">
+          <div className="px-2">
             <div className="mx-auto max-w-5xl">
-              {SUBMISSIONS_DISABLED ? (
-                <div className="mb-4 flex justify-center rounded-[0.33em] border border-[rgba(114,6,140,0.35)] bg-destructive px-4 py-3 [font-family:var(--font-anteriore-mono)] text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-[0_10px_24px_-18px_rgba(114,6,140,0.45)] sm:text-sm">
-                  {SUBMISSIONS_DISABLED_MESSAGE}
-                </div>
-              ) : null}
               <div
                 className={cn(
                   "transition-all duration-[220ms] ease-out",
@@ -422,40 +402,25 @@ export default function AnteriorePage() {
               >
                 {renderPanel === "overview" && (
                   <>
-                    <div
-                      className={cn(
-                        "transition-all duration-[220ms] ease-out",
-                        panelPhase === "out"
-                          ? "translate-y-1 opacity-0"
-                          : "translate-y-0 opacity-100",
-                      )}
-                    >
-                      <HeroPanel
-                        hiringBadgeText={HIRING_BADGE_TEXT}
-                        siteUrl={ANTERIORE_SITE_URL}
-                        onHowToApply={openChallengePanel}
-                        showHowToApplyButton={activePanel === "overview"}
-                      />
-                    </div>
-                    <OverviewPanel
-                      hasChallengeVideo={hasChallengeVideo}
-                      challengeVideoUrl={CHALLENGE_VIDEO_URL}
-                      content={OVERVIEW_CONTENT}
-                      onGoToApply={openChallengePanel}
+                    <HeroPanel
+                      onHowToApply={openChallengePanel}
+                      showHowToApplyButton={activePanel === "overview"}
                     />
+                    <OverviewPanel onGoToApply={openChallengePanel} />
                   </>
                 )}
 
                 {renderPanel === "challenge" && (
-                  <HowToApplyPanel challengePdfUrl={CHALLENGE_PDF_URL} />
+                  <HowToApplyPanel
+                    challengePdfUrl={CHALLENGE_PDF_URL}
+                    onGoToApply={openSubmissionPanel}
+                  />
                 )}
 
                 {renderPanel === "submission" && (
                   <div ref={submissionPanelRef} className="w-full space-y-6">
                     <ApplyPanel
                       form={form}
-                      submissionsDisabled={SUBMISSIONS_DISABLED}
-                      submissionsDisabledMessage={SUBMISSIONS_DISABLED_MESSAGE}
                       submissionStep={submissionStep}
                       hasSubmitted={hasSubmitted}
                       submittedEmail={submittedEmail}

@@ -18,12 +18,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader } from "@/components/ui/loader";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { ParalumanSubmissionForm, SubmissionStep } from "./types";
+import type { CebuPacificSubmissionForm, SubmissionStep } from "./types";
 
 type ApplyPanelProps = {
-  form: ParalumanSubmissionForm;
-  submissionsDisabled?: boolean;
-  submissionsDisabledMessage?: string;
+  form: CebuPacificSubmissionForm;
   submissionStep: SubmissionStep;
   hasSubmitted: boolean;
   submittedEmail: string;
@@ -34,7 +32,10 @@ type ApplyPanelProps = {
   token: string;
   tokenFail: boolean;
   turnstileSiteKey?: string;
-  onFieldChange: (field: keyof ParalumanSubmissionForm, value: string) => void;
+  onFieldChange: (
+    field: keyof CebuPacificSubmissionForm,
+    value: string,
+  ) => void;
   onNextStep: () => void;
   onBackStep: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
@@ -45,8 +46,6 @@ type ApplyPanelProps = {
 
 export function ApplyPanel({
   form,
-  submissionsDisabled = false,
-  submissionsDisabledMessage = "Submissions are currently closed.",
   submissionStep,
   hasSubmitted,
   submittedEmail,
@@ -89,7 +88,7 @@ export function ApplyPanel({
       spread: 74,
       startVelocity: 34,
       origin: { y: 0.65 },
-      colors: ["#72068c", "#a855f7", "#f8b4ff", "#ffffff"],
+      colors: ["#e8c560", "#ffd84d", "#7cc242", "#ffffff"],
     });
 
     window.setTimeout(() => {
@@ -98,7 +97,7 @@ export function ApplyPanel({
         spread: 60,
         startVelocity: 28,
         origin: { x: 0.75, y: 0.68 },
-        colors: ["#72068c", "#d946ef", "#ffffff"],
+        colors: ["#e8c560", "#ddb04a", "#ffffff"],
       });
     }, 180);
   }, [hasSubmitted, prefersReduce]);
@@ -107,7 +106,7 @@ export function ApplyPanel({
     submissionStep === 1 ? "Challenge Output" : "Contact Details";
 
   const updateField =
-    (field: keyof ParalumanSubmissionForm) =>
+    (field: keyof CebuPacificSubmissionForm) =>
     (
       event: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
     ) => {
@@ -115,34 +114,34 @@ export function ApplyPanel({
     };
 
   return (
-    <div className="relative overflow-hidden rounded-[0.33em] border-2 border-[rgba(114,6,140,0.24)] bg-white shadow-[0_24px_55px_-35px_rgba(114,6,140,0.75)]">
+    <div className="relative overflow-hidden rounded-[0.33em] border-2 border-[rgba(212,173,69,0.3)] bg-white shadow-[0_24px_55px_-35px_rgba(212,173,69,0.75)]">
       <div className="relative">
-        <div className="flex flex-col gap-4 bg-gradient-to-br from-[#72068c] via-[#5a0570] to-[#4a0460] px-6 py-6 text-white sm:flex-row sm:items-start sm:justify-between sm:px-8">
+        <div className="flex flex-col gap-4 bg-gradient-to-br from-[#f3d98a] via-[#e8c560] to-[#ddb04a] px-6 py-6 text-black sm:flex-row sm:items-start sm:justify-between sm:px-8">
           <div>
-            <p className="[font-family:var(--font-paraluman-heading)] text-2xl text-white font-black uppercase tracking-[-0.02em] sm:text-3xl">
+            <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black uppercase tracking-[-0.02em] sm:text-3xl">
               Submit challenge
             </p>
-            <p className="[font-family:var(--font-paraluman-mono)]  text-white">
+            <p className="[font-family:var(--font-paraluman-mono)] text-black">
               No resume needed. Response in 24 hours
             </p>
           </div>
 
           {!hasSubmitted && (
             <div className="w-full sm:w-auto sm:min-w-64 sm:text-right">
-              <p className="[font-family:var(--font-paraluman-mono)] text-[11px] font-semibold uppercase tracking-[0.08em] text-white/80">
+              <p className="[font-family:var(--font-paraluman-mono)] text-[11px] font-semibold uppercase tracking-[0.08em] text-black/75">
                 Step {submissionStep} - {stepLabel}
               </p>
               <div className="mt-2 grid w-full grid-cols-2 gap-1.5 sm:ml-auto sm:w-40">
                 <span
                   className={cn(
                     "h-1.5 w-full rounded-full transition-colors",
-                    submissionStep >= 1 ? "bg-white" : "bg-white/30",
+                    submissionStep >= 1 ? "bg-black/85" : "bg-black/25",
                   )}
                 />
                 <span
                   className={cn(
                     "h-1.5 w-full rounded-full transition-colors",
-                    submissionStep >= 2 ? "bg-white" : "bg-white/30",
+                    submissionStep >= 2 ? "bg-black/85" : "bg-black/25",
                   )}
                 />
               </div>
@@ -158,7 +157,7 @@ export function ApplyPanel({
               }
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
-              className="relative overflow-hidden rounded-[0.33em] border-2 border-[#72068c]/25 bg-white p-6 shadow-[0_18px_45px_-35px_rgba(114,6,140,0.85)] sm:p-8"
+              className="relative overflow-hidden rounded-[0.33em] border-2 border-[#e8c560]/45 bg-white p-6 shadow-[0_18px_45px_-35px_rgba(212,173,69,0.85)] sm:p-8"
             >
               {!prefersReduce && (
                 <motion.div
@@ -169,7 +168,7 @@ export function ApplyPanel({
                 />
               )}
               <motion.div
-                className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(114,6,140,0.16),transparent_50%),radial-gradient(circle_at_bottom_left,rgba(114,6,140,0.08),transparent_55%)]"
+                className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(212,173,69,0.22),transparent_50%),radial-gradient(circle_at_bottom_left,rgba(212,173,69,0.1),transparent_55%)]"
                 initial={prefersReduce ? false : { opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.9, ease: "easeOut", delay: 0.4 }}
@@ -180,10 +179,10 @@ export function ApplyPanel({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
               >
-                <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black uppercase tracking-[-0.02em] text-[#72068c] sm:text-3xl">
+                <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black uppercase tracking-[-0.02em] text-[#6b5000] sm:text-3xl">
                   Submission sent
                 </p>
-                <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase tracking-[0.02em] text-[#72068c]/80 sm:text-xl">
+                <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase tracking-[0.02em] text-[#6b5000]/80 sm:text-xl">
                   You're in
                 </p>
                 <motion.p
@@ -193,7 +192,7 @@ export function ApplyPanel({
                   transition={{ duration: 0.7, ease: "easeOut", delay: 0.35 }}
                 >
                   Thank you for applying. We sent a confirmation to{" "}
-                  <span className="font-bold text-[#72068c]">
+                  <span className="font-bold text-[#6b5000]">
                     {submittedEmail || "your email"}
                   </span>
                   . You will receive a response within 24 hours.
@@ -207,7 +206,7 @@ export function ApplyPanel({
                   <Button
                     type="button"
                     onClick={onBackToOverview}
-                    className="inline-flex h-11 items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#72068c] bg-gradient-to-r from-[#72068c] to-[#5a0570] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:shadow-lg"
+                    className="inline-flex h-11 items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#2574BB] bg-[#2574BB] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:bg-[#1c5a92] hover:shadow-lg"
                   >
                     Back to overview
                   </Button>
@@ -216,8 +215,8 @@ export function ApplyPanel({
             </motion.div>
           ) : (
             <form className="space-y-5" onSubmit={(e) => void onSubmit(e)}>
-              <div className="rounded-[0.33em] border border-[rgba(114,6,140,0.16)] bg-[#72068c]/5 px-4 py-3">
-                <p className="[font-family:var(--font-paraluman-heading)] text-base font-black uppercase text-[#72068c] sm:text-lg">
+              <div className="rounded-[0.33em] border border-[rgba(212,173,69,0.35)] bg-[#e8c560]/10 px-4 py-3">
+                <p className="[font-family:var(--font-paraluman-heading)] text-base font-black uppercase text-[#6b5000] sm:text-lg">
                   {submissionStep === 1
                     ? "Step 1: Share your challenge output"
                     : "Step 2: Confirm your details"}
@@ -237,10 +236,9 @@ export function ApplyPanel({
                     </label>
                     <Input
                       required
-                      disabled={submissionsDisabled || isSubmitting}
                       value={form.submissionLink}
                       onChange={updateField("submissionLink")}
-                      className="h-11 border-2 border-[rgba(114,6,140,0.3)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
+                      className="h-11 border-2 border-[rgba(212,173,69,0.45)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
                     />
                     <p className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 [font-family:var(--font-paraluman-mono)] text-[10px] text-black/55 sm:text-[11px]">
                       <span className="inline-flex items-center gap-1">
@@ -267,10 +265,9 @@ export function ApplyPanel({
                       Application Notes (Optional)
                     </label>
                     <Textarea
-                      disabled={submissionsDisabled || isSubmitting}
                       value={form.submissionNotes}
                       onChange={updateField("submissionNotes")}
-                      className="min-h-28 border-2 border-[rgba(114,6,140,0.3)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
+                      className="min-h-28 border-2 border-[rgba(212,173,69,0.45)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
                     />
                     <p className="[font-family:var(--font-paraluman-mono)] text-[10px] text-black/55 sm:text-[11px]">
                       Add context, constraints, or tradeoffs you want us to
@@ -289,10 +286,9 @@ export function ApplyPanel({
                     <Input
                       required
                       type="email"
-                      disabled={submissionsDisabled || isSubmitting}
                       value={form.email}
                       onChange={updateField("email")}
-                      className="h-11 border-2 border-[rgba(114,6,140,0.3)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
+                      className="h-11 border-2 border-[rgba(212,173,69,0.45)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
                     />
                   </div>
 
@@ -302,10 +298,9 @@ export function ApplyPanel({
                     </label>
                     <Input
                       required
-                      disabled={submissionsDisabled || isSubmitting}
                       value={form.fullName}
                       onChange={updateField("fullName")}
-                      className="h-11 border-2 border-[rgba(114,6,140,0.3)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
+                      className="h-11 border-2 border-[rgba(212,173,69,0.45)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
                     />
                   </div>
 
@@ -315,15 +310,14 @@ export function ApplyPanel({
                     </label>
                     <Input
                       required
-                      disabled={submissionsDisabled || isSubmitting}
                       value={form.facebookLink}
                       onChange={updateField("facebookLink")}
-                      className="h-11 border-2 border-[rgba(114,6,140,0.3)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
+                      className="h-11 border-2 border-[rgba(212,173,69,0.45)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
                     />
                   </div>
 
-                  {submissionsDisabled ? null : isDevelopment ? (
-                    <p className="rounded-[0.33em] bg-[rgba(114,6,140,0.1)] px-3 py-2 [font-family:var(--font-paraluman-mono)] text-xs text-[#72068c]">
+                  {isDevelopment ? (
+                    <p className="rounded-[0.33em] bg-[rgba(212,173,69,0.18)] px-3 py-2 [font-family:var(--font-paraluman-mono)] text-xs text-[#6b5000]">
                       Captcha disabled in development
                     </p>
                   ) : !token ? (
@@ -350,19 +344,12 @@ export function ApplyPanel({
                 </>
               )}
 
-              {submissionsDisabled ? (
-                <div className="rounded-[0.33em] border border-amber-300 bg-amber-50 px-4 py-3 [font-family:var(--font-paraluman-mono)] text-sm font-semibold text-amber-800">
-                  {submissionsDisabledMessage}
-                </div>
-              ) : null}
-
               <div className="flex flex-col sm:flex-row justify-end">
                 {submissionStep === 1 ? (
                   <Button
                     type="button"
                     onClick={onNextStep}
-                    disabled={submissionsDisabled || isSubmitting}
-                    className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#72068c] bg-gradient-to-r from-[#72068c] to-[#5a0570] [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:shadow-lg sm:w-auto sm:px-8"
+                    className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#2574BB] bg-[#2574BB] [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:bg-[#1c5a92] hover:shadow-lg sm:w-auto sm:px-8"
                   >
                     Continue to contact details
                   </Button>
@@ -372,15 +359,15 @@ export function ApplyPanel({
                       type="button"
                       variant="outline"
                       onClick={onBackStep}
-                      className="inline-flex h-11 w-1/3 items-center justify-center gap-1.5 rounded-[0.33em] border-2 border-[rgba(114,6,140,0.35)] bg-white/90 px-3 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.08em] text-[#72068c] transition-colors hover:bg-white sm:w-auto"
+                      className="inline-flex h-11 w-1/3 items-center justify-center gap-1.5 rounded-[0.33em] border-2 border-[rgba(212,173,69,0.5)] bg-white px-3 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.08em] text-[#6b5000] transition-colors hover:bg-[#fff7da] sm:w-auto"
                     >
                       <ArrowLeft className="h-4 w-4" />
                       Back
                     </Button>
                     <Button
                       type="submit"
-                      disabled={submissionsDisabled || isSubmitting}
-                      className="inline-flex h-11 w-2/3 items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#72068c] bg-gradient-to-r from-[#72068c] to-[#5a0570] px-6 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:shadow-lg sm:min-w-36 sm:w-auto"
+                      disabled={isSubmitting}
+                      className="inline-flex h-11 w-2/3 items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#2574BB] bg-[#2574BB] px-6 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:bg-[#1c5a92] hover:shadow-lg sm:min-w-36 sm:w-auto"
                     >
                       {isSubmitting ? (
                         <>

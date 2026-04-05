@@ -30,13 +30,9 @@ interface ApplicationRowProps {
   application: EmployerApplication;
   isSuperListing?: boolean;
   onView: (v: any) => void;
-  onNotes: () => void;
-  onSchedule: () => void;
   onStatusChange: (status: number) => void;
   onArchiveButtonClick: (application: EmployerApplication) => void;
   onDeleteButtonClick: (application: EmployerApplication) => void;
-  openChatModal: () => void;
-  updateConversationId: (conversationId: string) => void;
   setSelectedApplication: (application: EmployerApplication) => void;
   checkboxSelected?: boolean;
   onToggleSelect?: (next: boolean) => void;
@@ -57,9 +53,6 @@ export function ApplicationRow({
   application,
   isSuperListing = false,
   onView,
-  openChatModal,
-  updateConversationId,
-  setSelectedApplication,
   checkboxSelected = false,
   onToggleSelect,
   onArchiveButtonClick,
@@ -78,7 +71,7 @@ export function ApplicationRow({
   const currentStatusId = application.status?.toString() ?? "0";
   const defaultStatus: ActionItem = {
     id: currentStatusId,
-    label: get_app_status(application.status!)?.name,
+    label: get_app_status(application.status)?.name,
     active: true,
     disabled: false,
     destructive: false,
@@ -100,7 +93,7 @@ export function ApplicationRow({
         className={`flex flex-col hover:cursor-pointer transition-colors ${
           isSuperListing
             ? "border-amber-300 bg-amber-50/40 hover:bg-amber-100/50"
-            : "hover:bg-primary/25"
+            : "hover:bg-muted/50"
         }`}
         onClick={onView}
       >
@@ -212,7 +205,7 @@ export function ApplicationRow({
                   e.stopPropagation();
                   onArchiveButtonClick(application);
                 }}
-                enabled={application.status! !== 7}
+                enabled={application.status !== 7}
               />
             )}
             {application.status === 7 && (
@@ -222,7 +215,7 @@ export function ApplicationRow({
                   e.stopPropagation();
                   onDeleteButtonClick(application);
                 }}
-                enabled={application.status! === 7}
+                enabled={application.status === 7}
               />
             )}
           </div>
@@ -263,7 +256,7 @@ export function ApplicationRow({
         delay: staggerDelay,
         ease: "easeOut",
       }}
-      className="group hover:cursor-pointer transition-colors odd:bg-white even:bg-gray-50 hover:bg-primary/25"
+      className="group hover:cursor-pointer transition-colors odd:bg-white even:bg-muted/50 hover:bg-muted/70"
       onClick={onView}
     >
       <td
@@ -304,6 +297,7 @@ export function ApplicationRow({
                 onArchiveButtonClick(application);
               }}
               enabled={application.status! !== 7}
+              label="Archive"
             />
           )}
           {application.status === 7 && (
@@ -313,7 +307,9 @@ export function ApplicationRow({
                 e.stopPropagation();
                 onDeleteButtonClick(application);
               }}
-              enabled={application.status! === 7}
+              enabled={application.status === 7}
+              destructive={true}
+              label="Delete"
             />
           )}
         </div>
