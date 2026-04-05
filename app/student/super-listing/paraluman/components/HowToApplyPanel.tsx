@@ -28,10 +28,10 @@ export function HowToApplyPanel({
               onClick={onGoToApply}
               className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-white bg-white/95 px-8 [font-family:var(--font-paraluman-heading)] text-base font-bold uppercase tracking-[0.1em] text-[#72068c] transition-all duration-200 hover:bg-white hover:shadow-lg sm:h-16 sm:w-auto sm:px-10 sm:text-lg"
             >
-              Go to submit
+              Apply
             </Button>
             <p className="mt-2 [font-family:var(--font-paraluman-mono)] text-[10px] leading-tight text-white/75 sm:text-[11px]">
-              No resume needed. Response in 24 hours
+              No resume needed. Guaranteed response in 24 hours
             </p>
           </div>
         </div>
@@ -128,8 +128,8 @@ export function HowToApplyPanel({
             <p className="[font-family:var(--font-paraluman-heading)] text-2xl text-white uppercase tracking-[-0.02em] sm:text-3xl">
               Ready to turn this into a real opportunity?
             </p>
-            <p className="[font-family:var(--font-paraluman-mono)] text-[10px] leading-tight text-white/75 sm:text-[11px]">
-              No resume needed. Response in 24 hours
+            <p className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-white/85 sm:text-base">
+              Start now while your momentum is high. We reply in 24 hours.
             </p>
           </div>
           <div className="w-full sm:w-auto sm:text-right">
@@ -138,7 +138,7 @@ export function HowToApplyPanel({
               onClick={onGoToApply}
               className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-white bg-white/95 px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#72068c] transition-all duration-200 hover:bg-white hover:shadow-lg sm:w-auto"
             >
-              Go to submit
+              Start submission
             </Button>
           </div>
         </div>

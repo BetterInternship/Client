@@ -20,6 +20,7 @@ import {
   User2,
 } from "lucide-react";
 import { useEffect } from "react";
+import { updateApplicationStatus } from "@/lib/api/services";
 import { statusMap } from "@/components/common/status-icon-map";
 import { type ActionItem } from "@/components/ui/action-item";
 import { Toast } from "@/components/ui/toast";
@@ -34,19 +35,24 @@ const SHOW_SUPER_DUMMY_APPLICATION = true;
 interface ApplicationsContentProps {
   applications: EmployerApplication[];
   isSuperListing?: boolean;
+  statusId: number[];
   isLoading?: boolean;
+  openChatModal: () => void;
+  updateConversationId: (userId: string) => void;
   onApplicationClick: (application: EmployerApplication) => void;
+  onNotesClick: (application: EmployerApplication) => void;
+  onScheduleClick: (application: EmployerApplication) => void;
   onStatusChange: (application: EmployerApplication, status: number) => void;
   setSelectedApplication: (application: EmployerApplication) => void;
   onRequestArchiveApplicant: (application: EmployerApplication) => void;
   onRequestDeleteApplicant: (application: EmployerApplication) => void;
   onRequestAcceptApplicant: (application: EmployerApplication) => void;
-  onRequestShortlistApplicant: (application: EmployerApplication) => void;
-  onRequestRejectApplicant: (application: EmployerApplication) => void;
   onRequestStatusChange: (
     applications: EmployerApplication[],
     status: number,
   ) => void;
+  applicantToDelete: EmployerApplication | null;
+  applicantToArchive: EmployerApplication | null;
 }
 
 export const ApplicationsContent = forwardRef<
@@ -57,13 +63,16 @@ export const ApplicationsContent = forwardRef<
     applications,
     isSuperListing = false,
     isLoading,
+    openChatModal,
+    updateConversationId,
     onApplicationClick,
+    onNotesClick,
+    onScheduleClick,
     onStatusChange,
     setSelectedApplication,
     onRequestDeleteApplicant,
     onRequestArchiveApplicant,
     onRequestAcceptApplicant,
-    onRequestRejectApplicant,
     onRequestStatusChange,
   },
   ref,
@@ -95,34 +104,30 @@ export const ApplicationsContent = forwardRef<
     }
   }, [toastVisible]);
 
-  const updateSingleStatus = (id: string, status: number) => {
+  const updateSingleStatus = async (id: string, status: number) => {
     const application = sortedApplications.find((a) => a.id === id);
 
     if (!application) return;
 
     try {
-      onStatusChange(application, status);
-      setToastMessage(`Applicant status changed.`);
-      setToastVisible(true);
+      const response = await updateApplicationStatus(id, status);
+
+      if (response) {
+        onStatusChange(application, status);
+        setToastMessage(`Applicant status changed.`);
+        setToastVisible(true);
+      }
     } catch (error) {
       console.error("Critical error occurred during status update: ", error);
     }
   };
 
-  const acceptSingleApplicant = (id: string) => {
+  const acceptSingleApplicant = async (id: string) => {
     const application = sortedApplications.find((a) => a.id === id);
 
     if (!application) return;
 
     onRequestAcceptApplicant(application);
-  };
-
-  const rejectSingleApplicant = (id: string) => {
-    const application = sortedApplications.find((a) => a.id === id);
-
-    if (!application) return;
-
-    onRequestRejectApplicant(application);
   };
 
   if (!app_statuses) return null;
@@ -157,12 +162,9 @@ export const ApplicationsContent = forwardRef<
       .map((status): ActionItem => {
         const uiProps = statusMap.get(status.id);
 
-        const handleClick =
-          status.id === 4
-            ? () => acceptSingleApplicant(applicationId)
-            : status.id === 6
-              ? () => rejectSingleApplicant(applicationId)
-              : () => updateSingleStatus(applicationId, status.id);
+        const handleClick = status.id === 4
+          ? () => acceptSingleApplicant(applicationId)
+          : () => updateSingleStatus(applicationId, status.id);
 
         return {
           id: status.id.toString(),
@@ -205,9 +207,7 @@ export const ApplicationsContent = forwardRef<
 
   const applyActiveFilter = (apps: typeof sortedApplications) => {
     if (activeFilter === -1) {
-      return apps.filter(
-        (application) => application.status !== 7 && application.status !== 5,
-      );
+      return apps.filter((application) => application.status !== 7);
     }
 
     return apps.filter((application) => application.status === activeFilter);
@@ -301,7 +301,7 @@ export const ApplicationsContent = forwardRef<
         visibleApplicationsCount={visibleApplications.length}
         statuses={remove_unused_statuses}
         onUnselectAll={unselectAll}
-        onSelectAll={selectAll}
+        onSelectAll={selectAll} 
         onDelete={() => {
           const appToDelete = Array.from(selectedApplications)
             .map((id) => sortedApplications.find((app) => app.id === id))
@@ -325,8 +325,12 @@ export const ApplicationsContent = forwardRef<
                   toggleSelect(application.id!, v);
                 }
               }}
+              onNotes={() => onNotesClick(application)}
+              onSchedule={() => onScheduleClick(application)}
               onStatusChange={(status) => onStatusChange(application, status)}
+              openChatModal={openChatModal}
               setSelectedApplication={setSelectedApplication}
+              updateConversationId={updateConversationId}
               checkboxSelected={selectedApplications.has(application.id!)}
               onToggleSelect={(v) => toggleSelect(application.id!, v)}
               onArchiveButtonClick={onRequestArchiveApplicant}
@@ -483,10 +487,14 @@ export const ApplicationsContent = forwardRef<
                       toggleSelect(application.id!, v);
                     }
                   }}
+                  onNotes={() => onNotesClick(application)}
+                  onSchedule={() => onScheduleClick(application)}
                   onStatusChange={(status) =>
                     onStatusChange(application, status)
                   }
+                  openChatModal={openChatModal}
                   setSelectedApplication={setSelectedApplication}
+                  updateConversationId={updateConversationId}
                   checkboxSelected={selectedApplications.has(application.id!)}
                   onToggleSelect={(v) => toggleSelect(application.id!, v)}
                   onArchiveButtonClick={() =>

@@ -1,14 +1,22 @@
 import type { Metadata } from "next";
-import { createSuperListingMetadata } from "../metadata-utils";
 
-export const metadata: Metadata = createSuperListingMetadata({
-  slug: "paraluman",
+export const metadata: Metadata = {
   title:
     "BetterInternship x Paraluman News: Multilingual News Delivery Challenge",
-  socialTitle: "BetterInternship x Paraluman News Super Listing",
   description:
     "Design a practical multilingual publishing solution for Paraluman News that balances speed, accuracy, editorial integrity, and reader trust.",
-});
+  openGraph: {
+    title: "BetterInternship x Paraluman News Super Listing",
+
+    url: "/super-listing/paraluman",
+    siteName: "BetterInternship",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "BetterInternship x Paraluman News Super Listing",
+  },
+};
 
 export default function ParalumanLayout({
   children,

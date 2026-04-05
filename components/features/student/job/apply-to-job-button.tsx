@@ -2,15 +2,13 @@ import { useJobsData } from "@/lib/api/student.data.api";
 import { Job, PublicUser } from "@/lib/db/db.types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Zap } from "lucide-react";
 import { useAuthContext } from "@/lib/ctx-auth";
-import {
-  isProfileBaseComplete,
-  isProfileResume,
-  isProfileVerified,
-} from "@/lib/profile";
+import { isProfileBaseComplete, isProfileResume } from "@/lib/profile";
 import { useMemo } from "react";
+import useModalRegistry from "@/components/modals/modal-registry";
 import { useRouter } from "next/navigation";
+import { useMobile } from "@/hooks/use-mobile";
 
 // ! todo: rmove openAppModal and use openGlobalModal instead
 export const ApplyToJobButton = ({
@@ -26,8 +24,10 @@ export const ApplyToJobButton = ({
 }) => {
   const auth = useAuthContext();
   const jobs = useJobsData();
+  const modalRegistry = useModalRegistry();
   const applied = useMemo(() => !!jobs.isJobApplied(job.id!), [jobs]);
   const router = useRouter();
+  const isMobile = useMobile();
   const isSuperListing = Boolean(job.challenge);
 
   /**
@@ -39,9 +39,6 @@ export const ApplyToJobButton = ({
     if (!profile || !auth.isAuthenticated()) {
       window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
       return;
-    }
-    if (!isProfileVerified(profile)) {
-      return router.push("/register/verify");
     }
 
     if (

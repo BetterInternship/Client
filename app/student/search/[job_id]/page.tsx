@@ -7,8 +7,17 @@ import { Button } from "@/components/ui/button";
 import { useProfileData, useJobData } from "@/lib/api/student.data.api";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useModalRef } from "@/hooks/use-modal";
+import ReactMarkdown from "react-markdown";
 import { Loader } from "@/components/ui/loader";
-import { JobDetails } from "@/components/shared/jobs";
+import {
+  EmployerMOA,
+  JobType,
+  JobSalary,
+  JobMode,
+  JobHead,
+  JobApplicationRequirements,
+  JobDetails,
+} from "@/components/shared/jobs";
 import { Card } from "@/components/ui/card";
 import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { PageError } from "@/components/ui/error";
@@ -35,6 +44,7 @@ export default function JobPage() {
   const applicationActions = useApplicationActions();
 
   const profile = useProfileData();
+  const { universities } = useDbRefs();
   const { isAuthenticated } = useAuthContext();
 
   const goProfile = useCallback(() => {
@@ -97,7 +107,9 @@ export default function JobPage() {
 
                   {job.data && (
                     <div className="flex flex-wrap items-center gap-3">
-                      <ShareJobButton id={job.data.id ?? ""} />
+                      <ShareJobButton
+                        id={job.data.id ?? ""}
+                      />
                       <SaveJobButton job={job.data} />
                       <ApplyToJobButton
                         profile={profile.data}
@@ -125,7 +137,7 @@ export default function JobPage() {
                       }}
                       job={job.data}
                       isAuthenticated={isAuthenticated()}
-                    />
+                  />
                   </div>
                 </div>
               </div>

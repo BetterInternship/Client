@@ -91,7 +91,6 @@ interface AuthResponse extends FetchResponse {
 interface ResourceHashResponse {
   success?: boolean;
   message?: string;
-  error?: string;
   hash?: string;
 }
 

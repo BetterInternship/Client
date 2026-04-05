@@ -3,9 +3,7 @@
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
-import useModalRegistry from "@/components/modals/modal-registry";
 import { cn } from "@/lib/utils";
 import anterioreLogo from "./logo.png";
 import { HeroPanel } from "./components/HeroPanel";
@@ -73,14 +71,9 @@ const PANEL_TABS: Array<{
 ];
 
 const PANEL_TRANSITION_MS = 220;
-const SUBMISSIONS_DISABLED = true;
-const SUBMISSIONS_DISABLED_MESSAGE =
-  "Submissions are currently closed for this listing.";
 
 export default function AnteriorePage() {
   const isDevelopment = process.env.NODE_ENV === "development";
-  const router = useRouter();
-  const modalRegistry = useModalRegistry();
 
   const [form, setForm] = useState<AnterioreSubmissionForm>(INITIAL_FORM_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -94,7 +87,6 @@ export default function AnteriorePage() {
   const [submissionStep, setSubmissionStep] = useState<SubmissionStep>(1);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
-  const [showClosedModal, setShowClosedModal] = useState(true);
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const panelSectionRef = useRef<HTMLElement | null>(null);
@@ -131,30 +123,6 @@ export default function AnteriorePage() {
       }
     };
   }, []);
-
-  useEffect(() => {
-    if (!SUBMISSIONS_DISABLED) return;
-
-    if (!showClosedModal) {
-      modalRegistry.superListingClosed.close();
-      return;
-    }
-
-    modalRegistry.superListingClosed.open({
-      description:
-        "We’re sorry, but applications for this listing are now closed. Please explore our other listings to find more opportunities.",
-      accentColor: "#274b7d",
-      onView: () => setShowClosedModal(false),
-      onLeave: () => {
-        setShowClosedModal(false);
-        router.push("/search");
-      },
-    });
-
-    return () => {
-      modalRegistry.superListingClosed.close();
-    };
-  }, [modalRegistry, router, showClosedModal]);
 
   const endpoint = useMemo(() => {
     const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
@@ -228,12 +196,6 @@ export default function AnteriorePage() {
     event.preventDefault();
     setResultMessage("");
     setIsError(false);
-
-    if (SUBMISSIONS_DISABLED) {
-      setIsError(true);
-      setResultMessage(SUBMISSIONS_DISABLED_MESSAGE);
-      return;
-    }
 
     if (submissionStep !== 2) {
       setIsError(true);
@@ -407,11 +369,6 @@ export default function AnteriorePage() {
         <section ref={panelSectionRef} className="relative">
           <div className="px-6 py-12 sm:px-8 sm:py-16 lg:px-10">
             <div className="mx-auto max-w-5xl">
-              {SUBMISSIONS_DISABLED ? (
-                <div className="mb-4 flex justify-center rounded-[0.33em] border border-[rgba(114,6,140,0.35)] bg-destructive px-4 py-3 [font-family:var(--font-anteriore-mono)] text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-[0_10px_24px_-18px_rgba(114,6,140,0.45)] sm:text-sm">
-                  {SUBMISSIONS_DISABLED_MESSAGE}
-                </div>
-              ) : null}
               <div
                 className={cn(
                   "transition-all duration-[220ms] ease-out",
@@ -454,8 +411,6 @@ export default function AnteriorePage() {
                   <div ref={submissionPanelRef} className="w-full space-y-6">
                     <ApplyPanel
                       form={form}
-                      submissionsDisabled={SUBMISSIONS_DISABLED}
-                      submissionsDisabledMessage={SUBMISSIONS_DISABLED_MESSAGE}
                       submissionStep={submissionStep}
                       hasSubmitted={hasSubmitted}
                       submittedEmail={submittedEmail}

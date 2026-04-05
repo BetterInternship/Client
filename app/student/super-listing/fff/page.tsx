@@ -10,7 +10,6 @@ import {
 } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { ArrowUpRight, Loader2 } from "lucide-react";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import { Button } from "@/components/ui/button";
@@ -21,7 +20,6 @@ import { cn } from "@/lib/utils";
 import { Loader } from "@/components/ui/loader";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Badge } from "@/components/ui/badge";
-import useModalRegistry from "@/components/modals/modal-registry";
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],
@@ -52,9 +50,6 @@ const RESPONSIBILITIES = [
 
 const CHALLENGE_PDF_URL =
   "https://drive.google.com/file/d/1dRzxouQEAr4BzugNCJ-4hKE9t8K3jL4O/view?usp=sharing";
-const SUBMISSIONS_DISABLED = true;
-const SUBMISSIONS_DISABLED_MESSAGE =
-  "Submissions are currently closed for this listing.";
 
 type FffSubmissionPayload = {
   email: string;
@@ -75,8 +70,6 @@ const INITIAL_FORM_STATE: FffSubmissionPayload = {
 
 export default function FFFPage() {
   const isDevelopment = process.env.NODE_ENV === "development";
-  const router = useRouter();
-  const modalRegistry = useModalRegistry();
 
   const [form, setForm] = useState<FffSubmissionPayload>(INITIAL_FORM_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,7 +78,6 @@ export default function FFFPage() {
   const [token, setToken] = useState("");
   const [tokenFail, setTokenFail] = useState(false);
   const [isAtTop, setIsAtTop] = useState(true);
-  const [showClosedModal, setShowClosedModal] = useState(true);
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const topSentinelRef = useRef<HTMLDivElement | null>(null);
@@ -115,30 +107,6 @@ export default function FFFPage() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!SUBMISSIONS_DISABLED) return;
-
-    if (!showClosedModal) {
-      modalRegistry.superListingClosed.close();
-      return;
-    }
-
-    modalRegistry.superListingClosed.open({
-      description:
-        "We’re sorry, but applications for this listing are now closed. Please explore our other listings to find more opportunities.",
-      accentColor: "#000000",
-      onView: () => setShowClosedModal(false),
-      onLeave: () => {
-        setShowClosedModal(false);
-        router.push("/search");
-      },
-    });
-
-    return () => {
-      modalRegistry.superListingClosed.close();
-    };
-  }, [modalRegistry, router, showClosedModal]);
-
   const endpoint = useMemo(() => {
     const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
     if (!base) return "/api/super-listings/submission/fff";
@@ -157,12 +125,6 @@ export default function FFFPage() {
     event.preventDefault();
     setResultMessage("");
     setIsError(false);
-
-    if (SUBMISSIONS_DISABLED) {
-      setIsError(true);
-      setResultMessage(SUBMISSIONS_DISABLED_MESSAGE);
-      return;
-    }
 
     if (!isDevelopment && !token) {
       setIsError(true);
@@ -265,11 +227,6 @@ export default function FFFPage() {
         </header>
 
         <section className="relative mx-auto flex min-h-[calc(100svh-73px)] w-full max-w-6xl flex-col justify-center px-6 py-12 sm:px-8 lg:px-10">
-          {SUBMISSIONS_DISABLED ? (
-            <div className="mb-6 flex justify-center rounded-[0.33em] border border-[rgba(114,6,140,0.35)] bg-destructive px-4 py-3 [font-family:var(--font-fff-mono)] text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-[0_10px_24px_-18px_rgba(114,6,140,0.45)] sm:text-sm">
-              {SUBMISSIONS_DISABLED_MESSAGE}
-            </div>
-          ) : null}
           <div className="mx-auto grid w-full max-w-5xl items-center gap-10 lg:grid-cols-[1.15fr_0.85fr]">
             <div className="relative text-left">
               <SuperListingBadge variant="gold" />
@@ -376,10 +333,9 @@ export default function FFFPage() {
                     size="lg"
                     type="button"
                     onClick={scrollToSubmission}
-                    disabled={SUBMISSIONS_DISABLED}
-                    className="relative flex h-16 w-full rounded-none border border-black bg-black px-11 [font-family:var(--font-fff-heading)] text-base font-black uppercase tracking-[0.12em] text-white transition-all hover:-translate-y-1 hover:bg-black/90 disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:translate-y-0 disabled:hover:bg-black sm:inline-flex sm:w-auto"
+                    className="relative flex h-16 w-full rounded-none border border-black bg-black px-11 [font-family:var(--font-fff-heading)] text-base font-black uppercase tracking-[0.12em] text-white transition-all hover:-translate-y-1 hover:bg-black/90 sm:inline-flex sm:w-auto"
                   >
-                    {SUBMISSIONS_DISABLED ? "Closed" : "Submit"}
+                    Submit
                   </Button>
                 </div>
               </div>
@@ -432,11 +388,6 @@ export default function FFFPage() {
                   <p className="[font-family:var(--font-fff-mono)] text-xs uppercase tracking-[0.17em] text-black/65">
                     Submission
                   </p>
-                  {SUBMISSIONS_DISABLED ? (
-                    <p className="mt-4 rounded-[0.33em] border border-amber-300 bg-amber-50 px-4 py-3 [font-family:var(--font-fff-mono)] text-sm font-semibold text-amber-800">
-                      {SUBMISSIONS_DISABLED_MESSAGE}
-                    </p>
-                  ) : null}
 
                   <form
                     className="mt-4 grid gap-4"
@@ -445,7 +396,6 @@ export default function FFFPage() {
                     <Input
                       required
                       type="email"
-                      disabled={SUBMISSIONS_DISABLED || isSubmitting}
                       value={form.email}
                       onChange={updateField("email")}
                       placeholder="Email address"
@@ -454,7 +404,6 @@ export default function FFFPage() {
 
                     <Input
                       required
-                      disabled={SUBMISSIONS_DISABLED || isSubmitting}
                       value={form.submissionLink}
                       onChange={updateField("submissionLink")}
                       placeholder="Submission link (GitHub, Loom, or demo URL)"
@@ -462,14 +411,13 @@ export default function FFFPage() {
                     />
 
                     <Textarea
-                      disabled={SUBMISSIONS_DISABLED || isSubmitting}
                       value={form.submissionNotes}
                       onChange={updateField("submissionNotes")}
                       placeholder="Submission notes (optional)"
                       className="min-h-28 rounded-none border-black/25 bg-white [font-family:var(--font-fff-mono)] text-sm text-black placeholder:text-black/35 focus-visible:ring-1 focus-visible:ring-black focus-visible:ring-offset-0"
                     />
 
-                    {SUBMISSIONS_DISABLED ? null : isDevelopment ? (
+                    {isDevelopment ? (
                       <p className="[font-family:var(--font-fff-mono)] text-xs text-black/70">
                         Captcha is disabled in development mode.
                       </p>
@@ -512,7 +460,7 @@ export default function FFFPage() {
                         <Button
                           type="submit"
                           size="lg"
-                          disabled={SUBMISSIONS_DISABLED || isSubmitting}
+                          disabled={isSubmitting}
                           className="relative flex h-12 w-full rounded-none border border-black bg-black px-7 [font-family:var(--font-fff-heading)] text-sm font-bold uppercase tracking-[0.09em] text-white transition-all hover:-translate-y-1 hover:bg-black/90 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:bg-black sm:inline-flex sm:w-auto"
                         >
                           {isSubmitting ? (

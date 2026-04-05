@@ -17,7 +17,6 @@ import {
   useFormFilloutProcessPending,
   useFormFilloutProcessReader,
 } from "@/hooks/forms/filloutFormProcess";
-import { isProfileVerified } from "@/lib/profile";
 
 /**
  * The forms page component - shows either history or generate based on form count
@@ -39,22 +38,10 @@ export default function FormsPage() {
     if (!isAuthenticated()) {
       return; // Exit if not authenticated
     }
-    if (profile.isPending) {
-      return;
-    }
-    if (!isProfileVerified(profile.data)) {
-      router.push("/register/verify");
-      return;
-    }
 
-    if (!profile.data?.department) router.push("/profile/complete-profile");
-  }, [
-    isAuthenticated,
-    profile.data,
-    profile.data?.department,
-    profile.isPending,
-    router,
-  ]);
+    if (!profile.data?.department && !profile.isPending)
+      router.push("/profile/complete-profile");
+  }, [isAuthenticated, profile.data?.department, profile.isPending, router]);
 
   // Query 1: Check for updates (cheap query - just a timestamp)
   // TODO: Enable this later for smart cache invalidation

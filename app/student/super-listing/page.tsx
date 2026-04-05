@@ -715,15 +715,6 @@ export default function SuperListingStoryPage() {
                 </Button>
               </Link>
             </MagneticButton>
-
-            <MagneticButton>
-              <Link href="/student/super-listing/cebu-pacific">
-                <Button className="h-14 rounded-[0.33em] border-2 border-cyan-300 bg-transparent px-10 text-lg font-black text-cyan-300 hover:bg-cyan-300/10 transition-all">
-                  Cebu Pacific Challenge
-                  <ArrowRight className="ml-3 h-5 w-5" />
-                </Button>
-              </Link>
-            </MagneticButton>
           </div>
 
           <motion.p

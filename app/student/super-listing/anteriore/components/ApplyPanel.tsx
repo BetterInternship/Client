@@ -22,8 +22,6 @@ import type { AnterioreSubmissionForm, SubmissionStep } from "./types";
 
 type ApplyPanelProps = {
   form: AnterioreSubmissionForm;
-  submissionsDisabled?: boolean;
-  submissionsDisabledMessage?: string;
   submissionStep: SubmissionStep;
   hasSubmitted: boolean;
   submittedEmail: string;
@@ -45,8 +43,6 @@ type ApplyPanelProps = {
 
 export function ApplyPanel({
   form,
-  submissionsDisabled = false,
-  submissionsDisabledMessage = "Submissions are currently closed.",
   submissionStep,
   hasSubmitted,
   submittedEmail,
@@ -206,11 +202,6 @@ export function ApplyPanel({
           </motion.div>
         ) : (
           <form className="space-y-5" onSubmit={(e) => void onSubmit(e)}>
-            {submissionsDisabled ? (
-              <div className="rounded-[0.33em] border border-amber-300 bg-amber-50 px-4 py-3 [font-family:var(--font-anteriore-mono)] text-sm font-semibold text-amber-800">
-                {submissionsDisabledMessage}
-              </div>
-            ) : null}
             {submissionStep === 1 && (
               <>
                 <div className="space-y-2">
@@ -219,7 +210,6 @@ export function ApplyPanel({
                   </label>
                   <Input
                     required
-                    disabled={submissionsDisabled || isSubmitting}
                     value={form.submissionLink}
                     onChange={updateField("submissionLink")}
                     className="h-11 border-2 border-[#274b7d]/30 bg-white focus:ring-0 [font-family:var(--font-anteriore-mono)]"
@@ -249,7 +239,6 @@ export function ApplyPanel({
                     Application Notes (Optional)
                   </label>
                   <Textarea
-                    disabled={submissionsDisabled || isSubmitting}
                     value={form.submissionNotes}
                     onChange={updateField("submissionNotes")}
                     className="min-h-28 border-2 border-[#274b7d]/30 bg-white focus:ring-0 [font-family:var(--font-anteriore-mono)]"
@@ -267,7 +256,6 @@ export function ApplyPanel({
                   <Input
                     required
                     type="email"
-                    disabled={submissionsDisabled || isSubmitting}
                     value={form.email}
                     onChange={updateField("email")}
                     className="h-11 border-2 border-[#274b7d]/30 bg-white focus:ring-0 [font-family:var(--font-anteriore-mono)]"
@@ -280,7 +268,6 @@ export function ApplyPanel({
                   </label>
                   <Input
                     required
-                    disabled={submissionsDisabled || isSubmitting}
                     value={form.fullName}
                     onChange={updateField("fullName")}
                     className="h-11 border-2 border-[#274b7d]/30 bg-white focus:ring-0 [font-family:var(--font-anteriore-mono)]"
@@ -293,14 +280,13 @@ export function ApplyPanel({
                   </label>
                   <Input
                     required
-                    disabled={submissionsDisabled || isSubmitting}
                     value={form.facebookLink}
                     onChange={updateField("facebookLink")}
                     className="h-11 border-2 border-[#274b7d]/30 bg-white focus:ring-0 [font-family:var(--font-anteriore-mono)]"
                   />
                 </div>
 
-                {submissionsDisabled ? null : isDevelopment ? (
+                {isDevelopment ? (
                   <p className="rounded-[0.33em] bg-[#274b7d]/10 px-3 py-2 [font-family:var(--font-anteriore-mono)] text-xs text-[#1b3458]">
                     Captcha disabled in development
                   </p>
@@ -337,7 +323,6 @@ export function ApplyPanel({
                 <Button
                   type="button"
                   onClick={onNextStep}
-                  disabled={submissionsDisabled || isSubmitting}
                   className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#274b7d] bg-gradient-to-r from-[#274b7d] to-[#1b3458] [font-family:var(--font-anteriore-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:shadow-lg sm:w-auto sm:px-8"
                 >
                   Next Step
@@ -355,7 +340,7 @@ export function ApplyPanel({
                   </Button>
                   <Button
                     type="submit"
-                    disabled={submissionsDisabled || isSubmitting}
+                    disabled={isSubmitting}
                     className="inline-flex h-11 w-2/3 items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#274b7d] bg-gradient-to-r from-[#274b7d] to-[#1b3458] px-6 [font-family:var(--font-anteriore-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:shadow-lg sm:min-w-36 sm:w-auto"
                   >
                     {isSubmitting ? (

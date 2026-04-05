@@ -11,17 +11,12 @@ import { useState } from "react";
 import { ListingsDeleteModal } from "../listings";
 import { useListingsBusinessLogic } from "@/hooks/hire/listings/use-listings-business-logic";
 import { useAppContext } from "@/lib/ctx-app";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 export default function JobHeader({
   job,
   onJobUpdate,
-}: {
-  job: Job;
+} : {
+  job: Job,
   onJobUpdate?: (updates: Partial<Job>) => void;
 }) {
   const router = useRouter();
@@ -35,7 +30,7 @@ export default function JobHeader({
     close: closeDeleteModal,
     Modal: DeleteModal,
   } = useModal("delete-modal");
-
+  
   //goes back to job list
   const handleJobBack = () => {
     setExitingBack(true);
@@ -76,23 +71,20 @@ export default function JobHeader({
         )}
       </DeleteModal>
       <div className="max-w-7xl mx-auto px-4 py-3">
-        <div
-          className={cn(
-            "flex items-center justify-between gap-4",
-            isMobile ? "flex-col items-start" : "",
-          )}
-        >
+        <div className={cn(
+          "flex items-center justify-between gap-4",
+          isMobile
+          ? "flex-col items-start"
+          : ""
+        )}>
           <div className="flex justify-between gap-4">
             {/* back button */}
-            <Button
-              size="md"
-              variant="ghost"
-              onClick={() => router.push("/dashboard")}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 transition-colors"
+            <button
+              onClick={handleJobBack}
+              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors flex-shrink-0"
             >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="sm:hidden md:block">Back</span>
-            </Button>
+              <ArrowLeft className="s-6" />
+            </button>
             {/* job title */}
             <div className="flex flex-col min-w-0">
               <h3 className="text-lg font-semibold leading-tight truncate">
@@ -103,26 +95,22 @@ export default function JobHeader({
               </span>
             </div>
             {/* active toggle */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center gap-2">
-                  <Toggle state={job.is_active} onClick={handleToggleActive} />
-                  <span
-                    className={cn(
-                      "text-xs px-2 py-1 rounded transition",
-                      job.is_active
-                        ? "bg-supportive text-white"
-                        : "bg-muted text-muted-foreground",
-                    )}
-                  >
-                    {job.is_active ? "Active" : "Paused"}
-                  </span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                Toggle the visibility of the listing to students.
-              </TooltipContent>
-            </Tooltip>
+            <div className="flex items-center gap-2">
+              <Toggle
+                state={job.is_active}
+                onClick={handleToggleActive}
+              />
+              <span
+                className={cn(
+                  "text-xs px-2 py-1 rounded transition",
+                  job.is_active
+                    ? "bg-supportive text-white"
+                    : "bg-muted text-muted-foreground",
+                )}
+              >
+                {job.is_active ? "Active" : "Paused"}
+              </span>
+            </div>
           </div>
           <div className="flex gap-1 flex-wrap">
             <Link
@@ -138,8 +126,8 @@ export default function JobHeader({
                 className={cn(
                   "hover:bg-primary/10 gap-1",
                   pathname === "/dashboard/manage"
-                    ? "bg-primary/10 text-primary"
-                    : "",
+                  ? "bg-primary/10 text-primary"
+                  : ""
                 )}
               >
                 <Users size={16} />
@@ -159,8 +147,8 @@ export default function JobHeader({
                 className={cn(
                   "hover:bg-primary/10 gap-1",
                   pathname === "/listings/details"
-                    ? "bg-primary/10 text-primary"
-                    : "",
+                  ? "bg-primary/10 text-primary"
+                  : ""
                 )}
               >
                 <Info size={16} />
@@ -197,5 +185,5 @@ export default function JobHeader({
         </div>
       </div>
     </div>
-  );
+  )
 }
