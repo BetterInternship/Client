@@ -60,12 +60,12 @@ export function HeroPanel({
   return (
     <section className="relative mx-auto flex min-h-[calc(100svh-9.5rem)] max-w-5xl items-start justify-center overflow-hidden pb-16 pt-6 sm:min-h-[calc(100svh-10.5rem)] sm:items-center sm:pb-20 sm:pt-12 lg:min-h-[calc(100svh-11rem)]">
       <div className="relative mx-auto w-full max-w-5xl">
-        <div className="flex flex-col items-start space-y-12 text-left sm:items-center sm:text-center sm:space-y-20">
+        <div className="flex flex-col items-center space-y-12 text-center sm:space-y-20">
           <Link
             href="https://www.cebupacificair.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex w-fit transition-opacity duration-300 hover:opacity-85 sm:mx-auto"
+            className="mx-auto inline-flex w-fit transition-opacity duration-300 hover:opacity-85"
           >
             <Image
               src={cebuPacificLogo}
@@ -117,7 +117,7 @@ export function HeroPanel({
           </div>
 
           {showHowToApplyButton && (
-            <div className="flex flex-col items-start gap-3 pt-6 sm:items-center sm:gap-4 sm:pt-10">
+            <div className="flex flex-col items-center gap-3 pt-6 sm:gap-4 sm:pt-10">
               <div className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.25rem,3.6vw,2.35rem)] font-black uppercase leading-[0.95] tracking-[-0.03em] text-[#2574BB]">
                 No resume required, 24h response
               </div>
