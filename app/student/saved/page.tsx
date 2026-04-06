@@ -23,27 +23,7 @@ type SavedJobItem = SavedJob & Partial<Job>;
 export default function SavedJobsPage() {
   const { isAuthenticated, redirectIfNotLoggedIn } = useAuthContext();
   const jobs = useJobsData();
-  const savedJobs = React.useMemo(
-    () =>
-      [...(jobs.savedJobs as SavedJobItem[])].sort((a, b) => {
-        const firstSavedAt =
-          (a as { saved_at?: string | null }).saved_at ??
-          a.created_at ??
-          a.job?.created_at ??
-          a.jobs?.created_at ??
-          "";
-        const secondSavedAt =
-          (b as { saved_at?: string | null }).saved_at ??
-          b.created_at ??
-          b.job?.created_at ??
-          b.jobs?.created_at ??
-          "";
-        return (
-          new Date(secondSavedAt).getTime() - new Date(firstSavedAt).getTime()
-        );
-      }),
-    [jobs.savedJobs],
-  );
+  const savedJobs = jobs.savedJobs as SavedJobItem[];
 
   redirectIfNotLoggedIn();
 
