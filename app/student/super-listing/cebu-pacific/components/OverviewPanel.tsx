@@ -75,16 +75,15 @@ export function OverviewPanel({
         <SectionTitle title="About Cebu Pacific" />
         <div className="relative mx-auto w-full max-w-prose overflow-hidden rounded-[0.33em] border border-[rgba(37,116,187,0.4)] bg-[#edf6ff] p-6 text-[#173957] shadow-[0_24px_56px_-30px_rgba(37,116,187,0.45)] sm:p-8">
           <div className="relative z-10 space-y-3">
-            <div className="mt-4 space-y-3 [font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#173957]/95 sm:text-base">
-              <p className="text-[#173957]/95 max-w-prose">
+            <div className="mt-4 space-y-8 [font-family:var(--font-paraluman-body)] text-lg leading-8 text-[#173957]/95 sm:text-xl">
+              <p className="max-w-prose text-lg leading-8 text-[#173957]/95 sm:text-xl">
                 We are the leading airline in the Philippines, operating flights
-                to over 60 domestic and international destinations across 14
-                countries.
+                to over 60 destinations across 14 countries.
               </p>
-              <p className="text-[#173957]/95">
+              <p className="text-lg leading-8 text-[#173957]/95 sm:text-xl">
                 But even as a leading airline, we know we can still be better.
               </p>
-              <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black leading-tight tracking-[-0.02em] text-[#1f68a9] pt-[1.5em]">
+              <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black leading-tight tracking-[-0.02em] text-[#1f68a9] pt-[1em]">
                 That&apos;s where you come in.
               </p>
             </div>
@@ -108,29 +107,29 @@ export function OverviewPanel({
         <SectionTitle title="What you will work on" />
         <div className="relative mx-auto w-full max-w-prose overflow-hidden rounded-[0.33em] border border-[#2574BB]/35 bg-[#edf6ff] p-6 text-[#173957] shadow-[0_20px_38px_-26px_rgba(37,116,187,0.35)] sm:p-8">
           <div className="relative z-10 space-y-5">
-            <div className="space-y-4 [font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#153a5b]/92 sm:text-base">
-              <p className="text-base font-semibold leading-7 text-[#153a5b] sm:text-lg">
+            <div className="space-y-8 [font-family:var(--font-paraluman-body)] text-lg leading-8 text-[#153a5b]/92 sm:text-xl">
+              <p className="text-lg font-semibold leading-8 text-[#153a5b] sm:text-xl">
                 For this internship, we are not assigning roles upfront.
               </p>
-              <p className="text-[#153a5b]/92 max-w-prose">
-                <span className="[font-family:var(--font-paraluman-heading)] text-base font-black uppercase tracking-[0.06em] text-[#2574BB] sm:text-lg">
+              <p className="max-w-prose text-lg leading-8 text-[#153a5b]/92 sm:text-xl">
+                <span className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase tracking-[0.06em] text-[#2574BB] sm:text-xl">
                   Why?
                 </span>{" "}
-                Because we&apos;re not looking for someone to follow
-                instructions. We&apos;re looking for someone who will go through
-                their own initiatives to fix problems.
+                We&apos;re not looking for someone to follow instructions.
+                We&apos;re looking for someone who can solve problems with their
+                own initiative.
               </p>
-              <p className="text-[#153a5b]/92 max-w-prose">
+              <p className="max-w-prose text-lg leading-8 text-[#153a5b]/92 sm:text-xl">
                 Once you pass the challenge, we&apos;ll see what you&apos;re
                 capable of first, then we&apos;ll give you projects based on
                 your talents and strengths.
               </p>
-              <p className="text-[#153a5b]/92 max-w-prose">
+              <p className="max-w-prose text-lg leading-8 text-[#153a5b]/92 sm:text-xl">
                 Our plan is to let you work on real user problems - our website,
                 app, systems, and maybe even the actual experience of flying.
               </p>
             </div>
-            <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black leading-tight tracking-[-0.02em] text-[#1f68a9] pt-[1.5em]">
+            <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black leading-tight tracking-[-0.02em] text-[#1f68a9] pt-[1em]">
               If you get in, you&apos;re here to build <br />
               and to make flying better for Every Juan.
             </p>
@@ -141,16 +140,16 @@ export function OverviewPanel({
       <section className="space-y-2">
         <SectionTitle title="What you will get" />
         <div className="relative mx-auto w-full max-w-prose overflow-hidden rounded-[0.33em] border border-[#2574BB]/40 bg-[#edf6ff] p-6 text-[#173957] shadow-[0_26px_48px_-30px_rgba(37,116,187,0.46)] sm:p-8">
-          <div className="relative z-10 space-y-4 [font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#173957]/95 sm:text-base">
-            <p className="max-w-prose">
+          <div className="relative z-10 space-y-8 [font-family:var(--font-paraluman-body)] text-lg leading-8 text-[#173957]/95 sm:text-xl">
+            <p className="max-w-prose text-lg leading-8 sm:text-xl">
               What you build may be used by millions of Filipinos, including
               your family and friends.
             </p>
-            <p className="max-w-prose">
+            <p className="max-w-prose text-lg leading-8 sm:text-xl">
               In most internships, you do grunt work. Here, you make changes
               that could impact a top airline in our country.
             </p>
-            <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black leading-tight tracking-[-0.02em] text-[#1f68a9] pt-[1.5em]">
+            <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black leading-tight tracking-[-0.02em] text-[#1f68a9] pt-[1em]">
               You walk away with a story <br />
               that makes people stop and listen.
             </p>
@@ -177,7 +176,7 @@ export function OverviewPanel({
                   <span className="relative z-10 inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-[#2574BB]/25 bg-white [font-family:var(--font-paraluman-heading)] text-xs font-black uppercase tracking-[0.03em] text-[#1f68a9] shadow-[0_8px_18px_-14px_rgba(37,116,187,0.7)]">
                     {index + 1}
                   </span>
-                  <p className="pt-0.5 [font-family:var(--font-paraluman-body)] text-base leading-7 text-[#153a5b]/92 sm:text-lg">
+                  <p className="pt-0.5 [font-family:var(--font-paraluman-body)] text-lg leading-8 text-[#153a5b]/92 sm:text-xl">
                     {step}
                   </p>
                 </li>
@@ -185,7 +184,7 @@ export function OverviewPanel({
             </ol>
 
             <div className="flex w-full flex-col gap-3 rounded-[0.33em] border border-[#2574BB]/22 bg-white/75 px-4 py-3.5 shadow-[0_12px_24px_-22px_rgba(37,116,187,0.55)] sm:flex-row sm:items-center sm:justify-between">
-              <p className="[font-family:var(--font-paraluman-body)] text-sm font-semibold leading-6 text-[#153a5b]/95">
+              <p className="[font-family:var(--font-paraluman-body)] text-lg font-semibold leading-8 text-[#153a5b]/95 sm:text-xl">
                 No resume needed. One clear submission link is enough.
               </p>
               <Button
@@ -213,7 +212,7 @@ export function OverviewPanel({
                 <AccordionTrigger className="[font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.06em] text-[#1f68a9] hover:no-underline sm:text-base">
                   {item.question}
                 </AccordionTrigger>
-                <AccordionContent className="[font-family:var(--font-paraluman-body)] text-sm leading-7 text-black/70">
+                <AccordionContent className="[font-family:var(--font-paraluman-body)] text-lg leading-8 text-black/70 sm:text-xl">
                   {item.answer}
                 </AccordionContent>
               </AccordionItem>
