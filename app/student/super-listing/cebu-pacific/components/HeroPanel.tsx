@@ -58,9 +58,9 @@ export function HeroPanel({
   }, [phraseIndex, typedText, isDeleting]);
 
   return (
-    <section className="relative mx-auto flex min-h-[calc(100svh-9.5rem)] max-w-5xl items-center justify-center overflow-hidden pb-16 pt-10 sm:min-h-[calc(100svh-10.5rem)] sm:pb-20 sm:pt-12 lg:min-h-[calc(100svh-11rem)]">
+    <section className="relative mx-auto flex min-h-[calc(100svh-9.5rem)] max-w-5xl items-start justify-center overflow-hidden pb-16 pt-6 sm:min-h-[calc(100svh-10.5rem)] sm:items-center sm:pb-20 sm:pt-12 lg:min-h-[calc(100svh-11rem)]">
       <div className="relative mx-auto w-full max-w-5xl">
-        <div className="flex flex-col items-start space-y-16 text-left sm:items-center sm:text-center sm:space-y-20">
+        <div className="flex flex-col items-start space-y-12 text-left sm:items-center sm:text-center sm:space-y-20">
           <Link
             href="https://www.cebupacificair.com/"
             target="_blank"
@@ -117,7 +117,7 @@ export function HeroPanel({
           </div>
 
           {showHowToApplyButton && (
-            <div className="flex flex-col items-start gap-4 pt-8 sm:items-center sm:pt-10">
+            <div className="flex flex-col items-start gap-3 pt-6 sm:items-center sm:gap-4 sm:pt-10">
               <div className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.25rem,3.6vw,2.35rem)] font-black uppercase leading-[0.95] tracking-[-0.03em] text-[#2574BB]">
                 No resume required, 24h response
               </div>
@@ -125,9 +125,9 @@ export function HeroPanel({
                 type="button"
                 onClick={onHowToApply}
                 aria-label="Scroll to overview"
-                className="mt-1 inline-flex h-20 w-20 items-center justify-center rounded-full text-[#2574BB] transition-all duration-300 hover:scale-105 hover:text-[#1c5a92] active:scale-95 sm:h-24 sm:w-24"
+                className="mt-1 inline-flex h-16 w-16 items-center justify-center rounded-full text-[#2574BB] transition-all duration-300 hover:scale-105 hover:text-[#1c5a92] active:scale-95 sm:h-24 sm:w-24"
               >
-                <ChevronDown className="h-14 w-14 animate-bounce stroke-[2.6] sm:h-16 sm:w-16" />
+                <ChevronDown className="h-12 w-12 animate-bounce stroke-[2.6] sm:h-16 sm:w-16" />
               </button>
             </div>
           )}

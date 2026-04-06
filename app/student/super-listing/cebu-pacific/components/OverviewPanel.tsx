@@ -50,11 +50,19 @@ const HOW_TO_APPLY_STEPS = [
 
 function SectionTitle({ title, textClassName }: SectionTitleProps) {
   return (
-    <p
-      className={`mx-auto w-full max-w-prose text-center [font-family:var(--font-paraluman-heading)] text-[clamp(1.25rem,2.4vw,1.8rem)] font-black tracking-[-0.01em] ${textClassName ?? "text-[#1f68a9]"}`}
-    >
-      {title}
-    </p>
+    <div className="mx-auto w-full max-w-prose">
+      <div className="flex items-stretch gap-4">
+        <span
+          aria-hidden="true"
+          className="w-[0.75em] shrink-0 bg-[#2574BB] opacity-50 h-[1.5em] my-auto"
+        />
+        <p
+          className={`text-left [font-family:var(--font-paraluman-heading)] text-[clamp(1.25rem,2.4vw,1.8rem)] font-black tracking-[-0.01em] ${textClassName ?? "text-[#1f68a9]"}`}
+        >
+          {title}
+        </p>
+      </div>
+    </div>
   );
 }
 
