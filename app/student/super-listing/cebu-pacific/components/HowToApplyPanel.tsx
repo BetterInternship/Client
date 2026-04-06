@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Apple, Globe, Play } from "lucide-react";
+import { Globe } from "lucide-react";
 
 type HowToApplyPanelProps = {
   challengePdfUrl?: string;
@@ -14,23 +14,38 @@ export function HowToApplyPanel({
 }: HowToApplyPanelProps) {
   return (
     <div className="space-y-6">
-      <div className="overflow-hidden rounded-[0.33em] border-2 border-[rgba(212,173,69,0.38)] shadow-[0_24px_55px_-35px_rgba(212,173,69,0.75)]">
-        <div className="relative bg-gradient-to-br from-[#f3d98a] via-[#e8c560] to-[#ddb04a] px-6 py-6 text-black sm:px-8">
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.16)_0%,transparent_38%,rgba(255,255,255,0.06)_72%,transparent_100%)]" />
+      <div className="overflow-hidden rounded-[0.33em] border-2 border-[#2574BB]/35 shadow-[0_24px_55px_-35px_rgba(37,116,187,0.6)]">
+        <div className="relative bg-gradient-to-br from-[#edf6ff] via-[#e3efff] to-[#d6e8ff] px-6 py-6 text-black sm:px-8">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_92%_8%,rgba(243,217,138,0.26),transparent_30%),linear-gradient(135deg,rgba(255,255,255,0.2)_0%,transparent_42%,rgba(255,255,255,0.08)_74%,transparent_100%)]" />
           <div className="relative z-10">
             <div className="space-y-10">
               <div className="space-y-3">
-                <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black uppercase tracking-[-0.02em] sm:text-3xl ">
+                <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.16em] text-[#1f68a9]/80 sm:text-sm">
                   Challenge Brief
                 </p>
-                <p className="[font-family:var(--font-paraluman-mono)] text-sm  text-black/85 sm:text-base ">
-                  Find a pain point within Cebu Pacific&apos;s app/website - a
-                  broken flow, a missing feature, or a mediocre interface - and
-                  take responsibility to fix it. Rebuild it to be{" "}
-                  <span className="font-black text-[#2574BB]">10X BETTER</span>.
+                <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black leading-[1.16] tracking-[-0.02em] text-[#1f68a9] sm:text-3xl">
+                  <span className="inline-block w-fit bg-[#f3d98a] px-2 py-0.5">
+                    Find a pain point within
+                  </span>
+                  <br />
+                  <span className="mt-1 inline-block w-fit bg-[#f3d98a] px-2 py-0.5">
+                    Cebu Pacific&apos;s app/website.
+                  </span>
+                  <br />
+                  <span className="mt-1 inline-block w-fit bg-[#f3d98a] px-2 py-0.5">
+                    Rebuild it to be{" "}
+                    <span className="font-black text-[#2574BB]">
+                      10x better
+                    </span>
+                    .
+                  </span>
+                </p>
+                <p className="[font-family:var(--font-paraluman-mono)] text-sm text-[#163a5b]/85 sm:text-base">
+                  Show us clear product thinking, practical judgment, and
+                  execution quality.
                 </p>
 
-                <p className="[font-family:var(--font-paraluman-mono)] text-sm  text-black/85 sm:text-base ">
+                <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.12em] text-[#163a5b]/75 sm:text-sm ">
                   Official Links
                 </p>
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center [font-family:var(--font-paraluman-mono)] text-sm text-black/80 sm:text-base">
@@ -78,9 +93,9 @@ export function HowToApplyPanel({
             </div>
           </div>
         </div>
-        <div className="space-y-6 border-t border-[rgba(212,173,69,0.3)] bg-white px-6 py-7 sm:px-8 sm:py-8">
-          <section className="space-y-2 border-b border-[rgba(212,173,69,0.24)] pb-6">
-            <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase text-[#6b5000]">
+        <div className="space-y-6 border-t border-[#2574BB]/22 bg-white px-6 py-7 sm:px-8 sm:py-8">
+          <section className="space-y-2 border-b border-[#2574BB]/16 pb-6">
+            <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase text-[#1f68a9]">
               Goal
             </p>
             <ul className="list-disc pl-5 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80 sm:text-base">
@@ -92,8 +107,8 @@ export function HowToApplyPanel({
             </ul>
           </section>
 
-          <section className="space-y-2 border-b border-[rgba(212,173,69,0.24)] pb-6">
-            <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase text-[#6b5000]">
+          <section className="space-y-2 border-b border-[#2574BB]/16 pb-6">
+            <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase text-[#1f68a9]">
               What We&apos;re Looking For
             </p>
             <ol className="list-decimal pl-8 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80 sm:text-base space-y-3">
@@ -128,8 +143,8 @@ export function HowToApplyPanel({
             </ol>
           </section>
 
-          <section className="space-y-2 border-b border-[rgba(212,173,69,0.24)] pb-6">
-            <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase text-[#6b5000]">
+          <section className="space-y-2 border-b border-[#2574BB]/16 pb-6">
+            <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase text-[#1f68a9]">
               Submission Requirements
             </p>
             <ol className="list-decimal pl-8 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80 sm:text-base">
@@ -145,7 +160,7 @@ export function HowToApplyPanel({
           </section>
 
           <section className="space-y-2">
-            <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase text-[#6b5000]">
+            <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase text-[#1f68a9]">
               Before You Start
             </p>
             <p className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80 sm:text-base">
@@ -160,14 +175,14 @@ export function HowToApplyPanel({
           </section>
         </div>
       </div>
-      <div className="relative overflow-hidden rounded-[0.33em] border-2 border-[rgba(212,173,69,0.55)] bg-gradient-to-br from-[#f3d98a] via-[#e8c560] to-[#ddb04a] p-6 text-[#173957] shadow-[0_24px_55px_-30px_rgba(212,173,69,0.88)] sm:p-8">
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.16)_0%,transparent_38%,rgba(255,255,255,0.06)_72%,transparent_100%)]" />
+      <div className="relative overflow-hidden rounded-[0.33em] border-2 border-[#2574BB]/38 bg-gradient-to-br from-[#edf6ff] via-[#e4f0ff] to-[#d8e9ff] p-6 text-[#173957] shadow-[0_24px_55px_-30px_rgba(37,116,187,0.62)] sm:p-8">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_90%_85%,rgba(243,217,138,0.22),transparent_35%),linear-gradient(135deg,rgba(255,255,255,0.16)_0%,transparent_38%,rgba(255,255,255,0.06)_72%,transparent_100%)]" />
         <div className="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="">
-            <p className="[font-family:var(--font-paraluman-heading)] text-2xl text-[#173957] uppercase tracking-[-0.02em] sm:text-3xl !font-black">
+            <p className="[font-family:var(--font-paraluman-heading)] text-2xl text-[#1f68a9] uppercase tracking-[-0.02em] sm:text-3xl !font-black">
               Ready to turn this into a real opportunity?
             </p>
-            <p className="[font-family:var(--font-paraluman-mono)] text-[10px] leading-tight text-[#173957]/80 sm:text-[11px]">
+            <p className="[font-family:var(--font-paraluman-mono)] text-[10px] leading-tight text-[#1d466f]/80 sm:text-[11px]">
               No resume needed. Response in 24 hours
             </p>
           </div>
@@ -175,7 +190,7 @@ export function HowToApplyPanel({
             <Button
               type="button"
               onClick={onGoToApply}
-              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#2574BB] bg-[#2574BB] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:bg-[#1c5a92] hover:shadow-lg sm:w-auto"
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#d8c17b] bg-[#ecd389] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#173957] transition-all duration-200 hover:bg-[#e2c36b] hover:shadow-[0_12px_26px_-14px_rgba(236,211,137,0.9)] sm:w-auto"
             >
               Submit Work
             </Button>

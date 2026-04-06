@@ -3,9 +3,7 @@
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
-import useModalRegistry from "@/components/modals/modal-registry";
 import { cn } from "@/lib/utils";
 import { OverviewPanel } from "./components/OverviewPanel";
 import { HowToApplyPanel } from "./components/HowToApplyPanel";
@@ -59,8 +57,6 @@ const PANEL_TRANSITION_MS = 220;
 
 export default function CebuPacificPage() {
   const isDevelopment = process.env.NODE_ENV === "development";
-  const router = useRouter();
-  const modalRegistry = useModalRegistry();
 
   const [form, setForm] =
     useState<CebuPacificSubmissionForm>(INITIAL_FORM_STATE);
@@ -75,11 +71,11 @@ export default function CebuPacificPage() {
   const [submissionStep, setSubmissionStep] = useState<SubmissionStep>(1);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
-  const [showClosedModal, setShowClosedModal] = useState(true);
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const panelSectionRef = useRef<HTMLElement | null>(null);
   const submissionPanelRef = useRef<HTMLDivElement | null>(null);
+  const overviewAnchorRef = useRef<HTMLDivElement | null>(null);
   const panelTransitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -112,26 +108,6 @@ export default function CebuPacificPage() {
       }
     };
   }, []);
-
-  // useEffect(() => {
-  //   if (!showClosedModal) {
-  //     modalRegistry.superListingClosed.close();
-  //     return;
-  //   }
-
-  //   modalRegistry.superListingClosed.open({
-  //     accentColor: "#FFC100",
-  //     onView: () => setShowClosedModal(false),
-  //     onLeave: () => {
-  //       setShowClosedModal(false);
-  //       router.push("/search");
-  //     },
-  //   });
-
-  //   return () => {
-  //     modalRegistry.superListingClosed.close();
-  //   };
-  // }, [modalRegistry, router, showClosedModal]);
 
   const endpoint = useMemo(() => {
     const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
@@ -166,6 +142,17 @@ export default function CebuPacificPage() {
 
   const openChallengePanel = () => {
     openPanel("challenge");
+  };
+
+  const scrollToOverview = () => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        overviewAnchorRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+    });
   };
 
   const openSubmissionPanel = () => {
@@ -295,12 +282,12 @@ export default function CebuPacificPage() {
   return (
     <main
       className={cn(
-        "relative isolate h-full min-h-screen bg-[#fffdf5] text-black",
+        "relative isolate h-full min-h-screen bg-[#f7fbff] text-black",
         headingFont.variable,
         monoFont.variable,
       )}
     >
-      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_8%_12%,rgba(255,193,0,0.17),transparent_38%),radial-gradient(circle_at_88%_8%,rgba(255,193,0,0.13),transparent_34%),radial-gradient(circle_at_50%_92%,rgba(255,193,0,0.1),transparent_44%)]" />
+      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_8%_12%,rgba(37,116,187,0.15),transparent_38%),radial-gradient(circle_at_88%_8%,rgba(243,217,138,0.15),transparent_34%),radial-gradient(circle_at_50%_92%,rgba(37,116,187,0.08),transparent_44%)]" />
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.045)_1px,transparent_1px)] bg-[size:46px_46px] opacity-28" />
 
       <div
@@ -349,8 +336,8 @@ export default function CebuPacificPage() {
 
         <section className="sticky top-0 z-40 px-2 py-2 sm:px-8 sm:py-3 lg:px-10">
           <div className="mx-auto max-w-3xl">
-            <div className="relative rounded-[0.33em] border border-[rgba(255,193,0,0.38)] bg-white/95 p-1 shadow-[0_14px_34px_-26px_rgba(255,193,0,0.55)] backdrop-blur-sm">
-              <div className="relative flex items-stretch overflow-hidden rounded-[0.32em] bg-[#fff4c7]">
+            <div className="relative rounded-[0.33em] border border-[rgba(37,116,187,0.3)] bg-white p-1 shadow-[0_14px_34px_-26px_rgba(37,116,187,0.45)]">
+              <div className="relative flex items-stretch overflow-hidden rounded-[0.32em] bg-white">
                 {PANEL_TABS.map((tab, index) => {
                   const isActive = activePanel === tab.key;
                   const isFirst = index === 0;
@@ -371,8 +358,8 @@ export default function CebuPacificPage() {
                         "relative flex min-h-10 flex-1 items-center justify-center overflow-hidden px-1.5 py-2 text-center [font-family:var(--font-paraluman-mono)] font-semibold uppercase transition-[background,color,box-shadow] duration-220 ease-[cubic-bezier(0.22,1,0.36,1)] after:pointer-events-none after:absolute after:inset-0 after:bg-white/20 after:opacity-0 after:transition-opacity after:duration-180 active:after:opacity-100 sm:min-h-[2.625rem] sm:px-2",
                         !isFirst && "-ml-3 sm:-ml-4",
                         isActive
-                          ? "bg-gradient-to-r from-[#ffc100] via-[#e4af00] to-[#c89400] text-[#2a1f00] shadow-[0_10px_20px_-14px_rgba(255,193,0,0.85)]"
-                          : "bg-[#fff4c7] text-black/70 hover:bg-[#ffeeb8] hover:text-black",
+                          ? "bg-[#2574BB] text-white shadow-[0_8px_18px_-12px_rgba(37,116,187,0.9)]"
+                          : "bg-white text-[#1d466f]/80 hover:bg-[#f4f9ff] hover:text-[#12385c]",
                       )}
                     >
                       <span className="inline-flex w-full items-center justify-center gap-1 whitespace-nowrap text-[9px] tracking-[0.02em] sm:gap-2 sm:text-xs sm:tracking-[0.06em]">
@@ -403,10 +390,12 @@ export default function CebuPacificPage() {
                 {renderPanel === "overview" && (
                   <>
                     <HeroPanel
-                      onHowToApply={openChallengePanel}
+                      onHowToApply={scrollToOverview}
                       showHowToApplyButton={activePanel === "overview"}
                     />
-                    <OverviewPanel onGoToApply={openChallengePanel} />
+                    <div ref={overviewAnchorRef} id="cebu-overview-anchor">
+                      <OverviewPanel onGoToApply={openChallengePanel} />
+                    </div>
                   </>
                 )}
 
