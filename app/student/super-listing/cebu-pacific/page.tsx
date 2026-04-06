@@ -75,7 +75,6 @@ export default function CebuPacificPage() {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const panelSectionRef = useRef<HTMLElement | null>(null);
   const submissionPanelRef = useRef<HTMLDivElement | null>(null);
-  const overviewAnchorRef = useRef<HTMLDivElement | null>(null);
   const panelTransitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -147,7 +146,8 @@ export default function CebuPacificPage() {
   const scrollToOverview = () => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        overviewAnchorRef.current?.scrollIntoView({
+        const anchor = document.getElementById("cebu-overview-anchor");
+        anchor?.scrollIntoView({
           behavior: "smooth",
           block: "start",
         });
@@ -393,7 +393,7 @@ export default function CebuPacificPage() {
                       onHowToApply={scrollToOverview}
                       showHowToApplyButton={activePanel === "overview"}
                     />
-                    <div ref={overviewAnchorRef} id="cebu-overview-anchor">
+                    <div id="cebu-overview-anchor">
                       <OverviewPanel onGoToApply={openChallengePanel} />
                     </div>
                   </>
