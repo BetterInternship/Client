@@ -58,7 +58,7 @@ export function HeroPanel({
   }, [phraseIndex, typedText, isDeleting]);
 
   return (
-    <section className="relative flex min-h-[calc(100svh-9.5rem)] w-full flex-col items-center justify-center overflow-hidden pt-20 sm:min-h-[calc(100svh-10.5rem)] sm:pt-20 lg:min-h-[calc(100svh-11rem)]">
+    <section className="relative flex min-h-[calc(100svh-9.5rem)] w-full flex-col items-center justify-center overflow-hidden pt-14 sm:min-h-[calc(100svh-10.5rem)] sm:pt-20 lg:min-h-[calc(100svh-11rem)]">
       <div className="relative w-full">
         <div className="flex flex-col items-center space-y-12 text-center sm:space-y-20">
           <Link
@@ -89,7 +89,7 @@ export function HeroPanel({
           </div>
 
           <div className="w-fit">
-            <p className="[font-family:var(--font-paraluman-heading)] min-h-[3em] text-3xl font-black leading-relaxed tracking-[-0.01em] text-[#1f3a55]/95 sm:min-h-[1.4em] sm:text-[2.8rem]">
+            <p className="[font-family:var(--font-paraluman-heading)] min-h-[3em] text-3xl font-black leading-tight sm:leading-relaxed tracking-[-0.01em] text-[#1f3a55]/95 sm:min-h-[1.4em] sm:text-[2.8rem]">
               <span className="block sm:inline">Build better travel</span>
               <span
                 className={`inline-flex items-center ${
@@ -126,7 +126,7 @@ export function HeroPanel({
             aria-label="Scroll to overview"
             className="group flex flex-col items-center transition-all duration-300 hover:brightness-125"
           >
-            <span className="rounded-full border border-[#2574BB]/30 bg-[#2574BB]/90 px-4 py-1 [font-family:var(--font-paraluman-heading)] text-sm font-semibold leading-none tracking-[-0.01em] text-white shadow-[0_14px_28px_-22px_rgba(37,116,187,0.7)] sm:px-5 sm:py-1.5 sm:text-xl">
+            <span className="rounded-full border border-[#2574BB]/30 bg-[#2574BB]/90 px-5 py-2 [font-family:var(--font-paraluman-heading)]  font-semibold leading-none tracking-[-0.01em] text-white shadow-[0_14px_28px_-22px_rgba(37,116,187,0.7)] sm:px-5 sm:py-1.5 sm:text-xl">
               No resume required, 24h response
             </span>
             <span className="mt-1 inline-flex items-center justify-center text-[#2574BB] transition-colors duration-300 group-hover:text-[#1c5a92]">
