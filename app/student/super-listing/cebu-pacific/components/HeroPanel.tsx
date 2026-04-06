@@ -58,8 +58,8 @@ export function HeroPanel({
   }, [phraseIndex, typedText, isDeleting]);
 
   return (
-    <section className="relative mx-auto flex min-h-[calc(100svh-9.5rem)] max-w-5xl items-start justify-center overflow-hidden pb-16 pt-6 sm:min-h-[calc(100svh-10.5rem)] sm:items-center sm:pb-20 sm:pt-12 lg:min-h-[calc(100svh-11rem)]">
-      <div className="relative mx-auto w-full max-w-5xl">
+    <section className="relative flex min-h-[calc(100svh-9.5rem)] w-full items-start justify-center overflow-hidden pb-16 pt-6 sm:min-h-[calc(100svh-10.5rem)] sm:items-center sm:pb-20 sm:pt-12 lg:min-h-[calc(100svh-11rem)]">
+      <div className="relative w-full">
         <div className="flex flex-col items-center space-y-12 text-center sm:space-y-20">
           <Link
             href="https://www.cebupacificair.com/"
@@ -75,7 +75,7 @@ export function HeroPanel({
             />
           </Link>
 
-          <div className="mx-auto w-full max-w-[min(92vw,940px)] ">
+          <div className="w-full">
             <div className="relative mx-auto inline-block">
               <h1 className="absolute left-1/2 top-0 z-20 w-fit -translate-x-1/2 rounded-full border border-[#2574BB]/30 bg-white/90 px-4 py-1 [font-family:var(--font-paraluman-heading)] text-sm font-semibold leading-none tracking-[-0.01em] text-[#2574BB] shadow-[0_14px_28px_-22px_rgba(37,116,187,0.7)] sm:px-5 sm:py-1.5 sm:text-lg">
                 We&apos;re looking for
@@ -88,7 +88,7 @@ export function HeroPanel({
             </div>
           </div>
 
-          <div className="mx-auto w-fit max-w-3xl">
+          <div className="w-fit">
             <p className="[font-family:var(--font-paraluman-heading)] min-h-[3em] text-2xl font-black leading-relaxed tracking-[-0.01em] text-[#1f3a55]/95 sm:min-h-[1.4em] sm:text-3xl">
               <span className="block sm:inline">Build better travel</span>
               <span

@@ -50,11 +50,11 @@ const HOW_TO_APPLY_STEPS = [
 
 function SectionTitle({ title, textClassName }: SectionTitleProps) {
   return (
-    <div className="mx-auto w-full max-w-prose">
-      <div className="flex items-stretch gap-4">
+    <div className="w-full">
+      <div className="flex items-stretch gap-2.5">
         <span
           aria-hidden="true"
-          className="w-[0.75em] shrink-0 bg-[#2574BB] opacity-50 h-[1.5em] my-auto"
+          className="w-[0.3em] shrink-0 bg-[#2574BB] h-[2em] my-auto opacity-50"
         />
         <p
           className={`text-left [font-family:var(--font-paraluman-heading)] text-[clamp(1.25rem,2.4vw,1.8rem)] font-black tracking-[-0.01em] ${textClassName ?? "text-[#1f68a9]"}`}
@@ -73,17 +73,17 @@ export function OverviewPanel({
     <div className="space-y-16 pt-4 sm:pt-8">
       <section className="space-y-2">
         <SectionTitle title="About Cebu Pacific" />
-        <div className="relative mx-auto w-full max-w-prose overflow-hidden rounded-[0.33em] border border-[rgba(37,116,187,0.4)] bg-[#edf6ff] p-6 text-[#173957] shadow-[0_24px_56px_-30px_rgba(37,116,187,0.45)] sm:p-8">
+        <div className="relative w-full overflow-hidden rounded-[0.33em] border border-[rgba(37,116,187,0.4)] bg-[#edf6ff] p-6 text-[#173957] shadow-[0_24px_56px_-30px_rgba(37,116,187,0.45)] sm:p-8">
           <div className="relative z-10 space-y-3">
-            <div className="mt-4 space-y-8 [font-family:var(--font-paraluman-body)] text-lg leading-8 text-[#173957]/95 sm:text-xl">
-              <p className="max-w-prose text-lg leading-8 text-[#173957]/95 sm:text-xl">
+            <div className="space-y-8 [font-family:var(--font-paraluman-body)] text-lg leading-8 text-[#173957]/95 sm:text-xl">
+              <p className="text-lg leading-8 text-[#173957]/95 sm:text-xl">
                 We are the leading airline in the Philippines, operating flights
                 to over 60 destinations across 14 countries.
               </p>
               <p className="text-lg leading-8 text-[#173957]/95 sm:text-xl">
                 But even as a leading airline, we know we can still be better.
               </p>
-              <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black leading-tight tracking-[-0.02em] text-[#1f68a9] pt-[1em]">
+              <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black leading-tight tracking-[-0.02em] text-[#1f68a9]">
                 That&apos;s where you come in.
               </p>
             </div>
@@ -105,13 +105,13 @@ export function OverviewPanel({
       </section>
       <section className="space-y-2">
         <SectionTitle title="What you will work on" />
-        <div className="relative mx-auto w-full max-w-prose overflow-hidden rounded-[0.33em] border border-[#2574BB]/35 bg-[#edf6ff] p-6 text-[#173957] shadow-[0_20px_38px_-26px_rgba(37,116,187,0.35)] sm:p-8">
+        <div className="relative w-full overflow-hidden rounded-[0.33em] border border-[#2574BB]/35 bg-[#edf6ff] p-6 text-[#173957] shadow-[0_20px_38px_-26px_rgba(37,116,187,0.35)] sm:p-8">
           <div className="relative z-10 space-y-5">
             <div className="space-y-8 [font-family:var(--font-paraluman-body)] text-lg leading-8 text-[#153a5b]/92 sm:text-xl">
               <p className="text-lg font-semibold leading-8 text-[#153a5b] sm:text-xl">
                 For this internship, we are not assigning roles upfront.
               </p>
-              <p className="max-w-prose text-lg leading-8 text-[#153a5b]/92 sm:text-xl">
+              <p className="text-lg leading-8 text-[#153a5b]/92 sm:text-xl">
                 <span className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase tracking-[0.06em] text-[#2574BB] sm:text-xl">
                   Why?
                 </span>{" "}
@@ -119,37 +119,34 @@ export function OverviewPanel({
                 We&apos;re looking for someone who can solve problems with their
                 own initiative.
               </p>
-              <p className="max-w-prose text-lg leading-8 text-[#153a5b]/92 sm:text-xl">
+              <p className="text-lg leading-8 text-[#153a5b]/92 sm:text-xl">
                 Once you pass the challenge, we&apos;ll see what you&apos;re
                 capable of first, then we&apos;ll give you projects based on
                 your talents and strengths.
               </p>
-              <p className="max-w-prose text-lg leading-8 text-[#153a5b]/92 sm:text-xl">
-                Our plan is to let you work on real user problems - our website,
-                app, systems, and maybe even the actual experience of flying.
+
+              <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black leading-tight tracking-[-0.02em] text-[#1f68a9]">
+                If you get in, you&apos;re here to build <br />
+                and to make flying better for Every Juan.
               </p>
             </div>
-            <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black leading-tight tracking-[-0.02em] text-[#1f68a9] pt-[1em]">
-              If you get in, you&apos;re here to build <br />
-              and to make flying better for Every Juan.
-            </p>
           </div>
         </div>
       </section>
 
       <section className="space-y-2">
         <SectionTitle title="What you will get" />
-        <div className="relative mx-auto w-full max-w-prose overflow-hidden rounded-[0.33em] border border-[#2574BB]/40 bg-[#edf6ff] p-6 text-[#173957] shadow-[0_26px_48px_-30px_rgba(37,116,187,0.46)] sm:p-8">
+        <div className="relative w-full overflow-hidden rounded-[0.33em] border border-[#2574BB]/40 bg-[#edf6ff] p-6 text-[#173957] shadow-[0_26px_48px_-30px_rgba(37,116,187,0.46)] sm:p-8">
           <div className="relative z-10 space-y-8 [font-family:var(--font-paraluman-body)] text-lg leading-8 text-[#173957]/95 sm:text-xl">
-            <p className="max-w-prose text-lg leading-8 sm:text-xl">
+            <p className="text-lg leading-8 sm:text-xl">
               What you build may be used by millions of Filipinos, including
               your family and friends.
             </p>
-            <p className="max-w-prose text-lg leading-8 sm:text-xl">
+            <p className="text-lg leading-8 sm:text-xl">
               In most internships, you do grunt work. Here, you make changes
               that could impact a top airline in our country.
             </p>
-            <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black leading-tight tracking-[-0.02em] text-[#1f68a9] pt-[1em]">
+            <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black leading-tight tracking-[-0.02em] text-[#1f68a9]">
               You walk away with a story <br />
               that makes people stop and listen.
             </p>
@@ -159,7 +156,7 @@ export function OverviewPanel({
 
       <section className="space-y-2">
         <SectionTitle title="How to apply" />
-        <div className="relative mx-auto w-full max-w-prose overflow-hidden rounded-[0.33em] border border-[#2574BB]/40 bg-[#edf6ff] p-6 text-[#173957] shadow-[0_26px_48px_-30px_rgba(37,116,187,0.46)] sm:p-8">
+        <div className="relative w-full overflow-hidden rounded-[0.33em] border border-[#2574BB]/40 bg-[#edf6ff] p-6 text-[#173957] shadow-[0_26px_48px_-30px_rgba(37,116,187,0.46)] sm:p-8">
           <div className="relative z-10 space-y-5">
             <ol className="mx-auto w-full">
               {HOW_TO_APPLY_STEPS.map((step, index) => (
@@ -185,7 +182,7 @@ export function OverviewPanel({
 
             <div className="flex w-full flex-col gap-3 rounded-[0.33em] border border-[#2574BB]/22 bg-white/75 px-4 py-3.5 shadow-[0_12px_24px_-22px_rgba(37,116,187,0.55)] sm:flex-row sm:items-center sm:justify-between">
               <p className="[font-family:var(--font-paraluman-body)] text-lg font-semibold leading-8 text-[#153a5b]/95 sm:text-xl">
-                No resume needed. One clear submission link is enough.
+                No resume needed. 24h response. 
               </p>
               <Button
                 type="button"
@@ -201,7 +198,7 @@ export function OverviewPanel({
 
       <div className="space-y-2">
         <SectionTitle title="FAQs" />
-        <div className="mx-auto w-full max-w-prose rounded-[0.33em] border-2 border-[#2574BB]/30 bg-white px-6 py-3 shadow-[0_16px_38px_-28px_rgba(37,116,187,0.5)]">
+        <div className="w-full rounded-[0.33em] border-2 border-[#2574BB]/30 bg-white px-6 py-3 shadow-[0_16px_38px_-28px_rgba(37,116,187,0.5)]">
           <Accordion type="single" collapsible className="w-full">
             {FAQ_ITEMS.map((item, index) => (
               <AccordionItem
@@ -209,7 +206,7 @@ export function OverviewPanel({
                 value={`faq-${index}`}
                 className="border-[#2574BB]/20"
               >
-                <AccordionTrigger className="[font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.06em] text-[#1f68a9] hover:no-underline sm:text-base">
+                <AccordionTrigger className="[font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.06em] text-[#1f68a9] hover:no-underline sm:text-lg">
                   {item.question}
                 </AccordionTrigger>
                 <AccordionContent className="[font-family:var(--font-paraluman-body)] text-lg leading-8 text-black/70 sm:text-xl">
@@ -221,13 +218,13 @@ export function OverviewPanel({
         </div>
       </div>
 
-      <div className="relative mx-auto w-full max-w-prose overflow-hidden rounded-[0.33em] border-2 border-[#2574BB]/38 bg-[#edf6ff] p-6 text-[#173957] shadow-[0_24px_55px_-30px_rgba(37,116,187,0.62)] sm:p-8">
+      <div className="relative w-full overflow-hidden rounded-[0.33em] border-2 border-[#2574BB]/38 bg-[#edf6ff] p-6 text-[#173957] shadow-[0_24px_55px_-30px_rgba(37,116,187,0.62)] sm:p-8">
         <div className="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="">
             <p className="[font-family:var(--font-paraluman-heading)] text-2xl text-[#1f68a9] uppercase tracking-[-0.02em] sm:text-3xl font-black">
               Up for the challenge?
             </p>
-            <p className="[font-family:var(--font-paraluman-body)] text-[10px] leading-tight text-[#1d466f]/80 sm:text-[11px]">
+            <p className="[font-family:var(--font-paraluman-body)] leading-tight text-[#1d466f]/80 sm:text-xs">
               No resume needed. Response in 24 hours
             </p>
           </div>

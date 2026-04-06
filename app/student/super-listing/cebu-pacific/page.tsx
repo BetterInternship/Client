@@ -400,7 +400,10 @@ export default function CebuPacificPage() {
                       onHowToApply={scrollToOverview}
                       showHowToApplyButton={activePanel === "overview"}
                     />
-                    <div id="cebu-overview-anchor">
+                    <div
+                      id="cebu-overview-anchor"
+                      className="mx-auto w-full max-w-3xl"
+                    >
                       <OverviewPanel onGoToApply={openChallengePanel} />
                     </div>
                   </>
