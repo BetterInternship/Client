@@ -156,7 +156,7 @@ export function OverviewPanel({
 
       <section className="space-y-2">
         <SectionTitle title="How to apply" />
-        <div className="relative w-full overflow-hidden rounded-[0.33em] border border-[#2574BB]/40 bg-[#edf6ff] p-6 text-[#173957] shadow-[0_26px_48px_-30px_rgba(37,116,187,0.46)] sm:p-8">
+        <div className="relative w-full overflow-hidden rounded-[0.33em] border border-[#9b8955]/20 bg-[#f6eccf] p-6 text-[#173957] shadow-[0_26px_48px_-30px_rgba(37,116,187,0.46)] sm:p-8">
           <div className="relative z-10 space-y-5">
             <ol className="mx-auto w-full">
               {HOW_TO_APPLY_STEPS.map((step, index) => (
@@ -182,14 +182,14 @@ export function OverviewPanel({
 
             <div className="flex w-full flex-col gap-3 rounded-[0.33em] border border-[#2574BB]/22 bg-white/75 px-4 py-3.5 shadow-[0_12px_24px_-22px_rgba(37,116,187,0.55)] sm:flex-row sm:items-center sm:justify-between">
               <p className="[font-family:var(--font-paraluman-body)] text-lg font-semibold leading-8 text-[#153a5b]/95 sm:text-xl">
-                No resume needed. 24h response. 
+                No resume needed. 24h response.
               </p>
               <Button
                 type="button"
                 onClick={onGoToHowToApply}
                 className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#d8c17b] bg-[#ecd389] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#173957] transition-all duration-200 hover:bg-[#e2c36b] hover:shadow-[0_12px_26px_-14px_rgba(236,211,137,0.9)] sm:w-auto"
               >
-                Open challenge
+                View challenge
               </Button>
             </div>
           </div>
