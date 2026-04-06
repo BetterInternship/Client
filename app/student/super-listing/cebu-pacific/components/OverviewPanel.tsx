@@ -42,6 +42,12 @@ const FAQ_ITEMS = [
   },
 ];
 
+const HOW_TO_APPLY_STEPS = [
+  "Open the challenge brief and review the task.",
+  "Build your solution and upload it in one clear link.",
+  "Submit your link and details. We respond within 24 hours.",
+];
+
 function SectionTitle({ title, textClassName }: SectionTitleProps) {
   return (
     <div className="space-y-2">
@@ -149,6 +155,48 @@ export function OverviewPanel({
         </div>
       </section>
 
+      <section className="space-y-6">
+        <SectionTitle title="How to apply" />
+        <div className="rounded-[0.33em] border border-[#2574BB]/38 bg-[#edf6ff] p-6 shadow-[0_24px_50px_-30px_rgba(37,116,187,0.58)] sm:p-8">
+          <div className="space-y-5">
+            <ol className="mx-auto w-full">
+              {HOW_TO_APPLY_STEPS.map((step, index) => (
+                <li
+                  key={step}
+                  className="relative flex items-start gap-4 pb-5 pl-1"
+                >
+                  {index < HOW_TO_APPLY_STEPS.length - 1 && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-[0.98rem] top-8 h-[calc(100%-0.25rem)] w-px bg-[#2574BB]/30"
+                    />
+                  )}
+                  <span className="relative z-10 inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-[#2574BB]/25 bg-white [font-family:var(--font-paraluman-heading)] text-xs font-black uppercase tracking-[0.03em] text-[#1f68a9] shadow-[0_8px_18px_-14px_rgba(37,116,187,0.7)]">
+                    {index + 1}
+                  </span>
+                  <p className="pt-0.5 [font-family:var(--font-paraluman-mono)] text-base leading-7 text-[#153a5b] sm:text-lg">
+                    {step}
+                  </p>
+                </li>
+              ))}
+            </ol>
+
+            <div className="mx-auto flex w-full max-w-5xl flex-col gap-3 rounded-[0.33em] border border-[#2574BB]/22 bg-white/75 px-4 py-3.5 shadow-[0_12px_24px_-22px_rgba(37,116,187,0.55)] sm:flex-row sm:items-center sm:justify-between">
+              <p className="[font-family:var(--font-paraluman-mono)] text-sm font-semibold leading-6 text-[#153a5b]/95">
+                No resume needed. One clear submission link is enough.
+              </p>
+              <Button
+                type="button"
+                onClick={onGoToHowToApply}
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#d8c17b] bg-[#ecd389] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#173957] transition-all duration-200 hover:bg-[#e2c36b] hover:shadow-[0_12px_26px_-14px_rgba(236,211,137,0.9)] sm:w-auto"
+              >
+                Open challenge
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div className="space-y-4">
         <SectionTitle title="FAQs" />
         <div className="rounded-[0.33em] border-2 border-[#2574BB]/30 bg-white px-6 py-3 shadow-[0_16px_38px_-28px_rgba(37,116,187,0.5)]">
@@ -187,7 +235,7 @@ export function OverviewPanel({
               onClick={onGoToHowToApply}
               className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#d8c17b] bg-[#ecd389] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#173957] transition-all duration-200 hover:bg-[#e2c36b] hover:shadow-[0_12px_26px_-14px_rgba(236,211,137,0.9)] sm:w-auto"
             >
-              Start challenge
+              View challenge
             </Button>
           </div>
         </div>
