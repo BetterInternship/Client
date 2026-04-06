@@ -78,7 +78,7 @@ export function HeroPanel({
 
           <div className="mx-auto w-full max-w-[min(92vw,940px)] ">
             <div className="relative mx-auto inline-block">
-              <h1 className="absolute left-1 top-0 z-20 w-fit -rotate-[3deg] rounded-full border border-[#2574BB]/30 bg-white/90 px-4 py-1 [font-family:var(--font-paraluman-heading)] text-sm font-semibold leading-none tracking-[-0.01em] text-[#2574BB] shadow-[0_14px_28px_-22px_rgba(37,116,187,0.7)] sm:left-2 sm:px-5 sm:py-1.5 sm:text-lg">
+              <h1 className="absolute left-1/2 top-0 z-20 w-fit -translate-x-1/2 rounded-full border border-[#2574BB]/30 bg-white/90 px-4 py-1 [font-family:var(--font-paraluman-heading)] text-sm font-semibold leading-none tracking-[-0.01em] text-[#2574BB] shadow-[0_14px_28px_-22px_rgba(37,116,187,0.7)] sm:px-5 sm:py-1.5 sm:text-lg">
                 We&apos;re looking for
               </h1>
               <p className="[font-family:var(--font-paraluman-heading)] pt-8 sm:pt-10">
