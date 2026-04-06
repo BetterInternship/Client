@@ -160,8 +160,8 @@ export function OverviewPanel({
 
       <section className="space-y-2">
         <SectionTitle title="How to apply" />
-        <div className="rounded-[0.33em] border border-[#2574BB]/38 bg-[#edf6ff] p-6 shadow-[0_24px_50px_-30px_rgba(37,116,187,0.58)] sm:p-8">
-          <div className="space-y-5">
+        <div className="relative mx-auto w-full max-w-prose overflow-hidden rounded-[0.33em] border border-[#2574BB]/40 bg-[#edf6ff] p-6 text-[#173957] shadow-[0_26px_48px_-30px_rgba(37,116,187,0.46)] sm:p-8">
+          <div className="relative z-10 space-y-5">
             <ol className="mx-auto w-full">
               {HOW_TO_APPLY_STEPS.map((step, index) => (
                 <li
@@ -177,15 +177,15 @@ export function OverviewPanel({
                   <span className="relative z-10 inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-[#2574BB]/25 bg-white [font-family:var(--font-paraluman-heading)] text-xs font-black uppercase tracking-[0.03em] text-[#1f68a9] shadow-[0_8px_18px_-14px_rgba(37,116,187,0.7)]">
                     {index + 1}
                   </span>
-                  <p className="pt-0.5 [font-family:var(--font-paraluman-mono)] text-base leading-7 text-[#153a5b] sm:text-lg">
+                  <p className="pt-0.5 [font-family:var(--font-paraluman-body)] text-base leading-7 text-[#153a5b]/92 sm:text-lg">
                     {step}
                   </p>
                 </li>
               ))}
             </ol>
 
-            <div className="mx-auto flex w-full max-w-5xl flex-col gap-3 rounded-[0.33em] border border-[#2574BB]/22 bg-white/75 px-4 py-3.5 shadow-[0_12px_24px_-22px_rgba(37,116,187,0.55)] sm:flex-row sm:items-center sm:justify-between">
-              <p className="[font-family:var(--font-paraluman-mono)] text-sm font-semibold leading-6 text-[#153a5b]/95">
+            <div className="flex w-full flex-col gap-3 rounded-[0.33em] border border-[#2574BB]/22 bg-white/75 px-4 py-3.5 shadow-[0_12px_24px_-22px_rgba(37,116,187,0.55)] sm:flex-row sm:items-center sm:justify-between">
+              <p className="[font-family:var(--font-paraluman-body)] text-sm font-semibold leading-6 text-[#153a5b]/95">
                 No resume needed. One clear submission link is enough.
               </p>
               <Button
