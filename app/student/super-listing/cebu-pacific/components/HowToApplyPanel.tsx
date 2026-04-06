@@ -40,7 +40,7 @@ export function HowToApplyPanel({
                     .
                   </span>
                 </p>
-                <p className="[font-family:var(--font-paraluman-mono)] text-sm text-[#163a5b]/85 sm:text-base">
+                <p className="[font-family:var(--font-paraluman-body)] text-sm text-[#163a5b]/85 sm:text-base">
                   Show us clear product thinking, practical judgment, and
                   execution quality.
                 </p>
@@ -48,7 +48,7 @@ export function HowToApplyPanel({
                 <p className="[font-family:var(--font-paraluman-mono)] text-xs uppercase tracking-[0.12em] text-[#163a5b]/75 sm:text-sm ">
                   Official Links
                 </p>
-                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center [font-family:var(--font-paraluman-mono)] text-sm text-black/80 sm:text-base">
+                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center [font-family:var(--font-paraluman-body)] text-sm text-black/80 sm:text-base">
                   <a
                     href="https://www.cebupacificair.com/en-PH/"
                     target="_blank"
@@ -86,7 +86,7 @@ export function HowToApplyPanel({
                 >
                   Submit Work
                 </Button>
-                <p className="[font-family:var(--font-paraluman-mono)] text-[10px] leading-tight text-black/75 sm:text-[11px]">
+                <p className="[font-family:var(--font-paraluman-body)] text-[10px] leading-tight text-black/75 sm:text-[11px]">
                   No resume needed. Response in 24 hours
                 </p>
               </div>
@@ -98,7 +98,7 @@ export function HowToApplyPanel({
             <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase text-[#1f68a9]">
               Goal
             </p>
-            <ul className="list-disc pl-5 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80 sm:text-base">
+            <ul className="list-disc pl-5 [font-family:var(--font-paraluman-body)] text-sm leading-7 text-black/80 sm:text-base">
               <li>Show us how you think.</li>
               <li>Why does this problem matter?</li>
               <li>Why did you make those changes?</li>
@@ -111,7 +111,7 @@ export function HowToApplyPanel({
             <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase text-[#1f68a9]">
               What We&apos;re Looking For
             </p>
-            <ol className="list-decimal pl-8 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80 sm:text-base space-y-3">
+            <ol className="list-decimal pl-8 [font-family:var(--font-paraluman-body)] text-sm leading-7 text-black/80 sm:text-base space-y-3">
               <li>
                 <span className="font-black">Taste and judgment</span>
                 <br />
@@ -147,7 +147,7 @@ export function HowToApplyPanel({
             <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase text-[#1f68a9]">
               Submission Requirements
             </p>
-            <ol className="list-decimal pl-8 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80 sm:text-base">
+            <ol className="list-decimal pl-8 [font-family:var(--font-paraluman-body)] text-sm leading-7 text-black/80 sm:text-base">
               <li>
                 Your redesign or solution as a deployed working prototype, not a
                 wireframe.
@@ -163,11 +163,11 @@ export function HowToApplyPanel({
             <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase text-[#1f68a9]">
               Before You Start
             </p>
-            <p className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80 sm:text-base">
+            <p className="[font-family:var(--font-paraluman-body)] text-sm leading-7 text-black/80 sm:text-base">
               This internship isn&apos;t about being the best programmer or the
               best designer. It&apos;s about being able to solve problems.
             </p>
-            <p className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80 sm:text-base">
+            <p className="[font-family:var(--font-paraluman-body)] text-sm leading-7 text-black/80 sm:text-base">
               Most people will scroll past this. Some will start, but few will
               finish. We&apos;re looking for the few resilient ones who will
               follow through.
@@ -182,7 +182,7 @@ export function HowToApplyPanel({
             <p className="[font-family:var(--font-paraluman-heading)] text-2xl text-[#1f68a9] uppercase tracking-[-0.02em] sm:text-3xl !font-black">
               Ready to turn this into a real opportunity?
             </p>
-            <p className="[font-family:var(--font-paraluman-mono)] text-[10px] leading-tight text-[#1d466f]/80 sm:text-[11px]">
+            <p className="[font-family:var(--font-paraluman-body)] text-[10px] leading-tight text-[#1d466f]/80 sm:text-[11px]">
               No resume needed. Response in 24 hours
             </p>
           </div>

@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
 import cebuPacificLogo from "../logo.png";
 
 type HeroPanelProps = {
@@ -59,19 +58,19 @@ export function HeroPanel({
   }, [phraseIndex, typedText, isDeleting]);
 
   return (
-    <section className="relative mx-auto flex min-h-[68vh] max-w-5xl items-center justify-center overflow-hidden sm:min-h-[72vh] lg:min-h-[78vh]">
+    <section className="relative mx-auto flex min-h-[calc(100svh-9.5rem)] max-w-5xl items-center justify-center overflow-hidden pb-16 pt-10 sm:min-h-[calc(100svh-10.5rem)] sm:pb-20 sm:pt-12 lg:min-h-[calc(100svh-11rem)]">
       <div className="relative mx-auto w-full max-w-5xl">
-        <div className="flex flex-col items-center space-y-8 text-center sm:space-y-16">
+        <div className="flex flex-col items-start space-y-16 text-left sm:items-center sm:text-center sm:space-y-20">
           <Link
             href="https://www.cebupacificair.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="mx-auto inline-flex w-fit transition-opacity duration-300 hover:opacity-85"
+            className="inline-flex w-fit transition-opacity duration-300 hover:opacity-85 sm:mx-auto"
           >
             <Image
               src={cebuPacificLogo}
               alt="Cebu Pacific"
-              className="h-auto w-32 sm:w-40"
+              className="h-auto w-40 sm:w-48"
               priority
             />
           </Link>
@@ -118,18 +117,18 @@ export function HeroPanel({
           </div>
 
           {showHowToApplyButton && (
-            <div className="flex flex-col items-center gap-3 pt-3">
-              <Button
+            <div className="flex flex-col items-start gap-4 pt-8 sm:items-center sm:pt-10">
+              <div className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.25rem,3.6vw,2.35rem)] font-black uppercase leading-[0.95] tracking-[-0.03em] text-[#2574BB]">
+                No resume required, 24h response
+              </div>
+              <button
                 type="button"
                 onClick={onHowToApply}
-                className="inline-flex h-16 w-full items-center justify-center gap-3 rounded-[0.33em] border-2 border-[#2574BB] bg-[#2574BB] px-8 [font-family:var(--font-paraluman-heading)] text-lg font-black uppercase tracking-[0.09em] text-white transition-all duration-300 hover:bg-[#1c5a92] hover:shadow-[0_24px_48px_-16px_rgba(37,116,187,0.62)] active:scale-95 sm:w-auto sm:px-12 sm:text-xl"
+                aria-label="Scroll to overview"
+                className="mt-1 inline-flex h-20 w-20 items-center justify-center rounded-full text-[#2574BB] transition-all duration-300 hover:scale-105 hover:text-[#1c5a92] active:scale-95 sm:h-24 sm:w-24"
               >
-                See Full Overview
-                <ArrowDown className="h-5 w-5" />
-              </Button>
-              <p className="[font-family:var(--font-paraluman-mono)] text-sm font-semibold text-[#6f5200]/80">
-                No resume required, 24h response
-              </p>
+                <ChevronDown className="h-14 w-14 animate-bounce stroke-[2.6] sm:h-16 sm:w-16" />
+              </button>
             </div>
           )}
         </div>

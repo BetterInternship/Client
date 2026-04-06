@@ -189,7 +189,7 @@ export function ApplyPanel({
                   You're in
                 </p>
                 <motion.p
-                  className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/70 sm:text-base"
+                  className="[font-family:var(--font-paraluman-body)] text-sm leading-7 text-black/70 sm:text-base"
                   initial={prefersReduce ? false : { opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.7, ease: "easeOut", delay: 0.35 }}
@@ -225,7 +225,7 @@ export function ApplyPanel({
                     ? "Step 1: Share your challenge output"
                     : "Step 2: Confirm your details"}
                 </p>
-                <p className="relative z-10 mt-1 [font-family:var(--font-paraluman-mono)] text-xs leading-6 text-[#173957]/85 sm:text-sm">
+                <p className="relative z-10 mt-1 [font-family:var(--font-paraluman-body)] text-xs leading-6 text-[#173957]/85 sm:text-sm">
                   {submissionStep === 1
                     ? "This will be where you submit your challenge output."
                     : "Final step. No resume needed. Guaranteed response in 24 hours."}
@@ -243,10 +243,10 @@ export function ApplyPanel({
                       required
                       value={form.submissionLink}
                       onChange={updateField("submissionLink")}
-                      className="h-11 border-2 border-[#2574BB]/35 bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
+                      className="h-11 border-2 border-[#2574BB]/35 bg-white focus:ring-0 [font-family:var(--font-paraluman-body)]"
                     />
-                    <div className="[font-family:var(--font-paraluman-mono)] text-[10px] text-black/55 sm:text-[11px]">
-                      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 [font-family:var(--font-paraluman-mono)] text-[10px] text-black/55 sm:text-[11px]">
+                    <div className="[font-family:var(--font-paraluman-body)] text-[10px] text-black/55 sm:text-[11px]">
+                      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 [font-family:var(--font-paraluman-body)] text-[10px] text-black/55 sm:text-[11px]">
                         Submit your CHALLENGE OUTPUT through any of the
                         platforms:
                         <span className="inline-flex items-center gap-1 border rounded-full px-1.5 border-black/55">
@@ -276,9 +276,9 @@ export function ApplyPanel({
                     <Textarea
                       value={form.submissionNotes}
                       onChange={updateField("submissionNotes")}
-                      className="min-h-28 border-2 border-[#2574BB]/35 bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
+                      className="min-h-28 border-2 border-[#2574BB]/35 bg-white focus:ring-0 [font-family:var(--font-paraluman-body)]"
                     />
-                    <p className="[font-family:var(--font-paraluman-mono)] text-[10px] text-black/55 sm:text-[11px]">
+                    <p className="[font-family:var(--font-paraluman-body)] text-[10px] text-black/55 sm:text-[11px]">
                       Add context, constraints, or tradeoffs you want us to
                       notice.
                     </p>
@@ -297,7 +297,7 @@ export function ApplyPanel({
                       type="email"
                       value={form.email}
                       onChange={updateField("email")}
-                      className="h-11 border-2 border-[#2574BB]/35 bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
+                      className="h-11 border-2 border-[#2574BB]/35 bg-white focus:ring-0 [font-family:var(--font-paraluman-body)]"
                     />
                   </div>
 
@@ -309,7 +309,7 @@ export function ApplyPanel({
                       required
                       value={form.fullName}
                       onChange={updateField("fullName")}
-                      className="h-11 border-2 border-[#2574BB]/35 bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
+                      className="h-11 border-2 border-[#2574BB]/35 bg-white focus:ring-0 [font-family:var(--font-paraluman-body)]"
                     />
                   </div>
 
@@ -321,12 +321,12 @@ export function ApplyPanel({
                       required
                       value={form.facebookLink}
                       onChange={updateField("facebookLink")}
-                      className="h-11 border-2 border-[#2574BB]/35 bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
+                      className="h-11 border-2 border-[#2574BB]/35 bg-white focus:ring-0 [font-family:var(--font-paraluman-body)]"
                     />
                   </div>
 
                   {isDevelopment ? (
-                    <p className="rounded-[0.33em] bg-[#2574BB]/10 px-3 py-2 [font-family:var(--font-paraluman-mono)] text-xs text-[#1f68a9]">
+                    <p className="rounded-[0.33em] bg-[#2574BB]/10 px-3 py-2 [font-family:var(--font-paraluman-body)] text-xs text-[#1f68a9]">
                       Captcha disabled in development
                     </p>
                   ) : !token ? (
@@ -346,7 +346,7 @@ export function ApplyPanel({
                       />
                     </div>
                   ) : (
-                    <div className="rounded-[0.33em] bg-emerald-100 px-3 py-2 [font-family:var(--font-paraluman-mono)] text-xs text-emerald-700">
+                    <div className="rounded-[0.33em] bg-emerald-100 px-3 py-2 [font-family:var(--font-paraluman-body)] text-xs text-emerald-700">
                       Browser verification complete
                     </div>
                   )}
@@ -394,7 +394,7 @@ export function ApplyPanel({
               {resultMessage && (
                 <div
                   className={cn(
-                    "rounded-[0.33em] border-2 px-4 py-3 [font-family:var(--font-paraluman-mono)] text-sm",
+                    "rounded-[0.33em] border-2 px-4 py-3 [font-family:var(--font-paraluman-body)] text-sm",
                     isError
                       ? "border-red-300 bg-red-50 text-red-700"
                       : "border-emerald-300 bg-emerald-50 text-emerald-700",

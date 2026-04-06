@@ -3,7 +3,7 @@
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { OverviewPanel } from "./components/OverviewPanel";
 import { HowToApplyPanel } from "./components/HowToApplyPanel";
@@ -26,6 +26,12 @@ const monoFont = JetBrains_Mono({
   subsets: ["latin"],
   weight: ["400", "600"],
   variable: "--font-paraluman-mono",
+});
+
+const bodyFont = Open_Sans({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  variable: "--font-paraluman-body",
 });
 
 const CHALLENGE_PDF_URL = "https://www.cebupacificair.com/";
@@ -285,6 +291,7 @@ export default function CebuPacificPage() {
         "relative isolate h-full min-h-screen bg-[#f7fbff] text-black",
         headingFont.variable,
         monoFont.variable,
+        bodyFont.variable,
       )}
     >
       <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_8%_12%,rgba(37,116,187,0.15),transparent_38%),radial-gradient(circle_at_88%_8%,rgba(243,217,138,0.15),transparent_34%),radial-gradient(circle_at_50%_92%,rgba(37,116,187,0.08),transparent_44%)]" />
