@@ -169,7 +169,7 @@ export default function FormDashboard({
 
     if (tapState.timer) clearTimeout(tapState.timer);
 
-    if (tapState.count >= 5) {
+    if (tapState.count >= 10) {
       const cutoff = Date.now();
       setFreshHistoryCutoffMsInStorage(cutoff);
       setFreshHistoryCutoffMs(cutoff);
