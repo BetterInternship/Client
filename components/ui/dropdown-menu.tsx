@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { cn } from "@/lib/utils";
-import { ChevronDown, ChevronUp, LucideIcon } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { ActionItem } from "./action-item";
 import StatusBadge from "./status-badge";
 import { createPortal } from "react-dom";
@@ -12,7 +12,7 @@ export const DropdownMenu = ({
   defaultItem,
   enabled = true,
 }: {
-  className: string;
+  className?: string;
   items: ActionItem[];
   defaultItem: ActionItem;
   enabled?: boolean;
@@ -67,20 +67,18 @@ export const DropdownMenu = ({
       aria-disabled={!enabled}
       className={cn(
         className,
-        "relative border border-gray-300 rounded-[0.33em] bg-white inline-flex w-max aria-disabled:text-muted-foreground aria-disabled:bg-muted aria-disabled:cursor-not-allowed aria-disabled:pointer-events-none",
+        "relative border border-gray-300 rounded-[0.33em] bg-white inline-flex aria-disabled:text-muted-foreground aria-disabled:bg-muted aria-disabled:cursor-not-allowed aria-disabled:pointer-events-none",
       )}
     >
       <div
-        className="
-          flex flex-col gap-1
-        "
+        className="flex flex-col gap-1"
         onClick={(e) => {
           e.stopPropagation();
           if (!enabled) return;
           setIsOpen((prev) => !prev);
         }}
       >
-        <div className="flex gap-2 px-2 py-1 pr-4 items-center">
+        <div className="flex gap-2 px-2 py-1 pr-4 items-center justify-between w-full">
           {isOpen ? <ChevronUp size={cn(20)} /> : <ChevronDown size={cn(20)} />}
           <StatusBadge statusId={parseInt(activeItem.id)} />
         </div>

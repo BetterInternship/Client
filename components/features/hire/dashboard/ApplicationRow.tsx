@@ -117,7 +117,11 @@ export function ApplicationRow({
             </h4>
           </div>
           {isSuperListing && (
-            <DropdownMenu items={statuses} defaultItem={defaultStatus} />
+            <DropdownMenu
+              items={statuses}
+              defaultItem={defaultStatus}
+              enabled={application.status !== 4 && application.status !== 6}
+            />
           )}
         </div>
         {isSuperListing ? (
@@ -163,7 +167,11 @@ export function ApplicationRow({
         )}
         {!isSuperListing && (
           <div className="flex items-center justify-end gap-2 pt-2">
-            <DropdownMenu items={statuses} defaultItem={defaultStatus} />
+            <DropdownMenu
+              items={statuses}
+              defaultItem={defaultStatus}
+              enabled={application.status !== 4 && application.status !== 6}
+            />
           </div>
         )}
       </Card>
@@ -199,7 +207,7 @@ export function ApplicationRow({
         <td className="px-4 py-2">
           {formatDateWithoutTime(application.applied_at)}
         </td>
-        <td className="px-4 py-2 w-24 overflow-visible">
+        <td className="px-4 py-2 w-40 overflow-visible">
           <DropdownMenu
             className="w-full"
             items={statuses}
@@ -298,7 +306,7 @@ export function ApplicationRow({
         {/* man why is the applied at date a string but the expected start date is a number */}
         {formatDateWithoutTime(application.applied_at)}
       </td>
-      <td className="px-4 py-2 w-24 overflow-visible">
+      <td className="px-4 py-2 w-40 overflow-visible">
         <DropdownMenu
           items={statuses}
           defaultItem={defaultStatus}
