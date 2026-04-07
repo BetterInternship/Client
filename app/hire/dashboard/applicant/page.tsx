@@ -6,7 +6,7 @@ import { ApplicantPage } from "@/components/features/hire/dashboard/ApplicantPag
 import { type ActionItem } from "@/components/ui/action-item";
 import useApplicationActions from "@/hooks/use-application-actions";
 import { useEmployerApplications } from "@/hooks/use-employer-api";
-import { updateApplicationStatus, UserService } from "@/lib/api/services";
+import { UserService } from "@/lib/api/services";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useSearchParams } from "next/navigation";

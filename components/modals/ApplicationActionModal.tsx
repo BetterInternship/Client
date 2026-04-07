@@ -20,6 +20,11 @@ interface ApplicationActionModalProps {
   onCancel: () => void;
 }
 
+/**
+ * Retrieve an applicant's name from a given application.
+ * @param app EmployerApplication object to retrieve name from.
+ * @returns Applicant's name.
+ */
 const getApplicantName = (app?: EmployerApplication) => {
   if (!app?.user) return "this applicant";
 
@@ -29,6 +34,15 @@ const getApplicantName = (app?: EmployerApplication) => {
   );
 };
 
+/**
+ * The frontend of the modal for application actions such as accepting, rejecting, and archiving.
+ * @param type Type of action performed (accept, reject, etc.). The type of actions that can be performed can be modified in the `uiConfig` record within this component.
+ * @param applicants Applicant/s affected by the action.
+ * @param isProcessing Boolean state that tracks whether the action is being processed. Used to disable the buttons while waiting for db response.
+ * @param onConfirm Function to run when confirming the action.
+ * @param onCancel Function to run when cancelling the action.
+ * @returns The frontend for the application action modal.
+ */
 export default function ApplicationActionModal({
   type,
   applicants,
@@ -155,7 +169,9 @@ export default function ApplicationActionModal({
         </Button>
         <Button
           scheme={config.buttonScheme}
-          onClick={onConfirm}
+          onClick={() => {
+            onConfirm();
+          }}
           disabled={isProcessing}
           className="w-full sm:w-auto"
         >
