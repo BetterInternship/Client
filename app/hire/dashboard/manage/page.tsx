@@ -41,7 +41,7 @@ function ManageContent() {
   }, [jobId]);
 
   const handleJobUpdate = (updates: Partial<Job>) => {
-    setJobData(prev => prev ? { ...prev, ...updates } : null);
+    setJobData((prev) => (prev ? { ...prev, ...updates } : null));
   };
 
   if (loading || !jobData) {
@@ -55,15 +55,9 @@ function ManageContent() {
   return (
     <ContentLayout className="!p-0">
       <div className="w-full h-full flex flex-col">
-        <JobHeader
-          job={jobData}
-          onJobUpdate={handleJobUpdate}
-        />
+        <JobHeader job={jobData} onJobUpdate={handleJobUpdate} />
         <div className="flex-1 overflow-auto pt-4 px-2 sm:px-8">
-          <JobTabs 
-            selectedJob={jobData} 
-            onJobUpdate={handleJobUpdate}
-          />
+          <JobTabs selectedJob={jobData} onJobUpdate={handleJobUpdate} />
         </div>
       </div>
     </ContentLayout>
@@ -75,5 +69,5 @@ export default function Manage() {
     <Suspense>
       <ManageContent />
     </Suspense>
-);
+  );
 }

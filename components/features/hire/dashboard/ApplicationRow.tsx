@@ -11,10 +11,15 @@ import {
   formatDateWithoutTime,
   formatTimestampDateWithoutTime,
 } from "@/lib/utils/date-utils";
-import { statusMap } from "@/components/common/status-icon-map";
+import {
+  DB_STATUS_MAP,
+  UI_STATUS_MAP,
+  ApplicationAction,
+} from "@/lib/consts/application";
 import { motion } from "framer-motion";
 import {
   Archive,
+  ArchiveRestore,
   Calendar,
   ContactRound,
   GraduationCap,
@@ -30,10 +35,8 @@ interface ApplicationRowProps {
   application: EmployerApplication;
   isSuperListing?: boolean;
   onView: (v: any) => void;
-  onStatusChange: (status: number) => void;
-  onArchiveButtonClick: (application: EmployerApplication) => void;
-  onDeleteButtonClick: (application: EmployerApplication) => void;
-  setSelectedApplication: (application: EmployerApplication) => void;
+  onAction: (action: ApplicationAction, app: EmployerApplication[]) => void;
+  setSelectedApplication: (app: EmployerApplication) => void;
   checkboxSelected?: boolean;
   onToggleSelect?: (next: boolean) => void;
   statuses: ActionItem[];
@@ -55,8 +58,7 @@ export function ApplicationRow({
   onView,
   checkboxSelected = false,
   onToggleSelect,
-  onArchiveButtonClick,
-  onDeleteButtonClick,
+  onAction,
   statuses,
 }: ApplicationRowProps) {
   const { to_university_name, get_app_status } = useDbRefs();
@@ -69,6 +71,10 @@ export function ApplicationRow({
   const staggerDelay = index < MAX_STAGGER_ROWS ? index * 0.05 : 0;
 
   const currentStatusId = application.status?.toString() ?? "0";
+
+  const config = DB_STATUS_MAP[application.status || 0];
+  const filterKey = config?.key || "pending";
+
   const defaultStatus: ActionItem = {
     id: currentStatusId,
     label: get_app_status(application.status)?.name,
@@ -76,7 +82,7 @@ export function ApplicationRow({
     disabled: false,
     destructive: false,
     highlighted: true,
-    highlightColor: statusMap.get(application.status!)?.bgColor,
+    highlightColor: UI_STATUS_MAP.get(filterKey)?.bgColor,
   };
   const challengeSubmission = application.challenge_submission?.trim() ?? "";
   const hasChallengeSubmission = challengeSubmission.length > 0;
@@ -198,24 +204,27 @@ export function ApplicationRow({
         </td>
         <td>
           <div className="flex items-center gap-2 pr-2 flex-row justify-end">
-            {application.status !== 7 && (
+            {application.visibility === "visible" && (
               <ActionButton
                 icon={Archive}
-                onClick={(e) => {
+                onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                   e.stopPropagation();
-                  onArchiveButtonClick(application);
+                  if (application.visibility === "archived") {
+                    onAction("UNARCHIVE", [application]);
+                  } else {
+                    onAction("ARCHIVE", [application]);
+                  }
                 }}
-                enabled={application.status !== 7}
               />
             )}
-            {application.status === 7 && (
+            {application.visibility === "archived" && (
               <ActionButton
                 icon={Trash2}
-                onClick={(e) => {
+                onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                   e.stopPropagation();
-                  onDeleteButtonClick(application);
+                  onAction("DELETE", [application]);
                 }}
-                enabled={application.status === 7}
+                enabled={application.visibility === "archived"}
               />
             )}
           </div>
@@ -289,25 +298,32 @@ export function ApplicationRow({
       </td>
       <td>
         <div className="flex items-center gap-2 pr-2 flex-row justify-end">
-          {application.status !== 7 && (
+          {application.visibility !== "deleted" && (
             <ActionButton
-              icon={Archive}
-              onClick={(e) => {
+              icon={
+                application.visibility === "archived" ? ArchiveRestore : Archive
+              }
+              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                 e.stopPropagation();
-                onArchiveButtonClick(application);
+                if (application.visibility === "archived") {
+                  onAction("UNARCHIVE", [application]);
+                } else {
+                  onAction("ARCHIVE", [application]);
+                }
               }}
-              enabled={application.status! !== 7}
-              label="Archive"
+              label={
+                application.visibility === "archived" ? "Unarchive" : "Archive"
+              }
             />
           )}
-          {application.status === 7 && (
+          {application.visibility === "archived" && (
             <ActionButton
               icon={Trash2}
-              onClick={(e) => {
+              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                 e.stopPropagation();
-                onDeleteButtonClick(application);
+                onAction("DELETE", [application]);
               }}
-              enabled={application.status === 7}
+              enabled={application.visibility === "archived"}
               destructive={true}
               label="Delete"
             />

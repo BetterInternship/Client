@@ -1,7 +1,8 @@
-import { ApplicationAction } from "@/hooks/use-application-actions";
+import { ApplicationAction } from "@/lib/consts/application";
 import { EmployerApplication } from "@/lib/db/db.types";
 import {
   Archive,
+  ArchiveRestore,
   Check,
   FileQuestion,
   List,
@@ -74,7 +75,7 @@ export default function ApplicationActionModal({
       color: "bg-text-supportive",
       title: `Accept ${name}?`,
       description:
-        "This action is irreversible and will notify them of their acceptance.",
+        "This action is irreversible and will notify the applicant of their acceptance.",
       buttonLabel: "Accept",
       buttonScheme: "primary",
     },
@@ -83,7 +84,7 @@ export default function ApplicationActionModal({
       color: "bg-text-destructive",
       title: `Reject ${name}?`,
       description:
-        "This action is irreversible and will notify them of their rejection.",
+        "This action is irreversible and will notify the applicant of their rejection.",
       buttonLabel: "Reject",
       buttonScheme: "destructive",
     },
@@ -92,7 +93,7 @@ export default function ApplicationActionModal({
       color: "bg-text-primary",
       title: `Shortlist ${name}?`,
       description:
-        "The applicant will be shortlisted. You can change their status later.",
+        "The application will be shortlisted. You can change its status later.",
       buttonLabel: "Shortlist",
       buttonScheme: "primary",
     },
@@ -101,7 +102,16 @@ export default function ApplicationActionModal({
       color: "bg-text-muted",
       title: `Archive ${name}?`,
       description:
-        "This applicant will be moved to the 'Archived' section. You can change their status later.",
+        "This application will be moved to the 'Archived' section. You can change its status later.",
+      buttonLabel: "Accept",
+      buttonScheme: "primary",
+    },
+    UNARCHIVE: {
+      icon: ArchiveRestore,
+      color: "bg-text-muted",
+      title: `Unarchive ${name}?`,
+      description:
+        "This application will be unarchived. It will be visible in the other sections.",
       buttonLabel: "Accept",
       buttonScheme: "primary",
     },

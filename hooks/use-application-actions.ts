@@ -1,18 +1,15 @@
 import { useEffect, useState } from "react";
-import { useEmployerApplications } from "./use-employer-api";
 import { EmployerApplication } from "@/lib/db/db.types";
+import { toast } from "sonner";
 import { useModalRegistry } from "@/components/modals/modal-registry";
+import { ApplicationAction } from "@/lib/consts/application";
 
-// Types of actions that users can do with applications.
-export type ApplicationAction =
-  | "ACCEPT"
-  | "REJECT"
-  | "ARCHIVE"
-  | "SHORTLIST"
-  | "DELETE"
-  | "CHANGE_STATUS"
-  | "NONE";
-
+/**
+ * Hook to modify application state.
+ * @param review Function that takes in an application ID and options (such as new status) and performs the necessary API call to update the application in the database. This is passed in as a parameter to allow for flexibility in how the review action is performed, such as allowing for different implementations for different pages or contexts.
+ * @param onSuccess Function that runs after the state is successfully modified.
+ * @returns Function to trigger different application actions.
+ */
 export function useApplicationActions(
   review: (app_id: string, options: any) => Promise<any>,
   onSuccess?: () => void,
@@ -62,27 +59,40 @@ export function useApplicationActions(
     setIsProcessing(true);
 
     try {
-      let statusToSet: number = 0;
+      // this object must match the structure of the updates requested in API-Server-V2\src\applications\applications.service.ts
+      let updatePayload: { status?: number; visibility?: string } = {};
+
+      let toastMessage: string;
 
       // map action type to status number in database.
       switch (applicationAction.type) {
+        case "SHORTLIST":
+          updatePayload = { status: 1 };
+          toastMessage = `${applicationAction.applicants[0].user?.first_name || ""} ${applicationAction.applicants[0].user?.last_name || ""}'s application was shorlisted.`;
+          break;
         case "ACCEPT":
-          statusToSet = 4;
+          updatePayload = { status: 4 };
+          toastMessage = `${applicationAction.applicants[0].user?.first_name || ""} ${applicationAction.applicants[0].user?.last_name || ""}'s application was accepted.`;
           break;
         case "REJECT":
-          statusToSet = 6;
-          break;
-        case "ARCHIVE":
-          statusToSet = 7;
-          break;
-        case "SHORTLIST":
-          statusToSet = 1;
-          break;
-        case "DELETE":
-          statusToSet = 5;
+          updatePayload = { status: 6 };
+          toastMessage = `${applicationAction.applicants[0].user?.first_name || ""} ${applicationAction.applicants[0].user?.last_name || ""}'s application was rejected.`;
           break;
         case "CHANGE_STATUS":
-          statusToSet = applicationAction.targetStatus!;
+          updatePayload = { status: applicationAction.targetStatus };
+          toastMessage = `${applicationAction.applicants.length} application${applicationAction.applicants.length === 1 ? "" : "s"} were updated.`;
+          break;
+        case "ARCHIVE":
+          updatePayload = { visibility: "archived" };
+          toastMessage = `${applicationAction.applicants[0].user?.first_name || ""} ${applicationAction.applicants[0].user?.last_name || ""}'s application was archived.`;
+          break;
+        case "UNARCHIVE":
+          updatePayload = { visibility: "visible" };
+          toastMessage = `${applicationAction.applicants[0].user?.first_name || ""} ${applicationAction.applicants[0].user?.last_name || ""}'s application was unarchived.`;
+          break;
+        case "DELETE":
+          updatePayload = { visibility: "deleted" };
+          toastMessage = `${applicationAction.applicants[0].user?.first_name || ""} ${applicationAction.applicants[0].user?.last_name || ""}'s application was deleted.`;
           break;
         default:
           return;
@@ -91,21 +101,24 @@ export function useApplicationActions(
       // execute all updates.
       await Promise.all(
         applicationAction.applicants.map((app) =>
-          review(app.id ?? "", { status: statusToSet }),
+          review(app.id ?? "", updatePayload),
         ),
       );
+
+      toast.success(toastMessage);
 
       // cleanup + callback.
       setApplicationAction({ type: "NONE", applicants: [] });
       if (onSuccess) onSuccess();
-    } catch (error) {
-      console.error("Failed to execute application action:", error);
+    } catch (error: any) {
+      toast.error(`${error}`);
     } finally {
       setIsProcessing(false);
     }
   };
 
   return {
+    triggerAction,
     triggerAccept: (app: EmployerApplication) => triggerAction("ACCEPT", [app]),
     triggerShortlist: (app: EmployerApplication) =>
       triggerAction("SHORTLIST", [app]),
@@ -113,7 +126,7 @@ export function useApplicationActions(
     triggerArchive: (app: EmployerApplication) =>
       triggerAction("ARCHIVE", [app]),
     triggerDelete: (app: EmployerApplication) => triggerAction("DELETE", [app]),
-    triggerMassStatusChange: (apps: EmployerApplication[]) =>
+    triggerMassStatusChange: (apps: EmployerApplication[], status: number) =>
       triggerAction("CHANGE_STATUS", apps, status),
   };
 }

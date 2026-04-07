@@ -19,7 +19,7 @@ import {
 } from "./components/MassApplyResults";
 import { FormPreviewPdfDisplay } from "../features/student/forms/previewer";
 import { IFormSigningParty } from "@betterinternship/core/forms";
-import { ApplicationAction } from "@/hooks/use-application-actions";
+import { ApplicationAction } from "@/lib/consts/application";
 import { EmployerApplication } from "@/lib/db/db.types";
 import ApplicationActionModal from "./ApplicationActionModal";
 
