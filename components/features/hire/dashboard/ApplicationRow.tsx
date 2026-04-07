@@ -199,8 +199,13 @@ export function ApplicationRow({
         <td className="px-4 py-2">
           {formatDateWithoutTime(application.applied_at)}
         </td>
-        <td className="px-4 py-2 overflow-visible">
-          <DropdownMenu items={statuses} defaultItem={defaultStatus} />
+        <td className="px-4 py-2 w-24 overflow-visible">
+          <DropdownMenu
+            className="w-full"
+            items={statuses}
+            defaultItem={defaultStatus}
+            enabled={application.status !== 4 && application.status !== 6}
+          />
         </td>
         <td>
           <div className="flex items-center gap-2 pr-2 flex-row justify-end">
@@ -293,8 +298,12 @@ export function ApplicationRow({
         {/* man why is the applied at date a string but the expected start date is a number */}
         {formatDateWithoutTime(application.applied_at)}
       </td>
-      <td className="px-4 py-2 overflow-visible">
-        <DropdownMenu items={statuses} defaultItem={defaultStatus} />
+      <td className="px-4 py-2 w-24 overflow-visible">
+        <DropdownMenu
+          items={statuses}
+          defaultItem={defaultStatus}
+          enabled={application.status !== 4 && application.status !== 6}
+        />
       </td>
       <td>
         <div className="flex items-center gap-2 pr-2 flex-row justify-end">

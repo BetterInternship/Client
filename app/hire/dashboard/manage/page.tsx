@@ -25,7 +25,6 @@ function ManageContent() {
       try {
         setLoading(true);
         const response = await JobService.getAnyJobById(jobId);
-        console.log(response);
         if (response?.success && response.job) {
           setJobData(response.job);
         } else {

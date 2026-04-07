@@ -68,15 +68,24 @@ export function useApplicationActions(
       switch (applicationAction.type) {
         case "SHORTLIST":
           updatePayload = { status: 1 };
-          toastMessage = `${applicationAction.applicants[0].user?.first_name || ""} ${applicationAction.applicants[0].user?.last_name || ""}'s application was shorlisted.`;
+          toastMessage =
+            applicationAction.applicants.length > 1
+              ? `${applicationAction.applicants.length} applications were shortlisted.`
+              : `${applicationAction.applicants[0].user?.first_name || ""} ${applicationAction.applicants[0].user?.last_name || ""}'s application was shortlisted.`;
           break;
         case "ACCEPT":
           updatePayload = { status: 4 };
-          toastMessage = `${applicationAction.applicants[0].user?.first_name || ""} ${applicationAction.applicants[0].user?.last_name || ""}'s application was accepted.`;
+          toastMessage =
+            applicationAction.applicants.length > 1
+              ? `${applicationAction.applicants.length} applications were accepted.`
+              : `${applicationAction.applicants[0].user?.first_name || ""} ${applicationAction.applicants[0].user?.last_name || ""}'s application was accepted.`;
           break;
         case "REJECT":
           updatePayload = { status: 6 };
-          toastMessage = `${applicationAction.applicants[0].user?.first_name || ""} ${applicationAction.applicants[0].user?.last_name || ""}'s application was rejected.`;
+          toastMessage =
+            applicationAction.applicants.length > 1
+              ? `${applicationAction.applicants.length} applications were rejected.`
+              : `${applicationAction.applicants[0].user?.first_name || ""} ${applicationAction.applicants[0].user?.last_name || ""}'s application was rejected.`;
           break;
         case "CHANGE_STATUS":
           updatePayload = { status: applicationAction.targetStatus };
@@ -84,15 +93,24 @@ export function useApplicationActions(
           break;
         case "ARCHIVE":
           updatePayload = { visibility: "archived" };
-          toastMessage = `${applicationAction.applicants[0].user?.first_name || ""} ${applicationAction.applicants[0].user?.last_name || ""}'s application was archived.`;
+          toastMessage =
+            applicationAction.applicants.length > 1
+              ? `${applicationAction.applicants.length} applications were archived.`
+              : `${applicationAction.applicants[0].user?.first_name || ""} ${applicationAction.applicants[0].user?.last_name || ""}'s application was archived.`;
           break;
         case "UNARCHIVE":
           updatePayload = { visibility: "visible" };
-          toastMessage = `${applicationAction.applicants[0].user?.first_name || ""} ${applicationAction.applicants[0].user?.last_name || ""}'s application was unarchived.`;
+          toastMessage =
+            applicationAction.applicants.length > 1
+              ? `${applicationAction.applicants.length} applications were unarchived.`
+              : `${applicationAction.applicants[0].user?.first_name || ""} ${applicationAction.applicants[0].user?.last_name || ""}'s application was unarchived.`;
           break;
         case "DELETE":
           updatePayload = { visibility: "deleted" };
-          toastMessage = `${applicationAction.applicants[0].user?.first_name || ""} ${applicationAction.applicants[0].user?.last_name || ""}'s application was deleted.`;
+          toastMessage =
+            applicationAction.applicants.length > 1
+              ? `${applicationAction.applicants.length} applications were deleted.`
+              : `${applicationAction.applicants[0].user?.first_name || ""} ${applicationAction.applicants[0].user?.last_name || ""}'s application was deleted.`;
           break;
         default:
           return;

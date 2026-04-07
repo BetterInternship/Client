@@ -35,6 +35,120 @@ const getApplicantName = (app?: EmployerApplication) => {
   );
 };
 
+const getUIConfig = (
+  type: ApplicationAction,
+  name: string,
+  numApplicants: number,
+) => {
+  const isMassAction = numApplicants > 1;
+
+  const config: Record<
+    ApplicationAction,
+    {
+      icon: React.ComponentType<{
+        className: string;
+      }>;
+      color: string;
+      title: string;
+      description: string;
+      buttonLabel: string;
+      buttonScheme: "default" | "primary" | "destructive";
+    }
+  > = {
+    ACCEPT: {
+      icon: Check,
+      color: "bg-text-supportive",
+      title: isMassAction
+        ? `Accept ${numApplicants} applicants?`
+        : `Accept ${name}?`,
+      description: isMassAction
+        ? "This action is irreversible and will notify the applicants of their acceptance."
+        : "This action is irreversible and will notify the applicant of their acceptance.",
+      buttonLabel: "Accept",
+      buttonScheme: "primary",
+    },
+    REJECT: {
+      icon: X,
+      color: "bg-text-destructive",
+      title: isMassAction
+        ? `Reject ${numApplicants} applicants?`
+        : `Reject ${name}?`,
+      description: isMassAction
+        ? "This action is irreversible and will notify the applicants of their rejection."
+        : "This action is irreversible and will notify the applicant of their rejection.",
+      buttonLabel: "Reject",
+      buttonScheme: "destructive",
+    },
+    SHORTLIST: {
+      icon: Star,
+      color: "bg-text-primary",
+      title: isMassAction
+        ? `Shortlist ${numApplicants} applicants?`
+        : `Shortlist ${name}?`,
+      description: isMassAction
+        ? "The applications will be shortlisted. You can change their status later."
+        : "The application will be shortlisted. You can change its status later.",
+      buttonLabel: "Shortlist",
+      buttonScheme: "primary",
+    },
+    ARCHIVE: {
+      icon: Archive,
+      color: "bg-text-muted",
+      title: isMassAction
+        ? `Archive ${numApplicants} applicants?`
+        : `Archive ${name}?`,
+      description: isMassAction
+        ? "These applications will be moved to the 'Archived' section. You can change their status later."
+        : "This application will be moved to the 'Archived' section. You can change its status later.",
+      buttonLabel: "Archive",
+      buttonScheme: "primary",
+    },
+    UNARCHIVE: {
+      icon: ArchiveRestore,
+      color: "bg-text-muted",
+      title: isMassAction
+        ? `Unarchive ${numApplicants} applicants?`
+        : `Unarchive ${name}?`,
+      description: isMassAction
+        ? "These applications will be unarchived. They will be visible in the other sections."
+        : "This application will be unarchived. It will be visible in the other sections.",
+      buttonLabel: "Unarchive",
+      buttonScheme: "primary",
+    },
+    DELETE: {
+      icon: Trash2,
+      color: "bg-text-destructive",
+      title: isMassAction
+        ? `Delete ${numApplicants} applicants?`
+        : `Delete ${name}?`,
+      description: isMassAction
+        ? "Are you sure you want to permanently delete these applications? This cannot be undone."
+        : "Are you sure you want to permanently delete this application? This cannot be undone.",
+      buttonLabel: "Delete",
+      buttonScheme: "destructive",
+    },
+    CHANGE_STATUS: {
+      icon: List,
+      color: "bg-text-muted",
+      title: `Change status for ${numApplicants} applicant${isMassAction ? "" : "s"}?`,
+      description:
+        "This will immediately update the status for all selected applicants.",
+      buttonLabel: "Update",
+      buttonScheme: "primary",
+    },
+    NONE: {
+      icon: FileQuestion,
+      color: "bg-text-muted",
+      title: "Unknown error",
+      description: "An unknown error has occurred.",
+      buttonLabel: "Continue",
+      buttonScheme: "default",
+    },
+  };
+
+  return config[type];
+};
+
 /**
  * The frontend of the modal for application actions such as accepting, rejecting, and archiving.
  * @param type Type of action performed (accept, reject, etc.). The type of actions that can be performed can be modified in the `uiConfig` record within this component.
@@ -57,93 +171,7 @@ export default function ApplicationActionModal({
   const name = getApplicantName(firstApplicant);
   const isMassAction = applicants.length > 1;
 
-  const uiConfig: Record<
-    ApplicationAction,
-    {
-      icon: React.ComponentType<{
-        className: string;
-      }>;
-      color: string;
-      title: string;
-      description: string;
-      buttonLabel: string;
-      buttonScheme: "default" | "primary" | "destructive";
-    }
-  > = {
-    ACCEPT: {
-      icon: Check,
-      color: "bg-text-supportive",
-      title: `Accept ${name}?`,
-      description:
-        "This action is irreversible and will notify the applicant of their acceptance.",
-      buttonLabel: "Accept",
-      buttonScheme: "primary",
-    },
-    REJECT: {
-      icon: X,
-      color: "bg-text-destructive",
-      title: `Reject ${name}?`,
-      description:
-        "This action is irreversible and will notify the applicant of their rejection.",
-      buttonLabel: "Reject",
-      buttonScheme: "destructive",
-    },
-    SHORTLIST: {
-      icon: Star,
-      color: "bg-text-primary",
-      title: `Shortlist ${name}?`,
-      description:
-        "The application will be shortlisted. You can change its status later.",
-      buttonLabel: "Shortlist",
-      buttonScheme: "primary",
-    },
-    ARCHIVE: {
-      icon: Archive,
-      color: "bg-text-muted",
-      title: `Archive ${name}?`,
-      description:
-        "This application will be moved to the 'Archived' section. You can change its status later.",
-      buttonLabel: "Accept",
-      buttonScheme: "primary",
-    },
-    UNARCHIVE: {
-      icon: ArchiveRestore,
-      color: "bg-text-muted",
-      title: `Unarchive ${name}?`,
-      description:
-        "This application will be unarchived. It will be visible in the other sections.",
-      buttonLabel: "Accept",
-      buttonScheme: "primary",
-    },
-    DELETE: {
-      icon: Trash2,
-      color: "bg-text-destructive",
-      title: `Delete ${name}?`,
-      description:
-        "Are you sure you want to permanently delete this application? This cannot be undone.",
-      buttonLabel: "Delete",
-      buttonScheme: "destructive",
-    },
-    CHANGE_STATUS: {
-      icon: List,
-      color: "bg-text-muted",
-      title: `Change status for ${applicants.length} applicant${applicants.length === 1 ? "" : "s"}?`,
-      description:
-        "This will immediately update the status for all selected applicants.",
-      buttonLabel: "Accept",
-      buttonScheme: "primary",
-    },
-    NONE: {
-      icon: FileQuestion,
-      color: "bg-text-muted",
-      title: "Unknown error",
-      description: "An unknown error has occurred.",
-      buttonLabel: "Continue",
-      buttonScheme: "default",
-    },
-  };
-
-  const config = uiConfig[type];
+  const config = getUIConfig(type, name, applicants.length);
 
   return (
     <div className="flex flex-col gap-3 h-full w-full">

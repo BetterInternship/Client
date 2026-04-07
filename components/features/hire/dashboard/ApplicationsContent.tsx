@@ -12,10 +12,13 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import { ApplicationsHeader } from "./ApplicationsHeader";
 import { useState } from "react";
 import {
+  Archive,
+  ArchiveRestore,
   Calendar,
   ContactRound,
   GraduationCap,
   ListCheck,
+  Trash2,
   User2,
 } from "lucide-react";
 import { useEffect } from "react";
@@ -97,7 +100,11 @@ export const ApplicationsContent = forwardRef<
             .map((id) => sortedApplications.find((app) => app.id === id))
             .filter((app): app is EmployerApplication => !!app);
 
-          onAction("CHANGE_STATUS", applicationsToUpdate, status.id);
+          onAction(
+            config.action || "CHANGE_STATUS",
+            applicationsToUpdate,
+            status.id,
+          );
         },
         destructive: uiProps?.destructive,
         highlightColor: uiProps?.fgColor,
@@ -118,20 +125,7 @@ export const ApplicationsContent = forwardRef<
         const uiProps = UI_STATUS_MAP.get(filterKey);
 
         const handleClick = () => {
-          switch (status.id) {
-            case 1:
-              onAction("SHORTLIST", [application]);
-              break;
-            case 4:
-              onAction("ACCEPT", [application]);
-              break;
-            case 6:
-              onAction("REJECT", [application]);
-              break;
-            default:
-              onAction("CHANGE_STATUS", [application], status.id);
-              break;
-          }
+          onAction(config.action || "CHANGE_STATUS", [application], status.id);
         };
 
         return {
@@ -172,11 +166,6 @@ export const ApplicationsContent = forwardRef<
     highlighted: true,
     highlightColor: UI_STATUS_MAP.get("pending")?.bgColor,
   };
-
-  // remove the delete item from the bottom command bar so we can put it in the top one and the pending status.
-  const remove_unused_statuses = statuses.filter(
-    (status) => status.id !== "5" && status.id !== "0",
-  );
 
   const applyActiveFilter = (apps: typeof sortedApplications) => {
     if (activeFilter === "archived")
@@ -241,6 +230,45 @@ export const ApplicationsContent = forwardRef<
   const someVisibleSelected =
     numVisibleSelected > 0 && numVisibleSelected < visibleApplications.length;
 
+  // separate statuses and visibility in the command bar and remove unused ones.
+  const command_bar_statuses = statuses.filter(
+    (status) => status.id !== "5" && status.id !== "7" && status.id !== "0",
+  );
+
+  const command_bar_visibility: ActionItem[] = [
+    {
+      id: "archive",
+      label: activeFilter === "archived" ? "Unarchive" : "Archive",
+      icon: activeFilter === "archived" ? ArchiveRestore : Archive,
+      onClick: () => {
+        const apps = Array.from(selectedApplications)
+          .map((id) => sortedApplications.find((app) => app.id === id))
+          .filter((app): app is EmployerApplication => !!app);
+
+        if (apps.length > 0) {
+          onAction(activeFilter === "archived" ? "UNARCHIVE" : "ARCHIVE", apps);
+          unselectAll();
+        }
+      },
+    },
+    {
+      id: "delete",
+      label: "Delete",
+      icon: Trash2,
+      destructive: true,
+      onClick: () => {
+        const apps = Array.from(selectedApplications)
+          .map((id) => sortedApplications.find((app) => app.id === id))
+          .filter((app): app is EmployerApplication => !!app);
+
+        if (apps.length > 0) {
+          onAction("DELETE", apps);
+          unselectAll();
+        }
+      },
+    },
+  ];
+
   // make command bars visible when an applicant is selected.
   useEffect(() => {
     setCommandBarsVisible(selectedApplications.size > 0);
@@ -304,7 +332,8 @@ export const ApplicationsContent = forwardRef<
         allVisibleSelected={allVisibleSelected}
         someVisibleSelected={someVisibleSelected}
         visibleApplicationsCount={visibleApplications.length}
-        statuses={remove_unused_statuses}
+        statuses={command_bar_statuses}
+        applicationVisibility={command_bar_visibility}
         onUnselectAll={unselectAll}
         onSelectAll={selectAll}
         onDelete={() => {
@@ -378,7 +407,8 @@ export const ApplicationsContent = forwardRef<
         allVisibleSelected={allVisibleSelected}
         someVisibleSelected={someVisibleSelected}
         visibleApplicationsCount={visibleApplications.length}
-        statuses={remove_unused_statuses}
+        statuses={command_bar_statuses}
+        applicationVisibility={command_bar_visibility}
         onUnselectAll={unselectAll}
         onSelectAll={selectAll}
         onDelete={() => {

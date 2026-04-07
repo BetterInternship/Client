@@ -85,7 +85,7 @@ export const DB_STATUS_MAP: Record<number, StatusConfig> = {
   0: { key: "pending" },
   1: { key: "shortlisted", action: "SHORTLIST" },
   4: { key: "accepted", action: "ACCEPT" },
-  5: { key: "deleted", action: "DELETE" },
+  5: { action: "DELETE" },
   6: { key: "rejected", action: "REJECT" },
   7: { key: "archived", action: "ARCHIVE" },
 };
