@@ -34,7 +34,9 @@ export function useApplicationActions(
         type: applicationAction.type,
         applicants: applicationAction.applicants,
         isProcessing,
-        onConfirm: confirmAction,
+        onConfirm: () => {
+          void confirmAction();
+        },
       });
     } else {
       modalRegistry.applicationAction.close();

@@ -43,7 +43,7 @@ export const useModalRegistry = () => {
           type: ApplicationAction;
           applicants: EmployerApplication[];
           isProcessing: boolean;
-          onConfirm: () => Promise<void>;
+          onConfirm: () => void;
         }) =>
           open(
             "application-action",

@@ -169,9 +169,7 @@ export default function ApplicationActionModal({
         </Button>
         <Button
           scheme={config.buttonScheme}
-          onClick={() => {
-            onConfirm();
-          }}
+          onClick={onConfirm}
           disabled={isProcessing}
           className="w-full sm:w-auto"
         >
