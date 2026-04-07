@@ -67,7 +67,7 @@ export const DropdownMenu = ({
       aria-disabled={!enabled}
       className={cn(
         className,
-        "relative border border-gray-300 rounded-[0.33em] bg-white inline-flex aria-disabled:text-muted-foreground aria-disabled:bg-muted aria-disabled:cursor-not-allowed aria-disabled:pointer-events-none",
+        "relative border border-gray-300 rounded-[0.33em] bg-white inline-flex aria-disabled:text-muted-foreground/50 aria-disabled:bg-muted/50 aria-disabled:cursor-not-allowed aria-disabled:pointer-events-none",
       )}
     >
       <div
