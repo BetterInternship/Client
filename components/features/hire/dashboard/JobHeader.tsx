@@ -1,21 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { useOwnedJobs } from "@/hooks/use-employer-api";
-import { useModal } from "@/hooks/use-modal";
 import { Job } from "@/lib/db/db.types";
 import { cn, formatDateWithoutTime } from "@/lib/utils";
 import { ArrowLeft, Edit, Info, Trash2, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
-import { ListingsDeleteModal } from "../listings";
 import { useListingsBusinessLogic } from "@/hooks/hire/listings/use-listings-business-logic";
 import { useAppContext } from "@/lib/ctx-app";
+import useModalRegistry from "@/components/modals/modal-registry";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { toast } from "sonner";
 
 export default function JobHeader({
   job,
@@ -25,29 +24,8 @@ export default function JobHeader({
   onJobUpdate?: (updates: Partial<Job>) => void;
 }) {
   const router = useRouter();
-  const [exitingBack, setExitingBack] = useState(false);
   const { ownedJobs, update_job, delete_job } = useOwnedJobs();
-  const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
-  const { saving, clearSelectedJob } = useListingsBusinessLogic(ownedJobs);
-
-  const {
-    open: openDeleteModal,
-    close: closeDeleteModal,
-    Modal: DeleteModal,
-  } = useModal("delete-modal");
-
-  //goes back to job list
-  const handleJobBack = () => {
-    setExitingBack(true);
-    router.push("/dashboard");
-  };
-
-  const handleJobDelete = () => {
-    if (job) {
-      setJobToDelete(job);
-      openDeleteModal();
-    }
-  };
+  const { saving } = useListingsBusinessLogic(ownedJobs);
 
   const handleToggleActive = async () => {
     if (!job.id) return;
@@ -63,18 +41,10 @@ export default function JobHeader({
   const { isMobile } = useAppContext();
   const pathname = usePathname();
 
+  const modalRegistry = useModalRegistry();
+
   return (
     <div className="sticky top-0 z-40 border-b border-gray-200 bg-white shadow-sm">
-      <DeleteModal>
-        {jobToDelete && (
-          <ListingsDeleteModal
-            job={jobToDelete}
-            deleteJob={delete_job}
-            clearJob={clearSelectedJob}
-            close={closeDeleteModal}
-          />
-        )}
-      </DeleteModal>
       <div className="mx-auto px-4 md:px-6 py-3">
         <div
           className={cn(
@@ -106,7 +76,10 @@ export default function JobHeader({
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-2">
-                  <Toggle state={job.is_active} onClick={handleToggleActive} />
+                  <Toggle
+                    state={job.is_active}
+                    onClick={() => void handleToggleActive}
+                  />
                   <span
                     className={cn(
                       "text-xs px-2 py-1 rounded transition",
@@ -188,7 +161,28 @@ export default function JobHeader({
               size="sm"
               disabled={saving}
               className="hover:bg-destructive/10 hover:text-destructive gap-1"
-              onClick={handleJobDelete}
+              onClick={() => {
+                modalRegistry.deleteListing.open({
+                  job,
+                  isProcessing: saving,
+                  onConfirm: () => {
+                    if (job.id) {
+                      void delete_job(job.id)
+                        .then(() => {
+                          modalRegistry.deleteListing.close();
+                          router.push("/dashboard");
+                          toast.success("Deleted job listing successfully.");
+                        })
+                        .catch((e: Error) => {
+                          modalRegistry.deleteListing.close();
+                          toast.error(
+                            e.message || "Failed to delete job listing.",
+                          );
+                        });
+                    }
+                  },
+                });
+              }}
             >
               <Trash2 size={16} />
               <span>Delete</span>
