@@ -29,6 +29,7 @@ import {
 import { ActionButton } from "@/components/ui/action-button";
 import { FormCheckbox } from "@/components/EditForm";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
+import StatusBadge from "@/components/ui/status-badge";
 
 interface ApplicationRowProps {
   index?: number;
@@ -117,11 +118,7 @@ export function ApplicationRow({
             </h4>
           </div>
           {isSuperListing && (
-            <DropdownMenu
-              items={statuses}
-              defaultItem={defaultStatus}
-              enabled={application.status !== 4 && application.status !== 6}
-            />
+            <DropdownMenu items={statuses} defaultItem={defaultStatus} />
           )}
         </div>
         {isSuperListing ? (
@@ -167,11 +164,14 @@ export function ApplicationRow({
         )}
         {!isSuperListing && (
           <div className="flex items-center justify-end gap-2 pt-2">
-            <DropdownMenu
-              items={statuses}
-              defaultItem={defaultStatus}
-              enabled={application.status !== 4 && application.status !== 6}
-            />
+            {filterKey !== "accepted" && filterKey !== "rejected" ? (
+              <DropdownMenu items={statuses} defaultItem={defaultStatus} />
+            ) : (
+              <StatusBadge
+                className="w-32 py-2"
+                statusId={application.status || 0}
+              />
+            )}
           </div>
         )}
       </Card>
@@ -208,12 +208,15 @@ export function ApplicationRow({
           {formatDateWithoutTime(application.applied_at)}
         </td>
         <td className="px-4 py-2 w-40 overflow-visible">
-          <DropdownMenu
-            className="w-full"
-            items={statuses}
-            defaultItem={defaultStatus}
-            enabled={application.status !== 4 && application.status !== 6}
-          />
+          {filterKey !== "accepted" && filterKey !== "rejected" ? (
+            <DropdownMenu
+              className="w-full"
+              items={statuses}
+              defaultItem={defaultStatus}
+            />
+          ) : (
+            <StatusBadge statusId={application.status || 0} />
+          )}
         </td>
         <td>
           <div className="flex items-center gap-2 pr-2 flex-row justify-end">
@@ -307,11 +310,15 @@ export function ApplicationRow({
         {formatDateWithoutTime(application.applied_at)}
       </td>
       <td className="px-4 py-2 w-40 overflow-visible">
-        <DropdownMenu
-          items={statuses}
-          defaultItem={defaultStatus}
-          enabled={application.status !== 4 && application.status !== 6}
-        />
+        {filterKey !== "accepted" && filterKey !== "rejected" ? (
+          <DropdownMenu
+            className="w-full"
+            items={statuses}
+            defaultItem={defaultStatus}
+          />
+        ) : (
+          <StatusBadge statusId={application.status || 0} />
+        )}
       </td>
       <td>
         <div className="flex items-center gap-2 pr-2 flex-row justify-end">

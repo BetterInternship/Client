@@ -39,6 +39,7 @@ import { Loader } from "@/components/ui/loader";
 import { motion } from "framer-motion";
 import { useAuthContext } from "@/app/hire/authctx";
 import { ActionButton } from "@/components/ui/action-button";
+import StatusBadge from "@/components/ui/status-badge";
 
 interface ApplicantPageProps {
   application: EmployerApplication | undefined;
@@ -306,7 +307,11 @@ export function ApplicantPage({
             {/* actions */}
             <div className="flex items-center justify-between gap-2 my-4">
               <div className="flex items-center gap-2">
-                <DropdownMenu items={statuses} defaultItem={defaultStatus} />
+                {filterKey !== "accepted" && filterKey !== "rejected" ? (
+                  <DropdownMenu items={statuses} defaultItem={defaultStatus} />
+                ) : (
+                  <StatusBadge statusId={application?.status || 0} />
+                )}
               </div>
               <div className="flex items-center gap-2">
                 {onArchive && (

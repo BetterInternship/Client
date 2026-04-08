@@ -2,10 +2,8 @@
 // Wraps everything in DashboardProvider for shared state management
 "use client";
 
-import { motion } from "framer-motion";
 import ContentLayout from "@/components/features/hire/content-layout";
 import { JobsContent } from "@/components/features/hire/dashboard/JobsContent";
-import { ShowUnverifiedBanner } from "@/components/ui/banner";
 import { Loader } from "@/components/ui/loader";
 import {
   useEmployerApplications,
@@ -18,14 +16,11 @@ import { Bell, Briefcase, Plus } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useAuthContext } from "../authctx";
 import { Job } from "@/lib/db/db.types";
-import { FadeIn } from "@/components/animata/fade";
 import { useModal } from "@/hooks/use-modal";
 import {
   getNotificationPermission,
   requestNotificationPermission,
   checkNotificationSupport,
-  shouldShowNotification,
-  sendNotification,
 } from "@/lib/notification-service";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { useRouter } from "next/navigation";

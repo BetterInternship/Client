@@ -4,9 +4,10 @@ import { DB_STATUS_MAP, UI_STATUS_MAP } from "@/lib/consts/application";
 
 interface StatusBadgeProps {
   statusId: number;
+  className?: string;
 }
 
-export default function StatusBadge({ statusId }: StatusBadgeProps) {
+export default function StatusBadge({ statusId, className }: StatusBadgeProps) {
   const config = DB_STATUS_MAP[statusId];
   const filterKey = config?.key || "pending";
   const status = UI_STATUS_MAP.get(filterKey);
@@ -19,9 +20,10 @@ export default function StatusBadge({ statusId }: StatusBadgeProps) {
   return (
     <div
       className={cn(
-        "flex items-center gap-1 w-full px-2 py-1 rounded-[0.33em] text-xs transition",
+        "flex items-center gap-1 w-full h-full px-2 py-1 border rounded-[0.33em] text-xs transition",
         status.bgColor,
         status.fgColor,
+        className,
       )}
     >
       <status.icon className="h-3 w-3" />
