@@ -13,6 +13,7 @@ import { ConversationsContextProvider } from "@/hooks/use-conversation";
 import { PocketbaseProvider, usePocketbase } from "@/lib/pocketbase";
 import { ModalProvider } from "@/components/providers/modal-provider/ModalProvider";
 import { NotificationListener } from "./notification-listener";
+import { SonnerToaster } from "@/components/ui/sonner-toast";
 
 const baseUrl =
   process.env.NEXT_PUBLIC_CLIENT_HIRE_URL?.replace(/\/$/, "") ||
@@ -106,6 +107,7 @@ const HTMLContent = ({
                         </div>
                       </AllowLanding>
                     </ModalProvider>
+                    <SonnerToaster />
                   </body>
                 </html>
               </ConversationsContextProvider>

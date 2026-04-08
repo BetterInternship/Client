@@ -1,11 +1,11 @@
-import { statusMap } from "@/components/common/status-icon-map";
+import { DB_STATUS_MAP, UI_STATUS_MAP } from "@/lib/consts/application";
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import { UserPfp } from "@/components/shared/pfp";
 import { ActionItem } from "@/components/ui/action-item";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { HorizontalCollapsible } from "@/components/ui/horizontal-collapse";
 import { useFile } from "@/hooks/use-file";
-import { EmployerConversationService, UserService } from "@/lib/api/services";
+import { UserService } from "@/lib/api/services";
 import { useAppContext } from "@/lib/ctx-app";
 import { EmployerApplication, PublicUser } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
@@ -24,6 +24,7 @@ import {
   Archive,
   HandHelping,
   Trash2,
+  ArchiveRestore,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, useRef } from "react";
@@ -34,9 +35,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useConversation, useConversations } from "@/hooks/use-conversation";
 import { Loader } from "@/components/ui/loader";
-import { useProfile, useEmployerApplications } from "@/hooks/use-employer-api";
 import { motion } from "framer-motion";
 import { useAuthContext } from "@/app/hire/authctx";
 import { ActionButton } from "@/components/ui/action-button";
@@ -63,64 +62,28 @@ export function ApplicantPage({
   const internshipPreferences = user?.internship_preferences;
   const challengeSubmission = application?.challenge_submission?.trim() ?? "";
   const hasChallengeSubmission = challengeSubmission.length > 0;
-  const applications = useEmployerApplications();
-
-  const profile = useProfile();
 
   const { isMobile } = useAppContext();
-  const { isAuthenticated, redirectIfNotLoggedIn, loading } = useAuthContext();
+  const { redirectIfNotLoggedIn, loading } = useAuthContext();
 
   redirectIfNotLoggedIn();
 
-  const [conversationId, setConversationId] = useState("");
-  const conversations = useConversations();
-  const updateConversationId = (userId: string) => {
-    let userConversation = conversations.data?.find((c) =>
-      c?.subscribers?.includes(userId),
-    );
-    setConversationId(userConversation?.id);
-  };
-
-  const messageInputRef = useRef<HTMLTextAreaElement>(null);
-  const chatAnchorRef = useRef<HTMLDivElement>(null);
-  const [lastSending, setLastSending] = useState(false);
-  const [sending, setSending] = useState(false);
-  const conversation = useConversation("employer", conversationId);
   const [exitingBack, setExitingBack] = useState(false);
 
   const { to_university_name, get_app_status } = useDbRefs();
 
-  const endSend = () => {
-    setSending(false);
-    setTimeout(() => {
-      chatAnchorRef.current?.scrollIntoView({ behavior: "instant" });
-    }, 100);
-  };
-
-  useEffect(() => {
-    updateConversationId(application?.user_id || "");
-  }, [application?.user_id]);
-
-  useEffect(() => {
-    setLastSending(sending);
-  }, [sending]);
-
-  useEffect(() => {
-    let timeout: NodeJS.Timeout;
-    if (!sending && !lastSending)
-      timeout = setTimeout(() => messageInputRef.current?.focus(), 200);
-    return () => timeout && clearTimeout(timeout);
-  }, [lastSending]);
-
   const currentStatusId = application?.status?.toString() ?? "0";
+  const config = DB_STATUS_MAP[application?.status || 0];
+  const filterKey = config?.key || "pending";
+
   const defaultStatus: ActionItem = {
     id: currentStatusId,
-    label: get_app_status(application?.status!)?.name,
+    label: get_app_status(application?.status || 0)?.name,
     active: true,
     disabled: false,
     destructive: false,
     highlighted: true,
-    highlightColor: statusMap.get(application?.status!)?.bgColor,
+    highlightColor: UI_STATUS_MAP.get(filterKey)?.bgColor,
   };
 
   const {
@@ -343,21 +306,22 @@ export function ApplicantPage({
             {/* actions */}
             <div className="flex items-center justify-between gap-2 my-4">
               <div className="flex items-center gap-2">
-                {/* <button
-                                    className="flex items-center gap-2 text-sm text-gray-600 rounded-[0.33em] p-1.5 px-2 border border-gray-300 hover:text-gray-700 hover:bg-gray-100"
-                                    onClick={openChatModal}
-                                    >
-                                    <MessageCircle className="h-5 w-5"/> Chat
-                                </button> */}
                 <DropdownMenu items={statuses} defaultItem={defaultStatus} />
               </div>
               <div className="flex items-center gap-2">
                 {onArchive && (
                   <ActionButton
-                    icon={Archive}
+                    icon={
+                      application?.visibility === "archived"
+                        ? ArchiveRestore
+                        : Archive
+                    }
                     onClick={onArchive}
-                    enabled={
-                      application!.status !== 5 && application!.status !== 7
+                    enabled={true}
+                    label={
+                      application?.visibility === "archived"
+                        ? "Unarchive"
+                        : "Archive"
                     }
                   />
                 )}
@@ -365,8 +329,9 @@ export function ApplicantPage({
                   <ActionButton
                     icon={Trash2}
                     onClick={onDelete}
-                    enabled={application!.status !== 5}
+                    enabled={true}
                     destructive={true}
+                    label="Delete"
                   />
                 )}
               </div>

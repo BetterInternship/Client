@@ -1,7 +1,8 @@
-import { ApplicationAction } from "@/hooks/use-application-actions";
+import { ApplicationAction } from "@/lib/consts/application";
 import { EmployerApplication } from "@/lib/db/db.types";
 import {
   Archive,
+  ArchiveRestore,
   Check,
   FileQuestion,
   List,
@@ -20,6 +21,11 @@ interface ApplicationActionModalProps {
   onCancel: () => void;
 }
 
+/**
+ * Retrieve an applicant's name from a given application.
+ * @param app EmployerApplication object to retrieve name from.
+ * @returns Applicant's name.
+ */
 const getApplicantName = (app?: EmployerApplication) => {
   if (!app?.user) return "this applicant";
 
@@ -29,20 +35,14 @@ const getApplicantName = (app?: EmployerApplication) => {
   );
 };
 
-export default function ApplicationActionModal({
-  type,
-  applicants,
-  isProcessing,
-  onConfirm,
-  onCancel,
-}: ApplicationActionModalProps) {
-  if (applicants.length === 0) return null;
+const getUIConfig = (
+  type: ApplicationAction,
+  name: string,
+  numApplicants: number,
+) => {
+  const isMassAction = numApplicants > 1;
 
-  const firstApplicant = applicants[0];
-  const name = getApplicantName(firstApplicant);
-  const isMassAction = applicants.length > 1;
-
-  const uiConfig: Record<
+  const config: Record<
     ApplicationAction,
     {
       icon: React.ComponentType<{
@@ -58,55 +58,82 @@ export default function ApplicationActionModal({
     ACCEPT: {
       icon: Check,
       color: "bg-text-supportive",
-      title: `Accept ${name}?`,
-      description:
-        "This action is irreversible and will notify them of their acceptance.",
+      title: isMassAction
+        ? `Accept ${numApplicants} applicants?`
+        : `Accept ${name}?`,
+      description: isMassAction
+        ? "This action is irreversible and will notify the applicants of their acceptance."
+        : "This action is irreversible and will notify the applicant of their acceptance.",
       buttonLabel: "Accept",
       buttonScheme: "primary",
     },
     REJECT: {
       icon: X,
       color: "bg-text-destructive",
-      title: `Reject ${name}?`,
-      description:
-        "This action is irreversible and will notify them of their rejection.",
+      title: isMassAction
+        ? `Reject ${numApplicants} applicants?`
+        : `Reject ${name}?`,
+      description: isMassAction
+        ? "This action is irreversible and will notify the applicants of their rejection."
+        : "This action is irreversible and will notify the applicant of their rejection.",
       buttonLabel: "Reject",
       buttonScheme: "destructive",
     },
     SHORTLIST: {
       icon: Star,
       color: "bg-text-primary",
-      title: `Shortlist ${name}?`,
-      description:
-        "The applicant will be shortlisted. You can change their status later.",
+      title: isMassAction
+        ? `Shortlist ${numApplicants} applicants?`
+        : `Shortlist ${name}?`,
+      description: isMassAction
+        ? "The applications will be shortlisted. You can change their status later."
+        : "The application will be shortlisted. You can change its status later.",
       buttonLabel: "Shortlist",
       buttonScheme: "primary",
     },
     ARCHIVE: {
       icon: Archive,
       color: "bg-text-muted",
-      title: `Archive ${name}?`,
-      description:
-        "This applicant will be moved to the 'Archived' section. You can change their status later.",
-      buttonLabel: "Accept",
+      title: isMassAction
+        ? `Archive ${numApplicants} applicants?`
+        : `Archive ${name}?`,
+      description: isMassAction
+        ? "These applications will be moved to the 'Archived' section. You can change their status later."
+        : "This application will be moved to the 'Archived' section. You can change its status later.",
+      buttonLabel: "Archive",
+      buttonScheme: "primary",
+    },
+    UNARCHIVE: {
+      icon: ArchiveRestore,
+      color: "bg-text-muted",
+      title: isMassAction
+        ? `Unarchive ${numApplicants} applicants?`
+        : `Unarchive ${name}?`,
+      description: isMassAction
+        ? "These applications will be unarchived. They will be visible in the other sections."
+        : "This application will be unarchived. It will be visible in the other sections.",
+      buttonLabel: "Unarchive",
       buttonScheme: "primary",
     },
     DELETE: {
       icon: Trash2,
       color: "bg-text-destructive",
-      title: `Delete ${name}?`,
-      description:
-        "Are you sure you want to permanently delete this application? This cannot be undone.",
+      title: isMassAction
+        ? `Delete ${numApplicants} applicants?`
+        : `Delete ${name}?`,
+      description: isMassAction
+        ? "Are you sure you want to permanently delete these applications? This cannot be undone."
+        : "Are you sure you want to permanently delete this application? This cannot be undone.",
       buttonLabel: "Delete",
       buttonScheme: "destructive",
     },
     CHANGE_STATUS: {
       icon: List,
       color: "bg-text-muted",
-      title: `Change status for ${applicants.length} applicant${applicants.length === 1 ? "" : "s"}?`,
+      title: `Change status for ${numApplicants} applicant${isMassAction ? "" : "s"}?`,
       description:
         "This will immediately update the status for all selected applicants.",
-      buttonLabel: "Accept",
+      buttonLabel: "Update",
       buttonScheme: "primary",
     },
     NONE: {
@@ -119,7 +146,32 @@ export default function ApplicationActionModal({
     },
   };
 
-  const config = uiConfig[type];
+  return config[type];
+};
+
+/**
+ * The frontend of the modal for application actions such as accepting, rejecting, and archiving.
+ * @param type Type of action performed (accept, reject, etc.). The type of actions that can be performed can be modified in the `uiConfig` record within this component.
+ * @param applicants Applicant/s affected by the action.
+ * @param isProcessing Boolean state that tracks whether the action is being processed. Used to disable the buttons while waiting for db response.
+ * @param onConfirm Function to run when confirming the action.
+ * @param onCancel Function to run when cancelling the action.
+ * @returns The frontend for the application action modal.
+ */
+export default function ApplicationActionModal({
+  type,
+  applicants,
+  isProcessing,
+  onConfirm,
+  onCancel,
+}: ApplicationActionModalProps) {
+  if (applicants.length === 0) return null;
+
+  const firstApplicant = applicants[0];
+  const name = getApplicantName(firstApplicant);
+  const isMassAction = applicants.length > 1;
+
+  const config = getUIConfig(type, name, applicants.length);
 
   return (
     <div className="flex flex-col gap-3 h-full w-full">

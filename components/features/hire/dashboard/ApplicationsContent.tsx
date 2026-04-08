@@ -12,17 +12,23 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import { ApplicationsHeader } from "./ApplicationsHeader";
 import { useState } from "react";
 import {
+  Archive,
+  ArchiveRestore,
   Calendar,
-  CheckCircle2,
   ContactRound,
   GraduationCap,
   ListCheck,
+  Trash2,
   User2,
 } from "lucide-react";
 import { useEffect } from "react";
-import { statusMap } from "@/components/common/status-icon-map";
+import {
+  DB_STATUS_MAP,
+  UI_STATUS_MAP,
+  ApplicationAction,
+  ApplicationFilter,
+} from "@/lib/consts/application";
 import { type ActionItem } from "@/components/ui/action-item";
-import { Toast } from "@/components/ui/toast";
 import { ApplicationsCommandBar } from "./ApplicationsCommandBar";
 import { FormCheckbox } from "@/components/EditForm";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
@@ -36,16 +42,11 @@ interface ApplicationsContentProps {
   isSuperListing?: boolean;
   isLoading?: boolean;
   onApplicationClick: (application: EmployerApplication) => void;
-  onStatusChange: (application: EmployerApplication, status: number) => void;
   setSelectedApplication: (application: EmployerApplication) => void;
-  onRequestArchiveApplicant: (application: EmployerApplication) => void;
-  onRequestDeleteApplicant: (application: EmployerApplication) => void;
-  onRequestAcceptApplicant: (application: EmployerApplication) => void;
-  onRequestShortlistApplicant: (application: EmployerApplication) => void;
-  onRequestRejectApplicant: (application: EmployerApplication) => void;
-  onRequestStatusChange: (
-    applications: EmployerApplication[],
-    status: number,
+  onAction: (
+    type: ApplicationAction,
+    apps: EmployerApplication[],
+    status?: number,
   ) => void;
 }
 
@@ -58,13 +59,8 @@ export const ApplicationsContent = forwardRef<
     isSuperListing = false,
     isLoading,
     onApplicationClick,
-    onStatusChange,
     setSelectedApplication,
-    onRequestDeleteApplicant,
-    onRequestArchiveApplicant,
-    onRequestAcceptApplicant,
-    onRequestRejectApplicant,
-    onRequestStatusChange,
+    onAction,
   },
   ref,
 ) {
@@ -74,9 +70,7 @@ export const ApplicationsContent = forwardRef<
   const selectedJobId = searchParams.get("jobId");
 
   const [commandBarsVisible, setCommandBarsVisible] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<number>(-1);
-  const [toastVisible, setToastVisible] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
+  const [activeFilter, setActiveFilter] = useState<ApplicationFilter>("all");
   const sortedApplications = applications.toSorted(
     (a, b) =>
       new Date(b.applied_at ?? "").getTime() -
@@ -85,51 +79,17 @@ export const ApplicationsContent = forwardRef<
 
   const { app_statuses, get_app_status } = useDbRefs();
 
-  useEffect(() => {
-    if (toastVisible) {
-      const timeoutId = setTimeout(() => {
-        setToastVisible(false);
-      }, 5000);
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [toastVisible]);
-
-  const updateSingleStatus = (id: string, status: number) => {
-    const application = sortedApplications.find((a) => a.id === id);
-
-    if (!application) return;
-
-    try {
-      onStatusChange(application, status);
-      setToastMessage(`Applicant status changed.`);
-      setToastVisible(true);
-    } catch (error) {
-      console.error("Critical error occurred during status update: ", error);
-    }
-  };
-
-  const acceptSingleApplicant = (id: string) => {
-    const application = sortedApplications.find((a) => a.id === id);
-
-    if (!application) return;
-
-    onRequestAcceptApplicant(application);
-  };
-
-  const rejectSingleApplicant = (id: string) => {
-    const application = sortedApplications.find((a) => a.id === id);
-
-    if (!application) return;
-
-    onRequestRejectApplicant(application);
-  };
-
   if (!app_statuses) return null;
 
   const statuses = app_statuses
     .map((status): ActionItem => {
-      const uiProps = statusMap.get(status.id);
+      // look up config for db id
+      const config = DB_STATUS_MAP[status.id];
+
+      // get ui properties using mapped key
+      const filterKey =
+        config?.key || (status.name.toLowerCase() as ApplicationFilter);
+      const uiProps = UI_STATUS_MAP.get(filterKey);
 
       return {
         id: status.id.toString(),
@@ -140,7 +100,11 @@ export const ApplicationsContent = forwardRef<
             .map((id) => sortedApplications.find((app) => app.id === id))
             .filter((app): app is EmployerApplication => !!app);
 
-          onRequestStatusChange(applicationsToUpdate, status.id);
+          onAction(
+            config.action || "CHANGE_STATUS",
+            applicationsToUpdate,
+            status.id,
+          );
         },
         destructive: uiProps?.destructive,
         highlightColor: uiProps?.fgColor,
@@ -151,18 +115,18 @@ export const ApplicationsContent = forwardRef<
     .filter(Boolean);
 
   // get statuses specifically for the rows. these use different action items.
-  const getRowStatuses = (applicationId: string) => {
+  const getRowStatuses = (application: EmployerApplication) => {
     return app_statuses
       .filter((status) => status.id !== 7 && status.id !== 5 && status.id !== 0)
       .map((status): ActionItem => {
-        const uiProps = statusMap.get(status.id);
+        const config = DB_STATUS_MAP[status.id];
+        const filterKey =
+          config?.key || (status.name.toLowerCase() as ApplicationFilter);
+        const uiProps = UI_STATUS_MAP.get(filterKey);
 
-        const handleClick =
-          status.id === 4
-            ? () => acceptSingleApplicant(applicationId)
-            : status.id === 6
-              ? () => rejectSingleApplicant(applicationId)
-              : () => updateSingleStatus(applicationId, status.id);
+        const handleClick = () => {
+          onAction(config.action || "CHANGE_STATUS", [application], status.id);
+        };
 
         return {
           id: status.id.toString(),
@@ -177,17 +141,22 @@ export const ApplicationsContent = forwardRef<
   };
   const dummyStatuses = app_statuses
     .filter((status) => status.id !== 7 && status.id !== 5 && status.id !== 0)
-    .map(
-      (status): ActionItem => ({
+    .map((status): ActionItem => {
+      const config = DB_STATUS_MAP[status.id];
+      const filterKey =
+        config?.key || (status.name.toLowerCase() as ApplicationFilter);
+      const uiProps = UI_STATUS_MAP.get(filterKey);
+
+      return {
         id: status.id.toString(),
         label: status.name,
-        icon: statusMap.get(status.id)?.icon,
+        icon: uiProps?.icon,
         onClick: () => {},
-        destructive: statusMap.get(status.id)?.destructive,
-        bgColor: statusMap.get(status.id)?.bgColor,
-        fgColor: statusMap.get(status.id)?.fgColor,
-      }),
-    );
+        destructive: uiProps?.destructive,
+        bgColor: uiProps?.bgColor,
+        fgColor: uiProps?.fgColor,
+      };
+    });
   const dummyDefaultStatus: ActionItem = {
     id: "0",
     label: get_app_status(0)?.name,
@@ -195,27 +164,38 @@ export const ApplicationsContent = forwardRef<
     disabled: false,
     destructive: false,
     highlighted: true,
-    highlightColor: statusMap.get(0)?.bgColor,
+    highlightColor: UI_STATUS_MAP.get("pending")?.bgColor,
   };
 
-  // remove the delete item from the bottom command bar so we can put it in the top one and the pending status.
-  const remove_unused_statuses = statuses.filter(
-    (status) => status.id !== "5" && status.id !== "0",
-  );
-
   const applyActiveFilter = (apps: typeof sortedApplications) => {
-    if (activeFilter === -1) {
-      return apps.filter(
-        (application) => application.status !== 7 && application.status !== 5,
-      );
-    }
+    if (activeFilter === "archived")
+      return apps.filter((app) => app.visibility === "archived");
 
-    return apps.filter((application) => application.status === activeFilter);
+    const activeApps = apps.filter((app) => app.visibility === "visible");
+
+    switch (activeFilter) {
+      case "all":
+        return activeApps.filter(
+          (app) =>
+            app.visibility !== "archived" && app.visibility !== "deleted",
+        );
+      case "pending":
+        return activeApps.filter((app) => app.status === 0);
+      case "shortlisted":
+        return activeApps.filter((app) => app.status === 1);
+      case "accepted":
+        return activeApps.filter((app) => app.status === 4);
+      case "rejected":
+        return activeApps.filter((app) => app.status === 6);
+      default:
+        return activeApps;
+    }
   };
 
   const visibleApplications = applyActiveFilter(sortedApplications).filter(
     (application) => application.status !== undefined,
   );
+
   const showSuperDummyApplication =
     isSuperListing &&
     visibleApplications.length === 0 &&
@@ -250,27 +230,86 @@ export const ApplicationsContent = forwardRef<
   const someVisibleSelected =
     numVisibleSelected > 0 && numVisibleSelected < visibleApplications.length;
 
+  // separate statuses and visibility in the command bar and remove unused ones.
+  const command_bar_statuses = statuses.filter(
+    (status) => status.id !== "5" && status.id !== "7" && status.id !== "0",
+  );
+
+  const command_bar_visibility: ActionItem[] = [
+    {
+      id: "archive",
+      label: activeFilter === "archived" ? "Unarchive" : "Archive",
+      icon: activeFilter === "archived" ? ArchiveRestore : Archive,
+      onClick: () => {
+        const apps = Array.from(selectedApplications)
+          .map((id) => sortedApplications.find((app) => app.id === id))
+          .filter((app): app is EmployerApplication => !!app);
+
+        if (apps.length > 0) {
+          onAction(activeFilter === "archived" ? "UNARCHIVE" : "ARCHIVE", apps);
+          unselectAll();
+        }
+      },
+    },
+    {
+      id: "delete",
+      label: "Delete",
+      icon: Trash2,
+      destructive: true,
+      onClick: () => {
+        const apps = Array.from(selectedApplications)
+          .map((id) => sortedApplications.find((app) => app.id === id))
+          .filter((app): app is EmployerApplication => !!app);
+
+        if (apps.length > 0) {
+          onAction("DELETE", apps);
+          unselectAll();
+        }
+      },
+    },
+  ];
+
   // make command bars visible when an applicant is selected.
   useEffect(() => {
     setCommandBarsVisible(selectedApplications.size > 0);
   }, [selectedApplications.size]);
 
+  // get number of applications under each filter.
   const getCounts = (apps: EmployerApplication[]) => {
-    const counts: Record<string | number, number> = { all: 0 };
-
-    statuses.forEach((status) => {
-      counts[status?.id || 0] = 0;
-    });
+    const counts: Record<ApplicationFilter | number, number> = {
+      all: 0,
+      pending: 0,
+      accepted: 0,
+      shortlisted: 0,
+      rejected: 0,
+      archived: 0,
+    };
 
     apps.forEach((app) => {
-      const statusId = app.status;
+      // don't count deleted applications.
+      if (app.visibility === "deleted") return;
 
-      if (statusId !== 7) {
-        counts.all++;
+      // only count archived applications within its own tab (not included in all).
+      if (app.visibility === "archived") {
+        counts.archived++;
+        return;
       }
 
-      if (statusId !== undefined && Object.hasOwn(counts, statusId)) {
-        counts[statusId]++;
+      // if neither of the above, include in all count.
+      counts.all++;
+      switch (app.status) {
+        case 0:
+          counts.pending++;
+          break;
+        case 1:
+          counts.shortlisted++;
+          break;
+        case 4:
+          counts.accepted++;
+          break;
+        case 6:
+          counts.rejected++;
+          break;
       }
     });
 
@@ -279,17 +318,11 @@ export const ApplicationsContent = forwardRef<
 
   return isMobile ? (
     <div className="flex flex-col gap-2 min-h-screen mb-28">
-      <Toast
-        visible={toastVisible}
-        title={toastMessage}
-        indicator={<CheckCircle2 />}
-        className="top-6 z-[1000]"
-      />
       <ApplicationsHeader
         selectedCounts={getCounts(sortedApplications)}
         activeFilter={activeFilter}
-        onFilterChange={(status: number) => {
-          setActiveFilter(status);
+        onFilterChange={(filter: ApplicationFilter) => {
+          setActiveFilter(filter);
           unselectAll();
         }}
       />
@@ -299,14 +332,15 @@ export const ApplicationsContent = forwardRef<
         allVisibleSelected={allVisibleSelected}
         someVisibleSelected={someVisibleSelected}
         visibleApplicationsCount={visibleApplications.length}
-        statuses={remove_unused_statuses}
+        statuses={command_bar_statuses}
+        applicationVisibility={command_bar_visibility}
         onUnselectAll={unselectAll}
         onSelectAll={selectAll}
         onDelete={() => {
           const appToDelete = Array.from(selectedApplications)
             .map((id) => sortedApplications.find((app) => app.id === id))
             .find((app): app is EmployerApplication => !!app);
-          if (appToDelete) onRequestDeleteApplicant(appToDelete);
+          if (appToDelete) onAction("DELETE", [appToDelete]);
         }}
         onStatusChange={() => {}}
       />
@@ -325,13 +359,11 @@ export const ApplicationsContent = forwardRef<
                   toggleSelect(application.id!, v);
                 }
               }}
-              onStatusChange={(status) => onStatusChange(application, status)}
               setSelectedApplication={setSelectedApplication}
               checkboxSelected={selectedApplications.has(application.id!)}
               onToggleSelect={(v) => toggleSelect(application.id!, v)}
-              onArchiveButtonClick={onRequestArchiveApplicant}
-              onDeleteButtonClick={onRequestDeleteApplicant}
-              statuses={getRowStatuses(application.id!)}
+              onAction={onAction}
+              statuses={getRowStatuses(application)}
             />
           ))
         ) : showSuperDummyApplication ? (
@@ -361,16 +393,11 @@ export const ApplicationsContent = forwardRef<
     </div>
   ) : (
     <div className="flex flex-col gap-2 mb-28">
-      <Toast
-        visible={toastVisible}
-        title={toastMessage}
-        indicator={<CheckCircle2 />}
-      />
       <ApplicationsHeader
         selectedCounts={getCounts(sortedApplications)}
         activeFilter={activeFilter}
-        onFilterChange={(status: number) => {
-          setActiveFilter(status);
+        onFilterChange={(filter: ApplicationFilter) => {
+          setActiveFilter(filter);
           unselectAll();
         }}
       />
@@ -380,14 +407,15 @@ export const ApplicationsContent = forwardRef<
         allVisibleSelected={allVisibleSelected}
         someVisibleSelected={someVisibleSelected}
         visibleApplicationsCount={visibleApplications.length}
-        statuses={remove_unused_statuses}
+        statuses={command_bar_statuses}
+        applicationVisibility={command_bar_visibility}
         onUnselectAll={unselectAll}
         onSelectAll={selectAll}
         onDelete={() => {
           const appToDelete = Array.from(selectedApplications)
             .map((id) => sortedApplications.find((app) => app.id === id))
             .find((app): app is EmployerApplication => !!app);
-          if (appToDelete) onRequestDeleteApplicant(appToDelete);
+          if (appToDelete) onAction("DELETE", [appToDelete]);
         }}
         onStatusChange={() => {}}
       />
@@ -483,19 +511,11 @@ export const ApplicationsContent = forwardRef<
                       toggleSelect(application.id!, v);
                     }
                   }}
-                  onStatusChange={(status) =>
-                    onStatusChange(application, status)
-                  }
                   setSelectedApplication={setSelectedApplication}
                   checkboxSelected={selectedApplications.has(application.id!)}
                   onToggleSelect={(v) => toggleSelect(application.id!, v)}
-                  onArchiveButtonClick={() =>
-                    onRequestArchiveApplicant?.(application)
-                  }
-                  onDeleteButtonClick={() =>
-                    onRequestDeleteApplicant?.(application)
-                  }
-                  statuses={getRowStatuses(application.id!)}
+                  onAction={onAction}
+                  statuses={getRowStatuses(application)}
                 />
               ))
             ) : showSuperDummyApplication ? (
