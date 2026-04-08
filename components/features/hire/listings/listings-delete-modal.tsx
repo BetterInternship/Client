@@ -42,7 +42,7 @@ export function ListingsDeleteModal({
           variant="outline"
           scheme="destructive"
           disabled={deleting}
-          onClick={handleDelete}
+          onClick={() => void handleDelete}
         >
           {deleting ? "Deleting..." : "Delete"}
         </Button>
