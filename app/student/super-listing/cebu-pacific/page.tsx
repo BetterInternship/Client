@@ -385,7 +385,7 @@ export default function CebuPacificPage() {
 
         <section ref={panelSectionRef} className="relative">
           <div className="px-2">
-            <div className="mx-auto max-w-5xl">
+            <div className="mx-auto max-w-6xl">
               <div
                 className={cn(
                   "transition-all duration-[220ms] ease-out",
@@ -402,7 +402,7 @@ export default function CebuPacificPage() {
                     />
                     <div
                       id="cebu-overview-anchor"
-                      className="mx-auto w-full max-w-3xl"
+                      className="mx-auto w-full max-w-6xl"
                     >
                       <OverviewPanel onGoToApply={openChallengePanel} />
                     </div>
