@@ -54,10 +54,7 @@ export function HeroLandingView({ hero }: HeroLandingViewProps) {
   }, [phraseIndex, typedText, isDeleting]);
 
   return (
-    <section
-      data-story-hero
-      className="absolute inset-0 z-30 overflow-hidden"
-    >
+    <section data-story-hero className="absolute inset-0 z-30 overflow-hidden">
       <div
         data-story-hero-bg
         className="absolute inset-0 overflow-hidden bg-[#6bb6e8]"
@@ -74,13 +71,19 @@ export function HeroLandingView({ hero }: HeroLandingViewProps) {
 
         <div
           aria-hidden
-          className="absolute inset-0 bg-[radial-gradient(circle_at_78%_22%,rgba(255,230,134,0.32),transparent_24%),linear-gradient(145deg,rgba(255,255,255,0.06),transparent_45%),linear-gradient(180deg,rgba(6,26,56,0.34),rgba(255,255,255,0.03))]"
+          className="absolute inset-0 bg-[linear-gradient(145deg,rgba(255,255,255,0.06),transparent_45%),linear-gradient(180deg,rgba(6,26,56,0.34),rgba(255,255,255,0.03))]"
         />
       </div>
 
       <div className="absolute inset-0 z-10 flex items-end justify-start px-6 pb-10 sm:px-10 sm:pb-12 lg:px-16 lg:pb-16">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-7 bg-black/16" aria-hidden />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-7 bg-black/16" aria-hidden />
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-7 bg-black/16"
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-7 bg-black/16"
+          aria-hidden
+        />
         <div
           className="absolute inset-x-0 bottom-0 h-[56vh] bg-gradient-to-t from-white/72 via-white/28 to-transparent"
           aria-hidden
@@ -89,19 +92,21 @@ export function HeroLandingView({ hero }: HeroLandingViewProps) {
         <div className="relative flex max-w-3xl flex-col gap-6">
           <h1
             data-story-hero-headline
-            className="text-4xl font-bold tracking-tight text-[#163c69] sm:text-5xl lg:text-6xl xl:text-7xl [font-family:var(--font-cebu-story-heading)]"
+            className="text-4xl font-semibold tracking-[-0.01em] text-[#163c69] sm:text-5xl lg:text-6xl xl:text-7xl [font-family:var(--font-cebu-hero-title)]"
             style={{ lineHeight: 1.05 }}
           >
-            <span className="block whitespace-nowrap text-[clamp(2rem,6vw,4.8rem)]">
+            <span className="block whitespace-nowrap text-[clamp(2rem,6vw,4.8rem)] text-white">
               Have you ever wanted to
             </span>
-            <span className="mt-2 block min-h-[1.2em] whitespace-nowrap text-[clamp(1.6rem,4.8vw,4.2rem)]">
+            <span className="mt-2 block min-h-[1.2em] whitespace-nowrap ttext-[clamp(2rem,6vw,4.8rem)]">
               <span className="inline-block whitespace-nowrap bg-[#f8d64e] px-3 text-[#163c69] shadow-[0_14px_28px_-18px_rgba(248,214,78,0.9)] box-decoration-clone">
                 {typedText || "\u00A0"}
                 <span
                   aria-hidden="true"
                   className="ml-1 inline-block h-[0.92em] w-[3px] translate-y-[0.08em] rounded-full bg-[#163c69]/70"
-                  style={{ animation: "cebuCaretBlink 1.05s steps(1, end) infinite" }}
+                  style={{
+                    animation: "cebuCaretBlink 1.05s steps(1, end) infinite",
+                  }}
                 />
               </span>
             </span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { IBM_Plex_Mono, Manrope, Sora } from "next/font/google";
+import { IBM_Plex_Mono, Manrope, Playfair_Display, Sora } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { cebuPacificStoryModel } from "./cebu-pacific-story";
 import { ScrollStoryView } from "./components/ScrollStoryView";
@@ -23,6 +23,12 @@ const bodyFont = Manrope({
   variable: "--font-cebu-story-body",
 });
 
+const heroTitleFont = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  variable: "--font-cebu-hero-title",
+});
+
 export default function CebuPacificCompanyProfilePage() {
   return (
     <ScrollStoryView
@@ -31,6 +37,7 @@ export default function CebuPacificCompanyProfilePage() {
         headingFont.variable,
         monoFont.variable,
         bodyFont.variable,
+        heroTitleFont.variable,
         "[font-family:var(--font-cebu-story-body)]",
       )}
     />
