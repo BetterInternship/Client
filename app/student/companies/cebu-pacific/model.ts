@@ -22,23 +22,14 @@ export type ScrollStorySection = {
   id: string;
   step: string;
   title: string;
-  description: string;
-  supporting: string;
-  image: {
+  description?: string;
+  supporting?: string;
+  image?: {
     src: string;
     alt: string;
     caption: string;
   };
-  stats: Array<{
-    value: string;
-    label: string;
-  }>;
-  points: Array<{
-    title: string;
-    body: string;
-  }>;
   journey?: {
-    title: string;
     roles: ScrollStoryJourneyRole[];
   };
   quote?: {
@@ -63,8 +54,6 @@ export type ScrollStorySectionRefs = {
   supporting: HTMLElement | null;
   media: HTMLElement | null;
   image: HTMLImageElement | null;
-  stats: HTMLElement[];
-  points: HTMLElement[];
   quote: HTMLElement | null;
   actions: HTMLElement[];
 };
@@ -224,39 +213,7 @@ const revealSection = (
     );
   }
 
-  // 7. Stats stagger
-  if (section.stats.length > 0) {
-    timeline.fromTo(
-      section.stats,
-      { y: config.statOffsetY * 1.3, autoAlpha: 0 },
-      {
-        y: 0,
-        autoAlpha: 1,
-        duration: 0.55,
-        stagger: 0.12,
-        ease: "power3.out",
-      },
-      at(position, 0.85),
-    );
-  }
-
-  // 8. Points / Journey card
-  if (section.points.length > 0) {
-    timeline.fromTo(
-      section.points,
-      { y: config.pointOffsetY * 1.2, autoAlpha: 0 },
-      {
-        y: 0,
-        autoAlpha: 1,
-        duration: 0.6,
-        stagger: 0.13,
-        ease: "power3.out",
-      },
-      at(position, 0.98),
-    );
-  }
-
-  // 9. Quote
+  // 7. Quote
   if (section.quote) {
     timeline.fromTo(
       section.quote,
@@ -271,7 +228,7 @@ const revealSection = (
     );
   }
 
-  // 10. Actions fade and slide in
+  // 8. Actions fade and slide in
   if (section.actions.length > 0) {
     timeline.fromTo(
       section.actions,
@@ -341,22 +298,6 @@ const hideSection = (
     );
   }
 
-  if (section.stats.length > 0) {
-    timeline.to(
-      section.stats,
-      { y: -15, autoAlpha: 0, duration: 0.4, stagger: 0.02, ease: "power3.inOut" },
-      `${position}+=0.1`,
-    );
-  }
-
-  if (section.points.length > 0) {
-    timeline.to(
-      section.points,
-      { y: -15, autoAlpha: 0, duration: 0.4, stagger: 0.02, ease: "power3.inOut" },
-      `${position}+=0.12`,
-    );
-  }
-
   if (section.quote) {
     timeline.to(
       section.quote,
@@ -368,7 +309,13 @@ const hideSection = (
   if (section.actions.length > 0) {
     timeline.to(
       section.actions,
-      { x: -16, autoAlpha: 0, duration: 0.4, stagger: 0.02, ease: "power3.inOut" },
+      {
+        x: -16,
+        autoAlpha: 0,
+        duration: 0.4,
+        stagger: 0.02,
+        ease: "power3.inOut",
+      },
       `${position}+=0.1`,
     );
   }

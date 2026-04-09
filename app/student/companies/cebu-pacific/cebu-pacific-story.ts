@@ -9,11 +9,6 @@ import {
 
 const sharedActions: ScrollStoryAction[] = [
   {
-    label: "Open Challenge",
-    href: "/student/super-listing/cebu-pacific",
-    tone: "primary",
-  },
-  {
     label: "Visit Cebu Pacific",
     href: "https://www.cebupacificair.com/",
     external: true,
@@ -42,25 +37,6 @@ const sections: ScrollStorySection[] = [
       caption:
         "Placeholder aircraft photography. Swap for branded Cebu Pacific visuals later.",
     },
-    stats: [
-      { value: "Full-screen", label: "Immersive first impression" },
-      { value: "Airline-first", label: "Visual direction and copy" },
-      { value: "Scroll-pinned", label: "Story stays in one viewport" },
-    ],
-    points: [
-      {
-        title: "Flight-energy hero",
-        body: "Big type, sunlit gradients, and runway-style framing make the page feel in motion from the first second.",
-      },
-      {
-        title: "Clear next step",
-        body: "Primary actions stay visible so the page can inspire and convert without waiting for a footer.",
-      },
-      {
-        title: "Scene-based pacing",
-        body: "The first frame introduces Cebu Pacific like the opening shot of a campaign film, not a standard careers page.",
-      },
-    ],
     quote: {
       text: "Fast-moving brands deserve landing pages that feel like departure, not documentation.",
       attribution: "Creative direction for the rebuild",
@@ -87,25 +63,6 @@ const sections: ScrollStorySection[] = [
       caption:
         "Scene two uses another temporary plane image so we can focus on motion and composition first.",
     },
-    stats: [
-      { value: "One viewport", label: "Sticky scene container" },
-      { value: "GSAP", label: "Master timeline handoff" },
-      { value: "Snap points", label: "Section-to-section rhythm" },
-    ],
-    points: [
-      {
-        title: "Storyboard structure",
-        body: "Each wheel or trackpad gesture advances the next sequence instead of pushing the whole page downward.",
-      },
-      {
-        title: "Reusable motion",
-        body: "The transition pattern is abstracted into an array of GSAP steps so we can remix the pacing later.",
-      },
-      {
-        title: "Airline lens",
-        body: "Copy and visuals keep returning to routes, touchpoints, and movement so the page stays on brand.",
-      },
-    ],
     actions: sharedActions,
     palette: {
       sky: "#0e7adf",
@@ -128,25 +85,6 @@ const sections: ScrollStorySection[] = [
       caption:
         "Temporary aircraft interior shot. Replace with culture or team photography when assets are ready.",
     },
-    stats: [
-      { value: "Cross-functional", label: "Teams behind the trip" },
-      { value: "Challenge-first", label: "Work shown through execution" },
-      { value: "Built to extend", label: "Easy to add more scenes" },
-    ],
-    points: [
-      {
-        title: "Internship credibility",
-        body: "The page can speak to builders, designers, and operators without collapsing into generic company-page language.",
-      },
-      {
-        title: "Model-driven content",
-        body: "Section copy, palette, and motion hooks live in one model so the story can evolve without rewriting the view layer.",
-      },
-      {
-        title: "Component reuse",
-        body: "The same section renderer can support another airline or travel company by swapping data and animation steps.",
-      },
-    ],
     quote: {
       text: "The strongest internship pages don't just say the work matters. They stage the feeling that it does.",
       attribution: "Narrative direction for scene three",
@@ -162,24 +100,8 @@ const sections: ScrollStorySection[] = [
   {
     id: "final-call",
     step: "04",
-    title: "Finish on a clear final call instead of a quiet fade-out.",
-    description:
-      "The last screen is built to convert attention into action with a tighter summary, stronger CTA treatment, and space for a challenge-first internship pitch.",
-    supporting:
-      "For now, the photography stays intentionally temporary. When Cebu Pacific assets arrive, we can drop them in without touching the section engine or animation model.",
-    image: {
-      src: "https://images.unsplash.com/photo-1504198453319-5ce911bafcde?auto=format&fit=crop&w=1200&q=80",
-      alt: "Placeholder photo of a plane descending through a warm sunset sky.",
-      caption: "Final approach frame with another placeholder aircraft image.",
-    },
-    stats: [
-      { value: "Launch-ready", label: "Ending that actually sells" },
-      { value: "Asset-swappable", label: "Placeholder images for now" },
-      { value: "Reusable engine", label: "Model plus view split" },
-    ],
-    points: [],
+    title: "Pick your journey",
     journey: {
-      title: "Pick your journey",
       roles: [
         {
           label: "Flight Operations Intern",

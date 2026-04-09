@@ -194,18 +194,6 @@ export function ScrollStoryView({ model, className }: ScrollStoryViewProps) {
           });
         }
 
-        // Stats
-        gsap.set(section.stats, {
-          y: isFirst ? 0 : 30,
-          autoAlpha: isFirst ? 0 : 0,
-        });
-
-        // Points
-        gsap.set(section.points, {
-          y: isFirst ? 0 : 30,
-          autoAlpha: isFirst ? 0 : 0,
-        });
-
         // Quote
         if (section.quote) {
           gsap.set(section.quote, {
@@ -311,37 +299,7 @@ export function ScrollStoryView({ model, className }: ScrollStoryViewProps) {
           );
         }
 
-        // 6. Stats stagger
-        if (firstSection.stats.length > 0) {
-          intro.fromTo(
-            firstSection.stats,
-            { y: 30, autoAlpha: 0 },
-            {
-              y: 0,
-              autoAlpha: 1,
-              duration: 0.6,
-              stagger: 0.12,
-            },
-            0.9,
-          );
-        }
-
-        // 7. Points stagger in
-        if (firstSection.points.length > 0) {
-          intro.fromTo(
-            firstSection.points,
-            { y: 30, autoAlpha: 0 },
-            {
-              y: 0,
-              autoAlpha: 1,
-              duration: 0.65,
-              stagger: 0.13,
-            },
-            1.05,
-          );
-        }
-
-        // 8. Quote fades in
+        // 6. Quote fades in
         if (firstSection.quote) {
           intro.fromTo(
             firstSection.quote,
@@ -351,7 +309,7 @@ export function ScrollStoryView({ model, className }: ScrollStoryViewProps) {
           );
         }
 
-        // 9. Actions slide in from left
+        // 7. Actions slide in from left
         if (firstSection.actions.length > 0) {
           intro.fromTo(
             firstSection.actions,

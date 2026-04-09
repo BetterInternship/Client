@@ -37,11 +37,11 @@ export function HeroLandingView({ hero }: HeroLandingViewProps) {
         </div>
 
         {/* Bouncing chevron — bottom of left half */}
-        <div className="absolute bottom-12 left-1/2 z-10 -translate-x-1/2">
+        <div className="z-10 mt-8 translate-x-[-10px]">
           <svg
             data-story-hero-chevron
-            width="28"
-            height="28"
+            width="80"
+            height="80"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -56,10 +56,7 @@ export function HeroLandingView({ hero }: HeroLandingViewProps) {
       </div>
 
       {/* Right half — image edge-to-edge */}
-      <div
-        data-story-hero-bg
-        className="relative"
-      >
+      <div data-story-hero-bg className="relative">
         <img
           data-story-hero-image
           src={hero.backgroundImage}

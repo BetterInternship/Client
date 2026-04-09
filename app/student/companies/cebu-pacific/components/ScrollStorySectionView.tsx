@@ -115,30 +115,12 @@ export function ScrollStorySectionView({
               </p>
             </div>
 
-            {/* Stats */}
-            <div className="grid gap-2 sm:grid-cols-3">
-              {section.stats.map((stat) => (
-                <article
-                  key={stat.label}
-                  data-story-stat
-                  className="border border-gray-200 bg-white/70 px-5 py-4"
-                >
-                  <p className="text-xl font-semibold tracking-tight text-gray-900 [font-family:var(--font-cebu-story-heading)]">
-                    {stat.value}
-                  </p>
-                  <p className="mt-2 text-xs uppercase tracking-[0.2em] text-gray-400 [font-family:var(--font-cebu-story-mono)]">
-                    {stat.label}
-                  </p>
-                </article>
-              ))}
-            </div>
-
             {/* Journey card */}
             {hasJourney && section.journey ? (
-              <div data-story-point className="border border-gray-200 bg-white/80 p-6">
-                <h2 className="mb-5 text-xl font-semibold uppercase tracking-[0.15em] text-gray-900 [font-family:var(--font-cebu-story-heading)]">
-                  {section.journey.title}
-                </h2>
+              <div
+                data-story-point
+                className="border border-gray-200 bg-white/80 p-6"
+              >
                 <div className="flex flex-col gap-2">
                   {section.journey.roles.map((role) => (
                     <Link
@@ -166,26 +148,6 @@ export function ScrollStorySectionView({
                     </Link>
                   ))}
                 </div>
-              </div>
-            ) : null}
-
-            {/* Points */}
-            {!hasJourney && section.points.length > 0 ? (
-              <div className="grid gap-2 lg:grid-cols-3">
-                {section.points.map((point) => (
-                  <article
-                    key={point.title}
-                    data-story-point
-                    className="border-l-2 border-l-[var(--section-sky)] border-y border-r border-y-gray-200 border-r-gray-200 bg-white/60 px-5 py-5"
-                  >
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[var(--section-sky)] [font-family:var(--font-cebu-story-mono)]">
-                      {point.title}
-                    </p>
-                    <p className="mt-3 text-sm leading-6 text-gray-500">
-                      {point.body}
-                    </p>
-                  </article>
-                ))}
               </div>
             ) : null}
 
@@ -229,41 +191,36 @@ export function ScrollStorySectionView({
             </div>
           </div>
 
-          {/* Media */}
-          <div
-            data-story-media
-            className="relative flex items-center justify-center lg:justify-end"
-          >
-            <div className="relative w-full max-w-xl">
-              <div className="relative overflow-hidden border border-gray-200 bg-white/50">
-                <div className="relative overflow-hidden bg-gray-100">
-                  {/* Scene label */}
-                  <div className="absolute left-4 top-4 z-10 inline-flex items-center gap-2 border border-gray-300 bg-white/90 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-gray-500 [font-family:var(--font-cebu-story-mono)]">
-                    <span className="h-[6px] w-[6px] bg-[var(--section-sky)]" />
-                    Scene {section.step}
-                  </div>
+          {!!section.image && (
+            <div
+              data-story-media
+              className="relative flex items-center justify-center lg:justify-end"
+            >
+              <div className="relative w-full max-w-xl">
+                <div className="relative overflow-hidden border border-gray-200 bg-white/50">
+                  <div className="relative overflow-hidden bg-gray-100">
+                    <img
+                      data-story-image
+                      src={section.image.src}
+                      alt={section.image.alt}
+                      className="h-[28rem] w-full object-cover sm:h-[34rem] lg:h-[44rem]"
+                    />
 
-                  <img
-                    data-story-image
-                    src={section.image.src}
-                    alt={section.image.alt}
-                    className="h-[28rem] w-full object-cover sm:h-[34rem] lg:h-[44rem]"
-                  />
-
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-white via-white/80 to-transparent px-5 pb-5 pt-16">
-                    <p className="text-xs leading-6 text-gray-400 [font-family:var(--font-cebu-story-mono)]">
-                      {section.image.caption}
-                    </p>
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-white via-white/80 to-transparent px-5 pb-5 pt-16">
+                      <p className="text-xs leading-6 text-gray-400 [font-family:var(--font-cebu-story-mono)]">
+                        {section.image.caption}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Label badge */}
-              <div className="absolute -bottom-3 left-3 border border-gray-200 bg-white/95 px-4 py-2 text-[9px] font-semibold uppercase tracking-[0.3em] text-gray-400 [font-family:var(--font-cebu-story-mono)]">
-                Placeholder image
+                {/* Label badge */}
+                <div className="absolute -bottom-3 left-3 border border-gray-200 bg-white/95 px-4 py-2 text-[9px] font-semibold uppercase tracking-[0.3em] text-gray-400 [font-family:var(--font-cebu-story-mono)]">
+                  Placeholder image
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </section>
