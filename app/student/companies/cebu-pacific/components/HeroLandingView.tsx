@@ -18,40 +18,19 @@ const HERO_PHRASES = [
 
 export function HeroLandingView({ hero }: HeroLandingViewProps) {
   const [phraseIndex, setPhraseIndex] = useState(0);
-  const [typedText, setTypedText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isPhraseVisible, setIsPhraseVisible] = useState(true);
 
   useEffect(() => {
-    const currentPhrase = HERO_PHRASES[phraseIndex];
+    const cycle = window.setInterval(() => {
+      setIsPhraseVisible(false);
+      window.setTimeout(() => {
+        setPhraseIndex((current) => (current + 1) % HERO_PHRASES.length);
+        setIsPhraseVisible(true);
+      }, 220);
+    }, 2600);
 
-    const delay = (() => {
-      if (!isDeleting && typedText === currentPhrase) return 1800;
-      if (isDeleting && typedText.length === 0) return 380;
-      return isDeleting ? 26 : 46;
-    })();
-
-    const timer = window.setTimeout(() => {
-      if (!isDeleting) {
-        if (typedText.length < currentPhrase.length) {
-          setTypedText(currentPhrase.slice(0, typedText.length + 1));
-          return;
-        }
-
-        setIsDeleting(true);
-        return;
-      }
-
-      if (typedText.length > 0) {
-        setTypedText(currentPhrase.slice(0, typedText.length - 1));
-        return;
-      }
-
-      setIsDeleting(false);
-      setPhraseIndex((current) => (current + 1) % HERO_PHRASES.length);
-    }, delay);
-
-    return () => window.clearTimeout(timer);
-  }, [phraseIndex, typedText, isDeleting]);
+    return () => window.clearInterval(cycle);
+  }, []);
 
   return (
     <section data-story-hero className="absolute inset-0 z-30 overflow-hidden">
@@ -98,16 +77,15 @@ export function HeroLandingView({ hero }: HeroLandingViewProps) {
             <span className="block whitespace-nowrap text-[clamp(2rem,6vw,4.8rem)] text-white">
               Have you ever wanted to
             </span>
-            <span className="mt-2 block min-h-[1.2em] whitespace-nowrap ttext-[clamp(2rem,6vw,4.8rem)]">
-              <span className="inline-block whitespace-nowrap bg-[#f8d64e] px-3 text-[#163c69] shadow-[0_14px_28px_-18px_rgba(248,214,78,0.9)] box-decoration-clone">
-                {typedText || "\u00A0"}
-                <span
-                  aria-hidden="true"
-                  className="ml-1 inline-block h-[0.92em] w-[3px] translate-y-[0.08em] rounded-full bg-[#163c69]/70"
-                  style={{
-                    animation: "cebuCaretBlink 1.05s steps(1, end) infinite",
-                  }}
-                />
+            <span className="mt-2 block min-h-[1.2em] whitespace-nowrap text-[clamp(2rem,6vw,4.8rem)]">
+              <span
+                className={
+                  isPhraseVisible
+                    ? "hero-phrase-in inline-block whitespace-nowrap bg-[#f8d64e] px-3 text-[#163c69] shadow-[0_14px_28px_-18px_rgba(248,214,78,0.9)] box-decoration-clone"
+                    : "hero-phrase-out inline-block whitespace-nowrap bg-[#f8d64e] px-3 text-[#163c69] shadow-[0_14px_28px_-18px_rgba(248,214,78,0.9)] box-decoration-clone"
+                }
+              >
+                {HERO_PHRASES[phraseIndex]}
               </span>
             </span>
           </h1>
@@ -118,46 +96,86 @@ export function HeroLandingView({ hero }: HeroLandingViewProps) {
             </p>
           ) : null}
 
-          <div className="translate-x-[-8px]">
-            <svg
-              data-story-hero-chevron
-              width="72"
-              height="72"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="square"
-              strokeLinejoin="miter"
-              className="animate-[hero-nudge_3.4s_ease-in-out_infinite] text-[#163c69]/65"
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
+          <div className="translate-x-[-1px]">
+            <div className="inline-flex items-center gap-3 [font-family:var(--font-cebu-story-mono)] text-[10px] font-medium uppercase tracking-[0.26em] text-white/75">
+              <span
+                data-story-hero-chevron
+                className="relative inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/35 bg-white/10"
+              >
+                {/* <span className="pointer-events-none absolute inset-[2px] rounded-full border border-transparent border-r-white/55 border-t-white/55 animate-[hero-ring-spin_5.8s_linear_infinite]" /> */}
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="square"
+                  strokeLinejoin="miter"
+                  className="animate-[hero-arrow-nudge_2.6s_ease-in-out_infinite] text-white/75"
+                >
+                  <polyline points="7 10 12 15 17 10" />
+                </svg>
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
       <style jsx>{`
-        @keyframes hero-nudge {
+        @keyframes hero-arrow-nudge {
           0%,
           100% {
             transform: translateY(0);
-            opacity: 0.62;
+            opacity: 0.7;
           }
           50% {
-            transform: translateY(5px);
-            opacity: 0.36;
+            transform: translateY(2px);
+            opacity: 0.38;
           }
         }
 
-        @keyframes cebuCaretBlink {
+        @keyframes hero-ring-spin {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+
+        @keyframes heroPhraseIn {
+          0% {
+            opacity: 0;
+            transform: translateY(8px);
+            filter: blur(2px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
+          }
+        }
+
+        @keyframes heroPhraseOut {
           0% {
             opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
           }
-          50%,
           100% {
             opacity: 0;
+            transform: translateY(-6px);
+            filter: blur(2px);
           }
+        }
+
+        .hero-phrase-in {
+          animation: heroPhraseIn 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .hero-phrase-out {
+          animation: heroPhraseOut 220ms ease-in both;
         }
       `}</style>
     </section>
