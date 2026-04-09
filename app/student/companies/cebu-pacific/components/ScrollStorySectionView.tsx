@@ -79,7 +79,7 @@ export function ScrollStorySectionView({
                   "max-w-7xl",
                   hasJourney
                     ? "lg:grid-cols-[1.1fr_0.9fr]"
-                    : "lg:grid-cols-[1.02fr_0.98fr]"
+                    : "lg:grid-cols-[1.02fr_0.98fr]",
                 )
               : "max-w-4xl grid-cols-1 justify-items-center text-center",
             stacked ? "min-h-screen py-24" : "h-full",
@@ -88,18 +88,25 @@ export function ScrollStorySectionView({
           <div
             data-story-content
             className={cn(
-              "relative z-10 flex flex-col justify-center gap-6",
+              "relative z-10 flex flex-col justify-start gap-6",
               !section.image && "items-center",
             )}
           >
             <div className="space-y-5">
               {/* Step indicator */}
-              <div className={cn("flex items-center gap-3", !section.image && "mx-auto justify-center")}>
-                <span className="inline-block h-[2px] w-8 bg-[var(--section-sky)]" />
-                <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[var(--section-sky)] [font-family:var(--font-cebu-story-mono)]">
-                  {section.step}
-                </span>
-              </div>
+              {!hasJourney && (
+                <div
+                  className={cn(
+                    "flex items-center gap-3",
+                    !section.image && "mx-auto justify-center",
+                  )}
+                >
+                  <span className="inline-block h-[2px] w-8 bg-[var(--section-sky)]" />
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[var(--section-sky)] [font-family:var(--font-cebu-story-mono)]">
+                    {section.step}
+                  </span>
+                </div>
+              )}
 
               <h1
                 data-story-title
@@ -111,7 +118,10 @@ export function ScrollStorySectionView({
               {section.description && (
                 <p
                   data-story-description
-                  className={cn("max-w-2xl text-base leading-7 text-gray-600 sm:text-lg", !section.image && "mx-auto")}
+                  className={cn(
+                    "max-w-2xl text-base leading-7 text-gray-600 sm:text-lg",
+                    !section.image && "mx-auto",
+                  )}
                 >
                   {section.description}
                 </p>
@@ -120,7 +130,10 @@ export function ScrollStorySectionView({
               {section.supporting && (
                 <p
                   data-story-supporting
-                  className={cn("max-w-2xl text-sm leading-7 text-gray-400 sm:text-base", !section.image && "mx-auto")}
+                  className={cn(
+                    "max-w-2xl text-sm leading-7 text-gray-400 sm:text-base",
+                    !section.image && "mx-auto",
+                  )}
                 >
                   {section.supporting}
                 </p>
@@ -182,7 +195,12 @@ export function ScrollStorySectionView({
             ) : null}
 
             {/* Actions */}
-            <div className={cn("mt-6 flex flex-wrap gap-3", !section.image && "justify-center")}>
+            <div
+              className={cn(
+                "mt-6 flex flex-wrap gap-3",
+                !section.image && "justify-center",
+              )}
+            >
               {section.actions.map((action) => (
                 <Link
                   key={`${section.id}-${action.label}`}
@@ -207,7 +225,7 @@ export function ScrollStorySectionView({
           {section.image && (
             <div
               data-story-media
-              className="relative flex items-center justify-center lg:justify-end"
+              className="relative flex items-start justify-center lg:justify-end"
             >
               <div className="relative w-full max-w-xl">
                 <div className="relative overflow-hidden border border-gray-200 bg-white/50">
