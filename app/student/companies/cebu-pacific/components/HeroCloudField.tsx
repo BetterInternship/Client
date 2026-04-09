@@ -290,7 +290,7 @@ export function HeroCloudField({ className }: HeroCloudFieldProps) {
 
         .plane-wrapper {
           position: absolute;
-          left: 30%;
+          left: 18%;
           bottom: 40%;
           width: clamp(320px, 46vw, 620px);
           opacity: 0.98;
@@ -383,7 +383,7 @@ export function HeroCloudField({ className }: HeroCloudFieldProps) {
           }
 
           .plane-wrapper {
-            left: 18%;
+            left: 6%;
             bottom: 44%;
             width: 78vw;
           }
