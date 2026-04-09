@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import type { ScrollStoryHero } from "../model";
 import { HeroCloudField } from "./HeroCloudField";
 
@@ -7,66 +8,65 @@ type HeroLandingViewProps = {
   hero: ScrollStoryHero;
 };
 
+const HERO_PHRASES = [
+  "build for everyJuan?",
+  "start something real?",
+  "work on real journeys?",
+  "begin somewhere big?",
+  "take off early?",
+];
+
 export function HeroLandingView({ hero }: HeroLandingViewProps) {
+  const [phraseIndex, setPhraseIndex] = useState(0);
+  const [typedText, setTypedText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const currentPhrase = HERO_PHRASES[phraseIndex];
+
+    const delay = (() => {
+      if (!isDeleting && typedText === currentPhrase) return 1800;
+      if (isDeleting && typedText.length === 0) return 380;
+      return isDeleting ? 26 : 46;
+    })();
+
+    const timer = window.setTimeout(() => {
+      if (!isDeleting) {
+        if (typedText.length < currentPhrase.length) {
+          setTypedText(currentPhrase.slice(0, typedText.length + 1));
+          return;
+        }
+
+        setIsDeleting(true);
+        return;
+      }
+
+      if (typedText.length > 0) {
+        setTypedText(currentPhrase.slice(0, typedText.length - 1));
+        return;
+      }
+
+      setIsDeleting(false);
+      setPhraseIndex((current) => (current + 1) % HERO_PHRASES.length);
+    }, delay);
+
+    return () => window.clearTimeout(timer);
+  }, [phraseIndex, typedText, isDeleting]);
+
   return (
     <section
       data-story-hero
-      className="absolute inset-0 z-30 flex flex-col overflow-hidden lg:grid lg:grid-cols-2"
+      className="absolute inset-0 z-30 overflow-hidden"
     >
-      <div className="relative flex flex-1 flex-col items-start justify-center overflow-hidden bg-[#f5f7fa] px-8 py-12 lg:px-20 lg:py-0">
-        <div
-          aria-hidden
-          className="absolute inset-0 z-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.03)_1px,transparent_1px)] bg-[size:48px_48px] opacity-50"
-        />
-
-        <div className="pointer-events-none absolute inset-0 z-0" aria-hidden>
-          <span className="absolute -left-20 -top-16 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-white to-white/20 opacity-80 blur-3xl sm:h-[700px] sm:w-[700px]" />
-          <span className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-gradient-to-br from-white to-white/20 opacity-60 blur-3xl" />
-        </div>
-
-        <div className="relative z-10 flex flex-col gap-8">
-          <h1
-            data-story-hero-headline
-            className="max-w-xl text-4xl font-bold uppercase tracking-tight text-gray-900 sm:text-5xl lg:text-6xl xl:text-7xl [font-family:var(--font-cebu-story-heading)]"
-            style={{ lineHeight: 1.05 }}
-          >
-            {hero.headline}
-          </h1>
-
-          {hero.subline ? (
-            <p className="max-w-md text-base tracking-wide text-gray-400 sm:text-lg [font-family:var(--font-cebu-story-mono)]">
-              {hero.subline}
-            </p>
-          ) : null}
-        </div>
-
-        <div className="z-10 mt-8 translate-x-[-10px]">
-          <svg
-            data-story-hero-chevron
-            width="80"
-            height="80"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="square"
-            strokeLinejoin="miter"
-            className="animate-[hero-bounce_2s_ease-in-out_infinite] text-gray-400"
-          >
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </div>
-      </div>
-
       <div
         data-story-hero-bg
-        className="relative flex-1 overflow-hidden bg-[#6bb6e8] lg:h-full"
+        className="absolute inset-0 overflow-hidden bg-[#6bb6e8]"
       >
         <div className="absolute inset-0">
           <img
             src={hero.backgroundImage}
             alt=""
-            className="h-full w-full object-cover opacity-[0.16] mix-blend-soft-light"
+            className="h-full w-full object-cover opacity-[0.2] mix-blend-soft-light"
           />
         </div>
 
@@ -74,20 +74,84 @@ export function HeroLandingView({ hero }: HeroLandingViewProps) {
 
         <div
           aria-hidden
-          className="absolute inset-0 bg-[radial-gradient(circle_at_78%_22%,rgba(255,247,210,0.55),transparent_24%),linear-gradient(145deg,rgba(255,255,255,0.12),transparent_45%),linear-gradient(180deg,rgba(9,45,102,0.08),rgba(255,255,255,0))]"
+          className="absolute inset-0 bg-[radial-gradient(circle_at_78%_22%,rgba(255,230,134,0.32),transparent_24%),linear-gradient(145deg,rgba(255,255,255,0.06),transparent_45%),linear-gradient(180deg,rgba(6,26,56,0.34),rgba(255,255,255,0.03))]"
         />
       </div>
 
+      <div className="absolute inset-0 z-10 flex items-end justify-start px-6 pb-10 sm:px-10 sm:pb-12 lg:px-16 lg:pb-16">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-7 bg-black/16" aria-hidden />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-7 bg-black/16" aria-hidden />
+        <div
+          className="absolute inset-x-0 bottom-0 h-[56vh] bg-gradient-to-t from-white/72 via-white/28 to-transparent"
+          aria-hidden
+        />
+
+        <div className="relative flex max-w-3xl flex-col gap-6">
+          <h1
+            data-story-hero-headline
+            className="text-4xl font-bold tracking-tight text-[#163c69] sm:text-5xl lg:text-6xl xl:text-7xl [font-family:var(--font-cebu-story-heading)]"
+            style={{ lineHeight: 1.05 }}
+          >
+            <span className="block whitespace-nowrap text-[clamp(2rem,6vw,4.8rem)]">
+              Have you ever wanted to
+            </span>
+            <span className="mt-2 block min-h-[1.2em] whitespace-nowrap text-[clamp(1.6rem,4.8vw,4.2rem)]">
+              <span className="inline-block whitespace-nowrap bg-[#f8d64e] px-3 text-[#163c69] shadow-[0_14px_28px_-18px_rgba(248,214,78,0.9)] box-decoration-clone">
+                {typedText || "\u00A0"}
+                <span
+                  aria-hidden="true"
+                  className="ml-1 inline-block h-[0.92em] w-[3px] translate-y-[0.08em] rounded-full bg-[#163c69]/70"
+                  style={{ animation: "cebuCaretBlink 1.05s steps(1, end) infinite" }}
+                />
+              </span>
+            </span>
+          </h1>
+
+          {hero.subline ? (
+            <p className="max-w-lg text-sm tracking-[0.14em] text-[#163c69]/72 sm:text-base [font-family:var(--font-cebu-story-mono)]">
+              {hero.subline}
+            </p>
+          ) : null}
+
+          <div className="translate-x-[-8px]">
+            <svg
+              data-story-hero-chevron
+              width="72"
+              height="72"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="square"
+              strokeLinejoin="miter"
+              className="animate-[hero-nudge_3.4s_ease-in-out_infinite] text-[#163c69]/65"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
       <style jsx>{`
-        @keyframes hero-bounce {
+        @keyframes hero-nudge {
           0%,
           100% {
             transform: translateY(0);
-            opacity: 1;
+            opacity: 0.62;
           }
           50% {
-            transform: translateY(10px);
-            opacity: 0.4;
+            transform: translateY(5px);
+            opacity: 0.36;
+          }
+        }
+
+        @keyframes cebuCaretBlink {
+          0% {
+            opacity: 1;
+          }
+          50%,
+          100% {
+            opacity: 0;
           }
         }
       `}</style>
