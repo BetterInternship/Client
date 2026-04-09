@@ -19,18 +19,16 @@ const sharedActions: ScrollStoryAction[] = [
 const hero: ScrollStoryHero = {
   backgroundImage:
     "https://www.jgsummit.com.ph/images/2024/02/01/27a2535d4a430089d6b5cde4cf3d8e580cae419d.jpg",
-  headline: "What is your dream internship?",
+  headline: "Have you ever wanted to ________?",
 };
 
 const sections: ScrollStorySection[] = [
   {
     id: "runway",
     step: "01",
-    title: "Move with a team that treats every journey like a product.",
+    title: "Pick a challenge, Win an internship",
     description:
-      "Cebu Pacific is an airline brand with motion built into its identity. From booking to boarding, every detail shapes how travelers remember the trip.",
-    supporting:
-      "This opening scene leans into that energy with a high-altitude hero, warm sunlight, and clear calls to action that feel more like a departure board than a brochure.",
+      "Resumes are a thing of the past. Cebu Pacific wants to see what you can actually do.",
     image: {
       src: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1200&q=80",
       alt: "Placeholder photo of a passenger plane lifting above the clouds.",
@@ -52,11 +50,10 @@ const sections: ScrollStorySection[] = [
   {
     id: "network",
     step: "02",
-    title: "Every scroll step reveals another part of the journey.",
+    title: "You define your internship",
     description:
-      "The middle act widens the story from brand to experience: digital touchpoints, airport choreography, and the chain of decisions that keep travel feeling smooth.",
-    supporting:
-      "Rather than dumping sections into a long document, the page treats each moment like a route on a map. Scroll becomes the control system for the narrative.",
+      "We don't want to limit what you can do. If you get in, we'll give you the freedom to make decisions and take initiative.",
+    supporting: "We'll work together towards a common goal.",
     image: {
       src: "https://images.unsplash.com/photo-1517479149777-5f3b1511d5ad?auto=format&fit=crop&w=1200&q=80",
       alt: "Placeholder photo taken from an airplane wing over bright clouds.",
@@ -74,11 +71,10 @@ const sections: ScrollStorySection[] = [
   {
     id: "culture",
     step: "03",
-    title: "Show students the people, pace, and pressure behind the polish.",
+    title: "We give goals, not tasks",
     description:
-      "A strong company page for an airline should move past fleet imagery and hint at the real work: operational thinking, service design, and teams that coordinate under pressure.",
-    supporting:
-      "This scene reframes internships as meaningful contributions to a living system, which makes the opportunity feel sharper and more credible.",
+      "A task list is the last thing we want to give you. As long as we establish common goals, we want you to grow and figure out the rest.",
+    supporting: "Internships are learning experiences, not replays of school.",
     image: {
       src: "https://images.unsplash.com/photo-1529074963764-98f45c47344b?auto=format&fit=crop&w=1200&q=80",
       alt: "Placeholder photo of a plane interior and bright sky through cabin windows.",
