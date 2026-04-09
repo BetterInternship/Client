@@ -43,7 +43,7 @@ export function HeroCloudField({ className }: HeroCloudFieldProps) {
             rotateY(13.5deg) rotateZ(-2.8deg) scale(1.3);
           filter: drop-shadow(0 24px 34px rgba(16, 53, 92, 0.38));
           will-change: transform;
-          animation: planePerspectiveGlide 15s ease-in-out infinite;
+          animation: planePerspectiveGlide 12s ease-in-out infinite;
         }
 
         .plane-image {
@@ -62,7 +62,7 @@ export function HeroCloudField({ className }: HeroCloudFieldProps) {
               rotateY(13.5deg) rotateZ(-2.8deg) scale(1.3);
           }
           50% {
-            transform: perspective(1320px) translate3d(-53.9%, -6px, 0)
+            transform: perspective(1320px) translate3d(-52.8%, -14px, 0)
               rotateY(13.5deg) rotateZ(-2.8deg) scale(1.3);
           }
         }

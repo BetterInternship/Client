@@ -18,19 +18,40 @@ const HERO_PHRASES = [
 
 export function HeroLandingView({ hero }: HeroLandingViewProps) {
   const [phraseIndex, setPhraseIndex] = useState(0);
-  const [isPhraseVisible, setIsPhraseVisible] = useState(true);
+  const [typedText, setTypedText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    const cycle = window.setInterval(() => {
-      setIsPhraseVisible(false);
-      window.setTimeout(() => {
-        setPhraseIndex((current) => (current + 1) % HERO_PHRASES.length);
-        setIsPhraseVisible(true);
-      }, 220);
-    }, 2600);
+    const currentPhrase = HERO_PHRASES[phraseIndex];
 
-    return () => window.clearInterval(cycle);
-  }, []);
+    const delay = (() => {
+      if (!isDeleting && typedText === currentPhrase) return 1800;
+      if (isDeleting && typedText.length === 0) return 380;
+      return isDeleting ? 26 : 46;
+    })();
+
+    const timer = window.setTimeout(() => {
+      if (!isDeleting) {
+        if (typedText.length < currentPhrase.length) {
+          setTypedText(currentPhrase.slice(0, typedText.length + 1));
+          return;
+        }
+
+        setIsDeleting(true);
+        return;
+      }
+
+      if (typedText.length > 0) {
+        setTypedText(currentPhrase.slice(0, typedText.length - 1));
+        return;
+      }
+
+      setIsDeleting(false);
+      setPhraseIndex((current) => (current + 1) % HERO_PHRASES.length);
+    }, delay);
+
+    return () => window.clearTimeout(timer);
+  }, [phraseIndex, typedText, isDeleting]);
 
   return (
     <section data-story-hero className="absolute inset-0 z-30 overflow-hidden">
@@ -78,14 +99,15 @@ export function HeroLandingView({ hero }: HeroLandingViewProps) {
               Have you ever wanted to
             </span>
             <span className="mt-2 block min-h-[1.2em] whitespace-nowrap text-[clamp(2rem,6vw,4.8rem)]">
-              <span
-                className={
-                  isPhraseVisible
-                    ? "hero-phrase-in inline-block whitespace-nowrap bg-[#f8d64e] px-3 text-[#163c69] shadow-[0_14px_28px_-18px_rgba(248,214,78,0.9)] box-decoration-clone"
-                    : "hero-phrase-out inline-block whitespace-nowrap bg-[#f8d64e] px-3 text-[#163c69] shadow-[0_14px_28px_-18px_rgba(248,214,78,0.9)] box-decoration-clone"
-                }
-              >
-                {HERO_PHRASES[phraseIndex]}
+              <span className="inline-block whitespace-nowrap bg-[#f8d64e] px-3 text-[#163c69] shadow-[0_14px_28px_-18px_rgba(248,214,78,0.9)] box-decoration-clone">
+                {typedText || "\u00A0"}
+                <span
+                  aria-hidden="true"
+                  className="ml-1 inline-block h-[0.92em] w-[3px] translate-y-[0.08em] rounded-full bg-[#163c69]/70"
+                  style={{
+                    animation: "cebuCaretBlink 1.05s steps(1, end) infinite",
+                  }}
+                />
               </span>
             </span>
           </h1>
@@ -144,38 +166,14 @@ export function HeroLandingView({ hero }: HeroLandingViewProps) {
           }
         }
 
-        @keyframes heroPhraseIn {
-          0% {
-            opacity: 0;
-            transform: translateY(8px);
-            filter: blur(2px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-            filter: blur(0);
-          }
-        }
-
-        @keyframes heroPhraseOut {
+        @keyframes cebuCaretBlink {
           0% {
             opacity: 1;
-            transform: translateY(0);
-            filter: blur(0);
           }
+          50%,
           100% {
             opacity: 0;
-            transform: translateY(-6px);
-            filter: blur(2px);
           }
-        }
-
-        .hero-phrase-in {
-          animation: heroPhraseIn 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
-        }
-
-        .hero-phrase-out {
-          animation: heroPhraseOut 220ms ease-in both;
         }
       `}</style>
     </section>
