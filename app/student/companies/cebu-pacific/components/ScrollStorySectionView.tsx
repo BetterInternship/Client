@@ -73,20 +73,28 @@ export function ScrollStorySectionView({
       <div className="relative flex h-full items-center">
         <div
           className={cn(
-            "mx-auto grid w-full max-w-7xl gap-10 px-5 pb-12 pt-28 sm:px-8 lg:px-12",
-            hasJourney
-              ? "lg:grid-cols-[1.1fr_0.9fr]"
-              : "lg:grid-cols-[1.02fr_0.98fr]",
+            "mx-auto grid w-full gap-10 px-5 pb-12 pt-28 sm:px-8 lg:px-12",
+            section.image
+              ? cn(
+                  "max-w-7xl",
+                  hasJourney
+                    ? "lg:grid-cols-[1.1fr_0.9fr]"
+                    : "lg:grid-cols-[1.02fr_0.98fr]"
+                )
+              : "max-w-4xl grid-cols-1 justify-items-center text-center",
             stacked ? "min-h-screen py-24" : "h-full",
           )}
         >
           <div
             data-story-content
-            className="relative z-10 flex flex-col justify-center gap-6"
+            className={cn(
+              "relative z-10 flex flex-col justify-center gap-6",
+              !section.image && "items-center",
+            )}
           >
             <div className="space-y-5">
               {/* Step indicator */}
-              <div className="flex items-center gap-3">
+              <div className={cn("flex items-center gap-3", !section.image && "mx-auto justify-center")}>
                 <span className="inline-block h-[2px] w-8 bg-[var(--section-sky)]" />
                 <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[var(--section-sky)] [font-family:var(--font-cebu-story-mono)]">
                   {section.step}
@@ -100,19 +108,23 @@ export function ScrollStorySectionView({
                 {section.title}
               </h1>
 
-              <p
-                data-story-description
-                className="max-w-2xl text-base leading-7 text-gray-600 sm:text-lg"
-              >
-                {section.description}
-              </p>
+              {section.description && (
+                <p
+                  data-story-description
+                  className={cn("max-w-2xl text-base leading-7 text-gray-600 sm:text-lg", !section.image && "mx-auto")}
+                >
+                  {section.description}
+                </p>
+              )}
 
-              <p
-                data-story-supporting
-                className="max-w-2xl text-sm leading-7 text-gray-400 sm:text-base"
-              >
-                {section.supporting}
-              </p>
+              {section.supporting && (
+                <p
+                  data-story-supporting
+                  className={cn("max-w-2xl text-sm leading-7 text-gray-400 sm:text-base", !section.image && "mx-auto")}
+                >
+                  {section.supporting}
+                </p>
+              )}
             </div>
 
             {/* Journey card */}
@@ -170,7 +182,7 @@ export function ScrollStorySectionView({
             ) : null}
 
             {/* Actions */}
-            <div className="flex flex-wrap gap-3">
+            <div className={cn("mt-6 flex flex-wrap gap-3", !section.image && "justify-center")}>
               {section.actions.map((action) => (
                 <Link
                   key={`${section.id}-${action.label}`}
@@ -191,7 +203,8 @@ export function ScrollStorySectionView({
             </div>
           </div>
 
-          {!!section.image && (
+          {/* Right half — Media */}
+          {section.image && (
             <div
               data-story-media
               className="relative flex items-center justify-center lg:justify-end"

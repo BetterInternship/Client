@@ -10,10 +10,10 @@ export function HeroLandingView({ hero }: HeroLandingViewProps) {
   return (
     <section
       data-story-hero
-      className="absolute inset-0 z-30 grid grid-cols-2 overflow-hidden"
+      className="absolute inset-0 z-30 flex flex-col lg:grid lg:grid-cols-2 overflow-hidden"
     >
-      {/* Left half — white background with text */}
-      <div className="relative flex flex-col items-start justify-center bg-[#f5f7fa] px-12 lg:px-20">
+      {/* Top/Left half — white background with text */}
+      <div className="relative flex flex-1 flex-col items-start justify-center bg-[#f5f7fa] px-8 py-12 lg:px-20 lg:py-0">
         {/* Subtle grid texture */}
         <div
           aria-hidden
@@ -55,8 +55,8 @@ export function HeroLandingView({ hero }: HeroLandingViewProps) {
         </div>
       </div>
 
-      {/* Right half — image edge-to-edge */}
-      <div data-story-hero-bg className="relative">
+      {/* Bottom/Right half — image edge-to-edge */}
+      <div data-story-hero-bg className="relative flex-1 lg:h-full">
         <img
           data-story-hero-image
           src={hero.backgroundImage}

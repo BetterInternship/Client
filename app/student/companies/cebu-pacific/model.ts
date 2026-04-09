@@ -122,12 +122,12 @@ const revealSection = (
     timeline.set(section.overlay, { autoAlpha: 0 }, position);
   }
 
-  // 1. Root clip-path wipe to reveal the entire section coming from the bottom
+  // 1. Physical slide-up to reveal the entire section coming from the bottom
   timeline.fromTo(
     section.root,
-    { clipPath: "inset(100% 0% 0% 0%)" },
+    { yPercent: 100 },
     {
-      clipPath: "inset(0% 0% 0% 0%)",
+      yPercent: 0,
       duration: 1.0,
       ease: "power3.inOut",
     },
@@ -155,7 +155,7 @@ const revealSection = (
     timeline.fromTo(
       section.media,
       {
-        xPercent: 110,
+        xPercent: config.mediaOffsetXPercent * 4, // Extremely far away since it's no longer horizontally clipped!
         autoAlpha: 0,
       },
       {
@@ -253,7 +253,6 @@ const hideSection = (
 ) => {
   // WIPE EFFECT ENHANCER: Globally darkens the previous section while the new one wipes up over it
   if (section.overlay) {
-    timeline.set(section.overlay, { yPercent: 0 }); // guarantee it's not shifted
     timeline.fromTo(
       section.overlay,
       {
@@ -261,8 +260,8 @@ const hideSection = (
       },
       {
         autoAlpha: 0.85,
-        duration: 1.0,
-        ease: "power2.inOut",
+        duration: 0.95, // matched roughly to wipe
+        ease: "expo.in", // Delays the fade heavily until the wipe is almost complete, so it doesn't darken the screen too early
       },
       position,
     );
