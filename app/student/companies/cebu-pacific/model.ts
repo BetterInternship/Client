@@ -21,6 +21,44 @@ export type ScrollStoryJourneyRole = {
 export type ScrollStorySection = {
   id: string;
   step: string;
+  variant?: "feature" | "statement" | "journey";
+  transition?: {
+    enter?: {
+      contentY?: number;
+      titleY?: number;
+      descriptionY?: number;
+      supportingY?: number;
+      quoteY?: number;
+      mediaY?: number;
+      imageScaleFrom?: number;
+    };
+    exit?: {
+      panelYPercent?: number;
+      contentY?: number;
+    };
+    delays?: {
+      background?: number;
+      content?: number;
+      title?: number;
+      description?: number;
+      supporting?: number;
+      quote?: number;
+      media?: number;
+      image?: number;
+      actions?: number;
+    };
+    durations?: {
+      panel?: number;
+      content?: number;
+      title?: number;
+      description?: number;
+      supporting?: number;
+      quote?: number;
+      media?: number;
+      image?: number;
+      actions?: number;
+    };
+  };
   title: string;
   description?: string;
   supporting?: string;
@@ -47,6 +85,7 @@ export type ScrollStorySection = {
 
 export type ScrollStorySectionRefs = {
   root: HTMLElement;
+  background: HTMLElement | null;
   overlay: HTMLElement | null;
   content: HTMLElement | null;
   title: HTMLElement | null;
@@ -85,7 +124,7 @@ export type ScrollStoryModel = {
   };
   hero?: ScrollStoryHero;
   sections: ScrollStorySection[];
-  steps: ScrollStoryStep[];
+  steps?: ScrollStoryStep[];
 };
 
 export type ScrollStoryTransitionConfig = {

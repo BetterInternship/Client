@@ -1,10 +1,8 @@
 import {
-  createScrollStoryTransitionStep,
   type ScrollStoryAction,
   type ScrollStoryHero,
   type ScrollStoryModel,
   type ScrollStorySection,
-  type ScrollStoryStep,
 } from "./model";
 
 const sharedActions: ScrollStoryAction[] = [
@@ -26,6 +24,7 @@ const sections: ScrollStorySection[] = [
   {
     id: "runway",
     step: "01",
+    variant: "feature",
     title: "Pick a challenge, Win an internship",
     description:
       "Resumes are a thing of the past. Cebu Pacific wants to see what you can actually do.",
@@ -50,16 +49,11 @@ const sections: ScrollStorySection[] = [
   {
     id: "network",
     step: "02",
+    variant: "statement",
     title: "You define your internship",
     description:
       "We don't want to limit what you can do. If you get in, we'll give you the freedom to make decisions and take initiative.",
     supporting: "We'll work together towards a common goal.",
-    image: {
-      src: "https://images.unsplash.com/photo-1517479149777-5f3b1511d5ad?auto=format&fit=crop&w=1200&q=80",
-      alt: "Placeholder photo taken from an airplane wing over bright clouds.",
-      caption:
-        "Scene two uses another temporary plane image so we can focus on motion and composition first.",
-    },
     actions: sharedActions,
     palette: {
       sky: "#0e7adf",
@@ -71,6 +65,7 @@ const sections: ScrollStorySection[] = [
   {
     id: "culture",
     step: "03",
+    variant: "feature",
     title: "We give goals, not tasks",
     description:
       "A task list is the last thing we want to give you. As long as we establish common goals, we want you to grow and figure out the rest.",
@@ -96,6 +91,7 @@ const sections: ScrollStorySection[] = [
   {
     id: "final-call",
     step: "04",
+    variant: "journey",
     title: "Pick your journey",
     journey: {
       roles: [
@@ -123,48 +119,6 @@ const sections: ScrollStorySection[] = [
   },
 ];
 
-const steps: ScrollStoryStep[] = [
-  createScrollStoryTransitionStep({
-    id: "to-network",
-    label: "Climb",
-    sectionId: "network",
-    contentOffsetY: 32,
-    mediaOffsetXPercent: 20,
-    mediaScaleFrom: 1.25,
-    statOffsetY: 28,
-    pointOffsetY: 40,
-    previousExitYPercent: -22,
-    previousRotate: 0,
-    previousMediaXPercent: -16,
-  }),
-  createScrollStoryTransitionStep({
-    id: "to-culture",
-    label: "Cruise",
-    sectionId: "culture",
-    contentOffsetY: 28,
-    mediaOffsetXPercent: -22,
-    mediaScaleFrom: 1.2,
-    statOffsetY: 26,
-    pointOffsetY: 38,
-    previousExitYPercent: -20,
-    previousRotate: 0,
-    previousMediaXPercent: 18,
-  }),
-  createScrollStoryTransitionStep({
-    id: "to-final-call",
-    label: "Final Approach",
-    sectionId: "final-call",
-    contentOffsetY: 34,
-    mediaOffsetXPercent: 24,
-    mediaScaleFrom: 1.28,
-    statOffsetY: 30,
-    pointOffsetY: 42,
-    previousExitYPercent: -24,
-    previousRotate: 0,
-    previousMediaXPercent: -20,
-  }),
-];
-
 export const cebuPacificStoryModel: ScrollStoryModel = {
   brand: {
     eyebrow: "BetterInternship x Cebu Pacific",
@@ -172,9 +126,8 @@ export const cebuPacificStoryModel: ScrollStoryModel = {
     strapline:
       "A cinematic airline company page that pins the viewport and turns scroll into a flight path.",
     primaryAction: sharedActions[0],
-    secondaryAction: sharedActions[1],
+    secondaryAction: sharedActions[0],
   },
   hero,
   sections,
-  steps,
 };

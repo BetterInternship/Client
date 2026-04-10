@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 import type { ScrollStoryHero } from "../model";
 import { HeroCloudField } from "./HeroCloudField";
 
 type HeroLandingViewProps = {
   hero: ScrollStoryHero;
+  showBackground?: boolean;
+  className?: string;
 };
 
 const HERO_PHRASES = [
@@ -16,7 +19,11 @@ const HERO_PHRASES = [
   "take off early?",
 ];
 
-export function HeroLandingView({ hero }: HeroLandingViewProps) {
+export function HeroLandingView({
+  hero,
+  showBackground = true,
+  className,
+}: HeroLandingViewProps) {
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [typedText, setTypedText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
@@ -54,26 +61,31 @@ export function HeroLandingView({ hero }: HeroLandingViewProps) {
   }, [phraseIndex, typedText, isDeleting]);
 
   return (
-    <section data-story-hero className="absolute inset-0 z-30 overflow-hidden">
-      <div
-        data-story-hero-bg
-        className="absolute inset-0 overflow-hidden bg-[#6bb6e8]"
-      >
-        <div className="absolute inset-0">
-          <img
-            src={hero.backgroundImage}
-            alt=""
-            className="h-full w-full object-cover opacity-[0.2] mix-blend-soft-light"
+    <section
+      data-story-hero
+      className={cn("absolute inset-0 z-30 overflow-hidden", className)}
+    >
+      {showBackground ? (
+        <div
+          data-story-hero-bg
+          className="absolute inset-0 overflow-hidden bg-[#6bb6e8]"
+        >
+          <div className="absolute inset-0">
+            <img
+              src={hero.backgroundImage}
+              alt=""
+              className="h-full w-full object-cover opacity-[0.2] mix-blend-soft-light"
+            />
+          </div>
+
+          <HeroCloudField className="absolute inset-0" />
+
+          <div
+            aria-hidden
+            className="absolute inset-0 bg-[linear-gradient(145deg,rgba(255,255,255,0.06),transparent_45%),linear-gradient(180deg,rgba(6,26,56,0.34),rgba(255,255,255,0.03))]"
           />
         </div>
-
-        <HeroCloudField className="absolute inset-0" />
-
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-[linear-gradient(145deg,rgba(255,255,255,0.06),transparent_45%),linear-gradient(180deg,rgba(6,26,56,0.34),rgba(255,255,255,0.03))]"
-        />
-      </div>
+      ) : null}
 
       <div className="absolute inset-0 z-10 flex items-end justify-start px-6 pb-10 sm:px-10 sm:pb-12 lg:px-16 lg:pb-16">
         <div
@@ -89,16 +101,25 @@ export function HeroLandingView({ hero }: HeroLandingViewProps) {
           aria-hidden
         />
 
-        <div className="relative flex max-w-3xl flex-col gap-6">
+        <div
+          data-panel-content
+          className="relative flex max-w-3xl flex-col gap-6"
+        >
           <h1
-            data-story-hero-headline
+            data-story-title
             className="text-4xl font-semibold tracking-[-0.01em] text-[#163c69] sm:text-5xl lg:text-6xl xl:text-7xl [font-family:var(--font-cebu-hero-title)]"
             style={{ lineHeight: 1.05 }}
           >
-            <span className="block whitespace-nowrap text-[clamp(2rem,6vw,4.8rem)] text-white">
+            <span
+              data-story-hero-line-1
+              className="block whitespace-nowrap text-[clamp(2rem,6vw,4.8rem)] text-white"
+            >
               Have you ever wanted to
             </span>
-            <span className="mt-2 block min-h-[1.2em] whitespace-nowrap text-[clamp(2rem,6vw,4.8rem)]">
+            <span
+              data-story-hero-line-2
+              className="mt-2 block min-h-[1.2em] whitespace-nowrap text-[clamp(2rem,6vw,4.8rem)]"
+            >
               <span className="inline-block whitespace-nowrap bg-[#f8d64e] px-3 text-[#163c69] shadow-[0_14px_28px_-18px_rgba(248,214,78,0.9)] box-decoration-clone">
                 {typedText || "\u00A0"}
                 <span
@@ -113,7 +134,10 @@ export function HeroLandingView({ hero }: HeroLandingViewProps) {
           </h1>
 
           {hero.subline ? (
-            <p className="max-w-lg text-sm tracking-[0.14em] text-[#163c69]/72 sm:text-base [font-family:var(--font-cebu-story-mono)]">
+            <p
+              data-story-description
+              className="max-w-lg text-sm tracking-[0.14em] text-[#163c69]/72 sm:text-base [font-family:var(--font-cebu-story-mono)]"
+            >
               {hero.subline}
             </p>
           ) : null}

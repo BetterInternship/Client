@@ -25,14 +25,23 @@ export function HeroCloudField({ className }: HeroCloudFieldProps) {
       <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:120px_120px]" />
       <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_20%_20%,rgba(255,58,96,0.14),transparent_45%),radial-gradient(ellipse_at_85%_30%,rgba(53,167,255,0.12),transparent_48%)]" />
 
-      <div className="plane-wrapper">
-        <img src={PLANE_TEXTURE_PATH} alt="" className="plane-image" />
+      <div data-story-hero-plane className="plane-stage">
+        <div className="plane-wrapper">
+          <img src={PLANE_TEXTURE_PATH} alt="" className="plane-image" />
+        </div>
       </div>
 
       <div className="absolute inset-x-0 bottom-0 h-[42%] bg-[linear-gradient(180deg,rgba(170,201,225,0)_0%,rgba(170,201,225,0.2)_58%,rgba(170,201,225,0.48)_100%)]" />
       <div className="absolute inset-x-0 bottom-0 h-[18%] bg-[linear-gradient(180deg,rgba(255,255,255,0),rgba(198,219,236,0.28))]" />
 
       <style jsx>{`
+        .plane-stage {
+          position: absolute;
+          inset: 0;
+          will-change: transform, opacity;
+          pointer-events: none;
+        }
+
         .plane-wrapper {
           position: absolute;
           left: 50%;
@@ -41,9 +50,8 @@ export function HeroCloudField({ className }: HeroCloudFieldProps) {
           transform-origin: 70% 52%;
           transform: perspective(1320px) translate3d(-54.5%, 0, 0)
             rotateY(13.5deg) rotateZ(-2.8deg) scale(1.3);
-          filter: drop-shadow(0 24px 34px rgba(16, 53, 92, 0.38));
+          filter: drop-shadow(0 16px 22px rgba(16, 53, 92, 0.32));
           will-change: transform;
-          animation: planePerspectiveGlide 12s ease-in-out infinite;
         }
 
         .plane-image {
@@ -55,18 +63,6 @@ export function HeroCloudField({ className }: HeroCloudFieldProps) {
           -webkit-user-drag: none;
         }
 
-        @keyframes planePerspectiveGlide {
-          0%,
-          100% {
-            transform: perspective(1320px) translate3d(-54.5%, 0, 0)
-              rotateY(13.5deg) rotateZ(-2.8deg) scale(1.3);
-          }
-          50% {
-            transform: perspective(1320px) translate3d(-52.8%, -14px, 0)
-              rotateY(13.5deg) rotateZ(-2.8deg) scale(1.3);
-          }
-        }
-
         @media (max-width: 767px) {
           .plane-wrapper {
             bottom: 20%;
@@ -74,13 +70,6 @@ export function HeroCloudField({ className }: HeroCloudFieldProps) {
             transform-origin: 72% 52%;
             transform: perspective(1000px) translate3d(-61.5%, 0, 0)
               rotateY(20deg) rotateZ(-2.6deg) scale(1.34);
-            animation: none;
-          }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .plane-wrapper {
-            animation: none;
           }
         }
       `}</style>
