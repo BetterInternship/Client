@@ -744,8 +744,8 @@ function FireEmojisEffect({ isActive }: { isActive: boolean }) {
 export default function MiroThonLandingPage() {
   const discordLink = "https://discord.gg/QZ9mXJQm";
 
-  const eventStart = useMemo(() => new Date("2026-02-13T18:00:00+08:00"), []); // REAL DATE
-  const eventEnd = useMemo(() => new Date("2026-02-15T00:00:00+08:00"), []);
+  const eventStart = useMemo(() => new Date("2026-04-14T18:00:00+08:00"), []); // REAL DATE
+  const eventEnd = useMemo(() => new Date("2026-04-20T00:00:00+08:00"), []);
 
   const [countdown, setCountdown] = useState<Countdown>(() => {
     const now = new Date().getTime();
