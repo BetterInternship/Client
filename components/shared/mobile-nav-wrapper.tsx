@@ -19,7 +19,8 @@ export default function MobileNavWrapper() {
     pathname === "/fff" ||
     pathname.startsWith("/super-listing/") ||
     pathname === "/register" ||
-    pathname === "/register/verify";
+    pathname === "/register/verify" ||
+    pathname.startsWith("/companies/");
 
   if (!isMobile || hide) {
     return null;
