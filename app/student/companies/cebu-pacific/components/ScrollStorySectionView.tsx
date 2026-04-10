@@ -115,11 +115,11 @@ export function ScrollStorySectionView({
             isRunway ? (
               <div
                 data-story-content
-                className="sticky top-0 mx-auto h-[92svh] max-w-7xl order"
+                className="sticky mx-auto h-[92svh] max-w-7xl order "
               >
                 <h1
                   data-story-title
-                  className="absolute  max-w-[16ch] whitespace-pre-line text-left text-[length:var(--section-title-size)] leading-[1.04] tracking-[-0.02em] text-white [font-family:var(--font-cebu-story-display)] "
+                  className="absolute max-w-[16ch] whitespace-pre-line text-left text-[length:var(--section-title-size)] leading-[1.04] tracking-[-0.02em] text-white [font-family:var(--font-cebu-story-display)] top-[5svh] "
                 >
                   {section.title}
                 </h1>
@@ -127,7 +127,7 @@ export function ScrollStorySectionView({
                 {section.description ? (
                   <p
                     data-story-description
-                    className="absolute bottom-[11svh] right-6 max-w-[16ch] whitespace-pre-line text-right text-[length:var(--section-title-size)] leading-[1.04] tracking-[-0.02em] text-slate-900 opacity-0 [font-family:var(--font-cebu-story-display)] sm:bottom-[11svh] sm:right-10 lg:bottom-[10svh] lg:right-14"
+                    className="absolute bottom-[11svh] right-0 max-w-[16ch] whitespace-pre-line text-right text-[length:var(--section-title-size)] leading-[1.04] tracking-[-0.02em] text-slate-900 opacity-0 [font-family:var(--font-cebu-story-display)] sm:bottom-[11svh] lg:bottom-[18svh] "
                   >
                     {section.description}
                   </p>
