@@ -20,7 +20,7 @@ const HERO_PHRASES = [
 ];
 
 export function HeroLandingView({
-  hero,
+  hero: _hero,
   showBackground = true,
   className,
 }: HeroLandingViewProps) {
@@ -70,57 +70,40 @@ export function HeroLandingView({
           data-story-hero-bg
           className="absolute inset-0 overflow-hidden bg-[#6bb6e8]"
         >
-          <div className="absolute inset-0">
-            <img
-              src={hero.backgroundImage}
-              alt=""
-              className="h-full w-full object-cover opacity-[0.2] mix-blend-soft-light"
-            />
-          </div>
-
           <HeroCloudField className="absolute inset-0" />
-
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-[linear-gradient(145deg,rgba(255,255,255,0.06),transparent_45%),linear-gradient(180deg,rgba(6,26,56,0.34),rgba(255,255,255,0.03))]"
+        </div>
+      ) : (
+        <div data-story-hero-bg className="absolute inset-0 overflow-hidden">
+          <HeroCloudField
+            className="absolute inset-0"
+            showSky={false}
+            showAtmosphere={false}
+            showBottomGlow={false}
           />
         </div>
-      ) : null}
+      )}
 
       <div className="absolute inset-0 z-10 flex items-end justify-start px-6 pb-10 sm:px-10 sm:pb-12 lg:px-16 lg:pb-16">
         <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-7 bg-black/16"
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-7 bg-black/16"
-          aria-hidden
-        />
-        <div
-          className="absolute inset-x-0 bottom-0 h-[56vh] bg-gradient-to-t from-white/72 via-white/28 to-transparent"
-          aria-hidden
-        />
-
-        <div
           data-panel-content
-          className="relative flex max-w-3xl flex-col gap-6"
+          className="relative flex max-w-4xl flex-col gap-6"
         >
           <h1
             data-story-title
-            className="text-4xl font-semibold tracking-[-0.01em] text-[#163c69] sm:text-5xl lg:text-6xl xl:text-7xl [font-family:var(--font-cebu-hero-title)]"
-            style={{ lineHeight: 1.05 }}
+            className="[--hero-title-size:clamp(2.2rem,7.3vw,6.7rem)] text-4xl tracking-[-0.01em] text-[#163c69] sm:text-5xl lg:text-6xl xl:text-7xl"
+            style={{ lineHeight: 1 }}
           >
             <span
               data-story-hero-line-1
-              className="block whitespace-nowrap text-[clamp(2rem,6vw,4.8rem)] text-white"
+              className="block whitespace-nowrap text-[length:var(--hero-title-size)] tracking-[-0.02em] text-white [font-family:var(--font-cebu-story-display)]"
             >
               Have you ever wanted to
             </span>
             <span
               data-story-hero-line-2
-              className="mt-2 block min-h-[1.2em] whitespace-nowrap text-[clamp(2rem,6vw,4.8rem)]"
+              className="mt-3 block min-h-[1.2em] text-[length:var(--hero-title-size)] [font-family:var(--font-cebu-story-display)]"
             >
-              <span className="inline-block whitespace-nowrap bg-[#f8d64e] px-3 text-[#163c69] shadow-[0_14px_28px_-18px_rgba(248,214,78,0.9)] box-decoration-clone">
+              <span className="inline-block whitespace-nowrap bg-[#f8d64e] px-3 pb-1 text-[#163c69] shadow-[0_14px_28px_-18px_rgba(248,214,78,0.9)] box-decoration-clone [font-family:var(--font-cebu-story-display)] font-semibold tracking-[-0.012em]">
                 {typedText || "\u00A0"}
                 <span
                   aria-hidden="true"
@@ -133,17 +116,8 @@ export function HeroLandingView({
             </span>
           </h1>
 
-          {hero.subline ? (
-            <p
-              data-story-description
-              className="max-w-lg text-sm tracking-[0.14em] text-[#163c69]/72 sm:text-base [font-family:var(--font-cebu-story-mono)]"
-            >
-              {hero.subline}
-            </p>
-          ) : null}
-
           <div className="translate-x-[-1px]">
-            <div className="inline-flex items-center gap-3 [font-family:var(--font-cebu-story-mono)] text-[10px] font-medium uppercase tracking-[0.26em] text-white/75">
+            <div className="inline-flex items-center gap-3 [font-family:var(--font-cebu-story-body)] text-[10px] font-medium uppercase tracking-[0.2em] text-white/75">
               <span
                 data-story-hero-chevron
                 className="relative inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/35 bg-white/10"

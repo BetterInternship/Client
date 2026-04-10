@@ -18,27 +18,35 @@ const hero: ScrollStoryHero = {
   backgroundImage:
     "https://www.jgsummit.com.ph/images/2024/02/01/27a2535d4a430089d6b5cde4cf3d8e580cae419d.jpg",
   headline: "Have you ever wanted to ________?",
+  subline: "Challenge-first internship experience",
 };
 
 const sections: ScrollStorySection[] = [
   {
     id: "runway",
     step: "01",
-    variant: "feature",
-    title: "Pick a challenge, Win an internship",
-    description:
-      "Resumes are a thing of the past. Cebu Pacific wants to see what you can actually do.",
-    image: {
-      src: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1200&q=80",
-      alt: "Placeholder photo of a passenger plane lifting above the clouds.",
-      caption:
-        "Placeholder aircraft photography. Swap for branded Cebu Pacific visuals later.",
+    backgroundMode: "sky",
+    variant: "statement",
+    title: "Resumes are a thing of the past.",
+    description: "Cebu Pacific wants to see what you can actually do.",
+    chapterEnter: {
+      panelYPercent: 0,
+      titleY: 14,
+      descriptionY: 26,
+      contentY: 8,
+      duration: 0.92,
     },
-    quote: {
-      text: "Fast-moving brands deserve landing pages that feel like departure, not documentation.",
-      attribution: "Creative direction for the rebuild",
+    chapterExit: {
+      panelYPercent: -3,
+      scaleTo: 1,
+      opacityTo: 0,
+      duration: 0.4,
     },
-    actions: sharedActions,
+    typographyScale: {
+      titleClamp: "clamp(2rem,4.5vw,4.5rem)",
+      descriptionClamp: "clamp(1.2rem,2.1vw,2.4rem)",
+    },
+    actions: [],
     palette: {
       sky: "#1a8fd8",
       glow: "rgba(26, 143, 216, 0.08)",
@@ -49,11 +57,32 @@ const sections: ScrollStorySection[] = [
   {
     id: "network",
     step: "02",
+    backgroundMode: "panel",
     variant: "statement",
-    title: "You define your internship",
+    title: "You define\nyour internship.",
     description:
       "We don't want to limit what you can do. If you get in, we'll give you the freedom to make decisions and take initiative.",
-    supporting: "We'll work together towards a common goal.",
+    supporting: "We'll work together toward one goal.",
+    quote: {
+      text: "Ownership starts early here. Interns are trusted to shape real decisions.",
+      attribution: "Former Product Intern",
+    },
+    chapterEnter: {
+      panelYPercent: 10,
+      titleY: 34,
+      duration: 0.88,
+    },
+    chapterExit: {
+      panelYPercent: -9,
+      scaleTo: 0.972,
+      opacityTo: 0,
+      duration: 0.64,
+    },
+    typographyScale: {
+      titleClamp: "clamp(3.6rem,8.4vw,8.6rem)",
+      descriptionClamp: "clamp(1.08rem,1.26vw,1.28rem)",
+      supportingClamp: "clamp(0.98rem,1.12vw,1.1rem)",
+    },
     actions: sharedActions,
     palette: {
       sky: "#0e7adf",
@@ -65,20 +94,32 @@ const sections: ScrollStorySection[] = [
   {
     id: "culture",
     step: "03",
-    variant: "feature",
-    title: "We give goals, not tasks",
+    backgroundMode: "panel",
+    variant: "statement",
+    title: "We give goals,\nnot tasks.",
     description:
       "A task list is the last thing we want to give you. As long as we establish common goals, we want you to grow and figure out the rest.",
     supporting: "Internships are learning experiences, not replays of school.",
-    image: {
-      src: "https://images.unsplash.com/photo-1529074963764-98f45c47344b?auto=format&fit=crop&w=1200&q=80",
-      alt: "Placeholder photo of a plane interior and bright sky through cabin windows.",
-      caption:
-        "Temporary aircraft interior shot. Replace with culture or team photography when assets are ready.",
+    chapterEnter: {
+      panelYPercent: 12,
+      titleY: 34,
+      mediaY: 16,
+      imageScaleFrom: 1.07,
+      duration: 0.9,
+    },
+    chapterExit: {
+      panelYPercent: -8,
+      scaleTo: 0.97,
+      opacityTo: 0,
+      duration: 0.64,
+    },
+    typographyScale: {
+      titleClamp: "clamp(3rem,6.4vw,6.2rem)",
+      descriptionClamp: "clamp(1rem,1.05vw,1.12rem)",
     },
     quote: {
-      text: "The strongest internship pages don't just say the work matters. They stage the feeling that it does.",
-      attribution: "Narrative direction for scene three",
+      text: "Strong interns are not assigned tiny tasks - they are trusted with outcomes.",
+      attribution: "Team mentorship principle",
     },
     actions: sharedActions,
     palette: {
@@ -91,8 +132,17 @@ const sections: ScrollStorySection[] = [
   {
     id: "final-call",
     step: "04",
+    backgroundMode: "sky",
     variant: "journey",
-    title: "Pick your journey",
+    title: "Pick\nyour journey.",
+    chapterEnter: {
+      panelYPercent: 9,
+      titleY: 30,
+      duration: 0.84,
+    },
+    typographyScale: {
+      titleClamp: "clamp(3.4rem,8.2vw,8rem)",
+    },
     journey: {
       roles: [
         {
@@ -127,6 +177,18 @@ export const cebuPacificStoryModel: ScrollStoryModel = {
       "A cinematic airline company page that pins the viewport and turns scroll into a flight path.",
     primaryAction: sharedActions[0],
     secondaryAction: sharedActions[0],
+  },
+  boot: {
+    minHoldMs: 1500,
+    maxWaitMs: 3000,
+    planeEnterFrom: {
+      x: "-120vw",
+      y: "0vh",
+      scale: 0.94,
+    },
+    planeEnterDuration: 1.15,
+    planeSettleDuration: 0.28,
+    overlayFadeDuration: 0.45,
   },
   hero,
   sections,

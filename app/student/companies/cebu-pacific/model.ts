@@ -13,6 +13,50 @@ export type ScrollStoryHero = {
   subline?: string;
 };
 
+export type ScrollStoryBootConfig = {
+  minHoldMs?: number;
+  maxWaitMs?: number;
+  planeEnterFrom?: {
+    x?: string;
+    y?: string;
+    scale?: number;
+  };
+  planeEnterDuration?: number;
+  planeSettleDuration?: number;
+  overlayFadeDuration?: number;
+};
+
+export type ScrollStoryChapterEnterConfig = {
+  panelYPercent?: number;
+  contentY?: number;
+  titleY?: number;
+  descriptionY?: number;
+  supportingY?: number;
+  quoteY?: number;
+  mediaY?: number;
+  imageScaleFrom?: number;
+  duration?: number;
+};
+
+export type ScrollStoryChapterExitConfig = {
+  panelYPercent?: number;
+  contentY?: number;
+  titleY?: number;
+  descriptionY?: number;
+  supportingY?: number;
+  quoteY?: number;
+  mediaY?: number;
+  scaleTo?: number;
+  opacityTo?: number;
+  duration?: number;
+};
+
+export type ScrollStoryTypographyScale = {
+  titleClamp?: string;
+  descriptionClamp?: string;
+  supportingClamp?: string;
+};
+
 export type ScrollStoryJourneyRole = {
   label: string;
   href: string;
@@ -21,7 +65,11 @@ export type ScrollStoryJourneyRole = {
 export type ScrollStorySection = {
   id: string;
   step: string;
+  backgroundMode?: "panel" | "sky";
   variant?: "feature" | "statement" | "journey";
+  chapterEnter?: ScrollStoryChapterEnterConfig;
+  chapterExit?: ScrollStoryChapterExitConfig;
+  typographyScale?: ScrollStoryTypographyScale;
   transition?: {
     enter?: {
       contentY?: number;
@@ -122,6 +170,7 @@ export type ScrollStoryModel = {
     primaryAction: ScrollStoryAction;
     secondaryAction: ScrollStoryAction;
   };
+  boot?: ScrollStoryBootConfig;
   hero?: ScrollStoryHero;
   sections: ScrollStorySection[];
   steps?: ScrollStoryStep[];
@@ -222,7 +271,7 @@ const revealSection = (
     );
   }
 
-  // 5. Description — simple fade in, sliding slightly up
+  // 5. Description - simple fade in, sliding slightly up
   if (section.description) {
     timeline.fromTo(
       section.description,

@@ -6,38 +6,60 @@ import skyBgImage from "@/public/student/images/sky-bg.png";
 
 type HeroCloudFieldProps = {
   className?: string;
+  showSky?: boolean;
+  showAtmosphere?: boolean;
+  showBottomGlow?: boolean;
 };
 
 const PLANE_TEXTURE_PATH = planeImage.src;
 const SKY_BG_PATH = skyBgImage.src;
 
-export function HeroCloudField({ className }: HeroCloudFieldProps) {
+export function HeroCloudField({
+  className,
+  showSky = true,
+  showAtmosphere = true,
+  showBottomGlow = true,
+}: HeroCloudFieldProps) {
   return (
     <div
       className={cn("absolute inset-0 overflow-hidden", className)}
       aria-hidden
     >
-      <div className="absolute inset-0">
-        <img src={SKY_BG_PATH} alt="" className="h-full w-full object-cover" />
-      </div>
-      <div className="absolute inset-0 bg-[linear-gradient(165deg,rgba(7,24,52,0.5)_0%,rgba(7,24,52,0.24)_40%,rgba(7,24,52,0.1)_65%,rgba(255,255,255,0.05)_100%)]" />
-      <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(9,33,67,0.48),rgba(9,33,67,0.2)_44%,transparent_76%,rgba(255,255,255,0.08)_100%)]" />
-      <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:120px_120px]" />
-      <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_20%_20%,rgba(255,58,96,0.14),transparent_45%),radial-gradient(ellipse_at_85%_30%,rgba(53,167,255,0.12),transparent_48%)]" />
+      {showSky ? (
+        <div className="absolute inset-0">
+          <img
+            src={SKY_BG_PATH}
+            alt=""
+            className="h-full w-full object-cover object-bottom"
+            data-story-hero-sky
+          />
+        </div>
+      ) : null}
+      {showAtmosphere ? (
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(9,31,64,0.44)_0%,rgba(9,31,64,0.22)_52%,rgba(9,31,64,0.1)_100%)]" />
+      ) : null}
 
       <div data-story-hero-plane className="plane-stage">
         <div className="plane-wrapper">
-          <img src={PLANE_TEXTURE_PATH} alt="" className="plane-image" />
+          <img
+            src={PLANE_TEXTURE_PATH}
+            alt=""
+            className="plane-image"
+            data-story-hero-plane-image
+          />
         </div>
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 h-[42%] bg-[linear-gradient(180deg,rgba(170,201,225,0)_0%,rgba(170,201,225,0.2)_58%,rgba(170,201,225,0.48)_100%)]" />
-      <div className="absolute inset-x-0 bottom-0 h-[18%] bg-[linear-gradient(180deg,rgba(255,255,255,0),rgba(198,219,236,0.28))]" />
+      {showBottomGlow ? (
+        <div className="absolute inset-x-0 bottom-0 h-[30%] bg-[linear-gradient(180deg,rgba(170,201,225,0)_0%,rgba(170,201,225,0.34)_100%)]" />
+      ) : null}
 
       <style jsx>{`
         .plane-stage {
           position: absolute;
           inset: 0;
+          opacity: 0;
+          transform: translate3d(-65vw, -55vh, 0) scale(0.92);
           will-change: transform, opacity;
           pointer-events: none;
         }
