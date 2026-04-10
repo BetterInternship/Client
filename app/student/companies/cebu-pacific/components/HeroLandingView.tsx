@@ -86,7 +86,7 @@ export function HeroLandingView({
       <div className="absolute inset-0 z-10 flex items-end justify-start px-6 pb-10 sm:px-10 sm:pb-12 lg:px-16 lg:pb-16">
         <div
           data-panel-content
-          className="relative flex max-w-4xl flex-col gap-6"
+          className="relative flex max-w-4xl flex-col gap-6 pb-16 sm:pb-20 lg:pb-24"
         >
           <h1
             data-story-title
@@ -115,29 +115,28 @@ export function HeroLandingView({
               </span>
             </span>
           </h1>
+        </div>
 
-          <div className="translate-x-[-1px]">
-            <div className="inline-flex items-center gap-3 [font-family:var(--font-cebu-story-body)] text-[10px] font-medium uppercase tracking-[0.2em] text-white/75">
-              <span
-                data-story-hero-chevron
-                className="relative inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/35 bg-white/10"
+        <div className="absolute inset-x-0 bottom-10 flex justify-center sm:bottom-12 lg:bottom-12">
+          <div className="inline-flex items-center gap-3 [font-family:var(--font-cebu-story-body)] text-[10px] font-medium uppercase tracking-[0.2em] text-white/75">
+            <span
+              data-story-hero-chevron
+              className="relative inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/35 bg-white/50"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="square"
+                strokeLinejoin="miter"
+                className="animate-[hero-arrow-nudge_2.6s_ease-in-out_infinite] text-[#163c69]/75"
               >
-                {/* <span className="pointer-events-none absolute inset-[2px] rounded-full border border-transparent border-r-white/55 border-t-white/55 animate-[hero-ring-spin_5.8s_linear_infinite]" /> */}
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="square"
-                  strokeLinejoin="miter"
-                  className="animate-[hero-arrow-nudge_2.6s_ease-in-out_infinite] text-white/75"
-                >
-                  <polyline points="7 10 12 15 17 10" />
-                </svg>
-              </span>
-            </div>
+                <polyline points="7 10 12 15 17 10" />
+              </svg>
+            </span>
           </div>
         </div>
       </div>
