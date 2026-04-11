@@ -567,8 +567,7 @@ export const useHeroSceneTimeline = ({
         const sectionConfig = sections[index];
         const isRunwaySection = sectionConfig?.id === "runway";
         const isNetworkSection = sectionConfig?.id === "network";
-        const isImmediateSection =
-          sectionConfig?.id === "culture" || sectionConfig?.id === "final-call";
+        const isImmediateSection = sectionConfig?.id === "final-call";
         const runwayWhiteWash = scene.root.querySelector<HTMLElement>(
           "[data-runway-white-wash]",
         );
@@ -648,11 +647,13 @@ export const useHeroSceneTimeline = ({
           const networkYourInternship = scene.title.querySelector<HTMLElement>(
             "[data-network-your-internship]",
           );
-          const networkDefineUnderline = scene.title.querySelector<SVGPathElement>(
-            "[data-network-define-underline] path",
-          );
+          const networkDefineUnderline =
+            scene.title.querySelector<SVGPathElement>(
+              "[data-network-define-underline] path",
+            );
 
-          if (networkWords.length > 0) gsap.set(networkWords, { autoAlpha: 1, y: 0 });
+          if (networkWords.length > 0)
+            gsap.set(networkWords, { autoAlpha: 1, y: 0 });
           if (networkYou)
             gsap.set(networkYou, {
               backgroundImage:
@@ -700,18 +701,30 @@ export const useHeroSceneTimeline = ({
             "[data-culture-tasks-strike] path",
           );
           if (cultureLineTwo) {
-            gsap.set(cultureLineTwo, { autoAlpha: 1, y: 0 });
+            gsap.set(cultureLineTwo, { autoAlpha: 0, y: 24 });
           }
           if (cultureGoals) {
             gsap.set(cultureGoals, {
-              backgroundSize: "100% 100%",
+              backgroundSize: "0% 100%",
             });
           }
           if (cultureTasksStrike) {
             const strikeLength = cultureTasksStrike.getTotalLength();
             gsap.set(cultureTasksStrike, {
               strokeDasharray: strikeLength,
-              strokeDashoffset: 0,
+              strokeDashoffset: strikeLength,
+            });
+          }
+        }
+        if (sectionConfig?.id === "final-call" && scene.title) {
+          const finalYourUnderline = scene.title.querySelector<SVGPathElement>(
+            "[data-final-your-underline] path",
+          );
+          if (finalYourUnderline) {
+            const pathLength = finalYourUnderline.getTotalLength();
+            gsap.set(finalYourUnderline, {
+              strokeDasharray: pathLength,
+              strokeDashoffset: pathLength,
             });
           }
         }
@@ -719,10 +732,12 @@ export const useHeroSceneTimeline = ({
           const networkManifesto = scene.root.querySelector<HTMLElement>(
             "[data-network-manifesto]",
           );
-          const networkManifestoHighlight = scene.root.querySelector<HTMLElement>(
-            "[data-network-manifesto-highlight]",
-          );
-          if (networkManifesto) gsap.set(networkManifesto, { autoAlpha: 1, y: 0 });
+          const networkManifestoHighlight =
+            scene.root.querySelector<HTMLElement>(
+              "[data-network-manifesto-highlight]",
+            );
+          if (networkManifesto)
+            gsap.set(networkManifesto, { autoAlpha: 1, y: 0 });
           if (networkManifestoHighlight) {
             gsap.set(networkManifestoHighlight, {
               backgroundImage:
@@ -933,41 +948,50 @@ export const useHeroSceneTimeline = ({
           const sectionConfig = sections[index];
           const isRunwaySection = sectionConfig.id === "runway";
           const isNetworkSection = sectionConfig.id === "network";
-          const isImmediateSection =
-            sectionConfig.id === "culture" || sectionConfig.id === "final-call";
+          const isCultureSection = sectionConfig.id === "culture";
+          const isImmediateSection = sectionConfig.id === "final-call";
 
           if (isNetworkSection) {
             const previousScene = scenes[index - 1];
-            const runwayWhiteWash = previousScene?.root.querySelector<HTMLElement>(
-              "[data-runway-white-wash]",
-            );
+            const runwayWhiteWash =
+              previousScene?.root.querySelector<HTMLElement>(
+                "[data-runway-white-wash]",
+              );
             const runwayGrid =
-              previousScene?.root.querySelector<HTMLElement>("[data-runway-grid]");
+              previousScene?.root.querySelector<HTMLElement>(
+                "[data-runway-grid]",
+              );
             const networkWords = scene.title
               ? Array.from(
-                  scene.title.querySelectorAll<HTMLElement>("[data-network-word]"),
+                  scene.title.querySelectorAll<HTMLElement>(
+                    "[data-network-word]",
+                  ),
                 )
               : [];
-            const networkYou = scene.title?.querySelector<HTMLElement>(
-              "[data-network-you]",
-            );
-            const networkYourInternship = scene.title?.querySelector<HTMLElement>(
-              "[data-network-your-internship]",
-            );
-            const networkDefineUnderline = scene.title?.querySelector<SVGPathElement>(
-              "[data-network-define-underline] path",
-            );
+            const networkYou =
+              scene.title?.querySelector<HTMLElement>("[data-network-you]");
+            const networkYourInternship =
+              scene.title?.querySelector<HTMLElement>(
+                "[data-network-your-internship]",
+              );
+            const networkDefineUnderline =
+              scene.title?.querySelector<SVGPathElement>(
+                "[data-network-define-underline] path",
+              );
             const networkPhotos = scene.media
               ? Array.from(
-                  scene.media.querySelectorAll<HTMLElement>("[data-story-photo]"),
+                  scene.media.querySelectorAll<HTMLElement>(
+                    "[data-story-photo]",
+                  ),
                 )
               : [];
             const networkManifesto = scene.root.querySelector<HTMLElement>(
               "[data-network-manifesto]",
             );
-            const networkManifestoHighlight = scene.root.querySelector<HTMLElement>(
-              "[data-network-manifesto-highlight]",
-            );
+            const networkManifestoHighlight =
+              scene.root.querySelector<HTMLElement>(
+                "[data-network-manifesto-highlight]",
+              );
             const lockRunwayFinalState = () => {
               if (runwayWhiteWash) gsap.set(runwayWhiteWash, { autoAlpha: 1 });
               if (runwayGrid) gsap.set(runwayGrid, { autoAlpha: 0.42 });
@@ -1104,6 +1128,153 @@ export const useHeroSceneTimeline = ({
               scale: 1,
               pointerEvents: "auto",
             });
+
+            const journeyRail =
+              scene.root.querySelector<HTMLElement>("[data-story-point]");
+            const journeyRailTrack = scene.root.querySelector<HTMLElement>(
+              "[data-journey-rail-track]",
+            );
+
+            if (journeyRail && journeyRailTrack) {
+              const getMaxShift = () =>
+                Math.max(
+                  0,
+                  journeyRailTrack.scrollWidth - journeyRail.clientWidth,
+                );
+              const maxShift = getMaxShift();
+
+              if (maxShift > 8) {
+                gsap.set(journeyRailTrack, { x: 0 });
+                gsap.to(journeyRailTrack, {
+                  keyframes: [
+                    { x: 0, duration: 0.04, ease: "none" },
+                    { x: () => -getMaxShift(), duration: 0.96, ease: "none" },
+                  ],
+                  scrollTrigger: {
+                    trigger: scene.root,
+                    start: "top top",
+                    end: () =>
+                      `+=${Math.max(window.innerHeight * 1.8, getMaxShift() * 1.12)}`,
+                    scrub: 0.95,
+                    pin: true,
+                    pinType: isViewportScroller ? "fixed" : "transform",
+                    anticipatePin: 1,
+                    invalidateOnRefresh: true,
+                    ...(isViewportScroller ? {} : { scroller }),
+                  },
+                });
+              }
+            }
+
+            const finalYourUnderline =
+              scene.title?.querySelector<SVGPathElement>(
+                "[data-final-your-underline] path",
+              );
+            if (finalYourUnderline) {
+              const underlineTimeline = gsap.timeline({
+                scrollTrigger: {
+                  trigger: scene.root,
+                  start: "top 84%",
+                  end: "top 46%",
+                  scrub: 0.35,
+                  invalidateOnRefresh: true,
+                  ...(isViewportScroller ? {} : { scroller }),
+                },
+              });
+
+              underlineTimeline.to(finalYourUnderline, {
+                strokeDashoffset: 0,
+                duration: 0.28,
+                ease: "power2.out",
+              });
+            }
+            return;
+          }
+
+          if (isCultureSection) {
+            gsap.set(scene.root, {
+              autoAlpha: 1,
+              yPercent: 0,
+              scale: 1,
+              pointerEvents: "auto",
+            });
+
+            const cultureLineTwo = scene.title?.querySelector<HTMLElement>(
+              "[data-culture-line-two]",
+            );
+            const cultureGoals = scene.title?.querySelector<HTMLElement>(
+              "[data-culture-goals]",
+            );
+            const cultureTasksStrike =
+              scene.title?.querySelector<SVGPathElement>(
+                "[data-culture-tasks-strike] path",
+              );
+            if (cultureTasksStrike) {
+              gsap
+                .timeline({
+                  scrollTrigger: {
+                    trigger: scene.root,
+                    start: "top 50%",
+                    end: "top 20%",
+                    scrub: 0.35,
+                    invalidateOnRefresh: true,
+                    ...(isViewportScroller ? {} : { scroller }),
+                  },
+                })
+                .to(cultureTasksStrike, {
+                  strokeDashoffset: 2,
+                  duration: 0.56,
+                  ease: "power2.out",
+                });
+            }
+
+            if (cultureLineTwo) {
+              ScrollTrigger.create({
+                trigger: scene.root,
+                start: "top 8%",
+                onEnter: () => {
+                  gsap.to(cultureLineTwo, {
+                    autoAlpha: 1,
+                    y: 0,
+                    duration: 0.34,
+                    ease: "back.out(1.3)",
+                  });
+                },
+                onLeaveBack: () => {
+                  gsap.to(cultureLineTwo, {
+                    autoAlpha: 0,
+                    y: 24,
+                    duration: 0.2,
+                    ease: "power2.out",
+                  });
+                },
+                invalidateOnRefresh: true,
+                ...(isViewportScroller ? {} : { scroller }),
+              });
+            }
+
+            if (cultureGoals) {
+              ScrollTrigger.create({
+                trigger: scene.root,
+                start: "top 2%",
+                onEnter: () => {
+                  gsap.to(cultureGoals, {
+                    backgroundSize: "100% 100%",
+                    duration: 0.3,
+                    ease: "power2.out",
+                  });
+                },
+                onLeaveBack: () => {
+                  gsap.to(cultureGoals, {
+                    backgroundSize: "0% 100%",
+                    duration: 0.2,
+                    ease: "power2.out",
+                  });
+                },
+                invalidateOnRefresh: true,
+                ...(isViewportScroller ? {} : { scroller }),
+              });
+            }
             return;
           }
 
@@ -1209,7 +1380,6 @@ export const useHeroSceneTimeline = ({
               );
             }
           }
-
         });
       } else {
         const chapterSceneSpan = isCompactMotion ? 1.06 : 1.24;

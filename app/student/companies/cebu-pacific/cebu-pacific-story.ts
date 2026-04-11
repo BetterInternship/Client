@@ -28,7 +28,7 @@ const sections: ScrollStorySection[] = [
     backgroundMode: "sky",
     variant: "statement",
     title: "Resumes are a thing of the past.",
-    description: "Cebu Pacific wants to see what you can actually do.",
+    description: "Cebu Pacific wants to see what you can do.",
     chapterEnter: {
       panelYPercent: 0,
       titleY: 14,
@@ -125,7 +125,7 @@ const sections: ScrollStorySection[] = [
     step: "04",
     backgroundMode: "sky",
     variant: "journey",
-    title: "Pick\nyour journey.",
+    title: "Define your with Cebu Pacific.",
     chapterEnter: {
       panelYPercent: 9,
       titleY: 30,
@@ -146,6 +146,66 @@ const sections: ScrollStorySection[] = [
         },
         {
           label: "Data Analytics Intern",
+          href: "#",
+        },
+        {
+          label: "Customer Experience Intern",
+          href: "#",
+        },
+        {
+          label: "Revenue Management Intern",
+          href: "#",
+        },
+        {
+          label: "Aircraft Maintenance Planning Intern",
+          href: "#",
+        },
+        {
+          label: "Airport Operations Intern",
+          href: "#",
+        },
+        {
+          label: "People and Culture Intern",
+          href: "#",
+        },
+        {
+          label: "Commercial Strategy Intern",
+          href: "#",
+        },
+        {
+          label: "Network Planning Intern",
+          href: "#",
+        },
+        {
+          label: "Ground Services Intern",
+          href: "#",
+        },
+        {
+          label: "Safety and Compliance Intern",
+          href: "#",
+        },
+        {
+          label: "Cabin Crew Experience Intern",
+          href: "#",
+        },
+        {
+          label: "Digital Marketing Intern",
+          href: "#",
+        },
+        {
+          label: "Brand Communications Intern",
+          href: "#",
+        },
+        {
+          label: "Software Engineering Intern",
+          href: "#",
+        },
+        {
+          label: "Cybersecurity Intern",
+          href: "#",
+        },
+        {
+          label: "Finance and Planning Intern",
           href: "#",
         },
       ],

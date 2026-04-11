@@ -32,6 +32,7 @@ export function ScrollStorySectionView({
   const isRunway = section.id === "runway";
   const isNetwork = section.id === "network";
   const isCulture = section.id === "culture";
+  const isFinalCall = section.id === "final-call";
   const isMidScreen = isRunway || isCulture;
 
   const titleFallback = isMidScreen
@@ -69,7 +70,11 @@ export function ScrollStorySectionView({
               isNetwork && "min-h-[120svh]",
             )
           : "absolute inset-0 h-full",
-        isActive ? "pointer-events-auto" : "pointer-events-none",
+        stacked
+          ? "pointer-events-auto"
+          : isActive
+            ? "pointer-events-auto"
+            : "pointer-events-none",
       )}
     >
       {isRunway ? (
@@ -95,10 +100,7 @@ export function ScrollStorySectionView({
         </div>
       ) : !transparentBackground ? (
         <div data-story-background className="absolute inset-0">
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-[#eef2f7]"
-          />
+          <div aria-hidden className="absolute inset-0 bg-[#eef2f7]" />
           <div
             aria-hidden
             className="absolute inset-0 bg-[linear-gradient(to_right,rgba(17,24,39,0.085)_1px,transparent_1px),linear-gradient(to_bottom,rgba(17,24,39,0.075)_1px,transparent_1px)] bg-[size:74px_74px] opacity-[0.42]"
@@ -125,7 +127,9 @@ export function ScrollStorySectionView({
             stacked
               ? isCulture
                 ? "h-[100svh] py-0 pb-0"
-                : "min-h-[100svh] py-24"
+                : isFinalCall
+                  ? "h-[100svh] py-0 pb-0"
+                  : "min-h-[100svh] py-24"
               : "h-full",
           )}
         >
@@ -165,7 +169,7 @@ export function ScrollStorySectionView({
                     data-network-you
                     className="inline-block whitespace-nowrap bg-transparent px-3 pb-1 font-semibold tracking-[-0.012em] text-slate-900 shadow-none"
                   >
-                    you
+                    You
                   </span>{" "}
                   <span
                     data-network-word
@@ -242,7 +246,7 @@ export function ScrollStorySectionView({
                     data-network-manifesto-highlight
                     className="inline-block whitespace-nowrap bg-transparent px-3 pb-1 font-semibold tracking-[-0.012em] text-slate-900 shadow-none"
                   >
-                    we&apos;ll give you the freedom
+                    We&apos;ll give you the freedom
                   </span>{" "}
                   to make decisions and take initiative.
                 </p>
@@ -258,7 +262,7 @@ export function ScrollStorySectionView({
                 className="text-center text-[clamp(2.4rem,7.2vw,7rem)] leading-[0.9] tracking-[-0.03em] text-slate-950 [font-family:var(--font-cebu-story-body)]"
               >
                 <span className="block whitespace-nowrap">
-                  we don&apos;t give{" "}
+                  We don&apos;t give{" "}
                   <span
                     data-culture-tasks
                     className="relative inline-block overflow-visible px-[0.08em] text-slate-950"
@@ -282,9 +286,9 @@ export function ScrollStorySectionView({
                 </span>
                 <span
                   data-culture-line-two
-                  className="block whitespace-nowrap opacity-0 translate-y-6"
+                  className="block whitespace-nowrap opacity-0"
                 >
-                  we give{" "}
+                  We give{" "}
                   <span
                     data-culture-goals
                     className="inline-block bg-[linear-gradient(0deg,#fde047_0%,#fde047_100%)] bg-[length:0%_100%] bg-no-repeat px-[0.08em] text-[#163c69]"
@@ -372,6 +376,93 @@ export function ScrollStorySectionView({
                   ))}
                 </div>
               </div>
+            </div>
+          ) : isFinalCall ? (
+            <div
+              data-story-content
+              className="mx-auto flex h-[100svh] w-full max-w-[1280px] flex-col justify-between px-4 pb-6 pt-6 text-slate-100 box-border sm:px-8 lg:px-10 lg:pt-8"
+            >
+              <div className="px-1 pb-6 pt-8 sm:pt-10 lg:pt-12">
+                <h1
+                  data-story-title
+                  className="max-w-[24ch] whitespace-nowrap text-[clamp(2.15rem,7.8vw,5.9rem)] font-semibold leading-[0.95] tracking-[-0.03em] text-slate-200 [font-family:var(--font-cebu-story-body)]"
+                >
+                  <span className="inline-block whitespace-nowrap">
+                    Define{" "}
+                    <span data-final-your className="relative inline-block">
+                      your
+                      <svg
+                        data-final-your-underline
+                        aria-hidden
+                        viewBox="0 0 120 14"
+                        className="absolute -bottom-[0.12em] left-0 h-[0.23em] w-full"
+                        fill="none"
+                      >
+                        <path
+                          d="M3 8 C24 3, 47 12, 69 8 C87 5, 104 10, 117 7"
+                          stroke="#fde047"
+                          strokeWidth="4"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </span>{" "}
+                    journey
+                  </span>
+                  <span className="block text-[clamp(2.15rem,7.8vw,4rem)] mt-4">
+                    with{" "}
+                    <span className="whitespace-nowrap">Cebu Pacific.</span>
+                  </span>
+                </h1>
+              </div>
+
+              {hasJourney && section.journey ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-end px-1">
+                    <span className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-white/72 [font-family:var(--font-cebu-story-body)]">
+                      Scroll to explore
+                      <svg
+                        aria-hidden
+                        viewBox="0 0 24 24"
+                        className="h-3.5 w-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M5 12h14" />
+                        <path d="m13 6 6 6-6 6" />
+                      </svg>
+                    </span>
+                  </div>
+                  <div
+                    data-story-point
+                    className="overflow-x-hidden overflow-y-visible pb-2"
+                  >
+                    <div
+                      data-journey-rail-track
+                      className="flex min-w-max gap-4 pl-6 pr-10"
+                    >
+                      {section.journey.roles.map((role) => (
+                        <Link
+                          key={role.label}
+                          href={role.href}
+                          className="group block w-[min(78vw,430px)] shrink-0"
+                        >
+                          <div className="flex min-h-[320px] flex-col justify-between border border-white/18 bg-white/42 p-6 backdrop-blur-[12px] transition-colors duration-300 hover:border-white/60 hover:bg-white group-hover:border-white/60 group-hover:bg-white">
+                            <h3 className="whitespace-pre-line text-[clamp(1.6rem,3.4vw,2.6rem)] font-semibold leading-[0.92] tracking-[-0.02em] text-white transition-colors duration-300 hover:text-[#16467e] group-hover:text-[#16467e] [font-family:var(--font-cebu-story-body)]">
+                              {role.label}
+                            </h3>
+                            <p className="text-[11px] uppercase tracking-[0.14em] text-white/80 transition-colors duration-300 hover:text-[#16467e]/80 group-hover:text-[#16467e]/80 [font-family:var(--font-cebu-story-body)]">
+                              View details
+                            </p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </div>
           ) : (
             <div
