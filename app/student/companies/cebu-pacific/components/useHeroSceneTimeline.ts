@@ -51,6 +51,9 @@ const waitForImage = (image: HTMLImageElement | null): Promise<void> => {
   });
 };
 
+const waitForImages = (images: HTMLImageElement[]): Promise<void> =>
+  Promise.all(images.map((image) => waitForImage(image))).then(() => {});
+
 const waitForFonts = async (): Promise<void> => {
   if (!("fonts" in document)) return;
 
@@ -148,18 +151,9 @@ export const useHeroSceneTimeline = ({
     const heroBackground = hero.querySelector<HTMLElement>(
       "[data-story-hero-bg]",
     );
-    const heroBackgroundImage = hero.querySelector<HTMLImageElement>(
-      "[data-story-hero-bg-image]",
-    );
-    const heroPlaneImage = hero.querySelector<HTMLImageElement>(
-      "[data-story-hero-plane-image]",
-    );
     const heroContent = hero.querySelector<HTMLElement>("[data-panel-content]");
     const heroCue = hero.querySelector<HTMLElement>(
       "[data-story-hero-chevron]",
-    );
-    const bootSkyImage = bootOverlay?.querySelector<HTMLImageElement>(
-      "[data-story-boot-sky-image]",
     );
     const bootTitle = bootOverlay?.querySelector<HTMLElement>(
       "[data-story-boot-title]",
@@ -211,38 +205,49 @@ export const useHeroSceneTimeline = ({
       scroller === document.scrollingElement ||
       scroller === document.documentElement ||
       scroller === document.body;
+    const isCompactMotion = compactMotionMedia.matches;
+    const prefersNativeTouchScroll = isCompactMotion || ScrollTrigger.isTouch > 0;
+    const scrollPinType =
+      isViewportScroller && isCompactMotion ? "transform" : isViewportScroller ? "fixed" : "transform";
+    const progressScrub = isCompactMotion ? 0.2 : 0.35;
+    const sectionScrub = isCompactMotion ? 0.24 : 0.36;
+    const chapterScrub = isCompactMotion ? 0.3 : 0.42;
+    const journeyScrub = isCompactMotion ? 0.68 : 0.95;
+    const runwayPinScrub = isCompactMotion ? 0.22 : 0.28;
 
-    const lenis = new Lenis(
-      isViewportScroller
-        ? {
-            smoothWheel: true,
-            syncTouch: false,
-            lerp: 0.2,
-          }
-        : {
-            wrapper: scroller,
-            content: root,
-            smoothWheel: true,
-            syncTouch: false,
-            lerp: 0.2,
-            gestureOrientation: "vertical",
-          },
-    );
+    let lenis: Lenis | null = null;
+    if (!prefersNativeTouchScroll) {
+      lenis = new Lenis(
+        isViewportScroller
+          ? {
+              smoothWheel: true,
+              syncTouch: false,
+              lerp: 0.2,
+            }
+          : {
+              wrapper: scroller,
+              content: root,
+              smoothWheel: true,
+              syncTouch: false,
+              lerp: 0.2,
+              gestureOrientation: "vertical",
+            },
+      );
+    }
 
     const onLenisScroll = () => {
       ScrollTrigger.update();
     };
 
-    lenis.on("scroll", onLenisScroll);
-    lenis.stop();
+    lenis?.on("scroll", onLenisScroll);
+    lenis?.stop();
 
-    const lenisTicker = (time: number) => {
-      lenis.raf(time * 1000);
-    };
-
-    gsap.ticker.add(lenisTicker);
-
-    const isCompactMotion = compactMotionMedia.matches;
+    const lenisTicker = lenis
+      ? (time: number) => {
+          lenis?.raf(time * 1000);
+        }
+      : null;
+    if (lenisTicker) gsap.ticker.add(lenisTicker);
     const introFromX = boot?.planeEnterFrom?.x ?? "-120vw";
     const introFromY = boot?.planeEnterFrom?.y ?? "0vh";
     const introFromScale = boot?.planeEnterFrom?.scale ?? 0.94;
@@ -250,7 +255,7 @@ export const useHeroSceneTimeline = ({
     const introSettleDuration = boot?.planeSettleDuration ?? 0.28;
     const overlayFadeDuration = boot?.overlayFadeDuration ?? 0.45;
     const minHoldMs = boot?.minHoldMs ?? 900;
-    const maxWaitMs = boot?.maxWaitMs ?? 3000;
+    const trackedImages = Array.from(root.querySelectorAll("img"));
 
     let isCancelled = false;
     let introTimeline: gsap.core.Timeline | null = null;
@@ -774,7 +779,7 @@ export const useHeroSceneTimeline = ({
               pointerEvents: "none",
             });
           }
-          lenis.start();
+          lenis?.start();
           ScrollTrigger.refresh();
         },
       });
@@ -881,7 +886,7 @@ export const useHeroSceneTimeline = ({
           trigger: hero,
           start: "top top",
           end: "bottom top",
-          scrub: 0.35,
+          scrub: progressScrub,
           invalidateOnRefresh: true,
           onUpdate: (self) => {
             if (!hasKilledIdleTween && self.progress > 0.01) {
@@ -1022,7 +1027,7 @@ export const useHeroSceneTimeline = ({
                   trigger: scene.root,
                   start: "top 84%",
                   end: "top 30%",
-                  scrub: 0.35,
+                  scrub: progressScrub,
                   invalidateOnRefresh: true,
                   ...(isViewportScroller ? {} : { scroller }),
                 },
@@ -1155,9 +1160,9 @@ export const useHeroSceneTimeline = ({
                     start: "top top",
                     end: () =>
                       `+=${Math.max(window.innerHeight * 1.8, getMaxShift() * 1.12)}`,
-                    scrub: 0.95,
+                    scrub: journeyScrub,
                     pin: true,
-                    pinType: isViewportScroller ? "fixed" : "transform",
+                    pinType: scrollPinType,
                     anticipatePin: 1,
                     invalidateOnRefresh: true,
                     ...(isViewportScroller ? {} : { scroller }),
@@ -1176,7 +1181,7 @@ export const useHeroSceneTimeline = ({
                   trigger: scene.root,
                   start: "top 84%",
                   end: "top 46%",
-                  scrub: 0.35,
+                  scrub: progressScrub,
                   invalidateOnRefresh: true,
                   ...(isViewportScroller ? {} : { scroller }),
                 },
@@ -1216,7 +1221,7 @@ export const useHeroSceneTimeline = ({
                     trigger: scene.root,
                     start: "top 50%",
                     end: "top 20%",
-                    scrub: 0.35,
+                    scrub: progressScrub,
                     invalidateOnRefresh: true,
                     ...(isViewportScroller ? {} : { scroller }),
                   },
@@ -1286,7 +1291,7 @@ export const useHeroSceneTimeline = ({
               trigger: scene.root,
               start: triggerStart,
               end: sectionEnterEnd,
-              scrub: 0.36,
+              scrub: sectionScrub,
               invalidateOnRefresh: true,
               ...(isViewportScroller ? {} : { scroller }),
             },
@@ -1316,9 +1321,9 @@ export const useHeroSceneTimeline = ({
                 trigger: scene.root,
                 start: "top top",
                 end: "+=26%",
-                scrub: 0.28,
+                scrub: runwayPinScrub,
                 pin: true,
-                pinType: isViewportScroller ? "fixed" : "transform",
+                pinType: scrollPinType,
                 anticipatePin: 1,
                 invalidateOnRefresh: true,
                 onLeave: setRunwayFinalState,
@@ -1389,9 +1394,9 @@ export const useHeroSceneTimeline = ({
             start: "top top",
             end: () =>
               `+=${window.innerHeight * Math.max(scenes.length, 1) * (isCompactMotion ? 1 : 1.08)}`,
-            scrub: 0.42,
+            scrub: chapterScrub,
             pin: true,
-            pinType: isViewportScroller ? "fixed" : "transform",
+            pinType: scrollPinType,
             anticipatePin: 1,
             invalidateOnRefresh: true,
             ...(isViewportScroller ? {} : { scroller }),
@@ -1420,15 +1425,8 @@ export const useHeroSceneTimeline = ({
 
     const runIntro = async () => {
       await Promise.all([
-        Promise.race([
-          Promise.all([
-            waitForImage(heroBackgroundImage),
-            waitForImage(heroPlaneImage),
-            waitForImage(bootSkyImage),
-            waitForFonts(),
-          ]),
-          wait(maxWaitMs),
-        ]),
+        waitForImages(trackedImages),
+        waitForFonts(),
         wait(minHoldMs),
       ]);
 
@@ -1443,9 +1441,9 @@ export const useHeroSceneTimeline = ({
       introTimeline?.kill();
       heroPlaneIdleTween?.kill();
       ctx.revert();
-      gsap.ticker.remove(lenisTicker);
-      lenis.off("scroll", onLenisScroll);
-      lenis.destroy();
+      if (lenisTicker) gsap.ticker.remove(lenisTicker);
+      lenis?.off("scroll", onLenisScroll);
+      lenis?.destroy();
     };
   }, [
     boot,

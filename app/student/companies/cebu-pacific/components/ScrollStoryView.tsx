@@ -88,7 +88,7 @@ export function ScrollStoryView({ model, className }: ScrollStoryViewProps) {
         <div className="absolute inset-0 bg-[#6bb6e8]" />
         <div className="absolute inset-0">
           <img
-            src="/student/images/sky-bg.png"
+            src={skyBgImage.src}
             alt=""
             className="h-full w-full object-cover opacity-70"
             data-story-boot-sky-image
