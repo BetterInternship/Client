@@ -1148,7 +1148,9 @@ export const useHeroSceneTimeline = ({
                 );
               const maxShift = getMaxShift();
 
-              if (maxShift > 8) {
+              if (isCompactMotion) {
+                gsap.set(journeyRailTrack, { x: 0 });
+              } else if (maxShift > 8) {
                 gsap.set(journeyRailTrack, { x: 0 });
                 gsap.to(journeyRailTrack, {
                   keyframes: [

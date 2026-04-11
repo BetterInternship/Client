@@ -137,76 +137,20 @@ const sections: ScrollStorySection[] = [
     journey: {
       roles: [
         {
-          label: "Flight Operations Intern",
-          href: "#",
+          label: "Software Engineering Intern",
+          href: "/super-listing/cebu-pacific",
         },
         {
-          label: "Digital Product Design Intern",
-          href: "#",
+          label: "Product Design Intern",
+          href: "/super-listing/cebu-pacific",
         },
         {
           label: "Data Analytics Intern",
-          href: "#",
-        },
-        {
-          label: "Customer Experience Intern",
-          href: "#",
-        },
-        {
-          label: "Revenue Management Intern",
-          href: "#",
-        },
-        {
-          label: "Aircraft Maintenance Planning Intern",
-          href: "#",
-        },
-        {
-          label: "Airport Operations Intern",
-          href: "#",
-        },
-        {
-          label: "People and Culture Intern",
-          href: "#",
-        },
-        {
-          label: "Commercial Strategy Intern",
-          href: "#",
-        },
-        {
-          label: "Network Planning Intern",
-          href: "#",
-        },
-        {
-          label: "Ground Services Intern",
-          href: "#",
-        },
-        {
-          label: "Safety and Compliance Intern",
-          href: "#",
-        },
-        {
-          label: "Cabin Crew Experience Intern",
-          href: "#",
-        },
-        {
-          label: "Digital Marketing Intern",
-          href: "#",
-        },
-        {
-          label: "Brand Communications Intern",
-          href: "#",
-        },
-        {
-          label: "Software Engineering Intern",
-          href: "#",
+          href: "/super-listing/cebu-pacific",
         },
         {
           label: "Cybersecurity Intern",
-          href: "#",
-        },
-        {
-          label: "Finance and Planning Intern",
-          href: "#",
+          href: "/super-listing/cebu-pacific",
         },
       ],
     },

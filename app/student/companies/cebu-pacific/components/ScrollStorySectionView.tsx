@@ -130,16 +130,13 @@ export function ScrollStorySectionView({
               ? isCulture
                 ? "h-[100svh] py-0 pb-0"
                 : isFinalCall
-                  ? "h-[100svh] py-0 pb-0"
+                  ? "min-h-[100svh] py-0 pb-0 sm:h-[100svh]"
                   : "min-h-[100svh] py-24"
               : "h-full",
           )}
         >
           {isRunway ? (
-            <div
-              data-story-content
-              className="sticky h-[92svh] w-full"
-            >
+            <div data-story-content className="sticky h-[92svh] w-full">
               <h1
                 data-story-title
                 className="absolute top-[5svh] left-1/2 w-[min(92vw,16ch)] -translate-x-1/2 whitespace-pre-line text-center text-[length:var(--section-title-size)] leading-[1.04] tracking-[-0.02em] text-white [font-family:var(--font-cebu-story-body)] sm:left-0 sm:w-auto sm:translate-x-0 sm:text-left"
@@ -204,7 +201,10 @@ export function ScrollStorySectionView({
                 </h1>
               </div>
 
-              <div data-story-media className="relative z-10 -mx-6 min-h-[130svh] sm:mx-0 sm:min-h-[206svh]">
+              <div
+                data-story-media
+                className="relative z-10 -mx-6 min-h-[130svh] sm:mx-0 sm:min-h-[206svh]"
+              >
                 <figure
                   data-story-photo
                   className="absolute left-0 top-[8svh] w-full overflow-hidden shadow-[0_40px_86px_-52px_rgba(15,23,42,0.46)] sm:top-[10svh] sm:w-[80%]"
@@ -382,7 +382,7 @@ export function ScrollStorySectionView({
           ) : isFinalCall ? (
             <div
               data-story-content
-              className="flex h-[100svh] w-full flex-col justify-between pb-6 pt-6 text-slate-100 box-border lg:pt-8"
+              className="flex min-h-[100svh] w-full flex-col justify-between pb-6 pt-6 text-slate-100 box-border sm:h-[100svh] lg:pt-8"
             >
               <div className="px-1 pb-6 pt-8 sm:pt-10 lg:pt-12">
                 <h1
@@ -412,7 +412,9 @@ export function ScrollStorySectionView({
                   </span>
                   <span className="block text-[clamp(2.15rem,7.8vw,4rem)] mt-4">
                     with{" "}
-                    <span className="whitespace-normal sm:whitespace-nowrap">Cebu Pacific.</span>
+                    <span className="whitespace-normal sm:whitespace-nowrap">
+                      Cebu Pacific.
+                    </span>
                   </span>
                 </h1>
               </div>
@@ -420,7 +422,7 @@ export function ScrollStorySectionView({
               {hasJourney && section.journey ? (
                 <div className="space-y-4">
                   <div className="flex items-center justify-end px-1">
-                    <span className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-white/72 [font-family:var(--font-cebu-story-body)]">
+                    <span className="hidden items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-white/72 [font-family:var(--font-cebu-story-body)] sm:inline-flex">
                       Scroll to explore
                       <svg
                         aria-hidden
@@ -443,21 +445,21 @@ export function ScrollStorySectionView({
                   >
                     <div
                       data-journey-rail-track
-                      className="flex min-w-max gap-4 pr-10 sm:pr-12"
+                      className="grid grid-cols-1 gap-4 sm:flex sm:min-w-max sm:gap-4 sm:pr-12"
                     >
                       {section.journey.roles.map((role) => (
                         <Link
                           key={role.label}
                           href={role.href}
-                          className="group block w-[min(78vw,430px)] shrink-0"
+                          className="group block w-full sm:w-[min(78vw,430px)] sm:shrink-0"
                         >
-                          <div className="flex min-h-[320px] flex-col justify-between border border-white/18 bg-white/42 p-6 text-center backdrop-blur-[12px] transition-colors duration-300 hover:border-white/60 hover:bg-white group-hover:border-white/60 group-hover:bg-white sm:text-left">
-                            <h3 className="whitespace-pre-line text-[clamp(1.6rem,3.4vw,2.6rem)] font-semibold leading-[0.92] tracking-[-0.02em] text-white transition-colors duration-300 hover:text-[#16467e] group-hover:text-[#16467e] [font-family:var(--font-cebu-story-body)]">
+                          <div className="flex min-h-[160px] flex-col justify-between border border-white/18 bg-white/42 p-4 text-left backdrop-blur-[12px] transition-colors duration-300 hover:border-white/60 hover:bg-white group-hover:border-white/60 group-hover:bg-white sm:min-h-[320px] sm:p-6">
+                            <h3 className="whitespace-pre-line text-[clamp(1.25rem,5.4vw,1.7rem)] font-semibold leading-[0.92] tracking-[-0.02em] text-white transition-colors duration-300 hover:text-[#16467e] group-hover:text-[#16467e] [font-family:var(--font-cebu-story-body)] sm:text-[clamp(1.6rem,3.4vw,2.6rem)]">
                               {role.label}
                             </h3>
-                            <p className="text-[11px] uppercase tracking-[0.14em] text-white/80 transition-colors duration-300 hover:text-[#16467e]/80 group-hover:text-[#16467e]/80 [font-family:var(--font-cebu-story-body)]">
-                              View details
-                            </p>
+                            <span className="text-[16px] font-semibold leading-none text-white/85 transition-colors duration-300 hover:text-[#16467e]/85 group-hover:text-[#16467e]/85 [font-family:var(--font-cebu-story-body)] justify-right ">
+                              View &gt;
+                            </span>
                           </div>
                         </Link>
                       ))}
