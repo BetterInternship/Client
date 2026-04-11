@@ -95,15 +95,15 @@ export function HeroLandingView({
           >
             <span
               data-story-hero-line-1
-              className="block whitespace-nowrap text-[length:var(--hero-title-size)] tracking-[-0.02em] text-white [font-family:var(--font-cebu-story-display)]"
+              className="block whitespace-nowrap text-[length:var(--hero-title-size)] tracking-[-0.02em] text-white [font-family:var(--font-cebu-story-body)]"
             >
               Have you ever wanted to
             </span>
             <span
               data-story-hero-line-2
-              className="mt-3 block min-h-[1.2em] text-[length:var(--hero-title-size)] [font-family:var(--font-cebu-story-display)]"
+              className="mt-3 block min-h-[1.2em] text-[length:var(--hero-title-size)] [font-family:var(--font-cebu-story-body)]"
             >
-              <span className="inline-block whitespace-nowrap bg-[#f8d64e] px-3 pb-1 text-[#163c69] shadow-[0_14px_28px_-18px_rgba(248,214,78,0.9)] box-decoration-clone [font-family:var(--font-cebu-story-display)] font-semibold tracking-[-0.012em]">
+              <span className="inline-block whitespace-nowrap bg-[#f8d64e] px-3 pb-1 text-[#163c69] shadow-[0_14px_28px_-18px_rgba(248,214,78,0.9)] box-decoration-clone [font-family:var(--font-cebu-story-body)] font-semibold tracking-[-0.012em]">
                 {typedText || "\u00A0"}
                 <span
                   aria-hidden="true"

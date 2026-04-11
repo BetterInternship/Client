@@ -63,7 +63,7 @@ export function ScrollStoryView({ model, className }: ScrollStoryViewProps) {
             key={section.id}
             className={cn(
               "relative min-h-[100svh]",
-              section.id === "runway" && "min-h-[170svh]",
+              section.id === "runway" && "min-h-[120svh]",
             )}
             ref={(node) => {
               sectionRefs.current[index] = node;
@@ -98,7 +98,7 @@ export function ScrollStoryView({ model, className }: ScrollStoryViewProps) {
         <div className="relative z-10 flex h-full items-center justify-center px-6 text-center">
           <h2
             data-story-boot-title
-            className="max-w-2xl text-[clamp(1.15rem,2.2vw,2rem)] leading-[1.1] tracking-[-0.01em] text-white [font-family:var(--font-cebu-story-display)]"
+            className="max-w-2xl text-[clamp(1.15rem,2.2vw,2rem)] leading-[1.1] tracking-[-0.01em] text-white [font-family:var(--font-cebu-story-body)]"
           >
             Ready for your dream internship?
           </h2>

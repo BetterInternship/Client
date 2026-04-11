@@ -115,6 +115,10 @@ const getSceneRefs = (root: HTMLElement): StorySceneRefs => ({
   ),
 });
 
+type RevealSectionOptions = {
+  animateRootOpacity?: boolean;
+};
+
 export const useHeroSceneTimeline = ({
   rootRef,
   heroRef,
@@ -258,8 +262,10 @@ export const useHeroSceneTimeline = ({
       scene: StorySceneRefs,
       sectionConfig: ScrollStorySection,
       position: number,
+      options?: RevealSectionOptions,
     ) => {
       const isRunwaySection = sectionConfig.id === "runway";
+      const animateRootOpacity = options?.animateRootOpacity ?? true;
       const enterConfig = sectionConfig.chapterEnter;
       const panelYPercent =
         enterConfig?.panelYPercent ?? (isCompactMotion ? 7 : 12);
@@ -313,18 +319,33 @@ export const useHeroSceneTimeline = ({
       }
 
       timeline.set(scene.root, { pointerEvents: "auto", zIndex: 30 }, position);
-      timeline.fromTo(
-        scene.root,
-        { autoAlpha: 0, yPercent: panelYPercent, scale: panelScaleFrom },
-        {
-          autoAlpha: 1,
-          yPercent: 0,
-          scale: 1,
-          duration,
-          ease: "power3.out",
-        },
-        position,
-      );
+      if (animateRootOpacity) {
+        timeline.fromTo(
+          scene.root,
+          { autoAlpha: 0, yPercent: panelYPercent, scale: panelScaleFrom },
+          {
+            autoAlpha: 1,
+            yPercent: 0,
+            scale: 1,
+            duration,
+            ease: "power3.out",
+          },
+          position,
+        );
+      } else {
+        timeline.fromTo(
+          scene.root,
+          { yPercent: panelYPercent, scale: panelScaleFrom },
+          {
+            autoAlpha: 1,
+            yPercent: 0,
+            scale: 1,
+            duration,
+            ease: "power3.out",
+          },
+          position,
+        );
+      }
 
       if (scene.content) {
         timeline.fromTo(
@@ -543,6 +564,8 @@ export const useHeroSceneTimeline = ({
       if (heroCue) gsap.set(heroCue, { autoAlpha: 0 });
 
       scenes.forEach((scene, index) => {
+        const sectionConfig = sections[index];
+        const isNetworkSection = sectionConfig?.id === "network";
         const runwayWhiteWash = scene.root.querySelector<HTMLElement>(
           "[data-runway-white-wash]",
         );
@@ -567,8 +590,19 @@ export const useHeroSceneTimeline = ({
           });
         }
 
-        if (scene.content) gsap.set(scene.content, { autoAlpha: 0, y: 24 });
-        if (scene.title) gsap.set(scene.title, { autoAlpha: 0, y: 30 });
+        if (scene.content) {
+          gsap.set(scene.content, {
+            autoAlpha: isNetworkSection ? 1 : 0,
+            y: isNetworkSection ? 0 : 24,
+          });
+        }
+        if (scene.title) {
+          gsap.set(scene.title, {
+            autoAlpha: isNetworkSection ? 1 : 0,
+            y: isNetworkSection ? 0 : 30,
+            scale: 1,
+          });
+        }
         if (scene.description)
           gsap.set(scene.description, { autoAlpha: 0, y: 22 });
         if (scene.supporting)
@@ -776,6 +810,91 @@ export const useHeroSceneTimeline = ({
         scenes.forEach((scene, index) => {
           const sectionConfig = sections[index];
           const isRunwaySection = sectionConfig.id === "runway";
+          const isNetworkSection = sectionConfig.id === "network";
+
+          if (isNetworkSection) {
+            const previousScene = scenes[index - 1];
+            const runwayWhiteWash = previousScene?.root.querySelector<HTMLElement>(
+              "[data-runway-white-wash]",
+            );
+            const runwayGrid =
+              previousScene?.root.querySelector<HTMLElement>("[data-runway-grid]");
+            const networkPhotos = scene.media
+              ? Array.from(
+                  scene.media.querySelectorAll<HTMLElement>("[data-story-photo]"),
+                )
+              : [];
+            const lockRunwayFinalState = () => {
+              if (runwayWhiteWash) gsap.set(runwayWhiteWash, { autoAlpha: 1 });
+              if (runwayGrid) gsap.set(runwayGrid, { autoAlpha: 0.42 });
+            };
+
+            if (runwayWhiteWash || runwayGrid) {
+              ScrollTrigger.create({
+                trigger: scene.root,
+                start: "top bottom",
+                end: "top top",
+                onEnter: lockRunwayFinalState,
+                onEnterBack: lockRunwayFinalState,
+                onUpdate: lockRunwayFinalState,
+                ...(isViewportScroller ? {} : { scroller }),
+              });
+            }
+
+            gsap.set(scene.root, {
+              autoAlpha: 1,
+              yPercent: 0,
+              scale: 1,
+              pointerEvents: "auto",
+            });
+
+            if (scene.media) {
+              const networkMediaTimeline = gsap.timeline({
+                scrollTrigger: {
+                  trigger: scene.media,
+                  start: "top 84%",
+                  toggleActions: "play none none reverse",
+                  invalidateOnRefresh: true,
+                  ...(isViewportScroller ? {} : { scroller }),
+                },
+              });
+
+              networkMediaTimeline.fromTo(
+                scene.media,
+                { autoAlpha: 0, y: 42 },
+                {
+                  autoAlpha: 1,
+                  y: 0,
+                  duration: 0.7,
+                  ease: "power3.out",
+                },
+                0,
+              );
+
+              if (networkPhotos.length > 0) {
+                networkMediaTimeline.fromTo(
+                  networkPhotos,
+                  {
+                    autoAlpha: 0,
+                    y: 54,
+                    scale: 0.9,
+                  },
+                  {
+                    autoAlpha: 1,
+                    y: 0,
+                    scale: 1,
+                    duration: 0.78,
+                    stagger: 0.14,
+                    ease: "power3.out",
+                  },
+                  0.08,
+                );
+              }
+            }
+
+            return;
+          }
+
           const triggerStart = index === 0 ? "top bottom" : "top 82%";
           const sectionEnterEnd = index === 0 ? "top 24%" : "top 45%";
 
@@ -790,7 +909,9 @@ export const useHeroSceneTimeline = ({
             },
           });
 
-          revealSection(sectionEnterTimeline, scene, sectionConfig, 0);
+          revealSection(sectionEnterTimeline, scene, sectionConfig, 0, {
+            animateRootOpacity: false,
+          });
 
           if (isRunwaySection) {
             const runwayWhiteWash = scene.root.querySelector<HTMLElement>(
@@ -798,17 +919,34 @@ export const useHeroSceneTimeline = ({
             );
             const runwayGrid =
               scene.root.querySelector<HTMLElement>("[data-runway-grid]");
+            const setRunwayInitialState = () => {
+              if (runwayWhiteWash) gsap.set(runwayWhiteWash, { autoAlpha: 0 });
+              if (runwayGrid) gsap.set(runwayGrid, { autoAlpha: 0 });
+            };
+            const setRunwayFinalState = () => {
+              if (runwayWhiteWash) gsap.set(runwayWhiteWash, { autoAlpha: 1 });
+              if (runwayGrid) gsap.set(runwayGrid, { autoAlpha: 0.42 });
+            };
 
             const runwayPhaseTwo = gsap.timeline({
               scrollTrigger: {
                 trigger: scene.root,
                 start: "top top",
-                end: "+=62%",
+                end: "+=26%",
                 scrub: 0.28,
                 pin: true,
                 pinType: isViewportScroller ? "fixed" : "transform",
                 anticipatePin: 1,
                 invalidateOnRefresh: true,
+                onLeave: setRunwayFinalState,
+                onLeaveBack: setRunwayInitialState,
+                onUpdate: (self) => {
+                  if (self.progress >= 0.98) {
+                    setRunwayFinalState();
+                  } else if (self.progress <= 0.015) {
+                    setRunwayInitialState();
+                  }
+                },
                 ...(isViewportScroller ? {} : { scroller }),
               },
             });

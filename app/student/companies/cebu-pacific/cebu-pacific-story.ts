@@ -59,31 +59,22 @@ const sections: ScrollStorySection[] = [
     step: "02",
     backgroundMode: "panel",
     variant: "statement",
-    title: "You define\nyour internship.",
-    description:
-      "We don't want to limit what you can do. If you get in, we'll give you the freedom to make decisions and take initiative.",
-    supporting: "We'll work together toward one goal.",
-    quote: {
-      text: "Ownership starts early here. Interns are trusted to shape real decisions.",
-      attribution: "Former Product Intern",
-    },
+    title: "You define your internship",
     chapterEnter: {
       panelYPercent: 10,
-      titleY: 34,
-      duration: 0.88,
+      titleY: 20,
+      duration: 0.92,
     },
     chapterExit: {
       panelYPercent: -9,
-      scaleTo: 0.972,
+      scaleTo: 0.986,
       opacityTo: 0,
-      duration: 0.64,
+      duration: 0.58,
     },
     typographyScale: {
-      titleClamp: "clamp(3.6rem,8.4vw,8.6rem)",
-      descriptionClamp: "clamp(1.08rem,1.26vw,1.28rem)",
-      supportingClamp: "clamp(0.98rem,1.12vw,1.1rem)",
+      titleClamp: "clamp(2.4rem,6.8vw,6.2rem)",
     },
-    actions: sharedActions,
+    actions: [],
     palette: {
       sky: "#0e7adf",
       glow: "rgba(14, 122, 223, 0.08)",
