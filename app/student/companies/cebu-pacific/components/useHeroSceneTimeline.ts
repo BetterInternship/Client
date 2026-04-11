@@ -608,10 +608,85 @@ export const useHeroSceneTimeline = ({
         if (scene.supporting)
           gsap.set(scene.supporting, { autoAlpha: 0, y: 18 });
         if (scene.quote) gsap.set(scene.quote, { autoAlpha: 0, y: 14 });
-        if (scene.media) gsap.set(scene.media, { autoAlpha: 0, y: 20 });
+        if (scene.media) {
+          gsap.set(scene.media, {
+            autoAlpha: isNetworkSection ? 1 : 0,
+            y: isNetworkSection ? 0 : 20,
+          });
+        }
         if (scene.image) gsap.set(scene.image, { autoAlpha: 0, scale: 1.06 });
         if (scene.actions.length > 0) {
           gsap.set(scene.actions, { autoAlpha: 0, y: 12 });
+        }
+        if (isNetworkSection && scene.title) {
+          const networkWords = Array.from(
+            scene.title.querySelectorAll<HTMLElement>("[data-network-word]"),
+          );
+          const networkYou =
+            scene.title.querySelector<HTMLElement>("[data-network-you]");
+          const networkYourInternship = scene.title.querySelector<HTMLElement>(
+            "[data-network-your-internship]",
+          );
+          const networkDefineUnderline = scene.title.querySelector<SVGPathElement>(
+            "[data-network-define-underline] path",
+          );
+
+          if (networkWords.length > 0) gsap.set(networkWords, { autoAlpha: 1, y: 0 });
+          if (networkYou)
+            gsap.set(networkYou, {
+              backgroundImage:
+                "linear-gradient(0deg, #fde047 0%, #fde047 100%)",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "0% 100%",
+              backgroundSize: "0% 100%",
+              color: "#0f172a",
+              boxShadow: "none",
+            });
+          if (networkYourInternship)
+            gsap.set(networkYourInternship, {
+              backgroundImage:
+                "linear-gradient(0deg, #fde047 0%, #fde047 100%)",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "0% 100%",
+              backgroundSize: "0% 100%",
+              color: "#0f172a",
+              boxShadow: "none",
+            });
+          if (networkDefineUnderline) {
+            const pathLength = networkDefineUnderline.getTotalLength();
+            gsap.set(networkDefineUnderline, {
+              strokeDasharray: pathLength,
+              strokeDashoffset: pathLength,
+            });
+          }
+        }
+        if (isNetworkSection && scene.media) {
+          const networkPhotos = Array.from(
+            scene.media.querySelectorAll<HTMLElement>("[data-story-photo]"),
+          );
+          if (networkPhotos.length > 0) {
+            gsap.set(networkPhotos, { autoAlpha: 0, y: 52, scale: 1.02 });
+          }
+        }
+        if (isNetworkSection) {
+          const networkManifesto = scene.root.querySelector<HTMLElement>(
+            "[data-network-manifesto]",
+          );
+          const networkManifestoHighlight = scene.root.querySelector<HTMLElement>(
+            "[data-network-manifesto-highlight]",
+          );
+          if (networkManifesto) gsap.set(networkManifesto, { autoAlpha: 1, y: 0 });
+          if (networkManifestoHighlight) {
+            gsap.set(networkManifestoHighlight, {
+              backgroundImage:
+                "linear-gradient(0deg, #fde047 0%, #fde047 100%)",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "0% 100%",
+              backgroundSize: "0% 100%",
+              color: "#0f172a",
+              boxShadow: "none",
+            });
+          }
         }
         if (runwayWhiteWash) gsap.set(runwayWhiteWash, { autoAlpha: 0 });
         if (runwayGrid) gsap.set(runwayGrid, { autoAlpha: 0 });
@@ -819,11 +894,31 @@ export const useHeroSceneTimeline = ({
             );
             const runwayGrid =
               previousScene?.root.querySelector<HTMLElement>("[data-runway-grid]");
+            const networkWords = scene.title
+              ? Array.from(
+                  scene.title.querySelectorAll<HTMLElement>("[data-network-word]"),
+                )
+              : [];
+            const networkYou = scene.title?.querySelector<HTMLElement>(
+              "[data-network-you]",
+            );
+            const networkYourInternship = scene.title?.querySelector<HTMLElement>(
+              "[data-network-your-internship]",
+            );
+            const networkDefineUnderline = scene.title?.querySelector<SVGPathElement>(
+              "[data-network-define-underline] path",
+            );
             const networkPhotos = scene.media
               ? Array.from(
                   scene.media.querySelectorAll<HTMLElement>("[data-story-photo]"),
                 )
               : [];
+            const networkManifesto = scene.root.querySelector<HTMLElement>(
+              "[data-network-manifesto]",
+            );
+            const networkManifestoHighlight = scene.root.querySelector<HTMLElement>(
+              "[data-network-manifesto-highlight]",
+            );
             const lockRunwayFinalState = () => {
               if (runwayWhiteWash) gsap.set(runwayWhiteWash, { autoAlpha: 1 });
               if (runwayGrid) gsap.set(runwayGrid, { autoAlpha: 0.42 });
@@ -848,48 +943,106 @@ export const useHeroSceneTimeline = ({
               pointerEvents: "auto",
             });
 
-            if (scene.media) {
-              const networkMediaTimeline = gsap.timeline({
+            if (networkWords.length > 0) {
+              const headlineProgressTimeline = gsap.timeline({
                 scrollTrigger: {
-                  trigger: scene.media,
+                  trigger: scene.root,
                   start: "top 84%",
-                  toggleActions: "play none none reverse",
+                  end: "top 30%",
+                  scrub: 0.35,
                   invalidateOnRefresh: true,
                   ...(isViewportScroller ? {} : { scroller }),
                 },
               });
 
-              networkMediaTimeline.fromTo(
-                scene.media,
-                { autoAlpha: 0, y: 42 },
+              if (networkYou) {
+                headlineProgressTimeline.to(
+                  networkYou,
+                  {
+                    backgroundSize: "100% 100%",
+                    color: "#163c69",
+                    boxShadow: "0 10px 18px -14px rgba(253,224,71,0.85)",
+                    duration: 0.28,
+                    ease: "power2.out",
+                  },
+                  0.04,
+                );
+              }
+
+              if (networkDefineUnderline) {
+                headlineProgressTimeline.to(
+                  networkDefineUnderline,
+                  {
+                    strokeDashoffset: 0,
+                    duration: 0.24,
+                    ease: "power2.out",
+                  },
+                  0.4,
+                );
+              }
+
+              if (networkYourInternship) {
+                headlineProgressTimeline.to(
+                  networkYourInternship,
+                  {
+                    backgroundSize: "100% 100%",
+                    color: "#163c69",
+                    boxShadow: "0 10px 18px -14px rgba(253,224,71,0.85)",
+                    duration: 0.28,
+                    ease: "power2.out",
+                  },
+                  0.7,
+                );
+              }
+            }
+
+            networkPhotos.forEach((photo, photoIndex) => {
+              gsap.fromTo(
+                photo,
+                { autoAlpha: 0, y: 52, scale: 1.02 },
                 {
                   autoAlpha: 1,
                   y: 0,
-                  duration: 0.7,
+                  scale: 1,
+                  duration: 0.68,
                   ease: "power3.out",
+                  scrollTrigger: {
+                    trigger: photo,
+                    start: "top 86%",
+                    toggleActions: "play none none reverse",
+                    invalidateOnRefresh: true,
+                    ...(isViewportScroller ? {} : { scroller }),
+                  },
+                  delay: photoIndex * 0.04,
                 },
-                0,
               );
+            });
 
-              if (networkPhotos.length > 0) {
-                networkMediaTimeline.fromTo(
-                  networkPhotos,
-                  {
-                    autoAlpha: 0,
-                    y: 54,
-                    scale: 0.9,
-                  },
-                  {
-                    autoAlpha: 1,
-                    y: 0,
-                    scale: 1,
-                    duration: 0.78,
-                    stagger: 0.14,
-                    ease: "power3.out",
-                  },
-                  0.08,
-                );
-              }
+            if (networkManifesto && networkManifestoHighlight) {
+              ScrollTrigger.create({
+                trigger: networkManifesto,
+                start: "top 82%",
+                onEnter: () => {
+                  gsap.to(networkManifestoHighlight, {
+                    backgroundSize: "100% 100%",
+                    color: "#163c69",
+                    boxShadow: "0 10px 18px -14px rgba(253,224,71,0.85)",
+                    duration: 0.3,
+                    ease: "power2.out",
+                  });
+                },
+                onLeaveBack: () => {
+                  gsap.to(networkManifestoHighlight, {
+                    backgroundSize: "0% 100%",
+                    color: "#0f172a",
+                    boxShadow: "none",
+                    duration: 0.18,
+                    ease: "power2.out",
+                  });
+                },
+                invalidateOnRefresh: true,
+                ...(isViewportScroller ? {} : { scroller }),
+              });
             }
 
             return;

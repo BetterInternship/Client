@@ -64,6 +64,7 @@ export function ScrollStoryView({ model, className }: ScrollStoryViewProps) {
             className={cn(
               "relative min-h-[100svh]",
               section.id === "runway" && "min-h-[120svh]",
+              section.id === "network" && "min-h-[230svh]",
             )}
             ref={(node) => {
               sectionRefs.current[index] = node;

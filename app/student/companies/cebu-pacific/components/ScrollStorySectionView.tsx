@@ -61,12 +61,14 @@ export function ScrollStorySectionView({
     <section
       style={paletteStyle}
       className={cn(
-        "overflow-hidden border-0 outline-none",
+        isNetwork
+          ? "overflow-visible border-0 outline-none"
+          : "overflow-hidden border-0 outline-none",
         stacked
           ? cn(
               "relative min-h-[100svh]",
               isRunway && "min-h-[120svh]",
-              isNetwork && "min-h-[320svh]",
+              isNetwork && "min-h-[230svh]",
             )
           : "absolute inset-0 h-full",
         isActive ? "pointer-events-auto" : "pointer-events-none",
@@ -132,7 +134,7 @@ export function ScrollStorySectionView({
             >
               <h1
                 data-story-title
-                className="absolute max-w-[16ch] whitespace-pre-line text-left text-[length:var(--section-title-size)] leading-[1.04] tracking-[-0.02em] text-white [font-family:var(--font-cebu-story-body)] top-[5svh] "
+                className="absolute max-w-[16ch] whitespace-pre-line text-left text-[length:var(--section-title-size)] leading-[1.04] tracking-[-0.02em] text-white [font-family:var(--font-cebu-story-body)] top-[5svh] left-[5svw]"
               >
                 {section.title}
               </h1>
@@ -140,7 +142,7 @@ export function ScrollStorySectionView({
               {section.description ? (
                 <p
                   data-story-description
-                  className="absolute bottom-[11svh] right-0 max-w-[16ch] whitespace-pre-line text-right text-[length:var(--section-title-size)] leading-[1.04] tracking-[-0.02em] text-slate-900 opacity-0 [font-family:var(--font-cebu-story-body)] sm:bottom-[11svh] lg:bottom-[18svh] "
+                  className="absolute bottom-[11svh] right-[5svw] max-w-[16ch] whitespace-pre-line text-right text-[length:var(--section-title-size)] leading-[1.04] tracking-[-0.02em] text-slate-900 opacity-0 [font-family:var(--font-cebu-story-body)] sm:bottom-[11svh] lg:bottom-[18svh] "
                 >
                   {section.description}
                 </p>
@@ -149,38 +151,55 @@ export function ScrollStorySectionView({
           ) : isNetwork ? (
             <div
               data-story-content
-              className="relative mx-auto min-h-[320svh] w-full max-w-[110rem] px-6 pb-24 pt-[12svh] sm:px-10 lg:px-16"
+              className="relative mx-auto min-h-[230svh] w-full max-w-[110rem] px-6 pb-24 pt-[12svh] sm:px-10 lg:px-16"
             >
-              <div
-                data-network-glow
-                aria-hidden
-                className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_var(--network-glow-x,50%)_var(--network-glow-y,30%),rgba(148,190,228,0.26)_0%,rgba(148,190,228,0.14)_20%,rgba(148,190,228,0)_56%)]"
-              />
-
-              <div
-                className="sticky top-0 z-20 flex h-[100svh] items-start justify-center pt-[12svh] sm:pt-[11svh]"
-              >
+              <div className="relative z-20 flex w-full items-start justify-start">
                 <h1
                   data-story-title
-                  className="max-w-none whitespace-nowrap px-4 text-center text-[clamp(1.55rem,5vw,5.6rem)] leading-[1.04] tracking-[-0.02em] text-slate-900 [font-family:var(--font-cebu-story-body)]"
+                  className="max-w-none whitespace-nowrap text-left text-[clamp(1.55rem,5vw,5.6rem)] text-slate-900 [font-family:var(--font-cebu-story-body)]"
                 >
-                  <span data-network-word data-network-word-emphasis>
-                    YOU
+                  <span
+                    data-network-word
+                    data-network-you
+                    className="inline-block whitespace-nowrap bg-transparent px-3 pb-1 font-semibold tracking-[-0.012em] text-slate-900 shadow-none"
+                  >
+                    you
                   </span>{" "}
-                  <span data-network-word data-network-word-emphasis>
-                    DEFINE
+                  <span
+                    data-network-word
+                    data-network-define
+                    className="relative"
+                  >
+                    define
+                    <svg
+                      data-network-define-underline
+                      aria-hidden
+                      viewBox="0 0 120 14"
+                      className="absolute -bottom-[0.06em] left-0 h-[0.23em] w-full"
+                      fill="none"
+                    >
+                      <path
+                        d="M3 8 C24 3, 47 12, 69 8 C87 5, 104 10, 117 7"
+                        stroke="#1d7fe6"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                      />
+                    </svg>
                   </span>{" "}
-                  <span data-network-word data-network-word-emphasis>
-                    YOUR
-                  </span>{" "}
-                  <span data-network-word>internship</span>
+                  <span
+                    data-network-word
+                    data-network-your-internship
+                    className="inline-block whitespace-nowrap bg-transparent px-3 pb-1 font-semibold tracking-[-0.012em] text-slate-900 shadow-none"
+                  >
+                    your internship
+                  </span>
                 </h1>
               </div>
 
-              <div data-story-media className="relative z-10 min-h-[264svh]">
+              <div data-story-media className="relative z-10 min-h-[206svh]">
                 <figure
                   data-story-photo
-                  className="absolute left-[4%] top-[36svh] w-[74%] overflow-hidden shadow-[0_40px_86px_-52px_rgba(15,23,42,0.46)] lg:w-[61%]"
+                  className="absolute left-[0%] top-[10svh] w-[80%] overflow-hidden shadow-[0_40px_86px_-52px_rgba(15,23,42,0.46)] lg:w-[80%]"
                 >
                   <img
                     src="https://cabincrew24.com/wp-content/uploads/2024/01/Cathay-Pacific-Cabin-Crew-members-in-front-of-hg-1024x796.jpeg"
@@ -191,7 +210,7 @@ export function ScrollStorySectionView({
 
                 <figure
                   data-story-photo
-                  className="absolute right-[4%] top-[126svh] w-[70%] overflow-hidden shadow-[0_40px_86px_-52px_rgba(15,23,42,0.45)] lg:w-[58%]"
+                  className="absolute right-[0%] top-[86svh] w-[76%] overflow-hidden shadow-[0_40px_86px_-52px_rgba(15,23,42,0.45)] lg:w-[80%]"
                 >
                   <img
                     src="https://cabincrew24.com/wp-content/uploads/2024/01/Cebu-Pacific-Cabin-Crew-doing-announcements.jpeg"
@@ -202,7 +221,7 @@ export function ScrollStorySectionView({
 
                 <figure
                   data-story-photo
-                  className="absolute left-[12%] top-[214svh] w-[72%] overflow-hidden shadow-[0_40px_86px_-52px_rgba(15,23,42,0.46)] lg:w-[63%]"
+                  className="absolute left-[10%] top-[156svh] w-[74%] overflow-hidden shadow-[0_40px_86px_-52px_rgba(15,23,42,0.46)] lg:w-[76%]"
                 >
                   <img
                     src="https://www.jgsummit.com.ph/images/2022/11/24/57e5d8a5bdd950444f0c89bfe580b5582e95a5dd.jpg"
@@ -210,6 +229,21 @@ export function ScrollStorySectionView({
                     className="h-full w-full object-cover"
                   />
                 </figure>
+              </div>
+
+              <div className="relative z-20 mt-10 flex w-full justify-end">
+                <p
+                  data-network-manifesto
+                  className="w-[min(96vw,62rem)] max-w-none text-right text-[clamp(1.55rem,5vw,5.6rem)] leading-[1.04] tracking-[-0.02em] text-slate-900 [font-family:var(--font-cebu-story-body)]"
+                >
+                  <span
+                    data-network-manifesto-highlight
+                    className="inline-block whitespace-nowrap bg-transparent px-3 pb-1 font-semibold tracking-[-0.012em] text-slate-900 shadow-none"
+                  >
+                    we&apos;ll give you the freedom
+                  </span>{" "}
+                  to make decisions and take initiative.
+                </p>
               </div>
             </div>
           ) : isMidScreen ? (
