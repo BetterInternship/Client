@@ -565,7 +565,10 @@ export const useHeroSceneTimeline = ({
 
       scenes.forEach((scene, index) => {
         const sectionConfig = sections[index];
+        const isRunwaySection = sectionConfig?.id === "runway";
         const isNetworkSection = sectionConfig?.id === "network";
+        const isImmediateSection =
+          sectionConfig?.id === "culture" || sectionConfig?.id === "final-call";
         const runwayWhiteWash = scene.root.querySelector<HTMLElement>(
           "[data-runway-white-wash]",
         );
@@ -592,31 +595,49 @@ export const useHeroSceneTimeline = ({
 
         if (scene.content) {
           gsap.set(scene.content, {
-            autoAlpha: isNetworkSection ? 1 : 0,
-            y: isNetworkSection ? 0 : 24,
+            autoAlpha: isRunwaySection ? 0 : 1,
+            y: isRunwaySection ? 24 : 0,
           });
         }
         if (scene.title) {
           gsap.set(scene.title, {
-            autoAlpha: isNetworkSection ? 1 : 0,
-            y: isNetworkSection ? 0 : 30,
+            autoAlpha: isRunwaySection ? 0 : 1,
+            y: isRunwaySection ? 30 : 0,
             scale: 1,
           });
         }
         if (scene.description)
-          gsap.set(scene.description, { autoAlpha: 0, y: 22 });
+          gsap.set(scene.description, {
+            autoAlpha: isImmediateSection ? 1 : 0,
+            y: isImmediateSection ? 0 : 22,
+          });
         if (scene.supporting)
-          gsap.set(scene.supporting, { autoAlpha: 0, y: 18 });
-        if (scene.quote) gsap.set(scene.quote, { autoAlpha: 0, y: 14 });
+          gsap.set(scene.supporting, {
+            autoAlpha: isImmediateSection ? 1 : 0,
+            y: isImmediateSection ? 0 : 18,
+          });
+        if (scene.quote)
+          gsap.set(scene.quote, {
+            autoAlpha: isImmediateSection ? 1 : 0,
+            y: isImmediateSection ? 0 : 14,
+          });
         if (scene.media) {
           gsap.set(scene.media, {
-            autoAlpha: isNetworkSection ? 1 : 0,
-            y: isNetworkSection ? 0 : 20,
+            autoAlpha: isRunwaySection ? 0 : 1,
+            y: isRunwaySection ? 20 : 0,
           });
         }
-        if (scene.image) gsap.set(scene.image, { autoAlpha: 0, scale: 1.06 });
+        if (scene.image) {
+          gsap.set(scene.image, {
+            autoAlpha: isImmediateSection ? 1 : 0,
+            scale: isImmediateSection ? 1 : 1.06,
+          });
+        }
         if (scene.actions.length > 0) {
-          gsap.set(scene.actions, { autoAlpha: 0, y: 12 });
+          gsap.set(scene.actions, {
+            autoAlpha: isImmediateSection ? 1 : 0,
+            y: isImmediateSection ? 0 : 12,
+          });
         }
         if (isNetworkSection && scene.title) {
           const networkWords = Array.from(
@@ -666,6 +687,32 @@ export const useHeroSceneTimeline = ({
           );
           if (networkPhotos.length > 0) {
             gsap.set(networkPhotos, { autoAlpha: 0, y: 52, scale: 1.02 });
+          }
+        }
+        if (sectionConfig?.id === "culture" && scene.title) {
+          const cultureLineTwo = scene.title.querySelector<HTMLElement>(
+            "[data-culture-line-two]",
+          );
+          const cultureGoals = scene.title.querySelector<HTMLElement>(
+            "[data-culture-goals]",
+          );
+          const cultureTasksStrike = scene.title.querySelector<SVGPathElement>(
+            "[data-culture-tasks-strike] path",
+          );
+          if (cultureLineTwo) {
+            gsap.set(cultureLineTwo, { autoAlpha: 1, y: 0 });
+          }
+          if (cultureGoals) {
+            gsap.set(cultureGoals, {
+              backgroundSize: "100% 100%",
+            });
+          }
+          if (cultureTasksStrike) {
+            const strikeLength = cultureTasksStrike.getTotalLength();
+            gsap.set(cultureTasksStrike, {
+              strokeDasharray: strikeLength,
+              strokeDashoffset: 0,
+            });
           }
         }
         if (isNetworkSection) {
@@ -886,6 +933,8 @@ export const useHeroSceneTimeline = ({
           const sectionConfig = sections[index];
           const isRunwaySection = sectionConfig.id === "runway";
           const isNetworkSection = sectionConfig.id === "network";
+          const isImmediateSection =
+            sectionConfig.id === "culture" || sectionConfig.id === "final-call";
 
           if (isNetworkSection) {
             const previousScene = scenes[index - 1];
@@ -1048,6 +1097,16 @@ export const useHeroSceneTimeline = ({
             return;
           }
 
+          if (isImmediateSection) {
+            gsap.set(scene.root, {
+              autoAlpha: 1,
+              yPercent: 0,
+              scale: 1,
+              pointerEvents: "auto",
+            });
+            return;
+          }
+
           const triggerStart = index === 0 ? "top bottom" : "top 82%";
           const sectionEnterEnd = index === 0 ? "top 24%" : "top 45%";
 
@@ -1150,6 +1209,7 @@ export const useHeroSceneTimeline = ({
               );
             }
           }
+
         });
       } else {
         const chapterSceneSpan = isCompactMotion ? 1.06 : 1.24;

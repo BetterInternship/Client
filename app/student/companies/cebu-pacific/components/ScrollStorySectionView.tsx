@@ -61,14 +61,12 @@ export function ScrollStorySectionView({
     <section
       style={paletteStyle}
       className={cn(
-        isNetwork
-          ? "overflow-visible border-0 outline-none"
-          : "overflow-hidden border-0 outline-none",
+        "overflow-hidden border-0 outline-none",
         stacked
           ? cn(
               "relative min-h-[100svh]",
               isRunway && "min-h-[120svh]",
-              isNetwork && "min-h-[230svh]",
+              isNetwork && "min-h-[120svh]",
             )
           : "absolute inset-0 h-full",
         isActive ? "pointer-events-auto" : "pointer-events-none",
@@ -96,10 +94,10 @@ export function ScrollStorySectionView({
           />
         </div>
       ) : !transparentBackground ? (
-        <div data-story-background className="absolute -inset-y-px -inset-x-2">
+        <div data-story-background className="absolute inset-0">
           <div
             aria-hidden
-            className="absolute inset-0 bg-[linear-gradient(180deg,#f8fafb_0%,#eef2f7_56%,#e7ebf1_100%)]"
+            className="absolute inset-0 bg-[#eef2f7]"
           />
           <div
             aria-hidden
@@ -107,7 +105,7 @@ export function ScrollStorySectionView({
           />
         </div>
       ) : (
-        <div data-story-background className="absolute -inset-y-px -inset-x-2">
+        <div data-story-background className="absolute inset-0">
           <img
             src="/student/images/sky-bg.png"
             alt=""
@@ -124,7 +122,11 @@ export function ScrollStorySectionView({
         <div
           className={cn(
             "mx-auto w-full px-6 pb-14",
-            stacked ? "min-h-[100svh] py-24" : "h-full",
+            stacked
+              ? isCulture
+                ? "h-[100svh] py-0 pb-0"
+                : "min-h-[100svh] py-24"
+              : "h-full",
           )}
         >
           {isRunway ? (
@@ -151,7 +153,7 @@ export function ScrollStorySectionView({
           ) : isNetwork ? (
             <div
               data-story-content
-              className="relative mx-auto min-h-[230svh] w-full max-w-[110rem] px-6 pb-24 pt-[12svh] sm:px-10 lg:px-16"
+              className="relative mx-auto min-h-[120svh] w-full max-w-[110rem] px-6 pb-24 pt-[12svh] sm:px-10 lg:px-16"
             >
               <div className="relative z-20 flex w-full items-start justify-start">
                 <h1
@@ -245,6 +247,53 @@ export function ScrollStorySectionView({
                   to make decisions and take initiative.
                 </p>
               </div>
+            </div>
+          ) : isCulture ? (
+            <div
+              data-story-content
+              className="mx-auto flex h-[100svh] w-full max-w-none items-center justify-center"
+            >
+              <h1
+                data-story-title
+                className="text-center text-[clamp(2.4rem,7.2vw,7rem)] leading-[0.9] tracking-[-0.03em] text-slate-950 [font-family:var(--font-cebu-story-body)]"
+              >
+                <span className="block whitespace-nowrap">
+                  we don&apos;t give{" "}
+                  <span
+                    data-culture-tasks
+                    className="relative inline-block overflow-visible px-[0.08em] text-slate-950"
+                  >
+                    TASKS
+                    <svg
+                      data-culture-tasks-strike
+                      aria-hidden
+                      viewBox="0 0 120 14"
+                      className="absolute left-0 top-1/2 h-[0.34em] w-full -translate-y-1/2"
+                      fill="none"
+                    >
+                      <path
+                        d="M2 8 C20 1, 43 14, 66 8 C86 3, 104 13, 118 7"
+                        stroke="#dc2626"
+                        strokeWidth="5"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </span>
+                </span>
+                <span
+                  data-culture-line-two
+                  className="block whitespace-nowrap opacity-0 translate-y-6"
+                >
+                  we give{" "}
+                  <span
+                    data-culture-goals
+                    className="inline-block bg-[linear-gradient(0deg,#fde047_0%,#fde047_100%)] bg-[length:0%_100%] bg-no-repeat px-[0.08em] text-[#163c69]"
+                  >
+                    GOALS
+                  </span>
+                  .
+                </span>
+              </h1>
             </div>
           ) : isMidScreen ? (
             <div
