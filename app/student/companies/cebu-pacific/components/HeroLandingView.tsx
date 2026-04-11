@@ -24,11 +24,34 @@ export function HeroLandingView({
   showBackground = true,
   className,
 }: HeroLandingViewProps) {
+  const [isMobile, setIsMobile] = useState(false);
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [typedText, setTypedText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+    const syncViewport = () => setIsMobile(mediaQuery.matches);
+    syncViewport();
+    mediaQuery.addEventListener("change", syncViewport);
+    return () => mediaQuery.removeEventListener("change", syncViewport);
+  }, []);
+
+  useEffect(() => {
+    if (!isMobile) return;
+    const timer = window.setTimeout(() => {
+      setPhraseIndex((current) => (current + 1) % HERO_PHRASES.length);
+    }, 2100);
+    return () => window.clearTimeout(timer);
+  }, [isMobile, phraseIndex]);
+
+  useEffect(() => {
+    if (isMobile) {
+      setTypedText("");
+      setIsDeleting(false);
+      return;
+    }
+
     const currentPhrase = HERO_PHRASES[phraseIndex];
 
     const delay = (() => {
@@ -58,7 +81,7 @@ export function HeroLandingView({
     }, delay);
 
     return () => window.clearTimeout(timer);
-  }, [phraseIndex, typedText, isDeleting]);
+  }, [isMobile, phraseIndex, typedText, isDeleting]);
 
   return (
     <section
@@ -86,11 +109,11 @@ export function HeroLandingView({
       <div className="absolute inset-0 z-10 flex items-end justify-start px-6 pb-10 sm:px-10 sm:pb-12 lg:px-16 lg:pb-16">
         <div
           data-panel-content
-          className="relative flex max-w-4xl flex-col gap-6 pb-16 sm:pb-20 lg:pb-24"
+          className="relative flex w-full flex-col items-start gap-6 pb-16 sm:pb-20 lg:pb-24"
         >
           <h1
             data-story-title
-            className="[--hero-title-size:clamp(2.2rem,7.3vw,6.7rem)] text-4xl tracking-[-0.01em] text-[#163c69] sm:text-5xl lg:text-6xl xl:text-7xl"
+            className="[--hero-title-size:clamp(1.55rem,6.2vw,2.2rem)] text-left text-4xl tracking-[-0.01em] text-[#163c69] sm:[--hero-title-size:clamp(2.2rem,7.3vw,6.7rem)] sm:text-5xl lg:text-6xl xl:text-7xl"
             style={{ lineHeight: 1 }}
           >
             <span
@@ -103,16 +126,25 @@ export function HeroLandingView({
               data-story-hero-line-2
               className="mt-3 block min-h-[1.2em] text-[length:var(--hero-title-size)] [font-family:var(--font-cebu-story-body)]"
             >
-              <span className="inline-block whitespace-nowrap bg-[#f8d64e] px-3 pb-1 text-[#163c69] shadow-[0_14px_28px_-18px_rgba(248,214,78,0.9)] box-decoration-clone [font-family:var(--font-cebu-story-body)] font-semibold tracking-[-0.012em]">
-                {typedText || "\u00A0"}
+              {isMobile ? (
                 <span
-                  aria-hidden="true"
-                  className="ml-1 inline-block h-[0.92em] w-[3px] translate-y-[0.08em] rounded-full bg-[#163c69]/70"
-                  style={{
-                    animation: "cebuCaretBlink 1.05s steps(1, end) infinite",
-                  }}
-                />
-              </span>
+                  key={`mobile-phrase-${phraseIndex}`}
+                  className="inline-block whitespace-normal bg-[#f8d64e] px-3 pb-1 text-[#163c69] shadow-[0_14px_28px_-18px_rgba(248,214,78,0.9)] box-decoration-clone [font-family:var(--font-cebu-story-body)] font-semibold tracking-[-0.012em] animate-[hero-mobile-phrase_430ms_ease-out]"
+                >
+                  {HERO_PHRASES[phraseIndex]}
+                </span>
+              ) : (
+                <span className="inline-block whitespace-normal bg-[#f8d64e] px-3 pb-1 text-[#163c69] shadow-[0_14px_28px_-18px_rgba(248,214,78,0.9)] box-decoration-clone [font-family:var(--font-cebu-story-body)] font-semibold tracking-[-0.012em] sm:whitespace-nowrap">
+                  {typedText || "\u00A0"}
+                  <span
+                    aria-hidden="true"
+                    className="ml-1 inline-block h-[0.92em] w-[3px] translate-y-[0.08em] rounded-full bg-[#163c69]/70"
+                    style={{
+                      animation: "cebuCaretBlink 1.05s steps(1, end) infinite",
+                    }}
+                  />
+                </span>
+              )}
             </span>
           </h1>
         </div>
@@ -170,6 +202,19 @@ export function HeroLandingView({
           50%,
           100% {
             opacity: 0;
+          }
+        }
+
+        @keyframes hero-mobile-phrase {
+          0% {
+            opacity: 0;
+            transform: translateY(12px);
+            filter: blur(1px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
           }
         }
       `}</style>

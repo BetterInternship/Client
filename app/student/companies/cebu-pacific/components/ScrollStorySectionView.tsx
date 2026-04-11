@@ -28,6 +28,7 @@ export function ScrollStorySectionView({
   stacked = false,
   transparentBackground = false,
 }: ScrollStorySectionViewProps) {
+  const sharedGutterClass = "px-6 sm:px-10 lg:px-16";
   const hasJourney = Boolean(section.journey);
   const isRunway = section.id === "runway";
   const isNetwork = section.id === "network";
@@ -123,7 +124,8 @@ export function ScrollStorySectionView({
       <div className="relative flex h-full items-center">
         <div
           className={cn(
-            "mx-auto w-full px-6 pb-14",
+            "mx-auto w-full pb-14",
+            sharedGutterClass,
             stacked
               ? isCulture
                 ? "h-[100svh] py-0 pb-0"
@@ -136,11 +138,11 @@ export function ScrollStorySectionView({
           {isRunway ? (
             <div
               data-story-content
-              className="sticky mx-auto h-[92svh] max-w-7xl order "
+              className="sticky h-[92svh] w-full"
             >
               <h1
                 data-story-title
-                className="absolute max-w-[16ch] whitespace-pre-line text-left text-[length:var(--section-title-size)] leading-[1.04] tracking-[-0.02em] text-white [font-family:var(--font-cebu-story-body)] top-[5svh] left-[5svw]"
+                className="absolute top-[5svh] left-1/2 w-[min(92vw,16ch)] -translate-x-1/2 whitespace-pre-line text-center text-[length:var(--section-title-size)] leading-[1.04] tracking-[-0.02em] text-white [font-family:var(--font-cebu-story-body)] sm:left-0 sm:w-auto sm:translate-x-0 sm:text-left"
               >
                 {section.title}
               </h1>
@@ -148,7 +150,7 @@ export function ScrollStorySectionView({
               {section.description ? (
                 <p
                   data-story-description
-                  className="absolute bottom-[11svh] right-[5svw] max-w-[16ch] whitespace-pre-line text-right text-[length:var(--section-title-size)] leading-[1.04] tracking-[-0.02em] text-slate-900 opacity-0 [font-family:var(--font-cebu-story-body)] sm:bottom-[11svh] lg:bottom-[18svh] "
+                  className="absolute bottom-[11svh] left-1/2 w-[min(92vw,16ch)] -translate-x-1/2 whitespace-pre-line text-center text-[length:var(--section-title-size)] leading-[1.04] tracking-[-0.02em] text-slate-900 opacity-0 [font-family:var(--font-cebu-story-body)] sm:left-auto sm:right-0 sm:w-auto sm:translate-x-0 sm:text-right sm:bottom-[11svh] lg:bottom-[18svh]"
                 >
                   {section.description}
                 </p>
@@ -157,17 +159,17 @@ export function ScrollStorySectionView({
           ) : isNetwork ? (
             <div
               data-story-content
-              className="relative mx-auto min-h-[120svh] w-full max-w-[110rem] px-6 pb-24 pt-[12svh] sm:px-10 lg:px-16"
+              className="relative min-h-[120svh] w-full pb-24 pt-[12svh]"
             >
               <div className="relative z-20 flex w-full items-start justify-start">
                 <h1
                   data-story-title
-                  className="max-w-none whitespace-nowrap text-left text-[clamp(1.55rem,5vw,5.6rem)] text-slate-900 [font-family:var(--font-cebu-story-body)]"
+                  className="max-w-[95vw] whitespace-normal text-left text-[clamp(1.55rem,5vw,5.6rem)] text-slate-900 [font-family:var(--font-cebu-story-body)] sm:max-w-none sm:whitespace-nowrap"
                 >
                   <span
                     data-network-word
                     data-network-you
-                    className="inline-block whitespace-nowrap bg-transparent px-3 pb-1 font-semibold tracking-[-0.012em] text-slate-900 shadow-none"
+                    className="inline-block whitespace-normal bg-transparent px-3 pb-1 font-semibold tracking-[-0.012em] text-slate-900 shadow-none sm:whitespace-nowrap"
                   >
                     You
                   </span>{" "}
@@ -195,17 +197,17 @@ export function ScrollStorySectionView({
                   <span
                     data-network-word
                     data-network-your-internship
-                    className="inline-block whitespace-nowrap bg-transparent px-3 pb-1 font-semibold tracking-[-0.012em] text-slate-900 shadow-none"
+                    className="inline-block whitespace-normal bg-transparent px-3 pb-1 font-semibold tracking-[-0.012em] text-slate-900 shadow-none sm:whitespace-nowrap"
                   >
                     your internship
                   </span>
                 </h1>
               </div>
 
-              <div data-story-media className="relative z-10 min-h-[206svh]">
+              <div data-story-media className="relative z-10 -mx-6 min-h-[130svh] sm:mx-0 sm:min-h-[206svh]">
                 <figure
                   data-story-photo
-                  className="absolute left-[0%] top-[10svh] w-[80%] overflow-hidden shadow-[0_40px_86px_-52px_rgba(15,23,42,0.46)] lg:w-[80%]"
+                  className="absolute left-0 top-[8svh] w-full overflow-hidden shadow-[0_40px_86px_-52px_rgba(15,23,42,0.46)] sm:top-[10svh] sm:w-[80%]"
                 >
                   <img
                     src="https://cabincrew24.com/wp-content/uploads/2024/01/Cathay-Pacific-Cabin-Crew-members-in-front-of-hg-1024x796.jpeg"
@@ -216,7 +218,7 @@ export function ScrollStorySectionView({
 
                 <figure
                   data-story-photo
-                  className="absolute right-[0%] top-[86svh] w-[76%] overflow-hidden shadow-[0_40px_86px_-52px_rgba(15,23,42,0.45)] lg:w-[80%]"
+                  className="absolute right-0 top-[54svh] w-full overflow-hidden shadow-[0_40px_86px_-52px_rgba(15,23,42,0.45)] sm:top-[86svh] sm:w-[76%] lg:w-[80%]"
                 >
                   <img
                     src="https://cabincrew24.com/wp-content/uploads/2024/01/Cebu-Pacific-Cabin-Crew-doing-announcements.jpeg"
@@ -227,7 +229,7 @@ export function ScrollStorySectionView({
 
                 <figure
                   data-story-photo
-                  className="absolute left-[10%] top-[156svh] w-[74%] overflow-hidden shadow-[0_40px_86px_-52px_rgba(15,23,42,0.46)] lg:w-[76%]"
+                  className="absolute left-0 top-[94svh] w-full overflow-hidden shadow-[0_40px_86px_-52px_rgba(15,23,42,0.46)] sm:left-[10%] sm:top-[156svh] sm:w-[74%] lg:w-[76%]"
                 >
                   <img
                     src="https://www.jgsummit.com.ph/images/2022/11/24/57e5d8a5bdd950444f0c89bfe580b5582e95a5dd.jpg"
@@ -237,14 +239,14 @@ export function ScrollStorySectionView({
                 </figure>
               </div>
 
-              <div className="relative z-20 mt-10 flex w-full justify-end">
+              <div className="relative z-20 mt-10 flex w-full justify-end lg:mt-[19svh]">
                 <p
                   data-network-manifesto
-                  className="w-[min(96vw,62rem)] max-w-none text-right text-[clamp(1.55rem,5vw,5.6rem)] leading-[1.04] tracking-[-0.02em] text-slate-900 [font-family:var(--font-cebu-story-body)]"
+                  className="w-full text-right text-[clamp(1.55rem,5vw,5.6rem)] leading-[1.04] tracking-[-0.02em] text-slate-900 [font-family:var(--font-cebu-story-body)]"
                 >
                   <span
                     data-network-manifesto-highlight
-                    className="inline-block whitespace-nowrap bg-transparent px-3 pb-1 font-semibold tracking-[-0.012em] text-slate-900 shadow-none"
+                    className="inline-block whitespace-normal bg-transparent px-3 pb-1 font-semibold tracking-[-0.012em] text-slate-900 shadow-none sm:whitespace-nowrap"
                   >
                     We&apos;ll give you the freedom
                   </span>{" "}
@@ -261,7 +263,7 @@ export function ScrollStorySectionView({
                 data-story-title
                 className="text-center text-[clamp(2.4rem,7.2vw,7rem)] leading-[0.9] tracking-[-0.03em] text-slate-950 [font-family:var(--font-cebu-story-body)]"
               >
-                <span className="block whitespace-nowrap">
+                <span className="block whitespace-normal sm:whitespace-nowrap">
                   We don&apos;t give{" "}
                   <span
                     data-culture-tasks
@@ -286,7 +288,7 @@ export function ScrollStorySectionView({
                 </span>
                 <span
                   data-culture-line-two
-                  className="block whitespace-nowrap opacity-0"
+                  className="block whitespace-normal opacity-0 sm:whitespace-nowrap"
                 >
                   We give{" "}
                   <span
@@ -303,12 +305,12 @@ export function ScrollStorySectionView({
             <div
               data-story-content
               className={cn(
-                "mx-auto grid h-full max-w-6xl gap-6 border border-slate-200/90 bg-white/88 p-8 shadow-[0_32px_70px_-50px_rgba(15,23,42,0.45)] backdrop-blur-[1px] sm:p-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,0.84fr)] lg:p-14",
+                "grid h-full w-full gap-6 border border-slate-200/90 bg-white/88 p-8 shadow-[0_32px_70px_-50px_rgba(15,23,42,0.45)] backdrop-blur-[1px] sm:p-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,0.84fr)] lg:p-14",
                 "content-center",
               )}
             >
-              <div className="space-y-6">
-                <div className="flex items-center gap-4">
+              <div className="space-y-6 text-center sm:text-left">
+                <div className="flex items-center justify-center gap-4 sm:justify-start">
                   <span className="inline-block h-px w-12 bg-[var(--section-sky)] opacity-65" />
                   <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--section-sky)]/80 [font-family:var(--font-cebu-story-body)]">
                     {section.step}
@@ -323,7 +325,7 @@ export function ScrollStorySectionView({
                 </h1>
               </div>
 
-              <div className="space-y-6 lg:self-end">
+              <div className="space-y-6 text-center sm:text-left lg:self-end">
                 {section.description ? (
                   <p
                     data-story-description
@@ -345,7 +347,7 @@ export function ScrollStorySectionView({
                 {section.quote ? (
                   <blockquote
                     data-story-quote
-                    className="border-l-2 border-[var(--section-sky)]/65 bg-slate-50/90 px-5 py-4"
+                    className="border-l-0 border-t-2 border-[var(--section-sky)]/65 bg-slate-50/90 px-5 py-4 text-center sm:border-l-2 sm:border-t-0 sm:text-left"
                   >
                     <p className="text-base leading-7 text-slate-700 sm:text-lg">
                       &ldquo;{section.quote.text}&rdquo;
@@ -356,7 +358,7 @@ export function ScrollStorySectionView({
                   </blockquote>
                 ) : null}
 
-                <div className="mt-1 flex flex-wrap gap-3">
+                <div className="mt-1 flex flex-wrap justify-center gap-3 sm:justify-start">
                   {section.actions.map((action) => (
                     <Link
                       key={`${section.id}-${action.label}`}
@@ -380,14 +382,14 @@ export function ScrollStorySectionView({
           ) : isFinalCall ? (
             <div
               data-story-content
-              className="mx-auto flex h-[100svh] w-full max-w-[1280px] flex-col justify-between px-4 pb-6 pt-6 text-slate-100 box-border sm:px-8 lg:px-10 lg:pt-8"
+              className="flex h-[100svh] w-full flex-col justify-between pb-6 pt-6 text-slate-100 box-border lg:pt-8"
             >
               <div className="px-1 pb-6 pt-8 sm:pt-10 lg:pt-12">
                 <h1
                   data-story-title
-                  className="max-w-[24ch] whitespace-nowrap text-[clamp(2.15rem,7.8vw,5.9rem)] font-semibold leading-[0.95] tracking-[-0.03em] text-slate-200 [font-family:var(--font-cebu-story-body)]"
+                  className="max-w-[24ch] whitespace-normal text-center text-[clamp(2.15rem,7.8vw,5.9rem)] font-semibold leading-[0.95] tracking-[-0.03em] text-slate-200 [font-family:var(--font-cebu-story-body)] sm:whitespace-nowrap sm:text-left"
                 >
-                  <span className="inline-block whitespace-nowrap">
+                  <span className="inline-block whitespace-normal sm:whitespace-nowrap">
                     Define{" "}
                     <span data-final-your className="relative inline-block">
                       your
@@ -410,7 +412,7 @@ export function ScrollStorySectionView({
                   </span>
                   <span className="block text-[clamp(2.15rem,7.8vw,4rem)] mt-4">
                     with{" "}
-                    <span className="whitespace-nowrap">Cebu Pacific.</span>
+                    <span className="whitespace-normal sm:whitespace-nowrap">Cebu Pacific.</span>
                   </span>
                 </h1>
               </div>
@@ -441,7 +443,7 @@ export function ScrollStorySectionView({
                   >
                     <div
                       data-journey-rail-track
-                      className="flex min-w-max gap-4 pl-6 pr-10"
+                      className="flex min-w-max gap-4 pr-10 sm:pr-12"
                     >
                       {section.journey.roles.map((role) => (
                         <Link
@@ -449,7 +451,7 @@ export function ScrollStorySectionView({
                           href={role.href}
                           className="group block w-[min(78vw,430px)] shrink-0"
                         >
-                          <div className="flex min-h-[320px] flex-col justify-between border border-white/18 bg-white/42 p-6 backdrop-blur-[12px] transition-colors duration-300 hover:border-white/60 hover:bg-white group-hover:border-white/60 group-hover:bg-white">
+                          <div className="flex min-h-[320px] flex-col justify-between border border-white/18 bg-white/42 p-6 text-center backdrop-blur-[12px] transition-colors duration-300 hover:border-white/60 hover:bg-white group-hover:border-white/60 group-hover:bg-white sm:text-left">
                             <h3 className="whitespace-pre-line text-[clamp(1.6rem,3.4vw,2.6rem)] font-semibold leading-[0.92] tracking-[-0.02em] text-white transition-colors duration-300 hover:text-[#16467e] group-hover:text-[#16467e] [font-family:var(--font-cebu-story-body)]">
                               {role.label}
                             </h3>
@@ -467,10 +469,10 @@ export function ScrollStorySectionView({
           ) : (
             <div
               data-story-content
-              className="mx-auto grid h-full max-w-6xl content-center gap-10 border border-white/35 bg-white/14 p-8 shadow-[0_32px_80px_-60px_rgba(3,10,26,0.6)] backdrop-blur-md sm:p-10 lg:grid-cols-[minmax(0,0.72fr)_minmax(24rem,0.88fr)] lg:p-14"
+              className="grid h-full w-full content-center gap-10 border border-white/35 bg-white/14 p-8 shadow-[0_32px_80px_-60px_rgba(3,10,26,0.6)] backdrop-blur-md sm:p-10 lg:grid-cols-[minmax(0,0.72fr)_minmax(24rem,0.88fr)] lg:p-14"
             >
-              <div className="space-y-6">
-                <div className="flex items-center gap-4">
+              <div className="space-y-6 text-center sm:text-left">
+                <div className="flex items-center justify-center gap-4 sm:justify-start">
                   <span className="inline-block h-px w-10 bg-white/60" />
                   <span className="text-[10px] font-medium uppercase tracking-[0.22em] text-white/80 [font-family:var(--font-cebu-story-body)]">
                     {section.step}
@@ -504,7 +506,7 @@ export function ScrollStorySectionView({
                       <Link
                         key={role.label}
                         href={role.href}
-                        className="group flex w-full items-center justify-between border border-slate-200 bg-white px-5 py-4 text-left transition-colors duration-200 hover:border-[var(--section-sky)]"
+                        className="group flex w-full items-center justify-between border border-slate-200 bg-white px-5 py-4 text-center transition-colors duration-200 hover:border-[var(--section-sky)] sm:text-left"
                       >
                         <span className="text-sm font-semibold tracking-[0.02em] text-slate-700 [font-family:var(--font-cebu-story-body)]">
                           {role.label}
@@ -529,7 +531,7 @@ export function ScrollStorySectionView({
                 </div>
               ) : null}
 
-              <div className="mt-1 flex flex-wrap gap-3">
+              <div className="mt-1 flex flex-wrap justify-center gap-3 sm:justify-start">
                 {section.actions.map((action) => (
                   <Link
                     key={`${section.id}-${action.label}`}
