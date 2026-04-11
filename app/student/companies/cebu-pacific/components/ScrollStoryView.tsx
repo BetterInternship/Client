@@ -97,15 +97,27 @@ export function ScrollStoryView({ model, className }: ScrollStoryViewProps) {
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(9,31,64,0.42)_0%,rgba(9,31,64,0.14)_100%)]" />
 
         <div className="relative z-10 flex h-full items-center justify-center px-6 text-center">
-          <h2
-            data-story-boot-title
-            className="max-w-2xl text-[clamp(1.15rem,2.2vw,2rem)] leading-[1.1] tracking-[-0.01em] text-white [font-family:var(--font-cebu-story-body)]"
-          >
-            Ready for your dream internship?
-          </h2>
-          <span data-story-boot-text className="sr-only">
-            Loading
-          </span>
+          <div className="w-full max-w-2xl space-y-5">
+            <h2
+              data-story-boot-title
+              className="text-[clamp(1.15rem,2.2vw,2rem)] leading-[1.1] tracking-[-0.01em] text-white [font-family:var(--font-cebu-story-body)]"
+            >
+              Ready for your dream internship?
+            </h2>
+            <div
+              aria-hidden
+              className="mx-auto h-1.5 w-full max-w-[28rem] overflow-hidden rounded-full bg-white/30"
+            >
+              <div
+                data-story-boot-progress-bar
+                className="h-full w-0 bg-white"
+              />
+            </div>
+
+            <span data-story-boot-text className="sr-only">
+              Loading
+            </span>
+          </div>
         </div>
       </div>
     </div>

@@ -51,8 +51,29 @@ const waitForImage = (image: HTMLImageElement | null): Promise<void> => {
   });
 };
 
-const waitForImages = (images: HTMLImageElement[]): Promise<void> =>
-  Promise.all(images.map((image) => waitForImage(image))).then(() => {});
+const preloadImagesWithProgress = async (
+  images: HTMLImageElement[],
+  onProgress?: (ratio: number) => void,
+): Promise<void> => {
+  const total = images.length;
+  if (total === 0) {
+    onProgress?.(1);
+    return;
+  }
+
+  let loaded = 0;
+  const mark = () => {
+    loaded += 1;
+    onProgress?.(Math.min(1, loaded / total));
+  };
+
+  await Promise.all(
+    images.map(async (image) => {
+      await waitForImage(image);
+      mark();
+    }),
+  );
+};
 
 const waitForFonts = async (): Promise<void> => {
   if (!("fonts" in document)) return;
@@ -161,6 +182,12 @@ export const useHeroSceneTimeline = ({
     const bootText = bootOverlay?.querySelector<HTMLElement>(
       "[data-story-boot-text]",
     );
+    const bootProgressBar = bootOverlay?.querySelector<HTMLElement>(
+      "[data-story-boot-progress-bar]",
+    );
+    const bootProgressText = bootOverlay?.querySelector<HTMLElement>(
+      "[data-story-boot-progress-text]",
+    );
     const scenes = sectionNodes.map((node) => getSceneRefs(node));
 
     const reducedMotionMedia = window.matchMedia(
@@ -255,6 +282,7 @@ export const useHeroSceneTimeline = ({
     const introSettleDuration = boot?.planeSettleDuration ?? 0.28;
     const overlayFadeDuration = boot?.overlayFadeDuration ?? 0.45;
     const minHoldMs = boot?.minHoldMs ?? 900;
+    const maxWaitMs = boot?.maxWaitMs ?? 6500;
     const trackedImages = Array.from(root.querySelectorAll("img"));
 
     let isCancelled = false;
@@ -546,6 +574,8 @@ export const useHeroSceneTimeline = ({
           pointerEvents: "auto",
         });
       }
+      if (bootProgressBar) gsap.set(bootProgressBar, { width: "0%" });
+      if (bootProgressText) bootProgressText.textContent = "Loading 0%";
 
       if (heroBackground) gsap.set(heroBackground, { autoAlpha: 1 });
       if (heroPlane) {
@@ -1426,12 +1456,38 @@ export const useHeroSceneTimeline = ({
     }, root);
 
     const runIntro = async () => {
+      const progressState = { value: 0 };
+      const updateBootProgress = (ratio: number) => {
+        const target = Math.round(Math.max(0, Math.min(1, ratio)) * 100);
+        if (!bootProgressBar) {
+          if (bootProgressText) bootProgressText.textContent = `Loading ${target}%`;
+          return;
+        }
+
+        gsap.to(progressState, {
+          value: target,
+          duration: 0.28,
+          ease: "power1.out",
+          overwrite: true,
+          onUpdate: () => {
+            const value = Math.round(progressState.value);
+            gsap.set(bootProgressBar, { width: `${value}%` });
+            if (bootProgressText) bootProgressText.textContent = `Loading ${value}%`;
+          },
+        });
+      };
+
       await Promise.all([
-        waitForImages(trackedImages),
+        Promise.race([
+          preloadImagesWithProgress(trackedImages, updateBootProgress),
+          wait(maxWaitMs),
+        ]),
         waitForFonts(),
         wait(minHoldMs),
       ]);
 
+      updateBootProgress(1);
+      await wait(240);
       if (isCancelled) return;
       introTimeline?.play(0);
     };
