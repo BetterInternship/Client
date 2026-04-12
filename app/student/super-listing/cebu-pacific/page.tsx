@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type FormEvent, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
@@ -9,6 +9,7 @@ import { OverviewPanel } from "./components/OverviewPanel";
 import { HowToApplyPanel } from "./components/HowToApplyPanel";
 import { ApplyPanel } from "./components/ApplyPanel";
 import { HeroPanel } from "./components/HeroPanel";
+import { JobDetailsRail } from "./components/JobDetailsRail";
 import cebuPacificLogo from "./logo.png";
 import type {
   PanelKey,
@@ -52,14 +53,11 @@ const INITIAL_FORM_STATE: CebuPacificSubmissionForm = {
 const PANEL_TABS: Array<{
   key: PanelKey;
   label: string;
-  step: string;
 }> = [
-  { key: "overview", label: "Overview", step: "1" },
-  { key: "challenge", label: "Challenge", step: "2" },
-  { key: "submission", label: "Submit", step: "3" },
+  { key: "overview", label: "Overview" },
+  { key: "challenge", label: "Challenge" },
+  { key: "submission", label: "Submit" },
 ];
-
-const PANEL_TRANSITION_MS = 220;
 
 export default function CebuPacificPage() {
   const isDevelopment = process.env.NODE_ENV === "development";
@@ -72,47 +70,12 @@ export default function CebuPacificPage() {
   const [token, setToken] = useState("");
   const [tokenFail, setTokenFail] = useState(false);
   const [activePanel, setActivePanel] = useState<PanelKey>("overview");
-  const [renderPanel, setRenderPanel] = useState<PanelKey>("overview");
-  const [panelPhase, setPanelPhase] = useState<"in" | "out">("in");
   const [submissionStep, setSubmissionStep] = useState<SubmissionStep>(1);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
 
-  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const panelSectionRef = useRef<HTMLElement | null>(null);
   const submissionPanelRef = useRef<HTMLDivElement | null>(null);
-  const panelTransitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
-
-  useEffect(() => {
-    if (activePanel === renderPanel) return;
-
-    setPanelPhase("out");
-
-    if (panelTransitionTimerRef.current) {
-      clearTimeout(panelTransitionTimerRef.current);
-    }
-
-    panelTransitionTimerRef.current = setTimeout(() => {
-      setRenderPanel(activePanel);
-      requestAnimationFrame(() => setPanelPhase("in"));
-    }, PANEL_TRANSITION_MS);
-
-    return () => {
-      if (panelTransitionTimerRef.current) {
-        clearTimeout(panelTransitionTimerRef.current);
-      }
-    };
-  }, [activePanel, renderPanel]);
-
-  useEffect(() => {
-    return () => {
-      if (panelTransitionTimerRef.current) {
-        clearTimeout(panelTransitionTimerRef.current);
-      }
-    };
-  }, []);
 
   const endpoint = useMemo(() => {
     const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
@@ -127,14 +90,7 @@ export default function CebuPacificPage() {
     setForm((previous) => ({ ...previous, [field]: value }));
   };
 
-  const openPanel = (panel: PanelKey, shouldScroll = false) => {
-    setActivePanel(panel);
-    if (panel === "submission") {
-      setSubmissionStep(1);
-    }
-
-    if (!shouldScroll) return;
-
+  const scrollToPanelSection = () => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         panelSectionRef.current?.scrollIntoView({
@@ -145,25 +101,29 @@ export default function CebuPacificPage() {
     });
   };
 
-  const openChallengePanel = () => {
-    openPanel("challenge");
+  const openPanel = (panel: PanelKey, shouldScroll = false) => {
+    setActivePanel(panel);
+    setResultMessage("");
+    setIsError(false);
+
+    if (panel === "submission") {
+      setSubmissionStep(1);
+    }
+
+    if (shouldScroll) {
+      scrollToPanelSection();
+    }
   };
 
-  const scrollToOverview = () => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const anchor = document.getElementById("cebu-overview-anchor");
-        anchor?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      });
-    });
+  const openChallengePanel = () => {
+    openPanel("challenge", true);
   };
 
   const openSubmissionPanel = () => {
     setActivePanel("submission");
     setSubmissionStep(1);
+    setResultMessage("");
+    setIsError(false);
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -288,7 +248,7 @@ export default function CebuPacificPage() {
   return (
     <main
       className={cn(
-        "relative isolate h-full min-h-screen bg-[#f7fbff] text-black",
+        "relative isolate min-h-screen bg-[#f7fbff] text-black",
         headingFont.variable,
         monoFont.variable,
         bodyFont.variable,
@@ -297,127 +257,102 @@ export default function CebuPacificPage() {
       <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_8%_12%,rgba(37,116,187,0.15),transparent_38%),radial-gradient(circle_at_88%_8%,rgba(243,217,138,0.15),transparent_34%),radial-gradient(circle_at_50%_92%,rgba(37,116,187,0.08),transparent_44%)]" />
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.045)_1px,transparent_1px)] bg-[size:46px_46px] opacity-28" />
 
-      <div
-        ref={scrollContainerRef}
-        className="relative h-full overflow-x-hidden overflow-y-auto pb-24 sm:pb-0"
-      >
-        <header
-          className={cn(
-            " top-0 z-[9999] flex items-center justify-between px-4 py-3 transition-all duration-300 sm:px-8 lg:px-10 border-b border-transparent bg-transparent shadow-none backdrop-blur-0",
-          )}
-        >
-          {" "}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Link
-              href="/"
-              className="transition-opacity duration-200 hover:opacity-70"
-            >
-              <Image
-                src="/BetterInternshipLogo.png"
-                alt="BetterInternship"
-                width={40}
-                height={40}
-                className="h-10 w-10 sm:h-12 sm:w-12"
-              />
-            </Link>
+      <header className="top-0 z-[9999] flex items-center justify-between border-b border-transparent bg-transparent px-4 py-3 shadow-none backdrop-blur-0 transition-all duration-300 sm:px-8 lg:px-10">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link
+            href="/"
+            className="transition-opacity duration-200 hover:opacity-70"
+          >
+            <Image
+              src="/BetterInternshipLogo.png"
+              alt="BetterInternship"
+              width={40}
+              height={40}
+              className="h-10 w-10 sm:h-12 sm:w-12"
+            />
+          </Link>
 
-            <span className="text-xs font-semibold uppercase text-black/45">
-              x
-            </span>
+          <span className="text-xs font-semibold uppercase text-black/45">
+            x
+          </span>
 
-            <Link
-              href="https://www.cebupacificair.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center px-1 py-0.5 transition-opacity duration-200 hover:opacity-75"
-            >
-              <Image
-                src={cebuPacificLogo}
-                alt="Cebu Pacific"
-                className="h-7 w-auto sm:h-8"
-                priority
-              />
-            </Link>
+          <Link
+            href="https://www.cebupacificair.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center px-1 py-0.5 transition-opacity duration-200 hover:opacity-75"
+          >
+            <Image
+              src={cebuPacificLogo}
+              alt="Cebu Pacific"
+              className="h-7 w-auto sm:h-8"
+              priority
+            />
+          </Link>
+        </div>
+      </header>
+
+      <section className="px-4 pb-6 pt-6 sm:px-8 sm:pb-8 sm:pt-8 lg:px-10 lg:pt-10">
+        <div className="mx-auto max-w-6xl">
+          <HeroPanel
+            onOpenChallenge={openChallengePanel}
+            onOpenSubmission={openSubmissionPanel}
+          />
+        </div>
+      </section>
+
+      <section ref={panelSectionRef} className="px-4 pb-20 sm:px-8 lg:px-10">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-wrap gap-5 px-0 pb-2">
+            {PANEL_TABS.map((tab) => {
+              const isActive = activePanel === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => openPanel(tab.key)}
+                  className={cn(
+                    "relative inline-flex min-h-11 items-center justify-center py-2 [font-family:var(--font-paraluman-heading)] text-sm font-medium tracking-[-0.02em] transition-colors duration-200",
+                    isActive
+                      ? "text-[#173f69]"
+                      : "text-[#234e78]/70 hover:text-[#173f69]",
+                  )}
+                  aria-pressed={isActive}
+                >
+                  {tab.label}
+                  <span
+                    className={cn(
+                      "absolute bottom-0 left-0 h-px w-full transition-opacity duration-200",
+                      isActive
+                        ? "bg-[#173f69] opacity-100"
+                        : "bg-transparent opacity-0",
+                    )}
+                  />
+                </button>
+              );
+            })}
           </div>
-        </header>
 
-        <section className="sticky top-0 z-40 px-2 py-2 sm:px-8 sm:py-3 lg:px-10">
-          <div className="mx-auto max-w-3xl">
-            <div className="relative rounded-[0.33em] border border-[rgba(37,116,187,0.3)] bg-white p-1 shadow-[0_14px_34px_-26px_rgba(37,116,187,0.45)]">
-              <div className="relative flex items-stretch overflow-hidden rounded-[0.32em] bg-white">
-                {PANEL_TABS.map((tab, index) => {
-                  const isActive = activePanel === tab.key;
-                  const isFirst = index === 0;
-                  const isLast = index === PANEL_TABS.length - 1;
-                  const tabClipPath = isFirst
-                    ? "polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%)"
-                    : isLast
-                      ? "polygon(0 0, 100% 0, 100% 100%, 0 100%, 12px 50%)"
-                      : "polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%)";
-                  const tabZIndex = isActive ? 20 : index + 1;
-                  return (
-                    <button
-                      key={tab.key}
-                      type="button"
-                      onClick={() => openPanel(tab.key)}
-                      style={{ clipPath: tabClipPath, zIndex: tabZIndex }}
-                      className={cn(
-                        "relative flex min-h-10 flex-1 items-center justify-center overflow-hidden px-1.5 py-2 text-center [font-family:var(--font-paraluman-mono)] font-semibold uppercase transition-[background,color,box-shadow] duration-220 ease-[cubic-bezier(0.22,1,0.36,1)] after:pointer-events-none after:absolute after:inset-0 after:bg-white/20 after:opacity-0 after:transition-opacity after:duration-180 active:after:opacity-100 sm:min-h-[2.625rem] sm:px-2",
-                        !isFirst && "-ml-3 sm:-ml-4",
-                        isActive
-                          ? "bg-[#2574BB] text-white shadow-[0_8px_18px_-12px_rgba(37,116,187,0.9)]"
-                          : "bg-white text-[#1d466f]/80 hover:bg-[#f4f9ff] hover:text-[#12385c]",
-                      )}
-                    >
-                      <span className="inline-flex w-full items-center justify-center gap-1 whitespace-nowrap text-[9px] tracking-[0.02em] sm:gap-2 sm:text-xs sm:tracking-[0.06em]">
-                        <span className="inline-block min-w-[1.50em] text-center opacity-70">
-                          {tab.step}
-                        </span>
-                        <span className="text-center">{tab.label}</span>
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </section>
+          <div className="border border-[#2574BB]/10 bg-white shadow-[0_28px_70px_-48px_rgba(19,70,111,0.32)]">
+            <div className="grid gap-8 px-4 py-6 sm:px-6 sm:py-8 lg:grid-cols-[18rem_minmax(0,1fr)] lg:items-start lg:gap-10 lg:px-8">
+              <JobDetailsRail />
 
-        <section ref={panelSectionRef} className="relative">
-          <div className="px-2">
-            <div className="mx-auto max-w-6xl">
-              <div
-                className={cn(
-                  "transition-all duration-[220ms] ease-out",
-                  panelPhase === "out"
-                    ? "translate-y-1 opacity-0"
-                    : "translate-y-0 opacity-100",
-                )}
-              >
-                {renderPanel === "overview" && (
-                  <>
-                    <HeroPanel
-                      onHowToApply={scrollToOverview}
-                      showHowToApplyButton={activePanel === "overview"}
-                    />
-                    <div
-                      id="cebu-overview-anchor"
-                      className="mx-auto w-full max-w-6xl"
-                    >
-                      <OverviewPanel onGoToApply={openChallengePanel} />
-                    </div>
-                  </>
+              <div className="min-w-0 border-t border-[#2574BB]/10 pt-8 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0">
+                {activePanel === "overview" && (
+                  <div id="cebu-overview-anchor" className="w-full">
+                    <OverviewPanel onGoToApply={openChallengePanel} />
+                  </div>
                 )}
 
-                {renderPanel === "challenge" && (
+                {activePanel === "challenge" && (
                   <HowToApplyPanel
                     challengePdfUrl={CHALLENGE_PDF_URL}
                     onGoToApply={openSubmissionPanel}
                   />
                 )}
 
-                {renderPanel === "submission" && (
-                  <div ref={submissionPanelRef} className="w-full space-y-6">
+                {activePanel === "submission" && (
+                  <div ref={submissionPanelRef} className="w-full">
                     <ApplyPanel
                       form={form}
                       submissionStep={submissionStep}
@@ -453,8 +388,8 @@ export default function CebuPacificPage() {
               </div>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </main>
   );
 }

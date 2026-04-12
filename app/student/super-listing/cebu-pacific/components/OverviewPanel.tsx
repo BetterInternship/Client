@@ -1,5 +1,6 @@
 "use client";
 
+import { type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -7,6 +8,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { cn } from "@/lib/utils";
 import { cebuPacificProfile } from "../../../companies/cebu-pacific/data";
 
 type OverviewPanelProps = {
@@ -15,7 +17,7 @@ type OverviewPanelProps = {
 
 type SectionTitleProps = {
   title: string;
-  textClassName?: string;
+  eyebrow?: string;
 };
 
 const FAQ_ITEMS = [
@@ -37,7 +39,7 @@ const FAQ_ITEMS = [
   {
     question: "How quickly will I hear back?",
     answer:
-      "Qualified submissions are reviewed quickly, with a target response within 24 hours.",
+      "Qualified submissions are reviewed quickly, with a response within 24 hours.",
   },
 ];
 
@@ -47,136 +49,123 @@ const HOW_TO_APPLY_STEPS = [
   "Submit one clear link and your details. Cebu Pacific responds within 24 hours.",
 ];
 
-function SectionTitle({ title, textClassName }: SectionTitleProps) {
+function SectionTitle({ title, eyebrow }: SectionTitleProps) {
   return (
-    <div className="w-full">
-      <div className="flex items-stretch gap-2.5">
-        <span
-          aria-hidden="true"
-          className="my-auto h-[2em] w-[0.3em] shrink-0 bg-[#2574BB] opacity-50"
-        />
-        <p
-          className={`text-left [font-family:var(--font-paraluman-heading)] text-[clamp(1.25rem,2.4vw,1.8rem)] font-black tracking-[-0.01em] ${textClassName ?? "text-[#1f68a9]"}`}
-        >
-          {title}
+    <div className="space-y-1.5">
+      {eyebrow ? (
+        <p className="[font-family:var(--font-paraluman-mono)] text-[10px] font-semibold uppercase tracking-[0.22em] text-[#1f68a9]/62 sm:text-[11px]">
+          {eyebrow}
         </p>
-      </div>
+      ) : null}
+      <h2 className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.35rem,2.6vw,2rem)] font-medium tracking-[-0.03em] text-[#173f69]">
+        {title}
+      </h2>
     </div>
   );
+}
+
+function ContentCard({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return <div className={cn("p-0", className)}>{children}</div>;
 }
 
 export function OverviewPanel({
   onGoToApply: onGoToChallenge,
 }: OverviewPanelProps) {
   return (
-    <div className="space-y-16 pt-4 sm:pt-8">
-      <section className="space-y-2">
-        <SectionTitle title="Job details" />
-        <div className="grid gap-4 md:grid-cols-3">
-          {cebuPacificProfile.jobDetails.map((item) => (
-            <div
-              key={item.label}
-              className="rounded-[0.33em] border border-[#2574BB]/30 bg-white p-5 shadow-[0_16px_38px_-28px_rgba(37,116,187,0.45)]"
-            >
-              <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.12em] text-[#2574BB]/80">
-                {item.label}
-              </p>
-              <p className="mt-2 [font-family:var(--font-paraluman-heading)] text-2xl font-black tracking-[-0.02em] text-[#1f68a9]">
-                {item.value}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="space-y-2">
-        <SectionTitle title="Role overview" />
-        <div className="relative w-full overflow-hidden rounded-[0.33em] border border-[#2574BB]/35 bg-[#edf6ff] p-6 text-[#173957] shadow-[0_20px_38px_-26px_rgba(37,116,187,0.35)] sm:p-8">
-          <div className="relative z-10 space-y-6 [font-family:var(--font-paraluman-body)] text-lg leading-8 text-[#153a5b]/92 sm:text-xl">
-            {cebuPacificProfile.roleOverview.map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="space-y-2">
-        <SectionTitle title="Why skip resume" />
-        <div className="relative w-full overflow-hidden rounded-[0.33em] border border-[#9b8955]/20 bg-[#f6eccf] p-6 text-[#173957] shadow-[0_26px_48px_-30px_rgba(37,116,187,0.46)] sm:p-8">
-          <div className="relative z-10 space-y-6 [font-family:var(--font-paraluman-body)] text-lg leading-8 text-[#173957]/95 sm:text-xl">
-            {cebuPacificProfile.whySkipResume.map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
-            ))}
-            <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black leading-tight tracking-[-0.02em] text-[#1f68a9]">
-              This listing is designed to reward builders, not paperwork.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="space-y-2">
-        <SectionTitle title="FAQs" />
-        <div className="w-full rounded-[0.33em] border-2 border-[#2574BB]/30 bg-white px-6 py-3 shadow-[0_16px_38px_-28px_rgba(37,116,187,0.5)]">
-          <Accordion type="single" collapsible className="w-full">
-            {FAQ_ITEMS.map((item, index) => (
-              <AccordionItem
-                key={item.question}
-                value={`faq-${index}`}
-                className="border-[#2574BB]/20"
-              >
-                <AccordionTrigger className="[font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.06em] text-[#1f68a9] hover:no-underline sm:text-lg">
-                  {item.question}
-                </AccordionTrigger>
-                <AccordionContent className="[font-family:var(--font-paraluman-body)] text-lg leading-8 text-black/70 sm:text-xl">
-                  {item.answer}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
-      </section>
-
-      <section className="space-y-2">
-        <SectionTitle title="How to apply" />
-        <div className="relative w-full overflow-hidden rounded-[0.33em] border border-[#2574BB]/40 bg-[#edf6ff] p-6 text-[#173957] shadow-[0_26px_48px_-30px_rgba(37,116,187,0.46)] sm:p-8">
-          <div className="relative z-10 space-y-5">
-            <ol className="mx-auto w-full">
-              {HOW_TO_APPLY_STEPS.map((step, index) => (
-                <li
-                  key={step}
-                  className="relative flex items-start gap-4 pb-5 pl-1"
-                >
-                  {index < HOW_TO_APPLY_STEPS.length - 1 && (
-                    <span
-                      aria-hidden="true"
-                      className="absolute left-[0.98rem] top-8 h-[calc(100%-0.25rem)] w-px bg-[#2574BB]/30"
-                    />
-                  )}
-                  <span className="relative z-10 inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-[#2574BB]/25 bg-white [font-family:var(--font-paraluman-heading)] text-xs font-black uppercase tracking-[0.03em] text-[#1f68a9] shadow-[0_8px_18px_-14px_rgba(37,116,187,0.7)]">
-                    {index + 1}
-                  </span>
-                  <p className="pt-0.5 [font-family:var(--font-paraluman-body)] text-lg leading-8 text-[#153a5b]/92 sm:text-xl">
-                    {step}
-                  </p>
-                </li>
+    <div className="space-y-8 sm:space-y-10">
+      <div className="space-y-8 sm:space-y-10">
+        <section className="space-y-4 border-t border-[#2574BB]/10 pt-8 first:border-t-0 first:pt-0">
+          <SectionTitle title="Role overview" />
+          <ContentCard>
+            <div className="space-y-5 [font-family:var(--font-paraluman-body)] text-base leading-7 text-[#173957]/80 sm:text-lg sm:leading-8">
+              {cebuPacificProfile.roleOverview.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
               ))}
-            </ol>
-
-            <div className="flex w-full flex-col gap-3 rounded-[0.33em] border border-[#2574BB]/22 bg-white/75 px-4 py-3.5 shadow-[0_12px_24px_-22px_rgba(37,116,187,0.55)] sm:flex-row sm:items-center sm:justify-between">
-              <p className="[font-family:var(--font-paraluman-body)] text-lg font-semibold leading-8 text-[#153a5b]/95 sm:text-xl">
-                Open the challenge brief to start.
-              </p>
-              <Button
-                type="button"
-                onClick={onGoToChallenge}
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#d8c17b] bg-[#ecd389] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#173957] transition-all duration-200 hover:bg-[#e2c36b] hover:shadow-[0_12px_26px_-14px_rgba(236,211,137,0.9)] sm:w-auto"
-              >
-                View challenge
-              </Button>
             </div>
-          </div>
-        </div>
-      </section>
+          </ContentCard>
+        </section>
+
+        <section className="space-y-4 border-t border-[#2574BB]/10 pt-8">
+          <SectionTitle title="Why skip resume" />
+          <ContentCard>
+            <div className="space-y-5 [font-family:var(--font-paraluman-body)] text-base leading-7 text-[#173957]/80 sm:text-lg sm:leading-8">
+              {cebuPacificProfile.whySkipResume.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+              <p className="[font-family:var(--font-paraluman-heading)] text-xl font-medium tracking-[-0.03em] text-[#173f69] sm:text-2xl">
+                This listing is built to reward builders, not paperwork.
+              </p>
+            </div>
+          </ContentCard>
+        </section>
+
+        <section className="space-y-4 border-t border-[#2574BB]/10 pt-8">
+          <SectionTitle title="FAQs" />
+          <ContentCard>
+            <Accordion type="single" collapsible className="w-full">
+              {FAQ_ITEMS.map((item, index) => (
+                <AccordionItem
+                  key={item.question}
+                  value={`faq-${index}`}
+                  className="border-[#2574BB]/12"
+                >
+                  <AccordionTrigger className="[font-family:var(--font-paraluman-heading)] text-left text-base font-medium tracking-[-0.02em] text-[#173f69] hover:no-underline sm:text-lg">
+                    {item.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="[font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#173957]/72 sm:text-base">
+                    {item.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </ContentCard>
+        </section>
+
+        <section className="space-y-4 border-t border-[#2574BB]/10 pt-8">
+          <SectionTitle title="How to apply" />
+          <ContentCard className="bg-[linear-gradient(180deg,rgba(239,246,255,0.82)_0%,rgba(255,255,255,0.98)_100%)] px-5 py-5 sm:px-6 sm:py-6">
+            <div className="space-y-6">
+              <ol className="space-y-4">
+                {HOW_TO_APPLY_STEPS.map((step, index) => (
+                  <li key={step} className="flex items-start gap-4">
+                    <span className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center border border-[#2574BB]/16 bg-white [font-family:var(--font-paraluman-heading)] text-sm font-medium text-[#173f69] shadow-[0_10px_20px_-16px_rgba(23,63,105,0.5)]">
+                      {index + 1}
+                    </span>
+                    <p className="pt-0.5 [font-family:var(--font-paraluman-body)] text-base leading-7 text-[#173957]/78 sm:text-lg sm:leading-8">
+                      {step}
+                    </p>
+                  </li>
+                ))}
+              </ol>
+
+              <div className="flex flex-col gap-4 border-t border-[#2574BB]/12 bg-white/80 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1">
+                  <p className="[font-family:var(--font-paraluman-heading)] text-xl font-medium tracking-[-0.03em] text-[#173f69]">
+                    Open the challenge brief when you&apos;re ready.
+                  </p>
+                  <p className="[font-family:var(--font-paraluman-body)] text-sm text-[#173957]/72">
+                    Review the prompt, then come back to submit a working
+                    output.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  onClick={onGoToChallenge}
+                  className="inline-flex h-11 items-center justify-center rounded-md bg-[#173f69] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-medium tracking-[-0.02em] text-white transition-all duration-200 hover:bg-[#123456]"
+                >
+                  View challenge
+                </Button>
+              </div>
+            </div>
+          </ContentCard>
+        </section>
+      </div>
     </div>
   );
 }

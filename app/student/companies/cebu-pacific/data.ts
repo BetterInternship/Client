@@ -117,7 +117,6 @@ export const cebuPacificProfile: CebuPacificProfile = {
     },
   ],
   jobDetails: [
-    { label: "Role", value: "Product & Web Interns" },
     { label: "Work setup", value: "Hybrid collaboration" },
     { label: "Location", value: "Pasay, Metro Manila" },
   ],
