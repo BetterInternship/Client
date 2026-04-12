@@ -300,6 +300,10 @@ export default function CebuPacificPage() {
 
       <section ref={panelSectionRef} className="px-4 pb-20 sm:px-8 lg:px-10">
         <div className="mx-auto max-w-6xl">
+          <div className="mb-5 lg:hidden">
+            <JobDetailsRail />
+          </div>
+
           <div className="flex flex-wrap gap-5 px-0 pb-2">
             {PANEL_TABS.map((tab) => {
               const isActive = activePanel === tab.key;
@@ -332,9 +336,11 @@ export default function CebuPacificPage() {
 
           <div className="border border-[#2574BB]/10 bg-white shadow-[0_28px_70px_-48px_rgba(19,70,111,0.32)]">
             <div className="grid gap-8 px-4 py-6 sm:px-6 sm:py-8 lg:grid-cols-[18rem_minmax(0,1fr)] lg:items-start lg:gap-10 lg:px-8">
-              <JobDetailsRail />
+              <div className="hidden lg:block">
+                <JobDetailsRail />
+              </div>
 
-              <div className="min-w-0 border-t border-[#2574BB]/10 pt-8 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0">
+              <div className="min-w-0 pt-1 sm:pt-0 lg:border-l lg:border-[#2574BB]/10 lg:pl-10">
                 {activePanel === "overview" && (
                   <div id="cebu-overview-anchor" className="w-full">
                     <OverviewPanel onGoToApply={openChallengePanel} />
