@@ -1,12 +1,15 @@
 "use client";
 
 import { useRef } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { ScrollStoryModel } from "../model";
 import { HeroLandingView } from "./HeroLandingView";
 import { ScrollStorySectionView } from "./ScrollStorySectionView";
 import { useHeroSceneTimeline } from "./useHeroSceneTimeline";
 import skyBgImage from "@/public/student/images/sky-bg.png";
+import cebuPacificLogo from "../../../super-listing/cebu-pacific/logo.png";
 
 type ScrollStoryViewProps = {
   model: ScrollStoryModel;
@@ -46,6 +49,43 @@ export function ScrollStoryView({ model, className }: ScrollStoryViewProps) {
           className="h-full w-full object-cover object-bottom"
         />
       </div>
+
+      <header className="fixed inset-x-0 top-0 z-[110] border-b border-[#2574BB]/10 bg-white/95 px-4 py-3 shadow-[0_16px_40px_-34px_rgba(19,70,111,0.35)] backdrop-blur-md sm:px-8 lg:px-10">
+        <div className="mx-auto flex max-w-6xl items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              href="/"
+              className="transition-opacity duration-200 hover:opacity-70"
+            >
+              <Image
+                src="/BetterInternshipLogo.png"
+                alt="BetterInternship"
+                width={40}
+                height={40}
+                className="h-10 w-10 sm:h-12 sm:w-12"
+              />
+            </Link>
+
+            <span className="text-xs font-semibold uppercase text-black/45">
+              x
+            </span>
+
+            <Link
+              href="https://www.cebupacificair.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-1 py-0.5 transition-opacity duration-200 hover:opacity-75"
+            >
+              <Image
+                src={cebuPacificLogo}
+                alt="Cebu Pacific"
+                className="h-7 w-auto sm:h-8"
+                priority
+              />
+            </Link>
+          </div>
+        </div>
+      </header>
 
       {model.hero ? (
         <section ref={heroRef} className="relative z-20 h-[100svh]">
