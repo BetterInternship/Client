@@ -44,11 +44,6 @@ type ApplyPanelProps = {
   onTokenError: () => void;
 };
 
-const STEP_LABELS: Record<SubmissionStep, string> = {
-  1: "Challenge output",
-  2: "Contact details",
-};
-
 export function ApplyPanel({
   form,
   submissionStep,
@@ -117,12 +112,15 @@ export function ApplyPanel({
 
   return (
     <div className="space-y-6">
-      <div className="max-w-3xl space-y-3">
-        <h2 className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.8rem,3.2vw,3rem)] font-medium leading-[1.02] tracking-[-0.04em] text-[#173f69]">
+      <div className="max-w-3xl space-y-3 border-b pb-5">
+        <h2 className="[font-family:var(--font-paraluman-heading)] text-4xl font-bold leading-[1.02] tracking-[-0.04em] text-[#173f69]">
           Submit your challenge output.
         </h2>
         <p className="[font-family:var(--font-paraluman-body)] text-base leading-7 text-[#173957]/72 sm:text-lg sm:leading-8">
-          No resume needed. Reponse within 24 hours.
+          Again,{" "}
+          <span className="font-bold text-warning">
+            no resume needed. Reponse within 24 hours.
+          </span>
         </p>
       </div>
 
@@ -164,23 +162,16 @@ export function ApplyPanel({
             </motion.div>
           ) : (
             <form className="space-y-6" onSubmit={(e) => void onSubmit(e)}>
-              <div className="border-b border-[#2574BB]/10 pb-4">
-                <p className="[font-family:var(--font-paraluman-heading)] text-lg font-medium tracking-[-0.03em] text-[#173f69]">
-                  {submissionStep === 1
-                    ? "Step 1: Share your challenge output"
-                    : "Step 2: Confirm your details"}
-                </p>
-                <p className="mt-1 [font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#173957]/66">
-                  {submissionStep === 1
-                    ? "Paste the single best link to your prototype, video, or document."
-                    : "Add your contact details so the team can review and reply quickly."}
-                </p>
-              </div>
+              <p className="[font-family:var(--font-paraluman-heading)] text-lg font-bold tracking-[-0.03em] text-[#173f69]">
+                {submissionStep === 1
+                  ? "Step 1/2: Paste the single best link to your prototype, video, or document."
+                  : "Step 2/2: Add your contact details so the team can review and reply quickly."}
+              </p>
 
               {submissionStep === 1 && (
                 <>
                   <div className="space-y-2.5">
-                    <label className="[font-family:var(--font-paraluman-mono)] text-[10px] font-semibold uppercase tracking-[0.22em] text-[#173957]/62 sm:text-[11px]">
+                    <label className="[font-family:var(--font-paraluman-body)] font-semibold text-[#173957] opacity-60 text-xs">
                       Challenge Output Link *
                     </label>
                     <Input
@@ -210,18 +201,15 @@ export function ApplyPanel({
                   </div>
 
                   <div className="space-y-2.5">
-                    <label className="[font-family:var(--font-paraluman-mono)] text-[10px] font-semibold uppercase tracking-[0.22em] text-[#173957]/62 sm:text-[11px]">
+                    <label className="[font-family:var(--font-paraluman-body)] font-semibold text-[#173957] opacity-60 text-xs">
                       Application Notes
                     </label>
                     <Textarea
                       value={form.submissionNotes}
                       onChange={updateField("submissionNotes")}
+                      placeholder="Add any context, constraints, or tradeoffs you want Cebu Pacific to notice."
                       className="min-h-32 border-[#2574BB]/14 bg-white [font-family:var(--font-paraluman-body)] text-base shadow-none focus-visible:ring-[#2574BB]/25"
                     />
-                    <p className="[font-family:var(--font-paraluman-body)] text-sm text-[#173957]/56">
-                      Add any context, constraints, or tradeoffs you want Cebu
-                      Pacific to notice.
-                    </p>
                   </div>
                 </>
               )}
@@ -230,7 +218,7 @@ export function ApplyPanel({
                 <>
                   <div className="grid gap-5 sm:grid-cols-2">
                     <div className="space-y-2.5 sm:col-span-2">
-                      <label className="[font-family:var(--font-paraluman-mono)] text-[10px] font-semibold uppercase tracking-[0.22em] text-[#173957]/62 sm:text-[11px]">
+                      <label className="[font-family:var(--font-paraluman-body)] font-semibold text-[#173957] opacity-60 text-xs">
                         Email Address *
                       </label>
                       <Input
@@ -243,7 +231,7 @@ export function ApplyPanel({
                     </div>
 
                     <div className="space-y-2.5">
-                      <label className="[font-family:var(--font-paraluman-mono)] text-[10px] font-semibold uppercase tracking-[0.22em] text-[#173957]/62 sm:text-[11px]">
+                      <label className="[font-family:var(--font-paraluman-body)] font-semibold text-[#173957] opacity-60 text-xs">
                         Full Name *
                       </label>
                       <Input
@@ -255,7 +243,7 @@ export function ApplyPanel({
                     </div>
 
                     <div className="space-y-2.5">
-                      <label className="[font-family:var(--font-paraluman-mono)] text-[10px] font-semibold uppercase tracking-[0.22em] text-[#173957]/62 sm:text-[11px]">
+                      <label className="[font-family:var(--font-paraluman-body)] font-semibold text-[#173957] opacity-60 text-xs">
                         Facebook Link *
                       </label>
                       <Input

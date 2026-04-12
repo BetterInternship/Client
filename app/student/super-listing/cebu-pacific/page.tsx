@@ -292,12 +292,9 @@ export default function CebuPacificPage() {
         </div>
       </header>
 
-      <section className="px-4 pb-6 pt-6 sm:px-8 sm:pb-8 sm:pt-8 lg:px-10 lg:pt-10">
+      <section className="px-4 pb-12 pt-6 sm:px-8 sm:pb-16 sm:pt-8 lg:px-10 lg:pt-10">
         <div className="mx-auto max-w-6xl">
-          <HeroPanel
-            onOpenChallenge={openChallengePanel}
-            onOpenSubmission={openSubmissionPanel}
-          />
+          <HeroPanel />
         </div>
       </section>
 

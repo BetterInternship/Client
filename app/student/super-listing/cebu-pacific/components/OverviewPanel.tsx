@@ -17,7 +17,6 @@ type OverviewPanelProps = {
 
 type SectionTitleProps = {
   title: string;
-  eyebrow?: string;
 };
 
 const FAQ_ITEMS = [
@@ -49,14 +48,9 @@ const HOW_TO_APPLY_STEPS = [
   "Submit one clear link and your details. Cebu Pacific responds within 24 hours.",
 ];
 
-function SectionTitle({ title, eyebrow }: SectionTitleProps) {
+function SectionTitle({ title }: SectionTitleProps) {
   return (
     <div className="space-y-1.5">
-      {eyebrow ? (
-        <p className="[font-family:var(--font-paraluman-mono)] text-[10px] font-semibold uppercase tracking-[0.22em] text-[#1f68a9]/62 sm:text-[11px]">
-          {eyebrow}
-        </p>
-      ) : null}
       <h2 className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.35rem,2.6vw,2rem)] font-medium tracking-[-0.03em] text-[#173f69]">
         {title}
       </h2>
@@ -83,7 +77,7 @@ export function OverviewPanel({
         <section className="space-y-4 border-t border-[#2574BB]/10 pt-8 first:border-t-0 first:pt-0">
           <SectionTitle title="Role overview" />
           <ContentCard>
-            <div className="space-y-5 [font-family:var(--font-paraluman-body)] text-base leading-7 text-[#173957]/80 sm:text-lg sm:leading-8">
+            <div className="space-y-5 [font-family:var(--font-paraluman-body)] text-base leading-7 text-[#173957] opacity-80 sm:text-lg sm:leading-8">
               {cebuPacificProfile.roleOverview.map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
               ))}
@@ -94,14 +88,14 @@ export function OverviewPanel({
         <section className="space-y-4 border-t border-[#2574BB]/10 pt-8">
           <SectionTitle title="Why skip resume" />
           <ContentCard>
-            <div className="space-y-5 [font-family:var(--font-paraluman-body)] text-base leading-7 text-[#173957]/80 sm:text-lg sm:leading-8">
+            <div className="space-y-5 [font-family:var(--font-paraluman-body)] text-base leading-7 text-[#173957] opacity-80 sm:text-lg sm:leading-8">
               {cebuPacificProfile.whySkipResume.map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
               ))}
-              <p className="[font-family:var(--font-paraluman-heading)] text-xl font-medium tracking-[-0.03em] text-[#173f69] sm:text-2xl">
-                This listing is built to reward builders, not paperwork.
-              </p>
             </div>
+            <p className="[font-family:var(--font-paraluman-heading)] text-xl tracking-[-0.03em] sm:text-2xl mt-5 text-supportive font-bold">
+              This listing is built to reward doers, not sayers.
+            </p>
           </ContentCard>
         </section>
 
@@ -118,7 +112,7 @@ export function OverviewPanel({
                   <AccordionTrigger className="[font-family:var(--font-paraluman-heading)] text-left text-base font-medium tracking-[-0.02em] text-[#173f69] hover:no-underline sm:text-lg">
                     {item.question}
                   </AccordionTrigger>
-                  <AccordionContent className="[font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#173957]/72 sm:text-base">
+                  <AccordionContent className="[font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#173957] opacity-70 sm:text-base">
                     {item.answer}
                   </AccordionContent>
                 </AccordionItem>

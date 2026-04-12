@@ -1,23 +1,9 @@
 "use client";
-
-import Image from "next/image";
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { cebuPacificProfile } from "../../../companies/cebu-pacific/data";
-import cebuPacificLogo from "../logo.png";
 
-type HeroPanelProps = {
-  onOpenChallenge: () => void;
-  onOpenSubmission: () => void;
-};
-
-export function HeroPanel({
-  onOpenChallenge,
-  onOpenSubmission,
-}: HeroPanelProps) {
+export function HeroPanel() {
   return (
-    <section className="border-b border-[#2574BB]/10 px-0 py-1 sm:py-2">
+    <section className="px-0 py-1 sm:py-2">
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-start">
         <div className="space-y-6">
           <div className="max-w-4xl space-y-4">
@@ -30,7 +16,7 @@ export function HeroPanel({
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-            <p className="[font-family:var(--font-paraluman-body)] text-sm text-[#173957]/65">
+            <p className="[font-family:var(--font-paraluman-heading)] text-2xl text-warning font-bold border-b-4 border-warning/80">
               No resume needed. Response within 24 hours.
             </p>
           </div>
