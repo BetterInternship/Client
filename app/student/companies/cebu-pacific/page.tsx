@@ -70,18 +70,7 @@ const IMPACT_IMAGE_URL =
   "https://images.unsplash.com/photo-1529074963764-98f45c47344b?auto=format&fit=crop&w=1400&q=80";
 const INTERNSHIP_IMAGE_URL =
   "https://images.unsplash.com/photo-1517479149777-5f3b1511d5ad?auto=format&fit=crop&w=1400&q=80";
-const TEXT_GUTTER = "px-6 sm:px-10 lg:px-16 xl:px-24";
-
-const HERO_BADGES = [
-  {
-    label: "No resume needed",
-    icon: FileCheck2,
-  },
-  {
-    label: "Hear back in 24 hours",
-    icon: Clock3,
-  },
-];
+const TEXT_GUTTER = "px-6 sm:px-24  lg:px-16 xl:px-24";
 
 function SectionTitle({ title }: { title: string }) {
   return (
@@ -267,26 +256,14 @@ function BrandBadge({
 
   if (variant === "ticker") {
     return (
-      <div
+      <p
         className={cn(
-          "inline-flex items-center gap-3 rounded-[0.33em] border px-4 py-3",
-          isDark
-            ? "border-white/14 bg-[linear-gradient(180deg,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.08)_100%)] text-white"
-            : "border-[#d7e3f0] bg-[linear-gradient(180deg,rgba(244,249,255,0.98)_0%,rgba(231,241,251,0.94)_100%)] text-[#173f69] shadow-[0_12px_24px_-22px_rgba(23,63,105,0.18)]",
+          "[font-family:var(--font-paraluman-heading)] text-sm font-black uppercase tracking-[-0.01em]",
+          isDark ? "text-[#ffd166]" : "text-[#d28a17]",
         )}
       >
-        <Icon
-          className={cn("h-4 w-4", isDark ? "text-white" : "text-[#173f69]")}
-        />
-        <p
-          className={cn(
-            "[font-family:var(--font-paraluman-heading)] text-sm font-black uppercase tracking-[-0.01em]",
-            isDark ? "text-white" : "text-[#173f69]",
-          )}
-        >
-          {label}
-        </p>
-      </div>
+        {label}
+      </p>
     );
   }
 
@@ -468,9 +445,9 @@ function BrandBadge({
 
 function HeroPanel() {
   return (
-    <section className="relative min-h-screen overflow-hidden">
-      <div className="grid min-h-screen lg:grid-cols-2">
-        <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-white px-6 py-14 sm:px-10 sm:py-16 lg:px-16 lg:py-20 xl:px-24">
+    <section className="relative overflow-hidden">
+      <div className="grid min-h-[97vh] lg:grid-cols-2">
+        <div className="relative flex min-h-[92vh] items-center justify-center overflow-hidden bg-white px-6 py-14 sm:px-10 sm:py-16 lg:px-16 lg:py-20 xl:px-24">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_18%,rgba(127,192,255,0.22),transparent_24%),radial-gradient(circle_at_78%_76%,rgba(37,116,187,0.1),transparent_28%),linear-gradient(to_right,rgba(23,63,105,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(23,63,105,0.045)_1px,transparent_1px)] bg-[size:auto,auto,42px_42px,42px_42px]" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(225,239,252,0.8)_100%)]" />
           <div className="flex w-full max-w-3xl flex-col items-center space-y-8 text-center sm:space-y-9 lg:items-start lg:text-left">
@@ -500,25 +477,10 @@ function HeroPanel() {
             <p className="max-w-3xl [font-family:var(--font-paraluman-body)] text-base leading-7 text-[#173957]/80 sm:text-lg sm:leading-8">
               {cebuPacificProfile.subheadline}
             </p>
-
-            <div className="flex flex-col items-center gap-3 pt-3 lg:items-start">
-              <Button
-                asChild
-                className="inline-flex h-16 w-full items-center justify-center gap-3 rounded-[0.33em] border-2 border-[#173f69] bg-[#173f69] px-8 [font-family:var(--font-paraluman-heading)] text-lg font-black uppercase tracking-[0.09em] text-white transition-all duration-300 hover:bg-[#123456] hover:shadow-[0_24px_48px_-16px_rgba(23,63,105,0.6)] active:scale-95 sm:w-auto sm:px-12 sm:text-xl"
-              >
-                <Link href="/student/super-listing/cebu-pacific">
-                  Start challenge
-                  <ArrowRight className="h-5 w-5" />
-                </Link>
-              </Button>
-              <div className="[font-family:var(--font-paraluman-mono)] text-sm font-semibold text-[#1f68a9]/65">
-                No resume required, 24h response
-              </div>
-            </div>
           </div>
         </div>
 
-        <div className="relative min-h-[22rem] lg:min-h-screen">
+        <div className="relative min-h-[22rem] lg:min-h-[92vh]">
           <Image
             src={HERO_IMAGE_URL}
             alt="Airplane wing above the clouds"
@@ -536,17 +498,16 @@ function HeroPanel() {
               className="h-auto w-20 sm:w-24 lg:w-28"
             />
           </div>
-          <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6 lg:p-8">
-            <div className="flex flex-wrap gap-3">
-              {HERO_BADGES.map((badge) => (
-                <BrandBadge
-                  key={`hero-image-${badge.label}`}
-                  label={badge.label}
-                  icon={badge.icon}
-                  variant="ticker"
-                />
-              ))}
-            </div>
+        </div>
+      </div>
+      <div className="border-t border-[#2574BB]/10 bg-[#d28a17] px-3 py-2 backdrop-blur-sm sm:px-4">
+        <div className="overflow-hidden">
+          <div className="[font-family:var(--font-paraluman-heading)] whitespace-nowrap text-[11px] font-black uppercase tracking-[0.18em] text-white [animation:hero-marquee_18s_linear_infinite] sm:text-xs">
+            No resume needed. 24 hour response. No resume needed. 24 hour
+            response. No resume needed. 24 hour response. No resume needed. 24
+            hour response. No resume needed. 24 hour response. No resume needed.
+            24 hour response. No resume needed. 24 hour response. No resume
+            needed. 24 hour response. No resume needed. 24 hour response.
           </div>
         </div>
       </div>
@@ -579,6 +540,15 @@ export default function CebuPacificCompanyProfilePage() {
           }
           100% {
             background-position: -40% 50%;
+          }
+        }
+
+        @keyframes hero-marquee {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-33.333%);
           }
         }
       `}</style>
@@ -736,22 +706,17 @@ export default function CebuPacificCompanyProfilePage() {
           </SectionInner>
         </SectionShell>
 
-        <SectionShell className="overflow-hidden bg-[linear-gradient(180deg,#f7fbff_0%,#e5f1fb_42%,#d7eafb_100%)] py-10 sm:py-12">
+        <SectionShell className="overflow-hidden bg-[linear-gradient(180deg,#f7fbff_0%,#e5f1fb_42%,#d7eafb_100%)] py-10 sm:py-24">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(127,192,255,0.24),transparent_22%),radial-gradient(circle_at_82%_22%,rgba(23,63,105,0.12),transparent_24%),linear-gradient(to_right,rgba(23,63,105,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(23,63,105,0.05)_1px,transparent_1px)] bg-[size:auto,auto,44px_44px,44px_44px]" />
           <SectionInner className="relative space-y-5">
             <div className="flex flex-col items-center space-y-5 text-center">
-              <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(2.8rem,6vw,5.4rem)] font-black leading-[0.9] tracking-[-0.065em] text-[#173f69]">
+              <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(2.8rem,6vw,5.4rem)] font-black leading-[0.9] tracking-[-0.065em] text-[#173f69] ">
                 Better internships start here.
               </p>
               <div className="flex flex-wrap justify-center gap-3">
-                {HERO_BADGES.map((badge) => (
-                  <BrandBadge
-                    key={badge.label}
-                    label={badge.label}
-                    icon={badge.icon}
-                    variant="ticker"
-                  />
-                ))}
+                <div className="[font-family:var(--font-paraluman-heading)] text-2xl font-black tracking-[-0.01em] text-[#d28a17]">
+                  No resume needed. 24 hour response.
+                </div>
               </div>
             </div>
             <InsetPanel className="overflow-hidden rounded-[0.33em] border border-[#2574BB]/14 bg-white/92 shadow-[0_24px_60px_-40px_rgba(23,63,105,0.25)] backdrop-blur-sm">
