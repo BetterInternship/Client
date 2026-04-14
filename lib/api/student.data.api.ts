@@ -1,5 +1,4 @@
-import { useCallback, useMemo, useRef, useState, useEffect } from "react";
-import { APIClient, APIRouteBuilder } from "@/lib/api/api-client";
+import { useCallback, useMemo, useRef } from "react";
 import {
   JobService,
   UserService,
@@ -10,8 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useDbMoa } from "../db/use-bi-moa";
 import { hashStringToInt } from "../utils";
 import shuffle from "knuth-shuffle-seeded";
-import { User, PublicUser } from "@/lib/db/db.types";
-import { getFullName } from "@/lib/profile";
+import { PublicUser } from "@/lib/db/db.types";
 
 /**
  * Normalize internship_preferences field which may be stored as JSON string or object
@@ -65,7 +63,11 @@ export function useJobsData(
     queryKey: ["jobs"],
     queryFn: () =>
       JobService.getAllJobs().then((data) => {
-        data.jobs = shuffle(data.jobs ?? [], seed.current);
+        // ! remove shuffle
+        // data.jobs = shuffle(data.jobs ?? [], seed.current);
+        data.jobs = data.jobs?.toSorted(
+          (a, b) => b.created_at?.localeCompare(a.created_at || "") || 0,
+        );
         return data;
       }),
     staleTime: 60 * 60 * 1000,
