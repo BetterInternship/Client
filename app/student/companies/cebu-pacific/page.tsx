@@ -737,7 +737,7 @@ export default function CebuPacificCompanyProfilePage() {
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(127,192,255,0.24),transparent_22%),radial-gradient(circle_at_82%_22%,rgba(23,63,105,0.12),transparent_24%),linear-gradient(to_right,rgba(23,63,105,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(23,63,105,0.05)_1px,transparent_1px)] bg-[size:auto,auto,44px_44px,44px_44px]" />
           <SectionInner className="relative space-y-5">
             <div className="flex flex-col items-center space-y-5 text-center">
-              <p className="[font-family:var(--font-paraluman-heading)] max-w-[12ch] text-[clamp(2.8rem,6vw,5.4rem)] font-black leading-[0.9] tracking-[-0.065em] text-[#173f69]">
+              <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(2.8rem,6vw,5.4rem)] font-black leading-[0.9] tracking-[-0.065em] text-[#173f69]">
                 Better internships start here.
               </p>
               <div className="flex flex-wrap justify-center gap-3">
