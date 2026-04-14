@@ -587,9 +587,12 @@ export default function CebuPacificCompanyProfilePage() {
         <SectionShell className="overflow-hidden border-t-0 bg-[#173f69]">
           <SectionInner className="flex w-full flex-col items-center gap-6 text-center lg:flex-row lg:justify-center lg:text-left">
             <div className="max-w-5xl space-y-3">
-              <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(2rem,4.5vw,3.8rem)] font-black leading-[0.98] tracking-[-0.05em] text-white">
-                Cebu Pacific was named one of the Philippines&apos; Best Places
-                to Work in 2025.
+              <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(2rem,4.5vw,3.8rem)] font-light leading-[0.98] tracking-[-0.05em] text-white/70">
+                Cebu Pacific was named one of the{" "}
+                <span className="font-bold text-white">
+                  Philippines&apos; Best Places to Work in
+                </span>{" "}
+                2025.
               </p>
               <p className="[font-family:var(--font-paraluman-mono)] text-[11px] font-bold uppercase tracking-[0.18em] text-[#8fceff]">
                 Recognized by BusinessWorld
