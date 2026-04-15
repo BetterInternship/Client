@@ -12,9 +12,18 @@ import {
 } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { cebuPacificPrimaryListing, cebuPacificProfile } from "./data";
 import cebuPacificLogo from "../../super-listing/cebu-pacific/logo.png";
+import meaningfulWorkImage from "../../super-listing/cebu-pacific/1.png";
+import literallyEveryoneImage from "../../super-listing/cebu-pacific/2.png";
+import massiveImpactImage from "../../super-listing/cebu-pacific/3.png";
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],
@@ -38,10 +47,6 @@ const HERO_IMAGE_URL =
   "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1400&q=80";
 const BEST_PLACE_TO_WORK_BADGE_URL =
   "https://greatplacetowork.com.ph/wp-content/uploads/2024/04/Apr2024Apr2025PHL-1.png";
-const IMPACT_IMAGE_URL =
-  "https://images.unsplash.com/photo-1529074963764-98f45c47344b?auto=format&fit=crop&w=1400&q=80";
-const INTERNSHIP_IMAGE_URL =
-  "https://images.unsplash.com/photo-1517479149777-5f3b1511d5ad?auto=format&fit=crop&w=1400&q=80";
 const TEXT_GUTTER = "px-6 sm:px-10 lg:px-16 xl:px-24";
 const FEATURE_HEADING_CLASS =
   "[font-family:var(--font-paraluman-heading)] text-[clamp(1.95rem,3.6vw,3.15rem)] font-black leading-[0.96] tracking-[-0.055em]";
@@ -211,23 +216,35 @@ function ListingsCTA({
   onClick,
   className,
   label = "See listings",
+  size = "default",
 }: {
   onClick: () => void;
   className?: string;
   label?: string;
+  size?: "default" | "hero";
 }) {
   return (
     <MagneticButton className={cn("w-full sm:w-auto", className)}>
       <Button
         type="button"
         onClick={onClick}
-        className="group relative isolate inline-flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-[0.33em] bg-[linear-gradient(135deg,#2574BB_0%,#1b5f99_52%,#173f69_100%)] px-6 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white shadow-[0_16px_36px_-22px_rgba(23,63,105,0.48)] transition-all duration-300 ease-out before:absolute before:inset-0 before:z-0 before:bg-[linear-gradient(110deg,#0f4f8f_0%,#2574BB_22%,#eef7ff_36%,#2574BB_50%,#6fb7ff_64%,#1c5f9b_82%,#0f4f8f_100%)] before:bg-[length:220%_100%] before:opacity-0 before:transition-opacity before:duration-300 before:ease-out before:content-[''] hover:-translate-y-0.5 hover:text-white hover:before:opacity-100 group-hover:before:[animation:runway-shine_2.2s_ease-in-out_infinite] hover:shadow-[0_22px_42px_-24px_rgba(23,63,105,0.58)] sm:w-auto"
+        className={cn(
+          "group relative isolate inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-[0.33em] bg-[linear-gradient(135deg,#2574BB_0%,#1b5f99_52%,#173f69_100%)] [font-family:var(--font-paraluman-heading)] font-bold uppercase tracking-[0.1em] text-white shadow-[0_16px_36px_-22px_rgba(23,63,105,0.48)] transition-all duration-300 ease-out before:absolute before:inset-0 before:z-0 before:bg-[linear-gradient(110deg,#0f4f8f_0%,#2574BB_22%,#eef7ff_36%,#2574BB_50%,#6fb7ff_64%,#1c5f9b_82%,#0f4f8f_100%)] before:bg-[length:220%_100%] before:opacity-0 before:transition-opacity before:duration-300 before:ease-out before:content-[''] hover:-translate-y-0.5 hover:text-white hover:before:opacity-100 group-hover:before:[animation:runway-shine_2.2s_ease-in-out_infinite] hover:shadow-[0_22px_42px_-24px_rgba(23,63,105,0.58)] sm:w-auto",
+          size === "hero"
+            ? "h-14 px-8 text-base sm:h-16 sm:px-10 sm:text-lg"
+            : "h-12 px-6 text-sm",
+        )}
       >
         <span className="relative z-10 inline-flex items-center gap-2 text-white">
           <span className="relative z-10 text-white group-hover:text-white">
             {label}
           </span>
-          <ArrowRight className="relative z-10 h-4 w-4 text-white transition-transform duration-300 group-hover:translate-x-1.5 group-hover:text-white" />
+          <ArrowRight
+            className={cn(
+              "relative z-10 text-white transition-transform duration-300 group-hover:translate-x-1.5 group-hover:text-white",
+              size === "hero" ? "h-5 w-5" : "h-4 w-4",
+            )}
+          />
         </span>
       </Button>
     </MagneticButton>
@@ -326,6 +343,7 @@ function HeroPanel({
               <ListingsCTA
                 onClick={onJumpToListings}
                 label="Let me prove myself"
+                size="hero"
               />
 
               <p className="[font-family:var(--font-paraluman-body)] text-base leading-7 text-[#173957]/82 sm:text-lg sm:leading-[1.75] space-x-6">
@@ -495,7 +513,7 @@ export default function CebuPacificCompanyProfilePage() {
                     className="absolute inset-0"
                   >
                     <Image
-                      src={IMPACT_IMAGE_URL}
+                      src={meaningfulWorkImage}
                       alt="Passengers walking through an airport terminal"
                       fill
                       className="object-cover"
@@ -522,7 +540,7 @@ export default function CebuPacificCompanyProfilePage() {
                     className="absolute inset-0"
                   >
                     <Image
-                      src={INTERNSHIP_IMAGE_URL}
+                      src={massiveImpactImage}
                       alt="A Cebu Pacific airplane in flight"
                       fill
                       className="object-cover"
@@ -579,7 +597,7 @@ export default function CebuPacificCompanyProfilePage() {
                     className="absolute inset-0"
                   >
                     <Image
-                      src={IMPACT_IMAGE_URL}
+                      src={literallyEveryoneImage}
                       alt="Passengers walking through an airport terminal"
                       fill
                       className="object-cover"
@@ -758,7 +776,7 @@ export default function CebuPacificCompanyProfilePage() {
                     className="group inline-flex h-11 items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#173f69] bg-transparent px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#173f69] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#173f69] hover:text-white hover:shadow-[0_16px_34px_-24px_rgba(23,63,105,0.48)] sm:w-auto"
                   >
                     <Link
-                      href="/student/super-listing/cebu-pacific"
+                      href="/super-listing/cebu-pacific"
                       className="inline-flex items-center gap-2"
                     >
                       View listing
@@ -781,7 +799,7 @@ export default function CebuPacificCompanyProfilePage() {
                     className="group inline-flex h-11 items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#173f69] bg-transparent px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#173f69] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#173f69] hover:text-white hover:shadow-[0_16px_34px_-24px_rgba(23,63,105,0.48)] sm:w-auto"
                   >
                     <Link
-                      href="/student/super-listing/cebu-pacific"
+                      href="/super-listing/cebu-pacific"
                       className="inline-flex items-center gap-2"
                     >
                       View listing
@@ -804,7 +822,7 @@ export default function CebuPacificCompanyProfilePage() {
                     className="group inline-flex h-11 items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#173f69] bg-transparent px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#173f69] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#173f69] hover:text-white hover:shadow-[0_16px_34px_-24px_rgba(23,63,105,0.48)] sm:w-auto"
                   >
                     <Link
-                      href="/student/super-listing/cebu-pacific"
+                      href="/super-listing/cebu-pacific"
                       className="inline-flex items-center gap-2"
                     >
                       View listing
@@ -829,73 +847,50 @@ export default function CebuPacificCompanyProfilePage() {
             </RevealBlock>
 
             <RevealBlock
-              variants={STAGGER_CONTAINER_VARIANTS}
-              inView={sectionStaggerMotion}
-              className="mx-auto max-w-4xl space-y-3"
+              inView={sectionRevealMotion}
+              className="mx-auto max-w-4xl"
             >
-              <motion.details
-                variants={STAGGER_ITEM_VARIANTS}
-                className="group rounded-[0.33em] border border-[#2574BB]/16 bg-white px-5 py-4 shadow-[0_12px_28px_-24px_rgba(23,63,105,0.22)]"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 [font-family:var(--font-paraluman-heading)] text-lg font-black tracking-[-0.01em] text-[#123f6b]">
-                  Do I need a resume to apply?
-                  <span className="text-xl leading-none text-[#2574BB] transition-transform duration-200 group-open:rotate-45">
-                    +
-                  </span>
-                </summary>
-                <p className="[font-family:var(--font-paraluman-body)] mt-3 pr-8 text-base leading-7 text-[#173957]/82">
-                  No. Cebu Pacific reviews your challenge output first. Your
-                  thinking, execution, and decision quality matter most.
-                </p>
-              </motion.details>
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="faq-0" className="border-[#2574BB]/12">
+                  <AccordionTrigger className="[font-family:var(--font-paraluman-heading)] text-left text-base font-medium tracking-[-0.02em] text-[#173f69] hover:no-underline sm:text-lg">
+                    Do I need a resume to apply?
+                  </AccordionTrigger>
+                  <AccordionContent className="[font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#173957] opacity-70 sm:text-base">
+                    No. Cebu Pacific reviews your challenge output first. Your
+                    thinking, execution, and decision quality matter most.
+                  </AccordionContent>
+                </AccordionItem>
 
-              <motion.details
-                variants={STAGGER_ITEM_VARIANTS}
-                className="group rounded-[0.33em] border border-[#2574BB]/16 bg-white px-5 py-4 shadow-[0_12px_28px_-24px_rgba(23,63,105,0.22)]"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 [font-family:var(--font-paraluman-heading)] text-lg font-black tracking-[-0.01em] text-[#123f6b]">
-                  How fast will I hear back?
-                  <span className="text-xl leading-none text-[#2574BB] transition-transform duration-200 group-open:rotate-45">
-                    +
-                  </span>
-                </summary>
-                <p className="[font-family:var(--font-paraluman-body)] mt-3 pr-8 text-base leading-7 text-[#173957]/82">
-                  Our target is to respond within 24 hours so strong applicants
-                  can move forward quickly.
-                </p>
-              </motion.details>
+                <AccordionItem value="faq-1" className="border-[#2574BB]/12">
+                  <AccordionTrigger className="[font-family:var(--font-paraluman-heading)] text-left text-base font-medium tracking-[-0.02em] text-[#173f69] hover:no-underline sm:text-lg">
+                    How fast will I hear back?
+                  </AccordionTrigger>
+                  <AccordionContent className="[font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#173957] opacity-70 sm:text-base">
+                    Our target is to respond within 24 hours so strong
+                    applicants can move forward quickly.
+                  </AccordionContent>
+                </AccordionItem>
 
-              <motion.details
-                variants={STAGGER_ITEM_VARIANTS}
-                className="group rounded-[0.33em] border border-[#2574BB]/16 bg-white px-5 py-4 shadow-[0_12px_28px_-24px_rgba(23,63,105,0.22)]"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 [font-family:var(--font-paraluman-heading)] text-lg font-black tracking-[-0.01em] text-[#123f6b]">
-                  What kind of work will interns do?
-                  <span className="text-xl leading-none text-[#2574BB] transition-transform duration-200 group-open:rotate-45">
-                    +
-                  </span>
-                </summary>
-                <p className="[font-family:var(--font-paraluman-body)] mt-3 pr-8 text-base leading-7 text-[#173957]/82">
-                  Real product work. You&apos;ll help improve the booking
-                  experience used by millions of Filipino travelers.
-                </p>
-              </motion.details>
+                <AccordionItem value="faq-2" className="border-[#2574BB]/12">
+                  <AccordionTrigger className="[font-family:var(--font-paraluman-heading)] text-left text-base font-medium tracking-[-0.02em] text-[#173f69] hover:no-underline sm:text-lg">
+                    What kind of work will interns do?
+                  </AccordionTrigger>
+                  <AccordionContent className="[font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#173957] opacity-70 sm:text-base">
+                    Real product work. You&apos;ll help improve the booking
+                    experience used by millions of Filipino travelers.
+                  </AccordionContent>
+                </AccordionItem>
 
-              <motion.details
-                variants={STAGGER_ITEM_VARIANTS}
-                className="group rounded-[0.33em] border border-[#2574BB]/16 bg-white px-5 py-4 shadow-[0_12px_28px_-24px_rgba(23,63,105,0.22)]"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 [font-family:var(--font-paraluman-heading)] text-lg font-black tracking-[-0.01em] text-[#123f6b]">
-                  Which listings should I apply to?
-                  <span className="text-xl leading-none text-[#2574BB] transition-transform duration-200 group-open:rotate-45">
-                    +
-                  </span>
-                </summary>
-                <p className="[font-family:var(--font-paraluman-body)] mt-3 pr-8 text-base leading-7 text-[#173957]/82">
-                  Choose the role where your skills are strongest, then submit a
-                  high-quality challenge response for that listing.
-                </p>
-              </motion.details>
+                <AccordionItem value="faq-3" className="border-[#2574BB]/12">
+                  <AccordionTrigger className="[font-family:var(--font-paraluman-heading)] text-left text-base font-medium tracking-[-0.02em] text-[#173f69] hover:no-underline sm:text-lg">
+                    Which listings should I apply to?
+                  </AccordionTrigger>
+                  <AccordionContent className="[font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#173957] opacity-70 sm:text-base">
+                    Choose the role where your skills are strongest, then
+                    submit a high-quality challenge response for that listing.
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </RevealBlock>
           </SectionInner>
         </SectionShell>
