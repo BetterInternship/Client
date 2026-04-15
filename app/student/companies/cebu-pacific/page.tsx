@@ -289,13 +289,15 @@ const SplitFlapRow = memo(function SplitFlapRow({
   line,
   lineLength,
   reduceMotion,
+  className,
 }: {
   line: string;
   lineLength: number;
   reduceMotion: boolean;
+  className?: string;
 }) {
   return (
-    <div className="py-2 last:border-b-0 sm:py-2.5 lg:py-3">
+    <div className={cn("py-2 last:border-b-0 sm:py-2.5 lg:py-3", className)}>
       <SplitFlap
         value={padBoardValue(line, lineLength)}
         chars={BOARD_CHARS}
@@ -303,7 +305,7 @@ const SplitFlapRow = memo(function SplitFlapRow({
         timing={reduceMotion ? 1 : 24}
         hinge
         theme="light"
-        size="xlarge"
+        size="large"
       />
     </div>
   );
@@ -347,11 +349,7 @@ function SplitFlapBoard({
     }, pauseMs);
 
     return () => window.clearTimeout(timer);
-  }, [
-    activeIndex,
-    pauseMs,
-    states,
-  ]);
+  }, [activeIndex, pauseMs, states]);
 
   return (
     <motion.div
@@ -362,12 +360,13 @@ function SplitFlapBoard({
     >
       <div className="flex h-full min-h-[26rem] flex-col justify-center bg-transparent px-6 py-4 sm:min-h-[30rem] sm:px-8 sm:py-5 lg:min-h-0 lg:px-9 lg:py-4 xl:px-10">
         <div className="flex h-full flex-col justify-between">
-          {repeatedRows.map((row) => (
+          {repeatedRows.map((row, index) => (
             <SplitFlapRow
               key={row._repeatKey}
               line={row.line}
               lineLength={lineLength}
               reduceMotion={reduceMotion}
+              className={index >= 4 ? "max-lg:hidden" : undefined}
             />
           ))}
         </div>
@@ -396,7 +395,9 @@ function HeroMainContent({
       transition={{ duration: 0.56, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
         "relative z-10 flex w-full max-w-3xl flex-col space-y-7 sm:space-y-8",
-        centered ? "items-center text-center" : "items-center text-center lg:items-start lg:text-left",
+        centered
+          ? "items-center text-center"
+          : "items-center text-center lg:items-start lg:text-left",
       )}
     >
       <motion.div
@@ -417,7 +418,7 @@ function HeroMainContent({
           />
           <span
             className={cn(
-              "[font-family:var(--font-paraluman-mono)] text-[11px] font-bold uppercase sm:mt-2.5 sm:text-xs",
+              "[font-family:var(--font-paraluman-mono)] text-[11px] font-bold uppercase mt-2 sm:mt-2.5 sm:text-xs",
               spotlightMode ? "text-[#1b5f99]" : "text-[#2574BB]",
             )}
           >
@@ -428,7 +429,9 @@ function HeroMainContent({
 
       {useFlipperHeadline ? (
         <div className="w-full max-w-6xl space-y-3">
-          <h1 className="sr-only">Imagine 20 Million Travelers Using YOUR Code.</h1>
+          <h1 className="sr-only">
+            Imagine 20 Million Travelers Using YOUR Code.
+          </h1>
           <div
             className={cn(
               "mt-2 flex flex-wrap gap-2",
@@ -445,6 +448,7 @@ function HeroMainContent({
                 hinge
                 theme="light"
                 size="large"
+                className="scale-[0.82] sm:scale-100"
               />
             ))}
           </div>
@@ -459,7 +463,7 @@ function HeroMainContent({
               delay: 0.32,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="mt-2 block pb-[0.08em] bg-[linear-gradient(110deg,#0f4f8f_0%,#2574BB_22%,#eef7ff_36%,#2574BB_50%,#6fb7ff_64%,#1c5f9b_82%,#0f4f8f_100%)] bg-[length:220%_100%] bg-clip-text text-7xl leading-[0.95] tracking-[-0.052em] text-transparent [animation:runway-shine_8s_ease-in-out_infinite] [filter:drop-shadow(0_10px_28px_rgba(37,116,187,0.22))]"
+            className="mt-2 block pb-[0.08em] bg-[linear-gradient(110deg,#0f4f8f_0%,#2574BB_22%,#eef7ff_36%,#2574BB_50%,#6fb7ff_64%,#1c5f9b_82%,#0f4f8f_100%)] bg-[length:220%_100%] bg-clip-text text-[clamp(2.35rem,11.5vw,4.35rem)] leading-[0.95] tracking-[-0.052em] text-transparent [animation:runway-shine_8s_ease-in-out_infinite] [filter:drop-shadow(0_10px_28px_rgba(37,116,187,0.22))] lg:text-7xl"
           >
             Imagine 20 Million Travelers Using YOUR Code.
           </motion.span>
@@ -539,7 +543,7 @@ function HeroPanel({
 
   return (
     <section className="relative overflow-hidden">
-      <div className="absolute right-4 top-4 z-30 sm:right-6 sm:top-6">
+      <div className="absolute left-4 top-4 z-30 sm:left-6 sm:top-6">
         <label className="sr-only" htmlFor="hero-version-toggle">
           Hero version
         </label>
@@ -625,7 +629,9 @@ function HeroPanel({
               initial={
                 reduceMotion ? false : { opacity: 0, y: -8, scale: 0.94 }
               }
-              animate={reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+              animate={
+                reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }
+              }
               transition={{
                 duration: 0.52,
                 delay: 0.48,
@@ -1144,8 +1150,8 @@ export default function CebuPacificCompanyProfilePage() {
                     Which listings should I apply to?
                   </AccordionTrigger>
                   <AccordionContent className="[font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#173957] opacity-70 sm:text-base">
-                    Choose the role where your skills are strongest, then
-                    submit a high-quality challenge response for that listing.
+                    Choose the role where your skills are strongest, then submit
+                    a high-quality challenge response for that listing.
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
