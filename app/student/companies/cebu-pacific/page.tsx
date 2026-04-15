@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import {
   motion,
   useInView,
@@ -42,7 +42,11 @@ const IMPACT_IMAGE_URL =
   "https://images.unsplash.com/photo-1529074963764-98f45c47344b?auto=format&fit=crop&w=1400&q=80";
 const INTERNSHIP_IMAGE_URL =
   "https://images.unsplash.com/photo-1517479149777-5f3b1511d5ad?auto=format&fit=crop&w=1400&q=80";
-const TEXT_GUTTER = "px-6 sm:px-24  lg:px-16 xl:px-24";
+const TEXT_GUTTER = "px-6 sm:px-10 lg:px-16 xl:px-24";
+const FEATURE_HEADING_CLASS =
+  "[font-family:var(--font-paraluman-heading)] text-[clamp(1.95rem,3.6vw,3.15rem)] font-black leading-[0.96] tracking-[-0.055em]";
+const BODY_COPY_CLASS =
+  "[font-family:var(--font-paraluman-body)] max-w-[60ch] text-base leading-7 text-[#173957]/82 sm:text-lg sm:leading-[1.72]";
 const SECTION_REVEAL_VARIANTS: Variants = {
   hidden: { opacity: 0, y: 28 },
   visible: {
@@ -74,61 +78,6 @@ const IMAGE_REVEAL_VARIANTS: Variants = {
     transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
   },
 };
-
-function AnimatedStatValue({
-  value,
-  suffix = "",
-}: {
-  value: number;
-  suffix?: string;
-}) {
-  const reduceMotion = useReducedMotion();
-  const ref = useRef<HTMLSpanElement | null>(null);
-  const isInView = useInView(ref, {
-    once: true,
-    margin: "-18% 0px -18% 0px",
-  });
-  const [displayValue, setDisplayValue] = useState(reduceMotion ? value : 0);
-
-  useEffect(() => {
-    if (reduceMotion) {
-      setDisplayValue(value);
-      return;
-    }
-
-    if (!isInView) return;
-
-    let frame = 0;
-    let startTime: number | null = null;
-    const duration = 920;
-
-    const tick = (timestamp: number) => {
-      if (startTime === null) startTime = timestamp;
-
-      const elapsed = timestamp - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - (1 - progress) ** 3;
-      setDisplayValue(Math.round(value * eased));
-
-      if (progress < 1) {
-        frame = window.requestAnimationFrame(tick);
-      }
-    };
-
-    frame = window.requestAnimationFrame(tick);
-
-    return () => {
-      window.cancelAnimationFrame(frame);
-    };
-  }, [isInView, reduceMotion, value]);
-
-  return (
-    <span ref={ref}>
-      {displayValue}
-      {suffix}
-    </span>
-  );
-}
 
 type InViewMotionProps = {
   initial?: "hidden";
@@ -258,7 +207,40 @@ function MagneticButton({
   );
 }
 
-function HeroPanel({ reduceMotion }: { reduceMotion: boolean }) {
+function ListingsCTA({
+  onClick,
+  className,
+  label = "See listings",
+}: {
+  onClick: () => void;
+  className?: string;
+  label?: string;
+}) {
+  return (
+    <MagneticButton className={cn("w-full sm:w-auto", className)}>
+      <Button
+        type="button"
+        onClick={onClick}
+        className="group relative isolate inline-flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-[0.33em] bg-[linear-gradient(135deg,#2574BB_0%,#1b5f99_52%,#173f69_100%)] px-6 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white shadow-[0_16px_36px_-22px_rgba(23,63,105,0.48)] transition-all duration-300 ease-out before:absolute before:inset-0 before:z-0 before:bg-[linear-gradient(110deg,#0f4f8f_0%,#2574BB_22%,#eef7ff_36%,#2574BB_50%,#6fb7ff_64%,#1c5f9b_82%,#0f4f8f_100%)] before:bg-[length:220%_100%] before:opacity-0 before:transition-opacity before:duration-300 before:ease-out before:content-[''] hover:-translate-y-0.5 hover:text-white hover:before:opacity-100 group-hover:before:[animation:runway-shine_2.2s_ease-in-out_infinite] hover:shadow-[0_22px_42px_-24px_rgba(23,63,105,0.58)] sm:w-auto"
+      >
+        <span className="relative z-10 inline-flex items-center gap-2 text-white">
+          <span className="relative z-10 text-white group-hover:text-white">
+            {label}
+          </span>
+          <ArrowRight className="relative z-10 h-4 w-4 text-white transition-transform duration-300 group-hover:translate-x-1.5 group-hover:text-white" />
+        </span>
+      </Button>
+    </MagneticButton>
+  );
+}
+
+function HeroPanel({
+  reduceMotion,
+  onJumpToListings,
+}: {
+  reduceMotion: boolean;
+  onJumpToListings: () => void;
+}) {
   return (
     <section className="relative overflow-hidden">
       <div className="grid min-h-[100vh] lg:grid-cols-2">
@@ -341,25 +323,14 @@ function HeroPanel({ reduceMotion }: { reduceMotion: boolean }) {
               }}
               className="flex flex-col items-center gap-3 lg:items-start"
             >
-              <MagneticButton className="w-full sm:w-auto">
-                <Button
-                  asChild
-                  className="group relative isolate inline-flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-[0.33em] bg-[linear-gradient(135deg,#2574BB_0%,#1b5f99_52%,#173f69_100%)] px-6 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white shadow-[0_16px_36px_-22px_rgba(23,63,105,0.48)] transition-all duration-300 ease-out before:absolute before:inset-0 before:z-0 before:bg-[linear-gradient(110deg,#0f4f8f_0%,#2574BB_22%,#eef7ff_36%,#2574BB_50%,#6fb7ff_64%,#1c5f9b_82%,#0f4f8f_100%)] before:bg-[length:220%_100%] before:opacity-0 before:transition-opacity before:duration-300 before:ease-out before:content-[''] hover:-translate-y-0.5 hover:text-white hover:before:opacity-100 group-hover:before:[animation:runway-shine_2.2s_ease-in-out_infinite] hover:shadow-[0_22px_42px_-24px_rgba(23,63,105,0.58)] sm:w-auto"
-                >
-                  <Link
-                    href="/student/super-listing/cebu-pacific"
-                    className="relative z-10 inline-flex items-center gap-2 text-white hover:text-white"
-                  >
-                    <span className="relative z-10 text-white group-hover:text-white">
-                      Let me prove myself
-                    </span>
-                    <ArrowRight className="relative z-10 h-4 w-4 text-white transition-transform duration-300 group-hover:translate-x-1.5 group-hover:text-white" />
-                  </Link>
-                </Button>
-              </MagneticButton>
+              <ListingsCTA
+                onClick={onJumpToListings}
+                label="Let me prove myself"
+              />
 
               <p className="[font-family:var(--font-paraluman-body)] text-base leading-7 text-[#173957]/82 sm:text-lg sm:leading-[1.75] space-x-6">
-                <span>✔ No resume needed  </span><span>✔ Response in 24 hours</span>
+                <span>✔ No resume needed </span>
+                <span>✔ Response in 24 hours</span>
               </p>
             </motion.div>
           </motion.div>
@@ -411,6 +382,14 @@ export default function CebuPacificCompanyProfilePage() {
   const shouldReduceMotion = useReducedMotion();
   const sectionRevealMotion = getInViewMotionProps(shouldReduceMotion, 0.24);
   const sectionStaggerMotion = getInViewMotionProps(shouldReduceMotion, 0.18);
+  const listingsRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToListings = () => {
+    listingsRef.current?.scrollIntoView({
+      behavior: shouldReduceMotion ? "auto" : "smooth",
+      block: "start",
+    });
+  };
 
   return (
     <main
@@ -426,7 +405,10 @@ export default function CebuPacificCompanyProfilePage() {
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.04)_1px,transparent_1px)] bg-[size:48px_48px] opacity-18" />
 
       <section className="relative">
-        <HeroPanel reduceMotion={shouldReduceMotion} />
+        <HeroPanel
+          reduceMotion={shouldReduceMotion}
+          onJumpToListings={scrollToListings}
+        />
       </section>
       <style jsx>{`
         @keyframes runway-shine {
@@ -435,6 +417,15 @@ export default function CebuPacificCompanyProfilePage() {
           }
           100% {
             background-position: -40% 50%;
+          }
+        }
+
+        @keyframes hero-marquee {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-33.333%);
           }
         }
       `}</style>
@@ -492,6 +483,10 @@ export default function CebuPacificCompanyProfilePage() {
                     millions of Filipinos will use, including your family and
                     friends.
                   </p>
+                  <ListingsCTA
+                    onClick={scrollToListings}
+                    label="Let me prove myself"
+                  />
                 </div>
                 <div className="relative min-h-[20rem] overflow-hidden">
                   <RevealBlock
@@ -546,6 +541,10 @@ export default function CebuPacificCompanyProfilePage() {
                     <span className="font-bold">100 aircrafts.</span> Your code
                     will make their travels more delightful.
                   </p>
+                  <ListingsCTA
+                    onClick={scrollToListings}
+                    label="Let me prove myself"
+                  />
                 </div>
               </RevealBlock>
             </InsetPanel>
@@ -568,6 +567,10 @@ export default function CebuPacificCompanyProfilePage() {
                     impress us through the challenge. If we’re impressed, you’re
                     in.
                   </p>
+                  <ListingsCTA
+                    onClick={scrollToListings}
+                    label="Let me prove myself"
+                  />
                 </div>
                 <div className="relative min-h-[20rem] overflow-hidden">
                   <RevealBlock
@@ -591,8 +594,7 @@ export default function CebuPacificCompanyProfilePage() {
 
         <SectionShell className="overflow-hidden border-t-0 bg-[#173f69]">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_24%,rgba(143,206,255,0.26),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(255,255,255,0.09),transparent_24%)]" />
-          <div className="pointer-events-none absolute -left-20 top-14 h-52 w-52 rounded-full bg-[#64b4e6]/20 blur-3xl" />
-          <div className="pointer-events-none absolute -right-20 bottom-16 h-56 w-56 rounded-full bg-[#9bd5ff]/18 blur-3xl" />
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:40px_40px] opacity-50" />
           <SectionInner className="relative space-y-10">
             <RevealBlock
               inView={sectionRevealMotion}
@@ -619,7 +621,7 @@ export default function CebuPacificCompanyProfilePage() {
                 variants={STAGGER_ITEM_VARIANTS}
                 whileHover={shouldReduceMotion ? undefined : { y: -3 }}
                 transition={{ duration: 0.24, ease: "easeOut" }}
-                className="relative overflow-hidden rounded-[0.5em] border border-[#dbe7f2] bg-white px-6 py-8 text-center shadow-[0_12px_26px_-22px_rgba(15,23,42,0.2)]"
+                className="relative overflow-hidden rounded-[0.33em] border border-white/14 bg-white/95 px-6 py-8 text-center shadow-[0_12px_26px_-22px_rgba(15,23,42,0.2)]"
               >
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#2574BB_0%,#8fceff_48%,#2574BB_100%)]" />
                 <div className="space-y-3">
@@ -638,7 +640,7 @@ export default function CebuPacificCompanyProfilePage() {
                 variants={STAGGER_ITEM_VARIANTS}
                 whileHover={shouldReduceMotion ? undefined : { y: -3 }}
                 transition={{ duration: 0.24, ease: "easeOut" }}
-                className="relative overflow-hidden rounded-[0.5em] border border-[#dbe7f2] bg-white px-6 py-8 text-center shadow-[0_12px_26px_-22px_rgba(15,23,42,0.2)]"
+                className="relative overflow-hidden rounded-[0.33em] border border-white/14 bg-white/95 px-6 py-8 text-center shadow-[0_12px_26px_-22px_rgba(15,23,42,0.2)]"
               >
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#2574BB_0%,#8fceff_48%,#2574BB_100%)]" />
                 <div className="space-y-3">
@@ -655,7 +657,7 @@ export default function CebuPacificCompanyProfilePage() {
                 variants={STAGGER_ITEM_VARIANTS}
                 whileHover={shouldReduceMotion ? undefined : { y: -3 }}
                 transition={{ duration: 0.24, ease: "easeOut" }}
-                className="relative overflow-hidden rounded-[0.5em] border border-[#dbe7f2] bg-white px-6 py-8 text-center shadow-[0_12px_26px_-22px_rgba(15,23,42,0.2)]"
+                className="relative overflow-hidden rounded-[0.33em] border border-white/14 bg-white/95 px-6 py-8 text-center shadow-[0_12px_26px_-22px_rgba(15,23,42,0.2)]"
               >
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#2574BB_0%,#8fceff_48%,#2574BB_100%)]" />
                 <div className="space-y-3">
@@ -670,14 +672,18 @@ export default function CebuPacificCompanyProfilePage() {
                 </div>
               </motion.article>
             </RevealBlock>
+            <div className="pt-2 justify-center flex">
+              <ListingsCTA
+                onClick={scrollToListings}
+                label="Let me prove myself"
+              />
+            </div>
           </SectionInner>
         </SectionShell>
 
-        <SectionShell className="overflow-hidden bg-[linear-gradient(180deg,#f7fbff_0%,#e5f1fb_42%,#d7eafb_100%)] py-12 sm:py-28 ">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(127,192,255,0.24),transparent_22%),radial-gradient(circle_at_82%_22%,rgba(23,63,105,0.12),transparent_24%)]" />
-          <div className="pointer-events-none absolute left-[14%] top-8 h-44 w-44 rounded-full bg-[#6fb7ff]/16 blur-3xl" />
-          <div className="pointer-events-none absolute right-[8%] bottom-8 h-44 w-44 rounded-full bg-[#1f6298]/12 blur-3xl" />
-          <SectionInner className="relative space-y-24">
+        <SectionShell className="overflow-hidden bg-[linear-gradient(180deg,#f7fbff_0%,#e8f2fb_48%,#dcecf9_100%)] py-12 sm:py-20">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(127,192,255,0.18),transparent_22%),radial-gradient(circle_at_82%_22%,rgba(23,63,105,0.1),transparent_24%),linear-gradient(to_right,rgba(23,63,105,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(23,63,105,0.04)_1px,transparent_1px)] bg-[size:auto,auto,44px_44px,44px_44px]" />
+          <SectionInner className="relative space-y-12">
             <RevealBlock
               inView={sectionRevealMotion}
               className="flex flex-col items-center space-y-5 text-center"
@@ -685,58 +691,54 @@ export default function CebuPacificCompanyProfilePage() {
               <p className="[font-family:var(--font-paraluman-heading)] bg-[linear-gradient(110deg,#0f4f8f_0%,#2574BB_22%,#eef7ff_36%,#2574BB_50%,#6fb7ff_64%,#1c5f9b_82%,#0f4f8f_100%)] bg-[length:220%_100%] bg-clip-text text-[clamp(3rem,6.2vw,5.8rem)] font-black leading-[0.88] tracking-[-0.068em] text-transparent [animation:runway-shine_8s_ease-in-out_infinite] [filter:drop-shadow(0_10px_28px_rgba(37,116,187,0.18))]">
                 Better internships start here.
               </p>
-
-              <RevealBlock
-                variants={STAGGER_CONTAINER_VARIANTS}
-                inView={sectionStaggerMotion}
-                className="space-y-6"
-              >
-                <motion.div
+            </RevealBlock>
+            <RevealBlock
+              variants={STAGGER_CONTAINER_VARIANTS}
+              inView={sectionStaggerMotion}
+              className="space-y-6"
+            >
+              <div className="grid gap-4 md:grid-cols-3">
+                <motion.article
                   variants={STAGGER_ITEM_VARIANTS}
-                  className="text-center"
-                ></motion.div>
-                <div className="grid gap-4 md:grid-cols-3">
-                  <motion.article
-                    variants={STAGGER_ITEM_VARIANTS}
-                    className="rounded-[0.33em] border border-[#2574BB]/18 bg-white/85 px-6 py-6 shadow-[0_18px_36px_-28px_rgba(23,63,105,0.28)] backdrop-blur-sm"
-                  >
-                    <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black tracking-[-0.02em] text-[#123f6b]">
-                      No resume needed
-                    </p>
-                    <p className="[font-family:var(--font-paraluman-body)] mt-2 text-base leading-7 text-[#173957]/82">
-                      We don&apos;t care about credentials. Prove yourself by
-                      completing the challenge.
-                    </p>
-                  </motion.article>
-                  <motion.article
-                    variants={STAGGER_ITEM_VARIANTS}
-                    className="rounded-[0.33em] border border-[#2574BB]/18 bg-white/85 px-6 py-6 shadow-[0_18px_36px_-28px_rgba(23,63,105,0.28)] backdrop-blur-sm"
-                  >
-                    <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black tracking-[-0.02em] text-[#123f6b]">
-                      Challenge-based applications
-                    </p>
-                    <p className="[font-family:var(--font-paraluman-body)] mt-2 text-base leading-7 text-[#173957]/82">
-                      We want to look at what you can actually do, not just what
-                      you say.
-                    </p>
-                  </motion.article>
-                  <motion.article
-                    variants={STAGGER_ITEM_VARIANTS}
-                    className="rounded-[0.33em] border border-[#2574BB]/18 bg-white/85 px-6 py-6 shadow-[0_18px_36px_-28px_rgba(23,63,105,0.28)] backdrop-blur-sm"
-                  >
-                    <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black tracking-[-0.02em] text-[#123f6b]">
-                      Response in 24 hours
-                    </p>
-                    <p className="[font-family:var(--font-paraluman-body)] mt-2 text-base leading-7 text-[#173957]/82">
-                      You won&apos;t be the only one trying hard. We&apos;ll try
-                      our best at responding to you quickly.
-                    </p>
-                  </motion.article>
-                </div>
-              </RevealBlock>
+                  className="rounded-[0.33em] border border-[#2574BB]/18 bg-white/85 px-6 py-6 shadow-[0_18px_36px_-28px_rgba(23,63,105,0.28)] backdrop-blur-sm"
+                >
+                  <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black tracking-[-0.02em] text-[#123f6b]">
+                    No resume needed
+                  </p>
+                  <p className="[font-family:var(--font-paraluman-body)] mt-2 text-base leading-7 text-[#173957]/82">
+                    We don&apos;t care about credentials. Prove yourself by
+                    completing the challenge.
+                  </p>
+                </motion.article>
+                <motion.article
+                  variants={STAGGER_ITEM_VARIANTS}
+                  className="rounded-[0.33em] border border-[#2574BB]/18 bg-white/85 px-6 py-6 shadow-[0_18px_36px_-28px_rgba(23,63,105,0.28)] backdrop-blur-sm"
+                >
+                  <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black tracking-[-0.02em] text-[#123f6b]">
+                    Challenge-based applications
+                  </p>
+                  <p className="[font-family:var(--font-paraluman-body)] mt-2 text-base leading-7 text-[#173957]/82">
+                    We want to look at what you can actually do, not just what
+                    you say.
+                  </p>
+                </motion.article>
+                <motion.article
+                  variants={STAGGER_ITEM_VARIANTS}
+                  className="rounded-[0.33em] border border-[#2574BB]/18 bg-white/85 px-6 py-6 shadow-[0_18px_36px_-28px_rgba(23,63,105,0.28)] backdrop-blur-sm"
+                >
+                  <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black tracking-[-0.02em] text-[#123f6b]">
+                    Response in 24 hours
+                  </p>
+                  <p className="[font-family:var(--font-paraluman-body)] mt-2 text-base leading-7 text-[#173957]/82">
+                    You won&apos;t be the only one trying hard. We&apos;ll try
+                    our best at responding to you quickly.
+                  </p>
+                </motion.article>
+              </div>
             </RevealBlock>
 
-            <InsetPanel className="overflow-hidden rounded-[0.33em] border border-[#2574BB]/14  shadow-[0_28px_66px_-42px_rgba(23,63,105,0.3)] backdrop-blur-sm">
+            <InsetPanel className="overflow-hidden rounded-[0.33em] border border-[#2574BB]/14 shadow-[0_28px_66px_-42px_rgba(23,63,105,0.3)] backdrop-blur-sm max-w-4xl mx-auto">
+              <div ref={listingsRef} />
               <RevealBlock
                 variants={STAGGER_CONTAINER_VARIANTS}
                 inView={sectionStaggerMotion}
@@ -821,9 +823,6 @@ export default function CebuPacificCompanyProfilePage() {
               inView={sectionRevealMotion}
               className="mx-auto max-w-4xl text-center"
             >
-              <p className="[font-family:var(--font-paraluman-mono)] text-[11px] font-bold uppercase tracking-[0.18em] text-[#2574BB]">
-                FAQs
-              </p>
               <p className="[font-family:var(--font-paraluman-heading)] mt-2 text-[clamp(2rem,4vw,3rem)] font-black leading-[0.95] tracking-[-0.05em] text-[#123f6b]">
                 Questions you might have
               </p>
