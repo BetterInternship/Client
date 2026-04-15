@@ -3,7 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  memo,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   motion,
   useInView,
@@ -89,41 +96,17 @@ type InViewMotionProps = {
   viewport?: { once: true; amount: number };
 };
 
-type SplitFlapRowData = {
-  label: string;
-  value: string;
-};
-
-type SplitFlapBoardState = SplitFlapRowData[];
+type SplitFlapBoardState = string[];
 
 const HERO_BOARD_STATES: SplitFlapBoardState[] = [
-  [
-    { label: "STUDENT", value: "BUILDER" },
-    { label: "RESUME", value: "NOT NEEDED" },
-    { label: "RESPONSE", value: "24 HOURS" },
-    { label: "IMPACT", value: "MILLIONS" },
-  ],
-  [
-    { label: "FROM", value: "CLASSROOM" },
-    { label: "TO", value: "CEBU PACIFIC" },
-    { label: "ROLE", value: "REAL WORK" },
-    { label: "OUTCOME", value: "REAL IMPACT" },
-  ],
-  [
-    { label: "OPEN TO", value: "EVERY JUAN" },
-    { label: "CHALLENGE", value: "REQUIRED" },
-    { label: "DEGREE", value: "ANY" },
-    { label: "NEXT STOP", value: "INTERNSHIP" },
-  ],
-  [
-    { label: "USERS", value: "20 MILLION" },
-    { label: "PRODUCT", value: "BOOKING FLOW" },
-    { label: "MISSION", value: "EASIER TRAVEL" },
-    { label: "STATUS", value: "NOW BOARDING" },
-  ],
+  ["BUILD FAST", "NO RESUME", "24H REPLY", "BIG IMPACT"],
+  ["FROM CLASS", "TO CEBPAC", "REAL WORK", "OWN EARLY"],
+  ["EVERY JUAN", "TRY TASK", "ANY DEGREE", "NEXT STEP"],
+  ["20M USERS", "BOOK FLOW", "EASE TRIPS", "NOW BOARD"],
 ];
 
 const BOARD_CHARS = [...Presets.SPECIAL, ":", "/"];
+const MAX_BOARD_LINE_CHARS = 10;
 
 function padBoardValue(value: string, width: number) {
   return value.toUpperCase().padEnd(width, " ");
@@ -290,118 +273,71 @@ function ListingsCTA({
   );
 }
 
-function SplitFlapRow({
-  label,
-  value,
-  labelLength,
-  valueLength,
+const SplitFlapRow = memo(function SplitFlapRow({
+  line,
+  lineLength,
   reduceMotion,
 }: {
-  label: string;
-  value: string;
-  labelLength: number;
-  valueLength: number;
+  line: string;
+  lineLength: number;
   reduceMotion: boolean;
 }) {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-2 border-b border-white/10 py-2 last:border-b-0 sm:gap-3 sm:py-2.5 lg:py-3">
+    <div className="py-2 last:border-b-0 sm:py-2.5 lg:py-3">
       <SplitFlap
-        value={padBoardValue(label, labelLength)}
+        value={padBoardValue(line, lineLength)}
         chars={BOARD_CHARS}
-        length={labelLength}
-        timing={reduceMotion ? 1 : 24}
+        length={lineLength}
+        timing={reduceMotion ? 1 : 28}
         hinge
         theme="light"
-        size="medium"
-        className="cebu-split-flap cebu-split-flap-row"
-      />
-      <SplitFlap
-        value={padBoardValue(value, valueLength)}
-        chars={BOARD_CHARS}
-        length={valueLength}
-        timing={reduceMotion ? 1 : 20}
-        hinge
-        theme="light"
-        size="medium"
-        className="cebu-split-flap cebu-split-flap-row"
+        size="xlarge"
       />
     </div>
   );
-}
+});
 
 function SplitFlapBoard({
   states,
-  pauseMs = 2400,
-  rowDelayMs = 220,
+  pauseMs = 3400,
   className,
 }: {
   states: SplitFlapBoardState[];
   pauseMs?: number;
-  rowDelayMs?: number;
   className?: string;
 }) {
   const reduceMotion = useReducedMotion();
-  const labelLength = Math.max(
-    ...states.flatMap((state) => state.map((row) => row.label.length)),
-    0,
-  );
-  const valueLength = Math.max(
-    ...states.flatMap((state) => state.map((row) => row.value.length)),
-    0,
-  );
+  const lineLength = MAX_BOARD_LINE_CHARS;
   const [activeIndex, setActiveIndex] = useState(0);
-  const [displayedRows, setDisplayedRows] = useState<SplitFlapBoardState>(
-    states[0] ?? [],
-  );
-  const repeatedRows = Array.from({ length: 3 }, (_, repeatIndex) =>
-    displayedRows.map((row, rowIndex) => ({
-      ...row,
-      _repeatKey: `${repeatIndex}-${rowIndex}-${row.label}-${row.value}`,
-    })),
-  ).flat();
+  const displayedRows = states[activeIndex] ?? states[0] ?? [];
+  const targetRows = 7;
+  const repeatedRows = useMemo(() => {
+    if (displayedRows.length === 0) return [];
+    return Array.from({ length: targetRows }, (_, index) => {
+      const row = displayedRows[index % displayedRows.length];
+      return {
+        line: row,
+        _repeatKey: `row-${index}`,
+      };
+    });
+  }, [displayedRows]);
 
   useEffect(() => {
     setActiveIndex(0);
-    setDisplayedRows(states[0] ?? []);
   }, [states]);
 
   useEffect(() => {
     if (states.length <= 1) return;
 
     const nextIndex = (activeIndex + 1) % states.length;
-    const nextState = states[nextIndex];
-    const timeouts: number[] = [];
-
-    const startTimer = window.setTimeout(() => {
-      nextState.forEach((row, rowIndex) => {
-        const rowTimer = window.setTimeout(() => {
-          setDisplayedRows((current) =>
-            current.map((currentRow, currentIndex) =>
-              currentIndex === rowIndex ? row : currentRow,
-            ),
-          );
-        }, reduceMotion ? 0 : rowIndex * rowDelayMs);
-
-        timeouts.push(rowTimer);
-      });
-
-      const settleTimer = window.setTimeout(() => {
-        setActiveIndex(nextIndex);
-      }, reduceMotion ? 30 : nextState.length * rowDelayMs + pauseMs * 0.18);
-
-      timeouts.push(settleTimer);
+    const timer = window.setTimeout(() => {
+      setActiveIndex(nextIndex);
     }, pauseMs);
 
-    timeouts.push(startTimer);
-
-    return () => {
-      timeouts.forEach((timeout) => window.clearTimeout(timeout));
-    };
+    return () => window.clearTimeout(timer);
   }, [
     activeIndex,
     pauseMs,
-    reduceMotion,
-    rowDelayMs,
     states,
   ]);
 
@@ -412,15 +348,13 @@ function SplitFlapBoard({
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.18 }}
       className={cn("relative h-full w-full", className)}
     >
-      <div className="flex h-full min-h-[26rem] flex-col justify-center border-x border-white/8 bg-[linear-gradient(180deg,#17364f_0%,#0e1f30_52%,#0a1621_100%)] px-6 py-4 sm:min-h-[30rem] sm:px-8 sm:py-5 lg:min-h-0 lg:px-9 lg:py-4 xl:px-10">
+      <div className="flex h-full min-h-[26rem] flex-col justify-center bg-transparent px-6 py-4 sm:min-h-[30rem] sm:px-8 sm:py-5 lg:min-h-0 lg:px-9 lg:py-4 xl:px-10">
         <div className="flex h-full flex-col justify-between">
           {repeatedRows.map((row) => (
             <SplitFlapRow
               key={row._repeatKey}
-              label={row.label}
-              value={row.value}
-              labelLength={labelLength}
-              valueLength={valueLength}
+              line={row.line}
+              lineLength={lineLength}
               reduceMotion={reduceMotion}
             />
           ))}
@@ -439,10 +373,11 @@ function HeroPanel({
 }) {
   return (
     <section className="relative overflow-hidden">
-      <div className="grid min-h-[100vh] lg:grid-cols-[minmax(0,1.06fr)_minmax(0,0.94fr)]">
-        <div className="relative flex min-h-[86vh] items-center justify-center overflow-hidden bg-white px-6 py-14 sm:px-10 sm:py-16 lg:px-16 lg:py-20 xl:px-24">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_18%,rgba(127,192,255,0.22),transparent_24%),radial-gradient(circle_at_78%_76%,rgba(37,116,187,0.1),transparent_28%)]" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(225,239,252,0.8)_100%)]" />
+      <div className="relative grid min-h-[100vh] bg-white lg:grid-cols-[minmax(0,1.06fr)_minmax(0,0.94fr)]">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_18%,rgba(127,192,255,0.22),transparent_24%),radial-gradient(circle_at_78%_76%,rgba(37,116,187,0.1),transparent_28%)]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(225,239,252,0.8)_100%)]" />
+
+        <div className="relative flex min-h-[86vh] items-center justify-center overflow-hidden px-6 py-14 sm:px-10 sm:py-16 lg:px-16 lg:py-20 xl:px-24">
           <motion.div
             initial={reduceMotion ? false : { opacity: 0, y: 18 }}
             animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
@@ -533,7 +468,7 @@ function HeroPanel({
           </motion.div>
         </div>
 
-        <div className="relative flex min-h-[26rem] items-stretch overflow-hidden bg-[linear-gradient(180deg,#17364f_0%,#0e1f30_52%,#0a1621_100%)] lg:min-h-[86vh]">
+        <div className="relative flex min-h-[26rem] items-stretch overflow-hidden lg:min-h-[86vh]">
           <div className="relative z-10 h-full w-full">
             <SplitFlapBoard states={HERO_BOARD_STATES} />
           </div>
@@ -582,52 +517,6 @@ export default function CebuPacificCompanyProfilePage() {
           }
           100% {
             background-position: -40% 50%;
-          }
-        }
-
-        .cebu-split-flap.split-flap-display {
-          gap: 2px;
-          justify-content: flex-start;
-        }
-
-        .cebu-split-flap.split-flap-display .split-flap-digit {
-          border-radius: 0;
-          background: #000;
-          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
-          overflow: hidden;
-        }
-
-        .cebu-split-flap.split-flap-display.dark .split-flap-part {
-          background: #000;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          box-shadow: none;
-        }
-
-        .cebu-split-flap.split-flap-display .split-flap-char {
-          font-family: var(--font-paraluman-mono), monospace;
-          font-weight: 600;
-          letter-spacing: 0.01em;
-          text-transform: uppercase;
-        }
-
-        .cebu-split-flap.split-flap-display .split-flap-hinge {
-          height: 1px;
-          background: rgba(255, 255, 255, 0.12);
-        }
-
-        .cebu-split-flap-row.split-flap-display {
-          font-size: 1.16rem;
-        }
-
-        @media (min-width: 640px) {
-          .cebu-split-flap-row.split-flap-display {
-            font-size: 1.26rem;
-          }
-        }
-
-        @media (min-width: 1024px) {
-          .cebu-split-flap-row.split-flap-display {
-            font-size: 1.55rem;
           }
         }
       `}</style>
