@@ -339,7 +339,7 @@ function HeroPanel({ reduceMotion }: { reduceMotion: boolean }) {
                 }}
                 className="mt-2 block pb-[0.08em] bg-[linear-gradient(110deg,#0f4f8f_0%,#2574BB_22%,#eef7ff_36%,#2574BB_50%,#6fb7ff_64%,#1c5f9b_82%,#0f4f8f_100%)] bg-[length:220%_100%] bg-clip-text text-7xl  leading-[0.95] tracking-[-0.052em] text-transparent [animation:runway-shine_8s_ease-in-out_infinite] [filter:drop-shadow(0_10px_28px_rgba(37,116,187,0.22))]"
               >
-                Imagine 2 million air travelers using YOUR code.
+                Imagine 20 Million Travelers Using YOUR Code.
               </motion.span>
             </h1>
 
@@ -513,30 +513,16 @@ export default function CebuPacificCompanyProfilePage() {
               >
                 <div className="space-y-6 px-6 py-8 sm:px-8 sm:py-10">
                   <p className="[font-family:var(--font-paraluman-heading)] max-w-[20ch] text-[clamp(1.95rem,3.4vw,3rem)] font-black leading-[0.96] tracking-[-0.055em] text-[#173f69]">
-                    You&apos;ll help improve travel for hundreds of thousands of
-                    passengers.
+                    Meaningful Work
                   </p>
                   <p className="[font-family:var(--font-paraluman-body)] max-w-[60ch] text-base leading-7 text-[#173957]/82 sm:text-lg sm:leading-[1.72]">
-                    {cebuPacificProfile.about.body}
+                    <span className="font-bold">
+                      Most internships are grunt work.{" "}
+                    </span>
+                    Here, you’ll be given trust to build and ship features that
+                    millions of Filipinos will use, including your family and
+                    friends.
                   </p>
-                  <div className="flex flex-wrap items-end gap-x-10 gap-y-5 pt-2">
-                    <div>
-                      <p className="[font-family:var(--font-paraluman-heading)] text-5xl font-black tracking-[-0.06em] text-[#123f6b] sm:text-6xl">
-                        <AnimatedStatValue value={60} suffix="+" />
-                      </p>
-                      <p className="[font-family:var(--font-paraluman-mono)] mt-1 text-[10px] font-bold uppercase tracking-[0.15em] text-[#2574BB]">
-                        destinations flown daily
-                      </p>
-                    </div>
-                    <div>
-                      <p className="[font-family:var(--font-paraluman-heading)] text-5xl font-black tracking-[-0.06em] text-[#123f6b] sm:text-6xl">
-                        <AnimatedStatValue value={14} />
-                      </p>
-                      <p className="[font-family:var(--font-paraluman-mono)] mt-1 text-[10px] font-bold uppercase tracking-[0.15em] text-[#2574BB]">
-                        countries served
-                      </p>
-                    </div>
-                  </div>
                 </div>
                 <div className="relative min-h-[20rem] overflow-hidden">
                   <RevealBlock
@@ -581,64 +567,53 @@ export default function CebuPacificCompanyProfilePage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-[#173f69]/40 via-transparent to-transparent" />
                 </div>
                 <div className="space-y-6 px-6 py-8 sm:px-8 sm:py-10">
-                  <div>
-                    <p className="[font-family:var(--font-paraluman-mono)] text-[11px] font-bold uppercase tracking-[0.18em] text-[#2574BB]">
-                      A message to interns
-                    </p>
-                    <p className="[font-family:var(--font-paraluman-heading)] max-w-[18ch] text-[clamp(1.95rem,3.3vw,3rem)] font-black leading-[0.96] tracking-[-0.055em] text-[#173f69]">
-                      Built for interns who want real ownership early.
-                    </p>
-                  </div>
+                  <p className="[font-family:var(--font-paraluman-heading)] max-w-[18ch] text-[clamp(1.95rem,3.3vw,3rem)] font-black leading-[0.96] tracking-[-0.055em] text-[#173f69]">
+                    Massive impact
+                  </p>
+                  <p className="[font-family:var(--font-paraluman-body)] max-w-[60ch] text-base leading-7 text-[#173957]/82 sm:text-lg sm:leading-[1.72]">
+                    We operate over{" "}
+                    <span className="font-bold">190,000 flights</span> a year
+                    across nearly{" "}
+                    <span className="font-bold">100 aircrafts.</span> Your code
+                    will make their travels more delightful.
+                  </p>
+                </div>
+              </RevealBlock>
+            </InsetPanel>
+          </SectionInner>
+        </SectionShell>
+
+        <SectionShell className="border-t-0">
+          <SectionInner className="space-y-6">
+            <InsetPanel className="overflow-hidden border-0 bg-transparent shadow-none">
+              <RevealBlock
+                inView={sectionRevealMotion}
+                className="grid lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]"
+              >
+                <div className="space-y-6 px-6 py-8 sm:px-8 sm:py-10">
+                  <p className="[font-family:var(--font-paraluman-heading)] max-w-[20ch] text-[clamp(1.95rem,3.4vw,3rem)] font-black leading-[0.96] tracking-[-0.055em] text-[#173f69]">
+                    Open to LITERALLY EVERYONE
+                  </p>
+                  <p className="[font-family:var(--font-paraluman-body)] max-w-[60ch] text-base leading-7 text-[#173957]/82 sm:text-lg sm:leading-[1.72]">
+                    Again, we won’t look at your resume. Your only goal is to
+                    impress us through the challenge. If we’re impressed, you’re
+                    in.
+                  </p>
+                </div>
+                <div className="relative min-h-[20rem] overflow-hidden">
                   <RevealBlock
-                    variants={STAGGER_CONTAINER_VARIANTS}
-                    inView={sectionStaggerMotion}
-                    className="space-y-4"
+                    variants={IMAGE_REVEAL_VARIANTS}
+                    inView={sectionRevealMotion}
+                    className="absolute inset-0"
                   >
-                    <motion.article
-                      variants={STAGGER_ITEM_VARIANTS}
-                      whileHover={
-                        shouldReduceMotion
-                          ? undefined
-                          : {
-                              y: -2,
-                              boxShadow:
-                                "0 18px 36px -30px rgba(23,63,105,0.5)",
-                            }
-                      }
-                      transition={{ duration: 0.24, ease: "easeOut" }}
-                      className="rounded-[0.33em] border border-[#2574BB]/12 bg-[#f8fbff] p-4 sm:p-5"
-                    >
-                      <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black tracking-[-0.025em] text-[#123f6b] sm:text-xl">
-                        01 - Think like an owner
-                      </p>
-                      <p className="[font-family:var(--font-paraluman-body)] mt-2 text-base leading-7 text-[#173957]/82">
-                        Define the passenger problem clearly, decide fast, and
-                        show your reasoning through shipped work.
-                      </p>
-                    </motion.article>
-                    <motion.article
-                      variants={STAGGER_ITEM_VARIANTS}
-                      whileHover={
-                        shouldReduceMotion
-                          ? undefined
-                          : {
-                              y: -2,
-                              boxShadow:
-                                "0 18px 36px -30px rgba(23,63,105,0.5)",
-                            }
-                      }
-                      transition={{ duration: 0.24, ease: "easeOut" }}
-                      className="rounded-[0.33em] border border-[#2574BB]/12 bg-[#f8fbff] p-4 sm:p-5"
-                    >
-                      <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black tracking-[-0.025em] text-[#123f6b] sm:text-xl">
-                        02 - Move fast, learn faster
-                      </p>
-                      <p className="[font-family:var(--font-paraluman-body)] mt-2 text-base leading-7 text-[#173957]/82">
-                        Feedback is quick and specific, so iterate quickly and
-                        focus on what improves the real travel experience.
-                      </p>
-                    </motion.article>
+                    <Image
+                      src={IMPACT_IMAGE_URL}
+                      alt="Passengers walking through an airport terminal"
+                      fill
+                      className="object-cover"
+                    />
                   </RevealBlock>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#173f69]/35 via-transparent to-transparent" />
                 </div>
               </RevealBlock>
             </InsetPanel>
