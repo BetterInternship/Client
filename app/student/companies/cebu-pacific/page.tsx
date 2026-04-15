@@ -382,7 +382,7 @@ function HeroPanel({ reduceMotion }: { reduceMotion: boolean }) {
                     className="relative z-10 inline-flex items-center gap-2 text-white hover:text-white"
                   >
                     <span className="relative z-10 text-white group-hover:text-white">
-                      View Internship Challenge
+                      Let me prove myself
                     </span>
                     <ArrowRight className="relative z-10 h-4 w-4 text-white transition-transform duration-300 group-hover:translate-x-1.5 group-hover:text-white" />
                   </Link>
