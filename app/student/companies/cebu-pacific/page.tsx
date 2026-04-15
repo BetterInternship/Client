@@ -747,7 +747,7 @@ export default function CebuPacificCompanyProfilePage() {
                 inView={sectionRevealMotion}
                 className="grid lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]"
               >
-                <div className="space-y-6 px-6 py-8 sm:px-8 sm:py-10">
+                <div className="max-lg:order-2 space-y-6 px-6 py-8 sm:px-8 sm:py-10">
                   <p className="[font-family:var(--font-paraluman-heading)] max-w-[20ch] text-[clamp(1.95rem,3.4vw,3rem)] font-black leading-[0.96] tracking-[-0.055em] text-[#173f69]">
                     Meaningful Work
                   </p>
@@ -764,7 +764,7 @@ export default function CebuPacificCompanyProfilePage() {
                     label="Let me prove myself"
                   />
                 </div>
-                <div className="relative min-h-[20rem] overflow-hidden">
+                <div className="relative min-h-[20rem] overflow-hidden max-lg:order-1">
                   <RevealBlock
                     variants={IMAGE_REVEAL_VARIANTS}
                     inView={sectionRevealMotion}
@@ -791,7 +791,7 @@ export default function CebuPacificCompanyProfilePage() {
                 inView={sectionRevealMotion}
                 className="grid lg:grid-cols-[minmax(300px,0.9fr)_minmax(0,1.1fr)]"
               >
-                <div className="relative min-h-[20rem] overflow-hidden">
+                <div className="relative min-h-[20rem] overflow-hidden max-lg:order-1">
                   <RevealBlock
                     variants={IMAGE_REVEAL_VARIANTS}
                     inView={sectionRevealMotion}
@@ -806,7 +806,7 @@ export default function CebuPacificCompanyProfilePage() {
                   </RevealBlock>
                   <div className="absolute inset-0 bg-gradient-to-t from-[#173f69]/40 via-transparent to-transparent" />
                 </div>
-                <div className="space-y-6 px-6 py-8 sm:px-8 sm:py-10">
+                <div className="max-lg:order-2 space-y-6 px-6 py-8 sm:px-8 sm:py-10">
                   <p className="[font-family:var(--font-paraluman-heading)] max-w-[18ch] text-[clamp(1.95rem,3.3vw,3rem)] font-black leading-[0.96] tracking-[-0.055em] text-[#173f69]">
                     Massive impact
                   </p>
@@ -834,7 +834,7 @@ export default function CebuPacificCompanyProfilePage() {
                 inView={sectionRevealMotion}
                 className="grid lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]"
               >
-                <div className="space-y-6 px-6 py-8 sm:px-8 sm:py-10">
+                <div className="max-lg:order-2 space-y-6 px-6 py-8 sm:px-8 sm:py-10">
                   <p className="[font-family:var(--font-paraluman-heading)] max-w-[20ch] text-[clamp(1.95rem,3.4vw,3rem)] font-black leading-[0.96] tracking-[-0.055em] text-[#173f69]">
                     Open to LITERALLY EVERYONE
                   </p>
@@ -848,7 +848,7 @@ export default function CebuPacificCompanyProfilePage() {
                     label="Let me prove myself"
                   />
                 </div>
-                <div className="relative min-h-[20rem] overflow-hidden">
+                <div className="relative min-h-[20rem] overflow-hidden max-lg:order-1">
                   <RevealBlock
                     variants={IMAGE_REVEAL_VARIANTS}
                     inView={sectionRevealMotion}
