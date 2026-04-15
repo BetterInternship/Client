@@ -75,37 +75,6 @@ const IMAGE_REVEAL_VARIANTS: Variants = {
   },
 };
 
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part.replace(/[^A-Za-z]/g, ""))
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((segment) => segment[0]?.toUpperCase())
-    .join("");
-}
-
-function renderHighlightedQuote(quote: string, highlight: string): ReactNode {
-  if (!highlight) return quote;
-
-  const lowerQuote = quote.toLowerCase();
-  const lowerHighlight = highlight.toLowerCase();
-  const start = lowerQuote.indexOf(lowerHighlight);
-
-  if (start < 0) return quote;
-
-  const end = start + highlight.length;
-  return (
-    <>
-      {quote.slice(0, start)}
-      <strong className="font-semibold text-[#0f2f54]">
-        {quote.slice(start, end)}
-      </strong>
-      {quote.slice(end)}
-    </>
-  );
-}
-
 function AnimatedStatValue({
   value,
   suffix = "",
@@ -480,7 +449,7 @@ export default function CebuPacificCompanyProfilePage() {
               <div className="max-w-[42rem] space-y-3">
                 <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(2.15rem,4.8vw,4.1rem)] font-light leading-[0.96] tracking-[-0.056em] text-white">
                   Cebu Pacific was named one of the{" "}
-                  <span className="font-bold text-white">
+                  <span className="bg-[linear-gradient(110deg,#8fceff_0%,#eef7ff_52%,#8fceff_100%)] bg-[length:200%_100%] bg-clip-text text-transparent [animation:runway-shine_7.5s_ease-in-out_infinite] font-black">
                     Philippines&apos; Best Places to Work in
                   </span>{" "}
                   2025.
@@ -624,71 +593,82 @@ export default function CebuPacificCompanyProfilePage() {
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_24%,rgba(143,206,255,0.26),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(255,255,255,0.09),transparent_24%)]" />
           <div className="pointer-events-none absolute -left-20 top-14 h-52 w-52 rounded-full bg-[#64b4e6]/20 blur-3xl" />
           <div className="pointer-events-none absolute -right-20 bottom-16 h-56 w-56 rounded-full bg-[#9bd5ff]/18 blur-3xl" />
-          <SectionInner className="relative space-y-8">
-            <RevealBlock inView={sectionRevealMotion}>
-              <div className="max-w-3xl space-y-4">
-                <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(2.15rem,4.2vw,3.3rem)] font-black leading-[0.94] tracking-[-0.055em] text-white">
-                  What past interns remember most is the trust.
-                </p>
-              </div>
+          <SectionInner className="relative space-y-10">
+            <RevealBlock
+              inView={sectionRevealMotion}
+              className="mx-auto max-w-5xl space-y-3 text-center"
+            >
+              <p className="[font-family:var(--font-paraluman-mono)] text-[11px] font-bold uppercase tracking-[0.2em] text-[#8fceff]">
+                Objective
+              </p>
+              <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(2.1rem,4.5vw,3.35rem)] font-black leading-[0.97] tracking-[-0.045em] text-white">
+                Make Cebu Pacific the{" "}
+                <span className="bg-[linear-gradient(110deg,#8fceff_0%,#eef7ff_52%,#8fceff_100%)] bg-[length:200%_100%] bg-clip-text text-transparent [animation:runway-shine_7.5s_ease-in-out_infinite]">
+                  easiest airline to book
+                </span>{" "}
+                in the country. The interns will redesign how millions of
+                Filipinos book flights.
+              </p>
             </RevealBlock>
             <RevealBlock
               variants={STAGGER_CONTAINER_VARIANTS}
               inView={sectionStaggerMotion}
-              className="grid gap-6 xl:grid-cols-3"
+              className="grid gap-6 md:grid-cols-3"
             >
-              {cebuPacificProfile.testimonials.map((item) => {
-                const tag =
-                  item.name === "Nicole S."
-                    ? "Worked on booking flow"
-                    : item.name === "Marco L."
-                      ? "Improved payment UX"
-                      : item.name === "Danica R."
-                        ? "Shipped product experiments"
-                        : "Real product work";
-                const highlight =
-                  item.name === "Nicole S."
-                    ? "your thinking held up"
-                    : item.name === "Marco L."
-                      ? "Feedback was quick and very specific"
-                      : item.name === "Danica R."
-                        ? "real product work"
-                        : "";
-
-                return (
-                  <motion.article
-                    key={item.name}
-                    variants={STAGGER_ITEM_VARIANTS}
-                    whileHover={shouldReduceMotion ? undefined : { y: -3 }}
-                    transition={{ duration: 0.24, ease: "easeOut" }}
-                    className="flex min-h-[18rem] flex-col justify-between rounded-[0.5em] border border-[#dbe7f2] bg-white px-6 py-7 shadow-[0_12px_26px_-22px_rgba(15,23,42,0.2)] transition-all duration-300 hover:border-[#c8d8e8] hover:shadow-[0_18px_34px_-22px_rgba(15,23,42,0.24)] sm:px-7"
-                  >
-                    <div className="space-y-5">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#dbe7f2] bg-[#f3f8fd] text-[13px] font-black uppercase tracking-[0.1em] text-[#2f628f] [font-family:var(--font-paraluman-heading)]">
-                            {getInitials(item.name)}
-                          </span>
-                          <div>
-                            <p className="[font-family:var(--font-paraluman-heading)] text-base font-black uppercase tracking-[0.01em] text-[#0f2f54]">
-                              {item.name}
-                            </p>
-                            <p className="[font-family:var(--font-paraluman-mono)] text-[11px] font-bold uppercase tracking-[0.1em] text-[#5b7f9f]">
-                              {item.role}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <span className="inline-flex w-fit rounded-full border border-[#d7e7f6] bg-[#f1f7fd] px-3 py-1 [font-family:var(--font-paraluman-mono)] text-[9px] font-bold uppercase tracking-[0.14em] text-[#2f628f]">
-                        {tag}
-                      </span>
-                      <p className="text-[#365a7a] [font-family:var(--font-paraluman-body)] text-base leading-8">
-                        "{renderHighlightedQuote(item.quote, highlight)}"
-                      </p>
-                    </div>
-                  </motion.article>
-                );
-              })}
+              <motion.article
+                variants={STAGGER_ITEM_VARIANTS}
+                whileHover={shouldReduceMotion ? undefined : { y: -3 }}
+                transition={{ duration: 0.24, ease: "easeOut" }}
+                className="relative overflow-hidden rounded-[0.5em] border border-[#dbe7f2] bg-white px-6 py-8 text-center shadow-[0_12px_26px_-22px_rgba(15,23,42,0.2)]"
+              >
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#2574BB_0%,#8fceff_48%,#2574BB_100%)]" />
+                <div className="space-y-3">
+                  <p className="[font-family:var(--font-paraluman-mono)] text-[10px] font-bold uppercase tracking-[0.16em] text-[#4f7598]">
+                    01
+                  </p>
+                  <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black leading-[1.22] tracking-[-0.01em] text-[#0f2f54]">
+                    <span className="text-[#1b5f99]">80%</span> of first-time
+                    users complete a flight booking in{" "}
+                    <span className="text-[#1b5f99]">&le;60 seconds</span>{" "}
+                    without assistance
+                  </p>
+                </div>
+              </motion.article>
+              <motion.article
+                variants={STAGGER_ITEM_VARIANTS}
+                whileHover={shouldReduceMotion ? undefined : { y: -3 }}
+                transition={{ duration: 0.24, ease: "easeOut" }}
+                className="relative overflow-hidden rounded-[0.5em] border border-[#dbe7f2] bg-white px-6 py-8 text-center shadow-[0_12px_26px_-22px_rgba(15,23,42,0.2)]"
+              >
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#2574BB_0%,#8fceff_48%,#2574BB_100%)]" />
+                <div className="space-y-3">
+                  <p className="[font-family:var(--font-paraluman-mono)] text-[10px] font-bold uppercase tracking-[0.16em] text-[#4f7598]">
+                    02
+                  </p>
+                  <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black leading-[1.22] tracking-[-0.01em] text-[#0f2f54]">
+                    Reduce booking-related complaints/support tickets by{" "}
+                    <span className="text-[#1b5f99]">50%</span>
+                  </p>
+                </div>
+              </motion.article>
+              <motion.article
+                variants={STAGGER_ITEM_VARIANTS}
+                whileHover={shouldReduceMotion ? undefined : { y: -3 }}
+                transition={{ duration: 0.24, ease: "easeOut" }}
+                className="relative overflow-hidden rounded-[0.5em] border border-[#dbe7f2] bg-white px-6 py-8 text-center shadow-[0_12px_26px_-22px_rgba(15,23,42,0.2)]"
+              >
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#2574BB_0%,#8fceff_48%,#2574BB_100%)]" />
+                <div className="space-y-3">
+                  <p className="[font-family:var(--font-paraluman-mono)] text-[10px] font-bold uppercase tracking-[0.16em] text-[#4f7598]">
+                    03
+                  </p>
+                  <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black leading-[1.22] tracking-[-0.01em] text-[#0f2f54]">
+                    Achieve <span className="text-[#1b5f99]">&ge;90%</span> of
+                    users rating booking experience as &quot;easy&quot; or
+                    &quot;very easy&quot;
+                  </p>
+                </div>
+              </motion.article>
             </RevealBlock>
           </SectionInner>
         </SectionShell>
