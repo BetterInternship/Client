@@ -51,6 +51,8 @@ const bodyFont = Open_Sans({
   variable: "--font-paraluman-body",
 });
 
+const HERO_IMAGE_URL =
+  "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1400&q=80";
 const BEST_PLACE_TO_WORK_BADGE_URL =
   "https://greatplacetowork.com.ph/wp-content/uploads/2024/04/Apr2024Apr2025PHL-1.png";
 const TEXT_GUTTER = "px-6 sm:px-10 lg:px-16 xl:px-24";
@@ -97,6 +99,7 @@ type InViewMotionProps = {
 };
 
 type SplitFlapBoardState = string[];
+type HeroVersion = "version1" | "version2" | "version3";
 
 const HERO_BOARD_STATES: SplitFlapBoardState[] = [
   ["BUILD FAST", "NO RESUME", "24H REPLY", "BIG IMPACT"],
@@ -107,9 +110,18 @@ const HERO_BOARD_STATES: SplitFlapBoardState[] = [
 
 const BOARD_CHARS = [...Presets.SPECIAL, ":", "/"];
 const MAX_BOARD_LINE_CHARS = 10;
+const HERO_HEADLINE_WORDS = [
+  "IMAGINE",
+  "20",
+  "MILLION",
+  "TRAVELERS",
+  "USING",
+  "YOUR",
+  "CODE.",
+];
 
 function padBoardValue(value: string, width: number) {
-  return value.toUpperCase().padEnd(width, " ");
+  return value.toUpperCase().slice(0, width).padEnd(width, " ");
 }
 
 function getInViewMotionProps(
@@ -288,7 +300,7 @@ const SplitFlapRow = memo(function SplitFlapRow({
         value={padBoardValue(line, lineLength)}
         chars={BOARD_CHARS}
         length={lineLength}
-        timing={reduceMotion ? 1 : 28}
+        timing={reduceMotion ? 1 : 24}
         hinge
         theme="light"
         size="xlarge"
@@ -299,7 +311,7 @@ const SplitFlapRow = memo(function SplitFlapRow({
 
 function SplitFlapBoard({
   states,
-  pauseMs = 3400,
+  pauseMs = 5200,
   className,
 }: {
   states: SplitFlapBoardState[];
@@ -364,116 +376,275 @@ function SplitFlapBoard({
   );
 }
 
-function HeroPanel({
+function HeroMainContent({
   reduceMotion,
   onJumpToListings,
+  centered = false,
+  useFlipperHeadline = false,
+  spotlightMode = false,
 }: {
   reduceMotion: boolean;
   onJumpToListings: () => void;
+  centered?: boolean;
+  useFlipperHeadline?: boolean;
+  spotlightMode?: boolean;
 }) {
   return (
-    <section className="relative overflow-hidden">
-      <div className="relative grid min-h-[100vh] bg-white lg:grid-cols-[minmax(0,1.06fr)_minmax(0,0.94fr)]">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_18%,rgba(127,192,255,0.22),transparent_24%),radial-gradient(circle_at_78%_76%,rgba(37,116,187,0.1),transparent_28%)]" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(225,239,252,0.8)_100%)]" />
-
-        <div className="relative flex min-h-[86vh] items-center justify-center overflow-hidden px-6 py-14 sm:px-10 sm:py-16 lg:px-16 lg:py-20 xl:px-24">
-          <motion.div
-            initial={reduceMotion ? false : { opacity: 0, y: 18 }}
-            animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.56, ease: [0.22, 1, 0.36, 1] }}
-            className="relative z-10 flex w-full max-w-3xl flex-col items-center space-y-7 text-center sm:space-y-8 lg:max-w-[40rem] lg:items-start lg:text-left"
+    <motion.div
+      initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+      animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+      transition={{ duration: 0.56, ease: [0.22, 1, 0.36, 1] }}
+      className={cn(
+        "relative z-10 flex w-full max-w-3xl flex-col space-y-7 sm:space-y-8",
+        centered ? "items-center text-center" : "items-center text-center lg:items-start lg:text-left",
+      )}
+    >
+      <motion.div
+        whileHover={reduceMotion ? undefined : { y: -2 }}
+        transition={{ duration: 0.22, ease: "easeOut" }}
+      >
+        <Link
+          href={cebuPacificProfile.websiteUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex w-fit items-center gap-3 transition-all duration-300 hover:opacity-90"
+        >
+          <Image
+            src={cebuPacificLogo}
+            alt="Cebu Pacific"
+            className="h-auto w-28 sm:w-36"
+            priority
+          />
+          <span
+            className={cn(
+              "[font-family:var(--font-paraluman-mono)] text-[11px] font-bold uppercase sm:mt-2.5 sm:text-xs",
+              spotlightMode ? "text-[#1b5f99]" : "text-[#2574BB]",
+            )}
           >
+            Internships
+          </span>
+        </Link>
+      </motion.div>
+
+      {useFlipperHeadline ? (
+        <div className="w-full max-w-6xl space-y-3">
+          <h1 className="sr-only">Imagine 20 Million Travelers Using YOUR Code.</h1>
+          <div
+            className={cn(
+              "mt-2 flex flex-wrap gap-2",
+              centered ? "justify-center" : "justify-center lg:justify-start",
+            )}
+          >
+            {HERO_HEADLINE_WORDS.map((word, index) => (
+              <SplitFlap
+                key={`${word}-${index}`}
+                value={word}
+                chars={BOARD_CHARS}
+                length={word.length}
+                timing={reduceMotion ? 1 : 24}
+                hinge
+                theme="light"
+                size="large"
+              />
+            ))}
+          </div>
+        </div>
+      ) : (
+        <h1 className="[font-family:var(--font-paraluman-heading)] w-full font-black leading-[0.95] text-black">
+          <motion.span
+            initial={reduceMotion ? false : { opacity: 0, y: 18, scale: 0.98 }}
+            animate={reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+            transition={{
+              duration: 0.64,
+              delay: 0.32,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="mt-2 block pb-[0.08em] bg-[linear-gradient(110deg,#0f4f8f_0%,#2574BB_22%,#eef7ff_36%,#2574BB_50%,#6fb7ff_64%,#1c5f9b_82%,#0f4f8f_100%)] bg-[length:220%_100%] bg-clip-text text-7xl leading-[0.95] tracking-[-0.052em] text-transparent [animation:runway-shine_8s_ease-in-out_infinite] [filter:drop-shadow(0_10px_28px_rgba(37,116,187,0.22))]"
+          >
+            Imagine 20 Million Travelers Using YOUR Code.
+          </motion.span>
+        </h1>
+      )}
+
+      <motion.p
+        initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+        animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.52,
+          delay: 0.38,
+          ease: [0.22, 1, 0.36, 1],
+        }}
+        className={cn(
+          "max-w-[57ch] [font-family:var(--font-paraluman-body)] text-base leading-7 sm:text-lg sm:leading-[1.75]",
+          spotlightMode ? "text-[#0d2f51]/84" : "text-[#173957]/82",
+        )}
+      >
+        Have you ever dreamed of reaching millions of users with your code?
+        Today&apos;s your lucky day. We&apos;re looking for superstar interns to
+        improve our booking website.
+        <br />
+        <br />
+        And, we don&apos;t look at resumes. Anybody has a chance. You just need
+        to prove yourself.
+      </motion.p>
+
+      <motion.div
+        initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+        animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.44,
+          delay: 0.48,
+          ease: [0.22, 1, 0.36, 1],
+        }}
+        className={cn(
+          "flex flex-col gap-3",
+          centered ? "items-center" : "items-center lg:items-start",
+        )}
+      >
+        <ListingsCTA
+          onClick={onJumpToListings}
+          label="Let me prove myself"
+          size="hero"
+        />
+
+        <p
+          className={cn(
+            "[font-family:var(--font-paraluman-body)] text-base leading-7 sm:text-lg sm:leading-[1.75] space-x-6",
+            spotlightMode ? "text-[#0d2f51]/84" : "text-[#173957]/82",
+          )}
+        >
+          <span>✔ No resume needed </span>
+          <span>✔ Response in 24 hours</span>
+        </p>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function HeroPanel({
+  reduceMotion,
+  onJumpToListings,
+  heroVersion,
+  onHeroVersionChange,
+}: {
+  reduceMotion: boolean;
+  onJumpToListings: () => void;
+  heroVersion: HeroVersion;
+  onHeroVersionChange: (version: HeroVersion) => void;
+}) {
+  const sharedHeroBackground =
+    "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_18%,rgba(127,192,255,0.22),transparent_24%),radial-gradient(circle_at_78%_76%,rgba(37,116,187,0.1),transparent_28%)]";
+  const sharedHeroBottomFade =
+    "pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(225,239,252,0.8)_100%)]";
+
+  return (
+    <section className="relative overflow-hidden">
+      <div className="absolute right-4 top-4 z-30 sm:right-6 sm:top-6">
+        <label className="sr-only" htmlFor="hero-version-toggle">
+          Hero version
+        </label>
+        <select
+          id="hero-version-toggle"
+          value={heroVersion}
+          onChange={(event) =>
+            onHeroVersionChange(event.target.value as HeroVersion)
+          }
+          className="[font-family:var(--font-paraluman-mono)] rounded-md border border-[#173f69]/20 bg-white/95 px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-[#173f69] shadow-sm outline-none transition focus:border-[#2574BB] focus:ring-2 focus:ring-[#2574BB]/30"
+        >
+          <option value="version1">Version 1</option>
+          <option value="version2">Version 2</option>
+          <option value="version3">Version 3</option>
+        </select>
+      </div>
+
+      {heroVersion === "version1" ? (
+        <div className="relative min-h-[100vh] bg-[#eaf2fb]">
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(12,46,80,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(12,46,80,0.045)_1px,transparent_1px)] bg-[size:44px_44px]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,0)_0%,rgba(255,255,255,0)_16%,rgba(17,47,78,0.12)_32%,rgba(9,26,43,0.3)_50%,rgba(6,16,28,0.52)_70%,rgba(3,9,16,0.72)_100%)] [animation:hero-spotlight-breathe_12s_ease-in-out_infinite]" />
+          <div className="relative flex min-h-[86vh] items-center justify-center px-6 py-16 sm:px-10 sm:py-20 lg:px-16">
+            <HeroMainContent
+              reduceMotion={reduceMotion}
+              onJumpToListings={onJumpToListings}
+              centered
+              useFlipperHeadline
+              spotlightMode
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {heroVersion === "version2" ? (
+        <div className="relative grid min-h-[100vh] bg-white lg:grid-cols-[minmax(0,1.06fr)_minmax(0,0.94fr)]">
+          <div className={sharedHeroBackground} />
+          <div className={sharedHeroBottomFade} />
+
+          <div className="relative flex min-h-[86vh] items-center justify-center overflow-hidden px-6 py-14 sm:px-10 sm:py-16 lg:px-16 lg:py-20 xl:px-24">
+            <HeroMainContent
+              reduceMotion={reduceMotion}
+              onJumpToListings={onJumpToListings}
+            />
+          </div>
+
+          <div className="relative flex min-h-[26rem] items-stretch overflow-hidden lg:min-h-[86vh]">
+            <div className="relative z-10 h-full w-full">
+              <SplitFlapBoard states={HERO_BOARD_STATES} />
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {heroVersion === "version3" ? (
+        <div className="relative grid min-h-[100vh] bg-white lg:grid-cols-[minmax(0,1.06fr)_minmax(0,0.94fr)]">
+          <div className={sharedHeroBackground} />
+          <div className={sharedHeroBottomFade} />
+
+          <div className="relative flex min-h-[86vh] items-center justify-center overflow-hidden px-6 py-14 sm:px-10 sm:py-16 lg:px-16 lg:py-20 xl:px-24">
+            <HeroMainContent
+              reduceMotion={reduceMotion}
+              onJumpToListings={onJumpToListings}
+            />
+          </div>
+
+          <div className="relative min-h-[26rem] overflow-hidden lg:min-h-[86vh]">
             <motion.div
-              whileHover={reduceMotion ? undefined : { y: -2 }}
-              transition={{ duration: 0.22, ease: "easeOut" }}
+              initial={reduceMotion ? false : { scale: 1.05, y: 8 }}
+              animate={reduceMotion ? undefined : { scale: 1, y: 0 }}
+              transition={{ duration: 1.05, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute inset-0"
             >
-              <Link
-                href={cebuPacificProfile.websiteUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex w-fit items-center gap-3 transition-all duration-300 hover:opacity-90"
-              >
-                <Image
-                  src={cebuPacificLogo}
-                  alt="Cebu Pacific"
-                  className="h-auto w-28 sm:w-36"
-                  priority
-                />
-                <span className="[font-family:var(--font-paraluman-mono)] text-[11px] font-bold uppercase text-[#2574BB] sm:mt-2.5 sm:text-xs">
-                  Internships
-                </span>
-              </Link>
+              <Image
+                src={HERO_IMAGE_URL}
+                alt="Airplane wing above the clouds"
+                fill
+                className="object-cover"
+                priority
+              />
             </motion.div>
-
-            <h1 className="[font-family:var(--font-paraluman-heading)] w-full font-black leading-[0.95] text-black">
-              <motion.span
-                initial={
-                  reduceMotion ? false : { opacity: 0, y: 18, scale: 0.98 }
-                }
-                animate={
-                  reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }
-                }
-                transition={{
-                  duration: 0.64,
-                  delay: 0.32,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                className="mt-2 block pb-[0.08em] bg-[linear-gradient(110deg,#0f4f8f_0%,#2574BB_22%,#eef7ff_36%,#2574BB_50%,#6fb7ff_64%,#1c5f9b_82%,#0f4f8f_100%)] bg-[length:220%_100%] bg-clip-text text-7xl  leading-[0.95] tracking-[-0.052em] text-transparent [animation:runway-shine_8s_ease-in-out_infinite] [filter:drop-shadow(0_10px_28px_rgba(37,116,187,0.22))]"
-              >
-                Imagine 20 Million Travelers Using YOUR Code.
-              </motion.span>
-            </h1>
-
-            <motion.p
-              initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-              animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#173f69]/52 via-[#173f69]/10 to-transparent" />
+            <motion.div
+              initial={
+                reduceMotion ? false : { opacity: 0, y: -8, scale: 0.94 }
+              }
+              animate={reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
               transition={{
                 duration: 0.52,
-                delay: 0.38,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              className="max-w-[57ch] [font-family:var(--font-paraluman-body)] text-base leading-7 text-[#173957]/82 sm:text-lg sm:leading-[1.75]"
-            >
-              Have you ever dreamed of reaching millions of users with your
-              code? Today's your lucky day. We're looking for superstar interns
-              to improve our booking website.
-              <br />
-              <br />
-              And, we don't look at resumes. Anybody has a chance. You just need
-              to prove yourself.
-            </motion.p>
-
-            <motion.div
-              initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-              animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.44,
                 delay: 0.48,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              className="flex flex-col items-center gap-3 lg:items-start"
+              className="absolute right-4 top-4 sm:right-6 sm:top-6 lg:right-8 lg:top-8"
             >
-              <ListingsCTA
-                onClick={onJumpToListings}
-                label="Let me prove myself"
-                size="hero"
-              />
-
-              <p className="[font-family:var(--font-paraluman-body)] text-base leading-7 text-[#173957]/82 sm:text-lg sm:leading-[1.75] space-x-6">
-                <span>✔ No resume needed </span>
-                <span>✔ Response in 24 hours</span>
-              </p>
+              <div className="relative h-20 w-20 overflow-hidden sm:h-24 sm:w-24 lg:h-28 lg:w-28">
+                <Image
+                  src={BEST_PLACE_TO_WORK_BADGE_URL}
+                  alt="Best Places to Work in the Philippines 2024-2025 badge"
+                  fill
+                  className="object-contain object-center scale-[1.45]"
+                />
+              </div>
             </motion.div>
-          </motion.div>
-        </div>
-
-        <div className="relative flex min-h-[26rem] items-stretch overflow-hidden lg:min-h-[86vh]">
-          <div className="relative z-10 h-full w-full">
-            <SplitFlapBoard states={HERO_BOARD_STATES} />
           </div>
         </div>
-      </div>
+      ) : null}
     </section>
   );
 }
@@ -483,6 +654,7 @@ export default function CebuPacificCompanyProfilePage() {
   const sectionRevealMotion = getInViewMotionProps(shouldReduceMotion, 0.24);
   const sectionStaggerMotion = getInViewMotionProps(shouldReduceMotion, 0.18);
   const listingsRef = useRef<HTMLDivElement | null>(null);
+  const [heroVersion, setHeroVersion] = useState<HeroVersion>("version2");
 
   const scrollToListings = () => {
     listingsRef.current?.scrollIntoView({
@@ -508,6 +680,8 @@ export default function CebuPacificCompanyProfilePage() {
         <HeroPanel
           reduceMotion={shouldReduceMotion}
           onJumpToListings={scrollToListings}
+          heroVersion={heroVersion}
+          onHeroVersionChange={setHeroVersion}
         />
       </section>
       <style jsx global>{`
@@ -517,6 +691,17 @@ export default function CebuPacificCompanyProfilePage() {
           }
           100% {
             background-position: -40% 50%;
+          }
+        }
+        @keyframes hero-spotlight-breathe {
+          0%,
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+          50% {
+            transform: scale(1.012);
+            opacity: 0.97;
           }
         }
       `}</style>
