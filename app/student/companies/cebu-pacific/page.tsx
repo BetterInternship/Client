@@ -439,17 +439,30 @@ function HeroMainContent({
             )}
           >
             {HERO_HEADLINE_WORDS.map((word, index) => (
-              <SplitFlap
-                key={`${word}-${index}`}
-                value={word}
-                chars={BOARD_CHARS}
-                length={word.length}
-                timing={reduceMotion ? 1 : 24}
-                hinge
-                theme="light"
-                size="large"
-                className="scale-[0.82] sm:scale-100"
-              />
+              <span key={`${word}-${index}`}>
+                <span className="sm:hidden">
+                  <SplitFlap
+                    value={word}
+                    chars={BOARD_CHARS}
+                    length={word.length}
+                    timing={reduceMotion ? 1 : 24}
+                    hinge
+                    theme="light"
+                    size="medium"
+                  />
+                </span>
+                <span className="hidden sm:inline-flex">
+                  <SplitFlap
+                    value={word}
+                    chars={BOARD_CHARS}
+                    length={word.length}
+                    timing={reduceMotion ? 1 : 24}
+                    hinge
+                    theme="light"
+                    size="large"
+                  />
+                </span>
+              </span>
             ))}
           </div>
         </div>
