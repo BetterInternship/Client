@@ -358,8 +358,8 @@ function HeroPanel({ reduceMotion }: { reduceMotion: boolean }) {
                 </Button>
               </MagneticButton>
 
-              <p className="[font-family:var(--font-paraluman-mono)] text-[11px] font-bold uppercase tracking-[0.13em] text-[#1d5588]/85">
-                No resume needed &middot; Response in 24 hours
+              <p className="[font-family:var(--font-paraluman-body)] text-base leading-7 text-[#173957]/82 sm:text-lg sm:leading-[1.75] space-x-6">
+                <span>✔ No resume needed  </span><span>✔ Response in 24 hours</span>
               </p>
             </motion.div>
           </motion.div>
@@ -673,7 +673,7 @@ export default function CebuPacificCompanyProfilePage() {
           </SectionInner>
         </SectionShell>
 
-        <SectionShell className="overflow-hidden bg-[linear-gradient(180deg,#f7fbff_0%,#e5f1fb_42%,#d7eafb_100%)] py-12 sm:py-28">
+        <SectionShell className="overflow-hidden bg-[linear-gradient(180deg,#f7fbff_0%,#e5f1fb_42%,#d7eafb_100%)] py-12 sm:py-28 ">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(127,192,255,0.24),transparent_22%),radial-gradient(circle_at_82%_22%,rgba(23,63,105,0.12),transparent_24%)]" />
           <div className="pointer-events-none absolute left-[14%] top-8 h-44 w-44 rounded-full bg-[#6fb7ff]/16 blur-3xl" />
           <div className="pointer-events-none absolute right-[8%] bottom-8 h-44 w-44 rounded-full bg-[#1f6298]/12 blur-3xl" />
@@ -685,11 +685,57 @@ export default function CebuPacificCompanyProfilePage() {
               <p className="[font-family:var(--font-paraluman-heading)] bg-[linear-gradient(110deg,#0f4f8f_0%,#2574BB_22%,#eef7ff_36%,#2574BB_50%,#6fb7ff_64%,#1c5f9b_82%,#0f4f8f_100%)] bg-[length:220%_100%] bg-clip-text text-[clamp(3rem,6.2vw,5.8rem)] font-black leading-[0.88] tracking-[-0.068em] text-transparent [animation:runway-shine_8s_ease-in-out_infinite] [filter:drop-shadow(0_10px_28px_rgba(37,116,187,0.18))]">
                 Better internships start here.
               </p>
-              <p className="[font-family:var(--font-paraluman-mono)] text-[11px] font-bold uppercase tracking-[0.13em] text-[#1d5588] sm:text-xs">
-                No resume needed &middot; 24h response &middot; Real product
-                work
-              </p>
+
+              <RevealBlock
+                variants={STAGGER_CONTAINER_VARIANTS}
+                inView={sectionStaggerMotion}
+                className="space-y-6"
+              >
+                <motion.div
+                  variants={STAGGER_ITEM_VARIANTS}
+                  className="text-center"
+                ></motion.div>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <motion.article
+                    variants={STAGGER_ITEM_VARIANTS}
+                    className="rounded-[0.33em] border border-[#2574BB]/18 bg-white/85 px-6 py-6 shadow-[0_18px_36px_-28px_rgba(23,63,105,0.28)] backdrop-blur-sm"
+                  >
+                    <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black tracking-[-0.02em] text-[#123f6b]">
+                      No resume needed
+                    </p>
+                    <p className="[font-family:var(--font-paraluman-body)] mt-2 text-base leading-7 text-[#173957]/82">
+                      We don&apos;t care about credentials. Prove yourself by
+                      completing the challenge.
+                    </p>
+                  </motion.article>
+                  <motion.article
+                    variants={STAGGER_ITEM_VARIANTS}
+                    className="rounded-[0.33em] border border-[#2574BB]/18 bg-white/85 px-6 py-6 shadow-[0_18px_36px_-28px_rgba(23,63,105,0.28)] backdrop-blur-sm"
+                  >
+                    <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black tracking-[-0.02em] text-[#123f6b]">
+                      Challenge-based applications
+                    </p>
+                    <p className="[font-family:var(--font-paraluman-body)] mt-2 text-base leading-7 text-[#173957]/82">
+                      We want to look at what you can actually do, not just what
+                      you say.
+                    </p>
+                  </motion.article>
+                  <motion.article
+                    variants={STAGGER_ITEM_VARIANTS}
+                    className="rounded-[0.33em] border border-[#2574BB]/18 bg-white/85 px-6 py-6 shadow-[0_18px_36px_-28px_rgba(23,63,105,0.28)] backdrop-blur-sm"
+                  >
+                    <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black tracking-[-0.02em] text-[#123f6b]">
+                      Response in 24 hours
+                    </p>
+                    <p className="[font-family:var(--font-paraluman-body)] mt-2 text-base leading-7 text-[#173957]/82">
+                      You won&apos;t be the only one trying hard. We&apos;ll try
+                      our best at responding to you quickly.
+                    </p>
+                  </motion.article>
+                </div>
+              </RevealBlock>
             </RevealBlock>
+
             <InsetPanel className="overflow-hidden rounded-[0.33em] border border-[#2574BB]/14  shadow-[0_28px_66px_-42px_rgba(23,63,105,0.3)] backdrop-blur-sm">
               <RevealBlock
                 variants={STAGGER_CONTAINER_VARIANTS}
@@ -766,6 +812,92 @@ export default function CebuPacificCompanyProfilePage() {
                 </motion.article>
               </RevealBlock>
             </InsetPanel>
+          </SectionInner>
+        </SectionShell>
+
+        <SectionShell className="border-t-0 bg-[#f4f9ff] py-16 sm:py-20">
+          <SectionInner className="space-y-8">
+            <RevealBlock
+              inView={sectionRevealMotion}
+              className="mx-auto max-w-4xl text-center"
+            >
+              <p className="[font-family:var(--font-paraluman-mono)] text-[11px] font-bold uppercase tracking-[0.18em] text-[#2574BB]">
+                FAQs
+              </p>
+              <p className="[font-family:var(--font-paraluman-heading)] mt-2 text-[clamp(2rem,4vw,3rem)] font-black leading-[0.95] tracking-[-0.05em] text-[#123f6b]">
+                Questions you might have
+              </p>
+            </RevealBlock>
+
+            <RevealBlock
+              variants={STAGGER_CONTAINER_VARIANTS}
+              inView={sectionStaggerMotion}
+              className="mx-auto max-w-4xl space-y-3"
+            >
+              <motion.details
+                variants={STAGGER_ITEM_VARIANTS}
+                className="group rounded-[0.33em] border border-[#2574BB]/16 bg-white px-5 py-4 shadow-[0_12px_28px_-24px_rgba(23,63,105,0.22)]"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 [font-family:var(--font-paraluman-heading)] text-lg font-black tracking-[-0.01em] text-[#123f6b]">
+                  Do I need a resume to apply?
+                  <span className="text-xl leading-none text-[#2574BB] transition-transform duration-200 group-open:rotate-45">
+                    +
+                  </span>
+                </summary>
+                <p className="[font-family:var(--font-paraluman-body)] mt-3 pr-8 text-base leading-7 text-[#173957]/82">
+                  No. Cebu Pacific reviews your challenge output first. Your
+                  thinking, execution, and decision quality matter most.
+                </p>
+              </motion.details>
+
+              <motion.details
+                variants={STAGGER_ITEM_VARIANTS}
+                className="group rounded-[0.33em] border border-[#2574BB]/16 bg-white px-5 py-4 shadow-[0_12px_28px_-24px_rgba(23,63,105,0.22)]"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 [font-family:var(--font-paraluman-heading)] text-lg font-black tracking-[-0.01em] text-[#123f6b]">
+                  How fast will I hear back?
+                  <span className="text-xl leading-none text-[#2574BB] transition-transform duration-200 group-open:rotate-45">
+                    +
+                  </span>
+                </summary>
+                <p className="[font-family:var(--font-paraluman-body)] mt-3 pr-8 text-base leading-7 text-[#173957]/82">
+                  Our target is to respond within 24 hours so strong applicants
+                  can move forward quickly.
+                </p>
+              </motion.details>
+
+              <motion.details
+                variants={STAGGER_ITEM_VARIANTS}
+                className="group rounded-[0.33em] border border-[#2574BB]/16 bg-white px-5 py-4 shadow-[0_12px_28px_-24px_rgba(23,63,105,0.22)]"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 [font-family:var(--font-paraluman-heading)] text-lg font-black tracking-[-0.01em] text-[#123f6b]">
+                  What kind of work will interns do?
+                  <span className="text-xl leading-none text-[#2574BB] transition-transform duration-200 group-open:rotate-45">
+                    +
+                  </span>
+                </summary>
+                <p className="[font-family:var(--font-paraluman-body)] mt-3 pr-8 text-base leading-7 text-[#173957]/82">
+                  Real product work. You&apos;ll help improve the booking
+                  experience used by millions of Filipino travelers.
+                </p>
+              </motion.details>
+
+              <motion.details
+                variants={STAGGER_ITEM_VARIANTS}
+                className="group rounded-[0.33em] border border-[#2574BB]/16 bg-white px-5 py-4 shadow-[0_12px_28px_-24px_rgba(23,63,105,0.22)]"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 [font-family:var(--font-paraluman-heading)] text-lg font-black tracking-[-0.01em] text-[#123f6b]">
+                  Which listings should I apply to?
+                  <span className="text-xl leading-none text-[#2574BB] transition-transform duration-200 group-open:rotate-45">
+                    +
+                  </span>
+                </summary>
+                <p className="[font-family:var(--font-paraluman-body)] mt-3 pr-8 text-base leading-7 text-[#173957]/82">
+                  Choose the role where your skills are strongest, then submit a
+                  high-quality challenge response for that listing.
+                </p>
+              </motion.details>
+            </RevealBlock>
           </SectionInner>
         </SectionShell>
       </section>
