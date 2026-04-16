@@ -9,7 +9,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
-import { cebuPacificProfile } from "../../../companies/cebu-pacific/data";
 
 type OverviewPanelProps = {
   onGoToApply: () => void;
@@ -48,6 +47,17 @@ const HOW_TO_APPLY_STEPS = [
   "Submit one clear link and your details. Cebu Pacific responds within 24 hours.",
 ];
 
+const INTERNSHIP_OVERVIEW_PARAGRAPHS = [
+  "This internship is outcome-driven. Your job is to improve Cebu Pacific's booking experience in ways that are measurable, not just visually polished.",
+  "You will identify high-friction moments in the booking journey, propose practical product and UX improvements, then ship and validate a working solution.",
+];
+
+const INTERNSHIP_OKRS = [
+  "80% of first-time users complete a booking in 60 seconds or less.",
+  "Reduce booking-related complaints and support tickets by 50%.",
+  'At least 90% of users rate the booking experience as "easy" or "very easy."',
+];
+
 function SectionTitle({ title }: SectionTitleProps) {
   return (
     <div className="space-y-1.5">
@@ -75,27 +85,28 @@ export function OverviewPanel({
     <div className="space-y-8 sm:space-y-10">
       <div className="space-y-8 sm:space-y-10">
         <section className="space-y-4 border-t border-[#2574BB]/10 pt-8 first:border-t-0 first:pt-0">
-          <SectionTitle title="Role overview" />
+          <SectionTitle title="Internship overview" />
           <ContentCard>
             <div className="space-y-5 [font-family:var(--font-paraluman-body)] text-base leading-7 text-[#173957] opacity-80 sm:text-lg sm:leading-8">
-              {cebuPacificProfile.roleOverview.map((paragraph) => (
+              {INTERNSHIP_OVERVIEW_PARAGRAPHS.map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
               ))}
+              <div className="rounded-[0.33em] border border-[#2574BB]/12 bg-[linear-gradient(180deg,rgba(239,246,255,0.82)_0%,rgba(255,255,255,0.98)_100%)] px-5 py-5 sm:px-6 sm:py-6">
+                <p className="[font-family:var(--font-paraluman-heading)] text-lg font-medium tracking-[-0.02em] text-[#173f69] sm:text-xl">
+                  Internship OKRs
+                </p>
+                <ul className="mt-4 space-y-3">
+                  {INTERNSHIP_OKRS.map((okr) => (
+                    <li key={okr} className="flex items-start gap-3">
+                      <span className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-[#2574BB]" />
+                      <p className="text-base leading-7 text-[#173957]/82 sm:text-lg sm:leading-8">
+                        {okr}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
-          </ContentCard>
-        </section>
-
-        <section className="space-y-4 border-t border-[#2574BB]/10 pt-8">
-          <SectionTitle title="Why skip resume" />
-          <ContentCard>
-            <div className="space-y-5 [font-family:var(--font-paraluman-body)] text-base leading-7 text-[#173957] opacity-80 sm:text-lg sm:leading-8">
-              {cebuPacificProfile.whySkipResume.map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
-              ))}
-            </div>
-            <p className="[font-family:var(--font-paraluman-heading)] text-xl tracking-[-0.03em] sm:text-2xl mt-5 text-supportive font-bold">
-              This listing is built to reward doers, not sayers.
-            </p>
           </ContentCard>
         </section>
 
