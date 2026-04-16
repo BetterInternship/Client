@@ -533,7 +533,7 @@ function MeaningfulWorkScrollScene({
           },
           defaults: {
             ease: "power2.out",
-            duration: 0.52,
+            duration: 1.2,
           },
         });
 
@@ -541,23 +541,23 @@ function MeaningfulWorkScrollScene({
           mobileTimeline.to(eyebrowRef.current, { autoAlpha: 0.65, y: 0 }, 0);
         }
         if (lineOneRef.current) {
-          mobileTimeline.to(lineOneRef.current, { autoAlpha: 1, y: 0 }, 0.06);
+          mobileTimeline.to(lineOneRef.current, { autoAlpha: 1, y: 0 }, 0.35);
         }
         if (lineTwoRef.current) {
-          mobileTimeline.to(lineTwoRef.current, { autoAlpha: 1, y: 0 }, 0.16);
+          mobileTimeline.to(lineTwoRef.current, { autoAlpha: 1, y: 0 }, 0.85);
         }
         if (lineThreeRef.current) {
           mobileTimeline.to(
             lineThreeRef.current,
             { autoAlpha: 1, y: 0 },
-            0.26,
+            1.4,
           );
         }
         if (ctaRef.current) {
           mobileTimeline.to(
             ctaRef.current,
             { autoAlpha: 1, y: 0, scale: 1 },
-            0.36,
+            2.05,
           );
         }
 
@@ -820,8 +820,10 @@ function ListingCard({
 
 function ListingModalContent({
   card,
+  onApply,
 }: {
   card: (typeof LISTING_CARDS)[number];
+  onApply: () => void;
 }) {
   return (
     <div className="space-y-8 pt-4 text-[#123f6b] sm:space-y-10 ">
@@ -883,6 +885,7 @@ function ListingModalContent({
         <Button asChild className="h-12 w-full rounded-[0.33em]">
           <Link
             href="/super-listing/cebu-pacific"
+            onClick={onApply}
             className="flex items-center justify-center gap-2"
           >
             Apply now
@@ -1004,7 +1007,12 @@ export default function CebuPacificCompanyProfilePage() {
                               {card.title}
                             </span>
                           ),
-                          content: <ListingModalContent card={card} />,
+                          content: (
+                            <ListingModalContent
+                              card={card}
+                              onApply={() => modalRegistry.centeredDetails.close()}
+                            />
+                          ),
                           showHeaderDivider: false,
                           closeOnBackdropClick: true,
                           closeOnEscapeKey: true,
