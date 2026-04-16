@@ -301,7 +301,7 @@ export default function CebuPacificPage() {
             type="button"
             className="mb-4 inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#2574BB]/18 bg-white px-4 [font-family:var(--font-paraluman-heading)] text-sm font-medium tracking-[-0.02em] text-[#173f69] shadow-[0_10px_24px_-20px_rgba(19,70,111,0.48)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#f2f8ff] hover:text-[#123f6b] sm:mb-5"
           >
-            <Link href="/student/companies/cebu-pacific">
+            <Link href="/companies/cebu-pacific">
               <ArrowLeft className="h-4 w-4" />
               Back to company page
             </Link>
