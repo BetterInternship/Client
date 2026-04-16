@@ -20,6 +20,7 @@ import {
 import { ArrowRight } from "lucide-react";
 import { SplitFlap, Presets } from "react-split-flap";
 import { Button } from "@/components/ui/button";
+import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 import {
   Accordion,
   AccordionContent,
@@ -418,7 +419,7 @@ function HeroMainContent({
           />
           <span
             className={cn(
-              "[font-family:var(--font-paraluman-mono)] text-[11px] font-bold uppercase mt-2 sm:mt-2.5 sm:text-xs",
+              "[font-family:var(--font-paraluman-mono)] text-sm font-bold uppercase mt-1.5 sm:mt-2.5 sm:text-sm",
               spotlightMode ? "text-[#1b5f99]" : "text-[#2574BB]",
             )}
           >
@@ -476,9 +477,11 @@ function HeroMainContent({
               delay: 0.32,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="mt-2 block pb-[0.08em] bg-[linear-gradient(110deg,#0f4f8f_0%,#2574BB_22%,#eef7ff_36%,#2574BB_50%,#6fb7ff_64%,#1c5f9b_82%,#0f4f8f_100%)] bg-[length:220%_100%] bg-clip-text text-[clamp(2.35rem,11.5vw,4.35rem)] leading-[0.95] tracking-[-0.052em] text-transparent [animation:runway-shine_8s_ease-in-out_infinite] [filter:drop-shadow(0_10px_28px_rgba(37,116,187,0.22))] lg:text-7xl"
+            className="mt-2 block pb-[0.08em]"
           >
-            Imagine 20 Million Travelers Using YOUR Code.
+            <AnimatedShinyText className="block text-[clamp(2.35rem,11.5vw,4.35rem)] leading-[0.95] tracking-[-0.052em] [filter:brightness(0.50)] lg:text-7xl">
+              Imagine 20 Million Travelers Using YOUR Code.
+            </AnimatedShinyText>
           </motion.span>
         </h1>
       )}
