@@ -13,7 +13,6 @@ import {
 import { ArrowRight } from "lucide-react";
 import { SplitFlap, Presets } from "react-split-flap";
 import { Button } from "@/components/ui/button";
-import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 import {
   Accordion,
   AccordionContent,
@@ -299,7 +298,7 @@ function HeroMainContent({
         </Link>
       </motion.div>
 
-      <h1 className="[font-family:var(--font-paraluman-heading)] w-full font-black leading-[0.95] text-black">
+      <h1 className="[font-family:var(--font-paraluman-heading)] w-full font-black leading-[0.98]">
         <motion.span
           initial={reduceMotion ? false : { opacity: 0, y: 18, scale: 0.98 }}
           animate={reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
@@ -308,11 +307,11 @@ function HeroMainContent({
             delay: 0.32,
             ease: [0.22, 1, 0.36, 1],
           }}
-          className="mt-2 block pb-[0.08em]"
+          className="mt-2 block pb-[0.14em]"
         >
-          <AnimatedShinyText className="block text-[clamp(2.35rem,11.5vw,4.35rem)] leading-[0.95] tracking-[-0.052em] [filter:brightness(0.50)] lg:text-7xl">
+          <span className="block bg-[linear-gradient(110deg,#0f4f8f_0%,#2574BB_24%,#badbfd_38%,#2574BB_52%,#5eaeea_66%,#1c5f9b_82%,#0f4f8f_100%)] bg-[length:220%_100%] bg-clip-text text-[clamp(2.35rem,11.5vw,4.35rem)] leading-[0.98] tracking-[-0.052em] text-transparent [animation:runway-shine_8s_ease-in-out_infinite] lg:text-7xl">
             Imagine 20 Million Travelers Using YOUR Code.
-          </AnimatedShinyText>
+          </span>
         </motion.span>
       </h1>
 
@@ -345,6 +344,7 @@ function HeroMainContent({
           onClick={onJumpToListings}
           label="I want a chance"
           size="hero"
+          className="mt-4"
         />
       </motion.div>
     </motion.div>
@@ -736,7 +736,7 @@ export default function CebuPacificCompanyProfilePage() {
               inView={sectionRevealMotion}
               className="flex flex-col items-center space-y-5 text-center"
             >
-              <p className="[font-family:var(--font-paraluman-heading)] bg-[linear-gradient(110deg,#0f4f8f_0%,#2574BB_22%,#eef7ff_36%,#2574BB_50%,#6fb7ff_64%,#1c5f9b_82%,#0f4f8f_100%)] bg-[length:220%_100%] bg-clip-text text-[clamp(3rem,6.2vw,5.8rem)] font-black leading-[0.88] tracking-[-0.068em] text-transparent [animation:runway-shine_8s_ease-in-out_infinite] [filter:drop-shadow(0_10px_28px_rgba(37,116,187,0.18))]">
+              <p className="[font-family:var(--font-paraluman-heading)] bg-[linear-gradient(110deg,#0f4f8f_0%,#2574BB_24%,#badbfd_38%,#2574BB_52%,#5eaeea_66%,#1c5f9b_82%,#0f4f8f_100%)] bg-[length:220%_100%] bg-clip-text text-[clamp(3rem,6.2vw,5.8rem)] font-black leading-[0.88] tracking-[-0.068em] text-transparent [animation:runway-shine_8s_ease-in-out_infinite] [filter:drop-shadow(0_10px_28px_rgba(37,116,187,0.18))]">
                 Better internships start here.
               </p>
             </RevealBlock>
