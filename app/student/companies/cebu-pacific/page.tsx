@@ -10,12 +10,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import {
-  motion,
-  useInView,
-  useReducedMotion,
-  type Variants,
-} from "framer-motion";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { SplitFlap, Presets } from "react-split-flap";
 import gsap from "gsap";
@@ -28,11 +23,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import useModalRegistry from "@/components/modals/modal-registry";
 import { cn } from "@/lib/utils";
 import { cebuPacificPrimaryListing, cebuPacificProfile } from "./data";
 import cebuPacificLogo from "../../super-listing/cebu-pacific/logo.png";
-import literallyEveryoneImage from "../../super-listing/cebu-pacific/2.png";
-import massiveImpactImage from "../../super-listing/cebu-pacific/3.png";
 import heroImage from "./components/4.jpg";
 
 const headingFont = Space_Grotesk({
@@ -80,16 +74,6 @@ const STAGGER_ITEM_VARIANTS: Variants = {
     transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
   },
 };
-const IMAGE_REVEAL_VARIANTS: Variants = {
-  hidden: { opacity: 0, y: 20, scale: 1.04 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
-  },
-};
-
 type InViewMotionProps = {
   initial?: "hidden";
   whileInView?: "visible";
@@ -104,6 +88,53 @@ const METRIC_FLIPPER_CHARS = [...Presets.SPECIAL, "%", "&", "/", ":"];
 const METRIC_FLIPPER_LENGTH = Math.max(
   ...METRIC_FLIPPER_STATES.map((item) => item.value.length),
 );
+const LISTING_CARDS = [
+  {
+    id: "core",
+    eyebrow: "Product & Web Intern",
+    title: cebuPacificPrimaryListing.title,
+    summary:
+      "Improve the booking flow used by millions of travelers across the Philippines.",
+    metrics: [
+      "80% of first-time users complete a booking in <=60 seconds",
+      "Reduce booking-related complaints/support tickets by 50%",
+      ">=90% of users rate the booking experience as easy or very easy",
+    ],
+    supporting:
+      "Before you start, you will complete a challenge that mirrors real product work.",
+    accent: "#68b8ff",
+  },
+  {
+    id: "digital",
+    eyebrow: "Experience Track",
+    title: "Digital Experience Intern",
+    summary:
+      "Design clearer journeys that help customers find, select, and book flights faster.",
+    metrics: [
+      "Increase completed search-to-book journeys from first-time users",
+      "Lower friction in payment and form completion moments",
+      "Ship UX improvements backed by measurable user feedback",
+    ],
+    supporting:
+      "You will collaborate with product and engineering to ship changes with visible user impact.",
+    accent: "#92cfff",
+  },
+  {
+    id: "ops",
+    eyebrow: "Operations Track",
+    title: "Operations Innovation Intern",
+    summary:
+      "Build smarter processes that remove friction from airline operations and customer support.",
+    metrics: [
+      "Reduce manual operational steps in key workflows",
+      "Improve turnaround speed for high-volume internal requests",
+      "Launch one measurable process improvement during internship",
+    ],
+    supporting:
+      "Your scope focuses on practical systems improvements with clear outcomes.",
+    accent: "#b3dcff",
+  },
+] as const;
 
 function padFlipperMetric(value: string) {
   return value.toUpperCase().padEnd(METRIC_FLIPPER_LENGTH, " ");
@@ -155,25 +186,6 @@ function SectionShell({
     >
       {children}
     </section>
-  );
-}
-
-function InsetPanel({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <div
-      className={cn(
-        "border border-[#2574BB]/12 bg-white shadow-[0_24px_60px_-44px_rgba(23,63,105,0.45)]",
-        className,
-      )}
-    >
-      {children}
-    </div>
   );
 }
 
@@ -462,9 +474,8 @@ function MeaningfulWorkScrollScene({
       const scroller = getScrollParent(sectionRef.current);
       const scrollerElement =
         scroller === window ? null : (scroller as HTMLElement);
-      const scrollerContent = scrollerElement?.firstElementChild as
-        | HTMLElement
-        | null;
+      const scrollerContent =
+        scrollerElement?.firstElementChild as HTMLElement | null;
 
       if (scrollerElement && scrollerContent) {
         lenis = new Lenis({
@@ -645,10 +656,7 @@ function MeaningfulWorkScrollScene({
             style={reduceMotion ? { opacity: 1 } : undefined}
             className="mt-8 sm:mt-10"
           >
-            <ListingsCTA
-              onClick={onJumpToListings}
-              label="I want a chance!"
-            />
+            <ListingsCTA onClick={onJumpToListings} label="I want a chance!" />
           </div>
         </div>
       </div>
@@ -702,11 +710,136 @@ function HeroPanel({
     </section>
   );
 }
+
+function ListingCard({
+  card,
+  onSelect,
+}: {
+  card: (typeof LISTING_CARDS)[number];
+  onSelect: () => void;
+}) {
+  const isPrimary = card.id === "core";
+
+  return (
+    <motion.button
+      onClick={onSelect}
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      className={cn(
+        "relative flex h-full min-h-[24rem] flex-col rounded-[0.33em] border border-[#2574BB]/16 p-6 text-left transition-colors duration-200 cursor-pointer sm:min-h-[27rem] sm:p-8",
+        isPrimary
+          ? "bg-[linear-gradient(165deg,#ffffff_0%,#f4f9ff_60%,#eaf4ff_100%)] hover:bg-[linear-gradient(165deg,#ffffff_0%,#f1f7ff_60%,#e4f1ff_100%)]"
+          : "bg-[linear-gradient(165deg,#ffffff_0%,#f8fbff_60%,#edf5ff_100%)] hover:bg-[linear-gradient(165deg,#ffffff_0%,#f3f8ff_60%,#e7f2ff_100%)]",
+      )}
+    >
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-[2px] rounded-t-[0.33em]"
+        style={{
+          background: `linear-gradient(90deg, ${card.accent} 0%, rgba(37,116,187,0.22) 55%, transparent 100%)`,
+        }}
+      />
+      <div
+        className="pointer-events-none absolute right-5 top-5 h-2.5 w-2.5 rounded-full opacity-80"
+        style={{ backgroundColor: card.accent }}
+      />
+      <div
+        className="pointer-events-none absolute -right-10 -top-8 h-28 w-28 rounded-full opacity-30 blur-2xl"
+        style={{ backgroundColor: card.accent }}
+      />
+
+      <h3 className="max-w-[15ch] [font-family:var(--font-paraluman-heading)] text-[clamp(1.9rem,2.1vw,2.6rem)] font-semibold leading-[1.07] tracking-[-0.025em] text-[#123f6b]">
+        {card.title}
+      </h3>
+
+      <div className="mt-auto inline-flex items-center justify-end gap-2 pt-6 text-xs font-semibold uppercase tracking-[0.12em] text-[#4f7598] transition-colors group-hover:text-[#123f6b]">
+        Open
+        <ArrowRight className="-rotate-45 h-4 w-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+      </div>
+    </motion.button>
+  );
+}
+
+function ListingModalContent({
+  card,
+}: {
+  card: (typeof LISTING_CARDS)[number];
+}) {
+  return (
+    <div className="space-y-7 p-3 text-[#123f6b] sm:p-4">
+      <div className="rounded-[0.33em] border border-[#2574BB]/12 bg-[linear-gradient(180deg,#ffffff_0%,#f7fbff_100%)] p-4 sm:p-5">
+        <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#4f7598]">
+          Your internship shall:
+        </p>
+        <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.6rem,2.7vw,2.28rem)] font-semibold leading-[1.05] tracking-[-0.03em] text-[#123f6b]">
+          Make Cebu Pacific the easiest airline booking experience in the
+          country
+        </p>
+      </div>
+
+      <div className="rounded-[0.33em] border border-[#2574BB]/12 bg-white p-4 sm:p-5">
+        <h3 className="mb-4 text-xs font-bold uppercase tracking-[0.14em] text-[#4f7598]">
+          Your internship is a success if you can:
+        </h3>
+        <div className="space-y-3.5">
+          <div className="flex items-start gap-3 rounded-[0.33em] bg-[#f6faff] px-3 py-2.5">
+            <span
+              className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full"
+              style={{ backgroundColor: card.accent }}
+            />
+            <p className="text-sm text-[#173957]/84">
+              80% of first-time users complete a flight booking in less than 60
+              seconds without assistance
+            </p>
+          </div>
+          <div className="flex items-start gap-3 rounded-[0.33em] bg-[#f6faff] px-3 py-2.5">
+            <span
+              className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full"
+              style={{ backgroundColor: card.accent }}
+            />
+            <p className="text-sm text-[#173957]/84">
+              Reduce booking-related complaints/support tickets by 50%
+            </p>
+          </div>
+          <div className="flex items-start gap-3 rounded-[0.33em] bg-[#f6faff] px-3 py-2.5">
+            <span
+              className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full"
+              style={{ backgroundColor: card.accent }}
+            />
+            <p className="text-sm text-[#173957]/84">
+              Achieve greater than 90% of users rating booking experience as
+              "easy" or "very easy"
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-[0.33em] border border-[#2574BB]/14 bg-[#edf4fc] p-4 sm:p-5">
+        <p className="text-sm leading-relaxed text-[#173957]/76">
+          Exciting? But before you can start the internship, you shall pass our
+          challenge.
+        </p>
+      </div>
+
+      <div className="pt-2">
+        <Button variant="default" className="w-full justify-center gap-2 ">
+          <Link
+            href="/super-listing/cebu-pacific"
+            className="flex items-center justify-center gap-2"
+          >
+            Apply now
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
 export default function CebuPacificCompanyProfilePage() {
   const shouldReduceMotion = useReducedMotion();
   const sectionRevealMotion = getInViewMotionProps(shouldReduceMotion, 0.24);
   const sectionStaggerMotion = getInViewMotionProps(shouldReduceMotion, 0.18);
-  const listingsRef = useRef<HTMLDivElement | null>(null);
+  const modalRegistry = useModalRegistry();
+  const listingsRef = useRef<HTMLParagraphElement | null>(null);
 
   const scrollToListings = () => {
     listingsRef.current?.scrollIntoView({
@@ -765,189 +898,65 @@ export default function CebuPacificCompanyProfilePage() {
           />
         </SectionShell>
 
-        <SectionShell className="overflow-hidden border-t-0 bg-[#173f69]">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_24%,rgba(143,206,255,0.26),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(255,255,255,0.09),transparent_24%)]" />
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:40px_40px] opacity-50" />
-          <SectionInner className="relative space-y-10">
+        <SectionShell className="relative -mt-8 overflow-hidden border-t-0 bg-[linear-gradient(180deg,#edf4fc_0%,#e5effa_44%,#dbe9f8_100%)] py-10 sm:-mt-12 sm:py-12 min-h-[100svh]">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-[#f4f8fc] via-[#eef4fc] to-transparent" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(127,192,255,0.16),transparent_22%),radial-gradient(circle_at_82%_22%,rgba(23,63,105,0.09),transparent_24%)]" />
+          <div className="pointer-events-none absolute inset-0 opacity-80 [mask-image:linear-gradient(to_bottom,transparent_0%,transparent_22%,rgba(0,0,0,0.35)_38%,rgba(0,0,0,0.8)_55%,#000_66%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0%,transparent_22%,rgba(0,0,0,0.35)_38%,rgba(0,0,0,0.8)_55%,#000_66%)] bg-[linear-gradient(to_right,rgba(23,63,105,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(23,63,105,0.03)_1px,transparent_1px)] bg-[size:44px_44px,44px_44px]" />
+          <SectionInner className="relative flex min-h-[calc(100svh-5.25rem)] w-full flex-col justify-between gap-10 sm:min-h-[calc(100svh-6rem)]">
             <RevealBlock
               inView={sectionRevealMotion}
-              className="mx-auto max-w-5xl space-y-3 text-center"
+              className="pt-8 text-center sm:pt-10"
             >
-              <p className="[font-family:var(--font-paraluman-mono)] text-[11px] font-bold uppercase tracking-[0.2em] text-[#8fceff]">
-                Objective
-              </p>
-              <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(2.1rem,4.5vw,3.35rem)] font-black leading-[0.97] tracking-[-0.045em] text-white">
-                Make Cebu Pacific the{" "}
-                <span className="bg-[linear-gradient(110deg,#8fceff_0%,#eef7ff_52%,#8fceff_100%)] bg-[length:200%_100%] bg-clip-text text-transparent [animation:runway-shine_7.5s_ease-in-out_infinite]">
-                  easiest airline to book
-                </span>{" "}
-                in the country. The interns will redesign how millions of
-                Filipinos book flights.
-              </p>
-            </RevealBlock>
-            <RevealBlock
-              variants={STAGGER_CONTAINER_VARIANTS}
-              inView={sectionStaggerMotion}
-              className="grid gap-6 md:grid-cols-3"
-            >
-              <motion.article
-                variants={STAGGER_ITEM_VARIANTS}
-                whileHover={shouldReduceMotion ? undefined : { y: -3 }}
-                transition={{ duration: 0.24, ease: "easeOut" }}
-                className="relative overflow-hidden rounded-[0.33em] border border-white/14 bg-white/95 px-6 py-8 text-center shadow-[0_12px_26px_-22px_rgba(15,23,42,0.2)]"
+              <p
+                ref={listingsRef}
+                className="[font-family:var(--font-paraluman-heading)] bg-[linear-gradient(110deg,#0f4f8f_0%,#2574BB_24%,#badbfd_38%,#2574BB_52%,#5eaeea_66%,#1c5f9b_82%,#0f4f8f_100%)] bg-[length:220%_100%] bg-clip-text text-[clamp(2.6rem,5.7vw,5.1rem)] font-semibold leading-[0.92] tracking-[-0.06em] text-transparent [animation:runway-shine_8s_ease-in-out_infinite]"
               >
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#2574BB_0%,#8fceff_48%,#2574BB_100%)]" />
-                <div className="space-y-3">
-                  <p className="[font-family:var(--font-paraluman-mono)] text-[10px] font-bold uppercase tracking-[0.16em] text-[#4f7598]">
-                    01
-                  </p>
-                  <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black leading-[1.22] tracking-[-0.01em] text-[#0f2f54]">
-                    <span className="text-[#1b5f99]">80%</span> of first-time
-                    users complete a flight booking in{" "}
-                    <span className="text-[#1b5f99]">&le;60 seconds</span>{" "}
-                    without assistance
-                  </p>
-                </div>
-              </motion.article>
-              <motion.article
-                variants={STAGGER_ITEM_VARIANTS}
-                whileHover={shouldReduceMotion ? undefined : { y: -3 }}
-                transition={{ duration: 0.24, ease: "easeOut" }}
-                className="relative overflow-hidden rounded-[0.33em] border border-white/14 bg-white/95 px-6 py-8 text-center shadow-[0_12px_26px_-22px_rgba(15,23,42,0.2)]"
-              >
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#2574BB_0%,#8fceff_48%,#2574BB_100%)]" />
-                <div className="space-y-3">
-                  <p className="[font-family:var(--font-paraluman-mono)] text-[10px] font-bold uppercase tracking-[0.16em] text-[#4f7598]">
-                    02
-                  </p>
-                  <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black leading-[1.22] tracking-[-0.01em] text-[#0f2f54]">
-                    Reduce booking-related complaints/support tickets by{" "}
-                    <span className="text-[#1b5f99]">50%</span>
-                  </p>
-                </div>
-              </motion.article>
-              <motion.article
-                variants={STAGGER_ITEM_VARIANTS}
-                whileHover={shouldReduceMotion ? undefined : { y: -3 }}
-                transition={{ duration: 0.24, ease: "easeOut" }}
-                className="relative overflow-hidden rounded-[0.33em] border border-white/14 bg-white/95 px-6 py-8 text-center shadow-[0_12px_26px_-22px_rgba(15,23,42,0.2)]"
-              >
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#2574BB_0%,#8fceff_48%,#2574BB_100%)]" />
-                <div className="space-y-3">
-                  <p className="[font-family:var(--font-paraluman-mono)] text-[10px] font-bold uppercase tracking-[0.16em] text-[#4f7598]">
-                    03
-                  </p>
-                  <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black leading-[1.22] tracking-[-0.01em] text-[#0f2f54]">
-                    Achieve <span className="text-[#1b5f99]">&ge;90%</span> of
-                    users rating booking experience as &quot;easy&quot; or
-                    &quot;very easy&quot;
-                  </p>
-                </div>
-              </motion.article>
-            </RevealBlock>
-            <div className="pt-2 justify-center flex">
-              <ListingsCTA
-                onClick={scrollToListings}
-                label="Let me prove myself"
-              />
-            </div>
-          </SectionInner>
-        </SectionShell>
-
-        <SectionShell className="overflow-hidden bg-[linear-gradient(180deg,#f7fbff_0%,#e8f2fb_48%,#dcecf9_100%)] py-12 sm:py-20">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(127,192,255,0.18),transparent_22%),radial-gradient(circle_at_82%_22%,rgba(23,63,105,0.1),transparent_24%),linear-gradient(to_right,rgba(23,63,105,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(23,63,105,0.04)_1px,transparent_1px)] bg-[size:auto,auto,44px_44px,44px_44px]" />
-          <SectionInner className="relative space-y-12">
-            <RevealBlock
-              inView={sectionRevealMotion}
-              className="flex flex-col items-center space-y-5 text-center"
-            >
-              <p className="[font-family:var(--font-paraluman-heading)] bg-[linear-gradient(110deg,#0f4f8f_0%,#2574BB_24%,#badbfd_38%,#2574BB_52%,#5eaeea_66%,#1c5f9b_82%,#0f4f8f_100%)] bg-[length:220%_100%] bg-clip-text text-[clamp(3rem,6.2vw,5.8rem)] font-black leading-[0.88] tracking-[-0.068em] text-transparent [animation:runway-shine_8s_ease-in-out_infinite] [filter:drop-shadow(0_10px_28px_rgba(37,116,187,0.18))]">
                 Better internships start here.
               </p>
             </RevealBlock>
             <RevealBlock
               variants={STAGGER_CONTAINER_VARIANTS}
               inView={sectionStaggerMotion}
-              className="space-y-6"
-            ></RevealBlock>
-
-            <InsetPanel className="overflow-hidden rounded-[0.33em] border border-[#2574BB]/14 shadow-[0_28px_66px_-42px_rgba(23,63,105,0.3)] backdrop-blur-sm max-w-4xl mx-auto">
-              <div ref={listingsRef} />
-              <RevealBlock
-                variants={STAGGER_CONTAINER_VARIANTS}
-                inView={sectionStaggerMotion}
-                className="space-y-3 p-3 sm:p-4"
-              >
-                <motion.article
-                  variants={STAGGER_ITEM_VARIANTS}
-                  className="grid gap-5 rounded-[0.33em] border border-[#2574BB]/18 bg-white px-5 py-6 sm:px-7 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center"
-                >
-                  <div className="space-y-3">
-                    <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black uppercase tracking-[-0.02em] text-[#123f6b] sm:text-2xl">
-                      {cebuPacificPrimaryListing.title}
-                    </p>
-                  </div>
-                  <Button
-                    asChild
-                    className="group inline-flex h-11 items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#173f69] bg-transparent px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#173f69] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#173f69] hover:text-white hover:shadow-[0_16px_34px_-24px_rgba(23,63,105,0.48)] sm:w-auto"
+              className="pb-2 sm:pb-4"
+            >
+              <div className="mx-auto grid w-full max-w-6xl gap-3 md:grid-cols-2 lg:grid-cols-3">
+                {LISTING_CARDS.map((card, index) => (
+                  <motion.div
+                    key={card.id}
+                    variants={STAGGER_ITEM_VARIANTS}
+                    initial={
+                      shouldReduceMotion ? undefined : { opacity: 0, y: 8 }
+                    }
+                    animate={
+                      shouldReduceMotion ? undefined : { opacity: 1, y: 0 }
+                    }
+                    transition={{
+                      duration: 0.4,
+                      delay: index * 0.08,
+                    }}
+                    className="-m-px"
                   >
-                    <Link
-                      href="/super-listing/cebu-pacific"
-                      className="inline-flex items-center gap-2"
-                    >
-                      View listing
-                      <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-                    </Link>
-                  </Button>
-                </motion.article>
-
-                <motion.article
-                  variants={STAGGER_ITEM_VARIANTS}
-                  className="grid gap-5 rounded-[0.33em] border border-[#2574BB]/18 bg-white px-5 py-6 sm:px-7 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center"
-                >
-                  <div className="space-y-3">
-                    <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black uppercase tracking-[-0.02em] text-[#123f6b] sm:text-2xl">
-                      Digital Experience Intern
-                    </p>
-                  </div>
-                  <Button
-                    asChild
-                    className="group inline-flex h-11 items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#173f69] bg-transparent px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#173f69] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#173f69] hover:text-white hover:shadow-[0_16px_34px_-24px_rgba(23,63,105,0.48)] sm:w-auto"
-                  >
-                    <Link
-                      href="/super-listing/cebu-pacific"
-                      className="inline-flex items-center gap-2"
-                    >
-                      View listing
-                      <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-                    </Link>
-                  </Button>
-                </motion.article>
-
-                <motion.article
-                  variants={STAGGER_ITEM_VARIANTS}
-                  className="grid gap-5 rounded-[0.33em] border border-[#2574BB]/18 bg-white px-5 py-6 sm:px-7 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center"
-                >
-                  <div className="space-y-3">
-                    <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black uppercase tracking-[-0.02em] text-[#123f6b] sm:text-2xl">
-                      Operations Innovation Intern
-                    </p>
-                  </div>
-                  <Button
-                    asChild
-                    className="group inline-flex h-11 items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#173f69] bg-transparent px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-[#173f69] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#173f69] hover:text-white hover:shadow-[0_16px_34px_-24px_rgba(23,63,105,0.48)] sm:w-auto"
-                  >
-                    <Link
-                      href="/super-listing/cebu-pacific"
-                      className="inline-flex items-center gap-2"
-                    >
-                      View listing
-                      <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-                    </Link>
-                  </Button>
-                </motion.article>
-              </RevealBlock>
-            </InsetPanel>
+                    <ListingCard
+                      card={card}
+                      onSelect={() => {
+                        modalRegistry.centeredDetails.open({
+                          title: (
+                            <span className="[font-family:var(--font-paraluman-heading)] text-2xl font-semibold leading-[1.05] tracking-[-0.03em] text-[#123f6b] sm:text-[2.05rem]">
+                              {card.title}
+                            </span>
+                          ),
+                          content: <ListingModalContent card={card} />,
+                          showHeaderDivider: false,
+                          closeOnBackdropClick: true,
+                          closeOnEscapeKey: true,
+                          showCloseButton: true,
+                        });
+                      }}
+                    />
+                  </motion.div>
+                ))}
+              </div>
+            </RevealBlock>
           </SectionInner>
         </SectionShell>
 

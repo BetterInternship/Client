@@ -382,6 +382,32 @@ export const useModalRegistry = () => {
         close: () => close("form-template-details"),
       },
 
+      centeredDetails: {
+        open: ({
+          title,
+          content,
+          showHeaderDivider = true,
+          showCloseButton = true,
+          closeOnBackdropClick = true,
+          closeOnEscapeKey = true,
+        }: {
+          title?: ReactNode;
+          content: ReactNode;
+          showHeaderDivider?: boolean;
+          showCloseButton?: boolean;
+          closeOnBackdropClick?: boolean;
+          closeOnEscapeKey?: boolean;
+        }) =>
+          open("centered-details", DefaultModalLayout, content, {
+            title,
+            showHeaderDivider,
+            showCloseButton,
+            closeOnBackdropClick,
+            closeOnEscapeKey,
+          }),
+        close: () => close("centered-details"),
+      },
+
       superListingClosed: {
         open: ({
           title,
