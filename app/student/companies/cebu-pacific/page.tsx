@@ -3,7 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   motion,
   useInView,
@@ -12,6 +18,9 @@ import {
 } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { SplitFlap, Presets } from "react-split-flap";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Lenis from "lenis";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -22,7 +31,6 @@ import {
 import { cn } from "@/lib/utils";
 import { cebuPacificPrimaryListing, cebuPacificProfile } from "./data";
 import cebuPacificLogo from "../../super-listing/cebu-pacific/logo.png";
-import meaningfulWorkImage from "../../super-listing/cebu-pacific/1.png";
 import literallyEveryoneImage from "../../super-listing/cebu-pacific/2.png";
 import massiveImpactImage from "../../super-listing/cebu-pacific/3.png";
 import heroImage from "./components/4.jpg";
@@ -411,6 +419,243 @@ function MetricsFlipper({ reduceMotion }: { reduceMotion: boolean }) {
   );
 }
 
+function MeaningfulWorkScrollScene({
+  reduceMotion,
+  onJumpToListings,
+}: {
+  reduceMotion: boolean;
+  onJumpToListings: () => void;
+}) {
+  const getScrollParent = (node: HTMLElement | null): HTMLElement | Window => {
+    let parent = node?.parentElement ?? null;
+    while (parent) {
+      const style = window.getComputedStyle(parent);
+      const overflowY = style.overflowY;
+      if (
+        /(auto|scroll|overlay)/.test(overflowY) &&
+        parent.scrollHeight > parent.clientHeight + 1
+      ) {
+        return parent;
+      }
+      parent = parent.parentElement;
+    }
+    return window;
+  };
+
+  const sectionRef = useRef<HTMLDivElement | null>(null);
+  const eyebrowRef = useRef<HTMLParagraphElement | null>(null);
+  const lineOneRef = useRef<HTMLParagraphElement | null>(null);
+  const lineTwoRef = useRef<HTMLParagraphElement | null>(null);
+  const lineThreeRef = useRef<HTMLParagraphElement | null>(null);
+  const ctaRef = useRef<HTMLDivElement | null>(null);
+
+  useLayoutEffect(() => {
+    if (reduceMotion) return;
+    if (!sectionRef.current) return;
+
+    gsap.registerPlugin(ScrollTrigger);
+    let lenis: Lenis | null = null;
+    let lenisRaf = 0;
+    let onLenisScroll: (() => void) | null = null;
+
+    const ctx = gsap.context(() => {
+      const scroller = getScrollParent(sectionRef.current);
+      const scrollerElement =
+        scroller === window ? null : (scroller as HTMLElement);
+      const scrollerContent = scrollerElement?.firstElementChild as
+        | HTMLElement
+        | null;
+
+      if (scrollerElement && scrollerContent) {
+        lenis = new Lenis({
+          wrapper: scrollerElement,
+          content: scrollerContent,
+          duration: 1.15,
+          smoothWheel: true,
+          smoothTouch: false,
+          wheelMultiplier: 0.92,
+          touchMultiplier: 1,
+          autoRaf: false,
+        });
+
+        onLenisScroll = () => ScrollTrigger.update();
+        lenis.on("scroll", onLenisScroll);
+
+        const raf = (time: number) => {
+          lenis?.raf(time);
+          lenisRaf = window.requestAnimationFrame(raf);
+        };
+        lenisRaf = window.requestAnimationFrame(raf);
+      }
+
+      const targets = [
+        eyebrowRef.current,
+        lineOneRef.current,
+        lineTwoRef.current,
+        lineThreeRef.current,
+      ].filter(Boolean);
+
+      gsap.set(targets, { autoAlpha: 0.2, y: 14 });
+      if (ctaRef.current) {
+        gsap.set(ctaRef.current, {
+          autoAlpha: 0.2,
+          y: 18,
+          scale: 0.94,
+          filter: "drop-shadow(0 0 0 rgba(37,116,187,0))",
+        });
+      }
+      const fadeRange = (progress: number, start: number, end: number) => {
+        if (progress <= start) return 0.2;
+        if (progress >= end) return 1;
+        return 0.2 + ((progress - start) / (end - start)) * 0.8;
+      };
+      const mapRange = (
+        progress: number,
+        start: number,
+        end: number,
+        from: number,
+        to: number,
+      ) => {
+        if (progress <= start) return from;
+        if (progress >= end) return to;
+        return from + ((progress - start) / (end - start)) * (to - from);
+      };
+      const lineGlow = (progress: number, start: number, end: number) =>
+        mapRange(progress, start, end, 0, 18);
+
+      ScrollTrigger.create({
+        trigger: sectionRef.current,
+        scroller: scroller === window ? undefined : (scroller as HTMLElement),
+        start: "top top",
+        end: "+=250%",
+        scrub: 1.15,
+        pin: true,
+        pinSpacing: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          const p = self.progress;
+          if (eyebrowRef.current)
+            gsap.set(eyebrowRef.current, {
+              autoAlpha: Math.min(0.65, fadeRange(p, 0.02, 0.24)),
+              y: mapRange(p, 0.02, 0.24, 10, 0),
+            });
+          if (lineOneRef.current)
+            gsap.set(lineOneRef.current, {
+              autoAlpha: fadeRange(p, 0.1, 0.36),
+              y: mapRange(p, 0.1, 0.36, 16, 0),
+              textShadow: `0 0 ${lineGlow(
+                p,
+                0.1,
+                0.36,
+              )}px rgba(37,116,187,0.22)`,
+            });
+          if (lineTwoRef.current)
+            gsap.set(lineTwoRef.current, {
+              autoAlpha: fadeRange(p, 0.3, 0.62),
+              y: mapRange(p, 0.3, 0.62, 16, 0),
+              textShadow: `0 0 ${lineGlow(
+                p,
+                0.3,
+                0.62,
+              )}px rgba(37,116,187,0.22)`,
+            });
+          if (lineThreeRef.current)
+            gsap.set(lineThreeRef.current, {
+              autoAlpha: fadeRange(p, 0.54, 0.86),
+              y: mapRange(p, 0.54, 0.86, 16, 0),
+              textShadow: `0 0 ${lineGlow(
+                p,
+                0.54,
+                0.86,
+              )}px rgba(37,116,187,0.22)`,
+            });
+          if (ctaRef.current) {
+            const ctaProgress = mapRange(p, 0.74, 1, 0, 1);
+            gsap.set(ctaRef.current, {
+              autoAlpha: fadeRange(p, 0.76, 0.98),
+              y: mapRange(p, 0.74, 1, 18, 0),
+              scale: mapRange(p, 0.74, 1, 0.94, 1),
+              filter: `drop-shadow(0 0 ${mapRange(
+                ctaProgress,
+                0,
+                1,
+                0,
+                14,
+              )}px rgba(37,116,187,0.24))`,
+            });
+          }
+        },
+      });
+
+      ScrollTrigger.refresh();
+    }, sectionRef);
+
+    return () => {
+      if (lenisRaf) window.cancelAnimationFrame(lenisRaf);
+      if (lenis && onLenisScroll) lenis.off("scroll", onLenisScroll);
+      lenis?.destroy();
+      ctx.revert();
+    };
+  }, [reduceMotion]);
+
+  return (
+    <div
+      ref={sectionRef}
+      className="relative flex min-h-[100svh] items-center justify-center px-6 py-10 sm:px-10 lg:px-16"
+    >
+      <div className="w-full">
+        <div className="mx-auto flex w-full max-w-none flex-col items-center text-center">
+          <p
+            ref={eyebrowRef}
+            style={reduceMotion ? { opacity: 1 } : undefined}
+            className="[font-family:var(--font-paraluman-heading)] mb-6 w-full -translate-y-7 text-[clamp(1.45rem,2.8vw,2.35rem)] font-bold leading-[1.08] tracking-[-0.03em] text-[#0f2f54] sm:mb-8 sm:-translate-y-9"
+          >
+            Imagine an internship where...
+          </p>
+
+          <div className="w-full max-w-[1540px] space-y-3 sm:space-y-4">
+            <p
+              ref={lineOneRef}
+              style={reduceMotion ? { opacity: 1 } : undefined}
+              className="[font-family:var(--font-paraluman-heading)] mx-auto w-full text-[clamp(2rem,5.2vw,5rem)] font-black leading-[0.96] tracking-[-0.05em] text-[#0f2f54]"
+            >
+              You <span className="text-[#2574BB]">work</span> the way you want
+            </p>
+            <p
+              ref={lineTwoRef}
+              style={reduceMotion ? { opacity: 1 } : undefined}
+              className="[font-family:var(--font-paraluman-heading)] mx-auto w-full text-[clamp(2rem,5.2vw,5rem)] font-black leading-[0.96] tracking-[-0.05em] text-[#0f2f54]"
+            >
+              Your <span className="text-[#2574BB]">skills</span> matter more
+              than experience
+            </p>
+            <p
+              ref={lineThreeRef}
+              style={reduceMotion ? { opacity: 1 } : undefined}
+              className="[font-family:var(--font-paraluman-heading)] mx-auto w-full text-[clamp(2rem,5.2vw,5rem)] font-black leading-[0.96] tracking-[-0.05em] text-[#0f2f54]"
+            >
+              You do work that <span className="text-[#2574BB]">matters</span>.
+              <span className="block">No grunt work</span>
+            </p>
+          </div>
+
+          <div
+            ref={ctaRef}
+            style={reduceMotion ? { opacity: 1 } : undefined}
+            className="mt-8 sm:mt-10"
+          >
+            <ListingsCTA
+              onClick={onJumpToListings}
+              label="I want a chance!"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function HeroPanel({
   reduceMotion,
   onJumpToListings,
@@ -513,132 +758,11 @@ export default function CebuPacificCompanyProfilePage() {
           </SectionInner>
         </SectionShell>
 
-        <SectionShell className="border-t-0">
-          <SectionInner className="space-y-6">
-            <InsetPanel className="overflow-hidden border-0 bg-transparent shadow-none">
-              <RevealBlock
-                inView={sectionRevealMotion}
-                className="grid lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]"
-              >
-                <div className="max-lg:order-2 space-y-6 px-6 py-8 sm:px-8 sm:py-10">
-                  <p className="[font-family:var(--font-paraluman-heading)] max-w-[20ch] text-[clamp(1.95rem,3.4vw,3rem)] font-black leading-[0.96] tracking-[-0.055em] text-[#173f69]">
-                    Meaningful Work
-                  </p>
-                  <p className="[font-family:var(--font-paraluman-body)] max-w-[60ch] text-base leading-7 text-[#173957]/82 sm:text-lg sm:leading-[1.72]">
-                    <span className="font-bold">
-                      Most internships are grunt work.{" "}
-                    </span>
-                    Here, you’ll be given trust to build and ship features that
-                    millions of Filipinos will use, including your family and
-                    friends.
-                  </p>
-                  <ListingsCTA
-                    onClick={scrollToListings}
-                    label="Let me prove myself"
-                  />
-                </div>
-                <div className="relative min-h-[20rem] overflow-hidden max-lg:order-1">
-                  <RevealBlock
-                    variants={IMAGE_REVEAL_VARIANTS}
-                    inView={sectionRevealMotion}
-                    className="absolute inset-0"
-                  >
-                    <Image
-                      src={meaningfulWorkImage}
-                      alt="Passengers walking through an airport terminal"
-                      fill
-                      className="object-cover"
-                    />
-                  </RevealBlock>
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#173f69]/35 via-transparent to-transparent" />
-                </div>
-              </RevealBlock>
-            </InsetPanel>
-          </SectionInner>
-        </SectionShell>
-
-        <SectionShell className="border-t-0">
-          <SectionInner className="space-y-6">
-            <InsetPanel className="overflow-hidden border-0 bg-transparent shadow-none">
-              <RevealBlock
-                inView={sectionRevealMotion}
-                className="grid lg:grid-cols-[minmax(300px,0.9fr)_minmax(0,1.1fr)]"
-              >
-                <div className="relative min-h-[20rem] overflow-hidden max-lg:order-1">
-                  <RevealBlock
-                    variants={IMAGE_REVEAL_VARIANTS}
-                    inView={sectionRevealMotion}
-                    className="absolute inset-0"
-                  >
-                    <Image
-                      src={massiveImpactImage}
-                      alt="A Cebu Pacific airplane in flight"
-                      fill
-                      className="object-cover"
-                    />
-                  </RevealBlock>
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#173f69]/40 via-transparent to-transparent" />
-                </div>
-                <div className="max-lg:order-2 space-y-6 px-6 py-8 sm:px-8 sm:py-10">
-                  <p className="[font-family:var(--font-paraluman-heading)] max-w-[18ch] text-[clamp(1.95rem,3.3vw,3rem)] font-black leading-[0.96] tracking-[-0.055em] text-[#173f69]">
-                    Massive impact
-                  </p>
-                  <p className="[font-family:var(--font-paraluman-body)] max-w-[60ch] text-base leading-7 text-[#173957]/82 sm:text-lg sm:leading-[1.72]">
-                    We operate over{" "}
-                    <span className="font-bold">190,000 flights</span> a year
-                    across nearly{" "}
-                    <span className="font-bold">100 aircrafts.</span> Your code
-                    will make their travels more delightful.
-                  </p>
-                  <ListingsCTA
-                    onClick={scrollToListings}
-                    label="Let me prove myself"
-                  />
-                </div>
-              </RevealBlock>
-            </InsetPanel>
-          </SectionInner>
-        </SectionShell>
-
-        <SectionShell className="border-t-0">
-          <SectionInner className="space-y-6">
-            <InsetPanel className="overflow-hidden border-0 bg-transparent shadow-none">
-              <RevealBlock
-                inView={sectionRevealMotion}
-                className="grid lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]"
-              >
-                <div className="max-lg:order-2 space-y-6 px-6 py-8 sm:px-8 sm:py-10">
-                  <p className="[font-family:var(--font-paraluman-heading)] max-w-[20ch] text-[clamp(1.95rem,3.4vw,3rem)] font-black leading-[0.96] tracking-[-0.055em] text-[#173f69]">
-                    Open to LITERALLY EVERYONE
-                  </p>
-                  <p className="[font-family:var(--font-paraluman-body)] max-w-[60ch] text-base leading-7 text-[#173957]/82 sm:text-lg sm:leading-[1.72]">
-                    Again, we won’t look at your resume. Your only goal is to
-                    impress us through the challenge. If we’re impressed, you’re
-                    in.
-                  </p>
-                  <ListingsCTA
-                    onClick={scrollToListings}
-                    label="Let me prove myself"
-                  />
-                </div>
-                <div className="relative min-h-[20rem] overflow-hidden max-lg:order-1">
-                  <RevealBlock
-                    variants={IMAGE_REVEAL_VARIANTS}
-                    inView={sectionRevealMotion}
-                    className="absolute inset-0"
-                  >
-                    <Image
-                      src={literallyEveryoneImage}
-                      alt="Passengers walking through an airport terminal"
-                      fill
-                      className="object-cover"
-                    />
-                  </RevealBlock>
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#173f69]/35 via-transparent to-transparent" />
-                </div>
-              </RevealBlock>
-            </InsetPanel>
-          </SectionInner>
+        <SectionShell className="border-t-0 bg-[#f4f8fc] py-0">
+          <MeaningfulWorkScrollScene
+            reduceMotion={shouldReduceMotion}
+            onJumpToListings={scrollToListings}
+          />
         </SectionShell>
 
         <SectionShell className="overflow-hidden border-t-0 bg-[#173f69]">
