@@ -464,6 +464,10 @@ function MeaningfulWorkScrollScene({
   useLayoutEffect(() => {
     if (reduceMotion) return;
     if (!sectionRef.current) return;
+    const isTouchLikeViewport =
+      window.matchMedia("(pointer: coarse)").matches ||
+      window.matchMedia("(hover: none)").matches ||
+      window.matchMedia("(max-width: 767px)").matches;
 
     gsap.registerPlugin(ScrollTrigger);
     let lenis: Lenis | null = null;
@@ -476,8 +480,10 @@ function MeaningfulWorkScrollScene({
         scroller === window ? null : (scroller as HTMLElement);
       const scrollerContent =
         scrollerElement?.firstElementChild as HTMLElement | null;
+      const triggerScroller =
+        scroller === window ? undefined : (scroller as HTMLElement);
 
-      if (scrollerElement && scrollerContent) {
+      if (!isTouchLikeViewport && scrollerElement && scrollerContent) {
         lenis = new Lenis({
           wrapper: scrollerElement,
           content: scrollerContent,
@@ -505,6 +511,59 @@ function MeaningfulWorkScrollScene({
         lineTwoRef.current,
         lineThreeRef.current,
       ].filter(Boolean);
+
+      if (isTouchLikeViewport) {
+        gsap.set(targets, { autoAlpha: 0, y: 24 });
+        if (ctaRef.current) {
+          gsap.set(ctaRef.current, {
+            autoAlpha: 0,
+            y: 20,
+            scale: 0.96,
+          });
+        }
+
+        const mobileTimeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            scroller: triggerScroller,
+            start: "top 82%",
+            end: "bottom 38%",
+            toggleActions: "play none none reverse",
+            invalidateOnRefresh: true,
+          },
+          defaults: {
+            ease: "power2.out",
+            duration: 0.52,
+          },
+        });
+
+        if (eyebrowRef.current) {
+          mobileTimeline.to(eyebrowRef.current, { autoAlpha: 0.65, y: 0 }, 0);
+        }
+        if (lineOneRef.current) {
+          mobileTimeline.to(lineOneRef.current, { autoAlpha: 1, y: 0 }, 0.06);
+        }
+        if (lineTwoRef.current) {
+          mobileTimeline.to(lineTwoRef.current, { autoAlpha: 1, y: 0 }, 0.16);
+        }
+        if (lineThreeRef.current) {
+          mobileTimeline.to(
+            lineThreeRef.current,
+            { autoAlpha: 1, y: 0 },
+            0.26,
+          );
+        }
+        if (ctaRef.current) {
+          mobileTimeline.to(
+            ctaRef.current,
+            { autoAlpha: 1, y: 0, scale: 1 },
+            0.36,
+          );
+        }
+
+        ScrollTrigger.refresh();
+        return;
+      }
 
       gsap.set(targets, { autoAlpha: 0.2, y: 14 });
       if (ctaRef.current) {
@@ -536,7 +595,7 @@ function MeaningfulWorkScrollScene({
 
       ScrollTrigger.create({
         trigger: sectionRef.current,
-        scroller: scroller === window ? undefined : (scroller as HTMLElement),
+        scroller: triggerScroller,
         start: "top top",
         end: "+=250%",
         scrub: 1.15,
