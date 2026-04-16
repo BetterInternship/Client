@@ -34,7 +34,7 @@ export function HowToApplyPanel({
               one meaningful pain point
             </span>
             <br /> in Cebu Pacific&apos;s digital experience
-            <br /> and rebuild it to feel{" "}
+            <br /> and rebuild it to be{" "}
             <span className="bg-[#f8d64e]/50 px-1">10x better.</span>
           </h2>
           <p className="max-w-3xl [font-family:var(--font-paraluman-body)] pt-4 text-base leading-7 text-[#173957] opacity-80 sm:text-lg sm:leading-8">
