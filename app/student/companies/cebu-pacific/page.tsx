@@ -53,7 +53,7 @@ const bodyFont = Open_Sans({
 });
 
 const HERO_IMAGE_URL =
-  "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1400&q=80";
+  "https://travelweekly.com.au/wp-content/uploads/2015/01/41f7edf0-2d00-487f-b86a-dd5bcba0ce13_Cebu-Pacific-fleet-at-Terminal-3.jpg";
 const BEST_PLACE_TO_WORK_BADGE_URL =
   "https://greatplacetowork.com.ph/wp-content/uploads/2024/04/Apr2024Apr2025PHL-1.png";
 const TEXT_GUTTER = "px-6 sm:px-10 lg:px-16 xl:px-24";
