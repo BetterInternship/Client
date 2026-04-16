@@ -16,7 +16,7 @@ export function HeroPanel() {
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-            <p className="w-full border-b-[3px] border-warning/80 pb-1 [font-family:var(--font-paraluman-heading)] text-[clamp(0.98rem,4.6vw,1.2rem)] font-bold leading-[1.08] tracking-[-0.02em] text-warning sm:w-auto sm:border-b-4 sm:pb-0 sm:text-2xl sm:leading-none sm:tracking-normal">
+            <p className="w-full pb-1 [font-family:var(--font-paraluman-heading)] text-3xl font-bold leading-[1.08] tracking-[-0.02em] text-warning sm:w-auto  sm:pb-0  sm:leading-none sm:tracking-normal border-b-[4px] border-warning  ">
               No resume needed. Response in 24 hours.
             </p>
           </div>

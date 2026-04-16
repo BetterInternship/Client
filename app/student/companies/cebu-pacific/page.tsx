@@ -893,7 +893,7 @@ export default function CebuPacificCompanyProfilePage() {
               className="mx-auto max-w-4xl text-center"
             >
               <p className="[font-family:var(--font-paraluman-heading)] mt-2 text-[clamp(2rem,4vw,3rem)] font-black leading-[0.95] tracking-[-0.05em] text-[#123f6b]">
-                Questions you might have
+                FAQs
               </p>
             </RevealBlock>
 

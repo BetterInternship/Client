@@ -4,7 +4,9 @@ import { type FormEvent, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
+import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { OverviewPanel } from "./components/OverviewPanel";
 import { HowToApplyPanel } from "./components/HowToApplyPanel";
 import { ApplyPanel } from "./components/ApplyPanel";
@@ -294,6 +296,16 @@ export default function CebuPacificPage() {
 
       <section className="px-4 pb-12 pt-6 sm:px-8 sm:pb-16 sm:pt-8 lg:px-10 lg:pt-10">
         <div className="mx-auto max-w-6xl">
+          <Button
+            asChild
+            type="button"
+            className="mb-4 inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#2574BB]/18 bg-white px-4 [font-family:var(--font-paraluman-heading)] text-sm font-medium tracking-[-0.02em] text-[#173f69] shadow-[0_10px_24px_-20px_rgba(19,70,111,0.48)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#f2f8ff] hover:text-[#123f6b] sm:mb-5"
+          >
+            <Link href="/student/companies/cebu-pacific">
+              <ArrowLeft className="h-4 w-4" />
+              Back to company page
+            </Link>
+          </Button>
           <HeroPanel />
         </div>
       </section>
