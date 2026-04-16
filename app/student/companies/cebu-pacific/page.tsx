@@ -377,7 +377,7 @@ function MetricsFlipper({ reduceMotion }: { reduceMotion: boolean }) {
               value={padFlipperMetric(metric.value)}
               chars={METRIC_FLIPPER_CHARS}
               length={METRIC_FLIPPER_LENGTH}
-              timing={reduceMotion ? 1 : 22}
+              timing={reduceMotion ? 1 : 12}
               hinge
               theme="light"
               size="xlarge"
@@ -388,7 +388,7 @@ function MetricsFlipper({ reduceMotion }: { reduceMotion: boolean }) {
               value={padFlipperMetric(metric.value)}
               chars={METRIC_FLIPPER_CHARS}
               length={METRIC_FLIPPER_LENGTH}
-              timing={reduceMotion ? 1 : 22}
+              timing={reduceMotion ? 1 : 12}
               hinge
               theme="light"
               size="xlarge"
@@ -403,7 +403,7 @@ function MetricsFlipper({ reduceMotion }: { reduceMotion: boolean }) {
         initial={reduceMotion ? false : { opacity: 0, y: 6 }}
         animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
-        className="[font-family:var(--font-paraluman-heading)] whitespace-nowrap text-center text-xl font-black uppercase tracking-[0.04em] text-[#8fceff] sm:text-left sm:text-2xl lg:text-3xl"
+        className="[font-family:var(--font-paraluman-heading)] whitespace-nowrap text-center text-xl font-black  tracking-[0.04em] text-[#8fceff] sm:text-left sm:text-2xl lg:text-3xl"
       >
         {metric.label}
       </motion.p>
@@ -502,6 +502,7 @@ export default function CebuPacificCompanyProfilePage() {
 
       <section>
         <SectionShell className="border-t-0 bg-[#173f69] py-12 sm:py-14">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_22%,rgba(143,206,255,0.16),transparent_34%),radial-gradient(circle_at_82%_74%,rgba(255,255,255,0.07),transparent_30%),linear-gradient(to_right,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.045)_1px,transparent_1px)] bg-[size:auto,auto,28px_28px,28px_28px] opacity-40" />
           <SectionInner>
             <RevealBlock
               inView={sectionRevealMotion}
