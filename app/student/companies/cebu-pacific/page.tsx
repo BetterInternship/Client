@@ -765,7 +765,7 @@ function ListingModalContent({
   card: (typeof LISTING_CARDS)[number];
 }) {
   return (
-    <div className="space-y-8 p-4 text-[#123f6b] sm:space-y-10 sm:p-6">
+    <div className="space-y-8 pt-4 text-[#123f6b] sm:space-y-10 ">
       <div>
         <p className="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-[#4f7598]">
           Your internship shall:
