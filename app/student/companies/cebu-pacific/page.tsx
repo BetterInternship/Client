@@ -751,7 +751,7 @@ function ListingCard({
         {card.title}
       </h3>
 
-      <div className="mt-auto inline-flex items-center justify-end gap-2 pt-6 text-xs font-semibold uppercase tracking-[0.12em] text-[#4f7598] transition-colors group-hover:text-[#123f6b]">
+      <div className="mt-auto inline-flex items-center justify-end gap-2 pt-6 text-sm font-semibold uppercase tracking-[0.1em] text-[#4f7598] transition-colors group-hover:text-[#123f6b]">
         Open
         <ArrowRight className="-rotate-45 h-4 w-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
       </div>
@@ -765,47 +765,47 @@ function ListingModalContent({
   card: (typeof LISTING_CARDS)[number];
 }) {
   return (
-    <div className="space-y-7 p-3 text-[#123f6b] sm:p-4">
-      <div className="rounded-[0.33em] border border-[#2574BB]/12 bg-[linear-gradient(180deg,#ffffff_0%,#f7fbff_100%)] p-4 sm:p-5">
-        <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#4f7598]">
+    <div className="space-y-8 p-4 text-[#123f6b] sm:space-y-10 sm:p-6">
+      <div>
+        <p className="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-[#4f7598]">
           Your internship shall:
         </p>
-        <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.6rem,2.7vw,2.28rem)] font-semibold leading-[1.05] tracking-[-0.03em] text-[#123f6b]">
+        <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.5rem,2.35vw,2.02rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-[#123f6b]">
           Make Cebu Pacific the easiest airline booking experience in the
           country
         </p>
       </div>
 
-      <div className="rounded-[0.33em] border border-[#2574BB]/12 bg-white p-4 sm:p-5">
-        <h3 className="mb-4 text-xs font-bold uppercase tracking-[0.14em] text-[#4f7598]">
+      <div>
+        <h3 className="mb-5 text-sm font-bold uppercase tracking-[0.12em] text-[#4f7598]">
           Your internship is a success if you can:
         </h3>
-        <div className="space-y-3.5">
-          <div className="flex items-start gap-3 rounded-[0.33em] bg-[#f6faff] px-3 py-2.5">
+        <div className="space-y-4">
+          <div className="flex items-start gap-3">
             <span
               className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full"
               style={{ backgroundColor: card.accent }}
             />
-            <p className="text-sm text-[#173957]/84">
+            <p className="text-base leading-7 text-[#173957]/84">
               80% of first-time users complete a flight booking in less than 60
               seconds without assistance
             </p>
           </div>
-          <div className="flex items-start gap-3 rounded-[0.33em] bg-[#f6faff] px-3 py-2.5">
+          <div className="flex items-start gap-3">
             <span
               className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full"
               style={{ backgroundColor: card.accent }}
             />
-            <p className="text-sm text-[#173957]/84">
+            <p className="text-base leading-7 text-[#173957]/84">
               Reduce booking-related complaints/support tickets by 50%
             </p>
           </div>
-          <div className="flex items-start gap-3 rounded-[0.33em] bg-[#f6faff] px-3 py-2.5">
+          <div className="flex items-start gap-3">
             <span
               className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full"
               style={{ backgroundColor: card.accent }}
             />
-            <p className="text-sm text-[#173957]/84">
+            <p className="text-base leading-7 text-[#173957]/84">
               Achieve greater than 90% of users rating booking experience as
               "easy" or "very easy"
             </p>
@@ -813,15 +813,15 @@ function ListingModalContent({
         </div>
       </div>
 
-      <div className="rounded-[0.33em] border border-[#2574BB]/14 bg-[#edf4fc] p-4 sm:p-5">
-        <p className="text-sm leading-relaxed text-[#173957]/76">
+      <div className="rounded-[0.33em] bg-[#edf4fc] p-5 sm:p-6">
+        <p className="text-base leading-7 text-[#173957]/76">
           Exciting? But before you can start the internship, you shall pass our
           challenge.
         </p>
       </div>
 
-      <div className="pt-2">
-        <Button variant="default" className="w-full justify-center gap-2 ">
+      <div className="pt-3 sm:pt-4">
+        <Button asChild className="h-12 w-full rounded-[0.33em]">
           <Link
             href="/super-listing/cebu-pacific"
             className="flex items-center justify-center gap-2"
