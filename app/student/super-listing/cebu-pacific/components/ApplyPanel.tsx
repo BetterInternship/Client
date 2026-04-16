@@ -181,19 +181,20 @@ export function ApplyPanel({
                       className="h-12 border-[#2574BB]/14 bg-white [font-family:var(--font-paraluman-body)] text-base shadow-none focus-visible:ring-[#2574BB]/25"
                     />
                     <div className="flex flex-wrap gap-2 pt-1 [font-family:var(--font-paraluman-body)] text-[11px] text-[#173957]/56 sm:text-xs">
-                      <span className="inline-flex items-center gap-1 border border-[#2574BB]/10 bg-[#fbfdff] px-2.5 py-1">
+                      Accepted Links:
+                      <span className="inline-flex items-center gap-1">
                         <FolderOpen className="h-3.5 w-3.5" />
-                        Google Drive
+                        Google Drive,
                       </span>
-                      <span className="inline-flex items-center gap-1 border border-[#2574BB]/10 bg-[#fbfdff] px-2.5 py-1">
+                      <span className="inline-flex items-center gap-1">
                         <FileText className="h-3.5 w-3.5" />
-                        Google Docs
+                        Google Docs,
                       </span>
-                      <span className="inline-flex items-center gap-1 border border-[#2574BB]/10 bg-[#fbfdff] px-2.5 py-1">
+                      <span className="inline-flex items-center gap-1">
                         <Globe className="h-3.5 w-3.5" />
-                        Live Demo
+                        Live Demo,
                       </span>
-                      <span className="inline-flex items-center gap-1 border border-[#2574BB]/10 bg-[#fbfdff] px-2.5 py-1">
+                      <span className="inline-flex items-center gap-1">
                         <Video className="h-3.5 w-3.5" />
                         YouTube
                       </span>
