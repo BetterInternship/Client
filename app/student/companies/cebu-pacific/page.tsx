@@ -15,7 +15,6 @@ import { ArrowRight } from "lucide-react";
 import { SplitFlap, Presets } from "react-split-flap";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Lenis from "lenis";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -464,46 +463,13 @@ function MeaningfulWorkScrollScene({
   useLayoutEffect(() => {
     if (reduceMotion) return;
     if (!sectionRef.current) return;
-    const isTouchLikeViewport =
-      window.matchMedia("(pointer: coarse)").matches ||
-      window.matchMedia("(hover: none)").matches ||
-      window.matchMedia("(max-width: 767px)").matches;
 
     gsap.registerPlugin(ScrollTrigger);
-    let lenis: Lenis | null = null;
-    let lenisRaf = 0;
-    let onLenisScroll: (() => void) | null = null;
 
     const ctx = gsap.context(() => {
       const scroller = getScrollParent(sectionRef.current);
-      const scrollerElement =
-        scroller === window ? null : (scroller as HTMLElement);
-      const scrollerContent =
-        scrollerElement?.firstElementChild as HTMLElement | null;
       const triggerScroller =
         scroller === window ? undefined : (scroller as HTMLElement);
-
-      if (!isTouchLikeViewport && scrollerElement && scrollerContent) {
-        lenis = new Lenis({
-          wrapper: scrollerElement,
-          content: scrollerContent,
-          duration: 1.15,
-          smoothWheel: true,
-          smoothTouch: false,
-          wheelMultiplier: 0.92,
-          touchMultiplier: 1,
-          autoRaf: false,
-        });
-
-        onLenisScroll = () => ScrollTrigger.update();
-        lenis.on("scroll", onLenisScroll);
-
-        const raf = (time: number) => {
-          lenis?.raf(time);
-          lenisRaf = window.requestAnimationFrame(raf);
-        };
-        lenisRaf = window.requestAnimationFrame(raf);
-      }
 
       const targets = [
         eyebrowRef.current,
@@ -512,159 +478,50 @@ function MeaningfulWorkScrollScene({
         lineThreeRef.current,
       ].filter(Boolean);
 
-      if (isTouchLikeViewport) {
-        gsap.set(targets, { autoAlpha: 0, y: 24 });
-        if (ctaRef.current) {
-          gsap.set(ctaRef.current, {
-            autoAlpha: 0,
-            y: 20,
-            scale: 0.96,
-          });
-        }
-
-        const mobileTimeline = gsap.timeline({
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            scroller: triggerScroller,
-            start: "top 82%",
-            end: "bottom 38%",
-            toggleActions: "play none none reverse",
-            invalidateOnRefresh: true,
-          },
-          defaults: {
-            ease: "power2.out",
-            duration: 1.2,
-          },
-        });
-
-        if (eyebrowRef.current) {
-          mobileTimeline.to(eyebrowRef.current, { autoAlpha: 0.65, y: 0 }, 0);
-        }
-        if (lineOneRef.current) {
-          mobileTimeline.to(lineOneRef.current, { autoAlpha: 1, y: 0 }, 0.35);
-        }
-        if (lineTwoRef.current) {
-          mobileTimeline.to(lineTwoRef.current, { autoAlpha: 1, y: 0 }, 0.85);
-        }
-        if (lineThreeRef.current) {
-          mobileTimeline.to(
-            lineThreeRef.current,
-            { autoAlpha: 1, y: 0 },
-            1.4,
-          );
-        }
-        if (ctaRef.current) {
-          mobileTimeline.to(
-            ctaRef.current,
-            { autoAlpha: 1, y: 0, scale: 1 },
-            2.05,
-          );
-        }
-
-        ScrollTrigger.refresh();
-        return;
-      }
-
-      gsap.set(targets, { autoAlpha: 0.2, y: 14 });
+      gsap.set(targets, { autoAlpha: 0, y: 24 });
       if (ctaRef.current) {
         gsap.set(ctaRef.current, {
-          autoAlpha: 0.2,
-          y: 18,
-          scale: 0.94,
-          filter: "drop-shadow(0 0 0 rgba(37,116,187,0))",
+          autoAlpha: 0,
+          y: 20,
+          scale: 0.96,
         });
       }
-      const fadeRange = (progress: number, start: number, end: number) => {
-        if (progress <= start) return 0.2;
-        if (progress >= end) return 1;
-        return 0.2 + ((progress - start) / (end - start)) * 0.8;
-      };
-      const mapRange = (
-        progress: number,
-        start: number,
-        end: number,
-        from: number,
-        to: number,
-      ) => {
-        if (progress <= start) return from;
-        if (progress >= end) return to;
-        return from + ((progress - start) / (end - start)) * (to - from);
-      };
-      const lineGlow = (progress: number, start: number, end: number) =>
-        mapRange(progress, start, end, 0, 18);
 
-      ScrollTrigger.create({
-        trigger: sectionRef.current,
-        scroller: triggerScroller,
-        start: "top top",
-        end: "+=250%",
-        scrub: 1.15,
-        pin: true,
-        pinSpacing: true,
-        anticipatePin: 1,
-        invalidateOnRefresh: true,
-        onUpdate: (self) => {
-          const p = self.progress;
-          if (eyebrowRef.current)
-            gsap.set(eyebrowRef.current, {
-              autoAlpha: Math.min(0.65, fadeRange(p, 0.02, 0.24)),
-              y: mapRange(p, 0.02, 0.24, 10, 0),
-            });
-          if (lineOneRef.current)
-            gsap.set(lineOneRef.current, {
-              autoAlpha: fadeRange(p, 0.1, 0.36),
-              y: mapRange(p, 0.1, 0.36, 16, 0),
-              textShadow: `0 0 ${lineGlow(
-                p,
-                0.1,
-                0.36,
-              )}px rgba(37,116,187,0.22)`,
-            });
-          if (lineTwoRef.current)
-            gsap.set(lineTwoRef.current, {
-              autoAlpha: fadeRange(p, 0.3, 0.62),
-              y: mapRange(p, 0.3, 0.62, 16, 0),
-              textShadow: `0 0 ${lineGlow(
-                p,
-                0.3,
-                0.62,
-              )}px rgba(37,116,187,0.22)`,
-            });
-          if (lineThreeRef.current)
-            gsap.set(lineThreeRef.current, {
-              autoAlpha: fadeRange(p, 0.54, 0.86),
-              y: mapRange(p, 0.54, 0.86, 16, 0),
-              textShadow: `0 0 ${lineGlow(
-                p,
-                0.54,
-                0.86,
-              )}px rgba(37,116,187,0.22)`,
-            });
-          if (ctaRef.current) {
-            const ctaProgress = mapRange(p, 0.74, 1, 0, 1);
-            gsap.set(ctaRef.current, {
-              autoAlpha: fadeRange(p, 0.76, 0.98),
-              y: mapRange(p, 0.74, 1, 18, 0),
-              scale: mapRange(p, 0.74, 1, 0.94, 1),
-              filter: `drop-shadow(0 0 ${mapRange(
-                ctaProgress,
-                0,
-                1,
-                0,
-                14,
-              )}px rgba(37,116,187,0.24))`,
-            });
-          }
+      const sharedTimeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          scroller: triggerScroller,
+          start: "top 82%",
+          end: "bottom 38%",
+          toggleActions: "play none none reverse",
+          invalidateOnRefresh: true,
+        },
+        defaults: {
+          ease: "power2.out",
+          duration: 0.72,
         },
       });
+
+      if (eyebrowRef.current) {
+        sharedTimeline.to(eyebrowRef.current, { autoAlpha: 0.65, y: 0 }, 0);
+      }
+      if (lineOneRef.current) {
+        sharedTimeline.to(lineOneRef.current, { autoAlpha: 1, y: 0 }, 0.16);
+      }
+      if (lineTwoRef.current) {
+        sharedTimeline.to(lineTwoRef.current, { autoAlpha: 1, y: 0 }, 0.38);
+      }
+      if (lineThreeRef.current) {
+        sharedTimeline.to(lineThreeRef.current, { autoAlpha: 1, y: 0 }, 0.62);
+      }
+      if (ctaRef.current) {
+        sharedTimeline.to(ctaRef.current, { autoAlpha: 1, y: 0, scale: 1 }, 0.88);
+      }
 
       ScrollTrigger.refresh();
     }, sectionRef);
 
     return () => {
-      if (lenisRaf) window.cancelAnimationFrame(lenisRaf);
-      if (lenis && onLenisScroll) lenis.off("scroll", onLenisScroll);
-      lenis?.destroy();
       ctx.revert();
     };
   }, [reduceMotion]);
@@ -848,8 +705,8 @@ function ListingModalContent({
               style={{ backgroundColor: card.accent }}
             />
             <p className="text-base leading-7 text-[#173957]/84">
-              80% of first-time users complete a flight booking in less than 60
-              seconds without assistance
+              Achieve 80% of first-time users complete a flight booking in less
+              than 60 seconds without assistance
             </p>
           </div>
           <div className="flex items-start gap-3">
@@ -876,7 +733,7 @@ function ListingModalContent({
 
       <div className="rounded-[0.33em] bg-[#edf4fc] p-5 sm:p-6">
         <p className="text-base leading-7 text-[#173957]/76">
-          Exciting? But before you can start the internship, you shall pass our
+          Exciting? But before you can start the internship, you need to pass our
           challenge.
         </p>
       </div>
@@ -1010,7 +867,9 @@ export default function CebuPacificCompanyProfilePage() {
                           content: (
                             <ListingModalContent
                               card={card}
-                              onApply={() => modalRegistry.centeredDetails.close()}
+                              onApply={() =>
+                                modalRegistry.centeredDetails.close()
+                              }
                             />
                           ),
                           showHeaderDivider: false,
