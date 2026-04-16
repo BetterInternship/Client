@@ -93,7 +93,7 @@ export function OverviewPanel({
               ))}
               <div className="rounded-[0.33em] border border-[#2574BB]/12 bg-[linear-gradient(180deg,rgba(239,246,255,0.82)_0%,rgba(255,255,255,0.98)_100%)] px-5 py-5 sm:px-6 sm:py-6">
                 <p className="[font-family:var(--font-paraluman-heading)] text-lg font-medium tracking-[-0.02em] text-[#173f69] sm:text-xl">
-                  Internship OKRs
+                  Internship Success Metric
                 </p>
                 <ul className="mt-4 space-y-3">
                   {INTERNSHIP_OKRS.map((okr) => (
