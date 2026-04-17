@@ -78,7 +78,7 @@ export default function JobHeader({
                 <div className="flex items-center gap-2">
                   <Toggle
                     state={job.is_active}
-                    onClick={() => void handleToggleActive}
+                    onClick={() => void handleToggleActive()}
                   />
                   <span
                     className={cn(
