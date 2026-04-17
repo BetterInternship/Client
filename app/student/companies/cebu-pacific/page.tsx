@@ -642,7 +642,7 @@ function ListingCard({
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
       className={cn(
-        "relative flex h-full min-h-[24rem] flex-col rounded-[0.33em] border border-[#2574BB]/16 p-6 text-left transition-colors duration-200 cursor-pointer sm:min-h-[27rem] sm:p-8",
+        "relative flex h-fit w-full max-w-sm min-h-0 flex-col rounded-[0.33em] border border-[#2574BB]/16 p-5 text-left transition-colors duration-200 cursor-pointer sm:h-full sm:max-w-none sm:min-h-[27rem] sm:p-8",
         isPrimary
           ? "bg-[linear-gradient(165deg,#ffffff_0%,#f4f9ff_60%,#eaf4ff_100%)] hover:bg-[linear-gradient(165deg,#ffffff_0%,#f1f7ff_60%,#e4f1ff_100%)]"
           : "bg-[linear-gradient(165deg,#ffffff_0%,#f8fbff_60%,#edf5ff_100%)] hover:bg-[linear-gradient(165deg,#ffffff_0%,#f3f8ff_60%,#e7f2ff_100%)]",
@@ -820,7 +820,7 @@ export default function CebuPacificCompanyProfilePage() {
         <SectionShell className="relative -mt-8 overflow-hidden border-t-0 bg-[linear-gradient(180deg,#edf4fc_0%,#e5effa_44%,#dbe9f8_100%)] py-10 sm:-mt-12 sm:py-12 min-h-[100svh]">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-[#f4f8fc] via-[#eef4fc] to-transparent" />
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(127,192,255,0.16),transparent_22%),radial-gradient(circle_at_82%_22%,rgba(23,63,105,0.09),transparent_24%)]" />
-          <div className="pointer-events-none absolute inset-0 opacity-80 [mask-image:linear-gradient(to_bottom,transparent_0%,transparent_22%,rgba(0,0,0,0.35)_38%,rgba(0,0,0,0.8)_55%,#000_66%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0%,transparent_22%,rgba(0,0,0,0.35)_38%,rgba(0,0,0,0.8)_55%,#000_66%)] bg-[linear-gradient(to_right,rgba(23,63,105,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(23,63,105,0.03)_1px,transparent_1px)] bg-[size:44px_44px,44px_44px]" />
+          <div className="pointer-events-none absolute inset-0 opacity-100 [mask-image:linear-gradient(to_bottom,transparent_0%,rgba(0,0,0,0.24)_24%,rgba(0,0,0,0.62)_46%,rgba(0,0,0,0.86)_66%,#000_84%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0%,rgba(0,0,0,0.24)_24%,rgba(0,0,0,0.62)_46%,rgba(0,0,0,0.86)_66%,#000_84%)] bg-[linear-gradient(to_bottom,rgba(23,63,105,0)_0%,rgba(23,63,105,0.12)_46%,rgba(23,63,105,0.18)_100%),linear-gradient(to_right,rgba(23,63,105,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(23,63,105,0.06)_1px,transparent_1px)] bg-[size:100%_100%,44px_44px,44px_44px]" />
           <SectionInner className="relative flex min-h-[calc(100svh-5.25rem)] w-full flex-col justify-between gap-10 sm:min-h-[calc(100svh-6rem)]">
             <RevealBlock
               inView={sectionRevealMotion}
@@ -838,7 +838,7 @@ export default function CebuPacificCompanyProfilePage() {
               inView={sectionStaggerMotion}
               className="pb-2 sm:pb-4"
             >
-              <div className="mx-auto grid w-full max-w-6xl gap-3 md:grid-cols-2 lg:grid-cols-3">
+              <div className="mx-auto grid w-full max-w-6xl justify-items-center gap-3 md:grid-cols-2 md:justify-items-stretch lg:grid-cols-3">
                 {LISTING_CARDS.map((card, index) => (
                   <motion.div
                     key={card.id}
@@ -853,7 +853,7 @@ export default function CebuPacificCompanyProfilePage() {
                       duration: 0.4,
                       delay: index * 0.08,
                     }}
-                    className="-m-px"
+                    className="-m-px w-full max-w-sm md:max-w-none"
                   >
                     <ListingCard
                       card={card}
