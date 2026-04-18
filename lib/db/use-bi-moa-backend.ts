@@ -1,67 +1,38 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-22 14:37:59
- * @ Modified time: 2025-10-11 00:03:47
+ * @ Modified time: 2026-04-19 00:00:00
  * @ Description:
  *
- * Separates out the server component of the context.
+ * Server-only data loader for moa records.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import "server-only";
 import { Moa } from "./db.types";
-import { createClient } from "@supabase/supabase-js";
+import { Kysely, PostgresDialect } from "kysely";
+import { DB } from "@betterinternship/schema.base";
+import { Pool } from "pg";
 
-// Environment setup
-const DB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const DB_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const DATABASE_URL = process.env.DATABASE_URL;
 
-if (!DB_URL || !DB_ANON_KEY)
-  throw new Error("[ERROR:ENV] Missing supabase configuration.");
-const db = createClient(DB_URL ?? "", DB_ANON_KEY ?? "");
+if (!DATABASE_URL) throw new Error("[ERROR:ENV] Missing database url.");
+
+const db = new Kysely<DB>({
+  dialect: new PostgresDialect({
+    pool: new Pool({
+      connectionString: DATABASE_URL,
+    }),
+  }),
+});
+
+export interface BIMoaData {
+  moa: Moa[];
+}
 
 /**
- * Fetches actual data from db.
- *
- * @returns
+ * Fetches the moa table on the server and returns serializable data for clients.
  */
-export const createBiMoaContext = () => {
-  const [moa, setMoa] = useState<Moa[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  /**
-   * Fetch the entire moa table.
-   */
-  const fetchMoaRefTable = async () => {
-    const { data, error } = await db.from("moa").select("*");
-    if (error) console.error(error);
-    else setMoa(data);
-    setLoading(false);
-  };
-
-  /**
-   * Checks whether or not an association between the employer and university exists.
-   *
-   * @param employer_id
-   * @param university_id
-   */
-  const check = useCallback(
-    (employer_id: string, university_id: string) => {
-      if (loading) return false;
-      return moa.some(
-        (m) =>
-          m.employer_id === employer_id &&
-          m.university_id === university_id &&
-          new Date(m.expires_at ?? "").getTime() > new Date().getTime()
-      );
-    },
-    [moa, loading]
-  );
-
-  useEffect(() => {
-    fetchMoaRefTable();
-  }, []);
-
-  return {
-    check,
-  };
+export const getBiMoaData = async (): Promise<BIMoaData> => {
+  const moa = await db.selectFrom("moa").selectAll().execute();
+  return { moa };
 };
