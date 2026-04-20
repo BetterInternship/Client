@@ -45,7 +45,7 @@ export default function VerifyPage() {
 
   // Wait for profile and auth checks; unauthenticated users are redirected
   if (profile.isPending) return <Loader>Loading...</Loader>;
-  if (!profile.data || profile.data?.is_verified) return null;
+  if (profile.data?.is_verified) return router.replace(nextUrl);
 
   return (
     <div className="min-h-[calc(100vh-5rem)] bg-gradient-to-b from-primary/5 via-transparent to-transparent">
