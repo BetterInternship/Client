@@ -38,6 +38,8 @@ export function FormHistoryView({ forms, formLabel }: FormHistoryViewProps) {
     [forms, formLabel],
   );
 
+  console.log("here are the forms to be displayed: ", filteredForms);
+
   return (
     <div className="w-full mx-auto">
       <div className="animate-fade-in">

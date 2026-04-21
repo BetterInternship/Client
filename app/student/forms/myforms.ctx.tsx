@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-12-18 15:17:08
- * @ Modified time: 2026-03-04 17:03:50
+ * @ Modified time: 2026-04-20 22:15:38
  * @ Description:
  *
  * These are the forms a user has generated or initiated.
@@ -74,6 +74,8 @@ export const MyFormsContextProvider = ({
         status: f.form_process_status,
         timestamp: f.timestamp,
       })) ?? [];
+
+  console.log("FORMS FORMS FORMS", forms);
 
   // Helper function to check if form has pending instances
   const hasPendingInstance = (formLabel: string): boolean => {
