@@ -41,8 +41,8 @@ export function FormSubmissionSuccessModal({
     modalRegistry.formSubmissionSuccess.close();
   };
 
-  const process = submissionType == "esign" ? "sent" : "generated";
-  console.log("FormSubmissionSuccessModal rendered with type:", submissionType);
+  const recipientEmail = firstRecipient?.signatory_account?.email?.trim();
+  const isSentFlow = submissionType === "esign" && !!recipientEmail;
 
   return (
     <div className="flex w-full flex-col items-center gap-4 px-1 py-6 text-center sm:gap-6 sm:px-6 sm:py-10">
@@ -72,10 +72,10 @@ export function FormSubmissionSuccessModal({
       `}</style>
 
       <div className="w-full">
-        {submissionType === "manual" ? (
+        {!isSentFlow ? (
           <>
             <h2 className="flex flex-row items-center text-left text-3xl font-semibold text-foreground">
-              <span className="mr-2 mt-1">Form {process} successfully</span>
+              <span className="mr-2 mt-1">Form generated successfully</span>
               <AnimatedCheck />
             </h2>
             <p className="text-gray-500 text-left mt-4">
@@ -85,7 +85,7 @@ export function FormSubmissionSuccessModal({
         ) : (
           <div className="flex flex-col gap-2 items-start pt-2 sm:pt-4">
             <h2 className="flex flex-row items-center text-left text-3xl font-semibold text-foreground">
-              <span className="mr-2 mt-1">Form {process} successfully</span>
+              <span className="mr-2 mt-1">Form sent successfully</span>
               <AnimatedCheck />
             </h2>
             <div className="mt-5 flex w-full flex-col items-start rounded-[0.33em] bg-gray-100 p-4 sm:mt-8 sm:p-5 sm:px-6">
@@ -93,7 +93,7 @@ export function FormSubmissionSuccessModal({
                 An initial email has been sent to the following address:
               </div>
               <Badge className="text-sm my-2" type="supportive">
-                <pre>{firstRecipient?.signatory_account?.email}</pre>
+                <pre>{recipientEmail}</pre>
               </Badge>
               <div className="text-left mt-5">
                 Kindly ask them to check their Inbox or Spam folder.

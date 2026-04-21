@@ -157,10 +157,6 @@ export function FormSigningLayout({
     [recipients],
   );
   const noRecipientStep = useMemo(() => !fromMe || noEsign, [fromMe, noEsign]);
-  const generateWithNoSignature = useMemo(
-    () => !recipients.length || noEsign,
-    [recipients, noEsign],
-  );
   const desktopSteps: SigningStep[] = noRecipientStep
     ? ["fields", "confirm"]
     : ["timeline", "fields", "confirm"];
@@ -465,23 +461,28 @@ export function FormSigningLayout({
   ]);
 
   const getFirstRecipient = useCallback((): IFormSigningParty | undefined => {
-    const firstRecipient = recipients.find(
-      (recipient) =>
-        recipient.signatory_source?._id === "initiator" ||
-        !!recipient.signatory_account?.email,
-    );
-    if (!firstRecipient) return;
+    const firstRecipient = recipients.find((recipient) => {
+      const fieldName = form.formMetadata.getSigningPartyFieldName(
+        recipient._id,
+      );
+      const email =
+        recipientEmails[fieldName] ?? recipient.signatory_account?.email ?? "";
+
+      return !!email.trim();
+    });
+
+    if (!firstRecipient) return undefined;
+
     const fieldName = form.formMetadata.getSigningPartyFieldName(
       firstRecipient._id,
     );
+    const email =
+      recipientEmails[fieldName] ?? firstRecipient.signatory_account?.email;
 
     return {
       ...firstRecipient,
       signatory_account: {
-        email:
-          (recipientEmails[fieldName] ||
-            firstRecipient.signatory_account?.email) ??
-          "",
+        email: (email ?? "").trim(),
       },
     };
   }, [form, recipients, recipientEmails]);
@@ -492,8 +493,10 @@ export function FormSigningLayout({
       ...autofillValues,
       ...recipientEmails,
     });
+    const firstRecipient = getFirstRecipient();
+    const shouldGenerateForm = !!noEsign || !firstRecipient;
 
-    if (generateWithNoSignature) {
+    if (shouldGenerateForm) {
       const response = await formFilloutProcess.run(
         {
           formName: form.formName,
@@ -543,7 +546,7 @@ export function FormSigningLayout({
           setCurrentStep(initialStep);
           onBack();
         },
-        getFirstRecipient(),
+        firstRecipient,
       );
     }
     setNextLoading(false);
@@ -551,10 +554,10 @@ export function FormSigningLayout({
     autofillValues,
     form,
     formFilloutProcess,
-    generateWithNoSignature,
     getFirstRecipient,
     initialStep,
     modalRegistry.formSubmissionSuccess,
+    noEsign,
     onBack,
     queryClient,
     recipientEmails,
@@ -1017,6 +1020,11 @@ export function FormSigningLayout({
                             }}
                             isConfirmingRecipients
                           />
+                        )}
+                        {noRecipientStep && (
+                          <div className="rounded-[0.33em] border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+                            This form does not require any signatures.
+                          </div>
                         )}
                         <label className="flex cursor-pointer items-center gap-3 rounded-[0.33em] border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
                           <Checkbox
