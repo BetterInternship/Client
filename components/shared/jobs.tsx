@@ -293,64 +293,6 @@ function SuperListingBorderBadge({ mobile = false }: { mobile?: boolean }) {
   );
 }
 
-function LightningEmojiBorder({
-  mobile = false,
-  variant = "card",
-}: {
-  mobile?: boolean;
-  variant?: "card" | "hero";
-}) {
-  const isHero = variant === "hero";
-  const sm = isHero ? "text-base md:text-lg" : mobile ? "text-sm" : "text-base";
-
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-0 z-[15] overflow-visible"
-    >
-      {/* Top-left (card) / repositioned for hero */}
-      <span
-        className={cn(
-          "absolute -translate-y-1/2 rotate-[-14deg] leading-none select-none super-sticker",
-          isHero
-            ? mobile
-              ? "bottom-0 left-3 translate-y-1/2"
-              : "top-0 right-[40%]"
-            : "top-0 left-3",
-          sm,
-        )}
-      >
-        ⚡
-      </span>
-
-      {/* Bottom-right corner */}
-      <span
-        className={cn(
-          "absolute bottom-0 right-3 translate-y-1/2 rotate-[12deg] leading-none select-none super-sticker-slow",
-          sm,
-        )}
-      >
-        ⚡
-      </span>
-
-      {/* Third sticker — different position for mobile vs desktop hero */}
-      {isHero && (
-        <span
-          className={cn(
-            "absolute leading-none select-none super-sticker-delayed",
-            mobile
-              ? "top-1/2 right-0 translate-x-1/2 -translate-y-1/2 rotate-[8deg]"
-              : "top-0 right-[15%] -translate-y-1/2 rotate-[10deg]",
-            "text-sm md:text-base",
-          )}
-        >
-          ⚡
-        </span>
-      )}
-    </div>
-  );
-}
-
 function SuperJobCardContent({
   job,
   compact = false,
@@ -389,9 +331,6 @@ function SuperJobCard({
 }) {
   return (
     <div className="relative py-3">
-      {/* Stickers live outside the clipped card so they sit ON the border */}
-      <LightningEmojiBorder mobile={mobile} />
-
       <div
         onClick={onClick}
         className={cn(
@@ -1290,9 +1229,6 @@ export function SuperChallengeDetails({
 
   return (
     <div className="relative py-3">
-      {/* Stickers sit outside the clipped card, on the border */}
-      <LightningEmojiBorder variant="hero" mobile={mobile} />
-
       <div
         className={cn(
           "super-challenge-card group relative isolate rounded-[0.33em] p-6 pt-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_40px_rgba(245,158,11,0.25),0_0_80px_rgba(245,158,11,0.12),0_20px_40px_rgba(249,115,22,0.15)]",
