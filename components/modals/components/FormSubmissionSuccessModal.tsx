@@ -106,8 +106,12 @@ export function FormSubmissionSuccessModal({
               </div>
               <div className="mt-4 mb-2 italic text-left text-gray-500">
                 For help, contact us at{" "}
-                <a href="https://facebook.com/shi.sherwin">
-                  facebook.com/shi.sherwin
+                <a
+                  href="https://www.facebook.com/betterinternship.sherwin/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  facebook.com/betterinternship.sherwin
                 </a>
                 .
               </div>
