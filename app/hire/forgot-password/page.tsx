@@ -36,6 +36,8 @@ export default function ForgotPasswordPage() {
  * Layout for the forgot password form.
  */
 const ForgotPasswordForm = ({}) => {
+  const GENERIC_RESET_MESSAGE =
+    "If an account with that email exists, a reset link will be sent shortly.";
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -49,18 +51,16 @@ const ForgotPasswordForm = ({}) => {
     setMessage("");
 
     try {
-      const r = await EmployerUserService.requestPasswordReset(
-        email.toLowerCase(),
-      );
-
-      // @ts-ignore
-      setMessage(r.message);
+      await EmployerUserService.requestPasswordReset(email.toLowerCase());
+      setMessage(GENERIC_RESET_MESSAGE);
     } catch (err: any) {
-      setError(
-        err.response?.data?.message ??
-          err.message ??
-          "Something went wrong. Please try again later.",
-      );
+      const status = err?.response?.status;
+      if (status === 429) {
+        setError("Too many requests. Please wait a moment and try again.");
+      } else {
+        // Keep response generic to avoid account-enumeration leaks.
+        setMessage(GENERIC_RESET_MESSAGE);
+      }
     } finally {
       setIsLoading(false);
     }
