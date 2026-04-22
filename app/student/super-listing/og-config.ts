@@ -39,6 +39,13 @@ const SUPER_LISTING_OG_OVERRIDES: Record<
     accent: "#0c4a6e",
     glow: "#38bdf8",
   },
+  pcc: {
+    company: "Philippine Chamber of Commerce",
+    role: "Business Innovation Challenge",
+    tagline: "Reduce business-process friction with practical execution.",
+    accent: "#0f766e",
+    glow: "#34d399",
+  },
   paraluman: {
     company: "Paraluman News",
     role: "Multilingual News Delivery Challenge",
@@ -88,7 +95,14 @@ function resolveLogoDataUrl(slug: string, configuredLogoFile?: string) {
   const slugDirectory = path.join(SUPER_LISTING_ROOT, slug);
   const candidateFileNames = configuredLogoFile
     ? [configuredLogoFile]
-    : ["logo.svg", "logo.png", "logo.webp", "logo.jpg", "logo.jpeg", `${slug}-icon.svg`];
+    : [
+        "logo.svg",
+        "logo.png",
+        "logo.webp",
+        "logo.jpg",
+        "logo.jpeg",
+        `${slug}-icon.svg`,
+      ];
 
   for (const candidateFileName of candidateFileNames) {
     const absolutePath = path.join(slugDirectory, candidateFileName);
@@ -120,7 +134,9 @@ export function getAvailableSuperListingSlugs(): string[] {
   const entries = fs.readdirSync(SUPER_LISTING_ROOT, { withFileTypes: true });
 
   cachedSlugs = entries
-    .filter((entry) => entry.isDirectory() && !RESERVED_DIRECTORIES.has(entry.name))
+    .filter(
+      (entry) => entry.isDirectory() && !RESERVED_DIRECTORIES.has(entry.name),
+    )
     .map((entry) => entry.name)
     .filter((slug) =>
       fs.existsSync(path.join(SUPER_LISTING_ROOT, slug, "page.tsx")),

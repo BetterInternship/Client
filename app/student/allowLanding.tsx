@@ -14,7 +14,9 @@ export default function AllowLanding({
   const hideSharedHeader =
     isStudentLanding ||
     pathname === "/companies/cebu-pacific" ||
-    pathname === "/student/companies/cebu-pacific";
+    pathname === "/student/companies/cebu-pacific" ||
+    pathname === "/companies/pcc" ||
+    pathname === "/student/companies/pcc";
 
   return (
     <div className="h-[100svh] bg-gray-50 flex flex-col overflow-y-auto">
