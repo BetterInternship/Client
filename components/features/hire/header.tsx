@@ -33,12 +33,13 @@ import { Separator } from "@/components/ui/separator";
 export const Header: React.FC = () => {
   const { isMobile } = useMobile();
   const { god } = useAuthContext();
-  const { routeExcluded } = useRoute();
+  const { routeExcluded, routeIncluded } = useRoute();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const noProfileRoutes = ["/login", "/register"];
-  const noHeaderRoutes: string[] = [];
+  const mobileNoHeaderRoutes: string[] = ["/dashboard/manage"];
+  const hideHeader = isMobile && routeIncluded(mobileNoHeaderRoutes);
   const showProfileButton = routeExcluded(noProfileRoutes);
 
   useEffect(() => {
@@ -48,7 +49,7 @@ export const Header: React.FC = () => {
     };
   }, [isMenuOpen]);
 
-  return routeExcluded(noHeaderRoutes) ? (
+  return !hideHeader ? (
     <div className="flex flex-col">
       <div
         className={cn(
