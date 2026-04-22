@@ -1,9 +1,11 @@
 "use client";
 
-import { RefObject } from "react";
+import { RefObject, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import {
   ArrowLeft,
+  EllipsisVertical,
+  X,
   Building,
   MapPin,
   CheckCircle2,
@@ -18,6 +20,7 @@ import { ModalComponent, ModalHandle } from "@/hooks/use-modal";
 import { JobDetailsSummary, SuperChallengeDetails } from "../shared/jobs";
 import { SaveJobButton } from "../features/student/job/save-job-button";
 import { ApplyToJobButton } from "../features/student/job/apply-to-job-button";
+import { ShareJobButton } from "../features/student/job/share-job-button";
 import { MissingNotice } from "../shared/jobs";
 
 export const JobModal = ({
@@ -37,6 +40,7 @@ export const JobModal = ({
   };
 }) => {
   const profile = useProfileData();
+  const [isActionsSheetOpen, setIsActionsSheetOpen] = useState(false);
 
   const isSuperListing = Boolean(job?.challenge);
   const hasGithub = !!user?.github_link?.trim();
@@ -51,17 +55,28 @@ export const JobModal = ({
   return (
     <ModalComponent ref={ref}>
       <div className="relative flex h-[100svh] max-h-[100svh] max-w-[100svw] flex-col bg-white">
-        {/* Top bar (close only) — sticky and safe-area aware */}
+        {/* Top bar with back + actions */}
         <div className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b px-4 pb-2 pt-5">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => ref?.current?.close()}
-            className="h-8 w-8 p-0 -ml-2 hover:bg-gray-100 rounded-full"
-            aria-label="Close"
-          >
-            <ArrowLeft className="h-5 w-5 text-gray-500" />
-          </Button>
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => ref?.current?.close()}
+              className="h-8 w-8 p-0 -ml-2 hover:bg-gray-100 rounded-full"
+              aria-label="Close"
+            >
+              <ArrowLeft className="h-5 w-5 text-gray-500" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+              aria-label="More actions"
+              onClick={() => setIsActionsSheetOpen(true)}
+            >
+              <EllipsisVertical className="h-5 w-5 text-gray-500" />
+            </Button>
+          </div>
         </div>
 
         {/* Scrollable content — mirrors desktop layout */}
@@ -143,6 +158,42 @@ export const JobModal = ({
             />
           </div>
         </div>
+
+        {isActionsSheetOpen && (
+          <div className="absolute inset-0 z-40">
+            <button
+              type="button"
+              aria-label="Close actions"
+              className="absolute inset-0 bg-black/40"
+              onClick={() => setIsActionsSheetOpen(false)}
+            />
+            <div className="absolute inset-x-0 bottom-0 z-50 rounded-t-2xl border-t bg-white p-4 pb-[calc(env(safe-area-inset-bottom)+16px)] shadow-xl">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <p className="text-base font-semibold text-gray-900">
+                    Job actions
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 rounded-full"
+                  aria-label="Close actions"
+                  onClick={() => setIsActionsSheetOpen(false)}
+                >
+                  <X className="h-4 w-4 text-gray-500" />
+                </Button>
+              </div>
+              {job.id && (
+                <ShareJobButton
+                  id={job.id}
+                  className="w-full justify-start"
+                  onCopied={() => setIsActionsSheetOpen(false)}
+                />
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </ModalComponent>
   );

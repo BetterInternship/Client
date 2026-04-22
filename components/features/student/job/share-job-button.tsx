@@ -1,17 +1,26 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Check, Copy, CopyCheck, Share } from "lucide-react";
+import { Copy, CopyCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 
-export const ShareJobButton = ({ id }: { id: string }) => {
+export const ShareJobButton = ({
+  id,
+  className,
+  onCopied,
+}: {
+  id: string;
+  className?: string;
+  onCopied?: () => void;
+}) => {
   const [clicked, setClicked] = useState(false);
 
   const copyJobLink = () => {
-    navigator.clipboard.writeText(
+    void navigator.clipboard.writeText(
       `${process.env.NEXT_PUBLIC_CLIENT_URL}/search/${id}`,
     );
     setClicked(true);
+    onCopied?.();
     setTimeout(() => setClicked(false), 1500);
   };
 
@@ -27,10 +36,9 @@ export const ShareJobButton = ({ id }: { id: string }) => {
       scheme="default"
       size="md"
       className={cn(
-        "!p-4", 
-        clicked 
-        ? "text-supportive border-supportive"
-        : ""
+        "!p-4",
+        clicked ? "text-supportive border-supportive" : "",
+        className,
       )}
     >
       {clicked ? <CopyCheck /> : <Copy />}
