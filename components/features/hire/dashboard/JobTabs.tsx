@@ -2,43 +2,15 @@
 
 import { useAuthContext } from "@/app/hire/authctx";
 import { ApplicationsContent } from "@/components/features/hire/dashboard/ApplicationsContent";
-import { Card } from "@/components/ui/card";
-import { useConversation, useConversations } from "@/hooks/use-conversation";
-import {
-  useEmployerApplications,
-  useProfile,
-} from "@/hooks/use-employer-api";
+import { useEmployerApplications } from "@/hooks/use-employer-api";
 import { useFile } from "@/hooks/use-file";
-import { useModal } from "@/hooks/use-modal";
-import { useSideModal } from "@/hooks/use-side-modal";
-import { EmployerConversationService, UserService } from "@/lib/api/services";
-import { EmployerApplication, InternshipPreferences } from "@/lib/db/db.types";
-import {
-  Archive,
-  Check,
-  List,
-  MessageSquarePlus,
-  MessageSquareText,
-  Trash2,
-} from "lucide-react";
+import { UserService } from "@/lib/api/services";
+import { EmployerApplication } from "@/lib/db/db.types";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Job } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
-import { ReviewModalContent } from "@/components/features/hire/dashboard/ReviewModalContent";
-import { ApplicantModalContent } from "@/components/shared/applicant-modal";
-import { PDFPreview } from "@/components/shared/pdf-preview";
-import { Message } from "@/components/ui/messages";
-import { Textarea } from "@/components/ui/textarea";
-import { getFullName } from "@/lib/profile";
 import { motion } from "framer-motion";
-import {
-  FileText,
-  MessageCirclePlus,
-  SendHorizonal,
-  SquareArrowOutUpRight,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import useApplicationActions from "@/hooks/use-application-actions";
 
 interface JobTabsProps {
   selectedJob: Job | null;
@@ -66,27 +38,12 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
   };
 
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
-  const [filteredStatus, setFilteredStatus] = useState<number[]>([
-    0, 1, 2, 3, 4, 5, 6,
-  ]);
-  const [applicantToArchive, setApplicantToArchive] =
-    useState<EmployerApplication | null>(null);
-  const [applicantToDelete, setApplicantToDelete] =
-    useState<EmployerApplication | null>(null);
-  const [applicantToAccept, setApplicantToAccept] =
-    useState<EmployerApplication | null>(null);
-  const [statusChangeData, setStatusChangeData] = useState<{
-    applicants: EmployerApplication[];
-    status: number;
-  } | null>(null);
-
-  const messageInputRef = useRef<HTMLTextAreaElement>(null);
-  const chatAnchorRef = useRef<HTMLDivElement>(null);
-  const [lastSending, setLastSending] = useState(false);
-  const [sending, setSending] = useState(false);
-  const conversation = useConversation("employer", conversationId);
 
   const router = useRouter();
+
+  const { triggerAction } = useApplicationActions(applications.review, () => {
+    applicationContentRef.current?.unselectAll();
+  });
 
   const applicationContentRef = useRef<{ unselectAll: () => void }>(null);
 
@@ -108,24 +65,6 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
       syncResumeURL();
     }
   }, [selectedApplication?.user_id, syncResumeURL]);
-
-  const endSend = () => {
-    setSending(false);
-    setTimeout(() => {
-      chatAnchorRef.current?.scrollIntoView({ behavior: "instant" });
-    }, 100);
-  };
-
-  useEffect(() => {
-    setLastSending(sending);
-  }, [sending]);
-
-  useEffect(() => {
-    let timeout: NodeJS.Timeout;
-    if (!sending && !lastSending)
-      timeout = setTimeout(() => messageInputRef.current?.focus(), 200);
-    return () => timeout && clearTimeout(timeout);
-  }, [lastSending]);
 
   useEffect(() => {
     if (selectedJob?.id) {
@@ -254,158 +193,6 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
     router.push(
       `/dashboard/applicant?userId=${application?.user_id}&jobId=${selectedJobId}`,
     );
-  };
-
-  const handleNotesClick = (application: EmployerApplication) => {
-    openReviewModal();
-    setSelectedApplication(application);
-  };
-
-  const handleScheduleClick = (application: EmployerApplication) => {
-    setSelectedApplication(application);
-    window?.open(application.user?.calendar_link ?? "", "_blank");
-  };
-
-  const handleStatusChange = (
-    application: EmployerApplication,
-    status: number,
-  ) => {
-    applications.review(application.id ?? "", { status });
-  };
-
-  const handleRequestApplicantArchive = (application: EmployerApplication) => {
-    setApplicantToArchive(application);
-    openApplicantArchiveModal();
-  };
-
-  const handleRequestApplicantDelete = (application: EmployerApplication) => {
-    setApplicantToDelete(application);
-    openApplicantDeleteModal();
-  };
-
-  const handleRequestApplicantAccept = (application: EmployerApplication) => {
-    setApplicantToAccept(application);
-    openApplicantAcceptModal();
-  };
-
-  const handleConfirmApplicantArchive = async () => {
-    if (!applicantToArchive?.id) return;
-    await applications.review(applicantToArchive.id, { status: 7 });
-    setApplicantToArchive(null);
-    closeApplicantArchiveModal();
-    applicationContentRef.current?.unselectAll();
-  };
-
-  const handleConfirmApplicantDelete = async () => {
-    if (!applicantToDelete?.id) return;
-    await applications.review(applicantToDelete.id, { status: 5 });
-    setApplicantToDelete(null);
-    closeApplicantDeleteModal();
-    applicationContentRef.current?.unselectAll();
-  };
-
-  const handleConfirmApplicantAccept = async () => {
-    if (!applicantToAccept?.id) return;
-    await applications.review(applicantToAccept.id, { status: 4 });
-    setApplicantToAccept(null);
-    closeApplicantAcceptModal();
-    applicationContentRef.current?.unselectAll();
-  };
-
-  const handleCancelApplicantArchive = () => {
-    setApplicantToArchive(null);
-    closeApplicantArchiveModal();
-  };
-
-  const handleCancelApplicantDelete = () => {
-    setApplicantToDelete(null);
-    closeApplicantDeleteModal();
-  };
-
-  const handleCancelApplicantAccept = () => {
-    setApplicantToAccept(null);
-    closeApplicantAcceptModal();
-  };
-
-  const onChatClick = async () => {
-    if (!selectedApplication?.user_id) return;
-
-    const userConversation = conversations.data?.find((c) =>
-      c?.subscribers?.includes(selectedApplication?.user_id),
-    );
-
-    if (userConversation) {
-      setConversationId(userConversation.id);
-      openOldChatModal();
-    } else {
-      openNewChatModal();
-    }
-  };
-
-  const handleRequestStatusChange = (
-    applicants: EmployerApplication[],
-    status: number,
-  ) => {
-    setStatusChangeData({ applicants, status });
-    openStatusChangeModal();
-  };
-
-  const handleCancelStatusChange = () => {
-    setStatusChangeData(null);
-    closeStatusChangeModal();
-  };
-
-  const handleConfirmStatusChange = async () => {
-    if (!statusChangeData) return;
-
-    await Promise.all(
-      statusChangeData.applicants.map((app) =>
-        applications.review(app.id ?? "", { status: statusChangeData.status }),
-      ),
-    );
-
-    setStatusChangeData(null);
-    closeStatusChangeModal();
-    applicationContentRef.current?.unselectAll();
-  };
-
-  // Handle message
-  const handleMessage = async (
-    studentId: string | undefined,
-    message: string,
-  ) => {
-    if (message.trim() === "") return;
-
-    setSending(true);
-    let userConversation = conversations.data?.find((c) =>
-      c?.subscribers?.includes(studentId),
-    );
-
-    if (!userConversation && studentId) {
-      const response =
-        await EmployerConversationService.createConversation(studentId).catch(
-          endSend,
-        );
-
-      if (!response?.success) {
-        alert("Could not initiate conversation with user.");
-        endSend();
-        return;
-      }
-
-      setConversationId(response.conversation?.id ?? "");
-      userConversation = response.conversation;
-      endSend();
-    }
-
-    setTimeout(async () => {
-      if (!userConversation) return endSend();
-      await EmployerConversationService.sendToUser(
-        userConversation?.id,
-        message,
-      ).catch(endSend);
-      endSend();
-    });
   };
 
   if (isLoading || !isAuthenticated()) return null;
@@ -537,17 +324,9 @@ export default function JobTabs({ selectedJob, onJobUpdate }: JobTabsProps) {
               openChatModal={openChatModal}
               updateConversationId={updateConversationId}
               onApplicationClick={handleApplicationClick}
-              onNotesClick={handleNotesClick}
-              onScheduleClick={handleScheduleClick}
-              onStatusChange={handleStatusChange}
               setSelectedApplication={setSelectedApplication}
-              onRequestArchiveApplicant={handleRequestApplicantArchive}
-              onRequestDeleteApplicant={handleRequestApplicantDelete}
-              onRequestAcceptApplicant={handleRequestApplicantAccept}
-              onRequestStatusChange={handleRequestStatusChange}
-              applicantToArchive={applicantToArchive}
-              applicantToDelete={applicantToDelete}
-            ></ApplicationsContent>
+              onAction={triggerAction}
+            />
           </div>
         </div>
 

@@ -19,6 +19,11 @@ import {
 } from "./components/MassApplyResults";
 import { FormPreviewPdfDisplay } from "../features/student/forms/previewer";
 import { IFormSigningParty } from "@betterinternship/core/forms";
+import { ApplicationAction } from "@/lib/consts/application";
+import { EmployerApplication } from "@/lib/db/db.types";
+import ApplicationActionModal from "./ApplicationActionModal";
+import DeleteJobListingModal from "./DeleteJobListingModal";
+import { Job } from "@/lib/db/db.types";
 
 /**
  * Simplifies modal config since we usually reuse each of these modal stuffs.
@@ -30,6 +35,67 @@ export const useModalRegistry = () => {
 
   const modalRegistry = useMemo(
     () => ({
+      // modal for deleting a job listing.
+      deleteListing: {
+        open: ({
+          job,
+          isProcessing,
+          onConfirm,
+        }: {
+          job: Job;
+          isProcessing: boolean;
+          onConfirm: () => void;
+        }) =>
+          open(
+            "delete-listing",
+            DefaultModalLayout,
+            <DeleteJobListingModal
+              job={job}
+              isProcessing={isProcessing}
+              onConfirm={onConfirm}
+              onCancel={() => close("delete-listing")}
+            />,
+            {
+              title: `Delete ${job.title}`,
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showHeaderDivider: true,
+            },
+          ),
+        close: () => close("delete-listing"),
+      },
+      // modal for any action performed on a job application.
+      applicationAction: {
+        open: ({
+          type,
+          applicants,
+          isProcessing,
+          onConfirm,
+        }: {
+          type: ApplicationAction;
+          applicants: EmployerApplication[];
+          isProcessing: boolean;
+          onConfirm: () => void;
+        }) =>
+          open(
+            "application-action",
+            DefaultModalLayout,
+            <ApplicationActionModal
+              type={type}
+              applicants={applicants}
+              isProcessing={isProcessing}
+              onConfirm={onConfirm}
+              onCancel={() => close("application-action")}
+            />,
+            {
+              title: `Change application status`,
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showHeaderDivider: true,
+            },
+          ),
+        close: () => close("application-action"),
+      },
       // Mass apply fill-out modal
       massApplyCompose: {
         open: ({
@@ -314,6 +380,32 @@ export const useModalRegistry = () => {
             mobileFullscreen,
           }),
         close: () => close("form-template-details"),
+      },
+
+      centeredDetails: {
+        open: ({
+          title,
+          content,
+          showHeaderDivider = true,
+          showCloseButton = true,
+          closeOnBackdropClick = true,
+          closeOnEscapeKey = true,
+        }: {
+          title?: ReactNode;
+          content: ReactNode;
+          showHeaderDivider?: boolean;
+          showCloseButton?: boolean;
+          closeOnBackdropClick?: boolean;
+          closeOnEscapeKey?: boolean;
+        }) =>
+          open("centered-details", DefaultModalLayout, content, {
+            title,
+            showHeaderDivider,
+            showCloseButton,
+            closeOnBackdropClick,
+            closeOnEscapeKey,
+          }),
+        close: () => close("centered-details"),
       },
 
       superListingClosed: {

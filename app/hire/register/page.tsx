@@ -324,6 +324,12 @@ const EmployerEditor = ({
               <label
                 htmlFor="accept-terms"
                 className="text-sm text-gray-700 leading-relaxed cursor-pointer flex-1"
+                onClick={() =>
+                  setAdditionalFields({
+                    ...additionalFields,
+                    terms_accepted: !additionalFields.terms_accepted,
+                  })
+                }
               >
                 I have read and agree to the{" "}
                 <a
@@ -331,6 +337,7 @@ const EmployerEditor = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:text-blue-800 underline font-medium"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   Terms & Conditions
                 </a>{" "}
@@ -340,6 +347,7 @@ const EmployerEditor = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:text-blue-800 underline font-medium"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   Privacy Policy
                 </a>

@@ -2,10 +2,8 @@
 // Wraps everything in DashboardProvider for shared state management
 "use client";
 
-import { motion } from "framer-motion";
 import ContentLayout from "@/components/features/hire/content-layout";
 import { JobsContent } from "@/components/features/hire/dashboard/JobsContent";
-import { ShowUnverifiedBanner } from "@/components/ui/banner";
 import { Loader } from "@/components/ui/loader";
 import {
   useEmployerApplications,
@@ -14,19 +12,10 @@ import {
 } from "@/hooks/use-employer-api";
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { Bell, Briefcase, Plus } from "lucide-react";
+import { Briefcase, Plus } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useAuthContext } from "../authctx";
 import { Job } from "@/lib/db/db.types";
-import { FadeIn } from "@/components/animata/fade";
-import { useModal } from "@/hooks/use-modal";
-import {
-  getNotificationPermission,
-  requestNotificationPermission,
-  checkNotificationSupport,
-  shouldShowNotification,
-  sendNotification,
-} from "@/lib/notification-service";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { useRouter } from "next/navigation";
 
@@ -76,28 +65,6 @@ function DashboardContent() {
     return result;
   };
 
-  const {
-    open: openNotifPermsModal,
-    close: closeNotifPermsModal,
-    Modal: NotifPermsModal,
-  } = useModal("notif-perms-modal");
-
-  useEffect(() => {
-    const requestPermission = async () => {
-      if (checkNotificationSupport()) {
-        const currentPermission = getNotificationPermission();
-
-        if (currentPermission === "default") {
-          openNotifPermsModal();
-          const permission = await requestNotificationPermission();
-          closeNotifPermsModal();
-        }
-      }
-    };
-
-    requestPermission();
-  }, []);
-
   useEffect(() => {
     if (!ownedJobs) {
       setLoading(true);
@@ -116,17 +83,6 @@ function DashboardContent() {
 
   return (
     <ContentLayout>
-      <NotifPermsModal>
-        <div className="p-8 pt-0 h-full">
-          <div className="text-lg mb-4">
-            <Bell size={48} />
-            <span>
-              Please grant notification access so we can send you chat
-              notifications.
-            </span>
-          </div>
-        </div>
-      </NotifPermsModal>
       <div
         className={cn(
           "flex-1 flex flex-col w-full py-4",
@@ -167,7 +123,7 @@ function DashboardContent() {
             {isMobile && (
               <button
                 aria-label="Create new listing"
-                className="fixed bottom-8 right-2 bg-primary rounded-full p-5 z-10 shadow-xl z-[1000]"
+                className="fixed bottom-8 right-2 bg-primary rounded-full p-5 z-10 shadow-xl"
                 onClick={handleAddListingClick}
               >
                 <Plus className="h-5 w-5 text-white" />

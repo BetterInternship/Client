@@ -1,11 +1,11 @@
 "use client";
 
-import { statusMap } from "@/components/common/status-icon-map";
+import { DB_STATUS_MAP, UI_STATUS_MAP } from "@/lib/consts/application";
 import ContentLayout from "@/components/features/hire/content-layout";
 import { ApplicantPage } from "@/components/features/hire/dashboard/ApplicantPage";
 import { type ActionItem } from "@/components/ui/action-item";
 import { useEmployerApplications } from "@/hooks/use-employer-api";
-import { updateApplicationStatus, UserService } from "@/lib/api/services";
+import { UserService } from "@/lib/api/services";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useSearchParams } from "next/navigation";
@@ -18,6 +18,9 @@ function ApplicantPageContent() {
   const isDummyProfile = searchParams.get("dummy") === "1";
   const [loading, setLoading] = useState(true);
   const applications = useEmployerApplications();
+  const { app_statuses } = useDbRefs();
+
+  const { triggerAction } = useApplicationActions(applications.review);
 
   const dummyApplication: EmployerApplication = {
     id: "dummy-super-application",
@@ -112,12 +115,19 @@ function ApplicantPageContent() {
     return unique_app_statuses
       .filter((status) => status.id !== 7 && status.id !== 5 && status.id !== 0)
       .map((status): ActionItem => {
-        const uiProps = statusMap.get(status.id);
+        const config = DB_STATUS_MAP[status.id];
+        const uiProps = UI_STATUS_MAP.get(config?.key || "pending");
+
         return {
           id: status.id.toString(),
           label: status.name,
           icon: uiProps?.icon,
-          onClick: () => updateApplicationStatus(applicationId, status.id),
+          onClick: () =>
+            triggerAction(
+              config?.action || "CHANGE_STATUS",
+              [application],
+              status.id,
+            ),
           destructive: uiProps?.destructive,
         };
       });
@@ -133,6 +143,18 @@ function ApplicantPageContent() {
             isDummyProfile ? [] : getStatuses(userApplication?.id || "")
           }
           userApplications={otherApplications}
+          onArchive={() => {
+            if (!userApplication) return;
+            if (userApplication.visibility === "archived") {
+              triggerAction("UNARCHIVE", [userApplication]);
+            } else {
+              triggerAction("ARCHIVE", [userApplication]);
+            }
+          }}
+          onDelete={() => {
+            if (!userApplication) return;
+            if (userApplication) triggerAction("DELETE", [userApplication]);
+          }}
         />
       </div>
     </ContentLayout>

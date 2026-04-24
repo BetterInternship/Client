@@ -200,11 +200,14 @@ export const useModal = (
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       console.debug(`[useModal:${name}] close button click`);
                       close();
                     }}
                     onTouchEnd={(e) => {
+                      e.preventDefault();
                       e.stopPropagation();
                       console.debug(`[useModal:${name}] close button touch`);
                       close();

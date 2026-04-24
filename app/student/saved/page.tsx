@@ -23,27 +23,7 @@ type SavedJobItem = SavedJob & Partial<Job>;
 export default function SavedJobsPage() {
   const { isAuthenticated, redirectIfNotLoggedIn } = useAuthContext();
   const jobs = useJobsData();
-  const savedJobs = React.useMemo(
-    () =>
-      [...(jobs.savedJobs as SavedJobItem[])].sort((a, b) => {
-        const firstSavedAt =
-          (a as { saved_at?: string | null }).saved_at ??
-          a.created_at ??
-          a.job?.created_at ??
-          a.jobs?.created_at ??
-          "";
-        const secondSavedAt =
-          (b as { saved_at?: string | null }).saved_at ??
-          b.created_at ??
-          b.job?.created_at ??
-          b.jobs?.created_at ??
-          "";
-        return (
-          new Date(secondSavedAt).getTime() - new Date(firstSavedAt).getTime()
-        );
-      }),
-    [jobs.savedJobs],
-  );
+  const savedJobs = jobs.savedJobs as SavedJobItem[];
 
   redirectIfNotLoggedIn();
 
@@ -153,26 +133,26 @@ const SavedJobCard = ({ savedJob }: { savedJob: SavedJobItem }) => {
               <Badge type="destructive">Job no longer available.</Badge>
             )}
           </div>
-          <div className="flex items-center gap-2">
-            {jobId ? (
-              <div
-                onClick={(event) => event.stopPropagation()}
-                onKeyDown={(event) => event.stopPropagation()}
-              >
-                <SaveJobButton job={saveButtonJob} />
-              </div>
-            ) : null}
-            {canOpenListing && (
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-[0.33em] bg-primary/5 text-primary/80">
-                <ArrowUpRight className="h-3.5 w-3.5" />
-              </span>
-            )}
-          </div>
         </div>
         <JobHead title={job.title} employer={job.employer?.name} />
         <p className="text-gray-500 text-sm leading-relaxed line-clamp-2 mt-2 mb-4">
           {job.description}
         </p>
+      </div>
+      <div className="flex items-center gap-2 justify-end">
+        {jobId ? (
+          <div
+            onClick={(event) => event.stopPropagation()}
+            onKeyDown={(event) => event.stopPropagation()}
+          >
+            <SaveJobButton job={saveButtonJob} />
+          </div>
+        ) : null}
+        {canOpenListing && (
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-[0.33em] bg-primary/5 text-primary/80">
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </span>
+        )}
       </div>
     </Card>
   );

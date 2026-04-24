@@ -1,164 +1,150 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { ArrowUpRight, Globe } from "lucide-react";
 
 type HowToApplyPanelProps = {
   challengePdfUrl?: string;
   onGoToApply: () => void;
 };
 
+type SectionTitleProps = {
+  title: string;
+};
+
+function SectionTitle({ title }: SectionTitleProps) {
+  return (
+    <h2 className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.35rem,2.6vw,2rem)] font-medium tracking-[-0.03em] text-[#173f69]">
+      {title}
+    </h2>
+  );
+}
+
 export function HowToApplyPanel({
-  challengePdfUrl: _challengePdfUrl,
+  challengePdfUrl,
   onGoToApply,
 }: HowToApplyPanelProps) {
   return (
-    <div className="space-y-6">
-      <div className="relative overflow-hidden rounded-[0.33em] border-2 border-[rgba(212,173,69,0.55)] bg-gradient-to-br from-[#f3d98a] via-[#e8c560] to-[#ddb04a] px-6 py-10 text-[#173957] shadow-[0_24px_55px_-30px_rgba(212,173,69,0.88)] sm:px-8 sm:py-14">
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.16)_0%,transparent_38%,rgba(255,255,255,0.06)_72%,transparent_100%)]" />
-        <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center gap-6 text-center">
-          <div className="space-y-3">
-            <h2 className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.8rem,6.8vw,4.2rem)] font-black uppercase leading-[0.9] tracking-[-0.03em] text-[#173957]">
-              Build Better Digital Travel
-            </h2>
-          </div>
+    <div className="space-y-8 sm:space-y-10">
+      <section className="space-y-4 border-t border-[#2574BB]/10 pt-8 first:border-t-0 first:pt-0">
+        <div className="space-y-3">
+          <h2 className="max-w-3xl [font-family:var(--font-paraluman-heading)] text-4xl font-bold leading-[1.25] tracking-[-0.04em] text-[#173f69] pb-1 border-b-[5px] w-fit border-b-[#173f69] border-opacity-80">
+            Find{" "}
+            <span className="bg-[#f8d64e]/50 px-1">
+              one meaningful pain point
+            </span>
+            <br /> in Cebu Pacific&apos;s digital experience
+            <br /> and rebuild it to be{" "}
+            <span className="bg-[#f8d64e]/50 px-1">10x better.</span>
+          </h2>
+          <p className="max-w-3xl [font-family:var(--font-paraluman-body)] pt-4 text-base leading-7 text-[#173957] opacity-80 sm:text-lg sm:leading-8">
+            Show clear product thinking, practical judgment, and execution
+            quality through a working output, not just a concept.
+          </p>
+        </div>
 
-          <div className="w-full sm:w-auto">
-            <Button
-              type="button"
-              onClick={onGoToApply}
-              className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#2574BB] bg-[#2574BB] px-8 [font-family:var(--font-paraluman-heading)] text-base font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:bg-[#1c5a92] hover:shadow-lg sm:h-16 sm:w-auto sm:px-10 sm:text-lg"
+        <div className="space-y-3 pt-5">
+          <p className="[font-family:var(--font-paraluman-body)] font-semibold text-[#1f68a9]/64">
+            Official links
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <a
+              href={challengePdfUrl || "https://www.cebupacificair.com/en-PH/"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border border-[#2574BB]/10 bg-white px-3 py-2 text-sm text-[#173f69] transition-colors hover:bg-[#edf5ff]"
             >
-              Submit Work
-            </Button>
-            <p className="mt-2 [font-family:var(--font-paraluman-mono)] text-[10px] leading-tight text-[#173957]/80 sm:text-[11px]">
-              No resume needed. Response in 24 hours
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="overflow-hidden rounded-[0.33em] border-2 border-[rgba(212,173,69,0.3)] bg-white shadow-[0_24px_55px_-35px_rgba(212,173,69,0.75)]">
-        <div className="space-y-6 px-6 py-7 sm:px-8 sm:py-8">
-          <section className="space-y-3 border-b border-[rgba(212,173,69,0.24)] pb-6">
-            <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase text-[#6b5000]">
-              Challenge Brief
-            </p>
-            <p className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80 sm:text-base">
-              Find a pain point within Cebu Pacific&apos;s app/website - a
-              broken flow, a missing feature, or a mediocre interface - and take
-              responsibility to fix it. Rebuild it to be{" "}
-              <span className="font-black text-[#2574BB]">10X BETTER</span>.
-            </p>
-            <p className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80 sm:text-base">
-              Website link:
-              <br />
-              App link:
-            </p>
-          </section>
-
-          <section className="space-y-2 border-b border-[rgba(212,173,69,0.24)] pb-6">
-            <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase text-[#6b5000]">
-              Goal
-            </p>
-            <ul className="list-disc pl-5 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80 sm:text-base">
-              <li>Show us how you think.</li>
-              <li>Why does this problem matter?</li>
-              <li>Why did you make those changes?</li>
-              <li>How does your solution improve the experience?</li>
-              <li>If we&apos;re impressed, you&apos;re in.</li>
-            </ul>
-          </section>
-
-          <section className="space-y-2 border-b border-[rgba(212,173,69,0.24)] pb-6">
-            <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase text-[#6b5000]">
-              What We&apos;re Looking For
-            </p>
-            <ol className="list-decimal pl-8 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80 sm:text-base space-y-3">
-              <li>
-                <span className="font-black">Taste and judgment</span>
-                <br />
-                Did you pick the right problem? Is it actually worth solving?
-              </li>
-              <li>
-                <span className="font-black">Thinking</span>
-                <br />
-                How deep did you go? Did you understand the Cebu Pacific
-                experience, or did you only make something look nicer?
-              </li>
-              <li>
-                <span className="font-black">Execution</span>
-                <br />
-                Did you actually build something working, or were you only
-                presenting ideas?
-              </li>
-              <li>
-                <span className="font-black">Creativity and initiative</span>
-                <br />
-                This internship doesn&apos;t have much handholding. We&apos;re
-                looking for someone who takes initiative and figures things out.
-              </li>
-              <li>
-                <span className="font-black">Effort and attitude</span>
-                <br />
-                Skill matters, but how you approach the work matters more.
-              </li>
-            </ol>
-          </section>
-
-          <section className="space-y-2 border-b border-[rgba(212,173,69,0.24)] pb-6">
-            <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase text-[#6b5000]">
-              Submission Requirements
-            </p>
-            <ol className="list-decimal pl-8 [font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80 sm:text-base">
-              <li>
-                Your redesign or solution as a deployed working prototype, not a
-                wireframe.
-              </li>
-              <li>
-                A short video pitch as a compelling story for a non-technical
-                audience, not a technical deep dive.
-              </li>
-            </ol>
-          </section>
-
-          <section className="space-y-2">
-            <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase text-[#6b5000]">
-              Before You Start
-            </p>
-            <p className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80 sm:text-base">
-              This internship isn&apos;t about being the best programmer or the
-              best designer. It&apos;s about being able to solve problems.
-            </p>
-            <p className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/80 sm:text-base">
-              Most people will scroll past this. Some will start, but few will
-              finish. We&apos;re looking for the few resilient ones who will
-              follow through.
-            </p>
-          </section>
-        </div>
-      </div>
-      <div className="relative overflow-hidden rounded-[0.33em] border-2 border-[rgba(212,173,69,0.55)] bg-gradient-to-br from-[#f3d98a] via-[#e8c560] to-[#ddb04a] p-6 text-[#173957] shadow-[0_24px_55px_-30px_rgba(212,173,69,0.88)] sm:p-8">
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.16)_0%,transparent_38%,rgba(255,255,255,0.06)_72%,transparent_100%)]" />
-        <div className="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="">
-            <p className="[font-family:var(--font-paraluman-heading)] text-2xl text-[#173957] uppercase tracking-[-0.02em] sm:text-3xl !font-black">
-              Ready to turn this into a real opportunity?
-            </p>
-            <p className="[font-family:var(--font-paraluman-mono)] text-[10px] leading-tight text-[#173957]/80 sm:text-[11px]">
-              No resume needed. Response in 24 hours
-            </p>
-          </div>
-          <div className="w-full sm:w-auto sm:text-right">
-            <Button
-              type="button"
-              onClick={onGoToApply}
-              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#2574BB] bg-[#2574BB] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:bg-[#1c5a92] hover:shadow-lg sm:w-auto"
+              <Globe className="h-4 w-4" />
+              Website
+            </a>
+            <a
+              href="https://apps.apple.com/us/app/cebu-pacific/id1210712639"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border border-[#2574BB]/10 bg-white px-3 py-2 text-sm text-[#173f69] transition-colors hover:bg-[#edf5ff]"
             >
-              Submit Work
-            </Button>
+              <ArrowUpRight className="h-4 w-4" />
+              App Store
+            </a>
+            <a
+              href="https://play.google.com/store/apps/details?id=com.inkglobal.cebu.android&hl=en"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border border-[#2574BB]/10 bg-white px-3 py-2 text-sm text-[#173f69] transition-colors hover:bg-[#edf5ff]"
+            >
+              <ArrowUpRight className="h-4 w-4" />
+              Google Play
+            </a>
           </div>
         </div>
-      </div>
+      </section>
+
+      <section className="space-y-4 border-t border-[#2574BB]/10 pt-8">
+        <SectionTitle title="Goal" />
+        <ul className="space-y-3 [font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#173957] opacity-80 sm:text-base">
+          <li>Show how you think through a real passenger problem.</li>
+          <li>
+            Explain why the issue matters and what changed in your solution.
+          </li>
+          <li>Make the improvement feel concrete, useful, and believable.</li>
+        </ul>
+      </section>
+
+      <section className="space-y-4 border-t border-[#2574BB]/10 pt-8">
+        <SectionTitle title="What we're looking for" />
+        <div className="space-y-4 [font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#173957] opacity-80 sm:text-base">
+          <p>
+            <span className="font-semibold text-[#173f69]">Judgment.</span> Did
+            you choose a problem worth solving?
+          </p>
+          <p>
+            <span className="font-semibold text-[#173f69]">Depth.</span> Did you
+            understand the Cebu Pacific experience beyond surface UI?
+          </p>
+          <p>
+            <span className="font-semibold text-[#173f69]">Execution.</span> Did
+            you build something working instead of only presenting slides?
+          </p>
+        </div>
+      </section>
+
+      <section className="space-y-4 border-t border-[#2574BB]/10 pt-8">
+        <SectionTitle title="Submission requirements" />
+        <div className="space-y-4 [font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#173957] opacity-80 sm:text-base">
+          <p>
+            A deployed working prototype or tangible build, not only a
+            wireframe.
+          </p>
+          <p>
+            A short video pitch that tells the story clearly for a non-technical
+            audience.
+          </p>
+          <p>
+            One clean submission link plus your contact details in the next tab.
+          </p>
+        </div>
+      </section>
+
+      <section className="space-y-4 border-t border-[#2574BB]/10 pt-8">
+        <SectionTitle title="Before you start" />
+        <div className="space-y-4 bg-[rgba(250,243,220,0.84)] px-5 py-5 [font-family:var(--font-paraluman-body)] rounded-[0.33em] text-base leading-7 text-[#173957] opacity-80 sm:px-6 sm:py-6 sm:text-lg sm:leading-8">
+          <p>This is about solving problems, not looking polished on paper.</p>
+          <p>
+            Most people will scroll past this. Some will start. Few will finish.
+            Cebu Pacific is looking for the ones who can follow through.
+          </p>
+        </div>
+
+        <div className="border-t border-[#2574BB]/12 bg-white/80 pt-5">
+          <Button
+            type="button"
+            onClick={onGoToApply}
+            className="inline-flex h-11 items-center justify-center rounded-md bg-[#173f69] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-medium tracking-[-0.02em] text-white transition-all duration-200 hover:bg-[#123456]"
+          >
+            Submit work
+          </Button>
+        </div>
+      </section>
     </div>
   );
 }

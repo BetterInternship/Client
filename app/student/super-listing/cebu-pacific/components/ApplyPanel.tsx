@@ -88,7 +88,7 @@ export function ApplyPanel({
       spread: 74,
       startVelocity: 34,
       origin: { y: 0.65 },
-      colors: ["#e8c560", "#ffd84d", "#7cc242", "#ffffff"],
+      colors: ["#2574BB", "#4ea1ef", "#f3d98a", "#ffffff"],
     });
 
     window.setTimeout(() => {
@@ -97,13 +97,10 @@ export function ApplyPanel({
         spread: 60,
         startVelocity: 28,
         origin: { x: 0.75, y: 0.68 },
-        colors: ["#e8c560", "#ddb04a", "#ffffff"],
+        colors: ["#2574BB", "#f3d98a", "#ffffff"],
       });
     }, 180);
   }, [hasSubmitted, prefersReduce]);
-
-  const stepLabel =
-    submissionStep === 1 ? "Challenge Output" : "Contact Details";
 
   const updateField =
     (field: keyof CebuPacificSubmissionForm) =>
@@ -114,214 +111,157 @@ export function ApplyPanel({
     };
 
   return (
-    <div className="relative overflow-hidden rounded-[0.33em] border-2 border-[rgba(212,173,69,0.3)] bg-white shadow-[0_24px_55px_-35px_rgba(212,173,69,0.75)]">
-      <div className="relative">
-        <div className="flex flex-col gap-4 bg-gradient-to-br from-[#f3d98a] via-[#e8c560] to-[#ddb04a] px-6 py-6 text-black sm:flex-row sm:items-start sm:justify-between sm:px-8">
-          <div>
-            <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black uppercase tracking-[-0.02em] text-[#2574BB] sm:text-3xl">
-              Submit challenge
-            </p>
-            <p className="[font-family:var(--font-paraluman-mono)] text-black">
-              No resume needed. Response in 24 hours
-            </p>
-          </div>
+    <div className="space-y-6">
+      <div className="max-w-3xl space-y-3 border-b pb-5">
+        <h2 className="[font-family:var(--font-paraluman-heading)] text-4xl font-bold leading-[1.02] tracking-[-0.04em] text-[#173f69]">
+          Submit your challenge output.
+        </h2>
+        <p className="[font-family:var(--font-paraluman-body)] text-base leading-7 text-[#173957]/72 sm:text-lg sm:leading-8">
+          Again,{" "}
+          <span className="font-bold text-warning">
+            no resume needed. Reponse within 24 hours.
+          </span>
+        </p>
+      </div>
 
-          {!hasSubmitted && (
-            <div className="w-full sm:w-auto sm:min-w-64 sm:text-right">
-              <p className="[font-family:var(--font-paraluman-mono)] text-[11px] font-semibold uppercase tracking-[0.08em] text-black/75">
-                Step {submissionStep} - {stepLabel}
-              </p>
-              <div className="mt-2 grid w-full grid-cols-2 gap-1.5 sm:ml-auto sm:w-40">
-                <span
-                  className={cn(
-                    "h-1.5 w-full rounded-full transition-colors",
-                    submissionStep >= 1 ? "bg-black/85" : "bg-black/25",
-                  )}
-                />
-                <span
-                  className={cn(
-                    "h-1.5 w-full rounded-full transition-colors",
-                    submissionStep >= 2 ? "bg-black/85" : "bg-black/25",
-                  )}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="px-6 py-7 sm:px-8 sm:py-8">
+      <div className="overflow-hidden">
+        <div className="px-0 py-6 sm:py-8">
           {hasSubmitted ? (
             <motion.div
               initial={
-                prefersReduce ? false : { opacity: 0, y: 20, scale: 0.95 }
+                prefersReduce ? false : { opacity: 0, y: 20, scale: 0.98 }
               }
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
-              className="relative overflow-hidden rounded-[0.33em] border-2 border-[#e8c560]/45 bg-white p-6 shadow-[0_18px_45px_-35px_rgba(212,173,69,0.85)] sm:p-8"
+              transition={{ duration: 0.7, ease: [0.34, 1.56, 0.64, 1] }}
+              className="p-0"
             >
-              {!prefersReduce && (
-                <motion.div
-                  className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,transparent_25%,rgba(255,255,255,0.5)_50%,transparent_75%)]"
-                  initial={{ x: "-100%" }}
-                  animate={{ x: "100%" }}
-                  transition={{ duration: 1.2, ease: "easeInOut", delay: 0.3 }}
-                />
-              )}
-              <motion.div
-                className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(212,173,69,0.22),transparent_50%),radial-gradient(circle_at_bottom_left,rgba(212,173,69,0.1),transparent_55%)]"
-                initial={prefersReduce ? false : { opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.9, ease: "easeOut", delay: 0.4 }}
-              />
-              <motion.div
-                className="relative z-10 flex flex-col gap-4"
-                initial={prefersReduce ? false : { opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
-              >
-                <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black uppercase tracking-[-0.02em] text-[#6b5000] sm:text-3xl">
+              <div className="space-y-4">
+                <p className="[font-family:var(--font-paraluman-mono)] text-[10px] font-semibold uppercase tracking-[0.22em] text-[#1f68a9]/64 sm:text-[11px]">
                   Submission sent
                 </p>
-                <p className="[font-family:var(--font-paraluman-heading)] text-lg font-black uppercase tracking-[0.02em] text-[#6b5000]/80 sm:text-xl">
-                  You're in
+                <p className="[font-family:var(--font-paraluman-heading)] text-3xl font-medium tracking-[-0.04em] text-[#173f69] sm:text-4xl">
+                  You&apos;re in.
                 </p>
-                <motion.p
-                  className="[font-family:var(--font-paraluman-mono)] text-sm leading-7 text-black/70 sm:text-base"
-                  initial={prefersReduce ? false : { opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.7, ease: "easeOut", delay: 0.35 }}
-                >
+                <p className="max-w-2xl [font-family:var(--font-paraluman-body)] text-base leading-7 text-[#173957]/74 sm:text-lg sm:leading-8">
                   Thank you for applying. We sent a confirmation to{" "}
-                  <span className="font-bold text-[#6b5000]">
+                  <span className="font-semibold text-[#173f69]">
                     {submittedEmail || "your email"}
                   </span>
                   . You will receive a response within 24 hours.
-                </motion.p>
-                <motion.div
-                  className="pt-1"
-                  initial={prefersReduce ? false : { opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.7, ease: "easeOut", delay: 0.5 }}
-                >
+                </p>
+                <div className="pt-2">
                   <Button
                     type="button"
                     onClick={onBackToOverview}
-                    className="inline-flex h-11 items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#2574BB] bg-[#2574BB] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:bg-[#1c5a92] hover:shadow-lg"
+                    className="inline-flex h-11 items-center justify-center rounded-md bg-[#173f69] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-medium tracking-[-0.02em] text-white transition-all duration-200 hover:bg-[#123456]"
                   >
                     Back to overview
                   </Button>
-                </motion.div>
-              </motion.div>
+                </div>
+              </div>
             </motion.div>
           ) : (
-            <form className="space-y-5" onSubmit={(e) => void onSubmit(e)}>
-              <div className="rounded-[0.33em] border border-[rgba(212,173,69,0.35)] bg-[#e8c560]/10 px-4 py-3">
-                <p className="[font-family:var(--font-paraluman-heading)] text-base font-black uppercase text-[#6b5000] sm:text-lg">
-                  {submissionStep === 1
-                    ? "Step 1: Share your challenge output"
-                    : "Step 2: Confirm your details"}
-                </p>
-                <p className="mt-1 [font-family:var(--font-paraluman-mono)] text-xs leading-6 text-black/70 sm:text-sm">
-                  {submissionStep === 1
-                    ? "One clear link is enough. Demo, docs, repo, or walkthrough all work."
-                    : "Final step. No resume needed. Guaranteed response in 24 hours."}
-                </p>
-              </div>
+            <form className="space-y-6" onSubmit={(e) => void onSubmit(e)}>
+              <p className="[font-family:var(--font-paraluman-heading)] text-lg font-bold tracking-[-0.03em] text-[#173f69]">
+                {submissionStep === 1
+                  ? "Step 1/2: Paste the single best link to your prototype, video, or document."
+                  : "Step 2/2: Add your contact details so the team can review and reply quickly."}
+              </p>
 
               {submissionStep === 1 && (
                 <>
-                  <div className="space-y-2">
-                    <label className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.1em] text-black/70">
-                      Challenge Submission Link *
+                  <div className="space-y-2.5">
+                    <label className="[font-family:var(--font-paraluman-body)] font-semibold text-[#173957] opacity-60 text-xs">
+                      Challenge Output Link *
                     </label>
                     <Input
                       required
                       value={form.submissionLink}
                       onChange={updateField("submissionLink")}
-                      className="h-11 border-2 border-[rgba(212,173,69,0.45)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
+                      className="h-12 border-[#2574BB]/14 bg-white [font-family:var(--font-paraluman-body)] text-base shadow-none focus-visible:ring-[#2574BB]/25"
                     />
-                    <p className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 [font-family:var(--font-paraluman-mono)] text-[10px] text-black/55 sm:text-[11px]">
+                    <div className="flex flex-wrap gap-2 pt-1 [font-family:var(--font-paraluman-body)] text-[11px] text-[#173957]/56 sm:text-xs">
+                      Accepted Links:
                       <span className="inline-flex items-center gap-1">
-                        <FolderOpen className="h-3 w-3 shrink-0" />
-                        Google Drive
+                        <FolderOpen className="h-3.5 w-3.5" />
+                        Google Drive,
                       </span>
                       <span className="inline-flex items-center gap-1">
-                        <FileText className="h-3 w-3 shrink-0" />
-                        Google Docs
+                        <FileText className="h-3.5 w-3.5" />
+                        Google Docs,
                       </span>
                       <span className="inline-flex items-center gap-1">
-                        <Globe className="h-3 w-3 shrink-0" />
-                        Live Demo
+                        <Globe className="h-3.5 w-3.5" />
+                        Live Demo,
                       </span>
                       <span className="inline-flex items-center gap-1">
-                        <Video className="h-3 w-3 shrink-0" />
+                        <Video className="h-3.5 w-3.5" />
                         YouTube
                       </span>
-                    </p>
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.1em] text-black/70">
-                      Application Notes (Optional)
+                  <div className="space-y-2.5">
+                    <label className="[font-family:var(--font-paraluman-body)] font-semibold text-[#173957] opacity-60 text-xs">
+                      Application Notes
                     </label>
                     <Textarea
                       value={form.submissionNotes}
                       onChange={updateField("submissionNotes")}
-                      className="min-h-28 border-2 border-[rgba(212,173,69,0.45)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
+                      placeholder="Add any context, constraints, or tradeoffs you want Cebu Pacific to notice."
+                      className="min-h-32 border-[#2574BB]/14 bg-white [font-family:var(--font-paraluman-body)] text-base shadow-none focus-visible:ring-[#2574BB]/25"
                     />
-                    <p className="[font-family:var(--font-paraluman-mono)] text-[10px] text-black/55 sm:text-[11px]">
-                      Add context, constraints, or tradeoffs you want us to
-                      notice.
-                    </p>
                   </div>
                 </>
               )}
 
               {submissionStep === 2 && (
                 <>
-                  <div className="space-y-2">
-                    <label className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.1em] text-black/70">
-                      Email Address *
-                    </label>
-                    <Input
-                      required
-                      type="email"
-                      value={form.email}
-                      onChange={updateField("email")}
-                      className="h-11 border-2 border-[rgba(212,173,69,0.45)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
-                    />
-                  </div>
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="space-y-2.5 sm:col-span-2">
+                      <label className="[font-family:var(--font-paraluman-body)] font-semibold text-[#173957] opacity-60 text-xs">
+                        Email Address *
+                      </label>
+                      <Input
+                        required
+                        type="email"
+                        value={form.email}
+                        onChange={updateField("email")}
+                        className="h-12 border-[#2574BB]/14 bg-white [font-family:var(--font-paraluman-body)] text-base shadow-none focus-visible:ring-[#2574BB]/25"
+                      />
+                    </div>
 
-                  <div className="space-y-2">
-                    <label className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.1em] text-black/70">
-                      Full Name *
-                    </label>
-                    <Input
-                      required
-                      value={form.fullName}
-                      onChange={updateField("fullName")}
-                      className="h-11 border-2 border-[rgba(212,173,69,0.45)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
-                    />
-                  </div>
+                    <div className="space-y-2.5">
+                      <label className="[font-family:var(--font-paraluman-body)] font-semibold text-[#173957] opacity-60 text-xs">
+                        Full Name *
+                      </label>
+                      <Input
+                        required
+                        value={form.fullName}
+                        onChange={updateField("fullName")}
+                        className="h-12 border-[#2574BB]/14 bg-white [font-family:var(--font-paraluman-body)] text-base shadow-none focus-visible:ring-[#2574BB]/25"
+                      />
+                    </div>
 
-                  <div className="space-y-2">
-                    <label className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.1em] text-black/70">
-                      Facebook Link *
-                    </label>
-                    <Input
-                      required
-                      value={form.facebookLink}
-                      onChange={updateField("facebookLink")}
-                      className="h-11 border-2 border-[rgba(212,173,69,0.45)] bg-white focus:ring-0 [font-family:var(--font-paraluman-mono)]"
-                    />
+                    <div className="space-y-2.5">
+                      <label className="[font-family:var(--font-paraluman-body)] font-semibold text-[#173957] opacity-60 text-xs">
+                        Facebook Link *
+                      </label>
+                      <Input
+                        required
+                        value={form.facebookLink}
+                        onChange={updateField("facebookLink")}
+                        className="h-12 border-[#2574BB]/14 bg-white [font-family:var(--font-paraluman-body)] text-base shadow-none focus-visible:ring-[#2574BB]/25"
+                      />
+                    </div>
                   </div>
 
                   {isDevelopment ? (
-                    <p className="rounded-[0.33em] bg-[rgba(212,173,69,0.18)] px-3 py-2 [font-family:var(--font-paraluman-mono)] text-xs text-[#6b5000]">
-                      Captcha disabled in development
+                    <p className="border-t border-[#2574BB]/10 pt-4 [font-family:var(--font-paraluman-body)] text-sm text-[#1f68a9]">
+                      Captcha disabled in development.
                     </p>
                   ) : !token ? (
-                    <div className="space-y-3">
+                    <div className="space-y-3 border-t border-[#2574BB]/10 pt-4">
                       {!tokenFail ? (
                         <Loader>Validating browser...</Loader>
                       ) : (
@@ -337,29 +277,29 @@ export function ApplyPanel({
                       />
                     </div>
                   ) : (
-                    <div className="rounded-[0.33em] bg-emerald-100 px-3 py-2 [font-family:var(--font-paraluman-mono)] text-xs text-emerald-700">
-                      Browser verification complete
+                    <div className="border-t border-emerald-200 pt-4 [font-family:var(--font-paraluman-body)] text-sm text-emerald-700">
+                      Browser verification complete.
                     </div>
                   )}
                 </>
               )}
 
-              <div className="flex flex-col sm:flex-row justify-end">
+              <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
                 {submissionStep === 1 ? (
                   <Button
                     type="button"
                     onClick={onNextStep}
-                    className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#2574BB] bg-[#2574BB] [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:bg-[#1c5a92] hover:shadow-lg sm:w-auto sm:px-8"
+                    className="inline-flex h-11 items-center justify-center rounded-md bg-[#173f69] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-medium tracking-[-0.02em] text-white transition-all duration-200 hover:bg-[#123456]"
                   >
                     Continue to contact details
                   </Button>
                 ) : (
-                  <div className="flex w-full gap-2 sm:w-auto sm:items-center">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={onBackStep}
-                      className="inline-flex h-11 w-1/3 items-center justify-center gap-1.5 rounded-[0.33em] border-2 border-[rgba(212,173,69,0.5)] bg-white px-3 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.08em] text-[#6b5000] transition-colors hover:bg-[#fff7da] sm:w-auto"
+                      className="inline-flex h-11 items-center justify-center gap-1.5 rounded-md border border-[#2574BB]/14 bg-white px-5 [font-family:var(--font-paraluman-heading)] text-sm font-medium tracking-[-0.02em] text-[#173f69] transition-colors duration-200 hover:bg-[#edf5ff]"
                     >
                       <ArrowLeft className="h-4 w-4" />
                       Back
@@ -367,7 +307,7 @@ export function ApplyPanel({
                     <Button
                       type="submit"
                       disabled={isSubmitting}
-                      className="inline-flex h-11 w-2/3 items-center justify-center gap-2 rounded-[0.33em] border-2 border-[#2574BB] bg-[#2574BB] px-6 [font-family:var(--font-paraluman-heading)] text-sm font-bold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:bg-[#1c5a92] hover:shadow-lg sm:min-w-36 sm:w-auto"
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-[#173f69] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-medium tracking-[-0.02em] text-white transition-all duration-200 hover:bg-[#123456]"
                     >
                       {isSubmitting ? (
                         <>
@@ -385,10 +325,10 @@ export function ApplyPanel({
               {resultMessage && (
                 <div
                   className={cn(
-                    "rounded-[0.33em] border-2 px-4 py-3 [font-family:var(--font-paraluman-mono)] text-sm",
+                    "rounded-[1rem] border px-4 py-3 [font-family:var(--font-paraluman-body)] text-sm",
                     isError
-                      ? "border-red-300 bg-red-50 text-red-700"
-                      : "border-emerald-300 bg-emerald-50 text-emerald-700",
+                      ? "border-red-200 bg-red-50 text-red-700"
+                      : "border-emerald-200 bg-emerald-50 text-emerald-700",
                   )}
                 >
                   {resultMessage}
