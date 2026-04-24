@@ -10,6 +10,7 @@ import { EmployerApplication } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import useApplicationActions from "@/hooks/use-application-actions";
 
 function ApplicantPageContent() {
   const searchParams = useSearchParams();
