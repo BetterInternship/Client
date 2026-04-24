@@ -79,8 +79,6 @@ function ApplicantPageContent() {
     otherApplications = [];
   }
 
-  const { app_statuses } = useDbRefs();
-
   useEffect(() => {
     const fetchUserData = async () => {
       if (isDummyProfile) {
