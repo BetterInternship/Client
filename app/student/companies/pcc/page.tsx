@@ -119,10 +119,9 @@ const SPONSOR_BRANDS = [
 const LISTING_CARDS = [
   {
     id: "core",
-    eyebrow: "Innovation Track",
     title: pccPrimaryListing.title,
     summary:
-      "Design practical improvements that help Philippine businesses navigate real regulatory and operational friction.",
+      "Deliver one practical improvement that helps Philippine businesses navigate a high-friction process",
     metrics: [
       "Reduce one workflow turnaround time by at least 30%",
       "Lower recurring support escalations in your selected process",
@@ -654,37 +653,56 @@ function ListingCard({
   return (
     <motion.button
       onClick={onSelect}
-      whileHover={{ y: -2 }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
+      whileHover={{ y: -8 }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
       className={cn(
-        "relative flex h-fit w-full max-w-sm min-h-0 flex-col rounded-[0.33em] border border-[#2574BB]/16 p-5 text-left transition-colors duration-200 cursor-pointer sm:h-full sm:max-w-none sm:min-h-[27rem] sm:p-8",
+        "group relative flex h-fit w-full min-h-0 flex-col rounded-[0.5em] border p-8 text-left transition-all duration-300 cursor-pointer sm:min-h-[32rem] sm:p-12 lg:p-16",
         isPrimary
-          ? "bg-[linear-gradient(165deg,#ffffff_0%,#f4f9ff_60%,#eaf4ff_100%)] hover:bg-[linear-gradient(165deg,#ffffff_0%,#f1f7ff_60%,#e4f1ff_100%)]"
-          : "bg-[linear-gradient(165deg,#ffffff_0%,#f8fbff_60%,#edf5ff_100%)] hover:bg-[linear-gradient(165deg,#ffffff_0%,#f3f8ff_60%,#e7f2ff_100%)]",
+          ? "border-[#2574BB]/20 bg-[linear-gradient(135deg,#ffffff_0%,#fbfdff_45%,#f4faff_100%)] shadow-[0_32px_64px_-40px_rgba(37,116,187,0.32)] hover:shadow-[0_48px_80px_-48px_rgba(37,116,187,0.42)]"
+          : "border-[#2574BB]/16 bg-[linear-gradient(135deg,#ffffff_0%,#fcfdff_45%,#f7fbff_100%)] shadow-[0_28px_56px_-36px_rgba(37,116,187,0.26)] hover:shadow-[0_42px_72px_-44px_rgba(37,116,187,0.34)]",
       )}
     >
+      <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-[0.5em]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(104,184,255,0.08),transparent_40%),radial-gradient(circle_at_80%_70%,rgba(37,116,187,0.06),transparent_45%)] rounded-[0.5em]" />
+      </div>
+
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[2px] rounded-t-[0.33em]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[1.5px] rounded-t-[0.5em]"
         style={{
-          background: `linear-gradient(90deg, ${card.accent} 0%, rgba(37,116,187,0.22) 55%, transparent 100%)`,
+          background: `linear-gradient(90deg, transparent 0%, ${card.accent} 15%, ${card.accent} 85%, transparent 100%)`,
         }}
       />
       <div
-        className="pointer-events-none absolute right-5 top-5 h-2.5 w-2.5 rounded-full opacity-80"
+        className="pointer-events-none absolute right-10 top-10 h-4 w-4 rounded-full opacity-70 group-hover:opacity-100 transition-opacity"
         style={{ backgroundColor: card.accent }}
       />
       <div
-        className="pointer-events-none absolute -right-10 -top-8 h-28 w-28 rounded-full opacity-30 blur-2xl"
+        className="pointer-events-none absolute -right-16 -top-12 h-48 w-48 rounded-full opacity-25 blur-3xl group-hover:opacity-40 transition-opacity duration-300"
+        style={{ backgroundColor: card.accent }}
+      />
+      <div
+        className="pointer-events-none absolute -left-20 -bottom-16 h-52 w-52 rounded-full opacity-20 blur-3xl group-hover:opacity-30 transition-opacity duration-300"
         style={{ backgroundColor: card.accent }}
       />
 
-      <h3 className="max-w-[15ch] [font-family:var(--font-paraluman-heading)] text-[clamp(1.9rem,2.1vw,2.6rem)] font-semibold leading-[1.07] tracking-[-0.025em] text-[#123f6b]">
-        {card.title}
-      </h3>
+      <div className="relative z-10 space-y-8">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#68b8ff] mb-4">
+            {card.eyebrow}
+          </p>
+          <h3 className="[font-family:var(--font-paraluman-heading)] text-[clamp(2.4rem,3vw,3.8rem)] font-bold leading-[1.08] tracking-[-0.04em] text-[#0f2f54]">
+            {card.title}
+          </h3>
+        </div>
 
-      <div className="mt-auto inline-flex items-center justify-end gap-2 pt-6 text-sm font-semibold uppercase tracking-[0.1em] text-[#4f7598] transition-colors group-hover:text-[#123f6b]">
-        Open
-        <ArrowRight className="-rotate-45 h-4 w-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+        <p className="text-base leading-7 text-[#2d5a8a] sm:text-lg sm:leading-8 max-w-2xl">
+          {card.summary}
+        </p>
+      </div>
+
+      <div className="relative z-10 mt-auto inline-flex items-center justify-between gap-3 pt-12 text-base font-bold uppercase tracking-[0.12em] text-[#2574BB] transition-all duration-300 group-hover:text-[#0f2f54] w-full">
+        <span>View this role</span>
+        <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-2" />
       </div>
     </motion.button>
   );
@@ -841,18 +859,15 @@ export default function PccCompanyProfilePage() {
           />
         </SectionShell>
 
-        <SectionShell className="relative -mt-8 overflow-hidden border-t-0 bg-[linear-gradient(180deg,#edf4fc_0%,#e5effa_44%,#dbe9f8_100%)] py-10 sm:-mt-12 sm:py-12 min-h-[100svh]">
+        <SectionShell className="relative -mt-8 overflow-hidden border-t-0 bg-[linear-gradient(180deg,#edf4fc_0%,#e5effa_44%,#dbe9f8_100%)] py-16 sm:-mt-12 sm:py-24 lg:py-32 min-h-[120vh] flex flex-col">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-[#f4f8fc] via-[#eef4fc] to-transparent" />
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(127,192,255,0.16),transparent_22%),radial-gradient(circle_at_82%_22%,rgba(23,63,105,0.09),transparent_24%)]" />
           <div className="pointer-events-none absolute inset-0 opacity-100 [mask-image:linear-gradient(to_bottom,transparent_0%,rgba(0,0,0,0.24)_24%,rgba(0,0,0,0.62)_46%,rgba(0,0,0,0.86)_66%,#000_84%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0%,rgba(0,0,0,0.24)_24%,rgba(0,0,0,0.62)_46%,rgba(0,0,0,0.86)_66%,#000_84%)] bg-[linear-gradient(to_bottom,rgba(23,63,105,0)_0%,rgba(23,63,105,0.12)_46%,rgba(23,63,105,0.18)_100%),linear-gradient(to_right,rgba(23,63,105,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(23,63,105,0.06)_1px,transparent_1px)] bg-[size:100%_100%,44px_44px,44px_44px]" />
-          <SectionInner className="relative flex min-h-[calc(100svh-5.25rem)] w-full flex-col justify-between gap-10 sm:min-h-[calc(100svh-6rem)]">
-            <RevealBlock
-              inView={sectionRevealMotion}
-              className="pt-8 text-center sm:pt-10"
-            >
+          <SectionInner className="relative flex flex-col items-center justify-center flex-1 w-full gap-16 sm:gap-20 lg:gap-24">
+            <RevealBlock inView={sectionRevealMotion} className="text-center">
               <p
                 ref={listingsRef}
-                className="[font-family:var(--font-paraluman-heading)] bg-[linear-gradient(110deg,#0f4f8f_0%,#2574BB_24%,#badbfd_38%,#2574BB_52%,#5eaeea_66%,#1c5f9b_82%,#0f4f8f_100%)] bg-[length:220%_100%] bg-clip-text text-[clamp(2.6rem,5.7vw,5.1rem)] font-semibold leading-[0.92] tracking-[-0.06em] text-transparent [animation:runway-shine_8s_ease-in-out_infinite]"
+                className="[font-family:var(--font-paraluman-heading)] bg-[linear-gradient(110deg,#0f4f8f_0%,#2574BB_24%,#badbfd_38%,#2574BB_52%,#5eaeea_66%,#1c5f9b_82%,#0f4f8f_100%)] bg-[length:220%_100%] bg-clip-text text-[clamp(2.8rem,6.5vw,5.5rem)] font-bold leading-[0.95] tracking-[-0.065em] text-transparent [animation:runway-shine_8s_ease-in-out_infinite]"
               >
                 Better internships start here.
               </p>
@@ -860,52 +875,40 @@ export default function PccCompanyProfilePage() {
             <RevealBlock
               variants={STAGGER_CONTAINER_VARIANTS}
               inView={sectionStaggerMotion}
-              className="pb-2 sm:pb-4"
+              className="w-full flex items-center justify-center"
             >
-              <div className="mx-auto grid w-full max-w-6xl justify-items-center gap-3 md:grid-cols-2 md:justify-items-stretch lg:grid-cols-3">
-                {LISTING_CARDS.map((card, index) => (
-                  <motion.div
-                    key={card.id}
-                    variants={STAGGER_ITEM_VARIANTS}
-                    initial={
-                      shouldReduceMotion ? undefined : { opacity: 0, y: 8 }
-                    }
-                    animate={
-                      shouldReduceMotion ? undefined : { opacity: 1, y: 0 }
-                    }
-                    transition={{
-                      duration: 0.4,
-                      delay: index * 0.08,
-                    }}
-                    className="-m-px w-full max-w-sm md:max-w-none"
-                  >
-                    <ListingCard
-                      card={card}
-                      onSelect={() => {
-                        modalRegistry.centeredDetails.open({
-                          title: (
-                            <span className="[font-family:var(--font-paraluman-heading)] text-2xl font-semibold leading-[1.05] tracking-[-0.03em] text-[#123f6b] sm:text-[2.05rem]">
-                              {card.title}
-                            </span>
-                          ),
-                          content: (
-                            <ListingModalContent
-                              card={card}
-                              onApply={() =>
-                                modalRegistry.centeredDetails.close()
-                              }
-                            />
-                          ),
-                          showHeaderDivider: false,
-                          closeOnBackdropClick: true,
-                          closeOnEscapeKey: true,
-                          showCloseButton: true,
-                        });
-                      }}
-                    />
-                  </motion.div>
-                ))}
-              </div>
+              <motion.div
+                variants={STAGGER_ITEM_VARIANTS}
+                initial={shouldReduceMotion ? undefined : { opacity: 0, y: 16 }}
+                animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.56,
+                }}
+                className="w-full max-w-4xl relative"
+              >
+                <ListingCard
+                  card={LISTING_CARDS[0]}
+                  onSelect={() => {
+                    modalRegistry.centeredDetails.open({
+                      title: (
+                        <span className="[font-family:var(--font-paraluman-heading)] text-2xl font-semibold leading-[1.05] tracking-[-0.03em] text-[#123f6b] sm:text-[2.05rem]">
+                          {LISTING_CARDS[0].title}
+                        </span>
+                      ),
+                      content: (
+                        <ListingModalContent
+                          card={LISTING_CARDS[0]}
+                          onApply={() => modalRegistry.centeredDetails.close()}
+                        />
+                      ),
+                      showHeaderDivider: false,
+                      closeOnBackdropClick: true,
+                      closeOnEscapeKey: true,
+                      showCloseButton: true,
+                    });
+                  }}
+                />
+              </motion.div>
             </RevealBlock>
           </SectionInner>
         </SectionShell>

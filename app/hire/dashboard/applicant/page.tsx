@@ -4,7 +4,6 @@ import { DB_STATUS_MAP, UI_STATUS_MAP } from "@/lib/consts/application";
 import ContentLayout from "@/components/features/hire/content-layout";
 import { ApplicantPage } from "@/components/features/hire/dashboard/ApplicantPage";
 import { type ActionItem } from "@/components/ui/action-item";
-import useApplicationActions from "@/hooks/use-application-actions";
 import { useEmployerApplications } from "@/hooks/use-employer-api";
 import { UserService } from "@/lib/api/services";
 import { EmployerApplication } from "@/lib/db/db.types";
@@ -18,7 +17,6 @@ function ApplicantPageContent() {
   const jobId = searchParams.get("jobId");
   const isDummyProfile = searchParams.get("dummy") === "1";
   const [loading, setLoading] = useState(true);
-
   const applications = useEmployerApplications();
   const { app_statuses } = useDbRefs();
 
@@ -81,6 +79,8 @@ function ApplicantPageContent() {
     otherApplications = [];
   }
 
+  const { app_statuses } = useDbRefs();
+
   useEffect(() => {
     const fetchUserData = async () => {
       if (isDummyProfile) {
@@ -111,7 +111,7 @@ function ApplicantPageContent() {
     [],
   );
 
-  const getStatuses = (application: EmployerApplication) => {
+  const getStatuses = (applicationId: string) => {
     return unique_app_statuses
       .filter((status) => status.id !== 7 && status.id !== 5 && status.id !== 0)
       .map((status): ActionItem => {
@@ -139,7 +139,9 @@ function ApplicantPageContent() {
         <ApplicantPage
           application={userApplication}
           jobID={jobId || ""}
-          statuses={isDummyProfile ? [] : getStatuses(userApplication!)}
+          statuses={
+            isDummyProfile ? [] : getStatuses(userApplication?.id || "")
+          }
           userApplications={otherApplications}
           onArchive={() => {
             if (!userApplication) return;

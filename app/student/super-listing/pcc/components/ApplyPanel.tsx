@@ -116,7 +116,7 @@ export function ApplyPanel({
         <p className="[font-family:var(--font-paraluman-body)] text-base leading-7 text-[#173957]/72 sm:text-lg sm:leading-8">
           Again,{" "}
           <span className="font-bold text-warning">
-            no resume needed. Reponse within 24 hours.
+            no resume needed. Response within 24 hours.
           </span>
         </p>
       </div>

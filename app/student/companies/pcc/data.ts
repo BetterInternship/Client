@@ -43,7 +43,7 @@ export type PccProfile = {
 
 export const pccPrimaryListing: Job = {
   id: "pilot-pcc-super-listing",
-  title: "Policy and Business Innovation Intern",
+  title: "Software Development Intern",
   location: "Makati, Metro Manila / Hybrid",
   description:
     "Identify one bottleneck Filipino MSMEs face in permits, compliance, or market access, and propose a practical digital workflow that chambers can pilot.",

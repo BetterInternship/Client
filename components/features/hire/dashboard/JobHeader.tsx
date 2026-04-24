@@ -191,7 +191,9 @@ export default function JobHeader({
                 className="block"
               >
                 <Button
-                  variant={pathname === "/dashboard/manage" ? "ghost" : "outline"}
+                  variant={
+                    pathname === "/dashboard/manage" ? "ghost" : "outline"
+                  }
                   size="sm"
                   disabled={saving}
                   className={cn(

@@ -27,7 +27,7 @@ const FAQ_ITEMS = [
   {
     question: "What is the core problem to solve?",
     answer:
-      "Philippine Chamber of Commerce has a large member base but limited visibility into who those companies are and how they can help each other. Your solution should turn that database into a living network.",
+      "PCC has scale but weak network activation. Member data is scattered, company strengths are not easy to surface, and routing introductions still depends on slow manual coordination. Your solution should turn that into a usable operating system for member connections.",
   },
   {
     question: "Does this need to be a real, workable app?",
@@ -42,21 +42,23 @@ const FAQ_ITEMS = [
 ];
 
 const HOW_TO_APPLY_STEPS = [
-  "Read the challenge brief and map how a company joins, builds profile data, and finds connections.",
-  "Build a workable product flow with direct sign-up, grouped community participation, and incentive logic.",
-  "Submit one clear link and your details. Include a short walkthrough of your point economy and user journey.",
+  "Read the challenge brief and map where the current member journey breaks: onboarding delays, weak profile completeness, and slow partner discovery.",
+  "Build a workable flow with direct sign-up, structured profile capture, grouped participation, and incentive logic that improves response behavior.",
+  "Submit one clear link and your details. Include a short walkthrough showing how your flow reduces friction from signup to introduction.",
 ];
 
 const INTERNSHIP_OVERVIEW_PARAGRAPHS = [
-  "This challenge asks you to build a usable app for the Philippine Chamber of Commerce community. The goal is to make the member database actually useful, not just a directory.",
-  "Every company should have a meaningful profile, be searchable by relevant criteria, and be able to connect with other businesses in the network quickly.",
-  "The system should bypass current bottlenecks by allowing companies to sign up directly and participate through clear group-based pathways.",
+  "This internship places you inside a real PCC ecosystem problem where member data exists but network value is still hard to unlock at speed.",
+  "Each company should have a meaningful profile, be discoverable by practical criteria, and be routed toward relevant members without relying on manual back-and-forth.",
+  "Working on PCC gives you real ecosystem exposure: you solve a live business-network problem, design for multi-stakeholder behavior, and ship work that can directly improve how companies find opportunities through the chamber.",
+  "Your system should reduce onboarding friction, improve profile quality, and speed up partner discovery through clear group-based pathways and incentives.",
 ];
 
 const INTERNSHIP_OKRS = [
-  "A company can complete onboarding and profile setup in one clear flow.",
-  "Members can discover and request introductions to relevant companies through the app.",
-  "Gamification incentives increase profile completion and inquiry response behavior.",
+  "A company can complete onboarding and profile setup quickly in one clear flow.",
+  "Members can identify and request relevant introductions without slow manual routing.",
+  "Incentives increase profile completeness and improve inquiry response consistency.",
+  "You can clearly explain business impact, product decisions, and tradeoffs from a real organizational problem, not a simulated exercise.",
 ];
 
 function SectionTitle({ title }: SectionTitleProps) {
@@ -156,8 +158,9 @@ export function OverviewPanel({
                     Open the challenge brief when you&apos;re ready.
                   </p>
                   <p className="[font-family:var(--font-paraluman-body)] text-sm text-[#173957]/72">
-                    Focus on a complete network loop: signup, profile, discover,
-                    connect, and incentives.
+                    Focus on solving PCC's full friction loop: signup, profile
+                    quality, discoverability, connection routing, and
+                    incentives.
                   </p>
                 </div>
                 <Button

@@ -1,5 +1,4 @@
 "use client";
-import { pccProfile } from "../../../companies/pcc/data";
 
 export function HeroPanel() {
   return (
@@ -8,16 +7,19 @@ export function HeroPanel() {
         <div className="space-y-6">
           <div className="max-w-4xl space-y-4">
             <h1 className="[font-family:var(--font-paraluman-heading)] text-[clamp(2rem,5vw,4.4rem)] font-medium leading-[0.98] tracking-[-0.05em] text-[#173f69]">
-              Policy and Business Innovation Intern
+              Software Development Intern
             </h1>
             <p className="max-w-3xl [font-family:var(--font-paraluman-body)] text-base leading-7 text-[#173957]/78 sm:text-lg sm:leading-8">
-              {pccProfile.subheadline}
+              PCC has many member companies, but the network is still hard to
+              activate. Data is fragmented, introductions are slow, and
+              businesses struggle to find the right partners fast enough to act
+              on opportunities.
             </p>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <p className="w-full pb-1 [font-family:var(--font-paraluman-heading)] text-3xl font-bold leading-[1.08] tracking-[-0.02em] text-warning sm:w-auto  sm:pb-0  sm:leading-none sm:tracking-normal border-b-[4px] border-warning  ">
-              No resume needed. Response target: 24 hours.
+              No resume needed. Response in 24 hours.
             </p>
           </div>
         </div>

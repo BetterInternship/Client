@@ -16,11 +16,17 @@ import {
   ArrowLeft,
   Award,
   FileText,
+  MessageCircle,
   Phone,
   Mail,
   BriefcaseBusiness,
   Github,
   Linkedin,
+  SquareArrowOutUpRight,
+  MessageSquareText,
+  MessageSquarePlus,
+  MessageCirclePlus,
+  SendHorizonal,
   Archive,
   HandHelping,
   Trash2,
@@ -46,8 +52,6 @@ interface ApplicantPageProps {
   jobID?: string | undefined;
   userApplications?: EmployerApplication[] | undefined;
   statuses: ActionItem[];
-  onArchive?: () => void;
-  onDelete?: () => void;
 }
 
 export function ApplicantPage({
@@ -55,8 +59,6 @@ export function ApplicantPage({
   jobID,
   userApplications,
   statuses,
-  onArchive,
-  onDelete,
 }: ApplicantPageProps) {
   const router = useRouter();
   const user = application?.user as Partial<PublicUser>;
@@ -109,15 +111,121 @@ export function ApplicantPage({
     }
   };
 
+  const {
+    open: openNewChatModal,
+    close: closeNewChatModal,
+    Modal: NewChatModal,
+  } = useModal("new-chat-modal", {
+    onClose: () => (conversation.unsubscribe(), setConversationId("")),
+    showCloseButton: false,
+  });
+
+  const {
+    open: openOldChatModal,
+    close: closeOldChatModal,
+    Modal: OldChatModal,
+  } = useModal("old-chat-modal", {
+    onClose: () => (conversation.unsubscribe(), setConversationId("")),
+    showCloseButton: false,
+  });
+
+  const {
+    open: openChatModal,
+    close: closeChatModal,
+    SideModal: ChatModal,
+  } = useSideModal("chat-modal", {
+    onClose: () => (conversation.unsubscribe(), setConversationId("")),
+  });
+
+  const {
+    open: openApplicantArchiveModal,
+    close: closeApplicantArchiveModal,
+    Modal: ApplicantArchiveModal,
+  } = useModal("applicant-archive-modal");
+
   useEffect(() => {
     if (application?.user_id) {
       syncResumeURL();
     }
   }, [application?.user_id, syncResumeURL]);
 
+  const onChatClick = async () => {
+    if (!application?.user_id) return;
+
+    const userConversation = conversations.data?.find((c) =>
+      c?.subscribers?.includes(application?.user_id),
+    );
+
+    if (userConversation) {
+      setConversationId(userConversation.id);
+      openOldChatModal();
+    } else {
+      openNewChatModal();
+    }
+  };
+
+  // Handle message
+  const handleMessage = async (
+    studentId: string | undefined,
+    message: string,
+  ) => {
+    if (message.trim() === "") return;
+
+    setSending(true);
+    let userConversation = conversations.data?.find((c) =>
+      c?.subscribers?.includes(studentId),
+    );
+
+    if (!userConversation && studentId) {
+      const response =
+        await EmployerConversationService.createConversation(studentId).catch(
+          endSend,
+        );
+
+      if (!response?.success) {
+        alert("Could not initiate conversation with user.");
+        endSend();
+        return;
+      }
+
+      setConversationId(response.conversation?.id ?? "");
+      userConversation = response.conversation;
+      endSend();
+    }
+
+    setTimeout(async () => {
+      if (!userConversation) return endSend();
+      await EmployerConversationService.sendToUser(
+        userConversation?.id,
+        message,
+      ).catch(endSend);
+      endSend();
+    });
+  };
+
+  const handleSetStatus = (statusId: string | number) => {
+    const action = statuses?.find(
+      (s) => s.id?.toString() === statusId.toString(),
+    );
+    action?.onClick?.();
+  };
+
+  const handleConfirmApplicantArchive = async () => {
+    if (!application?.user_id) return;
+    await applications.review(application.id || "", { status: 7 });
+    router.push(`/dashboard/manage?jobId=${application.job_id}`);
+    closeApplicantArchiveModal();
+  };
+
+  const handleCancelApplicantArchive = () => {
+    closeApplicantArchiveModal();
+  };
+
   if (loading || resumeLoading) {
     return <Loader>Getting applicant information...</Loader>;
   }
+
+  let lastSelf = false;
 
   return (
     <>
@@ -634,6 +742,228 @@ export function ApplicantPage({
           )}
         </div>
       </motion.div>
+
+      <ChatModal>
+        <div className="relative p-6 pb-20 h-full w-full">
+          <div className="flex flex-col h-[100%] w-full">
+            <div className="justify-between sticky top-0 z-10 py-2 border-b bg-white/90 backdrop-blur">
+              <div className="flex items-center justify-between gap-2 font-medium text-lg">
+                {getFullName(application?.user)}
+              </div>
+              <div className="text-gray-500 text-sm max-w-[40vh] mb-2 flex truncate">
+                <p className="text-sm text-primary"> Applied for: </p>
+                {userApplications?.map((a) => (
+                  <p className="text-sm ml-1">
+                    {a.job?.title}
+                    {a !==
+                      userApplications
+                        ?.filter((a) => a.user_id === application?.user_id)
+                        .at(-1) && <>, </>}
+                  </p>
+                ))}
+              </div>
+              <button
+                className="flex items-center bg-primary text-white text-sm p-2 rounded-[0.33em] gap-2 hover:opacity-70"
+                onClick={onChatClick}
+              >
+                <SquareArrowOutUpRight className="h-5 w-5" />
+                Go to Chat Page
+              </button>
+            </div>
+            <div className="overflow-y-hidden flex-1 max-h-[75%] mb-6 pb-2 px-2 border-r border-l border-b">
+              <div className="flex flex-col-reverse max-h-full min-h-full overflow-y-scroll p-0 gap-1">
+                <div ref={chatAnchorRef} />
+                {(conversation?.loading ?? true) ? (
+                  <div className="flex-1 flex flex-col items-center justify-center">
+                    <Loader>Loading conversation...</Loader>
+                  </div>
+                ) : conversation?.messages?.length ? (
+                  conversation.messages
+                    ?.map((message: any, idx: number) => {
+                      if (!idx) lastSelf = false;
+                      const oldLastSelf = lastSelf;
+                      lastSelf = message.sender_id === profile.data?.id;
+                      return {
+                        key: idx,
+                        message: message.message,
+                        self: message.sender_id === profile.data?.id,
+                        prevSelf: oldLastSelf,
+                        them: getFullName(application?.user),
+                      };
+                    })
+                    ?.toReversed()
+                    ?.map((d: any) => (
+                      <Message
+                        key={d.key}
+                        message={d.message}
+                        self={d.self}
+                        prevSelf={d.prevSelf}
+                        them={d.them}
+                      />
+                    ))
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Card className="flex flex-col items-center justify-center p-4 px-6 border-transparent">
+                        <MessageCirclePlus className="w-8 h-8 my-2 opacity-50" />
+                        <div className="text-base font-bold">
+                          No Messages Yet
+                        </div>
+                        <p className="text-gray-500 text-sm">
+                          Start a conversation to see your messages.
+                        </p>
+                      </Card>
+                    </motion.div>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Textarea
+                ref={messageInputRef}
+                placeholder="Send a message here..."
+                className="w-full h-10 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (!application?.user_id) return;
+                    if (messageInputRef.current?.value) {
+                      handleMessage(
+                        application.user_id,
+                        messageInputRef.current.value,
+                      );
+                    }
+                  }
+                }}
+                maxLength={1000}
+              />
+              <button
+                disabled={
+                  sending || messageInputRef.current?.value.trim() === undefined
+                }
+                onClick={() => {
+                  if (!application?.user_id) return;
+                  if (messageInputRef.current?.value) {
+                    handleMessage(
+                      application?.user_id,
+                      messageInputRef.current?.value,
+                    );
+                  }
+                }}
+                className={cn(
+                  "text-primary px-2",
+                  sending || messageInputRef.current?.value.trim() === undefined
+                    ? "opacity-50"
+                    : "",
+                )}
+              >
+                <SendHorizonal className="w-7 h-7" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </ChatModal>
+
+      <NewChatModal>
+        <div className="p-8">
+          <div className="mb-4 flex flex-col items-center justify-center text-center">
+            <MessageSquarePlus className="text-primary h-8 w-8 mb-4" />
+            <div className="flex flex-col items-center">
+              <h3 className="text-lg">New Conversation</h3>
+              <p className="text-gray-500 text-sm">
+                No conversation history with{" "}
+                <span className="text-primary">
+                  {getFullName(application?.user)}
+                </span>
+                .
+              </p>
+              <p className="text-gray-500 text-sm">
+                Initiate new conversation?
+              </p>
+            </div>
+            <div className="flex justify-center gap-6 mt-2">
+              <Button
+                className="bg-white text-primary hover:bg-gray-100 border-solid border-2"
+                onClick={closeNewChatModal}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  if (!application?.user_id) return;
+                  const response =
+                    await EmployerConversationService.createConversation(
+                      application.user_id,
+                    );
+                  if (response?.success && response.conversation?.id)
+                    router.push(
+                      `/conversations?userId=${application?.user_id}`,
+                    );
+                }}
+              >
+                Start chatting
+              </Button>
+            </div>
+          </div>
+        </div>
+      </NewChatModal>
+
+      <OldChatModal>
+        <div className="p-8">
+          <div className="mb-4 flex flex-col items-center justify-center text-center">
+            <MessageSquareText className="text-primary h-8 w-8 mb-4" />
+            <div className="flex flex-col items-center">
+              <h3 className="text-lg">Go to Conversations</h3>
+              <p className="text-gray-500 text-sm">
+                You have existing chat history with{" "}
+                <span className="text-primary">
+                  {getFullName(application?.user)}
+                </span>
+                !
+              </p>
+              <p className="text-gray-500 text-sm">
+                Redirect to conversations?
+              </p>
+            </div>
+            <div className="flex justify-center gap-6 mt-2">
+              <Button
+                className="bg-white text-primary hover:bg-gray-100 border-solid border-2"
+                onClick={closeOldChatModal}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() =>
+                  router.push(`/conversations?userId=${application?.user_id}`)
+                }
+              >
+                Go to chat
+              </Button>
+            </div>
+          </div>
+        </div>
+      </OldChatModal>
+      <ApplicantArchiveModal>
+        {application?.user && (
+          <div className="p-8 pt-0 h-full">
+            <div className="text-lg mb-4">
+              Archive applicant "{getFullName(application.user)}"?
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={handleCancelApplicantArchive}>
+                Cancel
+              </Button>
+              <Button variant="default" onClick={handleConfirmApplicantArchive}>
+                Archive
+              </Button>
+            </div>
+          </div>
+        )}
+      </ApplicantArchiveModal>
     </>
   );
 }
