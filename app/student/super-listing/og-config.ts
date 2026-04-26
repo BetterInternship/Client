@@ -46,6 +46,13 @@ const SUPER_LISTING_OG_OVERRIDES: Record<
     accent: "#0f766e",
     glow: "#34d399",
   },
+  "sofi-ai": {
+    company: "Sofi AI",
+    role: "Frontend AI Product Challenge",
+    tagline: "Build a practical frontend for TikTok hook analysis.",
+    accent: "#07C4A7",
+    glow: "#35e3ca",
+  },
   paraluman: {
     company: "Paraluman News",
     role: "Multilingual News Delivery Challenge",
