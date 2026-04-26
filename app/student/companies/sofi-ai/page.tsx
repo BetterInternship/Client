@@ -328,12 +328,26 @@ function HeroMainContent({
         </motion.span>
       </h1>
 
-      <motion.div
+      <motion.p
         initial={reduceMotion ? false : { opacity: 0, y: 12 }}
         animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
         transition={{
           duration: 0.52,
           delay: 0.38,
+          ease: [0.22, 1, 0.36, 1],
+        }}
+        className="max-w-[57ch] text-center [font-family:var(--font-paraluman-body)] text-base leading-7 text-[#184d45]/82 sm:text-lg sm:leading-[1.75]"
+      >
+        You’ll work on real projects with real clients,  helping build and ship
+        things that people actually use.
+      </motion.p>
+
+      <motion.div
+        initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+        animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.52,
+          delay: 0.44,
           ease: [0.22, 1, 0.36, 1],
         }}
         className="flex flex-col items-center gap-3"
@@ -502,6 +516,87 @@ function MeaningfulWorkScrollScene({
   );
 }
 
+function HeroDots({ className }: { className?: string }) {
+  return (
+    <div className={cn("absolute grid grid-cols-3 gap-4 opacity-60", className)}>
+      {Array.from({ length: 9 }).map((_, index) => (
+        <span key={index} className="h-1.5 w-1.5 rounded-full bg-[#10A37F]/65" />
+      ))}
+    </div>
+  );
+}
+
+function HeroWorkflowScene({ reduceMotion }: { reduceMotion: boolean }) {
+  const pulseLine = reduceMotion
+    ? ""
+    : "[animation:hero-line-pulse_5s_ease-in-out_infinite]";
+  const driftGlow = reduceMotion
+    ? ""
+    : "[animation:hero-glow-drift_14s_ease-in-out_infinite]";
+  const driftSlow = reduceMotion
+    ? ""
+    : "[animation:hero-float-slow_10s_ease-in-out_infinite]";
+  const dashFlow = reduceMotion
+    ? ""
+    : "[animation:hero-dash-flow_18s_linear_infinite]";
+
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 bg-[#F8FFFC]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(248,255,252,0.94)_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_92%,rgba(16,163,127,0.12),transparent_22%),radial-gradient(circle_at_92%_4%,rgba(16,163,127,0.14),transparent_24%),radial-gradient(circle_at_50%_46%,rgba(255,255,255,0.99),rgba(255,255,255,0.96)_38%,rgba(255,255,255,0)_70%)]" />
+      <div
+        className={cn(
+          "absolute inset-0 opacity-55 [background-image:linear-gradient(rgba(16,163,127,0.085)_1px,transparent_1px),linear-gradient(90deg,rgba(16,163,127,0.085)_1px,transparent_1px)] [background-size:44px_44px]",
+          driftGlow,
+        )}
+      />
+      <div className="absolute right-[12%] top-[43%] hidden h-[15rem] w-[18rem] rounded-[1.6rem] border border-white/60 bg-white/18 shadow-[0_30px_80px_-60px_rgba(6,78,59,0.24)] backdrop-blur-[2px] lg:block" />
+
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 1440 840"
+        preserveAspectRatio="none"
+        className="absolute inset-0 h-full w-full"
+      >
+        <path
+          d="M228 444C234 216 428 108 740 102C1024 96 1230 182 1326 336"
+          fill="none"
+          stroke="#10A37F"
+          strokeOpacity="0.24"
+          strokeWidth="1.5"
+          strokeDasharray="7 9"
+          className={cn(pulseLine, dashFlow)}
+        />
+        <path
+          d="M392 728C496 850 738 878 992 848C1166 828 1316 770 1392 666"
+          fill="none"
+          stroke="#10A37F"
+          strokeOpacity="0.22"
+          strokeWidth="1.5"
+          strokeDasharray="7 9"
+          className={cn(pulseLine, dashFlow)}
+        />
+        <path
+          d="M158 536H228M364 536H432"
+          fill="none"
+          stroke="#10A37F"
+          strokeOpacity="0.36"
+          strokeWidth="1.6"
+          strokeDasharray="7 9"
+        />
+        <circle cx="158" cy="536" r="4.5" fill="#10A37F" fillOpacity="0.72" />
+        <circle cx="228" cy="536" r="4.5" fill="#10A37F" fillOpacity="0.72" />
+        <circle cx="364" cy="536" r="4.5" fill="#10A37F" fillOpacity="0.72" />
+        <circle cx="432" cy="536" r="4.5" fill="#10A37F" fillOpacity="0.72" />
+      </svg>
+
+      <HeroDots className={cn("left-[4%] top-[30%] hidden md:grid", driftSlow)} />
+      <HeroDots className={cn("right-[9%] top-[15%] hidden lg:grid", driftSlow)} />
+    </div>
+  );
+}
+
 function HeroPanel({
   reduceMotion,
   onJumpToListings,
@@ -509,8 +604,6 @@ function HeroPanel({
   reduceMotion: boolean;
   onJumpToListings: () => void;
 }) {
-  const sharedHeroBackground =
-    "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_18%,rgba(7,196,167,0.22),transparent_24%),radial-gradient(circle_at_78%_76%,rgba(7,196,167,0.1),transparent_28%)]";
   const sharedHeroBottomFade =
     "pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(231,255,250,0.8)_100%)]";
 
@@ -530,11 +623,11 @@ function HeroPanel({
             priority
           />
         </Link>
-        <div className={sharedHeroBackground} />
+        <HeroWorkflowScene reduceMotion={reduceMotion} />
         <div className={sharedHeroBottomFade} />
 
         <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col items-center gap-10 sm:gap-12">
-          <div className="flex min-h-[30vh] w-full items-center justify-center">
+          <div className="flex min-h-[58vh] w-full items-center justify-center md:min-h-[64vh]">
             <HeroMainContent
               reduceMotion={reduceMotion}
               onJumpToListings={onJumpToListings}
@@ -601,11 +694,6 @@ function WorkWithFounder() {
             </Link>
             <p className="mt-3 whitespace-pre-line [font-family:var(--font-paraluman-mono)] text-base leading-relaxed text-white sm:text-lg">
               {FOUNDER_PROFILE.role}
-            </p>
-            <p className="mt-5 max-w-2xl [font-family:var(--font-paraluman-body)] text-sm leading-7 text-white sm:text-base">
-              Sophia is known for building in public, sharing the startup
-              journey, and leading Sofi AI with a bias toward products that
-              actually work for real users.
             </p>
           </div>
         </div>
@@ -800,6 +888,50 @@ export default function SofiAiCompanyProfilePage() {
           }
           100% {
             background-position: -40% 50%;
+          }
+        }
+        @keyframes hero-float-slow {
+          0%,
+          100% {
+            translate: 0 0;
+          }
+          50% {
+            translate: 0 -10px;
+          }
+        }
+        @keyframes hero-float-alt {
+          0%,
+          100% {
+            translate: 0 0;
+          }
+          50% {
+            translate: 0 -8px;
+          }
+        }
+        @keyframes hero-line-pulse {
+          0%,
+          100% {
+            opacity: 0.45;
+          }
+          50% {
+            opacity: 0.88;
+          }
+        }
+        @keyframes hero-glow-drift {
+          0%,
+          100% {
+            opacity: 0.52;
+          }
+          50% {
+            opacity: 0.72;
+          }
+        }
+        @keyframes hero-dash-flow {
+          0% {
+            stroke-dashoffset: 0;
+          }
+          100% {
+            stroke-dashoffset: -96;
           }
         }
       `}</style>
