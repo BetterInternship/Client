@@ -15,7 +15,6 @@ import useApplicationActions from "@/hooks/use-application-actions";
 function ApplicantPageContent() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
-  const jobId = searchParams.get("jobId");
   const isDummyProfile = searchParams.get("dummy") === "1";
   const [loading, setLoading] = useState(true);
   const applications = useEmployerApplications();
@@ -25,7 +24,6 @@ function ApplicantPageContent() {
 
   const dummyApplication: EmployerApplication = {
     id: "dummy-super-application",
-    user_id: "",
     job_id: jobId ?? "dummy-super-job",
     status: 0,
     applied_at: "2026-03-09T00:00:00.000Z",
