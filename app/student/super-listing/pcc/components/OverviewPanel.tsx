@@ -47,13 +47,6 @@ const HOW_TO_APPLY_STEPS = [
   "Submit one clear link and your details. Include a short walkthrough showing how your flow reduces friction from signup to introduction.",
 ];
 
-const INTERNSHIP_OVERVIEW_PARAGRAPHS = [
-  "This internship places you inside a real PCC ecosystem problem where member data exists but network value is still hard to unlock at speed.",
-  "Each company should have a meaningful profile, be discoverable by practical criteria, and be routed toward relevant members without relying on manual back-and-forth.",
-  "Working on PCC gives you real ecosystem exposure: you solve a live business-network problem, design for multi-stakeholder behavior, and ship work that can directly improve how companies find opportunities through the chamber.",
-  "Your system should reduce onboarding friction, improve profile quality, and speed up partner discovery through clear group-based pathways and incentives.",
-];
-
 const INTERNSHIP_OKRS = [
   "A company can complete onboarding and profile setup quickly in one clear flow.",
   "Members can identify and request relevant introductions without slow manual routing.",
@@ -91,9 +84,84 @@ export function OverviewPanel({
           <SectionTitle title="Internship overview" />
           <ContentCard>
             <div className="space-y-5 [font-family:var(--font-paraluman-body)] text-base leading-7 text-[#173957] opacity-80 sm:text-lg sm:leading-8">
-              {INTERNSHIP_OVERVIEW_PARAGRAPHS.map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
-              ))}
+              <p>This internship will be like no other.</p>
+              <p>
+                You are going to build a platform that will solve{" "}
+                <strong>one of PCCI&apos;s biggest problems</strong>.
+              </p>
+              <p>
+                It&apos;s like LinkedIn, but localized for Philippine
+                businesses. Your initial users will be us, PCCI, the{" "}
+                <strong>
+                  largest business organisation in the Philippines with 80,000
+                  member companies.
+                </strong>
+              </p>
+              <p>
+                And yes, this sounds like too big of a project to give to an
+                intern, but we&apos;re doing it anyway.
+              </p>
+              <p>
+                Most internships give you grunt work. Here, you&apos;ll be
+                given a lot of resources, freedom, and mentorship to bring this
+                dream to reality. You&apos;ll be given tasks that you are not
+                qualified to do, but that means{" "}
+                <strong>you&apos;ll grow faster</strong>.
+              </p>
+              <p>
+                This project is the perfect opportunity to give you industry
+                exposure. Not only are you shipping a solution to a live problem
+                that involves real business owners, but you are also placed
+                within close proximity to the businesses involved.
+              </p>
+              <p>
+                By the end of it, you&apos;ll have a project you can show, and
+                a story that will make any employer want to hire you.
+              </p>
+              <p>
+                And BTW,{" "}
+                <strong>we don&apos;t look at grades or resumes.</strong> Check
+                the challenge for more details.
+              </p>
+              <div className="space-y-4 pt-2">
+                <p className="[font-family:var(--font-paraluman-heading)] text-lg font-medium tracking-[-0.02em] text-[#173f69] sm:text-xl">
+                  Project details
+                </p>
+                <div className="space-y-5">
+                  <p>
+                    <strong>PCCI has 80,000 businesses in its network.</strong>{" "}
+                    But it&apos;s hard for these businesses to talk to each
+                    other.
+                  </p>
+                  <p>
+                    Businesses like these usually try to connect with each other
+                    to find the best partnerships that optimize their line of
+                    work.
+                  </p>
+                  <p>
+                    But in a sea of thousands of members with no centralized
+                    contact list, it&apos;s almost impossible for businesses to
+                    find each other in this community.
+                  </p>
+                  <p>
+                    This internship involves working closely with members of
+                    PCCI and their data. The goal is to create a platform that
+                    makes it easier for businesses to find each other, and to
+                    network when they do.
+                  </p>
+                  <p>
+                    But most important of all,{" "}
+                    <strong>
+                      the platform should incentivize businesses to connect.
+                    </strong>{" "}
+                    Sometimes, businesses within PCCI aren&apos;t even held
+                    back by the lack of a platform: some businesses just prefer
+                    not to respond to requests because they&apos;re used to
+                    their usual sets of connections and don&apos;t bother
+                    looking for more.
+                  </p>
+                </div>
+              </div>
               <div className="rounded-[0.33em] border border-[#2574BB]/12 bg-[linear-gradient(180deg,rgba(239,246,255,0.82)_0%,rgba(255,255,255,0.98)_100%)] px-5 py-5 sm:px-6 sm:py-6">
                 <p className="[font-family:var(--font-paraluman-heading)] text-lg font-medium tracking-[-0.02em] text-[#173f69] sm:text-xl">
                   What Success Looks Like
