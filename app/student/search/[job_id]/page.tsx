@@ -8,15 +8,7 @@ import { useProfileData, useJobData } from "@/lib/api/student.data.api";
 import { useModalRef } from "@/hooks/use-modal";
 import { useMobile } from "@/hooks/use-mobile";
 import { Loader } from "@/components/ui/loader";
-import {
-  EmployerMOA,
-  JobType,
-  JobSalary,
-  JobMode,
-  JobHead,
-  JobApplicationRequirements,
-  JobDetails,
-} from "@/components/shared/jobs";
+import { JobDetails } from "@/components/shared/jobs";
 import { Card } from "@/components/ui/card";
 import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { PageError } from "@/components/ui/error";
@@ -45,7 +37,6 @@ export default function JobPage() {
   const applicationActions = useApplicationActions();
 
   const profile = useProfileData();
-  const { universities } = useDbRefs();
   const { isAuthenticated } = useAuthContext();
 
   const goProfile = useCallback(() => {
@@ -165,7 +156,7 @@ export default function JobPage() {
                       }}
                       job={job.data}
                       isAuthenticated={isAuthenticated()}
-                  />
+                    />
                   </div>
                 </div>
               </div>
