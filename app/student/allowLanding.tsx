@@ -3,7 +3,6 @@
 import { usePathname } from "next/navigation";
 import Header from "@/components/features/student/header";
 import { Suspense } from "react";
-import { startsWith } from "zod";
 
 export default function AllowLanding({
   children,
@@ -13,7 +12,7 @@ export default function AllowLanding({
   const pathname = usePathname();
   const isStudentLanding = pathname === "/";
   const hideSharedHeader =
-    isStudentLanding || startsWith(pathname, "/companies/");
+    isStudentLanding || pathname.startsWith("/companies/");
 
   return (
     <div className="h-[100svh] bg-gray-50 flex flex-col overflow-y-auto">
