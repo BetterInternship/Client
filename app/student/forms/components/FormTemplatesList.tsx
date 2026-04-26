@@ -1,5 +1,5 @@
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
-import { FormTemplate } from "@/lib/db/use-moa-backend";
+import { FormTemplate } from "@/lib/db/forms-db.types";
 import { ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";

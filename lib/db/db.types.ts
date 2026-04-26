@@ -1,44 +1,60 @@
 import {
-  Database as _Database,
-  Json,
-  Tables,
+  DB,
+  RefColleges,
+  RefJobAllowances,
+  RefJobCategories,
+  RefJobModes,
+  RefJobTypes,
+  RefUniversities,
+  JobsChallenge,
+  RefJobPayFreq,
+  RefAppStatuses,
+  RefIndustries,
+  RefDepartments,
+  Moa as _Moa,
+  Users,
+  Employers,
+  Conversations,
+  EmployerUsers,
+  Jobs,
+  Applications,
+  SavedJobs,
 } from "@betterinternship/schema.base";
+import { Selectable } from "kysely";
 
-export type Database = _Database;
-export type College = Tables<"ref_colleges">;
-export type University = Tables<"ref_universities">;
-export type JobType = Tables<"ref_job_types">;
-export type JobAllowance = Tables<"ref_job_allowances">;
-export type JobCategory = Tables<"ref_job_categories">;
-export type JobPayFreq = Tables<"ref_job_pay_freq">;
-export type JobMode = Tables<"ref_job_modes">;
-export type JobChallenge = Tables<"jobs_challenge">;
-export type AppStatus = Tables<"ref_app_statuses">;
-export type Industry = Tables<"ref_industries">;
-export type Department = Tables<"ref_departments">;
-export type Moa = Tables<"moa">;
-export type PrivateUser = Tables<"users">;
-type _PublicUserBase = Omit<Tables<"users">, "verification_hash">;
-export type PublicUser = Omit<_PublicUserBase, "internship_preferences"> & {
+export type Database = DB;
+export type College = Selectable<RefColleges>;
+export type University = Selectable<RefUniversities>;
+export type JobType = Selectable<RefJobTypes>;
+export type JobAllowance = Selectable<RefJobAllowances>;
+export type JobCategory = Selectable<RefJobCategories>;
+export type JobPayFreq = Selectable<RefJobPayFreq>;
+export type JobMode = Selectable<RefJobModes>;
+export type JobChallenge = Selectable<JobsChallenge>;
+export type AppStatus = Selectable<RefAppStatuses>;
+export type Industry = Selectable<RefIndustries>;
+export type Department = Selectable<RefDepartments>;
+export type Moa = Selectable<_Moa>;
+export type PrivateUser = Selectable<Users>;
+export type PublicUser = Omit<
+  PrivateUser,
+  "verification_hash" | "internship_preferences"
+> & {
   internship_preferences?: InternshipPreferences;
 };
-export type Employer = Partial<Tables<"employers">>;
-export type User = Partial<Tables<"users">>;
-export interface Conversation extends Tables<"conversations"> {
+export type Employer = Partial<Selectable<Employers>>;
+export type User = Partial<Selectable<Users>>;
+export interface Conversation extends Selectable<Conversations> {
   employers?: Partial<Employer>;
   employer?: Partial<Employer>;
   users?: Partial<PublicUser>;
   user?: Partial<PublicUser>;
 }
-export type PrivateEmployerUser = Tables<"employer_users">;
-export type PublicEmployerUser = Omit<
-  Tables<"employer_users">,
-  "is_deactivated"
->;
-export interface MoA extends Partial<Tables<"moa">> {}
+export type PrivateEmployerUser = Selectable<EmployerUsers>;
+export type PublicEmployerUser = Omit<PrivateEmployerUser, "is_deactivated">;
 
 export interface Job extends Omit<
-  Partial<Tables<"jobs">>,
+  Partial<Selectable<Jobs>>,
   "internship_preferences"
 > {
   employer?: Partial<Employer>;
@@ -60,14 +76,14 @@ export type UpdateJobChallengeListingPayload = Partial<Job> & {
   challenge?: JobChallengePayload | Partial<JobChallenge> | null;
 };
 
-export interface UserApplication extends Partial<Tables<"applications">> {
+export interface UserApplication extends Partial<Selectable<Applications>> {
   job?: Partial<Job>;
   jobs?: Partial<Job>;
   employer?: Partial<Employer>;
   employers?: Partial<Employer>;
 }
 
-export interface EmployerApplication extends Partial<Tables<"applications">> {
+export interface EmployerApplication extends Partial<Selectable<Applications>> {
   job?: Partial<Job>;
   jobs?: Partial<Job>;
   user?: Partial<PrivateUser>;
@@ -75,7 +91,7 @@ export interface EmployerApplication extends Partial<Tables<"applications">> {
   challenge_submission?: string | null;
 }
 
-export interface SavedJob extends Partial<Tables<"saved_jobs">> {
+export interface SavedJob extends Partial<Selectable<SavedJobs>> {
   job?: Partial<Job>;
   jobs?: Partial<Job>;
 }
