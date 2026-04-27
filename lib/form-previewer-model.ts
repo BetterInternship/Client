@@ -1,5 +1,20 @@
 import { coerceAnyDate, formatTimestampDateWithoutTime } from "@/lib/utils";
 
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
 export type PreviewFieldType = "text" | "signature" | "image";
 
 export interface PreviewField {
@@ -125,7 +140,8 @@ export const resolveAutoPreviewValue = (
     return formatTimestampDateWithoutTime(now.getTime());
   if (normalized === "auto.current-day") return now.getDate().toString();
   if (normalized === "auto.current-month")
-    return (now.getMonth() + 1).toString();
+    return MONTH_NAMES[now.getMonth()] ?? "";
+
   if (normalized === "auto.current-year") return now.getFullYear().toString();
   return "";
 };
@@ -239,7 +255,7 @@ export const createPreviewDisplayValueResolver = ({
         ? rawValue
         : typeof rawValue === "number"
           ? String(rawValue)
-        : "";
+          : "";
     const fallbackValue = rawString.trim()
       ? ""
       : resolveInitiatorFallbackValue(field);
