@@ -34,6 +34,10 @@ export default function FormsPage() {
   const { redirectIfNotLoggedIn, isAuthenticated } = useAuthContext();
   const [hasFormsAccess, setHasFormsAccess] = useState(false);
 
+  useEffect(() => {
+    setHasFormsAccess(!!profile.data.form_group_id);
+  }, [profile.data]);
+
   // Auth redirect at body level (runs first)
   redirectIfNotLoggedIn();
 
@@ -122,7 +126,7 @@ export default function FormsPage() {
               ...pendingForms,
             ]}
             formTemplates={formTemplates?.filter((ft) => !!ft) ?? []}
-            isLoading={isLoading}
+            isLoading={isLoading || profile.isPending}
           />
         </motion.div>
       )}
