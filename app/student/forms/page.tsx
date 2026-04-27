@@ -9,15 +9,17 @@ import {
   FORM_TEMPLATES_STALE_TIME,
   FORM_TEMPLATES_GC_TIME,
 } from "@/lib/consts/cache";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuthContext } from "@/lib/ctx-auth";
 import FormDashboard from "./components/FormDashboard";
+import { FormsAccessGate } from "./components/FormsAccessGate";
 import {
   useFormFilloutProcessHandled,
   useFormFilloutProcessPending,
   useFormFilloutProcessReader,
 } from "@/hooks/forms/filloutFormProcess";
 import { isProfileVerified } from "@/lib/profile";
+import { AnimatePresence, motion } from "framer-motion";
 
 /**
  * The forms page component - shows either history or generate based on form count
@@ -30,6 +32,7 @@ export default function FormsPage() {
   const myForms = useMyForms();
   const queryClient = useQueryClient();
   const { redirectIfNotLoggedIn, isAuthenticated } = useAuthContext();
+  const [hasFormsAccess, setHasFormsAccess] = useState(false);
 
   // Auth redirect at body level (runs first)
   redirectIfNotLoggedIn();
@@ -72,6 +75,7 @@ export default function FormsPage() {
   const { data: formTemplates, isLoading } = useQuery({
     queryKey: ["my-form-templates"],
     queryFn: () => FormService.getMyFormTemplates(),
+    enabled: hasFormsAccess,
     staleTime: FORM_TEMPLATES_STALE_TIME,
     gcTime: FORM_TEMPLATES_GC_TIME,
     refetchOnWindowFocus: true, // Refetch when user switches back to tab
@@ -97,10 +101,31 @@ export default function FormsPage() {
   }, [formFilloutProcess.getAllPending()]);
 
   return (
-    <FormDashboard
-      generatedForms={[...myForms.forms, ...handledForms, ...pendingForms]}
-      formTemplates={formTemplates?.filter((ft) => !!ft) ?? []}
-      isLoading={isLoading}
-    />
+    <AnimatePresence mode="wait" initial={false}>
+      {!hasFormsAccess ? (
+        <FormsAccessGate
+          key="forms-access-card"
+          onAccessGranted={() => setHasFormsAccess(true)}
+        />
+      ) : (
+        <motion.div
+          key="forms-dashboard"
+          className="h-full min-h-0 w-full"
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
+        >
+          <FormDashboard
+            generatedForms={[
+              ...myForms.forms,
+              ...handledForms,
+              ...pendingForms,
+            ]}
+            formTemplates={formTemplates?.filter((ft) => !!ft) ?? []}
+            isLoading={isLoading}
+          />
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
