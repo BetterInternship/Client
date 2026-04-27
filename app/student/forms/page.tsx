@@ -20,6 +20,7 @@ import {
 } from "@/hooks/forms/filloutFormProcess";
 import { isProfileVerified } from "@/lib/profile";
 import { AnimatePresence, motion } from "framer-motion";
+import { Loader } from "@/components/ui/loader";
 
 /**
  * The forms page component - shows either history or generate based on form count
@@ -32,11 +33,18 @@ export default function FormsPage() {
   const myForms = useMyForms();
   const queryClient = useQueryClient();
   const { redirectIfNotLoggedIn, isAuthenticated } = useAuthContext();
-  const [hasFormsAccess, setHasFormsAccess] = useState(false);
+  const [hasFormsAccess, setHasFormsAccess] = useState<boolean | null>(() =>
+    profile.isPending ? null : !!profile.data?.form_group_id,
+  );
 
   useEffect(() => {
-    setHasFormsAccess(!!profile.data.form_group_id);
-  }, [profile.data]);
+    if (profile.isPending) return;
+
+    setHasFormsAccess((currentAccess) => {
+      if (currentAccess === true) return true;
+      return !!profile.data?.form_group_id;
+    });
+  }, [profile.data?.form_group_id, profile.isPending]);
 
   // Auth redirect at body level (runs first)
   redirectIfNotLoggedIn();
@@ -79,7 +87,7 @@ export default function FormsPage() {
   const { data: formTemplates, isLoading } = useQuery({
     queryKey: ["my-form-templates"],
     queryFn: () => FormService.getMyFormTemplates(),
-    enabled: hasFormsAccess,
+    enabled: hasFormsAccess === true,
     staleTime: FORM_TEMPLATES_STALE_TIME,
     gcTime: FORM_TEMPLATES_GC_TIME,
     refetchOnWindowFocus: true, // Refetch when user switches back to tab
@@ -103,6 +111,10 @@ export default function FormsPage() {
     if (!formFilloutProcess.getAllPending().length)
       void queryClient.invalidateQueries({ queryKey: ["my-forms"] });
   }, [formFilloutProcess.getAllPending()]);
+
+  if (hasFormsAccess === null) {
+    return <Loader>Loading forms...</Loader>;
+  }
 
   return (
     <AnimatePresence mode="wait" initial={false}>
