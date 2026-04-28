@@ -14,7 +14,6 @@ import doodlePack from "../../companies/sofi-ai/doodle-pack.png";
 import type {
   PanelKey,
   SofiAiSubmissionForm,
-  SubmissionStep,
 } from "./components/types";
 
 const headingFont = Space_Grotesk({
@@ -46,9 +45,8 @@ type SofiAiSubmissionResponse = {
 const INITIAL_FORM_STATE: SofiAiSubmissionForm = {
   email: "",
   fullName: "",
-  facebookLink: "",
   submissionLink: "",
-  submissionNotes: "",
+  videoSubmissionLink: "",
 };
 
 const PANEL_TABS: Array<{
@@ -57,6 +55,7 @@ const PANEL_TABS: Array<{
 }> = [
   { key: "overview", label: "Overview" },
   { key: "challenge", label: "Application" },
+  { key: "submission", label: "Submit" },
 ];
 
 const DOODLE_SPRITES = {
@@ -103,7 +102,6 @@ export default function SofiAiSuperListingPage() {
   const [token, setToken] = useState("");
   const [tokenFail, setTokenFail] = useState(false);
   const [activePanel, setActivePanel] = useState<PanelKey>("overview");
-  const [submissionStep, setSubmissionStep] = useState<SubmissionStep>(1);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
 
@@ -146,8 +144,7 @@ export default function SofiAiSuperListingPage() {
   };
 
   const openSubmissionPanel = () => {
-    setActivePanel("challenge");
-    setSubmissionStep(1);
+    setActivePanel("submission");
     setResultMessage("");
     setIsError(false);
 
@@ -161,59 +158,19 @@ export default function SofiAiSuperListingPage() {
     });
   };
 
-  const goToStepTwo = () => {
-    setResultMessage("");
-    setIsError(false);
-
-    if (!form.submissionLink.trim()) {
-      setIsError(true);
-      setResultMessage(
-        "Challenge submission link is required before proceeding.",
-      );
-      return;
-    }
-
-    setSubmissionStep(2);
-    requestAnimationFrame(() => {
-      submissionPanelRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    });
-  };
-
-  const goToNextStep = () => {
-    if (submissionStep === 1) {
-      goToStepTwo();
-    }
-  };
-
-  const goToPreviousStep = () => {
-    setResultMessage("");
-    setIsError(false);
-    setSubmissionStep((previous) =>
-      previous > 1 ? ((previous - 1) as SubmissionStep) : 1,
-    );
-  };
-
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setResultMessage("");
     setIsError(false);
 
-    if (submissionStep !== 2) {
-      setIsError(true);
-      setResultMessage("Please complete all steps before submitting.");
-      return;
-    }
-
     if (
       !form.email.trim() ||
       !form.fullName.trim() ||
-      !form.facebookLink.trim()
+      !form.submissionLink.trim() ||
+      !form.videoSubmissionLink.trim()
     ) {
       setIsError(true);
-      setResultMessage("Please complete your personal information.");
+      setResultMessage("Please complete all required fields.");
       return;
     }
 
@@ -224,11 +181,8 @@ export default function SofiAiSuperListingPage() {
     }
 
     const combinedNotes = [
-      form.submissionNotes.trim()
-        ? `Notes: ${form.submissionNotes.trim()}`
-        : "",
       `Full Name: ${form.fullName.trim()}`,
-      `Facebook Link: ${form.facebookLink.trim()}`,
+      `Video Submission Link: ${form.videoSubmissionLink.trim()}`,
     ]
       .filter(Boolean)
       .join("\n\n");
@@ -255,7 +209,6 @@ export default function SofiAiSuperListingPage() {
 
       const submittedEmailAddress = form.email.trim();
       setForm(INITIAL_FORM_STATE);
-      setSubmissionStep(1);
       setSubmittedEmail(submittedEmailAddress);
       setHasSubmitted(true);
       setResultMessage("");
@@ -391,42 +344,38 @@ export default function SofiAiSuperListingPage() {
                   )}
 
                   {activePanel === "challenge" && (
-                    <div className="space-y-12">
-                      <HowToApplyPanel
-                        onGoToApply={openSubmissionPanel}
+                    <HowToApplyPanel onGoToApply={openSubmissionPanel} />
+                  )}
+
+                  {activePanel === "submission" && (
+                    <div ref={submissionPanelRef}>
+                      <ApplyPanel
+                        form={form}
+                        hasSubmitted={hasSubmitted}
+                        submittedEmail={submittedEmail}
+                        isSubmitting={isSubmitting}
+                        isError={isError}
+                        resultMessage={resultMessage}
+                        isDevelopment={isDevelopment}
+                        token={token}
+                        tokenFail={tokenFail}
+                        turnstileSiteKey={
+                          process.env.NEXT_PUBLIC_SERVER_API_KEY_TURNSTILE
+                        }
+                        onFieldChange={onFieldChange}
+                        onSubmit={(event) => {
+                          void handleSubmit(event);
+                        }}
+                        onBackToOverview={() => openPanel("overview", true)}
+                        onTokenSuccess={(t) => {
+                          setToken(t);
+                          setTokenFail(false);
+                        }}
+                        onTokenError={() => {
+                          setToken("");
+                          setTokenFail(true);
+                        }}
                       />
-                      <div ref={submissionPanelRef} className="pt-10">
-                        <ApplyPanel
-                          form={form}
-                          submissionStep={submissionStep}
-                          hasSubmitted={hasSubmitted}
-                          submittedEmail={submittedEmail}
-                          isSubmitting={isSubmitting}
-                          isError={isError}
-                          resultMessage={resultMessage}
-                          isDevelopment={isDevelopment}
-                          token={token}
-                          tokenFail={tokenFail}
-                          turnstileSiteKey={
-                            process.env.NEXT_PUBLIC_SERVER_API_KEY_TURNSTILE
-                          }
-                          onFieldChange={onFieldChange}
-                          onNextStep={goToNextStep}
-                          onBackStep={goToPreviousStep}
-                          onSubmit={(event) => {
-                            void handleSubmit(event);
-                          }}
-                          onBackToOverview={() => openPanel("overview", true)}
-                          onTokenSuccess={(t) => {
-                            setToken(t);
-                            setTokenFail(false);
-                          }}
-                          onTokenError={() => {
-                            setToken("");
-                            setTokenFail(true);
-                          }}
-                        />
-                      </div>
                     </div>
                   )}
                 </div>

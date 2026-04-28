@@ -91,7 +91,7 @@ const MEDIA_ARTICLES = [
     source: "Manila Bulletin",
     title:
       "Sofi AI's Sophia Sy has an answer to online buyers' most asked question",
-    date: "Oct 7, 2025",
+    date: "Manila Bulletin",
     href: "https://mb.com.ph/2025/10/07/sofi-ais-sophia-sy-has-an-answer-to-online-buyers-most-asked-question",
   },
   {
@@ -220,11 +220,7 @@ function HeroMainContent({
         }}
         className="mt-8 sm:mt-10"
       >
-        <ListingsCTA
-          onClick={onJumpToListings}
-          label="I want a chance"
-          size="hero"
-        />
+        <ListingsCTA onClick={onJumpToListings} label="See roles" size="hero" />
       </motion.div>
     </div>
   );
