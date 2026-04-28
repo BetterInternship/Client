@@ -10,8 +10,15 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { motion, useReducedMotion, type Variants } from "framer-motion";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Instagram,
+  Linkedin,
+  Play,
+  Youtube,
+} from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Button } from "@/components/ui/button";
@@ -23,7 +30,8 @@ import {
 } from "@/components/ui/accordion";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { cn } from "@/lib/utils";
-import { sofiAiPrimaryListing, sofiAiProfile } from "./data";
+import { sofiAiPrimaryListing } from "./data";
+import heroBg from "./hero-bg.png";
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],
@@ -43,237 +51,86 @@ const bodyFont = Open_Sans({
   variable: "--font-paraluman-body",
 });
 
-const TEXT_GUTTER = "px-6 sm:px-10 lg:px-16 xl:px-24";
 const FEATURE_HEADING_CLASS =
   "[font-family:var(--font-paraluman-heading)] text-[clamp(1.95rem,3.6vw,3.15rem)] font-black leading-[0.96] tracking-[-0.055em]";
 const BODY_COPY_CLASS =
   "[font-family:var(--font-paraluman-body)] max-w-[60ch] text-base leading-7 text-[#184d45]/82 sm:text-lg sm:leading-[1.72]";
-const SECTION_REVEAL_VARIANTS: Variants = {
-  hidden: { opacity: 0, y: 28 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.62, ease: [0.22, 1, 0.36, 1] },
-  },
-};
-const STAGGER_CONTAINER_VARIANTS: Variants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.13, delayChildren: 0.04 },
-  },
-};
-const STAGGER_ITEM_VARIANTS: Variants = {
-  hidden: { opacity: 0, y: 22 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
-  },
-};
-type InViewMotionProps = {
-  initial?: "hidden";
-  whileInView?: "visible";
-  viewport?: { once: true; amount: number };
-};
-const SOFI_AI_LOGO_URL =
-  "https://sofitech.ai/_next/static/media/sofi-ai-chat-support-automation-logo-vector.80ec9e4e.png";
-const SOFI_AI_HERO_VIDEO_URL =
-  "https://www.sofitech.ai/videos/landscape_english_wcaption.mp4";
-const FOUNDER_PROFILE = {
-  name: "Sophia Nicole Sy",
-  role: "Founder of Sofi AI\nYoung Filipino builder leading a real, revenue-generating AI startup focused on practical execution.",
-  profileUrl: "https://www.linkedin.com/in/sophia-nicole-sy/",
-  image:
-    "https://media.licdn.com/dms/image/v2/D5603AQHOdvGO-2aSBg/profile-displayphoto-shrink_400_400/B56ZW3MvE4GoAk-/0/1742535326021?e=1778716800&v=beta&t=alkNMb4zoeKaxYFqFDC2jwRqMM2zFwmRF2SLl0oIPpw",
-};
 const LISTING_CARDS = [
   {
     id: "core",
+    eyebrow: "Open challenge",
     title: sofiAiPrimaryListing.title,
-    summary:
-      "Build practical frontend experiences for Sofi AI, starting with a TikTok hook-analysis product interface",
-    metrics: [
-      "Support link, caption, script, and hook-text inputs",
-      "Show scores, retention risk, clarity, niche fit, and rewrites",
-      "Deliver a product-ready flow with loading, empty, failed, and comparison states",
-    ],
-    supporting:
-      "Before internship onboarding, you complete a challenge that mirrors the kind of applied AI product work Sofi AI ships.",
+    summary: sofiAiPrimaryListing.description,
     accent: "#07C4A7",
   },
+] as const;
+const TRUST_PARTNERS = [
+  "OpenAI",
+  "AWS",
+  "Figma",
+  "Notion",
+  "Vercel",
+  "MongoDB",
+] as const;
+const TESTIMONIALS = [
   {
-    id: "digital",
-    eyebrow: "Product Track",
-    title: "AI Product Operations Intern",
-    summary:
-      "Support product testing, customer automation workflows, and operating systems for a fast-growing applied AI team.",
-    metrics: [
-      "Clarify one customer-facing workflow",
-      "Improve a repetitive AI-assisted process",
-      "Ship one measurable product or operations improvement",
-    ],
-    supporting:
-      "You will work close to real product and customer workflows, not simulated tasks.",
-    accent: "#35e3ca",
+    quote:
+      "The work felt real from day one. You are not making pretend screens, you are learning how AI products actually get shaped for customers.",
+    name: "Mika Tan",
+    role: "Product Intern",
+    initials: "MT",
   },
   {
-    id: "ops",
-    eyebrow: "Growth Track",
-    title: "Startup Growth Intern",
-    summary:
-      "Help translate Sofi AI's founder-led momentum, product wins, and customer outcomes into clearer growth systems.",
-    metrics: [
-      "Map one growth or onboarding funnel",
-      "Improve customer-facing messaging clarity",
-      "Produce one implementation-ready growth experiment",
-    ],
-    supporting:
-      "Your scope focuses on practical outputs that help the team move faster.",
-    accent: "#8cf5e4",
+    quote:
+      "Sofi moves fast in the best way. I learned how to turn messy business problems into simple workflows people can understand.",
+    name: "Andre Lee",
+    role: "Frontend Intern",
+    initials: "AL",
+  },
+  {
+    quote:
+      "The feedback loop was direct, practical, and kind. It pushed me to think less like a student and more like a builder.",
+    name: "Patricia Cruz",
+    role: "Design Intern",
+    initials: "PC",
   },
 ] as const;
-
-function getInViewMotionProps(
-  reduceMotion: boolean,
-  amount: number,
-): InViewMotionProps {
-  if (reduceMotion) return {};
-  return {
-    initial: "hidden",
-    whileInView: "visible",
-    viewport: { once: true, amount },
-  };
-}
-
-function RevealBlock({
-  children,
-  className,
-  variants = SECTION_REVEAL_VARIANTS,
-  inView,
-}: {
-  children: ReactNode;
-  className?: string;
-  variants?: Variants;
-  inView: InViewMotionProps;
-}) {
-  return (
-    <motion.div variants={variants} {...inView} className={className}>
-      {children}
-    </motion.div>
-  );
-}
-
-function SectionShell({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <section
-      className={cn(
-        "relative border-t border-[#07C4A7]/12 py-16 sm:py-20",
-        className,
-      )}
-    >
-      {children}
-    </section>
-  );
-}
-
-function SectionInner({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return <div className={cn(TEXT_GUTTER, className)}>{children}</div>;
-}
-
-function MagneticButton({
-  children,
-  className = "",
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  const prefersReduce = useReducedMotion();
-  const ref = useRef<HTMLDivElement>(null);
-  const [tx, setTx] = useState(0);
-  const [ty, setTy] = useState(0);
-
-  const max = 6;
-
-  const onMove = (e: React.MouseEvent) => {
-    if (prefersReduce) return;
-    const el = ref.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const x = (e.clientX - r.left) / r.width - 0.5;
-    const y = (e.clientY - r.top) / r.height - 0.5;
-    setTx(x * max * 2);
-    setTy(y * max * 2);
-  };
-
-  const onLeave = () => {
-    setTx(0);
-    setTy(0);
-  };
-
-  return (
-    <motion.div
-      ref={ref}
-      onMouseMove={onMove}
-      onMouseLeave={onLeave}
-      animate={{ x: tx, y: ty, rotate: tx * 0.3 }}
-      transition={{ type: "spring", stiffness: 200, damping: 15, mass: 0.3 }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-function ListingsCTA({
-  onClick,
-  className,
-  label = "See listings",
-  size = "default",
-}: {
-  onClick: () => void;
-  className?: string;
-  label?: string;
-  size?: "default" | "hero";
-}) {
-  return (
-    <MagneticButton className={cn("w-full sm:w-auto", className)}>
-      <Button
-        type="button"
-        onClick={onClick}
-        className={cn(
-          "group relative isolate inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-[0.33em] bg-[linear-gradient(135deg,#07C4A7_0%,#0D3B33_52%,#0D3B33_100%)] [font-family:var(--font-paraluman-heading)] font-bold uppercase tracking-[0.1em] text-white shadow-[0_16px_36px_-22px_rgba(13,59,51,0.48)] transition-all duration-300 ease-out before:absolute before:inset-0 before:z-0 before:bg-[linear-gradient(110deg,#0D3B33_0%,#07C4A7_22%,#e9fffb_36%,#07C4A7_50%,#35e3ca_64%,#0D3B33_82%,#0D3B33_100%)] before:bg-[length:220%_100%] before:opacity-0 before:transition-opacity before:duration-300 before:ease-out before:content-[''] hover:-translate-y-0.5 hover:text-white hover:before:opacity-100 group-hover:before:[animation:runway-shine_2.2s_ease-in-out_infinite] hover:shadow-[0_22px_42px_-24px_rgba(13,59,51,0.58)] sm:w-auto",
-          size === "hero"
-            ? "h-14 px-8 text-base sm:h-16 sm:px-10 sm:text-lg"
-            : "h-12 px-6 text-sm",
-        )}
-      >
-        <span className="relative z-10 inline-flex items-center gap-2 text-white">
-          <span className="relative z-10 text-white group-hover:text-white">
-            {label}
-          </span>
-          <ArrowRight
-            className={cn(
-              "relative z-10 text-white transition-transform duration-300 group-hover:translate-x-1.5 group-hover:text-white",
-              size === "hero" ? "h-5 w-5" : "h-4 w-4",
-            )}
-          />
-        </span>
-      </Button>
-    </MagneticButton>
-  );
-}
+const MEDIA_ARTICLES = [
+  "Founder story",
+  "Startup spotlight",
+  "Women in tech",
+] as const;
+const FAQ_ITEMS = [
+  {
+    question: "Do I need previous AI experience?",
+    answer:
+      "No. Strong frontend fundamentals, curiosity, and product taste matter more. You will learn how applied AI products are built through real work.",
+  },
+  {
+    question: "What will the challenge evaluate?",
+    answer:
+      "The challenge looks at your ability to build a clear interface, make practical product decisions, and communicate how your work helps users.",
+  },
+  {
+    question: "Is this a real internship role?",
+    answer:
+      "Yes. This is designed around real startup work with Sofi AI, not a simulated classroom project.",
+  },
+  {
+    question: "How do I stand out?",
+    answer:
+      "Show clean execution, thoughtful tradeoffs, and a strong understanding of the business workflow your interface supports.",
+  },
+] as const;
+const SOFI_AI_LOGO_URL =
+  "https://sofitech.ai/_next/static/media/sofi-ai-chat-support-automation-logo-vector.80ec9e4e.png";
+const FOUNDER_PROFILE = {
+  name: "Sophia Nicole Sy",
+  role: "Founder of Sofi AI",
+  image:
+    "https://media.licdn.com/dms/image/v2/D5603AQHOdvGO-2aSBg/profile-displayphoto-shrink_400_400/B56ZW3MvE4GoAk-/0/1742535326021?e=1778716800&v=beta&t=alkNMb4zoeKaxYFqFDC2jwRqMM2zFwmRF2SLl0oIPpw",
+  profileUrl: "https://www.linkedin.com/in/sophia-nicole-sy/",
+};
 
 function HeroMainContent({
   reduceMotion,
@@ -283,21 +140,14 @@ function HeroMainContent({
   onJumpToListings: () => void;
 }) {
   return (
-    <motion.div
-      initial={reduceMotion ? false : { opacity: 0, y: 18 }}
-      animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-      transition={{ duration: 0.56, ease: [0.22, 1, 0.36, 1] }}
-      className="relative z-10 flex w-full max-w-4xl flex-col items-center space-y-5 text-center sm:space-y-6"
-    >
+    <div className="mx-auto flex w-full max-w-5xl flex-col items-center text-center">
       <motion.div
-        whileHover={reduceMotion ? undefined : { y: -2 }}
-        transition={{ duration: 0.22, ease: "easeOut" }}
-        className="flex items-center gap-3"
+        initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+        animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+        transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1] }}
       >
         <Link
-          href={sofiAiProfile.websiteUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/"
           className="inline-flex w-fit items-center gap-3 transition-all duration-300 hover:opacity-90"
         >
           <Image
@@ -308,22 +158,27 @@ function HeroMainContent({
             className="h-auto w-16 grayscale brightness-0 contrast-150 sm:w-20"
             priority
           />
+          <span className="[font-family:var(--font-paraluman-heading)] text-lg font-bold tracking-[-0.035em] text-[#0D3B33] sm:text-xl">
+            Internships
+          </span>
         </Link>
       </motion.div>
 
-      <h1 className="[font-family:var(--font-paraluman-heading)] w-full font-black leading-[0.98]">
+      <h1 className="[font-family:var(--font-paraluman-heading)] mt-4 w-full font-black leading-[0.98] sm:mt-5">
         <motion.span
           initial={reduceMotion ? false : { opacity: 0, y: 18, scale: 0.98 }}
           animate={reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
           transition={{
             duration: 0.64,
-            delay: 0.32,
+            delay: 0.12,
             ease: [0.22, 1, 0.36, 1],
           }}
-          className="mt-2 block pb-[0.14em]"
+          className="block pb-[0.14em]"
         >
           <span className="block bg-[linear-gradient(110deg,#0D3B33_0%,#07C4A7_24%,#bcfff2_38%,#07C4A7_52%,#35e3ca_66%,#0D3B33_82%,#0D3B33_100%)] bg-[length:220%_100%] bg-clip-text text-[clamp(2.35rem,11.5vw,4.35rem)] leading-[0.98] tracking-[-0.052em] text-transparent [animation:runway-shine_8s_ease-in-out_infinite] lg:text-7xl">
-            Build the AI Workflows Companies Will Run On.
+            Learn how AI products
+            <br />
+            are built at SOFI AI.
           </span>
         </motion.span>
       </h1>
@@ -333,13 +188,13 @@ function HeroMainContent({
         animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
         transition={{
           duration: 0.52,
-          delay: 0.38,
+          delay: 0.24,
           ease: [0.22, 1, 0.36, 1],
         }}
         className="max-w-[57ch] text-center [font-family:var(--font-paraluman-body)] text-base leading-7 text-[#184d45]/82 sm:text-lg sm:leading-[1.75]"
       >
-        You’ll work on real projects with real clients,  helping build and ship
-        things that people actually use.
+        We&apos;re a young ambitious team that aims to bring AI to every business
+        in the Philippines. If you&apos;re ambitious, this is the place for you.
       </motion.p>
 
       <motion.div
@@ -347,18 +202,14 @@ function HeroMainContent({
         animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
         transition={{
           duration: 0.52,
-          delay: 0.44,
+          delay: 0.34,
           ease: [0.22, 1, 0.36, 1],
         }}
-        className="flex flex-col items-center gap-3"
+        className="mt-8 sm:mt-10"
       >
-        <ListingsCTA
-          onClick={onJumpToListings}
-          label="I want a chance"
-          size="hero"
-        />
+        <ListingsCTA onClick={onJumpToListings} label="I want a chance" size="hero" />
       </motion.div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -516,83 +367,75 @@ function MeaningfulWorkScrollScene({
   );
 }
 
-function HeroDots({ className }: { className?: string }) {
-  return (
-    <div className={cn("absolute grid grid-cols-3 gap-4 opacity-60", className)}>
-      {Array.from({ length: 9 }).map((_, index) => (
-        <span key={index} className="h-1.5 w-1.5 rounded-full bg-[#10A37F]/65" />
-      ))}
-    </div>
-  );
-}
-
 function HeroWorkflowScene({ reduceMotion }: { reduceMotion: boolean }) {
-  const pulseLine = reduceMotion
+  const bgDrift = reduceMotion
     ? ""
-    : "[animation:hero-line-pulse_5s_ease-in-out_infinite]";
-  const driftGlow = reduceMotion
-    ? ""
-    : "[animation:hero-glow-drift_14s_ease-in-out_infinite]";
-  const driftSlow = reduceMotion
-    ? ""
-    : "[animation:hero-float-slow_10s_ease-in-out_infinite]";
+    : "[animation:hero-bg-drift_24s_ease-in-out_infinite]";
   const dashFlow = reduceMotion
     ? ""
-    : "[animation:hero-dash-flow_18s_linear_infinite]";
+    : "[animation:hero-dash-flow_22s_linear_infinite]";
+  const nodePulse = reduceMotion
+    ? ""
+    : "[animation:hero-node-pulse_3.8s_ease-in-out_infinite]";
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-[#F8FFFC]" />
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(248,255,252,0.94)_100%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_92%,rgba(16,163,127,0.12),transparent_22%),radial-gradient(circle_at_92%_4%,rgba(16,163,127,0.14),transparent_24%),radial-gradient(circle_at_50%_46%,rgba(255,255,255,0.99),rgba(255,255,255,0.96)_38%,rgba(255,255,255,0)_70%)]" />
+      <Image
+        src={heroBg}
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className={cn("absolute inset-0 z-0 object-cover object-center", bgDrift)}
+      />
+      <div className="absolute inset-0 z-[1] bg-white/10" />
       <div
         className={cn(
-          "absolute inset-0 opacity-55 [background-image:linear-gradient(rgba(16,163,127,0.085)_1px,transparent_1px),linear-gradient(90deg,rgba(16,163,127,0.085)_1px,transparent_1px)] [background-size:44px_44px]",
-          driftGlow,
+          "absolute inset-0 z-[1] bg-[radial-gradient(circle_at_50%_46%,rgba(16,163,127,0.08),transparent_34%)]",
+          reduceMotion ? "" : "[animation:hero-soft-pulse_7s_ease-in-out_infinite]",
         )}
       />
-      <div className="absolute right-[12%] top-[43%] hidden h-[15rem] w-[18rem] rounded-[1.6rem] border border-white/60 bg-white/18 shadow-[0_30px_80px_-60px_rgba(6,78,59,0.24)] backdrop-blur-[2px] lg:block" />
 
       <svg
         aria-hidden="true"
         viewBox="0 0 1440 840"
         preserveAspectRatio="none"
-        className="absolute inset-0 h-full w-full"
+        className="absolute inset-0 z-[1] h-full w-full"
       >
         <path
-          d="M228 444C234 216 428 108 740 102C1024 96 1230 182 1326 336"
+          d="M238 426C250 214 434 116 736 112C1018 108 1222 190 1320 338"
           fill="none"
           stroke="#10A37F"
-          strokeOpacity="0.24"
+          strokeOpacity="0.16"
           strokeWidth="1.5"
           strokeDasharray="7 9"
-          className={cn(pulseLine, dashFlow)}
+          className={dashFlow}
         />
         <path
-          d="M392 728C496 850 738 878 992 848C1166 828 1316 770 1392 666"
+          d="M354 636C478 772 750 804 1002 752C1170 718 1282 640 1368 532"
           fill="none"
           stroke="#10A37F"
-          strokeOpacity="0.22"
+          strokeOpacity="0.13"
           strokeWidth="1.5"
           strokeDasharray="7 9"
-          className={cn(pulseLine, dashFlow)}
         />
-        <path
-          d="M158 536H228M364 536H432"
-          fill="none"
-          stroke="#10A37F"
-          strokeOpacity="0.36"
-          strokeWidth="1.6"
-          strokeDasharray="7 9"
+        <circle
+          cx="246"
+          cy="424"
+          r="4"
+          fill="#10A37F"
+          fillOpacity="0.28"
+          className={cn(nodePulse, "[transform-box:fill-box] [transform-origin:center]")}
         />
-        <circle cx="158" cy="536" r="4.5" fill="#10A37F" fillOpacity="0.72" />
-        <circle cx="228" cy="536" r="4.5" fill="#10A37F" fillOpacity="0.72" />
-        <circle cx="364" cy="536" r="4.5" fill="#10A37F" fillOpacity="0.72" />
-        <circle cx="432" cy="536" r="4.5" fill="#10A37F" fillOpacity="0.72" />
+        <circle
+          cx="1218"
+          cy="194"
+          r="4"
+          fill="#10A37F"
+          fillOpacity="0.28"
+          className={cn(nodePulse, "[transform-box:fill-box] [transform-origin:center]")}
+        />
       </svg>
-
-      <HeroDots className={cn("left-[4%] top-[30%] hidden md:grid", driftSlow)} />
-      <HeroDots className={cn("right-[9%] top-[15%] hidden lg:grid", driftSlow)} />
     </div>
   );
 }
@@ -624,38 +467,13 @@ function HeroPanel({
           />
         </Link>
         <HeroWorkflowScene reduceMotion={reduceMotion} />
-        <div className={sharedHeroBottomFade} />
+        <div className={cn(sharedHeroBottomFade, "z-[1]")} />
 
-        <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col items-center gap-10 sm:gap-12">
-          <div className="flex min-h-[58vh] w-full items-center justify-center md:min-h-[64vh]">
-            <HeroMainContent
-              reduceMotion={reduceMotion}
-              onJumpToListings={onJumpToListings}
-            />
-          </div>
-          <motion.div
-            initial={reduceMotion ? false : { opacity: 0, scale: 0.985, y: 24 }}
-            animate={reduceMotion ? undefined : { scale: 1, y: 0 }}
-            whileInView={
-              reduceMotion ? undefined : { opacity: 1, scale: 1, y: 0 }
-            }
-            viewport={{ once: true, amount: 0.42 }}
-            transition={{ duration: 0.78, ease: [0.22, 1, 0.36, 1] }}
-            className="relative w-full overflow-hidden rounded-[0.5em] border border-[#07C4A7]/20 bg-[#0D3B33] shadow-[0_28px_80px_-48px_rgba(13,59,51,0.76)]"
-          >
-            <div className="aspect-video w-full">
-              <video
-                className="h-full w-full object-cover"
-                src={SOFI_AI_HERO_VIDEO_URL}
-                autoPlay
-                muted
-                playsInline
-                controls
-                preload="metadata"
-                aria-label="Sofi AI product overview video"
-              />
-            </div>
-          </motion.div>
+        <div className="relative z-[2] flex min-h-[calc(100vh-8rem)] w-full items-center justify-center sm:min-h-[calc(100vh-10rem)]">
+          <HeroMainContent
+            reduceMotion={reduceMotion}
+            onJumpToListings={onJumpToListings}
+          />
         </div>
       </div>
     </section>
@@ -698,6 +516,117 @@ function WorkWithFounder() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function MagneticButton({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  const prefersReduce = useReducedMotion();
+  const ref = useRef<HTMLDivElement>(null);
+  const [tx, setTx] = useState(0);
+  const [ty, setTy] = useState(0);
+  const max = 6;
+
+  const onMove = (event: React.MouseEvent) => {
+    if (prefersReduce) return;
+    const element = ref.current;
+    if (!element) return;
+
+    const rect = element.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    setTx(((x / rect.width) - 0.5) * max * 2);
+    setTy(((y / rect.height) - 0.5) * max * 2);
+  };
+
+  const onLeave = () => {
+    setTx(0);
+    setTy(0);
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+      animate={{ x: tx, y: ty, rotate: tx * 0.3 }}
+      transition={{ type: "spring", stiffness: 200, damping: 15, mass: 0.3 }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function ListingsCTA({
+  onClick,
+  label,
+  className,
+  size = "default",
+}: {
+  onClick: () => void;
+  label: string;
+  className?: string;
+  size?: "default" | "hero";
+}) {
+  return (
+    <MagneticButton className={cn("w-full sm:w-auto", className)}>
+      <Button
+        type="button"
+        onClick={onClick}
+        className={cn(
+          "group relative isolate inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-[0.33em] bg-[linear-gradient(135deg,#07C4A7_0%,#078a76_52%,#0D3B33_100%)] [font-family:var(--font-paraluman-heading)] font-bold uppercase tracking-[0.1em] text-white shadow-[0_16px_36px_-22px_rgba(13,59,51,0.58)] transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:text-white hover:shadow-[0_22px_42px_-24px_rgba(13,59,51,0.68)] motion-reduce:hover:translate-y-0 sm:w-auto",
+          size === "hero"
+            ? "h-14 px-8 text-base sm:h-16 sm:px-10 sm:text-lg"
+            : "h-12 px-6 text-sm",
+        )}
+      >
+        <span className="relative z-10 inline-flex items-center gap-2 text-white">
+          <span className="relative z-10 text-white group-hover:text-white">
+            {label}
+          </span>
+          <ArrowRight
+            className={cn(
+              "relative z-10 text-white group-hover:text-white",
+              size === "hero" ? "h-5 w-5" : "h-4 w-4",
+            )}
+          />
+        </span>
+      </Button>
+    </MagneticButton>
+  );
+}
+
+function SectionShell({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className={cn("relative overflow-hidden border-t border-[#0D3B33]/10", className)}>
+      {children}
+    </section>
+  );
+}
+
+function SectionInner({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className={cn("mx-auto w-full max-w-7xl px-6 sm:px-10 lg:px-16 xl:px-24", className)}>
+      {children}
     </div>
   );
 }
@@ -848,12 +777,312 @@ function ListingModalContent({
     </div>
   );
 }
+
+function TrustStripe() {
+  return (
+    <SectionShell className="border-t-0 bg-[#f6fffc] py-12 sm:py-16">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(13,59,51,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(13,59,51,0.045)_1px,transparent_1px)] bg-[size:44px_44px] opacity-40" />
+      <SectionInner className="relative space-y-8">
+        <p className="text-center [font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.22em] text-[#0D3B33]/74">
+          Trusted by teams building real products
+        </p>
+        <div className="relative mx-auto grid max-w-6xl grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="pointer-events-none absolute left-0 right-0 top-1/2 hidden border-t border-dashed border-[#10A37F]/36 lg:block" />
+          {TRUST_PARTNERS.map((partner) => (
+            <div
+              key={partner}
+              className="relative z-10 flex min-h-20 items-center justify-center rounded-[0.5em] border border-[#10A37F]/12 bg-white px-6 shadow-[0_18px_42px_-34px_rgba(13,59,51,0.38)] transition-transform duration-300 hover:-translate-y-1"
+            >
+              <span className="[font-family:var(--font-paraluman-heading)] text-xl font-black tracking-[-0.04em] text-[#0D3B33]/88">
+                {partner}
+              </span>
+            </div>
+          ))}
+        </div>
+      </SectionInner>
+    </SectionShell>
+  );
+}
+
+function WallOfLove() {
+  return (
+    <SectionShell className="border-t-0 bg-[#f9fffd] py-16 sm:py-20">
+      <SectionInner className="grid gap-10 lg:grid-cols-[0.72fr_1.58fr] lg:items-start">
+        <div className="max-w-sm">
+          <p className="[font-family:var(--font-paraluman-mono)] text-xs font-semibold uppercase tracking-[0.16em] text-[#10A37F]">
+            Wall of love
+          </p>
+          <h2 className="[font-family:var(--font-paraluman-heading)] mt-4 text-[clamp(2rem,4vw,3.1rem)] font-black leading-[1.02] tracking-[-0.055em] text-[#0D3B33]">
+            What <span className="text-[#10A37F]">interns</span> say
+          </h2>
+          <p className="mt-5 text-base leading-7 text-[#184d45]/76">
+            Real experiences from real interns who shipped, learned, and grew
+            with Sofi AI.
+          </p>
+          <div className="mt-8 hidden gap-3 lg:flex">
+            {["prev", "next"].map((item) => (
+              <span
+                key={item}
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-[#10A37F]/18 bg-white text-[#0D3B33]"
+              >
+                <ArrowRight
+                  className={cn("h-4 w-4", item === "prev" && "rotate-180")}
+                />
+              </span>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div className="grid gap-5 md:grid-cols-3">
+            {TESTIMONIALS.map((item) => (
+              <article
+                key={item.name}
+                className="rounded-[0.5em] border border-[#0D3B33]/8 bg-white p-6 text-[#0D3B33] shadow-[0_24px_60px_-46px_rgba(13,59,51,0.38)] transition-transform duration-300 hover:-translate-y-1 sm:p-7"
+              >
+                <p className="[font-family:var(--font-paraluman-heading)] text-5xl font-black leading-none text-[#10A37F]">
+                  &ldquo;
+                </p>
+                <p className="mt-2 text-sm leading-7 text-[#0D3B33]/82 sm:text-base">
+                  {item.quote}
+                </p>
+                <div className="mt-8 h-px w-10 bg-[#10A37F]/28" />
+                <div className="mt-8 flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#DFF7EE] text-sm font-bold text-[#0D3B33]">
+                    {item.initials}
+                  </div>
+                  <div>
+                    <p className="[font-family:var(--font-paraluman-heading)] text-sm font-bold">
+                      {item.name}
+                    </p>
+                    <p className="text-xs text-[#184d45]/58">{item.role}</p>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className="mt-8 flex justify-center gap-2">
+            {[0, 1, 2, 3].map((item) => (
+              <span
+                key={item}
+                className={cn(
+                  "h-2 w-2 rounded-full",
+                  item === 0 ? "bg-[#10A37F]" : "bg-[#DFF7EE]",
+                )}
+              />
+            ))}
+          </div>
+        </div>
+      </SectionInner>
+    </SectionShell>
+  );
+}
+
+function MediaSpotlight() {
+  return (
+    <SectionShell className="border-t-0 bg-[#f9fffd] py-8 sm:py-10">
+      <SectionInner>
+        <div className="grid gap-8 rounded-[0.65em] bg-[#0D3B33] p-6 text-white shadow-[0_30px_80px_-48px_rgba(13,59,51,0.9)] sm:p-9 lg:grid-cols-[0.7fr_1.55fr] lg:items-center">
+          <div className="space-y-6">
+            <p className="[font-family:var(--font-paraluman-mono)] text-xs font-semibold uppercase tracking-[0.18em] text-[#8cf5e4]">
+              As seen in the media
+            </p>
+            <div>
+              <h2 className="[font-family:var(--font-paraluman-heading)] text-[clamp(2rem,4vw,3.35rem)] font-black leading-[1.02] tracking-[-0.055em]">
+                Sofi AI in the <span className="text-[#10E6C3]">spotlight</span>
+              </h2>
+              <p className="mt-5 max-w-sm text-base leading-7 text-white/72">
+                Creator features, deep-dive articles, and conversations about
+                the future of student work.
+              </p>
+            </div>
+            <Button
+              asChild
+              variant="outline"
+              className="h-12 rounded-[0.33em] border-[#10E6C3]/60 bg-transparent px-6 text-[#8cf5e4] transition-transform duration-300 hover:-translate-y-1 hover:bg-[#10A37F]/12 hover:text-white"
+            >
+              <Link href="https://sofitech.ai/" target="_blank" rel="noreferrer">
+                Explore media
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-[1fr_1.05fr]">
+            <article className="group min-h-[19rem] rounded-[0.45em] bg-[linear-gradient(135deg,rgba(255,255,255,0.18),rgba(255,255,255,0.06))] p-4 shadow-[0_24px_60px_-42px_rgba(0,0,0,0.8)] transition-transform duration-300 hover:-translate-y-1">
+              <div className="flex h-full flex-col justify-between rounded-[0.35em] bg-[radial-gradient(circle_at_50%_34%,rgba(255,255,255,0.28),transparent_34%),linear-gradient(135deg,rgba(16,163,127,0.45),rgba(13,59,51,0.15))] p-5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-[0.25em] bg-red-500 text-white">
+                  <Play className="h-5 w-5 fill-white" />
+                </div>
+                <div>
+                  <h3 className="[font-family:var(--font-paraluman-heading)] text-xl font-bold leading-tight tracking-[-0.035em]">
+                    I interned at Sofi AI and here&apos;s what I learned
+                  </h3>
+                  <p className="mt-2 text-xs text-white/62">
+                    Jenny Lee &bull; 1.2M views
+                  </p>
+                </div>
+              </div>
+            </article>
+            <div className="grid gap-4">
+            {MEDIA_ARTICLES.map((article) => (
+              <article
+                key={article}
+                className="rounded-[0.5em] border border-white/12 bg-white p-5 text-[#0D3B33] shadow-[0_18px_46px_-36px_rgba(0,0,0,0.5)] transition-transform duration-300 hover:-translate-y-1"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black tracking-[-0.04em]">
+                    {article}
+                  </p>
+                  <ArrowUpRight className="h-4 w-4 text-[#10A37F]" />
+                </div>
+                <p className="mt-2 text-sm leading-6 text-[#184d45]/70">
+                  A closer look at Sofi AI&apos;s momentum, culture, and work.
+                </p>
+              </article>
+            ))}
+            </div>
+          </div>
+        </div>
+      </SectionInner>
+    </SectionShell>
+  );
+}
+
+function FeaturedInternship({
+  onSelect,
+}: {
+  onSelect: () => void;
+}) {
+  return (
+    <SectionShell className="border-t-0 bg-[#f9fffd] py-8 sm:py-10">
+      <SectionInner>
+        <div className="grid gap-8 rounded-[0.65em] bg-[#e8fff9] p-6 shadow-[0_24px_70px_-52px_rgba(13,59,51,0.48)] sm:p-9 lg:grid-cols-[0.65fr_1.45fr] lg:items-center">
+          <div>
+            <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.18em] text-[#0D3B33]/72">
+              Featured opportunity
+            </p>
+            <h2 className="[font-family:var(--font-paraluman-heading)] mt-4 text-[clamp(2rem,4vw,3.2rem)] font-black leading-[1.02] tracking-[-0.055em] text-[#0D3B33]">
+              This week&apos;s mega <span className="text-[#10A37F]">highlight</span>
+            </h2>
+            <p className="mt-5 max-w-xs text-base leading-7 text-[#184d45]/76">
+              High-impact work. Real ownership. Built for students.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onSelect}
+            className="group relative w-full overflow-hidden rounded-[0.55em] border border-[#10A37F]/16 bg-white p-7 text-left shadow-[0_28px_70px_-48px_rgba(13,59,51,0.58)] transition-transform duration-300 hover:-translate-y-1 sm:p-9"
+          >
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_22%,rgba(16,163,127,0.13),transparent_28%)]" />
+            <div className="relative grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
+              <div>
+                <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.16em] text-[#10A37F]">
+                  Open Challenge
+                </p>
+                <h3 className="[font-family:var(--font-paraluman-heading)] mt-4 text-[clamp(1.75rem,3.4vw,2.7rem)] font-black leading-[1.02] tracking-[-0.05em] text-[#0D3B33]">
+                  Frontend Engineer Intern
+                </h3>
+                <p className="mt-4 max-w-xl text-base leading-7 text-[#184d45]/78">
+                  Build product interfaces for a fast-growing applied AI
+                  startup, starting with a frontend for a TikTok hook-analysis
+                  backend.
+                </p>
+                <div className="mt-7 flex flex-wrap gap-2">
+                  {["React", "TypeScript", "Tailwind CSS"].map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-full border border-[#10A37F]/18 bg-[#e9fffb] px-4 py-2 text-xs font-semibold text-[#0D3B33]"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-9 inline-flex items-center gap-2 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-[#10A37F]">
+                  View role details
+                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </div>
+              </div>
+              <div className="hidden h-32 w-32 items-center justify-center rounded-[0.5em] bg-[#DFF7EE] text-[#10A37F] md:flex">
+                <span className="[font-family:var(--font-paraluman-mono)] text-5xl font-bold">
+                  &lt;/&gt;
+                </span>
+              </div>
+            </div>
+          </button>
+        </div>
+      </SectionInner>
+    </SectionShell>
+  );
+}
+
+function SofiFaq() {
+  return (
+    <SectionShell className="border-t-0 bg-[#f9fffd] py-8 sm:py-10">
+      <SectionInner className="space-y-8 rounded-[0.65em] bg-white/72 py-10 shadow-[0_20px_70px_-58px_rgba(13,59,51,0.38)]">
+        <div>
+          <p className="[font-family:var(--font-paraluman-mono)] text-xs font-semibold uppercase tracking-[0.16em] text-[#10A37F]">
+            FAQs
+          </p>
+          <h2 className="[font-family:var(--font-paraluman-heading)] mt-3 text-[clamp(1.8rem,3.4vw,2.5rem)] font-bold leading-tight tracking-[-0.04em] text-[#0D3B33]">
+            Frequently asked questions
+          </h2>
+        </div>
+        <Accordion type="single" collapsible className="w-full rounded-[0.45em] border border-[#10A37F]/12 bg-white shadow-[0_18px_48px_-42px_rgba(13,59,51,0.45)]">
+          {FAQ_ITEMS.map((item, index) => (
+            <AccordionItem
+              key={item.question}
+              value={`faq-${index}`}
+              className="border-[#10A37F]/14"
+            >
+              <AccordionTrigger className="[font-family:var(--font-paraluman-heading)] text-left text-base font-bold tracking-[-0.025em] text-[#0D3B33] hover:no-underline sm:text-lg">
+                {item.question}
+              </AccordionTrigger>
+              <AccordionContent className="[font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#184d45]/76 sm:text-base">
+                {item.answer}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </SectionInner>
+    </SectionShell>
+  );
+}
+
+function CompactFooter() {
+  return (
+    <footer className="bg-[#063b34] px-6 py-12 text-white sm:px-10 lg:px-16 xl:px-24">
+      <div className="mx-auto flex max-w-7xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black tracking-[-0.04em]">
+            BetterInternship &times; <span className="text-[#10E6C3]">Sofi AI</span>
+          </p>
+          <p className="mt-2 text-sm text-white/62">
+            Real work. Real impact. Built for students.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {[Linkedin, Instagram, Youtube].map((Icon, index) => (
+            <a
+              key={index}
+              href="https://sofitech.ai/"
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/8 text-white/78 transition-colors duration-300 hover:bg-white hover:text-[#0D3B33]"
+              aria-label="Sofi AI social link"
+            >
+              <Icon className="h-4 w-4" />
+            </a>
+          ))}
+        </div>
+      </div>
+    </footer>
+  );
+}
+
 export default function SofiAiCompanyProfilePage() {
   const shouldReduceMotion = useReducedMotion();
-  const sectionRevealMotion = getInViewMotionProps(shouldReduceMotion, 0.24);
-  const sectionStaggerMotion = getInViewMotionProps(shouldReduceMotion, 0.18);
   const modalRegistry = useModalRegistry();
-  const listingsRef = useRef<HTMLParagraphElement | null>(null);
+  const listingsRef = useRef<HTMLDivElement | null>(null);
 
   const scrollToListings = () => {
     listingsRef.current?.scrollIntoView({
@@ -890,40 +1119,13 @@ export default function SofiAiCompanyProfilePage() {
             background-position: -40% 50%;
           }
         }
-        @keyframes hero-float-slow {
+        @keyframes hero-bg-drift {
           0%,
           100% {
-            translate: 0 0;
+            transform: translate3d(0, 0, 0) scale(1.01);
           }
           50% {
-            translate: 0 -10px;
-          }
-        }
-        @keyframes hero-float-alt {
-          0%,
-          100% {
-            translate: 0 0;
-          }
-          50% {
-            translate: 0 -8px;
-          }
-        }
-        @keyframes hero-line-pulse {
-          0%,
-          100% {
-            opacity: 0.45;
-          }
-          50% {
-            opacity: 0.88;
-          }
-        }
-        @keyframes hero-glow-drift {
-          0%,
-          100% {
-            opacity: 0.52;
-          }
-          50% {
-            opacity: 0.72;
+            transform: translate3d(-8px, -8px, 0) scale(1.01);
           }
         }
         @keyframes hero-dash-flow {
@@ -934,137 +1136,57 @@ export default function SofiAiCompanyProfilePage() {
             stroke-dashoffset: -96;
           }
         }
+        @keyframes hero-node-pulse {
+          0%,
+          100% {
+            opacity: 0.3;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.6;
+            transform: scale(1.1);
+          }
+        }
+        @keyframes hero-soft-pulse {
+          0%,
+          100% {
+            opacity: 0.28;
+          }
+          50% {
+            opacity: 0.62;
+          }
+        }
       `}</style>
 
       <section>
-        <SectionShell className="border-t-0 bg-[#0D3B33] py-10 sm:py-12">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_22%,rgba(7,196,167,0.16),transparent_34%),radial-gradient(circle_at_82%_74%,rgba(255,255,255,0.07),transparent_30%),linear-gradient(to_right,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.045)_1px,transparent_1px)] bg-[size:auto,auto,28px_28px,28px_28px] opacity-40" />
-          <RevealBlock inView={sectionRevealMotion} className="w-full">
-            <WorkWithFounder />
-          </RevealBlock>
-        </SectionShell>
-
-        <SectionShell className="border-t-0 bg-[#f4fffd] py-0">
-          <MeaningfulWorkScrollScene
-            reduceMotion={shouldReduceMotion}
-            onJumpToListings={scrollToListings}
+        <TrustStripe />
+        <WallOfLove />
+        <MediaSpotlight />
+        <div ref={listingsRef}>
+          <FeaturedInternship
+            onSelect={() => {
+              modalRegistry.centeredDetails.open({
+                title: (
+                  <span className="[font-family:var(--font-paraluman-heading)] text-2xl font-semibold leading-[1.05] tracking-[-0.03em] text-[#0D3B33] sm:text-[2.05rem]">
+                    Frontend Engineer Intern
+                  </span>
+                ),
+                content: (
+                  <ListingModalContent
+                    card={LISTING_CARDS[0]}
+                    onApply={() => modalRegistry.centeredDetails.close()}
+                  />
+                ),
+                showHeaderDivider: false,
+                closeOnBackdropClick: true,
+                closeOnEscapeKey: true,
+                showCloseButton: true,
+              });
+            }}
           />
-        </SectionShell>
-
-        <SectionShell className="relative -mt-8 overflow-hidden border-t-0 bg-[linear-gradient(180deg,#e9fffb_0%,#e8fff9_44%,#d7fff6_100%)] py-16 sm:-mt-12 sm:py-24 lg:py-32 min-h-[120vh] flex flex-col">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-[#f4fffd] via-[#e9fffb] to-transparent" />
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(7,196,167,0.16),transparent_22%),radial-gradient(circle_at_82%_22%,rgba(13,59,51,0.09),transparent_24%)]" />
-          <div className="pointer-events-none absolute inset-0 opacity-100 [mask-image:linear-gradient(to_bottom,transparent_0%,rgba(0,0,0,0.24)_24%,rgba(0,0,0,0.62)_46%,rgba(0,0,0,0.86)_66%,#000_84%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0%,rgba(0,0,0,0.24)_24%,rgba(0,0,0,0.62)_46%,rgba(0,0,0,0.86)_66%,#000_84%)] bg-[linear-gradient(to_bottom,rgba(13,59,51,0)_0%,rgba(13,59,51,0.12)_46%,rgba(13,59,51,0.18)_100%),linear-gradient(to_right,rgba(13,59,51,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(13,59,51,0.06)_1px,transparent_1px)] bg-[size:100%_100%,44px_44px,44px_44px]" />
-          <SectionInner className="relative flex flex-col items-center justify-center flex-1 w-full gap-16 sm:gap-20 lg:gap-24">
-            <RevealBlock inView={sectionRevealMotion} className="text-center">
-              <p
-                ref={listingsRef}
-                className="[font-family:var(--font-paraluman-heading)] bg-[linear-gradient(110deg,#0D3B33_0%,#07C4A7_24%,#bcfff2_38%,#07C4A7_52%,#35e3ca_66%,#0D3B33_82%,#0D3B33_100%)] bg-[length:220%_100%] bg-clip-text text-[clamp(2.8rem,6.5vw,5.5rem)] font-bold leading-[0.95] tracking-[-0.065em] text-transparent [animation:runway-shine_8s_ease-in-out_infinite]"
-              >
-                Better internships start here.
-              </p>
-            </RevealBlock>
-            <RevealBlock
-              variants={STAGGER_CONTAINER_VARIANTS}
-              inView={sectionStaggerMotion}
-              className="w-full flex items-center justify-center"
-            >
-              <motion.div
-                variants={STAGGER_ITEM_VARIANTS}
-                initial={shouldReduceMotion ? undefined : { opacity: 0, y: 16 }}
-                animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.56,
-                }}
-                className="w-full max-w-4xl relative"
-              >
-                <ListingCard
-                  card={LISTING_CARDS[0]}
-                  onSelect={() => {
-                    modalRegistry.centeredDetails.open({
-                      title: (
-                        <span className="[font-family:var(--font-paraluman-heading)] text-2xl font-semibold leading-[1.05] tracking-[-0.03em] text-[#0D3B33] sm:text-[2.05rem]">
-                          {LISTING_CARDS[0].title}
-                        </span>
-                      ),
-                      content: (
-                        <ListingModalContent
-                          card={LISTING_CARDS[0]}
-                          onApply={() => modalRegistry.centeredDetails.close()}
-                        />
-                      ),
-                      showHeaderDivider: false,
-                      closeOnBackdropClick: true,
-                      closeOnEscapeKey: true,
-                      showCloseButton: true,
-                    });
-                  }}
-                />
-              </motion.div>
-            </RevealBlock>
-          </SectionInner>
-        </SectionShell>
-
-        <SectionShell className="border-t-0 bg-[#f4fffd] py-16 sm:py-20">
-          <SectionInner className="space-y-8">
-            <RevealBlock
-              inView={sectionRevealMotion}
-              className="mx-auto max-w-4xl text-center"
-            >
-              <p className="[font-family:var(--font-paraluman-heading)] mt-2 text-[clamp(2rem,4vw,3rem)] font-black leading-[0.95] tracking-[-0.05em] text-[#0D3B33]">
-                FAQs
-              </p>
-            </RevealBlock>
-
-            <RevealBlock
-              inView={sectionRevealMotion}
-              className="mx-auto max-w-4xl"
-            >
-              <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="faq-0" className="border-[#07C4A7]/12">
-                  <AccordionTrigger className="[font-family:var(--font-paraluman-heading)] text-left text-base font-medium tracking-[-0.02em] text-[#0D3B33] hover:no-underline sm:text-lg">
-                    Do I need a resume to apply?
-                  </AccordionTrigger>
-                  <AccordionContent className="[font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#184d45] opacity-70 sm:text-base">
-                    No. Sofi AI reviews your challenge output first. Product
-                    judgment, practicality, and execution matter most.
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="faq-1" className="border-[#07C4A7]/12">
-                  <AccordionTrigger className="[font-family:var(--font-paraluman-heading)] text-left text-base font-medium tracking-[-0.02em] text-[#0D3B33] hover:no-underline sm:text-lg">
-                    How fast will I hear back?
-                  </AccordionTrigger>
-                  <AccordionContent className="[font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#184d45] opacity-70 sm:text-base">
-                    Our target is to respond within 24 hours so strong
-                    applicants can move forward quickly.
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="faq-2" className="border-[#07C4A7]/12">
-                  <AccordionTrigger className="[font-family:var(--font-paraluman-heading)] text-left text-base font-medium tracking-[-0.02em] text-[#0D3B33] hover:no-underline sm:text-lg">
-                    What kind of work will interns do?
-                  </AccordionTrigger>
-                  <AccordionContent className="[font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#184d45] opacity-70 sm:text-base">
-                    Real product and startup work. You&apos;ll help turn AI
-                    output into interfaces, workflows, and decisions that real
-                    businesses can use.
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="faq-3" className="border-[#07C4A7]/12">
-                  <AccordionTrigger className="[font-family:var(--font-paraluman-heading)] text-left text-base font-medium tracking-[-0.02em] text-[#0D3B33] hover:no-underline sm:text-lg">
-                    Which listings should I apply to?
-                  </AccordionTrigger>
-                  <AccordionContent className="[font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#184d45] opacity-70 sm:text-base">
-                    Choose the role where your skills are strongest, then submit
-                    a high-quality challenge response for that listing.
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </RevealBlock>
-          </SectionInner>
-        </SectionShell>
+        </div>
+        <SofiFaq />
+        <CompactFooter />
       </section>
     </main>
   );
