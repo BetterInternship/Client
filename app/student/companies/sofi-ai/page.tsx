@@ -32,6 +32,8 @@ import useModalRegistry from "@/components/modals/modal-registry";
 import { cn } from "@/lib/utils";
 import { sofiAiPrimaryListing } from "./data";
 import heroBg from "./hero-bg.png";
+import heroBgMobile from "./hero-bg-mobile.png";
+import doodlePack from "./doodle-pack.png";
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],
@@ -65,12 +67,12 @@ const LISTING_CARDS = [
   },
 ] as const;
 const TRUST_PARTNERS = [
-  "OpenAI",
-  "AWS",
-  "Figma",
-  "Notion",
-  "Vercel",
-  "MongoDB",
+  "Radar.ph",
+  "Bilyonaryo",
+  "KakaComputer Podcast",
+  "NVIDIA Inception",
+  "Google for Startups",
+  "Manila Bulletin",
 ] as const;
 const TESTIMONIALS = [
   {
@@ -193,8 +195,9 @@ function HeroMainContent({
         }}
         className="max-w-[57ch] text-center [font-family:var(--font-paraluman-body)] text-base leading-7 text-[#184d45]/82 sm:text-lg sm:leading-[1.75]"
       >
-        We&apos;re a young ambitious team that aims to bring AI to every business
-        in the Philippines. If you&apos;re ambitious, this is the place for you.
+        We&apos;re a young ambitious team that aims to bring AI to every
+        business in the Philippines. If you&apos;re ambitious, this is the place
+        for you.
       </motion.p>
 
       <motion.div
@@ -207,7 +210,11 @@ function HeroMainContent({
         }}
         className="mt-8 sm:mt-10"
       >
-        <ListingsCTA onClick={onJumpToListings} label="I want a chance" size="hero" />
+        <ListingsCTA
+          onClick={onJumpToListings}
+          label="I want a chance"
+          size="hero"
+        />
       </motion.div>
     </div>
   );
@@ -385,14 +392,30 @@ function HeroWorkflowScene({ reduceMotion }: { reduceMotion: boolean }) {
         alt=""
         fill
         priority
-        sizes="100vw"
-        className={cn("absolute inset-0 z-0 object-cover object-center", bgDrift)}
+        sizes="(min-width: 640px) 100vw, 0vw"
+        className={cn(
+          "absolute inset-0 z-0 hidden object-cover object-center sm:block",
+          bgDrift,
+        )}
+      />
+      <Image
+        src={heroBgMobile}
+        alt=""
+        fill
+        priority
+        sizes="(max-width: 639px) 100vw, 0vw"
+        className={cn(
+          "absolute inset-0 z-0 object-cover object-center sm:hidden",
+          bgDrift,
+        )}
       />
       <div className="absolute inset-0 z-[1] bg-white/10" />
       <div
         className={cn(
           "absolute inset-0 z-[1] bg-[radial-gradient(circle_at_50%_46%,rgba(16,163,127,0.08),transparent_34%)]",
-          reduceMotion ? "" : "[animation:hero-soft-pulse_7s_ease-in-out_infinite]",
+          reduceMotion
+            ? ""
+            : "[animation:hero-soft-pulse_7s_ease-in-out_infinite]",
         )}
       />
 
@@ -425,7 +448,10 @@ function HeroWorkflowScene({ reduceMotion }: { reduceMotion: boolean }) {
           r="4"
           fill="#10A37F"
           fillOpacity="0.28"
-          className={cn(nodePulse, "[transform-box:fill-box] [transform-origin:center]")}
+          className={cn(
+            nodePulse,
+            "[transform-box:fill-box] [transform-origin:center]",
+          )}
         />
         <circle
           cx="1218"
@@ -433,7 +459,10 @@ function HeroWorkflowScene({ reduceMotion }: { reduceMotion: boolean }) {
           r="4"
           fill="#10A37F"
           fillOpacity="0.28"
-          className={cn(nodePulse, "[transform-box:fill-box] [transform-origin:center]")}
+          className={cn(
+            nodePulse,
+            "[transform-box:fill-box] [transform-origin:center]",
+          )}
         />
       </svg>
     </div>
@@ -541,8 +570,8 @@ function MagneticButton({
     const rect = element.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    setTx(((x / rect.width) - 0.5) * max * 2);
-    setTy(((y / rect.height) - 0.5) * max * 2);
+    setTx((x / rect.width - 0.5) * max * 2);
+    setTy((y / rect.height - 0.5) * max * 2);
   };
 
   const onLeave = () => {
@@ -611,7 +640,12 @@ function SectionShell({
   children: ReactNode;
 }) {
   return (
-    <section className={cn("relative overflow-hidden border-t border-[#0D3B33]/10", className)}>
+    <section
+      className={cn(
+        "relative overflow-hidden border-t border-[#0D3B33]/10",
+        className,
+      )}
+    >
       {children}
     </section>
   );
@@ -625,10 +659,80 @@ function SectionInner({
   children: ReactNode;
 }) {
   return (
-    <div className={cn("mx-auto w-full max-w-7xl px-6 sm:px-10 lg:px-16 xl:px-24", className)}>
+    <div
+      className={cn(
+        "mx-auto w-full max-w-7xl px-6 sm:px-10 lg:px-16 xl:px-24",
+        className,
+      )}
+    >
       {children}
     </div>
   );
+}
+
+const DOODLE_SPRITES = {
+  dashedPath: { row: 0, col: 0 },
+  sparkle: { row: 0, col: 1 },
+  dotGrid: { row: 0, col: 2 },
+  arrow: { row: 0, col: 3 },
+  scribble: { row: 1, col: 0 },
+  circleAccent: { row: 1, col: 1 },
+  stickyNote: { row: 1, col: 2 },
+  secondArrow: { row: 1, col: 3 },
+  circleAccent2: { row: 2, col: 0 },
+  wavyLine: { row: 2, col: 1 },
+  profileBubble: { row: 2, col: 2 },
+  cornerDots: { row: 2, col: 3 },
+} as const;
+
+type DoodleName = keyof typeof DOODLE_SPRITES;
+
+function DoodleSprite({
+  name,
+  className,
+  pad = 0,
+}: {
+  name: DoodleName;
+  className?: string;
+  pad?: number;
+}) {
+  const { row, col } = DOODLE_SPRITES[name];
+  const x = (col / 3) * 100 + 8;
+  const y = (row / 2) * 100 + 12;
+
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "pointer-events-none absolute z-[2] block aspect-[384/341] overflow-hidden bg-transparent bg-no-repeat mix-blend-normal select-none [animation:sofi-doodle-float_9s_ease-in-out_infinite]",
+        className,
+      )}
+      style={{
+        padding: `${pad}px`,
+      }}
+    >
+      <span
+        className="block h-full w-full bg-no-repeat"
+        style={{
+          backgroundImage: `url(${doodlePack.src})`,
+          backgroundPosition: `${x}% ${y}%`,
+          backgroundSize: "400% 300%",
+        }}
+      />
+    </span>
+  );
+}
+
+function Doodle({
+  name,
+  className,
+  pad,
+}: {
+  name: DoodleName;
+  className?: string;
+  pad?: number;
+}) {
+  return <DoodleSprite name={name} className={className} pad={pad} />;
 }
 
 function ListingCard({
@@ -779,25 +883,28 @@ function ListingModalContent({
 }
 
 function TrustStripe() {
+  const carouselPartners = [...TRUST_PARTNERS, ...TRUST_PARTNERS];
+
   return (
-    <SectionShell className="border-t-0 bg-[#f6fffc] py-12 sm:py-16">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(13,59,51,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(13,59,51,0.045)_1px,transparent_1px)] bg-[size:44px_44px] opacity-40" />
-      <SectionInner className="relative space-y-8">
-        <p className="text-center [font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.22em] text-[#0D3B33]/74">
-          Trusted by teams building real products
+    <SectionShell className="border-t-0 bg-[#F4F7F6] py-5 sm:py-6">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(5,35,56,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(5,35,56,0.035)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
+      <SectionInner className="relative">
+        <p className="text-center [font-family:var(--font-paraluman-mono)] text-[0.68rem] font-bold uppercase tracking-[0.24em] text-[#728092]">
+          Featured in
         </p>
-        <div className="relative mx-auto grid max-w-6xl grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-          <div className="pointer-events-none absolute left-0 right-0 top-1/2 hidden border-t border-dashed border-[#10A37F]/36 lg:block" />
-          {TRUST_PARTNERS.map((partner) => (
-            <div
-              key={partner}
-              className="relative z-10 flex min-h-20 items-center justify-center rounded-[0.5em] border border-[#10A37F]/12 bg-white px-6 shadow-[0_18px_42px_-34px_rgba(13,59,51,0.38)] transition-transform duration-300 hover:-translate-y-1"
-            >
-              <span className="[font-family:var(--font-paraluman-heading)] text-xl font-black tracking-[-0.04em] text-[#0D3B33]/88">
-                {partner}
-              </span>
-            </div>
-          ))}
+        <div className="relative mt-3 overflow-hidden py-2.5 [mask-image:linear-gradient(90deg,transparent,black_12%,black_88%,transparent)]">
+          <div className="flex w-max items-center gap-6 [animation:sofi-trust-marquee_34s_linear_infinite]">
+            {carouselPartners.map((partner, index) => (
+              <div
+                key={`${partner}-${index}`}
+                className="flex items-center gap-6 whitespace-nowrap text-xs font-semibold text-[#052338]/52 sm:text-sm"
+                aria-hidden={index >= TRUST_PARTNERS.length}
+              >
+                <span>{partner}</span>
+                <span className="h-1 w-1 rounded-full bg-[#8B5CF6]/45" />
+              </div>
+            ))}
+          </div>
         </div>
       </SectionInner>
     </SectionShell>
@@ -806,20 +913,30 @@ function TrustStripe() {
 
 function WallOfLove() {
   return (
-    <SectionShell className="border-t-0 bg-[#f9fffd] py-16 sm:py-20">
-      <SectionInner className="grid gap-10 lg:grid-cols-[0.72fr_1.58fr] lg:items-start">
-        <div className="max-w-sm">
-          <p className="[font-family:var(--font-paraluman-mono)] text-xs font-semibold uppercase tracking-[0.16em] text-[#10A37F]">
+    <SectionShell className="border-t-0 bg-[#fbfffe] py-28 sm:py-36">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.055)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.055)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
+
+      <Doodle
+        name="sparkle"
+        className="left-40 top-64 hidden w-[12rem] lg:block"
+      />
+      <Doodle
+        name="sparkle"
+        className="right-40 bottom-24 hidden w-[8rem] lg:block"
+      />
+      <SectionInner className="relative grid gap-10 lg:grid-cols-[0.35fr_1.65fr] lg:items-start">
+        <div>
+          <p className="[font-family:var(--font-paraluman-mono)] text-xs font-semibold uppercase tracking-[0.16em] text-[#00A886]">
             Wall of love
           </p>
-          <h2 className="[font-family:var(--font-paraluman-heading)] mt-4 text-[clamp(2rem,4vw,3.1rem)] font-black leading-[1.02] tracking-[-0.055em] text-[#0D3B33]">
-            What <span className="text-[#10A37F]">interns</span> say
+          <h2 className="[font-family:var(--font-paraluman-heading)] mt-4 text-[clamp(2rem,4vw,3.05rem)] font-black leading-[1.02] tracking-[-0.055em] text-[#052338]">
+            What <span className="text-[#00A886]">interns</span> say
           </h2>
-          <p className="mt-5 text-base leading-7 text-[#184d45]/76">
+          <p className="sr-only">
             Real experiences from real interns who shipped, learned, and grew
             with Sofi AI.
           </p>
-          <div className="mt-8 hidden gap-3 lg:flex">
+          <div className="hidden">
             {["prev", "next"].map((item) => (
               <span
                 key={item}
@@ -837,38 +954,28 @@ function WallOfLove() {
             {TESTIMONIALS.map((item) => (
               <article
                 key={item.name}
-                className="rounded-[0.5em] border border-[#0D3B33]/8 bg-white p-6 text-[#0D3B33] shadow-[0_24px_60px_-46px_rgba(13,59,51,0.38)] transition-transform duration-300 hover:-translate-y-1 sm:p-7"
+                className="flex min-h-[17.5rem] flex-col rounded-[0.55em] border border-[#052338]/8 bg-white p-7 text-[#052338] shadow-[0_18px_44px_-36px_rgba(5,35,56,0.34)] transition-transform duration-300 hover:-translate-y-1 hover:bg-white lg:p-8"
               >
-                <p className="[font-family:var(--font-paraluman-heading)] text-5xl font-black leading-none text-[#10A37F]">
+                <p className="[font-family:var(--font-paraluman-heading)] text-7xl font-black leading-none text-[#00A886]">
                   &ldquo;
                 </p>
-                <p className="mt-2 text-sm leading-7 text-[#0D3B33]/82 sm:text-base">
+                <p className="text-sm font-semibold leading-7 text-[#052338]/86 sm:text-base">
                   {item.quote}
                 </p>
-                <div className="mt-8 h-px w-10 bg-[#10A37F]/28" />
-                <div className="mt-8 flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#DFF7EE] text-sm font-bold text-[#0D3B33]">
+                <div className="mt-auto flex items-center gap-3 pt-8">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#E8FFF9] text-sm font-bold text-[#0D3B33] ring-1 ring-[#10B981]/15">
                     {item.initials}
                   </div>
                   <div>
                     <p className="[font-family:var(--font-paraluman-heading)] text-sm font-bold">
                       {item.name}
                     </p>
-                    <p className="text-xs text-[#184d45]/58">{item.role}</p>
+                    <p className="text-xs font-semibold text-[#00A886]">
+                      {item.role}
+                    </p>
                   </div>
                 </div>
               </article>
-            ))}
-          </div>
-          <div className="mt-8 flex justify-center gap-2">
-            {[0, 1, 2, 3].map((item) => (
-              <span
-                key={item}
-                className={cn(
-                  "h-2 w-2 rounded-full",
-                  item === 0 ? "bg-[#10A37F]" : "bg-[#DFF7EE]",
-                )}
-              />
             ))}
           </div>
         </div>
@@ -879,67 +986,63 @@ function WallOfLove() {
 
 function MediaSpotlight() {
   return (
-    <SectionShell className="border-t-0 bg-[#f9fffd] py-8 sm:py-10">
+    <SectionShell className="border-t-0 bg-[#fbfffe] py-24 sm:py-32">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.055)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.055)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
       <SectionInner>
-        <div className="grid gap-8 rounded-[0.65em] bg-[#0D3B33] p-6 text-white shadow-[0_30px_80px_-48px_rgba(13,59,51,0.9)] sm:p-9 lg:grid-cols-[0.7fr_1.55fr] lg:items-center">
+        <div className="relative grid gap-9 lg:grid-cols-[0.72fr_1.65fr] lg:items-center">
+          <Doodle
+            name="arrow"
+            className="bottom-4 left-48 hidden w-28 opacity-75 md:block"
+          />
+          <Doodle
+            name="wavyLine"
+            className="right-8 top-8 hidden w-24 opacity-75 lg:block"
+          />
           <div className="space-y-6">
-            <p className="[font-family:var(--font-paraluman-mono)] text-xs font-semibold uppercase tracking-[0.18em] text-[#8cf5e4]">
-              As seen in the media
-            </p>
             <div>
               <h2 className="[font-family:var(--font-paraluman-heading)] text-[clamp(2rem,4vw,3.35rem)] font-black leading-[1.02] tracking-[-0.055em]">
-                Sofi AI in the <span className="text-[#10E6C3]">spotlight</span>
+                Sofi AI in the <span className="text-[#00B894]">spotlight</span>
               </h2>
-              <p className="mt-5 max-w-sm text-base leading-7 text-white/72">
-                Creator features, deep-dive articles, and conversations about
-                the future of student work.
-              </p>
             </div>
-            <Button
-              asChild
-              variant="outline"
-              className="h-12 rounded-[0.33em] border-[#10E6C3]/60 bg-transparent px-6 text-[#8cf5e4] transition-transform duration-300 hover:-translate-y-1 hover:bg-[#10A37F]/12 hover:text-white"
-            >
-              <Link href="https://sofitech.ai/" target="_blank" rel="noreferrer">
-                Explore media
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-[1fr_1.05fr]">
-            <article className="group min-h-[19rem] rounded-[0.45em] bg-[linear-gradient(135deg,rgba(255,255,255,0.18),rgba(255,255,255,0.06))] p-4 shadow-[0_24px_60px_-42px_rgba(0,0,0,0.8)] transition-transform duration-300 hover:-translate-y-1">
-              <div className="flex h-full flex-col justify-between rounded-[0.35em] bg-[radial-gradient(circle_at_50%_34%,rgba(255,255,255,0.28),transparent_34%),linear-gradient(135deg,rgba(16,163,127,0.45),rgba(13,59,51,0.15))] p-5">
+          <div className="relative grid gap-6 lg:grid-cols-[1.18fr_0.88fr]">
+            <article className="group min-h-[19rem] overflow-hidden rounded-[0.45em] bg-white shadow-[0_18px_40px_-30px_rgba(5,35,56,0.5)] transition-transform duration-300 hover:-translate-y-1">
+              <div className="flex h-full flex-col justify-between bg-[radial-gradient(circle_at_50%_32%,rgba(255,255,255,0.55),transparent_34%),linear-gradient(135deg,rgba(16,185,129,0.18),rgba(139,92,246,0.16))] p-5">
                 <div className="flex h-10 w-10 items-center justify-center rounded-[0.25em] bg-red-500 text-white">
                   <Play className="h-5 w-5 fill-white" />
                 </div>
-                <div>
+                <div className="rounded-[0.35em] bg-white/90 p-4 shadow-[0_12px_30px_-24px_rgba(5,35,56,0.45)]">
                   <h3 className="[font-family:var(--font-paraluman-heading)] text-xl font-bold leading-tight tracking-[-0.035em]">
                     I interned at Sofi AI and here&apos;s what I learned
                   </h3>
-                  <p className="mt-2 text-xs text-white/62">
+                  <p className="mt-2 text-xs text-[#5B6382]">
                     Jenny Lee &bull; 1.2M views
                   </p>
                 </div>
               </div>
             </article>
-            <div className="grid gap-4">
-            {MEDIA_ARTICLES.map((article) => (
-              <article
-                key={article}
-                className="rounded-[0.5em] border border-white/12 bg-white p-5 text-[#0D3B33] shadow-[0_18px_46px_-36px_rgba(0,0,0,0.5)] transition-transform duration-300 hover:-translate-y-1"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black tracking-[-0.04em]">
+            <div className="grid content-center gap-0 divide-y divide-[#052338]/10">
+              {MEDIA_ARTICLES.map((article) => (
+                <article
+                  key={article}
+                  className="grid grid-cols-[4.75rem_1fr_auto] items-start gap-4 py-5 text-[#052338]"
+                >
+                  <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black tracking-[-0.05em] text-[#052338]">
                     {article}
                   </p>
-                  <ArrowUpRight className="h-4 w-4 text-[#10A37F]" />
-                </div>
-                <p className="mt-2 text-sm leading-6 text-[#184d45]/70">
-                  A closer look at Sofi AI&apos;s momentum, culture, and work.
-                </p>
-              </article>
-            ))}
+                  <div>
+                    <p className="text-sm font-semibold leading-6 text-[#052338]/86">
+                      A closer look at Sofi AI&apos;s momentum, culture, and
+                      work.
+                    </p>
+                    <p className="mt-2 text-xs font-semibold text-[#8B5CF6]/80">
+                      Apr 10, 2024
+                    </p>
+                  </div>
+                  <ArrowUpRight className="mt-1 h-4 w-4 text-[#00B894]" />
+                </article>
+              ))}
             </div>
           </div>
         </div>
@@ -948,68 +1051,65 @@ function MediaSpotlight() {
   );
 }
 
-function FeaturedInternship({
-  onSelect,
-}: {
-  onSelect: () => void;
-}) {
+function FeaturedInternship({ onSelect }: { onSelect: () => void }) {
   return (
-    <SectionShell className="border-t-0 bg-[#f9fffd] py-8 sm:py-10">
+    <SectionShell className="border-t-0 bg-[#fbfffe] py-24 sm:py-32">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.055)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.055)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
       <SectionInner>
-        <div className="grid gap-8 rounded-[0.65em] bg-[#e8fff9] p-6 shadow-[0_24px_70px_-52px_rgba(13,59,51,0.48)] sm:p-9 lg:grid-cols-[0.65fr_1.45fr] lg:items-center">
-          <div>
-            <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.18em] text-[#0D3B33]/72">
-              Featured opportunity
-            </p>
-            <h2 className="[font-family:var(--font-paraluman-heading)] mt-4 text-[clamp(2rem,4vw,3.2rem)] font-black leading-[1.02] tracking-[-0.055em] text-[#0D3B33]">
-              This week&apos;s mega <span className="text-[#10A37F]">highlight</span>
-            </h2>
-            <p className="mt-5 max-w-xs text-base leading-7 text-[#184d45]/76">
-              High-impact work. Real ownership. Built for students.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onSelect}
-            className="group relative w-full overflow-hidden rounded-[0.55em] border border-[#10A37F]/16 bg-white p-7 text-left shadow-[0_28px_70px_-48px_rgba(13,59,51,0.58)] transition-transform duration-300 hover:-translate-y-1 sm:p-9"
-          >
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_22%,rgba(16,163,127,0.13),transparent_28%)]" />
-            <div className="relative grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
-              <div>
-                <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.16em] text-[#10A37F]">
-                  Open Challenge
-                </p>
-                <h3 className="[font-family:var(--font-paraluman-heading)] mt-4 text-[clamp(1.75rem,3.4vw,2.7rem)] font-black leading-[1.02] tracking-[-0.05em] text-[#0D3B33]">
-                  Frontend Engineer Intern
-                </h3>
-                <p className="mt-4 max-w-xl text-base leading-7 text-[#184d45]/78">
-                  Build product interfaces for a fast-growing applied AI
-                  startup, starting with a frontend for a TikTok hook-analysis
-                  backend.
-                </p>
-                <div className="mt-7 flex flex-wrap gap-2">
-                  {["React", "TypeScript", "Tailwind CSS"].map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full border border-[#10A37F]/18 bg-[#e9fffb] px-4 py-2 text-xs font-semibold text-[#0D3B33]"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <div className="mt-9 inline-flex items-center gap-2 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-[#10A37F]">
-                  View role details
-                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                </div>
+        <button
+          type="button"
+          onClick={onSelect}
+          className="group relative w-full overflow-hidden rounded-[0.75em] border border-[#10B981]/18 bg-[#003F38] p-7 text-left text-white shadow-[0_28px_70px_-42px_rgba(0,63,56,0.82)] transition-transform duration-300 hover:-translate-y-1 sm:p-10 lg:p-12"
+        >
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_42%,rgba(16,185,129,0.38),transparent_30%),linear-gradient(135deg,rgba(16,185,129,0.12),rgba(0,63,56,0)_48%)]" />
+          <Doodle
+            name="dotGrid"
+            className="bottom-8 right-8 hidden w-32 opacity-70 lg:block"
+          />
+          <Doodle
+            name="secondArrow"
+            className="bottom-0 left-[42%] hidden w-36 opacity-75 lg:block"
+          />
+          <Doodle
+            name="stickyNote"
+            className="right-20 top-5 hidden w-40 rotate-6 opacity-80 lg:block"
+          />
+          <div className="relative grid gap-10 lg:grid-cols-[1.05fr_0.85fr] lg:items-center">
+            <div>
+              <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.18em] text-[#10E6C3]">
+                Featured opportunity
+              </p>
+              <h3 className="[font-family:var(--font-paraluman-heading)] mt-4 text-[clamp(2rem,4.2vw,3.25rem)] font-black leading-[1.02] tracking-[-0.055em] text-white">
+                Frontend Engineer Intern
+              </h3>
+              <p className="mt-4 max-w-2xl text-base font-semibold leading-7 text-white/86">
+                Build product interfaces for a fast-growing applied AI startup,
+                starting with a frontend for a TikTok hook-analysis backend.
+              </p>
+              <div className="mt-7 flex flex-wrap gap-2">
+                {["React", "TypeScript", "Tailwind CSS"].map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-[0.35em] border border-white/10 bg-white/12 px-4 py-2 text-xs font-semibold text-white"
+                  >
+                    {tag}
+                  </span>
+                ))}
               </div>
-              <div className="hidden h-32 w-32 items-center justify-center rounded-[0.5em] bg-[#DFF7EE] text-[#10A37F] md:flex">
-                <span className="[font-family:var(--font-paraluman-mono)] text-5xl font-bold">
+              <div className="mt-8 inline-flex h-12 items-center gap-2 rounded-[0.35em] bg-[#10B981] px-6 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white shadow-[0_16px_32px_-18px_rgba(16,185,129,0.95)] transition-colors duration-300 group-hover:bg-[#00A886]">
+                View role details
+                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </div>
+            </div>
+            <div className="hidden min-h-52 items-center justify-center lg:flex">
+              <div className="grid h-52 w-80 rotate-3 place-items-center rounded-[0.65em] border border-white/14 bg-white/10 shadow-[0_22px_52px_-34px_rgba(255,255,255,0.5)] backdrop-blur">
+                <span className="[font-family:var(--font-paraluman-mono)] text-6xl font-bold text-[#10E6C3]">
                   &lt;/&gt;
                 </span>
               </div>
             </div>
-          </button>
-        </div>
+          </div>
+        </button>
       </SectionInner>
     </SectionShell>
   );
@@ -1017,28 +1117,37 @@ function FeaturedInternship({
 
 function SofiFaq() {
   return (
-    <SectionShell className="border-t-0 bg-[#f9fffd] py-8 sm:py-10">
-      <SectionInner className="space-y-8 rounded-[0.65em] bg-white/72 py-10 shadow-[0_20px_70px_-58px_rgba(13,59,51,0.38)]">
+    <SectionShell className="border-t-0 bg-[#fbfffe] py-20 sm:py-28">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.055)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.055)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
+      <Doodle
+        name="wavyLine"
+        className="right-24 top-14 hidden w-24 opacity-75 md:block"
+      />
+      <SectionInner className="relative space-y-6">
         <div>
-          <p className="[font-family:var(--font-paraluman-mono)] text-xs font-semibold uppercase tracking-[0.16em] text-[#10A37F]">
+          <p className="[font-family:var(--font-paraluman-mono)] text-xs font-semibold uppercase tracking-[0.16em] text-[#00A886]">
             FAQs
           </p>
-          <h2 className="[font-family:var(--font-paraluman-heading)] mt-3 text-[clamp(1.8rem,3.4vw,2.5rem)] font-bold leading-tight tracking-[-0.04em] text-[#0D3B33]">
-            Frequently asked questions
+          <h2 className="[font-family:var(--font-paraluman-heading)] mt-3 text-[clamp(1.8rem,3.4vw,2.5rem)] font-bold leading-tight tracking-[-0.04em] text-[#052338]">
+            Frequently asked <span className="text-[#00B894]">questions</span>
           </h2>
         </div>
-        <Accordion type="single" collapsible className="w-full rounded-[0.45em] border border-[#10A37F]/12 bg-white shadow-[0_18px_48px_-42px_rgba(13,59,51,0.45)]">
+        <Accordion
+          type="single"
+          collapsible
+          className="w-full rounded-[0.45em] border border-[#052338]/8 bg-white shadow-[0_18px_42px_-34px_rgba(5,35,56,0.28)]"
+        >
           {FAQ_ITEMS.map((item, index) => (
             <AccordionItem
               key={item.question}
               value={`faq-${index}`}
-              className="border-[#10A37F]/14"
+              className="border-[#052338]/10"
             >
-              <AccordionTrigger className="[font-family:var(--font-paraluman-heading)] text-left text-base font-bold tracking-[-0.025em] text-[#0D3B33] hover:no-underline sm:text-lg">
+              <AccordionTrigger className="px-6 py-4 [font-family:var(--font-paraluman-heading)] text-left text-base font-bold tracking-[-0.025em] text-[#052338] hover:no-underline sm:px-7 sm:text-lg">
                 {item.question}
               </AccordionTrigger>
-              <AccordionContent className="[font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#184d45]/76 sm:text-base">
-                {item.answer}
+              <AccordionContent className="px-6 pb-5 [font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#052338]/76 sm:px-7 sm:text-base">
+                <div>{item.answer}</div>
               </AccordionContent>
             </AccordionItem>
           ))}
@@ -1050,24 +1159,25 @@ function SofiFaq() {
 
 function CompactFooter() {
   return (
-    <footer className="bg-[#063b34] px-6 py-12 text-white sm:px-10 lg:px-16 xl:px-24">
-      <div className="mx-auto flex max-w-7xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+    <footer className="relative overflow-hidden border-t border-[#052338]/8 bg-[#F6FBFA] px-6 py-5 text-[#052338] sm:px-10 lg:px-16 xl:px-24">
+      <div className="relative mx-auto flex max-w-7xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black tracking-[-0.04em]">
-            BetterInternship &times; <span className="text-[#10E6C3]">Sofi AI</span>
+          <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black tracking-[-0.04em] text-[#052338]">
+            BetterInternship &times;{" "}
+            <span className="text-[#00A886]">Sofi AI</span>
           </p>
-          <p className="mt-2 text-sm text-white/62">
+          <p className="mt-2 text-sm text-[#052338]/58">
             Real work. Real impact. Built for students.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {[Linkedin, Instagram, Youtube].map((Icon, index) => (
             <a
               key={index}
               href="https://sofitech.ai/"
               target="_blank"
               rel="noreferrer"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/8 text-white/78 transition-colors duration-300 hover:bg-white hover:text-[#0D3B33]"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#052338] shadow-[0_12px_28px_-24px_rgba(5,35,56,0.38)] transition-colors duration-300 hover:bg-[#003F38] hover:text-white"
               aria-label="Sofi AI social link"
             >
               <Icon className="h-4 w-4" />
@@ -1156,36 +1266,57 @@ export default function SofiAiCompanyProfilePage() {
             opacity: 0.62;
           }
         }
+        @keyframes sofi-trust-marquee {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
+        @keyframes sofi-doodle-float {
+          0%,
+          100% {
+            transform: translate3d(0, 0, 0) rotate(var(--doodle-rotate, 0deg));
+          }
+          50% {
+            transform: translate3d(0, -8px, 0)
+              rotate(var(--doodle-rotate, 0deg));
+          }
+        }
       `}</style>
 
       <section>
         <TrustStripe />
-        <WallOfLove />
-        <MediaSpotlight />
-        <div ref={listingsRef}>
-          <FeaturedInternship
-            onSelect={() => {
-              modalRegistry.centeredDetails.open({
-                title: (
-                  <span className="[font-family:var(--font-paraluman-heading)] text-2xl font-semibold leading-[1.05] tracking-[-0.03em] text-[#0D3B33] sm:text-[2.05rem]">
-                    Frontend Engineer Intern
-                  </span>
-                ),
-                content: (
-                  <ListingModalContent
-                    card={LISTING_CARDS[0]}
-                    onApply={() => modalRegistry.centeredDetails.close()}
-                  />
-                ),
-                showHeaderDivider: false,
-                closeOnBackdropClick: true,
-                closeOnEscapeKey: true,
-                showCloseButton: true,
-              });
-            }}
-          />
+        <div className="relative overflow-hidden bg-[#fbfffe]">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_14%,rgba(16,185,129,0.13),transparent_30%),radial-gradient(circle_at_88%_46%,rgba(16,185,129,0.1),transparent_32%),radial-gradient(circle_at_18%_86%,rgba(16,185,129,0.08),transparent_28%)]" />
+          <WallOfLove />
+          <MediaSpotlight />
+          <div ref={listingsRef}>
+            <FeaturedInternship
+              onSelect={() => {
+                modalRegistry.centeredDetails.open({
+                  title: (
+                    <span className="[font-family:var(--font-paraluman-heading)] text-2xl font-semibold leading-[1.05] tracking-[-0.03em] text-[#0D3B33] sm:text-[2.05rem]">
+                      Frontend Engineer Intern
+                    </span>
+                  ),
+                  content: (
+                    <ListingModalContent
+                      card={LISTING_CARDS[0]}
+                      onApply={() => modalRegistry.centeredDetails.close()}
+                    />
+                  ),
+                  showHeaderDivider: false,
+                  closeOnBackdropClick: true,
+                  closeOnEscapeKey: true,
+                  showCloseButton: true,
+                });
+              }}
+            />
+          </div>
+          <SofiFaq />
         </div>
-        <SofiFaq />
         <CompactFooter />
       </section>
     </main>
