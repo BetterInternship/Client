@@ -589,7 +589,7 @@ function TrustStripe() {
 
 function WallOfLove() {
   return (
-    <SectionShell className="border-t-0 bg-transparent py-28 sm:py-36">
+    <SectionShell className="border-t-0 bg-transparent py-20 sm:py-28">
       <Doodle
         name="sparkle"
         className="left-48 top-72 hidden w-[12rem] lg:block"
@@ -677,7 +677,7 @@ function WallOfLove() {
 
 function MediaSpotlight() {
   return (
-    <SectionShell className="border-t-0 bg-transparent py-24 sm:py-32">
+    <SectionShell className="border-t-0 bg-transparent py-16 sm:py-24 -mt-12 sm:-mt-16">
       <SectionInner className="relative px-0 sm:px-10 lg:px-16 xl:px-24">
         <div className="pointer-events-none absolute inset-x-0 h-[calc(100%-2rem)] bg-[#052338]/14 blur-2xl sm:inset-x-16 sm:rounded-[0.9em]" />
         <div className="relative overflow-hidden border-y border-[#052338]/8 bg-white px-5 py-8 shadow-[0_36px_92px_-46px_rgba(5,35,56,0.5),0_16px_34px_-24px_rgba(5,35,56,0.28)] backdrop-blur-sm sm:rounded-[0.75em] sm:border sm:p-10 lg:px-14">
@@ -755,7 +755,7 @@ function MediaSpotlight() {
 
 function FeaturedInternship() {
   return (
-    <SectionShell className="border-t-0 bg-transparent py-24 sm:py-48">
+    <SectionShell className="border-t-0 bg-transparent py-16 sm:py-32">
       <SectionInner className="relative">
         <div className="pointer-events-none absolute left-1/2 top-[44%] h-[32rem] w-[130%] -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.96)_0%,rgba(255,255,255,0.82)_46%,rgba(255,255,255,0)_78%)] blur-2xl" />
         <Doodle
@@ -777,7 +777,7 @@ function FeaturedInternship() {
         </div>
         <Link
           href="/super-listing/sofi-ai"
-          className="group relative z-10 mt-9 grid w-full items-center gap-5 rounded-[0.65em] border border-[#052338]/10 bg-white/90 p-5 text-left text-[#052338] shadow-[0_20px_60px_-46px_rgba(5,35,56,0.4)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#07C4A7]/35 hover:bg-white sm:grid-cols-[auto_1fr_auto_auto] sm:p-6 lg:px-7"
+          className="group relative z-10 mt-6 grid w-full items-center gap-5 rounded-[0.65em] border border-[#052338]/10 bg-white/90 p-5 text-left text-[#052338] shadow-[0_20px_60px_-46px_rgba(5,35,56,0.4)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#07C4A7]/35 hover:bg-white sm:grid-cols-[auto_1fr_auto_auto] sm:p-6 lg:px-7"
         >
           <div className="flex h-14 w-14 items-center justify-center rounded-[0.55em] bg-[#E8FFF9] text-[#00866f] ring-1 ring-[#07C4A7]/14">
             <span className="[font-family:var(--font-paraluman-mono)] text-xl font-bold">
@@ -800,14 +800,14 @@ function FeaturedInternship() {
 
 function SofiFaq() {
   return (
-    <SectionShell className="border-t-0 bg-transparent py-24 sm:py-32">
+    <SectionShell className="border-t-0 bg-transparent py-16 sm:py-24">
       <Doodle
         name="wavyLine"
         className="right-24 top-14 hidden w-64 md:block"
       />
-      <SectionInner className="relative space-y-6">
+      <SectionInner className="relative space-y-4">
         <div>
-          <h2 className="[font-family:var(--font-paraluman-heading)] mt-3 text-[clamp(1.8rem,3.4vw,2.5rem)] font-bold leading-tight tracking-[-0.04em] text-[#052338]">
+          <h2 className="[font-family:var(--font-paraluman-heading)] mt-2 text-[clamp(1.8rem,3.4vw,2.5rem)] font-bold leading-tight tracking-[-0.04em] text-[#052338]">
             Frequently asked <span className="text-[#00B894]">questions</span>
           </h2>
         </div>
