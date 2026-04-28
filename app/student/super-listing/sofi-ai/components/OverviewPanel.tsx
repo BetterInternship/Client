@@ -16,36 +16,23 @@ const FAQ_ITEMS = [
   {
     question: "Who can apply for this internship?",
     answer:
-      "Students and early builders who can structure ambiguous product problems, justify interface decisions, and deliver practical frontend outputs.",
+      "Anyone who can think clearly about product design, user flow, and interface execution. We care more about your challenge output than your grades or credentials.",
   },
   {
-    question: "What is the core problem to solve?",
+    question: "Do I need to build a fully functional product?",
     answer:
-      "Sofi AI builds practical AI systems, but practical AI still needs strong product interfaces. Your challenge is to turn backend intelligence into a frontend that users can understand, trust, and act on.",
+      "No. The challenge should show a clear product experience and logical user journey. It can be a prototype, deployed concept, or working interface as long as you can explain your decisions.",
   },
   {
-    question: "Does this need to be a real, workable app?",
+    question: "What kind of work will I do if selected?",
     answer:
-      "Yes. The output should show a usable flow that feels like something a fast-moving AI startup could test with real users.",
+      "You will help design products that Sofi AI is actively preparing to launch, working around user flows, wireframes, product interfaces, and AI-powered product experiences.",
   },
   {
-    question: "What should the frontend include?",
+    question: "What makes a strong submission?",
     answer:
-      "For the challenge, include the TikTok hook-analysis flow: input for a TikTok link, caption, script, or hook text; a results dashboard; hook score; retention risk; clarity; emotional pull; niche fit; suggested rewrites; loading, failed, and empty states.",
+      "Strong submissions show thoughtful decision-making, clear design execution, and strong communication. We want to understand how you think, not just what the final screens look like.",
   },
-];
-
-const HOW_TO_APPLY_STEPS = [
-  "Read the challenge brief and map the journey: input, analysis, scoring, rewrite suggestions, comparison, and next action.",
-  "Build a workable frontend concept or prototype that makes AI hook analysis feel fast, trustworthy, and useful.",
-  "Submit one clear link and your details. Include a short walkthrough showing how your flow turns backend analysis into better creative decisions.",
-];
-
-const INTERNSHIP_OKRS = [
-  "A user can submit a TikTok link, caption, script, or hook text through one clear flow.",
-  "The results view communicates hook score, retention risk, clarity, emotional pull, niche fit, and suggested rewrites.",
-  "The interface includes useful states for loading, failed analysis, empty input, and original-versus-improved comparison.",
-  "You can clearly explain product decisions, tradeoffs, and edge cases from a real AI product problem.",
 ];
 
 function SectionTitle({ children }: { children: string }) {
@@ -78,28 +65,21 @@ export function OverviewPanel({
     <div className="[font-family:var(--font-paraluman-body)] text-sm leading-8 text-[#184d45]/86 sm:text-[0.95rem]">
       <section className="space-y-5">
         <h1 className="[font-family:var(--font-paraluman-heading)] text-2xl font-bold leading-tight tracking-[-0.035em] text-[#052338] sm:text-[1.7rem]">
-          Build product interfaces for AI tools businesses actually use.
+          Design products that will actually get launched.
         </h1>
         <div className="space-y-4">
           <p>
-            This internship is for builders who want to work inside a real,
-            traction-driven AI startup, not a simulated school project.
+            This is not a typical UI/UX internship. You will be leading the
+            design of products that we are actively preparing to launch.
           </p>
           <p>
-            Sofi AI builds practical AI systems for businesses: AI assistants,
-            customer support automation, and workflow tools that help teams
-            automate customer interactions, streamline operations, and scale.
+            We already have a solid backend engineering team. And right now, we
+            are looking for someone who can bring the product to life through
+            design, user flow, and experience.
           </p>
           <p>
-            Your challenge is one slice of that world: design the interface for
-            a <strong>TikTok hook-analysis backend</strong>. The backend can
-            analyze the hook, but users still need a clear product experience
-            that tells them what to do next.
-          </p>
-          <p>
-            <strong>We do not look at grades or resumes.</strong> The
-            challenge-first format helps Sofi AI evaluate product taste,
-            interface judgment, and execution better than resume-only screening.
+            If you do well, there are many more projects lined up... and
+            potentially a full-time role.
           </p>
         </div>
       </section>
@@ -108,36 +88,65 @@ export function OverviewPanel({
         <SectionTitle>What you&apos;ll do</SectionTitle>
         <AsteriskList
           items={[
-            "Turn AI analysis into clear, useful frontend flows.",
-            "Design the input, loading, results, scoring, rewrite, and comparison states.",
-            "Make AI feedback feel specific, trustworthy, and actionable for creators or business teams.",
+            "Design products that will be launched.",
+            "Create user flows, wireframes, and product interfaces.",
+            "Work closely with a team focused on AI and product development.",
           ]}
         />
       </section>
 
       <section className="mt-9 space-y-4 border-t border-[#052338]/10 pt-8">
-        <SectionTitle>What success looks like</SectionTitle>
-        <AsteriskList items={INTERNSHIP_OKRS} />
+        <SectionTitle>What&apos;s special</SectionTitle>
+        <AsteriskList
+          items={[
+            "You'll have real responsibility from day one.",
+            "Your work will have real users.",
+            "You'll experience how a Filipino AI tech startup operates.",
+          ]}
+        />
       </section>
 
       <section className="mt-9 space-y-4 border-t border-[#052338]/10 pt-8">
-        <SectionTitle>How to apply</SectionTitle>
-        <AsteriskList items={HOW_TO_APPLY_STEPS} />
-        <div className="pt-2">
-          <Button
-            type="button"
-            onClick={onGoToChallenge}
-            className="h-11 rounded-md bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white hover:bg-[#0D3B33]"
-          >
-            View challenge
-          </Button>
+        <SectionTitle>This is for you if</SectionTitle>
+        <AsteriskList
+          items={[
+            "You want to be pushed and challenged.",
+            "You enjoy working in a fast-paced startup environment.",
+            "You're okay with high responsibility and fast growth.",
+            "You genuinely love design and building products.",
+            "You are resilient and willing to learn from mistakes.",
+          ]}
+        />
+      </section>
+
+      <section className="mt-9 space-y-4 border-t border-[#052338]/10 pt-8">
+        <SectionTitle>Qualifications</SectionTitle>
+        <div className="space-y-4">
+          <p className="[font-family:var(--font-paraluman-heading)] text-xl font-bold tracking-[-0.035em] text-[#052338]">
+            None.
+          </p>
+          <p>
+            We don&apos;t care about grades or credentials. We want to see if
+            you can do real work. Complete the challenge and show us what you
+            can do.
+          </p>
         </div>
       </section>
 
       <section className="mt-9 border-l border-[#00A886]/30 pl-4 italic text-[#184d45]/68">
-        Note: This role will not be for everyone. But for the right person, this
-        could be the best internship experience you&apos;ll get.
+        Note: This role won&apos;t be for everyone. But for the right person,
+        this could be the best internship experience you&apos;ll get.
       </section>
+
+      <div className="mt-9 pt-2">
+        <Button
+          type="button"
+          onClick={onGoToChallenge}
+          className="h-11 rounded-md bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white hover:bg-[#0D3B33]"
+        >
+          View challenge
+        </Button>
+      </div>
 
       <section className="mt-9 space-y-2 border-t border-[#052338]/10 pt-8">
         <SectionTitle>FAQs</SectionTitle>
