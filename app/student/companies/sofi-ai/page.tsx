@@ -891,9 +891,17 @@ function MediaSpotlight() {
 
 function FeaturedInternship({ onSelect }: { onSelect: () => void }) {
   return (
-    <SectionShell className="border-t-0 bg-transparent py-24 sm:py-32">
+    <SectionShell className="border-t-0 bg-transparent py-24 sm:py-48">
       <SectionInner className="relative">
-        <div className="pointer-events-none absolute inset-x-0 top-[44%] h-[32rem] -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.96)_0%,rgba(255,255,255,0.82)_42%,rgba(255,255,255,0)_76%)] blur-xl" />
+        <div className="pointer-events-none absolute left-1/2 top-[44%] h-[32rem] w-[130%] -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.96)_0%,rgba(255,255,255,0.82)_46%,rgba(255,255,255,0)_78%)] blur-2xl" />
+        <Doodle
+          name="stickyNote"
+          className=" -top-20 hidden w-44 opacity-90 [--doodle-rotate:16deg] lg:block xl:right-16 xl:w-52"
+        />
+        <Doodle
+          name="stickyNote"
+          className="left-22 -bottom-36 hidden w-40 opacity-80 [--doodle-rotate:-8deg] lg:block xl:left-16 xl:w-48"
+        />
         <div className="relative z-10 mx-auto max-w-4xl text-center">
           <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.18em] text-[#00A886]">
             Featured opportunity
