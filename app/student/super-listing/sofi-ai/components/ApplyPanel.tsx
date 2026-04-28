@@ -156,10 +156,13 @@ export function ApplyPanel({
           </p>
         </div>
 
-        <div className="mt-6 space-y-5 border-t border-[#052338]/10 pt-5 [font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/86">
+        <div className="space-y-5 mt-3 [font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/86">
           <div className="space-y-2.5">
+            <p className="[font-family:var(--font-paraluman-heading)] text-lg font-bold tracking-[-0.025em] text-[#052338]">
+              Submission Requirements
+            </p>
             <p className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.025em] text-[#052338]">
-              Deployed Website or Prototype
+              1. Deployed Website or Prototype
             </p>
             <AsteriskList
               items={[
@@ -172,7 +175,7 @@ export function ApplyPanel({
 
           <div className="space-y-2.5">
             <p className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.025em] text-[#052338]">
-              1-3 Minute Video
+              2. 1-3 Minute Video
             </p>
             <AsteriskList
               items={[
@@ -187,121 +190,121 @@ export function ApplyPanel({
 
       <div className="mt-6 max-w-2xl">
         <div>
-            <form className="space-y-5" onSubmit={(e) => void onSubmit(e)}>
-              <div className="grid gap-4">
-                <div className="space-y-2">
-                  <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
-                    Full Name *
-                  </label>
-                  <Input
-                    required
-                    value={form.fullName}
-                    onChange={updateField("fullName")}
-                    className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
-                    Email *
-                  </label>
-                  <Input
-                    required
-                    type="email"
-                    value={form.email}
-                    onChange={updateField("email")}
-                    className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
-                    Deployed Website / Prototype Link *
-                  </label>
-                  <p className="[font-family:var(--font-paraluman-body)] text-xs leading-5 text-[#052338]/42">
-                    Figma, Framer, Webflow, or any shareable URL. Make sure view
-                    access is on.
-                  </p>
-                  <Input
-                    required
-                    value={form.submissionLink}
-                    onChange={updateField("submissionLink")}
-                    className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
-                    Video Submission Link *
-                  </label>
-                  <p className="[font-family:var(--font-paraluman-body)] text-xs leading-5 text-[#052338]/42">
-                    Loom, YouTube (unlisted), Google Drive &mdash; any link we
-                    can watch. Keep it 1-3 minutes.
-                  </p>
-                  <Input
-                    required
-                    value={form.videoSubmissionLink}
-                    onChange={updateField("videoSubmissionLink")}
-                    className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
-                  />
-                </div>
+          <form className="space-y-5" onSubmit={(e) => void onSubmit(e)}>
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
+                  Full Name *
+                </label>
+                <Input
+                  required
+                  value={form.fullName}
+                  onChange={updateField("fullName")}
+                  className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
+                />
               </div>
 
-              {isDevelopment ? (
-                <p className="border-t border-[#052338]/10 pt-4 [font-family:var(--font-paraluman-body)] text-sm text-[#00866f]">
-                  Captcha disabled in development.
+              <div className="space-y-2">
+                <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
+                  Email *
+                </label>
+                <Input
+                  required
+                  type="email"
+                  value={form.email}
+                  onChange={updateField("email")}
+                  className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
+                  Deployed Website / Prototype Link *
+                </label>
+                <p className="[font-family:var(--font-paraluman-body)] text-xs leading-5 text-[#052338]/42">
+                  Figma, Framer, Webflow, or any shareable URL. Make sure view
+                  access is on.
                 </p>
-              ) : !token ? (
-                <div className="space-y-3 border-t border-[#052338]/10 pt-4">
-                  {!tokenFail ? (
-                    <Loader>Validating browser...</Loader>
-                  ) : (
-                    <Badge type="destructive" className="mb-2">
-                      Unable to validate captcha. Please refresh and try again.
-                    </Badge>
-                  )}
-                  <Turnstile
-                    siteKey={turnstileSiteKey!}
-                    onSuccess={onTokenSuccess}
-                    onError={onTokenError}
-                  />
-                </div>
-              ) : (
-                <div className="border-t border-[#052338]/10 pt-4 [font-family:var(--font-paraluman-body)] text-sm text-[#00866f]">
-                  Browser verification complete.
-                </div>
-              )}
-
-              <div className="flex flex-col gap-3">
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="inline-flex h-11 w-fit items-center justify-center gap-2 rounded-md bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white transition-all duration-200 hover:bg-[#0D3B33]"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Submitting
-                    </>
-                  ) : (
-                    "Submit challenge"
-                  )}
-                </Button>
+                <Input
+                  required
+                  value={form.submissionLink}
+                  onChange={updateField("submissionLink")}
+                  className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
+                />
               </div>
 
-              {resultMessage && (
-                <div
-                  className={cn(
-                    "rounded-md border px-4 py-3 [font-family:var(--font-paraluman-body)] text-sm",
-                    isError
-                      ? "border-red-200 bg-red-50 text-red-700"
-                      : "border-emerald-200 bg-emerald-50 text-emerald-700",
-                  )}
-                >
-                  {resultMessage}
-                </div>
-              )}
-            </form>
+              <div className="space-y-2">
+                <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
+                  Video Submission Link *
+                </label>
+                <p className="[font-family:var(--font-paraluman-body)] text-xs leading-5 text-[#052338]/42">
+                  Loom, YouTube (unlisted), Google Drive &mdash; any link we can
+                  watch. Keep it 1-3 minutes.
+                </p>
+                <Input
+                  required
+                  value={form.videoSubmissionLink}
+                  onChange={updateField("videoSubmissionLink")}
+                  className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
+                />
+              </div>
+            </div>
+
+            {isDevelopment ? (
+              <p className="border-t border-[#052338]/10 pt-4 [font-family:var(--font-paraluman-body)] text-sm text-[#00866f]">
+                Captcha disabled in development.
+              </p>
+            ) : !token ? (
+              <div className="space-y-3 border-t border-[#052338]/10 pt-4">
+                {!tokenFail ? (
+                  <Loader>Validating browser...</Loader>
+                ) : (
+                  <Badge type="destructive" className="mb-2">
+                    Unable to validate captcha. Please refresh and try again.
+                  </Badge>
+                )}
+                <Turnstile
+                  siteKey={turnstileSiteKey!}
+                  onSuccess={onTokenSuccess}
+                  onError={onTokenError}
+                />
+              </div>
+            ) : (
+              <div className="border-t border-[#052338]/10 pt-4 [font-family:var(--font-paraluman-body)] text-sm text-[#00866f]">
+                Browser verification complete.
+              </div>
+            )}
+
+            <div className="flex flex-col gap-3">
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="inline-flex h-11 w-fit items-center justify-center gap-2 rounded-md bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white transition-all duration-200 hover:bg-[#0D3B33]"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Submitting
+                  </>
+                ) : (
+                  "Submit challenge"
+                )}
+              </Button>
+            </div>
+
+            {resultMessage && (
+              <div
+                className={cn(
+                  "rounded-md border px-4 py-3 [font-family:var(--font-paraluman-body)] text-sm",
+                  isError
+                    ? "border-red-200 bg-red-50 text-red-700"
+                    : "border-emerald-200 bg-emerald-50 text-emerald-700",
+                )}
+              >
+                {resultMessage}
+              </div>
+            )}
+          </form>
         </div>
       </div>
     </div>
