@@ -89,8 +89,8 @@ export function HowToApplyPanel({ onGoToApply }: HowToApplyPanelProps) {
             </p>
             <div className="pt-2 space-y-1">
               <p>
-                Once a user inputs all their required details, here is a sample of
-                the data our platform generates.
+                Once a user inputs all their required details, here is a sample
+                of the data our platform generates.
               </p>
               <div className="space-y-1">
                 <a
