@@ -344,7 +344,7 @@ function HeroPanel({
   onJumpToListings: () => void;
 }) {
   const sharedHeroBottomFade =
-    "pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(231,255,250,0.8)_100%)]";
+    "pointer-events-none absolute inset-x-0 bottom-0 z-[30] h-[28rem] bg-[linear-gradient(180deg,rgba(247,255,253,0)_0%,rgba(247,255,253,0.44)_32%,rgba(247,255,253,0.82)_60%,rgba(247,255,253,0.98)_84%,#f7fffd_100%)]";
 
   return (
     <section className="relative overflow-hidden">
@@ -363,9 +363,9 @@ function HeroPanel({
           />
         </Link>
         <HeroWorkflowScene reduceMotion={reduceMotion} />
-        <div className={cn(sharedHeroBottomFade, "z-[1]")} />
+        <div className={sharedHeroBottomFade} />
 
-        <div className="relative z-[2] flex min-h-[calc(100vh-8rem)] w-full items-center justify-center sm:min-h-[calc(100vh-10rem)]">
+        <div className="relative z-[40] flex min-h-[calc(100vh-8rem)] w-full items-center justify-center sm:min-h-[calc(100vh-10rem)]">
           <HeroMainContent
             reduceMotion={reduceMotion}
             onJumpToListings={onJumpToListings}
@@ -713,8 +713,7 @@ function TrustStripe() {
   const carouselPartners = [...TRUST_PARTNERS, ...TRUST_PARTNERS];
 
   return (
-    <SectionShell className="border-t-0 bg-white py-5 sm:py-8">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(5,35,56,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(5,35,56,0.035)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
+    <SectionShell className="relative z-10 border-t-0 py-5 sm:py-8 ">
       <SectionInner className="relative">
         <p className="text-center [font-family:var(--font-paraluman-mono)] text-[0.68rem] font-bold uppercase tracking-[0.24em] text-[#728092]">
           Featured in
@@ -740,12 +739,10 @@ function TrustStripe() {
 
 function WallOfLove() {
   return (
-    <SectionShell className="border-t-0 bg-[#fbfffe] py-28 sm:py-36">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.055)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.055)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
-
+    <SectionShell className="border-t-0 bg-transparent py-28 sm:py-36">
       <Doodle
         name="sparkle"
-        className="left-40 top-64 hidden w-[12rem] lg:block"
+        className="left-48 top-72 hidden w-[12rem] lg:block"
       />
       <Doodle
         name="sparkle"
@@ -813,77 +810,77 @@ function WallOfLove() {
 
 function MediaSpotlight() {
   return (
-    <SectionShell className="border-t-0 bg-[#fbfffe] py-24 sm:py-32">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.055)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.055)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
-      <SectionInner>
-        <div className="relative grid gap-9 lg:grid-cols-[0.72fr_1.65fr] lg:items-start">
-          <Doodle
-            name="arrow"
-            className="bottom-4 left-48 hidden w-28 opacity-75 md:block"
-          />
-          <Doodle
-            name="wavyLine"
-            className="right-8 top-8 hidden w-24 opacity-75 lg:block"
-          />
-          <div className="space-y-6">
-            <div>
-              <h2 className="[font-family:var(--font-paraluman-heading)] text-[clamp(2rem,4vw,3.35rem)] font-black leading-[1.02] tracking-[-0.055em]">
-                Sofi AI in the <span className="text-[#00B894]">spotlight</span>
-              </h2>
+    <SectionShell className="border-t-0 bg-transparent py-24 sm:py-32">
+      <SectionInner className="relative">
+        <div className="pointer-events-none absolute inset-x-10 top-16 h-[calc(100%-2rem)] rounded-[0.9em] bg-[#052338]/14 blur-2xl sm:inset-x-16" />
+        <div className="relative overflow-hidden rounded-[0.75em] border border-[#052338]/8 bg-white p-7 shadow-[0_36px_92px_-46px_rgba(5,35,56,0.5),0_16px_34px_-24px_rgba(5,35,56,0.28)] backdrop-blur-sm sm:p-10 lg:p-14">
+          <div className="relative grid gap-9 lg:grid-cols-[0.72fr_1.65fr] lg:items-start">
+            <Doodle
+              name="profileBubble"
+              className="left-44 -bottom-24 hidden w-64 lg:block"
+            />
+
+            <div className="space-y-6">
+              <div>
+                <h2 className="[font-family:var(--font-paraluman-heading)] text-[clamp(2rem,4vw,3.35rem)] font-black leading-[1.02] tracking-[-0.055em]">
+                  Sofi AI in the{" "}
+                  <span className="text-[#00B894]">spotlight</span>
+                </h2>
+              </div>
             </div>
-          </div>
 
-          <div className="relative grid gap-6 lg:grid-cols-[1.18fr_0.88fr]">
-            <Link
-              href={MEDIA_VIDEO_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="group overflow-hidden rounded-[0.45em] bg-white shadow-[0_18px_40px_-30px_rgba(5,35,56,0.5)] transition-transform duration-300 hover:-translate-y-1"
-            >
-              <div className="relative aspect-video overflow-hidden bg-[#052338]">
-                <Image
-                  src={MEDIA_VIDEO_THUMBNAIL}
-                  alt="Sofi AI video preview"
-                  fill
-                  sizes="(min-width: 1024px) 42vw, 100vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-[#052338]/10" />
-                <div className="absolute left-5 top-5 flex h-10 w-10 items-center justify-center rounded-[0.25em] bg-red-500 text-white shadow-[0_14px_30px_-18px_rgba(0,0,0,0.6)]">
-                  <Play className="h-5 w-5 fill-white" />
-                </div>
-                <span className="absolute bottom-3 right-3 rounded bg-black/78 px-2 py-1 text-[0.68rem] font-bold text-white">
-                  YouTube
-                </span>
-              </div>
-              <div className="p-4">
-                <h3 className="[font-family:var(--font-paraluman-heading)] text-xl font-bold leading-tight tracking-[-0.035em] text-[#052338]">
-                  Sophia Nicole Sy of SOFI AI on AI, Innovation and Women in the
-                  Future of work
-                </h3>
-              </div>
-            </Link>
-
-            <div className="grid content-center gap-0 divide-y divide-[#052338]/10">
-              {MEDIA_ARTICLES.map((article) => (
-                <Link
-                  key={article.href}
-                  href={article.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="grid grid-cols-[1fr_auto] items-start gap-4 py-5 text-[#052338]"
-                >
-                  <div>
-                    <p className="text-sm font-semibold leading-6 text-[#052338]/86">
-                      {article.title}
-                    </p>
-                    <p className="mt-2 text-xs font-semibold text-[#8B5CF6]/80">
-                      {article.date}
-                    </p>
+            <div className="relative grid gap-6 lg:grid-cols-[1.18fr_0.88fr]">
+              <Link
+                href={MEDIA_VIDEO_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="group overflow-hidden rounded-[0.45em] bg-white shadow-[0_18px_40px_-30px_rgba(5,35,56,0.5)] transition-transform duration-300 hover:-translate-y-1"
+              >
+                <div className="relative aspect-video overflow-hidden bg-[#052338]">
+                  <Image
+                    src={MEDIA_VIDEO_THUMBNAIL}
+                    alt="Sofi AI video preview"
+                    fill
+                    sizes="(min-width: 1024px) 42vw, 100vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-[#052338]/10" />
+                  <div className="absolute left-5 top-5 flex h-10 w-10 items-center justify-center rounded-[0.25em] bg-red-500 text-white shadow-[0_14px_30px_-18px_rgba(0,0,0,0.6)]">
+                    <Play className="h-5 w-5 fill-white" />
                   </div>
-                  <ArrowUpRight className="mt-1 h-4 w-4 text-[#00B894]" />
-                </Link>
-              ))}
+                  <span className="absolute bottom-3 right-3 rounded bg-black/78 px-2 py-1 text-[0.68rem] font-bold text-white">
+                    YouTube
+                  </span>
+                </div>
+                <div className="p-4">
+                  <h3 className="[font-family:var(--font-paraluman-heading)] text-xl font-bold leading-tight tracking-[-0.035em] text-[#052338]">
+                    Sophia Nicole Sy of SOFI AI on AI, Innovation and Women in
+                    the Future of work
+                  </h3>
+                </div>
+              </Link>
+
+              <div className="grid content-center gap-0 divide-y divide-[#052338]/10">
+                {MEDIA_ARTICLES.map((article) => (
+                  <Link
+                    key={article.href}
+                    href={article.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="grid grid-cols-[1fr_auto] items-start gap-4 py-5 text-[#052338]"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold leading-6 text-[#052338]/86">
+                        {article.title}
+                      </p>
+                      <p className="mt-2 text-xs font-semibold text-[#8B5CF6]/80">
+                        {article.date}
+                      </p>
+                    </div>
+                    <ArrowUpRight className="mt-1 h-4 w-4 text-[#00B894]" />
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -894,21 +891,22 @@ function MediaSpotlight() {
 
 function FeaturedInternship({ onSelect }: { onSelect: () => void }) {
   return (
-    <SectionShell className="border-t-0 bg-[#fbfffe] py-24 sm:py-32">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.055)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.055)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
+    <SectionShell className="border-t-0 bg-transparent py-24 sm:py-32">
       <SectionInner className="relative">
-        <div className="mx-auto max-w-4xl text-center">
+        <div className="pointer-events-none absolute inset-x-0 top-[44%] h-[32rem] -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.96)_0%,rgba(255,255,255,0.82)_42%,rgba(255,255,255,0)_76%)] blur-xl" />
+        <div className="relative z-10 mx-auto max-w-4xl text-center">
           <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.18em] text-[#00A886]">
             Featured opportunity
           </p>
           <h2 className="[font-family:var(--font-paraluman-heading)] mt-3 text-[clamp(2.2rem,4.6vw,3.6rem)] font-black leading-[0.98] tracking-[-0.06em] text-[#052338]">
-            Better Internships <span className="text-[#00A886]">start here</span>
+            Better Internships{" "}
+            <span className="text-[#00A886]">start here</span>
           </h2>
         </div>
         <button
           type="button"
           onClick={onSelect}
-          className="group relative mt-9 grid w-full items-center gap-5 rounded-[0.65em] border border-[#052338]/10 bg-white/90 p-5 text-left text-[#052338] shadow-[0_20px_60px_-46px_rgba(5,35,56,0.4)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#07C4A7]/35 hover:bg-white sm:grid-cols-[auto_1fr_auto_auto] sm:p-6 lg:px-7"
+          className="group relative z-10 mt-9 grid w-full items-center gap-5 rounded-[0.65em] border border-[#052338]/10 bg-white/90 p-5 text-left text-[#052338] shadow-[0_20px_60px_-46px_rgba(5,35,56,0.4)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#07C4A7]/35 hover:bg-white sm:grid-cols-[auto_1fr_auto_auto] sm:p-6 lg:px-7"
         >
           <div className="flex h-14 w-14 items-center justify-center rounded-[0.55em] bg-[#E8FFF9] text-[#00866f] ring-1 ring-[#07C4A7]/14">
             <span className="[font-family:var(--font-paraluman-mono)] text-xl font-bold">
@@ -933,14 +931,6 @@ function FeaturedInternship({ onSelect }: { onSelect: () => void }) {
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
           </div>
         </button>
-        <button
-          type="button"
-          onClick={onSelect}
-          className="group mx-auto mt-5 flex items-center gap-2 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-[#007f6b] transition-colors duration-200 hover:text-[#052338]"
-        >
-          View all opportunities
-          <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-        </button>
       </SectionInner>
     </SectionShell>
   );
@@ -948,17 +938,13 @@ function FeaturedInternship({ onSelect }: { onSelect: () => void }) {
 
 function SofiFaq() {
   return (
-    <SectionShell className="border-t-0 bg-[#fbfffe] py-24 sm:py-32">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.055)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.055)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
+    <SectionShell className="border-t-0 bg-transparent py-24 sm:py-32">
       <Doodle
         name="wavyLine"
-        className="right-24 top-14 hidden w-24 opacity-75 md:block"
+        className="right-24 top-14 hidden w-64 md:block"
       />
       <SectionInner className="relative space-y-6">
         <div>
-          <p className="[font-family:var(--font-paraluman-mono)] text-xs font-semibold uppercase tracking-[0.16em] text-[#00A886]">
-            FAQs
-          </p>
           <h2 className="[font-family:var(--font-paraluman-heading)] mt-3 text-[clamp(1.8rem,3.4vw,2.5rem)] font-bold leading-tight tracking-[-0.04em] text-[#052338]">
             Frequently asked <span className="text-[#00B894]">questions</span>
           </h2>
@@ -1042,8 +1028,12 @@ export default function SofiAiCompanyProfilePage() {
         bodyFont.variable,
       )}
     >
-      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_8%_12%,rgba(7,196,167,0.12),transparent_38%),radial-gradient(circle_at_88%_8%,rgba(7,196,167,0.1),transparent_34%),radial-gradient(circle_at_50%_92%,rgba(7,196,167,0.07),transparent_44%)]" />
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.04)_1px,transparent_1px)] bg-[size:48px_48px] opacity-18" />
+      <div className="pointer-events-none fixed inset-0 -z-30 bg-[#f7fffd]" />
+      <div className="pointer-events-none fixed inset-0 -z-20 overflow-hidden">
+        <span className="absolute -left-20 top-[22%] h-72 w-72 rounded-full bg-[#07C4A7]/8 blur-2xl" />
+        <span className="absolute -right-24 top-[54%] h-80 w-80 rounded-full bg-[#BFFFF3]/16 blur-2xl" />
+        <span className="absolute bottom-[8%] left-[28%] h-72 w-72 rounded-full bg-[#07C4A7]/6 blur-2xl" />
+      </div>
 
       <section className="relative">
         <HeroPanel
@@ -1118,9 +1108,16 @@ export default function SofiAiCompanyProfilePage() {
       `}</style>
 
       <section>
-        <TrustStripe />
-        <div className="relative overflow-hidden bg-[#fbfffe]">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_14%,rgba(16,185,129,0.13),transparent_30%),radial-gradient(circle_at_88%_46%,rgba(16,185,129,0.1),transparent_32%),radial-gradient(circle_at_18%_86%,rgba(16,185,129,0.08),transparent_28%)]" />
+        <div className="relative overflow-hidden bg-transparent">
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(13,59,51,0.09)_1px,transparent_1px),linear-gradient(to_bottom,rgba(13,59,51,0.09)_1px,transparent_1px)] bg-[size:44px_44px] opacity-70" />
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <span className="absolute -left-14 top-20 h-64 w-64 rounded-full bg-[#07C4A7]/9 blur-2xl" />
+            <span className="absolute -right-20 top-[34%] h-72 w-72 rounded-full bg-[#BFFFF3]/18 blur-2xl" />
+            <span className="absolute left-[14%] top-[58%] h-64 w-64 rounded-full bg-[#07C4A7]/7 blur-2xl" />
+            <span className="absolute bottom-24 right-[10%] h-56 w-56 rounded-full bg-[#9fffe9]/14 blur-2xl" />
+          </div>
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-72 bg-[linear-gradient(180deg,#f7fffd_0%,rgba(247,255,253,0.96)_20%,rgba(247,255,253,0.72)_48%,rgba(247,255,253,0)_100%)]" />
+          <TrustStripe />
           <WallOfLove />
           <MediaSpotlight />
           <div ref={listingsRef}>
