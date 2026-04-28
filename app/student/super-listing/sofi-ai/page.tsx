@@ -35,7 +35,6 @@ const bodyFont = Open_Sans({
   variable: "--font-paraluman-body",
 });
 
-const CHALLENGE_PDF_URL = "https://sofitech.ai/";
 const SOFI_AI_LOGO_URL =
   "https://sofitech.ai/_next/static/media/sofi-ai-chat-support-automation-logo-vector.80ec9e4e.png";
 
@@ -394,7 +393,6 @@ export default function SofiAiSuperListingPage() {
                   {activePanel === "challenge" && (
                     <div className="space-y-12">
                       <HowToApplyPanel
-                        challengePdfUrl={CHALLENGE_PDF_URL}
                         onGoToApply={openSubmissionPanel}
                       />
                       <div ref={submissionPanelRef} className="pt-10">

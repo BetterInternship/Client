@@ -1,10 +1,4 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
-import { ArrowUpRight, Globe } from "lucide-react";
-
 type HowToApplyPanelProps = {
-  challengePdfUrl?: string;
   onGoToApply: () => void;
 };
 
@@ -32,87 +26,146 @@ function AsteriskList({ items }: { items: readonly string[] }) {
 }
 
 export function HowToApplyPanel({
-  challengePdfUrl,
   onGoToApply,
 }: HowToApplyPanelProps) {
   return (
     <div className="[font-family:var(--font-paraluman-body)] text-sm leading-8 text-[#184d45]/86 sm:text-[0.95rem]">
       <section className="space-y-5">
         <h1 className="[font-family:var(--font-paraluman-heading)] text-2xl font-bold leading-tight tracking-[-0.035em] text-[#052338] sm:text-[1.7rem]">
-          Build a TikTok hook analysis frontend that makes AI feedback easy to
-          trust and act on.
+          Application Process
         </h1>
         <p>
-          Sofi AI is focused on applied AI: customer automation, AI assistants,
-          and workflow tools that real businesses use. This challenge is a
-          smaller version of that same product problem.
-        </p>
-        <p>
-          Design a frontend for a backend that analyzes TikTok hooks and returns
-          useful AI feedback. Your interface should help a user understand why a
-          hook works, where attention may drop, and what to try next.
+          We&apos;re doing this differently. Instead of resumes, we want to see
+          how you actually think and build.
         </p>
       </section>
 
       <section className="mt-9 space-y-4 border-t border-[#052338]/10 pt-8">
-        <SectionTitle>Goal</SectionTitle>
+        <SectionTitle>The Challenge</SectionTitle>
+        <p>
+          You&apos;ll design a new product that we&apos;re planning to release.
+          We already have the product vision, backend, and core strategy. Your
+          role is to:
+        </p>
         <AsteriskList
           items={[
-            "Create a clear input flow for a TikTok link, caption, script, or hook text.",
-            "Present hook score, retention risk, clarity, emotional pull, niche fit, and suggested rewrites.",
-            "Make AI analysis feel specific, structured, and useful for a creator or business team.",
-            "Include states for loading, failed analysis, empty input, and original-versus-improved comparison.",
+            "Bring it to life through design.",
+            "Create a clear user flow.",
+            "Translate the idea into a working interface.",
+          ]}
+        />
+        <p>
+          This does not need to be a fully functional product. What matters is
+          your ability to create a clear, thoughtful vision, and to make us
+          understand how it should look.
+        </p>
+        <p>
+          We&apos;ll give you direction. How you execute is up to you. You are
+          given the freedom to shape the user journey, make product and design
+          decisions, and define how the experience should feel. Use any tools
+          you want, including AI, references, or your own workflow.
+        </p>
+      </section>
+
+      <section className="mt-9 space-y-4 border-t border-[#052338]/10 pt-8">
+        <SectionTitle>The Product</SectionTitle>
+        <div className="space-y-4">
+          <div>
+            <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-bold tracking-[-0.035em] text-[#052338]">
+              GIA
+            </p>
+            <p className="[font-family:var(--font-paraluman-mono)] text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#00A886]">
+              Generative Influencer Analyst
+            </p>
+          </div>
+          <p>
+            GIA is a web-based analytics platform powered by SOFI AI. She helps
+            TikTok creators understand their content in a simple, human way
+            without needing to be technical.
+          </p>
+          <p>
+            You feed her your profile link. She gives you back a readable report
+            with hook scores, audience signals, sentiment analysis, and
+            suggestions on what to post next.
+          </p>
+        </div>
+      </section>
+
+      <section className="mt-9 space-y-4 border-t border-[#052338]/10 pt-8">
+        <SectionTitle>Who it&apos;s for</SectionTitle>
+        <p>
+          TikTok creators in the Philippines who don&apos;t speak fluent
+          analytics: people who see their metrics but don&apos;t fully
+          understand them.
+        </p>
+      </section>
+
+      <section className="mt-9 space-y-4 border-t border-[#052338]/10 pt-8">
+        <SectionTitle>What makes it different</SectionTitle>
+        <AsteriskList
+          items={[
+            "Reads comments, not just views. Surfaces what the audience is actually asking for.",
+            "Scores hooks on a 10-point scale and tells you why.",
+            "Outputs a shareable PDF report, not a dashboard you have to interpret.",
+            "Conversational tone. GIA talks like a friend with receipts.",
           ]}
         />
       </section>
 
       <section className="mt-9 space-y-4 border-t border-[#052338]/10 pt-8">
-        <SectionTitle>What we&apos;re looking for</SectionTitle>
-        <div className="space-y-4">
-          <p>
-            <strong className="text-[#052338]">Judgment.</strong> Did you turn
-            AI output into something a real user can understand and trust?
-          </p>
-          <p>
-            <strong className="text-[#052338]">Taste.</strong> Does the
-            interface feel like it belongs inside a fast-moving AI startup?
-          </p>
-          <p>
-            <strong className="text-[#052338]">Execution.</strong> Did you show
-            enough product states for this to feel like a real app, not a static
-            mockup?
-          </p>
+        <SectionTitle>Submission Requirements</SectionTitle>
+        <div className="space-y-7">
+          <div className="space-y-3">
+            <p className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.025em] text-[#052338]">
+              Deployed Website or Prototype
+            </p>
+            <AsteriskList
+              items={[
+                "Shows the product experience.",
+                "Clear and logical user flow.",
+                "Doesn't need to be fully functional, as long as you can explain it.",
+              ]}
+            />
+          </div>
+          <div className="space-y-3">
+            <p className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.025em] text-[#052338]">
+              1-3 Minute Video
+            </p>
+            <AsteriskList
+              items={[
+                "Pitch yourself.",
+                "Walk us through your design.",
+                "Explain your thinking and decisions.",
+              ]}
+            />
+          </div>
         </div>
       </section>
 
       <section className="mt-9 space-y-4 border-t border-[#052338]/10 pt-8">
-        <SectionTitle>Submission requirements</SectionTitle>
+        <SectionTitle>How we&apos;ll evaluate</SectionTitle>
         <div className="space-y-4">
           <p>
-            A workable prototype, live demo, Figma, video walkthrough, or
-            document that clearly shows the frontend experience.
+            <strong className="text-[#052338]">1. Thinking:</strong> How you
+            approach the problem and make decisions.
           </p>
           <p>
-            Your flow must include input, analysis loading, result summary,
-            scoring, suggested rewrites, and original-versus-improved
-            comparison.
+            <strong className="text-[#052338]">2. Design:</strong> Clarity,
+            usability, and overall execution.
           </p>
           <p>
-            Include a short explanation of your product decisions: what you
-            prioritized, what you simplified, and what you would build next if
-            given backend access.
+            <strong className="text-[#052338]">3. Communication:</strong> How
+            well you explain your work and ideas.
           </p>
         </div>
-      </section>
-
-      <section className="mt-9 space-y-4 border-t border-[#052338]/10 pt-8">
-        <SectionTitle>Before you start</SectionTitle>
-        <div className="border-l border-[#00A886]/30 pl-4">
-          <p>
-            Bottom line: make AI feedback feel useful enough that someone would
-            actually improve their hook before posting. Your solution should
-            feel like a product interface, not a report generator.
-          </p>
+        <div className="pt-2">
+          <button
+            type="button"
+            onClick={onGoToApply}
+            className="inline-flex h-11 items-center justify-center rounded-md bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white transition-all duration-200 hover:bg-[#0D3B33]"
+          >
+            Submit work
+          </button>
         </div>
       </section>
     </div>
