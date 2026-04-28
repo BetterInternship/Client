@@ -33,7 +33,7 @@ export function OverviewPanel({
   onGoToApply: onGoToChallenge,
 }: OverviewPanelProps) {
   return (
-    <div className="[font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/86 sm:text-[0.9rem]">
+    <div className="[font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/86 sm:text-[0.9rem] space-y-5">
       <section className="space-y-3.5">
         <h1 className="[font-family:var(--font-paraluman-heading)] text-[1.45rem] font-bold leading-tight tracking-[-0.035em] text-[#052338] sm:text-[1.55rem]">
           Design products that will actually get launched.
@@ -55,7 +55,7 @@ export function OverviewPanel({
         </div>
       </section>
 
-      <section className="mt-7 space-y-3   pt-6">
+      <section className="space-y-3">
         <SectionTitle>What you&apos;ll do</SectionTitle>
         <AsteriskList
           items={[
@@ -66,7 +66,7 @@ export function OverviewPanel({
         />
       </section>
 
-      <section className="mt-7 space-y-3 pt-6">
+      <section className="space-y-3">
         <SectionTitle>What&apos;s special</SectionTitle>
         <AsteriskList
           items={[
@@ -77,7 +77,7 @@ export function OverviewPanel({
         />
       </section>
 
-      <section className="mt-7 space-y-3  pt-6">
+      <section className="space-y-3">
         <SectionTitle>This is for you if</SectionTitle>
         <AsteriskList
           items={[
@@ -90,7 +90,7 @@ export function OverviewPanel({
         />
       </section>
 
-      <section className="mt-7 space-y-3  pt-6">
+      <section className="space-y-3">
         <SectionTitle>Qualifications</SectionTitle>
         <div className="space-y-3">
           <p className="[font-family:var(--font-paraluman-heading)] text-lg font-bold tracking-[-0.035em] text-[#052338]">

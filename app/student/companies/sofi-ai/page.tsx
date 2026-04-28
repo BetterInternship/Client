@@ -66,24 +66,36 @@ const TRUST_PARTNERS = [
 const TESTIMONIALS = [
   {
     quote:
-      "The work felt real from day one. You are not making pretend screens, you are learning how AI products actually get shaped for customers.",
-    name: "Mika Tan",
-    role: "Product Intern",
-    initials: "MT",
+      "SOFI AI Tech Solution Inc. became more than just an internship for me. It became a place where I learned, struggled, improved, and grew.",
+    name: "Kit Nicholas Santiago",
+    role: "QA Intern",
+    initials: "KNS",
+    image:
+      "https://media.licdn.com/dms/image/v2/D5603AQEF-cvb_bhiRg/profile-displayphoto-scale_200_200/B56Zw9c9LTGYAY-/0/1770557534834?e=1778716800&v=beta&t=lnfnwJztxOh5nk0of10xB7WypUTnHOm153lplpUo5RM",
+    linkedinUrl:
+      "https://www.linkedin.com/posts/kit-nicholas-santiago-0bb647201_internshipjourney-sofiai-qaspecialist-activity-7441149431242006528-meDq/",
   },
   {
     quote:
-      "Sofi moves fast in the best way. I learned how to turn messy business problems into simple workflows people can understand.",
-    name: "Andre Lee",
-    role: "Frontend Intern",
-    initials: "AL",
+      "I entered SOFI AI Tech Solution Inc. with fears about the IT industry, but because of them, I'm leaving with valuable lessons and experiences that I can carry forward into the future.",
+    name: "Avril Belisario",
+    role: "Intern",
+    initials: "AB",
+    image:
+      "https://media.licdn.com/dms/image/v2/D5635AQGPl11qNymoRw/profile-framedphoto-shrink_800_800/B56ZipGYnPHcAg-/0/1755183680376?e=1777989600&v=beta&t=O2w0VIXgbfS6aJO4WJ61DaisZrKcBzDigi2beUoMlL0",
+    linkedinUrl:
+      "https://www.linkedin.com/posts/avrilbelisario_my-first-internship-has-already-ended-activity-7303703279601954816-rnxK/",
   },
   {
     quote:
-      "The feedback loop was direct, practical, and kind. It pushed me to think less like a student and more like a builder.",
-    name: "Patricia Cruz",
-    role: "Design Intern",
-    initials: "PC",
+      "One of my favorite things about working as an intern at SOFI AI Tech Solution Inc. is the random discussions we get to have during downtime.",
+    name: "Gianette Lim",
+    role: "AI Solutions Intern",
+    initials: "GL",
+    image:
+      "https://media.licdn.com/dms/image/v2/D5603AQGVLjGZOSuHKA/profile-displayphoto-shrink_800_800/B56ZbQKSIzGoAc-/0/1747249081357?e=1778716800&v=beta&t=CM3ahFmY1arjAT_HwO78K3DTXxyQiA21q4042uXStus",
+    linkedinUrl:
+      "https://www.linkedin.com/posts/gianettelim_intern-internship-ai-activity-7445336000584904704-7I7o?utm_source=share&utm_medium=member_desktop&rcm=ACoAAD8u8tkBx7gJFzFwlBvPf4FWX6EY447FtNc",
   },
 ] as const;
 const MEDIA_ARTICLES = [
@@ -624,18 +636,35 @@ function WallOfLove() {
                 <p className="text-sm font-semibold leading-7 text-[#052338]/86 sm:text-base">
                   {item.quote}
                 </p>
-                <div className="mt-auto flex items-center gap-3 pt-8">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#E8FFF9] text-sm font-bold text-[#0D3B33] ring-1 ring-[#10B981]/15">
-                    {item.initials}
+                <div className="mt-auto pt-8">
+                  <div className="flex items-center gap-3">
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      width={48}
+                      height={48}
+                      className="h-12 w-12 rounded-full object-cover"
+                    />
+                    <div>
+                      <p className="[font-family:var(--font-paraluman-heading)] text-sm font-bold">
+                        {item.name}
+                      </p>
+                      <p className="text-xs font-semibold text-[#00A886]">
+                        {item.role}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="[font-family:var(--font-paraluman-heading)] text-sm font-bold">
-                      {item.name}
-                    </p>
-                    <p className="text-xs font-semibold text-[#00A886]">
-                      {item.role}
-                    </p>
-                  </div>
+                  {item.linkedinUrl && (
+                    <Link
+                      href={item.linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[#00A886] transition-colors hover:text-[#0D3B33]"
+                    >
+                      View original post
+                      <ArrowUpRight className="h-3 w-3" />
+                    </Link>
+                  )}
                 </div>
               </article>
             ))}
