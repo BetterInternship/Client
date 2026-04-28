@@ -28,9 +28,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import useModalRegistry from "@/components/modals/modal-registry";
 import { cn } from "@/lib/utils";
-import { sofiAiPrimaryListing } from "./data";
 import heroBg from "./hero-bg.png";
 import heroBgMobile from "./hero-bg-mobile.png";
 import doodlePack from "./doodle-pack.png";
@@ -57,15 +55,6 @@ const FEATURE_HEADING_CLASS =
   "[font-family:var(--font-paraluman-heading)] text-[clamp(1.95rem,3.6vw,3.15rem)] font-black leading-[0.96] tracking-[-0.055em]";
 const BODY_COPY_CLASS =
   "[font-family:var(--font-paraluman-body)] max-w-[60ch] text-base leading-7 text-[#184d45]/82 sm:text-lg sm:leading-[1.72]";
-const LISTING_CARDS = [
-  {
-    id: "core",
-    eyebrow: "Open challenge",
-    title: sofiAiPrimaryListing.title,
-    summary: sofiAiPrimaryListing.description,
-    accent: "#07C4A7",
-  },
-] as const;
 const TRUST_PARTNERS = [
   "Radar.ph",
   "Bilyonaryo",
@@ -562,153 +551,6 @@ function Doodle({
   return <DoodleSprite name={name} className={className} pad={pad} />;
 }
 
-function ListingCard({
-  card,
-  onSelect,
-}: {
-  card: (typeof LISTING_CARDS)[number];
-  onSelect: () => void;
-}) {
-  const isPrimary = card.id === "core";
-
-  return (
-    <motion.button
-      onClick={onSelect}
-      whileHover={{ y: -8 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
-      className={cn(
-        "group relative flex h-fit w-full min-h-0 flex-col rounded-[0.5em] border p-8 text-left transition-all duration-300 cursor-pointer sm:min-h-[32rem] sm:p-12 lg:p-16",
-        isPrimary
-          ? "border-[#07C4A7]/20 bg-[linear-gradient(135deg,#ffffff_0%,#f7fffd_45%,#f1fffc_100%)] shadow-[0_32px_64px_-40px_rgba(7,196,167,0.32)] hover:shadow-[0_48px_80px_-48px_rgba(7,196,167,0.42)]"
-          : "border-[#07C4A7]/16 bg-[linear-gradient(135deg,#ffffff_0%,#f8fffd_45%,#f7fffd_100%)] shadow-[0_28px_56px_-36px_rgba(7,196,167,0.26)] hover:shadow-[0_42px_72px_-44px_rgba(7,196,167,0.34)]",
-      )}
-    >
-      <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-[0.5em]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(7,196,167,0.08),transparent_40%),radial-gradient(circle_at_80%_70%,rgba(7,196,167,0.06),transparent_45%)] rounded-[0.5em]" />
-      </div>
-
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[1.5px] rounded-t-[0.5em]"
-        style={{
-          background: `linear-gradient(90deg, transparent 0%, ${card.accent} 15%, ${card.accent} 85%, transparent 100%)`,
-        }}
-      />
-      <div
-        className="pointer-events-none absolute right-10 top-10 h-4 w-4 rounded-full opacity-70 group-hover:opacity-100 transition-opacity"
-        style={{ backgroundColor: card.accent }}
-      />
-      <div
-        className="pointer-events-none absolute -right-16 -top-12 h-48 w-48 rounded-full opacity-25 blur-3xl group-hover:opacity-40 transition-opacity duration-300"
-        style={{ backgroundColor: card.accent }}
-      />
-      <div
-        className="pointer-events-none absolute -left-20 -bottom-16 h-52 w-52 rounded-full opacity-20 blur-3xl group-hover:opacity-30 transition-opacity duration-300"
-        style={{ backgroundColor: card.accent }}
-      />
-
-      <div className="relative z-10 space-y-8">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#07C4A7] mb-4">
-            {card.eyebrow}
-          </p>
-          <h3 className="[font-family:var(--font-paraluman-heading)] text-[clamp(2.4rem,3vw,3.8rem)] font-bold leading-[1.08] tracking-[-0.04em] text-[#0D3B33]">
-            {card.title}
-          </h3>
-        </div>
-
-        <p className="text-base leading-7 text-[#265f57] sm:text-lg sm:leading-8 max-w-2xl">
-          {card.summary}
-        </p>
-      </div>
-
-      <div className="relative z-10 mt-auto inline-flex items-center justify-between gap-3 pt-12 text-base font-bold uppercase tracking-[0.12em] text-[#07C4A7] transition-all duration-300 group-hover:text-[#0D3B33] w-full">
-        <span>View this role</span>
-        <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-2" />
-      </div>
-    </motion.button>
-  );
-}
-
-function ListingModalContent({
-  card,
-  onApply,
-}: {
-  card: (typeof LISTING_CARDS)[number];
-  onApply: () => void;
-}) {
-  return (
-    <div className="space-y-8 pt-4 text-[#0D3B33] sm:space-y-10 ">
-      <div>
-        <p className="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-[#0D3B33]">
-          Your internship shall:
-        </p>
-        <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.5rem,2.35vw,2.02rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-[#0D3B33]">
-          Build a practical frontend for TikTok hook analysis that turns AI
-          output into clear product decisions
-        </p>
-      </div>
-
-      <div>
-        <h3 className="mb-5 text-sm font-bold uppercase tracking-[0.12em] text-[#0D3B33]">
-          Your internship is a success if you can:
-        </h3>
-        <div className="space-y-4">
-          <div className="flex items-start gap-3">
-            <span
-              className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full"
-              style={{ backgroundColor: card.accent }}
-            />
-            <p className="text-base leading-7 text-[#184d45]/84">
-              Let users submit a TikTok link, caption, script, or hook text in
-              one clear flow
-            </p>
-          </div>
-          <div className="flex items-start gap-3">
-            <span
-              className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full"
-              style={{ backgroundColor: card.accent }}
-            />
-            <p className="text-base leading-7 text-[#184d45]/84">
-              Show hook score, retention risk, clarity, emotional pull, niche
-              fit, and suggested rewrites
-            </p>
-          </div>
-          <div className="flex items-start gap-3">
-            <span
-              className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full"
-              style={{ backgroundColor: card.accent }}
-            />
-            <p className="text-base leading-7 text-[#184d45]/84">
-              Include loading, empty, failed, and original-versus-improved
-              comparison states
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="rounded-[0.33em] bg-[#e9fffb] p-5 sm:p-6">
-        <p className="text-base leading-7 text-[#184d45]/76">
-          Exciting? But before you can start the internship, you need to pass
-          our challenge.
-        </p>
-      </div>
-
-      <div className="pt-3 sm:pt-4">
-        <Button asChild className="h-12 w-full rounded-[0.33em]">
-          <Link
-            href="/super-listing/sofi-ai"
-            onClick={onApply}
-            className="flex items-center justify-center gap-2"
-          >
-            Apply now
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </Button>
-      </div>
-    </div>
-  );
-}
-
 function TrustStripe() {
   const carouselPartners = [...TRUST_PARTNERS, ...TRUST_PARTNERS];
 
@@ -886,7 +728,7 @@ function MediaSpotlight() {
   );
 }
 
-function FeaturedInternship({ onSelect }: { onSelect: () => void }) {
+function FeaturedInternship() {
   return (
     <SectionShell className="border-t-0 bg-transparent py-24 sm:py-48">
       <SectionInner className="relative">
@@ -908,9 +750,8 @@ function FeaturedInternship({ onSelect }: { onSelect: () => void }) {
             <span className="text-[#00A886]">start here</span>
           </h2>
         </div>
-        <button
-          type="button"
-          onClick={onSelect}
+        <Link
+          href="/super-listing/sofi-ai"
           className="group relative z-10 mt-9 grid w-full items-center gap-5 rounded-[0.65em] border border-[#052338]/10 bg-white/90 p-5 text-left text-[#052338] shadow-[0_20px_60px_-46px_rgba(5,35,56,0.4)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#07C4A7]/35 hover:bg-white sm:grid-cols-[auto_1fr_auto_auto] sm:p-6 lg:px-7"
         >
           <div className="flex h-14 w-14 items-center justify-center rounded-[0.55em] bg-[#E8FFF9] text-[#00866f] ring-1 ring-[#07C4A7]/14">
@@ -926,7 +767,7 @@ function FeaturedInternship({ onSelect }: { onSelect: () => void }) {
             View role
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
           </div>
-        </button>
+        </Link>
       </SectionInner>
     </SectionShell>
   );
@@ -1012,7 +853,6 @@ function CompactFooter() {
 
 export default function SofiAiCompanyProfilePage() {
   const shouldReduceMotion = useReducedMotion();
-  const modalRegistry = useModalRegistry();
   const listingsRef = useRef<HTMLDivElement | null>(null);
 
   const scrollToListings = () => {
@@ -1125,27 +965,7 @@ export default function SofiAiCompanyProfilePage() {
           <WallOfLove />
           <MediaSpotlight />
           <div ref={listingsRef}>
-            <FeaturedInternship
-              onSelect={() => {
-                modalRegistry.centeredDetails.open({
-                  title: (
-                    <span className="[font-family:var(--font-paraluman-heading)] text-2xl font-semibold leading-[1.05] tracking-[-0.03em] text-[#0D3B33] sm:text-[2.05rem]">
-                      Frontend Engineer Intern
-                    </span>
-                  ),
-                  content: (
-                    <ListingModalContent
-                      card={LISTING_CARDS[0]}
-                      onApply={() => modalRegistry.centeredDetails.close()}
-                    />
-                  ),
-                  showHeaderDivider: false,
-                  closeOnBackdropClick: true,
-                  closeOnEscapeKey: true,
-                  showCloseButton: true,
-                });
-              }}
-            />
+            <FeaturedInternship />
           </div>
           <SofiFaq />
         </div>

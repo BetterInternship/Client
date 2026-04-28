@@ -1,13 +1,20 @@
 "use client";
 
 const JOB_METADATA = [
-  { label: "Location", value: "Remote" },
-  { label: "Employment Type", value: "Part-time" },
-  { label: "Duration", value: "3 months" },
-  { label: "Department", value: "Design & Product" },
+  {
+    label: "Location",
+    value:
+      " 2nd Floor, Bookman Building, Quezon Ave, Santa Mesa Heights, Quezon City, Metro Manila",
+  },
+  {
+    label: "Employment Type",
+    value: "Project Based / Flexible Internship",
+  },
+  { label: "Work Mode", value: "Hybrid (1-2x per week onsite)" },
   {
     label: "Compensation",
-    value: "Stipend provided. Amount discussed during onboarding",
+    value:
+      "Per hour or project based (negotiable. if you're good, we can pay more!)",
   },
 ] as const;
 
@@ -29,7 +36,3 @@ export function JobDetailsRail() {
     </aside>
   );
 }
-
-
-
-
