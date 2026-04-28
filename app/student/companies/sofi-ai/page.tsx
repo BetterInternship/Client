@@ -598,6 +598,8 @@ function WallOfLove() {
         name="sparkle"
         className="right-40 bottom-24 hidden w-[8rem] lg:block"
       />
+      <Doodle name="sparkle" className="-right-6 top-10 md:hidden w-[8rem]" />
+      <Doodle name="sparkle" className="left-2 -bottom-8 md:hidden w-[5rem]" />
       <SectionInner className="relative grid gap-10 lg:grid-cols-[0.35fr_1.65fr] lg:items-start">
         <div>
           <p className="[font-family:var(--font-paraluman-mono)] text-xs font-semibold uppercase tracking-[0.16em] text-[#00A886]">
@@ -686,6 +688,10 @@ function MediaSpotlight() {
               name="profileBubble"
               className="right-56 -top-24 hidden w-80 [&>span]:scale-x-[-1] lg:block"
             />
+            <Doodle
+              name="profileBubble"
+              className="-right-12 -top-24 md:hidden w-40 [&>span]:scale-x-[-1]"
+            />
 
             <div className="max-w-3xl">
               <h2 className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.9rem,7vw,3.35rem)] font-black leading-[1.02] tracking-[-0.055em]">
@@ -755,7 +761,7 @@ function MediaSpotlight() {
 
 function FeaturedInternship() {
   return (
-    <SectionShell className="border-t-0 bg-transparent py-16 sm:py-32">
+    <SectionShell className="border-t-0 bg-transparent py-32">
       <SectionInner className="relative">
         <div className="pointer-events-none absolute left-1/2 top-[44%] h-[32rem] w-[130%] -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.96)_0%,rgba(255,255,255,0.82)_46%,rgba(255,255,255,0)_78%)] blur-2xl" />
         <Doodle
@@ -765,6 +771,14 @@ function FeaturedInternship() {
         <Doodle
           name="stickyNote"
           className="left-22 -bottom-36 hidden w-40 opacity-80 [--doodle-rotate:-8deg] lg:block xl:left-16 xl:w-48"
+        />
+        <Doodle
+          name="stickyNote"
+          className="-right-12 -top-32 md:hidden w-40 [--doodle-rotate:12deg]"
+        />
+        <Doodle
+          name="stickyNote"
+          className="left-0 -bottom-36 md:hidden w-40 [--doodle-rotate:-6deg]"
         />
         <div className="relative z-10 mx-auto max-w-4xl text-center">
           <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.18em] text-[#00A886]">
@@ -805,6 +819,7 @@ function SofiFaq() {
         name="wavyLine"
         className="right-24 top-14 hidden w-64 md:block"
       />
+      <Doodle name="wavyLine" className="-right-10 top-8 md:hidden w-40" />
       <SectionInner className="relative space-y-4">
         <div>
           <h2 className="[font-family:var(--font-paraluman-heading)] mt-2 text-[clamp(1.8rem,3.4vw,2.5rem)] font-bold leading-tight tracking-[-0.04em] text-[#052338]">
