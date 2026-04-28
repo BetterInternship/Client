@@ -4,7 +4,7 @@ type HowToApplyPanelProps = {
 
 function SectionTitle({ children }: { children: string }) {
   return (
-    <h2 className="[font-family:var(--font-paraluman-heading)] text-lg font-bold tracking-[-0.025em] text-[#052338]">
+    <h2 className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.025em] text-[#052338]">
       {children}
     </h2>
   );
@@ -12,10 +12,10 @@ function SectionTitle({ children }: { children: string }) {
 
 function AsteriskList({ items }: { items: readonly string[] }) {
   return (
-    <ul className="space-y-3">
+    <ul className="space-y-2">
       {items.map((item) => (
-        <li key={item} className="flex gap-3">
-          <span className="mt-0.5 shrink-0 [font-family:var(--font-paraluman-mono)] text-sm font-semibold leading-8 text-[#00A886]">
+        <li key={item} className="flex gap-2.5">
+          <span className="mt-0.5 shrink-0 [font-family:var(--font-paraluman-mono)] text-sm font-semibold leading-6 text-[#00A886]">
             *
           </span>
           <span>{item}</span>
@@ -25,13 +25,11 @@ function AsteriskList({ items }: { items: readonly string[] }) {
   );
 }
 
-export function HowToApplyPanel({
-  onGoToApply,
-}: HowToApplyPanelProps) {
+export function HowToApplyPanel({ onGoToApply }: HowToApplyPanelProps) {
   return (
-    <div className="[font-family:var(--font-paraluman-body)] text-sm leading-8 text-[#184d45]/86 sm:text-[0.95rem]">
-      <section className="space-y-5">
-        <h1 className="[font-family:var(--font-paraluman-heading)] text-2xl font-bold leading-tight tracking-[-0.035em] text-[#052338] sm:text-[1.7rem]">
+    <div className="[font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/86 sm:text-[0.9rem]">
+      <section className="space-y-3.5">
+        <h1 className="[font-family:var(--font-paraluman-heading)] text-[1.45rem] font-bold leading-tight tracking-[-0.035em] text-[#052338] sm:text-[1.55rem]">
           Application Process
         </h1>
         <p>
@@ -40,7 +38,7 @@ export function HowToApplyPanel({
         </p>
       </section>
 
-      <section className="mt-9 space-y-4 border-t border-[#052338]/10 pt-8">
+      <section className="mt-7 space-y-3  pt-6">
         <SectionTitle>The Challenge</SectionTitle>
         <p>
           You&apos;ll design a new product that we&apos;re planning to release.
@@ -67,11 +65,11 @@ export function HowToApplyPanel({
         </p>
       </section>
 
-      <section className="mt-9 space-y-4 border-t border-[#052338]/10 pt-8">
+      <section className="mt-7 space-y-3 border-t border-[#052338]/10 pt-6">
         <SectionTitle>The Product</SectionTitle>
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div>
-            <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-bold tracking-[-0.035em] text-[#052338]">
+            <p className="[font-family:var(--font-paraluman-heading)] text-xl font-bold tracking-[-0.035em] text-[#052338]">
               GIA
             </p>
             <p className="[font-family:var(--font-paraluman-mono)] text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#00A886]">
@@ -91,7 +89,7 @@ export function HowToApplyPanel({
         </div>
       </section>
 
-      <section className="mt-9 space-y-4 border-t border-[#052338]/10 pt-8">
+      <section className="mt-7 space-y-3 pt-6">
         <SectionTitle>Who it&apos;s for</SectionTitle>
         <p>
           TikTok creators in the Philippines who don&apos;t speak fluent
@@ -100,7 +98,7 @@ export function HowToApplyPanel({
         </p>
       </section>
 
-      <section className="mt-9 space-y-4 border-t border-[#052338]/10 pt-8">
+      <section className="mt-7 space-y-3 pt-6">
         <SectionTitle>What makes it different</SectionTitle>
         <AsteriskList
           items={[
@@ -112,9 +110,9 @@ export function HowToApplyPanel({
         />
       </section>
 
-      <section className="mt-9 space-y-4 border-t border-[#052338]/10 pt-8">
+      <section className="mt-7 space-y-3  pt-6">
         <SectionTitle>How we&apos;ll evaluate</SectionTitle>
-        <div className="space-y-4">
+        <div className="space-y-3">
           <p>
             <strong className="text-[#052338]">1. Thinking:</strong> How you
             approach the problem and make decisions.

@@ -649,17 +649,17 @@ function WallOfLove() {
 function MediaSpotlight() {
   return (
     <SectionShell className="border-t-0 bg-transparent py-24 sm:py-32">
-      <SectionInner className="relative">
-        <div className="pointer-events-none absolute inset-x-10 h-[calc(100%-2rem)] rounded-[0.9em] bg-[#052338]/14 blur-2xl sm:inset-x-16" />
-        <div className="relative overflow-hidden rounded-[0.75em] border border-[#052338]/8 bg-white shadow-[0_36px_92px_-46px_rgba(5,35,56,0.5),0_16px_34px_-24px_rgba(5,35,56,0.28)] backdrop-blur-sm sm:p-10 lg:px-14">
-          <div className="relative space-y-8">
+      <SectionInner className="relative px-0 sm:px-10 lg:px-16 xl:px-24">
+        <div className="pointer-events-none absolute inset-x-0 h-[calc(100%-2rem)] bg-[#052338]/14 blur-2xl sm:inset-x-16 sm:rounded-[0.9em]" />
+        <div className="relative overflow-hidden border-y border-[#052338]/8 bg-white px-5 py-8 shadow-[0_36px_92px_-46px_rgba(5,35,56,0.5),0_16px_34px_-24px_rgba(5,35,56,0.28)] backdrop-blur-sm sm:rounded-[0.75em] sm:border sm:p-10 lg:px-14">
+          <div className="relative space-y-7 sm:space-y-8">
             <Doodle
               name="profileBubble"
               className="right-56 -top-24 hidden w-80 [&>span]:scale-x-[-1] lg:block"
             />
 
             <div className="max-w-3xl">
-              <h2 className="[font-family:var(--font-paraluman-heading)] text-[clamp(2rem,4vw,3.35rem)] font-black leading-[1.02] tracking-[-0.055em]">
+              <h2 className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.9rem,7vw,3.35rem)] font-black leading-[1.02] tracking-[-0.055em]">
                 Sofi AI in the <span className="text-[#00B894]">spotlight</span>
               </h2>
             </div>

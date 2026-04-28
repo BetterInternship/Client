@@ -291,21 +291,21 @@ export default function SofiAiSuperListingPage() {
         className="relative z-10 px-5 pb-20 sm:px-8"
       >
         <div className="mx-auto max-w-5xl">
-          <div className=" pt-8">
+          <div className="pt-6">
             <h1 className="[font-family:var(--font-paraluman-heading)] text-[2.35rem] font-bold leading-[1.02] tracking-[-0.055em] text-[#052338] sm:text-[3rem] lg:text-[3.4rem]">
               UI/UX Intern
             </h1>
           </div>
 
-          <div className="mt-12 grid gap-10 lg:grid-cols-[16.25rem_minmax(0,1fr)] lg:gap-12">
+          <div className="mt-10 grid gap-8 lg:grid-cols-[16.25rem_minmax(0,1fr)] lg:gap-10">
             <div className="lg:sticky lg:top-24 lg:self-start">
               <JobDetailsRail />
             </div>
 
             <div className="min-w-0">
-              <div className="rounded-[0.75em] border border-[rgba(0,80,60,0.055)] bg-white/55 px-6 shadow-[0_18px_48px_-42px_rgba(5,35,56,0.28)] backdrop-blur-[2px]">
+              <div className="-mx-5 border-y border-[rgba(0,80,60,0.055)] bg-white/55 px-5 pb-3 shadow-[0_18px_48px_-42px_rgba(5,35,56,0.28)] backdrop-blur-[2px] sm:mx-0 sm:rounded-[0.75em] sm:border sm:px-6">
                 <div className="border-b border-[#052338]/12">
-                  <div className="flex gap-7 overflow-x-auto">
+                  <div className="flex justify-between gap-3 sm:justify-start sm:gap-7">
                     {PANEL_TABS.map((tab) => {
                       const isActive = activePanel === tab.key;
                       return (
@@ -314,7 +314,7 @@ export default function SofiAiSuperListingPage() {
                           type="button"
                           onClick={() => openPanel(tab.key)}
                           className={cn(
-                            "relative inline-flex h-11 shrink-0 items-center [font-family:var(--font-paraluman-heading)] text-sm font-semibold transition-colors duration-200",
+                            "relative inline-flex h-11 min-w-0 items-center [font-family:var(--font-paraluman-heading)] text-sm font-semibold transition-colors duration-200",
                             isActive
                               ? "text-[#00A886]"
                               : "text-[#052338]/45 hover:text-[#052338]",
@@ -336,7 +336,7 @@ export default function SofiAiSuperListingPage() {
                   </div>
                 </div>
 
-                <div className="pt-8 sm:pt-9">
+                <div className="pt-6 sm:pt-7">
                   {activePanel === "overview" && (
                     <div id="sofi-ai-overview-anchor" className="w-full">
                       <OverviewPanel onGoToApply={openChallengePanel} />
