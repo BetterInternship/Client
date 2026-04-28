@@ -1,15 +1,12 @@
 import type { StaticImageData } from "next/image";
 
-export type PanelKey = "overview" | "challenge";
-
-export type SubmissionStep = 1 | 2;
+export type PanelKey = "overview" | "challenge" | "submission";
 
 export type SofiAiSubmissionForm = {
   email: string;
   fullName: string;
-  facebookLink: string;
   submissionLink: string;
-  submissionNotes: string;
+  videoSubmissionLink: string;
 };
 
 export type CEOProfile = {

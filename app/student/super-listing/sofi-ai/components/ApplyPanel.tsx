@@ -1,28 +1,19 @@
 "use client";
 
 import { type ChangeEvent, type FormEvent, useEffect, useRef } from "react";
-import {
-  ArrowLeft,
-  FileText,
-  FolderOpen,
-  Globe,
-  Loader2,
-  Video,
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import confetti from "canvas-confetti";
 import { motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Loader } from "@/components/ui/loader";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { SofiAiSubmissionForm, SubmissionStep } from "./types";
+import type { SofiAiSubmissionForm } from "./types";
 
 type ApplyPanelProps = {
   form: SofiAiSubmissionForm;
-  submissionStep: SubmissionStep;
   hasSubmitted: boolean;
   submittedEmail: string;
   isSubmitting: boolean;
@@ -33,17 +24,29 @@ type ApplyPanelProps = {
   tokenFail: boolean;
   turnstileSiteKey?: string;
   onFieldChange: (field: keyof SofiAiSubmissionForm, value: string) => void;
-  onNextStep: () => void;
-  onBackStep: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onBackToOverview: () => void;
   onTokenSuccess: (token: string) => void;
   onTokenError: () => void;
 };
 
+function AsteriskList({ items }: { items: readonly string[] }) {
+  return (
+    <ul className="space-y-2.5">
+      {items.map((item) => (
+        <li key={item} className="flex gap-3">
+          <span className="mt-0.5 shrink-0 [font-family:var(--font-paraluman-mono)] text-sm font-semibold leading-7 text-[#00A886]">
+            *
+          </span>
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function ApplyPanel({
   form,
-  submissionStep,
   hasSubmitted,
   submittedEmail,
   isSubmitting,
@@ -54,8 +57,6 @@ export function ApplyPanel({
   tokenFail,
   turnstileSiteKey,
   onFieldChange,
-  onNextStep,
-  onBackStep,
   onSubmit,
   onBackToOverview,
   onTokenSuccess,
@@ -108,9 +109,9 @@ export function ApplyPanel({
     };
 
   return (
-    <div className="bg-[#E8FFF9] px-0 py-6 text-[#052338] sm:-mx-6 sm:px-6 sm:py-7">
-      <div>
-        <div className="mt-2 max-w-2xl space-y-2">
+    <div className="text-[#052338]">
+      <div className="max-w-2xl">
+        <div className="space-y-2">
           <h2 className="[font-family:var(--font-paraluman-heading)] text-2xl font-bold leading-tight tracking-[-0.035em] sm:text-[1.7rem]">
             Submit your challenge output.
           </h2>
@@ -121,9 +122,37 @@ export function ApplyPanel({
             </span>
           </p>
         </div>
+
+        <div className="mt-8 space-y-6 border-t border-[#052338]/10 pt-7 [font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#184d45]/86">
+          <div className="space-y-3">
+            <p className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.025em] text-[#052338]">
+              Deployed Website or Prototype
+            </p>
+            <AsteriskList
+              items={[
+                "Shows the product experience.",
+                "Clear and logical user flow.",
+                "Doesn't need to be fully functional, as long as you can explain it.",
+              ]}
+            />
+          </div>
+
+          <div className="space-y-3">
+            <p className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.025em] text-[#052338]">
+              1-3 Minute Video
+            </p>
+            <AsteriskList
+              items={[
+                "Pitch yourself.",
+                "Walk us through your design.",
+                "Explain your thinking and decisions.",
+              ]}
+            />
+          </div>
+        </div>
       </div>
 
-      <div className="mt-7 border-t border-[#00A886]/16 pt-6">
+      <div className="mt-8 max-w-2xl">
         <div>
           {hasSubmitted ? (
             <motion.div
@@ -160,165 +189,105 @@ export function ApplyPanel({
               </div>
             </motion.div>
           ) : (
-            <form className="space-y-6" onSubmit={(e) => void onSubmit(e)}>
-              <p className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.025em] text-[#052338]">
-                {submissionStep === 1
-                  ? "Step 1/2: Paste the single best link to your prototype, video, or document."
-                  : "Step 2/2: Add your contact details so the team can review and reply quickly."}
-              </p>
+            <form className="space-y-7" onSubmit={(e) => void onSubmit(e)}>
+              <div className="grid gap-5">
+                <div className="space-y-2">
+                  <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
+                    Full Name *
+                  </label>
+                  <Input
+                    required
+                    value={form.fullName}
+                    onChange={updateField("fullName")}
+                    className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
+                  />
+                </div>
 
-              {submissionStep === 1 && (
-                <>
-                  <div className="space-y-2.5">
-                    <label className="[font-family:var(--font-paraluman-mono)] text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#052338]/55">
-                      Challenge Output Link *
-                    </label>
-                    <Input
-                      required
-                      value={form.submissionLink}
-                      onChange={updateField("submissionLink")}
-                      className="h-11 rounded-md border-[#00A886]/18 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/25"
-                    />
-                    <div className="flex flex-wrap gap-2 pt-1 [font-family:var(--font-paraluman-body)] text-[11px] text-[#184d45]/62 sm:text-xs">
-                      Accepted Links:
-                      <span className="inline-flex items-center gap-1">
-                        <FolderOpen className="h-3.5 w-3.5" />
-                        Google Drive,
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <FileText className="h-3.5 w-3.5" />
-                        Google Docs,
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <Globe className="h-3.5 w-3.5" />
-                        Live Demo,
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <Video className="h-3.5 w-3.5" />
-                        YouTube
-                      </span>
-                    </div>
-                  </div>
+                <div className="space-y-2">
+                  <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
+                    Email *
+                  </label>
+                  <Input
+                    required
+                    type="email"
+                    value={form.email}
+                    onChange={updateField("email")}
+                    className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
+                  />
+                </div>
 
-                  <div className="space-y-2.5">
-                    <label className="[font-family:var(--font-paraluman-mono)] text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#052338]/55">
-                      Application Notes
-                    </label>
-                    <Textarea
-                      value={form.submissionNotes}
-                      onChange={updateField("submissionNotes")}
-                      placeholder="Add context, constraints, and tradeoffs you want Sofi AI reviewers to notice."
-                      className="min-h-32 rounded-md border-[#00A886]/18 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none placeholder:text-[#052338]/45 focus-visible:ring-[#00B894]/25"
-                    />
-                  </div>
-                </>
-              )}
+                <div className="space-y-2">
+                  <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
+                    Deployed Website / Prototype Link *
+                  </label>
+                  <p className="[font-family:var(--font-paraluman-body)] text-xs leading-6 text-[#052338]/42">
+                    Figma, Framer, Webflow, or any shareable URL. Make sure view
+                    access is on.
+                  </p>
+                  <Input
+                    required
+                    value={form.submissionLink}
+                    onChange={updateField("submissionLink")}
+                    className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
+                  />
+                </div>
 
-              {submissionStep === 2 && (
-                <>
-                  <div className="grid gap-5 sm:grid-cols-2">
-                    <div className="space-y-2.5 sm:col-span-2">
-                      <label className="[font-family:var(--font-paraluman-mono)] text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#052338]/55">
-                        Email Address *
-                      </label>
-                      <Input
-                        required
-                        type="email"
-                        value={form.email}
-                        onChange={updateField("email")}
-                        className="h-11 rounded-md border-[#00A886]/18 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/25"
-                      />
-                    </div>
+                <div className="space-y-2">
+                  <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
+                    Video Submission Link *
+                  </label>
+                  <p className="[font-family:var(--font-paraluman-body)] text-xs leading-6 text-[#052338]/42">
+                    Loom, YouTube (unlisted), Google Drive &mdash; any link we can`r`n                    watch. Keep it 1-3 minutes.
+                  </p>
+                  <Input
+                    required
+                    value={form.videoSubmissionLink}
+                    onChange={updateField("videoSubmissionLink")}
+                    className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
+                  />
+                </div>
+              </div>
 
-                    <div className="space-y-2.5">
-                      <label className="[font-family:var(--font-paraluman-mono)] text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#052338]/55">
-                        Full Name *
-                      </label>
-                      <Input
-                        required
-                        value={form.fullName}
-                        onChange={updateField("fullName")}
-                        className="h-11 rounded-md border-[#00A886]/18 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/25"
-                      />
-                    </div>
-
-                    <div className="space-y-2.5">
-                      <label className="[font-family:var(--font-paraluman-mono)] text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#052338]/55">
-                        Facebook Link *
-                      </label>
-                      <Input
-                        required
-                        value={form.facebookLink}
-                        onChange={updateField("facebookLink")}
-                        className="h-11 rounded-md border-[#00A886]/18 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/25"
-                      />
-                    </div>
-                  </div>
-
-                  {isDevelopment ? (
-                    <p className="border-t border-[#00A886]/16 pt-4 [font-family:var(--font-paraluman-body)] text-sm text-[#00866f]">
-                      Captcha disabled in development.
-                    </p>
-                  ) : !token ? (
-                    <div className="space-y-3 border-t border-[#00A886]/16 pt-4">
-                      {!tokenFail ? (
-                        <Loader>Validating browser...</Loader>
-                      ) : (
-                        <Badge type="destructive" className="mb-2">
-                          Unable to validate captcha. Please refresh and try
-                          again.
-                        </Badge>
-                      )}
-                      <Turnstile
-                        siteKey={turnstileSiteKey!}
-                        onSuccess={onTokenSuccess}
-                        onError={onTokenError}
-                      />
-                    </div>
+              {isDevelopment ? (
+                <p className="border-t border-[#052338]/10 pt-4 [font-family:var(--font-paraluman-body)] text-sm text-[#00866f]">
+                  Captcha disabled in development.
+                </p>
+              ) : !token ? (
+                <div className="space-y-3 border-t border-[#052338]/10 pt-4">
+                  {!tokenFail ? (
+                    <Loader>Validating browser...</Loader>
                   ) : (
-                    <div className="border-t border-[#00A886]/16 pt-4 [font-family:var(--font-paraluman-body)] text-sm text-[#00866f]">
-                      Browser verification complete.
-                    </div>
+                    <Badge type="destructive" className="mb-2">
+                      Unable to validate captcha. Please refresh and try again.
+                    </Badge>
                   )}
-                </>
+                  <Turnstile
+                    siteKey={turnstileSiteKey!}
+                    onSuccess={onTokenSuccess}
+                    onError={onTokenError}
+                  />
+                </div>
+              ) : (
+                <div className="border-t border-[#052338]/10 pt-4 [font-family:var(--font-paraluman-body)] text-sm text-[#00866f]">
+                  Browser verification complete.
+                </div>
               )}
 
-              <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-                {submissionStep === 1 ? (
-                  <Button
-                    type="button"
-                    onClick={onNextStep}
-                    className="inline-flex h-11 items-center justify-center rounded-md bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white transition-all duration-200 hover:bg-[#0D3B33]"
-                  >
-                    Continue to contact details
-                  </Button>
-                ) : (
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={onBackStep}
-                      className="inline-flex h-11 items-center justify-center gap-1.5 rounded-md border border-[#052338]/12 bg-white px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-[#052338] transition-colors duration-200 hover:bg-white"
-                    >
-                      <ArrowLeft className="h-4 w-4" />
-                      Back
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white transition-all duration-200 hover:bg-[#0D3B33]"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Submitting
-                        </>
-                      ) : (
-                        "Submit challenge"
-                      )}
-                    </Button>
-                  </div>
-                )}
+              <div className="flex flex-col gap-3">
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="inline-flex h-11 w-fit items-center justify-center gap-2 rounded-md bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white transition-all duration-200 hover:bg-[#0D3B33]"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Submitting
+                    </>
+                  ) : (
+                    "Submit challenge"
+                  )}
+                </Button>
               </div>
 
               {resultMessage && (
@@ -340,3 +309,4 @@ export function ApplyPanel({
     </div>
   );
 }
+

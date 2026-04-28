@@ -113,36 +113,6 @@ export function HowToApplyPanel({
       </section>
 
       <section className="mt-9 space-y-4 border-t border-[#052338]/10 pt-8">
-        <SectionTitle>Submission Requirements</SectionTitle>
-        <div className="space-y-7">
-          <div className="space-y-3">
-            <p className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.025em] text-[#052338]">
-              Deployed Website or Prototype
-            </p>
-            <AsteriskList
-              items={[
-                "Shows the product experience.",
-                "Clear and logical user flow.",
-                "Doesn't need to be fully functional, as long as you can explain it.",
-              ]}
-            />
-          </div>
-          <div className="space-y-3">
-            <p className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.025em] text-[#052338]">
-              1-3 Minute Video
-            </p>
-            <AsteriskList
-              items={[
-                "Pitch yourself.",
-                "Walk us through your design.",
-                "Explain your thinking and decisions.",
-              ]}
-            />
-          </div>
-        </div>
-      </section>
-
-      <section className="mt-9 space-y-4 border-t border-[#052338]/10 pt-8">
         <SectionTitle>How we&apos;ll evaluate</SectionTitle>
         <div className="space-y-4">
           <p>

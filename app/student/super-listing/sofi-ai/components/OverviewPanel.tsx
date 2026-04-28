@@ -147,26 +147,6 @@ export function OverviewPanel({
           View challenge
         </Button>
       </div>
-
-      <section className="mt-9 space-y-2 border-t border-[#052338]/10 pt-8">
-        <SectionTitle>FAQs</SectionTitle>
-        <Accordion type="single" collapsible className="w-full">
-          {FAQ_ITEMS.map((item, index) => (
-            <AccordionItem
-              key={item.question}
-              value={`faq-${index}`}
-              className="border-[#052338]/10"
-            >
-              <AccordionTrigger className="[font-family:var(--font-paraluman-heading)] text-left text-sm font-bold tracking-[-0.025em] text-[#052338] hover:no-underline">
-                {item.question}
-              </AccordionTrigger>
-              <AccordionContent className="[font-family:var(--font-paraluman-body)] text-sm leading-8 text-[#184d45]/78">
-                {item.answer}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-      </section>
     </div>
   );
 }
