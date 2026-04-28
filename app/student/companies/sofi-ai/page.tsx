@@ -98,10 +98,31 @@ const TESTIMONIALS = [
   },
 ] as const;
 const MEDIA_ARTICLES = [
-  "Founder story",
-  "Startup spotlight",
-  "Women in tech",
+  {
+    source: "Manila Bulletin",
+    title:
+      "Sofi AI's Sophia Sy has an answer to online buyers' most asked question",
+    date: "Oct 7, 2025",
+    href: "https://mb.com.ph/2025/10/07/sofi-ais-sophia-sy-has-an-answer-to-online-buyers-most-asked-question",
+  },
+  {
+    source: "Radar.ph",
+    title:
+      "Sophia Sy's rise: the Gen Z woman founder who self-funded Sofi AI for Filipino MSMEs",
+    date: "Radar.ph",
+    href: "https://radar.ph/sophia-sys-rise-the-gen-z-woman-founder-who-self-funded-sofi-ai-for-filipino-msmes/",
+  },
+  {
+    source: "Bilyonaryo",
+    title:
+      "We train the AI to sound human: Sofi AI founder builds tech that speaks the way Pinoys do",
+    date: "Bilyonaryo",
+    href: "https://bnc.bilyonaryo.com/we-train-the-ai-to-sound-human-sofi-ai-founder-builds-tech-that-speaks-the-way-pinoys-do/business/",
+  },
 ] as const;
+const MEDIA_VIDEO_URL = "https://youtu.be/FB0acP1XaUM";
+const MEDIA_VIDEO_THUMBNAIL =
+  "https://img.youtube.com/vi/FB0acP1XaUM/maxresdefault.jpg";
 const FAQ_ITEMS = [
   {
     question: "Do I need previous AI experience?",
@@ -216,160 +237,6 @@ function HeroMainContent({
           size="hero"
         />
       </motion.div>
-    </div>
-  );
-}
-
-function MeaningfulWorkScrollScene({
-  reduceMotion,
-  onJumpToListings,
-}: {
-  reduceMotion: boolean;
-  onJumpToListings: () => void;
-}) {
-  const getScrollParent = (node: HTMLElement | null): HTMLElement | Window => {
-    let parent = node?.parentElement ?? null;
-    while (parent) {
-      const style = window.getComputedStyle(parent);
-      const overflowY = style.overflowY;
-      if (
-        /(auto|scroll|overlay)/.test(overflowY) &&
-        parent.scrollHeight > parent.clientHeight + 1
-      ) {
-        return parent;
-      }
-      parent = parent.parentElement;
-    }
-    return window;
-  };
-
-  const sectionRef = useRef<HTMLDivElement | null>(null);
-  const eyebrowRef = useRef<HTMLParagraphElement | null>(null);
-  const lineOneRef = useRef<HTMLParagraphElement | null>(null);
-  const lineTwoRef = useRef<HTMLParagraphElement | null>(null);
-  const lineThreeRef = useRef<HTMLParagraphElement | null>(null);
-  const ctaRef = useRef<HTMLDivElement | null>(null);
-
-  useLayoutEffect(() => {
-    if (reduceMotion) return;
-    if (!sectionRef.current) return;
-
-    gsap.registerPlugin(ScrollTrigger);
-
-    const ctx = gsap.context(() => {
-      const scroller = getScrollParent(sectionRef.current);
-      const triggerScroller =
-        scroller === window ? undefined : (scroller as HTMLElement);
-
-      const targets = [
-        eyebrowRef.current,
-        lineOneRef.current,
-        lineTwoRef.current,
-        lineThreeRef.current,
-      ].filter(Boolean);
-
-      gsap.set(targets, { autoAlpha: 0, y: 24 });
-      if (ctaRef.current) {
-        gsap.set(ctaRef.current, {
-          autoAlpha: 0,
-          y: 20,
-          scale: 0.96,
-        });
-      }
-
-      const sharedTimeline = gsap.timeline({
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          scroller: triggerScroller,
-          start: "top 82%",
-          end: "bottom 38%",
-          toggleActions: "play none none reverse",
-          invalidateOnRefresh: true,
-        },
-        defaults: {
-          ease: "power2.out",
-          duration: 0.72,
-        },
-      });
-
-      if (eyebrowRef.current) {
-        sharedTimeline.to(eyebrowRef.current, { autoAlpha: 0.65, y: 0 }, 0);
-      }
-      if (lineOneRef.current) {
-        sharedTimeline.to(lineOneRef.current, { autoAlpha: 1, y: 0 }, 0.16);
-      }
-      if (lineTwoRef.current) {
-        sharedTimeline.to(lineTwoRef.current, { autoAlpha: 1, y: 0 }, 0.38);
-      }
-      if (lineThreeRef.current) {
-        sharedTimeline.to(lineThreeRef.current, { autoAlpha: 1, y: 0 }, 0.62);
-      }
-      if (ctaRef.current) {
-        sharedTimeline.to(
-          ctaRef.current,
-          { autoAlpha: 1, y: 0, scale: 1 },
-          0.88,
-        );
-      }
-
-      ScrollTrigger.refresh();
-    }, sectionRef);
-
-    return () => {
-      ctx.revert();
-    };
-  }, [reduceMotion]);
-
-  return (
-    <div
-      ref={sectionRef}
-      className="relative flex min-h-[100svh] items-center justify-center px-6 py-10 sm:px-10 lg:px-16"
-    >
-      <div className="w-full">
-        <div className="mx-auto flex w-full max-w-none flex-col items-center text-center">
-          <p
-            ref={eyebrowRef}
-            style={reduceMotion ? { opacity: 1 } : undefined}
-            className="[font-family:var(--font-paraluman-heading)] mb-6 w-full -translate-y-7 text-[clamp(1.45rem,2.8vw,2.35rem)] font-bold leading-[1.08] tracking-[-0.03em] text-[#0D3B33] sm:mb-8 sm:-translate-y-9"
-          >
-            Imagine an internship where...
-          </p>
-
-          <div className="w-full max-w-[1540px] space-y-3 sm:space-y-4">
-            <p
-              ref={lineOneRef}
-              style={reduceMotion ? { opacity: 1 } : undefined}
-              className="[font-family:var(--font-paraluman-heading)] mx-auto w-full text-[clamp(2rem,5.2vw,5rem)] font-black leading-[0.96] tracking-[-0.05em] text-[#0D3B33]"
-            >
-              You <span className="text-[#07C4A7]">work</span> the way you want
-            </p>
-            <p
-              ref={lineTwoRef}
-              style={reduceMotion ? { opacity: 1 } : undefined}
-              className="[font-family:var(--font-paraluman-heading)] mx-auto w-full text-[clamp(2rem,5.2vw,5rem)] font-black leading-[0.96] tracking-[-0.05em] text-[#0D3B33]"
-            >
-              Your <span className="text-[#07C4A7]">skills</span> matter more
-              than experience
-            </p>
-            <p
-              ref={lineThreeRef}
-              style={reduceMotion ? { opacity: 1 } : undefined}
-              className="[font-family:var(--font-paraluman-heading)] mx-auto w-full text-[clamp(2rem,5.2vw,5rem)] font-black leading-[0.96] tracking-[-0.05em] text-[#0D3B33]"
-            >
-              You do work that <span className="text-[#07C4A7]">matters</span>.
-              <span className="block">No grunt work</span>
-            </p>
-          </div>
-
-          <div
-            ref={ctaRef}
-            style={reduceMotion ? { opacity: 1 } : undefined}
-            className="mt-8 sm:mt-10"
-          >
-            <ListingsCTA onClick={onJumpToListings} label="I want a chance!" />
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
@@ -506,46 +373,6 @@ function HeroPanel({
         </div>
       </div>
     </section>
-  );
-}
-
-function WorkWithFounder() {
-  return (
-    <div className="space-y-8 px-6 sm:px-10 lg:px-16 xl:px-24">
-      <p className="[font-family:var(--font-paraluman-mono)] text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8cf5e4] sm:text-xs">
-        Work with
-      </p>
-      <div className="rounded-[0.33em]">
-        <div className="flex flex-col items-start gap-6 text-left sm:flex-row sm:items-end">
-          <div className="relative flex h-52 w-52 flex-shrink-0 items-center justify-center overflow-hidden rounded-[0.33em] border-2 border-white/20 bg-white shadow-xl sm:h-64 sm:w-64">
-            <Image
-              src={FOUNDER_PROFILE.image}
-              alt="Sofia Nicole Sy portrait"
-              width={400}
-              height={400}
-              className="h-full w-full object-cover"
-            />
-          </div>
-
-          <div>
-            <Link
-              href={FOUNDER_PROFILE.profileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-2 [font-family:var(--font-paraluman-heading)] text-2xl font-black uppercase tracking-tight sm:text-3xl"
-            >
-              <span className="text-white transition-colors">
-                {FOUNDER_PROFILE.name}
-              </span>
-              <ArrowUpRight className="h-5 w-5 text-white transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
-            </Link>
-            <p className="mt-3 whitespace-pre-line [font-family:var(--font-paraluman-mono)] text-base leading-relaxed text-white sm:text-lg">
-              {FOUNDER_PROFILE.role}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -886,7 +713,7 @@ function TrustStripe() {
   const carouselPartners = [...TRUST_PARTNERS, ...TRUST_PARTNERS];
 
   return (
-    <SectionShell className="border-t-0 bg-[#F4F7F6] py-5 sm:py-6">
+    <SectionShell className="border-t-0 bg-white py-5 sm:py-8">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(5,35,56,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(5,35,56,0.035)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
       <SectionInner className="relative">
         <p className="text-center [font-family:var(--font-paraluman-mono)] text-[0.68rem] font-bold uppercase tracking-[0.24em] text-[#728092]">
@@ -1007,41 +834,54 @@ function MediaSpotlight() {
           </div>
 
           <div className="relative grid gap-6 lg:grid-cols-[1.18fr_0.88fr]">
-            <article className="group min-h-[19rem] overflow-hidden rounded-[0.45em] bg-white shadow-[0_18px_40px_-30px_rgba(5,35,56,0.5)] transition-transform duration-300 hover:-translate-y-1">
-              <div className="flex h-full flex-col justify-between bg-[radial-gradient(circle_at_50%_32%,rgba(255,255,255,0.55),transparent_34%),linear-gradient(135deg,rgba(16,185,129,0.18),rgba(139,92,246,0.16))] p-5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-[0.25em] bg-red-500 text-white">
+            <Link
+              href={MEDIA_VIDEO_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="group overflow-hidden rounded-[0.45em] bg-white shadow-[0_18px_40px_-30px_rgba(5,35,56,0.5)] transition-transform duration-300 hover:-translate-y-1"
+            >
+              <div className="relative aspect-video overflow-hidden bg-[#052338]">
+                <Image
+                  src={MEDIA_VIDEO_THUMBNAIL}
+                  alt="Sofi AI video preview"
+                  fill
+                  sizes="(min-width: 1024px) 42vw, 100vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-[#052338]/10" />
+                <div className="absolute left-5 top-5 flex h-10 w-10 items-center justify-center rounded-[0.25em] bg-red-500 text-white shadow-[0_14px_30px_-18px_rgba(0,0,0,0.6)]">
                   <Play className="h-5 w-5 fill-white" />
                 </div>
-                <div className="rounded-[0.35em] bg-white/90 p-4 shadow-[0_12px_30px_-24px_rgba(5,35,56,0.45)]">
-                  <h3 className="[font-family:var(--font-paraluman-heading)] text-xl font-bold leading-tight tracking-[-0.035em]">
-                    I interned at Sofi AI and here&apos;s what I learned
-                  </h3>
-                  <p className="mt-2 text-xs text-[#5B6382]">
-                    Jenny Lee &bull; 1.2M views
-                  </p>
-                </div>
+                <span className="absolute bottom-3 right-3 rounded bg-black/78 px-2 py-1 text-[0.68rem] font-bold text-white">
+                  YouTube
+                </span>
               </div>
-            </article>
+              <div className="p-4">
+                <h3 className="[font-family:var(--font-paraluman-heading)] text-xl font-bold leading-tight tracking-[-0.035em] text-[#052338]">
+                  Sophia Nicole Sy of SOFI AI on AI, Innovation and Women in the
+                  Future of work
+                </h3>
+              </div>
+            </Link>
             <div className="grid content-center gap-0 divide-y divide-[#052338]/10">
               {MEDIA_ARTICLES.map((article) => (
-                <article
-                  key={article}
-                  className="grid grid-cols-[4.75rem_1fr_auto] items-start gap-4 py-5 text-[#052338]"
+                <Link
+                  key={article.href}
+                  href={article.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="grid grid-cols-[1fr_auto] items-start gap-4 py-5 text-[#052338]"
                 >
-                  <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-black tracking-[-0.05em] text-[#052338]">
-                    {article}
-                  </p>
                   <div>
                     <p className="text-sm font-semibold leading-6 text-[#052338]/86">
-                      A closer look at Sofi AI&apos;s momentum, culture, and
-                      work.
+                      {article.title}
                     </p>
                     <p className="mt-2 text-xs font-semibold text-[#8B5CF6]/80">
-                      Apr 10, 2024
+                      {article.date}
                     </p>
                   </div>
                   <ArrowUpRight className="mt-1 h-4 w-4 text-[#00B894]" />
-                </article>
+                </Link>
               ))}
             </div>
           </div>
@@ -1082,7 +922,7 @@ function FeaturedInternship({ onSelect }: { onSelect: () => void }) {
               <h3 className="[font-family:var(--font-paraluman-heading)] mt-4 text-[clamp(2rem,4.2vw,3.25rem)] font-black leading-[1.02] tracking-[-0.055em] text-white">
                 Frontend Engineer Intern
               </h3>
-              <p className="mt-4 max-w-2xl text-base font-semibold leading-7 text-white/86">
+              <p className="mt-4 max-w-2xl text-base font-semibold leading-7 text-white">
                 Build product interfaces for a fast-growing applied AI startup,
                 starting with a frontend for a TikTok hook-analysis backend.
               </p>
