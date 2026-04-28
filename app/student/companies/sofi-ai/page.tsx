@@ -919,18 +919,9 @@ function FeaturedInternship({ onSelect }: { onSelect: () => void }) {
             </span>
           </div>
           <h3 className="[font-family:var(--font-paraluman-heading)] text-xl font-bold tracking-[-0.035em] text-[#052338]">
-            Frontend Engineer Intern
+            UI/UX Intern
           </h3>
-          <div className="flex flex-wrap gap-2 sm:justify-end">
-            {["React", "TypeScript", "Tailwind CSS"].map((tag) => (
-              <span
-                key={tag}
-                className="rounded-full bg-[#052338]/5 px-4 py-2 text-xs font-semibold text-[#052338]/82"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
+
           <div className="inline-flex items-center gap-2 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-[#007f6b] sm:justify-end">
             View role
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
@@ -981,31 +972,39 @@ function SofiFaq() {
 
 function CompactFooter() {
   return (
-    <footer className="relative overflow-hidden border-t border-[#052338]/8 bg-[#F6FBFA] px-6 py-5 text-[#052338] sm:px-10 lg:px-16 xl:px-24">
-      <div className="relative mx-auto flex max-w-7xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black tracking-[-0.04em] text-[#052338]">
-            BetterInternship &times;{" "}
-            <span className="text-[#00A886]">Sofi AI</span>
-          </p>
-          <p className="mt-2 text-sm text-[#052338]/58">
-            Real work. Real impact. Built for students.
-          </p>
+    <footer className="relative overflow-hidden border-t border-[#052338]/8 bg-white px-6 py-8 text-[#052338] sm:px-10 lg:px-16 xl:px-24">
+      <div className="relative mx-auto flex max-w-7xl flex-col gap-6  sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex max-w-md items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Image
+              src="/BetterInternshipLogo.png"
+              alt="BetterInternship logo"
+              width={56}
+              height={56}
+              className="h-12 w-12"
+            />
+            <span className="[font-family:var(--font-paraluman-heading)] text-lg font-black leading-none tracking-[-0.04em] text-[#052338] sm:text-xl">
+              &times;
+            </span>
+            <Image
+              src={SOFI_AI_LOGO_URL}
+              alt="Sofi AI logo"
+              width={92}
+              height={32}
+              className="h-auto w-20 grayscale brightness-0 contrast-150 sm:w-24"
+            />
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          {[Linkedin, Instagram, Youtube].map((Icon, index) => (
-            <a
-              key={index}
-              href="https://sofitech.ai/"
-              target="_blank"
-              rel="noreferrer"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#052338] shadow-[0_12px_28px_-24px_rgba(5,35,56,0.38)] transition-colors duration-300 hover:bg-[#003F38] hover:text-white"
-              aria-label="Sofi AI social link"
-            >
-              <Icon className="h-4 w-4" />
-            </a>
-          ))}
-        </div>
+
+        <Button
+          asChild
+          className="inline-flex w-fit items-center justify-center gap-2 rounded-full bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white shadow-[0_14px_28px_-22px_rgba(5,35,56,0.7)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#003F38]"
+        >
+          <a href="https://sofitech.ai/" target="_blank" rel="noreferrer">
+            Visit Sofi AI
+            <ArrowUpRight className="h-4 w-4" />
+          </a>
+        </Button>
       </div>
     </footer>
   );
