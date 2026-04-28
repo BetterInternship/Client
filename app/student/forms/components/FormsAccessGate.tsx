@@ -2,7 +2,7 @@
 
 import { Fragment, type FormEvent, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -29,15 +29,30 @@ const normalizeAccessCode = (value: string) =>
 export function FormsAccessGate({
   onAccessGranted,
 }: {
-  onAccessGranted: () => void;
+  onAccessGranted: (accessCode: string) => Promise<void> | void;
 }) {
   const [accessCode, setAccessCode] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const isAccessCodeComplete = accessCode.length === 6;
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!isAccessCodeComplete) return;
-    onAccessGranted();
+    if (!isAccessCodeComplete || isSubmitting) return;
+
+    setError("");
+    setIsSubmitting(true);
+    try {
+      await onAccessGranted(accessCode);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Could not access forms. Please check your code and try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -50,7 +65,7 @@ export function FormsAccessGate({
     >
       <Card className="w-full max-w-lg overflow-hidden border-gray-200/90 p-0 shadow-sm">
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(event) => void handleSubmit(event)}
           className="flex flex-col gap-6 p-6 sm:p-7"
         >
           <div className="flex items-start gap-3">
@@ -73,7 +88,10 @@ export function FormsAccessGate({
               id="forms-access-code"
               maxLength={6}
               value={accessCode}
-              onChange={(value) => setAccessCode(normalizeAccessCode(value))}
+              onChange={(value) => {
+                setAccessCode(normalizeAccessCode(value));
+                setError("");
+              }}
               autoComplete="one-time-code"
               autoFocus
               inputMode="text"
@@ -101,16 +119,30 @@ export function FormsAccessGate({
                 </Fragment>
               ))}
             </InputOTP>
+            {error && (
+              <p className="max-w-sm text-center text-sm font-medium text-destructive">
+                {error}
+              </p>
+            )}
           </div>
 
           <Button
             type="submit"
             size="md"
             className="h-11 w-full"
-            disabled={!isAccessCodeComplete}
+            disabled={!isAccessCodeComplete || isSubmitting}
           >
-            Access Your Forms
-            <ArrowRight className="h-4 w-4" />
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Accessing Forms
+              </>
+            ) : (
+              <>
+                Access Your Forms
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
           </Button>
         </form>
       </Card>
