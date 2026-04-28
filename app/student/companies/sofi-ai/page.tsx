@@ -816,7 +816,7 @@ function MediaSpotlight() {
     <SectionShell className="border-t-0 bg-[#fbfffe] py-24 sm:py-32">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.055)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.055)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
       <SectionInner>
-        <div className="relative grid gap-9 lg:grid-cols-[0.72fr_1.65fr] lg:items-center">
+        <div className="relative grid gap-9 lg:grid-cols-[0.72fr_1.65fr] lg:items-start">
           <Doodle
             name="arrow"
             className="bottom-4 left-48 hidden w-28 opacity-75 md:block"
@@ -863,6 +863,7 @@ function MediaSpotlight() {
                 </h3>
               </div>
             </Link>
+
             <div className="grid content-center gap-0 divide-y divide-[#052338]/10">
               {MEDIA_ARTICLES.map((article) => (
                 <Link
@@ -895,60 +896,50 @@ function FeaturedInternship({ onSelect }: { onSelect: () => void }) {
   return (
     <SectionShell className="border-t-0 bg-[#fbfffe] py-24 sm:py-32">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.055)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.055)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
-      <SectionInner>
+      <SectionInner className="relative">
+        <div className="mx-auto max-w-4xl text-center">
+          <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.18em] text-[#00A886]">
+            Featured opportunity
+          </p>
+          <h2 className="[font-family:var(--font-paraluman-heading)] mt-3 text-[clamp(2.2rem,4.6vw,3.6rem)] font-black leading-[0.98] tracking-[-0.06em] text-[#052338]">
+            Better Internships <span className="text-[#00A886]">start here</span>
+          </h2>
+        </div>
         <button
           type="button"
           onClick={onSelect}
-          className="group relative w-full overflow-hidden rounded-[0.75em] border border-[#10B981]/18 bg-[#003F38] p-7 text-left text-white shadow-[0_28px_70px_-42px_rgba(0,63,56,0.82)] transition-transform duration-300 hover:-translate-y-1 sm:p-10 lg:p-12"
+          className="group relative mt-9 grid w-full items-center gap-5 rounded-[0.65em] border border-[#052338]/10 bg-white/90 p-5 text-left text-[#052338] shadow-[0_20px_60px_-46px_rgba(5,35,56,0.4)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#07C4A7]/35 hover:bg-white sm:grid-cols-[auto_1fr_auto_auto] sm:p-6 lg:px-7"
         >
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_42%,rgba(16,185,129,0.38),transparent_30%),linear-gradient(135deg,rgba(16,185,129,0.12),rgba(0,63,56,0)_48%)]" />
-          <Doodle
-            name="dotGrid"
-            className="bottom-8 right-8 hidden w-32 opacity-70 lg:block"
-          />
-          <Doodle
-            name="secondArrow"
-            className="bottom-0 left-[42%] hidden w-36 opacity-75 lg:block"
-          />
-          <Doodle
-            name="stickyNote"
-            className="right-20 top-5 hidden w-40 rotate-6 opacity-80 lg:block"
-          />
-          <div className="relative grid gap-10 lg:grid-cols-[1.05fr_0.85fr] lg:items-center">
-            <div>
-              <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.18em] text-[#10E6C3]">
-                Featured opportunity
-              </p>
-              <h3 className="[font-family:var(--font-paraluman-heading)] mt-4 text-[clamp(2rem,4.2vw,3.25rem)] font-black leading-[1.02] tracking-[-0.055em] text-white">
-                Frontend Engineer Intern
-              </h3>
-              <p className="mt-4 max-w-2xl text-base font-semibold leading-7 text-white">
-                Build product interfaces for a fast-growing applied AI startup,
-                starting with a frontend for a TikTok hook-analysis backend.
-              </p>
-              <div className="mt-7 flex flex-wrap gap-2">
-                {["React", "TypeScript", "Tailwind CSS"].map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-[0.35em] border border-white/10 bg-white/12 px-4 py-2 text-xs font-semibold text-white"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              <div className="mt-8 inline-flex h-12 items-center gap-2 rounded-[0.35em] bg-[#10B981] px-6 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white shadow-[0_16px_32px_-18px_rgba(16,185,129,0.95)] transition-colors duration-300 group-hover:bg-[#00A886]">
-                View role details
-                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </div>
-            </div>
-            <div className="hidden min-h-52 items-center justify-center lg:flex">
-              <div className="grid h-52 w-80 rotate-3 place-items-center rounded-[0.65em] border border-white/14 bg-white/10 shadow-[0_22px_52px_-34px_rgba(255,255,255,0.5)] backdrop-blur">
-                <span className="[font-family:var(--font-paraluman-mono)] text-6xl font-bold text-[#10E6C3]">
-                  &lt;/&gt;
-                </span>
-              </div>
-            </div>
+          <div className="flex h-14 w-14 items-center justify-center rounded-[0.55em] bg-[#E8FFF9] text-[#00866f] ring-1 ring-[#07C4A7]/14">
+            <span className="[font-family:var(--font-paraluman-mono)] text-xl font-bold">
+              &lt;/&gt;
+            </span>
           </div>
+          <h3 className="[font-family:var(--font-paraluman-heading)] text-xl font-bold tracking-[-0.035em] text-[#052338]">
+            Frontend Engineer Intern
+          </h3>
+          <div className="flex flex-wrap gap-2 sm:justify-end">
+            {["React", "TypeScript", "Tailwind CSS"].map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full bg-[#052338]/5 px-4 py-2 text-xs font-semibold text-[#052338]/82"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+          <div className="inline-flex items-center gap-2 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-[#007f6b] sm:justify-end">
+            View role
+            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+          </div>
+        </button>
+        <button
+          type="button"
+          onClick={onSelect}
+          className="group mx-auto mt-5 flex items-center gap-2 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-[#007f6b] transition-colors duration-200 hover:text-[#052338]"
+        >
+          View all opportunities
+          <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
         </button>
       </SectionInner>
     </SectionShell>
@@ -957,7 +948,7 @@ function FeaturedInternship({ onSelect }: { onSelect: () => void }) {
 
 function SofiFaq() {
   return (
-    <SectionShell className="border-t-0 bg-[#fbfffe] py-20 sm:py-28">
+    <SectionShell className="border-t-0 bg-[#fbfffe] py-24 sm:py-32">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.055)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.055)_1px,transparent_1px)] bg-[size:36px_36px] opacity-45" />
       <Doodle
         name="wavyLine"
