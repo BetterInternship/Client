@@ -32,10 +32,10 @@ type ApplyPanelProps = {
 
 function AsteriskList({ items }: { items: readonly string[] }) {
   return (
-    <ul className="space-y-2.5">
+    <ul className="space-y-2">
       {items.map((item) => (
-        <li key={item} className="flex gap-3">
-          <span className="mt-0.5 shrink-0 [font-family:var(--font-paraluman-mono)] text-sm font-semibold leading-7 text-[#00A886]">
+        <li key={item} className="flex gap-2.5">
+          <span className="mt-0.5 shrink-0 [font-family:var(--font-paraluman-mono)] text-sm font-semibold leading-6 text-[#00A886]">
             *
           </span>
           <span>{item}</span>
@@ -108,14 +108,47 @@ export function ApplyPanel({
       onFieldChange(field, event.target.value);
     };
 
+  if (hasSubmitted) {
+    return (
+      <motion.div
+        initial={prefersReduce ? false : { opacity: 0, y: 20, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.7, ease: [0.34, 1.56, 0.64, 1] }}
+        className="text-[#052338]"
+      >
+        <div className="max-w-2xl space-y-4">
+          <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-bold tracking-[-0.035em] text-[#052338]">
+            Submission sent
+          </p>
+          <p className="max-w-2xl [font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/82 sm:text-[0.9rem]">
+            Thank you for applying. We sent a confirmation to{" "}
+            <span className="font-semibold text-[#052338]">
+              {submittedEmail || "your email"}
+            </span>
+            . You will receive a response within 24 hours.
+          </p>
+          <div className="pt-1">
+            <Button
+              type="button"
+              onClick={onBackToOverview}
+              className="inline-flex h-11 items-center justify-center rounded-md bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white transition-all duration-200 hover:bg-[#0D3B33]"
+            >
+              Back to overview
+            </Button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
   return (
     <div className="text-[#052338]">
       <div className="max-w-2xl">
         <div className="space-y-2">
-          <h2 className="[font-family:var(--font-paraluman-heading)] text-2xl font-bold leading-tight tracking-[-0.035em] sm:text-[1.7rem]">
+          <h2 className="[font-family:var(--font-paraluman-heading)] text-[1.45rem] font-bold leading-tight tracking-[-0.035em] sm:text-[1.55rem]">
             Submit your challenge output.
           </h2>
-          <p className="[font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#184d45]/82 sm:text-[0.95rem]">
+          <p className="[font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/82 sm:text-[0.9rem]">
             Again,{" "}
             <span className="font-bold text-[#00866f]">
               no resume needed. Response within 24 hours.
@@ -123,8 +156,8 @@ export function ApplyPanel({
           </p>
         </div>
 
-        <div className="mt-8 space-y-6 border-t border-[#052338]/10 pt-7 [font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#184d45]/86">
-          <div className="space-y-3">
+        <div className="mt-6 space-y-5 border-t border-[#052338]/10 pt-5 [font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/86">
+          <div className="space-y-2.5">
             <p className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.025em] text-[#052338]">
               Deployed Website or Prototype
             </p>
@@ -137,7 +170,7 @@ export function ApplyPanel({
             />
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             <p className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.025em] text-[#052338]">
               1-3 Minute Video
             </p>
@@ -152,45 +185,10 @@ export function ApplyPanel({
         </div>
       </div>
 
-      <div className="mt-8 max-w-2xl">
+      <div className="mt-6 max-w-2xl">
         <div>
-          {hasSubmitted ? (
-            <motion.div
-              initial={
-                prefersReduce ? false : { opacity: 0, y: 20, scale: 0.98 }
-              }
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.7, ease: [0.34, 1.56, 0.64, 1] }}
-              className="p-0"
-            >
-              <div className="space-y-4">
-                <p className="[font-family:var(--font-paraluman-mono)] text-[10px] font-semibold uppercase tracking-[0.16em] text-[#00A886] sm:text-[11px]">
-                  Submission sent
-                </p>
-                <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-bold tracking-[-0.035em] text-[#052338]">
-                  You&apos;re in.
-                </p>
-                <p className="max-w-2xl [font-family:var(--font-paraluman-body)] text-sm leading-8 text-[#184d45]/82 sm:text-[0.95rem]">
-                  Thank you for applying. We sent a confirmation to{" "}
-                  <span className="font-semibold text-[#052338]">
-                    {submittedEmail || "your email"}
-                  </span>
-                  . You will receive a response within 24 hours.
-                </p>
-                <div className="pt-2">
-                  <Button
-                    type="button"
-                    onClick={onBackToOverview}
-                    className="inline-flex h-11 items-center justify-center rounded-md bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white transition-all duration-200 hover:bg-[#0D3B33]"
-                  >
-                    Back to overview
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          ) : (
-            <form className="space-y-7" onSubmit={(e) => void onSubmit(e)}>
-              <div className="grid gap-5">
+            <form className="space-y-5" onSubmit={(e) => void onSubmit(e)}>
+              <div className="grid gap-4">
                 <div className="space-y-2">
                   <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
                     Full Name *
@@ -220,7 +218,7 @@ export function ApplyPanel({
                   <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
                     Deployed Website / Prototype Link *
                   </label>
-                  <p className="[font-family:var(--font-paraluman-body)] text-xs leading-6 text-[#052338]/42">
+                  <p className="[font-family:var(--font-paraluman-body)] text-xs leading-5 text-[#052338]/42">
                     Figma, Framer, Webflow, or any shareable URL. Make sure view
                     access is on.
                   </p>
@@ -236,8 +234,9 @@ export function ApplyPanel({
                   <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
                     Video Submission Link *
                   </label>
-                  <p className="[font-family:var(--font-paraluman-body)] text-xs leading-6 text-[#052338]/42">
-                    Loom, YouTube (unlisted), Google Drive &mdash; any link we can`r`n                    watch. Keep it 1-3 minutes.
+                  <p className="[font-family:var(--font-paraluman-body)] text-xs leading-5 text-[#052338]/42">
+                    Loom, YouTube (unlisted), Google Drive &mdash; any link we
+                    can watch. Keep it 1-3 minutes.
                   </p>
                   <Input
                     required
@@ -303,10 +302,8 @@ export function ApplyPanel({
                 </div>
               )}
             </form>
-          )}
         </div>
       </div>
     </div>
   );
 }
-
