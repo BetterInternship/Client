@@ -1,6 +1,6 @@
 import type { StaticImageData } from "next/image";
 
-export type PanelKey = "overview" | "challenge" | "submission";
+export type PanelKey = "overview" | "challenge";
 
 export type SubmissionStep = 1 | 2;
 

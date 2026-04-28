@@ -85,7 +85,7 @@ export function ApplyPanel({
       spread: 74,
       startVelocity: 34,
       origin: { y: 0.65 },
-      colors: ["#07C4A7", "#35e3ca", "#8cf5e4", "#ffffff"],
+      colors: ["#00A886", "#00B894", "#8cf5e4", "#ffffff"],
     });
 
     window.setTimeout(() => {
@@ -94,7 +94,7 @@ export function ApplyPanel({
         spread: 60,
         startVelocity: 28,
         origin: { x: 0.75, y: 0.68 },
-        colors: ["#07C4A7", "#8cf5e4", "#ffffff"],
+        colors: ["#00A886", "#8cf5e4", "#ffffff"],
       });
     }, 180);
   }, [hasSubmitted, prefersReduce]);
@@ -108,21 +108,23 @@ export function ApplyPanel({
     };
 
   return (
-    <div className="space-y-6">
-      <div className="max-w-3xl space-y-3 border-b pb-5">
-        <h2 className="[font-family:var(--font-paraluman-heading)] text-4xl font-bold leading-[1.02] tracking-[-0.04em] text-[#0D3B33]">
-          Submit your challenge output.
-        </h2>
-        <p className="[font-family:var(--font-paraluman-body)] text-base leading-7 text-[#184d45]/72 sm:text-lg sm:leading-8">
-          Again,{" "}
-          <span className="font-bold text-[#07C4A7]">
-            no resume needed. Response within 24 hours.
-          </span>
-        </p>
+    <div className="bg-[#E8FFF9] px-0 py-6 text-[#052338] sm:-mx-6 sm:px-6 sm:py-7">
+      <div>
+        <div className="mt-2 max-w-2xl space-y-2">
+          <h2 className="[font-family:var(--font-paraluman-heading)] text-2xl font-bold leading-tight tracking-[-0.035em] sm:text-[1.7rem]">
+            Submit your challenge output.
+          </h2>
+          <p className="[font-family:var(--font-paraluman-body)] text-sm leading-7 text-[#184d45]/82 sm:text-[0.95rem]">
+            Again,{" "}
+            <span className="font-bold text-[#00866f]">
+              no resume needed. Response within 24 hours.
+            </span>
+          </p>
+        </div>
       </div>
 
-      <div className="overflow-hidden">
-        <div className="px-0 py-6 sm:py-8">
+      <div className="mt-7 border-t border-[#00A886]/16 pt-6">
+        <div>
           {hasSubmitted ? (
             <motion.div
               initial={
@@ -133,15 +135,15 @@ export function ApplyPanel({
               className="p-0"
             >
               <div className="space-y-4">
-                <p className="[font-family:var(--font-paraluman-mono)] text-[10px] font-semibold uppercase tracking-[0.22em] text-[#07C4A7]/64 sm:text-[11px]">
+                <p className="[font-family:var(--font-paraluman-mono)] text-[10px] font-semibold uppercase tracking-[0.16em] text-[#00A886] sm:text-[11px]">
                   Submission sent
                 </p>
-                <p className="[font-family:var(--font-paraluman-heading)] text-3xl font-medium tracking-[-0.04em] text-[#0D3B33] sm:text-4xl">
+                <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-bold tracking-[-0.035em] text-[#052338]">
                   You&apos;re in.
                 </p>
-                <p className="max-w-2xl [font-family:var(--font-paraluman-body)] text-base leading-7 text-[#184d45]/74 sm:text-lg sm:leading-8">
+                <p className="max-w-2xl [font-family:var(--font-paraluman-body)] text-sm leading-8 text-[#184d45]/82 sm:text-[0.95rem]">
                   Thank you for applying. We sent a confirmation to{" "}
-                  <span className="font-semibold text-[#0D3B33]">
+                  <span className="font-semibold text-[#052338]">
                     {submittedEmail || "your email"}
                   </span>
                   . You will receive a response within 24 hours.
@@ -150,7 +152,7 @@ export function ApplyPanel({
                   <Button
                     type="button"
                     onClick={onBackToOverview}
-                    className="inline-flex h-11 items-center justify-center rounded-md bg-[#0D3B33] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-medium tracking-[-0.02em] text-white transition-all duration-200 hover:bg-[#0a2f29]"
+                    className="inline-flex h-11 items-center justify-center rounded-md bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white transition-all duration-200 hover:bg-[#0D3B33]"
                   >
                     Back to overview
                   </Button>
@@ -159,7 +161,7 @@ export function ApplyPanel({
             </motion.div>
           ) : (
             <form className="space-y-6" onSubmit={(e) => void onSubmit(e)}>
-              <p className="[font-family:var(--font-paraluman-heading)] text-lg font-bold tracking-[-0.03em] text-[#0D3B33]">
+              <p className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.025em] text-[#052338]">
                 {submissionStep === 1
                   ? "Step 1/2: Paste the single best link to your prototype, video, or document."
                   : "Step 2/2: Add your contact details so the team can review and reply quickly."}
@@ -168,16 +170,16 @@ export function ApplyPanel({
               {submissionStep === 1 && (
                 <>
                   <div className="space-y-2.5">
-                    <label className="[font-family:var(--font-paraluman-body)] font-semibold text-[#184d45] opacity-60 text-xs">
+                    <label className="[font-family:var(--font-paraluman-mono)] text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#052338]/55">
                       Challenge Output Link *
                     </label>
                     <Input
                       required
                       value={form.submissionLink}
                       onChange={updateField("submissionLink")}
-                      className="h-12 border-[#07C4A7]/14 bg-white [font-family:var(--font-paraluman-body)] text-base shadow-none focus-visible:ring-[#07C4A7]/25"
+                      className="h-11 rounded-md border-[#00A886]/18 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/25"
                     />
-                    <div className="flex flex-wrap gap-2 pt-1 [font-family:var(--font-paraluman-body)] text-[11px] text-[#184d45]/56 sm:text-xs">
+                    <div className="flex flex-wrap gap-2 pt-1 [font-family:var(--font-paraluman-body)] text-[11px] text-[#184d45]/62 sm:text-xs">
                       Accepted Links:
                       <span className="inline-flex items-center gap-1">
                         <FolderOpen className="h-3.5 w-3.5" />
@@ -199,14 +201,14 @@ export function ApplyPanel({
                   </div>
 
                   <div className="space-y-2.5">
-                    <label className="[font-family:var(--font-paraluman-body)] font-semibold text-[#184d45] opacity-60 text-xs">
+                    <label className="[font-family:var(--font-paraluman-mono)] text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#052338]/55">
                       Application Notes
                     </label>
                     <Textarea
                       value={form.submissionNotes}
                       onChange={updateField("submissionNotes")}
                       placeholder="Add context, constraints, and tradeoffs you want Sofi AI reviewers to notice."
-                      className="min-h-32 border-[#07C4A7]/14 bg-white [font-family:var(--font-paraluman-body)] text-base shadow-none focus-visible:ring-[#07C4A7]/25"
+                      className="min-h-32 rounded-md border-[#00A886]/18 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none placeholder:text-[#052338]/45 focus-visible:ring-[#00B894]/25"
                     />
                   </div>
                 </>
@@ -216,7 +218,7 @@ export function ApplyPanel({
                 <>
                   <div className="grid gap-5 sm:grid-cols-2">
                     <div className="space-y-2.5 sm:col-span-2">
-                      <label className="[font-family:var(--font-paraluman-body)] font-semibold text-[#184d45] opacity-60 text-xs">
+                      <label className="[font-family:var(--font-paraluman-mono)] text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#052338]/55">
                         Email Address *
                       </label>
                       <Input
@@ -224,41 +226,41 @@ export function ApplyPanel({
                         type="email"
                         value={form.email}
                         onChange={updateField("email")}
-                        className="h-12 border-[#07C4A7]/14 bg-white [font-family:var(--font-paraluman-body)] text-base shadow-none focus-visible:ring-[#07C4A7]/25"
+                        className="h-11 rounded-md border-[#00A886]/18 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/25"
                       />
                     </div>
 
                     <div className="space-y-2.5">
-                      <label className="[font-family:var(--font-paraluman-body)] font-semibold text-[#184d45] opacity-60 text-xs">
+                      <label className="[font-family:var(--font-paraluman-mono)] text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#052338]/55">
                         Full Name *
                       </label>
                       <Input
                         required
                         value={form.fullName}
                         onChange={updateField("fullName")}
-                        className="h-12 border-[#07C4A7]/14 bg-white [font-family:var(--font-paraluman-body)] text-base shadow-none focus-visible:ring-[#07C4A7]/25"
+                        className="h-11 rounded-md border-[#00A886]/18 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/25"
                       />
                     </div>
 
                     <div className="space-y-2.5">
-                      <label className="[font-family:var(--font-paraluman-body)] font-semibold text-[#184d45] opacity-60 text-xs">
+                      <label className="[font-family:var(--font-paraluman-mono)] text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#052338]/55">
                         Facebook Link *
                       </label>
                       <Input
                         required
                         value={form.facebookLink}
                         onChange={updateField("facebookLink")}
-                        className="h-12 border-[#07C4A7]/14 bg-white [font-family:var(--font-paraluman-body)] text-base shadow-none focus-visible:ring-[#07C4A7]/25"
+                        className="h-11 rounded-md border-[#00A886]/18 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/25"
                       />
                     </div>
                   </div>
 
                   {isDevelopment ? (
-                    <p className="border-t border-[#07C4A7]/10 pt-4 [font-family:var(--font-paraluman-body)] text-sm text-[#07C4A7]">
+                    <p className="border-t border-[#00A886]/16 pt-4 [font-family:var(--font-paraluman-body)] text-sm text-[#00866f]">
                       Captcha disabled in development.
                     </p>
                   ) : !token ? (
-                    <div className="space-y-3 border-t border-[#07C4A7]/10 pt-4">
+                    <div className="space-y-3 border-t border-[#00A886]/16 pt-4">
                       {!tokenFail ? (
                         <Loader>Validating browser...</Loader>
                       ) : (
@@ -274,7 +276,7 @@ export function ApplyPanel({
                       />
                     </div>
                   ) : (
-                    <div className="border-t border-emerald-200 pt-4 [font-family:var(--font-paraluman-body)] text-sm text-emerald-700">
+                    <div className="border-t border-[#00A886]/16 pt-4 [font-family:var(--font-paraluman-body)] text-sm text-[#00866f]">
                       Browser verification complete.
                     </div>
                   )}
@@ -286,7 +288,7 @@ export function ApplyPanel({
                   <Button
                     type="button"
                     onClick={onNextStep}
-                    className="inline-flex h-11 items-center justify-center rounded-md bg-[#0D3B33] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-medium tracking-[-0.02em] text-white transition-all duration-200 hover:bg-[#0a2f29]"
+                    className="inline-flex h-11 items-center justify-center rounded-md bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white transition-all duration-200 hover:bg-[#0D3B33]"
                   >
                     Continue to contact details
                   </Button>
@@ -296,7 +298,7 @@ export function ApplyPanel({
                       type="button"
                       variant="outline"
                       onClick={onBackStep}
-                      className="inline-flex h-11 items-center justify-center gap-1.5 rounded-md border border-[#07C4A7]/14 bg-white px-5 [font-family:var(--font-paraluman-heading)] text-sm font-medium tracking-[-0.02em] text-[#0D3B33] transition-colors duration-200 hover:bg-[#e9fffb]"
+                      className="inline-flex h-11 items-center justify-center gap-1.5 rounded-md border border-[#052338]/12 bg-white px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-[#052338] transition-colors duration-200 hover:bg-white"
                     >
                       <ArrowLeft className="h-4 w-4" />
                       Back
@@ -304,7 +306,7 @@ export function ApplyPanel({
                     <Button
                       type="submit"
                       disabled={isSubmitting}
-                      className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-[#0D3B33] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-medium tracking-[-0.02em] text-white transition-all duration-200 hover:bg-[#0a2f29]"
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white transition-all duration-200 hover:bg-[#0D3B33]"
                     >
                       {isSubmitting ? (
                         <>
@@ -322,7 +324,7 @@ export function ApplyPanel({
               {resultMessage && (
                 <div
                   className={cn(
-                    "rounded-[1rem] border px-4 py-3 [font-family:var(--font-paraluman-body)] text-sm",
+                    "rounded-md border px-4 py-3 [font-family:var(--font-paraluman-body)] text-sm",
                     isError
                       ? "border-red-200 bg-red-50 text-red-700"
                       : "border-emerald-200 bg-emerald-50 text-emerald-700",
@@ -338,7 +340,3 @@ export function ApplyPanel({
     </div>
   );
 }
-
-
-
-
