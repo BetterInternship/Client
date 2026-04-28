@@ -812,24 +812,21 @@ function MediaSpotlight() {
   return (
     <SectionShell className="border-t-0 bg-transparent py-24 sm:py-32">
       <SectionInner className="relative">
-        <div className="pointer-events-none absolute inset-x-10 top-16 h-[calc(100%-2rem)] rounded-[0.9em] bg-[#052338]/14 blur-2xl sm:inset-x-16" />
-        <div className="relative overflow-hidden rounded-[0.75em] border border-[#052338]/8 bg-white p-7 shadow-[0_36px_92px_-46px_rgba(5,35,56,0.5),0_16px_34px_-24px_rgba(5,35,56,0.28)] backdrop-blur-sm sm:p-10 lg:p-14">
-          <div className="relative grid gap-9 lg:grid-cols-[0.72fr_1.65fr] lg:items-start">
+        <div className="pointer-events-none absolute inset-x-10 h-[calc(100%-2rem)] rounded-[0.9em] bg-[#052338]/14 blur-2xl sm:inset-x-16" />
+        <div className="relative overflow-hidden rounded-[0.75em] border border-[#052338]/8 bg-white shadow-[0_36px_92px_-46px_rgba(5,35,56,0.5),0_16px_34px_-24px_rgba(5,35,56,0.28)] backdrop-blur-sm sm:p-10 lg:px-14">
+          <div className="relative space-y-8">
             <Doodle
               name="profileBubble"
-              className="left-44 -bottom-24 hidden w-64 lg:block"
+              className="right-56 -top-24 hidden w-80 [&>span]:scale-x-[-1] lg:block"
             />
 
-            <div className="space-y-6">
-              <div>
-                <h2 className="[font-family:var(--font-paraluman-heading)] text-[clamp(2rem,4vw,3.35rem)] font-black leading-[1.02] tracking-[-0.055em]">
-                  Sofi AI in the{" "}
-                  <span className="text-[#00B894]">spotlight</span>
-                </h2>
-              </div>
+            <div className="max-w-3xl">
+              <h2 className="[font-family:var(--font-paraluman-heading)] text-[clamp(2rem,4vw,3.35rem)] font-black leading-[1.02] tracking-[-0.055em]">
+                Sofi AI in the <span className="text-[#00B894]">spotlight</span>
+              </h2>
             </div>
 
-            <div className="relative grid gap-6 lg:grid-cols-[1.18fr_0.88fr]">
+            <div className="grid gap-8 lg:grid-cols-[1.25fr_0.75fr] lg:items-start xl:gap-10">
               <Link
                 href={MEDIA_VIDEO_URL}
                 target="_blank"
@@ -860,7 +857,7 @@ function MediaSpotlight() {
                 </div>
               </Link>
 
-              <div className="grid content-center gap-0 divide-y divide-[#052338]/10">
+              <div className="grid content-start gap-0 divide-y divide-[#052338]/10 lg:pt-2">
                 {MEDIA_ARTICLES.map((article) => (
                   <Link
                     key={article.href}
