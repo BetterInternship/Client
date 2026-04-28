@@ -157,6 +157,11 @@ interface SaveJobResponse extends FetchResponse {
   message: string;
 }
 
+interface JoinFormGroupResponse extends FetchResponse {
+  success: boolean;
+  message?: string;
+}
+
 export type ApproveSignatoryRequest = {
   pendingDocumentId: string;
   signatoryName: string;
@@ -202,10 +207,11 @@ export const FormService = {
   },
 
   async getMyFormTemplates() {
-    const { formTemplates } = await APIClient.get<{
+    const response = await APIClient.get<{
+      formGroupDescription: string;
       formTemplates: FormTemplate[];
     }>(APIRouteBuilder("users").r("me/form-templates").build());
-    return formTemplates;
+    return response;
   },
 
   async getFormTemplatesLastUpdated() {
@@ -281,6 +287,13 @@ export const UserService = {
     return APIClient.put<UserResponse>(
       APIRouteBuilder("users").r("me").build(),
       data,
+    );
+  },
+
+  async joinFormGroup(code: string) {
+    return APIClient.post<JoinFormGroupResponse>(
+      APIRouteBuilder("users").r("join-form-group").build(),
+      { code },
     );
   },
 
