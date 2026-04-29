@@ -1,4 +1,4 @@
-import { FormTemplate } from "../db/use-moa-backend";
+import { FormTemplate } from "../db/forms-db.types";
 import {
   Conversation,
   CreateJobChallengeListingPayload,

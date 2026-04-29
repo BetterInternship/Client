@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FileSearch, FileText } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { FormTemplate } from "@/lib/db/use-moa-backend";
+import { FormTemplate } from "@/lib/db/forms-db.types";
 import { Loader } from "@/components/ui/loader";
 import {
   FormRendererContextBridge,

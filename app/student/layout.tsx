@@ -5,6 +5,8 @@ import { HeaderContextProvider } from "@/lib/ctx-header";
 import { RefsContextProvider } from "@/lib/db/use-refs";
 import { AppContextProvider } from "@/lib/ctx-app";
 import { BIMoaContextProvider } from "@/lib/db/use-bi-moa";
+import { getRefsData } from "@/lib/db/use-refs-backend";
+import { getBiMoaData } from "@/lib/db/use-bi-moa-backend";
 import { PostHogProvider } from "../posthog-provider";
 import TanstackProvider from "../tanstack-provider";
 import AllowLanding from "./allowLanding";
@@ -81,14 +83,19 @@ export const viewport: Viewport = {
  *
  * @component
  */
-export const RootLayout = ({
+export const RootLayout = async ({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
+  const [refsData, biMoaData] = await Promise.all([
+    getRefsData(),
+    getBiMoaData(),
+  ]);
+
   return (
-    <RefsContextProvider>
-      <BIMoaContextProvider>
+    <RefsContextProvider data={refsData}>
+      <BIMoaContextProvider moa={biMoaData.moa}>
         <PostHogProvider>
           <HTMLContent>{children}</HTMLContent>
         </PostHogProvider>
