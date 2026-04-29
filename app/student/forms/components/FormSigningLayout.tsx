@@ -68,6 +68,38 @@ const areFormValuesEqual = (
   return leftEntries.every(([key, value]) => right[key] === value);
 };
 
+const normalizeFieldName = (fieldName: string) =>
+  String(fieldName ?? "")
+    .trim()
+    .replace(/:default$/i, "");
+
+const getSignatureDerivedFieldNames = (
+  formMetadata: ReturnType<typeof useFormRendererContext>["formMetadata"],
+) => {
+  const fields = formMetadata.getFieldsForEditorService();
+  const signatureFieldNames = new Set(
+    fields
+      .filter((field) => field.type === "signature")
+      .map((field) => normalizeFieldName(field.field)),
+  );
+
+  if (!signatureFieldNames.size) return [];
+
+  return fields
+    .filter((field) => {
+      if (field.source !== "derived" || typeof field.prefiller !== "string")
+        return false;
+
+      const prefiller = field.prefiller;
+      return Array.from(signatureFieldNames).some(
+        (signatureFieldName) =>
+          prefiller.includes(signatureFieldName) ||
+          prefiller.includes(`${signatureFieldName}:default`),
+      );
+    })
+    .map((field) => field.field);
+};
+
 type SigningStep = "timeline" | "fields" | "preview-review" | "confirm";
 
 const DESKTOP_BACK_STEP_RESET_DELAY_MS = 320;
@@ -269,6 +301,11 @@ export function FormSigningLayout({
   const previewValuesWithDerived = useMemo(
     () => withDerivedFormValues(form.formMetadata, previewValues),
     [form.formMetadata, previewValues],
+  );
+  const wetSignatureHiddenFieldNames = useMemo(
+    () =>
+      noEsign ? getSignatureDerivedFieldNames(form.formMetadata) : [],
+    [form.formMetadata, noEsign],
   );
 
   const computeRequiredFieldsComplete = useCallback(
@@ -780,6 +817,8 @@ export function FormSigningLayout({
                       !isMobileLayout && selectedFieldSource === "form"
                     }
                     signingParties={recipients}
+                    wetSignatureMode={!!noEsign}
+                    hiddenFieldNames={wetSignatureHiddenFieldNames}
                     onFieldClick={handlePdfFieldSelect}
                     selectedFieldId={form.selectedPreviewId ?? undefined}
                   />
