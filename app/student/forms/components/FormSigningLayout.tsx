@@ -123,6 +123,14 @@ export function FormSigningLayout({
   const [selectionTick, setSelectionTick] = useState(0);
 
   useEffect(() => {
+    form.updateWetSignatureMode(!!noEsign);
+
+    return () => {
+      form.updateWetSignatureMode(false);
+    };
+  }, [noEsign]);
+
+  useEffect(() => {
     if (typeof window === "undefined") return;
 
     const updateCompactSigningLayout = () => {

@@ -57,6 +57,7 @@ export interface IFormRendererContext<T extends any[]> {
   // Setters
   updateFormName: (newFormName: string) => void;
   refreshPreviews: () => void;
+  updateWetSignatureMode: (enabled: boolean) => void;
   updateFieldsWithParams: (newParams: Record<string, any>) => void;
 }
 
@@ -117,6 +118,7 @@ export const FormRendererContextProvider = ({
   const [previewFields, setPreviewFields] = useState<ServerField[]>([]);
   const [blocks, setBlocks] = useState<ClientBlock<[PublicUser]>[]>([]);
   const [fields, setFields] = useState<ClientField<[PublicUser]>[]>([]);
+  const [wetSignatureMode, setWetSignatureMode] = useState(false);
   const [params, setParams] = useState<IFormParameters>({});
   const [previews, setPreviews] = useState<Record<number, React.ReactNode[]>>(
     {},
@@ -188,9 +190,9 @@ export const FormRendererContextProvider = ({
     const loadedFields = fm.getFieldsForClientService("initiator");
 
     setFields(loadedFields);
-    setBlocks(fm.getBlocksForClientService("initiator"));
+    setBlocks(getBlocksForCurrentMode(fm, wetSignatureMode));
     setPreviewFields(fm.getFieldsForSigningService());
-  }, [form]);
+  }, [form, wetSignatureMode]);
 
   // Clear fields on refresh?
   useEffect(() => {
@@ -225,6 +227,7 @@ export const FormRendererContextProvider = ({
     document: { name: documentName, url: documentUrl },
     updateFormName: (newFormName: string) => setFormName(newFormName),
     refreshPreviews: refreshPreviews,
+    updateWetSignatureMode: (enabled: boolean) => setWetSignatureMode(enabled),
     updateFieldsWithParams: (newParams: Record<string, any>) => {
       // Merge new params with existing ones (don't replace)
       const mergedParams = { ...params, ...newParams };
@@ -241,6 +244,22 @@ export const FormRendererContextProvider = ({
     </FormRendererContext.Provider>
   );
 };
+
+function getBlocksForCurrentMode<T extends any[]>(
+  formMetadata: FormMetadata<T>,
+  wetSignatureMode: boolean,
+) {
+  const blocks = formMetadata.getBlocksForClientService(
+    wetSignatureMode ? undefined : "initiator",
+  );
+
+  if (!wetSignatureMode) return blocks;
+
+  return blocks.filter((block) => {
+    const field = block.field_schema ?? block.phantom_field_schema;
+    return field?.type !== "signature";
+  });
+}
 
 /**
  * A preview of what the field will look like on the document.
