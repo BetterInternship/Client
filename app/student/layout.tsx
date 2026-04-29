@@ -37,7 +37,7 @@ const baseUrl = (() => {
 
   return configuredUrl || fallbackBaseUrl;
 })().replace(/\/$/, "");
-const ogImage = "https://www.betterinternship.com/og.png?v=1";
+const ogImage = `${baseUrl}/og.png?v=2`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),

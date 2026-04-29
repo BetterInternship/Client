@@ -1,8 +1,7 @@
+import fs from "node:fs";
+import path from "node:path";
 import { ImageResponse } from "next/og";
-import {
-  getSuperListingOgConfig,
-  isSuperListingSlug,
-} from "../../og-config";
+import { getSuperListingOgConfig, isSuperListingSlug } from "../../og-config";
 
 export const contentType = "image/png";
 
@@ -10,6 +9,17 @@ export const size = {
   width: 1200,
   height: 630,
 };
+
+const betterInternshipLogo = `data:image/png;base64,${fs
+  .readFileSync(path.join(process.cwd(), "public/BetterInternshipLogo.png"))
+  .toString("base64")}`;
+const backgroundImage = `data:image/png;base64,${fs
+  .readFileSync(path.join(process.cwd(), "public/bg.png"))
+  .toString("base64")}`;
+const spaceGroteskMediumUrl =
+  "https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7aUUsj.ttf";
+const spaceGroteskBoldUrl =
+  "https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVksj.ttf";
 
 export async function GET(
   _request: Request,
@@ -22,6 +32,10 @@ export async function GET(
   }
 
   const config = getSuperListingOgConfig(slug);
+  const [spaceGroteskMedium, spaceGroteskBold] = await Promise.all([
+    fetch(spaceGroteskMediumUrl).then((response) => response.arrayBuffer()),
+    fetch(spaceGroteskBoldUrl).then((response) => response.arrayBuffer()),
+  ]);
 
   return new ImageResponse(
     <div
@@ -30,151 +44,99 @@ export async function GET(
         height: "100%",
         display: "flex",
         position: "relative",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        padding: "58px",
-        background:
-          "radial-gradient(circle at 15% 15%, rgba(255,255,255,0.2), transparent 35%), radial-gradient(circle at 85% 80%, rgba(255,255,255,0.14), transparent 42%), linear-gradient(135deg, #0b1220 0%, #111827 50%, #030712 100%)",
-        color: "white",
-        fontFamily:
-          "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "hidden",
+        color: "#061633",
+        fontFamily: "Space Grotesk",
       }}
     >
-      <div
+      <img
+        src={backgroundImage}
+        alt=""
+        width={1200}
+        height={630}
         style={{
           position: "absolute",
-          top: "-120px",
-          right: "-120px",
-          width: "340px",
-          height: "340px",
-          borderRadius: "999px",
-          background: config.glow,
-          opacity: 0.2,
-          filter: "blur(24px)",
+          left: 0,
+          top: 0,
+          width: 1200,
+          height: 630,
+          objectFit: "cover",
         }}
       />
 
       <div
         style={{
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
-          gap: "14px",
-          fontSize: 26,
-          color: "#e5e7eb",
-          letterSpacing: "-0.01em",
+          color: "#061633",
+          gap: "20px",
+          zIndex: 1,
         }}
       >
-        {config.logoDataUrl ? (
-          <img
-            src={config.logoDataUrl}
-            alt={`${config.company} logo`}
-            width={40}
-            height={40}
-            style={{
-              width: 40,
-              height: 40,
-              objectFit: "contain",
-              borderRadius: 10,
-              background: "rgba(17,24,39,0.65)",
-              padding: "4px",
-            }}
-          />
-        ) : null}
-        <span style={{ fontWeight: 800 }}>BetterInternship</span>
-        <span style={{ opacity: 0.55 }}>x</span>
-        <span style={{ fontWeight: 700 }}>{config.company}</span>
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
         <div
           style={{
-            alignSelf: "flex-start",
             display: "flex",
             alignItems: "center",
-            borderRadius: "999px",
-            border: `2px solid ${config.glow}`,
-            background: "rgba(17, 24, 39, 0.75)",
-            color: "#f9fafb",
-            padding: "10px 18px",
-            fontSize: 18,
-            fontWeight: 800,
-            letterSpacing: "0.09em",
-            textTransform: "uppercase",
-          }}
-        >
-          {config.badgeLabel || "Super Listing"}
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "12px",
-            maxWidth: "1000px",
-          }}
-        >
-          <div
-            style={{
-              fontSize: 68,
-              lineHeight: 0.95,
-              letterSpacing: "-0.045em",
-              fontWeight: 900,
-              textTransform: "uppercase",
-            }}
-          >
-            {config.company}
-          </div>
-          <div
-            style={{
-              fontSize: 34,
-              lineHeight: 1.1,
-              letterSpacing: "-0.02em",
-              color: "#e5e7eb",
-              fontWeight: 700,
-            }}
-          >
-            {config.role}
-          </div>
-        </div>
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "20px",
-        }}
-      >
-        <div
-          style={{
-            fontSize: 26,
-            lineHeight: 1.25,
-            color: "#d1d5db",
-            maxWidth: "840px",
-          }}
-        >
-          {config.tagline}
-        </div>
-        <div
-          style={{
-            display: "flex",
-            borderRadius: "14px",
-            border: `2px solid ${config.accent}`,
-            background: "rgba(17, 24, 39, 0.8)",
-            padding: "10px 14px",
-            fontSize: 16,
-            color: "#f9fafb",
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
+            gap: "14px",
+            fontSize: 30,
             fontWeight: 700,
-            whiteSpace: "nowrap",
+            letterSpacing: 0,
           }}
         >
-          betterinternship.com
+          <img
+            src={betterInternshipLogo}
+            alt="BetterInternship logo"
+            width={92}
+            height={92}
+            style={{
+              width: 52,
+              height: 52,
+              objectFit: "contain",
+            }}
+          />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <span>BetterInternship</span>
+            <span style={{ color: "#1787ff", marginRight: "8px" }}>x</span>
+            <span>{config.company}</span>
+          </div>
+        </div>
+        <div
+          style={{
+            color: "#061633",
+            fontSize: 72,
+            fontWeight: 700,
+            letterSpacing: 0,
+            textAlign: "center",
+          }}
+        >
+          UI/UX Intern Super Listing
         </div>
       </div>
     </div>,
-    size,
+    {
+      ...size,
+      fonts: [
+        {
+          name: "Space Grotesk",
+          data: spaceGroteskMedium,
+          weight: 500,
+          style: "normal",
+        },
+        {
+          name: "Space Grotesk",
+          data: spaceGroteskBold,
+          weight: 700,
+          style: "normal",
+        },
+      ],
+    },
   );
 }

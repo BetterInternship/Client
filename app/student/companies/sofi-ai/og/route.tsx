@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { ImageResponse } from "next/og";
 
 export const contentType = "image/png";
@@ -7,10 +9,23 @@ export const size = {
   height: 630,
 };
 
-const logoUrl =
-  "https://sofitech.ai/_next/static/media/sofi-ai-chat-support-automation-logo-vector.80ec9e4e.png";
+const betterInternshipLogo = `data:image/png;base64,${fs
+  .readFileSync(path.join(process.cwd(), "public/BetterInternshipLogo.png"))
+  .toString("base64")}`;
+const backgroundImage = `data:image/png;base64,${fs
+  .readFileSync(path.join(process.cwd(), "public/bg.png"))
+  .toString("base64")}`;
+const spaceGroteskMediumUrl =
+  "https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7aUUsj.ttf";
+const spaceGroteskBoldUrl =
+  "https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVksj.ttf";
 
 export async function GET() {
+  const [spaceGroteskMedium, spaceGroteskBold] = await Promise.all([
+    fetch(spaceGroteskMediumUrl).then((response) => response.arrayBuffer()),
+    fetch(spaceGroteskBoldUrl).then((response) => response.arrayBuffer()),
+  ]);
+
   return new ImageResponse(
     <div
       style={{
@@ -20,58 +35,96 @@ export async function GET() {
         position: "relative",
         alignItems: "center",
         justifyContent: "center",
-        padding: "58px",
-        background:
-          "radial-gradient(circle at 15% 15%, rgba(255,255,255,0.2), transparent 35%), radial-gradient(circle at 85% 80%, rgba(255,255,255,0.14), transparent 42%), linear-gradient(135deg, #0b1220 0%, #111827 50%, #030712 100%)",
-        color: "white",
-        fontFamily:
-          "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial",
+        overflow: "hidden",
+        color: "#061633",
+        fontFamily: "Space Grotesk",
       }}
     >
-      <div
+      <img
+        src={backgroundImage}
+        alt=""
+        width={1200}
+        height={630}
         style={{
           position: "absolute",
-          top: "-140px",
-          right: "-110px",
-          width: "360px",
-          height: "360px",
-          borderRadius: "999px",
-          background: "#35e3ca",
-          opacity: 0.2,
-          filter: "blur(24px)",
+          left: 0,
+          top: 0,
+          width: 1200,
+          height: 630,
+          objectFit: "cover",
         }}
       />
 
       <div
         style={{
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
-          gap: "24px",
-          fontSize: 58,
-          color: "white",
-          fontWeight: 900,
-          letterSpacing: "-0.045em",
+          color: "#061633",
+          gap: "18px",
+          zIndex: 1,
         }}
       >
-        <img
-          src={logoUrl}
-          alt="Sofi AI logo"
-          width={92}
-          height={92}
+        <div
           style={{
-            width: 92,
-            height: 92,
-            objectFit: "contain",
-            borderRadius: 22,
-            background: "rgba(17,24,39,0.65)",
-            padding: "10px",
+            display: "flex",
+            alignItems: "center",
+            gap: "22px",
+            fontSize: 58,
+            fontWeight: 700,
+            letterSpacing: 0,
           }}
-        />
-        <span>BetterInternship</span>
-        <span style={{ color: "#35e3ca" }}>x</span>
-        <span>Sofi AI</span>
+        >
+          <img
+            src={betterInternshipLogo}
+            alt="BetterInternship logo"
+            width={92}
+            height={92}
+            style={{
+              width: 92,
+              height: 92,
+              objectFit: "contain",
+            }}
+          />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <span>BetterInternship</span>
+            <span style={{ color: "#1787ff", marginRight: "14px" }}>x </span>
+            <span>Sofi AI</span>
+          </div>
+        </div>
+        <div
+          style={{
+            color: "#6b7280",
+            fontSize: 34,
+            fontWeight: 500,
+            letterSpacing: 0,
+          }}
+        >
+          Land an internship 10x faster
+        </div>
       </div>
     </div>,
-    size,
+    {
+      ...size,
+      fonts: [
+        {
+          name: "Space Grotesk",
+          data: spaceGroteskMedium,
+          weight: 500,
+          style: "normal",
+        },
+        {
+          name: "Space Grotesk",
+          data: spaceGroteskBold,
+          weight: 700,
+          style: "normal",
+        },
+      ],
+    },
   );
 }

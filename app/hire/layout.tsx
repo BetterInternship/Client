@@ -18,7 +18,7 @@ import { SonnerToaster } from "@/components/ui/sonner-toast";
 const baseUrl =
   process.env.NEXT_PUBLIC_CLIENT_HIRE_URL?.replace(/\/$/, "") ||
   "https://hire.betterinternship.com";
-const ogImage = "https://www.betterinternship.com/og.png?v=1";
+const ogImage = `${baseUrl}/og.png?v=2`;
 
 export const metadata: Metadata = {
   title: "Recruiter Dashboard - BetterInternship",
