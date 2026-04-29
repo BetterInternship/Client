@@ -10,11 +10,8 @@ import { OverviewPanel } from "./components/OverviewPanel";
 import { HowToApplyPanel } from "./components/HowToApplyPanel";
 import { ApplyPanel } from "./components/ApplyPanel";
 import { JobDetailsRail } from "./components/JobDetailsRail";
-import doodlePack from "../../companies/sofi-ai/doodle-pack.png";
-import type {
-  PanelKey,
-  SofiAiSubmissionForm,
-} from "./components/types";
+import backgroundImage from "./bg.png";
+import type { PanelKey, SofiAiSubmissionForm } from "./components/types";
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],
@@ -57,40 +54,6 @@ const PANEL_TABS: Array<{
   { key: "challenge", label: "Application" },
   { key: "submission", label: "Submit" },
 ];
-
-const DOODLE_SPRITES = {
-  sparkle: { row: 0, col: 1 },
-  arrow: { row: 0, col: 3 },
-  circleAccent: { row: 1, col: 1 },
-  wavyLine: { row: 2, col: 1 },
-} as const;
-
-type DoodleName = keyof typeof DOODLE_SPRITES;
-
-function Doodle({ name, className }: { name: DoodleName; className?: string }) {
-  const { row, col } = DOODLE_SPRITES[name];
-  const x = (col / 3) * 100 + 8;
-  const y = (row / 2) * 100 + 12;
-
-  return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        "pointer-events-none absolute z-[1] block aspect-[384/341] overflow-hidden bg-transparent bg-no-repeat select-none",
-        className,
-      )}
-    >
-      <span
-        className="block h-full w-full bg-no-repeat"
-        style={{
-          backgroundImage: `url(${doodlePack.src})`,
-          backgroundPosition: `${x}% ${y}%`,
-          backgroundSize: "400% 300%",
-        }}
-      />
-    </span>
-  );
-}
 
 export default function SofiAiSuperListingPage() {
   const isDevelopment = process.env.NODE_ENV === "development";
@@ -266,25 +229,14 @@ export default function SofiAiSuperListingPage() {
         </div>
       </header>
 
-      <div className="pointer-events-none fixed inset-0 -z-20 bg-[#f7fffd]" />
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(13,59,51,0.055)_1px,transparent_1px),linear-gradient(to_bottom,rgba(13,59,51,0.055)_1px,transparent_1px)] bg-[size:44px_44px] opacity-40" />
-      <div className="pointer-events-none fixed -right-28 top-0 -z-10 h-96 w-96 rounded-full bg-[#BFFFF3]/32 blur-3xl" />
-      <Doodle
-        name="circleAccent"
-        className="-left-16 top-36 hidden w-36 opacity-30 sm:block lg:left-6 lg:top-40"
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-35"
+        style={{ backgroundImage: `url(${backgroundImage.src})` }}
       />
-      <Doodle
-        name="sparkle"
-        className="right-4 top-32 hidden w-24 opacity-35 sm:block lg:right-14"
-      />
-      <Doodle
-        name="arrow"
-        className="-right-16 top-[23rem] hidden w-44 opacity-25 lg:block"
-      />
-      <Doodle
-        name="wavyLine"
-        className="bottom-12 right-8 hidden w-44 opacity-30 lg:block"
-      />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-[#f7fffd]/62" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-[linear-gradient(to_right,rgba(13,59,51,0.055)_1px,transparent_1px),linear-gradient(to_bottom,rgba(13,59,51,0.055)_1px,transparent_1px)] bg-[size:44px_44px] opacity-40" />
+      <div className="pointer-events-none fixed -right-28 top-0 z-0 h-96 w-96 rounded-full bg-[#BFFFF3]/32 blur-3xl" />
 
       <section
         ref={panelSectionRef}
