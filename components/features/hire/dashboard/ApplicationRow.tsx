@@ -57,6 +57,9 @@ export function ApplicationRow({
   application,
   isSuperListing = false,
   onView,
+  openChatModal,
+  updateConversationId,
+  setSelectedApplication,
   checkboxSelected = false,
   onToggleSelect,
   onAction,
@@ -78,7 +81,7 @@ export function ApplicationRow({
 
   const defaultStatus: ActionItem = {
     id: currentStatusId,
-    label: get_app_status(application.status)?.name,
+    label: get_app_status(application.status!)?.name,
     active: true,
     disabled: false,
     destructive: false,
@@ -100,7 +103,7 @@ export function ApplicationRow({
         className={`flex flex-col hover:cursor-pointer transition-colors ${
           isSuperListing
             ? "border-amber-300 bg-amber-50/40 hover:bg-amber-100/50"
-            : "hover:bg-muted/50"
+            : "hover:bg-primary/25"
         }`}
         onClick={onView}
       >
@@ -281,7 +284,7 @@ export function ApplicationRow({
         delay: staggerDelay,
         ease: "easeOut",
       }}
-      className="group hover:cursor-pointer transition-colors odd:bg-white even:bg-muted/50 hover:bg-muted/70"
+      className="group hover:cursor-pointer transition-colors odd:bg-white even:bg-gray-50 hover:bg-primary/25"
       onClick={onView}
     >
       <td

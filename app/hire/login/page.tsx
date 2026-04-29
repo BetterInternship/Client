@@ -125,12 +125,14 @@ function LoginContent() {
             {status === "success" && !error && (
               <div
                 className={cn(
-                  "flex gap-2 items-center mb-4 p-3 bg-supportive/10 text-supportive border border-supportive/50 rounded-[0.33em]",
-                  isMobile ? "flex-col items-start" : "",
+                  "mb-4 rounded-[0.33em] bg-emerald-600 px-4 py-3 text-white mt-4",
+                  isMobile
+                    ? "flex flex-col items-start gap-2"
+                    : "flex items-center gap-2",
                 )}
               >
                 <MailCheck size={isMobile ? 24 : 20} />
-                <span className="text-sm justify-center">
+                <span className="text-sm">
                   Registration successful. Please check your email for the
                   password.
                 </span>

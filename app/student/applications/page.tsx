@@ -109,13 +109,9 @@ const ApplicationCard = ({ application }: { application: UserApplication }) => {
     challengeTitleFromJoin.trim().length > 0;
   const isUnavailable = !job?.is_active || job?.is_deleted;
   const canOpenListing = !!job?.id && !isUnavailable;
-  const statusLabel =
-    application.status === 5 || application.status === 7
-      ? "Closed"
-      : (to_app_status_name(application.status) ?? "Pending");
+  const statusLabel = to_app_status_name(application.status) ?? "Pending";
   let statusBadgeType: "destructive" | "supportive" | "warning" = "warning";
-  if (statusLabel === "Rejected" || statusLabel === "Closed")
-    statusBadgeType = "destructive";
+  if (statusLabel === "Rejected") statusBadgeType = "destructive";
   else if (statusLabel === "Accepted" || statusLabel === "Hired")
     statusBadgeType = "supportive";
   else statusBadgeType = "warning";

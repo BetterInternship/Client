@@ -22,6 +22,7 @@ import {
 } from "@betterinternship/schema.base";
 import { Selectable } from "kysely";
 
+
 export type Database = DB;
 export type College = Selectable<RefColleges>;
 export type University = Selectable<RefUniversities>;

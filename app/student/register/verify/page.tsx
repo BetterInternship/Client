@@ -25,6 +25,7 @@ export default function VerifyPage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
   const nextUrl = "/search";
   const profile = useProfileData();
+  const queryClient = useQueryClient();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -37,6 +38,8 @@ export default function VerifyPage() {
   useEffect(() => {
     if (profile.isPending) return;
     if (profile.data?.is_verified) router.replace(nextUrl);
+    if (!profile.data)
+      void queryClient.invalidateQueries({ queryKey: ["my-profile"] });
   }, [profile.isPending, profile.data?.is_verified, router]);
 
   // Prevent hydration mismatch when client restores persisted query cache.
@@ -45,7 +48,8 @@ export default function VerifyPage() {
 
   // Wait for profile and auth checks; unauthenticated users are redirected
   if (profile.isPending) return <Loader>Loading...</Loader>;
-  if (!profile.data || profile.data?.is_verified) return null;
+  if (profile.data?.is_verified) return router.replace(nextUrl);
+  if (!profile.data) return <Loader>Loading...</Loader>;
 
   return (
     <div className="min-h-[calc(100vh-5rem)] bg-gradient-to-b from-primary/5 via-transparent to-transparent">

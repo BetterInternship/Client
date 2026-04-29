@@ -12,9 +12,7 @@ export default function AllowLanding({
   const pathname = usePathname();
   const isStudentLanding = pathname === "/";
   const hideSharedHeader =
-    isStudentLanding ||
-    pathname === "/companies/cebu-pacific" ||
-    pathname === "/student/companies/cebu-pacific";
+    isStudentLanding || pathname.startsWith("/companies/");
 
   return (
     <div className="h-[100svh] bg-gray-50 flex flex-col overflow-y-auto">

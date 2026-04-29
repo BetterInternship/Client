@@ -17,7 +17,6 @@ const SUPER_LISTING_ROOT = path.join(
   "app/student/super-listing",
 );
 
-const RESERVED_DIRECTORIES = new Set(["og"]);
 let cachedSlugs: string[] | null = null;
 const logoDataUrlCache = new Map<string, string | undefined>();
 
@@ -38,6 +37,20 @@ const SUPER_LISTING_OG_OVERRIDES: Record<
     tagline: "Improve the booking, check-in, and support journey.",
     accent: "#0c4a6e",
     glow: "#38bdf8",
+  },
+  pcc: {
+    company: "Philippine Chamber of Commerce",
+    role: "Business Innovation Challenge",
+    tagline: "Reduce business-process friction with practical execution.",
+    accent: "#0f766e",
+    glow: "#34d399",
+  },
+  "sofi-ai": {
+    company: "Sofi AI",
+    role: "Frontend AI Product Challenge",
+    tagline: "Build a practical frontend for TikTok hook analysis.",
+    accent: "#07C4A7",
+    glow: "#35e3ca",
   },
   paraluman: {
     company: "Paraluman News",
@@ -62,6 +75,8 @@ const SUPER_LISTING_OG_OVERRIDES: Record<
     glow: "#f59e0b",
   },
 };
+
+const SUPER_LISTING_SLUGS = Object.keys(SUPER_LISTING_OG_OVERRIDES);
 
 function titleCaseFromSlug(slug: string) {
   return slug
@@ -88,7 +103,14 @@ function resolveLogoDataUrl(slug: string, configuredLogoFile?: string) {
   const slugDirectory = path.join(SUPER_LISTING_ROOT, slug);
   const candidateFileNames = configuredLogoFile
     ? [configuredLogoFile]
-    : ["logo.svg", "logo.png", "logo.webp", "logo.jpg", "logo.jpeg", `${slug}-icon.svg`];
+    : [
+        "logo.svg",
+        "logo.png",
+        "logo.webp",
+        "logo.jpg",
+        "logo.jpeg",
+        `${slug}-icon.svg`,
+      ];
 
   for (const candidateFileName of candidateFileNames) {
     const absolutePath = path.join(slugDirectory, candidateFileName);
@@ -113,20 +135,7 @@ function resolveLogoDataUrl(slug: string, configuredLogoFile?: string) {
 }
 
 export function getAvailableSuperListingSlugs(): string[] {
-  if (cachedSlugs) {
-    return cachedSlugs;
-  }
-
-  const entries = fs.readdirSync(SUPER_LISTING_ROOT, { withFileTypes: true });
-
-  cachedSlugs = entries
-    .filter((entry) => entry.isDirectory() && !RESERVED_DIRECTORIES.has(entry.name))
-    .map((entry) => entry.name)
-    .filter((slug) =>
-      fs.existsSync(path.join(SUPER_LISTING_ROOT, slug, "page.tsx")),
-    );
-
-  return cachedSlugs;
+  return cachedSlugs || (cachedSlugs = SUPER_LISTING_SLUGS);
 }
 
 export function isSuperListingSlug(slug: string): boolean {

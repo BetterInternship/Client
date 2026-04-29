@@ -40,7 +40,10 @@ const SHOW_SUPER_DUMMY_APPLICATION = true;
 interface ApplicationsContentProps {
   applications: EmployerApplication[];
   isSuperListing?: boolean;
+  statusId: number[];
   isLoading?: boolean;
+  openChatModal: () => void;
+  updateConversationId: (userId: string) => void;
   onApplicationClick: (application: EmployerApplication) => void;
   setSelectedApplication: (application: EmployerApplication) => void;
   onAction: (
@@ -48,6 +51,8 @@ interface ApplicationsContentProps {
     apps: EmployerApplication[],
     status?: number,
   ) => void;
+  applicantToDelete: EmployerApplication | null;
+  applicantToArchive: EmployerApplication | null;
 }
 
 export const ApplicationsContent = forwardRef<
@@ -58,6 +63,8 @@ export const ApplicationsContent = forwardRef<
     applications,
     isSuperListing = false,
     isLoading,
+    openChatModal,
+    updateConversationId,
     onApplicationClick,
     setSelectedApplication,
     onAction,
@@ -360,6 +367,7 @@ export const ApplicationsContent = forwardRef<
                 }
               }}
               setSelectedApplication={setSelectedApplication}
+              updateConversationId={updateConversationId}
               checkboxSelected={selectedApplications.has(application.id!)}
               onToggleSelect={(v) => toggleSelect(application.id!, v)}
               onAction={onAction}
@@ -512,6 +520,7 @@ export const ApplicationsContent = forwardRef<
                     }
                   }}
                   setSelectedApplication={setSelectedApplication}
+                  updateConversationId={updateConversationId}
                   checkboxSelected={selectedApplications.has(application.id!)}
                   onToggleSelect={(v) => toggleSelect(application.id!, v)}
                   onAction={onAction}

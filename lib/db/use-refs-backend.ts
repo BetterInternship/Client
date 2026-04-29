@@ -19,6 +19,7 @@ import {
   Industry,
   JobCategory,
   Department,
+  Degree,
 } from "./db.types";
 import { DB } from "@betterinternship/schema.base";
 import { Kysely, PostgresDialect } from "kysely";
@@ -140,8 +141,16 @@ export interface IRefsContext extends RefsData {
     name: string | null | undefined,
   ) => Department | null;
 
+  get_degree: (id: string | null | undefined) => Degree | null;
+  to_degree_name: (
+    id: string | null | undefined,
+    def?: string | null,
+  ) => string | null;
+  get_degree_by_name: (name: string | null | undefined) => Degree | null;
+
   get_departments_by_college: (college_id: string) => string[];
   get_colleges_by_university: (university_id: string) => string[];
+  get_degrees_by_university: (university_id: string) => Degree[];
   getUniversityFromDomain: (domain: string) => string[];
   isNotNull: (ref: any) => boolean;
 }
@@ -192,6 +201,7 @@ export const getRefsData = async (): Promise<RefsData> => {
 
   return {
     colleges,
+    degrees,
     departments,
     universities,
     job_types,
