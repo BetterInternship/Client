@@ -10,7 +10,13 @@ function SectionTitle({ children }: { children: string }) {
   );
 }
 
-function AsteriskList({ items }: { items: readonly string[] }) {
+function AsteriskList({
+  items,
+  emphasizedItems = [],
+}: {
+  items: readonly string[];
+  emphasizedItems?: readonly string[];
+}) {
   return (
     <ul className="space-y-2">
       {items.map((item) => (
@@ -18,7 +24,13 @@ function AsteriskList({ items }: { items: readonly string[] }) {
           <span className="mt-0.5 shrink-0 [font-family:var(--font-paraluman-mono)] text-sm font-semibold leading-6 text-[#00A886]">
             *
           </span>
-          <span>{item}</span>
+          <span
+            className={
+              emphasizedItems.includes(item) ? "font-bold" : undefined
+            }
+          >
+            {item}
+          </span>
         </li>
       ))}
     </ul>
@@ -41,9 +53,8 @@ export function HowToApplyPanel({ onGoToApply }: HowToApplyPanelProps) {
       <section className="space-y-3">
         <SectionTitle>The Challenge</SectionTitle>
         <p>
-          You&apos;ll design a new product that we&apos;re planning to release.
-          We have a rough product vision, backend, and strategy. Your role is
-          to:
+          You''ll design a new product that we're planning to release. We have a
+          rough product vision, backend, and strategy. Your role is to:
         </p>
         <AsteriskList
           items={[
@@ -58,10 +69,13 @@ export function HowToApplyPanel({ onGoToApply }: HowToApplyPanelProps) {
           understand how it should look.
         </p>
         <p>
-          We&apos;ll give you the direction and you are given the freedom to
-          shape the user journey, make product and design decisions, and define
-          how the experience should feel. Use any tools you want, including AI,
-          references, or your own workflow.
+          We’ll give you the direction and you are given the freedom to shape
+          the user journey, make product and design decisions, and define how
+          the experience should feel.
+        </p>
+        <p>
+          Use any tools you want, including AI, references, or your own
+          workflow.
         </p>
       </section>
 
@@ -80,13 +94,20 @@ export function HowToApplyPanel({ onGoToApply }: HowToApplyPanelProps) {
               way without needing to be technical.
             </p>
             <div className="space-y-2">
+              <p className="font-semibold text-[#052338]">User Profile:</p>
+              <p>
+                TikTok creators in the Philippines who don’t speak fluent
+                analytics: people who see their metrics but don’t fully
+                understand them.
+              </p>
+            </div>
+            <div className="space-y-2">
               <p className="font-semibold text-[#052338]">Use case:</p>
-              <AsteriskList
-                items={[
-                  "You feed her your Tiktok profile link.",
-                  "She gives you back a readable report with hook scores, audience signals, sentiment analysis, and suggestions on what to post next.",
-                ]}
-              />
+              <p>
+                You feed her your Tiktok profile link. She gives you back a
+                readable report with hook scores, audience signals, sentiment
+                analysis, and suggestions on what to post next.
+              </p>
             </div>
             <div className="pt-2 space-y-1">
               <p>Here is a sample of the report that GIA generates.</p>
@@ -126,22 +147,11 @@ export function HowToApplyPanel({ onGoToApply }: HowToApplyPanelProps) {
         </section>
 
         <section className="space-y-3">
-          <SectionTitle>Who it&apos;s for</SectionTitle>
-          <p>
-            TikTok creators in the Philippines who don&apos;t speak fluent
-            analytics: people who see their metrics but don&apos;t fully
-            understand them.
-          </p>
-        </section>
-
-        <section className="space-y-3">
           <SectionTitle>What You Will Build</SectionTitle>
           <div className="[font-family:var(--font-paraluman-body)] space-y-4 text-sm leading-6 text-[#184d45]/86 sm:text-[0.9rem]">
             <div className="space-y-2">
+              <p className="font-semibold text-[#052338]">1. Landing Page</p>{" "}
               <p>
-                <span className="font-semibold text-[#052338]">
-                  1. Landing Page:
-                </span>{" "}
                 We have an existing version of the landing page. Your task is to
                 improve or redesign it.
               </p>
@@ -155,10 +165,8 @@ export function HowToApplyPanel({ onGoToApply }: HowToApplyPanelProps) {
               />
             </div>
             <div className="space-y-2">
+              <p className="font-semibold text-[#052338]">2. Product Flow</p>{" "}
               <p>
-                <span className="font-semibold text-[#052338]">
-                  2. Product Flow:
-                </span>{" "}
                 Design the end-to-end user experience for the actual product,
                 from inputting a TikTok profile link to receiving and viewing
                 the generated report.
@@ -169,6 +177,9 @@ export function HowToApplyPanel({ onGoToApply }: HowToApplyPanelProps) {
                   "Is a PDF the best way to present the report? Or would a dashboard work better?",
                   "Should we be inputting the Tiktok profile link only? Are there any other details to input that would be useful?",
                   "Is anything missing in the current user flow?",
+                  "Or, should this product exist at all? Do you have any suggestions on what we should be making instead?",
+                ]}
+                emphasizedItems={[
                   "Or, should this product exist at all? Do you have any suggestions on what we should be making instead?",
                 ]}
               />
