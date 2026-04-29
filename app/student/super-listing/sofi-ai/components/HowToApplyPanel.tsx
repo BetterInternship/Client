@@ -4,13 +4,19 @@ type HowToApplyPanelProps = {
 
 function SectionTitle({ children }: { children: string }) {
   return (
-    <h2 className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.025em] text-[#052338]">
+    <h2 className="[font-family:var(--font-paraluman-heading)] text-xl font-bold tracking-[-0.025em] text-[#052338]">
       {children}
     </h2>
   );
 }
 
-function AsteriskList({ items }: { items: readonly string[] }) {
+function AsteriskList({
+  items,
+  emphasizedItems = [],
+}: {
+  items: readonly string[];
+  emphasizedItems?: readonly string[];
+}) {
   return (
     <ul className="space-y-2">
       {items.map((item) => (
@@ -18,7 +24,13 @@ function AsteriskList({ items }: { items: readonly string[] }) {
           <span className="mt-0.5 shrink-0 [font-family:var(--font-paraluman-mono)] text-sm font-semibold leading-6 text-[#00A886]">
             *
           </span>
-          <span>{item}</span>
+          <span
+            className={
+              emphasizedItems.includes(item) ? "font-bold" : undefined
+            }
+          >
+            {item}
+          </span>
         </li>
       ))}
     </ul>
@@ -33,35 +45,37 @@ export function HowToApplyPanel({ onGoToApply }: HowToApplyPanelProps) {
           Application Process
         </h1>
         <p>
-          We&apos;re doing this differently. Instead of resumes, we want to see
-          how you actually think and build.
+          We're doing this differently. Instead of resumes, we want to see how
+          you actually think and build.
         </p>
       </section>
 
       <section className="space-y-3">
         <SectionTitle>The Challenge</SectionTitle>
         <p>
-          You&apos;ll design a new product that we&apos;re planning to release.
-          We already have the product vision, backend, and core strategy. Your
-          role is to:
+          You''ll design a new product that we're planning to release. We have a
+          rough product vision, backend, and strategy. Your role is to:
         </p>
         <AsteriskList
           items={[
             "Bring it to life through design.",
             "Create a clear user flow.",
-            "Translate the idea into a working interface.",
+            "Give suggestions on how the product could be better.",
           ]}
         />
         <p>
-          This does not need to be a fully functional product. What matters is
-          your ability to create a clear, thoughtful vision, and to make us
+          This does not need to be fully functional. What matters is your
+          ability to create a clear, thoughtful vision, and to make us
           understand how it should look.
         </p>
         <p>
-          We&apos;ll give you direction. How you execute is up to you. You are
-          given the freedom to shape the user journey, make product and design
-          decisions, and define how the experience should feel. Use any tools
-          you want, including AI, references, or your own workflow.
+          We’ll give you the direction and you are given the freedom to shape
+          the user journey, make product and design decisions, and define how
+          the experience should feel.
+        </p>
+        <p>
+          Use any tools you want, including AI, references, or your own
+          workflow.
         </p>
       </section>
 
@@ -70,11 +84,8 @@ export function HowToApplyPanel({ onGoToApply }: HowToApplyPanelProps) {
           <SectionTitle>The Product</SectionTitle>
           <div className="space-y-3">
             <div>
-              <p className="[font-family:var(--font-paraluman-heading)] text-xl font-bold tracking-[-0.035em] text-[#052338]">
-                GIA
-              </p>
-              <p className="[font-family:var(--font-paraluman-mono)] text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#00A886]">
-                Generative Influencer Analyst
+              <p className="[font-family:var(--font-paraluman-mono)] text-xl font-semibold uppercase text-[#00A886]">
+                GIA: Generative Influencer Analyst
               </p>
             </div>
             <p>
@@ -82,16 +93,24 @@ export function HowToApplyPanel({ onGoToApply }: HowToApplyPanelProps) {
               helps TikTok creators understand their content in a simple, human
               way without needing to be technical.
             </p>
-            <p>
-              You feed her your profile link. She gives you back a readable
-              report with hook scores, audience signals, sentiment analysis, and
-              suggestions on what to post next.
-            </p>
-            <div className="pt-2 space-y-1">
+            <div className="space-y-2">
+              <p className="font-semibold text-[#052338]">User Profile:</p>
               <p>
-                Once a user inputs all their required details, here is a sample
-                of the data our platform generates.
+                TikTok creators in the Philippines who don’t speak fluent
+                analytics: people who see their metrics but don’t fully
+                understand them.
               </p>
+            </div>
+            <div className="space-y-2">
+              <p className="font-semibold text-[#052338]">Use case:</p>
+              <p>
+                You feed her your Tiktok profile link. She gives you back a
+                readable report with hook scores, audience signals, sentiment
+                analysis, and suggestions on what to post next.
+              </p>
+            </div>
+            <div className="pt-2 space-y-1">
+              <p>Here is a sample of the report that GIA generates.</p>
               <div className="space-y-1">
                 <a
                   href="/assets/Copy of hook_analysis_report (4)-1.pdf"
@@ -111,28 +130,64 @@ export function HowToApplyPanel({ onGoToApply }: HowToApplyPanelProps) {
                 </a>
               </div>
             </div>
+            <div className="pt-2 space-y-1">
+              <p>
+                Also, heres a sample landing page we made:{" "}
+                <a
+                  href="https://sofi-ai-gia.netlify.app/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#00A886] underline hover:text-[#00A886]/80 transition-colors"
+                >
+                  https://sofi-ai-gia.netlify.app/
+                </a>
+              </p>
+            </div>
           </div>
         </section>
 
         <section className="space-y-3">
-          <SectionTitle>Who it&apos;s for</SectionTitle>
-          <p>
-            TikTok creators in the Philippines who don&apos;t speak fluent
-            analytics: people who see their metrics but don&apos;t fully
-            understand them.
-          </p>
-        </section>
-
-        <section className="space-y-3">
-          <SectionTitle>What makes it different</SectionTitle>
-          <AsteriskList
-            items={[
-              "Reads comments, not just views. Surfaces what the audience is actually asking for.",
-              "Scores hooks on a 10-point scale and tells you why.",
-              "Outputs a shareable PDF report, not a dashboard you have to interpret.",
-              "Conversational tone. GIA talks like a friend with receipts.",
-            ]}
-          />
+          <SectionTitle>What You Will Build</SectionTitle>
+          <div className="[font-family:var(--font-paraluman-body)] space-y-4 text-sm leading-6 text-[#184d45]/86 sm:text-[0.9rem]">
+            <div className="space-y-2">
+              <p className="font-semibold text-[#052338]">1. Landing Page</p>{" "}
+              <p>
+                We have an existing version of the landing page. Your task is to
+                improve or redesign it.
+              </p>
+              <p>Think about:</p>
+              <AsteriskList
+                items={[
+                  "How you would improve conversion.",
+                  "How clearly the product is communicated.",
+                  "What would make creators immediately understand the value.",
+                ]}
+              />
+            </div>
+            <div className="space-y-2">
+              <p className="font-semibold text-[#052338]">2. Product Flow</p>{" "}
+              <p>
+                Design the end-to-end user experience for the actual product,
+                from inputting a TikTok profile link to receiving and viewing
+                the generated report.
+              </p>
+              <p>As you design, consider:</p>
+              <AsteriskList
+                items={[
+                  "Is a PDF the best way to present the report? Or would a dashboard work better?",
+                  "Should we be inputting the Tiktok profile link only? Are there any other details to input that would be useful?",
+                  "Is anything missing in the current user flow?",
+                  "Or, should this product exist at all? Do you have any suggestions on what we should be making instead?",
+                ]}
+                emphasizedItems={[
+                  "Or, should this product exist at all? Do you have any suggestions on what we should be making instead?",
+                ]}
+              />
+              <p>
+                You have full flexibility in how you structure this experience.
+              </p>
+            </div>
+          </div>
         </section>
 
         <section className="space-y-3">

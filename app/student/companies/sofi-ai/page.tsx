@@ -766,11 +766,11 @@ function FeaturedInternship() {
         <div className="pointer-events-none absolute left-1/2 top-[44%] h-[32rem] w-[130%] -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.96)_0%,rgba(255,255,255,0.82)_46%,rgba(255,255,255,0)_78%)] blur-2xl" />
         <Doodle
           name="stickyNote"
-          className=" -top-20 hidden w-44 opacity-90 [--doodle-rotate:16deg] lg:block xl:right-16 xl:w-52"
+          className=" right-14 -top-20 hidden w-44 [--doodle-rotate:16deg] lg:block xl:right-16 xl:w-52"
         />
         <Doodle
           name="stickyNote"
-          className="left-22 -bottom-36 hidden w-40 opacity-80 [--doodle-rotate:-8deg] lg:block xl:left-16 xl:w-48"
+          className="left-22 -bottom-36 hidden w-40 [--doodle-rotate:-8deg] lg:block xl:left-16 xl:w-48"
         />
         <Doodle
           name="stickyNote"
@@ -905,7 +905,7 @@ export default function SofiAiCompanyProfilePage() {
   return (
     <main
       className={cn(
-        "relative isolate min-h-screen bg-[#f7fffd] text-black",
+        "relative isolate min-h-screen bg-[#c9d5d2] text-black",
         "[&_*]:selection:bg-[#0D3B33]/20 [&_*]:selection:text-[#0D3B33]",
         headingFont.variable,
         monoFont.variable,

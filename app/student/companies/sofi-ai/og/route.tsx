@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 import { ImageResponse } from "next/og";
-import { getSuperListingOgConfig, isSuperListingSlug } from "../../og-config";
 
 export const contentType = "image/png";
 
@@ -21,17 +20,7 @@ const spaceGroteskMediumUrl =
 const spaceGroteskBoldUrl =
   "https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVksj.ttf";
 
-export async function GET(
-  _request: Request,
-  context: { params: Promise<{ slug: string }> },
-) {
-  const { slug } = await context.params;
-
-  if (!isSuperListingSlug(slug)) {
-    return new Response("Not Found", { status: 404 });
-  }
-
-  const config = getSuperListingOgConfig(slug);
+export async function GET() {
   const [spaceGroteskMedium, spaceGroteskBold] = await Promise.all([
     fetch(spaceGroteskMediumUrl).then((response) => response.arrayBuffer()),
     fetch(spaceGroteskBoldUrl).then((response) => response.arrayBuffer()),
@@ -72,7 +61,7 @@ export async function GET(
           flexDirection: "column",
           alignItems: "center",
           color: "#061633",
-          gap: "20px",
+          gap: "18px",
           zIndex: 1,
         }}
       >
@@ -80,8 +69,8 @@ export async function GET(
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "14px",
-            fontSize: 30,
+            gap: "22px",
+            fontSize: 58,
             fontWeight: 700,
             letterSpacing: 0,
           }}
@@ -92,8 +81,8 @@ export async function GET(
             width={92}
             height={92}
             style={{
-              width: 52,
-              height: 52,
+              width: 92,
+              height: 92,
               objectFit: "contain",
             }}
           />
@@ -104,20 +93,19 @@ export async function GET(
             }}
           >
             <span>BetterInternship</span>
-            <span style={{ color: "#1787ff", marginRight: "8px" }}>x</span>
-            <span>{config.company}</span>
+            <span style={{ color: "#1787ff", marginRight: "14px" }}>x </span>
+            <span>Sofi AI</span>
           </div>
         </div>
         <div
           style={{
-            color: "#061633",
-            fontSize: 72,
-            fontWeight: 700,
+            color: "#6b7280",
+            fontSize: 34,
+            fontWeight: 500,
             letterSpacing: 0,
-            textAlign: "center",
           }}
         >
-          UI/UX Intern Super Listing
+          Land an internship 10x faster
         </div>
       </div>
     </div>,
