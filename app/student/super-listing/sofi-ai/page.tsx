@@ -40,6 +40,7 @@ type SofiAiSubmissionResponse = {
 };
 
 const INITIAL_FORM_STATE: SofiAiSubmissionForm = {
+  contactNumber: "",
   email: "",
   fullName: "",
   submissionLink: "",
@@ -129,6 +130,7 @@ export default function SofiAiSuperListingPage() {
     if (
       !form.email.trim() ||
       !form.fullName.trim() ||
+      !form.contactNumber.trim() ||
       !form.submissionLink.trim() ||
       !form.videoSubmissionLink.trim()
     ) {
@@ -145,6 +147,7 @@ export default function SofiAiSuperListingPage() {
 
     const combinedNotes = [
       `Full Name: ${form.fullName.trim()}`,
+      `Contact Number: ${form.contactNumber.trim()}`,
       `Video Submission Link: ${form.videoSubmissionLink.trim()}`,
     ]
       .filter(Boolean)

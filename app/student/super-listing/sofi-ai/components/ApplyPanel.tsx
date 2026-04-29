@@ -142,7 +142,7 @@ export function ApplyPanel({
   }
 
   return (
-    <div className="text-[#052338]">
+    <div className="text-[#052338] space-y-6">
       <div className="max-w-2xl">
         <div className="space-y-2">
           <h2 className="[font-family:var(--font-paraluman-heading)] text-[1.45rem] font-bold leading-tight tracking-[-0.035em] sm:text-[1.55rem]">
@@ -156,9 +156,9 @@ export function ApplyPanel({
           </p>
         </div>
 
-        <div className="space-y-5 mt-3 [font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/86">
+        <div className="space-y-5 mt-6 [font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/86">
           <div className="space-y-2.5">
-            <p className="[font-family:var(--font-paraluman-heading)] text-lg font-bold tracking-[-0.025em] text-[#052338]">
+            <p className="[font-family:var(--font-paraluman-heading)] text-xl font-bold tracking-[-0.025em] text-[#052338]">
               Submission Requirements
             </p>
             <p className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.025em] text-[#052338]">
@@ -190,11 +190,14 @@ export function ApplyPanel({
 
       <div className="mt-6 max-w-2xl">
         <div>
+          <p className="[font-family:var(--font-paraluman-heading)] text-xl font-bold tracking-[-0.025em] text-[#052338]">
+            Submission Form
+          </p>
           <form className="space-y-5" onSubmit={(e) => void onSubmit(e)}>
             <div className="grid gap-4">
               <div className="space-y-2">
                 <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
-                  Full Name *
+                  Full Name <span className="text-red-500">*</span>
                 </label>
                 <Input
                   required
@@ -206,7 +209,7 @@ export function ApplyPanel({
 
               <div className="space-y-2">
                 <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
-                  Email *
+                  Email <span className="text-red-500">*</span>
                 </label>
                 <Input
                   required
@@ -219,12 +222,29 @@ export function ApplyPanel({
 
               <div className="space-y-2">
                 <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
-                  Deployed Website / Prototype Link *
+                  Contact Number <span className="text-red-500">*</span>
                 </label>
-                <p className="[font-family:var(--font-paraluman-body)] text-xs leading-5 text-[#052338]/42">
-                  Figma, Framer, Webflow, or any shareable URL. Make sure view
-                  access is on.
-                </p>
+                <Input
+                  required
+                  type="tel"
+                  value={form.contactNumber}
+                  onChange={updateField("contactNumber")}
+                  className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
+                />
+              </div>
+
+              <div className="space-y-2 ">
+                <div>
+                  <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
+                    Live Link (Website / Prototype / Wireframe){" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <p className="[font-family:var(--font-paraluman-body)] text-xs text-[#052338]/42">
+                    You can submit your work however you like, live site,
+                    prototype, or wireframes, whichever you can present your
+                    design best.
+                  </p>
+                </div>
                 <Input
                   required
                   value={form.submissionLink}
@@ -234,13 +254,16 @@ export function ApplyPanel({
               </div>
 
               <div className="space-y-2">
-                <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
-                  Video Submission Link *
-                </label>
-                <p className="[font-family:var(--font-paraluman-body)] text-xs leading-5 text-[#052338]/42">
-                  Loom, YouTube (unlisted), Google Drive &mdash; any link we can
-                  watch. Keep it 1-3 minutes.
-                </p>
+                <div>
+                  <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
+                    Short Video (1-3 mins){" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <p className="[font-family:var(--font-paraluman-body)] text-xs leading-5 text-[#052338]/42">
+                    Walk us through your thinking. You can upload it as an
+                    unlisted YouTube video.
+                  </p>
+                </div>
                 <Input
                   required
                   value={form.videoSubmissionLink}

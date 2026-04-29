@@ -8,7 +8,7 @@ type OverviewPanelProps = {
 
 function SectionTitle({ children }: { children: string }) {
   return (
-    <h2 className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.025em] text-[#052338]">
+    <h2 className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.025em] text-[#052338] text-xl">
       {children}
     </h2>
   );
@@ -56,7 +56,7 @@ export function OverviewPanel({
       </section>
 
       <section className="space-y-3">
-        <SectionTitle>What you&apos;ll do</SectionTitle>
+        <SectionTitle>What you'll do</SectionTitle>
         <AsteriskList
           items={[
             "Design products that will be launched.",

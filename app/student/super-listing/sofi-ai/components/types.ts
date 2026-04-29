@@ -3,6 +3,7 @@ import type { StaticImageData } from "next/image";
 export type PanelKey = "overview" | "challenge" | "submission";
 
 export type SofiAiSubmissionForm = {
+  contactNumber: string;
   email: string;
   fullName: string;
   submissionLink: string;
@@ -15,7 +16,3 @@ export type CEOProfile = {
   imageSrc: string | StaticImageData;
   profileUrl: string;
 };
-
-
-
-

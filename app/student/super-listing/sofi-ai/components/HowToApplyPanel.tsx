@@ -4,7 +4,7 @@ type HowToApplyPanelProps = {
 
 function SectionTitle({ children }: { children: string }) {
   return (
-    <h2 className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.025em] text-[#052338]">
+    <h2 className="[font-family:var(--font-paraluman-heading)] text-xl font-bold tracking-[-0.025em] text-[#052338]">
       {children}
     </h2>
   );
@@ -33,8 +33,8 @@ export function HowToApplyPanel({ onGoToApply }: HowToApplyPanelProps) {
           Application Process
         </h1>
         <p>
-          We&apos;re doing this differently. Instead of resumes, we want to see
-          how you actually think and build.
+          We're doing this differently. Instead of resumes, we want to see how
+          you actually think and build.
         </p>
       </section>
 
@@ -70,11 +70,8 @@ export function HowToApplyPanel({ onGoToApply }: HowToApplyPanelProps) {
           <SectionTitle>The Product</SectionTitle>
           <div className="space-y-3">
             <div>
-              <p className="[font-family:var(--font-paraluman-heading)] text-xl font-bold tracking-[-0.035em] text-[#052338]">
-                GIA
-              </p>
-              <p className="[font-family:var(--font-paraluman-mono)] text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#00A886]">
-                Generative Influencer Analyst
+              <p className="[font-family:var(--font-paraluman-mono)] text-xl font-semibold uppercase text-[#00A886]">
+                GIA: Generative Influencer Analyst
               </p>
             </div>
             <p>
@@ -113,15 +110,17 @@ export function HowToApplyPanel({ onGoToApply }: HowToApplyPanelProps) {
               </div>
             </div>
             <div className="pt-2 space-y-1">
-              <p>Also, here&apos;s a sample landing page we made:</p>
-              <a
-                href="https://sofi-ai-gia.netlify.app/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#00A886] underline hover:text-[#00A886]/80 transition-colors block"
-              >
-                https://sofi-ai-gia.netlify.app/
-              </a>
+              <p>
+                Also, heres a sample landing page we made:{" "}
+                <a
+                  href="https://sofi-ai-gia.netlify.app/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#00A886] underline hover:text-[#00A886]/80 transition-colors"
+                >
+                  https://sofi-ai-gia.netlify.app/
+                </a>
+              </p>
             </div>
           </div>
         </section>
