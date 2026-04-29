@@ -29,7 +29,7 @@ export function RegisterCarousel() {
     <Carousel
       setApi={setApi}
       opts={{ loop: true }}
-      plugins={[Fade()]}
+      plugins={[(Fade as unknown as () => any)()]}
       className="w-full h-full"
     >
       <CarouselContent className="h-full">
