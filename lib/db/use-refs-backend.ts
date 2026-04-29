@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-15 03:09:57
- * @ Modified time: 2026-04-19 00:26:30
+ * @ Modified time: 2026-04-30 01:43:35
  * @ Description:
  *
  * Server-only data loaders for refs tables.
@@ -19,7 +19,6 @@ import {
   Industry,
   JobCategory,
   Department,
-  Degree,
 } from "./db.types";
 import { DB } from "@betterinternship/schema.base";
 import { Kysely, PostgresDialect } from "kysely";
@@ -201,7 +200,6 @@ export const getRefsData = async (): Promise<RefsData> => {
 
   return {
     colleges,
-    degrees,
     departments,
     universities,
     job_types,
