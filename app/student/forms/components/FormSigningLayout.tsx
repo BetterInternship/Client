@@ -288,16 +288,21 @@ export function FormSigningLayout({
       })),
     [form.keyedFields, fieldOwnerByName],
   );
-  const initiatorManualFieldKeys = useMemo(
-    () =>
-      form.fields
-        .filter(
-          (field) =>
-            field.signing_party_id === "initiator" && field.source === "manual",
-        )
-        .map((field) => field.field),
-    [form.fields],
-  );
+  const requiredManualFieldKeys = useMemo(() => {
+    const fields = noEsign
+      ? form.formMetadata.getFieldsForClientService(undefined)
+      : form.fields;
+
+    return fields
+      .filter((field) => {
+        if (field.source !== "manual" || field.type === "signature")
+          return false;
+
+        if (noEsign) return true;
+        return field.signing_party_id === "initiator";
+      })
+      .map((field) => field.field);
+  }, [form.fields, form.formMetadata, noEsign]);
   const previewValuesWithDerived = useMemo(
     () => withDerivedFormValues(form.formMetadata, previewValues),
     [form.formMetadata, previewValues],
@@ -310,10 +315,10 @@ export function FormSigningLayout({
 
   const computeRequiredFieldsComplete = useCallback(
     (nextValues: FormValues) =>
-      initiatorManualFieldKeys.every(
+      requiredManualFieldKeys.every(
         (fieldKey) => !!getFieldValue(nextValues, fieldKey),
       ),
-    [initiatorManualFieldKeys],
+    [requiredManualFieldKeys],
   );
 
   const handleValuesChange = useCallback(
@@ -423,7 +428,9 @@ export function FormSigningLayout({
           }) && Object.keys(recipientEmailErrors).length === 0
         );
       case "fields":
-        return areRequiredFieldsComplete && signContext.hasAgreed;
+        return (
+          areRequiredFieldsComplete && (noEsign || signContext.hasAgreed)
+        );
       case "preview-review":
         return true;
       case "confirm":
@@ -437,6 +444,7 @@ export function FormSigningLayout({
     recipientEmails,
     signContext,
     form,
+    noEsign,
   ]);
 
   const handleNext = useCallback(async () => {
@@ -617,9 +625,9 @@ export function FormSigningLayout({
     setMobileFieldsTab("form");
     setMobilePreviewNeedsAttention(false);
     setHasConfirmedDetails(false);
-    setAreRequiredFieldsComplete(initiatorManualFieldKeys.length === 0);
+    setAreRequiredFieldsComplete(requiredManualFieldKeys.length === 0);
     setCurrentStep(initialStep);
-  }, [formLabel, initialStep, initiatorManualFieldKeys.length, noEsign]);
+  }, [formLabel, initialStep, requiredManualFieldKeys.length, noEsign]);
 
   useEffect(() => {
     if (currentStep === "confirm") {
