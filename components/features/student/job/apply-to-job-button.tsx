@@ -4,13 +4,10 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CheckCircle } from "lucide-react";
 import { useAuthContext } from "@/lib/ctx-auth";
-import {
-  isProfileBaseComplete,
-  isProfileResume,
-  isProfileVerified,
-} from "@/lib/profile";
+import { isProfileBaseComplete, isProfileResume } from "@/lib/profile";
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 // ! todo: rmove openAppModal and use openGlobalModal instead
 export const ApplyToJobButton = ({
@@ -40,9 +37,6 @@ export const ApplyToJobButton = ({
       window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
       return;
     }
-    if (!isProfileVerified(profile)) {
-      return router.push("/register/verify");
-    }
 
     if (
       !isProfileResume(profile) ||
@@ -53,7 +47,7 @@ export const ApplyToJobButton = ({
     }
 
     if (applied) {
-      alert("You have already applied to this job!");
+      toast.error("You have already applied to this job!");
       return;
     }
 

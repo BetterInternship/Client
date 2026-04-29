@@ -19,8 +19,10 @@ import {
   Industry,
   JobCategory,
   Department,
+  Degree,
 } from "./db.types";
 import { createClient } from "@supabase/supabase-js";
+import { get } from "react-hook-form";
 
 // Environment setup
 const db_url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -44,89 +46,98 @@ export interface IRefsContext {
   job_pay_freq: JobPayFreq[];
   app_statuses: AppStatus[];
   industries: Industry[];
+  degrees: Degree[];
 
   get_college: (id: string | null | undefined) => College | null;
   to_college_name: (
     id: string | null | undefined,
-    def?: string | null
+    def?: string | null,
   ) => string | null;
   get_college_by_name: (name: string | null | undefined) => College | null;
 
   get_university: (id: string | null | undefined) => University | null;
   to_university_name: (
     id: string | null | undefined,
-    def?: string | null
+    def?: string | null,
   ) => string | null;
   get_university_by_name: (
-    name: string | null | undefined
+    name: string | null | undefined,
   ) => University | null;
 
   get_job_type: (id: number | null | undefined) => JobType | null;
   to_job_type_name: (
     id: number | null | undefined,
-    def?: string | null
+    def?: string | null,
   ) => string | null;
   get_job_type_by_name: (name: string | null | undefined) => JobType | null;
 
   get_job_mode: (id: number | null | undefined) => JobMode | null;
   to_job_mode_name: (
     id: number | null | undefined,
-    def?: string | null
+    def?: string | null,
   ) => string | null;
   get_job_mode_by_name: (name: string | null | undefined) => JobMode | null;
 
   get_job_allowance: (id: number | null | undefined) => JobAllowance | null;
   to_job_allowance_name: (
     id: number | null | undefined,
-    def?: string | null
+    def?: string | null,
   ) => string | null;
   get_job_allowance_by_name: (
-    name: string | null | undefined
+    name: string | null | undefined,
   ) => JobAllowance | null;
 
   get_job_pay_freq: (id: number | null | undefined) => JobPayFreq | null;
   to_job_pay_freq_name: (
     id: number | null | undefined,
-    def?: string | null
+    def?: string | null,
   ) => string | null;
   get_job_pay_freq_by_name: (
-    name: string | null | undefined
+    name: string | null | undefined,
   ) => JobPayFreq | null;
 
   get_app_status: (id: number | null | undefined) => AppStatus | null;
   to_app_status_name: (
     id: number | null | undefined,
-    def?: string | null
+    def?: string | null,
   ) => string | null;
   get_app_status_by_name: (name: string | null | undefined) => AppStatus | null;
 
   get_industry: (id: string | null | undefined) => Industry | null;
   to_industry_name: (
     id: string | null | undefined,
-    def?: string | null
+    def?: string | null,
   ) => string | null;
   get_industry_by_name: (name: string | null | undefined) => Industry | null;
 
   get_job_category: (id: string | null | undefined) => JobCategory | null;
   to_job_category_name: (
     id: string | null | undefined,
-    def?: string | null
+    def?: string | null,
   ) => string | null;
   get_job_category_by_name: (
-    name: string | null | undefined
+    name: string | null | undefined,
   ) => JobCategory | null;
 
   get_department: (id: string | null | undefined) => Department | null;
   to_department_name: (
     id: string | null | undefined,
-    def?: string | null
+    def?: string | null,
   ) => string | null;
   get_department_by_name: (
-    name: string | null | undefined
+    name: string | null | undefined,
   ) => Department | null;
+
+  get_degree: (id: string | null | undefined) => Degree | null;
+  to_degree_name: (
+    id: string | null | undefined,
+    def?: string | null,
+  ) => string | null;
+  get_degree_by_name: (name: string | null | undefined) => Degree | null;
 
   get_departments_by_college: (college_id: string) => string[];
   get_colleges_by_university: (university_id: string) => string[];
+  get_degrees_by_university: (university_id: string) => Degree[];
   getUniversityFromDomain: (domain: string) => string[];
   isNotNull: (ref: any) => boolean;
 }
@@ -139,9 +150,9 @@ export interface IRefsContext {
  */
 const createRefInternalHook = <
   ID extends string | number,
-  T extends { id: ID; name: string }
+  T extends { id: ID; name: string },
 >(
-  table: string
+  table: string,
 ) => {
   const [data, set_data] = useState<T[]>([]);
   const [loading, set_loading] = useState(true);
@@ -170,7 +181,7 @@ const createRefInternalHook = <
       if (!f.length) return def;
       return f[0].name;
     },
-    [data]
+    [data],
   );
 
   /**
@@ -186,7 +197,7 @@ const createRefInternalHook = <
       if (!f.length) return null;
       return f[0];
     },
-    [data]
+    [data],
   );
 
   /**
@@ -202,7 +213,7 @@ const createRefInternalHook = <
       if (!f.length) return null;
       return f[0];
     },
-    [data]
+    [data],
   );
 
   // Fetch the data at the start
@@ -302,6 +313,14 @@ export const createRefsContext = () => {
     loading: l11,
   } = createRefInternalHook<string, Department>("ref_departments");
 
+  const {
+    data: degrees,
+    get: get_degree,
+    to_name: to_degree_name,
+    get_by_name: get_degree_by_name,
+    loading: l12,
+  } = createRefInternalHook<string, Degree>("ref_degrees");
+
   const { data: domains, loading: l13 } = createRefInternalHook<
     string,
     { id: string; name: string; university_id: string }
@@ -309,15 +328,15 @@ export const createRefsContext = () => {
 
   useEffect(() => {
     setLoading(
-      l2 || l3 || l4 || l5 || l6 || l7 || l8 || l9 || l10 || l11 || l13
+      l2 || l3 || l4 || l5 || l6 || l7 || l8 || l9 || l10 || l11 || l12 || l13,
     );
-  }, [l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l13]);
+  }, [l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13]);
 
   // The API to provide to the app
   const refs_context = {
     ref_loading: loading,
-
     colleges,
+    degrees,
     departments,
     universities,
     job_types,
@@ -342,6 +361,8 @@ export const createRefsContext = () => {
 
     get_college,
     get_department,
+    get_degree,
+    to_degree_name,
     get_university,
     get_job_type,
     get_job_mode,
@@ -352,6 +373,7 @@ export const createRefsContext = () => {
     get_industry,
 
     get_college_by_name,
+    get_degree_by_name,
     get_department_by_name,
     get_university_by_name,
     get_job_type_by_name,
@@ -369,6 +391,9 @@ export const createRefsContext = () => {
       colleges
         .filter((c) => c.university_id === university_id)
         .map((c) => c.id),
+
+    get_degrees_by_university: (university_id: string) =>
+      degrees.filter((d: any) => d.university_id === university_id),
 
     getUniversityFromDomain: (domain: string) =>
       domains.filter((d) => d.name === domain).map((d) => d.university_id),

@@ -19,11 +19,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  isProfileBaseComplete,
-  isProfileResume,
-  isProfileVerified,
-} from "@/lib/profile";
 import { useAuthContext } from "@/lib/ctx-auth";
 
 interface MobileBottomNavProps {
@@ -190,29 +185,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           <div className="flex flex-col gap-0">
             <button
               onClick={() => {
-                try {
-                  if (profileData && "data" in profileData) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-                    const profile = profileData.data;
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    if (!isProfileVerified(profile || null)) {
-                      router.push(`/register/verify`);
-                    } else if (
-                      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                      !isProfileResume(profile || null) ||
-                      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                      !isProfileBaseComplete(profile || null)
-                    ) {
-                      router.push(`/profile/complete-profile?dest=profile`);
-                    } else {
-                      router.push(`/profile`);
-                    }
-                  } else {
-                    router.push(`/profile`);
-                  }
-                } catch {
-                  router.push(`/profile`);
-                }
+                router.push(`/profile`);
               }}
               className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm"
             >

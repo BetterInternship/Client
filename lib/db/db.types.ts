@@ -16,6 +16,7 @@ export type JobChallenge = Tables<"jobs_challenge">;
 export type AppStatus = Tables<"ref_app_statuses">;
 export type Industry = Tables<"ref_industries">;
 export type Department = Tables<"ref_departments">;
+export type Degree = Tables<"ref_degrees">;
 export type Moa = Tables<"moa">;
 export type PrivateUser = Tables<"users">;
 type _PublicUserBase = Omit<Tables<"users">, "verification_hash">;
@@ -37,10 +38,8 @@ export type PublicEmployerUser = Omit<
 >;
 export interface MoA extends Partial<Tables<"moa">> {}
 
-export interface Job extends Omit<
-  Partial<Tables<"jobs">>,
-  "internship_preferences"
-> {
+export interface Job
+  extends Omit<Partial<Tables<"jobs">>, "internship_preferences"> {
   employer?: Partial<Employer>;
   employers?: Partial<Employer>;
   challenge?: Partial<JobChallenge> | null;
