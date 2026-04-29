@@ -1,28 +1,19 @@
 "use client";
 
 import { type ChangeEvent, type FormEvent, useEffect, useRef } from "react";
-import {
-  ArrowLeft,
-  FileText,
-  FolderOpen,
-  Globe,
-  Loader2,
-  Video,
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import confetti from "canvas-confetti";
 import { motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Loader } from "@/components/ui/loader";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { SofiAiSubmissionForm, SubmissionStep } from "./types";
+import type { SofiAiSubmissionForm } from "./types";
 
 type ApplyPanelProps = {
   form: SofiAiSubmissionForm;
-  submissionStep: SubmissionStep;
   hasSubmitted: boolean;
   submittedEmail: string;
   isSubmitting: boolean;
@@ -33,17 +24,29 @@ type ApplyPanelProps = {
   tokenFail: boolean;
   turnstileSiteKey?: string;
   onFieldChange: (field: keyof SofiAiSubmissionForm, value: string) => void;
-  onNextStep: () => void;
-  onBackStep: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onBackToOverview: () => void;
   onTokenSuccess: (token: string) => void;
   onTokenError: () => void;
 };
 
+function AsteriskList({ items }: { items: readonly string[] }) {
+  return (
+    <ul className="space-y-2">
+      {items.map((item) => (
+        <li key={item} className="flex gap-2.5">
+          <span className="mt-0.5 shrink-0 [font-family:var(--font-paraluman-mono)] text-sm font-semibold leading-6 text-[#00A886]">
+            *
+          </span>
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function ApplyPanel({
   form,
-  submissionStep,
   hasSubmitted,
   submittedEmail,
   isSubmitting,
@@ -54,8 +57,6 @@ export function ApplyPanel({
   tokenFail,
   turnstileSiteKey,
   onFieldChange,
-  onNextStep,
-  onBackStep,
   onSubmit,
   onBackToOverview,
   onTokenSuccess,
@@ -85,7 +86,7 @@ export function ApplyPanel({
       spread: 74,
       startVelocity: 34,
       origin: { y: 0.65 },
-      colors: ["#07C4A7", "#35e3ca", "#8cf5e4", "#ffffff"],
+      colors: ["#00A886", "#00B894", "#8cf5e4", "#ffffff"],
     });
 
     window.setTimeout(() => {
@@ -94,7 +95,7 @@ export function ApplyPanel({
         spread: 60,
         startVelocity: 28,
         origin: { x: 0.75, y: 0.68 },
-        colors: ["#07C4A7", "#8cf5e4", "#ffffff"],
+        colors: ["#00A886", "#8cf5e4", "#ffffff"],
       });
     }, 180);
   }, [hasSubmitted, prefersReduce]);
@@ -107,238 +108,205 @@ export function ApplyPanel({
       onFieldChange(field, event.target.value);
     };
 
+  if (hasSubmitted) {
+    return (
+      <motion.div
+        initial={prefersReduce ? false : { opacity: 0, y: 20, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.7, ease: [0.34, 1.56, 0.64, 1] }}
+        className="text-[#052338]"
+      >
+        <div className="max-w-2xl space-y-4">
+          <p className="[font-family:var(--font-paraluman-heading)] text-2xl font-bold tracking-[-0.035em] text-[#052338]">
+            Submission sent
+          </p>
+          <p className="max-w-2xl [font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/82 sm:text-[0.9rem]">
+            Thank you for applying. We sent a confirmation to{" "}
+            <span className="font-semibold text-[#052338]">
+              {submittedEmail || "your email"}
+            </span>
+            . You will receive a response within 24 hours.
+          </p>
+          <div className="pt-1">
+            <Button
+              type="button"
+              onClick={onBackToOverview}
+              className="inline-flex h-11 items-center justify-center rounded-md bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white transition-all duration-200 hover:bg-[#0D3B33]"
+            >
+              Back to overview
+            </Button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
-      <div className="max-w-3xl space-y-3 border-b pb-5">
-        <h2 className="[font-family:var(--font-paraluman-heading)] text-4xl font-bold leading-[1.02] tracking-[-0.04em] text-[#0D3B33]">
-          Submit your challenge output.
-        </h2>
-        <p className="[font-family:var(--font-paraluman-body)] text-base leading-7 text-[#184d45]/72 sm:text-lg sm:leading-8">
-          Again,{" "}
-          <span className="font-bold text-[#07C4A7]">
-            no resume needed. Response within 24 hours.
-          </span>
-        </p>
+    <div className="text-[#052338]">
+      <div className="max-w-2xl">
+        <div className="space-y-2">
+          <h2 className="[font-family:var(--font-paraluman-heading)] text-[1.45rem] font-bold leading-tight tracking-[-0.035em] sm:text-[1.55rem]">
+            Submit your challenge output.
+          </h2>
+          <p className="[font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/82 sm:text-[0.9rem]">
+            Again,{" "}
+            <span className="font-bold text-[#00866f]">
+              no resume needed. Response within 24 hours.
+            </span>
+          </p>
+        </div>
+
+        <div className="space-y-5 mt-3 [font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/86">
+          <div className="space-y-2.5">
+            <p className="[font-family:var(--font-paraluman-heading)] text-lg font-bold tracking-[-0.025em] text-[#052338]">
+              Submission Requirements
+            </p>
+            <p className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.025em] text-[#052338]">
+              1. Deployed Website or Prototype
+            </p>
+            <AsteriskList
+              items={[
+                "Shows the product experience.",
+                "Clear and logical user flow.",
+                "Doesn't need to be fully functional, as long as you can explain it.",
+              ]}
+            />
+          </div>
+
+          <div className="space-y-2.5">
+            <p className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.025em] text-[#052338]">
+              2. 1-3 Minute Video
+            </p>
+            <AsteriskList
+              items={[
+                "Pitch yourself.",
+                "Walk us through your design.",
+                "Explain your thinking and decisions.",
+              ]}
+            />
+          </div>
+        </div>
       </div>
 
-      <div className="overflow-hidden">
-        <div className="px-0 py-6 sm:py-8">
-          {hasSubmitted ? (
-            <motion.div
-              initial={
-                prefersReduce ? false : { opacity: 0, y: 20, scale: 0.98 }
-              }
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.7, ease: [0.34, 1.56, 0.64, 1] }}
-              className="p-0"
-            >
-              <div className="space-y-4">
-                <p className="[font-family:var(--font-paraluman-mono)] text-[10px] font-semibold uppercase tracking-[0.22em] text-[#07C4A7]/64 sm:text-[11px]">
-                  Submission sent
-                </p>
-                <p className="[font-family:var(--font-paraluman-heading)] text-3xl font-medium tracking-[-0.04em] text-[#0D3B33] sm:text-4xl">
-                  You&apos;re in.
-                </p>
-                <p className="max-w-2xl [font-family:var(--font-paraluman-body)] text-base leading-7 text-[#184d45]/74 sm:text-lg sm:leading-8">
-                  Thank you for applying. We sent a confirmation to{" "}
-                  <span className="font-semibold text-[#0D3B33]">
-                    {submittedEmail || "your email"}
-                  </span>
-                  . You will receive a response within 24 hours.
-                </p>
-                <div className="pt-2">
-                  <Button
-                    type="button"
-                    onClick={onBackToOverview}
-                    className="inline-flex h-11 items-center justify-center rounded-md bg-[#0D3B33] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-medium tracking-[-0.02em] text-white transition-all duration-200 hover:bg-[#0a2f29]"
-                  >
-                    Back to overview
-                  </Button>
-                </div>
+      <div className="mt-6 max-w-2xl">
+        <div>
+          <form className="space-y-5" onSubmit={(e) => void onSubmit(e)}>
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
+                  Full Name *
+                </label>
+                <Input
+                  required
+                  value={form.fullName}
+                  onChange={updateField("fullName")}
+                  className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
+                />
               </div>
-            </motion.div>
-          ) : (
-            <form className="space-y-6" onSubmit={(e) => void onSubmit(e)}>
-              <p className="[font-family:var(--font-paraluman-heading)] text-lg font-bold tracking-[-0.03em] text-[#0D3B33]">
-                {submissionStep === 1
-                  ? "Step 1/2: Paste the single best link to your prototype, video, or document."
-                  : "Step 2/2: Add your contact details so the team can review and reply quickly."}
+
+              <div className="space-y-2">
+                <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
+                  Email *
+                </label>
+                <Input
+                  required
+                  type="email"
+                  value={form.email}
+                  onChange={updateField("email")}
+                  className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
+                  Deployed Website / Prototype Link *
+                </label>
+                <p className="[font-family:var(--font-paraluman-body)] text-xs leading-5 text-[#052338]/42">
+                  Figma, Framer, Webflow, or any shareable URL. Make sure view
+                  access is on.
+                </p>
+                <Input
+                  required
+                  value={form.submissionLink}
+                  onChange={updateField("submissionLink")}
+                  className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
+                  Video Submission Link *
+                </label>
+                <p className="[font-family:var(--font-paraluman-body)] text-xs leading-5 text-[#052338]/42">
+                  Loom, YouTube (unlisted), Google Drive &mdash; any link we can
+                  watch. Keep it 1-3 minutes.
+                </p>
+                <Input
+                  required
+                  value={form.videoSubmissionLink}
+                  onChange={updateField("videoSubmissionLink")}
+                  className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
+                />
+              </div>
+            </div>
+
+            {isDevelopment ? (
+              <p className="border-t border-[#052338]/10 pt-4 [font-family:var(--font-paraluman-body)] text-sm text-[#00866f]">
+                Captcha disabled in development.
               </p>
-
-              {submissionStep === 1 && (
-                <>
-                  <div className="space-y-2.5">
-                    <label className="[font-family:var(--font-paraluman-body)] font-semibold text-[#184d45] opacity-60 text-xs">
-                      Challenge Output Link *
-                    </label>
-                    <Input
-                      required
-                      value={form.submissionLink}
-                      onChange={updateField("submissionLink")}
-                      className="h-12 border-[#07C4A7]/14 bg-white [font-family:var(--font-paraluman-body)] text-base shadow-none focus-visible:ring-[#07C4A7]/25"
-                    />
-                    <div className="flex flex-wrap gap-2 pt-1 [font-family:var(--font-paraluman-body)] text-[11px] text-[#184d45]/56 sm:text-xs">
-                      Accepted Links:
-                      <span className="inline-flex items-center gap-1">
-                        <FolderOpen className="h-3.5 w-3.5" />
-                        Google Drive,
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <FileText className="h-3.5 w-3.5" />
-                        Google Docs,
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <Globe className="h-3.5 w-3.5" />
-                        Live Demo,
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <Video className="h-3.5 w-3.5" />
-                        YouTube
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2.5">
-                    <label className="[font-family:var(--font-paraluman-body)] font-semibold text-[#184d45] opacity-60 text-xs">
-                      Application Notes
-                    </label>
-                    <Textarea
-                      value={form.submissionNotes}
-                      onChange={updateField("submissionNotes")}
-                      placeholder="Add context, constraints, and tradeoffs you want Sofi AI reviewers to notice."
-                      className="min-h-32 border-[#07C4A7]/14 bg-white [font-family:var(--font-paraluman-body)] text-base shadow-none focus-visible:ring-[#07C4A7]/25"
-                    />
-                  </div>
-                </>
-              )}
-
-              {submissionStep === 2 && (
-                <>
-                  <div className="grid gap-5 sm:grid-cols-2">
-                    <div className="space-y-2.5 sm:col-span-2">
-                      <label className="[font-family:var(--font-paraluman-body)] font-semibold text-[#184d45] opacity-60 text-xs">
-                        Email Address *
-                      </label>
-                      <Input
-                        required
-                        type="email"
-                        value={form.email}
-                        onChange={updateField("email")}
-                        className="h-12 border-[#07C4A7]/14 bg-white [font-family:var(--font-paraluman-body)] text-base shadow-none focus-visible:ring-[#07C4A7]/25"
-                      />
-                    </div>
-
-                    <div className="space-y-2.5">
-                      <label className="[font-family:var(--font-paraluman-body)] font-semibold text-[#184d45] opacity-60 text-xs">
-                        Full Name *
-                      </label>
-                      <Input
-                        required
-                        value={form.fullName}
-                        onChange={updateField("fullName")}
-                        className="h-12 border-[#07C4A7]/14 bg-white [font-family:var(--font-paraluman-body)] text-base shadow-none focus-visible:ring-[#07C4A7]/25"
-                      />
-                    </div>
-
-                    <div className="space-y-2.5">
-                      <label className="[font-family:var(--font-paraluman-body)] font-semibold text-[#184d45] opacity-60 text-xs">
-                        Facebook Link *
-                      </label>
-                      <Input
-                        required
-                        value={form.facebookLink}
-                        onChange={updateField("facebookLink")}
-                        className="h-12 border-[#07C4A7]/14 bg-white [font-family:var(--font-paraluman-body)] text-base shadow-none focus-visible:ring-[#07C4A7]/25"
-                      />
-                    </div>
-                  </div>
-
-                  {isDevelopment ? (
-                    <p className="border-t border-[#07C4A7]/10 pt-4 [font-family:var(--font-paraluman-body)] text-sm text-[#07C4A7]">
-                      Captcha disabled in development.
-                    </p>
-                  ) : !token ? (
-                    <div className="space-y-3 border-t border-[#07C4A7]/10 pt-4">
-                      {!tokenFail ? (
-                        <Loader>Validating browser...</Loader>
-                      ) : (
-                        <Badge type="destructive" className="mb-2">
-                          Unable to validate captcha. Please refresh and try
-                          again.
-                        </Badge>
-                      )}
-                      <Turnstile
-                        siteKey={turnstileSiteKey!}
-                        onSuccess={onTokenSuccess}
-                        onError={onTokenError}
-                      />
-                    </div>
-                  ) : (
-                    <div className="border-t border-emerald-200 pt-4 [font-family:var(--font-paraluman-body)] text-sm text-emerald-700">
-                      Browser verification complete.
-                    </div>
-                  )}
-                </>
-              )}
-
-              <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-                {submissionStep === 1 ? (
-                  <Button
-                    type="button"
-                    onClick={onNextStep}
-                    className="inline-flex h-11 items-center justify-center rounded-md bg-[#0D3B33] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-medium tracking-[-0.02em] text-white transition-all duration-200 hover:bg-[#0a2f29]"
-                  >
-                    Continue to contact details
-                  </Button>
+            ) : !token ? (
+              <div className="space-y-3 border-t border-[#052338]/10 pt-4">
+                {!tokenFail ? (
+                  <Loader>Validating browser...</Loader>
                 ) : (
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={onBackStep}
-                      className="inline-flex h-11 items-center justify-center gap-1.5 rounded-md border border-[#07C4A7]/14 bg-white px-5 [font-family:var(--font-paraluman-heading)] text-sm font-medium tracking-[-0.02em] text-[#0D3B33] transition-colors duration-200 hover:bg-[#e9fffb]"
-                    >
-                      <ArrowLeft className="h-4 w-4" />
-                      Back
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-[#0D3B33] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-medium tracking-[-0.02em] text-white transition-all duration-200 hover:bg-[#0a2f29]"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Submitting
-                        </>
-                      ) : (
-                        "Submit challenge"
-                      )}
-                    </Button>
-                  </div>
+                  <Badge type="destructive" className="mb-2">
+                    Unable to validate captcha. Please refresh and try again.
+                  </Badge>
                 )}
+                <Turnstile
+                  siteKey={turnstileSiteKey!}
+                  onSuccess={onTokenSuccess}
+                  onError={onTokenError}
+                />
               </div>
+            ) : (
+              <div className="border-t border-[#052338]/10 pt-4 [font-family:var(--font-paraluman-body)] text-sm text-[#00866f]">
+                Browser verification complete.
+              </div>
+            )}
 
-              {resultMessage && (
-                <div
-                  className={cn(
-                    "rounded-[1rem] border px-4 py-3 [font-family:var(--font-paraluman-body)] text-sm",
-                    isError
-                      ? "border-red-200 bg-red-50 text-red-700"
-                      : "border-emerald-200 bg-emerald-50 text-emerald-700",
-                  )}
-                >
-                  {resultMessage}
-                </div>
-              )}
-            </form>
-          )}
+            <div className="flex flex-col gap-3">
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="inline-flex h-11 w-fit items-center justify-center gap-2 rounded-md bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white transition-all duration-200 hover:bg-[#0D3B33]"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Submitting
+                  </>
+                ) : (
+                  "Submit challenge"
+                )}
+              </Button>
+            </div>
+
+            {resultMessage && (
+              <div
+                className={cn(
+                  "rounded-md border px-4 py-3 [font-family:var(--font-paraluman-body)] text-sm",
+                  isError
+                    ? "border-red-200 bg-red-50 text-red-700"
+                    : "border-emerald-200 bg-emerald-50 text-emerald-700",
+                )}
+              >
+                {resultMessage}
+              </div>
+            )}
+          </form>
         </div>
       </div>
     </div>
   );
 }
-
-
-
-

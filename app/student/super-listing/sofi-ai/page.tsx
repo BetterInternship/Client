@@ -6,16 +6,14 @@ import Link from "next/link";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { OverviewPanel } from "./components/OverviewPanel";
 import { HowToApplyPanel } from "./components/HowToApplyPanel";
 import { ApplyPanel } from "./components/ApplyPanel";
-import { HeroPanel } from "./components/HeroPanel";
 import { JobDetailsRail } from "./components/JobDetailsRail";
+import doodlePack from "../../companies/sofi-ai/doodle-pack.png";
 import type {
   PanelKey,
   SofiAiSubmissionForm,
-  SubmissionStep,
 } from "./components/types";
 
 const headingFont = Space_Grotesk({
@@ -36,7 +34,6 @@ const bodyFont = Open_Sans({
   variable: "--font-paraluman-body",
 });
 
-const CHALLENGE_PDF_URL = "https://sofitech.ai/";
 const SOFI_AI_LOGO_URL =
   "https://sofitech.ai/_next/static/media/sofi-ai-chat-support-automation-logo-vector.80ec9e4e.png";
 
@@ -48,9 +45,8 @@ type SofiAiSubmissionResponse = {
 const INITIAL_FORM_STATE: SofiAiSubmissionForm = {
   email: "",
   fullName: "",
-  facebookLink: "",
   submissionLink: "",
-  submissionNotes: "",
+  videoSubmissionLink: "",
 };
 
 const PANEL_TABS: Array<{
@@ -58,9 +54,43 @@ const PANEL_TABS: Array<{
   label: string;
 }> = [
   { key: "overview", label: "Overview" },
-  { key: "challenge", label: "Challenge" },
+  { key: "challenge", label: "Application" },
   { key: "submission", label: "Submit" },
 ];
+
+const DOODLE_SPRITES = {
+  sparkle: { row: 0, col: 1 },
+  arrow: { row: 0, col: 3 },
+  circleAccent: { row: 1, col: 1 },
+  wavyLine: { row: 2, col: 1 },
+} as const;
+
+type DoodleName = keyof typeof DOODLE_SPRITES;
+
+function Doodle({ name, className }: { name: DoodleName; className?: string }) {
+  const { row, col } = DOODLE_SPRITES[name];
+  const x = (col / 3) * 100 + 8;
+  const y = (row / 2) * 100 + 12;
+
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "pointer-events-none absolute z-[1] block aspect-[384/341] overflow-hidden bg-transparent bg-no-repeat select-none",
+        className,
+      )}
+    >
+      <span
+        className="block h-full w-full bg-no-repeat"
+        style={{
+          backgroundImage: `url(${doodlePack.src})`,
+          backgroundPosition: `${x}% ${y}%`,
+          backgroundSize: "400% 300%",
+        }}
+      />
+    </span>
+  );
+}
 
 export default function SofiAiSuperListingPage() {
   const isDevelopment = process.env.NODE_ENV === "development";
@@ -72,7 +102,6 @@ export default function SofiAiSuperListingPage() {
   const [token, setToken] = useState("");
   const [tokenFail, setTokenFail] = useState(false);
   const [activePanel, setActivePanel] = useState<PanelKey>("overview");
-  const [submissionStep, setSubmissionStep] = useState<SubmissionStep>(1);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
 
@@ -105,10 +134,6 @@ export default function SofiAiSuperListingPage() {
     setResultMessage("");
     setIsError(false);
 
-    if (panel === "submission") {
-      setSubmissionStep(1);
-    }
-
     if (shouldScroll) {
       scrollToPanelSection();
     }
@@ -120,7 +145,6 @@ export default function SofiAiSuperListingPage() {
 
   const openSubmissionPanel = () => {
     setActivePanel("submission");
-    setSubmissionStep(1);
     setResultMessage("");
     setIsError(false);
 
@@ -134,59 +158,19 @@ export default function SofiAiSuperListingPage() {
     });
   };
 
-  const goToStepTwo = () => {
-    setResultMessage("");
-    setIsError(false);
-
-    if (!form.submissionLink.trim()) {
-      setIsError(true);
-      setResultMessage(
-        "Challenge submission link is required before proceeding.",
-      );
-      return;
-    }
-
-    setSubmissionStep(2);
-    requestAnimationFrame(() => {
-      submissionPanelRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    });
-  };
-
-  const goToNextStep = () => {
-    if (submissionStep === 1) {
-      goToStepTwo();
-    }
-  };
-
-  const goToPreviousStep = () => {
-    setResultMessage("");
-    setIsError(false);
-    setSubmissionStep((previous) =>
-      previous > 1 ? ((previous - 1) as SubmissionStep) : 1,
-    );
-  };
-
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setResultMessage("");
     setIsError(false);
 
-    if (submissionStep !== 2) {
-      setIsError(true);
-      setResultMessage("Please complete all steps before submitting.");
-      return;
-    }
-
     if (
       !form.email.trim() ||
       !form.fullName.trim() ||
-      !form.facebookLink.trim()
+      !form.submissionLink.trim() ||
+      !form.videoSubmissionLink.trim()
     ) {
       setIsError(true);
-      setResultMessage("Please complete your personal information.");
+      setResultMessage("Please complete all required fields.");
       return;
     }
 
@@ -197,11 +181,8 @@ export default function SofiAiSuperListingPage() {
     }
 
     const combinedNotes = [
-      form.submissionNotes.trim()
-        ? `Notes: ${form.submissionNotes.trim()}`
-        : "",
       `Full Name: ${form.fullName.trim()}`,
-      `Facebook Link: ${form.facebookLink.trim()}`,
+      `Video Submission Link: ${form.videoSubmissionLink.trim()}`,
     ]
       .filter(Boolean)
       .join("\n\n");
@@ -228,7 +209,6 @@ export default function SofiAiSuperListingPage() {
 
       const submittedEmailAddress = form.email.trim();
       setForm(INITIAL_FORM_STATE);
-      setSubmissionStep(1);
       setSubmittedEmail(submittedEmailAddress);
       setHasSubmitted(true);
       setResultMessage("");
@@ -247,156 +227,158 @@ export default function SofiAiSuperListingPage() {
   return (
     <main
       className={cn(
-        "relative isolate min-h-screen bg-[#f7fffd] text-black",
+        "relative isolate min-h-screen overflow-x-hidden bg-[#f7fffd] text-[#052338]",
         headingFont.variable,
         monoFont.variable,
         bodyFont.variable,
       )}
     >
-      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_8%_12%,rgba(7,196,167,0.15),transparent_38%),radial-gradient(circle_at_88%_8%,rgba(7,196,167,0.15),transparent_34%),radial-gradient(circle_at_50%_92%,rgba(7,196,167,0.08),transparent_44%)]" />
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.045)_1px,transparent_1px)] bg-[size:46px_46px] opacity-28" />
-
-      <header className="top-0 z-[9999] flex items-center justify-between border-b border-transparent bg-transparent px-4 py-3 shadow-none backdrop-blur-0 transition-all duration-300 sm:px-8 lg:px-10">
-        <div className="flex items-center gap-2 sm:gap-3">
+      <header className="sticky top-0 z-50 border-b border-[#052338]/8 bg-white/92 px-5 py-3 backdrop-blur sm:px-8">
+        <div className="relative mx-auto flex h-8 max-w-5xl items-center justify-center">
           <Link
-            href="/"
-            className="transition-opacity duration-200 hover:opacity-70"
+            href="/companies/sofi-ai"
+            className="absolute left-0 inline-flex h-8 w-8 items-center justify-center text-[#052338]/45 transition-colors duration-200 hover:text-[#052338]"
+            aria-label="Back to Sofi AI company page"
           >
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+          <div className="inline-flex items-center gap-2">
             <Image
               src="/BetterInternshipLogo.png"
-              alt="BetterInternship"
-              width={40}
-              height={40}
-              className="h-10 w-10 sm:h-12 sm:w-12"
+              alt="BetterInternship logo"
+              width={32}
+              height={32}
+              className="h-7 w-7"
+              priority
             />
-          </Link>
-          <span className="text-xs font-semibold uppercase text-black/45">
-            x
-          </span>
-          <Link
-            href="https://sofitech.ai/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center transition-opacity duration-200 hover:opacity-75"
-          >
+            <span className="[font-family:var(--font-paraluman-heading)] text-sm font-bold text-[#052338]/45">
+              &times;
+            </span>
             <Image
               src={SOFI_AI_LOGO_URL}
               alt="Sofi AI logo"
               width={150}
               height={46}
-              className="h-auto w-14 grayscale brightness-0 contrast-150 sm:w-16"
+              className="h-auto w-14 grayscale brightness-0 contrast-150"
               priority
             />
-          </Link>
+          </div>
         </div>
       </header>
 
-      <section className="px-4 pb-12 pt-6 sm:px-8 sm:pb-16 sm:pt-8 lg:px-10 lg:pt-10">
-        <div className="mx-auto max-w-6xl">
-          <Button
-            asChild
-            type="button"
-            className="mb-4 inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#07C4A7]/18 bg-white px-4 [font-family:var(--font-paraluman-heading)] text-sm font-medium tracking-[-0.02em] text-[#0D3B33] shadow-[0_10px_24px_-20px_rgba(13,59,51,0.48)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#e9fffb] hover:text-[#0D3B33] sm:mb-5"
-          >
-            <Link href="/companies/sofi-ai">
-              <ArrowLeft className="h-4 w-4" />
-              Back to company page
-            </Link>
-          </Button>
-          <HeroPanel />
-        </div>
-      </section>
+      <div className="pointer-events-none fixed inset-0 -z-20 bg-[#f7fffd]" />
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(13,59,51,0.055)_1px,transparent_1px),linear-gradient(to_bottom,rgba(13,59,51,0.055)_1px,transparent_1px)] bg-[size:44px_44px] opacity-40" />
+      <div className="pointer-events-none fixed -right-28 top-0 -z-10 h-96 w-96 rounded-full bg-[#BFFFF3]/32 blur-3xl" />
+      <Doodle
+        name="circleAccent"
+        className="-left-16 top-36 hidden w-36 opacity-30 sm:block lg:left-6 lg:top-40"
+      />
+      <Doodle
+        name="sparkle"
+        className="right-4 top-32 hidden w-24 opacity-35 sm:block lg:right-14"
+      />
+      <Doodle
+        name="arrow"
+        className="-right-16 top-[23rem] hidden w-44 opacity-25 lg:block"
+      />
+      <Doodle
+        name="wavyLine"
+        className="bottom-12 right-8 hidden w-44 opacity-30 lg:block"
+      />
 
-      <section ref={panelSectionRef} className="px-4 pb-20 sm:px-8 lg:px-10">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-5 lg:hidden">
-            <JobDetailsRail />
+      <section
+        ref={panelSectionRef}
+        className="relative z-10 px-5 pb-20 sm:px-8"
+      >
+        <div className="mx-auto max-w-5xl">
+          <div className="pt-6">
+            <h1 className="[font-family:var(--font-paraluman-heading)] text-[2.35rem] font-bold leading-[1.02] tracking-[-0.055em] text-[#052338] sm:text-[3rem] lg:text-[3.4rem]">
+              UI/UX Intern
+            </h1>
           </div>
 
-          <div className="flex flex-wrap gap-5 px-0 pb-2">
-            {PANEL_TABS.map((tab) => {
-              const isActive = activePanel === tab.key;
-              return (
-                <button
-                  key={tab.key}
-                  type="button"
-                  onClick={() => openPanel(tab.key)}
-                  className={cn(
-                    "relative inline-flex min-h-11 items-center justify-center py-2 [font-family:var(--font-paraluman-heading)] text-sm font-medium tracking-[-0.02em] transition-colors duration-200",
-                    isActive
-                      ? "text-[#0D3B33]"
-                      : "text-[#427a72]/70 hover:text-[#0D3B33]",
+          <div className="mt-10 grid gap-8 lg:grid-cols-[16.25rem_minmax(0,1fr)] lg:gap-10">
+            <div className="lg:sticky lg:top-24 lg:self-start">
+              <JobDetailsRail />
+            </div>
+
+            <div className="min-w-0">
+              <div className="-mx-5 border-y border-[rgba(0,80,60,0.055)] bg-white/55 px-5 pb-3 shadow-[0_18px_48px_-42px_rgba(5,35,56,0.28)] backdrop-blur-[2px] sm:mx-0 sm:rounded-[0.75em] sm:border sm:px-6">
+                <div className="border-b border-[#052338]/12">
+                  <div className="flex justify-between gap-3 sm:justify-start sm:gap-7">
+                    {PANEL_TABS.map((tab) => {
+                      const isActive = activePanel === tab.key;
+                      return (
+                        <button
+                          key={tab.key}
+                          type="button"
+                          onClick={() => openPanel(tab.key)}
+                          className={cn(
+                            "relative inline-flex h-11 min-w-0 items-center [font-family:var(--font-paraluman-heading)] text-sm font-semibold transition-colors duration-200",
+                            isActive
+                              ? "text-[#00A886]"
+                              : "text-[#052338]/45 hover:text-[#052338]",
+                          )}
+                          aria-pressed={isActive}
+                        >
+                          {tab.label}
+                          <span
+                            className={cn(
+                              "absolute bottom-[-1px] left-0 h-px w-full transition-opacity duration-200",
+                              isActive
+                                ? "bg-[#00A886] opacity-100"
+                                : "opacity-0",
+                            )}
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="pt-6 sm:pt-7">
+                  {activePanel === "overview" && (
+                    <div id="sofi-ai-overview-anchor" className="w-full">
+                      <OverviewPanel onGoToApply={openChallengePanel} />
+                    </div>
                   )}
-                  aria-pressed={isActive}
-                >
-                  {tab.label}
-                  <span
-                    className={cn(
-                      "absolute bottom-0 left-0 h-px w-full transition-opacity duration-200",
-                      isActive
-                        ? "bg-[#0D3B33] opacity-100"
-                        : "bg-transparent opacity-0",
-                    )}
-                  />
-                </button>
-              );
-            })}
-          </div>
 
-          <div className="border border-[#07C4A7]/10 bg-white shadow-[0_28px_70px_-48px_rgba(13,59,51,0.32)]">
-            <div className="grid gap-8 px-4 py-6 sm:px-6 sm:py-8 lg:grid-cols-[18rem_minmax(0,1fr)] lg:items-start lg:gap-10 lg:px-8">
-              <div className="hidden lg:block">
-                <JobDetailsRail />
-              </div>
+                  {activePanel === "challenge" && (
+                    <HowToApplyPanel onGoToApply={openSubmissionPanel} />
+                  )}
 
-              <div className="min-w-0 pt-1 sm:pt-0 lg:border-l lg:border-[#07C4A7]/10 lg:pl-10">
-                {activePanel === "overview" && (
-                  <div id="sofi-ai-overview-anchor" className="w-full">
-                    <OverviewPanel onGoToApply={openChallengePanel} />
-                  </div>
-                )}
-
-                {activePanel === "challenge" && (
-                  <HowToApplyPanel
-                    challengePdfUrl={CHALLENGE_PDF_URL}
-                    onGoToApply={openSubmissionPanel}
-                  />
-                )}
-
-                {activePanel === "submission" && (
-                  <div ref={submissionPanelRef} className="w-full">
-                    <ApplyPanel
-                      form={form}
-                      submissionStep={submissionStep}
-                      hasSubmitted={hasSubmitted}
-                      submittedEmail={submittedEmail}
-                      isSubmitting={isSubmitting}
-                      isError={isError}
-                      resultMessage={resultMessage}
-                      isDevelopment={isDevelopment}
-                      token={token}
-                      tokenFail={tokenFail}
-                      turnstileSiteKey={
-                        process.env.NEXT_PUBLIC_SERVER_API_KEY_TURNSTILE
-                      }
-                      onFieldChange={onFieldChange}
-                      onNextStep={goToNextStep}
-                      onBackStep={goToPreviousStep}
-                      onSubmit={(event) => {
-                        void handleSubmit(event);
-                      }}
-                      onBackToOverview={() => openPanel("overview", true)}
-                      onTokenSuccess={(t) => {
-                        setToken(t);
-                        setTokenFail(false);
-                      }}
-                      onTokenError={() => {
-                        setToken("");
-                        setTokenFail(true);
-                      }}
-                    />
-                  </div>
-                )}
+                  {activePanel === "submission" && (
+                    <div ref={submissionPanelRef}>
+                      <ApplyPanel
+                        form={form}
+                        hasSubmitted={hasSubmitted}
+                        submittedEmail={submittedEmail}
+                        isSubmitting={isSubmitting}
+                        isError={isError}
+                        resultMessage={resultMessage}
+                        isDevelopment={isDevelopment}
+                        token={token}
+                        tokenFail={tokenFail}
+                        turnstileSiteKey={
+                          process.env.NEXT_PUBLIC_SERVER_API_KEY_TURNSTILE
+                        }
+                        onFieldChange={onFieldChange}
+                        onSubmit={(event) => {
+                          void handleSubmit(event);
+                        }}
+                        onBackToOverview={() => openPanel("overview", true)}
+                        onTokenSuccess={(t) => {
+                          setToken(t);
+                          setTokenFail(false);
+                        }}
+                        onTokenError={() => {
+                          setToken("");
+                          setTokenFail(true);
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -405,7 +387,3 @@ export default function SofiAiSuperListingPage() {
     </main>
   );
 }
-
-
-
-

@@ -1,20 +1,33 @@
 "use client";
 
-import { sofiAiProfile } from "../../../companies/sofi-ai/data";
+const JOB_METADATA = [
+  {
+    label: "Location",
+    value:
+      " 2nd Floor, Bookman Building, Quezon Ave, Santa Mesa Heights, Quezon City, Metro Manila",
+  },
+  {
+    label: "Employment Type",
+    value: "Project Based / Flexible Internship",
+  },
+  { label: "Work Mode", value: "Hybrid (1-2x per week onsite)" },
+  {
+    label: "Compensation",
+    value:
+      "Per hour or project based (negotiable. if you're good, we can pay more!)",
+  },
+] as const;
 
 export function JobDetailsRail() {
   return (
-    <aside className="">
-      <div className="grid gap-0 border border-[#07C4A7]/12 bg-[#f7fffd] px-5 py-5 shadow-[0_18px_40px_-30px_rgba(13,59,51,0.35)] sm:grid-cols-3 lg:grid-cols-1 lg:border-0 lg:bg-transparent lg:px-0 lg:py-0 lg:shadow-none">
-        {sofiAiProfile.jobDetails.map((item) => (
-          <div
-            key={item.label}
-            className="border-b border-[#07C4A7]/10 px-0 py-4 first:pt-0 last:border-b-0 last:pb-0 sm:border-b-0 sm:py-0 sm:pr-4 lg:px-0 lg:pb-6 lg:pr-0"
-          >
-            <p className="[font-family:var(--font-paraluman-body)] text-xs font-semibold text-[#07C4A7]/62 opacity-60">
+    <aside>
+      <div className="grid gap-5">
+        {JOB_METADATA.map((item) => (
+          <div key={item.label}>
+            <p className="[font-family:var(--font-paraluman-mono)] text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-[#052338]/35">
               {item.label}
             </p>
-            <p className="mt-1 [font-family:var(--font-paraluman-heading)] text-lg font-medium leading-6 tracking-[-0.03em] text-[#0D3B33] sm:text-xl">
+            <p className="mt-1 [font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#052338]/80">
               {item.value}
             </p>
           </div>
@@ -23,8 +36,3 @@ export function JobDetailsRail() {
     </aside>
   );
 }
-
-
-
-
-

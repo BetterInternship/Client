@@ -28,9 +28,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import useModalRegistry from "@/components/modals/modal-registry";
 import { cn } from "@/lib/utils";
-import { sofiAiPrimaryListing } from "./data";
 import heroBg from "./hero-bg.png";
 import heroBgMobile from "./hero-bg-mobile.png";
 import doodlePack from "./doodle-pack.png";
@@ -57,15 +55,6 @@ const FEATURE_HEADING_CLASS =
   "[font-family:var(--font-paraluman-heading)] text-[clamp(1.95rem,3.6vw,3.15rem)] font-black leading-[0.96] tracking-[-0.055em]";
 const BODY_COPY_CLASS =
   "[font-family:var(--font-paraluman-body)] max-w-[60ch] text-base leading-7 text-[#184d45]/82 sm:text-lg sm:leading-[1.72]";
-const LISTING_CARDS = [
-  {
-    id: "core",
-    eyebrow: "Open challenge",
-    title: sofiAiPrimaryListing.title,
-    summary: sofiAiPrimaryListing.description,
-    accent: "#07C4A7",
-  },
-] as const;
 const TRUST_PARTNERS = [
   "Radar.ph",
   "Bilyonaryo",
@@ -77,24 +66,36 @@ const TRUST_PARTNERS = [
 const TESTIMONIALS = [
   {
     quote:
-      "The work felt real from day one. You are not making pretend screens, you are learning how AI products actually get shaped for customers.",
-    name: "Mika Tan",
-    role: "Product Intern",
-    initials: "MT",
+      "SOFI AI Tech Solution Inc. became more than just an internship for me. It became a place where I learned, struggled, improved, and grew.",
+    name: "Kit Nicholas Santiago",
+    role: "QA Intern",
+    initials: "KNS",
+    image:
+      "https://media.licdn.com/dms/image/v2/D5603AQEF-cvb_bhiRg/profile-displayphoto-scale_200_200/B56Zw9c9LTGYAY-/0/1770557534834?e=1778716800&v=beta&t=lnfnwJztxOh5nk0of10xB7WypUTnHOm153lplpUo5RM",
+    linkedinUrl:
+      "https://www.linkedin.com/posts/kit-nicholas-santiago-0bb647201_internshipjourney-sofiai-qaspecialist-activity-7441149431242006528-meDq/",
   },
   {
     quote:
-      "Sofi moves fast in the best way. I learned how to turn messy business problems into simple workflows people can understand.",
-    name: "Andre Lee",
-    role: "Frontend Intern",
-    initials: "AL",
+      "I entered SOFI AI Tech Solution Inc. with fears about the IT industry, but because of them, I'm leaving with valuable lessons and experiences that I can carry forward into the future.",
+    name: "Avril Belisario",
+    role: "Intern",
+    initials: "AB",
+    image:
+      "https://media.licdn.com/dms/image/v2/D5635AQGPl11qNymoRw/profile-framedphoto-shrink_800_800/B56ZipGYnPHcAg-/0/1755183680376?e=1777989600&v=beta&t=O2w0VIXgbfS6aJO4WJ61DaisZrKcBzDigi2beUoMlL0",
+    linkedinUrl:
+      "https://www.linkedin.com/posts/avrilbelisario_my-first-internship-has-already-ended-activity-7303703279601954816-rnxK/",
   },
   {
     quote:
-      "The feedback loop was direct, practical, and kind. It pushed me to think less like a student and more like a builder.",
-    name: "Patricia Cruz",
-    role: "Design Intern",
-    initials: "PC",
+      "One of my favorite things about working as an intern at SOFI AI Tech Solution Inc. is the random discussions we get to have during downtime.",
+    name: "Gianette Lim",
+    role: "AI Solutions Intern",
+    initials: "GL",
+    image:
+      "https://media.licdn.com/dms/image/v2/D5603AQGVLjGZOSuHKA/profile-displayphoto-shrink_800_800/B56ZbQKSIzGoAc-/0/1747249081357?e=1778716800&v=beta&t=CM3ahFmY1arjAT_HwO78K3DTXxyQiA21q4042uXStus",
+    linkedinUrl:
+      "https://www.linkedin.com/posts/gianettelim_intern-internship-ai-activity-7445336000584904704-7I7o?utm_source=share&utm_medium=member_desktop&rcm=ACoAAD8u8tkBx7gJFzFwlBvPf4FWX6EY447FtNc",
   },
 ] as const;
 const MEDIA_ARTICLES = [
@@ -102,7 +103,7 @@ const MEDIA_ARTICLES = [
     source: "Manila Bulletin",
     title:
       "Sofi AI's Sophia Sy has an answer to online buyers' most asked question",
-    date: "Oct 7, 2025",
+    date: "Manila Bulletin",
     href: "https://mb.com.ph/2025/10/07/sofi-ais-sophia-sy-has-an-answer-to-online-buyers-most-asked-question",
   },
   {
@@ -231,11 +232,7 @@ function HeroMainContent({
         }}
         className="mt-8 sm:mt-10"
       >
-        <ListingsCTA
-          onClick={onJumpToListings}
-          label="I want a chance"
-          size="hero"
-        />
+        <ListingsCTA onClick={onJumpToListings} label="See roles" size="hero" />
       </motion.div>
     </div>
   );
@@ -562,153 +559,6 @@ function Doodle({
   return <DoodleSprite name={name} className={className} pad={pad} />;
 }
 
-function ListingCard({
-  card,
-  onSelect,
-}: {
-  card: (typeof LISTING_CARDS)[number];
-  onSelect: () => void;
-}) {
-  const isPrimary = card.id === "core";
-
-  return (
-    <motion.button
-      onClick={onSelect}
-      whileHover={{ y: -8 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
-      className={cn(
-        "group relative flex h-fit w-full min-h-0 flex-col rounded-[0.5em] border p-8 text-left transition-all duration-300 cursor-pointer sm:min-h-[32rem] sm:p-12 lg:p-16",
-        isPrimary
-          ? "border-[#07C4A7]/20 bg-[linear-gradient(135deg,#ffffff_0%,#f7fffd_45%,#f1fffc_100%)] shadow-[0_32px_64px_-40px_rgba(7,196,167,0.32)] hover:shadow-[0_48px_80px_-48px_rgba(7,196,167,0.42)]"
-          : "border-[#07C4A7]/16 bg-[linear-gradient(135deg,#ffffff_0%,#f8fffd_45%,#f7fffd_100%)] shadow-[0_28px_56px_-36px_rgba(7,196,167,0.26)] hover:shadow-[0_42px_72px_-44px_rgba(7,196,167,0.34)]",
-      )}
-    >
-      <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-[0.5em]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(7,196,167,0.08),transparent_40%),radial-gradient(circle_at_80%_70%,rgba(7,196,167,0.06),transparent_45%)] rounded-[0.5em]" />
-      </div>
-
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[1.5px] rounded-t-[0.5em]"
-        style={{
-          background: `linear-gradient(90deg, transparent 0%, ${card.accent} 15%, ${card.accent} 85%, transparent 100%)`,
-        }}
-      />
-      <div
-        className="pointer-events-none absolute right-10 top-10 h-4 w-4 rounded-full opacity-70 group-hover:opacity-100 transition-opacity"
-        style={{ backgroundColor: card.accent }}
-      />
-      <div
-        className="pointer-events-none absolute -right-16 -top-12 h-48 w-48 rounded-full opacity-25 blur-3xl group-hover:opacity-40 transition-opacity duration-300"
-        style={{ backgroundColor: card.accent }}
-      />
-      <div
-        className="pointer-events-none absolute -left-20 -bottom-16 h-52 w-52 rounded-full opacity-20 blur-3xl group-hover:opacity-30 transition-opacity duration-300"
-        style={{ backgroundColor: card.accent }}
-      />
-
-      <div className="relative z-10 space-y-8">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#07C4A7] mb-4">
-            {card.eyebrow}
-          </p>
-          <h3 className="[font-family:var(--font-paraluman-heading)] text-[clamp(2.4rem,3vw,3.8rem)] font-bold leading-[1.08] tracking-[-0.04em] text-[#0D3B33]">
-            {card.title}
-          </h3>
-        </div>
-
-        <p className="text-base leading-7 text-[#265f57] sm:text-lg sm:leading-8 max-w-2xl">
-          {card.summary}
-        </p>
-      </div>
-
-      <div className="relative z-10 mt-auto inline-flex items-center justify-between gap-3 pt-12 text-base font-bold uppercase tracking-[0.12em] text-[#07C4A7] transition-all duration-300 group-hover:text-[#0D3B33] w-full">
-        <span>View this role</span>
-        <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-2" />
-      </div>
-    </motion.button>
-  );
-}
-
-function ListingModalContent({
-  card,
-  onApply,
-}: {
-  card: (typeof LISTING_CARDS)[number];
-  onApply: () => void;
-}) {
-  return (
-    <div className="space-y-8 pt-4 text-[#0D3B33] sm:space-y-10 ">
-      <div>
-        <p className="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-[#0D3B33]">
-          Your internship shall:
-        </p>
-        <p className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.5rem,2.35vw,2.02rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-[#0D3B33]">
-          Build a practical frontend for TikTok hook analysis that turns AI
-          output into clear product decisions
-        </p>
-      </div>
-
-      <div>
-        <h3 className="mb-5 text-sm font-bold uppercase tracking-[0.12em] text-[#0D3B33]">
-          Your internship is a success if you can:
-        </h3>
-        <div className="space-y-4">
-          <div className="flex items-start gap-3">
-            <span
-              className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full"
-              style={{ backgroundColor: card.accent }}
-            />
-            <p className="text-base leading-7 text-[#184d45]/84">
-              Let users submit a TikTok link, caption, script, or hook text in
-              one clear flow
-            </p>
-          </div>
-          <div className="flex items-start gap-3">
-            <span
-              className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full"
-              style={{ backgroundColor: card.accent }}
-            />
-            <p className="text-base leading-7 text-[#184d45]/84">
-              Show hook score, retention risk, clarity, emotional pull, niche
-              fit, and suggested rewrites
-            </p>
-          </div>
-          <div className="flex items-start gap-3">
-            <span
-              className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full"
-              style={{ backgroundColor: card.accent }}
-            />
-            <p className="text-base leading-7 text-[#184d45]/84">
-              Include loading, empty, failed, and original-versus-improved
-              comparison states
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="rounded-[0.33em] bg-[#e9fffb] p-5 sm:p-6">
-        <p className="text-base leading-7 text-[#184d45]/76">
-          Exciting? But before you can start the internship, you need to pass
-          our challenge.
-        </p>
-      </div>
-
-      <div className="pt-3 sm:pt-4">
-        <Button asChild className="h-12 w-full rounded-[0.33em]">
-          <Link
-            href="/super-listing/sofi-ai"
-            onClick={onApply}
-            className="flex items-center justify-center gap-2"
-          >
-            Apply now
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </Button>
-      </div>
-    </div>
-  );
-}
-
 function TrustStripe() {
   const carouselPartners = [...TRUST_PARTNERS, ...TRUST_PARTNERS];
 
@@ -739,7 +589,7 @@ function TrustStripe() {
 
 function WallOfLove() {
   return (
-    <SectionShell className="border-t-0 bg-transparent py-28 sm:py-36">
+    <SectionShell className="border-t-0 bg-transparent py-20 sm:py-28">
       <Doodle
         name="sparkle"
         className="left-48 top-72 hidden w-[12rem] lg:block"
@@ -748,6 +598,8 @@ function WallOfLove() {
         name="sparkle"
         className="right-40 bottom-24 hidden w-[8rem] lg:block"
       />
+      <Doodle name="sparkle" className="-right-6 top-10 md:hidden w-[8rem]" />
+      <Doodle name="sparkle" className="left-2 -bottom-8 md:hidden w-[5rem]" />
       <SectionInner className="relative grid gap-10 lg:grid-cols-[0.35fr_1.65fr] lg:items-start">
         <div>
           <p className="[font-family:var(--font-paraluman-mono)] text-xs font-semibold uppercase tracking-[0.16em] text-[#00A886]">
@@ -786,18 +638,35 @@ function WallOfLove() {
                 <p className="text-sm font-semibold leading-7 text-[#052338]/86 sm:text-base">
                   {item.quote}
                 </p>
-                <div className="mt-auto flex items-center gap-3 pt-8">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#E8FFF9] text-sm font-bold text-[#0D3B33] ring-1 ring-[#10B981]/15">
-                    {item.initials}
+                <div className="mt-auto pt-8">
+                  <div className="flex items-center gap-3">
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      width={48}
+                      height={48}
+                      className="h-12 w-12 rounded-full object-cover"
+                    />
+                    <div>
+                      <p className="[font-family:var(--font-paraluman-heading)] text-sm font-bold">
+                        {item.name}
+                      </p>
+                      <p className="text-xs font-semibold text-[#00A886]">
+                        {item.role}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="[font-family:var(--font-paraluman-heading)] text-sm font-bold">
-                      {item.name}
-                    </p>
-                    <p className="text-xs font-semibold text-[#00A886]">
-                      {item.role}
-                    </p>
-                  </div>
+                  {item.linkedinUrl && (
+                    <Link
+                      href={item.linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[#00A886] transition-colors hover:text-[#0D3B33]"
+                    >
+                      View original post
+                      <ArrowUpRight className="h-3 w-3" />
+                    </Link>
+                  )}
                 </div>
               </article>
             ))}
@@ -810,18 +679,22 @@ function WallOfLove() {
 
 function MediaSpotlight() {
   return (
-    <SectionShell className="border-t-0 bg-transparent py-24 sm:py-32">
-      <SectionInner className="relative">
-        <div className="pointer-events-none absolute inset-x-10 h-[calc(100%-2rem)] rounded-[0.9em] bg-[#052338]/14 blur-2xl sm:inset-x-16" />
-        <div className="relative overflow-hidden rounded-[0.75em] border border-[#052338]/8 bg-white shadow-[0_36px_92px_-46px_rgba(5,35,56,0.5),0_16px_34px_-24px_rgba(5,35,56,0.28)] backdrop-blur-sm sm:p-10 lg:px-14">
-          <div className="relative space-y-8">
+    <SectionShell className="border-t-0 bg-transparent py-16 sm:py-24 -mt-12 sm:-mt-16">
+      <SectionInner className="relative px-0 sm:px-10 lg:px-16 xl:px-24">
+        <div className="pointer-events-none absolute inset-x-0 h-[calc(100%-2rem)] bg-[#052338]/14 blur-2xl sm:inset-x-16 sm:rounded-[0.9em]" />
+        <div className="relative overflow-hidden border-y border-[#052338]/8 bg-white px-5 py-8 shadow-[0_36px_92px_-46px_rgba(5,35,56,0.5),0_16px_34px_-24px_rgba(5,35,56,0.28)] backdrop-blur-sm sm:rounded-[0.75em] sm:border sm:p-10 lg:px-14">
+          <div className="relative space-y-7 sm:space-y-8">
             <Doodle
               name="profileBubble"
               className="right-56 -top-24 hidden w-80 [&>span]:scale-x-[-1] lg:block"
             />
+            <Doodle
+              name="profileBubble"
+              className="-right-12 -top-24 md:hidden w-40 [&>span]:scale-x-[-1]"
+            />
 
             <div className="max-w-3xl">
-              <h2 className="[font-family:var(--font-paraluman-heading)] text-[clamp(2rem,4vw,3.35rem)] font-black leading-[1.02] tracking-[-0.055em]">
+              <h2 className="[font-family:var(--font-paraluman-heading)] text-[clamp(1.9rem,7vw,3.35rem)] font-black leading-[1.02] tracking-[-0.055em]">
                 Sofi AI in the <span className="text-[#00B894]">spotlight</span>
               </h2>
             </div>
@@ -886,9 +759,9 @@ function MediaSpotlight() {
   );
 }
 
-function FeaturedInternship({ onSelect }: { onSelect: () => void }) {
+function FeaturedInternship() {
   return (
-    <SectionShell className="border-t-0 bg-transparent py-24 sm:py-48">
+    <SectionShell className="border-t-0 bg-transparent py-32">
       <SectionInner className="relative">
         <div className="pointer-events-none absolute left-1/2 top-[44%] h-[32rem] w-[130%] -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.96)_0%,rgba(255,255,255,0.82)_46%,rgba(255,255,255,0)_78%)] blur-2xl" />
         <Doodle
@@ -899,6 +772,14 @@ function FeaturedInternship({ onSelect }: { onSelect: () => void }) {
           name="stickyNote"
           className="left-22 -bottom-36 hidden w-40 opacity-80 [--doodle-rotate:-8deg] lg:block xl:left-16 xl:w-48"
         />
+        <Doodle
+          name="stickyNote"
+          className="-right-12 -top-32 md:hidden w-40 [--doodle-rotate:12deg]"
+        />
+        <Doodle
+          name="stickyNote"
+          className="left-0 -bottom-36 md:hidden w-40 [--doodle-rotate:-6deg]"
+        />
         <div className="relative z-10 mx-auto max-w-4xl text-center">
           <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.18em] text-[#00A886]">
             Featured opportunity
@@ -908,10 +789,9 @@ function FeaturedInternship({ onSelect }: { onSelect: () => void }) {
             <span className="text-[#00A886]">start here</span>
           </h2>
         </div>
-        <button
-          type="button"
-          onClick={onSelect}
-          className="group relative z-10 mt-9 grid w-full items-center gap-5 rounded-[0.65em] border border-[#052338]/10 bg-white/90 p-5 text-left text-[#052338] shadow-[0_20px_60px_-46px_rgba(5,35,56,0.4)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#07C4A7]/35 hover:bg-white sm:grid-cols-[auto_1fr_auto_auto] sm:p-6 lg:px-7"
+        <Link
+          href="/super-listing/sofi-ai"
+          className="group relative z-10 mt-6 grid w-full items-center gap-5 rounded-[0.65em] border border-[#052338]/10 bg-white/90 p-5 text-left text-[#052338] shadow-[0_20px_60px_-46px_rgba(5,35,56,0.4)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#07C4A7]/35 hover:bg-white sm:grid-cols-[auto_1fr_auto_auto] sm:p-6 lg:px-7"
         >
           <div className="flex h-14 w-14 items-center justify-center rounded-[0.55em] bg-[#E8FFF9] text-[#00866f] ring-1 ring-[#07C4A7]/14">
             <span className="[font-family:var(--font-paraluman-mono)] text-xl font-bold">
@@ -919,23 +799,14 @@ function FeaturedInternship({ onSelect }: { onSelect: () => void }) {
             </span>
           </div>
           <h3 className="[font-family:var(--font-paraluman-heading)] text-xl font-bold tracking-[-0.035em] text-[#052338]">
-            Frontend Engineer Intern
+            UI/UX Intern
           </h3>
-          <div className="flex flex-wrap gap-2 sm:justify-end">
-            {["React", "TypeScript", "Tailwind CSS"].map((tag) => (
-              <span
-                key={tag}
-                className="rounded-full bg-[#052338]/5 px-4 py-2 text-xs font-semibold text-[#052338]/82"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
+
           <div className="inline-flex items-center gap-2 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-[#007f6b] sm:justify-end">
             View role
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
           </div>
-        </button>
+        </Link>
       </SectionInner>
     </SectionShell>
   );
@@ -943,14 +814,15 @@ function FeaturedInternship({ onSelect }: { onSelect: () => void }) {
 
 function SofiFaq() {
   return (
-    <SectionShell className="border-t-0 bg-transparent py-24 sm:py-32">
+    <SectionShell className="border-t-0 bg-transparent py-16 sm:py-24">
       <Doodle
         name="wavyLine"
         className="right-24 top-14 hidden w-64 md:block"
       />
-      <SectionInner className="relative space-y-6">
+      <Doodle name="wavyLine" className="-right-10 top-8 md:hidden w-40" />
+      <SectionInner className="relative space-y-4">
         <div>
-          <h2 className="[font-family:var(--font-paraluman-heading)] mt-3 text-[clamp(1.8rem,3.4vw,2.5rem)] font-bold leading-tight tracking-[-0.04em] text-[#052338]">
+          <h2 className="[font-family:var(--font-paraluman-heading)] mt-2 text-[clamp(1.8rem,3.4vw,2.5rem)] font-bold leading-tight tracking-[-0.04em] text-[#052338]">
             Frequently asked <span className="text-[#00B894]">questions</span>
           </h2>
         </div>
@@ -981,31 +853,39 @@ function SofiFaq() {
 
 function CompactFooter() {
   return (
-    <footer className="relative overflow-hidden border-t border-[#052338]/8 bg-[#F6FBFA] px-6 py-5 text-[#052338] sm:px-10 lg:px-16 xl:px-24">
-      <div className="relative mx-auto flex max-w-7xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="[font-family:var(--font-paraluman-heading)] text-xl font-black tracking-[-0.04em] text-[#052338]">
-            BetterInternship &times;{" "}
-            <span className="text-[#00A886]">Sofi AI</span>
-          </p>
-          <p className="mt-2 text-sm text-[#052338]/58">
-            Real work. Real impact. Built for students.
-          </p>
+    <footer className="relative overflow-hidden border-t border-[#052338]/8 bg-white px-6 py-8 text-[#052338] sm:px-10 lg:px-16 xl:px-24">
+      <div className="relative mx-auto flex max-w-7xl flex-col gap-6  sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex max-w-md items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Image
+              src="/BetterInternshipLogo.png"
+              alt="BetterInternship logo"
+              width={56}
+              height={56}
+              className="h-12 w-12"
+            />
+            <span className="[font-family:var(--font-paraluman-heading)] text-lg font-black leading-none tracking-[-0.04em] text-[#052338] sm:text-xl">
+              &times;
+            </span>
+            <Image
+              src={SOFI_AI_LOGO_URL}
+              alt="Sofi AI logo"
+              width={92}
+              height={32}
+              className="h-auto w-20 grayscale brightness-0 contrast-150 sm:w-24"
+            />
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          {[Linkedin, Instagram, Youtube].map((Icon, index) => (
-            <a
-              key={index}
-              href="https://sofitech.ai/"
-              target="_blank"
-              rel="noreferrer"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#052338] shadow-[0_12px_28px_-24px_rgba(5,35,56,0.38)] transition-colors duration-300 hover:bg-[#003F38] hover:text-white"
-              aria-label="Sofi AI social link"
-            >
-              <Icon className="h-4 w-4" />
-            </a>
-          ))}
-        </div>
+
+        <Button
+          asChild
+          className="inline-flex w-fit items-center justify-center gap-2 rounded-full bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white shadow-[0_14px_28px_-22px_rgba(5,35,56,0.7)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#003F38]"
+        >
+          <a href="https://sofitech.ai/" target="_blank" rel="noreferrer">
+            Visit Sofi AI
+            <ArrowUpRight className="h-4 w-4" />
+          </a>
+        </Button>
       </div>
     </footer>
   );
@@ -1013,7 +893,6 @@ function CompactFooter() {
 
 export default function SofiAiCompanyProfilePage() {
   const shouldReduceMotion = useReducedMotion();
-  const modalRegistry = useModalRegistry();
   const listingsRef = useRef<HTMLDivElement | null>(null);
 
   const scrollToListings = () => {
@@ -1126,27 +1005,7 @@ export default function SofiAiCompanyProfilePage() {
           <WallOfLove />
           <MediaSpotlight />
           <div ref={listingsRef}>
-            <FeaturedInternship
-              onSelect={() => {
-                modalRegistry.centeredDetails.open({
-                  title: (
-                    <span className="[font-family:var(--font-paraluman-heading)] text-2xl font-semibold leading-[1.05] tracking-[-0.03em] text-[#0D3B33] sm:text-[2.05rem]">
-                      Frontend Engineer Intern
-                    </span>
-                  ),
-                  content: (
-                    <ListingModalContent
-                      card={LISTING_CARDS[0]}
-                      onApply={() => modalRegistry.centeredDetails.close()}
-                    />
-                  ),
-                  showHeaderDivider: false,
-                  closeOnBackdropClick: true,
-                  closeOnEscapeKey: true,
-                  showCloseButton: true,
-                });
-              }}
-            />
+            <FeaturedInternship />
           </div>
           <SofiFaq />
         </div>
