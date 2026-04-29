@@ -182,18 +182,7 @@ export const HeaderButtons: React.FC = () => {
   const handleLogout = () => logout().then(() => router.push("/"));
 
   const handleProfileClick = useCallback(() => {
-    console.log("current profile: ", profile);
-
-    if (!isProfileVerified(profile.data)) {
-      router.push(`/register/verify`);
-    } else if (
-      !isProfileResume(profile.data) ||
-      !isProfileBaseComplete(profile.data)
-    ) {
-      router.push(`profile/complete-profile?dest=profile`);
-    } else {
-      router.push(`/profile`);
-    }
+    router.push(`/profile`);
   }, [router, profile]);
 
   if (!isAuthenticated()) {

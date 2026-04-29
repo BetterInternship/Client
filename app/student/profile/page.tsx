@@ -165,17 +165,6 @@ export default function ProfilePage() {
     );
   }
 
-  if (!isProfileResume(profile.data) || !isProfileBaseComplete(profile.data)) {
-    return (
-      <div className="flex flex-col gap-4 items-center justify-center h-full">
-        <FileQuestion className="text-warning w-20 h-20" />
-        <span className="text-lg text-gray-500">
-          Page Paused, Please Reload
-        </span>
-      </div>
-    );
-  }
-
   return (
     data && (
       <div className="min-h-screen mx-auto max-w-6xl">
