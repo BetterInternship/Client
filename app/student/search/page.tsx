@@ -20,11 +20,7 @@ import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { JobModal } from "@/components/modals/JobModal";
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import {
-  isProfileBaseComplete,
-  isProfileResume,
-  isProfileVerified,
-} from "@/lib/profile";
+import { isProfileBaseComplete, isProfileResume } from "@/lib/profile";
 import { useRouter } from "next/navigation";
 import { SaveJobButton } from "@/components/features/student/job/save-job-button";
 import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job-button";
@@ -196,9 +192,6 @@ export default function SearchPage() {
     if (!isAuthenticated()) {
       window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
       return;
-    }
-    if (!isProfileVerified(profile.data)) {
-      return router.push("/register/verify");
     }
 
     if (

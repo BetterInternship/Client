@@ -19,11 +19,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  isProfileBaseComplete,
-  isProfileResume,
-  isProfileVerified,
-} from "@/lib/profile";
 import { useAuthContext } from "@/lib/ctx-auth";
 
 interface MobileBottomNavProps {

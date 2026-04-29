@@ -33,11 +33,6 @@ import { FormsNavigation } from "@/components/features/student/forms/FormsNaviga
 import { useProfileData } from "@/lib/api/student.data.api";
 import { cn } from "@/lib/utils";
 import {
-  isProfileBaseComplete,
-  isProfileResume,
-  isProfileVerified,
-} from "@/lib/profile";
-import {
   JobFilterProvider,
   JobFilters,
   JobFilter,
