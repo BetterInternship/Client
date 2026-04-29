@@ -67,7 +67,7 @@ export function OTPEmailStep({
     <>
       <div className="flex flex-col gap-3">
         <h1 className="text-3xl tracking-tight font-bold text-gray-700">
-          (Optional) Verify your account
+          Verify your account
         </h1>
         <span className="text-muted-foreground tracking-tight text-sm">
           To access online form signing, you'll need to verify your education
