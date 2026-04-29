@@ -17,7 +17,6 @@ const SUPER_LISTING_ROOT = path.join(
   "app/student/super-listing",
 );
 
-const RESERVED_DIRECTORIES = new Set(["og"]);
 let cachedSlugs: string[] | null = null;
 const logoDataUrlCache = new Map<string, string | undefined>();
 
@@ -77,6 +76,8 @@ const SUPER_LISTING_OG_OVERRIDES: Record<
   },
 };
 
+const SUPER_LISTING_SLUGS = Object.keys(SUPER_LISTING_OG_OVERRIDES);
+
 function titleCaseFromSlug(slug: string) {
   return slug
     .split("-")
@@ -134,22 +135,7 @@ function resolveLogoDataUrl(slug: string, configuredLogoFile?: string) {
 }
 
 export function getAvailableSuperListingSlugs(): string[] {
-  if (cachedSlugs) {
-    return cachedSlugs;
-  }
-
-  const entries = fs.readdirSync(SUPER_LISTING_ROOT, { withFileTypes: true });
-
-  cachedSlugs = entries
-    .filter(
-      (entry) => entry.isDirectory() && !RESERVED_DIRECTORIES.has(entry.name),
-    )
-    .map((entry) => entry.name)
-    .filter((slug) =>
-      fs.existsSync(path.join(SUPER_LISTING_ROOT, slug, "page.tsx")),
-    );
-
-  return cachedSlugs;
+  return cachedSlugs || (cachedSlugs = SUPER_LISTING_SLUGS);
 }
 
 export function isSuperListingSlug(slug: string): boolean {
