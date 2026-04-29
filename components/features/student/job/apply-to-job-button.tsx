@@ -4,11 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CheckCircle } from "lucide-react";
 import { useAuthContext } from "@/lib/ctx-auth";
-import {
-  isProfileBaseComplete,
-  isProfileResume,
-  isProfileVerified,
-} from "@/lib/profile";
+import { isProfileBaseComplete, isProfileResume } from "@/lib/profile";
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
