@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useRef } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { useDbRefs } from "@/lib/db/use-refs";
@@ -240,6 +240,7 @@ export function OTPEnterStep({
   const [otp, setOtp] = useState("");
   const [otpError, setOtpError] = useState("");
   const [activating, setActivating] = useState(false);
+  const activatingRef = useRef(false);
 
   // resend state
   const [sending, setSending] = useState(false);
@@ -259,7 +260,9 @@ export function OTPEnterStep({
 
   // auto-activate when six digits are entered.
   useEffect(() => {
-    if (otp.length !== 6) return;
+    if (otp.length !== 6 || activatingRef.current) return;
+
+    activatingRef.current = true;
     setActivating(true);
     setOtpError("");
 
@@ -277,9 +280,14 @@ export function OTPEnterStep({
               response?.error?.trim() ||
               "Verification code not valid.",
           );
+
+          activatingRef.current = false;
         }
       })
-      .catch(() => setOtpError("Couldn't verify your code. Try again."))
+      .catch(() => {
+        setOtpError("Couldn't verify your code. Try again.");
+        activatingRef.current = false;
+      })
       .finally(() => setActivating(false));
   }, [otp, eduEmail, onFinishAction, queryClient]);
 
@@ -384,7 +392,6 @@ export function RegisterPageContent() {
   );
 
   const nextUrl = "/search";
-  const deciding = profile.data === undefined;
 
   // modify url params based on current step.
   useEffect(() => {
@@ -403,9 +410,8 @@ export function RegisterPageContent() {
 
   // Redirect only after we know the profile state
   useEffect(() => {
-    if (deciding) return;
     if (profile.data?.is_verified) router.replace(nextUrl);
-  }, [deciding, profile.data?.is_verified, router]);
+  }, [profile.data?.is_verified, router]);
 
   // skip main register page if the user is already registered.
   useEffect(() => {
@@ -413,9 +419,6 @@ export function RegisterPageContent() {
       setStep(2);
     }
   }, [step, auth]);
-
-  // Prevent any flash
-  if (deciding || profile.data?.is_verified) return null;
 
   const regForm = useForm<FormInputs>({
     defaultValues: {
