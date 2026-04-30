@@ -4,6 +4,8 @@ import { FormInput } from "@/components/EditForm";
 import { Button } from "@/components/ui/button";
 import { UseFormReturn } from "react-hook-form";
 import { FormInputs } from "../page";
+import { Autocomplete } from "@/components/ui/autocomplete";
+import { DEGREES } from "./tempDegrees";
 
 /**
  * The first step to registering where the user puts their personal information in.
@@ -67,22 +69,20 @@ export function RegisterStep({
         maxLength={40}
         setter={(val) => {
           regForm.setValue("university", String(val));
-          regForm.setValue("degree", "");
         }}
         options={refs.universities}
         tooltip="If your university is not in the list, please contact us at the 'Need help' link."
       />
 
-      <FormDropdown
+      <Autocomplete
         label="Degree program"
-        maxLength={40}
+        placeholder="Degree program"
+        options={DEGREES}
         setter={(val) => {
           regForm.setValue("degree", String(val));
         }}
-        options={refs.get_degrees_by_university(
-          regForm.watch("university") || "",
-        )}
-        disabled={regForm.watch("university") === ""}
+        value={+regForm.watch("degree")! || ""}
+        required={true}
       />
 
       {/* create account */}

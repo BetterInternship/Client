@@ -1,0 +1,30 @@
+import { IAutocompleteOption } from "@/components/ui/autocomplete";
+
+// temp: this should not be in frontend. this will be changed soon.
+export const DEGREES: IAutocompleteOption<string | number>[] = [
+  { id: 1, name: "Computer Science" },
+  { id: 2, name: "Information Technology" },
+  { id: 3, name: "Data Science" },
+  { id: 4, name: "Engineering (Mechanical, Civil, Electrical, etc.)" },
+  { id: 5, name: "Business Administration" },
+  { id: 6, name: "Finance" },
+  { id: 7, name: "Accounting" },
+  { id: 8, name: "Economics" },
+  { id: 9, name: "Marketing" },
+  { id: 10, name: "Psychology" },
+  { id: 11, name: "Political Science" },
+  { id: 12, name: "Sociology" },
+  { id: 13, name: "Biology" },
+  { id: 14, name: "Chemistry" },
+  { id: 15, name: "Physics" },
+  { id: 16, name: "Mathematics" },
+  { id: 17, name: "Education" },
+  { id: 18, name: "Nursing" },
+  { id: 19, name: "Medicine" },
+  { id: 20, name: "Law" },
+  { id: 21, name: "Architecture" },
+  { id: 22, name: "Fine Arts" },
+  { id: 23, name: "Communications" },
+  { id: 24, name: "Environmental Science" },
+  { id: 25, name: "Agriculture" },
+];
