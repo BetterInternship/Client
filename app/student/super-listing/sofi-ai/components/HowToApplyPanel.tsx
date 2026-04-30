@@ -126,7 +126,7 @@ function UnlockRegistrationPanel({
         <LockKeyhole className="mt-0.5 h-5 w-5 shrink-0 text-[#00A886]" />
         <div className="space-y-1">
           <p className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.02em] text-[#052338]">
-            Unlock the GIA challenge
+            Unlock the challenge
           </p>
           <p className="[font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/78">
             Register your interest and we&apos;ll email the private challenge
@@ -165,8 +165,8 @@ function UnlockRegistrationPanel({
         {isDevelopment ? (
           <p className="border-t border-[#052338]/10 pt-4 [font-family:var(--font-paraluman-body)] text-sm text-[#00866f]">
             Captcha disabled in development. Use{" "}
-            <span className="font-semibold">?view=challenge</span> to preview
-            the unlocked state.
+            <span className="font-semibold">?unlockToken=dev-unlock</span> to
+            preview the unlocked state.
           </p>
         ) : !unlockToken ? (
           <div className="space-y-3 border-t border-[#052338]/10 pt-4">
