@@ -180,7 +180,7 @@ function AutocompleteBase<ID extends number | string>({
         <Input
           id={inputId}
           value={singleDisplay || query}
-          className="border-gray-200"
+          className="border-gray-300"
           placeholder={placeholder}
           onChange={(e) => {
             // typing starts a new search; selection is set on option click
