@@ -55,7 +55,6 @@ const INITIAL_FORM_STATE: SofiAiSubmissionForm = {
 
 const INITIAL_UNLOCK_FORM_STATE: SuperListingUnlockForm = {
   email: "",
-  fullName: "",
 };
 
 const PANEL_TABS: Array<{
@@ -83,8 +82,8 @@ function LockedSubmitPanel({
             Submit is locked
           </p>
           <p className="[font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/82 sm:text-[0.9rem]">
-            Unlock the challenge from the Application tab first. Once you
-            open the private email link, the submit form will appear here.
+            Unlock the challenge from the Application tab first. Once you enter
+            your email, the submit form will appear here.
           </p>
           <div className="pt-1">
             <Button
@@ -193,8 +192,8 @@ export default function SofiAiSuperListingPage() {
     event.preventDefault();
     setUnlockRegistrationError("");
 
-    if (!unlockForm.email.trim() || !unlockForm.fullName.trim()) {
-      setUnlockRegistrationError("Please enter your full name and email.");
+    if (!unlockForm.email.trim()) {
+      setUnlockRegistrationError("Please enter your email.");
       return;
     }
 
@@ -211,9 +210,9 @@ export default function SofiAiSuperListingPage() {
       await unlock.register({
         cfToken: unlockToken,
         email: unlockForm.email,
-        fullName: unlockForm.fullName,
       });
       setUnlockRegistrationSent(true);
+      unlock.unlock(unlockForm.email);
     } catch (error) {
       setUnlockRegistrationError(
         error instanceof Error

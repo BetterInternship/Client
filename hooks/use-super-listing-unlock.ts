@@ -12,7 +12,6 @@ type RegisterUnlockResponse = {
 type RegisterUnlockInput = {
   cfToken: string;
   email: string;
-  fullName: string;
 };
 
 type UseSuperListingUnlockOptions = {
@@ -28,6 +27,7 @@ export function useSuperListingUnlock({
 }: UseSuperListingUnlockOptions) {
   const [status, setStatus] = useState<UnlockStatus>("locked");
   const [message, setMessage] = useState("");
+  const [email, setEmail] = useState("");
 
   const endpointBase = useMemo(() => {
     const apiBase = getApiBase();
@@ -36,7 +36,7 @@ export function useSuperListingUnlock({
   }, [slug]);
 
   const register = useCallback(
-    async ({ cfToken, email, fullName }: RegisterUnlockInput) => {
+    async ({ cfToken, email }: RegisterUnlockInput) => {
       setMessage("");
 
       const response = await fetch(`${endpointBase}/register`, {
@@ -44,7 +44,6 @@ export function useSuperListingUnlock({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: email.trim(),
-          fullName: fullName.trim(),
           "cf-token": isDevelopment ? "dev-bypass" : cfToken,
         }),
       });
@@ -59,6 +58,11 @@ export function useSuperListingUnlock({
     [endpointBase, isDevelopment],
   );
 
+  const unlock = useCallback((unlockedEmail?: string) => {
+    setEmail(unlockedEmail?.trim() ?? "");
+    setStatus("unlocked");
+  }, []);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -66,19 +70,31 @@ export function useSuperListingUnlock({
     const view = searchParams.get("view");
     const unlockToken = searchParams.get("unlockToken");
 
-    setStatus(
-      view === "challenge" || (isDevelopment && unlockToken === "dev-unlock")
-        ? "unlocked"
-        : "locked",
-    );
-  }, [isDevelopment]);
+    if (
+      view === "challenge" ||
+      (isDevelopment && unlockToken === "dev-unlock")
+    ) {
+      unlock();
+      return;
+    }
+
+    setEmail("");
+    setStatus("locked");
+  }, [isDevelopment, unlock]);
+
+  const lock = useCallback(() => {
+    setEmail("");
+    setStatus("locked");
+  }, []);
 
   return {
-    email: "",
+    email,
     isChecking: false,
     isLocked: status !== "unlocked",
+    lock,
     message,
     register,
     status,
+    unlock,
   };
 }

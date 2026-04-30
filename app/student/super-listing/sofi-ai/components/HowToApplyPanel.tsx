@@ -1,4 +1,4 @@
-import { type ChangeEvent, type FormEvent } from "react";
+import { type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { CheckCircle2, Loader2, LockKeyhole, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -92,17 +92,17 @@ function UnlockRegistrationPanel({
   | "onUnlockTokenError"
   | "onUnlockTokenSuccess"
 >) {
-  const updateField =
-    (field: keyof SuperListingUnlockForm) =>
-    (event: ChangeEvent<HTMLInputElement>) => {
-      onUnlockFieldChange(field, event.target.value);
-    };
+  const updateEmail = (event: ChangeEvent<HTMLInputElement>) => {
+    onUnlockFieldChange("email", event.target.value);
+  };
 
   if (registrationSent) {
     return (
-      <div className="space-y-3 rounded-md border border-[#00A886]/18 bg-white/78 p-4 shadow-[0_18px_36px_-32px_rgba(5,35,56,0.35)]">
-        <div className="flex items-start gap-3">
-          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#00A886]" />
+      <div className="space-y-3 rounded-md border border-[#00A886]/18 bg-white/90 p-5 text-center shadow-[0_18px_36px_-32px_rgba(5,35,56,0.35)]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#00A886]/22 bg-[#E8FFF9] shadow-[0_0_24px_rgba(0,168,134,0.18)]">
+            <CheckCircle2 className="h-6 w-6 text-[#00A886]" />
+          </div>
           <div className="space-y-1">
             <p className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.02em] text-[#052338]">
               Check your email
@@ -121,52 +121,41 @@ function UnlockRegistrationPanel({
   }
 
   return (
-    <div className="space-y-4 rounded-md border border-[#00A886]/18 bg-white/78 p-4 shadow-[0_18px_36px_-32px_rgba(5,35,56,0.35)]">
-      <div className="flex items-start gap-3">
-        <LockKeyhole className="mt-0.5 h-5 w-5 shrink-0 text-[#00A886]" />
-        <div className="space-y-1">
-          <p className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.02em] text-[#052338]">
-            Unlock the challenge
+    <div className="space-y-5 rounded-md border border-[#00A886]/70 bg-white p-5 text-center shadow-[0_0_0_1px_rgba(0,168,134,0.18),0_0_34px_rgba(0,168,134,0.34),0_18px_42px_-30px_rgba(5,35,56,0.55)]">
+      <div className="space-y-3">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[#00A886]/24 bg-[#E8FFF9] shadow-[0_0_28px_rgba(0,168,134,0.22)]">
+          <LockKeyhole className="h-7 w-7 text-[#00A886]" />
+        </div>
+        <div className="space-y-1.5">
+          <p className="[font-family:var(--font-paraluman-heading)] text-xl font-bold tracking-[-0.02em] text-[#052338]">
+            You&apos;re up for the challenge?
           </p>
           <p className="[font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/78">
-            Register your interest and we&apos;ll email the private challenge
-            link. The product details and submit form unlock from that link.
+            Enter your email to unlock the brief now. We&apos;ll send the full
+            link too.
           </p>
         </div>
       </div>
 
       <form className="space-y-4" onSubmit={(e) => void onRegisterUnlock(e)}>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-2">
-            <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
-              Full Name <span className="text-red-500">*</span>
-            </label>
-            <Input
-              required
-              value={unlockForm.fullName}
-              onChange={updateField("fullName")}
-              className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
-              Email <span className="text-red-500">*</span>
-            </label>
-            <Input
-              required
-              type="email"
-              value={unlockForm.email}
-              onChange={updateField("email")}
-              className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
-            />
-          </div>
+        <div className="space-y-2 text-left">
+          <label className="[font-family:var(--font-paraluman-heading)] text-sm font-bold tracking-[-0.02em] text-[#052338]">
+            Email <span className="text-red-500">*</span>
+          </label>
+          <Input
+            required
+            type="email"
+            value={unlockForm.email}
+            onChange={updateEmail}
+            className="h-11 rounded-md border-[#00A886]/45 bg-[#F7FFFD] text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:border-[#00A886] focus-visible:ring-[#00A886]/24"
+          />
         </div>
 
         {isDevelopment ? (
           <p className="border-t border-[#052338]/10 pt-4 [font-family:var(--font-paraluman-body)] text-sm text-[#00866f]">
             Captcha disabled in development. Use{" "}
-            <span className="font-semibold">?unlockToken=dev-unlock</span> to
-            preview the unlocked state.
+            <span className="font-semibold">?view=challenge</span> to preview
+            the unlocked state.
           </p>
         ) : !unlockToken ? (
           <div className="space-y-3 border-t border-[#052338]/10 pt-4">
@@ -192,7 +181,7 @@ function UnlockRegistrationPanel({
         <Button
           type="submit"
           disabled={isRegisteringUnlock}
-          className="inline-flex h-11 w-fit items-center justify-center gap-2 rounded-md bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white transition-all duration-200 hover:bg-[#0D3B33]"
+          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[#00A886] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white shadow-[0_0_22px_rgba(0,168,134,0.38)] transition-all duration-200 hover:bg-[#00866f]"
         >
           {isRegisteringUnlock ? (
             <>
@@ -217,97 +206,61 @@ function UnlockRegistrationPanel({
   );
 }
 
-function LockedProductOverlay() {
-  return (
-    <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#f7fffd]/42 px-4 backdrop-blur-[1px]">
-      <div className="max-w-sm rounded-md border border-[#00A886]/20 bg-white p-4 text-center shadow-[0_18px_44px_-32px_rgba(5,35,56,0.55)]">
-        <LockKeyhole className="mx-auto h-6 w-6 text-[#00A886]" />
-        <p className="mt-2 [font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.02em] text-[#052338]">
-          Product brief locked
-        </p>
-        <p className="mt-1 [font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/74">
-          Register above and open the email link to reveal the GIA challenge.
-        </p>
+function SampleReportLinks({ isLocked }: { isLocked: boolean }) {
+  if (isLocked) {
+    return (
+      <div className="relative w-fit px-3 py-2">
+        <div className="pointer-events-none select-none space-y-1 blur-[8px]">
+          <span className="block text-[#00A886] underline">Sample #1</span>
+          <span className="block text-[#00A886] underline">Sample #2</span>
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center rounded-md bg-white/28 backdrop-blur-[1px]">
+          <LockKeyhole className="h-4 w-4 text-[#00A886]" />
+        </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1">
+      <a
+        href="/student/super-listing/sofi-ai/reference/output"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[#00A886] underline hover:text-[#00A886]/80 transition-colors block"
+      >
+        Sample #1
+      </a>
+      <a
+        href="/student/super-listing/sofi-ai/reference/sample"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[#00A886] underline hover:text-[#00A886]/80 transition-colors block"
+      >
+        Sample #2
+      </a>
     </div>
   );
 }
 
-function PlaceholderLine({
-  className,
-  widthClassName,
+function ChallengeDetails({
+  isLocked,
+  unlockPanel,
+  onGoToApply,
 }: {
-  className?: string;
-  widthClassName: string;
+  isLocked: boolean;
+  unlockPanel?: ReactNode;
+  onGoToApply: () => void;
 }) {
-  return (
-    <div
-      className={cn(
-        "h-3 rounded-full bg-[#0d3b33]/18 shadow-[0_0_18px_rgba(0,168,134,0.12)]",
-        widthClassName,
-        className,
-      )}
-    />
-  );
-}
-
-function LockedChallengePreview() {
-  return (
-    <div className="relative -mx-5 sm:-mx-6" aria-label="Locked challenge">
-      <LockedProductOverlay />
-      <div className="pointer-events-none select-none space-y-5 border-y border-[#00A886]/12 bg-[#E8FFF9]/50 px-5 py-5 blur-[7px] sm:px-6">
-        <section className="space-y-4">
-          <PlaceholderLine className="h-6" widthClassName="w-44" />
-          <div className="space-y-3">
-            <PlaceholderLine className="h-5" widthClassName="w-64 max-w-full" />
-            <PlaceholderLine widthClassName="w-full" />
-            <PlaceholderLine widthClassName="w-11/12" />
-            <PlaceholderLine widthClassName="w-4/5" />
-          </div>
-          <div className="space-y-3 pt-2">
-            <PlaceholderLine className="h-4" widthClassName="w-36" />
-            <PlaceholderLine widthClassName="w-10/12" />
-            <PlaceholderLine widthClassName="w-3/4" />
-          </div>
-          <div className="space-y-3 pt-2">
-            <PlaceholderLine className="h-4" widthClassName="w-28" />
-            <PlaceholderLine widthClassName="w-full" />
-            <PlaceholderLine widthClassName="w-2/3" />
-          </div>
-        </section>
-
-        <section className="space-y-4">
-          <PlaceholderLine className="h-6" widthClassName="w-52" />
-          <div className="space-y-3">
-            <PlaceholderLine className="h-4" widthClassName="w-40" />
-            <PlaceholderLine widthClassName="w-full" />
-            <PlaceholderLine widthClassName="w-5/6" />
-            <PlaceholderLine widthClassName="w-3/4" />
-          </div>
-          <div className="space-y-3">
-            <PlaceholderLine className="h-4" widthClassName="w-36" />
-            <PlaceholderLine widthClassName="w-11/12" />
-            <PlaceholderLine widthClassName="w-4/5" />
-            <PlaceholderLine widthClassName="w-2/3" />
-          </div>
-        </section>
-
-        <section className="space-y-4">
-          <PlaceholderLine className="h-6" widthClassName="w-44" />
-          <PlaceholderLine widthClassName="w-full" />
-          <PlaceholderLine widthClassName="w-10/12" />
-          <PlaceholderLine widthClassName="w-3/5" />
-        </section>
-      </div>
-    </div>
-  );
-}
-
-function ChallengeDetails({ onGoToApply }: { onGoToApply: () => void }) {
   return (
     <div className="relative -mx-5 sm:-mx-6">
       <div className="space-y-5 border-y border-[#00A886]/12 bg-[#E8FFF9]/50 px-5 py-5 transition duration-300 sm:px-6">
-        <section className="space-y-3">
+        <section
+          className={cn(
+            "space-y-3",
+            isLocked && "pointer-events-none blur-[1px]",
+          )}
+        >
           <SectionTitle>The Product</SectionTitle>
           <div className="space-y-3">
             <div>
@@ -338,24 +291,7 @@ function ChallengeDetails({ onGoToApply }: { onGoToApply: () => void }) {
             </div>
             <div className="pt-2 space-y-1">
               <p>Here is a sample of the report that GIA generates.</p>
-              <div className="space-y-1">
-                <a
-                  href="/student/super-listing/sofi-ai/reference/output"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#00A886] underline hover:text-[#00A886]/80 transition-colors block"
-                >
-                  Sample #1
-                </a>
-                <a
-                  href="/student/super-listing/sofi-ai/reference/sample"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#00A886] underline hover:text-[#00A886]/80 transition-colors block"
-                >
-                  Sample #2
-                </a>
-              </div>
+              <SampleReportLinks isLocked={isLocked} />
             </div>
             <div className="pt-2 space-y-1">
               <p>
@@ -364,7 +300,10 @@ function ChallengeDetails({ onGoToApply }: { onGoToApply: () => void }) {
                   href="https://sofi-ai-gia.netlify.app/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#00A886] underline hover:text-[#00A886]/80 transition-colors"
+                  className={cn(
+                    "text-[#00A886] underline transition-colors hover:text-[#00A886]/80",
+                    isLocked && "pointer-events-none inline-block blur-[5px]",
+                  )}
                 >
                   https://sofi-ai-gia.netlify.app/
                 </a>
@@ -373,7 +312,14 @@ function ChallengeDetails({ onGoToApply }: { onGoToApply: () => void }) {
           </div>
         </section>
 
-        <section className="space-y-3">
+        {unlockPanel}
+
+        <section
+          className={cn(
+            "space-y-3",
+            isLocked && "pointer-events-none blur-[6px]",
+          )}
+        >
           <SectionTitle>What You Will Build</SectionTitle>
           <div className="[font-family:var(--font-paraluman-body)] space-y-4 text-sm leading-6 text-[#184d45]/86 sm:text-[0.9rem]">
             <div className="space-y-2">
@@ -417,7 +363,12 @@ function ChallengeDetails({ onGoToApply }: { onGoToApply: () => void }) {
           </div>
         </section>
 
-        <section className="space-y-3">
+        <section
+          className={cn(
+            "space-y-3",
+            isLocked && "pointer-events-none blur-[6px]",
+          )}
+        >
           <SectionTitle>How we&apos;ll evaluate</SectionTitle>
           <div className="[font-family:var(--font-paraluman-body)] space-y-2 text-sm leading-6 text-[#184d45]/86 sm:text-[0.9rem]">
             <p>
@@ -438,7 +389,8 @@ function ChallengeDetails({ onGoToApply }: { onGoToApply: () => void }) {
           <div className="pt-2">
             <button
               type="button"
-              onClick={onGoToApply}
+              onClick={isLocked ? undefined : onGoToApply}
+              disabled={isLocked}
               className="inline-flex h-11 items-center justify-center rounded-md bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white transition-all duration-200 hover:bg-[#0D3B33]"
             >
               Submit work
@@ -458,7 +410,6 @@ export function HowToApplyPanel({
   registrationError,
   registrationSent,
   turnstileSiteKey,
-  unlockEmail,
   unlockForm,
   unlockMessage,
   unlockToken,
@@ -470,96 +421,87 @@ export function HowToApplyPanel({
   onUnlockTokenSuccess,
 }: HowToApplyPanelProps) {
   const isLocked = !isUnlocked;
+  const unlockPanel = isLocked ? (
+    <div className="relative z-20 space-y-3">
+      {unlockMessage && (
+        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-center [font-family:var(--font-paraluman-body)] text-sm text-red-700">
+          {unlockMessage}
+        </div>
+      )}
+      <UnlockRegistrationPanel
+        isDevelopment={isDevelopment}
+        isRegisteringUnlock={isRegisteringUnlock}
+        registrationError={registrationError}
+        registrationSent={registrationSent}
+        turnstileSiteKey={turnstileSiteKey}
+        unlockForm={unlockForm}
+        unlockToken={unlockToken}
+        unlockTokenFail={unlockTokenFail}
+        onRegisterUnlock={onRegisterUnlock}
+        onUnlockFieldChange={onUnlockFieldChange}
+        onUnlockTokenError={onUnlockTokenError}
+        onUnlockTokenSuccess={onUnlockTokenSuccess}
+      />
+    </div>
+  ) : undefined;
 
   return (
-    <div className="[font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/86 sm:text-[0.9rem] space-y-5">
-      <section className="space-y-3.5">
-        <h1 className="[font-family:var(--font-paraluman-heading)] text-[1.45rem] font-bold leading-tight tracking-[-0.035em] text-[#052338] sm:text-[1.55rem]">
-          Application Process
-        </h1>
-        <p>
-          We&apos;re doing this differently. Instead of resumes, we want to see
-          how you actually think and build.
-        </p>
-      </section>
-
-      <section className="space-y-3">
-        <SectionTitle>The Challenge</SectionTitle>
-        <p>
-          You&apos;ll design a new product that we&apos;re planning to release.
-          We have a rough product vision, backend, and strategy. Your role is
-          to:
-        </p>
-        <AsteriskList
-          items={[
-            "Bring it to life through design.",
-            "Create a clear user flow.",
-            "Give suggestions on how the product could be better.",
-          ]}
-        />
-        <p>
-          This does not need to be fully functional. What matters is your
-          ability to create a clear, thoughtful vision, and to make us
-          understand how it should look.
-        </p>
-        <p>
-          We&apos;ll give you the direction and you are given the freedom to
-          shape the user journey, make product and design decisions, and define
-          how the experience should feel.
-        </p>
-        <p>
-          Use any tools you want, including AI, references, or your own
-          workflow.
-        </p>
-      </section>
-
-      {isUnlockChecking ? (
-        <div className="rounded-md border border-[#00A886]/18 bg-white/78 p-4">
-          <Loader>Checking unlock link...</Loader>
-        </div>
-      ) : isUnlocked ? (
-        <div className="flex items-start gap-3 rounded-md border border-[#00A886]/18 bg-white/78 p-4">
-          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#00A886]" />
-          <div className="space-y-1">
-            <p className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.02em] text-[#052338]">
-              GIA challenge unlocked
+    <div className="[font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/86 sm:text-[0.9rem]">
+      <div className="relative">
+        <div className={cn("space-y-5", isLocked && "select-none")}>
+          <section className="space-y-3.5">
+            <h1 className="[font-family:var(--font-paraluman-heading)] text-[1.45rem] font-bold leading-tight tracking-[-0.035em] text-[#052338] sm:text-[1.55rem]">
+              Application Process
+            </h1>
+            <p>
+              We&apos;re doing this differently. Instead of resumes, we want to
+              see how you actually think and build.
             </p>
-            <p className="[font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/78">
-              {unlockEmail
-                ? `Unlocked for ${unlockEmail}.`
-                : "You can now view the product brief and submit your work."}
+          </section>
+
+          <section className="space-y-3">
+            <SectionTitle>The Challenge</SectionTitle>
+            <p>
+              You&apos;ll design a new product that we&apos;re planning to
+              release. We have a rough product vision, backend, and strategy.
+              Your role is to:
             </p>
-          </div>
-        </div>
-      ) : (
-        <>
-          {unlockMessage && (
-            <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 [font-family:var(--font-paraluman-body)] text-sm text-red-700">
-              {unlockMessage}
+            <AsteriskList
+              items={[
+                "Bring it to life through design.",
+                "Create a clear user flow.",
+                "Give suggestions on how the product could be better.",
+              ]}
+            />
+            <p>
+              This does not need to be fully functional. What matters is your
+              ability to create a clear, thoughtful vision, and to make us
+              understand how it should look.
+            </p>
+            <p>
+              We&apos;ll give you the direction and you are given the freedom to
+              shape the user journey, make product and design decisions, and
+              define how the experience should feel.
+            </p>
+            <p>
+              Use any tools you want, including AI, references, or your own
+              workflow.
+            </p>
+          </section>
+
+          {isUnlockChecking ? (
+            <div className="rounded-md border border-[#00A886]/18 bg-white/78 p-4">
+              <Loader>Checking unlock link...</Loader>
             </div>
-          )}
-          <UnlockRegistrationPanel
-            isDevelopment={isDevelopment}
-            isRegisteringUnlock={isRegisteringUnlock}
-            registrationError={registrationError}
-            registrationSent={registrationSent}
-            turnstileSiteKey={turnstileSiteKey}
-            unlockForm={unlockForm}
-            unlockToken={unlockToken}
-            unlockTokenFail={unlockTokenFail}
-            onRegisterUnlock={onRegisterUnlock}
-            onUnlockFieldChange={onUnlockFieldChange}
-            onUnlockTokenError={onUnlockTokenError}
-            onUnlockTokenSuccess={onUnlockTokenSuccess}
-          />
-        </>
-      )}
+          ) : null}
 
-      {isLocked ? (
-        <LockedChallengePreview />
-      ) : (
-        <ChallengeDetails onGoToApply={onGoToApply} />
-      )}
+          <ChallengeDetails
+            isLocked={isLocked}
+            unlockPanel={unlockPanel}
+            onGoToApply={onGoToApply}
+          />
+        </div>
+      </div>
     </div>
   );
 }
