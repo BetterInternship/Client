@@ -50,13 +50,9 @@ export function RegisterPageContent() {
 
     const search = params.toString();
     const query = search ? `?${search}` : "";
-    router.replace(`${pathname}${query}`, { scroll: false });
+    console.log(`register skip: ${pathname}${query}`);
+    // router.replace(`${pathname}${query}`, { scroll: false });
   }, [step, pathname, router, searchParams]);
-
-  // Redirect only after we know the profile state
-  useEffect(() => {
-    if (profile.data?.is_verified) router.replace(nextUrl);
-  }, [profile.data?.is_verified, router]);
 
   // skip main register page if the user is already registered.
   useEffect(() => {
