@@ -12,7 +12,6 @@ export type SofiAiSubmissionForm = {
 
 export type SuperListingUnlockForm = {
   email: string;
-  fullName: string;
 };
 
 export type CEOProfile = {
