@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-15 03:09:57
- * @ Modified time: 2026-04-30 01:43:35
+ * @ Modified time: 2026-04-30 22:56:23
  * @ Description:
  *
  * Server-only data loaders for refs tables.
@@ -140,16 +140,8 @@ export interface IRefsContext extends RefsData {
     name: string | null | undefined,
   ) => Department | null;
 
-  get_degree: (id: string | null | undefined) => Degree | null;
-  to_degree_name: (
-    id: string | null | undefined,
-    def?: string | null,
-  ) => string | null;
-  get_degree_by_name: (name: string | null | undefined) => Degree | null;
-
   get_departments_by_college: (college_id: string) => string[];
   get_colleges_by_university: (university_id: string) => string[];
-  get_degrees_by_university: (university_id: string) => Degree[];
   getUniversityFromDomain: (domain: string) => string[];
   isNotNull: (ref: any) => boolean;
 }
