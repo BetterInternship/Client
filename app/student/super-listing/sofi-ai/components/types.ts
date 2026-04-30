@@ -10,6 +10,11 @@ export type SofiAiSubmissionForm = {
   videoSubmissionLink: string;
 };
 
+export type SuperListingUnlockForm = {
+  email: string;
+  fullName: string;
+};
+
 export type CEOProfile = {
   name: string;
   role: string;

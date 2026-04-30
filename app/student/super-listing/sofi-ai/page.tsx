@@ -4,14 +4,20 @@ import { type FormEvent, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, LockKeyhole } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSuperListingUnlock } from "@/hooks/use-super-listing-unlock";
+import { Button } from "@/components/ui/button";
 import { OverviewPanel } from "./components/OverviewPanel";
 import { HowToApplyPanel } from "./components/HowToApplyPanel";
 import { ApplyPanel } from "./components/ApplyPanel";
 import { JobDetailsRail } from "./components/JobDetailsRail";
 import backgroundImage from "./bg.png";
-import type { PanelKey, SofiAiSubmissionForm } from "./components/types";
+import type {
+  PanelKey,
+  SofiAiSubmissionForm,
+  SuperListingUnlockForm,
+} from "./components/types";
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],
@@ -47,6 +53,11 @@ const INITIAL_FORM_STATE: SofiAiSubmissionForm = {
   videoSubmissionLink: "",
 };
 
+const INITIAL_UNLOCK_FORM_STATE: SuperListingUnlockForm = {
+  email: "",
+  fullName: "",
+};
+
 const PANEL_TABS: Array<{
   key: PanelKey;
   label: string;
@@ -56,18 +67,64 @@ const PANEL_TABS: Array<{
   { key: "submission", label: "Submit" },
 ];
 
+const SUPER_LISTING_SLUG = "sofi-ai";
+
+function LockedSubmitPanel({
+  onGoToChallenge,
+}: {
+  onGoToChallenge: () => void;
+}) {
+  return (
+    <div className="max-w-2xl space-y-4 text-[#052338]">
+      <div className="flex items-start gap-3 rounded-md border border-[#00A886]/18 bg-white/78 p-4 shadow-[0_18px_36px_-32px_rgba(5,35,56,0.35)]">
+        <LockKeyhole className="mt-0.5 h-5 w-5 shrink-0 text-[#00A886]" />
+        <div className="space-y-2">
+          <p className="[font-family:var(--font-paraluman-heading)] text-xl font-bold tracking-[-0.025em] text-[#052338]">
+            Submit is locked
+          </p>
+          <p className="[font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/82 sm:text-[0.9rem]">
+            Unlock the GIA challenge from the Application tab first. Once you
+            open the private email link, the submit form will appear here.
+          </p>
+          <div className="pt-1">
+            <Button
+              type="button"
+              onClick={onGoToChallenge}
+              className="inline-flex h-11 items-center justify-center rounded-md bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white transition-all duration-200 hover:bg-[#0D3B33]"
+            >
+              Unlock challenge
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SofiAiSuperListingPage() {
   const isDevelopment = process.env.NODE_ENV === "development";
 
   const [form, setForm] = useState<SofiAiSubmissionForm>(INITIAL_FORM_STATE);
+  const [unlockForm, setUnlockForm] = useState<SuperListingUnlockForm>(
+    INITIAL_UNLOCK_FORM_STATE,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRegisteringUnlock, setIsRegisteringUnlock] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
   const [isError, setIsError] = useState(false);
   const [token, setToken] = useState("");
   const [tokenFail, setTokenFail] = useState(false);
+  const [unlockToken, setUnlockToken] = useState("");
+  const [unlockTokenFail, setUnlockTokenFail] = useState(false);
+  const [unlockRegistrationError, setUnlockRegistrationError] = useState("");
+  const [unlockRegistrationSent, setUnlockRegistrationSent] = useState(false);
   const [activePanel, setActivePanel] = useState<PanelKey>("overview");
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
+  const unlock = useSuperListingUnlock({
+    isDevelopment,
+    slug: SUPER_LISTING_SLUG,
+  });
 
   const panelSectionRef = useRef<HTMLElement | null>(null);
   const submissionPanelRef = useRef<HTMLDivElement | null>(null);
@@ -80,6 +137,14 @@ export default function SofiAiSuperListingPage() {
 
   const onFieldChange = (field: keyof SofiAiSubmissionForm, value: string) => {
     setForm((previous) => ({ ...previous, [field]: value }));
+  };
+
+  const onUnlockFieldChange = (
+    field: keyof SuperListingUnlockForm,
+    value: string,
+  ) => {
+    setUnlockForm((previous) => ({ ...previous, [field]: value }));
+    setUnlockRegistrationError("");
   };
 
   const scrollToPanelSection = () => {
@@ -122,10 +187,54 @@ export default function SofiAiSuperListingPage() {
     });
   };
 
+  const handleUnlockRegistration = async (
+    event: FormEvent<HTMLFormElement>,
+  ) => {
+    event.preventDefault();
+    setUnlockRegistrationError("");
+
+    if (!unlockForm.email.trim() || !unlockForm.fullName.trim()) {
+      setUnlockRegistrationError("Please enter your full name and email.");
+      return;
+    }
+
+    if (!isDevelopment && !unlockToken) {
+      setUnlockRegistrationError(
+        "Please complete the browser verification first.",
+      );
+      return;
+    }
+
+    setIsRegisteringUnlock(true);
+
+    try {
+      await unlock.register({
+        cfToken: unlockToken,
+        email: unlockForm.email,
+        fullName: unlockForm.fullName,
+      });
+      setUnlockRegistrationSent(true);
+    } catch (error) {
+      setUnlockRegistrationError(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while sending your unlock link.",
+      );
+    } finally {
+      setIsRegisteringUnlock(false);
+    }
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setResultMessage("");
     setIsError(false);
+
+    if (unlock.isLocked) {
+      setIsError(true);
+      setResultMessage("Please unlock the GIA challenge before submitting.");
+      return;
+    }
 
     if (
       !form.email.trim() ||
@@ -299,38 +408,72 @@ export default function SofiAiSuperListingPage() {
                   )}
 
                   {activePanel === "challenge" && (
-                    <HowToApplyPanel onGoToApply={openSubmissionPanel} />
+                    <HowToApplyPanel
+                      isDevelopment={isDevelopment}
+                      isRegisteringUnlock={isRegisteringUnlock}
+                      isUnlockChecking={unlock.isChecking}
+                      isUnlocked={!unlock.isLocked}
+                      registrationError={unlockRegistrationError}
+                      registrationSent={unlockRegistrationSent}
+                      turnstileSiteKey={
+                        process.env.NEXT_PUBLIC_SERVER_API_KEY_TURNSTILE
+                      }
+                      unlockEmail={unlock.email}
+                      unlockForm={unlockForm}
+                      unlockMessage={unlock.message}
+                      unlockToken={unlockToken}
+                      unlockTokenFail={unlockTokenFail}
+                      onGoToApply={openSubmissionPanel}
+                      onRegisterUnlock={(event) => {
+                        void handleUnlockRegistration(event);
+                      }}
+                      onUnlockFieldChange={onUnlockFieldChange}
+                      onUnlockTokenSuccess={(t) => {
+                        setUnlockToken(t);
+                        setUnlockTokenFail(false);
+                      }}
+                      onUnlockTokenError={() => {
+                        setUnlockToken("");
+                        setUnlockTokenFail(true);
+                      }}
+                    />
                   )}
 
                   {activePanel === "submission" && (
                     <div ref={submissionPanelRef}>
-                      <ApplyPanel
-                        form={form}
-                        hasSubmitted={hasSubmitted}
-                        submittedEmail={submittedEmail}
-                        isSubmitting={isSubmitting}
-                        isError={isError}
-                        resultMessage={resultMessage}
-                        isDevelopment={isDevelopment}
-                        token={token}
-                        tokenFail={tokenFail}
-                        turnstileSiteKey={
-                          process.env.NEXT_PUBLIC_SERVER_API_KEY_TURNSTILE
-                        }
-                        onFieldChange={onFieldChange}
-                        onSubmit={(event) => {
-                          void handleSubmit(event);
-                        }}
-                        onBackToOverview={() => openPanel("overview", true)}
-                        onTokenSuccess={(t) => {
-                          setToken(t);
-                          setTokenFail(false);
-                        }}
-                        onTokenError={() => {
-                          setToken("");
-                          setTokenFail(true);
-                        }}
-                      />
+                      {unlock.isLocked ? (
+                        <LockedSubmitPanel
+                          onGoToChallenge={() => openPanel("challenge", true)}
+                        />
+                      ) : (
+                        <ApplyPanel
+                          form={form}
+                          hasSubmitted={hasSubmitted}
+                          submittedEmail={submittedEmail}
+                          isSubmitting={isSubmitting}
+                          isError={isError}
+                          resultMessage={resultMessage}
+                          isDevelopment={isDevelopment}
+                          token={token}
+                          tokenFail={tokenFail}
+                          turnstileSiteKey={
+                            process.env.NEXT_PUBLIC_SERVER_API_KEY_TURNSTILE
+                          }
+                          onFieldChange={onFieldChange}
+                          onSubmit={(event) => {
+                            void handleSubmit(event);
+                          }}
+                          onBackToOverview={() => openPanel("overview", true)}
+                          onTokenSuccess={(t) => {
+                            setToken(t);
+                            setTokenFail(false);
+                          }}
+                          onTokenError={() => {
+                            setToken("");
+                            setTokenFail(true);
+                          }}
+                        />
+                      )}
                     </div>
                   )}
                 </div>
