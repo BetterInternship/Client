@@ -180,35 +180,22 @@ function UnlockRegistrationPanel({
   );
 }
 
-function SampleReportLinks({ isLocked }: { isLocked: boolean }) {
-  if (isLocked) {
-    return (
-      <div className="pointer-events-none w-fit select-none space-y-1">
-        <span className="block text-[#00A886] underline blur-[5px]">
-          Sample #1
-        </span>
-        <span className="block text-[#00A886] underline blur-[5px]">
-          Sample #2
-        </span>
-      </div>
-    );
-  }
-
+function SampleReportLinks() {
   return (
     <div className="space-y-1">
       <a
-        href="/student/super-listing/sofi-ai/reference/output"
+        href="https://drive.google.com/file/d/1_lPgIcGMRIQmQWWexLXBkByZ82nB8kMv/view?usp=sharing"
         target="_blank"
         rel="noopener noreferrer"
-        className="text-[#00A886] underline hover:text-[#00A886]/80 transition-colors block"
+        className="block text-[#00A886] underline transition-colors hover:text-[#00A886]/80"
       >
         Sample #1
       </a>
       <a
-        href="/student/super-listing/sofi-ai/reference/sample"
+        href="https://drive.google.com/file/d/16Nail8GPx_crCHCZAjBABTJwBs7oUWfK/view?usp=sharing"
         target="_blank"
         rel="noopener noreferrer"
-        className="text-[#00A886] underline hover:text-[#00A886]/80 transition-colors block"
+        className="block text-[#00A886] underline transition-colors hover:text-[#00A886]/80"
       >
         Sample #2
       </a>
@@ -237,7 +224,7 @@ function ChallengeDetails({
         <section
           className={cn(
             "space-y-3 transition-all duration-700 ease-out",
-            isLocked && "pointer-events-none blur-[1px]",
+            isLocked && "blur-[1px]",
           )}
         >
           <SectionTitle>The Product</SectionTitle>
@@ -270,7 +257,7 @@ function ChallengeDetails({
             </div>
             <div className="pt-2 space-y-1">
               <p>Here is a sample of the report that GIA generates.</p>
-              <SampleReportLinks isLocked={isLocked} />
+              <SampleReportLinks />
             </div>
             <div className="pt-2 space-y-1">
               <p>
