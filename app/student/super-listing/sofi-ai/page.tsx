@@ -83,7 +83,7 @@ function LockedSubmitPanel({
             Submit is locked
           </p>
           <p className="[font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/82 sm:text-[0.9rem]">
-            Unlock the GIA challenge from the Application tab first. Once you
+            Unlock the challenge from the Application tab first. Once you
             open the private email link, the submit form will appear here.
           </p>
           <div className="pt-1">
