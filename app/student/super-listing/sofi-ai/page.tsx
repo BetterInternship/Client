@@ -187,7 +187,6 @@ export default function SofiAiSuperListingPage() {
       unlock.unlock(unlockForm.email);
       toast.success("Unlock email sent. Check your inbox.", {
         ...toastPresets.success,
-        description: "Challenge is unlocked on this device.",
       });
     } catch (error) {
       setUnlockRegistrationError(
