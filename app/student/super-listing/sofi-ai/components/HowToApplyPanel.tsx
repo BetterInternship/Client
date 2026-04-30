@@ -1,6 +1,6 @@
 import { type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import { Turnstile } from "@marsidev/react-turnstile";
-import { CheckCircle2, Loader2, LockKeyhole, Mail } from "lucide-react";
+import { Loader2, LockKeyhole, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,7 +68,6 @@ function UnlockRegistrationPanel({
   isDevelopment,
   isRegisteringUnlock,
   registrationError,
-  registrationSent,
   turnstileSiteKey,
   unlockForm,
   unlockToken,
@@ -82,7 +81,6 @@ function UnlockRegistrationPanel({
   | "isDevelopment"
   | "isRegisteringUnlock"
   | "registrationError"
-  | "registrationSent"
   | "turnstileSiteKey"
   | "unlockForm"
   | "unlockToken"
@@ -95,30 +93,6 @@ function UnlockRegistrationPanel({
   const updateEmail = (event: ChangeEvent<HTMLInputElement>) => {
     onUnlockFieldChange("email", event.target.value);
   };
-
-  if (registrationSent) {
-    return (
-      <div className="space-y-3 rounded-md border border-[#00A886]/18 bg-white/90 p-5 text-center shadow-[0_18px_36px_-32px_rgba(5,35,56,0.35)]">
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#00A886]/22 bg-[#E8FFF9] shadow-[0_0_24px_rgba(0,168,134,0.18)]">
-            <CheckCircle2 className="h-6 w-6 text-[#00A886]" />
-          </div>
-          <div className="space-y-1">
-            <p className="[font-family:var(--font-paraluman-heading)] text-base font-bold tracking-[-0.02em] text-[#052338]">
-              Check your email
-            </p>
-            <p className="[font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/78">
-              We sent the GIA challenge unlock link to{" "}
-              <span className="font-semibold text-[#052338]">
-                {unlockForm.email || "your email"}
-              </span>
-              .
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-5 rounded-md border border-[#00A886]/70 bg-white p-5 text-center shadow-[0_0_0_1px_rgba(0,168,134,0.18),0_0_34px_rgba(0,168,134,0.34),0_18px_42px_-30px_rgba(5,35,56,0.55)]">
@@ -209,14 +183,13 @@ function UnlockRegistrationPanel({
 function SampleReportLinks({ isLocked }: { isLocked: boolean }) {
   if (isLocked) {
     return (
-      <div className="relative w-fit px-3 py-2">
-        <div className="pointer-events-none select-none space-y-1 blur-[8px]">
-          <span className="block text-[#00A886] underline">Sample #1</span>
-          <span className="block text-[#00A886] underline">Sample #2</span>
-        </div>
-        <div className="absolute inset-0 flex items-center justify-center rounded-md bg-white/28 backdrop-blur-[1px]">
-          <LockKeyhole className="h-4 w-4 text-[#00A886]" />
-        </div>
+      <div className="pointer-events-none w-fit select-none space-y-1">
+        <span className="block text-[#00A886] underline blur-[5px]">
+          Sample #1
+        </span>
+        <span className="block text-[#00A886] underline blur-[5px]">
+          Sample #2
+        </span>
       </div>
     );
   }
@@ -254,10 +227,16 @@ function ChallengeDetails({
 }) {
   return (
     <div className="relative -mx-5 sm:-mx-6">
-      <div className="space-y-5 border-y border-[#00A886]/12 bg-[#E8FFF9]/50 px-5 py-5 transition duration-300 sm:px-6">
+      <div
+        className={cn(
+          "space-y-5 border-y border-[#00A886]/12 bg-[#E8FFF9]/50 px-5 py-5 transition-all duration-700 ease-out sm:px-6",
+          !isLocked &&
+            "animate-[sofi-unlock-reveal_900ms_cubic-bezier(0.22,1,0.36,1)]",
+        )}
+      >
         <section
           className={cn(
-            "space-y-3",
+            "space-y-3 transition-all duration-700 ease-out",
             isLocked && "pointer-events-none blur-[1px]",
           )}
         >
@@ -316,7 +295,7 @@ function ChallengeDetails({
 
         <section
           className={cn(
-            "space-y-3",
+            "space-y-3 transition-all duration-700 ease-out",
             isLocked && "pointer-events-none blur-[6px]",
           )}
         >
@@ -365,7 +344,7 @@ function ChallengeDetails({
 
         <section
           className={cn(
-            "space-y-3",
+            "space-y-3 transition-all duration-700 ease-out",
             isLocked && "pointer-events-none blur-[6px]",
           )}
         >
@@ -432,7 +411,6 @@ export function HowToApplyPanel({
         isDevelopment={isDevelopment}
         isRegisteringUnlock={isRegisteringUnlock}
         registrationError={registrationError}
-        registrationSent={registrationSent}
         turnstileSiteKey={turnstileSiteKey}
         unlockForm={unlockForm}
         unlockToken={unlockToken}
@@ -447,6 +425,28 @@ export function HowToApplyPanel({
 
   return (
     <div className="[font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/86 sm:text-[0.9rem]">
+      <style>{`
+        @keyframes sofi-unlock-reveal {
+          0% {
+            opacity: 0.62;
+            filter: blur(10px);
+            transform: translateY(10px);
+            box-shadow: 0 0 0 rgba(0, 168, 134, 0);
+          }
+          48% {
+            opacity: 1;
+            filter: blur(1.5px);
+            transform: translateY(0);
+            box-shadow: 0 0 44px rgba(0, 168, 134, 0.22);
+          }
+          100% {
+            opacity: 1;
+            filter: blur(0);
+            transform: translateY(0);
+            box-shadow: 0 0 0 rgba(0, 168, 134, 0);
+          }
+        }
+      `}</style>
       <div className="relative">
         <div className={cn("space-y-5", isLocked && "select-none")}>
           <section className="space-y-3.5">

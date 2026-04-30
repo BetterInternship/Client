@@ -4,10 +4,11 @@ import { type FormEvent, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
-import { ArrowLeft, LockKeyhole } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useSuperListingUnlock } from "@/hooks/use-super-listing-unlock";
-import { Button } from "@/components/ui/button";
+import { toastPresets } from "@/components/ui/sonner-toast";
 import { OverviewPanel } from "./components/OverviewPanel";
 import { HowToApplyPanel } from "./components/HowToApplyPanel";
 import { ApplyPanel } from "./components/ApplyPanel";
@@ -68,38 +69,6 @@ const PANEL_TABS: Array<{
 
 const SUPER_LISTING_SLUG = "sofi-ai";
 
-function LockedSubmitPanel({
-  onGoToChallenge,
-}: {
-  onGoToChallenge: () => void;
-}) {
-  return (
-    <div className="max-w-2xl space-y-4 text-[#052338]">
-      <div className="flex items-start gap-3 rounded-md border border-[#00A886]/18 bg-white/78 p-4 shadow-[0_18px_36px_-32px_rgba(5,35,56,0.35)]">
-        <LockKeyhole className="mt-0.5 h-5 w-5 shrink-0 text-[#00A886]" />
-        <div className="space-y-2">
-          <p className="[font-family:var(--font-paraluman-heading)] text-xl font-bold tracking-[-0.025em] text-[#052338]">
-            Submit is locked
-          </p>
-          <p className="[font-family:var(--font-paraluman-body)] text-sm leading-6 text-[#184d45]/82 sm:text-[0.9rem]">
-            Unlock the challenge from the Application tab first. Once you enter
-            your email, the submit form will appear here.
-          </p>
-          <div className="pt-1">
-            <Button
-              type="button"
-              onClick={onGoToChallenge}
-              className="inline-flex h-11 items-center justify-center rounded-md bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white transition-all duration-200 hover:bg-[#0D3B33]"
-            >
-              Unlock challenge
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function SofiAiSuperListingPage() {
   const isDevelopment = process.env.NODE_ENV === "development";
 
@@ -124,6 +93,9 @@ export default function SofiAiSuperListingPage() {
     isDevelopment,
     slug: SUPER_LISTING_SLUG,
   });
+  const visiblePanelTabs = unlock.isLocked
+    ? PANEL_TABS.filter((tab) => tab.key !== "submission")
+    : PANEL_TABS;
 
   const panelSectionRef = useRef<HTMLElement | null>(null);
   const submissionPanelRef = useRef<HTMLDivElement | null>(null);
@@ -213,6 +185,10 @@ export default function SofiAiSuperListingPage() {
       });
       setUnlockRegistrationSent(true);
       unlock.unlock(unlockForm.email);
+      toast.success("Unlock email sent. Check your inbox.", {
+        ...toastPresets.success,
+        description: "Challenge is unlocked on this device.",
+      });
     } catch (error) {
       setUnlockRegistrationError(
         error instanceof Error
@@ -369,7 +345,7 @@ export default function SofiAiSuperListingPage() {
               <div className="-mx-5 border-y border-[rgba(0,80,60,0.055)] bg-white/55 px-5 pb-3 shadow-[0_18px_48px_-42px_rgba(5,35,56,0.28)] backdrop-blur-[2px] sm:mx-0 sm:rounded-[0.75em] sm:border sm:px-6">
                 <div className="border-b border-[#052338]/12">
                   <div className="flex justify-between gap-3 sm:justify-start sm:gap-7">
-                    {PANEL_TABS.map((tab) => {
+                    {visiblePanelTabs.map((tab) => {
                       const isActive = activePanel === tab.key;
                       return (
                         <button
@@ -440,11 +416,7 @@ export default function SofiAiSuperListingPage() {
 
                   {activePanel === "submission" && (
                     <div ref={submissionPanelRef}>
-                      {unlock.isLocked ? (
-                        <LockedSubmitPanel
-                          onGoToChallenge={() => openPanel("challenge", true)}
-                        />
-                      ) : (
+                      {!unlock.isLocked && (
                         <ApplyPanel
                           form={form}
                           hasSubmitted={hasSubmitted}
