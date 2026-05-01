@@ -44,6 +44,8 @@ interface FormPreviewPdfDisplayProps {
   autoScrollToSelectedField?: boolean;
   fieldErrors?: Record<string, string>;
   signingParties?: IFormSigningParty[];
+  wetSignatureMode?: boolean;
+  hiddenFieldNames?: string[];
 }
 
 const clamp = (value: number, min: number, max: number) =>
@@ -66,6 +68,8 @@ export const FormPreviewPdfDisplay = ({
   autoScrollToSelectedField = true,
   fieldErrors = {},
   signingParties = [],
+  wetSignatureMode = false,
+  hiddenFieldNames = [],
 }: FormPreviewPdfDisplayProps) => {
   const { isMobile } = useAppContext();
   const refs = useDbRefs();
@@ -99,9 +103,24 @@ export const FormPreviewPdfDisplay = ({
     () => toPreviewFields(blocks ?? []),
     [blocks],
   );
+  const hiddenFieldNameSet = useMemo(
+    () => new Set(hiddenFieldNames.map(normalizePreviewFieldKey)),
+    [hiddenFieldNames],
+  );
+  const displayFields = useMemo(
+    () =>
+      wetSignatureMode
+        ? normalizedFields.filter(
+            (field) =>
+              field.type !== "signature" &&
+              !hiddenFieldNameSet.has(normalizePreviewFieldKey(field.field)),
+          )
+        : normalizedFields,
+    [hiddenFieldNameSet, normalizedFields, wetSignatureMode],
+  );
   const fieldsByPage = useMemo(
-    () => groupFieldsByPage(normalizedFields),
-    [normalizedFields],
+    () => groupFieldsByPage(displayFields),
+    [displayFields],
   );
   const signingPartyLabelById = useMemo(() => {
     const partyLabelById = new Map<string, string>();
@@ -377,6 +396,7 @@ export const FormPreviewPdfDisplay = ({
               fieldErrors={fieldErrors}
               resolveDisplayValue={resolveDisplayValue}
               signingPartyLabelById={signingPartyLabelById}
+              wetSignatureMode={wetSignatureMode}
             />
           ))}
         </div>
@@ -402,6 +422,7 @@ interface PdfPageWithFieldsProps {
   fieldErrors: Record<string, string>;
   resolveDisplayValue: (field: PreviewField, rawValue: unknown) => string;
   signingPartyLabelById: Map<string, string>;
+  wetSignatureMode: boolean;
 }
 
 const PdfPageWithFields = ({
@@ -421,6 +442,7 @@ const PdfPageWithFields = ({
   fieldErrors,
   resolveDisplayValue,
   signingPartyLabelById,
+  wetSignatureMode,
 }: PdfPageWithFieldsProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -591,13 +613,14 @@ const PdfPageWithFields = ({
           const hasAssignedOwner = owner.length > 0;
           const isOwnedByInitiator =
             !hasAssignedOwner || owner === "initiator" || owner === "student";
+          const shouldDisplayValue = wetSignatureMode || isOwnedByInitiator;
           const normalizedFieldName = normalizePreviewFieldKey(fieldName);
-          const rawValue = isOwnedByInitiator
+          const rawValue = shouldDisplayValue
             ? (values[fieldName] ??
               values[normalizedFieldName + ":default"] ??
               values[normalizedFieldName])
             : "";
-          const valueStr = isOwnedByInitiator
+          const valueStr = shouldDisplayValue
             ? resolveDisplayValue(field, rawValue)
             : "";
           const isFilled = valueStr.trim().length > 0;
@@ -665,17 +688,17 @@ const PdfPageWithFields = ({
 
           const hasFieldError = !!fieldErrors[fieldName];
           const isFieldValid = isFilled && !hasFieldError;
-          const borderColor = isOwnedByInitiator
+          const isClickable = wetSignatureMode || isOwnedByInitiator;
+          const borderColor = isClickable
             ? isFieldValid
               ? "#16a34a"
               : "#dc2626"
             : "#d1d5db";
-          const fillColor = isOwnedByInitiator
+          const fillColor = isClickable
             ? isFieldValid
               ? "rgba(34, 197, 94, 0.2)"
               : "rgba(239, 68, 68, 0.2)"
             : "transparent";
-          const isClickable = isOwnedByInitiator;
           const ownerLabel = field.signing_party_id
             ? (signingPartyLabelById.get(field.signing_party_id) ??
               "Unassigned")
