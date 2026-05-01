@@ -505,6 +505,7 @@ export const ApplicationService = {
 
   async createApplication(data: {
     job_id: string;
+    resume_id: string;
     cover_letter?: string;
     challenge_submission?: string;
   }) {

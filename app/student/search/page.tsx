@@ -38,7 +38,6 @@ export default function SearchPage() {
   // selection + bulk apply
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [bulkCoverLetter, setBulkCoverLetter] = useState("");
 
   // job list & filters
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
@@ -47,6 +46,7 @@ export default function SearchPage() {
   const [jobWorkloadFilter, setJobWorkloadFilter] = useState<string[]>([]);
   const [jobAllowanceFilter, setJobAllowanceFilter] = useState<string[]>([]);
   const [jobMoaFilter, setJobMoaFilter] = useState<string[]>([]);
+  const [resumeId, setResumeId] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
   // get job list div so we can scroll on page change.
@@ -203,13 +203,7 @@ export default function SearchPage() {
       profile: profile.data,
       applyLabel: `Apply to ${selectedIds.size || 0}`,
       onApply: () => {
-        modalRegistry.massApplyCompose.open({
-          bulkCoverLetter,
-          setBulkCoverLetter,
-          runMassApply,
-          massApplying,
-          selectedCount: selectedIds.size + "",
-        });
+        void runMassApply(resumeId, "");
       },
     });
   };
@@ -220,7 +214,7 @@ export default function SearchPage() {
   const isSubmittingRef = useRef(false);
 
   const runMassApply = useCallback(
-    async (coverLetter: string) => {
+    async (resumeId: string, coverLetter: string) => {
       if (isSubmittingRef.current) return;
       isSubmittingRef.current = true;
 
@@ -242,8 +236,6 @@ export default function SearchPage() {
           const needsPortfolio =
             internshipPreferences?.require_portfolio &&
             !profile.data?.portfolio_link?.trim();
-          const needsCover =
-            internshipPreferences?.require_cover_letter && !coverLetter.trim();
 
           if (needsGithub) {
             skipped.push({ job, reason: "Requires GitHub profile" });
@@ -251,10 +243,6 @@ export default function SearchPage() {
           }
           if (needsPortfolio) {
             skipped.push({ job, reason: "Requires portfolio link" });
-            continue;
-          }
-          if (needsCover) {
-            skipped.push({ job, reason: "Requires a cover letter" });
             continue;
           }
           eligible.push(job);
@@ -266,7 +254,6 @@ export default function SearchPage() {
             skipped,
             failed: [] as { job: Job; error: string }[],
           };
-          modalRegistry.massApplyCompose.close();
           modalRegistry.massApplyResult.open({
             massApplyResultsData: data,
             clearSelection,
@@ -284,7 +271,8 @@ export default function SearchPage() {
           try {
             await applicationActions.create.mutateAsync({
               job_id: job.id ?? "",
-              cover_letter: coverLetter || "",
+              resume_id: resumeId,
+              cover_letter: "",
             });
             if (applicationActions.create.error) {
               failed.push({
@@ -306,7 +294,6 @@ export default function SearchPage() {
 
         setMassApplying(false);
         const data = { ok, skipped, failed };
-        modalRegistry.massApplyCompose.close();
         modalRegistry.massApplyResult.open({
           massApplyResultsData: data,
           clearSelection,
@@ -323,6 +310,8 @@ export default function SearchPage() {
 
     const response = await applicationActions.create.mutateAsync({
       job_id: selectedJob.id,
+      resume_id: resumeId,
+      cover_letter: "",
     });
 
     if (response.message) {

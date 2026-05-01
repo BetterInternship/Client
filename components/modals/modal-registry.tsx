@@ -1,6 +1,5 @@
 import { useGlobalModal } from "../providers/modal-provider/ModalProvider";
 import { LucideIcon } from "lucide-react";
-import { MassApplyComposer } from "./components/MassApplyComposer";
 import { FormSubmissionSuccessModal } from "./components/FormSubmissionSuccessModal";
 import { FollowUpFormModal } from "./components/ResendFormModal";
 import { CancelFormModal } from "./components/CancelFormModal";
@@ -124,44 +123,6 @@ export const useModalRegistry = () => {
           ),
         close: () => close("complete-profile-apply"),
       },
-      // Mass apply fill-out modal
-      massApplyCompose: {
-        open: ({
-          bulkCoverLetter,
-          runMassApply,
-          setBulkCoverLetter,
-          massApplying,
-          selectedCount,
-        }: {
-          bulkCoverLetter: string;
-          runMassApply: (text: string) => Promise<void>;
-          setBulkCoverLetter: (bulkCoverLetter: string) => void;
-          massApplying: boolean;
-          selectedCount: string;
-        }) =>
-          open(
-            "mass-apply-compose",
-            DefaultModalLayout,
-            <MassApplyComposer
-              initialText={bulkCoverLetter}
-              disabled={massApplying}
-              minChars={0}
-              maxChars={500}
-              onCancel={() => close("mass-apply-compose")}
-              onSubmit={async (text) => {
-                setBulkCoverLetter(text);
-                await runMassApply(text);
-                close("mass-apply-compose");
-              }}
-            />,
-            {
-              title: `Apply to ${selectedCount} selected`,
-              closeOnBackdropClick: false,
-            },
-          ),
-        close: () => close("mass-apply-compose"),
-      },
-
       // The modal shown after performing a mass apply
       massApplyResult: {
         open: ({

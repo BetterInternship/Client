@@ -40,6 +40,8 @@ export default function JobPage() {
 
     const response = await applicationActions.create.mutateAsync({
       job_id: job.data.id,
+      resume_id: "",
+      cover_letter: "",
     });
 
     if (response.message) {

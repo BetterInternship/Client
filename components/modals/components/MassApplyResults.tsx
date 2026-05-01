@@ -21,7 +21,7 @@ export function MassApplyResults({
   onClearSelection: () => void;
 }) {
   return (
-    <div className="mx-auto space-y-4 ">
+    <div className="mx-auto space-y-4 mt-4">
       <div className="space-y-2 text-sm">
         <div className="flex items-center justify-between">
           <span className="text-green-700">Applied</span>
