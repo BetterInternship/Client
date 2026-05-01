@@ -575,12 +575,6 @@ function StepBasicIdentity({
             />
 
             <FormInput
-              label="Middle name"
-              required={false}
-              value={value.middleName}
-              setter={(v) => onChange({ ...value, middleName: v })}
-            />
-            <FormInput
               label="Last name"
               value={value.lastName}
               setter={(v) => onChange({ ...value, lastName: v })}

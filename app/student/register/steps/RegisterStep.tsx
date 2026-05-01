@@ -43,16 +43,6 @@ export function RegisterStep({
         />
 
         <FormInput
-          label="Middle name"
-          value={regForm.watch("middle_name") || ""}
-          setter={(val) => {
-            regForm.setValue("middle_name", val);
-          }}
-          required={false}
-          placeholder="Middle name"
-        />
-
-        <FormInput
           label="Last name"
           value={regForm.watch("last_name") || ""}
           maxLength={40}
