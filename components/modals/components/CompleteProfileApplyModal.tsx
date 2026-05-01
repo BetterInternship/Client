@@ -250,7 +250,7 @@ export function CompleteProfileApplyModal({
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="mt-3"
+                        className="mt-3 overflow-visible px-0.5 pb-0.5"
                       >
                         <FormInput
                           ref={resumeNameInputRef}
@@ -260,6 +260,7 @@ export function CompleteProfileApplyModal({
                             setResumeLabel(value);
                             setUploadStatus("ready");
                           }}
+                          className="focus-visible:border-primary focus-visible:ring-primary/70 focus-visible:text-primary focus-visible:ring-2"
                           placeholder="Name this resume"
                         />
                         <UploadProgress status={uploadStatus} />
