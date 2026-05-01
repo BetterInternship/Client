@@ -275,6 +275,28 @@ export const FormService = {
   },
 };
 
+interface UploadResumeResponse {
+  resume: {
+    id: string;
+    label: string;
+    filename: string;
+    uploaded_at: string;
+  };
+  success?: boolean;
+  message?: string;
+}
+
+interface ResumeArrayResponse {
+  resumes: {
+    id: string;
+    label: string;
+    filename: string;
+    uploaded_at: string;
+  }[];
+  success?: boolean;
+  message?: string;
+}
+
 export const UserService = {
   async getMyProfile(options: RequestInit = {}) {
     const result = APIClient.get<UserResponse>(
@@ -298,17 +320,15 @@ export const UserService = {
     );
   },
 
-  async parseResume(form: FormData) {
-    return APIClient.post<UserResponse>(
-      APIRouteBuilder("users").r("me", "extract-resume").build(),
-      form,
-      "form-data",
+  async getMyResumes() {
+    return APIClient.get<ResumeArrayResponse>(
+      APIRouteBuilder("users").r("me", "resumes").build(),
     );
   },
 
-  async getMyResumeURL() {
+  async getMyResumeURL(resumeId: string) {
     return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("users").r("me", "resume").build(),
+      APIRouteBuilder("users").r("me", "resume", resumeId).build(),
     );
   },
 
@@ -339,7 +359,7 @@ export const UserService = {
   },
 
   async updateMyResume(form: FormData) {
-    return APIClient.put<Response>(
+    return APIClient.put<UploadResumeResponse>(
       APIRouteBuilder("users").r("me", "resume").build(),
       form,
       "form-data",

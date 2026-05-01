@@ -15,7 +15,6 @@ import {
   CheckCircle2,
   Globe2,
   Loader2,
-  FileQuestion,
 } from "lucide-react";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "../../../lib/ctx-auth";
@@ -24,7 +23,6 @@ import { useDbRefs } from "@/lib/db/use-refs";
 import { InternshipPreferences, PublicUser } from "@/lib/db/db.types";
 import { ErrorLabel, LabeledProperty } from "@/components/ui/labels";
 import { UserService } from "@/lib/api/services";
-import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { Button } from "@/components/ui/button";
 import { FileUploadInput, useFile, useFileUpload } from "@/hooks/use-file";
 import { Card } from "@/components/ui/card";
@@ -33,14 +31,13 @@ import {
   isProfileBaseComplete,
   isProfileResume,
 } from "@/lib/profile";
-import { toURL, openURL } from "@/lib/utils/url-utils";
+import { toURL } from "@/lib/utils/url-utils";
 import {
   isValidOptionalGitHubURL,
   isValidOptionalLinkedinURL,
   isValidOptionalURL,
 } from "@/lib/utils/url-utils";
 import { Loader } from "@/components/ui/loader";
-import { BoolBadge } from "@/components/ui/badge";
 import { cn, formatMonth, isValidPHNumber, toSafeString } from "@/lib/utils";
 import { MyUserPfp, PFP_UPDATED_EVENT } from "@/components/shared/pfp";
 import { useAppContext } from "@/lib/ctx-app";
@@ -52,8 +49,8 @@ import {
 } from "@/components/EditForm";
 import { Divider } from "@/components/ui/divider";
 import { isValidRequiredUserName } from "@/lib/utils/name-utils";
-import { useQueryClient } from "@tanstack/react-query";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 import { Autocomplete, AutocompleteMulti } from "@/components/ui/autocomplete";
 import { AutocompleteTreeMulti } from "@/components/ui/autocomplete";
 import { POSITION_TREE } from "@/lib/consts/positions";
@@ -65,12 +62,20 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { AutoApplyCard } from "@/components/features/student/profile/AutoApplyCard";
 import { useProfileActions } from "@/lib/api/student.actions.api";
-import useModalRegistry from "@/components/modals/modal-registry";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
 import { useBlockPageRefreshEffect } from "@/hooks/use-refresh-block";
+import { PDFPreview } from "@/components/shared/pdf-preview";
+import { AddResumeModal } from "@/components/features/student/profile/AddResumeModal";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
+
+type ResumeListItem = {
+  id: string;
+  label: string;
+  filename: string;
+  uploaded_at: string;
+};
 
 export default function ProfilePage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
@@ -83,25 +88,29 @@ export default function ProfilePage() {
   const [autoApplyError, setAutoApplyError] = useState<string | null>(null);
 
   const { url: resumeURL, sync: syncResumeURL } = useFile({
-    fetcher: UserService.getMyResumeURL,
-    route: "/users/me/resume",
+    fetcher: (resumeId: string) => UserService.getMyResumeURL(resumeId),
+    route: (resumeId: string) => `/users/me/resume/${resumeId}`,
+  });
+  const resumes = useQuery({
+    queryKey: ["my-resumes"],
+    queryFn: () => UserService.getMyResumes(),
   });
 
   // Modals
+  const { open: openResumeModal, Modal: ResumeModal } =
+    useModal("resume-modal");
   const {
-    open: openEmployerModal,
-    close: closeEmployerModal,
-    Modal: EmployerModal,
-  } = useModal("employer-modal");
-
-  const { open: openResumeModal } = useModal("resume-modal");
+    open: openAddResumeModal,
+    close: closeAddResumeModal,
+    Modal: AddResumeModalBox,
+  } = useModal("add-resume-modal");
   const profileEditorRef = useRef<{ save: () => Promise<boolean> }>(null);
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
 
-  const openEmployerWithResume = async () => {
-    await syncResumeURL();
-    openEmployerModal();
+  const openResumePreview = async (resumeId: string) => {
+    await syncResumeURL(resumeId);
+    openResumeModal();
   };
 
   const handleAutoApplySave = async (newEnabled: boolean) => {
@@ -128,7 +137,7 @@ export default function ProfilePage() {
     upload: pfpUpload,
     isUploading: pfpIsUploading,
   } = useFileUpload({
-    uploader: UserService.updateMyPfp,
+    uploader: (file: FormData) => UserService.updateMyPfp(file),
     filename: "pfp",
     silent: true,
   });
@@ -139,10 +148,6 @@ export default function ProfilePage() {
   useEffect(() => {
     if (searchParams.get("edit") === "true") setIsEditing(true);
   }, [searchParams]);
-
-  useEffect(() => {
-    if (data?.resume) void syncResumeURL();
-  }, [data?.resume, syncResumeURL]);
 
   useBlockPageRefreshEffect(isEditing);
 
@@ -189,18 +194,19 @@ export default function ProfilePage() {
                   ref={pfpFileInputRef}
                   allowedTypes={["image/jpeg", "image/png", "image/webp"]}
                   maxSize={1}
-                  onSelect={async (file) => {
-                    const success = await pfpUpload(file);
-                    if (success) {
-                      void queryClient.invalidateQueries({
-                        queryKey: ["my-profile"],
-                      });
-                      window.dispatchEvent(new Event(PFP_UPDATED_EVENT));
-                      toast.success(
-                        "Profile photo uploaded successfully.",
-                        toastPresets.success,
-                      );
-                    }
+                  onSelect={(file) => {
+                    void pfpUpload(file).then((success) => {
+                      if (success) {
+                        void queryClient.invalidateQueries({
+                          queryKey: ["my-profile"],
+                        });
+                        window.dispatchEvent(new Event(PFP_UPDATED_EVENT));
+                        toast.success(
+                          "Profile photo uploaded successfully.",
+                          toastPresets.success,
+                        );
+                      }
+                    });
                   }}
                 />
               </div>
@@ -234,22 +240,22 @@ export default function ProfilePage() {
         <main className="px-4 sm:px-6 pt-8 pb-16 grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left column */}
           <div className="lg:col-span-2 flex flex-col gap-6">
-            {/* Resume */}
-            <Card className="p-5">
-              <div className="font-medium">Resume/CV</div>
-
-              <ResumeBox
-                profile={data}
-                openResumeModal={openEmployerWithResume}
-              />
-            </Card>
-
             {/* Profile */}
             {!isEditing && (
               <>
                 <ProfileReadOnlyTabs
                   profile={data}
+                  resumes={resumes.data?.resumes ?? []}
+                  resumesLoading={resumes.isPending}
+                  onViewResume={openResumePreview}
+                  onResumeUploaded={() => {
+                    void resumes.refetch();
+                    void queryClient.invalidateQueries({
+                      queryKey: ["my-profile"],
+                    });
+                  }}
                   onEdit={() => setIsEditing(true)}
+                  onAddResume={openAddResumeModal}
                 />
               </>
             )}
@@ -354,24 +360,22 @@ export default function ProfilePage() {
           </aside>
         </main>
 
-        <EmployerModal className="max-w-[80vw]">
-          <ApplicantModalContent
-            applicant={data}
-            pfp_fetcher={() => UserService.getUserPfpURL("me")}
-            pfp_route="/users/me/pic"
-            open_resume={() =>
-              void (async () => {
-                closeEmployerModal();
-                await syncResumeURL();
-                openResumeModal();
-              })()
-            }
-            open_calendar={() => {
-              openURL(data?.calendar_link);
+        <ResumeModal className="max-w-[80vw]">
+          <PDFPreview url={resumeURL} />
+        </ResumeModal>
+
+        <AddResumeModalBox>
+          <AddResumeModal
+            onCancel={closeAddResumeModal}
+            onComplete={() => {
+              closeAddResumeModal();
+              void resumes.refetch();
+              void queryClient.invalidateQueries({
+                queryKey: ["my-profile"],
+              });
             }}
-            resume_url={resumeURL}
           />
-        </EmployerModal>
+        </AddResumeModalBox>
       </div>
     )
   );
@@ -429,10 +433,20 @@ function HeaderLine({ profile }: { profile: PublicUser }) {
 
 function ProfileReadOnlyTabs({
   profile,
+  resumes,
+  resumesLoading,
+  onViewResume,
+  onResumeUploaded,
   onEdit,
+  onAddResume,
 }: {
   profile: PublicUser;
+  resumes: ResumeListItem[];
+  resumesLoading: boolean;
+  onViewResume: (resumeId: string) => void | Promise<void>;
+  onResumeUploaded: () => void;
   onEdit: () => void;
+  onAddResume: () => void;
 }) {
   const internshipPreferences = profile.internship_preferences;
   const {
@@ -444,12 +458,13 @@ function ProfileReadOnlyTabs({
     job_categories,
   } = useDbRefs();
 
-  type TabKey = "Student Profile" | "Internship Details";
+  type TabKey = "Student Profile" | "Internship Details" | "Resumes";
   const [tab, setTab] = useState<TabKey>("Student Profile");
 
   const tabs = [
     { key: "Student Profile", label: "Student Profile" },
     { key: "Internship Details", label: "Internship Details" },
+    { key: "Resumes", label: "Resumes" },
   ] as const;
 
   return (
@@ -693,6 +708,16 @@ function ProfileReadOnlyTabs({
             </div>
           </div>
         </section>
+      </OutsideTabPanel>
+
+      <OutsideTabPanel when="Resumes" activeKey={tab}>
+        <ResumeList
+          resumes={resumes}
+          loading={resumesLoading}
+          onViewResume={onViewResume}
+          onUploaded={onResumeUploaded}
+          onAddResume={onAddResume}
+        />
       </OutsideTabPanel>
     </OutsideTabs>
   );
@@ -1370,95 +1395,87 @@ const ProfileEditor = forwardRef<
 });
 ProfileEditor.displayName = "ProfileEditor";
 
-const ResumeBox = ({
-  profile,
-  openResumeModal,
+const ResumeList = ({
+  resumes,
+  loading,
+  onViewResume,
+  onUploaded,
+  onAddResume,
 }: {
-  profile: PublicUser;
-  openResumeModal: () => void;
+  resumes: ResumeListItem[];
+  loading: boolean;
+  onViewResume: (resumeId: string) => void | Promise<void>;
+  onUploaded: () => void;
+  onAddResume: () => void;
 }) => {
-  const queryClient = useQueryClient();
-
-  const {
-    fileInputRef: resumeFileInputRef,
-    upload: resumeUpload,
-    isUploading: resumeIsUploading,
-  } = useFileUpload({
-    uploader: UserService.updateMyResume,
-    filename: "resume",
-    silent: true,
-  });
-
-  const hasResume = !!profile.resume;
-
   return (
-    <div className="space-y-3">
-      {/* Header row: status + actions */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3">
-          <BoolBadge state={hasResume} onValue="Uploaded" offValue="Missing" />
-        </div>
-
-        <div className="flex items-center gap-2">
-          {hasResume && (
-            <Button
-              variant="outline"
-              onClick={openResumeModal}
-              disabled={resumeIsUploading}
-              className="hidden sm:inline-flex"
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-          )}
-          <Button
-            onClick={() => resumeFileInputRef.current?.open()}
-            disabled={resumeIsUploading}
-          >
-            <Upload className="h-4 w-4" />
-            {resumeIsUploading
-              ? "Uploading…"
-              : hasResume
-                ? "Upload new"
-                : "Upload"}
-          </Button>
-        </div>
+    <section>
+      <div className="text-xl sm:text-2xl tracking-tight font-semibold">
+        Resumes
       </div>
 
-      {/* Optional hint / empty state line */}
-      {!hasResume && !resumeIsUploading && (
-        <div className="rounded-[0.33em] border border-dashed p-3 text-xs text-muted-foreground">
-          No resume yet. Click <span className="font-medium">Upload</span> to
-          add your PDF.
+      <div className="mt-3 divide-y rounded-[0.33em] border">
+        {loading && (
+          <div className="p-4 text-sm text-muted-foreground">
+            Loading resumes...
+          </div>
+        )}
+        {!loading && resumes.length === 0 && (
+          <div className="p-4 text-sm text-muted-foreground">
+            No resumes uploaded yet.
+          </div>
+        )}
+        {!loading &&
+          resumes.map((resume) => (
+            <div
+              key={resume.id}
+              className="flex items-center justify-between gap-3 p-3"
+            >
+              <div className="min-w-0">
+                <div className="truncate text-sm font-medium text-gray-900">
+                  {resume.label || resume.filename || "Untitled resume"}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Uploaded {formatResumeUploadedAt(resume.uploaded_at)}
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => void onViewResume(resume.id)}
+                aria-label={`View ${resume.label || "resume"}`}
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+      </div>
+
+      {!loading && resumes.length === 0 && (
+        <div className="mt-3 rounded-[0.33em] border border-dashed p-3 text-xs text-muted-foreground">
+          Upload a PDF resume to make it available when applying.
         </div>
       )}
 
-      {/* Hidden input handler */}
-      <FileUploadInput
-        ref={resumeFileInputRef}
-        maxSize={2.5}
-        allowedTypes={["application/pdf"]}
-        onSelect={async (file) => {
-          // filename display removed by design
-          const success = await resumeUpload(file);
-
-          if (success) {
-            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-            toast.success(
-              "Resume uploaded successfully.",
-              toastPresets.success,
-            );
-          }
-        }}
-      />
-
-      {/* Uploading hint */}
-      {resumeIsUploading && (
-        <p className="text-xs text-muted-foreground">Uploading your resume…</p>
-      )}
-    </div>
+      <div className="mt-4 flex justify-end">
+        <Button onClick={onAddResume}>
+          <Upload className="h-4 w-4 mr-1.5" />
+          Add resume
+        </Button>
+      </div>
+    </section>
   );
 };
 
+function formatResumeUploadedAt(uploadedAt: string) {
+  const date = new Date(uploadedAt);
+  if (Number.isNaN(date.getTime())) return "unknown date";
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
 // ----------------------------
 //  Link Badge
 // ----------------------------
