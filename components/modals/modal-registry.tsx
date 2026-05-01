@@ -16,7 +16,7 @@ import {
   MassApplyResults,
   MassApplyResultsData,
 } from "./components/MassApplyResults";
-import { CompleteProfileApplyModal } from "./components/CompleteProfileApplyModal";
+import { ApplyModal } from "./components/ApplyModal";
 import { MissingRequirementsModal } from "./components/MissingRequirementsModal";
 import { FormPreviewPdfDisplay } from "../features/student/forms/previewer";
 import { IFormSigningParty } from "@betterinternship/core/forms";
@@ -110,7 +110,7 @@ export const useModalRegistry = () => {
           open(
             "complete-profile-apply",
             DefaultModalLayout,
-            <CompleteProfileApplyModal
+            <ApplyModal
               profile={profile}
               applyLabel={applyLabel}
               onApply={onApply}

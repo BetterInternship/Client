@@ -31,7 +31,7 @@ const MONTHS = [
   "December",
 ];
 
-export function CompleteProfileApplyModal({
+export function ApplyModal({
   profile,
   onCancel,
   onApply,
@@ -115,7 +115,8 @@ export function CompleteProfileApplyModal({
   const canApply = !!internshipType && month !== "" && year !== "";
 
   async function uploadResumeIfNeeded(): Promise<string | null> {
-    if (resumeChoice !== "new" || !selectedFile) return resumeChoice !== "new" ? resumeChoice : null;
+    if (resumeChoice !== "new" || !selectedFile)
+      return resumeChoice !== "new" ? resumeChoice : null;
 
     const form = new FormData();
     const label = resumeLabel.trim() || selectedFile.name;
@@ -130,7 +131,7 @@ export function CompleteProfileApplyModal({
     };
     const ok = response.success !== false;
     setUploadStatus(ok ? "uploaded" : "ready");
-    
+
     if (ok && response.resume?.id) {
       return response.resume.id;
     }
@@ -179,8 +180,9 @@ export function CompleteProfileApplyModal({
 
       await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
       onCancel();
-      
-      const targetResumeId = resumeChoice === "new" ? uploadedResumeId : resumeChoice;
+
+      const targetResumeId =
+        resumeChoice === "new" ? uploadedResumeId : resumeChoice;
       if (!targetResumeId) throw new Error("No resume selected");
 
       await onApply(targetResumeId);
@@ -212,45 +214,56 @@ export function CompleteProfileApplyModal({
         {step === 1 ? (
           <div className="space-y-4">
             {resumesLoading ? (
-              <div className="text-sm text-muted-foreground">Loading resumes...</div>
-            ) : hasExistingResumes && (
-              <div className="space-y-2">
-                {resumes.map(resume => (
-                  <button
-                    key={resume.id}
-                    type="button"
-                    onClick={() => {
-                      setResumeChoice(resume.id);
-                      setShowUpload(false);
-                    }}
-                    className={cn(
-                      "w-full rounded-[0.33em] border p-3 text-left transition bg-white",
-                      resumeChoice === resume.id
-                        ? "border-primary ring-2 ring-primary/15"
-                        : "border-gray-200 hover:border-primary/70",
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="grid h-10 w-10 place-items-center rounded-[0.33em] bg-primary/10 text-primary">
-                        <FileText className="h-5 w-5" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-medium text-gray-900">
-                          {resume.label || resume.filename || "Untitled resume"}
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-0.5">
-                          <Link href="/student/profile?section=resumes" target="_blank" className="text-primary hover:underline" onClick={(e) => e.stopPropagation()}>
-                            View in profile
-                          </Link>
-                        </div>
-                      </div>
-                      {resumeChoice === resume.id && (
-                        <CheckCircle2 className="h-5 w-5 text-primary" />
-                      )}
-                    </div>
-                  </button>
-                ))}
+              <div className="text-sm text-muted-foreground">
+                Loading resumes...
               </div>
+            ) : (
+              hasExistingResumes && (
+                <div className="space-y-2">
+                  {resumes.map((resume) => (
+                    <button
+                      key={resume.id}
+                      type="button"
+                      onClick={() => {
+                        setResumeChoice(resume.id);
+                        setShowUpload(false);
+                      }}
+                      className={cn(
+                        "w-full rounded-[0.33em] border p-3 text-left transition bg-white",
+                        resumeChoice === resume.id
+                          ? "border-primary ring-2 ring-primary/15"
+                          : "border-gray-200 hover:border-primary/70",
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="grid h-10 w-10 place-items-center rounded-[0.33em] bg-primary/10 text-primary">
+                          <FileText className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-sm font-medium text-gray-900">
+                            {resume.label ||
+                              resume.filename ||
+                              "Untitled resume"}
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            <Link
+                              href="/student/profile?section=resumes"
+                              target="_blank"
+                              className="text-primary hover:underline"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              View in profile
+                            </Link>
+                          </div>
+                        </div>
+                        {resumeChoice === resume.id && (
+                          <CheckCircle2 className="h-5 w-5 text-primary" />
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )
             )}
 
             {!resumesLoading && hasExistingResumes && !showUpload && (
