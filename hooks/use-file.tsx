@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 06:01:21
- * @ Modified time: 2026-03-28 18:54:09
+ * @ Modified time: 2026-05-02 00:54:34
  * @ Description:
  *
  * Properly handles dealing with files stored in GCS and their local state.
@@ -14,7 +14,7 @@ import { useCallback, useImperativeHandle, useRef, useState } from "react";
 interface IUseFile {
   url: string;
   loading: boolean;
-  sync: () => Promise<void>;
+  sync: (...args: any[]) => Promise<void>;
 }
 
 // Valid MimeTypes
@@ -40,8 +40,8 @@ export const useFile = ({
   fetcher,
   defaultURL = "",
 }: {
-  route: string;
-  fetcher: () => Promise<any>;
+  route: string | ((...args: any[]) => string);
+  fetcher: (...args: any[]) => Promise<any>;
   defaultURL?: string;
 }): IUseFile => {
   const [url, setURL] = useState(defaultURL);
@@ -53,26 +53,31 @@ export const useFile = ({
    *
    * @returns
    */
-  const synchronize = useCallback(async () => {
-    const { success, empty, hash } = await fetcher();
+  const synchronize = useCallback(
+    async (...args: any[]) => {
+      const { success, empty, hash } = await fetcher(...args);
 
-    // Something went wrong
-    if (!success) {
-      console.error("Could not fetch file.");
+      // Something went wrong
+      if (!success) {
+        console.error("Could not fetch file.");
+        setLoading(false);
+        return;
+      }
+
+      // File has not been uploaded by host / source
+      if (empty) {
+        setLoading(false);
+        return;
+      }
+
+      // Update url
+      const resolvedRoute =
+        typeof route === "function" ? route(...args) : route;
+      setURL(`${process.env.NEXT_PUBLIC_API_URL}${resolvedRoute}?hash=${hash}`);
       setLoading(false);
-      return;
-    }
-
-    // File has not been uploaded by host / source
-    if (empty) {
-      setLoading(false);
-      return;
-    }
-
-    // Update url
-    setURL(`${process.env.NEXT_PUBLIC_API_URL}${route}?hash=${hash}`);
-    setLoading(false);
-  }, [route]);
+    },
+    [fetcher, route],
+  );
 
   return {
     url,

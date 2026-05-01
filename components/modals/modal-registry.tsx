@@ -1,6 +1,5 @@
 import { useGlobalModal } from "../providers/modal-provider/ModalProvider";
 import { LucideIcon } from "lucide-react";
-import { MassApplyComposer } from "./components/MassApplyComposer";
 import { FormSubmissionSuccessModal } from "./components/FormSubmissionSuccessModal";
 import { FollowUpFormModal } from "./components/ResendFormModal";
 import { CancelFormModal } from "./components/CancelFormModal";
@@ -17,13 +16,16 @@ import {
   MassApplyResults,
   MassApplyResultsData,
 } from "./components/MassApplyResults";
+import { ApplyModal } from "./components/ApplyModal";
+import type { ApplyPayload } from "./components/ApplyModal";
+import { MissingRequirementsModal } from "./components/MissingRequirementsModal";
 import { FormPreviewPdfDisplay } from "../features/student/forms/previewer";
 import { IFormSigningParty } from "@betterinternship/core/forms";
 import { ApplicationAction } from "@/lib/consts/application";
 import { EmployerApplication } from "@/lib/db/db.types";
 import ApplicationActionModal from "./ApplicationActionModal";
 import DeleteJobListingModal from "./DeleteJobListingModal";
-import { Job } from "@/lib/db/db.types";
+import { Job, PublicUser } from "@/lib/db/db.types";
 
 /**
  * Simplifies modal config since we usually reuse each of these modal stuffs.
@@ -96,44 +98,54 @@ export const useModalRegistry = () => {
           ),
         close: () => close("application-action"),
       },
-      // Mass apply fill-out modal
-      massApplyCompose: {
+      completeProfileApply: {
         open: ({
-          bulkCoverLetter,
-          runMassApply,
-          setBulkCoverLetter,
-          massApplying,
-          selectedCount,
+          profile,
+          onApply,
+          applyLabel,
+          requiresCoverLetter,
         }: {
-          bulkCoverLetter: string;
-          runMassApply: (text: string) => Promise<void>;
-          setBulkCoverLetter: (bulkCoverLetter: string) => void;
-          massApplying: boolean;
-          selectedCount: string;
+          profile: PublicUser | null;
+          onApply: (payload: ApplyPayload) => void | Promise<void>;
+          applyLabel?: string;
+          requiresCoverLetter?: boolean;
         }) =>
           open(
-            "mass-apply-compose",
+            "complete-profile-apply",
             DefaultModalLayout,
-            <MassApplyComposer
-              initialText={bulkCoverLetter}
-              disabled={massApplying}
-              minChars={0}
-              maxChars={500}
-              onCancel={() => close("mass-apply-compose")}
-              onSubmit={async (text) => {
-                setBulkCoverLetter(text);
-                await runMassApply(text);
-                close("mass-apply-compose");
-              }}
+            <ApplyModal
+              profile={profile}
+              applyLabel={applyLabel}
+              requiresCoverLetter={requiresCoverLetter}
+              onApply={onApply}
+              onCancel={() => close("complete-profile-apply")}
             />,
             {
-              title: `Apply to ${selectedCount} selected`,
               closeOnBackdropClick: false,
+              showCloseButton: false,
+              showHeaderDivider: false,
             },
           ),
-        close: () => close("mass-apply-compose"),
+        close: () => close("complete-profile-apply"),
       },
-
+      missingRequirements: {
+        open: ({ missing }: { missing: string[] }) =>
+          open(
+            "missing-requirements",
+            DefaultModalLayout,
+            <MissingRequirementsModal
+              missing={missing}
+              onCancel={() => close("missing-requirements")}
+            />,
+            {
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showCloseButton: false,
+              showHeaderDivider: false,
+            },
+          ),
+        close: () => close("missing-requirements"),
+      },
       // The modal shown after performing a mass apply
       massApplyResult: {
         open: ({

@@ -34,16 +34,12 @@ import { FormCheckbox } from "@/components/EditForm";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { useRouter, useSearchParams } from "next/navigation";
 
-// Quick kill switch: set to false to remove dummy super listing applicant preview.
-const SHOW_SUPER_DUMMY_APPLICATION = true;
-
 interface ApplicationsContentProps {
   applications: EmployerApplication[];
   isSuperListing?: boolean;
   statusId: number[];
   isLoading?: boolean;
   openChatModal: () => void;
-  updateConversationId: (userId: string) => void;
   onApplicationClick: (application: EmployerApplication) => void;
   setSelectedApplication: (application: EmployerApplication) => void;
   onAction: (
@@ -64,7 +60,6 @@ export const ApplicationsContent = forwardRef<
     isSuperListing = false,
     isLoading,
     openChatModal,
-    updateConversationId,
     onApplicationClick,
     setSelectedApplication,
     onAction,
@@ -146,33 +141,6 @@ export const ApplicationsContent = forwardRef<
         };
       });
   };
-  const dummyStatuses = app_statuses
-    .filter((status) => status.id !== 7 && status.id !== 5 && status.id !== 0)
-    .map((status): ActionItem => {
-      const config = DB_STATUS_MAP[status.id];
-      const filterKey =
-        config?.key || (status.name.toLowerCase() as ApplicationFilter);
-      const uiProps = UI_STATUS_MAP.get(filterKey);
-
-      return {
-        id: status.id.toString(),
-        label: status.name,
-        icon: uiProps?.icon,
-        onClick: () => {},
-        destructive: uiProps?.destructive,
-        bgColor: uiProps?.bgColor,
-        fgColor: uiProps?.fgColor,
-      };
-    });
-  const dummyDefaultStatus: ActionItem = {
-    id: "0",
-    label: get_app_status(0)?.name,
-    active: true,
-    disabled: false,
-    destructive: false,
-    highlighted: true,
-    highlightColor: UI_STATUS_MAP.get("pending")?.bgColor,
-  };
 
   const applyActiveFilter = (apps: typeof sortedApplications) => {
     if (activeFilter === "archived")
@@ -202,17 +170,6 @@ export const ApplicationsContent = forwardRef<
   const visibleApplications = applyActiveFilter(sortedApplications).filter(
     (application) => application.status !== undefined,
   );
-
-  const showSuperDummyApplication =
-    isSuperListing &&
-    visibleApplications.length === 0 &&
-    SHOW_SUPER_DUMMY_APPLICATION;
-  const openDummyApplicantProfile = () => {
-    const query = selectedJobId
-      ? `?dummy=1&jobId=${selectedJobId}`
-      : "?dummy=1";
-    router.push(`/dashboard/applicant${query}`);
-  };
 
   const {
     selectedApplications,
@@ -367,31 +324,12 @@ export const ApplicationsContent = forwardRef<
                 }
               }}
               setSelectedApplication={setSelectedApplication}
-              updateConversationId={updateConversationId}
               checkboxSelected={selectedApplications.has(application.id!)}
               onToggleSelect={(v) => toggleSelect(application.id!, v)}
               onAction={onAction}
               statuses={getRowStatuses(application)}
             />
           ))
-        ) : showSuperDummyApplication ? (
-          <div
-            className="rounded-[0.33em] border border-amber-200 bg-amber-50/60 p-3 hover:bg-amber-100/50 hover:cursor-pointer transition-colors"
-            onClick={openDummyApplicantProfile}
-          >
-            <div className="flex items-center justify-between gap-2">
-              <h4 className="text-base text-gray-900">Sample Applicant</h4>
-              <Badge className="bg-gray-100 text-gray-700">Pending</Badge>
-            </div>
-            <div className="mt-2 rounded-[0.33em] border border-amber-200 bg-amber-50/80 p-3">
-              <p className="text-xs font-medium text-amber-700">Submission</p>
-              <p className="mt-1 text-sm text-gray-700 line-clamp-3">
-                This is a dummy super listing submission preview used for layout
-                checks. Remove it by setting SHOW_SUPER_DUMMY_APPLICATION to
-                false.
-              </p>
-            </div>
-          </div>
         ) : (
           <div className="p-2">
             <Badge>No applications under this category.</Badge>
@@ -520,61 +458,12 @@ export const ApplicationsContent = forwardRef<
                     }
                   }}
                   setSelectedApplication={setSelectedApplication}
-                  updateConversationId={updateConversationId}
                   checkboxSelected={selectedApplications.has(application.id!)}
                   onToggleSelect={(v) => toggleSelect(application.id!, v)}
                   onAction={onAction}
                   statuses={getRowStatuses(application)}
                 />
               ))
-            ) : showSuperDummyApplication ? (
-              <>
-                <tr
-                  className="odd:bg-white even:bg-gray-50 hover:bg-amber-100/50 hover:cursor-pointer transition-colors"
-                  onClick={openDummyApplicantProfile}
-                >
-                  <td
-                    className="px-4 py-2"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <FormCheckbox
-                      checked={false}
-                      setter={() => {}}
-                      disabled={true}
-                    />
-                  </td>
-                  <td className="px-4 py-2">Sample Applicant</td>
-                  <td className="px-4 py-2">Mar 9, 2026</td>
-                  <td
-                    className="px-4 py-2"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <DropdownMenu
-                      items={dummyStatuses}
-                      defaultItem={dummyDefaultStatus}
-                    />
-                  </td>
-                  <td className="px-4 py-2" />
-                </tr>
-                <tr
-                  className="bg-amber-50/40 hover:bg-amber-100/50 hover:cursor-pointer transition-colors"
-                  onClick={openDummyApplicantProfile}
-                >
-                  <td className="px-4 pb-3 pt-0" />
-                  <td colSpan={4} className="pr-4 pb-3 pt-0">
-                    <div className="rounded-[0.33em] border border-amber-200 bg-amber-50/70 p-3">
-                      <p className="text-xs font-medium text-amber-700">
-                        Submission
-                      </p>
-                      <p className="mt-1 text-sm text-gray-700 line-clamp-4">
-                        This is a dummy super listing submission preview used
-                        for layout checks. Remove it by setting
-                        SHOW_SUPER_DUMMY_APPLICATION to false.
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              </>
             ) : (
               <tr>
                 <td>

@@ -206,40 +206,46 @@ export function LabelWithTooltip({
   );
 }
 
-export const FormInput = ({
-  label,
-  value,
-  setter,
-  required = true,
-  className,
-  tooltip,
-  tooltipId,
-  labelAddon,
-  ...props
-}: FormInputProps) => {
-  return (
-    <div>
-      {label && (
-        <LabelWithTooltip
-          label={label}
-          required={required}
-          tooltip={tooltip}
-          tooltipId={tooltipId}
-          labelAddon={labelAddon}
-        />
-      )}
-      <Input
-        value={value ?? ""}
-        onChange={(e) => setter && setter(e.target.value)}
-        className={cn(
-          className,
-          "placeholder:text-gray-400 placeholder:italic focus:placeholder:text-primary/70",
+export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
+  function FormInput(
+    {
+      label,
+      value,
+      setter,
+      required = true,
+      className,
+      tooltip,
+      tooltipId,
+      labelAddon,
+      ...props
+    },
+    ref,
+  ) {
+    return (
+      <div>
+        {label && (
+          <LabelWithTooltip
+            label={label}
+            required={required}
+            tooltip={tooltip}
+            tooltipId={tooltipId}
+            labelAddon={labelAddon}
+          />
         )}
-        {...props}
-      />
-    </div>
-  );
-};
+        <Input
+          ref={ref}
+          value={value ?? ""}
+          onChange={(e) => setter && setter(e.target.value)}
+          className={cn(
+            className,
+            "placeholder:text-gray-400 placeholder:italic focus:placeholder:text-primary/70",
+          )}
+          {...props}
+        />
+      </div>
+    );
+  },
+);
 
 /**
  * Big input

@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 04:14:35
- * @ Modified time: 2025-10-07 08:12:26
+ * @ Modified time: 2026-05-02 04:11:16
  * @ Description:
  *
  * What employers see when clicking on an applicant to view.
@@ -18,28 +18,21 @@ import { Award, FileText } from "lucide-react";
 import { getFullName } from "@/lib/profile";
 import { MyUserPfp, UserPfp } from "./pfp";
 import { Divider } from "../ui/divider";
-import { fmtISO, formatMonth, formatTimestampDate } from "@/lib/utils/date-utils";
+import { formatMonth, formatTimestampDate } from "@/lib/utils/date-utils";
 import { Badge } from "../ui/badge";
-import { formatDate } from "date-fns";
 
 export const ApplicantModalContent = ({
   applicant = {} as Partial<PublicUser>,
   clickable = true,
-  open_resume,
-  open_calendar,
   is_employer = false,
   job = {} as Partial<Job>,
-  resume_url,
 }: {
   applicant?: Partial<PublicUser>;
   clickable?: boolean;
   pfp_fetcher: () => Promise<{ hash?: string }>;
   pfp_route: string;
-  open_resume: () => void;
-  open_calendar?: () => void;
   is_employer?: boolean;
   job?: Partial<Job>;
-  resume_url?: string;
 }) => {
   const {
     to_job_type_name,
@@ -51,17 +44,8 @@ export const ApplicantModalContent = ({
 
   const internshipPreferences = applicant.internship_preferences;
 
-  // actions
-  const handleResumeClick = useCallback(async () => {
-    if (!clickable || !applicant?.resume || !applicant?.id) return;
-    open_resume();
-  }, [clickable, applicant?.resume, applicant?.id, open_resume]);
-
-  // use the presigned URL for embedding
-  const resumeSrc = resume_url && resume_url.length ? resume_url : "";
-
   return (
-    <div className="h-full min-h-0 grid grid-cols-1 lg:grid-cols-2">
+    <div className="h-full min-h-0 grid grid-cols-1">
       {/* LEFT: original content */}
       <div className="flex flex-col h-full min-h-0 max-h-[95vh] md:max-h-[85vh] border-r border-gray-100 bg-white">
         {/* Fixed Header Section */}
@@ -83,7 +67,8 @@ export const ApplicantModalContent = ({
               </h1>
               <p className="text-gray-600 text-xs sm:text-sm md:text-base leading-relaxed mb-2 sm:mb-3 md:mb-4">
                 Applying for {job?.title ?? "Sample Position"}{" "}
-                {job?.internship_preferences?.job_commitment_ids?.[0] !== undefined
+                {job?.internship_preferences?.job_commitment_ids?.[0] !==
+                undefined
                   ? `• ${to_job_type_name(job?.internship_preferences?.job_commitment_ids?.[0])}`
                   : ""}
               </p>
@@ -98,19 +83,6 @@ export const ApplicantModalContent = ({
                 </div>
               )}
             </div>
-          </div>
-
-          {/* Quick Action Buttons */}
-          <div className="flex flex-col gap-2 md:flex-row lg:hidden">
-            <Button
-              className="h-10 sm:h-11"
-              size="md"
-              disabled={!clickable || !applicant.resume}
-              onClick={handleResumeClick}
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              {applicant.resume ? "View Resume" : "No Resume"}
-            </Button>
           </div>
         </div>
 
@@ -248,8 +220,10 @@ export const ApplicantModalContent = ({
               <div>
                 <p className="text-xs text-gray-500">Expected Start Date</p>
                 <p className="font-medium text-gray-900">
-                  {applicant.internship_preferences?.expected_start_date 
-                    ? formatTimestampDate(applicant.internship_preferences?.expected_start_date) 
+                  {applicant.internship_preferences?.expected_start_date
+                    ? formatTimestampDate(
+                        applicant.internship_preferences?.expected_start_date,
+                      )
                     : "-"}
                 </p>
               </div>
@@ -273,11 +247,12 @@ export const ApplicantModalContent = ({
                 <p className="text-xs text-gray-500 mb-2">Work Modes</p>
                 <div className="font-medium text-gray-900">
                   {(() => {
-                    const ids = (internshipPreferences?.job_setup_ids ?? []) as (string | number)[];
+                    const ids = (internshipPreferences?.job_setup_ids ??
+                      []) as (string | number)[];
                     const items = ids
                       .map((id) => {
                         const m = job_modes.find(
-                          (x) => String(x.id) === String(id)
+                          (x) => String(x.id) === String(id),
                         );
                         return m ? { id: String(m.id), name: m.name } : null;
                       })
@@ -300,11 +275,12 @@ export const ApplicantModalContent = ({
                 <p className="text-xs text-gray-500 mb-2">Workload Types</p>
                 <div className="font-medium text-gray-900 text-sm sm:text-base">
                   {(() => {
-                    const ids = (internshipPreferences?.job_commitment_ids ?? []) as (string | number)[];
+                    const ids = (internshipPreferences?.job_commitment_ids ??
+                      []) as (string | number)[];
                     const items = ids
                       .map((id) => {
                         const t = job_types.find(
-                          (x) => String(x.id) === String(id)
+                          (x) => String(x.id) === String(id),
                         );
                         return t ? { id: String(t.id), name: t.name } : null;
                       })
@@ -329,7 +305,7 @@ export const ApplicantModalContent = ({
                 </p>
                 <div className="font-medium text-gray-900 text-sm sm:text-base">
                   {(() => {
-                    const ids = (internshipPreferences?.job_category_ids ?? []) as string[];
+                    const ids = internshipPreferences?.job_category_ids ?? [];
                     const items = ids
                       .map((id) => {
                         const c = job_categories.find((x) => x.id === id);
@@ -366,19 +342,6 @@ export const ApplicantModalContent = ({
             </div>
           )}
         </div>
-      </div>
-
-      {/* RIGHT (desktop): embed only presigned URL */}
-      <div className="hidden lg:block h-full bg-gray-100">
-        {resumeSrc ? (
-          <iframe src={resumeSrc} title="Resume" className="w-full h-full" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="text-center px-6">
-              <p className="text-gray-600 mb-3">No resume to display.</p>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

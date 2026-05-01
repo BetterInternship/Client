@@ -11,10 +11,7 @@ import { PostHogProvider } from "../posthog-provider";
 import TanstackProvider from "../tanstack-provider";
 import Head from "next/head";
 import AllowLanding from "./allowLanding";
-import { ConversationsContextProvider } from "@/hooks/use-conversation";
-import { PocketbaseProvider, usePocketbase } from "@/lib/pocketbase";
 import { ModalProvider } from "@/components/providers/modal-provider/ModalProvider";
-import { NotificationListener } from "./notification-listener";
 import { SonnerToaster } from "@/components/ui/sonner-toast";
 
 const baseUrl =
@@ -92,37 +89,32 @@ const HTMLContent = ({
 
   return (
     <TanstackProvider>
-      <PocketbaseProvider type={"employer"}>
-        <AppContextProvider>
-          <AuthContextProvider>
-            <TooltipProvider>
-              <ConversationsContextProvider type="employer">
-                <html lang="en" className="h-full">
-                  <Head>
-                    <meta
-                      name="viewport"
-                      content="width=device-width, initial-scale=1.0"
-                    />
-                  </Head>
-                  <body className="h-full overflow-x-hidden m-0 p-0 antialiased">
-                    <ModalProvider>
-                      <AllowLanding>
-                        <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
-                          <div className="flex-grow max-h-[100svh] max-w-[100svw] overflow-auto flex flex-col">
-                            <NotificationListener />
-                            {children}
-                          </div>
-                        </div>
-                      </AllowLanding>
-                    </ModalProvider>
-                    <SonnerToaster />
-                  </body>
-                </html>
-              </ConversationsContextProvider>
-            </TooltipProvider>
-          </AuthContextProvider>
-        </AppContextProvider>
-      </PocketbaseProvider>
+      <AppContextProvider>
+        <AuthContextProvider>
+          <TooltipProvider>
+            <html lang="en" className="h-full">
+              <Head>
+                <meta
+                  name="viewport"
+                  content="width=device-width, initial-scale=1.0"
+                />
+              </Head>
+              <body className="h-full overflow-x-hidden m-0 p-0 antialiased">
+                <ModalProvider>
+                  <AllowLanding>
+                    <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
+                      <div className="flex-grow max-h-[100svh] max-w-[100svw] overflow-auto flex flex-col">
+                        {children}
+                      </div>
+                    </div>
+                  </AllowLanding>
+                </ModalProvider>
+                <SonnerToaster />
+              </body>
+            </html>
+          </TooltipProvider>
+        </AuthContextProvider>
+      </AppContextProvider>
     </TanstackProvider>
   );
 };

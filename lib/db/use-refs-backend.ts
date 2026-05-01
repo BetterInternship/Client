@@ -14,11 +14,13 @@ import {
   JobType,
   JobMode,
   JobAllowance,
-  JobPayFreq,
   AppStatus,
   Industry,
   JobCategory,
   Department,
+  RefDomain,
+  RefsData,
+  IRefsContext,
 } from "./db.types";
 import { DB } from "@betterinternship/schema.base";
 import { Kysely, PostgresDialect } from "kysely";
@@ -35,116 +37,6 @@ const db = new Kysely<DB>({
     }),
   }),
 });
-
-export interface RefDomain {
-  id: string;
-  name: string;
-  university_id: string;
-}
-
-export interface RefsData {
-  colleges: College[];
-  departments: Department[];
-  universities: University[];
-  job_types: JobType[];
-  job_modes: JobMode[];
-  job_allowances: JobAllowance[];
-  job_categories: JobCategory[];
-  job_pay_freq: JobPayFreq[];
-  app_statuses: AppStatus[];
-  industries: Industry[];
-  domains: RefDomain[];
-}
-
-// Setup the context
-export interface IRefsContext extends RefsData {
-  ref_loading: boolean;
-
-  get_college: (id: string | null | undefined) => College | null;
-  to_college_name: (
-    id: string | null | undefined,
-    def?: string | null,
-  ) => string | null;
-  get_college_by_name: (name: string | null | undefined) => College | null;
-
-  get_university: (id: string | null | undefined) => University | null;
-  to_university_name: (
-    id: string | null | undefined,
-    def?: string | null,
-  ) => string | null;
-  get_university_by_name: (
-    name: string | null | undefined,
-  ) => University | null;
-
-  get_job_type: (id: number | null | undefined) => JobType | null;
-  to_job_type_name: (
-    id: number | null | undefined,
-    def?: string | null,
-  ) => string | null;
-  get_job_type_by_name: (name: string | null | undefined) => JobType | null;
-
-  get_job_mode: (id: number | null | undefined) => JobMode | null;
-  to_job_mode_name: (
-    id: number | null | undefined,
-    def?: string | null,
-  ) => string | null;
-  get_job_mode_by_name: (name: string | null | undefined) => JobMode | null;
-
-  get_job_allowance: (id: number | null | undefined) => JobAllowance | null;
-  to_job_allowance_name: (
-    id: number | null | undefined,
-    def?: string | null,
-  ) => string | null;
-  get_job_allowance_by_name: (
-    name: string | null | undefined,
-  ) => JobAllowance | null;
-
-  get_job_pay_freq: (id: number | null | undefined) => JobPayFreq | null;
-  to_job_pay_freq_name: (
-    id: number | null | undefined,
-    def?: string | null,
-  ) => string | null;
-  get_job_pay_freq_by_name: (
-    name: string | null | undefined,
-  ) => JobPayFreq | null;
-
-  get_app_status: (id: number | null | undefined) => AppStatus | null;
-  to_app_status_name: (
-    id: number | null | undefined,
-    def?: string | null,
-  ) => string | null;
-  get_app_status_by_name: (name: string | null | undefined) => AppStatus | null;
-
-  get_industry: (id: string | null | undefined) => Industry | null;
-  to_industry_name: (
-    id: string | null | undefined,
-    def?: string | null,
-  ) => string | null;
-  get_industry_by_name: (name: string | null | undefined) => Industry | null;
-
-  get_job_category: (id: string | null | undefined) => JobCategory | null;
-  to_job_category_name: (
-    id: string | null | undefined,
-    def?: string | null,
-  ) => string | null;
-  get_job_category_by_name: (
-    name: string | null | undefined,
-  ) => JobCategory | null;
-
-  get_department: (id: string | null | undefined) => Department | null;
-  to_department_name: (
-    id: string | null | undefined,
-    def?: string | null,
-  ) => string | null;
-  get_department_by_name: (
-    name: string | null | undefined,
-  ) => Department | null;
-
-  get_departments_by_college: (college_id: string) => string[];
-  get_colleges_by_university: (university_id: string) => string[];
-  getUniversityFromDomain: (domain: string) => string[];
-  isNotNull: (ref: any) => boolean;
-}
 
 /**
  * Fetches all refs tables on the server and returns serializable data for clients.

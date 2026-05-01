@@ -27,7 +27,7 @@ import {
   ArchiveRestore,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef, useMemo } from "react";
 import { Divider } from "@/components/ui/divider";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -43,7 +43,6 @@ import StatusBadge from "@/components/ui/status-badge";
 
 interface ApplicantPageProps {
   application: EmployerApplication | undefined;
-  jobID?: string | undefined;
   userApplications?: EmployerApplication[] | undefined;
   statuses: ActionItem[];
   onArchive?: () => void;
@@ -52,7 +51,6 @@ interface ApplicantPageProps {
 
 export function ApplicantPage({
   application,
-  jobID,
   userApplications,
   statuses,
   onArchive,
@@ -94,10 +92,17 @@ export function ApplicantPage({
   } = useFile({
     fetcher: useCallback(
       async () =>
-        await UserService.getUserResumeURL(application?.user_id ?? ""),
-      [user?.id],
+        await UserService.getUserResumeURL(
+          application?.user_id ?? "",
+          application?.resume_id ?? "",
+        ),
+      [application?.user_id, application?.resume_id],
     ),
-    route: application ? `/users/${user?.id}/resume` : "",
+    route: useMemo(
+      () =>
+        application ? `/users/${user?.id}/resume/${application.resume_id}` : "",
+      [application?.user_id, application?.resume_id],
+    ),
   });
 
   const handleBack = () => {
@@ -111,9 +116,9 @@ export function ApplicantPage({
 
   useEffect(() => {
     if (application?.user_id) {
-      syncResumeURL();
+      void syncResumeURL();
     }
-  }, [application?.user_id, syncResumeURL]);
+  }, [application?.user_id, application?.resume_id, syncResumeURL]);
 
   if (loading || resumeLoading) {
     return <Loader>Getting applicant information...</Loader>;
@@ -499,7 +504,7 @@ export function ApplicantPage({
                     <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
                       Applicant Information
                     </h3>
-                    {jobID && (
+                    {application?.job && (
                       <p className="text-xs text-gray-500 mb-2">
                         Applying for: {application?.job?.title}
                       </p>
@@ -569,7 +574,7 @@ export function ApplicantPage({
                 {/* other roles *note: will make this look better */}
                 <div className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200">
                   <div className="flex items-center gap-3 mb-4 sm:mb-5">
-                    {jobID ? (
+                    {application?.job ? (
                       <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
                         Other Applied Roles
                       </h3>
@@ -590,7 +595,7 @@ export function ApplicantPage({
                       ))
                     ) : (
                       <>
-                        {jobID ? (
+                        {application?.job ? (
                           <p className="text-gray-500 text-sm">
                             {" "}
                             No applied roles

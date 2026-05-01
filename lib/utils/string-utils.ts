@@ -46,6 +46,12 @@ export function isValidEmail(email?: string | null) {
   return emailRegex.test(email);
 }
 
+export function isEduPhEmail(email?: string | null) {
+  if (!email) return false;
+  const trimmed = email.trim().toLowerCase();
+  return isValidEmail(trimmed) && trimmed.endsWith(".edu.ph");
+}
+
 export const normalizePhoneNumber = (
   phoneNumber: string | null | undefined,
 ): string | null => {

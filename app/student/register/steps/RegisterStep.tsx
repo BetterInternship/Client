@@ -1,5 +1,5 @@
 import { FormDropdown } from "@/components/EditForm";
-import { IRefsContext } from "@/lib/db/use-refs-backend";
+import { IRefsContext } from "@/lib/db/db.types";
 import { FormInput } from "@/components/EditForm";
 import { Button } from "@/components/ui/button";
 import { UseFormReturn } from "react-hook-form";
@@ -43,16 +43,6 @@ export function RegisterStep({
         />
 
         <FormInput
-          label="Middle name"
-          value={regForm.watch("middle_name") || ""}
-          setter={(val) => {
-            regForm.setValue("middle_name", val);
-          }}
-          required={false}
-          placeholder="Middle name"
-        />
-
-        <FormInput
           label="Last name"
           value={regForm.watch("last_name") || ""}
           maxLength={40}
@@ -64,14 +54,15 @@ export function RegisterStep({
         />
       </div>
 
-      <FormDropdown
+      <Autocomplete
         label="University"
-        maxLength={40}
+        placeholder="University"
         setter={(val) => {
           regForm.setValue("university", String(val));
         }}
         options={refs.universities}
-        tooltip="If your university is not in the list, please contact us at the 'Need help' link."
+        value={regForm.watch("university")! || ""}
+        required={true}
       />
 
       <Autocomplete
@@ -79,10 +70,11 @@ export function RegisterStep({
         placeholder="Degree program"
         options={DEGREES}
         setter={(val) => {
-          regForm.setValue("degree", String(val));
+          regForm.setValue("degree", val === null ? "" : String(val));
         }}
-        value={+regForm.watch("degree")! || ""}
+        value={regForm.watch("degree") || ""}
         required={true}
+        allowCustomValue={true}
       />
 
       {/* create account */}

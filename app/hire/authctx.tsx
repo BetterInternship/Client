@@ -7,7 +7,6 @@ import { EmployerAuthService } from "@/lib/api/hire.api";
 import { getFullName } from "@/lib/profile";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { useQueryClient } from "@tanstack/react-query";
-import { usePocketbase } from "@/lib/pocketbase";
 import { EmployerService } from "@/lib/api/services";
 import { useRef } from "react";
 
@@ -30,7 +29,7 @@ interface IAuthContext {
   ) => Promise<{ existing_user: boolean; verified_user: boolean }>;
   logout: () => Promise<void>;
   isAuthenticated: () => boolean;
-  refreshAuthentication: () => void;
+  refreshAuthentication: () => Promise<Partial<PublicEmployerUser> | null>;
   redirectIfNotLoggedIn: () => void;
   redirectIfLoggedIn: () => void;
 }
@@ -54,12 +53,11 @@ export const AuthContextProvider = ({
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const queryClient = useQueryClient();
-  const pocketbase = usePocketbase();
   const [god, setGod] = useState(false);
   const [user, setUser] = useState<Partial<PublicEmployerUser> | null>(() => {
     if (typeof window === "undefined") return null;
     const user = sessionStorage.getItem("user");
-    return user ? JSON.parse(user) : null;
+    return user ? (JSON.parse(user) as PublicEmployerUser) : null;
   });
 
   // Whenever user is updated, cache in localStorage
@@ -87,7 +85,8 @@ export const AuthContextProvider = ({
 
       setUser(response.user as PublicEmployerUser);
 
-      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
       if (response.god) setGod(true);
 
       setIsAuthenticated(true);
@@ -112,6 +111,7 @@ export const AuthContextProvider = ({
     setUser(response.user as PublicEmployerUser);
     setIsAuthenticated(true);
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
     if (response.god) setGod(true);
 
@@ -125,7 +125,6 @@ export const AuthContextProvider = ({
       return null;
     }
 
-    await pocketbase.refresh();
     await queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] });
     setProxy(getFullName(response.user));
     setUser(response.user);
@@ -138,7 +137,6 @@ export const AuthContextProvider = ({
   };
 
   const logout = async () => {
-    await pocketbase.logout();
     await EmployerAuthService.logout();
 
     await queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] });
@@ -162,17 +160,17 @@ export const AuthContextProvider = ({
 
     useEffect(() => {
       if (effectRan.current && !loading && isAuthenticated) {
-        router.push("/dashboard")
-      };
+        router.push("/dashboard");
+      }
 
       if (!loading) {
         effectRan.current = true;
       }
     }, [isAuthenticated, loading]);
-  }
+  };
 
   useEffect(() => {
-    refreshAuthentication();
+    void refreshAuthentication();
   }, []);
 
   return (
@@ -181,9 +179,11 @@ export const AuthContextProvider = ({
         user,
         god,
         proxy,
-        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
         register,
-        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
         login,
         loginAs,
         loading,

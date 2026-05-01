@@ -12,7 +12,6 @@ import { RegisterStep } from "./steps/RegisterStep";
 import { OTPEmailStep } from "./steps/OTPEmailStep";
 import { OTPEnterStep } from "./steps/OTPEnterStep";
 import { RegisterCarousel } from "@/components/features/student/register/RegisterCarousel";
-import { DEGREES } from "./steps/tempDegrees";
 
 export interface FormInputs {
   first_name?: string;
@@ -25,7 +24,6 @@ export interface FormInputs {
 export function RegisterPageContent() {
   const refs = useDbRefs();
   const auth = useAuthContext();
-  const profile = useProfileData();
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -107,16 +105,13 @@ export function RegisterPageContent() {
     // Extract fields
     const { university, first_name, middle_name, last_name, degree } = values;
 
-    // TEMP: this should be removed alongside the temp degree frontend implementation.
-    const mappedDegree = DEGREES.find((d) => parseInt(degree) === d.id)?.name;
-
     auth
       .register({
         university,
         first_name,
         middle_name,
         last_name,
-        degree: mappedDegree,
+        degree,
       })
       .then((response) => {
         if (response?.message) {
@@ -139,24 +134,15 @@ export function RegisterPageContent() {
     <div className="w-full min-h-screen p-3 bg-background">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 w-full min-h-[calc(100vh-1.5rem)]">
         {/* Decorative area */}
-        <div className="hidden lg:block lg:col-span-3 min-h-full rounded-[0.33em] overflow-hidden bg-black">
+        <div className="hidden lg:block lg:col-span-3 min-h-full rounded-[0.33em] overflow-hidden">
           <RegisterCarousel />
         </div>
 
         {/* Form area */}
-        <div className="col-span-1 lg:col-span-2 w-full p-3">
-          <div className="flex flex-col justify-between h-full w-full">
-            {/* Header */}
-            <div className="flex gap-2 items-center">
-              <img
-                src="/BetterInternshipLogo.png"
-                className="w-8 aspect-square"
-                alt="BetterInternship"
-              />
-              <h1 className="text-2xl font-bold tracking-tighter">
-                BetterInternship
-              </h1>
-            </div>
+        <div className="col-span-1 lg:col-span-2 w-full bg-muted border-l border-l-gray-300 px-5">
+          <div className="flex flex-col justify-between h-full w-full p-3">
+            {/* Header - DONT DELETE!!!!!!!!!!!!!! Otherwise layout will change */}
+            <div></div>
 
             <div className="space-y-6">
               {step === 1 && !auth.isAuthenticated() && (
@@ -176,7 +162,7 @@ export function RegisterPageContent() {
                     setStep(step + 1);
                   }}
                   onSkipAction={() => {
-                    location.href = nextUrl;
+                    router.replace(nextUrl);
                   }}
                 />
               )}
@@ -184,7 +170,7 @@ export function RegisterPageContent() {
                 <OTPEnterStep
                   eduEmail={verificationEmail}
                   onFinishAction={() => {
-                    location.href = nextUrl;
+                    router.replace(nextUrl);
                   }}
                   onBackAction={() => setStep(step - 1)}
                 />
