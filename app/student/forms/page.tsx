@@ -62,8 +62,6 @@ export default function FormsPage() {
       router.push("/register/verify");
       return;
     }
-
-    if (!profile.data?.department) router.push("/profile/complete-profile");
   }, [
     isStudentAuthenticated,
     profile.data,
