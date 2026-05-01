@@ -459,7 +459,37 @@ function ProfileReadOnlyTabs({
   } = useDbRefs();
 
   type TabKey = "Student Profile" | "Internship Details" | "Resumes";
-  const [tab, setTab] = useState<TabKey>("Student Profile");
+
+  const SECTION_TO_TAB: Record<string, TabKey> = {
+    student: "Student Profile",
+    internship: "Internship Details",
+    resumes: "Resumes",
+  };
+  const TAB_TO_SECTION: Record<TabKey, string> = {
+    "Student Profile": "student",
+    "Internship Details": "internship",
+    Resumes: "resumes",
+  };
+
+  const searchParams = useSearchParams();
+  const sectionParam = searchParams.get("section") ?? "";
+  const initialTab = SECTION_TO_TAB[sectionParam] ?? "Student Profile";
+
+  const [tab, setTab] = useState<TabKey>(initialTab);
+
+  const handleTabChange = (v: string) => {
+    const newTab = v as TabKey;
+    setTab(newTab);
+
+    const section = TAB_TO_SECTION[newTab];
+    const url = new URL(window.location.href);
+    if (section === "student") {
+      url.searchParams.delete("section");
+    } else {
+      url.searchParams.set("section", section);
+    }
+    window.history.replaceState({}, "", url.toString());
+  };
 
   const tabs = [
     { key: "Student Profile", label: "Student Profile" },
@@ -471,7 +501,7 @@ function ProfileReadOnlyTabs({
     <OutsideTabs
       tabs={tabs as unknown as { key: string; label: string }[]}
       value={tab}
-      onChange={(v) => setTab(v as TabKey)}
+      onChange={handleTabChange}
       rightSlot={
         <div>
           <Button onClick={onEdit} className="text-xs">

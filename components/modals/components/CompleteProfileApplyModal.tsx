@@ -239,7 +239,7 @@ export function CompleteProfileApplyModal({
                           {resume.label || resume.filename || "Untitled resume"}
                         </div>
                         <div className="text-xs text-muted-foreground mt-0.5">
-                          <Link href="/student/profile" target="_blank" className="text-primary hover:underline" onClick={(e) => e.stopPropagation()}>
+                          <Link href="/student/profile?section=resumes" target="_blank" className="text-primary hover:underline" onClick={(e) => e.stopPropagation()}>
                             View in profile
                           </Link>
                         </div>
