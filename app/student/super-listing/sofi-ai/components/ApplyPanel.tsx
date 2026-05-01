@@ -169,6 +169,7 @@ export function ApplyPanel({
                 "Shows the product experience.",
                 "Clear and logical user flow.",
                 "Doesn't need to be fully functional, as long as you can explain it.",
+                "Make sure the landing and product flow are accessible through the link you provide.",
               ]}
             />
           </div>
@@ -242,7 +243,11 @@ export function ApplyPanel({
                   <p className="[font-family:var(--font-paraluman-body)] text-xs text-[#052338]/42">
                     You can submit your work however you like, live site,
                     prototype, or wireframes, whichever you can present your
-                    design best.
+                    design best.{" "}
+                    <span className="font-bold">
+                      Make sure the Landing Page and Product Flow are accessible
+                      through this link.
+                    </span>
                   </p>
                 </div>
                 <Input

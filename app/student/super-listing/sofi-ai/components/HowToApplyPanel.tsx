@@ -302,6 +302,10 @@ function ChallengeDetails({
                   "What would make creators immediately understand the value.",
                 ]}
               />
+              <p className="font-bold">
+                Additionally, this landing page has to{" "}
+                <span className="underline">lead to the product flow</span>.
+              </p>
             </div>
             <div className="space-y-2">
               <p className="font-semibold text-[#052338]">2. Product Flow</p>{" "}
