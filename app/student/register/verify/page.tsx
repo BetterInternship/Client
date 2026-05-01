@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
 import { useStudentOtpVerification } from "@/hooks/use-student-otp-verification";
 import { StudentOtpInput } from "@/components/features/student/register/StudentOtpInput";
+import { isEduPhEmail } from "@/lib/utils/string-utils";
 
 export default function VerifyPage() {
   const router = useRouter();
@@ -111,9 +112,7 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
   }, [eduEmail, profile.data?.edu_verification_email]);
 
   useEffect(() => {
-    if (!eduEmail?.trim()) return setIsEmailValid(false);
-    if (!eduEmail.endsWith(".edu.ph")) return setIsEmailValid(false);
-    setIsEmailValid(true);
+    setIsEmailValid(isEduPhEmail(eduEmail));
   }, [eduEmail]);
 
   const requestOTP = async () => {

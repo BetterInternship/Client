@@ -176,7 +176,7 @@ export function RegisterPageContent() {
                     setStep(step + 1);
                   }}
                   onSkipAction={() => {
-                    location.href = nextUrl;
+                    router.replace(nextUrl);
                   }}
                 />
               )}
@@ -184,7 +184,7 @@ export function RegisterPageContent() {
                 <OTPEnterStep
                   eduEmail={verificationEmail}
                   onFinishAction={() => {
-                    location.href = nextUrl;
+                    router.replace(nextUrl);
                   }}
                   onBackAction={() => setStep(step - 1)}
                 />

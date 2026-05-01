@@ -3,7 +3,9 @@ import { FormInput } from "@/components/EditForm";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { AlertTriangle } from "lucide-react";
 import { useStudentOtpVerification } from "@/hooks/use-student-otp-verification";
+import { isEduPhEmail } from "@/lib/utils/string-utils";
 
 /**
  * The second step to registering where the user verifies their education email
@@ -36,9 +38,7 @@ export function OTPEmailStep({
 
   // set the email validity flag when the value is changed.
   useEffect(() => {
-    if (!eduEmail?.trim()) return setIsEmailValid(false);
-    if (!eduEmail.endsWith(".edu.ph")) return setIsEmailValid(false);
-    setIsEmailValid(true);
+    setIsEmailValid(isEduPhEmail(eduEmail));
   }, [eduEmail]);
 
   const requestOTP = async () => {
@@ -79,9 +79,10 @@ export function OTPEmailStep({
             placeholder="student@school.edu.ph"
           />
           {error && (
-            <p className="mt-2 text-xs text-destructive" role="alert">
-              {error}
-            </p>
+            <div className="mt-3 flex items-center gap-2 rounded-[0.5em] border border-amber-300 bg-amber-50 p-3 text-amber-900 text-sm">
+              <AlertTriangle className="h-4 w-4" />
+              <span>{error}</span>
+            </div>
           )}
         </div>
       </div>
