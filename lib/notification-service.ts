@@ -4,7 +4,7 @@
 
 // check if the browser supports the web notifications api.
 export function checkNotificationSupport() {
-  return 'Notification' in window;
+  return "Notification" in window;
 }
 
 // send popup to request notification permission.
@@ -31,11 +31,14 @@ export function shouldShowNotification() {
 }
 
 // send a new notification.
-export function sendNotification(title: string, options: ChatNotificationOptions) {
-  if (!checkNotificationSupport || getNotificationPermission() !== 'granted') {
+export function sendNotification(
+  title: string,
+  options: ChatNotificationOptions,
+) {
+  if (!checkNotificationSupport || getNotificationPermission() !== "granted") {
     return;
   }
 
-  let n: Notification = new Notification(title, options);
+  const n: Notification = new Notification(title, options);
   return n;
 }

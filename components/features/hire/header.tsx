@@ -21,7 +21,6 @@ import Link from "next/link";
 import { MyEmployerPfp } from "@/components/shared/pfp";
 import { useProfile } from "@/hooks/use-employer-api";
 import { useMobile } from "@/hooks/use-mobile";
-import { useConversations } from "@/hooks/use-conversation";
 import { MyUserPfp } from "@/components/shared/pfp";
 import { Separator } from "@/components/ui/separator";
 
@@ -134,14 +133,6 @@ export const ProfileButton = () => {
           </>
         }
       >
-        {/* <DropdownOption href="/company-profile">
-          <Building className="w-4 h-4 inline-block m-1 mr-2" />
-          Company Profile
-        </DropdownOption> */}
-        {/* <DropdownOption href="/company-users">
-          <UserPlus className="w-4 h-4 inline-block m-1 mr-2" />
-          Manage Accounts
-        </DropdownOption> */}
         <DropdownOption href="/login" on_click={handle_logout}>
           <LogOut className="text-red-500 w-4 h-4 inline-block m-1 mr-2" />
           <span className="text-red-500">Sign Out</span>
@@ -173,7 +164,6 @@ function MobileDrawer({
 }) {
   const profile = useProfile();
   const { isAuthenticated, logout } = useAuthContext();
-  const conversations = useConversations();
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -262,46 +252,6 @@ function MobileDrawer({
                       </button>
                     </Link>
                   </li>
-                  {/* <li>
-                    <Link href="/forms-management" className="block w-full">
-                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm">
-                        <div>
-                          <FileUser className="w-4 h-4 inline-block mr-2" />
-                          <span>Forms Automation</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-gray-300" />
-                      </button>
-                    </Link>
-                  </li> */}
-                  {/* {isAuthenticated() && (
-                    <li>
-                      <Link href="/conversations" className="block w-full">
-                        <button className="w-full flex items-center justify-between rounded-md px-3 py-2">
-                          <span className="inline-flex items-center gap-2 text-sm">
-                            <MessageCircleMore className="w-4 h-4" /> Chats
-                          </span>
-                          {conversations?.unreads?.length ? (
-                            <span className="text-[10px] leading-none bg-primary px-2 py-1 rounded-full text-white font-bold">
-                              {conversations.unreads.length}
-                            </span>
-                          ) : (
-                            <ChevronRight className="w-4 h-4 text-gray-300" />
-                          )}
-                        </button>
-                      </Link>
-                    </li>
-                  )} */}
-                  {/* <li>
-                    <Link href="/company-profile">
-                      <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary">
-                        <div>
-                          <Building className="w-4 h-4 inline-block mr-2" />
-                          <span>Company Profile</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-gray-300" />
-                      </button>
-                    </Link>
-                  </li> */}
                   <li>
                     <Link href="/help">
                       <button className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 text-sm text-primary">
