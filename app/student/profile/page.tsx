@@ -26,11 +26,7 @@ import { UserService } from "@/lib/api/services";
 import { Button } from "@/components/ui/button";
 import { FileUploadInput, useFile, useFileUpload } from "@/hooks/use-file";
 import { Card } from "@/components/ui/card";
-import {
-  getFullName,
-  isProfileBaseComplete,
-  isProfileResume,
-} from "@/lib/profile";
+import { getFullName } from "@/lib/profile";
 import { toURL } from "@/lib/utils/url-utils";
 import {
   isValidOptionalGitHubURL,
@@ -45,7 +41,6 @@ import {
   createEditForm,
   FormMonthPicker,
   FormInput,
-  FormDropdown,
 } from "@/components/EditForm";
 import { Divider } from "@/components/ui/divider";
 import { isValidRequiredUserName } from "@/lib/utils/name-utils";
@@ -449,14 +444,8 @@ function ProfileReadOnlyTabs({
   onAddResume: () => void;
 }) {
   const internshipPreferences = profile.internship_preferences;
-  const {
-    to_university_name,
-    to_college_name,
-    to_department_name,
-    job_modes,
-    job_types,
-    job_categories,
-  } = useDbRefs();
+  const { to_university_name, job_modes, job_types, job_categories } =
+    useDbRefs();
 
   type TabKey = "Student Profile" | "Internship Details" | "Resumes";
 
@@ -554,18 +543,6 @@ function ProfileReadOnlyTabs({
             <LabeledProperty
               label="Degree / Program"
               value={profile.degree ?? "-"}
-            />
-            <LabeledProperty
-              label="College / School"
-              value={profile.college ? to_college_name(profile.college) : "-"}
-            />
-            <LabeledProperty
-              label="Department"
-              value={
-                profile.department
-                  ? to_department_name(profile.department)
-                  : "-"
-              }
             />
             <LabeledProperty
               label="Expected Graduation Date"
@@ -760,7 +737,6 @@ const ProfileEditor = forwardRef<
     rightSlot?: React.ReactNode;
   }
 >(({ updateProfile, rightSlot }, ref) => {
-  const qc = useQueryClient();
   const {
     formData,
     formErrors,
@@ -771,20 +747,7 @@ const ProfileEditor = forwardRef<
     cleanFormData,
   } = useProfileEditForm();
   const { isMobile } = useAppContext();
-  const {
-    universities,
-    colleges,
-    departments,
-    job_modes,
-    job_types,
-    job_categories,
-    getUniversityFromDomain: get_universities_from_domain,
-    get_colleges_by_university,
-    get_departments_by_college,
-    to_university_name,
-    to_college_name,
-    to_department_name,
-  } = useDbRefs();
+  const { universities, job_modes, job_types, job_categories } = useDbRefs();
 
   type TabKey = "Student Profile" | "Internship Details" | "Calendar";
   const [tab, setTab] = useState<TabKey>("Student Profile");
@@ -793,8 +756,7 @@ const ProfileEditor = forwardRef<
     formErrors.first_name ||
     formErrors.last_name ||
     formErrors.phone_number ||
-    formErrors.university ||
-    formErrors.degree
+    formErrors.university
   );
   const hasPrefsErrors = !!formErrors.internship_preferences;
   const hasCalendarErrors = !!formErrors.calendar_link;
@@ -834,8 +796,6 @@ const ProfileEditor = forwardRef<
   }));
 
   const [universityOptions, setUniversityOptions] = useState(universities);
-  const [collegesOptions, setCollegesOptions] = useState(colleges);
-  const [departmentOptions, setDepartmentOptions] = useState(departments);
   const [jobModeOptions, setJobModeOptions] = useState(job_modes);
   const [jobTypeOptions, setJobTypeOptions] = useState(job_types);
   const [jobCategoryOptions, setJobCategoryOptions] = useState(job_categories);
@@ -846,24 +806,13 @@ const ProfileEditor = forwardRef<
 
   useEffect(() => {
     setUniversityOptions(universities?.filter((u) => u.name !== "ADMU"));
-    setDepartmentOptions(departments);
     setJobModeOptions((job_modes ?? []).slice());
     setJobTypeOptions((job_types ?? []).slice());
     setJobCategoryOptions((job_categories ?? []).slice());
 
     const t = setTimeout(() => validateFormData(), 400);
     return () => clearTimeout(t);
-  }, [
-    formData,
-    universities,
-    colleges,
-    departments,
-    job_modes,
-    job_types,
-    job_categories,
-    get_universities_from_domain,
-    get_departments_by_college,
-  ]);
+  }, [formData, universities, job_modes, job_types, job_categories]);
 
   useEffect(() => {
     addValidator(
@@ -876,11 +825,10 @@ const ProfileEditor = forwardRef<
       (name: string) =>
         !isValidRequiredUserName(name) && `Last name is not valid.`,
     );
-    addValidator(
-      "phone_number",
-      (number: string) =>
-        !isValidPHNumber(number) && "Invalid Philippine number.",
-    );
+    addValidator("phone_number", (number: string) => {
+      if (!number?.trim()) return false;
+      return !isValidPHNumber(number) && "Invalid Philippine number.";
+    });
     addValidator(
       "portfolio_link",
       (link: string) => !isValidOptionalURL(link) && "Invalid portfolio link.",
@@ -900,17 +848,6 @@ const ProfileEditor = forwardRef<
       (id: string) =>
         !universityOptions.some((u) => u.id === id) &&
         "Select a valid university.",
-    );
-    addValidator(
-      "college",
-      (id: string) =>
-        !colleges.some((c) => c.id === id) && "Select a valid college.",
-    );
-    addValidator(
-      "department",
-      (id: string) =>
-        !departmentOptions.some((d) => d.id === id) &&
-        "Select a valid department.",
     );
     addValidator("internship_preferences", (i: InternshipPreferences) => {
       // Specify start month
@@ -950,9 +887,9 @@ const ProfileEditor = forwardRef<
           return "Invalid work category selected.";
       }
 
-      return "";
+      return false;
     });
-  }, [universityOptions, jobModeOptions, jobTypeOptions]);
+  }, [universityOptions, jobModeOptions, jobTypeOptions, jobCategoryOptions]);
 
   const [showCalendarHelp, setShowCalendarHelp] = useState(false);
   const helpBtnRef = useRef<HTMLButtonElement>(null);
@@ -989,110 +926,6 @@ const ProfileEditor = forwardRef<
       });
     }
   }, []);
-
-  // realtime updating the department based on the college (and university fallback)
-  useEffect(() => {
-    const collegeId = formData.college;
-    const universityId = formData.university;
-
-    // If a specific college is selected -> show departments only for that college
-    if (collegeId) {
-      const list = get_departments_by_college?.(collegeId) ?? [];
-      const mapped = list.map((d) => ({ id: d, name: to_department_name(d) }));
-      setDepartmentOptions(mapped);
-
-      // if selected department is not in new list -> clear it
-      if (
-        formData.department &&
-        !mapped.some((m) => m.id === formData.department)
-      ) {
-        setField("department", undefined);
-      }
-
-      return;
-    }
-
-    // No college selected but a university is selected -> aggregate departments for all colleges of that university
-    if (universityId) {
-      const collegeIds = get_colleges_by_university?.(universityId) ?? [];
-
-      // collect departments from each college, dedupe
-      const deptSet = new Map<string, { id: string; name: string }>();
-      for (const cId of collegeIds) {
-        const list = get_departments_by_college?.(cId) ?? [];
-        for (const d of list) {
-          if (!deptSet.has(d)) {
-            deptSet.set(d, { id: d, name: to_department_name(d) });
-          }
-        }
-      }
-      const aggregated = Array.from(deptSet.values());
-      setDepartmentOptions(aggregated);
-
-      // If current selected department isn't part of aggregated -> clear it
-      if (
-        formData.department &&
-        !aggregated.some((a) => a.id === formData.department)
-      ) {
-        setField("department", undefined);
-      }
-      return;
-    }
-
-    // Neither college nor university -> show all departments
-    setDepartmentOptions(departments.map((d) => ({ id: d.id, name: d.name })));
-    if (formData.department) setField("department", undefined);
-  }, [
-    formData.college,
-    formData.department,
-    formData.university,
-    departments,
-    get_departments_by_college,
-    get_colleges_by_university,
-    to_department_name,
-    setField,
-  ]);
-
-  // for realtime updating the department based on the university
-  useEffect(() => {
-    const universityId = formData.university;
-    console.log(
-      "Selected university:",
-      universityId,
-      to_university_name(universityId),
-    );
-
-    if (universityId) {
-      const list = get_colleges_by_university?.(universityId) ?? [];
-      const mapped = list.map((d) => ({
-        id: d,
-        name: to_college_name(d) ?? "",
-        short_name: "",
-        university_id: universityId,
-      }));
-      setCollegesOptions(mapped);
-
-      // If the currently selected college is not in the new mapped list, clear it (and department)
-      if (formData.college && !mapped.some((c) => c.id === formData.college)) {
-        setField("college", undefined);
-        setField("department", undefined);
-      }
-    } else {
-      // no university selected -> show all colleges and clear college/department
-      setCollegesOptions(
-        colleges.map((d) => ({
-          id: d.id,
-          name: d.name,
-          short_name: d.short_name,
-          university_id: d.university_id,
-        })),
-      );
-
-      // Clear selected college and department because no university is chosen
-      if (formData.college) setField("college", undefined);
-      if (formData.department) setField("department", undefined);
-    }
-  }, [formData.university, formData.college, colleges]);
 
   return (
     <OutsideTabs
@@ -1143,7 +976,7 @@ const ProfileEditor = forwardRef<
               label="Middle Name"
               value={formData.middle_name ?? ""}
               setter={fieldSetter("middle_name")}
-              maxLength={2}
+              maxLength={32}
               required={false}
             />
             <FormInput
@@ -1156,6 +989,7 @@ const ProfileEditor = forwardRef<
             label="Phone Number"
             value={formData.phone_number ?? ""}
             setter={fieldSetter("phone_number")}
+            required={false}
           />
         </section>
 
@@ -1178,40 +1012,12 @@ const ProfileEditor = forwardRef<
               />
             </div>
             <div>
-              <ErrorLabel value={formErrors.college} />
-              <FormDropdown
-                label={"College"}
-                value={formData.college ?? undefined}
-                setter={fieldSetter("college")}
-                options={collegesOptions.map((c) => ({
-                  id: c.id,
-                  name: c.name,
-                }))}
-                placeholder="Indicate college"
-              />
-            </div>
-            <div>
-              <ErrorLabel value={formErrors.department} />
-              <FormDropdown
-                label="Department"
-                value={formData.department ?? undefined}
-                setter={fieldSetter("department")}
-                options={departmentOptions}
-                placeholder={
-                  formData.college
-                    ? "Indicate department"
-                    : "Select a college first"
-                }
-                disabled={!formData.college}
-              />
-            </div>
-            <div>
-              <ErrorLabel value={formErrors.degree} />
               <FormInput
                 label={"Degree / Program"}
                 value={formData.degree ?? undefined}
                 setter={fieldSetter("degree")}
                 placeholder="Indicate degree"
+                required={false}
               />
             </div>
             <div>
@@ -1558,9 +1364,8 @@ function computeProfileScore(p?: Partial<PublicUser>): {
   const u = p ?? {};
   const parts = {
     name: !!(u.first_name && u.last_name),
-    phone: !!u.phone_number,
     bio: !!u.bio && u.bio.trim().length >= 50, // richer bios
-    school: !!(u.university && u.degree),
+    school: !!u.university,
     links: !!(u.github_link || u.linkedin_link || u.portfolio_link),
     prefs: !!(
       u.internship_preferences?.job_category_ids?.length ||
@@ -1574,11 +1379,10 @@ function computeProfileScore(p?: Partial<PublicUser>): {
   // weights sum to 100
   const weights: Record<keyof typeof parts, number> = {
     name: 10,
-    phone: 5,
     bio: 15,
     school: 20,
     links: 10,
-    prefs: 20,
+    prefs: 25,
     dates: 10,
     resume: 10,
   };
@@ -1593,7 +1397,7 @@ function computeProfileScore(p?: Partial<PublicUser>): {
   if (!parts.links) tips.push("Add your LinkedIn/GitHub/Portfolio.");
   if (!parts.prefs) tips.push("Pick work modes, types, and roles you want.");
   if (!parts.dates) tips.push("Add expected internship dates.");
-  if (!parts.school) tips.push("Complete university/degree fields.");
+  if (!parts.school) tips.push("Add your university.");
   if (!parts.resume) tips.push("Upload a resume in PDF (≤2.5MB).");
 
   return { score, parts, tips };

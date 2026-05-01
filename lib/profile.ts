@@ -44,11 +44,7 @@ export const isProfileBaseComplete = (profile?: PublicUser | null) => {
   return (
     profile.first_name?.trim() &&
     profile.last_name?.trim() &&
-    profile.university?.trim() &&
-    profile.phone_number?.trim() &&
-    profile.degree?.trim() &&
-    profile?.college?.trim() &&
-    profile?.department?.trim()
+    profile.university?.trim()
   );
 };
 
