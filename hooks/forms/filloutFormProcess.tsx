@@ -9,6 +9,7 @@
 
 import { useMyForms } from "@/app/student/forms/myforms.ctx";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
+import { toastPresets } from "@/components/ui/sonner-toast";
 import { FormService } from "@/lib/api/services";
 import { useClientProcess } from "@betterinternship/components";
 import { useCallback, useMemo } from "react";
@@ -38,18 +39,18 @@ export const useFormFilloutProcessRunner = () => {
       [myForms.forms],
     ),
     onSuccess: (processId, _processName, result) => {
-      toast.success(`Generated ${form.formLabel}!`, {
+      toast.success(`Generated ${form.formLabel}`, {
         id: processId,
         duration: 2000,
+        ...toastPresets.success,
       });
-      console.log("FILLOUT FORM RESULT: ", result);
     },
     onFailure: (processId, _processName, error) => {
       toast.error(`Could not generate ${form.formLabel}: ${error}`, {
         id: processId,
         duration: 2000,
+        ...toastPresets.error,
       });
-      console.log("FILLOUT FORM ERROR: ", error);
     },
   });
 };
