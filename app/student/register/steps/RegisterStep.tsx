@@ -1,5 +1,5 @@
 import { FormDropdown } from "@/components/EditForm";
-import { IRefsContext } from "@/lib/db/use-refs-backend";
+import { IRefsContext } from "@/lib/db/db.types";
 import { FormInput } from "@/components/EditForm";
 import { Button } from "@/components/ui/button";
 import { UseFormReturn } from "react-hook-form";
