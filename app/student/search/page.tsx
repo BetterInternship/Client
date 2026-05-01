@@ -20,13 +20,9 @@ import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { JobModal } from "@/components/modals/JobModal";
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { isProfileApplyReady } from "@/lib/profile";
-import { useRouter } from "next/navigation";
 import { SaveJobButton } from "@/components/features/student/job/save-job-button";
 import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job-button";
 import { ShareJobButton } from "@/components/features/student/job/share-job-button";
-import { ApplyConfirmModal } from "@/components/modals/ApplyConfirmModal";
-import { applyToJob } from "@/lib/application";
 import { PageError } from "@/components/ui/error";
 import { useApplicationActions } from "@/lib/api/student.actions.api";
 import useModalRegistry from "@/components/modals/modal-registry";
@@ -79,7 +75,6 @@ export default function SearchPage() {
   // Modals
   const jobModalRef = useModalRef();
   const applySuccessModalRef = useModalRef();
-  const applyConfirmModalRef = useModalRef();
 
   // computed pages
   const jobsPage = jobs.getJobsPage({ page: _jobsPage, limit: jobsPageSize });
@@ -194,33 +189,6 @@ export default function SearchPage() {
       return;
     }
 
-    if (!isProfileApplyReady(profile.data)) {
-      modalRegistry.completeProfileApply.open({
-        profile: profile.data,
-        applyLabel: `Apply to ${selectedIds.size || 0}`,
-        onApply: () => {
-          const allApplied =
-            selectedJobsList.length > 0 &&
-            selectedJobsList.every((j) => jobs.isJobApplied(j.id!));
-          if (!selectedJobsList.length || allApplied) {
-            alert(
-              "No eligible jobs selected. Select jobs you haven’t applied to yet.",
-            );
-            return;
-          }
-
-          modalRegistry.massApplyCompose.open({
-            bulkCoverLetter,
-            setBulkCoverLetter,
-            runMassApply,
-            massApplying,
-            selectedCount: selectedIds.size + "",
-          });
-        },
-      });
-      return;
-    }
-
     const allApplied =
       selectedJobsList.length > 0 &&
       selectedJobsList.every((j) => jobs.isJobApplied(j.id!));
@@ -231,12 +199,18 @@ export default function SearchPage() {
       return;
     }
 
-    modalRegistry.massApplyCompose.open({
-      bulkCoverLetter,
-      setBulkCoverLetter,
-      runMassApply,
-      massApplying,
-      selectedCount: selectedIds.size + "",
+    modalRegistry.completeProfileApply.open({
+      profile: profile.data,
+      applyLabel: `Apply to ${selectedIds.size || 0}`,
+      onApply: () => {
+        modalRegistry.massApplyCompose.open({
+          bulkCoverLetter,
+          setBulkCoverLetter,
+          runMassApply,
+          massApplying,
+          selectedCount: selectedIds.size + "",
+        });
+      },
     });
   };
 
@@ -344,12 +318,20 @@ export default function SearchPage() {
     },
     [profile.data, applicationActions, clearSelection, setSelectMode],
   );
-  const router = useRouter();
+  const handleSingleApply = useCallback(async () => {
+    if (!selectedJob?.id) return;
 
-  const goProfile = useCallback(() => {
-    applyConfirmModalRef.current?.close();
-    router.push("/profile");
-  }, [applyConfirmModalRef, router]);
+    const response = await applicationActions.create.mutateAsync({
+      job_id: selectedJob.id,
+    });
+
+    if (response.message) {
+      alert(response.message);
+      return;
+    }
+
+    applySuccessModalRef.current?.open();
+  }, [applicationActions.create, selectedJob]);
 
   if (jobs.error)
     return (
@@ -622,7 +604,7 @@ export default function SearchPage() {
                     <ApplyToJobButton
                       profile={profile.data}
                       job={selectedJob}
-                      openAppModal={() => applyConfirmModalRef.current?.open()}
+                      onApply={handleSingleApply}
                     />,
                   ]}
                   isAuthenticated={isAuthenticated()}
@@ -658,7 +640,7 @@ export default function SearchPage() {
       {selectedJob && (
         <JobModal
           job={selectedJob}
-          openAppModal={() => applyConfirmModalRef.current?.open()}
+          onApply={handleSingleApply}
           ref={jobModalRef}
         />
       )}
@@ -666,23 +648,6 @@ export default function SearchPage() {
       {/* Success Modal */}
       <ApplySuccessModal job={selectedJob} ref={applySuccessModalRef} />
 
-      {/* Single-apply Confirmation Modal */}
-      <ApplyConfirmModal
-        ref={applyConfirmModalRef}
-        job={selectedJob}
-        onClose={() => applyConfirmModalRef.current?.close()}
-        onAddNow={goProfile}
-        onSubmit={(payload) => {
-          return applyToJob(applicationActions, selectedJob, payload).then(
-            (response) => {
-              if (!response.success) return alert(response.message);
-              applyConfirmModalRef.current?.close();
-              applySuccessModalRef.current?.open();
-              return;
-            },
-          );
-        }}
-      />
     </>
   );
 }

@@ -4,21 +4,19 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CheckCircle } from "lucide-react";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { isProfileApplyReady } from "@/lib/profile";
 import { useMemo } from "react";
 import { toast } from "sonner";
 import useModalRegistry from "@/components/modals/modal-registry";
 
-// ! todo: rmove openAppModal and use openGlobalModal instead
 export const ApplyToJobButton = ({
   profile,
   job,
-  openAppModal,
+  onApply,
   className,
 }: {
   profile: PublicUser | null;
   job: Job;
-  openAppModal: () => void;
+  onApply: () => void | Promise<void>;
   className?: string;
 }) => {
   const auth = useAuthContext();
@@ -38,20 +36,15 @@ export const ApplyToJobButton = ({
       return;
     }
 
-    if (!isProfileApplyReady(profile)) {
-      modalRegistry.completeProfileApply.open({
-        profile,
-        onApply: openAppModal,
-      });
-      return;
-    }
-
     if (applied) {
       toast.error("You have already applied to this job!");
       return;
     }
 
-    openAppModal();
+    modalRegistry.completeProfileApply.open({
+      profile,
+      onApply,
+    });
   };
 
   return (
