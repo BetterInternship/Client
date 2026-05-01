@@ -19,6 +19,7 @@ const InternalSetupPage = () => {
       await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
       await queryClient.invalidateQueries({ queryKey: ["my-form-templates"] });
       await queryClient.invalidateQueries({ queryKey: ["my-form-template"] });
+      await queryClient.invalidateQueries({ queryKey: ["my-resumes"] });
       router.push("/search");
     })();
   });

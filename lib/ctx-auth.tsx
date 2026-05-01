@@ -77,6 +77,7 @@ export const AuthContextProvider = ({
       await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
       await queryClient.invalidateQueries({ queryKey: ["my-form-templates"] });
       await queryClient.invalidateQueries({ queryKey: ["my-form-template"] });
+      await queryClient.invalidateQueries({ queryKey: ["my-resumes"] });
     }
 
     return response;
@@ -93,6 +94,7 @@ export const AuthContextProvider = ({
     await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
     await queryClient.invalidateQueries({ queryKey: ["my-form-templates"] });
     await queryClient.invalidateQueries({ queryKey: ["my-form-template"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-resumes"] });
     setIsAuthenticated(true);
     return response;
   };
@@ -107,6 +109,7 @@ export const AuthContextProvider = ({
     await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
     await queryClient.invalidateQueries({ queryKey: ["my-form-templates"] });
     await queryClient.invalidateQueries({ queryKey: ["my-form-template"] });
+    await queryClient.invalidateQueries({ queryKey: ["my-resumes"] });
     setIsAuthenticated(false);
   };
 
