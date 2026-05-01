@@ -49,7 +49,10 @@ export default function VerifyPage() {
 
   // Wait for profile and auth checks; unauthenticated users are redirected
   if (profile.isPending) return <Loader>Loading...</Loader>;
-  if (profile.data?.is_verified) return router.replace(nextUrl);
+  if (profile.data?.is_verified) {
+    router.replace(nextUrl);
+    return null;
+  }
   if (!profile.data) return <Loader>Loading...</Loader>;
 
   return (
