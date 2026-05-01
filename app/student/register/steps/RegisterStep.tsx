@@ -70,7 +70,7 @@ export function RegisterStep({
         placeholder="Degree program"
         options={DEGREES}
         setter={(val) => {
-          regForm.setValue("degree", String(val));
+          regForm.setValue("degree", val === null ? "" : String(val));
         }}
         value={regForm.watch("degree") || ""}
         required={true}

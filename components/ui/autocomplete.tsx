@@ -213,6 +213,9 @@ function AutocompleteBase<ID extends number | string>({
           className="border-gray-300"
           placeholder={placeholder}
           onChange={(e) => {
+            if (!multiple && (value?.length ?? 0) > 0) {
+              setter([]);
+            }
             // typing starts a new search; selection is set on option click
             setQuery(e.target.value);
             setIsOpen(true);
@@ -266,6 +269,11 @@ function AutocompleteBase<ID extends number | string>({
                 : "absolute left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto overscroll-contain rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5",
             )}
           >
+            {allowCustomValue && query.trim().length > 0 && (
+              <li className="w-full text-left px-4 py-2 text-sm text-gray-500 bg-gray-50 pointer-events-none">
+                Suggestions
+              </li>
+            )}
             {filtered.length ? (
               filtered.map((option) => {
                 const active = selectedSet.has(option.id);
@@ -302,7 +310,7 @@ function AutocompleteBase<ID extends number | string>({
               })
             ) : (
               <li className="w-full text-left px-4 py-2 text-sm text-gray-700">
-                No matching results.
+                ...
               </li>
             )}
           </ul>
@@ -660,7 +668,7 @@ export function AutocompleteTreeMulti({
               })
             ) : (
               <li className="w-full text-left px-4 py-2 text-sm text-gray-700">
-                No matching results.
+                ...
               </li>
             )}
           </ul>
