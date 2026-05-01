@@ -33,6 +33,7 @@ export default function FormsPage() {
   const myForms = useMyForms();
   const queryClient = useQueryClient();
   const { redirectIfNotLoggedIn, isAuthenticated } = useAuthContext();
+  const isStudentAuthenticated = isAuthenticated();
   const [hasFormsAccess, setHasFormsAccess] = useState<boolean | null>(() =>
     profile.isPending ? null : !!profile.data?.form_group_id,
   );
@@ -51,7 +52,7 @@ export default function FormsPage() {
 
   // Profile check only runs if authenticated
   useEffect(() => {
-    if (!isAuthenticated()) {
+    if (!isStudentAuthenticated) {
       return; // Exit if not authenticated
     }
     if (profile.isPending) {
@@ -64,7 +65,7 @@ export default function FormsPage() {
 
     if (!profile.data?.department) router.push("/profile/complete-profile");
   }, [
-    isAuthenticated,
+    isStudentAuthenticated,
     profile.data,
     profile.data?.department,
     profile.isPending,
@@ -129,7 +130,14 @@ export default function FormsPage() {
     setHasFormsAccess(true);
   };
 
-  if (hasFormsAccess === null) {
+  const isResolvingDestination =
+    !isStudentAuthenticated ||
+    profile.isPending ||
+    !profile.data ||
+    !isProfileVerified(profile.data) ||
+    !profile.data.department;
+
+  if (isResolvingDestination || hasFormsAccess === null) {
     return <Loader>Loading forms...</Loader>;
   }
 
