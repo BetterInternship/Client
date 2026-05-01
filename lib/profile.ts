@@ -73,3 +73,14 @@ export const isProfileResume = (profile?: PublicUser | null) => {
   if (!profile) return false;
   return !!profile.resume?.trim();
 };
+
+export const isProfileApplyReady = (profile?: PublicUser | null) => {
+  if (!profile) return false;
+
+  const preferences = profile.internship_preferences;
+  return (
+    isProfileResume(profile) &&
+    !!preferences?.internship_type &&
+    !!preferences?.expected_start_date
+  );
+};

@@ -25,13 +25,13 @@ import { MissingNotice } from "../shared/jobs";
 
 export const JobModal = ({
   job,
-  openAppModal,
+  onApply,
   applySuccessModalRef,
   ref,
   user,
 }: {
   job: Job;
-  openAppModal: () => void;
+  onApply: () => void | Promise<void>;
   ref?: RefObject<ModalHandle | null>;
   applySuccessModalRef?: RefObject<ModalHandle | null>;
   user?: {
@@ -153,7 +153,7 @@ export const JobModal = ({
             <ApplyToJobButton
               profile={profile.data}
               job={job}
-              openAppModal={openAppModal}
+              onApply={onApply}
               className="w-full"
             />
           </div>
