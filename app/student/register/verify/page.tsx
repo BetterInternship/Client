@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { AlertTriangle, Repeat } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Repeat } from "lucide-react";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthContext } from "@/lib/ctx-auth";
@@ -24,6 +24,10 @@ export default function VerifyPage() {
   const profile = useProfileData();
   const queryClient = useQueryClient();
   const [mounted, setMounted] = useState(false);
+
+  const handleBack = () => {
+    router.push("/");
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -68,6 +72,19 @@ export default function VerifyPage() {
         </div>
 
         <div className="mt-8 flex flex-col items-center gap-3">
+          <div className="mx-auto w-full max-w-lg">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleBack}
+              className="gap-2 border border-gray-200 bg-white text-muted-foreground shadow-sm hover:bg-gray-50"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to home
+            </Button>
+          </div>
+
           <Card className="p-5 sm:p-7 block w-full max-w-lg border border-primary/20 shadow-md">
             <StepActivateOTP onFinish={() => router.replace(nextUrl)} />
           </Card>
