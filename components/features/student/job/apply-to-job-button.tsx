@@ -16,7 +16,7 @@ export const ApplyToJobButton = ({
 }: {
   profile: PublicUser | null;
   job: Job;
-  onApply: () => void | Promise<void>;
+  onApply: (resumeId: string) => void | Promise<void>;
   className?: string;
 }) => {
   const auth = useAuthContext();

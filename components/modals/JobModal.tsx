@@ -31,7 +31,7 @@ export const JobModal = ({
   user,
 }: {
   job: Job;
-  onApply: () => void | Promise<void>;
+  onApply: (resumeId: string) => void | Promise<void>;
   ref?: RefObject<ModalHandle | null>;
   applySuccessModalRef?: RefObject<ModalHandle | null>;
   user?: {

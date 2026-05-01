@@ -103,7 +103,7 @@ export const useModalRegistry = () => {
           applyLabel,
         }: {
           profile: PublicUser | null;
-          onApply: () => void | Promise<void>;
+          onApply: (resumeId: string) => void | Promise<void>;
           applyLabel?: string;
         }) =>
           open(

@@ -46,7 +46,6 @@ export default function SearchPage() {
   const [jobWorkloadFilter, setJobWorkloadFilter] = useState<string[]>([]);
   const [jobAllowanceFilter, setJobAllowanceFilter] = useState<string[]>([]);
   const [jobMoaFilter, setJobMoaFilter] = useState<string[]>([]);
-  const [resumeId, setResumeId] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
   // get job list div so we can scroll on page change.
@@ -202,8 +201,8 @@ export default function SearchPage() {
     modalRegistry.completeProfileApply.open({
       profile: profile.data,
       applyLabel: `Apply to ${selectedIds.size || 0}`,
-      onApply: () => {
-        void runMassApply(resumeId, "");
+      onApply: (selectedResumeId: string) => {
+        void runMassApply(selectedResumeId, "");
       },
     });
   };
@@ -305,22 +304,25 @@ export default function SearchPage() {
     },
     [profile.data, applicationActions, clearSelection, setSelectMode],
   );
-  const handleSingleApply = useCallback(async () => {
-    if (!selectedJob?.id) return;
+  const handleSingleApply = useCallback(
+    async (selectedResumeId: string) => {
+      if (!selectedJob?.id || !selectedResumeId) return;
 
-    const response = await applicationActions.create.mutateAsync({
-      job_id: selectedJob.id,
-      resume_id: resumeId,
-      cover_letter: "",
-    });
+      const response = await applicationActions.create.mutateAsync({
+        job_id: selectedJob.id,
+        resume_id: selectedResumeId,
+        cover_letter: "",
+      });
 
-    if (response.message) {
-      alert(response.message);
-      return;
-    }
+      if (response.message) {
+        alert(response.message);
+        return;
+      }
 
-    applySuccessModalRef.current?.open();
-  }, [applicationActions.create, selectedJob]);
+      applySuccessModalRef.current?.open();
+    },
+    [applicationActions.create, selectedJob],
+  );
 
   if (jobs.error)
     return (

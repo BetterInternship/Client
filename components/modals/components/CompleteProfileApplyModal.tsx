@@ -4,16 +4,16 @@ import { Button } from "@/components/ui/button";
 import ResumeUpload from "@/components/features/student/resume-parser/ResumeUpload";
 import { FormInput } from "@/components/EditForm";
 import { UserService } from "@/lib/api/services";
-import { FileText, Loader2, CheckCircle2, X } from "lucide-react";
+import { FileText, CheckCircle2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { PublicUser } from "@/lib/db/db.types";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 type InternshipType = "credited" | "voluntary";
-type ResumeChoice = "existing" | "new";
 type UploadStatus = "idle" | "ready" | "uploading" | "uploaded";
 
 const MONTHS = [
@@ -39,13 +39,20 @@ export function CompleteProfileApplyModal({
 }: {
   profile: PublicUser | null;
   onCancel: () => void;
-  onApply: () => void | Promise<void>;
+  onApply: (resumeId: string) => void | Promise<void>;
   applyLabel?: string;
 }) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resumeNameInputRef = useRef<HTMLInputElement>(null);
-  const hasExistingResume = !!profile?.resume?.trim();
+
+  const { data: resumesData, isPending: resumesLoading } = useQuery({
+    queryKey: ["my-resumes"],
+    queryFn: () => UserService.getMyResumes(),
+  });
+
+  const resumes = useMemo(() => resumesData?.resumes ?? [], [resumesData]);
+  const hasExistingResumes = resumes.length > 0;
 
   const initialDate = useMemo(
     () =>
@@ -56,10 +63,24 @@ export function CompleteProfileApplyModal({
   );
 
   const [step, setStep] = useState<1 | 2>(1);
-  const [resumeChoice, setResumeChoice] = useState<ResumeChoice>(
-    hasExistingResume ? "existing" : "new",
-  );
-  const [showUpload, setShowUpload] = useState(!hasExistingResume);
+  const [resumeChoice, setResumeChoice] = useState<string>("new");
+  const [showUpload, setShowUpload] = useState(true);
+
+  // Default-select the first existing resume once data loads
+  const hasInitialized = useRef(false);
+  useEffect(() => {
+    if (resumesLoading || hasInitialized.current) return;
+    hasInitialized.current = true;
+
+    if (hasExistingResumes) {
+      setResumeChoice(resumes[0].id);
+      setShowUpload(false);
+    } else {
+      setResumeChoice("new");
+      setShowUpload(true);
+    }
+  }, [resumesLoading, hasExistingResumes, resumes]);
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [resumeLabel, setResumeLabel] = useState("");
   const [internshipType, setInternshipType] = useState<InternshipType | null>(
@@ -69,6 +90,7 @@ export function CompleteProfileApplyModal({
   const [year, setYear] = useState(initialDate.year);
   const [saving, setSaving] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
+  const [uploadedResumeId, setUploadedResumeId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!selectedFile) return;
@@ -87,27 +109,32 @@ export function CompleteProfileApplyModal({
   }, []);
 
   const canProceedFromResume =
-    resumeChoice === "existing"
-      ? hasExistingResume
+    resumeChoice !== "new"
+      ? !!resumeChoice
       : !!selectedFile && !!resumeLabel.trim();
   const canApply = !!internshipType && month !== "" && year !== "";
 
-  async function uploadResumeIfNeeded() {
-    if (resumeChoice !== "new" || !selectedFile) return true;
+  async function uploadResumeIfNeeded(): Promise<string | null> {
+    if (resumeChoice !== "new" || !selectedFile) return resumeChoice !== "new" ? resumeChoice : null;
 
     const form = new FormData();
     const label = resumeLabel.trim() || selectedFile.name;
     const uploadFilename = /\.pdf$/i.test(label) ? label : `${label}.pdf`;
     form.append("resume", selectedFile, uploadFilename);
-    form.append("resume_label", label);
+    form.append("label", label);
 
     setUploadStatus("uploading");
     const response = (await UserService.updateMyResume(form)) as {
       success?: boolean;
+      resume?: { id: string };
     };
     const ok = response.success !== false;
     setUploadStatus(ok ? "uploaded" : "ready");
-    return ok;
+    
+    if (ok && response.resume?.id) {
+      return response.resume.id;
+    }
+    return null;
   }
 
   async function handleResumeNext() {
@@ -115,10 +142,13 @@ export function CompleteProfileApplyModal({
 
     try {
       setSaving(true);
-      const uploadOk = await uploadResumeIfNeeded();
-      if (!uploadOk) {
-        toast.error("Could not upload your resume. Please try again.");
-        return;
+      if (resumeChoice === "new") {
+        const id = await uploadResumeIfNeeded();
+        if (!id) {
+          toast.error("Could not upload your resume. Please try again.");
+          return;
+        }
+        setUploadedResumeId(id);
       }
       setStep(2);
     } catch (error) {
@@ -149,7 +179,11 @@ export function CompleteProfileApplyModal({
 
       await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
       onCancel();
-      await onApply();
+      
+      const targetResumeId = resumeChoice === "new" ? uploadedResumeId : resumeChoice;
+      if (!targetResumeId) throw new Error("No resume selected");
+
+      await onApply(targetResumeId);
     } catch (error) {
       console.error(error);
       toast.error("Could not save your application preferences.");
@@ -177,40 +211,49 @@ export function CompleteProfileApplyModal({
 
         {step === 1 ? (
           <div className="space-y-4">
-            {hasExistingResume && (
-              <button
-                type="button"
-                onClick={() => {
-                  setResumeChoice("existing");
-                  setShowUpload(false);
-                }}
-                className={cn(
-                  "w-full rounded-[0.33em] border p-3 text-left transition bg-white",
-                  resumeChoice === "existing"
-                    ? "border-primary ring-2 ring-primary/15"
-                    : "border-gray-200 hover:border-primary/70",
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-[0.33em] bg-primary/10 text-primary">
-                    <FileText className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium text-gray-900">
-                      {profile?.resume ?? "Saved resume"}
+            {resumesLoading ? (
+              <div className="text-sm text-muted-foreground">Loading resumes...</div>
+            ) : hasExistingResumes && (
+              <div className="space-y-2">
+                {resumes.map(resume => (
+                  <button
+                    key={resume.id}
+                    type="button"
+                    onClick={() => {
+                      setResumeChoice(resume.id);
+                      setShowUpload(false);
+                    }}
+                    className={cn(
+                      "w-full rounded-[0.33em] border p-3 text-left transition bg-white",
+                      resumeChoice === resume.id
+                        ? "border-primary ring-2 ring-primary/15"
+                        : "border-gray-200 hover:border-primary/70",
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="grid h-10 w-10 place-items-center rounded-[0.33em] bg-primary/10 text-primary">
+                        <FileText className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-medium text-gray-900">
+                          {resume.label || resume.filename || "Untitled resume"}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          <Link href="/student/profile" target="_blank" className="text-primary hover:underline" onClick={(e) => e.stopPropagation()}>
+                            View in profile
+                          </Link>
+                        </div>
+                      </div>
+                      {resumeChoice === resume.id && (
+                        <CheckCircle2 className="h-5 w-5 text-primary" />
+                      )}
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      Saved to your profile
-                    </div>
-                  </div>
-                  {resumeChoice === "existing" && (
-                    <CheckCircle2 className="h-5 w-5 text-primary" />
-                  )}
-                </div>
-              </button>
+                  </button>
+                ))}
+              </div>
             )}
 
-            {hasExistingResume && !showUpload && (
+            {!resumesLoading && hasExistingResumes && !showUpload && (
               <button
                 type="button"
                 className="text-sm font-medium text-primary underline-offset-4 hover:underline"
@@ -229,142 +272,159 @@ export function CompleteProfileApplyModal({
                   initial={{ height: 0, opacity: 0, y: -8 }}
                   animate={{ height: "auto", opacity: 1, y: 0 }}
                   exit={{ height: 0, opacity: 0, y: -8 }}
-                  transition={{ duration: 0.22, ease: "easeOut" }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
                   className="overflow-hidden"
                 >
-                  <ResumeUpload
-                    ref={fileInputRef}
-                    isParsing={false}
-                    onSelect={(file) => {
-                      setResumeChoice("new");
-                      setSelectedFile(file);
-                      setUploadStatus("ready");
-                    }}
-                    onComplete={() => {}}
-                  />
+                  <div className="pt-2 pb-1 space-y-4">
+                    <ResumeUpload
+                      ref={fileInputRef}
+                      isParsing={false}
+                      onSelect={(file) => {
+                        setSelectedFile(file);
+                        setUploadStatus("ready");
+                      }}
+                      onComplete={() => {}}
+                    />
 
-                  <AnimatePresence>
-                    {selectedFile && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="mt-3 overflow-visible px-0.5 pb-0.5"
-                      >
-                        <FormInput
-                          ref={resumeNameInputRef}
-                          label="Resume name"
-                          value={resumeLabel}
-                          setter={(value) => {
-                            setResumeLabel(value);
-                            setUploadStatus("ready");
-                          }}
-                          className="focus-visible:border-primary focus-visible:ring-primary/70 focus-visible:text-primary focus-visible:ring-2"
-                          placeholder="Name this resume"
-                        />
-                        <UploadProgress status={uploadStatus} />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                    <AnimatePresence>
+                      {selectedFile && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                          className="mt-3 overflow-visible px-0.5 pb-0.5"
+                        >
+                          <FormInput
+                            ref={resumeNameInputRef}
+                            label="Resume label"
+                            value={resumeLabel}
+                            setter={(value) => {
+                              setResumeLabel(value);
+                              setUploadStatus("ready");
+                            }}
+                            placeholder="e.g. Frontend Developer Resume"
+                            autoComplete="off"
+                          />
+                          <UploadProgress status={uploadStatus} />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
+
+            <div className="mt-6 flex justify-end gap-3 pt-4">
+              <Button type="button" variant="outline" onClick={onCancel}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleResumeNext}
+                disabled={!canProceedFromResume || saving}
+              >
+                {saving ? "Saving..." : "Continue"}
+              </Button>
+            </div>
           </div>
         ) : (
-          <div className="space-y-5">
-            <div>
-              <div className="mb-2 text-sm font-medium text-gray-800">
-                Are you planning to credit this internship?
+          <div className="space-y-6">
+            <div className="space-y-4 pt-2">
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-gray-900">
+                  Internship Type
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setInternshipType("credited")}
+                    className={cn(
+                      "rounded-[0.33em] border p-3 text-center text-sm font-medium transition bg-white",
+                      internshipType === "credited"
+                        ? "border-primary bg-primary/5 text-primary ring-1 ring-primary"
+                        : "border-gray-200 text-gray-600 hover:border-primary/50 hover:bg-gray-50",
+                    )}
+                  >
+                    Credited
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setInternshipType("voluntary")}
+                    className={cn(
+                      "rounded-[0.33em] border p-3 text-center text-sm font-medium transition bg-white",
+                      internshipType === "voluntary"
+                        ? "border-primary bg-primary/5 text-primary ring-1 ring-primary"
+                        : "border-gray-200 text-gray-600 hover:border-primary/50 hover:bg-gray-50",
+                    )}
+                  >
+                    Voluntary
+                  </button>
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <ChoiceButton
-                  active={internshipType === "credited"}
-                  onClick={() => setInternshipType("credited")}
-                >
-                  For Credit
-                </ChoiceButton>
-                <ChoiceButton
-                  active={internshipType === "voluntary"}
-                  onClick={() => setInternshipType("voluntary")}
-                >
-                  Voluntary
-                </ChoiceButton>
+
+              <div className="space-y-3 pt-2">
+                <label className="text-sm font-medium text-gray-900">
+                  Expected Start Date
+                </label>
+                <div className="flex gap-3">
+                  <select
+                    className="flex h-10 w-full rounded-[0.33em] border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    value={month}
+                    onChange={(e) => setMonth(e.target.value)}
+                  >
+                    <option value="" disabled>
+                      Month
+                    </option>
+                    {MONTHS.map((m, i) => (
+                      <option key={m} value={i}>
+                        {m}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    className="flex h-10 w-full rounded-[0.33em] border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    value={year}
+                    onChange={(e) => setYear(e.target.value)}
+                  >
+                    <option value="" disabled>
+                      Year
+                    </option>
+                    {years.map((y) => (
+                      <option key={y} value={y}>
+                        {y}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
-            <div>
-              <div className="mb-2 text-sm font-medium text-gray-800">
-                When do you expect to take this internship?
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <select
-                  value={month}
-                  onChange={(e) => setMonth(e.target.value)}
-                  className="h-10 rounded-[0.33em] border border-gray-300 bg-white px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
-                >
-                  <option value="">Month</option>
-                  {MONTHS.map((label, index) => (
-                    <option key={label} value={index}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={year}
-                  onChange={(e) => setYear(e.target.value)}
-                  className="h-10 rounded-[0.33em] border border-gray-300 bg-white px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
-                >
-                  <option value="">Year</option>
-                  {years.map((yearOption) => (
-                    <option key={yearOption} value={yearOption}>
-                      {yearOption}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="flex items-center border-t pt-4">
-          <Button
-            variant="outline"
-            onClick={onCancel}
-            disabled={saving}
-            className="border-destructive/50 text-destructive hover:bg-destructive/10 hover:text-destructive"
-          >
-            Cancel
-          </Button>
-          <div className="ml-auto flex justify-end gap-2">
-            {step === 2 && (
+            <div className="mt-6 flex justify-between gap-3 pt-4 border-t">
               <Button
-                variant="outline"
+                type="button"
+                variant="ghost"
                 onClick={() => setStep(1)}
+                className="px-2"
                 disabled={saving}
               >
                 Back
               </Button>
-            )}
-            {step === 1 ? (
-              <Button
-                disabled={!canProceedFromResume || saving}
-                onClick={() => void handleResumeNext()}
-              >
-                {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-                Next
-              </Button>
-            ) : (
-              <Button
-                disabled={!canApply || saving}
-                onClick={() => void handleApply()}
-              >
-                {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-                {applyLabel}
-              </Button>
-            )}
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onCancel}
+                  disabled={saving}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleApply} disabled={!canApply || saving}>
+                  {saving ? "Applying..." : applyLabel}
+                </Button>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
@@ -399,45 +459,19 @@ function UploadProgress({ status }: { status: UploadStatus }) {
   );
 }
 
-function ChoiceButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "h-11 rounded-[0.33em] border px-3 text-sm font-medium transition",
-        active
-          ? "border-primary bg-primary text-white shadow-sm"
-          : "border-gray-300 bg-white text-gray-700 hover:border-primary/70",
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
 function stripPdfExtension(name: string) {
   return name.replace(/\.pdf$/i, "");
 }
 
 function timestampToMonthYear(timestamp?: number | null) {
   if (!timestamp) return { month: "", year: "" };
-  const date = new Date(timestamp);
-  if (Number.isNaN(date.getTime())) return { month: "", year: "" };
+  const d = new Date(timestamp * 1000);
   return {
-    month: String(date.getMonth()),
-    year: String(date.getFullYear()),
+    month: d.getMonth().toString(),
+    year: d.getFullYear().toString(),
   };
 }
 
 function monthYearToTimestamp(month: number, year: number) {
-  return new Date(year, month, 1).getTime();
+  return Math.floor(new Date(year, month, 1).getTime() / 1000);
 }
