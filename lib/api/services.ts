@@ -352,9 +352,9 @@ export const UserService = {
     );
   },
 
-  async getUserResumeURL(userId: string) {
+  async getUserResumeURL(userId: string, resumeId: string) {
     return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("users").r(userId, "resume").build(),
+      APIRouteBuilder("users").r(userId, "resume", resumeId).build(),
     );
   },
 

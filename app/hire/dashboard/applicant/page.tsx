@@ -13,7 +13,7 @@ import useApplicationActions from "@/hooks/use-application-actions";
 
 function ApplicantPageContent() {
   const searchParams = useSearchParams();
-  const userId = searchParams.get("userId");
+  const applicationId = searchParams.get("applicationId");
   const [loading, setLoading] = useState(true);
   const applications = useEmployerApplications();
   const { app_statuses } = useDbRefs();
@@ -21,11 +21,12 @@ function ApplicantPageContent() {
   const { triggerAction } = useApplicationActions(applications.review);
 
   const userApplication = applications?.employer_applications.find(
-    (a) => userId === a.user_id,
+    (a) => applicationId === a.id,
   );
   const otherApplications = applications?.employer_applications.filter(
-    (a) => userId === a.user_id,
+    (a) => a.user_id === userApplication?.user_id,
   );
+  const userId = userApplication?.user_id;
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -82,7 +83,6 @@ function ApplicantPageContent() {
       <div className="w-full h-full">
         <ApplicantPage
           application={userApplication}
-          jobID={""}
           statuses={getStatuses(userApplication?.id || "")}
           userApplications={otherApplications}
           onArchive={() => {

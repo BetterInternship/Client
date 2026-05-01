@@ -22,7 +22,6 @@ import {
 } from "@betterinternship/schema.base";
 import { Selectable } from "kysely";
 
-
 export type Database = DB;
 export type College = Selectable<RefColleges>;
 export type University = Selectable<RefUniversities>;
@@ -89,6 +88,7 @@ export interface EmployerApplication extends Partial<Selectable<Applications>> {
   jobs?: Partial<Job>;
   user?: Partial<PrivateUser>;
   users?: Partial<PrivateUser>;
+  resume_id: string;
   challenge_submission?: string | null;
 }
 
