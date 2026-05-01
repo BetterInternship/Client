@@ -139,24 +139,15 @@ export function RegisterPageContent() {
     <div className="w-full min-h-screen p-3 bg-background">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 w-full min-h-[calc(100vh-1.5rem)]">
         {/* Decorative area */}
-        <div className="hidden lg:block lg:col-span-3 min-h-full rounded-[0.33em] overflow-hidden bg-black">
+        <div className="hidden lg:block lg:col-span-3 min-h-full rounded-[0.33em] overflow-hidden">
           <RegisterCarousel />
         </div>
 
         {/* Form area */}
-        <div className="col-span-1 lg:col-span-2 w-full p-3">
-          <div className="flex flex-col justify-between h-full w-full">
-            {/* Header */}
-            <div className="flex gap-2 items-center">
-              <img
-                src="/BetterInternshipLogo.png"
-                className="w-8 aspect-square"
-                alt="BetterInternship"
-              />
-              <h1 className="text-2xl font-bold tracking-tighter">
-                BetterInternship
-              </h1>
-            </div>
+        <div className="col-span-1 lg:col-span-2 w-full bg-muted border-l border-l-gray-300 px-5">
+          <div className="flex flex-col justify-between h-full w-full p-3">
+            {/* Header - DONT DELETE!!!!!!!!!!!!!! Otherwise layout will change */}
+            <div></div>
 
             <div className="space-y-6">
               {step === 1 && !auth.isAuthenticated() && (

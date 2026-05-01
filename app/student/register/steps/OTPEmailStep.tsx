@@ -62,9 +62,8 @@ export function OTPEmailStep({
           Verify your account
         </h1>
         <span className="text-muted-foreground tracking-tight text-sm">
-          To access online form signing, you'll need to verify your education
-          email. If you don't, you'll still be able to apply to jobs on the
-          site.
+          Some site features require you to verify your edu email. You can skip
+          this for now.
         </span>
       </div>
       <div className="flex flex-col gap-3 items-end mt-4">

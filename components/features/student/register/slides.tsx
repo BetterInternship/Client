@@ -1,17 +1,14 @@
-import { Job, EmployerApplication } from "@/lib/db/db.types";
-import { JobListingsBox } from "../../hire/dashboard/JobListingsBox";
-import { JobCard } from "@/components/shared/jobs";
-
 const Hero = () => {
   return (
-    <div className="flex flex-col gap-8 justify-end bg-primary h-full w-full p-6">
+    <div className="flex flex-col gap-8 justify-between h-full w-full">
       <img
-        src="/BetterInternshipLogo.png"
-        className="w-32 aspect-square"
+        src="/registerPage/register-page-0.png"
+        className="w-full"
         alt="BetterInternship"
       />
-      <h1 className="text-white font-light tracking-tighter text-justify">
-        Better Internships start <span className="italic font-bold">here</span>.
+      <h1 className="font-light tracking-tighter text-justify text-gray-700 p-6">
+        <span className="font-semibold">Better internships</span> start{" "}
+        <span className="text-primary font-semibold">here</span>.
       </h1>
     </div>
   );
@@ -19,37 +16,32 @@ const Hero = () => {
 
 const SuperListings = () => {
   return (
-    <div className="flex flex-col justify-between bg-muted h-full w-full p-6">
-      <div className="flex-1 flex items-center justify-center">
-        <div className="w-full">
-          <JobCard
-            job={
-              {
-                id: "1",
-                title: "Software Development Intern",
-                is_active: true,
-                employer: {
-                  name: "Philippine Chamber of Commerce",
-                  profile_picture_url: null,
-                },
-                challenge: {
-                  id: "1",
-                  title:
-                    "Deliver one practical improvement that helps Philippine businesses navigate a high-friction process",
-                },
-              } as Job
-            }
+    <div className="flex flex-col justify-between h-full w-full">
+      <div className="flex flex-col space-y-8 py-6">
+        <div className="flex flex-row justify-center w-full">
+          <img
+            src="/registerPage/register-page-1.png"
+            className="w-3/4"
+            alt="BetterInternship"
           />
         </div>
-      </div>
-      <div>
-        <h1 className="text-gray-700 font-light tracking-tighter text-justify">
-          Make a real impact and stand out from other interns.
+        <h1 className="text-gray-700 font-semibold tracking-tighter text-left px-12 leading-[1.05]">
+          Stand out from other interns
+          <br />
+          even with no experience.
         </h1>
-        <span className="text-gray-500 text-justify text-lg">
-          Super listings are challenges from our partner companies that give you
-          the opportunity to demonstrate your skills directly; no resume needed.
-          You are guaranteed a response in 24 hours.
+        <span className="text-gray-500 text-justify text-md px-12">
+          <span className="font-bold">Not all internships need resumes.</span>{" "}
+          <br />
+          <br />
+          Some of our companies{" "}
+          <span className="font-bold">
+            give challenges instead to prove yourself as an applicant.
+          </span>{" "}
+          <br />
+          <br />
+          If you impress the company, you get in. <br />
+          <span className="font-bold">Even with no experience.</span>
         </span>
       </div>
     </div>
@@ -58,9 +50,15 @@ const SuperListings = () => {
 
 const FormAutomation = () => {
   return (
-    <div className="flex flex-col justify-end bg-muted h-full w-full p-6">
-      <h1 className="text-gray-700 font-light tracking-tighter text-justify">
-        Hundreds of pages of paperwork, automated.
+    <div className="flex flex-col justify-between h-full w-full p-6">
+      <img
+        src="/registerPage/register-page-2.png"
+        className="w-full"
+        alt="BetterInternship"
+      />
+      <h1 className="text-gray-700 tracking-tighter font-normal">
+        <span className="font-semibold">100s of pages</span> of paperwork,{" "}
+        <span className="text-primary font-semibold">automated.</span>
       </h1>
     </div>
   );
@@ -68,9 +66,15 @@ const FormAutomation = () => {
 
 const Connect = () => {
   return (
-    <div className="flex flex-col justify-end bg-muted h-full w-full p-6">
-      <h1 className="text-gray-700 font-light tracking-tighter text-justify">
-        Connect to hundreds of employers.
+    <div className="flex flex-col justify-between h-full w-full p-6">
+      <img
+        src="/registerPage/register-page-3.png"
+        className="w-full"
+        alt="BetterInternship"
+      />
+      <h1 className="text-gray-700 tracking-tighter font-normal">
+        <span className="font-semibold">Connect</span> with hundreds of{" "}
+        <span className="text-primary font-semibold">employers.</span>
       </h1>
     </div>
   );
