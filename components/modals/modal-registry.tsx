@@ -17,6 +17,7 @@ import {
   MassApplyResultsData,
 } from "./components/MassApplyResults";
 import { CompleteProfileApplyModal } from "./components/CompleteProfileApplyModal";
+import { MissingRequirementsModal } from "./components/MissingRequirementsModal";
 import { FormPreviewPdfDisplay } from "../features/student/forms/previewer";
 import { IFormSigningParty } from "@betterinternship/core/forms";
 import { ApplicationAction } from "@/lib/consts/application";
@@ -122,6 +123,24 @@ export const useModalRegistry = () => {
             },
           ),
         close: () => close("complete-profile-apply"),
+      },
+      missingRequirements: {
+        open: ({ missing }: { missing: string[] }) =>
+          open(
+            "missing-requirements",
+            DefaultModalLayout,
+            <MissingRequirementsModal
+              missing={missing}
+              onCancel={() => close("missing-requirements")}
+            />,
+            {
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showCloseButton: false,
+              showHeaderDivider: false,
+            },
+          ),
+        close: () => close("missing-requirements"),
       },
       // The modal shown after performing a mass apply
       massApplyResult: {

@@ -7,6 +7,7 @@ import { useAuthContext } from "@/lib/ctx-auth";
 import { useMemo } from "react";
 import { toast } from "sonner";
 import useModalRegistry from "@/components/modals/modal-registry";
+import { isProfileEligibleForListing } from "@/lib/profile";
 
 export const ApplyToJobButton = ({
   profile,
@@ -38,6 +39,13 @@ export const ApplyToJobButton = ({
 
     if (applied) {
       toast.error("You have already applied to this job!");
+      return;
+    }
+
+    // Check if the profile meets the listing's requirements
+    const { eligible, missing } = isProfileEligibleForListing(profile, job);
+    if (!eligible) {
+      modalRegistry.missingRequirements.open({ missing });
       return;
     }
 

@@ -1,4 +1,4 @@
-import { PublicUser } from "./db/db.types";
+import { Job, PublicUser } from "./db/db.types";
 
 /**
  * Does not include the middle name.
@@ -83,4 +83,27 @@ export const isProfileApplyReady = (profile?: PublicUser | null) => {
     !!preferences?.internship_type &&
     !!preferences?.expected_start_date
   );
+};
+
+/**
+ * Checks whether a user's profile satisfies a listing's requirements.
+ * Returns `eligible: true` when every requirement is met, otherwise returns
+ * the list of human-readable strings describing what's missing.
+ */
+export const isProfileEligibleForListing = (
+  profile: PublicUser | null | undefined,
+  job: Pick<Job, "internship_preferences">,
+): { eligible: boolean; missing: string[] } => {
+  const missing: string[] = [];
+  const prefs = job.internship_preferences;
+  if (!prefs) return { eligible: true, missing };
+
+  if (prefs.require_github && !profile?.github_link?.trim()) {
+    missing.push("GitHub profile link");
+  }
+  if (prefs.require_portfolio && !profile?.portfolio_link?.trim()) {
+    missing.push("Portfolio link");
+  }
+
+  return { eligible: missing.length === 0, missing };
 };
