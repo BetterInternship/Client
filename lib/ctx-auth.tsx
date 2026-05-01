@@ -46,7 +46,7 @@ export const AuthContextProvider = ({
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     if (typeof window === "undefined") return false;
     const isAuthed = sessionStorage.getItem("is_authenticated");
-    return isAuthed ? JSON.parse(isAuthed) : false;
+    return isAuthed ? (JSON.parse(isAuthed) as boolean) : false;
   });
 
   const refreshAuthentication = async () => {
@@ -68,15 +68,21 @@ export const AuthContextProvider = ({
   }, []);
 
   const register = async (user: Partial<PublicUser>) => {
-    await queryClient.invalidateQueries({ queryKey: ["jobs"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-applications"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-saved-jobs"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-conversations"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-form-templates"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-form-template"] });
-    return await AuthService.register(user);
+    const response = await AuthService.register(user);
+
+    if (response?.success) {
+      await refreshAuthentication();
+      await queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+      await queryClient.invalidateQueries({ queryKey: ["my-applications"] });
+      await queryClient.invalidateQueries({ queryKey: ["my-saved-jobs"] });
+      await queryClient.invalidateQueries({ queryKey: ["my-conversations"] });
+      await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
+      await queryClient.invalidateQueries({ queryKey: ["my-form-templates"] });
+      await queryClient.invalidateQueries({ queryKey: ["my-form-template"] });
+    }
+
+    return response;
   };
 
   const verify = async (userId: string, key: string) => {
