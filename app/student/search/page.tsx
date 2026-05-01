@@ -647,7 +647,6 @@ export default function SearchPage() {
 
       {/* Success Modal */}
       <ApplySuccessModal job={selectedJob} ref={applySuccessModalRef} />
-
     </>
   );
 }
