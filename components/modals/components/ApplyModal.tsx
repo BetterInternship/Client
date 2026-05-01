@@ -169,7 +169,13 @@ export function ApplyModal({
           toast.error("Could not upload your resume. Please try again.");
           return;
         }
+        await queryClient.invalidateQueries({ queryKey: ["my-resumes"] });
         setUploadedResumeId(id);
+        setResumeChoice(id);
+        setShowUpload(false);
+        setSelectedFile(null);
+        setResumeLabel("");
+        setUploadStatus("idle");
       }
       setStep(2);
     } catch (error) {
@@ -254,9 +260,7 @@ export function ApplyModal({
           <div className="text-xs font-medium uppercase tracking-wide text-primary pt-6">
             Step {step} of {totalSteps}
           </div>
-          <h3 className="mt-1 text-xl font-semibold text-gray-900">
-            {title}
-          </h3>
+          <h3 className="mt-1 text-xl font-semibold text-gray-900">{title}</h3>
           <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         </div>
 
@@ -377,8 +381,13 @@ export function ApplyModal({
               )}
             </AnimatePresence>
 
-            <div className="mt-6 flex justify-end gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={onCancel}>
+            <div className="mt-6 flex justify-between gap-3 pt-4 border-t">
+              <Button
+                type="button"
+                scheme="destructive"
+                variant="outline"
+                onClick={onCancel}
+              >
                 Cancel
               </Button>
               <Button
@@ -464,21 +473,22 @@ export function ApplyModal({
             <div className="mt-6 flex justify-between gap-3 pt-4 border-t">
               <Button
                 type="button"
-                variant="ghost"
-                onClick={() => setStep(1)}
-                className="px-2"
+                variant="outline"
+                scheme="destructive"
+                onClick={onCancel}
                 disabled={saving}
               >
-                Back
+                Cancel
               </Button>
               <div className="flex gap-3">
                 <Button
                   type="button"
-                  variant="outline"
-                  onClick={onCancel}
+                  variant="ghost"
+                  onClick={() => setStep(1)}
+                  className="px-2"
                   disabled={saving}
                 >
-                  Cancel
+                  Back
                 </Button>
                 <Button
                   onClick={handleDetailsNext}
@@ -515,21 +525,22 @@ export function ApplyModal({
             <div className="mt-6 flex justify-between gap-3 pt-4 border-t">
               <Button
                 type="button"
-                variant="ghost"
-                onClick={goBack}
-                className="px-2"
+                variant="outline"
+                scheme="destructive"
+                onClick={onCancel}
                 disabled={saving}
               >
-                Back
+                Cancel
               </Button>
               <div className="flex gap-3">
                 <Button
                   type="button"
-                  variant="outline"
-                  onClick={onCancel}
+                  variant="ghost"
+                  onClick={goBack}
+                  className="px-2"
                   disabled={saving}
                 >
-                  Cancel
+                  Back
                 </Button>
                 <Button onClick={handleApply} disabled={!canSubmit || saving}>
                   {saving ? "Applying..." : applyLabel}
