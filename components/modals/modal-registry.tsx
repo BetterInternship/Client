@@ -17,13 +17,15 @@ import {
   MassApplyResults,
   MassApplyResultsData,
 } from "./components/MassApplyResults";
+import { CompleteProfileApplyModal } from "./components/CompleteProfileApplyModal";
 import { FormPreviewPdfDisplay } from "../features/student/forms/previewer";
 import { IFormSigningParty } from "@betterinternship/core/forms";
 import { ApplicationAction } from "@/lib/consts/application";
 import { EmployerApplication } from "@/lib/db/db.types";
 import ApplicationActionModal from "./ApplicationActionModal";
 import DeleteJobListingModal from "./DeleteJobListingModal";
-import { Job } from "@/lib/db/db.types";
+import ApplyModal from "./ApplyModal";
+import { Job, PublicUser, User } from "@/lib/db/db.types";
 
 /**
  * Simplifies modal config since we usually reuse each of these modal stuffs.
@@ -95,6 +97,59 @@ export const useModalRegistry = () => {
             },
           ),
         close: () => close("application-action"),
+      },
+      // Modal for applying to a job with a resume upload.
+      apply: {
+        open: ({
+          applicant,
+          onConfirm,
+        }: {
+          applicant: User;
+          onConfirm: (file: File) => void | Promise<void>;
+        }) =>
+          open(
+            "apply",
+            DefaultModalLayout,
+            <ApplyModal
+              applicant={applicant}
+              onCancel={() => close("apply")}
+              onConfirm={onConfirm}
+            />,
+            {
+              title: "Apply to job",
+              closeOnBackdropClick: false,
+              closeOnEscapeKey: true,
+              showHeaderDivider: true,
+            },
+          ),
+        close: () => close("apply"),
+      },
+      completeProfileApply: {
+        open: ({
+          profile,
+          onApply,
+          applyLabel,
+        }: {
+          profile: PublicUser | null;
+          onApply: () => void | Promise<void>;
+          applyLabel?: string;
+        }) =>
+          open(
+            "complete-profile-apply",
+            DefaultModalLayout,
+            <CompleteProfileApplyModal
+              profile={profile}
+              applyLabel={applyLabel}
+              onApply={onApply}
+              onCancel={() => close("complete-profile-apply")}
+            />,
+            {
+              closeOnBackdropClick: false,
+              showCloseButton: false,
+              showHeaderDivider: false,
+            },
+          ),
+        close: () => close("complete-profile-apply"),
       },
       // Mass apply fill-out modal
       massApplyCompose: {

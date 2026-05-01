@@ -20,7 +20,7 @@ import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { JobModal } from "@/components/modals/JobModal";
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { isProfileBaseComplete, isProfileResume } from "@/lib/profile";
+import { isProfileApplyReady } from "@/lib/profile";
 import { useRouter } from "next/navigation";
 import { SaveJobButton } from "@/components/features/student/job/save-job-button";
 import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job-button";
@@ -194,12 +194,31 @@ export default function SearchPage() {
       return;
     }
 
-    if (
-      !isProfileResume(profile.data) ||
-      !isProfileBaseComplete(profile.data) ||
-      profile.data?.acknowledged_auto_apply === false
-    ) {
-      return router.push(`profile/complete-profile?dest=search`);
+    if (!isProfileApplyReady(profile.data)) {
+      modalRegistry.completeProfileApply.open({
+        profile: profile.data,
+        applyLabel: `Apply to ${selectedIds.size || 0}`,
+        onApply: () => {
+          const allApplied =
+            selectedJobsList.length > 0 &&
+            selectedJobsList.every((j) => jobs.isJobApplied(j.id!));
+          if (!selectedJobsList.length || allApplied) {
+            alert(
+              "No eligible jobs selected. Select jobs you haven’t applied to yet.",
+            );
+            return;
+          }
+
+          modalRegistry.massApplyCompose.open({
+            bulkCoverLetter,
+            setBulkCoverLetter,
+            runMassApply,
+            massApplying,
+            selectedCount: selectedIds.size + "",
+          });
+        },
+      });
+      return;
     }
 
     const allApplied =

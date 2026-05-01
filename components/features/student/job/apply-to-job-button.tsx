@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CheckCircle } from "lucide-react";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { isProfileBaseComplete, isProfileResume } from "@/lib/profile";
+import { isProfileApplyReady } from "@/lib/profile";
 import { useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import useModalRegistry from "@/components/modals/modal-registry";
 
 // ! todo: rmove openAppModal and use openGlobalModal instead
 export const ApplyToJobButton = ({
@@ -22,9 +22,9 @@ export const ApplyToJobButton = ({
   className?: string;
 }) => {
   const auth = useAuthContext();
+  const modalRegistry = useModalRegistry();
   const jobs = useJobsData();
   const applied = useMemo(() => !!jobs.isJobApplied(job.id!), [jobs]);
-  const router = useRouter();
   const isSuperListing = Boolean(job.challenge);
 
   /**
@@ -38,12 +38,12 @@ export const ApplyToJobButton = ({
       return;
     }
 
-    if (
-      !isProfileResume(profile) ||
-      !isProfileBaseComplete(profile) ||
-      profile.acknowledged_auto_apply === false
-    ) {
-      return router.push(`/profile/complete-profile?dest=search/${job.id}`);
+    if (!isProfileApplyReady(profile)) {
+      modalRegistry.completeProfileApply.open({
+        profile,
+        onApply: openAppModal,
+      });
+      return;
     }
 
     if (applied) {
