@@ -76,8 +76,8 @@ export function AddResumeModal({
   }
 
   return (
-    <div className="w-full sm:w-[34rem] p-4 sm:p-0">
-      <div className="space-y-5">
+    <div className="w-full sm:w-[34rem] p-4 sm:p-0 px-8">
+      <div className="space-y-5 px-8 p-4">
         <div className="relative pr-10">
           <h3 className="mt-1 text-xl font-semibold text-gray-900">
             Upload new resume
