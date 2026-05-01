@@ -29,6 +29,7 @@ import useModalRegistry from "@/components/modals/modal-registry";
 import { Loader } from "@/components/ui/loader";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
+import { toast } from "sonner";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -193,7 +194,7 @@ export default function SearchPage() {
       selectedJobsList.length > 0 &&
       selectedJobsList.every((j) => jobs.isJobApplied(j.id!));
     if (!selectedJobsList.length || allApplied) {
-      alert(
+      toast.error(
         "No eligible jobs selected. Select jobs you haven’t applied to yet.",
       );
       return;
@@ -325,7 +326,7 @@ export default function SearchPage() {
       });
 
       if (response.message) {
-        alert(response.message);
+        toast.error(response.message);
         return;
       }
 

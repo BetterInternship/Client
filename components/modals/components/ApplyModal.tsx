@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 type InternshipType = "credited" | "voluntary";
-type UploadStatus = "idle" | "ready" | "uploading" | "uploaded";
+type UploadStatus = "idle" | "uploading" | "uploaded";
 export type ApplyPayload = {
   resumeId: string;
   coverLetter: string;
@@ -98,6 +98,7 @@ export function ApplyModal({
   const [year, setYear] = useState(initialDate.year);
   const [saving, setSaving] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadedResumeId, setUploadedResumeId] = useState<string | null>(null);
   const [coverLetter, setCoverLetter] = useState("");
 
@@ -106,7 +107,8 @@ export function ApplyModal({
   useEffect(() => {
     if (!selectedFile) return;
     setResumeLabel(stripPdfExtension(selectedFile.name));
-    setUploadStatus("ready");
+    setUploadStatus("idle");
+    setUploadProgress(0);
     const focusTimer = window.setTimeout(() => {
       resumeNameInputRef.current?.focus();
       resumeNameInputRef.current?.select();
@@ -121,6 +123,27 @@ export function ApplyModal({
     }, 120);
     return () => window.clearTimeout(focusTimer);
   }, [step]);
+
+  useEffect(() => {
+    if (uploadStatus !== "uploading") return;
+
+    let timeout: number | undefined;
+    const tick = () => {
+      setUploadProgress((current) => {
+        if (current >= 91) return current;
+        return Math.min(
+          91,
+          current + Math.max(1, Math.round(Math.random() * 8)),
+        );
+      });
+      timeout = window.setTimeout(tick, 140 + Math.random() * 360);
+    };
+
+    timeout = window.setTimeout(tick, 140 + Math.random() * 360);
+    return () => {
+      if (timeout) window.clearTimeout(timeout);
+    };
+  }, [uploadStatus]);
 
   const years = useMemo(() => {
     const current = new Date().getFullYear();
@@ -144,13 +167,21 @@ export function ApplyModal({
     form.append("resume", selectedFile, uploadFilename);
     form.append("label", label);
 
+    setUploadProgress(5);
     setUploadStatus("uploading");
-    const response = (await UserService.updateMyResume(form)) as {
-      success?: boolean;
-      resume?: { id: string };
-    };
+    const [response] = (await Promise.all([
+      UserService.updateMyResume(form),
+      sleep(2000),
+    ])) as [
+      {
+        success?: boolean;
+        resume?: { id: string };
+      },
+      void,
+    ];
     const ok = response.success !== false;
-    setUploadStatus(ok ? "uploaded" : "ready");
+    setUploadProgress(ok ? 100 : 0);
+    setUploadStatus(ok ? "uploaded" : "idle");
 
     if (ok && response.resume?.id) {
       return response.resume.id;
@@ -176,11 +207,13 @@ export function ApplyModal({
         setSelectedFile(null);
         setResumeLabel("");
         setUploadStatus("idle");
+        setUploadProgress(0);
       }
       setStep(2);
     } catch (error) {
       console.error(error);
-      setUploadStatus("ready");
+      setUploadStatus("idle");
+      setUploadProgress(0);
       toast.error("Could not upload your resume. Please try again.");
     } finally {
       setSaving(false);
@@ -347,7 +380,8 @@ export function ApplyModal({
                       isParsing={false}
                       onSelect={(file) => {
                         setSelectedFile(file);
-                        setUploadStatus("ready");
+                        setUploadStatus("idle");
+                        setUploadProgress(0);
                       }}
                       onComplete={() => {}}
                     />
@@ -367,12 +401,16 @@ export function ApplyModal({
                             value={resumeLabel}
                             setter={(value) => {
                               setResumeLabel(value);
-                              setUploadStatus("ready");
+                              setUploadStatus("idle");
+                              setUploadProgress(0);
                             }}
                             placeholder="e.g. Frontend Developer Resume"
                             autoComplete="off"
                           />
-                          <UploadProgress status={uploadStatus} />
+                          <UploadProgress
+                            status={uploadStatus}
+                            progress={uploadProgress}
+                          />
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -554,16 +592,17 @@ export function ApplyModal({
   );
 }
 
-function UploadProgress({ status }: { status: UploadStatus }) {
+function UploadProgress({
+  status,
+  progress,
+}: {
+  status: UploadStatus;
+  progress: number;
+}) {
   if (status === "idle") return null;
 
-  const progress = status === "ready" ? 35 : status === "uploading" ? 72 : 100;
   const label =
-    status === "ready"
-      ? "Ready to upload"
-      : status === "uploading"
-        ? "Uploading resume..."
-        : "Resume uploaded";
+    status === "uploading" ? "Uploading resume..." : "Resume uploaded";
 
   return (
     <div className="mt-3 space-y-1.5">
@@ -585,6 +624,10 @@ function UploadProgress({ status }: { status: UploadStatus }) {
 
 function stripPdfExtension(name: string) {
   return name.replace(/\.pdf$/i, "");
+}
+
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => window.setTimeout(resolve, ms));
 }
 
 function timestampToMonthYear(timestamp?: number | null) {

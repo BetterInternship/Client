@@ -18,6 +18,7 @@ import { useApplicationActions } from "@/lib/api/student.actions.api";
 import { ShareJobButton } from "@/components/features/student/job/share-job-button";
 import { useAuthContext } from "@/lib/ctx-auth";
 import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
+import { toast } from "sonner";
 
 /**
  * The individual job page.
@@ -50,7 +51,7 @@ export default function JobPage() {
       });
 
       if (response.message) {
-        alert(response.message);
+        toast.error(response.message);
         return;
       }
 

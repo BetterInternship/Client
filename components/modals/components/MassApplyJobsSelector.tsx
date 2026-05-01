@@ -7,6 +7,7 @@ import { useJobsData } from "@/lib/api/student.data.api";
 import { useMassApply } from "@/lib/api/god.api";
 import { Job } from "@/lib/db/db.types";
 import { useAuthContext } from "@/lib/ctx-auth";
+import { toast } from "sonner";
 
 interface MassApplyJobsSelectorProps {
   selectedStudentIds: Set<string>;
@@ -47,12 +48,12 @@ export function MassApplyJobsSelector({
 
   const handleApply = async () => {
     if (!selectedJobId) {
-      alert("Please select a job");
+      toast.error("Please select a job");
       return;
     }
 
     if (!coverLetter.trim()) {
-      alert("Please enter a cover letter");
+      toast.error("Please enter a cover letter");
       return;
     }
 
@@ -62,13 +63,13 @@ export function MassApplyJobsSelector({
         studentIds: Array.from(selectedStudentIds),
         coverLetter: coverLetter.trim(),
       });
-      alert(
+      toast.success(
         `Successfully applied ${selectedStudentIds.size} student(s) to the job!`,
       );
       onClose();
     } catch (error) {
       console.error("Mass apply error:", error);
-      alert("Failed to apply students. Check console for details.");
+      toast.error("Failed to apply students. Check console for details.");
     }
   };
 
