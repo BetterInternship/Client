@@ -276,9 +276,10 @@ export const FormService = {
 };
 
 export const UserService = {
-  async getMyProfile() {
+  async getMyProfile(options: RequestInit = {}) {
     const result = APIClient.get<UserResponse>(
       APIRouteBuilder("users").r("me").build(),
+      options,
     );
     return result;
   },
