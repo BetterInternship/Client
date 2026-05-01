@@ -23,7 +23,7 @@ import { Property } from "../ui/labels";
 import { Toggle } from "../ui/toggle";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAppContext } from "@/lib/ctx-app";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { useProfileData } from "@/lib/api/student.data.api";
 
 export const JobHead = ({
   title,
@@ -155,18 +155,21 @@ export const JobBadges = ({
   job: Job;
   excludes?: string[];
 }) => {
-  const { universities } = useDbRefs();
+  const profile = useProfileData();
+  const universityId =
+    typeof profile.data?.university === "string"
+      ? profile.data.university
+      : undefined;
+  const employerId =
+    typeof job.employer_id === "string" ? job.employer_id : undefined;
 
   const workModes = job.internship_preferences?.job_setup_ids ?? [];
   const workLoads = job.internship_preferences?.job_commitment_ids ?? [];
 
   return (
     <div className="flex flex-wrap gap-2 mb-4">
-      {!excludes.includes("moa") && (
-        <EmployerMOA
-          employer_id={job.employer_id}
-          university_id={universities[0]?.id}
-        />
+      {!excludes.includes("moa") && universityId && employerId && (
+        <EmployerMOA employer_id={employerId} university_id={universityId} />
       )}
       {!excludes.includes("unlisted") && job.is_unlisted && (
         <Badge type="warning">
@@ -196,7 +199,9 @@ export const EmployerMOA = ({
   const { check } = useDbMoa();
   const { get_university } = useDbRefs();
 
-  return check(employer_id ?? "", university_id ?? "") ? (
+  if (!employer_id || !university_id) return <></>;
+
+  return check(employer_id, university_id) ? (
     <Badge type="supportive">
       <CheckCircle className="w-3 h-3 mr-1" />
       {get_university(university_id)?.name?.split(" ")[0]} MOA

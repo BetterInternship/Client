@@ -60,25 +60,16 @@ export const isProfileVerified = (profile?: PublicUser | null) => {
 };
 
 /**
- * Checks if resume has been uploaded before.
+ * Use this in the future, maybe we shud require it again to apply
  *
  * @param profile
  * @returns
  */
-export const isProfileResume = (profile?: PublicUser | null) => {
-  if (!profile) return false;
-  return !!profile.resume?.trim();
-};
-
 export const isProfileApplyReady = (profile?: PublicUser | null) => {
   if (!profile) return false;
 
   const preferences = profile.internship_preferences;
-  return (
-    isProfileResume(profile) &&
-    !!preferences?.internship_type &&
-    !!preferences?.expected_start_date
-  );
+  return !!preferences?.internship_type && !!preferences?.expected_start_date;
 };
 
 /**

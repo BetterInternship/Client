@@ -1,6 +1,5 @@
 import { useClientDimensions } from "@/hooks/use-dimensions";
 import { useAppContext } from "@/lib/ctx-app";
-import { FileWarning } from "lucide-react";
 
 export const PDFPreview = ({ url }: { url: string }) => {
   const { isMobile } = useAppContext();
