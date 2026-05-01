@@ -54,14 +54,15 @@ export function RegisterStep({
         />
       </div>
 
-      <FormDropdown
+      <Autocomplete
         label="University"
-        maxLength={40}
+        placeholder="University"
         setter={(val) => {
           regForm.setValue("university", String(val));
         }}
         options={refs.universities}
-        tooltip="If your university is not in the list, please contact us at the 'Need help' link."
+        value={regForm.watch("university")! || ""}
+        required={true}
       />
 
       <Autocomplete
@@ -71,8 +72,9 @@ export function RegisterStep({
         setter={(val) => {
           regForm.setValue("degree", String(val));
         }}
-        value={+regForm.watch("degree")! || ""}
+        value={regForm.watch("degree") || ""}
         required={true}
+        allowCustomValue={true}
       />
 
       {/* create account */}

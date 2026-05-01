@@ -12,7 +12,6 @@ import { RegisterStep } from "./steps/RegisterStep";
 import { OTPEmailStep } from "./steps/OTPEmailStep";
 import { OTPEnterStep } from "./steps/OTPEnterStep";
 import { RegisterCarousel } from "@/components/features/student/register/RegisterCarousel";
-import { DEGREES } from "./steps/tempDegrees";
 
 export interface FormInputs {
   first_name?: string;
@@ -25,7 +24,6 @@ export interface FormInputs {
 export function RegisterPageContent() {
   const refs = useDbRefs();
   const auth = useAuthContext();
-  const profile = useProfileData();
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -107,16 +105,13 @@ export function RegisterPageContent() {
     // Extract fields
     const { university, first_name, middle_name, last_name, degree } = values;
 
-    // TEMP: this should be removed alongside the temp degree frontend implementation.
-    const mappedDegree = DEGREES.find((d) => parseInt(degree) === d.id)?.name;
-
     auth
       .register({
         university,
         first_name,
         middle_name,
         last_name,
-        degree: mappedDegree,
+        degree,
       })
       .then((response) => {
         if (response?.message) {
