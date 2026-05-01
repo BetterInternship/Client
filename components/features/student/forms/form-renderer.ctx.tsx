@@ -257,7 +257,7 @@ function getBlocksForCurrentMode<T extends any[]>(
 
   return blocks.filter((block) => {
     const field = block.field_schema ?? block.phantom_field_schema;
-    return field?.type !== "signature";
+    return !!field && field.type !== "signature";
   });
 }
 
