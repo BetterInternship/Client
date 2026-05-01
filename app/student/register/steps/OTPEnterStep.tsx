@@ -1,13 +1,8 @@
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
-import { AuthService } from "@/lib/api/services";
-import { useQueryClient } from "@tanstack/react-query";
-import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { AlertTriangle } from "lucide-react";
+import { useStudentOtpVerification } from "@/hooks/use-student-otp-verification";
+import { StudentOtpInput } from "@/components/features/student/register/StudentOtpInput";
 
 /**
  * The third step to registering where the user inputs the verification code sent to their email.
@@ -25,86 +20,35 @@ export function OTPEnterStep({
   onFinishAction: () => void;
   onBackAction: () => void;
 }) {
-  const queryClient = useQueryClient();
-  const [otp, setOtp] = useState("");
-  const [otpError, setOtpError] = useState("");
-  const [activating, setActivating] = useState(false);
-  const activatingRef = useRef(false);
-
-  // resend state
-  const [sending, setSending] = useState(false);
-  const [isCoolingDown, setIsCoolingDown] = useState(true);
-  const [countdown, setCountdown] = useState(60);
-
-  useEffect(() => {
-    if (!isCoolingDown) return;
-
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    } else if (countdown === 0 && isCoolingDown) {
-      setIsCoolingDown(false);
-    }
-  }, [countdown, isCoolingDown]);
-
-  // auto-activate when six digits are entered.
-  useEffect(() => {
-    if (otp.length !== 6 || activatingRef.current) return;
-
-    activatingRef.current = true;
-    setActivating(true);
-    setOtpError("");
-
-    AuthService.activate(eduEmail, otp)
-      .then(async (response) => {
-        await queryClient.invalidateQueries({
-          queryKey: ["my-profile"],
-        });
-
-        if (response?.success === true) {
-          onFinishAction();
-        } else {
-          setOtpError(
-            response?.message?.trim() ||
-              response?.error?.trim() ||
-              "Verification code not valid.",
-          );
-
-          activatingRef.current = false;
-        }
-      })
-      .catch(() => {
-        setOtpError("Couldn't verify your code. Try again.");
-        activatingRef.current = false;
-      })
-      .finally(() => setActivating(false));
-  }, [otp, eduEmail, onFinishAction, queryClient]);
+  const {
+    countdown,
+    error: otpError,
+    isCoolingDown,
+    otpInputProps,
+    requestOtp,
+    sending,
+  } = useStudentOtpVerification({
+    email: eduEmail,
+    autoActivate: {
+      onSuccess: onFinishAction,
+    },
+    initialCoolingDown: true,
+  });
 
   // connect to the authentication service to request the otp.
-  const requestOTP = () => {
+  const requestOTP = async () => {
     // check if the otp can be requested before doing anything.
     if (sending || isCoolingDown) return;
-    setSending(true);
-    setOtpError("");
 
-    AuthService.requestActivation(eduEmail)
-      .then((response) => {
-        if (response?.success !== true) {
-          setOtpError(
-            response?.message?.trim() ||
-              response?.error?.trim() ||
-              "Couldn't send verification code. Try again.",
-          );
-          return;
-        }
-        toast.success(
-          "Verification code sent. Check your inbox for the six-digit code.",
-        );
-        setIsCoolingDown(true);
-        setCountdown(60);
-      })
-      .catch(() => setOtpError("Couldn't send verification code. Try again."))
-      .finally(() => setSending(false));
+    const result = await requestOtp({
+      failureMessage: "Couldn't send verification code. Try again.",
+    });
+
+    if (result?.success !== true) return;
+
+    toast.success(
+      "Verification code sent. Check your inbox for the six-digit code.",
+    );
   };
 
   return (
@@ -120,22 +64,15 @@ export function OTPEnterStep({
           <div className="text-sm font-medium text-gray-700 text-center">
             Enter the 6-digit code sent to your email
           </div>
-          <InputOTP
-            maxLength={6}
-            value={otp}
-            onChange={setOtp}
-            containerClassName="justify-center"
-          >
-            <InputOTPGroup>
-              <InputOTPSlot index={0} />
-              <InputOTPSlot index={1} />
-              <InputOTPSlot index={2} />
-              <InputOTPSlot index={3} />
-              <InputOTPSlot index={4} />
-              <InputOTPSlot index={5} />
-            </InputOTPGroup>
-          </InputOTP>
+          <StudentOtpInput {...otpInputProps} />
         </div>
+
+        {otpError && (
+          <div className="flex items-center gap-2 rounded-[0.5em] border border-amber-300 bg-amber-50 p-3 text-amber-900 text-sm">
+            <AlertTriangle className="h-4 w-4" />
+            <span>{otpError}</span>
+          </div>
+        )}
 
         <div className="flex flex-col sm:flex-row justify-between items-center gap-2 mt-4">
           <Button
@@ -150,7 +87,7 @@ export function OTPEnterStep({
           <Button
             type="button"
             variant="outline"
-            onClick={requestOTP}
+            onClick={() => void requestOTP()}
             disabled={sending || isCoolingDown}
             className="w-full sm:w-auto"
           >

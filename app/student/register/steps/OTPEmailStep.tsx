@@ -1,9 +1,9 @@
-import { AuthService } from "@/lib/api/services";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { FormInput } from "@/components/EditForm";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useStudentOtpVerification } from "@/hooks/use-student-otp-verification";
 
 /**
  * The second step to registering where the user verifies their education email
@@ -20,12 +20,13 @@ export function OTPEmailStep({
   onSkipAction: () => void;
 }) {
   const profile = useProfileData();
-  const [sending, setSending] = useState(false);
   const [eduEmail, setEduEmail] = useState(
     profile.data?.edu_verification_email ?? "",
   );
   const [isEmailValid, setIsEmailValid] = useState(false);
-  const [error, setError] = useState("");
+  const { error, requestOtp, sending } = useStudentOtpVerification({
+    email: eduEmail,
+  });
 
   // set the education email if it doesn't exist on the user account.
   useEffect(() => {
@@ -40,27 +41,18 @@ export function OTPEmailStep({
     setIsEmailValid(true);
   }, [eduEmail]);
 
-  const requestOTP = () => {
+  const requestOTP = async () => {
     if (!isEmailValid || sending) return;
-    setSending(true);
-    setError("");
 
-    AuthService.requestActivation(eduEmail)
-      .then((response) => {
-        if (response?.success !== true) {
-          console.log("OTP request failed:", response);
-          const err =
-            response?.message?.trim() ||
-            response?.error?.trim() ||
-            "Couldn't send OTP. Try again.";
-          setError(err);
-          return;
-        }
-        toast.success("OTP sent. Check your inbox for the six-digit code.");
-        onNextAction(eduEmail);
-      })
-      .catch(() => setError("Couldn't send OTP. Try again."))
-      .finally(() => setSending(false));
+    const result = await requestOtp({
+      failureMessage: "Couldn't send OTP. Try again.",
+      startCooldown: false,
+    });
+
+    if (result?.success !== true) return;
+
+    toast.success("OTP sent. Check your inbox for the six-digit code.");
+    onNextAction(eduEmail);
   };
 
   return (
@@ -81,9 +73,16 @@ export function OTPEmailStep({
             label="Education email"
             value={eduEmail}
             maxLength={40}
-            setter={setEduEmail}
+            setter={(value) => {
+              setEduEmail(value);
+            }}
             placeholder="student@school.edu.ph"
           />
+          {error && (
+            <p className="mt-2 text-xs text-destructive" role="alert">
+              {error}
+            </p>
+          )}
         </div>
       </div>
 
@@ -98,7 +97,7 @@ export function OTPEmailStep({
         </Button>
         <Button
           type="button"
-          onClick={requestOTP}
+          onClick={() => void requestOTP()}
           disabled={!isEmailValid || sending}
         >
           {sending ? "Sending..." : "Send OTP"}

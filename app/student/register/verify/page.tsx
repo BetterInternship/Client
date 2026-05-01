@@ -6,19 +6,15 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
 import { AlertTriangle, Repeat } from "lucide-react";
 import { useProfileData } from "@/lib/api/student.data.api";
-import { AuthService } from "@/lib/api/services";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Loader } from "@/components/ui/loader";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
+import { useStudentOtpVerification } from "@/hooks/use-student-otp-verification";
+import { StudentOtpInput } from "@/components/features/student/register/StudentOtpInput";
 
 export default function VerifyPage() {
   const router = useRouter();
@@ -87,18 +83,26 @@ export default function VerifyPage() {
 
 function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
   const profile = useProfileData();
-  const queryClient = useQueryClient();
-  const [otp, setOtp] = useState("");
-  const [otpError, setOtpError] = useState("");
-  const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [eduEmail, setEduEmail] = useState(
     profile.data?.edu_verification_email ?? "",
   );
   const [isEmailValid, setIsEmailValid] = useState(false);
-  const [isCoolingDown, setIsCoolingDown] = useState(false);
-  const [activating, setActivating] = useState(false);
-  const [countdown, setCountdown] = useState(0);
+  const {
+    activating,
+    countdown,
+    error: otpError,
+    isCoolingDown,
+    otpInputProps,
+    requestOtp,
+    sending,
+  } = useStudentOtpVerification({
+    email: eduEmail,
+    autoActivate: {
+      failureMessage: "OTP not valid.",
+      onSuccess: onFinish,
+    },
+  });
 
   useEffect(() => {
     if (!eduEmail && profile.data?.edu_verification_email) {
@@ -112,64 +116,21 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
     setIsEmailValid(true);
   }, [eduEmail]);
 
-  // auto-activate once 6 digits entered
-  useEffect(() => {
-    if (otp.length !== 6) return;
-    setActivating(true);
-    setOtpError("");
-    AuthService.activate(eduEmail, otp)
-      .then(async (response) => {
-        await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-
-        if (response?.success === true) {
-          onFinish();
-        } else {
-          setOtpError(
-            response?.message?.trim() ||
-              response?.error?.trim() ||
-              "OTP not valid.",
-          );
-        }
-      })
-      .catch(() => setOtpError("Couldn't verify your code. Try again."))
-      .finally(() => setActivating(false));
-  }, [otp, eduEmail, onFinish, queryClient]);
-
-  const requestOTP = () => {
+  const requestOTP = async () => {
     if (!isEmailValid || sending || isCoolingDown) return;
-    setSending(true);
-    setOtpError("");
-    AuthService.requestActivation(eduEmail)
-      .then((response) => {
-        if (response?.success !== true) {
-          console.log("OTP request failed:", response);
-          const err =
-            response?.message?.trim() ||
-            response?.error?.trim() ||
-            "Couldn't send OTP. Try again.";
-          setOtpError(err);
-          return;
-        }
-        toast.success(
-          "OTP sent. Check your inbox for the 6-digit code.",
-          toastPresets.success,
-        );
-        setSent(true);
-        setIsCoolingDown(true);
-        setCountdown(60);
-      })
-      .catch(() => setOtpError("Couldn't send OTP. Try again."))
-      .finally(() => setSending(false));
-  };
 
-  useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    } else if (countdown === 0 && isCoolingDown) {
-      setIsCoolingDown(false);
-    }
-  }, [countdown, isCoolingDown]);
+    const result = await requestOtp({
+      failureMessage: "Couldn't send OTP. Try again.",
+    });
+
+    if (result?.success !== true) return;
+
+    toast.success(
+      "OTP sent. Check your inbox for the 6-digit code.",
+      toastPresets.success,
+    );
+    setSent(true);
+  };
 
   return (
     <>
@@ -184,7 +145,9 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
               type="email"
               placeholder="email@uni.edu.ph"
               className="h-11"
-              onChange={(e) => setEduEmail(e.currentTarget.value)}
+              onChange={(e) => {
+                setEduEmail(e.currentTarget.value);
+              }}
             />
 
             <div className="mt-4 space-y-4">
@@ -194,21 +157,7 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
                     <div className="text-sm font-medium text-gray-700 text-center">
                       Enter the 6-digit code sent to your email
                     </div>
-                    <InputOTP
-                      maxLength={6}
-                      value={otp}
-                      onChange={setOtp}
-                      containerClassName="justify-center"
-                    >
-                      <InputOTPGroup>
-                        <InputOTPSlot index={0} />
-                        <InputOTPSlot index={1} />
-                        <InputOTPSlot index={2} />
-                        <InputOTPSlot index={3} />
-                        <InputOTPSlot index={4} />
-                        <InputOTPSlot index={5} />
-                      </InputOTPGroup>
-                    </InputOTP>
+                    <StudentOtpInput {...otpInputProps} />
                   </div>
                 )}
               </div>
@@ -231,7 +180,7 @@ function StepActivateOTP({ onFinish }: { onFinish: () => void }) {
               <div className="mt-3 flex justify-end gap-2 text-sm">
                 <Button
                   type="button"
-                  onClick={requestOTP}
+                  onClick={() => void requestOTP()}
                   size={"md"}
                   className="w-full sm:w-auto"
                   disabled={sending || !isEmailValid || isCoolingDown}
