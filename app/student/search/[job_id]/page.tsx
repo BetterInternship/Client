@@ -17,6 +17,7 @@ import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job
 import { useApplicationActions } from "@/lib/api/student.actions.api";
 import { ShareJobButton } from "@/components/features/student/job/share-job-button";
 import { useAuthContext } from "@/lib/ctx-auth";
+import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
 
 /**
  * The individual job page.
@@ -35,22 +36,28 @@ export default function JobPage() {
   const profile = useProfileData();
   const { isAuthenticated } = useAuthContext();
 
-  const handleApply = useCallback(async () => {
-    if (!job.data?.id) return;
+  const handleApply = useCallback(
+    async ({ resumeId, coverLetter }: ApplyPayload) => {
+      if (!job.data?.id || !resumeId) return;
 
-    const response = await applicationActions.create.mutateAsync({
-      job_id: job.data.id,
-      resume_id: "",
-      cover_letter: "",
-    });
+      const response = await applicationActions.create.mutateAsync({
+        job_id: job.data.id,
+        resume_id: resumeId,
+        cover_letter:
+          job.data.internship_preferences?.require_cover_letter === true
+            ? coverLetter
+            : "",
+      });
 
-    if (response.message) {
-      alert(response.message);
-      return;
-    }
+      if (response.message) {
+        alert(response.message);
+        return;
+      }
 
-    applySuccessModalRef.current?.open();
-  }, [applicationActions.create, job.data]);
+      applySuccessModalRef.current?.open();
+    },
+    [applicationActions.create, job.data],
+  );
 
   if (job.error)
     return (

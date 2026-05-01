@@ -28,6 +28,7 @@ import { useApplicationActions } from "@/lib/api/student.actions.api";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { Loader } from "@/components/ui/loader";
 import { motion, AnimatePresence } from "framer-motion";
+import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -201,8 +202,11 @@ export default function SearchPage() {
     modalRegistry.completeProfileApply.open({
       profile: profile.data,
       applyLabel: `Apply to ${selectedIds.size || 0}`,
-      onApply: (selectedResumeId: string) => {
-        void runMassApply(selectedResumeId, "");
+      requiresCoverLetter: selectedJobsList.some(
+        (job) => job.internship_preferences?.require_cover_letter === true,
+      ),
+      onApply: ({ resumeId, coverLetter }: ApplyPayload) => {
+        void runMassApply(resumeId, coverLetter);
       },
     });
   };
@@ -271,7 +275,10 @@ export default function SearchPage() {
             await applicationActions.create.mutateAsync({
               job_id: job.id ?? "",
               resume_id: resumeId,
-              cover_letter: "",
+              cover_letter:
+                job.internship_preferences?.require_cover_letter === true
+                  ? coverLetter
+                  : "",
             });
             if (applicationActions.create.error) {
               failed.push({
@@ -305,13 +312,16 @@ export default function SearchPage() {
     [profile.data, applicationActions, clearSelection, setSelectMode],
   );
   const handleSingleApply = useCallback(
-    async (selectedResumeId: string) => {
-      if (!selectedJob?.id || !selectedResumeId) return;
+    async ({ resumeId, coverLetter }: ApplyPayload) => {
+      if (!selectedJob?.id || !resumeId) return;
 
       const response = await applicationActions.create.mutateAsync({
         job_id: selectedJob.id,
-        resume_id: selectedResumeId,
-        cover_letter: "",
+        resume_id: resumeId,
+        cover_letter:
+          selectedJob.internship_preferences?.require_cover_letter === true
+            ? coverLetter
+            : "",
       });
 
       if (response.message) {

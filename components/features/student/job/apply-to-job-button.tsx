@@ -8,6 +8,7 @@ import { useMemo } from "react";
 import { toast } from "sonner";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { isProfileEligibleForListing } from "@/lib/profile";
+import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
 
 export const ApplyToJobButton = ({
   profile,
@@ -17,7 +18,7 @@ export const ApplyToJobButton = ({
 }: {
   profile: PublicUser | null;
   job: Job;
-  onApply: (resumeId: string) => void | Promise<void>;
+  onApply: (payload: ApplyPayload) => void | Promise<void>;
   className?: string;
 }) => {
   const auth = useAuthContext();
@@ -51,6 +52,8 @@ export const ApplyToJobButton = ({
 
     modalRegistry.completeProfileApply.open({
       profile,
+      requiresCoverLetter:
+        job.internship_preferences?.require_cover_letter === true,
       onApply,
     });
   };

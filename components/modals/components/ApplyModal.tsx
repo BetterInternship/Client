@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import ResumeUpload from "@/components/features/student/resume-parser/ResumeUpload";
 import { FormInput } from "@/components/EditForm";
 import { UserService } from "@/lib/api/services";
@@ -15,6 +16,10 @@ import Link from "next/link";
 
 type InternshipType = "credited" | "voluntary";
 type UploadStatus = "idle" | "ready" | "uploading" | "uploaded";
+export type ApplyPayload = {
+  resumeId: string;
+  coverLetter: string;
+};
 
 const MONTHS = [
   "January",
@@ -36,15 +41,18 @@ export function ApplyModal({
   onCancel,
   onApply,
   applyLabel = "Apply",
+  requiresCoverLetter = false,
 }: {
   profile: PublicUser | null;
   onCancel: () => void;
-  onApply: (resumeId: string) => void | Promise<void>;
+  onApply: (payload: ApplyPayload) => void | Promise<void>;
   applyLabel?: string;
+  requiresCoverLetter?: boolean;
 }) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resumeNameInputRef = useRef<HTMLInputElement>(null);
+  const coverLetterRef = useRef<HTMLTextAreaElement>(null);
 
   const { data: resumesData, isPending: resumesLoading } = useQuery({
     queryKey: ["my-resumes"],
@@ -62,7 +70,7 @@ export function ApplyModal({
     [profile?.internship_preferences?.expected_start_date],
   );
 
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [resumeChoice, setResumeChoice] = useState<string>("new");
   const [showUpload, setShowUpload] = useState(true);
 
@@ -91,6 +99,9 @@ export function ApplyModal({
   const [saving, setSaving] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
   const [uploadedResumeId, setUploadedResumeId] = useState<string | null>(null);
+  const [coverLetter, setCoverLetter] = useState("");
+
+  const totalSteps = requiresCoverLetter ? 3 : 2;
 
   useEffect(() => {
     if (!selectedFile) return;
@@ -103,6 +114,14 @@ export function ApplyModal({
     return () => window.clearTimeout(focusTimer);
   }, [selectedFile]);
 
+  useEffect(() => {
+    if (step !== 3) return;
+    const focusTimer = window.setTimeout(() => {
+      coverLetterRef.current?.focus();
+    }, 120);
+    return () => window.clearTimeout(focusTimer);
+  }, [step]);
+
   const years = useMemo(() => {
     const current = new Date().getFullYear();
     return Array.from({ length: 6 }, (_, i) => current + i);
@@ -113,6 +132,7 @@ export function ApplyModal({
       ? !!resumeChoice
       : !!selectedFile && !!resumeLabel.trim();
   const canApply = !!internshipType && month !== "" && year !== "";
+  const canSubmit = canApply && (!requiresCoverLetter || !!coverLetter.trim());
 
   async function uploadResumeIfNeeded(): Promise<string | null> {
     if (resumeChoice !== "new" || !selectedFile)
@@ -162,7 +182,7 @@ export function ApplyModal({
   }
 
   async function handleApply() {
-    if (!canApply) return;
+    if (!canSubmit) return;
 
     try {
       setSaving(true);
@@ -185,7 +205,10 @@ export function ApplyModal({
         resumeChoice === "new" ? uploadedResumeId : resumeChoice;
       if (!targetResumeId) throw new Error("No resume selected");
 
-      await onApply(targetResumeId);
+      await onApply({
+        resumeId: targetResumeId,
+        coverLetter: requiresCoverLetter ? coverLetter.trim() : "",
+      });
     } catch (error) {
       console.error(error);
       toast.error("Could not save your application preferences.");
@@ -194,21 +217,47 @@ export function ApplyModal({
     }
   }
 
+  function handleDetailsNext() {
+    if (!canApply) return;
+    if (requiresCoverLetter) {
+      setStep(3);
+      return;
+    }
+    void handleApply();
+  }
+
+  function goBack() {
+    if (step === 3) {
+      setStep(2);
+      return;
+    }
+    setStep(1);
+  }
+
+  const title =
+    step === 1
+      ? "Choose your resume"
+      : step === 2
+        ? "Internship details"
+        : "Cover letter";
+  const description =
+    step === 1
+      ? "Pick an existing resume or upload a fresh PDF before applying."
+      : step === 2
+        ? "These details help companies understand what kind of internship you need."
+        : "This listing requires a cover letter. Add it here before submitting your application.";
+
   return (
     <div className="w-full sm:w-[34rem]">
       <div className="space-y-5">
         <div className="relative pr-10">
           <div className="text-xs font-medium uppercase tracking-wide text-primary pt-6">
-            Step {step} of 2
+            Step {step} of {totalSteps}
           </div>
           <h3 className="mt-1 text-xl font-semibold text-gray-900">
-            {step === 1 ? "Choose your resume" : "Internship details"}
+            {title}
           </h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {step === 1
-              ? "Pick an existing resume or upload a fresh PDF before applying."
-              : "These details help companies understand what kind of internship you need."}
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         </div>
 
         {step === 1 ? (
@@ -340,7 +389,7 @@ export function ApplyModal({
               </Button>
             </div>
           </div>
-        ) : (
+        ) : step === 2 ? (
           <div className="space-y-6">
             <div className="space-y-4 pt-2">
               <div className="space-y-3">
@@ -431,7 +480,58 @@ export function ApplyModal({
                 >
                   Cancel
                 </Button>
-                <Button onClick={handleApply} disabled={!canApply || saving}>
+                <Button
+                  onClick={handleDetailsNext}
+                  disabled={!canApply || saving}
+                >
+                  {saving
+                    ? "Applying..."
+                    : requiresCoverLetter
+                      ? "Continue"
+                      : applyLabel}
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="space-y-3 pt-2">
+              <label
+                htmlFor="cover-letter"
+                className="text-sm font-medium text-gray-900"
+              >
+                Cover letter
+              </label>
+              <Textarea
+                id="cover-letter"
+                ref={coverLetterRef}
+                value={coverLetter}
+                onChange={(e) => setCoverLetter(e.target.value)}
+                placeholder="Write your cover letter here..."
+                className="min-h-48 resize-y rounded-[0.33em] border-gray-200 focus-visible:ring-primary"
+              />
+            </div>
+
+            <div className="mt-6 flex justify-between gap-3 pt-4 border-t">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={goBack}
+                className="px-2"
+                disabled={saving}
+              >
+                Back
+              </Button>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onCancel}
+                  disabled={saving}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleApply} disabled={!canSubmit || saving}>
                   {saving ? "Applying..." : applyLabel}
                 </Button>
               </div>

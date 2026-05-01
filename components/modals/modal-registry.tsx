@@ -17,6 +17,7 @@ import {
   MassApplyResultsData,
 } from "./components/MassApplyResults";
 import { ApplyModal } from "./components/ApplyModal";
+import type { ApplyPayload } from "./components/ApplyModal";
 import { MissingRequirementsModal } from "./components/MissingRequirementsModal";
 import { FormPreviewPdfDisplay } from "../features/student/forms/previewer";
 import { IFormSigningParty } from "@betterinternship/core/forms";
@@ -102,10 +103,12 @@ export const useModalRegistry = () => {
           profile,
           onApply,
           applyLabel,
+          requiresCoverLetter,
         }: {
           profile: PublicUser | null;
-          onApply: (resumeId: string) => void | Promise<void>;
+          onApply: (payload: ApplyPayload) => void | Promise<void>;
           applyLabel?: string;
+          requiresCoverLetter?: boolean;
         }) =>
           open(
             "complete-profile-apply",
@@ -113,6 +116,7 @@ export const useModalRegistry = () => {
             <ApplyModal
               profile={profile}
               applyLabel={applyLabel}
+              requiresCoverLetter={requiresCoverLetter}
               onApply={onApply}
               onCancel={() => close("complete-profile-apply")}
             />,
