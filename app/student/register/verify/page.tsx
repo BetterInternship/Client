@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,10 +17,22 @@ import { useStudentOtpVerification } from "@/hooks/use-student-otp-verification"
 import { StudentOtpInput } from "@/components/features/student/register/StudentOtpInput";
 import { isEduPhEmail } from "@/lib/utils/string-utils";
 
+const DEFAULT_VERIFICATION_REDIRECT = "/search";
+
+const resolveVerificationRedirect = (redirect: string | null) => {
+  const requestedRedirect = redirect?.trim();
+  if (!requestedRedirect) return DEFAULT_VERIFICATION_REDIRECT;
+  return `/${redirect}`;
+};
+
 export default function VerifyPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { redirectIfNotLoggedIn } = useAuthContext();
-  const nextUrl = "/search";
+  const nextUrl = useMemo(
+    () => resolveVerificationRedirect(searchParams.get("redirect")),
+    [searchParams],
+  );
   const profile = useProfileData();
   const queryClient = useQueryClient();
   const [mounted, setMounted] = useState(false);
@@ -38,10 +50,23 @@ export default function VerifyPage() {
   // Redirect only after we know the profile state
   useEffect(() => {
     if (profile.isPending) return;
-    if (profile.data?.is_verified) router.replace(nextUrl);
+    if (profile.data?.is_verified) {
+      if (nextUrl) router.replace(nextUrl);
+      else return;
+    }
     if (!profile.data)
       void queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-  }, [profile.isPending, profile.data?.is_verified, router]);
+  }, [
+    nextUrl,
+    profile.isPending,
+    profile.data?.is_verified,
+    queryClient,
+    router,
+  ]);
+
+  const finishVerification = useCallback(() => {
+    if (nextUrl) router.replace(nextUrl);
+  }, [nextUrl, router]);
 
   // Prevent hydration mismatch when client restores persisted query cache.
   // Server render and first client render both return null.
@@ -50,8 +75,12 @@ export default function VerifyPage() {
   // Wait for profile and auth checks; unauthenticated users are redirected
   if (profile.isPending) return <Loader>Loading...</Loader>;
   if (profile.data?.is_verified) {
-    router.replace(nextUrl);
-    return null;
+    if (nextUrl) {
+      router.replace(nextUrl);
+      return null;
+    } else {
+      return <Loader>Loading...</Loader>;
+    }
   }
   if (!profile.data) return <Loader>Loading...</Loader>;
 
@@ -89,7 +118,7 @@ export default function VerifyPage() {
           </div>
 
           <Card className="p-5 sm:p-7 block w-full max-w-lg border border-primary/20 shadow-md">
-            <StepActivateOTP onFinish={() => router.replace(nextUrl)} />
+            <StepActivateOTP onFinish={finishVerification} />
           </Card>
 
           <div className="text-xs text-gray-500 mt-2 text-center max-w-md">
