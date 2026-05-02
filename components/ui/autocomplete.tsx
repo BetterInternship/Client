@@ -46,6 +46,7 @@ function AutocompleteBase<ID extends number | string>({
   const { isMobile } = useAppContext();
   const ref = useDetectClickOutside({ onTriggered: () => setIsOpen(false) });
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const lastSelectionRef = useRef(0);
 
   const inputId = useId();
 
@@ -63,6 +64,7 @@ function AutocompleteBase<ID extends number | string>({
   }, [query, options]);
 
   const toggle = (id: ID) => {
+    lastSelectionRef.current = Date.now();
     if (!multiple) {
       setter([id]); // single-select
       setIsOpen(false);
@@ -186,6 +188,9 @@ function AutocompleteBase<ID extends number | string>({
             onBlur={() => {
               // Delay slightly to let dropdown option clicks register first
               setTimeout(() => {
+                if (Date.now() - lastSelectionRef.current < 250) {
+                  return;
+                }
                 if (allowCustomValue && query.trim().length > 0) {
                   const text = query.trim();
                   const exact = findExactOption(text);
@@ -240,6 +245,9 @@ function AutocompleteBase<ID extends number | string>({
           onBlur={() => {
             // slight delay to let dropdown option clicks register first
             setTimeout(() => {
+              if (Date.now() - lastSelectionRef.current < 250) {
+                return;
+              }
               if (allowCustomValue && query.trim().length > 0) {
                 const text = query.trim();
                 const exact = findExactOption(text);
