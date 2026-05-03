@@ -20,6 +20,46 @@ type UseSuperListingUnlockOptions = {
 };
 
 const getApiBase = () => process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+const getStorageKey = (slug: string) => `super-listing:${slug}:unlock`;
+
+type StoredUnlockState = {
+  email?: string;
+  status?: UnlockStatus;
+};
+
+const readStoredUnlockState = (slug: string): StoredUnlockState | null => {
+  try {
+    const storedValue = window.localStorage.getItem(getStorageKey(slug));
+    if (!storedValue) return null;
+
+    const parsedValue = JSON.parse(storedValue) as StoredUnlockState;
+    return parsedValue.status === "unlocked" ? parsedValue : null;
+  } catch {
+    return null;
+  }
+};
+
+const writeStoredUnlockState = (slug: string, email?: string) => {
+  try {
+    window.localStorage.setItem(
+      getStorageKey(slug),
+      JSON.stringify({
+        email: email?.trim() ?? "",
+        status: "unlocked",
+      } satisfies StoredUnlockState),
+    );
+  } catch {
+    // Unlocking should still work if localStorage is unavailable.
+  }
+};
+
+const clearStoredUnlockState = (slug: string) => {
+  try {
+    window.localStorage.removeItem(getStorageKey(slug));
+  } catch {
+    // Locking should still work if localStorage is unavailable.
+  }
+};
 
 export function useSuperListingUnlock({
   isDevelopment = false,
@@ -58,10 +98,15 @@ export function useSuperListingUnlock({
     [endpointBase, isDevelopment],
   );
 
-  const unlock = useCallback((unlockedEmail?: string) => {
-    setEmail(unlockedEmail?.trim() ?? "");
-    setStatus("unlocked");
-  }, []);
+  const unlock = useCallback(
+    (unlockedEmail?: string) => {
+      const trimmedEmail = unlockedEmail?.trim() ?? "";
+      setEmail(trimmedEmail);
+      setStatus("unlocked");
+      writeStoredUnlockState(slug, trimmedEmail);
+    },
+    [slug],
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -78,14 +123,21 @@ export function useSuperListingUnlock({
       return;
     }
 
+    const storedUnlockState = readStoredUnlockState(slug);
+    if (storedUnlockState) {
+      unlock(storedUnlockState.email);
+      return;
+    }
+
     setEmail("");
     setStatus("locked");
-  }, [isDevelopment, unlock]);
+  }, [isDevelopment, slug, unlock]);
 
   const lock = useCallback(() => {
     setEmail("");
     setStatus("locked");
-  }, []);
+    clearStoredUnlockState(slug);
+  }, [slug]);
 
   return {
     email,
