@@ -23,7 +23,7 @@ export function OTPEmailStep({
 }) {
   const profile = useProfileData();
   const [eduEmail, setEduEmail] = useState(
-    profile.data?.edu_verification_email ?? "",
+    (profile.data?.edu_verification_email as string) ?? "",
   );
   const [isEmailValid, setIsEmailValid] = useState(false);
   const { error, requestOtp, sending } = useStudentOtpVerification({
@@ -33,7 +33,7 @@ export function OTPEmailStep({
   // set the education email if it doesn't exist on the user account.
   useEffect(() => {
     if (!eduEmail && profile.data?.edu_verification_email)
-      setEduEmail(profile.data.edu_verification_email);
+      setEduEmail(profile.data.edu_verification_email as string);
   }, [eduEmail, profile.data?.edu_verification_email]);
 
   // set the email validity flag when the value is changed.
