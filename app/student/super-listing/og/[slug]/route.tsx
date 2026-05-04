@@ -117,7 +117,34 @@ export async function GET(
             textAlign: "center",
           }}
         >
-          UI/UX Intern Super Listing
+          {config.role}
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: 999,
+            backgroundColor: config.accent,
+            color: "#ffffff",
+            fontSize: 24,
+            fontWeight: 700,
+            padding: "12px 24px",
+          }}
+        >
+          {config.badgeLabel || "Super Listing"}
+        </div>
+        <div
+          style={{
+            maxWidth: 860,
+            color: "#345064",
+            fontSize: 30,
+            fontWeight: 500,
+            lineHeight: 1.25,
+            textAlign: "center",
+          }}
+        >
+          {config.tagline}
         </div>
       </div>
     </div>,
