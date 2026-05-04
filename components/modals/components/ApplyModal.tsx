@@ -61,6 +61,9 @@ export function ApplyModal({
 
   const resumes = useMemo(() => resumesData?.resumes ?? [], [resumesData]);
   const hasExistingResumes = resumes.length > 0;
+  const maxResumesEnv = Number(process.env.NEXT_PUBLIC_MAX_RESUMES_ALLOWED);
+  const maxResumesAllowed = Number.isFinite(maxResumesEnv) ? maxResumesEnv : 5;
+  const atResumeLimit = resumes.length >= maxResumesAllowed;
 
   const initialDate = useMemo(
     () =>
@@ -353,16 +356,18 @@ export function ApplyModal({
             )}
 
             {!resumesLoading && hasExistingResumes && !showUpload && (
-              <button
+              <Button
                 type="button"
-                className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                variant="link"
+                className="p-0"
                 onClick={() => {
                   setResumeChoice("new");
                   setShowUpload(true);
                 }}
+                disabled={atResumeLimit}
               >
                 Upload new resume
-              </button>
+              </Button>
             )}
 
             <AnimatePresence initial={false}>

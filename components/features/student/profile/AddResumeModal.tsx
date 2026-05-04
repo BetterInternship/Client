@@ -15,9 +15,11 @@ type UploadStatus = "idle" | "ready" | "uploading" | "uploaded";
 export function AddResumeModal({
   onCancel,
   onComplete,
+  isAtResumeLimit,
 }: {
   onCancel: () => void;
   onComplete: () => void;
+  isAtResumeLimit: boolean;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resumeNameInputRef = useRef<HTMLInputElement>(null);
@@ -38,7 +40,7 @@ export function AddResumeModal({
     return () => window.clearTimeout(focusTimer);
   }, [selectedFile]);
 
-  const canUpload = !!selectedFile && !!resumeLabel.trim();
+  const canUpload = !!selectedFile && !!resumeLabel.trim() && !isAtResumeLimit;
 
   async function handleUpload() {
     if (!canUpload || !selectedFile) return;

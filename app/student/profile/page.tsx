@@ -88,6 +88,11 @@ export default function ProfilePage() {
     queryFn: () => UserService.getMyResumes(),
   });
 
+  const maxResumesEnv = Number(process.env.NEXT_PUBLIC_MAX_RESUMES_ALLOWED);
+  const maxResumesAllowed = Number.isFinite(maxResumesEnv) ? maxResumesEnv : 5;
+  const resumeCount = resumes.data?.resumes?.length ?? 0;
+  const atResumeLimit = resumeCount >= maxResumesAllowed;
+
   // Modals
   const { open: openResumeModal, Modal: ResumeModal } =
     useModal("resume-modal");
@@ -230,6 +235,7 @@ export default function ProfilePage() {
                   }}
                   onEdit={() => setIsEditing(true)}
                   onAddResume={openAddResumeModal}
+                  atResumeLimit={atResumeLimit}
                 />
               </>
             )}
@@ -292,6 +298,7 @@ export default function ProfilePage() {
                 queryKey: ["my-profile"],
               });
             }}
+            isAtResumeLimit={atResumeLimit}
           />
         </AddResumeModalBox>
       </div>
@@ -958,8 +965,8 @@ const ProfileEditor = forwardRef<
                     new Date(ms ?? 0).toISOString(),
                   )
                 }
-                fromYear={2025}
-                toYear={2030}
+                fromYear={new Date().getFullYear()}
+                toYear={new Date().getFullYear() + 4}
                 placeholder="Select month"
               />
             </div>
@@ -1057,8 +1064,8 @@ const ProfileEditor = forwardRef<
                 expected_start_date: ms ?? null, // FormMonthPicker gives ms
               });
             }}
-            fromYear={2025}
-            toYear={2030}
+            fromYear={new Date().getFullYear()}
+            toYear={new Date().getFullYear() + 4}
             required={false}
             placeholder="Select month"
           />
@@ -1167,6 +1174,10 @@ const ResumeList = ({
   onUploaded: () => void;
   onAddResume: () => void;
 }) => {
+  const maxResumesEnv = Number(process.env.NEXT_PUBLIC_MAX_RESUMES_ALLOWED);
+  const maxResumesAllowed = Number.isFinite(maxResumesEnv) ? maxResumesEnv : 5;
+  const atResumeLimit = resumes.length >= maxResumesAllowed;
+
   return (
     <section>
       <div className="text-xl sm:text-2xl tracking-tight font-semibold">
@@ -1216,8 +1227,11 @@ const ResumeList = ({
         </div>
       )}
 
-      <div className="mt-4 flex justify-end">
-        <Button onClick={onAddResume}>
+      <div className="mt-4 flex justify-between items-center gap-2">
+        <span className="text-muted-foreground text-sm">
+          You can have up to {maxResumesAllowed} resumes.
+        </span>
+        <Button onClick={onAddResume} disabled={atResumeLimit}>
           <Upload className="h-4 w-4 mr-1.5" />
           Add resume
         </Button>
