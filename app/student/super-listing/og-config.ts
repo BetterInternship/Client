@@ -47,7 +47,7 @@ const SUPER_LISTING_OG_OVERRIDES: Record<
   },
   "sofi-ai": {
     company: "Sofi AI",
-    role: "Frontend AI Product Challenge",
+    role: "UI/UX Intern",
     tagline: "Build a practical frontend for TikTok hook analysis.",
     accent: "#07C4A7",
     glow: "#35e3ca",
@@ -55,8 +55,7 @@ const SUPER_LISTING_OG_OVERRIDES: Record<
   "sofi-ai-marketing": {
     company: "Sofi AI",
     role: "Marketing Intern",
-    tagline:
-      "Lead the marketing launch for GIA, SOFI AI's creator analytics product.",
+    tagline: "Build a practical frontend for TikTok hook analysis.",
     accent: "#07C4A7",
     glow: "#35e3ca",
   },
