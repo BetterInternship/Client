@@ -19,6 +19,7 @@ import {
   useFormFilloutProcessReader,
 } from "@/hooks/forms/filloutFormProcess";
 import { isProfileVerified } from "@/lib/profile";
+import { hasFormsEnabledUniversity } from "@/lib/student-forms-access";
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader } from "@/components/ui/loader";
 
@@ -34,6 +35,7 @@ export default function FormsPage() {
   const queryClient = useQueryClient();
   const { redirectIfNotLoggedIn, isAuthenticated } = useAuthContext();
   const isStudentAuthenticated = isAuthenticated();
+  const canUseUniversityForms = hasFormsEnabledUniversity(profile.data);
   const [hasFormsAccess, setHasFormsAccess] = useState<boolean | null>(() =>
     profile.isPending ? null : !!profile.data?.form_group_id,
   );
@@ -58,6 +60,10 @@ export default function FormsPage() {
     if (profile.isPending) {
       return;
     }
+    if (!hasFormsEnabledUniversity(profile.data)) {
+      router.replace("/search");
+      return;
+    }
     if (!isProfileVerified(profile.data)) {
       router.replace("/register/verify?redirect=forms");
       return;
@@ -66,6 +72,7 @@ export default function FormsPage() {
     isStudentAuthenticated,
     profile.data,
     profile.data?.department,
+    profile.data?.university,
     profile.isPending,
     router,
   ]);
@@ -87,7 +94,7 @@ export default function FormsPage() {
     useQuery({
       queryKey: ["my-form-templates"],
       queryFn: () => FormService.getMyFormTemplates(),
-      enabled: hasFormsAccess === true,
+      enabled: canUseUniversityForms && hasFormsAccess === true,
       staleTime: FORM_TEMPLATES_STALE_TIME,
       gcTime: FORM_TEMPLATES_GC_TIME,
       refetchOnWindowFocus: true, // Refetch when user switches back to tab
@@ -132,7 +139,8 @@ export default function FormsPage() {
     !isStudentAuthenticated ||
     profile.isPending ||
     !profile.data ||
-    !isProfileVerified(profile.data);
+    !isProfileVerified(profile.data) ||
+    !canUseUniversityForms;
 
   if (isResolvingDestination || hasFormsAccess === null) {
     return <Loader>Loading forms...</Loader>;
