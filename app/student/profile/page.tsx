@@ -55,7 +55,6 @@ import {
   type Option as ChipOpt,
 } from "@/components/ui/chip-select";
 import { Badge } from "@/components/ui/badge";
-import { AutoApplyCard } from "@/components/features/student/profile/AutoApplyCard";
 import { useProfileActions } from "@/lib/api/student.actions.api";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
@@ -79,8 +78,6 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [autoApplySaving, setAutoApplySaving] = useState(false);
-  const [autoApplyError, setAutoApplyError] = useState<string | null>(null);
 
   const { url: resumeURL, sync: syncResumeURL } = useFile({
     fetcher: (resumeId: string) => UserService.getMyResumeURL(resumeId),
@@ -106,23 +103,6 @@ export default function ProfilePage() {
   const openResumePreview = async (resumeId: string) => {
     await syncResumeURL(resumeId);
     openResumeModal();
-  };
-
-  const handleAutoApplySave = async (newEnabled: boolean) => {
-    setAutoApplySaving(true);
-    setAutoApplyError(null);
-
-    try {
-      await UserService.updateMyProfile({
-        apply_for_me: newEnabled,
-        auto_apply_enabled_at: newEnabled ? new Date().toISOString() : null,
-      });
-      void queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-    } catch (e: any) {
-      setAutoApplyError((e as string) ?? "Failed to update auto-apply");
-    } finally {
-      setAutoApplySaving(false);
-    }
   };
 
   redirectIfNotLoggedIn();
@@ -167,12 +147,11 @@ export default function ProfilePage() {
 
   return (
     data && (
-      <div className="min-h-screen mx-auto max-w-6xl">
+      <div className="min-h-screen mx-auto max-w-2xl w-full">
         {/* Top header */}
         <div className="relative">
-          <header className="relative px-4 sm:px-6 pt-10 ">
+          <header className="relative px-4 sm:px-6 pt-10">
             <div className="flex flex-col lg:flex-row gap-6 items-start">
-              {/* PFP */}
               <div className="relative">
                 <MyUserPfp size="36" />
 
@@ -232,7 +211,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Main content */}
-        <main className="px-4 sm:px-6 pt-8 pb-16 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <main className="w-full p-6">
           {/* Left column */}
           <div className="lg:col-span-2 flex flex-col gap-6">
             {/* Profile */}
@@ -297,62 +276,6 @@ export default function ProfilePage() {
               </ProfileEditForm>
             )}
           </div>
-
-          {/* Right column */}
-          <aside className="lg:col-span-1 space-y-6">
-            <AutoApplyCard
-              initialEnabled={!!data?.apply_for_me}
-              enabledAt={data?.auto_apply_enabled_at}
-              onSave={handleAutoApplySave}
-              saving={autoApplySaving}
-              error={autoApplyError}
-            />
-
-            {/* Completion meter */}
-            <div className="">
-              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                <span>Profile completeness</span>
-                <span>{score}%</span>
-              </div>
-              <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                <motion.div
-                  className="h-full bg-primary"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${score}%` }}
-                  transition={{ type: "spring", stiffness: 150, damping: 20 }}
-                />
-              </div>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {Object.entries(parts).map(([k, ok]) => (
-                  <span
-                    key={k}
-                    className={cn(
-                      "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs border",
-                      ok
-                        ? "border-emerald-500/40 text-emerald-600"
-                        : "border-amber-500/40 text-amber-700",
-                    )}
-                  >
-                    <CheckCircle2
-                      className={cn(
-                        "h-3.5 w-3.5 mr-1",
-                        ok ? "opacity-100" : "opacity-50",
-                      )}
-                    />{" "}
-                    {k}
-                  </span>
-                ))}
-              </div>
-              {/* NEW: quick tips, only show top 2 so it stays compact */}
-              {tips.length > 0 && (
-                <ul className="mt-3 text-xs text-muted-foreground list-disc pl-5 space-y-1">
-                  {tips.slice(0, 2).map((t) => (
-                    <li key={t}>{t}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </aside>
         </main>
 
         <ResumeModal className="max-w-[80vw]">
