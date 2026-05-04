@@ -85,6 +85,7 @@ export interface UserApplication extends Partial<
   jobs?: Partial<Job>;
   employer?: Partial<Employer>;
   employers?: Partial<Employer>;
+  resume?: Partial<Resume>;
 }
 
 export interface EmployerApplication extends Partial<
