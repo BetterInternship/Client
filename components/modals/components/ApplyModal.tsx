@@ -2,8 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import ResumeUpload from "@/components/features/student/resume-parser/ResumeUpload";
-import { FormInput } from "@/components/EditForm";
 import { UserService } from "@/lib/api/services";
 import { FileText, CheckCircle2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -13,9 +11,12 @@ import { toast } from "sonner";
 import { PublicUser } from "@/lib/db/db.types";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import {
+  ResumeUploadFormFields,
+  useResumeUploadForm,
+} from "@/components/features/student/resume-parser/ResumeUploadForm";
 
 type InternshipType = "credited" | "voluntary";
-type UploadStatus = "idle" | "uploading" | "uploaded";
 export type ApplyPayload = {
   resumeId: string;
   coverLetter: string;
@@ -50,9 +51,8 @@ export function ApplyModal({
   requiresCoverLetter?: boolean;
 }) {
   const queryClient = useQueryClient();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const resumeNameInputRef = useRef<HTMLInputElement>(null);
   const coverLetterRef = useRef<HTMLTextAreaElement>(null);
+  const resumeUpload = useResumeUploadForm();
 
   const { data: resumesData, isPending: resumesLoading } = useQuery({
     queryKey: ["my-resumes"],
@@ -92,32 +92,16 @@ export function ApplyModal({
     }
   }, [resumesLoading, hasExistingResumes, resumes]);
 
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [resumeLabel, setResumeLabel] = useState("");
   const [internshipType, setInternshipType] = useState<InternshipType | null>(
     profile?.internship_preferences?.internship_type ?? null,
   );
   const [month, setMonth] = useState(initialDate.month);
   const [year, setYear] = useState(initialDate.year);
   const [saving, setSaving] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadedResumeId, setUploadedResumeId] = useState<string | null>(null);
   const [coverLetter, setCoverLetter] = useState("");
 
   const totalSteps = requiresCoverLetter ? 3 : 2;
-
-  useEffect(() => {
-    if (!selectedFile) return;
-    setResumeLabel(stripPdfExtension(selectedFile.name));
-    setUploadStatus("idle");
-    setUploadProgress(0);
-    const focusTimer = window.setTimeout(() => {
-      resumeNameInputRef.current?.focus();
-      resumeNameInputRef.current?.select();
-    }, 180);
-    return () => window.clearTimeout(focusTimer);
-  }, [selectedFile]);
 
   useEffect(() => {
     if (step !== 3) return;
@@ -127,66 +111,23 @@ export function ApplyModal({
     return () => window.clearTimeout(focusTimer);
   }, [step]);
 
-  useEffect(() => {
-    if (uploadStatus !== "uploading") return;
-
-    let timeout: number | undefined;
-    const tick = () => {
-      setUploadProgress((current) => {
-        if (current >= 91) return current;
-        return Math.min(
-          91,
-          current + Math.max(1, Math.round(Math.random() * 8)),
-        );
-      });
-      timeout = window.setTimeout(tick, 140 + Math.random() * 360);
-    };
-
-    timeout = window.setTimeout(tick, 140 + Math.random() * 360);
-    return () => {
-      if (timeout) window.clearTimeout(timeout);
-    };
-  }, [uploadStatus]);
-
   const years = useMemo(() => {
     const current = new Date().getFullYear();
     return Array.from({ length: 6 }, (_, i) => current + i);
   }, []);
 
   const canProceedFromResume =
-    resumeChoice !== "new"
-      ? !!resumeChoice
-      : !!selectedFile && !!resumeLabel.trim();
+    resumeChoice !== "new" ? !!resumeChoice : resumeUpload.canUpload;
   const canApply = !!internshipType && month !== "" && year !== "";
   const canSubmit = canApply && (!requiresCoverLetter || !!coverLetter.trim());
 
   async function uploadResumeIfNeeded(): Promise<string | null> {
-    if (resumeChoice !== "new" || !selectedFile)
+    if (resumeChoice !== "new" || !resumeUpload.selectedFile)
       return resumeChoice !== "new" ? resumeChoice : null;
 
-    const form = new FormData();
-    const label = resumeLabel.trim() || selectedFile.name;
-    const uploadFilename = /\.pdf$/i.test(label) ? label : `${label}.pdf`;
-    form.append("resume", selectedFile, uploadFilename);
-    form.append("label", label);
+    const response = await resumeUpload.uploadResume();
 
-    setUploadProgress(5);
-    setUploadStatus("uploading");
-    const [response] = (await Promise.all([
-      UserService.uploadMyResume(form),
-      sleep(2000),
-    ])) as [
-      {
-        success?: boolean;
-        resume?: { id: string };
-      },
-      void,
-    ];
-    const ok = response.success !== false;
-    setUploadProgress(ok ? 100 : 0);
-    setUploadStatus(ok ? "uploaded" : "idle");
-
-    if (ok && response.resume?.id) {
+    if (response?.success !== false && response?.resume?.id) {
       return response.resume.id;
     }
     return null;
@@ -207,16 +148,12 @@ export function ApplyModal({
         setUploadedResumeId(id);
         setResumeChoice(id);
         setShowUpload(false);
-        setSelectedFile(null);
-        setResumeLabel("");
-        setUploadStatus("idle");
-        setUploadProgress(0);
+        resumeUpload.clear();
       }
       setStep(2);
     } catch (error) {
       console.error(error);
-      setUploadStatus("idle");
-      setUploadProgress(0);
+      resumeUpload.resetUploadState();
       toast.error("Could not upload your resume. Please try again.");
     } finally {
       setSaving(false);
@@ -380,45 +317,10 @@ export function ApplyModal({
                   className="overflow-hidden"
                 >
                   <div className="pt-2 pb-1 space-y-4">
-                    <ResumeUpload
-                      ref={fileInputRef}
-                      isParsing={false}
-                      onSelect={(file) => {
-                        setSelectedFile(file);
-                        setUploadStatus("idle");
-                        setUploadProgress(0);
-                      }}
-                      onComplete={() => {}}
+                    <ResumeUploadFormFields
+                      form={resumeUpload}
+                      placeholder="e.g. Frontend Developer Resume"
                     />
-
-                    <AnimatePresence>
-                      {selectedFile && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.2, ease: "easeOut" }}
-                          className="mt-3 overflow-visible px-0.5 pb-0.5"
-                        >
-                          <FormInput
-                            ref={resumeNameInputRef}
-                            label="Resume label"
-                            value={resumeLabel}
-                            setter={(value) => {
-                              setResumeLabel(value);
-                              setUploadStatus("idle");
-                              setUploadProgress(0);
-                            }}
-                            placeholder="e.g. Frontend Developer Resume"
-                            autoComplete="off"
-                          />
-                          <UploadProgress
-                            status={uploadStatus}
-                            progress={uploadProgress}
-                          />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
                   </div>
                 </motion.div>
               )}
@@ -434,7 +336,7 @@ export function ApplyModal({
                 Cancel
               </Button>
               <Button
-                onClick={handleResumeNext}
+                onClick={() => void handleResumeNext()}
                 disabled={!canProceedFromResume || saving}
               >
                 {saving ? "Saving..." : "Continue"}
@@ -585,7 +487,10 @@ export function ApplyModal({
                 >
                   Back
                 </Button>
-                <Button onClick={handleApply} disabled={!canSubmit || saving}>
+                <Button
+                  onClick={() => void handleApply()}
+                  disabled={!canSubmit || saving}
+                >
                   {saving ? "Applying..." : applyLabel}
                 </Button>
               </div>
@@ -595,44 +500,6 @@ export function ApplyModal({
       </div>
     </div>
   );
-}
-
-function UploadProgress({
-  status,
-  progress,
-}: {
-  status: UploadStatus;
-  progress: number;
-}) {
-  if (status === "idle") return null;
-
-  const label =
-    status === "uploading" ? "Uploading resume..." : "Resume uploaded";
-
-  return (
-    <div className="mt-3 space-y-1.5">
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>{label}</span>
-        <span>{progress}%</span>
-      </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-gray-100">
-        <motion.div
-          className="h-full rounded-full bg-primary"
-          initial={false}
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
-        />
-      </div>
-    </div>
-  );
-}
-
-function stripPdfExtension(name: string) {
-  return name.replace(/\.pdf$/i, "");
-}
-
-function sleep(ms: number) {
-  return new Promise<void>((resolve) => window.setTimeout(resolve, ms));
 }
 
 function timestampToMonthYear(timestamp?: number | null) {
