@@ -358,7 +358,7 @@ export const UserService = {
     );
   },
 
-  async updateMyResume(form: FormData) {
+  async uploadMyResume(form: FormData) {
     return APIClient.put<UploadResumeResponse>(
       APIRouteBuilder("users").r("me", "resume").build(),
       form,
@@ -366,9 +366,16 @@ export const UserService = {
     );
   },
 
+  async updateMyResume(resumeId: string, label: string) {
+    return APIClient.post<UploadResumeResponse>(
+      APIRouteBuilder("users").r("me", "resume", "update", resumeId).build(),
+      { label: label },
+    );
+  },
+
   async deleteMyResume(resumeId: string) {
     return APIClient.post<UploadResumeResponse>(
-      APIRouteBuilder("users").r("me", "resume", resumeId).build(),
+      APIRouteBuilder("users").r("me", "resume", "delete", resumeId).build(),
     );
   },
 

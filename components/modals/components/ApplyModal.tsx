@@ -173,7 +173,7 @@ export function ApplyModal({
     setUploadProgress(5);
     setUploadStatus("uploading");
     const [response] = (await Promise.all([
-      UserService.updateMyResume(form),
+      UserService.uploadMyResume(form),
       sleep(2000),
     ])) as [
       {

@@ -16,6 +16,9 @@ import {
   Globe2,
   Loader2,
   Trash2,
+  Pencil,
+  Check,
+  X,
 } from "lucide-react";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "../../../lib/ctx-auth";
@@ -73,6 +76,7 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isDeletingResume, setIsDeletingResume] = useState(false);
+  const [isRenamingResume, setIsRenamingResume] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const { url: resumeURL, sync: syncResumeURL } = useFile({
@@ -106,6 +110,44 @@ export default function ProfilePage() {
   const openResumePreview = async (resumeId: string) => {
     await syncResumeURL(resumeId);
     openResumeModal();
+  };
+
+  const onRenameResume = async (resumeId: string, label: string) => {
+    if (!resumeId) {
+      toast.error("Resume not found.");
+      return false;
+    }
+
+    const nextLabel = label.trim();
+    if (!nextLabel) {
+      toast.error("Resume label is required.");
+      return false;
+    }
+
+    setIsRenamingResume(true);
+    try {
+      const result = await UserService.updateMyResume(resumeId, nextLabel);
+      if (!result?.success) {
+        const errorMessage =
+          (result as { error?: string })?.error ||
+          result?.message ||
+          "Failed to rename resume.";
+        toast.error(errorMessage, toastPresets.destructive);
+        return false;
+      }
+
+      toast.success("Resume renamed successfully.", toastPresets.success);
+      void resumes.refetch();
+      void queryClient.invalidateQueries({
+        queryKey: ["my-profile"],
+      });
+      return true;
+    } catch (error) {
+      toast.error("Resume could not be renamed. Try again.");
+      return false;
+    } finally {
+      setIsRenamingResume(false);
+    }
   };
 
   const onDeleteResume = (resume: Resume) => {
@@ -158,7 +200,6 @@ export default function ProfilePage() {
   });
 
   const data = profile.data as PublicUser | undefined;
-  const { score, parts, tips } = computeProfileScore(data);
 
   useEffect(() => {
     if (searchParams.get("edit") === "true") setIsEditing(true);
@@ -270,6 +311,7 @@ export default function ProfilePage() {
                   }}
                   onEdit={() => setIsEditing(true)}
                   onAddResume={openAddResumeModal}
+                  onRenameResume={onRenameResume}
                   onDeleteResume={onDeleteResume}
                 />
               </>
@@ -396,6 +438,7 @@ function ProfileReadOnlyTabs({
   resumes,
   resumesLoading,
   onViewResume,
+  onRenameResume,
   onDeleteResume,
   onEdit,
   onAddResume,
@@ -405,6 +448,7 @@ function ProfileReadOnlyTabs({
   resumes: Resume[];
   resumesLoading: boolean;
   onViewResume: (resumeId: string) => void | Promise<void>;
+  onRenameResume: (resumeId: string, label: string) => Promise<boolean>;
   onDeleteResume: (resume: Resume) => void | Promise<void>;
   onEdit: () => void;
   onAddResume: () => void;
@@ -691,6 +735,7 @@ function ProfileReadOnlyTabs({
           onViewResume={onViewResume}
           onAddResume={onAddResume}
           onResumeUploaded={onResumeUploaded}
+          onRenameResume={onRenameResume}
           onDeleteResume={onDeleteResume}
         />
       </OutsideTabPanel>
@@ -1203,6 +1248,8 @@ const ResumeList = ({
   resumes,
   loading,
   onViewResume,
+  onRenameResume,
+  isRenamingResume,
   onDeleteResume,
   onAddResume,
   onResumeUploaded,
@@ -1210,6 +1257,8 @@ const ResumeList = ({
   resumes: Resume[];
   loading: boolean;
   onViewResume: (resumeId: string) => void | Promise<void>;
+  onRenameResume: (resumeId: string, label: string) => Promise<boolean>;
+  isRenamingResume: boolean;
   onDeleteResume: (resume: Resume) => void | Promise<void>;
   onAddResume: () => void;
   onResumeUploaded: () => void;
@@ -1217,6 +1266,23 @@ const ResumeList = ({
   const maxResumesEnv = Number(process.env.NEXT_PUBLIC_MAX_RESUMES_ALLOWED);
   const maxResumesAllowed = Number.isFinite(maxResumesEnv) ? maxResumesEnv : 5;
   const atResumeLimit = resumes.length >= maxResumesAllowed;
+
+  const [editingResumeId, setEditingResumeId] = useState<string | null>(null);
+  const [editingLabel, setEditingLabel] = useState("");
+
+  const startEditing = (resume: Resume) => {
+    if (!resume.id) {
+      toast.error("Resume not found.");
+      return;
+    }
+    setEditingResumeId(resume.id);
+    setEditingLabel(resume.label ?? "");
+  };
+
+  const cancelEditing = () => {
+    setEditingResumeId(null);
+    setEditingLabel("");
+  };
 
   return (
     <section>
@@ -1236,40 +1302,137 @@ const ResumeList = ({
           </div>
         )}
         {!loading &&
-          resumes.map((resume) => (
-            <div
-              key={resume.id}
-              className="flex items-center justify-between gap-3 p-3"
-            >
-              <div className="min-w-0">
-                <div className="truncate text-sm font-medium text-gray-900">
-                  {resume.label || resume.filename || "Untitled resume"}
+          resumes.map((resume) => {
+            const isEditing = editingResumeId === resume.id;
+            const currentLabel = resume.label ?? "";
+
+            const handleSave = () => {
+              if (!resume.id) {
+                toast.error("Resume not found.");
+                return;
+              }
+
+              const nextLabel = editingLabel.trim();
+              if (!nextLabel) {
+                toast.error("Resume label is required.");
+                return;
+              }
+
+              if (nextLabel === currentLabel) {
+                cancelEditing();
+                return;
+              }
+
+              void (async () => {
+                const success = await onRenameResume(resume.id, nextLabel);
+                if (success) cancelEditing();
+              })();
+            };
+
+            return (
+              <div
+                key={resume.id}
+                className="flex items-center justify-between gap-3 p-3"
+              >
+                <div className="min-w-0">
+                  {isEditing ? (
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 min-w-0">
+                        <FormInput
+                          value={editingLabel}
+                          setter={setEditingLabel}
+                          required={false}
+                          placeholder="Resume label"
+                          aria-label="Resume label"
+                          className="w-full"
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.preventDefault();
+                              handleSave();
+                            } else if (event.key === "Escape") {
+                              event.preventDefault();
+                              cancelEditing();
+                            }
+                          }}
+                          disabled={isRenamingResume}
+                        />
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleSave}
+                          aria-label="Save resume label"
+                          disabled={isRenamingResume}
+                        >
+                          {isRenamingResume ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Check className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={cancelEditing}
+                          aria-label="Cancel rename"
+                          disabled={isRenamingResume}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="truncate text-sm font-medium text-gray-900">
+                      <FormInput
+                        value={
+                          resume.label || resume.filename || "Untitled resume"
+                        }
+                        className={"border-none p-0"}
+                        disabled={isRenamingResume}
+                      />
+                    </div>
+                  )}
+
+                  <div className="text-xs text-muted-foreground">
+                    Uploaded {formatResumeUploadedAt(resume.uploaded_at)}
+                  </div>
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  Uploaded {formatResumeUploadedAt(resume.uploaded_at)}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => void onViewResume(resume.id)}
+                    aria-label={`View ${resume.label || "resume"}`}
+                    disabled={isRenamingResume || isEditing}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  {!isEditing && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => void startEditing(resume)}
+                      aria-label={`Rename ${resume.label || "resume"}`}
+                      disabled={isRenamingResume}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <Button
+                    scheme="destructive"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => void onDeleteResume(resume)}
+                    aria-label={`Delete ${resume.label || "resume"}`}
+                    disabled={isRenamingResume || isEditing}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => void onViewResume(resume.id)}
-                  aria-label={`View ${resume.label || "resume"}`}
-                >
-                  <Eye className="h-4 w-4" />
-                </Button>
-                <Button
-                  scheme="destructive"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => void onDeleteResume(resume)}
-                  aria-label={`Delete ${resume.label || "resume"}`}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
       </div>
 
       {!loading && resumes.length === 0 && (

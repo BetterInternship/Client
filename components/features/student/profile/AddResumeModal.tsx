@@ -54,7 +54,7 @@ export function AddResumeModal({
       form.append("label", label);
 
       setUploadStatus("uploading");
-      const response = (await UserService.updateMyResume(form)) as {
+      const response = (await UserService.uploadMyResume(form)) as {
         success?: boolean;
       };
 

@@ -27,6 +27,7 @@ import ApplicationActionModal from "./ApplicationActionModal";
 import DeleteJobListingModal from "./DeleteJobListingModal";
 import { Job, PublicUser } from "@/lib/db/db.types";
 import DeleteResumeModal from "./DeleteResumeModal";
+import RenameResumeModal from "./RenameResumeModal";
 
 /**
  * Simplifies modal config since we usually reuse each of these modal stuffs.
