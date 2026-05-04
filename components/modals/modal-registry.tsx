@@ -22,10 +22,11 @@ import { MissingRequirementsModal } from "./components/MissingRequirementsModal"
 import { FormPreviewPdfDisplay } from "../features/student/forms/previewer";
 import { IFormSigningParty } from "@betterinternship/core/forms";
 import { ApplicationAction } from "@/lib/consts/application";
-import { EmployerApplication } from "@/lib/db/db.types";
+import { EmployerApplication, Resume } from "@/lib/db/db.types";
 import ApplicationActionModal from "./ApplicationActionModal";
 import DeleteJobListingModal from "./DeleteJobListingModal";
 import { Job, PublicUser } from "@/lib/db/db.types";
+import DeleteResumeModal from "./DeleteResumeModal";
 
 /**
  * Simplifies modal config since we usually reuse each of these modal stuffs.
@@ -37,6 +38,35 @@ export const useModalRegistry = () => {
 
   const modalRegistry = useMemo(
     () => ({
+      // modal for deleting a resume.
+      deleteResume: {
+        open: ({
+          resume,
+          isProcessing,
+          onConfirm,
+        }: {
+          resume: Resume;
+          isProcessing: boolean;
+          onConfirm: () => void;
+        }) =>
+          open(
+            "delete-resume",
+            DefaultModalLayout,
+            <DeleteResumeModal
+              resume={resume}
+              isProcessing={isProcessing}
+              onConfirm={onConfirm}
+              onCancel={() => close("delete-resume")}
+            />,
+            {
+              title: `Delete ${resume.label}`,
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showHeaderDivider: true,
+            },
+          ),
+        close: () => close("delete-resume"),
+      },
       // modal for deleting a job listing.
       deleteListing: {
         open: ({

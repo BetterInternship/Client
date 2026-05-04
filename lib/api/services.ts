@@ -366,6 +366,12 @@ export const UserService = {
     );
   },
 
+  async deleteMyResume(resumeId: string) {
+    return APIClient.post<UploadResumeResponse>(
+      APIRouteBuilder("users").r("me", "resume", resumeId).build(),
+    );
+  },
+
   async saveJob(jobId: string) {
     return APIClient.post<SaveJobResponse>(
       APIRouteBuilder("users").r("save-job").build(),

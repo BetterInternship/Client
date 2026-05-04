@@ -15,12 +15,13 @@ import {
   CheckCircle2,
   Globe2,
   Loader2,
+  Trash2,
 } from "lucide-react";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { InternshipPreferences, PublicUser } from "@/lib/db/db.types";
+import { InternshipPreferences, PublicUser, Resume } from "@/lib/db/db.types";
 import { ErrorLabel, LabeledProperty } from "@/components/ui/labels";
 import { UserService } from "@/lib/api/services";
 import { Button } from "@/components/ui/button";
@@ -61,15 +62,9 @@ import { toastPresets } from "@/components/ui/sonner-toast";
 import { useBlockPageRefreshEffect } from "@/hooks/use-refresh-block";
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import { AddResumeModal } from "@/components/features/student/profile/AddResumeModal";
+import useModalRegistry from "@/components/modals/modal-registry";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
-
-type ResumeListItem = {
-  id: string;
-  label: string;
-  filename: string;
-  uploaded_at: string;
-};
 
 export default function ProfilePage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
@@ -77,6 +72,7 @@ export default function ProfilePage() {
   const profileActions = useProfileActions();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [isDeletingResume, setIsDeletingResume] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const { url: resumeURL, sync: syncResumeURL } = useFile({
@@ -101,13 +97,52 @@ export default function ProfilePage() {
     close: closeAddResumeModal,
     Modal: AddResumeModalBox,
   } = useModal("add-resume-modal");
+
   const profileEditorRef = useRef<{ save: () => Promise<boolean> }>(null);
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
+  const modalRegistry = useModalRegistry();
 
   const openResumePreview = async (resumeId: string) => {
     await syncResumeURL(resumeId);
     openResumeModal();
+  };
+
+  const onDeleteResume = (resume: Resume) => {
+    if (!resume.id) {
+      toast.error("Resume not found.");
+      return;
+    }
+
+    modalRegistry.deleteResume.open({
+      resume,
+      isProcessing: isDeletingResume,
+      onConfirm: async () => {
+        setIsDeletingResume(true);
+        try {
+          const result = await UserService.deleteMyResume(resume.id);
+          if (!result?.success) {
+            const errorMessage =
+              (result as { error?: string })?.error ||
+              result?.message ||
+              "Failed to delete resume.";
+            toast.error(errorMessage, toastPresets.destructive);
+            return;
+          }
+
+          modalRegistry.deleteResume.close();
+          toast.success("Resume deleted successfully.", toastPresets.success);
+          void resumes.refetch();
+          void queryClient.invalidateQueries({
+            queryKey: ["my-profile"],
+          });
+        } catch (error) {
+          toast.error("Resume could not be deleted. Try again.");
+        } finally {
+          setIsDeletingResume(false);
+        }
+      },
+    });
   };
 
   redirectIfNotLoggedIn();
@@ -235,7 +270,7 @@ export default function ProfilePage() {
                   }}
                   onEdit={() => setIsEditing(true)}
                   onAddResume={openAddResumeModal}
-                  atResumeLimit={atResumeLimit}
+                  onDeleteResume={onDeleteResume}
                 />
               </>
             )}
@@ -361,17 +396,19 @@ function ProfileReadOnlyTabs({
   resumes,
   resumesLoading,
   onViewResume,
-  onResumeUploaded,
+  onDeleteResume,
   onEdit,
   onAddResume,
+  onResumeUploaded,
 }: {
   profile: PublicUser;
-  resumes: ResumeListItem[];
+  resumes: Resume[];
   resumesLoading: boolean;
   onViewResume: (resumeId: string) => void | Promise<void>;
-  onResumeUploaded: () => void;
+  onDeleteResume: (resume: Resume) => void | Promise<void>;
   onEdit: () => void;
   onAddResume: () => void;
+  onResumeUploaded: () => void;
 }) {
   const internshipPreferences = profile.internship_preferences;
   const { to_university_name, job_modes, job_types, job_categories } =
@@ -652,8 +689,9 @@ function ProfileReadOnlyTabs({
           resumes={resumes}
           loading={resumesLoading}
           onViewResume={onViewResume}
-          onUploaded={onResumeUploaded}
           onAddResume={onAddResume}
+          onResumeUploaded={onResumeUploaded}
+          onDeleteResume={onDeleteResume}
         />
       </OutsideTabPanel>
     </OutsideTabs>
@@ -1165,14 +1203,16 @@ const ResumeList = ({
   resumes,
   loading,
   onViewResume,
-  onUploaded,
+  onDeleteResume,
   onAddResume,
+  onResumeUploaded,
 }: {
-  resumes: ResumeListItem[];
+  resumes: Resume[];
   loading: boolean;
   onViewResume: (resumeId: string) => void | Promise<void>;
-  onUploaded: () => void;
+  onDeleteResume: (resume: Resume) => void | Promise<void>;
   onAddResume: () => void;
+  onResumeUploaded: () => void;
 }) => {
   const maxResumesEnv = Number(process.env.NEXT_PUBLIC_MAX_RESUMES_ALLOWED);
   const maxResumesAllowed = Number.isFinite(maxResumesEnv) ? maxResumesEnv : 5;
@@ -1209,14 +1249,25 @@ const ResumeList = ({
                   Uploaded {formatResumeUploadedAt(resume.uploaded_at)}
                 </div>
               </div>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => void onViewResume(resume.id)}
-                aria-label={`View ${resume.label || "resume"}`}
-              >
-                <Eye className="h-4 w-4" />
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => void onViewResume(resume.id)}
+                  aria-label={`View ${resume.label || "resume"}`}
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+                <Button
+                  scheme="destructive"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => void onDeleteResume(resume)}
+                  aria-label={`Delete ${resume.label || "resume"}`}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           ))}
       </div>

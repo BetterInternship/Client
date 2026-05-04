@@ -1,60 +1,62 @@
 import {
   DB,
-  RefColleges,
-  RefJobAllowances,
-  RefJobCategories,
-  RefJobModes,
-  RefJobTypes,
-  RefUniversities,
-  JobsChallenge,
-  RefJobPayFreq,
-  RefAppStatuses,
-  RefIndustries,
-  RefDepartments,
-  Moa as _Moa,
-  Users,
-  Employers,
-  Conversations,
-  EmployerUsers,
-  Jobs,
-  Applications,
-  SavedJobs,
+  CareerRefColleges,
+  CareerRefJobAllowances,
+  CareerRefJobCategories,
+  CareerRefJobModes,
+  CareerRefJobTypes,
+  CareerRefUniversities,
+  CareerJobsChallenge,
+  CareerRefJobPayFreq,
+  CareerRefAppStatuses,
+  CareerRefIndustries,
+  CareerRefDepartments,
+  CareerMoa as _Moa,
+  CareerUsers,
+  CareerEmployers,
+  CareerConversations,
+  CareerEmployerUsers,
+  CareerJobs,
+  CareerApplications,
+  CareerSavedJobs,
+  CareerResumes,
 } from "@betterinternship/schema.base";
 import { Selectable } from "kysely";
 
 export type Database = DB;
-export type College = Selectable<RefColleges>;
-export type University = Selectable<RefUniversities>;
-export type JobType = Selectable<RefJobTypes>;
-export type JobAllowance = Selectable<RefJobAllowances>;
-export type JobCategory = Selectable<RefJobCategories>;
-export type JobPayFreq = Selectable<RefJobPayFreq>;
-export type JobMode = Selectable<RefJobModes>;
-export type JobChallenge = Selectable<JobsChallenge>;
-export type AppStatus = Selectable<RefAppStatuses>;
-export type Industry = Selectable<RefIndustries>;
-export type Department = Selectable<RefDepartments>;
+export type College = Selectable<CareerRefColleges>;
+export type University = Selectable<CareerRefUniversities>;
+export type JobType = Selectable<CareerRefJobTypes>;
+export type JobAllowance = Selectable<CareerRefJobAllowances>;
+export type JobCategory = Selectable<CareerRefJobCategories>;
+export type JobPayFreq = Selectable<CareerRefJobPayFreq>;
+export type JobMode = Selectable<CareerRefJobModes>;
+export type JobChallenge = Selectable<CareerJobsChallenge>;
+export type AppStatus = Selectable<CareerRefAppStatuses>;
+export type Industry = Selectable<CareerRefIndustries>;
+export type Department = Selectable<CareerRefDepartments>;
 export type Moa = Selectable<_Moa>;
-export type PrivateUser = Selectable<Users>;
+export type Resume = Selectable<CareerResumes>;
+export type PrivateUser = Selectable<CareerUsers>;
 export type PublicUser = Omit<
   PrivateUser,
   "verification_hash" | "internship_preferences"
 > & {
   internship_preferences?: InternshipPreferences;
 };
-export type Employer = Partial<Selectable<Employers>>;
-export type User = Partial<Selectable<Users>>;
-export interface Conversation extends Selectable<Conversations> {
+export type Employer = Partial<Selectable<CareerEmployers>>;
+export type User = Partial<Selectable<CareerUsers>>;
+export interface Conversation extends Selectable<CareerConversations> {
   employers?: Partial<Employer>;
   employer?: Partial<Employer>;
   users?: Partial<PublicUser>;
   user?: Partial<PublicUser>;
 }
-export type PrivateEmployerUser = Selectable<EmployerUsers>;
+export type PrivateEmployerUser = Selectable<CareerEmployerUsers>;
 export type PublicEmployerUser = Omit<PrivateEmployerUser, "is_deactivated">;
 
 export interface Job extends Omit<
-  Partial<Selectable<Jobs>>,
+  Partial<Selectable<CareerJobs>>,
   "internship_preferences"
 > {
   employer?: Partial<Employer>;
@@ -76,14 +78,18 @@ export type UpdateJobChallengeListingPayload = Partial<Job> & {
   challenge?: JobChallengePayload | Partial<JobChallenge> | null;
 };
 
-export interface UserApplication extends Partial<Selectable<Applications>> {
+export interface UserApplication extends Partial<
+  Selectable<CareerApplications>
+> {
   job?: Partial<Job>;
   jobs?: Partial<Job>;
   employer?: Partial<Employer>;
   employers?: Partial<Employer>;
 }
 
-export interface EmployerApplication extends Partial<Selectable<Applications>> {
+export interface EmployerApplication extends Partial<
+  Selectable<CareerApplications>
+> {
   job?: Partial<Job>;
   jobs?: Partial<Job>;
   user?: Partial<PrivateUser>;
@@ -92,7 +98,7 @@ export interface EmployerApplication extends Partial<Selectable<Applications>> {
   challenge_submission?: string | null;
 }
 
-export interface SavedJob extends Partial<Selectable<SavedJobs>> {
+export interface SavedJob extends Partial<Selectable<CareerSavedJobs>> {
   job?: Partial<Job>;
   jobs?: Partial<Job>;
 }
