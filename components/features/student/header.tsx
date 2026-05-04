@@ -31,6 +31,7 @@ import { useAuthContext } from "@/lib/ctx-auth";
 import { useHeaderContext } from "@/lib/ctx-header";
 import { FormsNavigation } from "@/components/features/student/forms/FormsNavigation";
 import { useProfileData } from "@/lib/api/student.data.api";
+import { hasFormsEnabledUniversity } from "@/lib/student-forms-access";
 import { cn } from "@/lib/utils";
 import {
   JobFilterProvider,
@@ -175,6 +176,7 @@ export const HeaderButtons: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const handleLogout = () => logout().then(() => router.push("/"));
+  const showFormsTab = hasFormsEnabledUniversity(profile.data);
 
   const handleProfileClick = useCallback(() => {
     router.push(`/profile`);
@@ -215,22 +217,23 @@ export const HeaderButtons: React.FC = () => {
         </Link>
       </Button>
 
-      {/* Forms Button */}
-      <Button
-        asChild
-        variant="ghost"
-        className={cn(
-          "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-[0.33em]",
-          pathname === "/forms"
-            ? "text-primary"
-            : "opacity-80 hover:opacity-100 hover:bg-gray-100",
-        )}
-      >
-        <Link href="/forms">
-          <Newspaper className="!h-6 !w-6" strokeWidth={1.7} />
-          <span className="text-xs">Forms</span>
-        </Link>
-      </Button>
+      {showFormsTab && (
+        <Button
+          asChild
+          variant="ghost"
+          className={cn(
+            "w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-[0.33em]",
+            pathname === "/forms"
+              ? "text-primary"
+              : "opacity-80 hover:opacity-100 hover:bg-gray-100",
+          )}
+        >
+          <Link href="/forms">
+            <Newspaper className="!h-6 !w-6" strokeWidth={1.7} />
+            <span className="text-xs">Forms</span>
+          </Link>
+        </Button>
+      )}
 
       {/* My Jobs Dropdown */}
       <ClickDropdown
@@ -401,8 +404,6 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
   initialFilterValues,
   showFilters,
 }) => {
-  const pathname = usePathname();
-
   return (
     <div
       className="flex gap-2 justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90] py-4 px-8"

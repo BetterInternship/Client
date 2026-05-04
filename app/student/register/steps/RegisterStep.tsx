@@ -1,10 +1,17 @@
-import { IRefsContext } from "@/lib/db/db.types";
+import { IRefsContext, University } from "@/lib/db/db.types";
 import { FormInput } from "@/components/EditForm";
 import { Button } from "@/components/ui/button";
 import { UseFormReturn } from "react-hook-form";
 import { FormInputs } from "../page";
 import { Autocomplete } from "@/components/ui/autocomplete";
 import { DEGREES } from "./tempDegrees";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { NO_UNIVERSITY_ID } from "@/lib/student-forms-access";
 
 /**
  * The first step to registering where the user puts their personal information in.
@@ -23,6 +30,23 @@ export function RegisterStep({
   onSubmit: (values: FormInputs) => void;
   submitting: boolean;
 }) {
+  const firstName = regForm.watch("first_name") || "";
+  const lastName = regForm.watch("last_name") || "";
+  const university = regForm.watch("university") || "";
+  const degree = regForm.watch("degree") || "";
+  const hasValidUniversity = refs.universities.some(
+    (option) => option.id === university,
+  );
+  const universityOptions = refs.universities
+    .toSorted((a, b) => (a.name as string).localeCompare(b.name as string))
+    .toSorted((a, b) => {
+      if (a.id === NO_UNIVERSITY_ID) return -1;
+      if (b.id === NO_UNIVERSITY_ID) return 1;
+      return 0;
+    });
+  const canCreateAccount =
+    firstName.trim() && lastName.trim() && hasValidUniversity && degree.trim();
+
   return (
     <>
       <div className="flex flex-col gap-3">
@@ -33,7 +57,7 @@ export function RegisterStep({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-3 w-full">
         <FormInput
           label="First name"
-          value={regForm.watch("first_name") || ""}
+          value={firstName}
           maxLength={40}
           setter={(val) => {
             regForm.setValue("first_name", val);
@@ -43,7 +67,7 @@ export function RegisterStep({
 
         <FormInput
           label="Last name"
-          value={regForm.watch("last_name") || ""}
+          value={lastName}
           maxLength={40}
           setter={(val) => {
             regForm.setValue("last_name", val);
@@ -57,12 +81,33 @@ export function RegisterStep({
         label="University"
         placeholder="University"
         setter={(val) => {
-          regForm.setValue("university", String(val));
+          regForm.setValue("university", val === null ? "" : String(val));
         }}
-        options={refs.universities}
-        value={regForm.watch("university")! || ""}
+        options={universityOptions as { id: string; name: string }[]}
+        value={university}
         required={true}
+        preserveOptionOrder={true}
       />
+
+      <Accordion type="single" collapsible className="-mt-3">
+        <AccordionItem value="missing-university" className="border-b-0">
+          <AccordionTrigger className="w-fit flex-none justify-start gap-1 py-0 text-sm font-normal text-primary underline underline-offset-4 hover:text-primary/80 hover:no-underline [&>svg]:hidden">
+            Don't see your university? Let us know!
+          </AccordionTrigger>
+          <AccordionContent className="pb-0 py-3 px-5 text-xs leading-6 text-muted-foreground border-b bg-gray-200">
+            Want to see your university on our site? <br />
+            <a
+              href="https://www.facebook.com/betterinternship.sherwin"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-primary underline hover:text-primary/80"
+            >
+              Talk to us now
+            </a>{" "}
+            and become an ambassador for BetterInternship!
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
       <Autocomplete
         label="Degree program"
@@ -71,7 +116,7 @@ export function RegisterStep({
         setter={(val) => {
           regForm.setValue("degree", val === null ? "" : String(val));
         }}
-        value={regForm.watch("degree") || ""}
+        value={degree}
         required={true}
         allowCustomValue={true}
       />
@@ -81,7 +126,7 @@ export function RegisterStep({
         <Button
           className="w-full sm:w-auto"
           type="button"
-          disabled={submitting}
+          disabled={submitting || !canCreateAccount}
           onClick={(e) =>
             void regForm.handleSubmit(() => onSubmit(regForm.getValues()))(e)
           }

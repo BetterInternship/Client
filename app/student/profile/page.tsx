@@ -3,6 +3,7 @@ import {
   useState,
   useEffect,
   useRef,
+  useMemo,
   forwardRef,
   useImperativeHandle,
 } from "react";
@@ -15,12 +16,16 @@ import {
   CheckCircle2,
   Globe2,
   Loader2,
+  Trash2,
+  Pencil,
+  Check,
+  X,
 } from "lucide-react";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { InternshipPreferences, PublicUser } from "@/lib/db/db.types";
+import { InternshipPreferences, PublicUser, Resume } from "@/lib/db/db.types";
 import { ErrorLabel, LabeledProperty } from "@/components/ui/labels";
 import { UserService } from "@/lib/api/services";
 import { Button } from "@/components/ui/button";
@@ -35,6 +40,7 @@ import {
 } from "@/lib/utils/url-utils";
 import { Loader } from "@/components/ui/loader";
 import { cn, formatMonth, isValidPHNumber, toSafeString } from "@/lib/utils";
+import { formatOptionalStartMonth } from "@/lib/utils/date-utils";
 import { MyUserPfp, PFP_UPDATED_EVENT } from "@/components/shared/pfp";
 import { useAppContext } from "@/lib/ctx-app";
 import {
@@ -55,22 +61,15 @@ import {
   type Option as ChipOpt,
 } from "@/components/ui/chip-select";
 import { Badge } from "@/components/ui/badge";
-import { AutoApplyCard } from "@/components/features/student/profile/AutoApplyCard";
 import { useProfileActions } from "@/lib/api/student.actions.api";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
 import { useBlockPageRefreshEffect } from "@/hooks/use-refresh-block";
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import { AddResumeModal } from "@/components/features/student/profile/AddResumeModal";
+import useModalRegistry from "@/components/modals/modal-registry";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
-
-type ResumeListItem = {
-  id: string;
-  label: string;
-  filename: string;
-  uploaded_at: string;
-};
 
 export default function ProfilePage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
@@ -78,9 +77,9 @@ export default function ProfilePage() {
   const profileActions = useProfileActions();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [isDeletingResume, setIsDeletingResume] = useState(false);
+  const [isRenamingResume, setIsRenamingResume] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [autoApplySaving, setAutoApplySaving] = useState(false);
-  const [autoApplyError, setAutoApplyError] = useState<string | null>(null);
 
   const { url: resumeURL, sync: syncResumeURL } = useFile({
     fetcher: (resumeId: string) => UserService.getMyResumeURL(resumeId),
@@ -91,6 +90,11 @@ export default function ProfilePage() {
     queryFn: () => UserService.getMyResumes(),
   });
 
+  const maxResumesEnv = Number(process.env.NEXT_PUBLIC_MAX_RESUMES_ALLOWED);
+  const maxResumesAllowed = Number.isFinite(maxResumesEnv) ? maxResumesEnv : 5;
+  const resumeCount = resumes.data?.resumes?.length ?? 0;
+  const atResumeLimit = resumeCount >= maxResumesAllowed;
+
   // Modals
   const { open: openResumeModal, Modal: ResumeModal } =
     useModal("resume-modal");
@@ -99,30 +103,90 @@ export default function ProfilePage() {
     close: closeAddResumeModal,
     Modal: AddResumeModalBox,
   } = useModal("add-resume-modal");
+
   const profileEditorRef = useRef<{ save: () => Promise<boolean> }>(null);
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
+  const modalRegistry = useModalRegistry();
 
   const openResumePreview = async (resumeId: string) => {
     await syncResumeURL(resumeId);
     openResumeModal();
   };
 
-  const handleAutoApplySave = async (newEnabled: boolean) => {
-    setAutoApplySaving(true);
-    setAutoApplyError(null);
-
-    try {
-      await UserService.updateMyProfile({
-        apply_for_me: newEnabled,
-        auto_apply_enabled_at: newEnabled ? new Date().toISOString() : null,
-      });
-      void queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-    } catch (e: any) {
-      setAutoApplyError((e as string) ?? "Failed to update auto-apply");
-    } finally {
-      setAutoApplySaving(false);
+  const onRenameResume = async (resumeId: string, label: string) => {
+    if (!resumeId) {
+      toast.error("Resume not found.");
+      return false;
     }
+
+    const nextLabel = label.trim();
+    if (!nextLabel) {
+      toast.error("Resume label is required.");
+      return false;
+    }
+
+    setIsRenamingResume(true);
+    try {
+      const result = await UserService.updateMyResume(resumeId, nextLabel);
+      if (!result?.success) {
+        const errorMessage =
+          (result as { error?: string })?.error ||
+          result?.message ||
+          "Failed to rename resume.";
+        toast.error(errorMessage, toastPresets.destructive);
+        return false;
+      }
+
+      toast.success("Resume renamed successfully.", toastPresets.success);
+      void resumes.refetch();
+      void queryClient.invalidateQueries({
+        queryKey: ["my-profile"],
+      });
+      return true;
+    } catch (error) {
+      toast.error("Resume could not be renamed. Try again.");
+      return false;
+    } finally {
+      setIsRenamingResume(false);
+    }
+  };
+
+  const onDeleteResume = (resume: Resume) => {
+    if (!resume.id) {
+      toast.error("Resume not found.");
+      return;
+    }
+
+    modalRegistry.deleteResume.open({
+      resume,
+      isProcessing: isDeletingResume,
+      onConfirm: async () => {
+        setIsDeletingResume(true);
+        try {
+          const result = await UserService.deleteMyResume(resume.id);
+          if (!result?.success) {
+            const errorMessage =
+              (result as { error?: string })?.error ||
+              result?.message ||
+              "Failed to delete resume.";
+            toast.error(errorMessage, toastPresets.destructive);
+            return;
+          }
+
+          modalRegistry.deleteResume.close();
+          toast.success("Resume deleted successfully.", toastPresets.success);
+          void resumes.refetch();
+          void queryClient.invalidateQueries({
+            queryKey: ["my-profile"],
+          });
+        } catch (error) {
+          toast.error("Resume could not be deleted. Try again.");
+        } finally {
+          setIsDeletingResume(false);
+        }
+      },
+    });
   };
 
   redirectIfNotLoggedIn();
@@ -138,7 +202,6 @@ export default function ProfilePage() {
   });
 
   const data = profile.data as PublicUser | undefined;
-  const { score, parts, tips } = computeProfileScore(data);
 
   useEffect(() => {
     if (searchParams.get("edit") === "true") setIsEditing(true);
@@ -167,12 +230,11 @@ export default function ProfilePage() {
 
   return (
     data && (
-      <div className="min-h-screen mx-auto max-w-6xl">
+      <div className="min-h-screen mx-auto max-w-2xl w-full">
         {/* Top header */}
         <div className="relative">
-          <header className="relative px-4 sm:px-6 pt-10 ">
+          <header className="relative px-4 sm:px-6 pt-10">
             <div className="flex flex-col lg:flex-row gap-6 items-start">
-              {/* PFP */}
               <div className="relative">
                 <MyUserPfp size="36" />
 
@@ -232,7 +294,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Main content */}
-        <main className="px-4 sm:px-6 pt-8 pb-16 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <main className="w-full p-6">
           {/* Left column */}
           <div className="lg:col-span-2 flex flex-col gap-6">
             {/* Profile */}
@@ -251,6 +313,8 @@ export default function ProfilePage() {
                   }}
                   onEdit={() => setIsEditing(true)}
                   onAddResume={openAddResumeModal}
+                  onRenameResume={onRenameResume}
+                  onDeleteResume={onDeleteResume}
                 />
               </>
             )}
@@ -297,62 +361,6 @@ export default function ProfilePage() {
               </ProfileEditForm>
             )}
           </div>
-
-          {/* Right column */}
-          <aside className="lg:col-span-1 space-y-6">
-            <AutoApplyCard
-              initialEnabled={!!data?.apply_for_me}
-              enabledAt={data?.auto_apply_enabled_at}
-              onSave={handleAutoApplySave}
-              saving={autoApplySaving}
-              error={autoApplyError}
-            />
-
-            {/* Completion meter */}
-            <div className="">
-              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                <span>Profile completeness</span>
-                <span>{score}%</span>
-              </div>
-              <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                <motion.div
-                  className="h-full bg-primary"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${score}%` }}
-                  transition={{ type: "spring", stiffness: 150, damping: 20 }}
-                />
-              </div>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {Object.entries(parts).map(([k, ok]) => (
-                  <span
-                    key={k}
-                    className={cn(
-                      "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs border",
-                      ok
-                        ? "border-emerald-500/40 text-emerald-600"
-                        : "border-amber-500/40 text-amber-700",
-                    )}
-                  >
-                    <CheckCircle2
-                      className={cn(
-                        "h-3.5 w-3.5 mr-1",
-                        ok ? "opacity-100" : "opacity-50",
-                      )}
-                    />{" "}
-                    {k}
-                  </span>
-                ))}
-              </div>
-              {/* NEW: quick tips, only show top 2 so it stays compact */}
-              {tips.length > 0 && (
-                <ul className="mt-3 text-xs text-muted-foreground list-disc pl-5 space-y-1">
-                  {tips.slice(0, 2).map((t) => (
-                    <li key={t}>{t}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </aside>
         </main>
 
         <ResumeModal className="max-w-[80vw]">
@@ -369,6 +377,7 @@ export default function ProfilePage() {
                 queryKey: ["my-profile"],
               });
             }}
+            isAtResumeLimit={atResumeLimit}
           />
         </AddResumeModalBox>
       </div>
@@ -431,17 +440,21 @@ function ProfileReadOnlyTabs({
   resumes,
   resumesLoading,
   onViewResume,
-  onResumeUploaded,
+  onRenameResume,
+  onDeleteResume,
   onEdit,
   onAddResume,
+  onResumeUploaded,
 }: {
   profile: PublicUser;
-  resumes: ResumeListItem[];
+  resumes: Resume[];
   resumesLoading: boolean;
   onViewResume: (resumeId: string) => void | Promise<void>;
-  onResumeUploaded: () => void;
+  onRenameResume: (resumeId: string, label: string) => Promise<boolean>;
+  onDeleteResume: (resume: Resume) => void | Promise<void>;
   onEdit: () => void;
   onAddResume: () => void;
+  onResumeUploaded: () => void;
 }) {
   const internshipPreferences = profile.internship_preferences;
   const { to_university_name, job_modes, job_types, job_categories } =
@@ -602,11 +615,9 @@ function ProfileReadOnlyTabs({
             />
             <LabeledProperty
               label="Ideal internship start"
-              value={
-                internshipPreferences?.expected_start_date
-                  ? toYYYYMM(internshipPreferences.expected_start_date)
-                  : "—"
-              }
+              value={formatOptionalStartMonth(
+                internshipPreferences?.expected_start_date,
+              )}
             />
             {internshipPreferences?.internship_type === "credited" && (
               <LabeledProperty
@@ -722,8 +733,10 @@ function ProfileReadOnlyTabs({
           resumes={resumes}
           loading={resumesLoading}
           onViewResume={onViewResume}
-          onUploaded={onResumeUploaded}
           onAddResume={onAddResume}
+          onResumeUploaded={onResumeUploaded}
+          onRenameResume={onRenameResume}
+          onDeleteResume={onDeleteResume}
         />
       </OutsideTabPanel>
     </OutsideTabs>
@@ -805,7 +818,7 @@ const ProfileEditor = forwardRef<
   ];
 
   useEffect(() => {
-    setUniversityOptions(universities?.filter((u) => u.name !== "ADMU"));
+    setUniversityOptions(universities?.filter((u) => u.name));
     setJobModeOptions((job_modes ?? []).slice());
     setJobTypeOptions((job_types ?? []).slice());
     setJobCategoryOptions((job_categories ?? []).slice());
@@ -1035,8 +1048,8 @@ const ProfileEditor = forwardRef<
                     new Date(ms ?? 0).toISOString(),
                   )
                 }
-                fromYear={2025}
-                toYear={2030}
+                fromYear={new Date().getFullYear()}
+                toYear={new Date().getFullYear() + 4}
                 placeholder="Select month"
               />
             </div>
@@ -1134,8 +1147,8 @@ const ProfileEditor = forwardRef<
                 expected_start_date: ms ?? null, // FormMonthPicker gives ms
               });
             }}
-            fromYear={2025}
-            toYear={2030}
+            fromYear={new Date().getFullYear()}
+            toYear={new Date().getFullYear() + 4}
             required={false}
             placeholder="Select month"
           />
@@ -1235,15 +1248,46 @@ const ResumeList = ({
   resumes,
   loading,
   onViewResume,
-  onUploaded,
+  onRenameResume,
+  isRenamingResume,
+  onDeleteResume,
   onAddResume,
+  onResumeUploaded,
 }: {
-  resumes: ResumeListItem[];
+  resumes: Resume[];
   loading: boolean;
   onViewResume: (resumeId: string) => void | Promise<void>;
-  onUploaded: () => void;
+  onRenameResume: (resumeId: string, label: string) => Promise<boolean>;
+  isRenamingResume: boolean;
+  onDeleteResume: (resume: Resume) => void | Promise<void>;
   onAddResume: () => void;
+  onResumeUploaded: () => void;
 }) => {
+  const maxResumesEnv = Number(process.env.NEXT_PUBLIC_MAX_RESUMES_ALLOWED);
+  const maxResumesAllowed = Number.isFinite(maxResumesEnv) ? maxResumesEnv : 5;
+  const atResumeLimit = resumes.length >= maxResumesAllowed;
+
+  const [editingResumeId, setEditingResumeId] = useState<string | null>(null);
+  const [editingLabel, setEditingLabel] = useState("");
+  const sortedResumes = useMemo(
+    () => [...resumes].sort(compareResumesByUploadedAtDesc),
+    [resumes],
+  );
+
+  const startEditing = (resume: Resume) => {
+    if (!resume.id) {
+      toast.error("Resume not found.");
+      return;
+    }
+    setEditingResumeId(resume.id);
+    setEditingLabel(resume.label ?? "");
+  };
+
+  const cancelEditing = () => {
+    setEditingResumeId(null);
+    setEditingLabel("");
+  };
+
   return (
     <section>
       <div className="text-xl sm:text-2xl tracking-tight font-semibold">
@@ -1262,29 +1306,137 @@ const ResumeList = ({
           </div>
         )}
         {!loading &&
-          resumes.map((resume) => (
-            <div
-              key={resume.id}
-              className="flex items-center justify-between gap-3 p-3"
-            >
-              <div className="min-w-0">
-                <div className="truncate text-sm font-medium text-gray-900">
-                  {resume.label || resume.filename || "Untitled resume"}
+          sortedResumes.map((resume) => {
+            const isEditing = editingResumeId === resume.id;
+            const currentLabel = resume.label ?? "";
+
+            const handleSave = () => {
+              if (!resume.id) {
+                toast.error("Resume not found.");
+                return;
+              }
+
+              const nextLabel = editingLabel.trim();
+              if (!nextLabel) {
+                toast.error("Resume label is required.");
+                return;
+              }
+
+              if (nextLabel === currentLabel) {
+                cancelEditing();
+                return;
+              }
+
+              void (async () => {
+                const success = await onRenameResume(resume.id, nextLabel);
+                if (success) cancelEditing();
+              })();
+            };
+
+            return (
+              <div
+                key={resume.id}
+                className="flex items-center justify-between gap-3 p-3"
+              >
+                <div className="min-w-0">
+                  {isEditing ? (
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 min-w-0">
+                        <FormInput
+                          value={editingLabel}
+                          setter={setEditingLabel}
+                          required={false}
+                          placeholder="Resume label"
+                          aria-label="Resume label"
+                          className="w-full"
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.preventDefault();
+                              handleSave();
+                            } else if (event.key === "Escape") {
+                              event.preventDefault();
+                              cancelEditing();
+                            }
+                          }}
+                          disabled={isRenamingResume}
+                        />
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleSave}
+                          aria-label="Save resume label"
+                          disabled={isRenamingResume}
+                        >
+                          {isRenamingResume ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Check className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={cancelEditing}
+                          aria-label="Cancel rename"
+                          disabled={isRenamingResume}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="truncate text-sm font-medium text-gray-900">
+                      <FormInput
+                        value={
+                          resume.label || resume.filename || "Untitled resume"
+                        }
+                        className={"border-none p-0"}
+                        disabled={isRenamingResume}
+                      />
+                    </div>
+                  )}
+
+                  <div className="text-xs text-muted-foreground">
+                    Uploaded {formatResumeUploadedAt(resume.uploaded_at)}
+                  </div>
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  Uploaded {formatResumeUploadedAt(resume.uploaded_at)}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => void onViewResume(resume.id)}
+                    aria-label={`View ${resume.label || "resume"}`}
+                    disabled={isRenamingResume || isEditing}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  {!isEditing && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => void startEditing(resume)}
+                      aria-label={`Rename ${resume.label || "resume"}`}
+                      disabled={isRenamingResume}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <Button
+                    scheme="destructive"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => void onDeleteResume(resume)}
+                    aria-label={`Delete ${resume.label || "resume"}`}
+                    disabled={isRenamingResume || isEditing}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => void onViewResume(resume.id)}
-                aria-label={`View ${resume.label || "resume"}`}
-              >
-                <Eye className="h-4 w-4" />
-              </Button>
-            </div>
-          ))}
+            );
+          })}
       </div>
 
       {!loading && resumes.length === 0 && (
@@ -1293,8 +1445,11 @@ const ResumeList = ({
         </div>
       )}
 
-      <div className="mt-4 flex justify-end">
-        <Button onClick={onAddResume}>
+      <div className="mt-4 flex justify-between items-center gap-2">
+        <span className="text-muted-foreground text-sm">
+          You can have up to {maxResumesAllowed} resumes.
+        </span>
+        <Button onClick={onAddResume} disabled={atResumeLimit}>
           <Upload className="h-4 w-4 mr-1.5" />
           Add resume
         </Button>
@@ -1302,6 +1457,15 @@ const ResumeList = ({
     </section>
   );
 };
+
+function compareResumesByUploadedAtDesc(first: Resume, second: Resume) {
+  const firstUploadedAt = new Date(first.uploaded_at).getTime();
+  const secondUploadedAt = new Date(second.uploaded_at).getTime();
+  const firstTime = Number.isNaN(firstUploadedAt) ? 0 : firstUploadedAt;
+  const secondTime = Number.isNaN(secondUploadedAt) ? 0 : secondUploadedAt;
+
+  return secondTime - firstTime;
+}
 
 function formatResumeUploadedAt(uploadedAt: string) {
   const date = new Date(uploadedAt);
@@ -1401,38 +1565,4 @@ function computeProfileScore(p?: Partial<PublicUser>): {
   if (!parts.resume) tips.push("Upload a resume in PDF (≤2.5MB).");
 
   return { score, parts, tips };
-}
-
-function monthFromMs(ms?: number | null): string | null {
-  if (ms == null || Number.isNaN(ms)) return null;
-  const d = new Date(ms); // local time
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  return `${y}-${m}`;
-}
-
-// Coerce many date-ish inputs to "YYYY-MM" or null
-function toYYYYMM(input?: string | number | null): string | null {
-  if (input == null || input === "") return null;
-
-  // Already "YYYY-MM"
-  if (typeof input === "string" && /^\d{4}-\d{2}$/.test(input)) return input;
-
-  // If string contains "YYYY-MM" at the start (e.g., "YYYY-MM-DD", ISO)
-  if (typeof input === "string") {
-    const m = input.match(/^(\d{4}-\d{2})/);
-    if (m) return m[1];
-  }
-
-  // Timestamp (number or numeric string)
-  const n = typeof input === "number" ? input : Number(input);
-  if (Number.isFinite(n)) return monthFromMs(n);
-
-  // Fallback: parseable string date
-  if (typeof input === "string") {
-    const parsed = Date.parse(input);
-    if (!Number.isNaN(parsed)) return monthFromMs(parsed);
-  }
-
-  return null;
 }

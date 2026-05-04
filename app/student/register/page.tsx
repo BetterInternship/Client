@@ -4,7 +4,6 @@ import { Suspense, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { useProfileData } from "@/lib/api/student.data.api";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { DropdownGroup } from "@/components/ui/dropdown";
@@ -12,6 +11,7 @@ import { RegisterStep } from "./steps/RegisterStep";
 import { OTPEmailStep } from "./steps/OTPEmailStep";
 import { OTPEnterStep } from "./steps/OTPEnterStep";
 import { RegisterCarousel } from "@/components/features/student/register/RegisterCarousel";
+import { NO_UNIVERSITY_ID } from "@/lib/student-forms-access";
 
 export interface FormInputs {
   first_name?: string;
@@ -20,6 +20,8 @@ export interface FormInputs {
   university?: string;
   degree?: string;
 }
+
+const NEXT_URL = "/search";
 
 export function RegisterPageContent() {
   const refs = useDbRefs();
@@ -34,7 +36,7 @@ export function RegisterPageContent() {
     searchParams.get("step") === "verify" ? 2 : 1,
   );
 
-  const nextUrl = "/search";
+  const skipOtpStep = searchParams.get("edu-email") === "true";
 
   // modify url params based on current step.
   useEffect(() => {
@@ -55,9 +57,13 @@ export function RegisterPageContent() {
   // skip main register page if the user is already registered.
   useEffect(() => {
     if (step === 1 && auth.isAuthenticated()) {
-      setStep(2);
+      if (skipOtpStep) {
+        router.replace(NEXT_URL);
+      } else {
+        setStep(2);
+      }
     }
-  }, [step, auth]);
+  }, [step, auth, router, skipOtpStep]);
 
   const regForm = useForm<FormInputs>({
     defaultValues: {
@@ -76,6 +82,7 @@ export function RegisterPageContent() {
    */
   const handleSubmit = (values: FormInputs) => {
     setSubmitting(true);
+    const shouldSkipOtp = skipOtpStep || values.university === NO_UNIVERSITY_ID;
 
     // Check for missing fields
     if (!values.first_name?.trim()) {
@@ -121,6 +128,12 @@ export function RegisterPageContent() {
         }
 
         setSubmitting(false);
+
+        if (shouldSkipOtp) {
+          router.replace(NEXT_URL);
+          return;
+        }
+
         setStep(step + 1);
       })
       .catch((error) => {
@@ -162,7 +175,7 @@ export function RegisterPageContent() {
                     setStep(step + 1);
                   }}
                   onSkipAction={() => {
-                    router.replace(nextUrl);
+                    router.replace(NEXT_URL);
                   }}
                 />
               )}
@@ -170,7 +183,7 @@ export function RegisterPageContent() {
                 <OTPEnterStep
                   eduEmail={verificationEmail}
                   onFinishAction={() => {
-                    router.replace(nextUrl);
+                    router.replace(NEXT_URL);
                   }}
                   onBackAction={() => setStep(step - 1)}
                 />

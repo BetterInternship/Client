@@ -28,6 +28,7 @@ function AutocompleteBase<ID extends number | string>({
   label,
   labelAddon,
   allowCustomValue = false,
+  preserveOptionOrder = false,
   ...props
 }: {
   required?: boolean;
@@ -40,6 +41,7 @@ function AutocompleteBase<ID extends number | string>({
   label?: React.ReactNode;
   labelAddon?: string;
   allowCustomValue?: boolean;
+  preserveOptionOrder?: boolean;
 }) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -50,8 +52,32 @@ function AutocompleteBase<ID extends number | string>({
 
   const inputId = useId();
 
-  const findExactOption = (value: string) =>
-    options.find((o) => o.name?.toLowerCase() === value.toLowerCase());
+  const findExactOption = (value: string) => {
+    const normalizedValue = value.trim().toLowerCase();
+    return options.find(
+      (o) => o.name?.trim().toLowerCase() === normalizedValue,
+    );
+  };
+
+  const resolveQuerySelection = (nextQuery: string) => {
+    const text = nextQuery.trim();
+    if (!text) return false;
+
+    const exact = findExactOption(text);
+    if (exact) {
+      setter([exact.id]);
+      setQuery("");
+      return true;
+    }
+
+    if (allowCustomValue) {
+      setter([text as unknown as ID]);
+      setQuery("");
+      return true;
+    }
+
+    return false;
+  };
 
   const selectedSet = useMemo(() => new Set(value ?? []), [value]);
 
@@ -60,8 +86,10 @@ function AutocompleteBase<ID extends number | string>({
     const base = q
       ? options.filter((o) => o.name?.toLowerCase().includes(q))
       : options;
-    return base.slice().sort((a, b) => a.name.localeCompare(b.name));
-  }, [query, options]);
+    return preserveOptionOrder
+      ? base
+      : base.slice().sort((a, b) => a.name.localeCompare(b.name));
+  }, [query, options, preserveOptionOrder]);
 
   const toggle = (id: ID) => {
     lastSelectionRef.current = Date.now();
@@ -218,26 +246,26 @@ function AutocompleteBase<ID extends number | string>({
           className="border-gray-300"
           placeholder={placeholder}
           onChange={(e) => {
-            if (!multiple && (value?.length ?? 0) > 0) {
+            const nextQuery = e.target.value;
+
+            if ((value?.length ?? 0) > 0) {
               setter([]);
             }
-            // typing starts a new search; selection is set on option click
-            setQuery(e.target.value);
+
+            const exact = findExactOption(nextQuery);
+            if (exact) {
+              setter([exact.id]);
+              setQuery("");
+            } else {
+              setQuery(nextQuery);
+            }
+
             setIsOpen(true);
           }}
           onFocus={() => setIsOpen(true)}
           onClick={() => setIsOpen(true)}
           onKeyDown={(e) => {
-            if (
-              allowCustomValue &&
-              e.key === "Enter" &&
-              query.trim().length > 0
-            ) {
-              const text = query.trim();
-              const exact = findExactOption(text);
-              const nextId = exact ? exact.id : (text as unknown as ID);
-              setter([nextId]);
-              setQuery("");
+            if (e.key === "Enter" && resolveQuerySelection(query)) {
               setIsOpen(false);
               e.preventDefault();
             }
@@ -248,13 +276,7 @@ function AutocompleteBase<ID extends number | string>({
               if (Date.now() - lastSelectionRef.current < 250) {
                 return;
               }
-              if (allowCustomValue && query.trim().length > 0) {
-                const text = query.trim();
-                const exact = findExactOption(text);
-                const nextId = exact ? exact.id : (text as unknown as ID);
-                setter([nextId]);
-                setQuery("");
-              }
+              resolveQuerySelection(query);
             }, 150);
           }}
         />
@@ -341,6 +363,7 @@ export const Autocomplete = <ID extends number | string>({
   label,
   props,
   allowCustomValue = false,
+  preserveOptionOrder = false,
 }: {
   required?: boolean;
   options: IAutocompleteOption<ID>[];
@@ -351,6 +374,7 @@ export const Autocomplete = <ID extends number | string>({
   label?: React.ReactNode;
   props?: any[];
   allowCustomValue?: boolean;
+  preserveOptionOrder?: boolean;
 }) => {
   return (
     <AutocompleteBase<ID>
@@ -363,6 +387,7 @@ export const Autocomplete = <ID extends number | string>({
       className={className}
       label={label}
       allowCustomValue={allowCustomValue}
+      preserveOptionOrder={preserveOptionOrder}
       {...props}
     />
   );

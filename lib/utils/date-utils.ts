@@ -108,6 +108,11 @@ export const formatTimestampDate = (timestamp?: number | null) => {
   );
 };
 
+export const formatOptionalTimestampDate = (timestamp?: number | null) => {
+  if (!timestamp) return "Not specified";
+  return formatTimestampDate(timestamp);
+};
+
 /**
  * Date formatter.
  *
@@ -174,6 +179,73 @@ export const formatMonth = (dateString?: string | null) => {
     year: "numeric",
     month: "long",
   });
+};
+
+export const formatOptionalStartMonth = (
+  input?: string | number | null,
+): string => {
+  if (!input) return "Not specified";
+  return toYYYYMM(input) ?? "Not specified";
+};
+
+export const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+export const timestampMsToMonthYear = (timestamp?: number | null) => {
+  if (!timestamp) return { month: "", year: "" };
+  const date = new Date(timestamp);
+  return {
+    month: date.getMonth().toString(),
+    year: date.getFullYear().toString(),
+  };
+};
+
+export const monthYearToTimestampMs = (month: number, year: number) => {
+  return new Date(year, month, 1, 0, 0, 0, 0).getTime();
+};
+
+// Coerce many date-ish inputs to "YYYY-MM" or null.
+export const toYYYYMM = (input?: string | number | null): string | null => {
+  if (input == null || input === "") return null;
+
+  if (typeof input === "string" && /^\d{4}-\d{2}$/.test(input)) return input;
+
+  if (typeof input === "string") {
+    const match = input.match(/^(\d{4}-\d{2})/);
+    if (match) return match[1];
+  }
+
+  const timestamp = typeof input === "number" ? input : Number(input);
+  if (Number.isFinite(timestamp)) return monthFromMs(timestamp);
+
+  if (typeof input === "string") {
+    const parsed = Date.parse(input);
+    if (!Number.isNaN(parsed)) return monthFromMs(parsed);
+  }
+
+  return null;
+};
+
+const monthFromMs = (ms?: number | null): string | null => {
+  if (ms == null || Number.isNaN(ms)) return null;
+  const date = new Date(ms);
+  if (Number.isNaN(date.getTime())) return null;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+    2,
+    "0",
+  )}`;
 };
 
 /**

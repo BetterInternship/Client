@@ -3,7 +3,8 @@
 // React imports
 import React from "react";
 import Link from "next/link";
-import { ArrowUpRight, BookA } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowUpRight, BookA, Eye } from "lucide-react";
 
 // UI components
 import { Button } from "@/components/ui/button";
@@ -22,10 +23,21 @@ import { HeaderText, HeaderIcon } from "@/components/ui/text";
 import { Separator } from "@/components/ui/separator";
 import { PageError } from "@/components/ui/error";
 import { cn } from "@/lib/utils";
+import { useFile } from "@/hooks/use-file";
+import { UserService } from "@/lib/api/services";
+import { useModal } from "@/hooks/use-modal";
+import { PDFPreview } from "@/components/shared/pdf-preview";
 
 export default function ApplicationsPage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
   const rawApplications = useApplicationsData();
+  const { url: resumeURL, sync: syncResumeURL } = useFile({
+    fetcher: (resumeId: string) => UserService.getMyResumeURL(resumeId),
+    route: (resumeId: string) => `/users/me/resume/${resumeId}`,
+  });
+  const { open: openResumeModal, Modal: ResumeModal } = useModal(
+    "application-resume-modal",
+  );
 
   const applications = React.useMemo(
     () => ({
@@ -39,6 +51,11 @@ export default function ApplicationsPage() {
     [rawApplications],
   );
   redirectIfNotLoggedIn();
+
+  const openResumePreview = async (resumeId: string) => {
+    await syncResumeURL(resumeId);
+    openResumeModal();
+  };
 
   return (
     <div className="h-full overflow-y-auto py-6 px-4">
@@ -87,16 +104,31 @@ export default function ApplicationsPage() {
         ) : (
           <div className="space-y-3">
             {applications?.data.map((application) => (
-              <ApplicationCard application={application} />
+              <ApplicationCard
+                key={application.id ?? application.job_id}
+                application={application}
+                onPreviewResume={openResumePreview}
+              />
             ))}
           </div>
         )}
+
+        <ResumeModal className="max-w-[80vw]">
+          <PDFPreview url={resumeURL} />
+        </ResumeModal>
       </div>
     </div>
   );
 }
 
-const ApplicationCard = ({ application }: { application: UserApplication }) => {
+const ApplicationCard = ({
+  application,
+  onPreviewResume,
+}: {
+  application: UserApplication;
+  onPreviewResume: (resumeId: string) => void | Promise<void>;
+}) => {
+  const router = useRouter();
   const { to_app_status_name } = useDbRefs();
   const job = application.job ?? application.jobs;
   const jobRecord = job as Record<string, unknown> | undefined;
@@ -115,13 +147,29 @@ const ApplicationCard = ({ application }: { application: UserApplication }) => {
   else if (statusLabel === "Accepted" || statusLabel === "Hired")
     statusBadgeType = "supportive";
   else statusBadgeType = "warning";
+  const resumeId = application.resume_id;
+  const listingHref = `/search/${job?.id}`;
+  const openListing = () => {
+    if (canOpenListing) router.push(listingHref);
+  };
 
-  const cardContent = (
+  return (
     <Card
+      role={canOpenListing ? "link" : undefined}
+      tabIndex={canOpenListing ? 0 : undefined}
+      onClick={openListing}
+      onKeyDown={(event) => {
+        if (!canOpenListing) return;
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openListing();
+        }
+      }}
       className={cn(
+        "rounded-[0.16em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
         canOpenListing &&
           !isSuperListing &&
-          "cursor-pointer transition-colors hover:bg-primary/5 hover:border-primary/20",
+          "cursor-pointer transition-colors hover:bg-gray-50 hover:border-primary/20",
         canOpenListing &&
           isSuperListing &&
           "cursor-pointer hover:ring-1 hover:ring-primary/20",
@@ -129,10 +177,13 @@ const ApplicationCard = ({ application }: { application: UserApplication }) => {
           "super-card relative isolate overflow-hidden bg-[radial-gradient(ellipse_at_top_left,rgba(254,240,138,0.5),transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(251,146,60,0.18),transparent_35%),linear-gradient(150deg,rgba(255,251,235,1)_0%,rgba(255,255,255,1)_45%,rgba(254,243,199,0.98)_100%)]",
       )}
     >
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Badge type={statusBadgeType}>{statusLabel}</Badge>
+            <Badge type="accent">
+              Applied {formatTimeAgo(application.applied_at ?? "")}
+            </Badge>
             {isSuperListing && <SuperListingBadge compact className="w-fit" />}
           </div>
           {canOpenListing ? (
@@ -146,23 +197,24 @@ const ApplicationCard = ({ application }: { application: UserApplication }) => {
           )}
         </div>
         <JobHead title={job?.title} employer={employer?.name} />
-        <div className="flex items-center gap-2 text-gray-600">
-          <Badge type="accent">
-            Applied {formatTimeAgo(application.applied_at ?? "")}
-          </Badge>
+        <div className="flex flex-col flex-wrap justify-between items-start gap-2 text-gray-600">
+          <Button
+            type="button"
+            variant="outline"
+            scheme="primary"
+            disabled={!resumeId}
+            aria-label={`Submitted resume`}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              if (resumeId) void onPreviewResume(resumeId);
+            }}
+          >
+            <Eye className="h-3.5 w-3.5" />
+            Preview Resume
+          </Button>
         </div>
       </div>
     </Card>
-  );
-
-  if (!canOpenListing) return cardContent;
-
-  return (
-    <Link
-      href={`/search/${job?.id}`}
-      className="block rounded-[0.33em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-    >
-      {cardContent}
-    </Link>
   );
 };

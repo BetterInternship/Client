@@ -141,7 +141,7 @@ export function useJobsData(
       // MOA filter
       const hasMoa = dbMoas.check(
         job?.employer_id ?? "",
-        dbRefs.get_university_by_name("DLSU - Manila")?.id ?? "",
+        profile.data?.university ?? "",
       )
         ? "Has MOA"
         : "No MOA";
