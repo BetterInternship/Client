@@ -805,7 +805,7 @@ const ProfileEditor = forwardRef<
   ];
 
   useEffect(() => {
-    setUniversityOptions(universities?.filter((u) => u.name !== "ADMU"));
+    setUniversityOptions(universities?.filter((u) => u.name));
     setJobModeOptions((job_modes ?? []).slice());
     setJobTypeOptions((job_types ?? []).slice());
     setJobCategoryOptions((job_categories ?? []).slice());
