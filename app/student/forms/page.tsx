@@ -59,7 +59,7 @@ export default function FormsPage() {
       return;
     }
     if (!isProfileVerified(profile.data)) {
-      router.push("/register/verify?redirect=forms");
+      router.replace("/register/verify?redirect=forms");
       return;
     }
   }, [
