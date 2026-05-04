@@ -14,6 +14,9 @@ import {
   LogIn,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { hasFormsEnabledUniversity } from "@/lib/student-forms-access";
+import { useProfileData } from "@/lib/api/student.data.api";
+import type { PublicUser } from "@/lib/db/db.types";
 import {
   Popover,
   PopoverContent,
@@ -22,7 +25,7 @@ import {
 import { useAuthContext } from "@/lib/ctx-auth";
 
 interface MobileBottomNavProps {
-  profileData?: any;
+  profileData?: PublicUser | null;
 }
 
 interface NavButtonProps {
@@ -82,6 +85,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   const router = useRouter();
   const pathname = usePathname();
   const { logout, isAuthenticated } = useAuthContext();
+  const profile = useProfileData();
+  const showFormsTab = hasFormsEnabledUniversity(profileData ?? profile.data);
 
   // Not logged in: show minimal nav with Search and Sign In
   if (!isAuthenticated()) {
@@ -120,13 +125,14 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         onClick={() => router.push("/search")}
       />
 
-      {/* Forms Button */}
-      <NavButton
-        icon={<Newspaper className="w-6 h-6" />}
-        label="Forms"
-        isActive={pathname === "/forms"}
-        onClick={() => router.push("/forms")}
-      />
+      {showFormsTab && (
+        <NavButton
+          icon={<Newspaper className="w-6 h-6" />}
+          label="Forms"
+          isActive={pathname === "/forms"}
+          onClick={() => router.push("/forms")}
+        />
+      )}
 
       {/* My Jobs Button with Popover Menu */}
       <NavButton

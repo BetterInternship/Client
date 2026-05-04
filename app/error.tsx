@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { TriangleAlert } from "lucide-react";
 import { useEffect } from "react";
-import Image from "next/image";
-import errorImg from "@/public/error.png";
 
 export default function Error({
   error,
@@ -21,10 +19,10 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="flex flex-col gap-4 justify-center items-center min-h-screen">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4">
       <Card className="flex flex-col gap-4 p-12">
-        <Image src={errorImg} alt="Error" className="w-96 mx-auto" />
-        <div className="flex gap-3 items-center">
+        <img src="/error.png" alt="Error" className="mx-auto w-96" />
+        <div className="flex items-center gap-3">
           <HeaderIcon icon={TriangleAlert} />
           <HeaderText>Something went wrong.</HeaderText>
         </div>
@@ -36,7 +34,11 @@ export default function Error({
           .
         </span>
         {error && (
-          <span className="text-muted-foreground">Error: {error.message}</span>
+          <div className="flex flex-col gap-4">
+            <span className="text-muted-foreground">
+              Error: {error.message}
+            </span>
+          </div>
         )}
         <div className="flex justify-between">
           <Button

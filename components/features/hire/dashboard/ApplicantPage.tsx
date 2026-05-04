@@ -11,7 +11,10 @@ import { EmployerApplication, PublicUser } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { getFullName } from "@/lib/profile";
 import { cn } from "@/lib/utils";
-import { formatMonth, formatTimestampDate } from "@/lib/utils/date-utils";
+import {
+  formatMonth,
+  formatOptionalTimestampDate,
+} from "@/lib/utils/date-utils";
 import {
   ArrowLeft,
   Award,
@@ -27,7 +30,7 @@ import {
   ArchiveRestore,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState, useRef, useMemo } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { Divider } from "@/components/ui/divider";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -438,7 +441,7 @@ export function ApplicantPage({
                           Expected Start Date
                         </p>
                         <p className="text-xs font-medium text-gray-900">
-                          {formatTimestampDate(
+                          {formatOptionalTimestampDate(
                             internshipPreferences?.expected_start_date,
                           )}
                         </p>
@@ -555,7 +558,7 @@ export function ApplicantPage({
                         Expected Start Date
                       </p>
                       <p className="text-sm font-medium text-gray-900">
-                        {formatTimestampDate(
+                        {formatOptionalTimestampDate(
                           internshipPreferences?.expected_start_date,
                         )}
                       </p>
