@@ -40,6 +40,7 @@ import {
 } from "@/lib/utils/url-utils";
 import { Loader } from "@/components/ui/loader";
 import { cn, formatMonth, isValidPHNumber, toSafeString } from "@/lib/utils";
+import { formatOptionalStartMonth } from "@/lib/utils/date-utils";
 import { MyUserPfp, PFP_UPDATED_EVENT } from "@/components/shared/pfp";
 import { useAppContext } from "@/lib/ctx-app";
 import {
@@ -1564,42 +1565,4 @@ function computeProfileScore(p?: Partial<PublicUser>): {
   if (!parts.resume) tips.push("Upload a resume in PDF (≤2.5MB).");
 
   return { score, parts, tips };
-}
-
-function monthFromMs(ms?: number | null): string | null {
-  if (ms == null || Number.isNaN(ms)) return null;
-  const d = new Date(ms); // local time
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  return `${y}-${m}`;
-}
-
-// Coerce many date-ish inputs to "YYYY-MM" or null
-function toYYYYMM(input?: string | number | null): string | null {
-  if (input == null || input === "") return null;
-
-  // Already "YYYY-MM"
-  if (typeof input === "string" && /^\d{4}-\d{2}$/.test(input)) return input;
-
-  // If string contains "YYYY-MM" at the start (e.g., "YYYY-MM-DD", ISO)
-  if (typeof input === "string") {
-    const m = input.match(/^(\d{4}-\d{2})/);
-    if (m) return m[1];
-  }
-
-  // Timestamp (number or numeric string)
-  const n = typeof input === "number" ? input : Number(input);
-  if (Number.isFinite(n)) return monthFromMs(n);
-
-  // Fallback: parseable string date
-  if (typeof input === "string") {
-    const parsed = Date.parse(input);
-    if (!Number.isNaN(parsed)) return monthFromMs(parsed);
-  }
-
-  return null;
-}
-
-function formatOptionalStartMonth(input?: string | number | null): string {
-  return toYYYYMM(input) ?? "Not specified";
 }

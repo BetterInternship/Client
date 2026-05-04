@@ -1,41 +1,29 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { useResumeUploadForm } from "@/components/features/student/resume-parser/ResumeUploadForm";
 import { UserService } from "@/lib/api/services";
-import { FileText, CheckCircle2 } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { PublicUser } from "@/lib/db/db.types";
+import {
+  monthYearToTimestampMs,
+  timestampMsToMonthYear,
+} from "@/lib/utils/date-utils";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { PublicUser } from "@/lib/db/db.types";
-import { cn } from "@/lib/utils";
-import Link from "next/link";
 import {
-  ResumeUploadFormFields,
-  useResumeUploadForm,
-} from "@/components/features/student/resume-parser/ResumeUploadForm";
+  ApplyStepHeader,
+  CoverLetterStep,
+  InternshipDetailsStep,
+  ResumeStep,
+} from "./apply-modal-steps";
 
 type InternshipType = "credited" | "voluntary";
+type ApplyStep = 1 | 2 | 3;
+
 export type ApplyPayload = {
   resumeId: string;
   coverLetter: string;
 };
-
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
 
 export function ApplyModal({
   profile,
@@ -67,17 +55,30 @@ export function ApplyModal({
 
   const initialDate = useMemo(
     () =>
-      timestampToMonthYear(
+      timestampMsToMonthYear(
         profile?.internship_preferences?.expected_start_date,
       ),
     [profile?.internship_preferences?.expected_start_date],
   );
 
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<ApplyStep>(1);
   const [resumeChoice, setResumeChoice] = useState<string>("new");
   const [showUpload, setShowUpload] = useState(true);
+  const [internshipType, setInternshipType] = useState<InternshipType | null>(
+    profile?.internship_preferences?.internship_type ?? null,
+  );
+  const [month, setMonth] = useState(initialDate.month);
+  const [year, setYear] = useState(initialDate.year);
+  const [saving, setSaving] = useState(false);
+  const [uploadedResumeId, setUploadedResumeId] = useState<string | null>(null);
+  const [coverLetter, setCoverLetter] = useState("");
 
-  // Default-select the first existing resume once data loads
+  const totalSteps = requiresCoverLetter ? 3 : 2;
+  const years = useMemo(() => {
+    const current = new Date().getFullYear();
+    return Array.from({ length: 6 }, (_, i) => current + i);
+  }, []);
+
   const hasInitialized = useRef(false);
   useEffect(() => {
     if (resumesLoading || hasInitialized.current) return;
@@ -92,17 +93,6 @@ export function ApplyModal({
     }
   }, [resumesLoading, hasExistingResumes, resumes]);
 
-  const [internshipType, setInternshipType] = useState<InternshipType | null>(
-    profile?.internship_preferences?.internship_type ?? null,
-  );
-  const [month, setMonth] = useState(initialDate.month);
-  const [year, setYear] = useState(initialDate.year);
-  const [saving, setSaving] = useState(false);
-  const [uploadedResumeId, setUploadedResumeId] = useState<string | null>(null);
-  const [coverLetter, setCoverLetter] = useState("");
-
-  const totalSteps = requiresCoverLetter ? 3 : 2;
-
   useEffect(() => {
     if (step !== 3) return;
     const focusTimer = window.setTimeout(() => {
@@ -110,11 +100,6 @@ export function ApplyModal({
     }, 120);
     return () => window.clearTimeout(focusTimer);
   }, [step]);
-
-  const years = useMemo(() => {
-    const current = new Date().getFullYear();
-    return Array.from({ length: 6 }, (_, i) => current + i);
-  }, []);
 
   const canProceedFromResume =
     resumeChoice !== "new" ? !!resumeChoice : resumeUpload.canUpload;
@@ -126,10 +111,9 @@ export function ApplyModal({
       return resumeChoice !== "new" ? resumeChoice : null;
 
     const response = await resumeUpload.uploadResume();
-
-    if (response?.success !== false && response?.resume?.id) {
+    if (response?.success !== false && response?.resume?.id)
       return response.resume.id;
-    }
+
     return null;
   }
 
@@ -144,6 +128,7 @@ export function ApplyModal({
           toast.error("Could not upload your resume. Please try again.");
           return;
         }
+
         await queryClient.invalidateQueries({ queryKey: ["my-resumes"] });
         setUploadedResumeId(id);
         setResumeChoice(id);
@@ -206,311 +191,71 @@ export function ApplyModal({
   }
 
   function goBack() {
-    if (step === 3) {
-      setStep(2);
-      return;
-    }
-    setStep(1);
+    setStep(step === 3 ? 2 : 1);
   }
-
-  const title =
-    step === 1
-      ? "Choose your resume"
-      : step === 2
-        ? "Internship details"
-        : "Cover letter";
-  const description =
-    step === 1
-      ? "Pick an existing resume or upload a fresh PDF before applying."
-      : step === 2
-        ? "These details help companies understand what kind of internship you need."
-        : "This listing requires a cover letter. Add it here before submitting your application.";
 
   return (
     <div className="w-full sm:w-[34rem]">
       <div className="space-y-5">
-        <div className="relative pr-10">
-          <div className="text-xs font-medium uppercase tracking-wide text-primary pt-6">
-            Step {step} of {totalSteps}
-          </div>
-          <h3 className="mt-1 text-xl font-semibold text-gray-900">{title}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-        </div>
+        <ApplyStepHeader
+          step={step}
+          totalSteps={totalSteps}
+          requiresCoverLetter={requiresCoverLetter}
+        />
 
         {step === 1 ? (
-          <div className="space-y-4">
-            {resumesLoading ? (
-              <div className="text-sm text-muted-foreground">
-                Loading resumes...
-              </div>
-            ) : (
-              hasExistingResumes && (
-                <div className="space-y-2">
-                  {resumes.map((resume) => (
-                    <button
-                      key={resume.id}
-                      type="button"
-                      onClick={() => {
-                        setResumeChoice(resume.id);
-                        setShowUpload(false);
-                      }}
-                      className={cn(
-                        "w-full rounded-[0.33em] border p-3 text-left transition bg-white",
-                        resumeChoice === resume.id
-                          ? "border-primary ring-2 ring-primary/15"
-                          : "border-gray-200 hover:border-primary/70",
-                      )}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="grid h-10 w-10 place-items-center rounded-[0.33em] bg-primary/10 text-primary">
-                          <FileText className="h-5 w-5" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="truncate text-sm font-medium text-gray-900">
-                            {resume.label ||
-                              resume.filename ||
-                              "Untitled resume"}
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-0.5">
-                            <Link
-                              href="/profile?section=resumes"
-                              target="_blank"
-                              className="text-primary hover:underline"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              View in profile
-                            </Link>
-                          </div>
-                        </div>
-                        {resumeChoice === resume.id && (
-                          <CheckCircle2 className="h-5 w-5 text-primary" />
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )
-            )}
-
-            {!resumesLoading && hasExistingResumes && !showUpload && (
-              <Button
-                type="button"
-                variant="link"
-                className="p-0"
-                onClick={() => {
-                  setResumeChoice("new");
-                  setShowUpload(true);
-                }}
-                disabled={atResumeLimit}
-              >
-                Upload new resume
-              </Button>
-            )}
-
-            <AnimatePresence initial={false}>
-              {showUpload && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0, y: -8 }}
-                  animate={{ height: "auto", opacity: 1, y: 0 }}
-                  exit={{ height: 0, opacity: 0, y: -8 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
-                  className="overflow-hidden"
-                >
-                  <div className="pt-2 pb-1 space-y-4">
-                    <ResumeUploadFormFields
-                      form={resumeUpload}
-                      placeholder="e.g. Frontend Developer Resume"
-                    />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <div className="mt-6 flex justify-between gap-3 pt-4 border-t">
-              <Button
-                type="button"
-                scheme="destructive"
-                variant="outline"
-                onClick={onCancel}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={() => void handleResumeNext()}
-                disabled={!canProceedFromResume || saving}
-              >
-                {saving ? "Saving..." : "Continue"}
-              </Button>
-            </div>
-          </div>
+          <ResumeStep
+            resumes={resumes}
+            resumesLoading={resumesLoading}
+            hasExistingResumes={hasExistingResumes}
+            atResumeLimit={atResumeLimit}
+            resumeChoice={resumeChoice}
+            showUpload={showUpload}
+            resumeUpload={resumeUpload}
+            canProceed={canProceedFromResume}
+            saving={saving}
+            onCancel={onCancel}
+            onResumeChoice={(id) => {
+              setResumeChoice(id);
+              setShowUpload(false);
+            }}
+            onShowUpload={() => {
+              setResumeChoice("new");
+              setShowUpload(true);
+            }}
+            onContinue={() => void handleResumeNext()}
+          />
         ) : step === 2 ? (
-          <div className="space-y-6">
-            <div className="space-y-4 pt-2">
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-900">
-                  Internship Type
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setInternshipType("credited")}
-                    className={cn(
-                      "rounded-[0.33em] border p-3 text-center text-sm font-medium transition bg-white",
-                      internshipType === "credited"
-                        ? "border-primary bg-primary/5 text-primary ring-1 ring-primary"
-                        : "border-gray-200 text-gray-600 hover:border-primary/50 hover:bg-gray-50",
-                    )}
-                  >
-                    Credited
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setInternshipType("voluntary")}
-                    className={cn(
-                      "rounded-[0.33em] border p-3 text-center text-sm font-medium transition bg-white",
-                      internshipType === "voluntary"
-                        ? "border-primary bg-primary/5 text-primary ring-1 ring-primary"
-                        : "border-gray-200 text-gray-600 hover:border-primary/50 hover:bg-gray-50",
-                    )}
-                  >
-                    Voluntary
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-3 pt-2">
-                <label className="text-sm font-medium text-gray-900">
-                  Expected Start Date
-                </label>
-                <div className="flex gap-3">
-                  <select
-                    className="flex h-10 w-full rounded-[0.33em] border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    value={month}
-                    onChange={(e) => setMonth(e.target.value)}
-                  >
-                    <option value="" disabled>
-                      Month
-                    </option>
-                    {MONTHS.map((m, i) => (
-                      <option key={m} value={i}>
-                        {m}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    className="flex h-10 w-full rounded-[0.33em] border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    value={year}
-                    onChange={(e) => setYear(e.target.value)}
-                  >
-                    <option value="" disabled>
-                      Year
-                    </option>
-                    {years.map((y) => (
-                      <option key={y} value={y}>
-                        {y}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 flex justify-between gap-3 pt-4 border-t">
-              <Button
-                type="button"
-                variant="outline"
-                scheme="destructive"
-                onClick={onCancel}
-                disabled={saving}
-              >
-                Cancel
-              </Button>
-              <div className="flex gap-3">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setStep(1)}
-                  className="px-2"
-                  disabled={saving}
-                >
-                  Back
-                </Button>
-                <Button
-                  onClick={handleDetailsNext}
-                  disabled={!canApply || saving}
-                >
-                  {saving
-                    ? "Applying..."
-                    : requiresCoverLetter
-                      ? "Continue"
-                      : applyLabel}
-                </Button>
-              </div>
-            </div>
-          </div>
+          <InternshipDetailsStep
+            internshipType={internshipType}
+            month={month}
+            year={year}
+            years={years}
+            saving={saving}
+            canApply={canApply}
+            requiresCoverLetter={requiresCoverLetter}
+            applyLabel={applyLabel}
+            onCancel={onCancel}
+            onBack={() => setStep(1)}
+            onInternshipTypeChange={setInternshipType}
+            onMonthChange={setMonth}
+            onYearChange={setYear}
+            onContinue={handleDetailsNext}
+          />
         ) : (
-          <div className="space-y-6">
-            <div className="space-y-3 pt-2">
-              <label
-                htmlFor="cover-letter"
-                className="text-sm font-medium text-gray-900"
-              >
-                Cover letter
-              </label>
-              <Textarea
-                id="cover-letter"
-                ref={coverLetterRef}
-                value={coverLetter}
-                onChange={(e) => setCoverLetter(e.target.value)}
-                placeholder="Write your cover letter here..."
-                className="min-h-48 resize-y rounded-[0.33em] border-gray-200 focus-visible:ring-primary"
-              />
-            </div>
-
-            <div className="mt-6 flex justify-between gap-3 pt-4 border-t">
-              <Button
-                type="button"
-                variant="outline"
-                scheme="destructive"
-                onClick={onCancel}
-                disabled={saving}
-              >
-                Cancel
-              </Button>
-              <div className="flex gap-3">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={goBack}
-                  className="px-2"
-                  disabled={saving}
-                >
-                  Back
-                </Button>
-                <Button
-                  onClick={() => void handleApply()}
-                  disabled={!canSubmit || saving}
-                >
-                  {saving ? "Applying..." : applyLabel}
-                </Button>
-              </div>
-            </div>
-          </div>
+          <CoverLetterStep
+            coverLetter={coverLetter}
+            coverLetterRef={coverLetterRef}
+            saving={saving}
+            canSubmit={canSubmit}
+            applyLabel={applyLabel}
+            onCancel={onCancel}
+            onBack={goBack}
+            onCoverLetterChange={setCoverLetter}
+            onSubmit={() => void handleApply()}
+          />
         )}
       </div>
     </div>
   );
-}
-
-function timestampToMonthYear(timestamp?: number | null) {
-  if (!timestamp) return { month: "", year: "" };
-  const d = new Date(timestamp);
-  return {
-    month: d.getMonth().toString(),
-    year: d.getFullYear().toString(),
-  };
-}
-
-function monthYearToTimestampMs(month: number, year: number) {
-  return new Date(year, month, 1, 0, 0, 0, 0).getTime();
 }

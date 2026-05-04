@@ -11,7 +11,10 @@ import { EmployerApplication, PublicUser } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { getFullName } from "@/lib/profile";
 import { cn } from "@/lib/utils";
-import { formatMonth, formatTimestampDate } from "@/lib/utils/date-utils";
+import {
+  formatMonth,
+  formatOptionalTimestampDate,
+} from "@/lib/utils/date-utils";
 import {
   ArrowLeft,
   Award,
@@ -641,9 +644,4 @@ export function ApplicantPage({
       </motion.div>
     </>
   );
-}
-
-function formatOptionalTimestampDate(timestamp?: number | null) {
-  if (!timestamp) return "Not specified";
-  return formatTimestampDate(timestamp);
 }
