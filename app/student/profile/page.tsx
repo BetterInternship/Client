@@ -3,6 +3,7 @@ import {
   useState,
   useEffect,
   useRef,
+  useMemo,
   forwardRef,
   useImperativeHandle,
 } from "react";
@@ -1269,6 +1270,10 @@ const ResumeList = ({
 
   const [editingResumeId, setEditingResumeId] = useState<string | null>(null);
   const [editingLabel, setEditingLabel] = useState("");
+  const sortedResumes = useMemo(
+    () => [...resumes].sort(compareResumesByUploadedAtDesc),
+    [resumes],
+  );
 
   const startEditing = (resume: Resume) => {
     if (!resume.id) {
@@ -1302,7 +1307,7 @@ const ResumeList = ({
           </div>
         )}
         {!loading &&
-          resumes.map((resume) => {
+          sortedResumes.map((resume) => {
             const isEditing = editingResumeId === resume.id;
             const currentLabel = resume.label ?? "";
 
@@ -1453,6 +1458,15 @@ const ResumeList = ({
     </section>
   );
 };
+
+function compareResumesByUploadedAtDesc(first: Resume, second: Resume) {
+  const firstUploadedAt = new Date(first.uploaded_at).getTime();
+  const secondUploadedAt = new Date(second.uploaded_at).getTime();
+  const firstTime = Number.isNaN(firstUploadedAt) ? 0 : firstUploadedAt;
+  const secondTime = Number.isNaN(secondUploadedAt) ? 0 : secondUploadedAt;
+
+  return secondTime - firstTime;
+}
 
 function formatResumeUploadedAt(uploadedAt: string) {
   const date = new Date(uploadedAt);
