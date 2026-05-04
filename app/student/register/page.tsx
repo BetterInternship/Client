@@ -11,6 +11,7 @@ import { RegisterStep } from "./steps/RegisterStep";
 import { OTPEmailStep } from "./steps/OTPEmailStep";
 import { OTPEnterStep } from "./steps/OTPEnterStep";
 import { RegisterCarousel } from "@/components/features/student/register/RegisterCarousel";
+import { NO_UNIVERSITY_ID } from "@/lib/student-forms-access";
 
 export interface FormInputs {
   first_name?: string;
@@ -81,6 +82,7 @@ export function RegisterPageContent() {
    */
   const handleSubmit = (values: FormInputs) => {
     setSubmitting(true);
+    const shouldSkipOtp = skipOtpStep || values.university === NO_UNIVERSITY_ID;
 
     // Check for missing fields
     if (!values.first_name?.trim()) {
@@ -127,7 +129,7 @@ export function RegisterPageContent() {
 
         setSubmitting(false);
 
-        if (skipOtpStep) {
+        if (shouldSkipOtp) {
           router.replace(NEXT_URL);
           return;
         }
