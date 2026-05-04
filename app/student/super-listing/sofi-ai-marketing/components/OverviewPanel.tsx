@@ -81,11 +81,10 @@ export function OverviewPanel({
         <SectionTitle>This is for you if</SectionTitle>
         <AsteriskList
           items={[
-            "You want to be pushed and challenged.",
-            "You enjoy working in a fast-paced startup environment.",
-            "You're okay with high responsibility and fast growth.",
-            "You genuinely love marketing and building brands.",
-            "You are resilient and willing to learn from mistakes.",
+            "Girly pop 💅",
+            "Chronically online on TikTok and knows trends.",
+            "Loves consuming, analyzing content, and creating content.",
+            "Can do simple TikTok edits and carousels. (canvas lang yan 😉)",
           ]}
         />
       </section>

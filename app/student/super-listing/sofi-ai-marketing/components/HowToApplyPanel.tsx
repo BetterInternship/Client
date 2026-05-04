@@ -304,10 +304,13 @@ function ChallengeDetails({
                   "What channels and platforms make the most sense.",
                   "What the message is: how would you explain GIA to a creator in one sentence.",
                   "How you would measure success.",
-                  "Give sample pubmats and social media posts.",
+                  "Give sample pubmats, social media posts, or TikToks.",
                 ]}
               />
-              <p>You have full flexibility in how you structure this.</p>
+              <p>
+                Be as creative as you want. You have total freedom in how you
+                structure this.
+              </p>
             </div>
             <div className="space-y-2">
               <p className="font-semibold text-[#052338]">
@@ -451,14 +454,14 @@ export function HowToApplyPanel({
           <section className="space-y-3">
             <SectionTitle>The Challenge</SectionTitle>
             <p>
-              You&apos;ll create a marketing proposal for GIA, a product
+              You&apos;ll create a pitch or elevator pitch for GIA, a product
               we&apos;re actively preparing to launch. We already have the
               product, and the core strategy. Your role is to:
             </p>
             <AsteriskList
               items={[
-                "Build a marketing plan for GIA to reach the right audience through a clear marketing strategy.",
-                "Build a compelling pitch that shows you understand the product and the market.",
+                "Build a clear pitch for how GIA can reach the right audience.",
+                "Show us how you would explain GIA quickly and make TikTok creators care.",
                 "Give suggestions on how we can grow faster.",
               ]}
             />
@@ -469,8 +472,8 @@ export function HowToApplyPanel({
             </p>
             <p>
               We&apos;ll give you direction. How you execute is up to you. You
-              are given the freedom to shape the marketing approach, make
-              creative decisions, and define how the story should be told.
+              are given the freedom to shape the pitch, make creative decisions,
+              and define how the story should be told.
             </p>
             <p>
               Use any tools you want, including AI, references, or your own
