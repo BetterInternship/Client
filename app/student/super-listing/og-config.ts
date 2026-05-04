@@ -52,6 +52,14 @@ const SUPER_LISTING_OG_OVERRIDES: Record<
     accent: "#07C4A7",
     glow: "#35e3ca",
   },
+  "sofi-ai-marketing": {
+    company: "Sofi AI",
+    role: "Marketing Intern",
+    tagline:
+      "Lead the marketing launch for GIA, SOFI AI's creator analytics product.",
+    accent: "#07C4A7",
+    glow: "#35e3ca",
+  },
   paraluman: {
     company: "Paraluman News",
     role: "Multilingual News Delivery Challenge",

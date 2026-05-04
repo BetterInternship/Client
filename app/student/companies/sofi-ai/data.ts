@@ -61,6 +61,26 @@ export const sofiAiPrimaryListing: Job = {
   },
 };
 
+export const sofiAiMarketingListing: Job = {
+  id: "pilot-sofi-ai-marketing-super-listing",
+  title: "Marketing Intern",
+  location: "Metro Manila / Hybrid",
+  description:
+    "Lead the marketing launch for GIA, SOFI AI's creator analytics product for TikTok creators in the Philippines.",
+  employer: {
+    name: "Sofi AI",
+  },
+  challenge: {
+    title: "Marketing Proposal Challenge",
+    description:
+      "Create a marketing proposal and video pitch that shows how GIA can reach TikTok creators through clear strategy, content, and storytelling.",
+  },
+  internship_preferences: {
+    job_setup_ids: [],
+    job_commitment_ids: [],
+  },
+};
+
 export const sofiAiNormalListing: Job = {
   id: "pilot-sofi-ai-normal-listing",
   title: "AI Product Operations Intern",
@@ -138,11 +158,7 @@ export const sofiAiProfile: SofiAiProfile = {
     "Sofi AI prioritizes demonstrated product thinking: clean flows, useful states, strong copy, and interfaces that make applied AI feel simple.",
   ],
   listings: {
-    super: [sofiAiPrimaryListing],
+    super: [sofiAiPrimaryListing, sofiAiMarketingListing],
     normal: [sofiAiNormalListing],
   },
 };
-
-
-
-

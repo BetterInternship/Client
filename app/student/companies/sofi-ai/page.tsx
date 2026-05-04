@@ -16,6 +16,7 @@ import {
   ArrowUpRight,
   Instagram,
   Linkedin,
+  Megaphone,
   Play,
   Youtube,
 } from "lucide-react";
@@ -760,6 +761,23 @@ function MediaSpotlight() {
 }
 
 function FeaturedInternship() {
+  const featuredListings = [
+    {
+      href: "/super-listing/sofi-ai",
+      title: "UI/UX Intern",
+      icon: (
+        <span className="[font-family:var(--font-paraluman-mono)] text-xl font-bold">
+          &lt;/&gt;
+        </span>
+      ),
+    },
+    {
+      href: "/super-listing/sofi-ai-marketing",
+      title: "Marketing Intern",
+      icon: <Megaphone className="h-6 w-6" />,
+    },
+  ] as const;
+
   return (
     <SectionShell className="border-t-0 bg-transparent py-32">
       <SectionInner className="relative">
@@ -789,24 +807,27 @@ function FeaturedInternship() {
             <span className="text-[#00A886]">start here</span>
           </h2>
         </div>
-        <Link
-          href="/super-listing/sofi-ai"
-          className="group relative z-10 mt-6 grid w-full items-center gap-5 rounded-[0.65em] border border-[#052338]/10 bg-white/90 p-5 text-left text-[#052338] shadow-[0_20px_60px_-46px_rgba(5,35,56,0.4)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#07C4A7]/35 hover:bg-white sm:grid-cols-[auto_1fr_auto_auto] sm:p-6 lg:px-7"
-        >
-          <div className="flex h-14 w-14 items-center justify-center rounded-[0.55em] bg-[#E8FFF9] text-[#00866f] ring-1 ring-[#07C4A7]/14">
-            <span className="[font-family:var(--font-paraluman-mono)] text-xl font-bold">
-              &lt;/&gt;
-            </span>
-          </div>
-          <h3 className="[font-family:var(--font-paraluman-heading)] text-xl font-bold tracking-[-0.035em] text-[#052338]">
-            UI/UX Intern
-          </h3>
+        <div className="relative z-10 mt-6 grid gap-4">
+          {featuredListings.map((listing) => (
+            <Link
+              key={listing.href}
+              href={listing.href}
+              className="group grid w-full items-center gap-5 rounded-[0.65em] border border-[#052338]/10 bg-white/90 p-5 text-left text-[#052338] shadow-[0_20px_60px_-46px_rgba(5,35,56,0.4)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#07C4A7]/35 hover:bg-white sm:grid-cols-[auto_1fr_auto] sm:p-6 lg:px-7"
+            >
+              <div className="flex h-14 w-14 items-center justify-center rounded-[0.55em] bg-[#E8FFF9] text-[#00866f] ring-1 ring-[#07C4A7]/14">
+                {listing.icon}
+              </div>
+              <h3 className="[font-family:var(--font-paraluman-heading)] text-xl font-bold tracking-[-0.035em] text-[#052338]">
+                {listing.title}
+              </h3>
 
-          <div className="inline-flex items-center gap-2 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-[#007f6b] sm:justify-end">
-            View role
-            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-          </div>
-        </Link>
+              <div className="inline-flex items-center gap-2 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-[#007f6b] sm:justify-end">
+                View role
+                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </div>
+            </Link>
+          ))}
+        </div>
       </SectionInner>
     </SectionShell>
   );
