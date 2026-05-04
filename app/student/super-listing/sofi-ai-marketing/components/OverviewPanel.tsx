@@ -82,8 +82,8 @@ export function OverviewPanel({
         <AsteriskList
           items={[
             "Girly pop 💅",
-            "Chronically online on TikTok and knows trends.",
-            "Loves consuming, analyzing content, and creating content.",
+            "Is chronically online on TikTok and knows trends.",
+            "You love consuming, analyzing content, and creating content.",
             "Can do simple TikTok edits and carousels. (canvas lang yan 😉)",
           ]}
         />
