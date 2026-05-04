@@ -38,7 +38,7 @@ export default function VerifyPage() {
   const [mounted, setMounted] = useState(false);
 
   const handleBack = () => {
-    router.push("/");
+    router.push("/search");
   };
 
   useEffect(() => {

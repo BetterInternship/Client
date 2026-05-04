@@ -181,7 +181,8 @@ export function RegisterPageContent() {
             <div className="space-y-3">
               <a
                 className="text-sm hover:underline"
-                href="mailto:hello@betterinternship.com"
+                href="https://www.facebook.com/betterinternship.sherwin"
+                target="_blank"
               >
                 Need help?
               </a>

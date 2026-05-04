@@ -59,7 +59,7 @@ export default function FormsPage() {
       return;
     }
     if (!isProfileVerified(profile.data)) {
-      router.push("/register/verify?redirect=forms");
+      router.replace("/register/verify?redirect=forms");
       return;
     }
   }, [
@@ -132,8 +132,7 @@ export default function FormsPage() {
     !isStudentAuthenticated ||
     profile.isPending ||
     !profile.data ||
-    !isProfileVerified(profile.data) ||
-    !profile.data.department;
+    !isProfileVerified(profile.data);
 
   if (isResolvingDestination || hasFormsAccess === null) {
     return <Loader>Loading forms...</Loader>;

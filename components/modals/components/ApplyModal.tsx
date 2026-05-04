@@ -333,7 +333,7 @@ export function ApplyModal({
                           </div>
                           <div className="text-xs text-muted-foreground mt-0.5">
                             <Link
-                              href="/student/profile?section=resumes"
+                              href="/profile?section=resumes"
                               target="_blank"
                               className="text-primary hover:underline"
                               onClick={(e) => e.stopPropagation()}

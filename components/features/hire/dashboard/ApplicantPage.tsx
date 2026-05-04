@@ -615,7 +615,7 @@ export function ApplicantPage({
           </div>
 
           {/* resume */}
-          {application?.user?.resume ? (
+          {application?.resume_id ? (
             <div
               className={cn(
                 "h-full flex flex-col justify-center items-center",
