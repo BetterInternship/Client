@@ -170,7 +170,7 @@ export function ApplyModal({
         internship_preferences: {
           ...(profile?.internship_preferences ?? {}),
           internship_type: internshipType ?? undefined,
-          expected_start_date: monthYearToTimestamp(
+          expected_start_date: monthYearToTimestampMs(
             Number(month),
             Number(year),
           ),
@@ -504,13 +504,13 @@ export function ApplyModal({
 
 function timestampToMonthYear(timestamp?: number | null) {
   if (!timestamp) return { month: "", year: "" };
-  const d = new Date(timestamp * 1000);
+  const d = new Date(timestamp);
   return {
     month: d.getMonth().toString(),
     year: d.getFullYear().toString(),
   };
 }
 
-function monthYearToTimestamp(month: number, year: number) {
-  return Math.floor(new Date(year, month, 1).getTime() / 1000);
+function monthYearToTimestampMs(month: number, year: number) {
+  return new Date(year, month, 1, 0, 0, 0, 0).getTime();
 }

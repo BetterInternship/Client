@@ -614,11 +614,9 @@ function ProfileReadOnlyTabs({
             />
             <LabeledProperty
               label="Ideal internship start"
-              value={
-                internshipPreferences?.expected_start_date
-                  ? toYYYYMM(internshipPreferences.expected_start_date)
-                  : "—"
-              }
+              value={formatOptionalStartMonth(
+                internshipPreferences?.expected_start_date,
+              )}
             />
             {internshipPreferences?.internship_type === "credited" && (
               <LabeledProperty
@@ -1600,4 +1598,8 @@ function toYYYYMM(input?: string | number | null): string | null {
   }
 
   return null;
+}
+
+function formatOptionalStartMonth(input?: string | number | null): string {
+  return toYYYYMM(input) ?? "Not specified";
 }
