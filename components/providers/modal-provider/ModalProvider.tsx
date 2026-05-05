@@ -131,19 +131,42 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
     const count = Object.keys(registry).length;
     if (count === 0) return;
 
+    const scrollY = window.scrollY;
     const originalOverflow = document.body.style.overflow;
+    const originalPosition = document.body.style.position;
+    const originalTop = document.body.style.top;
+    const originalLeft = document.body.style.left;
+    const originalRight = document.body.style.right;
+    const originalWidth = document.body.style.width;
+    const originalOverscrollBehavior = document.body.style.overscrollBehavior;
+
     document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.width = "100%";
+    document.body.style.overscrollBehavior = "none";
     let focusUpdateTimeout: ReturnType<typeof setTimeout> | null = null;
 
     const setVH = () => {
+      const visualViewport = window.visualViewport;
       const viewportHeight =
-        window.visualViewport?.height &&
-        Number.isFinite(window.visualViewport.height)
-          ? window.visualViewport.height
+        visualViewport?.height && Number.isFinite(visualViewport.height)
+          ? visualViewport.height
           : window.innerHeight;
+      const viewportOffsetTop =
+        visualViewport?.offsetTop && Number.isFinite(visualViewport.offsetTop)
+          ? visualViewport.offsetTop
+          : 0;
+
       document.documentElement.style.setProperty(
         "--vh",
         `${viewportHeight * 0.01}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--modal-viewport-top",
+        `${viewportOffsetTop}px`,
       );
     };
 
@@ -163,7 +186,14 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       document.body.style.overflow = originalOverflow;
+      document.body.style.position = originalPosition;
+      document.body.style.top = originalTop;
+      document.body.style.left = originalLeft;
+      document.body.style.right = originalRight;
+      document.body.style.width = originalWidth;
+      document.body.style.overscrollBehavior = originalOverscrollBehavior;
       document.documentElement.style.removeProperty("--vh");
+      document.documentElement.style.removeProperty("--modal-viewport-top");
       window.removeEventListener("resize", setVH);
       window.removeEventListener("orientationchange", setVH);
       window.visualViewport?.removeEventListener("resize", setVH);
@@ -171,6 +201,7 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
       document.removeEventListener("focusin", handleFocusChange);
       document.removeEventListener("focusout", handleFocusChange);
       if (focusUpdateTimeout) clearTimeout(focusUpdateTimeout);
+      window.scrollTo(0, scrollY);
     };
   }, [registry]);
 
@@ -224,6 +255,8 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
                   ? undefined
                   : {
                       height: "calc(var(--vh, 1vh) * 100)",
+                      top: "var(--modal-viewport-top, 0px)",
+                      bottom: "auto",
                     }
               }
               onClick={(e) => {
