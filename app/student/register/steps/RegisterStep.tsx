@@ -113,6 +113,7 @@ export function RegisterStep({
         value={degree}
         required={true}
         allowCustomValue={true}
+        emptyText="type your own degree..."
       />
 
       {/* create account */}
