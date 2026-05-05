@@ -69,6 +69,7 @@ import { PDFPreview } from "@/components/shared/pdf-preview";
 import { AddResumeModal } from "@/components/features/student/profile/AddResumeModal";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { sortUniversityOptions } from "../../../lib/student-forms-access";
+import { DEGREES } from "../register/steps/tempDegrees";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 type ProfileTabKey = "Student Profile" | "Internship Details" | "Resumes";
@@ -247,6 +248,10 @@ export default function ProfilePage() {
     setIsEditing(false);
   };
 
+  const handleEditorTabChange = (nextTab: EditableProfileTabKey) => {
+    handleProfileTabChange(nextTab);
+  };
+
   useBlockPageRefreshEffect(isEditing);
 
   if (profile.isPending) {
@@ -368,6 +373,7 @@ export default function ProfilePage() {
                   initialTab={
                     profileTab === "Resumes" ? "Student Profile" : profileTab
                   }
+                  onTabChange={handleEditorTabChange}
                   rightSlot={
                     <div className="flex gap-2">
                       <Button
@@ -779,9 +785,10 @@ const ProfileEditor = forwardRef<
   {
     updateProfile: (updatedProfile: Partial<PublicUser>) => Promise<unknown>;
     initialTab: EditableProfileTabKey;
+    onTabChange?: (tab: EditableProfileTabKey) => void;
     rightSlot?: React.ReactNode;
   }
->(({ updateProfile, initialTab, rightSlot }, ref) => {
+>(({ updateProfile, initialTab, onTabChange, rightSlot }, ref) => {
   const {
     formData,
     formErrors,
@@ -796,6 +803,12 @@ const ProfileEditor = forwardRef<
 
   type TabKey = EditableProfileTabKey | "Calendar";
   const [tab, setTab] = useState<TabKey>(initialTab);
+  const selectTab = (nextTab: TabKey) => {
+    setTab(nextTab);
+    if (nextTab !== "Calendar") {
+      onTabChange?.(nextTab);
+    }
+  };
 
   const hasProfileErrors = !!(
     formErrors.first_name ||
@@ -835,9 +848,9 @@ const ProfileEditor = forwardRef<
     save: async () => {
       const isValid = validateFormData();
       if (!isValid) {
-        if (hasCalendarErrors) setTab("Calendar");
-        else if (hasPrefsErrors) setTab("Internship Details");
-        else setTab("Student Profile");
+        if (hasCalendarErrors) selectTab("Calendar");
+        else if (hasPrefsErrors) selectTab("Internship Details");
+        else selectTab("Student Profile");
         return false;
       }
 
@@ -1015,7 +1028,7 @@ const ProfileEditor = forwardRef<
       ]}
       rightSlot={rightSlot}
       value={tab}
-      onChange={(v) => setTab(v as TabKey)}
+      onChange={(v) => selectTab(v as TabKey)}
     >
       {/* Student Profile */}
       <OutsideTabPanel when="Student Profile" activeKey={tab}>
@@ -1104,12 +1117,17 @@ const ProfileEditor = forwardRef<
               />
             </div>
             <div>
-              <FormInput
+              <Autocomplete
                 label={"Degree / Program"}
-                value={formData.degree ?? undefined}
-                setter={fieldSetter("degree")}
+                options={DEGREES}
+                value={formData.degree ?? ""}
+                setter={(val) =>
+                  setField("degree", val === null ? "" : String(val))
+                }
                 placeholder="Indicate degree"
                 required={false}
+                allowCustomValue={true}
+                emptyText="type your own degree..."
               />
             </div>
             <div>
