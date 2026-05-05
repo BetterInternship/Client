@@ -33,10 +33,10 @@ export function ApplyStepHeader({
         : "Cover letter";
   const description =
     step === 1
-      ? "Pick an existing resume or upload a fresh PDF before applying."
+      ? "Pick an existing resume or upload a new one before applying."
       : step === 2
         ? "These details help companies understand what kind of internship you need."
-        : "This listing requires a cover letter. Add it here before submitting your application.";
+        : "This listing requires a cover letter.";
 
   return (
     <div className="relative pr-10">
@@ -199,6 +199,7 @@ export function InternshipDetailsStep({
   years,
   saving,
   canApply,
+  isReadOnly,
   requiresCoverLetter,
   applyLabel,
   onCancel,
@@ -214,6 +215,7 @@ export function InternshipDetailsStep({
   years: number[];
   saving: boolean;
   canApply: boolean;
+  isReadOnly: boolean;
   requiresCoverLetter: boolean;
   applyLabel: string;
   onCancel: () => void;
@@ -226,17 +228,27 @@ export function InternshipDetailsStep({
   return (
     <div className="space-y-6">
       <div className="space-y-4 pt-2">
-        <InternshipTypeSelector
-          value={internshipType}
-          onChange={onInternshipTypeChange}
-        />
-        <ExpectedStartDateSelect
-          month={month}
-          year={year}
-          years={years}
-          onMonthChange={onMonthChange}
-          onYearChange={onYearChange}
-        />
+        {isReadOnly ? (
+          <InternshipDetailsSummary
+            internshipType={internshipType}
+            month={month}
+            year={year}
+          />
+        ) : (
+          <>
+            <InternshipTypeSelector
+              value={internshipType}
+              onChange={onInternshipTypeChange}
+            />
+            <ExpectedStartDateSelect
+              month={month}
+              year={year}
+              years={years}
+              onMonthChange={onMonthChange}
+              onYearChange={onYearChange}
+            />
+          </>
+        )}
       </div>
 
       <div className="mt-6 flex justify-between gap-3 pt-4 border-t">
@@ -268,6 +280,43 @@ export function InternshipDetailsStep({
           </Button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function InternshipDetailsSummary({
+  internshipType,
+  month,
+  year,
+}: {
+  internshipType: InternshipType | null;
+  month: string;
+  year: string;
+}) {
+  const startMonth =
+    month !== "" && year !== ""
+      ? // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        `${MONTH_NAMES[Number(month)]} ${year}`
+      : "Not specified";
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-[0.33em] font-light border border-gray-200 bg-gray-50 p-4">
+        You are applying for{" "}
+        {<span className="text-primary font-semibold">{internshipType}</span>}{" "}
+        internships
+        <br /> and expect to start on{" "}
+        {<span className="text-primary font-semibold">{startMonth}</span>}.
+      </div>
+      <Button asChild variant="link" className="h-auto p-0">
+        <Link
+          href="/profile?section=internship&edit=true"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Edit in profile
+        </Link>
+      </Button>
     </div>
   );
 }
