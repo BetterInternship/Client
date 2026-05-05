@@ -479,7 +479,7 @@ export default function SearchPage() {
             {/* Mobile mass apply toolbar */}
             {selectMode && (
               <motion.div
-                className="fixed bottom-20 left-4 right-4 z-40 bg-gray-50 border border-gray-200 rounded-lg shadow-lg px-4 py-3"
+                className="fixed inset-x-0 bottom-0 z-50 min-h-16 bg-gray-50 border-t border-gray-200 shadow-lg px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
                 initial={{ scale: 0.95, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.95, opacity: 0, y: 20 }}
