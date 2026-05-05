@@ -163,9 +163,14 @@ export const EmployerPropertyLabel: ValueComponent = ({
   );
 };
 
-export const ErrorLabel: ValueComponent = ({ value, fallback }) => {
+export const ErrorLabel: ValueComponent = ({ value, fallback, className }) => {
   return value ? (
-    <div className="flex items-center gap-1 text-destructive text-xs m-1">
+    <div
+      className={cn(
+        "flex items-center gap-1 text-destructive text-xs m-1",
+        className,
+      )}
+    >
       <AlertCircle className="h-3 w-3" />
       <span>{value ?? fallback}</span>
     </div>

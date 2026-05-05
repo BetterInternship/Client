@@ -73,6 +73,10 @@ export function ApplyModal({
   const [uploadedResumeId, setUploadedResumeId] = useState<string | null>(null);
   const [coverLetter, setCoverLetter] = useState("");
 
+  const hasSavedInternshipDetails = !!(
+    profile?.internship_preferences?.internship_type &&
+    profile?.internship_preferences?.expected_start_date
+  );
   const totalSteps = requiresCoverLetter ? 3 : 2;
   const years = useMemo(() => {
     const current = new Date().getFullYear();
@@ -101,9 +105,23 @@ export function ApplyModal({
     return () => window.clearTimeout(focusTimer);
   }, [step]);
 
+  useEffect(() => {
+    if (!hasSavedInternshipDetails) return;
+    setInternshipType(profile?.internship_preferences?.internship_type ?? null);
+    setMonth(initialDate.month);
+    setYear(initialDate.year);
+  }, [
+    hasSavedInternshipDetails,
+    initialDate.month,
+    initialDate.year,
+    profile?.internship_preferences?.internship_type,
+  ]);
+
   const canProceedFromResume =
     resumeChoice !== "new" ? !!resumeChoice : resumeUpload.canUpload;
-  const canApply = !!internshipType && month !== "" && year !== "";
+  const canApply =
+    hasSavedInternshipDetails ||
+    (!!internshipType && month !== "" && year !== "");
   const canSubmit = canApply && (!requiresCoverLetter || !!coverLetter.trim());
 
   async function uploadResumeIfNeeded(): Promise<string | null> {
@@ -150,17 +168,22 @@ export function ApplyModal({
 
     try {
       setSaving(true);
-      await UserService.updateMyProfile({
+      const profileUpdate: Partial<PublicUser> = {
         acknowledged_auto_apply: true,
-        internship_preferences: {
+      };
+
+      if (!hasSavedInternshipDetails) {
+        profileUpdate.internship_preferences = {
           ...(profile?.internship_preferences ?? {}),
           internship_type: internshipType ?? undefined,
           expected_start_date: monthYearToTimestampMs(
             Number(month),
             Number(year),
           ),
-        },
-      });
+        };
+      }
+
+      await UserService.updateMyProfile(profileUpdate);
 
       await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
       onCancel();
@@ -233,6 +256,7 @@ export function ApplyModal({
             years={years}
             saving={saving}
             canApply={canApply}
+            isReadOnly={hasSavedInternshipDetails}
             requiresCoverLetter={requiresCoverLetter}
             applyLabel={applyLabel}
             onCancel={onCancel}

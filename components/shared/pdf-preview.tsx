@@ -6,7 +6,7 @@ export const PDFPreview = ({ url }: { url: string }) => {
   const { clientWidth, clientHeight } = useClientDimensions();
 
   return (
-    <div className="px-6 pb-6">
+    <div className="px-6 pb-6 min-h-[600px]">
       {url ? (
         <iframe
           allowTransparency={true}
@@ -25,7 +25,7 @@ export const PDFPreview = ({ url }: { url: string }) => {
           File could not be loaded.
         </iframe>
       ) : (
-        <div className="relative flex flex-col items-center bg-white border border-gray-200 rounded-sm pb-8 w-fit h-fit p-8">
+        <div className="relative flex flex-col items-center bg-white rounded-sm pb-8 w-fit h-fit p-8">
           <div className="text-3xl font-semibold tracking-tight z-10 text-gray-600">
             No resume provided.
           </div>

@@ -29,6 +29,7 @@ function AutocompleteBase<ID extends number | string>({
   labelAddon,
   allowCustomValue = false,
   preserveOptionOrder = false,
+  emptyText = "...",
   ...props
 }: {
   required?: boolean;
@@ -42,6 +43,7 @@ function AutocompleteBase<ID extends number | string>({
   labelAddon?: string;
   allowCustomValue?: boolean;
   preserveOptionOrder?: boolean;
+  emptyText?: string;
 }) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -299,7 +301,7 @@ function AutocompleteBase<ID extends number | string>({
                 : "absolute left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto overscroll-contain rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5",
             )}
           >
-            {allowCustomValue && query.trim().length > 0 && (
+            {allowCustomValue && (
               <li className="w-full text-left px-4 py-2 text-sm text-gray-500 bg-gray-50 pointer-events-none">
                 Suggestions
               </li>
@@ -339,8 +341,8 @@ function AutocompleteBase<ID extends number | string>({
                 );
               })
             ) : (
-              <li className="w-full text-left px-4 py-2 text-sm text-gray-700">
-                ...
+              <li className="w-full text-left px-4 py-2 text-sm text-gray-700 text-primary text-opacity-50">
+                {emptyText}
               </li>
             )}
           </ul>
@@ -364,6 +366,7 @@ export const Autocomplete = <ID extends number | string>({
   props,
   allowCustomValue = false,
   preserveOptionOrder = false,
+  emptyText,
 }: {
   required?: boolean;
   options: IAutocompleteOption<ID>[];
@@ -375,6 +378,7 @@ export const Autocomplete = <ID extends number | string>({
   props?: any[];
   allowCustomValue?: boolean;
   preserveOptionOrder?: boolean;
+  emptyText?: string;
 }) => {
   return (
     <AutocompleteBase<ID>
@@ -388,6 +392,7 @@ export const Autocomplete = <ID extends number | string>({
       label={label}
       allowCustomValue={allowCustomValue}
       preserveOptionOrder={preserveOptionOrder}
+      emptyText={emptyText}
       {...props}
     />
   );
@@ -405,6 +410,7 @@ export const AutocompleteMulti = <ID extends number | string>({
   value,
   label,
   allowCustomValue = false,
+  emptyText,
 }: {
   required?: boolean;
   options: IAutocompleteOption<ID>[];
@@ -414,6 +420,7 @@ export const AutocompleteMulti = <ID extends number | string>({
   value?: ID[];
   label?: React.ReactNode;
   allowCustomValue?: boolean;
+  emptyText?: string;
 }) => {
   return (
     <AutocompleteBase<ID>
@@ -426,6 +433,7 @@ export const AutocompleteMulti = <ID extends number | string>({
       className={className}
       label={label}
       allowCustomValue={allowCustomValue}
+      emptyText={emptyText}
     />
   );
 };

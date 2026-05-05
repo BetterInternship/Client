@@ -68,8 +68,24 @@ import { useBlockPageRefreshEffect } from "@/hooks/use-refresh-block";
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import { AddResumeModal } from "@/components/features/student/profile/AddResumeModal";
 import useModalRegistry from "@/components/modals/modal-registry";
+import { sortUniversityOptions } from "../../../lib/student-forms-access";
+import { DEGREES } from "../register/steps/tempDegrees";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
+type ProfileTabKey = "Student Profile" | "Internship Details" | "Resumes";
+type EditableProfileTabKey = Exclude<ProfileTabKey, "Resumes">;
+
+const SECTION_TO_PROFILE_TAB: Record<string, ProfileTabKey> = {
+  student: "Student Profile",
+  internship: "Internship Details",
+  resumes: "Resumes",
+};
+
+const PROFILE_TAB_TO_SECTION: Record<ProfileTabKey, string> = {
+  "Student Profile": "student",
+  "Internship Details": "internship",
+  Resumes: "resumes",
+};
 
 export default function ProfilePage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
@@ -108,6 +124,9 @@ export default function ProfilePage() {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const modalRegistry = useModalRegistry();
+  const sectionParam = searchParams.get("section") ?? "";
+  const initialTab = SECTION_TO_PROFILE_TAB[sectionParam] ?? "Student Profile";
+  const [profileTab, setProfileTab] = useState<ProfileTabKey>(initialTab);
 
   const openResumePreview = async (resumeId: string) => {
     await syncResumeURL(resumeId);
@@ -161,30 +180,32 @@ export default function ProfilePage() {
     modalRegistry.deleteResume.open({
       resume,
       isProcessing: isDeletingResume,
-      onConfirm: async () => {
-        setIsDeletingResume(true);
-        try {
-          const result = await UserService.deleteMyResume(resume.id);
-          if (!result?.success) {
-            const errorMessage =
-              (result as { error?: string })?.error ||
-              result?.message ||
-              "Failed to delete resume.";
-            toast.error(errorMessage, toastPresets.destructive);
-            return;
-          }
+      onConfirm: () => {
+        void (async () => {
+          setIsDeletingResume(true);
+          try {
+            const result = await UserService.deleteMyResume(resume.id);
+            if (!result?.success) {
+              const errorMessage =
+                (result as { error?: string })?.error ||
+                result?.message ||
+                "Failed to delete resume.";
+              toast.error(errorMessage, toastPresets.destructive);
+              return;
+            }
 
-          modalRegistry.deleteResume.close();
-          toast.success("Resume deleted successfully.", toastPresets.success);
-          void resumes.refetch();
-          void queryClient.invalidateQueries({
-            queryKey: ["my-profile"],
-          });
-        } catch (error) {
-          toast.error("Resume could not be deleted. Try again.");
-        } finally {
-          setIsDeletingResume(false);
-        }
+            modalRegistry.deleteResume.close();
+            toast.success("Resume deleted successfully.", toastPresets.success);
+            void resumes.refetch();
+            void queryClient.invalidateQueries({
+              queryKey: ["my-profile"],
+            });
+          } catch (error) {
+            toast.error("Resume could not be deleted. Try again.");
+          } finally {
+            setIsDeletingResume(false);
+          }
+        })();
       },
     });
   };
@@ -204,8 +225,32 @@ export default function ProfilePage() {
   const data = profile.data as PublicUser | undefined;
 
   useEffect(() => {
+    setProfileTab(SECTION_TO_PROFILE_TAB[sectionParam] ?? "Student Profile");
     if (searchParams.get("edit") === "true") setIsEditing(true);
-  }, [searchParams]);
+  }, [searchParams, sectionParam]);
+
+  const handleProfileTabChange = (nextTab: ProfileTabKey) => {
+    setProfileTab(nextTab);
+
+    const section = PROFILE_TAB_TO_SECTION[nextTab];
+    const url = new URL(window.location.href);
+    if (section === "student") {
+      url.searchParams.delete("section");
+    } else {
+      url.searchParams.set("section", section);
+    }
+    window.history.replaceState({}, "", url.toString());
+  };
+
+  const handleCancelEditing = () => {
+    setSaveError(null);
+    setSaving(false);
+    setIsEditing(false);
+  };
+
+  const handleEditorTabChange = (nextTab: EditableProfileTabKey) => {
+    handleProfileTabChange(nextTab);
+  };
 
   useBlockPageRefreshEffect(isEditing);
 
@@ -302,6 +347,8 @@ export default function ProfilePage() {
               <>
                 <ProfileReadOnlyTabs
                   profile={data}
+                  tab={profileTab}
+                  onTabChange={handleProfileTabChange}
                   resumes={resumes.data?.resumes ?? []}
                   resumesLoading={resumes.isPending}
                   onViewResume={openResumePreview}
@@ -323,39 +370,54 @@ export default function ProfilePage() {
                 <ProfileEditor
                   updateProfile={profileActions.update.mutateAsync}
                   ref={profileEditorRef}
+                  initialTab={
+                    profileTab === "Resumes" ? "Student Profile" : profileTab
+                  }
+                  onTabChange={handleEditorTabChange}
                   rightSlot={
-                    <Button
-                      className="text-xs"
-                      onClick={() =>
-                        void (async () => {
-                          setSaving(true);
-                          setSaveError(null);
-                          const success =
-                            await profileEditorRef.current?.save();
-                          setSaving(false);
-                          if (success) {
-                            setIsEditing(false);
-                            toast.success(
-                              "Profile saved successfully.",
-                              toastPresets.success,
-                            );
-                          } else
-                            setSaveError(
-                              "Please fix the errors in the form before saving.", // TODO: Make this a toast
-                            );
-                        })()
-                      }
-                      disabled={saving}
-                    >
-                      <CheckCircle2 className="h-4 w-4 mr-1" />
-                      {saving ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin"></Loader2>
-                        </>
-                      ) : (
-                        <>Save</>
-                      )}
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        className="text-xs"
+                        onClick={handleCancelEditing}
+                        disabled={saving}
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        Cancel
+                      </Button>
+                      <Button
+                        className="text-xs"
+                        onClick={() =>
+                          void (async () => {
+                            setSaving(true);
+                            setSaveError(null);
+                            const success =
+                              await profileEditorRef.current?.save();
+                            setSaving(false);
+                            if (success) {
+                              setIsEditing(false);
+                              toast.success(
+                                "Profile saved successfully.",
+                                toastPresets.success,
+                              );
+                            } else
+                              setSaveError(
+                                "Please fix the errors in the form before saving.", // TODO: Make this a toast
+                              );
+                          })()
+                        }
+                        disabled={saving}
+                      >
+                        <CheckCircle2 className="h-4 w-4 mr-1" />
+                        {saving ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin"></Loader2>
+                          </>
+                        ) : (
+                          <>Save</>
+                        )}
+                      </Button>
+                    </div>
                   }
                 />
               </ProfileEditForm>
@@ -437,6 +499,8 @@ function HeaderLine({ profile }: { profile: PublicUser }) {
 
 function ProfileReadOnlyTabs({
   profile,
+  tab,
+  onTabChange,
   resumes,
   resumesLoading,
   onViewResume,
@@ -447,6 +511,8 @@ function ProfileReadOnlyTabs({
   onResumeUploaded,
 }: {
   profile: PublicUser;
+  tab: ProfileTabKey;
+  onTabChange: (tab: ProfileTabKey) => void;
   resumes: Resume[];
   resumesLoading: boolean;
   onViewResume: (resumeId: string) => void | Promise<void>;
@@ -460,37 +526,8 @@ function ProfileReadOnlyTabs({
   const { to_university_name, job_modes, job_types, job_categories } =
     useDbRefs();
 
-  type TabKey = "Student Profile" | "Internship Details" | "Resumes";
-
-  const SECTION_TO_TAB: Record<string, TabKey> = {
-    student: "Student Profile",
-    internship: "Internship Details",
-    resumes: "Resumes",
-  };
-  const TAB_TO_SECTION: Record<TabKey, string> = {
-    "Student Profile": "student",
-    "Internship Details": "internship",
-    Resumes: "resumes",
-  };
-
-  const searchParams = useSearchParams();
-  const sectionParam = searchParams.get("section") ?? "";
-  const initialTab = SECTION_TO_TAB[sectionParam] ?? "Student Profile";
-
-  const [tab, setTab] = useState<TabKey>(initialTab);
-
   const handleTabChange = (v: string) => {
-    const newTab = v as TabKey;
-    setTab(newTab);
-
-    const section = TAB_TO_SECTION[newTab];
-    const url = new URL(window.location.href);
-    if (section === "student") {
-      url.searchParams.delete("section");
-    } else {
-      url.searchParams.set("section", section);
-    }
-    window.history.replaceState({}, "", url.toString());
+    onTabChange(v as ProfileTabKey);
   };
 
   const tabs = [
@@ -505,11 +542,11 @@ function ProfileReadOnlyTabs({
       value={tab}
       onChange={handleTabChange}
       rightSlot={
-        <div>
+        tab !== "Resumes" && (
           <Button onClick={onEdit} className="text-xs">
             <Edit2 className="h-3 w-3" /> Edit
           </Button>
-        </div>
+        )
       }
     >
       {/* Student Profile */}
@@ -746,10 +783,12 @@ function ProfileReadOnlyTabs({
 const ProfileEditor = forwardRef<
   { save: () => Promise<boolean> },
   {
-    updateProfile: (updatedProfile: Partial<PublicUser>) => void;
+    updateProfile: (updatedProfile: Partial<PublicUser>) => Promise<unknown>;
+    initialTab: EditableProfileTabKey;
+    onTabChange?: (tab: EditableProfileTabKey) => void;
     rightSlot?: React.ReactNode;
   }
->(({ updateProfile, rightSlot }, ref) => {
+>(({ updateProfile, initialTab, onTabChange, rightSlot }, ref) => {
   const {
     formData,
     formErrors,
@@ -762,8 +801,14 @@ const ProfileEditor = forwardRef<
   const { isMobile } = useAppContext();
   const { universities, job_modes, job_types, job_categories } = useDbRefs();
 
-  type TabKey = "Student Profile" | "Internship Details" | "Calendar";
-  const [tab, setTab] = useState<TabKey>("Student Profile");
+  type TabKey = EditableProfileTabKey | "Calendar";
+  const [tab, setTab] = useState<TabKey>(initialTab);
+  const selectTab = (nextTab: TabKey) => {
+    setTab(nextTab);
+    if (nextTab !== "Calendar") {
+      onTabChange?.(nextTab);
+    }
+  };
 
   const hasProfileErrors = !!(
     formErrors.first_name ||
@@ -773,15 +818,39 @@ const ProfileEditor = forwardRef<
   );
   const hasPrefsErrors = !!formErrors.internship_preferences;
   const hasCalendarErrors = !!formErrors.calendar_link;
+  const fieldErrorClassName = "mt-1 mb-0 mx-0";
+  const internshipPreferencesError = formErrors.internship_preferences ?? "";
+  const internshipStartError = internshipPreferencesError.includes(
+    "expected start month",
+  )
+    ? internshipPreferencesError
+    : null;
+  const internshipDurationError = internshipPreferencesError.includes(
+    "number of hours",
+  )
+    ? internshipPreferencesError
+    : null;
+  const internshipSetupError = internshipPreferencesError.includes("work setup")
+    ? internshipPreferencesError
+    : null;
+  const internshipCommitmentError = internshipPreferencesError.includes(
+    "work commitment",
+  )
+    ? internshipPreferencesError
+    : null;
+  const internshipCategoryError = internshipPreferencesError.includes(
+    "work category",
+  )
+    ? internshipPreferencesError
+    : null;
 
   useImperativeHandle(ref, () => ({
     save: async () => {
-      validateFormData();
-      const hasErrors = Object.values(formErrors).some(Boolean);
-      if (hasErrors) {
-        if (hasCalendarErrors) setTab("Calendar");
-        else if (hasPrefsErrors) setTab("Internship Details");
-        else setTab("Student Profile");
+      const isValid = validateFormData();
+      if (!isValid) {
+        if (hasCalendarErrors) selectTab("Calendar");
+        else if (hasPrefsErrors) selectTab("Internship Details");
+        else selectTab("Student Profile");
         return false;
       }
 
@@ -803,7 +872,7 @@ const ProfileEditor = forwardRef<
             formData.internship_preferences?.job_category_ids ?? [],
         },
       };
-      updateProfile(updatedProfile);
+      await updateProfile(updatedProfile);
       return true;
     },
   }));
@@ -818,7 +887,7 @@ const ProfileEditor = forwardRef<
   ];
 
   useEffect(() => {
-    setUniversityOptions(universities?.filter((u) => u.name));
+    setUniversityOptions(universities);
     setJobModeOptions((job_modes ?? []).slice());
     setJobTypeOptions((job_types ?? []).slice());
     setJobCategoryOptions((job_categories ?? []).slice());
@@ -867,10 +936,11 @@ const ProfileEditor = forwardRef<
       if (!i.expected_start_date)
         return "Please select an expected start month.";
 
-      // If credited, check if number of hours are valid
-      if (i?.internship_type === "credited") {
-        if (!i.expected_duration_hours)
-          return "Please enter expected duration.";
+      // If credited and duration is provided, check if number of hours is valid
+      if (
+        i?.internship_type === "credited" &&
+        i.expected_duration_hours != null
+      ) {
         if (
           !Number.isFinite(i.expected_duration_hours) ||
           i.expected_duration_hours < 100 ||
@@ -958,7 +1028,7 @@ const ProfileEditor = forwardRef<
       ]}
       rightSlot={rightSlot}
       value={tab}
-      onChange={(v) => setTab(v as TabKey)}
+      onChange={(v) => selectTab(v as TabKey)}
     >
       {/* Student Profile */}
       <OutsideTabPanel when="Student Profile" activeKey={tab}>
@@ -967,43 +1037,61 @@ const ProfileEditor = forwardRef<
           <div className="text-xl sm:text-2xl tracking-tight font-semibold">
             Identity
           </div>
-          <div className="flex flex-col space-y-1 mb-2">
-            <ErrorLabel value={formErrors.first_name} />
-            <ErrorLabel value={formErrors.middle_name} />
-            <ErrorLabel value={formErrors.last_name} />
-            <ErrorLabel value={formErrors.phone_number} />
-          </div>
           <div
             className={cn(
               "mb-4",
               isMobile ? "flex flex-col space-y-3" : "grid grid-cols-3 gap-2",
             )}
           >
+            <div>
+              <FormInput
+                label="First Name"
+                value={formData.first_name ?? ""}
+                setter={fieldSetter("first_name")}
+                maxLength={32}
+              />
+              <ErrorLabel
+                value={formErrors.first_name}
+                className={fieldErrorClassName}
+              />
+            </div>
+            <div>
+              <FormInput
+                label="Middle Name"
+                value={formData.middle_name ?? ""}
+                setter={fieldSetter("middle_name")}
+                maxLength={32}
+                required={false}
+              />
+              <ErrorLabel
+                value={formErrors.middle_name}
+                className={fieldErrorClassName}
+              />
+            </div>
+            <div>
+              <FormInput
+                label="Last Name"
+                value={formData.last_name ?? ""}
+                setter={fieldSetter("last_name")}
+              />
+              <ErrorLabel
+                value={formErrors.last_name}
+                className={fieldErrorClassName}
+              />
+            </div>
+          </div>
+          <div>
             <FormInput
-              label="First Name"
-              value={formData.first_name ?? ""}
-              setter={fieldSetter("first_name")}
-              maxLength={32}
-            />
-            <FormInput
-              label="Middle Name"
-              value={formData.middle_name ?? ""}
-              setter={fieldSetter("middle_name")}
-              maxLength={32}
+              label="Phone Number"
+              value={formData.phone_number ?? ""}
+              setter={fieldSetter("phone_number")}
               required={false}
             />
-            <FormInput
-              label="Last Name"
-              value={formData.last_name ?? ""}
-              setter={fieldSetter("last_name")}
+            <ErrorLabel
+              value={formErrors.phone_number}
+              className={fieldErrorClassName}
             />
           </div>
-          <FormInput
-            label="Phone Number"
-            value={formData.phone_number ?? ""}
-            setter={fieldSetter("phone_number")}
-            required={false}
-          />
         </section>
 
         <Divider />
@@ -1015,26 +1103,34 @@ const ProfileEditor = forwardRef<
           </div>
           <div className="flex flex-col space-y-3">
             <div>
-              <ErrorLabel value={formErrors.university} />
               <Autocomplete
                 label={"University"}
-                options={universityOptions}
+                options={sortUniversityOptions(universityOptions)}
                 value={formData.university}
                 setter={fieldSetter("university")}
                 placeholder="Select University"
+                preserveOptionOrder
+              />
+              <ErrorLabel
+                value={formErrors.university}
+                className={fieldErrorClassName}
               />
             </div>
             <div>
-              <FormInput
+              <Autocomplete
                 label={"Degree / Program"}
-                value={formData.degree ?? undefined}
-                setter={fieldSetter("degree")}
+                options={DEGREES}
+                value={formData.degree ?? ""}
+                setter={(val) =>
+                  setField("degree", val === null ? "" : String(val))
+                }
                 placeholder="Indicate degree"
                 required={false}
+                allowCustomValue={true}
+                emptyText="type your own degree..."
               />
             </div>
             <div>
-              <ErrorLabel value={formErrors.expected_graduation_date} />
               <FormMonthPicker
                 label="Expected Graduation Date"
                 date={
@@ -1052,6 +1148,10 @@ const ProfileEditor = forwardRef<
                 toYear={new Date().getFullYear() + 4}
                 placeholder="Select month"
               />
+              <ErrorLabel
+                value={formErrors.expected_graduation_date}
+                className={fieldErrorClassName}
+              />
             </div>
           </div>
         </section>
@@ -1063,30 +1163,43 @@ const ProfileEditor = forwardRef<
           <div className="text-xl sm:text-2xl tracking-tight font-semibold">
             External Profiles
           </div>
-          <div className="flex flex-col space-y-1 mb-2">
-            <ErrorLabel value={formErrors.portfolio_link} />
-            <ErrorLabel value={formErrors.github_link} />
-            <ErrorLabel value={formErrors.linkedin_link} />
-          </div>
           <div className="flex flex-col space-y-3">
-            <FormInput
-              label={"Portfolio Link"}
-              value={formData.portfolio_link ?? ""}
-              setter={fieldSetter("portfolio_link")}
-              required={false}
-            />
-            <FormInput
-              label={"GitHub Profile"}
-              value={formData.github_link ?? ""}
-              setter={fieldSetter("github_link")}
-              required={false}
-            />
-            <FormInput
-              label={"LinkedIn Profile"}
-              value={formData.linkedin_link ?? ""}
-              setter={fieldSetter("linkedin_link")}
-              required={false}
-            />
+            <div>
+              <FormInput
+                label={"Portfolio Link"}
+                value={formData.portfolio_link ?? ""}
+                setter={fieldSetter("portfolio_link")}
+                required={false}
+              />
+              <ErrorLabel
+                value={formErrors.portfolio_link}
+                className={fieldErrorClassName}
+              />
+            </div>
+            <div>
+              <FormInput
+                label={"GitHub Profile"}
+                value={formData.github_link ?? ""}
+                setter={fieldSetter("github_link")}
+                required={false}
+              />
+              <ErrorLabel
+                value={formErrors.github_link}
+                className={fieldErrorClassName}
+              />
+            </div>
+            <div>
+              <FormInput
+                label={"LinkedIn Profile"}
+                value={formData.linkedin_link ?? ""}
+                setter={fieldSetter("linkedin_link")}
+                required={false}
+              />
+              <ErrorLabel
+                value={formErrors.linkedin_link}
+                className={fieldErrorClassName}
+              />
+            </div>
           </div>
         </section>
 
@@ -1152,8 +1265,10 @@ const ProfileEditor = forwardRef<
             required={false}
             placeholder="Select month"
           />
-
-          <ErrorLabel value={formErrors.internship_preferences} />
+          <ErrorLabel
+            value={internshipStartError}
+            className={fieldErrorClassName}
+          />
 
           {/* TODO: CHECK LEGACY CODE THEN INTERNSHIP PREF */}
           {formData.internship_preferences?.internship_type === "credited" && (
@@ -1167,15 +1282,14 @@ const ProfileEditor = forwardRef<
                 setter={(v: string) =>
                   setField("internship_preferences", {
                     ...(formData.internship_preferences ?? {}),
-                    expected_duration_hours:
-                      v === ""
-                        ? null
-                        : Number.isFinite(Number(v))
-                          ? Number(v)
-                          : null,
+                    expected_duration_hours: v.trim() === "" ? null : Number(v),
                   })
                 }
                 required={false}
+              />
+              <ErrorLabel
+                value={internshipDurationError}
+                className={fieldErrorClassName}
               />
             </div>
           )}
@@ -1204,6 +1318,10 @@ const ProfileEditor = forwardRef<
               }
               placeholder="Select one or more"
             />
+            <ErrorLabel
+              value={internshipSetupError}
+              className={fieldErrorClassName}
+            />
           </div>
 
           <div className="mt-2">
@@ -1221,6 +1339,10 @@ const ProfileEditor = forwardRef<
               }
               placeholder="Select one or more"
             />
+            <ErrorLabel
+              value={internshipCommitmentError}
+              className={fieldErrorClassName}
+            />
           </div>
 
           <div className="mt-2">
@@ -1235,6 +1357,10 @@ const ProfileEditor = forwardRef<
                 })
               }
               placeholder="Select one or more"
+            />
+            <ErrorLabel
+              value={internshipCategoryError}
+              className={fieldErrorClassName}
             />
           </div>
         </section>

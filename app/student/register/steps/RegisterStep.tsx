@@ -5,13 +5,13 @@ import { UseFormReturn } from "react-hook-form";
 import { FormInputs } from "../page";
 import { Autocomplete } from "@/components/ui/autocomplete";
 import { DEGREES } from "./tempDegrees";
+import { sortUniversityOptions } from "../../../../lib/student-forms-access";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { NO_UNIVERSITY_ID } from "@/lib/student-forms-access";
 
 /**
  * The first step to registering where the user puts their personal information in.
@@ -37,13 +37,7 @@ export function RegisterStep({
   const hasValidUniversity = refs.universities.some(
     (option) => option.id === university,
   );
-  const universityOptions = refs.universities
-    .toSorted((a, b) => (a.name as string).localeCompare(b.name as string))
-    .toSorted((a, b) => {
-      if (a.id === NO_UNIVERSITY_ID) return -1;
-      if (b.id === NO_UNIVERSITY_ID) return 1;
-      return 0;
-    });
+  const universityOptions = sortUniversityOptions(refs.universities);
   const canCreateAccount =
     firstName.trim() && lastName.trim() && hasValidUniversity && degree.trim();
 
@@ -119,6 +113,7 @@ export function RegisterStep({
         value={degree}
         required={true}
         allowCustomValue={true}
+        emptyText="type your own degree..."
       />
 
       {/* create account */}
