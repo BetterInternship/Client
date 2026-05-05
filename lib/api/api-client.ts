@@ -2,8 +2,10 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 if (!API_BASE_URL) console.warn("[WARNING]: Base API URL is not set.");
 
+type ParamValue = string | number | boolean | Array<string | number | boolean>;
+
 interface Params {
-  [key: string]: any;
+  [key: string]: ParamValue | null | undefined;
 }
 
 /**
@@ -15,8 +17,14 @@ interface Params {
 const createParameterString = (params: Params) => {
   const searchParams = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== "")
-      searchParams.append(key, value.toString());
+    if (value === undefined || value === null || value === "") return;
+
+    if (Array.isArray(value)) {
+      value.forEach((item) => searchParams.append(key, item.toString()));
+      return;
+    }
+
+    searchParams.append(key, value.toString());
   });
   return searchParams.toString();
 };
@@ -83,7 +91,9 @@ class FetchClient {
     try {
       const response = await fetch(url, config);
       if (!response.ok && response.status !== 304) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = (await response.json().catch(() => ({}))) as {
+          message?: string;
+        };
         console.warn(`${url}: ${errorData.message || response.status}`);
         return { error: errorData.message } as T;
         // throw new Error(errorData.message || "Something went wrong.");
@@ -100,42 +110,54 @@ class FetchClient {
     }
   }
 
-  async get<T>(url: string): Promise<T> {
-    return this.request<T>(url, { method: "GET" });
+  async get<T>(url: string, options: RequestInit = {}): Promise<T> {
+    return this.request<T>(url, { ...options, method: "GET" });
   }
 
-  async post<T>(url: string, data?: any, type: string = "json"): Promise<T> {
+  async post<T>(
+    url: string,
+    data?: unknown,
+    type: string = "json",
+    options: RequestInit = {},
+  ): Promise<T> {
     return this.request<T>(
       url,
       {
+        ...options,
         method: "POST",
         body: data
           ? type === "json"
             ? JSON.stringify(data)
-            : data
+            : (data as BodyInit)
           : undefined,
       },
       type,
     );
   }
 
-  async put<T>(url: string, data?: any, type: string = "json"): Promise<T> {
+  async put<T>(
+    url: string,
+    data?: unknown,
+    type: string = "json",
+    options: RequestInit = {},
+  ): Promise<T> {
     return this.request<T>(
       url,
       {
+        ...options,
         method: "PUT",
         body: data
           ? type === "json"
             ? JSON.stringify(data)
-            : data
+            : (data as BodyInit)
           : undefined,
       },
       type,
     );
   }
 
-  async delete<T>(url: string): Promise<T> {
-    return this.request<T>(url, { method: "DELETE" });
+  async delete<T>(url: string, options: RequestInit = {}): Promise<T> {
+    return this.request<T>(url, { ...options, method: "DELETE" });
   }
 }
 

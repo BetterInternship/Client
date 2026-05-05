@@ -1,4 +1,4 @@
-import { FormTemplate } from "../db/use-moa-backend";
+import { FormTemplate } from "../db/forms-db.types";
 import {
   Conversation,
   CreateJobChallengeListingPayload,
@@ -157,6 +157,11 @@ interface SaveJobResponse extends FetchResponse {
   message: string;
 }
 
+interface JoinFormGroupResponse extends FetchResponse {
+  success: boolean;
+  message?: string;
+}
+
 export type ApproveSignatoryRequest = {
   pendingDocumentId: string;
   signatoryName: string;
@@ -202,10 +207,11 @@ export const FormService = {
   },
 
   async getMyFormTemplates() {
-    const { formTemplates } = await APIClient.get<{
+    const response = await APIClient.get<{
+      formGroupDescription: string;
       formTemplates: FormTemplate[];
     }>(APIRouteBuilder("users").r("me/form-templates").build());
-    return formTemplates;
+    return response;
   },
 
   async getFormTemplatesLastUpdated() {
@@ -269,10 +275,33 @@ export const FormService = {
   },
 };
 
+interface UploadResumeResponse {
+  resume: {
+    id: string;
+    label: string;
+    filename: string;
+    uploaded_at: string;
+  };
+  success?: boolean;
+  message?: string;
+}
+
+interface ResumeArrayResponse {
+  resumes: {
+    id: string;
+    label: string;
+    filename: string;
+    uploaded_at: string;
+  }[];
+  success?: boolean;
+  message?: string;
+}
+
 export const UserService = {
-  async getMyProfile() {
+  async getMyProfile(options: RequestInit = {}) {
     const result = APIClient.get<UserResponse>(
       APIRouteBuilder("users").r("me").build(),
+      options,
     );
     return result;
   },
@@ -284,17 +313,22 @@ export const UserService = {
     );
   },
 
-  async parseResume(form: FormData) {
-    return APIClient.post<UserResponse>(
-      APIRouteBuilder("users").r("me", "extract-resume").build(),
-      form,
-      "form-data",
+  async joinFormGroup(code: string) {
+    return APIClient.post<JoinFormGroupResponse>(
+      APIRouteBuilder("users").r("join-form-group").build(),
+      { code },
     );
   },
 
-  async getMyResumeURL() {
+  async getMyResumes() {
+    return APIClient.get<ResumeArrayResponse>(
+      APIRouteBuilder("users").r("me", "resumes").build(),
+    );
+  },
+
+  async getMyResumeURL(resumeId: string) {
     return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("users").r("me", "resume").build(),
+      APIRouteBuilder("users").r("me", "resume", resumeId).build(),
     );
   },
 
@@ -318,17 +352,30 @@ export const UserService = {
     );
   },
 
-  async getUserResumeURL(userId: string) {
+  async getUserResumeURL(userId: string, resumeId: string) {
     return APIClient.get<ResourceHashResponse>(
-      APIRouteBuilder("users").r(userId, "resume").build(),
+      APIRouteBuilder("users").r(userId, "resume", resumeId).build(),
     );
   },
 
-  async updateMyResume(form: FormData) {
-    return APIClient.put<Response>(
+  async uploadMyResume(form: FormData) {
+    return APIClient.put<UploadResumeResponse>(
       APIRouteBuilder("users").r("me", "resume").build(),
       form,
       "form-data",
+    );
+  },
+
+  async updateMyResume(resumeId: string, label: string) {
+    return APIClient.post<UploadResumeResponse>(
+      APIRouteBuilder("users").r("me", "resume", "update", resumeId).build(),
+      { label: label },
+    );
+  },
+
+  async deleteMyResume(resumeId: string) {
+    return APIClient.post<UploadResumeResponse>(
+      APIRouteBuilder("users").r("me", "resume", "delete", resumeId).build(),
     );
   },
 
@@ -491,6 +538,7 @@ export const ApplicationService = {
 
   async createApplication(data: {
     job_id: string;
+    resume_id: string;
     cover_letter?: string;
     challenge_submission?: string;
   }) {

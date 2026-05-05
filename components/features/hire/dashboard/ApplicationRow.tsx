@@ -57,9 +57,6 @@ export function ApplicationRow({
   application,
   isSuperListing = false,
   onView,
-  openChatModal,
-  updateConversationId,
-  setSelectedApplication,
   checkboxSelected = false,
   onToggleSelect,
   onAction,
@@ -81,7 +78,7 @@ export function ApplicationRow({
 
   const defaultStatus: ActionItem = {
     id: currentStatusId,
-    label: get_app_status(application.status!)?.name,
+    label: get_app_status(application.status)?.name,
     active: true,
     disabled: false,
     destructive: false,

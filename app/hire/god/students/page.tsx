@@ -1,7 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 import { Autocomplete } from "@/components/ui/autocomplete";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,8 +8,6 @@ import {
   RowCard,
   Meta,
   LastLogin,
-  useLocalTagMap,
-  EditableTags,
   ListSummary,
 } from "@/components/features/hire/god/ui";
 import { BoolBadge, Badge } from "@/components/ui/badge";
@@ -24,12 +21,9 @@ import {
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useModal } from "@/hooks/use-modal";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
-import { PDFPreview } from "@/components/shared/pdf-preview";
 import { UserService } from "@/lib/api/services";
 import { useModalRegistry } from "@/components/modals/modal-registry";
-import { useFile } from "@/hooks/use-file";
 import {
-  FileText,
   Filter as FilterIcon,
   ChevronDown,
   Check,
@@ -37,24 +31,15 @@ import {
   CheckSquare,
   Square,
 } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 import {
   Popover,
   PopoverTrigger,
   PopoverContent,
 } from "@/components/ui/popover";
-import {
-  Command,
-  CommandList,
-  CommandItem,
-  CommandGroup,
-  CommandInput,
-  CommandEmpty,
-} from "@/components/ui/command";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
-import { useJobsData } from "@/lib/api/student.data.api";
+import { Employer, EmployerApplication, PublicUser } from "@/lib/db/db.types";
 
 const STUDENT_ORIGIN =
   process.env.NEXT_PUBLIC_CLIENT_URL || "http://localhost:3000";
@@ -73,40 +58,12 @@ const RowCheck = ({ visible }: { visible: boolean }) => (
   </span>
 );
 
-const Chip = ({
-  children,
-  active = false,
-  onClick,
-}: {
-  children: React.ReactNode;
-  active?: boolean;
-  onClick?: () => void;
-}) => (
-  <button
-    onClick={onClick}
-    className={cn(
-      "px-2.5 py-1 rounded-full border text-xs transition-colors",
-      active
-        ? "bg-blue-50 border-blue-300 text-blue-700"
-        : "bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100",
-    )}
-  >
-    {children}
-  </button>
-);
-
-/* ---------- Page ---------- */
-
 export default function StudentsPage() {
   const { users, isFetching } = useUsers();
   const queryClient = useQueryClient();
   const employers = useEmployers();
   const refs = useDbRefs();
   const modalRegistry = useModalRegistry();
-
-  // local tags (by user.id)
-  const { tagMap, addTag, removeTag, allTags } =
-    useLocalTagMap("god-tags:students");
 
   // Mass apply selection state
   const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(
@@ -134,33 +91,12 @@ export default function StudentsPage() {
   const [hideNoApps, setHideNoApps] = useState(false);
 
   // selection / modals
-  const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [selectedUser, setSelectedUser] = useState<PublicUser | null>(null);
   const {
     open: openApplicantModal,
     close: closeApplicantModal,
     Modal: ApplicantModal,
   } = useModal("applicant-modal");
-  const {
-    open: openResumeModal,
-    close: closeResumeModal,
-    Modal: ResumeModal,
-  } = useModal("resume-modal");
-
-  // Signed resume URL for the currently selected user
-  const { url: resumeURL, sync: syncResumeURL } = useFile({
-    fetcher: useCallback(
-      async () => await UserService.getUserResumeURL(selectedUser?.id ?? ""),
-      [selectedUser],
-    ),
-    route: selectedUser ? `/users/${selectedUser?.id}/resume` : "",
-  });
-
-  // Prefetch signed URL whenever a new student is selected (simple + effective)
-  useEffect(() => {
-    if (selectedUser?.id) {
-      syncResumeURL();
-    }
-  }, [selectedUser?.id, syncResumeURL]);
 
   // Student impersonation
   const { impersonate } = useStudentImpersonation();
@@ -190,7 +126,8 @@ export default function StudentsPage() {
   const toggleStudentSelection = (studentId: string) => {
     setSelectedStudentIds((prev) => {
       const next = new Set(prev);
-      next.has(studentId) ? next.delete(studentId) : next.add(studentId);
+      if (next.has(studentId)) next.delete(studentId);
+      else next.add(studentId);
       return next;
     });
   };
@@ -199,55 +136,52 @@ export default function StudentsPage() {
 
   const selectAllFiltered = () => {
     const next = new Set(selectedStudentIds);
-    filtered.forEach((u: any) => u.id && next.add(u.id));
+    filtered.forEach((u: PublicUser) => u.id && next.add(u.id));
     setSelectedStudentIds(next);
   };
 
   const unselectAllFiltered = () => {
     const next = new Set(selectedStudentIds);
-    filtered.forEach((u: any) => u.id && next.delete(u.id));
+    filtered.forEach((u: PublicUser) => u.id && next.delete(u.id));
     setSelectedStudentIds(next);
   };
 
   const applications = useMemo(() => {
-    const apps: any[] = [];
-    employers.data.forEach((e: any) =>
-      e?.applications?.map((a: any) => apps.push(a)),
+    const apps: EmployerApplication[] = [];
+    const employersWithApplications = employers.data as (Employer & {
+      applications: EmployerApplication[];
+    })[];
+
+    employersWithApplications?.forEach(
+      (e: Employer & { applications: EmployerApplication[] }) =>
+        e?.applications?.map((a: EmployerApplication) => apps.push(a)),
     );
     return apps;
   }, [employers.data]);
 
-  /* ---------- Options for dropdowns ---------- */
-
-  const positionOptions = useMemo(
-    () => refs.job_categories.map((c) => ({ id: c.id, label: c.name })),
-    [refs.job_categories],
-  );
-
   /* ---------- Filter helpers ---------- */
-
-  const matchesCollege = (u: any) => {
+  const matchesCollege = (u: PublicUser) => {
     if (activeColleges.length === 0) return true;
     return activeColleges.includes(u.college);
   };
 
-  const matchesApplyForMe = (u: any) => {
+  const matchesApplyForMe = (u: PublicUser) => {
     if (filterApplyForMe === null) return true;
     return u.apply_for_me === filterApplyForMe;
   };
 
-  const matchesWorkModes = (u: any) => {
+  const matchesWorkModes = (u: PublicUser) => {
     if (activeWorkModes.length === 0) return true;
     const modes = u.internship_preferences?.job_setup_ids ?? [];
-    return activeWorkModes.some((mode) => modes.includes(String(mode) as any));
+    return activeWorkModes.some((mode) => modes.includes(String(mode)));
   };
 
-  const matchesWorkTypes = (u: any) => {
+  const matchesWorkTypes = (u: PublicUser) => {
     if (activeWorkTypes.length === 0) return true;
     const types = u.internship_preferences?.job_commitment_ids ?? [];
-    return activeWorkTypes.some((type) => types.includes(String(type) as any));
+    return activeWorkTypes.some((type) => types.includes(String(type)));
   };
-  const matchesCreditedInternship = (u: any) => {
+  const matchesCreditedInternship = (u: PublicUser) => {
     if (filterCreditedInternship === null) return true;
     const isCredited = u.internship_preferences?.internship_type === "credited";
     return isCredited === filterCreditedInternship;
@@ -256,12 +190,12 @@ export default function StudentsPage() {
   /* ---------- Main filtered list ---------- */
   const filtered = users
     .filter(
-      (u: any) =>
+      (u: PublicUser) =>
         !hideNoApps ||
         applications.some((a) => a.user_id === u.id) ||
         u.id === search,
     )
-    .filter((u: any) =>
+    .filter((u) =>
       `${getFullName(u)} ${u.email} ${refs.to_college_name(u.college)} ${
         u.degree
       }`
@@ -274,55 +208,21 @@ export default function StudentsPage() {
     .filter(matchesWorkTypes)
     .filter(matchesCreditedInternship)
     .toSorted(
-      (a: any, b: any) =>
+      (a, b) =>
         new Date(b.created_at ?? "").getTime() -
         new Date(a.created_at ?? "").getTime(),
     );
 
-  /* ---------- ID(s) → text helpers ---------- */
-
-  const toSepText = <ID extends string | number>(
-    idsOrId: ID[] | ID | null | undefined,
-    toName: (id: ID) => string | null,
-    sep = ", ",
-  ) => {
-    const ids: ID[] = Array.isArray(idsOrId)
-      ? idsOrId
-      : idsOrId != null
-        ? [idsOrId]
-        : [];
-    return ids
-      .map((x) => toName(x) ?? "")
-      .filter(Boolean)
-      .join(sep);
-  };
-
   /* ---------- Rows ---------- */
-
-  const rows = filtered.map((u: any, index: number) => {
+  const rows = filtered.map((u, index) => {
     const userApplications = applications.filter((a) => a.user_id === u.id);
     const isRowPending = impersonate.isPending && impUserId === u.id;
     const isSelected = selectedStudentIds.has(u.id);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const lastTs = u?.last_session?.timestamp
-      ? new Date(u.last_session.timestamp).getTime()
+      ? // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+        new Date(u.last_session.timestamp).getTime()
       : undefined;
-    const rowTags = tagMap[u.id] ?? [];
-
-    const modeName = (id: number) => refs.to_job_mode_name(id);
-    const typeName = (id: number) => refs.to_job_type_name(id);
-    const categoryName = (id: string) => refs.to_job_category_name(id, "");
-
-    const modeTxt = toSepText<number>(
-      u.job_mode_ids ?? u.job_mode,
-      modeName,
-      " · ",
-    );
-    const typeTxt = toSepText<number>(
-      u.job_type_ids ?? u.job_type,
-      typeName,
-      " · ",
-    );
-    const posTxt = toSepText<string>(u.job_category_ids, categoryName, " · ");
 
     return (
       <RowCard
@@ -452,8 +352,9 @@ export default function StudentsPage() {
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {(() => {
-                    const ids = (u.internship_preferences?.job_category_ids ??
-                      []) as string[];
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    const ids: string[] =
+                      u.internship_preferences?.job_category_ids ?? [];
                     const items = ids
                       .map((id) => {
                         const c = refs.job_categories.find((x) => x.id === id);
@@ -494,7 +395,7 @@ export default function StudentsPage() {
               disabled={isRowPending}
               onClick={(ev) => {
                 ev.stopPropagation();
-                viewAsStudent(u.id);
+                void viewAsStudent(u.id);
               }}
             >
               {isRowPending ? "Starting..." : "View"}
@@ -530,10 +431,6 @@ export default function StudentsPage() {
             openApplicantModal();
           }
         }}
-        className={cn(
-          "transition-colors",
-          massApplyMode && isSelected && "bg-blue-50 border-blue-200",
-        )}
       />
     );
   });
@@ -551,11 +448,13 @@ export default function StudentsPage() {
   // Get unique colleges for filter
   const collegeOptions = useMemo(() => {
     const colleges = new Set<string>();
-    users.forEach((u: any) => {
+    users.forEach((u: PublicUser) => {
       if (u.college) colleges.add(u.college);
     });
-    return Array.from(colleges).sort((a, b) =>
-      refs.to_college_name(a).localeCompare(refs.to_college_name(b)),
+    return Array.from(colleges).sort(
+      (a, b) =>
+        refs.to_college_name(a)?.localeCompare(refs.to_college_name(b) ?? "") ??
+        0,
     );
   }, [users, refs]);
 
@@ -577,7 +476,7 @@ export default function StudentsPage() {
 
         <Autocomplete
           setter={setSearchQuery}
-          options={users.map((u: any) => ({
+          options={users.map((u) => ({
             id: u.id,
             name: getFullName(u) ?? "",
           }))}
@@ -628,7 +527,6 @@ export default function StudentsPage() {
                     setActiveColleges([]);
                     setActiveWorkModes([]);
                     setActiveWorkTypes([]);
-                    setActivePositions([]);
                   }}
                 >
                   Reset all
@@ -862,7 +760,6 @@ export default function StudentsPage() {
                       setActiveColleges([]);
                       setActiveWorkModes([]);
                       setActiveWorkTypes([]);
-                      setActivePositions([]);
                     }}
                   >
                     <X className="h-3.5 w-3.5 mr-1" />
@@ -950,42 +847,16 @@ export default function StudentsPage() {
           }
           pfp_route={`/users/${selectedUser?.id}/pic`}
           applicant={selectedUser ?? undefined}
-          resume_url={resumeURL}
-          open_calendar={async () => {
+          open_calendar={() => {
             closeApplicantModal();
             window?.open(selectedUser?.calendar_link ?? "", "_blank")?.focus();
           }}
-          open_resume={async () => {
+          open_resume={() => {
             closeApplicantModal();
-            await syncResumeURL();
-            openResumeModal();
           }}
           job={{}}
         />
       </ApplicantModal>
-
-      <ResumeModal>
-        {resumeURL ? (
-          <div className="h-full flex flex-col">
-            <h1 className="font-bold font-heading text-2xl px-6 py-4 text-gray-900">
-              {getFullName(selectedUser)} - Resume
-            </h1>
-            <PDFPreview url={resumeURL} />
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center h-96 px-8">
-            <div className="text-center">
-              <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">
-                No Resume Available
-              </h1>
-              <div className="max-w-md text-center border border-red-200 text-red-600 bg-red-50 rounded-[0.33em] p-4">
-                This applicant has not uploaded a resume yet.
-              </div>
-            </div>
-          </div>
-        )}
-      </ResumeModal>
     </>
   );
 }

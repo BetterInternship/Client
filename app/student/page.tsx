@@ -1,13 +1,33 @@
-"use client";
-
 import { HeroSection, Feature } from "@/components/landingStudent/sections";
 import Testimonials from "@/components/landingStudent/sections/3rdSection/testimonials";
 import { Footer } from "@/components/shared/footer";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { UserService } from "@/lib/api/services";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-export default function HomePage() {
-  const { redirectIfLoggedIn } = useAuthContext();
-  redirectIfLoggedIn();
+async function isLoggedIn() {
+  const cookieHeader = (await cookies()).toString();
+  if (!cookieHeader) return false;
+
+  try {
+    const response = await UserService.getMyProfile({
+      cache: "no-store",
+      headers: {
+        cookie: cookieHeader,
+      },
+    });
+
+    return !!response.user;
+  } catch {
+    return false;
+  }
+}
+
+export default async function HomePage() {
+  if (await isLoggedIn()) {
+    redirect("/search");
+  }
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}

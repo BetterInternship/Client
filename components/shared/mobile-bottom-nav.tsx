@@ -14,20 +14,18 @@ import {
   LogIn,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { hasFormsEnabledUniversity } from "@/lib/student-forms-access";
+import { useProfileData } from "@/lib/api/student.data.api";
+import type { PublicUser } from "@/lib/db/db.types";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  isProfileBaseComplete,
-  isProfileResume,
-  isProfileVerified,
-} from "@/lib/profile";
 import { useAuthContext } from "@/lib/ctx-auth";
 
 interface MobileBottomNavProps {
-  profileData?: any;
+  profileData?: PublicUser | null;
 }
 
 interface NavButtonProps {
@@ -87,6 +85,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   const router = useRouter();
   const pathname = usePathname();
   const { logout, isAuthenticated } = useAuthContext();
+  const profile = useProfileData();
+  const showFormsTab = hasFormsEnabledUniversity(profileData ?? profile.data);
 
   // Not logged in: show minimal nav with Search and Sign In
   if (!isAuthenticated()) {
@@ -125,13 +125,14 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         onClick={() => router.push("/search")}
       />
 
-      {/* Forms Button */}
-      <NavButton
-        icon={<Newspaper className="w-6 h-6" />}
-        label="Forms"
-        isActive={pathname === "/forms"}
-        onClick={() => router.push("/forms")}
-      />
+      {showFormsTab && (
+        <NavButton
+          icon={<Newspaper className="w-6 h-6" />}
+          label="Forms"
+          isActive={pathname === "/forms"}
+          onClick={() => router.push("/forms")}
+        />
+      )}
 
       {/* My Jobs Button with Popover Menu */}
       <NavButton
@@ -190,29 +191,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           <div className="flex flex-col gap-0">
             <button
               onClick={() => {
-                try {
-                  if (profileData && "data" in profileData) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-                    const profile = profileData.data;
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    if (!isProfileVerified(profile || null)) {
-                      router.push(`/register/verify`);
-                    } else if (
-                      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                      !isProfileResume(profile || null) ||
-                      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                      !isProfileBaseComplete(profile || null)
-                    ) {
-                      router.push(`/profile/complete-profile?dest=profile`);
-                    } else {
-                      router.push(`/profile`);
-                    }
-                  } else {
-                    router.push(`/profile`);
-                  }
-                } catch {
-                  router.push(`/profile`);
-                }
+                router.push(`/profile`);
               }}
               className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm"
             >

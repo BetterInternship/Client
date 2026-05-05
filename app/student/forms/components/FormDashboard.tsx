@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FileSearch, FileText } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { FormTemplate } from "@/lib/db/use-moa-backend";
+import { FormTemplate } from "@/lib/db/forms-db.types";
 import { Loader } from "@/components/ui/loader";
 import {
   FormRendererContextBridge,
@@ -62,10 +62,12 @@ const getTimestampMs = (timestamp?: string) => {
 export default function FormDashboard({
   generatedForms,
   formTemplates,
+  formGroupDescription,
   isLoading,
 }: {
   generatedForms: GeneratedFormItem[];
   formTemplates: FormTemplate[];
+  formGroupDescription: string;
   isLoading: boolean;
 }) {
   const { isMobile } = useMobile();
@@ -340,7 +342,9 @@ export default function FormDashboard({
               <div className="flex flex-row items-center gap-3 mb-2">
                 <HeaderIcon icon={FileText} />
                 <div onClick={handleHeaderSecretTap}>
-                  <HeaderText>Form Templates</HeaderText>
+                  <HeaderText>
+                    {formGroupDescription || "Form Templates"}
+                  </HeaderText>
                 </div>
               </div>
               <p className="text-sm text-gray-600">

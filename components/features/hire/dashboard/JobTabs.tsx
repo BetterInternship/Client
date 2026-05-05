@@ -40,11 +40,14 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
   const { url: resumeURL, sync: syncResumeURL } = useFile({
     fetcher: useCallback(
       async () =>
-        await UserService.getUserResumeURL(selectedApplication?.user_id ?? ""),
-      [selectedApplication?.user_id],
+        await UserService.getUserResumeURL(
+          selectedApplication?.user_id ?? "",
+          selectedApplication?.resume_id ?? "",
+        ),
+      [selectedApplication?.user_id, selectedApplication?.resume_id],
     ),
     route: selectedApplication
-      ? `/users/${selectedApplication.user_id}/resume`
+      ? `/users/${selectedApplication.user_id}/resume/${selectedApplication.resume_id}`
       : "",
   });
 
@@ -80,9 +83,7 @@ export default function JobTabs({ selectedJob }: JobTabsProps) {
 
   const handleApplicationClick = (application: EmployerApplication) => {
     setSelectedApplication(application); // set first
-    router.push(
-      `/dashboard/applicant?userId=${application?.user_id}&jobId=${selectedJobId}`,
-    );
+    router.push(`/dashboard/applicant?applicationId=${application.id}`);
   };
 
   if (isLoading || !isAuthenticated()) return null;

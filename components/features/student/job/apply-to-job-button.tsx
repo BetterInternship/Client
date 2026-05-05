@@ -4,30 +4,27 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CheckCircle } from "lucide-react";
 import { useAuthContext } from "@/lib/ctx-auth";
-import {
-  isProfileBaseComplete,
-  isProfileResume,
-  isProfileVerified,
-} from "@/lib/profile";
 import { useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import useModalRegistry from "@/components/modals/modal-registry";
+import { isProfileEligibleForListing } from "@/lib/profile";
+import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
 
-// ! todo: rmove openAppModal and use openGlobalModal instead
 export const ApplyToJobButton = ({
   profile,
   job,
-  openAppModal,
+  onApply,
   className,
 }: {
   profile: PublicUser | null;
   job: Job;
-  openAppModal: () => void;
+  onApply: (payload: ApplyPayload) => void | Promise<void>;
   className?: string;
 }) => {
   const auth = useAuthContext();
+  const modalRegistry = useModalRegistry();
   const jobs = useJobsData();
   const applied = useMemo(() => !!jobs.isJobApplied(job.id!), [jobs]);
-  const router = useRouter();
   const isSuperListing = Boolean(job.challenge);
 
   /**
@@ -40,24 +37,25 @@ export const ApplyToJobButton = ({
       window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
       return;
     }
-    if (!isProfileVerified(profile)) {
-      return router.push("/register/verify");
-    }
-
-    if (
-      !isProfileResume(profile) ||
-      !isProfileBaseComplete(profile) ||
-      profile.acknowledged_auto_apply === false
-    ) {
-      return router.push(`/profile/complete-profile?dest=search/${job.id}`);
-    }
 
     if (applied) {
-      alert("You have already applied to this job!");
+      toast.error("You have already applied to this job!");
       return;
     }
 
-    openAppModal();
+    // Check if the profile meets the listing's requirements
+    const { eligible, missing } = isProfileEligibleForListing(profile, job);
+    if (!eligible) {
+      modalRegistry.missingRequirements.open({ missing });
+      return;
+    }
+
+    modalRegistry.completeProfileApply.open({
+      profile,
+      requiresCoverLetter:
+        job.internship_preferences?.require_cover_letter === true,
+      onApply,
+    });
   };
 
   return (

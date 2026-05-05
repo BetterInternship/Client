@@ -10,6 +10,35 @@ export const toSafeString = (s?: string | null, def: string = "") => {
   return def;
 };
 
+const ABBREVIATION_IGNORED_WORDS = new Set([
+  "a",
+  "an",
+  "and",
+  "at",
+  "by",
+  "for",
+  "from",
+  "in",
+  "of",
+  "on",
+  "or",
+  "the",
+  "to",
+  "with",
+]);
+
+export const toAbbreviation = (value?: string | null): string => {
+  if (!value) return "";
+
+  return value
+    .split(/[,-]/)[0]
+    .trim()
+    .split(/\s+/)
+    .filter((word) => !ABBREVIATION_IGNORED_WORDS.has(word.toLowerCase()))
+    .map((word) => word.match(/[A-Za-z0-9]/)?.[0].toUpperCase() ?? "")
+    .join("");
+};
+
 export const isValidUUID = (uuid: string) => {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
     uuid,
@@ -44,6 +73,12 @@ export function isValidEmail(email?: string | null) {
   if (!email) return false;
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   return emailRegex.test(email);
+}
+
+export function isEduPhEmail(email?: string | null) {
+  if (!email) return false;
+  const trimmed = email.trim().toLowerCase();
+  return isValidEmail(trimmed) && trimmed.endsWith(".edu.ph");
 }
 
 export const normalizePhoneNumber = (

@@ -3,6 +3,7 @@ import {
   useState,
   useEffect,
   useRef,
+  useMemo,
   forwardRef,
   useImperativeHandle,
 } from "react";
@@ -15,45 +16,42 @@ import {
   CheckCircle2,
   Globe2,
   Loader2,
-  FileQuestion,
+  Trash2,
+  Pencil,
+  Check,
+  X,
 } from "lucide-react";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { InternshipPreferences, PublicUser } from "@/lib/db/db.types";
+import { InternshipPreferences, PublicUser, Resume } from "@/lib/db/db.types";
 import { ErrorLabel, LabeledProperty } from "@/components/ui/labels";
 import { UserService } from "@/lib/api/services";
-import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { Button } from "@/components/ui/button";
 import { FileUploadInput, useFile, useFileUpload } from "@/hooks/use-file";
 import { Card } from "@/components/ui/card";
-import {
-  getFullName,
-  isProfileBaseComplete,
-  isProfileResume,
-} from "@/lib/profile";
-import { toURL, openURL } from "@/lib/utils/url-utils";
+import { getFullName } from "@/lib/profile";
+import { toURL } from "@/lib/utils/url-utils";
 import {
   isValidOptionalGitHubURL,
   isValidOptionalLinkedinURL,
   isValidOptionalURL,
 } from "@/lib/utils/url-utils";
 import { Loader } from "@/components/ui/loader";
-import { BoolBadge } from "@/components/ui/badge";
 import { cn, formatMonth, isValidPHNumber, toSafeString } from "@/lib/utils";
+import { formatOptionalStartMonth } from "@/lib/utils/date-utils";
 import { MyUserPfp, PFP_UPDATED_EVENT } from "@/components/shared/pfp";
 import { useAppContext } from "@/lib/ctx-app";
 import {
   createEditForm,
   FormMonthPicker,
   FormInput,
-  FormDropdown,
 } from "@/components/EditForm";
 import { Divider } from "@/components/ui/divider";
 import { isValidRequiredUserName } from "@/lib/utils/name-utils";
-import { useQueryClient } from "@tanstack/react-query";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 import { Autocomplete, AutocompleteMulti } from "@/components/ui/autocomplete";
 import { AutocompleteTreeMulti } from "@/components/ui/autocomplete";
 import { POSITION_TREE } from "@/lib/consts/positions";
@@ -63,14 +61,31 @@ import {
   type Option as ChipOpt,
 } from "@/components/ui/chip-select";
 import { Badge } from "@/components/ui/badge";
-import { AutoApplyCard } from "@/components/features/student/profile/AutoApplyCard";
 import { useProfileActions } from "@/lib/api/student.actions.api";
-import useModalRegistry from "@/components/modals/modal-registry";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
 import { useBlockPageRefreshEffect } from "@/hooks/use-refresh-block";
+import { PDFPreview } from "@/components/shared/pdf-preview";
+import { AddResumeModal } from "@/components/features/student/profile/AddResumeModal";
+import useModalRegistry from "@/components/modals/modal-registry";
+import { sortUniversityOptions } from "../../../lib/student-forms-access";
+import { DEGREES } from "../register/steps/tempDegrees";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
+type ProfileTabKey = "Student Profile" | "Internship Details" | "Resumes";
+type EditableProfileTabKey = Exclude<ProfileTabKey, "Resumes">;
+
+const SECTION_TO_PROFILE_TAB: Record<string, ProfileTabKey> = {
+  student: "Student Profile",
+  internship: "Internship Details",
+  resumes: "Resumes",
+};
+
+const PROFILE_TAB_TO_SECTION: Record<ProfileTabKey, string> = {
+  "Student Profile": "student",
+  "Internship Details": "internship",
+  Resumes: "resumes",
+};
 
 export default function ProfilePage() {
   const { redirectIfNotLoggedIn } = useAuthContext();
@@ -78,47 +93,121 @@ export default function ProfilePage() {
   const profileActions = useProfileActions();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [isDeletingResume, setIsDeletingResume] = useState(false);
+  const [isRenamingResume, setIsRenamingResume] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [autoApplySaving, setAutoApplySaving] = useState(false);
-  const [autoApplyError, setAutoApplyError] = useState<string | null>(null);
 
   const { url: resumeURL, sync: syncResumeURL } = useFile({
-    fetcher: UserService.getMyResumeURL,
-    route: "/users/me/resume",
+    fetcher: (resumeId: string) => UserService.getMyResumeURL(resumeId),
+    route: (resumeId: string) => `/users/me/resume/${resumeId}`,
+  });
+  const resumes = useQuery({
+    queryKey: ["my-resumes"],
+    queryFn: () => UserService.getMyResumes(),
   });
 
-  // Modals
-  const {
-    open: openEmployerModal,
-    close: closeEmployerModal,
-    Modal: EmployerModal,
-  } = useModal("employer-modal");
+  const maxResumesEnv = Number(process.env.NEXT_PUBLIC_MAX_RESUMES_ALLOWED);
+  const maxResumesAllowed = Number.isFinite(maxResumesEnv) ? maxResumesEnv : 5;
+  const resumeCount = resumes.data?.resumes?.length ?? 0;
+  const atResumeLimit = resumeCount >= maxResumesAllowed;
 
-  const { open: openResumeModal } = useModal("resume-modal");
+  // Modals
+  const { open: openResumeModal, Modal: ResumeModal } =
+    useModal("resume-modal");
+  const {
+    open: openAddResumeModal,
+    close: closeAddResumeModal,
+    Modal: AddResumeModalBox,
+  } = useModal("add-resume-modal");
+
   const profileEditorRef = useRef<{ save: () => Promise<boolean> }>(null);
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
+  const modalRegistry = useModalRegistry();
+  const sectionParam = searchParams.get("section") ?? "";
+  const initialTab = SECTION_TO_PROFILE_TAB[sectionParam] ?? "Student Profile";
+  const [profileTab, setProfileTab] = useState<ProfileTabKey>(initialTab);
 
-  const openEmployerWithResume = async () => {
-    await syncResumeURL();
-    openEmployerModal();
+  const openResumePreview = async (resumeId: string) => {
+    await syncResumeURL(resumeId);
+    openResumeModal();
   };
 
-  const handleAutoApplySave = async (newEnabled: boolean) => {
-    setAutoApplySaving(true);
-    setAutoApplyError(null);
-
-    try {
-      await UserService.updateMyProfile({
-        apply_for_me: newEnabled,
-        auto_apply_enabled_at: newEnabled ? new Date().toISOString() : null,
-      });
-      void queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-    } catch (e: any) {
-      setAutoApplyError((e as string) ?? "Failed to update auto-apply");
-    } finally {
-      setAutoApplySaving(false);
+  const onRenameResume = async (resumeId: string, label: string) => {
+    if (!resumeId) {
+      toast.error("Resume not found.");
+      return false;
     }
+
+    const nextLabel = label.trim();
+    if (!nextLabel) {
+      toast.error("Resume label is required.");
+      return false;
+    }
+
+    setIsRenamingResume(true);
+    try {
+      const result = await UserService.updateMyResume(resumeId, nextLabel);
+      if (!result?.success) {
+        const errorMessage =
+          (result as { error?: string })?.error ||
+          result?.message ||
+          "Failed to rename resume.";
+        toast.error(errorMessage, toastPresets.destructive);
+        return false;
+      }
+
+      toast.success("Resume renamed successfully.", toastPresets.success);
+      void resumes.refetch();
+      void queryClient.invalidateQueries({
+        queryKey: ["my-profile"],
+      });
+      return true;
+    } catch (error) {
+      toast.error("Resume could not be renamed. Try again.");
+      return false;
+    } finally {
+      setIsRenamingResume(false);
+    }
+  };
+
+  const onDeleteResume = (resume: Resume) => {
+    if (!resume.id) {
+      toast.error("Resume not found.");
+      return;
+    }
+
+    modalRegistry.deleteResume.open({
+      resume,
+      isProcessing: isDeletingResume,
+      onConfirm: () => {
+        void (async () => {
+          setIsDeletingResume(true);
+          try {
+            const result = await UserService.deleteMyResume(resume.id);
+            if (!result?.success) {
+              const errorMessage =
+                (result as { error?: string })?.error ||
+                result?.message ||
+                "Failed to delete resume.";
+              toast.error(errorMessage, toastPresets.destructive);
+              return;
+            }
+
+            modalRegistry.deleteResume.close();
+            toast.success("Resume deleted successfully.", toastPresets.success);
+            void resumes.refetch();
+            void queryClient.invalidateQueries({
+              queryKey: ["my-profile"],
+            });
+          } catch (error) {
+            toast.error("Resume could not be deleted. Try again.");
+          } finally {
+            setIsDeletingResume(false);
+          }
+        })();
+      },
+    });
   };
 
   redirectIfNotLoggedIn();
@@ -128,21 +217,40 @@ export default function ProfilePage() {
     upload: pfpUpload,
     isUploading: pfpIsUploading,
   } = useFileUpload({
-    uploader: UserService.updateMyPfp,
+    uploader: (file: FormData) => UserService.updateMyPfp(file),
     filename: "pfp",
     silent: true,
   });
 
   const data = profile.data as PublicUser | undefined;
-  const { score, parts, tips } = computeProfileScore(data);
 
   useEffect(() => {
+    setProfileTab(SECTION_TO_PROFILE_TAB[sectionParam] ?? "Student Profile");
     if (searchParams.get("edit") === "true") setIsEditing(true);
-  }, [searchParams]);
+  }, [searchParams, sectionParam]);
 
-  useEffect(() => {
-    if (data?.resume) void syncResumeURL();
-  }, [data?.resume, syncResumeURL]);
+  const handleProfileTabChange = (nextTab: ProfileTabKey) => {
+    setProfileTab(nextTab);
+
+    const section = PROFILE_TAB_TO_SECTION[nextTab];
+    const url = new URL(window.location.href);
+    if (section === "student") {
+      url.searchParams.delete("section");
+    } else {
+      url.searchParams.set("section", section);
+    }
+    window.history.replaceState({}, "", url.toString());
+  };
+
+  const handleCancelEditing = () => {
+    setSaveError(null);
+    setSaving(false);
+    setIsEditing(false);
+  };
+
+  const handleEditorTabChange = (nextTab: EditableProfileTabKey) => {
+    handleProfileTabChange(nextTab);
+  };
 
   useBlockPageRefreshEffect(isEditing);
 
@@ -165,25 +273,13 @@ export default function ProfilePage() {
     );
   }
 
-  if (!isProfileResume(profile.data) || !isProfileBaseComplete(profile.data)) {
-    return (
-      <div className="flex flex-col gap-4 items-center justify-center h-full">
-        <FileQuestion className="text-warning w-20 h-20" />
-        <span className="text-lg text-gray-500">
-          Page Paused, Please Reload
-        </span>
-      </div>
-    );
-  }
-
   return (
     data && (
-      <div className="min-h-screen mx-auto max-w-6xl">
+      <div className="min-h-screen mx-auto max-w-2xl w-full">
         {/* Top header */}
         <div className="relative">
-          <header className="relative px-4 sm:px-6 pt-10 ">
+          <header className="relative px-4 sm:px-6 pt-10">
             <div className="flex flex-col lg:flex-row gap-6 items-start">
-              {/* PFP */}
               <div className="relative">
                 <MyUserPfp size="36" />
 
@@ -200,18 +296,19 @@ export default function ProfilePage() {
                   ref={pfpFileInputRef}
                   allowedTypes={["image/jpeg", "image/png", "image/webp"]}
                   maxSize={1}
-                  onSelect={async (file) => {
-                    const success = await pfpUpload(file);
-                    if (success) {
-                      void queryClient.invalidateQueries({
-                        queryKey: ["my-profile"],
-                      });
-                      window.dispatchEvent(new Event(PFP_UPDATED_EVENT));
-                      toast.success(
-                        "Profile photo uploaded successfully.",
-                        toastPresets.success,
-                      );
-                    }
+                  onSelect={(file) => {
+                    void pfpUpload(file).then((success) => {
+                      if (success) {
+                        void queryClient.invalidateQueries({
+                          queryKey: ["my-profile"],
+                        });
+                        window.dispatchEvent(new Event(PFP_UPDATED_EVENT));
+                        toast.success(
+                          "Profile photo uploaded successfully.",
+                          toastPresets.success,
+                        );
+                      }
+                    });
                   }}
                 />
               </div>
@@ -242,25 +339,29 @@ export default function ProfilePage() {
         </div>
 
         {/* Main content */}
-        <main className="px-4 sm:px-6 pt-8 pb-16 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <main className="w-full p-6">
           {/* Left column */}
           <div className="lg:col-span-2 flex flex-col gap-6">
-            {/* Resume */}
-            <Card className="p-5">
-              <div className="font-medium">Resume/CV</div>
-
-              <ResumeBox
-                profile={data}
-                openResumeModal={openEmployerWithResume}
-              />
-            </Card>
-
             {/* Profile */}
             {!isEditing && (
               <>
                 <ProfileReadOnlyTabs
                   profile={data}
+                  tab={profileTab}
+                  onTabChange={handleProfileTabChange}
+                  resumes={resumes.data?.resumes ?? []}
+                  resumesLoading={resumes.isPending}
+                  onViewResume={openResumePreview}
+                  onResumeUploaded={() => {
+                    void resumes.refetch();
+                    void queryClient.invalidateQueries({
+                      queryKey: ["my-profile"],
+                    });
+                  }}
                   onEdit={() => setIsEditing(true)}
+                  onAddResume={openAddResumeModal}
+                  onRenameResume={onRenameResume}
+                  onDeleteResume={onDeleteResume}
                 />
               </>
             )}
@@ -269,120 +370,78 @@ export default function ProfilePage() {
                 <ProfileEditor
                   updateProfile={profileActions.update.mutateAsync}
                   ref={profileEditorRef}
+                  initialTab={
+                    profileTab === "Resumes" ? "Student Profile" : profileTab
+                  }
+                  onTabChange={handleEditorTabChange}
                   rightSlot={
-                    <Button
-                      className="text-xs"
-                      onClick={() =>
-                        void (async () => {
-                          setSaving(true);
-                          setSaveError(null);
-                          const success =
-                            await profileEditorRef.current?.save();
-                          setSaving(false);
-                          if (success) {
-                            setIsEditing(false);
-                            toast.success(
-                              "Profile saved successfully.",
-                              toastPresets.success,
-                            );
-                          } else
-                            setSaveError(
-                              "Please fix the errors in the form before saving.", // TODO: Make this a toast
-                            );
-                        })()
-                      }
-                      disabled={saving}
-                    >
-                      <CheckCircle2 className="h-4 w-4 mr-1" />
-                      {saving ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin"></Loader2>
-                        </>
-                      ) : (
-                        <>Save</>
-                      )}
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        className="text-xs"
+                        onClick={handleCancelEditing}
+                        disabled={saving}
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        Cancel
+                      </Button>
+                      <Button
+                        className="text-xs"
+                        onClick={() =>
+                          void (async () => {
+                            setSaving(true);
+                            setSaveError(null);
+                            const success =
+                              await profileEditorRef.current?.save();
+                            setSaving(false);
+                            if (success) {
+                              setIsEditing(false);
+                              toast.success(
+                                "Profile saved successfully.",
+                                toastPresets.success,
+                              );
+                            } else
+                              setSaveError(
+                                "Please fix the errors in the form before saving.", // TODO: Make this a toast
+                              );
+                          })()
+                        }
+                        disabled={saving}
+                      >
+                        <CheckCircle2 className="h-4 w-4 mr-1" />
+                        {saving ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin"></Loader2>
+                          </>
+                        ) : (
+                          <>Save</>
+                        )}
+                      </Button>
+                    </div>
                   }
                 />
               </ProfileEditForm>
             )}
           </div>
-
-          {/* Right column */}
-          <aside className="lg:col-span-1 space-y-6">
-            <AutoApplyCard
-              initialEnabled={!!data?.apply_for_me}
-              enabledAt={data?.auto_apply_enabled_at}
-              onSave={handleAutoApplySave}
-              saving={autoApplySaving}
-              error={autoApplyError}
-            />
-
-            {/* Completion meter */}
-            <div className="">
-              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                <span>Profile completeness</span>
-                <span>{score}%</span>
-              </div>
-              <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                <motion.div
-                  className="h-full bg-primary"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${score}%` }}
-                  transition={{ type: "spring", stiffness: 150, damping: 20 }}
-                />
-              </div>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {Object.entries(parts).map(([k, ok]) => (
-                  <span
-                    key={k}
-                    className={cn(
-                      "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs border",
-                      ok
-                        ? "border-emerald-500/40 text-emerald-600"
-                        : "border-amber-500/40 text-amber-700",
-                    )}
-                  >
-                    <CheckCircle2
-                      className={cn(
-                        "h-3.5 w-3.5 mr-1",
-                        ok ? "opacity-100" : "opacity-50",
-                      )}
-                    />{" "}
-                    {k}
-                  </span>
-                ))}
-              </div>
-              {/* NEW: quick tips, only show top 2 so it stays compact */}
-              {tips.length > 0 && (
-                <ul className="mt-3 text-xs text-muted-foreground list-disc pl-5 space-y-1">
-                  {tips.slice(0, 2).map((t) => (
-                    <li key={t}>{t}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </aside>
         </main>
 
-        <EmployerModal className="max-w-[80vw]">
-          <ApplicantModalContent
-            applicant={data}
-            pfp_fetcher={() => UserService.getUserPfpURL("me")}
-            pfp_route="/users/me/pic"
-            open_resume={() =>
-              void (async () => {
-                closeEmployerModal();
-                await syncResumeURL();
-                openResumeModal();
-              })()
-            }
-            open_calendar={() => {
-              openURL(data?.calendar_link);
+        <ResumeModal className="max-w-[80vw]">
+          <PDFPreview url={resumeURL} />
+        </ResumeModal>
+
+        <AddResumeModalBox>
+          <AddResumeModal
+            onCancel={closeAddResumeModal}
+            onComplete={() => {
+              closeAddResumeModal();
+              void resumes.refetch();
+              void queryClient.invalidateQueries({
+                queryKey: ["my-profile"],
+              });
             }}
-            resume_url={resumeURL}
+            isAtResumeLimit={atResumeLimit}
           />
-        </EmployerModal>
+        </AddResumeModalBox>
       </div>
     )
   );
@@ -440,40 +499,54 @@ function HeaderLine({ profile }: { profile: PublicUser }) {
 
 function ProfileReadOnlyTabs({
   profile,
+  tab,
+  onTabChange,
+  resumes,
+  resumesLoading,
+  onViewResume,
+  onRenameResume,
+  onDeleteResume,
   onEdit,
+  onAddResume,
+  onResumeUploaded,
 }: {
   profile: PublicUser;
+  tab: ProfileTabKey;
+  onTabChange: (tab: ProfileTabKey) => void;
+  resumes: Resume[];
+  resumesLoading: boolean;
+  onViewResume: (resumeId: string) => void | Promise<void>;
+  onRenameResume: (resumeId: string, label: string) => Promise<boolean>;
+  onDeleteResume: (resume: Resume) => void | Promise<void>;
   onEdit: () => void;
+  onAddResume: () => void;
+  onResumeUploaded: () => void;
 }) {
   const internshipPreferences = profile.internship_preferences;
-  const {
-    to_university_name,
-    to_college_name,
-    to_department_name,
-    job_modes,
-    job_types,
-    job_categories,
-  } = useDbRefs();
+  const { to_university_name, job_modes, job_types, job_categories } =
+    useDbRefs();
 
-  type TabKey = "Student Profile" | "Internship Details";
-  const [tab, setTab] = useState<TabKey>("Student Profile");
+  const handleTabChange = (v: string) => {
+    onTabChange(v as ProfileTabKey);
+  };
 
   const tabs = [
     { key: "Student Profile", label: "Student Profile" },
     { key: "Internship Details", label: "Internship Details" },
+    { key: "Resumes", label: "Resumes" },
   ] as const;
 
   return (
     <OutsideTabs
       tabs={tabs as unknown as { key: string; label: string }[]}
       value={tab}
-      onChange={(v) => setTab(v as TabKey)}
+      onChange={handleTabChange}
       rightSlot={
-        <div>
+        tab !== "Resumes" && (
           <Button onClick={onEdit} className="text-xs">
             <Edit2 className="h-3 w-3" /> Edit
           </Button>
-        </div>
+        )
       }
     >
       {/* Student Profile */}
@@ -520,18 +593,6 @@ function ProfileReadOnlyTabs({
             <LabeledProperty
               label="Degree / Program"
               value={profile.degree ?? "-"}
-            />
-            <LabeledProperty
-              label="College / School"
-              value={profile.college ? to_college_name(profile.college) : "-"}
-            />
-            <LabeledProperty
-              label="Department"
-              value={
-                profile.department
-                  ? to_department_name(profile.department)
-                  : "-"
-              }
             />
             <LabeledProperty
               label="Expected Graduation Date"
@@ -591,11 +652,9 @@ function ProfileReadOnlyTabs({
             />
             <LabeledProperty
               label="Ideal internship start"
-              value={
-                internshipPreferences?.expected_start_date
-                  ? toYYYYMM(internshipPreferences.expected_start_date)
-                  : "—"
-              }
+              value={formatOptionalStartMonth(
+                internshipPreferences?.expected_start_date,
+              )}
             />
             {internshipPreferences?.internship_type === "credited" && (
               <LabeledProperty
@@ -705,6 +764,18 @@ function ProfileReadOnlyTabs({
           </div>
         </section>
       </OutsideTabPanel>
+
+      <OutsideTabPanel when="Resumes" activeKey={tab}>
+        <ResumeList
+          resumes={resumes}
+          loading={resumesLoading}
+          onViewResume={onViewResume}
+          onAddResume={onAddResume}
+          onResumeUploaded={onResumeUploaded}
+          onRenameResume={onRenameResume}
+          onDeleteResume={onDeleteResume}
+        />
+      </OutsideTabPanel>
     </OutsideTabs>
   );
 }
@@ -712,11 +783,12 @@ function ProfileReadOnlyTabs({
 const ProfileEditor = forwardRef<
   { save: () => Promise<boolean> },
   {
-    updateProfile: (updatedProfile: Partial<PublicUser>) => void;
+    updateProfile: (updatedProfile: Partial<PublicUser>) => Promise<unknown>;
+    initialTab: EditableProfileTabKey;
+    onTabChange?: (tab: EditableProfileTabKey) => void;
     rightSlot?: React.ReactNode;
   }
->(({ updateProfile, rightSlot }, ref) => {
-  const qc = useQueryClient();
+>(({ updateProfile, initialTab, onTabChange, rightSlot }, ref) => {
   const {
     formData,
     formErrors,
@@ -727,42 +799,58 @@ const ProfileEditor = forwardRef<
     cleanFormData,
   } = useProfileEditForm();
   const { isMobile } = useAppContext();
-  const {
-    universities,
-    colleges,
-    departments,
-    job_modes,
-    job_types,
-    job_categories,
-    getUniversityFromDomain: get_universities_from_domain,
-    get_colleges_by_university,
-    get_departments_by_college,
-    to_university_name,
-    to_college_name,
-    to_department_name,
-  } = useDbRefs();
+  const { universities, job_modes, job_types, job_categories } = useDbRefs();
 
-  type TabKey = "Student Profile" | "Internship Details" | "Calendar";
-  const [tab, setTab] = useState<TabKey>("Student Profile");
+  type TabKey = EditableProfileTabKey | "Calendar";
+  const [tab, setTab] = useState<TabKey>(initialTab);
+  const selectTab = (nextTab: TabKey) => {
+    setTab(nextTab);
+    if (nextTab !== "Calendar") {
+      onTabChange?.(nextTab);
+    }
+  };
 
   const hasProfileErrors = !!(
     formErrors.first_name ||
     formErrors.last_name ||
     formErrors.phone_number ||
-    formErrors.university ||
-    formErrors.degree
+    formErrors.university
   );
   const hasPrefsErrors = !!formErrors.internship_preferences;
   const hasCalendarErrors = !!formErrors.calendar_link;
+  const fieldErrorClassName = "mt-1 mb-0 mx-0";
+  const internshipPreferencesError = formErrors.internship_preferences ?? "";
+  const internshipStartError = internshipPreferencesError.includes(
+    "expected start month",
+  )
+    ? internshipPreferencesError
+    : null;
+  const internshipDurationError = internshipPreferencesError.includes(
+    "number of hours",
+  )
+    ? internshipPreferencesError
+    : null;
+  const internshipSetupError = internshipPreferencesError.includes("work setup")
+    ? internshipPreferencesError
+    : null;
+  const internshipCommitmentError = internshipPreferencesError.includes(
+    "work commitment",
+  )
+    ? internshipPreferencesError
+    : null;
+  const internshipCategoryError = internshipPreferencesError.includes(
+    "work category",
+  )
+    ? internshipPreferencesError
+    : null;
 
   useImperativeHandle(ref, () => ({
     save: async () => {
-      validateFormData();
-      const hasErrors = Object.values(formErrors).some(Boolean);
-      if (hasErrors) {
-        if (hasCalendarErrors) setTab("Calendar");
-        else if (hasPrefsErrors) setTab("Internship Details");
-        else setTab("Student Profile");
+      const isValid = validateFormData();
+      if (!isValid) {
+        if (hasCalendarErrors) selectTab("Calendar");
+        else if (hasPrefsErrors) selectTab("Internship Details");
+        else selectTab("Student Profile");
         return false;
       }
 
@@ -784,14 +872,12 @@ const ProfileEditor = forwardRef<
             formData.internship_preferences?.job_category_ids ?? [],
         },
       };
-      updateProfile(updatedProfile);
+      await updateProfile(updatedProfile);
       return true;
     },
   }));
 
   const [universityOptions, setUniversityOptions] = useState(universities);
-  const [collegesOptions, setCollegesOptions] = useState(colleges);
-  const [departmentOptions, setDepartmentOptions] = useState(departments);
   const [jobModeOptions, setJobModeOptions] = useState(job_modes);
   const [jobTypeOptions, setJobTypeOptions] = useState(job_types);
   const [jobCategoryOptions, setJobCategoryOptions] = useState(job_categories);
@@ -801,25 +887,14 @@ const ProfileEditor = forwardRef<
   ];
 
   useEffect(() => {
-    setUniversityOptions(universities?.filter((u) => u.name !== "ADMU"));
-    setDepartmentOptions(departments);
+    setUniversityOptions(universities);
     setJobModeOptions((job_modes ?? []).slice());
     setJobTypeOptions((job_types ?? []).slice());
     setJobCategoryOptions((job_categories ?? []).slice());
 
     const t = setTimeout(() => validateFormData(), 400);
     return () => clearTimeout(t);
-  }, [
-    formData,
-    universities,
-    colleges,
-    departments,
-    job_modes,
-    job_types,
-    job_categories,
-    get_universities_from_domain,
-    get_departments_by_college,
-  ]);
+  }, [formData, universities, job_modes, job_types, job_categories]);
 
   useEffect(() => {
     addValidator(
@@ -832,11 +907,10 @@ const ProfileEditor = forwardRef<
       (name: string) =>
         !isValidRequiredUserName(name) && `Last name is not valid.`,
     );
-    addValidator(
-      "phone_number",
-      (number: string) =>
-        !isValidPHNumber(number) && "Invalid Philippine number.",
-    );
+    addValidator("phone_number", (number: string) => {
+      if (!number?.trim()) return false;
+      return !isValidPHNumber(number) && "Invalid Philippine number.";
+    });
     addValidator(
       "portfolio_link",
       (link: string) => !isValidOptionalURL(link) && "Invalid portfolio link.",
@@ -857,26 +931,16 @@ const ProfileEditor = forwardRef<
         !universityOptions.some((u) => u.id === id) &&
         "Select a valid university.",
     );
-    addValidator(
-      "college",
-      (id: string) =>
-        !colleges.some((c) => c.id === id) && "Select a valid college.",
-    );
-    addValidator(
-      "department",
-      (id: string) =>
-        !departmentOptions.some((d) => d.id === id) &&
-        "Select a valid department.",
-    );
     addValidator("internship_preferences", (i: InternshipPreferences) => {
       // Specify start month
       if (!i.expected_start_date)
         return "Please select an expected start month.";
 
-      // If credited, check if number of hours are valid
-      if (i?.internship_type === "credited") {
-        if (!i.expected_duration_hours)
-          return "Please enter expected duration.";
+      // If credited and duration is provided, check if number of hours is valid
+      if (
+        i?.internship_type === "credited" &&
+        i.expected_duration_hours != null
+      ) {
         if (
           !Number.isFinite(i.expected_duration_hours) ||
           i.expected_duration_hours < 100 ||
@@ -906,9 +970,9 @@ const ProfileEditor = forwardRef<
           return "Invalid work category selected.";
       }
 
-      return "";
+      return false;
     });
-  }, [universityOptions, jobModeOptions, jobTypeOptions]);
+  }, [universityOptions, jobModeOptions, jobTypeOptions, jobCategoryOptions]);
 
   const [showCalendarHelp, setShowCalendarHelp] = useState(false);
   const helpBtnRef = useRef<HTMLButtonElement>(null);
@@ -946,110 +1010,6 @@ const ProfileEditor = forwardRef<
     }
   }, []);
 
-  // realtime updating the department based on the college (and university fallback)
-  useEffect(() => {
-    const collegeId = formData.college;
-    const universityId = formData.university;
-
-    // If a specific college is selected -> show departments only for that college
-    if (collegeId) {
-      const list = get_departments_by_college?.(collegeId) ?? [];
-      const mapped = list.map((d) => ({ id: d, name: to_department_name(d) }));
-      setDepartmentOptions(mapped);
-
-      // if selected department is not in new list -> clear it
-      if (
-        formData.department &&
-        !mapped.some((m) => m.id === formData.department)
-      ) {
-        setField("department", undefined);
-      }
-
-      return;
-    }
-
-    // No college selected but a university is selected -> aggregate departments for all colleges of that university
-    if (universityId) {
-      const collegeIds = get_colleges_by_university?.(universityId) ?? [];
-
-      // collect departments from each college, dedupe
-      const deptSet = new Map<string, { id: string; name: string }>();
-      for (const cId of collegeIds) {
-        const list = get_departments_by_college?.(cId) ?? [];
-        for (const d of list) {
-          if (!deptSet.has(d)) {
-            deptSet.set(d, { id: d, name: to_department_name(d) });
-          }
-        }
-      }
-      const aggregated = Array.from(deptSet.values());
-      setDepartmentOptions(aggregated);
-
-      // If current selected department isn't part of aggregated -> clear it
-      if (
-        formData.department &&
-        !aggregated.some((a) => a.id === formData.department)
-      ) {
-        setField("department", undefined);
-      }
-      return;
-    }
-
-    // Neither college nor university -> show all departments
-    setDepartmentOptions(departments.map((d) => ({ id: d.id, name: d.name })));
-    if (formData.department) setField("department", undefined);
-  }, [
-    formData.college,
-    formData.department,
-    formData.university,
-    departments,
-    get_departments_by_college,
-    get_colleges_by_university,
-    to_department_name,
-    setField,
-  ]);
-
-  // for realtime updating the department based on the university
-  useEffect(() => {
-    const universityId = formData.university;
-    console.log(
-      "Selected university:",
-      universityId,
-      to_university_name(universityId),
-    );
-
-    if (universityId) {
-      const list = get_colleges_by_university?.(universityId) ?? [];
-      const mapped = list.map((d) => ({
-        id: d,
-        name: to_college_name(d) ?? "",
-        short_name: "",
-        university_id: universityId,
-      }));
-      setCollegesOptions(mapped);
-
-      // If the currently selected college is not in the new mapped list, clear it (and department)
-      if (formData.college && !mapped.some((c) => c.id === formData.college)) {
-        setField("college", undefined);
-        setField("department", undefined);
-      }
-    } else {
-      // no university selected -> show all colleges and clear college/department
-      setCollegesOptions(
-        colleges.map((d) => ({
-          id: d.id,
-          name: d.name,
-          short_name: d.short_name,
-          university_id: d.university_id,
-        })),
-      );
-
-      // Clear selected college and department because no university is chosen
-      if (formData.college) setField("college", undefined);
-      if (formData.department) setField("department", undefined);
-    }
-  }, [formData.university, formData.college, colleges]);
-
   return (
     <OutsideTabs
       tabs={[
@@ -1068,7 +1028,7 @@ const ProfileEditor = forwardRef<
       ]}
       rightSlot={rightSlot}
       value={tab}
-      onChange={(v) => setTab(v as TabKey)}
+      onChange={(v) => selectTab(v as TabKey)}
     >
       {/* Student Profile */}
       <OutsideTabPanel when="Student Profile" activeKey={tab}>
@@ -1077,42 +1037,61 @@ const ProfileEditor = forwardRef<
           <div className="text-xl sm:text-2xl tracking-tight font-semibold">
             Identity
           </div>
-          <div className="flex flex-col space-y-1 mb-2">
-            <ErrorLabel value={formErrors.first_name} />
-            <ErrorLabel value={formErrors.middle_name} />
-            <ErrorLabel value={formErrors.last_name} />
-            <ErrorLabel value={formErrors.phone_number} />
-          </div>
           <div
             className={cn(
               "mb-4",
               isMobile ? "flex flex-col space-y-3" : "grid grid-cols-3 gap-2",
             )}
           >
+            <div>
+              <FormInput
+                label="First Name"
+                value={formData.first_name ?? ""}
+                setter={fieldSetter("first_name")}
+                maxLength={32}
+              />
+              <ErrorLabel
+                value={formErrors.first_name}
+                className={fieldErrorClassName}
+              />
+            </div>
+            <div>
+              <FormInput
+                label="Middle Name"
+                value={formData.middle_name ?? ""}
+                setter={fieldSetter("middle_name")}
+                maxLength={32}
+                required={false}
+              />
+              <ErrorLabel
+                value={formErrors.middle_name}
+                className={fieldErrorClassName}
+              />
+            </div>
+            <div>
+              <FormInput
+                label="Last Name"
+                value={formData.last_name ?? ""}
+                setter={fieldSetter("last_name")}
+              />
+              <ErrorLabel
+                value={formErrors.last_name}
+                className={fieldErrorClassName}
+              />
+            </div>
+          </div>
+          <div>
             <FormInput
-              label="First Name"
-              value={formData.first_name ?? ""}
-              setter={fieldSetter("first_name")}
-              maxLength={32}
-            />
-            <FormInput
-              label="Middle Name"
-              value={formData.middle_name ?? ""}
-              setter={fieldSetter("middle_name")}
-              maxLength={2}
+              label="Phone Number"
+              value={formData.phone_number ?? ""}
+              setter={fieldSetter("phone_number")}
               required={false}
             />
-            <FormInput
-              label="Last Name"
-              value={formData.last_name ?? ""}
-              setter={fieldSetter("last_name")}
+            <ErrorLabel
+              value={formErrors.phone_number}
+              className={fieldErrorClassName}
             />
           </div>
-          <FormInput
-            label="Phone Number"
-            value={formData.phone_number ?? ""}
-            setter={fieldSetter("phone_number")}
-          />
         </section>
 
         <Divider />
@@ -1124,54 +1103,34 @@ const ProfileEditor = forwardRef<
           </div>
           <div className="flex flex-col space-y-3">
             <div>
-              <ErrorLabel value={formErrors.university} />
               <Autocomplete
                 label={"University"}
-                options={universityOptions}
+                options={sortUniversityOptions(universityOptions)}
                 value={formData.university}
                 setter={fieldSetter("university")}
                 placeholder="Select University"
+                preserveOptionOrder
+              />
+              <ErrorLabel
+                value={formErrors.university}
+                className={fieldErrorClassName}
               />
             </div>
             <div>
-              <ErrorLabel value={formErrors.college} />
-              <FormDropdown
-                label={"College"}
-                value={formData.college ?? undefined}
-                setter={fieldSetter("college")}
-                options={collegesOptions.map((c) => ({
-                  id: c.id,
-                  name: c.name,
-                }))}
-                placeholder="Indicate college"
-              />
-            </div>
-            <div>
-              <ErrorLabel value={formErrors.department} />
-              <FormDropdown
-                label="Department"
-                value={formData.department ?? undefined}
-                setter={fieldSetter("department")}
-                options={departmentOptions}
-                placeholder={
-                  formData.college
-                    ? "Indicate department"
-                    : "Select a college first"
-                }
-                disabled={!formData.college}
-              />
-            </div>
-            <div>
-              <ErrorLabel value={formErrors.degree} />
-              <FormInput
+              <Autocomplete
                 label={"Degree / Program"}
-                value={formData.degree ?? undefined}
-                setter={fieldSetter("degree")}
+                options={DEGREES}
+                value={formData.degree ?? ""}
+                setter={(val) =>
+                  setField("degree", val === null ? "" : String(val))
+                }
                 placeholder="Indicate degree"
+                required={false}
+                allowCustomValue={true}
+                emptyText="type your own degree..."
               />
             </div>
             <div>
-              <ErrorLabel value={formErrors.expected_graduation_date} />
               <FormMonthPicker
                 label="Expected Graduation Date"
                 date={
@@ -1185,9 +1144,13 @@ const ProfileEditor = forwardRef<
                     new Date(ms ?? 0).toISOString(),
                   )
                 }
-                fromYear={2025}
-                toYear={2030}
+                fromYear={new Date().getFullYear()}
+                toYear={new Date().getFullYear() + 4}
                 placeholder="Select month"
+              />
+              <ErrorLabel
+                value={formErrors.expected_graduation_date}
+                className={fieldErrorClassName}
               />
             </div>
           </div>
@@ -1200,30 +1163,43 @@ const ProfileEditor = forwardRef<
           <div className="text-xl sm:text-2xl tracking-tight font-semibold">
             External Profiles
           </div>
-          <div className="flex flex-col space-y-1 mb-2">
-            <ErrorLabel value={formErrors.portfolio_link} />
-            <ErrorLabel value={formErrors.github_link} />
-            <ErrorLabel value={formErrors.linkedin_link} />
-          </div>
           <div className="flex flex-col space-y-3">
-            <FormInput
-              label={"Portfolio Link"}
-              value={formData.portfolio_link ?? ""}
-              setter={fieldSetter("portfolio_link")}
-              required={false}
-            />
-            <FormInput
-              label={"GitHub Profile"}
-              value={formData.github_link ?? ""}
-              setter={fieldSetter("github_link")}
-              required={false}
-            />
-            <FormInput
-              label={"LinkedIn Profile"}
-              value={formData.linkedin_link ?? ""}
-              setter={fieldSetter("linkedin_link")}
-              required={false}
-            />
+            <div>
+              <FormInput
+                label={"Portfolio Link"}
+                value={formData.portfolio_link ?? ""}
+                setter={fieldSetter("portfolio_link")}
+                required={false}
+              />
+              <ErrorLabel
+                value={formErrors.portfolio_link}
+                className={fieldErrorClassName}
+              />
+            </div>
+            <div>
+              <FormInput
+                label={"GitHub Profile"}
+                value={formData.github_link ?? ""}
+                setter={fieldSetter("github_link")}
+                required={false}
+              />
+              <ErrorLabel
+                value={formErrors.github_link}
+                className={fieldErrorClassName}
+              />
+            </div>
+            <div>
+              <FormInput
+                label={"LinkedIn Profile"}
+                value={formData.linkedin_link ?? ""}
+                setter={fieldSetter("linkedin_link")}
+                required={false}
+              />
+              <ErrorLabel
+                value={formErrors.linkedin_link}
+                className={fieldErrorClassName}
+              />
+            </div>
           </div>
         </section>
 
@@ -1284,13 +1260,15 @@ const ProfileEditor = forwardRef<
                 expected_start_date: ms ?? null, // FormMonthPicker gives ms
               });
             }}
-            fromYear={2025}
-            toYear={2030}
+            fromYear={new Date().getFullYear()}
+            toYear={new Date().getFullYear() + 4}
             required={false}
             placeholder="Select month"
           />
-
-          <ErrorLabel value={formErrors.internship_preferences} />
+          <ErrorLabel
+            value={internshipStartError}
+            className={fieldErrorClassName}
+          />
 
           {/* TODO: CHECK LEGACY CODE THEN INTERNSHIP PREF */}
           {formData.internship_preferences?.internship_type === "credited" && (
@@ -1304,15 +1282,14 @@ const ProfileEditor = forwardRef<
                 setter={(v: string) =>
                   setField("internship_preferences", {
                     ...(formData.internship_preferences ?? {}),
-                    expected_duration_hours:
-                      v === ""
-                        ? null
-                        : Number.isFinite(Number(v))
-                          ? Number(v)
-                          : null,
+                    expected_duration_hours: v.trim() === "" ? null : Number(v),
                   })
                 }
                 required={false}
+              />
+              <ErrorLabel
+                value={internshipDurationError}
+                className={fieldErrorClassName}
               />
             </div>
           )}
@@ -1341,6 +1318,10 @@ const ProfileEditor = forwardRef<
               }
               placeholder="Select one or more"
             />
+            <ErrorLabel
+              value={internshipSetupError}
+              className={fieldErrorClassName}
+            />
           </div>
 
           <div className="mt-2">
@@ -1358,6 +1339,10 @@ const ProfileEditor = forwardRef<
               }
               placeholder="Select one or more"
             />
+            <ErrorLabel
+              value={internshipCommitmentError}
+              className={fieldErrorClassName}
+            />
           </div>
 
           <div className="mt-2">
@@ -1373,6 +1358,10 @@ const ProfileEditor = forwardRef<
               }
               placeholder="Select one or more"
             />
+            <ErrorLabel
+              value={internshipCategoryError}
+              className={fieldErrorClassName}
+            />
           </div>
         </section>
       </OutsideTabPanel>
@@ -1381,95 +1370,238 @@ const ProfileEditor = forwardRef<
 });
 ProfileEditor.displayName = "ProfileEditor";
 
-const ResumeBox = ({
-  profile,
-  openResumeModal,
+const ResumeList = ({
+  resumes,
+  loading,
+  onViewResume,
+  onRenameResume,
+  isRenamingResume,
+  onDeleteResume,
+  onAddResume,
+  onResumeUploaded,
 }: {
-  profile: PublicUser;
-  openResumeModal: () => void;
+  resumes: Resume[];
+  loading: boolean;
+  onViewResume: (resumeId: string) => void | Promise<void>;
+  onRenameResume: (resumeId: string, label: string) => Promise<boolean>;
+  isRenamingResume: boolean;
+  onDeleteResume: (resume: Resume) => void | Promise<void>;
+  onAddResume: () => void;
+  onResumeUploaded: () => void;
 }) => {
-  const queryClient = useQueryClient();
+  const maxResumesEnv = Number(process.env.NEXT_PUBLIC_MAX_RESUMES_ALLOWED);
+  const maxResumesAllowed = Number.isFinite(maxResumesEnv) ? maxResumesEnv : 5;
+  const atResumeLimit = resumes.length >= maxResumesAllowed;
 
-  const {
-    fileInputRef: resumeFileInputRef,
-    upload: resumeUpload,
-    isUploading: resumeIsUploading,
-  } = useFileUpload({
-    uploader: UserService.updateMyResume,
-    filename: "resume",
-    silent: true,
-  });
+  const [editingResumeId, setEditingResumeId] = useState<string | null>(null);
+  const [editingLabel, setEditingLabel] = useState("");
+  const sortedResumes = useMemo(
+    () => [...resumes].sort(compareResumesByUploadedAtDesc),
+    [resumes],
+  );
 
-  const hasResume = !!profile.resume;
+  const startEditing = (resume: Resume) => {
+    if (!resume.id) {
+      toast.error("Resume not found.");
+      return;
+    }
+    setEditingResumeId(resume.id);
+    setEditingLabel(resume.label ?? "");
+  };
+
+  const cancelEditing = () => {
+    setEditingResumeId(null);
+    setEditingLabel("");
+  };
 
   return (
-    <div className="space-y-3">
-      {/* Header row: status + actions */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3">
-          <BoolBadge state={hasResume} onValue="Uploaded" offValue="Missing" />
-        </div>
-
-        <div className="flex items-center gap-2">
-          {hasResume && (
-            <Button
-              variant="outline"
-              onClick={openResumeModal}
-              disabled={resumeIsUploading}
-              className="hidden sm:inline-flex"
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-          )}
-          <Button
-            onClick={() => resumeFileInputRef.current?.open()}
-            disabled={resumeIsUploading}
-          >
-            <Upload className="h-4 w-4" />
-            {resumeIsUploading
-              ? "Uploading…"
-              : hasResume
-                ? "Upload new"
-                : "Upload"}
-          </Button>
-        </div>
+    <section>
+      <div className="text-xl sm:text-2xl tracking-tight font-semibold">
+        Resumes
       </div>
 
-      {/* Optional hint / empty state line */}
-      {!hasResume && !resumeIsUploading && (
-        <div className="rounded-[0.33em] border border-dashed p-3 text-xs text-muted-foreground">
-          No resume yet. Click <span className="font-medium">Upload</span> to
-          add your PDF.
+      <div className="mt-3 divide-y rounded-[0.33em] border">
+        {loading && (
+          <div className="p-4 text-sm text-muted-foreground">
+            Loading resumes...
+          </div>
+        )}
+        {!loading && resumes.length === 0 && (
+          <div className="p-4 text-sm text-muted-foreground">
+            No resumes uploaded yet.
+          </div>
+        )}
+        {!loading &&
+          sortedResumes.map((resume) => {
+            const isEditing = editingResumeId === resume.id;
+            const currentLabel = resume.label ?? "";
+
+            const handleSave = () => {
+              if (!resume.id) {
+                toast.error("Resume not found.");
+                return;
+              }
+
+              const nextLabel = editingLabel.trim();
+              if (!nextLabel) {
+                toast.error("Resume label is required.");
+                return;
+              }
+
+              if (nextLabel === currentLabel) {
+                cancelEditing();
+                return;
+              }
+
+              void (async () => {
+                const success = await onRenameResume(resume.id, nextLabel);
+                if (success) cancelEditing();
+              })();
+            };
+
+            return (
+              <div
+                key={resume.id}
+                className="flex items-center justify-between gap-3 p-3"
+              >
+                <div className="min-w-0">
+                  {isEditing ? (
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 min-w-0">
+                        <FormInput
+                          value={editingLabel}
+                          setter={setEditingLabel}
+                          required={false}
+                          placeholder="Resume label"
+                          aria-label="Resume label"
+                          className="w-full"
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.preventDefault();
+                              handleSave();
+                            } else if (event.key === "Escape") {
+                              event.preventDefault();
+                              cancelEditing();
+                            }
+                          }}
+                          disabled={isRenamingResume}
+                        />
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleSave}
+                          aria-label="Save resume label"
+                          disabled={isRenamingResume}
+                        >
+                          {isRenamingResume ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Check className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={cancelEditing}
+                          aria-label="Cancel rename"
+                          disabled={isRenamingResume}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="truncate text-sm font-medium text-gray-900">
+                      <FormInput
+                        value={
+                          resume.label || resume.filename || "Untitled resume"
+                        }
+                        className={"border-none p-0"}
+                        disabled={isRenamingResume}
+                      />
+                    </div>
+                  )}
+
+                  <div className="text-xs text-muted-foreground">
+                    Uploaded {formatResumeUploadedAt(resume.uploaded_at)}
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => void onViewResume(resume.id)}
+                    aria-label={`View ${resume.label || "resume"}`}
+                    disabled={isRenamingResume || isEditing}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  {!isEditing && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => void startEditing(resume)}
+                      aria-label={`Rename ${resume.label || "resume"}`}
+                      disabled={isRenamingResume}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <Button
+                    scheme="destructive"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => void onDeleteResume(resume)}
+                    aria-label={`Delete ${resume.label || "resume"}`}
+                    disabled={isRenamingResume || isEditing}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+      </div>
+
+      {!loading && resumes.length === 0 && (
+        <div className="mt-3 rounded-[0.33em] border border-dashed p-3 text-xs text-muted-foreground">
+          Upload a PDF resume to make it available when applying.
         </div>
       )}
 
-      {/* Hidden input handler */}
-      <FileUploadInput
-        ref={resumeFileInputRef}
-        maxSize={2.5}
-        allowedTypes={["application/pdf"]}
-        onSelect={async (file) => {
-          // filename display removed by design
-          const success = await resumeUpload(file);
-
-          if (success) {
-            queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-            toast.success(
-              "Resume uploaded successfully.",
-              toastPresets.success,
-            );
-          }
-        }}
-      />
-
-      {/* Uploading hint */}
-      {resumeIsUploading && (
-        <p className="text-xs text-muted-foreground">Uploading your resume…</p>
-      )}
-    </div>
+      <div className="mt-4 flex justify-between items-center gap-2">
+        <span className="text-muted-foreground text-sm">
+          You can have up to {maxResumesAllowed} resumes.
+        </span>
+        <Button onClick={onAddResume} disabled={atResumeLimit}>
+          <Upload className="h-4 w-4 mr-1.5" />
+          Add resume
+        </Button>
+      </div>
+    </section>
   );
 };
 
+function compareResumesByUploadedAtDesc(first: Resume, second: Resume) {
+  const firstUploadedAt = new Date(first.uploaded_at).getTime();
+  const secondUploadedAt = new Date(second.uploaded_at).getTime();
+  const firstTime = Number.isNaN(firstUploadedAt) ? 0 : firstUploadedAt;
+  const secondTime = Number.isNaN(secondUploadedAt) ? 0 : secondUploadedAt;
+
+  return secondTime - firstTime;
+}
+
+function formatResumeUploadedAt(uploadedAt: string) {
+  const date = new Date(uploadedAt);
+  if (Number.isNaN(date.getTime())) return "unknown date";
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
 // ----------------------------
 //  Link Badge
 // ----------------------------
@@ -1522,9 +1654,8 @@ function computeProfileScore(p?: Partial<PublicUser>): {
   const u = p ?? {};
   const parts = {
     name: !!(u.first_name && u.last_name),
-    phone: !!u.phone_number,
     bio: !!u.bio && u.bio.trim().length >= 50, // richer bios
-    school: !!(u.university && u.degree),
+    school: !!u.university,
     links: !!(u.github_link || u.linkedin_link || u.portfolio_link),
     prefs: !!(
       u.internship_preferences?.job_category_ids?.length ||
@@ -1538,11 +1669,10 @@ function computeProfileScore(p?: Partial<PublicUser>): {
   // weights sum to 100
   const weights: Record<keyof typeof parts, number> = {
     name: 10,
-    phone: 5,
     bio: 15,
     school: 20,
     links: 10,
-    prefs: 20,
+    prefs: 25,
     dates: 10,
     resume: 10,
   };
@@ -1557,42 +1687,8 @@ function computeProfileScore(p?: Partial<PublicUser>): {
   if (!parts.links) tips.push("Add your LinkedIn/GitHub/Portfolio.");
   if (!parts.prefs) tips.push("Pick work modes, types, and roles you want.");
   if (!parts.dates) tips.push("Add expected internship dates.");
-  if (!parts.school) tips.push("Complete university/degree fields.");
+  if (!parts.school) tips.push("Add your university.");
   if (!parts.resume) tips.push("Upload a resume in PDF (≤2.5MB).");
 
   return { score, parts, tips };
-}
-
-function monthFromMs(ms?: number | null): string | null {
-  if (ms == null || Number.isNaN(ms)) return null;
-  const d = new Date(ms); // local time
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  return `${y}-${m}`;
-}
-
-// Coerce many date-ish inputs to "YYYY-MM" or null
-function toYYYYMM(input?: string | number | null): string | null {
-  if (input == null || input === "") return null;
-
-  // Already "YYYY-MM"
-  if (typeof input === "string" && /^\d{4}-\d{2}$/.test(input)) return input;
-
-  // If string contains "YYYY-MM" at the start (e.g., "YYYY-MM-DD", ISO)
-  if (typeof input === "string") {
-    const m = input.match(/^(\d{4}-\d{2})/);
-    if (m) return m[1];
-  }
-
-  // Timestamp (number or numeric string)
-  const n = typeof input === "number" ? input : Number(input);
-  if (Number.isFinite(n)) return monthFromMs(n);
-
-  // Fallback: parseable string date
-  if (typeof input === "string") {
-    const parsed = Date.parse(input);
-    if (!Number.isNaN(parsed)) return monthFromMs(parsed);
-  }
-
-  return null;
 }

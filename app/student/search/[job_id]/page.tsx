@@ -14,11 +14,11 @@ import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { PageError } from "@/components/ui/error";
 import { SaveJobButton } from "@/components/features/student/job/save-job-button";
 import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job-button";
-import { ApplyConfirmModal } from "@/components/modals/ApplyConfirmModal";
-import { applyToJob } from "@/lib/application";
 import { useApplicationActions } from "@/lib/api/student.actions.api";
 import { ShareJobButton } from "@/components/features/student/job/share-job-button";
 import { useAuthContext } from "@/lib/ctx-auth";
+import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
+import { toast } from "sonner";
 
 /**
  * The individual job page.
@@ -31,18 +31,34 @@ export default function JobPage() {
   const job = useJobData(job_id as string);
   const [isActionsSheetOpen, setIsActionsSheetOpen] = useState(false);
   const { isMobile } = useMobile();
-  const applyConfirmModalRef = useModalRef();
-  const successModalRef = useModalRef();
   const applySuccessModalRef = useModalRef();
   const applicationActions = useApplicationActions();
 
   const profile = useProfileData();
   const { isAuthenticated } = useAuthContext();
 
-  const goProfile = useCallback(() => {
-    applyConfirmModalRef.current?.close();
-    router.push("/profile");
-  }, [applyConfirmModalRef, router]);
+  const handleApply = useCallback(
+    async ({ resumeId, coverLetter }: ApplyPayload) => {
+      if (!job.data?.id || !resumeId) return;
+
+      const response = await applicationActions.create.mutateAsync({
+        job_id: job.data.id,
+        resume_id: resumeId,
+        cover_letter:
+          job.data.internship_preferences?.require_cover_letter === true
+            ? coverLetter
+            : "",
+      });
+
+      if (response.message) {
+        toast.error(response.message);
+        return;
+      }
+
+      applySuccessModalRef.current?.open();
+    },
+    [applicationActions.create, job.data],
+  );
 
   if (job.error)
     return (
@@ -126,9 +142,7 @@ export default function JobPage() {
                         <ApplyToJobButton
                           profile={profile.data}
                           job={job.data}
-                          openAppModal={() =>
-                            applyConfirmModalRef.current?.open()
-                          }
+                          onApply={handleApply}
                         />
                       </div>
                     )}
@@ -169,7 +183,7 @@ export default function JobPage() {
                   <ApplyToJobButton
                     profile={profile.data}
                     job={job.data}
-                    openAppModal={() => applyConfirmModalRef.current?.open()}
+                    onApply={handleApply}
                     className="w-full"
                   />
                 </div>
@@ -219,23 +233,6 @@ export default function JobPage() {
       </div>
 
       <ApplySuccessModal job={job.data} ref={applySuccessModalRef} />
-      <ApplyConfirmModal
-        ref={applyConfirmModalRef}
-        job={job.data}
-        onClose={() => applyConfirmModalRef.current?.close()}
-        onAddNow={goProfile}
-        onSubmit={async (payload) => {
-          applyConfirmModalRef.current?.close();
-          await applyToJob(applicationActions, job.data, payload).then(
-            (response) => {
-              if (!response.success) return alert(response.message);
-              applySuccessModalRef.current?.open();
-            },
-          );
-        }}
-      />
-
-      <ApplySuccessModal job={job.data} ref={successModalRef} />
     </>
   );
 }

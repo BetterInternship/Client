@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Input } from "./input";
 import { useDetectClickOutside } from "react-detect-click-outside";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,9 @@ function AutocompleteBase<ID extends number | string>({
   multiple = true,
   label,
   labelAddon,
+  allowCustomValue = false,
+  preserveOptionOrder = false,
+  emptyText = "...",
   ...props
 }: {
   required?: boolean;
@@ -38,14 +41,49 @@ function AutocompleteBase<ID extends number | string>({
   multiple?: boolean;
   label?: React.ReactNode;
   labelAddon?: string;
+  allowCustomValue?: boolean;
+  preserveOptionOrder?: boolean;
+  emptyText?: string;
 }) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownMaxHeight, setDropdownMaxHeight] = useState<number>();
   const { isMobile } = useAppContext();
-  const ref = useDetectClickOutside({ onTriggered: () => setIsOpen(false) });
+  const clickOutsideRef = useDetectClickOutside({
+    onTriggered: () => setIsOpen(false),
+  });
+  const rootRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const lastSelectionRef = useRef(0);
 
   const inputId = useId();
+
+  const findExactOption = (value: string) => {
+    const normalizedValue = value.trim().toLowerCase();
+    return options.find(
+      (o) => o.name?.trim().toLowerCase() === normalizedValue,
+    );
+  };
+
+  const resolveQuerySelection = (nextQuery: string) => {
+    const text = nextQuery.trim();
+    if (!text) return false;
+
+    const exact = findExactOption(text);
+    if (exact) {
+      setter([exact.id]);
+      setQuery("");
+      return true;
+    }
+
+    if (allowCustomValue) {
+      setter([text as unknown as ID]);
+      setQuery("");
+      return true;
+    }
+
+    return false;
+  };
 
   const selectedSet = useMemo(() => new Set(value ?? []), [value]);
 
@@ -54,10 +92,13 @@ function AutocompleteBase<ID extends number | string>({
     const base = q
       ? options.filter((o) => o.name?.toLowerCase().includes(q))
       : options;
-    return base.slice().sort((a, b) => a.name.localeCompare(b.name));
-  }, [query, options]);
+    return preserveOptionOrder
+      ? base
+      : base.slice().sort((a, b) => a.name.localeCompare(b.name));
+  }, [query, options, preserveOptionOrder]);
 
   const toggle = (id: ID) => {
+    lastSelectionRef.current = Date.now();
     if (!multiple) {
       setter([id]); // single-select
       setIsOpen(false);
@@ -79,22 +120,71 @@ function AutocompleteBase<ID extends number | string>({
   const selectedLabels = useMemo(
     () =>
       (value ?? [])
-        .map((id) => options.find((o) => o.id === id)?.name)
+        .map((id) => {
+          const label = options.find((o) => o.id === id)?.name;
+          return label ?? (allowCustomValue ? String(id) : undefined);
+        })
         .filter(Boolean) as string[],
-    [value, options],
+    [value, options, allowCustomValue],
   );
 
   const singleDisplay = !multiple && (selectedLabels[0] ?? "");
+  const useInlineMobileDropdown = isMobile;
+
+  useEffect(() => {
+    if (!isOpen || !useInlineMobileDropdown) {
+      setDropdownMaxHeight(undefined);
+      return;
+    }
+
+    const updateDropdownMaxHeight = () => {
+      const rootRect = rootRef.current?.getBoundingClientRect();
+      if (!rootRect) return;
+
+      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+      const gap = 8;
+      const availableHeight = viewportHeight - rootRect.bottom - gap;
+      setDropdownMaxHeight(Math.max(0, Math.min(400, availableHeight)));
+    };
+
+    updateDropdownMaxHeight();
+    window.addEventListener("resize", updateDropdownMaxHeight);
+    window.visualViewport?.addEventListener("resize", updateDropdownMaxHeight);
+    window.visualViewport?.addEventListener("scroll", updateDropdownMaxHeight);
+
+    return () => {
+      window.removeEventListener("resize", updateDropdownMaxHeight);
+      window.visualViewport?.removeEventListener(
+        "resize",
+        updateDropdownMaxHeight,
+      );
+      window.visualViewport?.removeEventListener(
+        "scroll",
+        updateDropdownMaxHeight,
+      );
+    };
+  }, [isOpen, useInlineMobileDropdown]);
+  const suppressMobileKeyboard = isMobile && !allowCustomValue;
 
   // --- keyboard helpers for multi
   const onMultiKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!multiple) return;
+    if (allowCustomValue && e.key === "Enter" && query.trim.length === 0) {
+      const text = query.trim();
+      const exact = findExactOption(text);
+      const nextId = exact ? exact.id : (text as unknown as ID);
+      const set = new Set(value ?? []);
+      set.add(nextId);
+      setter(Array.from(set));
+      setQuery("");
+      setIsOpen(true);
+      e.preventDefault();
+    }
     if (
       e.key === "Backspace" &&
       query.length === 0 &&
       (value?.length ?? 0) > 0
     ) {
-      // remove last chip
       const last = value[value.length - 1];
       removeAt(last);
       e.preventDefault();
@@ -115,7 +205,12 @@ function AutocompleteBase<ID extends number | string>({
   return (
     <div
       className={cn("relative w-full overflow-visible", className)}
-      ref={ref}
+      ref={(node) => {
+        rootRef.current = node;
+        (
+          clickOutsideRef as React.MutableRefObject<HTMLDivElement | null>
+        ).current = node;
+      }}
     >
       {label ? (
         <div className="flex items-center gap-2 mb-1">
@@ -134,7 +229,12 @@ function AutocompleteBase<ID extends number | string>({
             "px-2 py-1 flex flex-wrap items-center gap-1",
             "focus-within:border-primary focus-within:border-opacity-50",
           )}
-          onClick={() => inputRef.current?.focus()}
+          onClick={() => {
+            setIsOpen(true);
+            if (!suppressMobileKeyboard) {
+              inputRef.current?.focus();
+            }
+          }}
         >
           {(value ?? []).map((id) => {
             const label = options.find((o) => o.id === id)?.name ?? String(id);
@@ -165,8 +265,24 @@ function AutocompleteBase<ID extends number | string>({
               setQuery(e.target.value);
               setIsOpen(true);
             }}
+            onBlur={() => {
+              // Delay slightly to let dropdown option clicks register first
+              setTimeout(() => {
+                if (Date.now() - lastSelectionRef.current < 250) {
+                  return;
+                }
+                if (allowCustomValue && query.trim().length > 0) {
+                  const text = query.trim();
+                  const exact = findExactOption(text);
+                  const nextId = exact ? exact.id : (text as unknown as ID);
+                  setter([nextId]);
+                  setQuery("");
+                }
+              }, 150);
+            }}
             onKeyDown={onMultiKeyDown}
             onFocus={() => setIsOpen(true)}
+            readOnly={suppressMobileKeyboard}
             placeholder={(value?.length ?? 0) === 0 ? placeholder : ""}
             className={cn(
               "flex-1 min-w-[8ch] h-7 text-sm",
@@ -180,35 +296,66 @@ function AutocompleteBase<ID extends number | string>({
         <Input
           id={inputId}
           value={singleDisplay || query}
-          className="border-gray-200"
+          className="border-gray-300"
           placeholder={placeholder}
+          readOnly={suppressMobileKeyboard}
           onChange={(e) => {
-            // typing starts a new search; selection is set on option click
-            setQuery(e.target.value);
+            const nextQuery = e.target.value;
+
+            if ((value?.length ?? 0) > 0) {
+              setter([]);
+            }
+
+            const exact = findExactOption(nextQuery);
+            if (exact) {
+              setter([exact.id]);
+              setQuery("");
+            } else {
+              setQuery(nextQuery);
+            }
+
             setIsOpen(true);
           }}
           onFocus={() => setIsOpen(true)}
-          onClick={() => setIsOpen(true)}
+          onClick={(e) => {
+            setIsOpen(true);
+            if (suppressMobileKeyboard) {
+              e.currentTarget.blur();
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && resolveQuerySelection(query)) {
+              setIsOpen(false);
+              e.preventDefault();
+            }
+          }}
+          onBlur={() => {
+            // slight delay to let dropdown option clicks register first
+            setTimeout(() => {
+              if (Date.now() - lastSelectionRef.current < 250) {
+                return;
+              }
+              resolveQuerySelection(query);
+            }, 150);
+          }}
         />
       )}
 
       {isOpen && (
         <>
-          {isMobile && (
-            <button
-              type="button"
-              aria-label="Close options"
-              className="fixed inset-0 z-[1090] bg-black/25 backdrop-blur-[1px]"
-              onClick={() => setIsOpen(false)}
-            />
-          )}
           <ul
-            className={cn(
-              isMobile
-                ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 max-h-[70vh] overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] rounded-t-2xl border border-b-0 border-gray-200 bg-white pb-3 pt-2 text-sm shadow-2xl ring-1 ring-black/10"
-                : "absolute left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto overscroll-contain rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5",
-            )}
+            className="absolute left-0 right-0 z-50 mt-1 max-h-[400px] overflow-y-auto overscroll-contain rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5"
+            style={
+              useInlineMobileDropdown && dropdownMaxHeight !== undefined
+                ? { maxHeight: dropdownMaxHeight }
+                : undefined
+            }
           >
+            {allowCustomValue && (
+              <li className="w-full text-left px-4 py-2 text-sm text-gray-500 bg-gray-50 pointer-events-none">
+                Suggestions
+              </li>
+            )}
             {filtered.length ? (
               filtered.map((option) => {
                 const active = selectedSet.has(option.id);
@@ -244,8 +391,8 @@ function AutocompleteBase<ID extends number | string>({
                 );
               })
             ) : (
-              <li className="w-full text-left px-4 py-2 text-sm text-gray-700">
-                No matching results.
+              <li className="w-full text-left px-4 py-2 text-sm text-gray-700 text-primary text-opacity-50">
+                {emptyText}
               </li>
             )}
           </ul>
@@ -267,6 +414,9 @@ export const Autocomplete = <ID extends number | string>({
   value,
   label,
   props,
+  allowCustomValue = false,
+  preserveOptionOrder = false,
+  emptyText,
 }: {
   required?: boolean;
   options: IAutocompleteOption<ID>[];
@@ -276,6 +426,9 @@ export const Autocomplete = <ID extends number | string>({
   value?: ID | null;
   label?: React.ReactNode;
   props?: any[];
+  allowCustomValue?: boolean;
+  preserveOptionOrder?: boolean;
+  emptyText?: string;
 }) => {
   return (
     <AutocompleteBase<ID>
@@ -287,6 +440,9 @@ export const Autocomplete = <ID extends number | string>({
       placeholder={placeholder}
       className={className}
       label={label}
+      allowCustomValue={allowCustomValue}
+      preserveOptionOrder={preserveOptionOrder}
+      emptyText={emptyText}
       {...props}
     />
   );
@@ -303,6 +459,8 @@ export const AutocompleteMulti = <ID extends number | string>({
   className,
   value,
   label,
+  allowCustomValue = false,
+  emptyText,
 }: {
   required?: boolean;
   options: IAutocompleteOption<ID>[];
@@ -311,6 +469,8 @@ export const AutocompleteMulti = <ID extends number | string>({
   className?: string;
   value?: ID[];
   label?: React.ReactNode;
+  allowCustomValue?: boolean;
+  emptyText?: string;
 }) => {
   return (
     <AutocompleteBase<ID>
@@ -322,6 +482,8 @@ export const AutocompleteMulti = <ID extends number | string>({
       placeholder={placeholder}
       className={className}
       label={label}
+      allowCustomValue={allowCustomValue}
+      emptyText={emptyText}
     />
   );
 };
@@ -357,8 +519,12 @@ export function AutocompleteTreeMulti({
 }) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownMaxHeight, setDropdownMaxHeight] = useState<number>();
   const { isMobile } = useAppContext();
-  const ref = useDetectClickOutside({ onTriggered: () => setIsOpen(false) });
+  const clickOutsideRef = useDetectClickOutside({
+    onTriggered: () => setIsOpen(false),
+  });
+  const rootRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLButtonElement | null>(null);
 
   // Build ID -> label map (child shows "Parent · Child")
@@ -463,10 +629,49 @@ export function AutocompleteTreeMulti({
     [selected, labelMap],
   );
 
+  useEffect(() => {
+    if (!isOpen || !isMobile) {
+      setDropdownMaxHeight(undefined);
+      return;
+    }
+
+    const updateDropdownMaxHeight = () => {
+      const rootRect = rootRef.current?.getBoundingClientRect();
+      if (!rootRect) return;
+
+      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+      const gap = 8;
+      const availableHeight = viewportHeight - rootRect.bottom - gap;
+      setDropdownMaxHeight(Math.max(0, Math.min(400, availableHeight)));
+    };
+
+    updateDropdownMaxHeight();
+    window.addEventListener("resize", updateDropdownMaxHeight);
+    window.visualViewport?.addEventListener("resize", updateDropdownMaxHeight);
+    window.visualViewport?.addEventListener("scroll", updateDropdownMaxHeight);
+
+    return () => {
+      window.removeEventListener("resize", updateDropdownMaxHeight);
+      window.visualViewport?.removeEventListener(
+        "resize",
+        updateDropdownMaxHeight,
+      );
+      window.visualViewport?.removeEventListener(
+        "scroll",
+        updateDropdownMaxHeight,
+      );
+    };
+  }, [isOpen, isMobile]);
+
   return (
     <div
       className={cn("relative w-full overflow-visible", className)}
-      ref={ref}
+      ref={(node) => {
+        rootRef.current = node;
+        (
+          clickOutsideRef as React.MutableRefObject<HTMLDivElement | null>
+        ).current = node;
+      }}
     >
       {label ? (
         <LabelWithTooltip label={label} required={required} tooltip={tooltip} />
@@ -509,20 +714,13 @@ export function AutocompleteTreeMulti({
 
       {isOpen && (
         <>
-          {isMobile && (
-            <button
-              type="button"
-              aria-label="Close options"
-              className="fixed inset-0 z-[1090] bg-black/25 backdrop-blur-[1px]"
-              onClick={() => setIsOpen(false)}
-            />
-          )}
           <ul
-            className={cn(
-              isMobile
-                ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 max-h-[70vh] overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] rounded-t-2xl border border-b-0 border-gray-200 bg-white pb-3 pt-2 text-sm shadow-2xl ring-1 ring-black/10"
-                : "absolute left-0 right-0 z-50 mt-1 max-h-40 overflow-y-auto overscroll-contain rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5",
-            )}
+            className="absolute left-0 right-0 z-50 mt-1 max-h-[400px] overflow-y-auto overscroll-contain rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5"
+            style={
+              isMobile && dropdownMaxHeight !== undefined
+                ? { maxHeight: dropdownMaxHeight }
+                : undefined
+            }
           >
             {filteredTree.length ? (
               filteredTree.map((p) => {
@@ -597,7 +795,7 @@ export function AutocompleteTreeMulti({
               })
             ) : (
               <li className="w-full text-left px-4 py-2 text-sm text-gray-700">
-                No matching results.
+                ...
               </li>
             )}
           </ul>

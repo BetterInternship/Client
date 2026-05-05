@@ -22,16 +22,17 @@ import { SaveJobButton } from "../features/student/job/save-job-button";
 import { ApplyToJobButton } from "../features/student/job/apply-to-job-button";
 import { ShareJobButton } from "../features/student/job/share-job-button";
 import { MissingNotice } from "../shared/jobs";
+import type { ApplyPayload } from "./components/ApplyModal";
 
 export const JobModal = ({
   job,
-  openAppModal,
+  onApply,
   applySuccessModalRef,
   ref,
   user,
 }: {
   job: Job;
-  openAppModal: () => void;
+  onApply: (payload: ApplyPayload) => void | Promise<void>;
   ref?: RefObject<ModalHandle | null>;
   applySuccessModalRef?: RefObject<ModalHandle | null>;
   user?: {
@@ -153,7 +154,7 @@ export const JobModal = ({
             <ApplyToJobButton
               profile={profile.data}
               job={job}
-              openAppModal={openAppModal}
+              onApply={onApply}
               className="w-full"
             />
           </div>

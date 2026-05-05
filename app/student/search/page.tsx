@@ -20,22 +20,16 @@ import { ApplySuccessModal } from "@/components/modals/ApplySuccessModal";
 import { JobModal } from "@/components/modals/JobModal";
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import {
-  isProfileBaseComplete,
-  isProfileResume,
-  isProfileVerified,
-} from "@/lib/profile";
-import { useRouter } from "next/navigation";
 import { SaveJobButton } from "@/components/features/student/job/save-job-button";
 import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job-button";
 import { ShareJobButton } from "@/components/features/student/job/share-job-button";
-import { ApplyConfirmModal } from "@/components/modals/ApplyConfirmModal";
-import { applyToJob } from "@/lib/application";
 import { PageError } from "@/components/ui/error";
 import { useApplicationActions } from "@/lib/api/student.actions.api";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { Loader } from "@/components/ui/loader";
 import { motion, AnimatePresence } from "framer-motion";
+import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
+import { toast } from "sonner";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -46,7 +40,6 @@ export default function SearchPage() {
   // selection + bulk apply
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [bulkCoverLetter, setBulkCoverLetter] = useState("");
 
   // job list & filters
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
@@ -83,7 +76,6 @@ export default function SearchPage() {
   // Modals
   const jobModalRef = useModalRef();
   const applySuccessModalRef = useModalRef();
-  const applyConfirmModalRef = useModalRef();
 
   // computed pages
   const jobsPage = jobs.getJobsPage({ page: _jobsPage, limit: jobsPageSize });
@@ -197,34 +189,26 @@ export default function SearchPage() {
       window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
       return;
     }
-    if (!isProfileVerified(profile.data)) {
-      return router.push("/register/verify");
-    }
-
-    if (
-      !isProfileResume(profile.data) ||
-      !isProfileBaseComplete(profile.data) ||
-      profile.data?.acknowledged_auto_apply === false
-    ) {
-      return router.push(`profile/complete-profile?dest=search`);
-    }
 
     const allApplied =
       selectedJobsList.length > 0 &&
-      selectedJobsList.every((j) => jobs.isJobApplied(j.id!));
+      selectedJobsList.every((j) => jobs.isJobApplied(j.id));
     if (!selectedJobsList.length || allApplied) {
-      alert(
+      toast.error(
         "No eligible jobs selected. Select jobs you haven’t applied to yet.",
       );
       return;
     }
 
-    modalRegistry.massApplyCompose.open({
-      bulkCoverLetter,
-      setBulkCoverLetter,
-      runMassApply,
-      massApplying,
-      selectedCount: selectedIds.size + "",
+    modalRegistry.completeProfileApply.open({
+      profile: profile.data,
+      applyLabel: `Apply to ${selectedIds.size || 0}`,
+      requiresCoverLetter: selectedJobsList.some(
+        (job) => job.internship_preferences?.require_cover_letter === true,
+      ),
+      onApply: ({ resumeId, coverLetter }: ApplyPayload) => {
+        void runMassApply(resumeId, coverLetter);
+      },
     });
   };
 
@@ -234,7 +218,7 @@ export default function SearchPage() {
   const isSubmittingRef = useRef(false);
 
   const runMassApply = useCallback(
-    async (coverLetter: string) => {
+    async (resumeId: string, coverLetter: string) => {
       if (isSubmittingRef.current) return;
       isSubmittingRef.current = true;
 
@@ -245,7 +229,7 @@ export default function SearchPage() {
         const eligible: Job[] = [];
 
         for (const job of selectedJobsList) {
-          if (jobs.isJobApplied(job.id!)) {
+          if (jobs.isJobApplied(job.id)) {
             skipped.push({ job, reason: "Already applied" });
             continue;
           }
@@ -256,8 +240,6 @@ export default function SearchPage() {
           const needsPortfolio =
             internshipPreferences?.require_portfolio &&
             !profile.data?.portfolio_link?.trim();
-          const needsCover =
-            internshipPreferences?.require_cover_letter && !coverLetter.trim();
 
           if (needsGithub) {
             skipped.push({ job, reason: "Requires GitHub profile" });
@@ -265,10 +247,6 @@ export default function SearchPage() {
           }
           if (needsPortfolio) {
             skipped.push({ job, reason: "Requires portfolio link" });
-            continue;
-          }
-          if (needsCover) {
-            skipped.push({ job, reason: "Requires a cover letter" });
             continue;
           }
           eligible.push(job);
@@ -280,7 +258,6 @@ export default function SearchPage() {
             skipped,
             failed: [] as { job: Job; error: string }[],
           };
-          modalRegistry.massApplyCompose.close();
           modalRegistry.massApplyResult.open({
             massApplyResultsData: data,
             clearSelection,
@@ -298,7 +275,11 @@ export default function SearchPage() {
           try {
             await applicationActions.create.mutateAsync({
               job_id: job.id ?? "",
-              cover_letter: coverLetter || "",
+              resume_id: resumeId,
+              cover_letter:
+                job.internship_preferences?.require_cover_letter === true
+                  ? coverLetter
+                  : "",
             });
             if (applicationActions.create.error) {
               failed.push({
@@ -320,7 +301,6 @@ export default function SearchPage() {
 
         setMassApplying(false);
         const data = { ok, skipped, failed };
-        modalRegistry.massApplyCompose.close();
         modalRegistry.massApplyResult.open({
           massApplyResultsData: data,
           clearSelection,
@@ -332,12 +312,28 @@ export default function SearchPage() {
     },
     [profile.data, applicationActions, clearSelection, setSelectMode],
   );
-  const router = useRouter();
+  const handleSingleApply = useCallback(
+    async ({ resumeId, coverLetter }: ApplyPayload) => {
+      if (!selectedJob?.id || !resumeId) return;
 
-  const goProfile = useCallback(() => {
-    applyConfirmModalRef.current?.close();
-    router.push("/profile");
-  }, [applyConfirmModalRef, router]);
+      const response = await applicationActions.create.mutateAsync({
+        job_id: selectedJob.id,
+        resume_id: resumeId,
+        cover_letter:
+          selectedJob.internship_preferences?.require_cover_letter === true
+            ? coverLetter
+            : "",
+      });
+
+      if (response.message) {
+        toast.error(response.message);
+        return;
+      }
+
+      applySuccessModalRef.current?.open();
+    },
+    [applicationActions.create, selectedJob],
+  );
 
   if (jobs.error)
     return (
@@ -483,7 +479,7 @@ export default function SearchPage() {
             {/* Mobile mass apply toolbar */}
             {selectMode && (
               <motion.div
-                className="fixed bottom-20 left-4 right-4 z-40 bg-gray-50 border border-gray-200 rounded-lg shadow-lg px-4 py-3"
+                className="fixed inset-x-0 bottom-0 z-50 min-h-16 bg-gray-50 border-t border-gray-200 shadow-lg px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
                 initial={{ scale: 0.95, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.95, opacity: 0, y: 20 }}
@@ -610,7 +606,7 @@ export default function SearchPage() {
                     <ApplyToJobButton
                       profile={profile.data}
                       job={selectedJob}
-                      openAppModal={() => applyConfirmModalRef.current?.open()}
+                      onApply={handleSingleApply}
                     />,
                   ]}
                   isAuthenticated={isAuthenticated()}
@@ -646,31 +642,13 @@ export default function SearchPage() {
       {selectedJob && (
         <JobModal
           job={selectedJob}
-          openAppModal={() => applyConfirmModalRef.current?.open()}
+          onApply={handleSingleApply}
           ref={jobModalRef}
         />
       )}
 
       {/* Success Modal */}
       <ApplySuccessModal job={selectedJob} ref={applySuccessModalRef} />
-
-      {/* Single-apply Confirmation Modal */}
-      <ApplyConfirmModal
-        ref={applyConfirmModalRef}
-        job={selectedJob}
-        onClose={() => applyConfirmModalRef.current?.close()}
-        onAddNow={goProfile}
-        onSubmit={(payload) => {
-          return applyToJob(applicationActions, selectedJob, payload).then(
-            (response) => {
-              if (!response.success) return alert(response.message);
-              applyConfirmModalRef.current?.close();
-              applySuccessModalRef.current?.open();
-              return;
-            },
-          );
-        }}
-      />
     </>
   );
 }

@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-09-30 20:27:33
- * @ Modified time: 2025-10-01 03:01:23
+ * @ Modified time: 2026-05-01 23:42:55
  * @ Description:
  *
  * This file should contain all actions on the users side of the platform.
@@ -11,6 +11,7 @@
 
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { ApplicationService, UserService } from "./services";
+import { PublicUser } from "../db/db.types";
 
 /**
  * Provides a cleaner interface to handle interactions with the backend.
@@ -24,12 +25,17 @@ export const useApplicationActions = () => {
   const queryClient = useQueryClient();
   const actions = {
     create: useMutation({
-      mutationFn: ApplicationService.createApplication,
+      mutationFn: (data: {
+        job_id: string;
+        resume_id: string;
+        cover_letter?: string;
+        challenge_submission?: string;
+      }) => ApplicationService.createApplication(data),
       onSettled: () =>
         queryClient.invalidateQueries({ queryKey: ["my-applications"] }),
     }),
     withdraw: useMutation({
-      mutationFn: ApplicationService.withdrawApplication,
+      mutationFn: (id: string) => ApplicationService.withdrawApplication(id),
       onSettled: () =>
         queryClient.invalidateQueries({ queryKey: ["my-applications"] }),
     }),
@@ -48,7 +54,7 @@ export const useJobActions = () => {
   const queryClient = useQueryClient();
   const actions = {
     toggleSave: useMutation({
-      mutationFn: UserService.saveJob,
+      mutationFn: (jobId: string) => UserService.saveJob(jobId),
       onSettled: () =>
         queryClient.invalidateQueries({ queryKey: ["my-saved-jobs"] }),
     }),
@@ -66,11 +72,12 @@ export const useProfileActions = () => {
   const queryClient = useQueryClient();
   const actions = {
     update: useMutation({
-      mutationFn: UserService.updateMyProfile,
+      mutationFn: (data: Partial<PublicUser>) =>
+        UserService.updateMyProfile(data),
       onSettled: () => {
-        queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-        queryClient.invalidateQueries({ queryKey: ["my-form-templates"] });
-      }
+        void queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+        void queryClient.invalidateQueries({ queryKey: ["my-form-templates"] });
+      },
     }),
   };
 
