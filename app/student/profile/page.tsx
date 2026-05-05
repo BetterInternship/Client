@@ -68,6 +68,7 @@ import { useBlockPageRefreshEffect } from "@/hooks/use-refresh-block";
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import { AddResumeModal } from "@/components/features/student/profile/AddResumeModal";
 import useModalRegistry from "@/components/modals/modal-registry";
+import { sortUniversityOptions } from "../../../lib/student-forms-access";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
@@ -818,7 +819,7 @@ const ProfileEditor = forwardRef<
   ];
 
   useEffect(() => {
-    setUniversityOptions(universities?.filter((u) => u.name));
+    setUniversityOptions(universities);
     setJobModeOptions((job_modes ?? []).slice());
     setJobTypeOptions((job_types ?? []).slice());
     setJobCategoryOptions((job_categories ?? []).slice());
@@ -1018,10 +1019,11 @@ const ProfileEditor = forwardRef<
               <ErrorLabel value={formErrors.university} />
               <Autocomplete
                 label={"University"}
-                options={universityOptions}
+                options={sortUniversityOptions(universityOptions)}
                 value={formData.university}
                 setter={fieldSetter("university")}
                 placeholder="Select University"
+                preserveOptionOrder
               />
             </div>
             <div>
