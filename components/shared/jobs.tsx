@@ -24,6 +24,7 @@ import { Toggle } from "../ui/toggle";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAppContext } from "@/lib/ctx-app";
 import { useProfileData } from "@/lib/api/student.data.api";
+import { toAbbreviation } from "../../lib/utils/string-utils";
 
 export const JobHead = ({
   title,
@@ -204,7 +205,7 @@ export const EmployerMOA = ({
   return check(employer_id, university_id) ? (
     <Badge type="supportive">
       <CheckCircle className="w-3 h-3 mr-1" />
-      {get_university(university_id)?.name?.split(" ")[0]} MOA
+      {toAbbreviation(get_university(university_id)?.name)} MOA
     </Badge>
   ) : (
     <></>
