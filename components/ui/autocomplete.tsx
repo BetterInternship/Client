@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Input } from "./input";
 import { useDetectClickOutside } from "react-detect-click-outside";
 import { cn } from "@/lib/utils";
@@ -47,8 +47,12 @@ function AutocompleteBase<ID extends number | string>({
 }) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownMaxHeight, setDropdownMaxHeight] = useState<number>();
   const { isMobile } = useAppContext();
-  const ref = useDetectClickOutside({ onTriggered: () => setIsOpen(false) });
+  const clickOutsideRef = useDetectClickOutside({
+    onTriggered: () => setIsOpen(false),
+  });
+  const rootRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const lastSelectionRef = useRef(0);
 
@@ -125,6 +129,41 @@ function AutocompleteBase<ID extends number | string>({
   );
 
   const singleDisplay = !multiple && (selectedLabels[0] ?? "");
+  const useInlineMobileDropdown = isMobile && allowCustomValue;
+
+  useEffect(() => {
+    if (!isOpen || !useInlineMobileDropdown) {
+      setDropdownMaxHeight(undefined);
+      return;
+    }
+
+    const updateDropdownMaxHeight = () => {
+      const rootRect = rootRef.current?.getBoundingClientRect();
+      if (!rootRect) return;
+
+      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+      const gap = 8;
+      const availableHeight = viewportHeight - rootRect.bottom - gap;
+      setDropdownMaxHeight(Math.max(0, availableHeight));
+    };
+
+    updateDropdownMaxHeight();
+    window.addEventListener("resize", updateDropdownMaxHeight);
+    window.visualViewport?.addEventListener("resize", updateDropdownMaxHeight);
+    window.visualViewport?.addEventListener("scroll", updateDropdownMaxHeight);
+
+    return () => {
+      window.removeEventListener("resize", updateDropdownMaxHeight);
+      window.visualViewport?.removeEventListener(
+        "resize",
+        updateDropdownMaxHeight,
+      );
+      window.visualViewport?.removeEventListener(
+        "scroll",
+        updateDropdownMaxHeight,
+      );
+    };
+  }, [isOpen, useInlineMobileDropdown]);
 
   // --- keyboard helpers for multi
   const onMultiKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -165,7 +204,12 @@ function AutocompleteBase<ID extends number | string>({
   return (
     <div
       className={cn("relative w-full overflow-visible", className)}
-      ref={ref}
+      ref={(node) => {
+        rootRef.current = node;
+        (
+          clickOutsideRef as React.MutableRefObject<HTMLDivElement | null>
+        ).current = node;
+      }}
     >
       {label ? (
         <div className="flex items-center gap-2 mb-1">
@@ -286,7 +330,7 @@ function AutocompleteBase<ID extends number | string>({
 
       {isOpen && (
         <>
-          {isMobile && (
+          {isMobile && !useInlineMobileDropdown && (
             <button
               type="button"
               aria-label="Close options"
@@ -296,10 +340,15 @@ function AutocompleteBase<ID extends number | string>({
           )}
           <ul
             className={cn(
-              isMobile
+              isMobile && !useInlineMobileDropdown
                 ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 max-h-[70vh] overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] rounded-t-2xl border border-b-0 border-gray-200 bg-white pb-3 pt-2 text-sm shadow-2xl ring-1 ring-black/10"
                 : "absolute left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto overscroll-contain rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5",
             )}
+            style={
+              useInlineMobileDropdown && dropdownMaxHeight
+                ? { maxHeight: dropdownMaxHeight }
+                : undefined
+            }
           >
             {allowCustomValue && (
               <li className="w-full text-left px-4 py-2 text-sm text-gray-500 bg-gray-50 pointer-events-none">
