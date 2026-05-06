@@ -3,7 +3,7 @@ import {
   ApplicationService,
   EmployerService,
   JobService,
-  handleApiError
+  handleApiError,
 } from "@/lib/api/services";
 import { Employer, EmployerApplication, Job } from "@/lib/db/db.types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -18,7 +18,7 @@ export const useEmployerName = (id: string) => {
     APIClient.get<any>(APIRouteBuilder("employer").r(id).build()).then(
       ({ employer }: { employer: Employer }) => {
         setEmployerName(employer?.name ?? "");
-      }
+      },
     );
   }, [id]);
 
@@ -51,7 +51,7 @@ export function useProfile() {
 
 export function useEmployerApplications() {
   const { get_cache, set_cache } = useCache<EmployerApplication[]>(
-    "_apps_employer_list"
+    "_apps_employer_list",
   );
   const [employerApplications, setEmployerApplications] = useState<
     EmployerApplication[]
@@ -76,7 +76,7 @@ export function useEmployerApplications() {
       const response = await ApplicationService.getEmployerApplications();
       if (response.success) {
         const filteredApplications = (response.applications ?? []).filter(
-          (app) => app.status !== 5
+          (app) => app.status !== 5,
         );
 
         setEmployerApplications(filteredApplications);
@@ -92,42 +92,19 @@ export function useEmployerApplications() {
 
   const review = async (
     app_id: string,
-    review_options: { review?: string; notes?: string; status?: number }
+    review_options: { review?: string; notes?: string; status?: number },
   ) => {
     // const cache = get_cache() as EmployerApplication[];
     const response = await ApplicationService.reviewApplication(
       app_id,
-      review_options
+      review_options,
     );
-
-    // getting some stale cache errors on multiple updates
-    // if (cache) {
-    //   const new_apps = [
-    //     {
-    //       ...cache.filter((a) => a?.id === app_id)[0],
-    //       // @ts-ignore
-    //       ...response.application,
-    //     },
-    //     ...cache.filter((a) => a?.id !== app_id),
-    //     // @ts-ignore
-    //   ].sort(
-    //     (a, b) =>
-    //       new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-    //   );
-    //   set_cache(new_apps);
-    //   setEmployerApplications(get_cache() as EmployerApplication[]);
-    // } else {
-    //   // @ts-ignore
-    //   set_cache([response.application]);
-    //   // @ts-ignore
-    //   setEmployerApplications([response.application]);
-    // }
 
     const updateState = (prevApps: EmployerApplication[] | undefined) => {
       const currentApps = prevApps || [];
 
-      const appIndex = currentApps.findIndex(a => a?.id === app_id);
-      
+      const appIndex = currentApps.findIndex((a) => a?.id === app_id);
+
       let new_apps: EmployerApplication[];
 
       if (appIndex > -1) {
@@ -136,7 +113,7 @@ export function useEmployerApplications() {
         new_apps[appIndex] = {
           ...currentApps[appIndex],
           // @ts-ignore
-          ...response.application
+          ...response.application,
         };
       } else {
         // @ts-ignore
@@ -145,14 +122,15 @@ export function useEmployerApplications() {
 
       return new_apps.sort(
         // @ts-ignore
-        (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+        (a, b) =>
+          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
       );
-    }
+    };
 
     // @ts-ignore
     set_cache(updateState);
     setEmployerApplications(updateState);
-    
+
     return response;
   };
 
@@ -182,7 +160,7 @@ export function useOwnedJobs(
     search?: string;
     location?: string;
     industry?: string;
-  } = {}
+  } = {},
 ) {
   const { get_cache, set_cache } = useCache<Job[]>("_jobs_owned_list");
   const [ownedJobs, setOwnedJobs] = useState<Job[]>([]);
@@ -214,12 +192,12 @@ export function useOwnedJobs(
       // @ts-ignore
       const updatedJob = response.job;
       const old_job = ownedJobs.filter((oj) => oj.id === job_id)[0] ?? {};
-      
+
       const newJobs = [
         { ...old_job, ...updatedJob },
         ...ownedJobs.filter((oj) => oj.id !== job_id),
-      ]
-      
+      ];
+
       set_cache(newJobs);
       setOwnedJobs(get_cache() ?? []);
     }
