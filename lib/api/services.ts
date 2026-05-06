@@ -177,7 +177,29 @@ export type ApproveSignatoryResponse = {
   [k: string]: any;
 };
 
+export type UploadSignatureImageResponse = {
+  success?: boolean;
+  message?: string;
+  value?: string;
+  asset?: {
+    filename: string;
+    url: string;
+    mimeType: string;
+    sizeBytes: number;
+  };
+};
+
 export const FormService = {
+  async uploadSignatureImage(data: {
+    source: "draw" | "upload";
+    dataUrl: string;
+  }) {
+    return APIClient.post<UploadSignatureImageResponse>(
+      APIRouteBuilder("users").r("me/signature-image").build(),
+      data,
+    );
+  },
+
   async initiateForm(data: {
     formName: string;
     formVersion: number;

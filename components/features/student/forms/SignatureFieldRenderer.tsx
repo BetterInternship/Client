@@ -81,7 +81,8 @@ export const SignatureFieldRenderer = <T extends any[]>({
   }, [signatureImage]);
 
   const emitSignatureImage = (nextImage: SignatureImageValue) => {
-    onAuxValueChange?.(imageFieldKey, serializeSignatureImageValue(nextImage));
+    const serializedValue = serializeSignatureImageValue(nextImage);
+    onAuxValueChange?.(imageFieldKey, serializedValue);
   };
 
   const getSignatureImageSrc = (signature: SignatureImageValue | null) => {
