@@ -8,7 +8,7 @@
  * // ! MERGE THIS WITH THE FORM FILLER CONTEXT PROBABLY
  */
 
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 
 interface ISignContext {
   hasAgreed?: boolean;
@@ -48,14 +48,16 @@ export const SignContextProvider = ({
     useState<ISignatureAgreementDict>({});
 
   // Should be called to init this context
-  const setRequiredSignatures = (requiredSignatureFieldIds: string[]) => {
-    const requiredSignatures: ISignatureAgreementDict = {};
-    for (const requiredSignature of requiredSignatureFieldIds) {
-      // Preserve existing agreement data if it exists
-      requiredSignatures[requiredSignature] = signatureAgreementDict[requiredSignature] || {};
-    }
-    setSignatureAgreementDict(requiredSignatures);
-  };
+  const setRequiredSignatures = useCallback((requiredSignatureFieldIds: string[]) => {
+    setSignatureAgreementDict((prev) => {
+      const requiredSignatures: ISignatureAgreementDict = {};
+      for (const requiredSignature of requiredSignatureFieldIds) {
+        // Preserve existing agreement data if it exists
+        requiredSignatures[requiredSignature] = prev[requiredSignature] || {};
+      }
+      return requiredSignatures;
+    });
+  }, []);
 
   // Checks whether or not all the needed signatures are good
   const hasAgreed = useMemo(
@@ -69,16 +71,25 @@ export const SignContextProvider = ({
   );
 
   // Update the dict
-  const setHasAgreedForSignature = (
-    signatureFieldId: string,
-    signatureValue: string,
-    hasAgreed: boolean,
-  ) => {
-    setSignatureAgreementDict({
-      ...signatureAgreementDict,
-      [signatureFieldId]: { hasAgreed, signatureValue },
-    });
-  };
+  const setHasAgreedForSignature = useCallback(
+    (signatureFieldId: string, signatureValue: string, hasAgreed: boolean) => {
+      setSignatureAgreementDict((prev) => {
+        const current = prev[signatureFieldId];
+        if (
+          current?.hasAgreed === hasAgreed &&
+          current?.signatureValue === signatureValue
+        ) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          [signatureFieldId]: { hasAgreed, signatureValue },
+        };
+      });
+    },
+    [],
+  );
 
   return (
     <SignContext.Provider

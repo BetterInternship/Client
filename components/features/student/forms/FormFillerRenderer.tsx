@@ -287,7 +287,12 @@ export function FormFillerRenderer({
               }
 
               // Validate with the updated field that has fresh params
-              formFiller.validateField(fieldKey, updatedField, autofillValues, nextValue);
+              formFiller.validateField(
+                fieldKey,
+                updatedField,
+                autofillValues,
+                nextValue,
+              );
             }}
             fieldRefs={fieldRefs.current}
             selectedFieldId={form.selectedPreviewId}
@@ -358,7 +363,10 @@ const BlocksRenderer = <T extends any[]>({
                   field={actualField}
                   value={values[actualField.field]}
                   onChange={(v) => onChange(actualField.field, v)}
-                  onBlur={(nextValue) => onBlurValidate?.(actualField.field, nextValue)}
+                  onAuxValueChange={onChange}
+                  onBlur={(nextValue) =>
+                    onBlurValidate?.(actualField.field, nextValue)
+                  }
                   error={errors[actualField.field]}
                   allValues={values}
                   isPhantom={isPhantom}
