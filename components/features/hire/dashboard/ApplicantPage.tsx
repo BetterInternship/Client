@@ -147,12 +147,12 @@ export function ApplicantPage({
         <div className="lg:flex w-full justify-center">
           <div
             className={cn(
-              "bg-white rounded-[0.33em] border border-gray-200",
+              "bg-white rounded-[0.33em] border border-gray-200 ",
               isMobile ? "p-4" : "w-[50%] p-6",
             )}
           >
             {/* "header" ish portion */}
-            <div className="">
+            <div className="mb-4">
               <div className="lg:flex items-center justify-between">
                 <div className="flex items-center">
                   <div className={cn("relative", isMobile ? "mr-2" : "mr-4")}>
@@ -221,7 +221,6 @@ export function ApplicantPage({
                         </p>
                       </div>
                     </div>
-
                     {/* links */}
                     <div
                       className={cn(
@@ -309,44 +308,6 @@ export function ApplicantPage({
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* actions */}
-            <div className="flex items-center justify-between gap-2 my-4">
-              <div className="flex items-center gap-2">
-                {filterKey !== "accepted" && filterKey !== "rejected" ? (
-                  <DropdownMenu items={statuses} defaultItem={defaultStatus} />
-                ) : (
-                  <StatusBadge statusId={application?.status || 0} />
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                {onArchive && (
-                  <ActionButton
-                    icon={
-                      application?.visibility === "archived"
-                        ? ArchiveRestore
-                        : Archive
-                    }
-                    onClick={onArchive}
-                    enabled={true}
-                    label={
-                      application?.visibility === "archived"
-                        ? "Unarchive"
-                        : "Archive"
-                    }
-                  />
-                )}
-                {onDelete && (
-                  <ActionButton
-                    icon={Trash2}
-                    onClick={onDelete}
-                    enabled={true}
-                    destructive={true}
-                    label="Delete"
-                  />
-                )}
               </div>
             </div>
 
