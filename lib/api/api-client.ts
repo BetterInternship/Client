@@ -1,6 +1,7 @@
 // API configuration and helper funcs
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 if (!API_BASE_URL) console.warn("[WARNING]: Base API URL is not set.");
+const API_MAINTENANCE_TIMEOUT_MS = 5000;
 
 type ParamValue = string | number | boolean | Array<string | number | boolean>;
 
@@ -27,6 +28,19 @@ const createParameterString = (params: Params) => {
     searchParams.append(key, value.toString());
   });
   return searchParams.toString();
+};
+
+const redirectToMaintenance = () => {
+  if (
+    typeof window === "undefined" ||
+    window.location.pathname.startsWith("/maintenance")
+  ) {
+    return;
+  }
+
+  const returnPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  window.sessionStorage.setItem("maintenanceReturnPath", returnPath);
+  window.location.assign(`/maintenance?from=${encodeURIComponent(returnPath)}`);
 };
 
 /**
@@ -82,15 +96,28 @@ class FetchClient {
           }
         : { ...options.headers };
 
+    const controller = options.signal ? null : new AbortController();
+    const timeout =
+      controller &&
+      globalThis.setTimeout(() => {
+        controller.abort();
+      }, API_MAINTENANCE_TIMEOUT_MS);
+
     const config: RequestInit = {
       ...options,
       credentials: "include",
       headers,
+      signal: options.signal ?? controller?.signal,
     };
 
     try {
       const response = await fetch(url, config);
       if (!response.ok && response.status !== 304) {
+        if ([502, 503, 504].includes(response.status)) {
+          redirectToMaintenance();
+          throw new Error(`API unavailable: ${response.status}`);
+        }
+
         const errorData = (await response.json().catch(() => ({}))) as {
           message?: string;
         };
@@ -106,7 +133,10 @@ class FetchClient {
       return (await response.text()) as unknown as T;
     } catch (error) {
       console.error("API request failed:", error);
+      redirectToMaintenance();
       throw error;
+    } finally {
+      if (timeout) globalThis.clearTimeout(timeout);
     }
   }
 
