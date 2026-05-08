@@ -27,6 +27,7 @@ import { FormSigningPartyTimeline } from "./FormSigningPartyTimeline";
 import { getFreshHistoryCutoffMsFromStorage } from "../fresh-history";
 import { getRecipientEmailErrors } from "./recipient-email-validation";
 import { useSignContext } from "@/components/providers/sign.ctx";
+import { withSubmittedSignatureImages } from "@/lib/signature-image-submit";
 
 interface FlowTestSigningLayoutProps {
   formLabel?: string;
@@ -542,10 +543,17 @@ export function FormSigningLayout({
 
   const handleSubmit = useCallback(async () => {
     setNextLoading(true);
-    const finalValues = formFiller.getFinalValues({
+    const finalValuesFromFiller = formFiller.getFinalValues({
       ...autofillValues,
       ...recipientEmails,
     });
+    const finalValues = Object.keys(latestValuesRef.current).length
+      ? {
+          ...finalValuesFromFiller,
+          ...latestValuesRef.current,
+        }
+      : finalValuesFromFiller;
+    const submittedValues = await withSubmittedSignatureImages(finalValues);
     const firstRecipient = getFirstRecipient();
     const shouldGenerateForm = !!noEsign || !firstRecipient;
 
@@ -554,7 +562,7 @@ export function FormSigningLayout({
         {
           formName: form.formName,
           formVersion: form.formVersion,
-          values: finalValues,
+          values: submittedValues,
         },
         {
           label: form.formLabel,
@@ -581,7 +589,7 @@ export function FormSigningLayout({
       const response = await FormService.initiateForm({
         formName: form.formName,
         formVersion: form.formVersion,
-        values: finalValues,
+        values: submittedValues,
         audit: getClientAudit(),
       });
 

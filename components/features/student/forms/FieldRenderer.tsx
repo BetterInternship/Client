@@ -17,26 +17,29 @@ import {
   FormTextarea,
   TimeInputNative,
 } from "@/components/EditForm";
-import { useSignContext } from "@/components/providers/sign.ctx";
 import {
   AutocompleteTreeMulti,
   TreeOption,
 } from "@/components/ui/autocomplete";
 import { ClientField } from "@betterinternship/core/forms";
 import { Eye } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { SignatureFieldRenderer } from "./SignatureFieldRenderer";
 
 export const FieldRenderer = <T extends any[]>({
   field,
   value = "",
   onChange,
+  onAuxValueChange,
   error,
   onBlur,
+  allValues,
   isPhantom = false,
 }: {
   field: ClientField<T>;
   value: string;
   onChange: (v: any) => void;
+  onAuxValueChange?: (key: string, value: any) => void;
   error?: string;
   onBlur?: (nextValue?: unknown) => void;
   allValues?: Record<string, string>;
@@ -139,12 +142,14 @@ export const FieldRenderer = <T extends any[]>({
   // Signatures
   if (field.type === "signature") {
     return (
-      <FieldRendererSignature
+      <SignatureFieldRenderer
         field={field}
         value={value}
         TooltipContent={TooltipLabel}
         onChange={onChange}
+        onAuxValueChange={onAuxValueChange}
         onBlur={onBlur}
+        allValues={allValues}
       />
     );
   }
@@ -410,72 +415,6 @@ const FieldRendererInput = <T extends any[]>({
         onBlur={() => onBlur?.()}
         labelAddon={badge}
       />
-      <TooltipContent />
-    </div>
-  );
-};
-
-/**
- * Signature-specific input
- *
- * @component
- */
-const FieldRendererSignature = <T extends any[]>({
-  field,
-  value,
-  TooltipContent,
-  onChange,
-  onBlur,
-}: {
-  field: ClientField<T>;
-  value: string;
-  TooltipContent: () => React.ReactNode;
-  onChange: (v: string | number) => void;
-  onBlur?: (nextValue?: unknown) => void;
-}) => {
-  const signContext = useSignContext();
-  const [checked, setChecked] = useState(false);
-
-  // ! PUT THIS SOMEWHERE ELSE
-  useEffect(() => {
-    const hasValue = !!value?.trim();
-    const shouldAgree = hasValue && checked;
-    signContext.setHasAgreedForSignature(field.field, value, shouldAgree);
-  }, [checked, value, field.field]);
-
-  const handleCheckboxChange = (newChecked: boolean) => {
-    setChecked(newChecked);
-    const hasValue = !!value?.trim();
-    const shouldAgree = hasValue && newChecked;
-    signContext.setHasAgreedForSignature(field.field, value, shouldAgree);
-  };
-
-  return (
-    <div className="space-y-1.5 rounded-[0.33em] border border-gray-300 p-4 px-5">
-      <FormInput
-        required={true}
-        label={`${field.label} (Signatory Full Name)`}
-        value={value ?? ""}
-        setter={(v) => onChange(v)}
-        tooltip={field.tooltip_label}
-        className="w-full"
-        onBlur={() => onBlur?.()}
-      />
-      <div
-        className="mt-5 flex flex-row cursor-pointer"
-        onClick={() => {
-          handleCheckboxChange(!checked);
-        }}
-      >
-        <div className="mt-1 mr-2">
-          <FormCheckbox checked={checked} setter={setChecked}></FormCheckbox>
-        </div>
-        <span className="text-md text-gray-700 italic">
-          I agree to use electronic representation of my signature for all
-          purposes when I (or my agent) use them on documents, including legally
-          binding contracts.
-        </span>
-      </div>
       <TooltipContent />
     </div>
   );
