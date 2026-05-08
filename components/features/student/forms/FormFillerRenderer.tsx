@@ -12,6 +12,7 @@ import { useProfileData } from "@/lib/api/student.data.api";
 import { getFullName } from "@/lib/profile";
 import { useSignContext } from "@/components/providers/sign.ctx";
 import { formatTimestampDateWithoutTime } from "@/lib/utils";
+import { withSavedSignatureImagesForFields } from "@/lib/saved-signature-image";
 
 export function FormFillerRenderer({
   onValuesChange,
@@ -52,22 +53,29 @@ export function FormFillerRenderer({
     () => formFiller.getFinalValues(autofillValues),
     [formFiller, autofillValues],
   );
+  const signatureFields = useMemo(
+    () => form.formMetadata.getSignatureFieldsForClientService("initiator"),
+    [form.formMetadata],
+  );
 
   useEffect(() => {
-    const signatureFields =
-      form.formMetadata.getSignatureFieldsForClientService("initiator");
     const valuesWithPrefilledSignatures =
       form.formMetadata.setSignatureValueForSigningParty(
         finalValues,
         getFullName(profile.data),
         "initiator",
       );
+    const valuesWithSavedSignatureImages = withSavedSignatureImagesForFields({
+      values: valuesWithPrefilledSignatures,
+      signatureFields,
+      signatureImage: profile.data?.signatureImage,
+    });
 
-    formFiller.setValues(valuesWithPrefilledSignatures);
+    formFiller.setValues(valuesWithSavedSignatureImages);
     signContext.setRequiredSignatures(
       signatureFields.map((signatureField) => signatureField.field),
     );
-  }, [form]);
+  }, [form, profile.data?.signatureImage, signatureFields]);
 
   // Initialize form values whenever form changes or profile loads
   useEffect(() => {

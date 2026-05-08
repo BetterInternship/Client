@@ -43,6 +43,7 @@ export type PublicUser = Omit<
   "verification_hash" | "internship_preferences"
 > & {
   internship_preferences?: InternshipPreferences;
+  signatureImage?: string | null;
 };
 export type Employer = Partial<Selectable<CareerEmployers>>;
 export type User = Partial<Selectable<CareerUsers>>;

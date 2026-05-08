@@ -65,11 +65,7 @@ export const SignatureFieldRenderer = <T extends any[]>({
 
   useEffect(() => {
     const hasValue = !!value?.trim();
-    setHasAgreedForSignature(
-      field.field,
-      value,
-      hasValue && checked,
-    );
+    setHasAgreedForSignature(field.field, value, hasValue && checked);
   }, [checked, field.field, setHasAgreedForSignature, value]);
 
   useEffect(() => {
@@ -322,6 +318,7 @@ export const SignatureFieldRenderer = <T extends any[]>({
   };
 
   const signatureImageSrc = getSignatureImageSrc(signatureImage);
+  const isSavedSignatureImage = signatureImage?.image.storage === "bucket";
 
   return (
     <div className="space-y-1.5">
@@ -404,11 +401,22 @@ export const SignatureFieldRenderer = <T extends any[]>({
               }}
             >
               {signatureImageSrc ? (
-                <img
-                  src={signatureImageSrc}
-                  alt="Uploaded signature"
-                  className="max-h-28 w-full object-contain"
-                />
+                <>
+                  <img
+                    src={signatureImageSrc}
+                    alt={
+                      isSavedSignatureImage
+                        ? "Saved signature"
+                        : "Uploaded signature"
+                    }
+                    className="max-h-28 w-full object-contain"
+                  />
+                  {isSavedSignatureImage ? (
+                    <span className="text-xs font-medium text-slate-500">
+                      Saved signature
+                    </span>
+                  ) : null}
+                </>
               ) : (
                 <>
                   <span className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-700">
