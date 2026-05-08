@@ -1,7 +1,8 @@
 // API configuration and helper funcs
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 if (!API_BASE_URL) console.warn("[WARNING]: Base API URL is not set.");
-const API_MAINTENANCE_TIMEOUT_MS = 5000;
+const IS_MAINTENANCE_MODE =
+  process.env.NEXT_PUBLIC_MAINTENANCE_MODE?.toLowerCase() === "true";
 
 type ParamValue = string | number | boolean | Array<string | number | boolean>;
 
@@ -41,6 +42,13 @@ const redirectToMaintenance = () => {
   const returnPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
   window.sessionStorage.setItem("maintenanceReturnPath", returnPath);
   window.location.assign(`/maintenance?from=${encodeURIComponent(returnPath)}`);
+};
+
+const redirectIfMaintenanceMode = () => {
+  if (!IS_MAINTENANCE_MODE) return false;
+
+  redirectToMaintenance();
+  return true;
 };
 
 /**
@@ -88,6 +96,10 @@ class FetchClient {
     options: RequestInit = {},
     type: string = "json",
   ): Promise<T> {
+    if (redirectIfMaintenanceMode()) {
+      throw new Error("Application is in maintenance mode.");
+    }
+
     const headers: HeadersInit =
       type === "json"
         ? {
@@ -96,28 +108,16 @@ class FetchClient {
           }
         : { ...options.headers };
 
-    const controller = options.signal ? null : new AbortController();
-    const timeout =
-      controller &&
-      globalThis.setTimeout(() => {
-        controller.abort();
-      }, API_MAINTENANCE_TIMEOUT_MS);
-
     const config: RequestInit = {
       ...options,
       credentials: "include",
       headers,
-      signal: options.signal ?? controller?.signal,
+      signal: options.signal,
     };
 
     try {
       const response = await fetch(url, config);
       if (!response.ok && response.status !== 304) {
-        if ([502, 503, 504].includes(response.status)) {
-          redirectToMaintenance();
-          throw new Error(`API unavailable: ${response.status}`);
-        }
-
         const errorData = (await response.json().catch(() => ({}))) as {
           message?: string;
         };
@@ -133,10 +133,7 @@ class FetchClient {
       return (await response.text()) as unknown as T;
     } catch (error) {
       console.error("API request failed:", error);
-      redirectToMaintenance();
       throw error;
-    } finally {
-      if (timeout) globalThis.clearTimeout(timeout);
     }
   }
 
