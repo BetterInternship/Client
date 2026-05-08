@@ -322,6 +322,7 @@ interface MobileHeaderProps {
   onApplyFilters: (filters: JobFilter) => void;
   initialFilterValues: Partial<JobFilter>;
   showFilters: boolean;
+  transparent?: boolean;
 }
 
 const MobileHeader: React.FC<MobileHeaderProps> = ({
@@ -333,12 +334,18 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
   onApplyFilters,
   initialFilterValues,
   showFilters,
+  transparent = false,
 }) => {
   const { mobileAddonConfig } = useHeaderContext();
 
   return (
     <JobFilterProvider initial={initialFilterValues}>
-      <div className="flex gap-2 items-center px-4 py-3 bg-white/80 border-b h-16">
+      <div
+        className={cn(
+          "flex gap-2 items-center px-4 py-3 h-16",
+          transparent ? "bg-transparent" : "bg-white/80 border-b",
+        )}
+      >
         {/* Logo */}
         <div className="flex-shrink-0">
           <HeaderTitle />
@@ -392,6 +399,8 @@ interface DesktopHeaderProps {
   onApplyFilters: (filters: JobFilter) => void;
   initialFilterValues: Partial<JobFilter>;
   showFilters: boolean;
+  showActions?: boolean;
+  transparent?: boolean;
 }
 
 const DesktopHeader: React.FC<DesktopHeaderProps> = ({
@@ -403,10 +412,17 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
   onApplyFilters,
   initialFilterValues,
   showFilters,
+  showActions = true,
+  transparent = false,
 }) => {
   return (
     <div
-      className="flex gap-2 justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90] py-4 px-8"
+      className={cn(
+        "flex gap-2 justify-between items-center z-[90] py-4 px-8",
+        transparent
+          ? "bg-transparent"
+          : "bg-white/80 backdrop-blur-md border-b border-gray-100",
+      )}
       style={{ overflow: "visible", position: "relative", zIndex: 100 }}
     >
       <div className="flex items-center gap-6 flex-1">
@@ -433,7 +449,7 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
       </div>
 
       {/* Right side: Navigation buttons + Profile */}
-      <HeaderButtons />
+      {showActions && <HeaderButtons />}
     </div>
   );
 };
@@ -442,7 +458,10 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
    MAIN HEADER (Orchestrator)
 ======================================================================================= */
 
-export const Header: React.FC = () => {
+export const Header: React.FC<{
+  showActions?: boolean;
+  transparent?: boolean;
+}> = ({ showActions = true, transparent = false }) => {
   const { isMobile } = useMobile();
   const { routeExcluded } = useRoute();
   const router = useRouter();
@@ -554,6 +573,7 @@ export const Header: React.FC = () => {
           onApplyFilters={onApplyFilters}
           initialFilterValues={initialFromUrl}
           showFilters={showFilters}
+          transparent={transparent}
         />
       )}
 
@@ -579,6 +599,8 @@ export const Header: React.FC = () => {
             onApplyFilters={onApplyFilters}
             initialFilterValues={initialFromUrl}
             showFilters={showFilters}
+            showActions={showActions}
+            transparent={transparent}
           />
         </div>
       )}
