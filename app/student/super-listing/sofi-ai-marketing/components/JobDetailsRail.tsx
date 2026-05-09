@@ -25,7 +25,7 @@ const JOB_METADATA: readonly JobMetadataItem[] = [
   },
   {
     label: "Deadline",
-    value: "May 9, 2026",
+    value: "May 16, 2026",
     labelClassName: "font-semibold text-red-600",
     valueClassName: "font-semibold text-red-600",
   },
