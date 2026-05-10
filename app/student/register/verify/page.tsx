@@ -122,7 +122,7 @@ export default function VerifyPage() {
           </Card>
 
           <div className="text-xs text-gray-500 mt-2 text-center max-w-md">
-            Having trouble? Make sure you typed your .edu.ph email correctly and
+            Having trouble? Make sure you typed your .edu email correctly and
             check your spam folder.
           </div>
         </div>
