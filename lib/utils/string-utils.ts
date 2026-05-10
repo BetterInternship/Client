@@ -78,7 +78,10 @@ export function isValidEmail(email?: string | null) {
 export function isEduPhEmail(email?: string | null) {
   if (!email) return false;
   const trimmed = email.trim().toLowerCase();
-  return isValidEmail(trimmed) && trimmed.endsWith(".edu.ph");
+  return (
+    isValidEmail(trimmed) &&
+    (trimmed.endsWith(".edu.ph") || trimmed.endsWith(".edu"))
+  );
 }
 
 export const normalizePhoneNumber = (
