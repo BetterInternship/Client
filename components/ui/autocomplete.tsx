@@ -58,6 +58,7 @@ function AutocompleteBase<ID extends number | string>({
   });
   const rootRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const sheetInputRef = useRef<HTMLInputElement | null>(null);
   const lastSelectionRef = useRef(0);
 
   const inputId = useId();
@@ -170,13 +171,24 @@ function AutocompleteBase<ID extends number | string>({
       );
     };
   }, [isOpen, useInlineMobileDropdown]);
+
+  useEffect(() => {
+    if (!isOpen || !useMobileSheet) return;
+
+    const focusTimer = window.setTimeout(() => {
+      sheetInputRef.current?.focus();
+    }, 80);
+
+    return () => window.clearTimeout(focusTimer);
+  }, [isOpen, useMobileSheet]);
+
   const suppressMobileKeyboard =
     isMobile && mobileDropdownMode === "inline" && !allowCustomValue;
 
   // --- keyboard helpers for multi
   const onMultiKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!multiple) return;
-    if (allowCustomValue && e.key === "Enter" && query.trim.length === 0) {
+    if (allowCustomValue && e.key === "Enter" && query.trim().length === 0) {
       const text = query.trim();
       const exact = findExactOption(text);
       const nextId = exact ? exact.id : (text as unknown as ID);
@@ -371,6 +383,38 @@ function AutocompleteBase<ID extends number | string>({
                 : undefined
             }
           >
+            {useMobileSheet && (
+              <li className="sticky top-0 z-10 border-b border-gray-200 bg-white px-4 py-3">
+                <Input
+                  ref={sheetInputRef}
+                  value={query}
+                  placeholder={placeholder ?? "Search"}
+                  className="h-10 border-gray-300 text-base"
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    setIsOpen(true);
+                    if ((value?.length ?? 0) > 0 && !multiple) {
+                      setter([]);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (multiple) {
+                      onMultiKeyDown(e);
+                      return;
+                    }
+
+                    if (e.key === "Enter" && resolveQuerySelection(query)) {
+                      setIsOpen(false);
+                      e.preventDefault();
+                    }
+
+                    if (e.key === "Escape") {
+                      setIsOpen(false);
+                    }
+                  }}
+                />
+              </li>
+            )}
             {allowCustomValue && (
               <li className="w-full text-left px-4 py-2 text-sm text-gray-500 bg-gray-50 pointer-events-none">
                 Suggestions
@@ -387,7 +431,11 @@ function AutocompleteBase<ID extends number | string>({
                       if (multiple) {
                         // keep open for rapid multi-pick
                         setQuery("");
-                        inputRef.current?.focus();
+                        if (useMobileSheet) {
+                          sheetInputRef.current?.focus();
+                        } else {
+                          inputRef.current?.focus();
+                        }
                       } else {
                         setQuery("");
                         setIsOpen(false);
