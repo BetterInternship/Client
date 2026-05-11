@@ -765,6 +765,7 @@ function FeaturedInternship() {
     {
       href: "/super-listing/sofi-ai",
       title: "UI/UX Intern",
+      closed: true,
       icon: (
         <span className="[font-family:var(--font-paraluman-mono)] text-xl font-bold">
           &lt;/&gt;
@@ -774,6 +775,7 @@ function FeaturedInternship() {
     {
       href: "/super-listing/sofi-ai-marketing",
       title: "Marketing Intern",
+      closed: false,
       icon: <Megaphone className="h-6 w-6" />,
     },
   ] as const;
@@ -817,12 +819,21 @@ function FeaturedInternship() {
               <div className="flex h-14 w-14 items-center justify-center rounded-[0.55em] bg-[#E8FFF9] text-[#00866f] ring-1 ring-[#07C4A7]/14">
                 {listing.icon}
               </div>
-              <h3 className="[font-family:var(--font-paraluman-heading)] text-xl font-bold tracking-[-0.035em] text-[#052338]">
-                {listing.title}
-              </h3>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="[font-family:var(--font-paraluman-heading)] text-xl font-bold tracking-[-0.035em] text-[#052338]">
+                    {listing.title}
+                  </h3>
+                  {listing.closed ? (
+                    <span className="inline-flex h-7 items-center rounded-full border border-red-200 bg-red-50 px-3 [font-family:var(--font-paraluman-mono)] text-[0.65rem] font-bold uppercase tracking-[0.12em] text-red-700">
+                      Closed
+                    </span>
+                  ) : null}
+                </div>
+              </div>
 
               <div className="inline-flex items-center gap-2 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-[#007f6b] sm:justify-end">
-                View role
+                {listing.closed ? "View closed role" : "View role"}
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </div>
             </Link>
