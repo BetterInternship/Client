@@ -13,6 +13,13 @@ import { cn } from "@/lib/utils";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { AnimatePresence, motion } from "framer-motion";
+import { useBlurTransition } from "@/components/animata/blur";
 
 /* ================= Types & Reducer ================= */
 
@@ -645,77 +652,87 @@ export function JobFilters({
   };
   const clearAll = () => dispatch({ type: "CLEAR" });
 
+  const blurTransition = useBlurTransition();
+
   /* ----- Desktop: compact single button in the bar ----- */
   if (isDesktop) {
     return (
-      <div className="relative">
-        <Button
-          variant="ghost"
-          size="md"
-          onClick={() => setOpen((p) => !p)}
-          className="justify-between p-2 px-3"
-        >
-          <span className="inline-flex items-center gap-2">
-            <FilterIcon className="w-4 h-4" />
-          </span>
-        </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="md"
+              onClick={() => setOpen((p) => !p)}
+              className="justify-between p-2 px-3"
+            >
+              <span className="inline-flex items-center gap-2">
+                <FilterIcon className="w-4 h-4" />
+              </span>
+            </Button>
 
-        {open && (
-          <div
-            className="absolute right-0 z-[260] mt-2 w-[35vw] max-h-[72vh] bg-white border rounded-md shadow-lg
+            <AnimatePresence>
+              {open && (
+                <motion.div
+                  className="absolute right-0 z-[260] mt-2 w-[35vw] max-h-[72vh] bg-white border rounded-[0.33em] shadow-xl
                      flex flex-col"
-          >
-            {/* Tabs Header */}
-            <div className="px-3 py-2 border-b flex items-center justify-between">
-              <div className="flex gap-2">
-                <button
-                  className={cn(
-                    "text-sm px-3 py-1 rounded-full",
-                    tab === "category"
-                      ? "bg-gray-900 text-white"
-                      : "bg-gray-100",
-                  )}
-                  onClick={() => setTab("category")}
+                  {...blurTransition}
                 >
-                  Category
-                </button>
-                <button
-                  className={cn(
-                    "text-sm  px-3 py-1 rounded-full",
-                    tab === "details"
-                      ? "bg-gray-900 text-white"
-                      : "bg-gray-100",
-                  )}
-                  onClick={() => setTab("details")}
-                >
-                  Details
-                </button>
-              </div>
-              <button
-                onClick={clearAll}
-                className="text-sm hover:underline transition-all text-gray-600"
-              >
-                Clear all
-              </button>
-            </div>
+                  {/* Tabs Header */}
+                  <div className="px-3 py-2 border-b flex items-center justify-between">
+                    <div className="flex gap-2">
+                      <button
+                        className={cn(
+                          "text-sm px-3 py-1 rounded-full",
+                          tab === "category"
+                            ? "bg-gray-900 text-white"
+                            : "bg-gray-100",
+                        )}
+                        onClick={() => setTab("category")}
+                      >
+                        Category
+                      </button>
+                      <button
+                        className={cn(
+                          "text-sm  px-3 py-1 rounded-full",
+                          tab === "details"
+                            ? "bg-gray-900 text-white"
+                            : "bg-gray-100",
+                        )}
+                        onClick={() => setTab("details")}
+                      >
+                        Details
+                      </button>
+                    </div>
+                    <button
+                      onClick={clearAll}
+                      className="text-sm hover:underline transition-all text-gray-600"
+                    >
+                      Clear all
+                    </button>
+                  </div>
 
-            {/* Scrollable content */}
-            <div className="p-3 overflow-auto flex-1">
-              {tab === "category" ? <PositionPanel /> : <DetailsPanel />}
-            </div>
+                  {/* Scrollable content */}
+                  <div className="p-3 overflow-auto flex-1">
+                    {tab === "category" ? <PositionPanel /> : <DetailsPanel />}
+                  </div>
 
-            {/* Non-scrollable footer */}
-            <div className="p-3 border-t">
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={apply}>Apply</Button>
-              </div>
-            </div>
+                  {/* Non-scrollable footer */}
+                  <div className="p-3 border-t">
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={apply}>Apply</Button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        )}
-      </div>
+        </TooltipTrigger>
+        <TooltipContent>Search filters</TooltipContent>
+      </Tooltip>
     );
   }
 
@@ -731,74 +748,81 @@ export function JobFilters({
         <FilterIcon />
       </Button>
 
-      {open && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-[2px]"
-          role="dialog"
-          aria-modal="true"
-          onClick={() => setOpen(false)}
-        >
-          <aside
-            className="fixed bottom-0 inset-x-0 z-[101] bg-white rounded-t-xl shadow-xl max-h-[88svh] overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-[2px]"
+            role="dialog"
+            aria-modal="true"
+            onClick={() => setOpen(false)}
+            {...blurTransition}
           >
-            {/* Header */}
-            <div className="px-4 pt-3 pb-2 border-b flex items-center justify-between">
-              <div className="font-semibold">Filters</div>
-              <button
-                className="text-sm hover:underline transition-all text-gray-600"
-                onClick={clearAll}
-              >
-                Clear all
-              </button>
-            </div>
-
-            {/* Tabs */}
-            <div className="px-4 py-2 flex gap-2">
-              <button
-                className={cn(
-                  "text-sm px-3 py-1 rounded-full",
-                  tab === "category" ? "bg-gray-900 text-white" : "bg-gray-100",
-                )}
-                onClick={() => setTab("category")}
-              >
-                Category
-              </button>
-              <button
-                className={cn(
-                  "text-sm px-3 py-1 rounded-full",
-                  tab === "details" ? "bg-gray-900 text-white" : "bg-gray-100",
-                )}
-                onClick={() => setTab("details")}
-              >
-                Details
-              </button>
-            </div>
-
-            {/* Content */}
-            <div
-              className="px-4 overflow-y-auto"
-              style={{ maxHeight: "60svh" }}
+            <aside
+              className="fixed bottom-0 inset-x-0 z-[101] bg-white rounded-t-xl shadow-xl max-h-[88svh] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
             >
-              {tab === "category" ? <PositionPanel /> : <DetailsPanel />}
-            </div>
+              {/* Header */}
+              <div className="px-4 pt-3 pb-2 border-b flex items-center justify-between">
+                <div className="font-semibold">Filters</div>
+                <button
+                  className="text-sm hover:underline transition-all text-gray-600"
+                  onClick={clearAll}
+                >
+                  Clear all
+                </button>
+              </div>
 
-            {/* Sticky footer */}
-            <div className="p-3 border-t flex gap-2">
-              <Button
-                variant="outline"
-                className="w-1/2"
-                onClick={() => setOpen(false)}
+              {/* Tabs */}
+              <div className="px-4 py-2 flex gap-2">
+                <button
+                  className={cn(
+                    "text-sm px-3 py-1 rounded-full",
+                    tab === "category"
+                      ? "bg-gray-900 text-white"
+                      : "bg-gray-100",
+                  )}
+                  onClick={() => setTab("category")}
+                >
+                  Category
+                </button>
+                <button
+                  className={cn(
+                    "text-sm px-3 py-1 rounded-full",
+                    tab === "details"
+                      ? "bg-gray-900 text-white"
+                      : "bg-gray-100",
+                  )}
+                  onClick={() => setTab("details")}
+                >
+                  Details
+                </button>
+              </div>
+
+              {/* Content */}
+              <div
+                className="px-4 overflow-y-auto"
+                style={{ maxHeight: "60svh" }}
               >
-                Cancel
-              </Button>
-              <Button className="w-1/2" onClick={apply}>
-                Apply
-              </Button>
-            </div>
-          </aside>
-        </div>
-      )}
+                {tab === "category" ? <PositionPanel /> : <DetailsPanel />}
+              </div>
+
+              {/* Sticky footer */}
+              <div className="p-3 border-t flex gap-2">
+                <Button
+                  variant="outline"
+                  className="w-1/2"
+                  onClick={() => setOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button className="w-1/2" onClick={apply}>
+                  Apply
+                </Button>
+              </div>
+            </aside>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
