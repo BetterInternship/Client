@@ -415,6 +415,9 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
   showActions = true,
   transparent = false,
 }) => {
+  const { isAuthenticated } = useAuthContext();
+  const showForCredit = isAuthenticated();
+
   return (
     <div
       className={cn(
@@ -439,6 +442,7 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
               onEnter={onSearch}
               moaOnly={moaOnly}
               onToggleMoa={onMoaToggle}
+              showForCredit={showForCredit}
             />
 
             <JobFilterProvider initial={initialFilterValues}>
