@@ -19,6 +19,7 @@ import Link from "next/link";
 import { TriangleAlert, User } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
+import { useBlurTransition } from "@/components/animata/blur";
 
 const [EmployerRegisterForm, useEmployerRegisterForm] =
   createEditForm<Employer>();
@@ -78,6 +79,8 @@ const EmployerEditor = ({
     {} as AdditionalFields,
   );
   const [missingFields, setMissingFields] = useState<string[]>([]);
+
+  const blurTransition = useBlurTransition();
 
   const register = async () => {
     // Validate required fields before submitting
@@ -182,12 +185,7 @@ const EmployerEditor = ({
   return (
     <>
       <AnimatePresence>
-        <motion.div
-          initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-          animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-          className="w-full"
-        >
+        <motion.div {...blurTransition} className="w-full">
           <Card>
             <div className="flex flex-row items-center gap-3 mb-2">
               <HeaderIcon icon={User} />
