@@ -45,8 +45,10 @@ export function JobsContent({
       return aIsSuper ? -1 : 1;
     }
 
-    const aCreatedAt = a.created_at?.getTime() ?? 0;
-    const bCreatedAt = b.created_at?.getTime() ?? 0;
+    console.log(typeof a.created_at);
+
+    const aCreatedAt = Date.parse(a?.created_at ?? "");
+    const bCreatedAt = Date.parse(b?.created_at ?? "");
     const aTimestamp = Number.isNaN(aCreatedAt) ? 0 : aCreatedAt;
     const bTimestamp = Number.isNaN(bCreatedAt) ? 0 : bCreatedAt;
 
