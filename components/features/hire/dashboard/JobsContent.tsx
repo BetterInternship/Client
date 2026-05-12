@@ -11,6 +11,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
 import { useState, useEffect } from "react";
+import { useBlurTransition } from "@/components/animata/blur";
 
 //maybe add employers id to cross check
 interface JobsContentProps {
@@ -34,6 +35,8 @@ export function JobsContent({
 
   const { isMobile } = useAppContext();
 
+  const blurTransition = useBlurTransition();
+
   const sortedJobs = jobs.toSorted((a, b) => {
     const aIsSuper = Boolean(a.challenge);
     const bIsSuper = Boolean(b.challenge);
@@ -42,8 +45,8 @@ export function JobsContent({
       return aIsSuper ? -1 : 1;
     }
 
-    const aCreatedAt = Date.parse(a.created_at ?? "");
-    const bCreatedAt = Date.parse(b.created_at ?? "");
+    const aCreatedAt = a.created_at?.getTime() ?? 0;
+    const bCreatedAt = b.created_at?.getTime() ?? 0;
     const aTimestamp = Number.isNaN(aCreatedAt) ? 0 : aCreatedAt;
     const bTimestamp = Number.isNaN(bCreatedAt) ? 0 : bCreatedAt;
 
@@ -77,11 +80,7 @@ export function JobsContent({
 
   return (
     <>
-      <motion.div
-        initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-        animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
-      >
+      <motion.div {...blurTransition}>
         {sortedJobs && sortedJobs.length > 0 && !showLoader && !isLoading ? (
           <div className="grid grid-cols-1 items-end gap-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {sortedJobs
