@@ -170,12 +170,10 @@ export const useModalRegistry = () => {
           profile,
           onApply,
           applyLabel,
-          requiresCoverLetter,
         }: {
           profile: PublicUser | null;
           onApply: (payload: ApplyPayload) => void | Promise<void>;
           applyLabel?: string;
-          requiresCoverLetter?: boolean;
         }) =>
           open(
             "complete-profile-apply",
@@ -183,7 +181,6 @@ export const useModalRegistry = () => {
             <ApplyModal
               profile={profile}
               applyLabel={applyLabel}
-              requiresCoverLetter={requiresCoverLetter}
               onApply={onApply}
               onCancel={() => close("complete-profile-apply")}
             />,

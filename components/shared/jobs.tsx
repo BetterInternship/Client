@@ -138,12 +138,6 @@ export const JobApplicationRequirements = ({ job }: { job: Job }) => {
           onValue="Portfolio"
           offValue="Portfolio"
         />
-        <BoolBadge
-          state={job.internship_preferences?.require_cover_letter}
-          onScheme="primary"
-          onValue="Cover Letter"
-          offValue="Cover Letter"
-        />
       </div>
     </div>
   );
@@ -544,7 +538,7 @@ export const MobileJobCard = ({
   );
 };
 
-export const MobileJobDetails = ({}) => {};
+export const MobileJobDetails = () => {};
 
 /* ──────────────────────────────────────────────
    Header + Actions (side-by-side)
@@ -858,7 +852,6 @@ export function JobDetails({
   const hasPortfolio = !!user?.portfolio_link?.trim();
   const isSuperListing = Boolean(job.challenge);
 
-  const needsCover = !!job.internship_preferences?.require_cover_letter;
   const needsGithub = !!job.internship_preferences?.require_github;
   const needsPortfolio = !!job.internship_preferences?.require_portfolio;
 
@@ -899,16 +892,13 @@ export function JobDetails({
           <MarkdownBlock text={job.description} />
         </Section>
 
-        {(job.requirements || needsCover || needsGithub || needsPortfolio) && (
-          <Divider />
-        )}
+        {(job.requirements || needsGithub || needsPortfolio) && <Divider />}
 
-        {(job.requirements || needsCover || needsGithub || needsPortfolio) && (
+        {(job.requirements || needsGithub || needsPortfolio) && (
           <Section title="Requirements">
             <div className="space-y-2">
               <MarkdownBlock text={job.requirements} />
               <div className="flex flex-wrap gap-1.5 mt-2">
-                {needsCover && <ReqPill ok={true} label="Cover letter" />}
                 {needsGithub && <ReqPill ok={true} label="GitHub profile" />}
                 {needsPortfolio && <ReqPill ok={true} label="Portfolio link" />}
               </div>

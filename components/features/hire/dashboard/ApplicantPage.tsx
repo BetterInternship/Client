@@ -313,27 +313,6 @@ export function ApplicantPage({
 
             {isMobile ? (
               <>
-                {application!.job?.internship_preferences
-                  ?.require_cover_letter ||
-                  (application!.cover_letter && (
-                    <HorizontalCollapsible
-                      className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
-                      title="Cover letter"
-                    >
-                      <span
-                        className={cn(
-                          "text-sm/5",
-                          application!.cover_letter?.length === 0
-                            ? "text-muted-foreground"
-                            : "",
-                        )}
-                      >
-                        {application!.cover_letter?.length === 0
-                          ? "The user has not provided a cover letter."
-                          : application!.cover_letter}
-                      </span>
-                    </HorizontalCollapsible>
-                  ))}
                 {hasChallengeSubmission && (
                   <HorizontalCollapsible
                     className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
@@ -421,27 +400,6 @@ export function ApplicantPage({
               </>
             ) : (
               <>
-                {application!.job?.internship_preferences
-                  ?.require_cover_letter ||
-                  (application!.cover_letter && (
-                    <HorizontalCollapsible
-                      className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"
-                      title="Cover letter"
-                    >
-                      <span
-                        className={cn(
-                          "text-sm/5",
-                          application!.cover_letter?.length === 0
-                            ? "text-muted-foreground"
-                            : "",
-                        )}
-                      >
-                        {application!.cover_letter?.length === 0
-                          ? "The user has not provided a cover letter."
-                          : application!.cover_letter}
-                      </span>
-                    </HorizontalCollapsible>
-                  ))}
                 {hasChallengeSubmission && (
                   <HorizontalCollapsible
                     className="flex flex-col my-2 mt-2 bg-blue-50 rounded-[0.33em] p-4 border border-gray-200"

@@ -46,7 +46,6 @@ export const JobModal = ({
   const isSuperListing = Boolean(job?.challenge);
   const hasGithub = !!user?.github_link?.trim();
   const hasPortfolio = !!user?.portfolio_link?.trim();
-  const needsCover = !!job?.internship_preferences?.require_cover_letter;
   const needsGithub = !!job?.internship_preferences?.require_github;
   const needsPortfolio = !!job?.internship_preferences?.require_portfolio;
   const missingRequired =
@@ -95,7 +94,6 @@ export const JobModal = ({
 
                 {/* Requirement chips + notice (like desktop) */}
                 <div className="flex flex-wrap gap-1.5">
-                  {needsCover && <ReqPill ok label="Cover letter required" />}
                   {needsGithub && (
                     <ReqPill ok={hasGithub} label="GitHub linked" />
                   )}
@@ -117,20 +115,15 @@ export const JobModal = ({
                   <MarkdownBlock text={job.description} />
                 </Section>
 
-                {(job.requirements ||
-                  needsCover ||
-                  needsGithub ||
-                  needsPortfolio) && <Divider />}
+                {(job.requirements || needsGithub || needsPortfolio) && (
+                  <Divider />
+                )}
 
                 {/* Requirements */}
-                {(job.requirements ||
-                  needsCover ||
-                  needsGithub ||
-                  needsPortfolio) && (
+                {(job.requirements || needsGithub || needsPortfolio) && (
                   <Section title="Requirements">
                     <div className="space-y-2">
                       <div className="flex flex-wrap gap-1.5 mt-2">
-                        {needsCover && <ReqPill ok label="Cover letter" />}
                         {needsGithub && (
                           <ReqPill ok={hasGithub} label="GitHub profile" />
                         )}

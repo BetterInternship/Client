@@ -52,8 +52,6 @@ export const ApplyToJobButton = ({
 
     modalRegistry.completeProfileApply.open({
       profile,
-      requiresCoverLetter:
-        job.internship_preferences?.require_cover_letter === true,
       onApply,
     });
   };

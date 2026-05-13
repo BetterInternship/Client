@@ -19,7 +19,6 @@ export function MassApplyJobsSelector({
   onClose,
 }: MassApplyJobsSelectorProps) {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
-  const [coverLetter, setCoverLetter] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [jobsPage, setJobsPage] = useState(1);
   const jobsPageSize = 10;
@@ -52,16 +51,10 @@ export function MassApplyJobsSelector({
       return;
     }
 
-    if (!coverLetter.trim()) {
-      toast.error("Please enter a cover letter");
-      return;
-    }
-
     try {
       await massApply.mutateAsync({
         jobId: selectedJobId,
         studentIds: Array.from(selectedStudentIds),
-        coverLetter: coverLetter.trim(),
       });
       toast.success(
         `Successfully applied ${selectedStudentIds.size} student(s) to the job!`,
@@ -159,29 +152,15 @@ export function MassApplyJobsSelector({
             )}
         </div>
 
-        {/* Job Details & Cover Letter - right side */}
+        {/* Job Details - right side */}
         <div className="w-1/2 flex flex-col overflow-hidden">
           {selectedJob ? (
-            <>
-              <div className="flex-1 overflow-y-auto border-b min-h-0 px-3 py-2 text-sm">
-                <JobDetails 
-                  job={selectedJob}
-                  isAuthenticated={isAuthenticated()}
-                />
-              </div>
-
-              <div className="px-3 py-1.5 border-t flex-shrink-0 bg-white">
-                <label className="block text-xs font-semibold text-gray-700 mb-0.5">
-                  Cover Letter
-                </label>
-                <textarea
-                  value={coverLetter}
-                  onChange={(e) => setCoverLetter(e.target.value)}
-                  placeholder="Write a cover letter for all applications..."
-                  className="w-full px-2 py-1 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none h-12"
-                />
-              </div>
-            </>
+            <div className="flex-1 overflow-y-auto min-h-0 px-3 py-2 text-sm">
+              <JobDetails
+                job={selectedJob}
+                isAuthenticated={isAuthenticated()}
+              />
+            </div>
           ) : (
             <div className="flex items-center justify-center h-full text-gray-500">
               <p className="text-xs">Select a job</p>
@@ -196,9 +175,7 @@ export function MassApplyJobsSelector({
         </Button>
         <Button
           size="sm"
-          disabled={
-            !selectedJobId || !coverLetter.trim() || massApply.isPending
-          }
+          disabled={!selectedJobId || massApply.isPending}
           onClick={() => void handleApply()}
         >
           {massApply.isPending
