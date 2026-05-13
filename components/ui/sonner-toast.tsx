@@ -1,9 +1,10 @@
 import { Toaster } from "sonner";
-import { CheckCircle, AlertCircle, AlertTriangle } from "lucide-react";
+import { CheckCircle, AlertCircle, AlertTriangle, Loader2 } from "lucide-react";
 
 interface ToastOptions {
   center?: boolean;
   fitContent?: boolean;
+  color?: string;
 }
 
 const createToastPreset = (
@@ -11,12 +12,12 @@ const createToastPreset = (
   background: string,
   options: ToastOptions = {}
 ) => {
-  const { center = true, fitContent = false } = options;
+  const { center = true, fitContent = false, color = "#ffffff" } = options;
   return {
     icon,
     style: {
       background,
-      color: "#ffffff",
+      color,
       border: "none",
       display: "flex",
       alignItems: "center",
@@ -30,6 +31,14 @@ export const toastPresets = {
   success: createToastPreset(<CheckCircle className="h-5 w-5" />, "#059669"),
   destructive: createToastPreset(<AlertCircle className="h-5 w-5" />, "#dc2626"),
   alert: createToastPreset(<AlertTriangle className="h-5 w-5" />, "#d97706"),
+  loading: {
+    ...createToastPreset(
+      <Loader2 className="h-5 w-5 animate-spin" />,
+      "#ffffff",
+      { color: "#111827" },
+    ),
+    duration: Infinity,
+  },
 };
 
 export function createCustomToastPreset(

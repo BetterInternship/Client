@@ -266,17 +266,33 @@ export default function ProfilePage() {
             actionSlot={isEditing ? editActions : undefined}
             onEdit={() => setIsEditing(true)}
             onPhotoSelect={(file) => {
+              if (!file) return;
+
+              const uploadToastId = toast(
+                "Uploading profile photo...",
+                toastPresets.loading,
+              );
+
               void pfpUpload(file).then((success) => {
                 if (success) {
                   void queryClient.invalidateQueries({
                     queryKey: ["my-profile"],
                   });
                   window.dispatchEvent(new Event(PFP_UPDATED_EVENT));
-                  toast.success(
-                    "Profile photo uploaded successfully.",
-                    toastPresets.success,
-                  );
+                  toast.success("Profile photo uploaded successfully.", {
+                    ...toastPresets.success,
+                    id: uploadToastId,
+                  });
+                  return;
                 }
+
+                toast.error(
+                  "Could not upload profile photo. Please try again.",
+                  {
+                    ...toastPresets.destructive,
+                    id: uploadToastId,
+                  },
+                );
               });
             }}
           />
