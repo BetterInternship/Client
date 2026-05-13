@@ -12,17 +12,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   ApplyStepHeader,
-  CoverLetterStep,
   InternshipDetailsStep,
   ResumeStep,
 } from "./apply-modal-steps";
 
 type InternshipType = "credited" | "voluntary";
-type ApplyStep = 1 | 2 | 3;
+type ApplyStep = 1 | 2;
 
 export type ApplyPayload = {
   resumeId: string;
-  coverLetter: string;
 };
 
 export function ApplyModal({
@@ -30,16 +28,13 @@ export function ApplyModal({
   onCancel,
   onApply,
   applyLabel = "Apply",
-  requiresCoverLetter = false,
 }: {
   profile: PublicUser | null;
   onCancel: () => void;
   onApply: (payload: ApplyPayload) => void | Promise<void>;
   applyLabel?: string;
-  requiresCoverLetter?: boolean;
 }) {
   const queryClient = useQueryClient();
-  const coverLetterRef = useRef<HTMLTextAreaElement>(null);
   const resumeUpload = useResumeUploadForm();
 
   const { data: resumesData, isPending: resumesLoading } = useQuery({
@@ -71,13 +66,12 @@ export function ApplyModal({
   const [year, setYear] = useState(initialDate.year);
   const [saving, setSaving] = useState(false);
   const [uploadedResumeId, setUploadedResumeId] = useState<string | null>(null);
-  const [coverLetter, setCoverLetter] = useState("");
 
   const hasSavedInternshipDetails = !!(
     profile?.internship_preferences?.internship_type &&
     profile?.internship_preferences?.expected_start_date
   );
-  const totalSteps = requiresCoverLetter ? 3 : 2;
+  const totalSteps = 2;
   const years = useMemo(() => {
     const current = new Date().getFullYear();
     return Array.from({ length: 6 }, (_, i) => current + i);
@@ -98,14 +92,6 @@ export function ApplyModal({
   }, [resumesLoading, hasExistingResumes, resumes]);
 
   useEffect(() => {
-    if (step !== 3) return;
-    const focusTimer = window.setTimeout(() => {
-      coverLetterRef.current?.focus();
-    }, 120);
-    return () => window.clearTimeout(focusTimer);
-  }, [step]);
-
-  useEffect(() => {
     if (!hasSavedInternshipDetails) return;
     setInternshipType(profile?.internship_preferences?.internship_type ?? null);
     setMonth(initialDate.month);
@@ -122,7 +108,6 @@ export function ApplyModal({
   const canApply =
     hasSavedInternshipDetails ||
     (!!internshipType && month !== "" && year !== "");
-  const canSubmit = canApply && (!requiresCoverLetter || !!coverLetter.trim());
 
   async function uploadResumeIfNeeded(): Promise<string | null> {
     if (resumeChoice !== "new" || !resumeUpload.selectedFile)
@@ -164,7 +149,7 @@ export function ApplyModal({
   }
 
   async function handleApply() {
-    if (!canSubmit) return;
+    if (!canApply) return;
 
     try {
       setSaving(true);
@@ -194,7 +179,6 @@ export function ApplyModal({
 
       await onApply({
         resumeId: targetResumeId,
-        coverLetter: requiresCoverLetter ? coverLetter.trim() : "",
       });
     } catch (error) {
       console.error(error);
@@ -206,25 +190,13 @@ export function ApplyModal({
 
   function handleDetailsNext() {
     if (!canApply) return;
-    if (requiresCoverLetter) {
-      setStep(3);
-      return;
-    }
     void handleApply();
-  }
-
-  function goBack() {
-    setStep(step === 3 ? 2 : 1);
   }
 
   return (
     <div className="w-full sm:w-[34rem]">
       <div className="space-y-5">
-        <ApplyStepHeader
-          step={step}
-          totalSteps={totalSteps}
-          requiresCoverLetter={requiresCoverLetter}
-        />
+        <ApplyStepHeader step={step} totalSteps={totalSteps} />
 
         {step === 1 ? (
           <ResumeStep
@@ -257,7 +229,6 @@ export function ApplyModal({
             saving={saving}
             canApply={canApply}
             isReadOnly={hasSavedInternshipDetails}
-            requiresCoverLetter={requiresCoverLetter}
             applyLabel={applyLabel}
             onCancel={onCancel}
             onBack={() => setStep(1)}
@@ -266,19 +237,7 @@ export function ApplyModal({
             onYearChange={setYear}
             onContinue={handleDetailsNext}
           />
-        ) : (
-          <CoverLetterStep
-            coverLetter={coverLetter}
-            coverLetterRef={coverLetterRef}
-            saving={saving}
-            canSubmit={canSubmit}
-            applyLabel={applyLabel}
-            onCancel={onCancel}
-            onBack={goBack}
-            onCoverLetterChange={setCoverLetter}
-            onSubmit={() => void handleApply()}
-          />
-        )}
+        ) : null}
       </div>
     </div>
   );

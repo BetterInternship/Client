@@ -135,11 +135,7 @@ export const StudentGodAPI = {
       APIRouteBuilder("student-god").r("impersonations", "stop").build(),
       {},
     ),
-  massApply: async (dto: {
-    jobId: string;
-    studentIds: string[];
-    coverLetter?: string;
-  }) =>
+  massApply: async (dto: { jobId: string; studentIds: string[] }) =>
     APIClient.post<FetchResponse>(
       APIRouteBuilder("student-god").r("mass-apply").build(),
       dto,
@@ -164,10 +160,7 @@ export function useStudentImpersonation() {
 
 export function useMassApply() {
   return useMutation({
-    mutationFn: (dto: {
-      jobId: string;
-      studentIds: string[];
-      coverLetter?: string;
-    }) => StudentGodAPI.massApply(dto),
+    mutationFn: (dto: { jobId: string; studentIds: string[] }) =>
+      StudentGodAPI.massApply(dto),
   });
 }

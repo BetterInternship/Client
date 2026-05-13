@@ -203,22 +203,17 @@ export default function SearchPage() {
     modalRegistry.completeProfileApply.open({
       profile: profile.data,
       applyLabel: `Apply to ${selectedIds.size || 0}`,
-      requiresCoverLetter: selectedJobsList.some(
-        (job) => job.internship_preferences?.require_cover_letter === true,
-      ),
-      onApply: ({ resumeId, coverLetter }: ApplyPayload) => {
-        void runMassApply(resumeId, coverLetter);
+      onApply: ({ resumeId }: ApplyPayload) => {
+        void runMassApply(resumeId);
       },
     });
   };
-
-  const [massApplying, setMassApplying] = useState(false);
 
   // guard against double-submit
   const isSubmittingRef = useRef(false);
 
   const runMassApply = useCallback(
-    async (resumeId: string, coverLetter: string) => {
+    async (resumeId: string) => {
       if (isSubmittingRef.current) return;
       isSubmittingRef.current = true;
 
@@ -266,8 +261,6 @@ export default function SearchPage() {
           return;
         }
 
-        setMassApplying(true);
-
         const ok: Job[] = [];
         const failed: { job: Job; error: string }[] = [];
 
@@ -276,10 +269,6 @@ export default function SearchPage() {
             await applicationActions.create.mutateAsync({
               job_id: job.id ?? "",
               resume_id: resumeId,
-              cover_letter:
-                job.internship_preferences?.require_cover_letter === true
-                  ? coverLetter
-                  : "",
             });
             if (applicationActions.create.error) {
               failed.push({
@@ -299,7 +288,6 @@ export default function SearchPage() {
           }
         }
 
-        setMassApplying(false);
         const data = { ok, skipped, failed };
         modalRegistry.massApplyResult.open({
           massApplyResultsData: data,
@@ -313,16 +301,12 @@ export default function SearchPage() {
     [profile.data, applicationActions, clearSelection, setSelectMode],
   );
   const handleSingleApply = useCallback(
-    async ({ resumeId, coverLetter }: ApplyPayload) => {
+    async ({ resumeId }: ApplyPayload) => {
       if (!selectedJob?.id || !resumeId) return;
 
       const response = await applicationActions.create.mutateAsync({
         job_id: selectedJob.id,
         resume_id: resumeId,
-        cover_letter:
-          selectedJob.internship_preferences?.require_cover_letter === true
-            ? coverLetter
-            : "",
       });
 
       if (response.message) {
