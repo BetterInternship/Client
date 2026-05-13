@@ -299,6 +299,9 @@ export function useApplicationsData() {
   const applications = useQuery({
     queryKey: ["my-applications"],
     queryFn: () => ApplicationService.getApplications(),
+    staleTime: 30 * 1000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   return {
