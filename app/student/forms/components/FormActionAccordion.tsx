@@ -17,9 +17,7 @@ export const FormActionAccordion = ({
 }) => {
   const form = useFormRendererContext();
   const recipients = form.formMetadata.getSigningParties();
-  const requiresSignatures = recipients.some(
-    (recipient) => recipient.signatory_source?._id === "initiator",
-  );
+  const requiresSignatures = recipients.length > 1;
 
   return (
     <Accordion type="single" collapsible>
