@@ -17,7 +17,6 @@ import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
 import { useBlockPageRefreshEffect } from "@/hooks/use-refresh-block";
 import { PDFPreview } from "@/components/shared/pdf-preview";
-import { AddResumeModal } from "@/components/features/student/profile/AddResumeModal";
 import { ProfileAccordion } from "@/components/features/student/profile/ProfileAccordion";
 import {
   ProfileEditForm,
@@ -61,11 +60,6 @@ export default function ProfilePage() {
   // Modals
   const { open: openResumeModal, Modal: ResumeModal } =
     useModal("resume-modal");
-  const {
-    open: openAddResumeModal,
-    close: closeAddResumeModal,
-    Modal: AddResumeModalBox,
-  } = useModal("add-resume-modal");
 
   const profileEditorRef = useRef<{ save: () => Promise<boolean> }>(null);
   const queryClient = useQueryClient();
@@ -222,7 +216,16 @@ export default function ProfilePage() {
     isRenaming: isRenamingResume,
     actions: {
       view: openResumePreview,
-      add: openAddResumeModal,
+      add: () =>
+        modalRegistry.addResume.open({
+          isAtResumeLimit: atResumeLimit,
+          onComplete: () => {
+            void resumes.refetch();
+            void queryClient.invalidateQueries({
+              queryKey: ["my-profile"],
+            });
+          },
+        }),
       rename: onRenameResume,
       delete: onDeleteResume,
     },
@@ -324,20 +327,6 @@ export default function ProfilePage() {
         <ResumeModal className="max-w-[80vw]">
           <PDFPreview url={resumeURL} />
         </ResumeModal>
-
-        <AddResumeModalBox>
-          <AddResumeModal
-            onCancel={closeAddResumeModal}
-            onComplete={() => {
-              closeAddResumeModal();
-              void resumes.refetch();
-              void queryClient.invalidateQueries({
-                queryKey: ["my-profile"],
-              });
-            }}
-            isAtResumeLimit={atResumeLimit}
-          />
-        </AddResumeModalBox>
       </div>
     )
   );

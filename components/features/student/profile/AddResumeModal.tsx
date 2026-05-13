@@ -48,44 +48,32 @@ export function AddResumeModal({
   }
 
   return (
-    <div className="w-full sm:w-[34rem] p-4 sm:p-0 px-8">
-      <div className="space-y-5 px-8 p-4">
-        <div className="relative pr-10">
-          <h3 className="mt-1 text-xl font-semibold text-gray-900">
-            Upload new resume
-          </h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Upload a PDF resume to make it available when applying.
-          </p>
-        </div>
+    <div className="flex h-full w-full flex-col gap-6 pt-2 sm:w-[34rem]">
+      <div className="space-y-4">
+        <ResumeUploadFormFields
+          form={resumeUpload}
+          inputClassName="focus-visible:border-primary focus-visible:ring-primary/70 focus-visible:text-primary focus-visible:ring-2"
+          placeholder="Name this resume (e.g., Software Engineering Resume)"
+        />
+      </div>
 
-        <div className="space-y-4">
-          <ResumeUploadFormFields
-            form={resumeUpload}
-            inputClassName="focus-visible:border-primary focus-visible:ring-primary/70 focus-visible:text-primary focus-visible:ring-2"
-            placeholder="Name this resume (e.g., Software Engineering Resume)"
-          />
-        </div>
-
-        <div className="flex items-center border-t pt-4 mt-2">
-          <Button
-            variant="outline"
-            onClick={onCancel}
-            disabled={saving}
-            className="border-destructive/50 text-destructive hover:bg-destructive/10 hover:text-destructive"
-          >
-            Cancel
-          </Button>
-          <div className="ml-auto flex justify-end gap-2">
-            <Button
-              disabled={!canUpload || saving}
-              onClick={() => void handleUpload()}
-            >
-              {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Upload Resume
-            </Button>
-          </div>
-        </div>
+      <div className="mt-auto flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <Button
+          variant="outline"
+          onClick={onCancel}
+          disabled={saving}
+          className="w-full sm:w-auto"
+        >
+          Cancel
+        </Button>
+        <Button
+          disabled={!canUpload || saving}
+          onClick={() => void handleUpload()}
+          className="w-full sm:w-auto"
+        >
+          {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+          Upload Resume
+        </Button>
       </div>
     </div>
   );
