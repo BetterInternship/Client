@@ -182,10 +182,28 @@ export function FormFillerRenderer({
       console.log("[form-scroll-debug]", {
         event: eventName,
         windowScrollY: Math.round(window.scrollY),
+        windowInnerHeight: Math.round(window.innerHeight),
         containerScrollTop: Math.round(scrollContainer.scrollTop),
         containerTop: Math.round(containerRect.top),
         containerBottom: Math.round(containerRect.bottom),
-        activeTag: activeElement?.tagName,
+        activeElement:
+          activeElement instanceof HTMLInputElement ||
+          activeElement instanceof HTMLTextAreaElement ||
+          activeElement instanceof HTMLSelectElement
+            ? {
+                tag: activeElement.tagName,
+                type: activeElement.getAttribute("type"),
+                name: activeElement.getAttribute("name"),
+                placeholder: activeElement.getAttribute("placeholder"),
+                valueLength: activeElement.value.length,
+              }
+            : activeElement
+              ? {
+                  tag: activeElement.tagName,
+                  id: activeElement.id,
+                  className: activeElement.className,
+                }
+              : null,
         activeTop: activeRect ? Math.round(activeRect.top) : null,
         activeBottom: activeRect ? Math.round(activeRect.bottom) : null,
         visualViewportHeight: viewport ? Math.round(viewport.height) : null,
@@ -199,12 +217,14 @@ export function FormFillerRenderer({
     const logInput = () => logScrollState("input");
     const logFocusIn = () => logScrollState("focusin");
     const logScroll = () => logScrollState("scroll");
+    const logWindowScroll = () => logScrollState("window.scroll");
     const logViewportResize = () => logScrollState("visualViewport.resize");
     const logViewportScroll = () => logScrollState("visualViewport.scroll");
 
     scrollContainer.addEventListener("input", logInput, true);
     scrollContainer.addEventListener("focusin", logFocusIn, true);
     scrollContainer.addEventListener("scroll", logScroll, { passive: true });
+    window.addEventListener("scroll", logWindowScroll, { passive: true });
     window.visualViewport?.addEventListener("resize", logViewportResize);
     window.visualViewport?.addEventListener("scroll", logViewportScroll);
 
@@ -214,6 +234,7 @@ export function FormFillerRenderer({
       scrollContainer.removeEventListener("input", logInput, true);
       scrollContainer.removeEventListener("focusin", logFocusIn, true);
       scrollContainer.removeEventListener("scroll", logScroll);
+      window.removeEventListener("scroll", logWindowScroll);
       window.visualViewport?.removeEventListener("resize", logViewportResize);
       window.visualViewport?.removeEventListener("scroll", logViewportScroll);
     };
@@ -307,10 +328,10 @@ export function FormFillerRenderer({
   }, [formFiller.errors]);
 
   return (
-    <div className="relative h-full flex flex-col">
+    <div className="relative h-full flex flex-col [overflow-anchor:none]">
       <div
         ref={scrollContainerRef}
-        className={`relative flex-1 overflow-auto overscroll-contain [-webkit-overflow-scrolling:touch] flex flex-col ${debugAddBottomPadding ? "pb-[180px]" : ""} ${debugForceSingleScroll ? "max-h-none" : ""}`}
+        className={`relative flex-1 overflow-auto overscroll-contain [-webkit-overflow-scrolling:touch] [overflow-anchor:none] flex flex-col ${debugAddBottomPadding ? "pb-[180px]" : ""} ${debugForceSingleScroll ? "max-h-none" : ""}`}
       >
         <div className="space-y-3 px-7 flex-1 mb-5">
           <BlocksRenderer

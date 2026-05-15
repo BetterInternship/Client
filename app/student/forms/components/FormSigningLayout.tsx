@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
 import { useFormFiller } from "@/components/features/student/forms/form-filler.ctx";
 import { useMyAutofill, useMyAutofillUpdate } from "@/hooks/use-my-autofill";
@@ -112,6 +113,7 @@ const FORM_JITTER_DEBUG_DEFAULTS = {
   forceSingleScroll: false,
   addBottomPadding: false,
   hidePreviewPing: false,
+  plainFixedShell: false,
 };
 type FormJitterDebug = typeof FORM_JITTER_DEBUG_DEFAULTS;
 
@@ -167,6 +169,8 @@ export function FormSigningLayout({
   const [jitterDebug, setJitterDebug] = useState<FormJitterDebug>(
     FORM_JITTER_DEBUG_DEFAULTS,
   );
+  const [debugPortalTarget, setDebugPortalTarget] =
+    useState<HTMLElement | null>(null);
 
   useEffect(() => {
     form.updateWetSignatureMode(!!noEsign);
@@ -182,6 +186,7 @@ export function FormSigningLayout({
     setShowJitterDebug(
       new URLSearchParams(window.location.search).has("debugFormJitter"),
     );
+    setDebugPortalTarget(document.body);
 
     const updateCompactSigningLayout = () => {
       setIsCompactSigningLayout(
@@ -734,10 +739,13 @@ export function FormSigningLayout({
       </div>
     ) : null;
 
-  return (
+  const content = (
     <div
       className={cn(
-        "h-full min-h-0 flex flex-col",
+        "h-full min-h-0 flex flex-col [overflow-anchor:none]",
+        showJitterDebug &&
+          jitterDebug.plainFixedShell &&
+          "fixed inset-0 z-[9998] bg-white transform-none backdrop-blur-none",
         showJitterDebug &&
           jitterDebug.disableAnimations &&
           "[&_*]:!animate-none [&_*]:!transition-none",
@@ -771,6 +779,7 @@ export function FormSigningLayout({
         className={cn(
           "min-h-0 flex-1 px-0 py-0 mx-auto w-full transition-[max-width] duration-500 ease-in-out sm:px-6 sm:py-4",
           "max-w-7xl",
+          showJitterDebug && jitterDebug.plainFixedShell && "sm:p-0",
         )}
       >
         <div
@@ -1227,4 +1236,10 @@ export function FormSigningLayout({
       </div>
     </div>
   );
+
+  if (showJitterDebug && jitterDebug.plainFixedShell && debugPortalTarget) {
+    return createPortal(content, debugPortalTarget);
+  }
+
+  return content;
 }
