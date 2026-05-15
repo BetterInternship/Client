@@ -685,35 +685,19 @@ export function FormSigningLayout({
           >
             <span
               className={cn(
-                "relative inline-flex items-center justify-center rounded-full px-4 py-1.5 transition-[transform,background-color] duration-200",
+                "relative inline-flex items-center justify-center gap-2 rounded-full px-4 py-1.5 transition-colors duration-200",
                 mobileFieldsTab === "preview"
                   ? "bg-primary/10"
                   : "bg-transparent",
-                mobilePreviewNeedsAttention
-                  ? "translate-x-1.5"
-                  : "translate-x-0",
               )}
             >
-              <span
-                className="absolute -left-4 top-1/2 -translate-y-1/2"
-                aria-hidden="true"
-              >
+              {mobilePreviewNeedsAttention && (
                 <span
-                  className={cn(
-                    "block h-2.5 w-2.5 rounded-full bg-primary transition-all duration-200",
-                    mobilePreviewNeedsAttention
-                      ? "tab-attention-dot-jitter scale-100 opacity-100"
-                      : "scale-75 opacity-0",
-                  )}
+                  className="h-2 w-2 shrink-0 rounded-full bg-primary"
+                  aria-hidden="true"
                 />
-              </span>
-              <span
-                className={cn(
-                  mobilePreviewNeedsAttention && "tab-attention-jitter",
-                )}
-              >
-                PDF Preview
-              </span>
+              )}
+              <span>PDF Preview</span>
             </span>
           </button>
         </div>
