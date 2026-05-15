@@ -714,7 +714,7 @@ export function FormSigningLayout({
     ) : null;
 
   return (
-    <div className="h-full min-h-0 flex flex-col [overflow-anchor:none]">
+    <div className="h-full min-h-0 flex flex-col">
       <div
         className={cn(
           "min-h-0 flex-1 px-0 py-0 mx-auto w-full transition-[max-width] duration-500 ease-in-out sm:px-6 sm:py-4",
@@ -978,6 +978,7 @@ export function FormSigningLayout({
                           autoScrollToSelectedField={
                             selectedFieldSource === "pdf"
                           }
+                          selectFieldOnInteraction={!isMobileLayout}
                           onFieldSelect={handleFormFieldSelect}
                         />
                       </div>

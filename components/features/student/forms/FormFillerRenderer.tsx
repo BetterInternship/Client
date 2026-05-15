@@ -14,28 +14,18 @@ import { useSignContext } from "@/components/providers/sign.ctx";
 import { formatTimestampDateWithoutTime } from "@/lib/utils";
 import { withSavedSignatureImagesForFields } from "@/lib/saved-signature-image";
 
-const isEditingFormControl = () => {
-  if (typeof document === "undefined") return false;
-
-  const activeElement = document.activeElement;
-  return (
-    activeElement instanceof HTMLInputElement ||
-    activeElement instanceof HTMLTextAreaElement ||
-    activeElement instanceof HTMLSelectElement ||
-    activeElement?.getAttribute("contenteditable") === "true"
-  );
-};
-
 export function FormFillerRenderer({
   onValuesChange,
   onFieldSelect,
   selectionTick = 0,
   autoScrollToSelectedField = true,
+  selectFieldOnInteraction = true,
 }: {
   onValuesChange?: (values: Record<string, string>) => void;
   onFieldSelect?: (fieldId: string) => void;
   selectionTick?: number;
   autoScrollToSelectedField?: boolean;
+  selectFieldOnInteraction?: boolean;
 }) {
   const form = useFormRendererContext();
   const formFiller = useFormFiller();
@@ -183,8 +173,7 @@ export function FormFillerRenderer({
       !autoScrollToSelectedField ||
       !form.selectedPreviewId ||
       !fieldRefs.current[form.selectedPreviewId] ||
-      !scrollContainerRef.current ||
-      isEditingFormControl()
+      !scrollContainerRef.current
     )
       return;
 
@@ -223,7 +212,7 @@ export function FormFillerRenderer({
   // Scroll to first field with error
   useEffect(() => {
     const errorFields = Object.keys(formFiller.errors);
-    if (errorFields.length === 0 || isEditingFormControl()) return;
+    if (errorFields.length === 0) return;
 
     const firstErrorField = errorFields[0];
     const firstFieldElement = fieldRefs.current[firstErrorField];
@@ -266,10 +255,10 @@ export function FormFillerRenderer({
   }, [formFiller.errors]);
 
   return (
-    <div className="relative h-full flex flex-col [overflow-anchor:none]">
+    <div className="relative h-full flex flex-col">
       <div
         ref={scrollContainerRef}
-        className="relative flex-1 overflow-auto overscroll-contain [-webkit-overflow-scrolling:touch] [overflow-anchor:none] flex flex-col"
+        className="relative flex-1 overflow-auto flex flex-col"
       >
         <div className="space-y-3 px-7 flex-1 mb-5">
           <BlocksRenderer
@@ -334,6 +323,7 @@ export function FormFillerRenderer({
             }}
             fieldRefs={fieldRefs.current}
             selectedFieldId={form.selectedPreviewId}
+            selectFieldOnInteraction={selectFieldOnInteraction}
           />
         </div>
       </div>
@@ -351,6 +341,7 @@ const BlocksRenderer = <T extends any[]>({
   onBlurValidate,
   fieldRefs,
   selectedFieldId,
+  selectFieldOnInteraction,
 }: {
   formKey: string;
   blocks: ClientBlock<T>[];
@@ -361,6 +352,7 @@ const BlocksRenderer = <T extends any[]>({
   onBlurValidate?: (fieldKey: string, nextValue?: unknown) => void;
   fieldRefs: Record<string, HTMLDivElement | null>;
   selectedFieldId?: string;
+  selectFieldOnInteraction: boolean;
 }) => {
   if (!blocks.length) return null;
   const sortedBlocks = blocks.toSorted((a, b) => a.order - b.order);
@@ -392,9 +384,17 @@ const BlocksRenderer = <T extends any[]>({
                 ref={(el) => {
                   if (el && actualField) fieldRefs[actualField.field] = el;
                 }}
-                onClick={() => !isPhantom && setSelected(actualField?.field)}
+                onClick={() =>
+                  selectFieldOnInteraction &&
+                  !isPhantom &&
+                  setSelected(actualField?.field)
+                }
                 className={`flex-1 transition-all py-2 px-1 ${isPhantom ? "cursor-not-allowed" : "cursor-pointer"} ${isSelected ? "ring-2 ring-blue-500 ring-offset-2 rounded-[0.33em]" : ""}`}
-                onFocus={() => !isPhantom && setSelected(actualField?.field)}
+                onFocus={() =>
+                  selectFieldOnInteraction &&
+                  !isPhantom &&
+                  setSelected(actualField?.field)
+                }
                 title={isPhantom ? "This field is not visible in the PDF" : ""}
               >
                 <FieldRenderer
