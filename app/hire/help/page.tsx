@@ -17,6 +17,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { useBlurTransition } from "@/components/animata/blur";
+import { Target } from "lucide-react";
 
 export default function HelpPage() {
   const { isMobile } = useAppContext();
@@ -39,7 +40,10 @@ export default function HelpPage() {
           <div className="grid gap-2 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1">
             <Card className="flex flex-col gap-2">
               <h4 className="tracking-tighter">Contact us</h4>
-              <Link href="mailto://hello@betterinternship.com">
+              <Link
+                href="https://www.facebook.com/betterinternship.sherwin"
+                target="_blank"
+              >
                 <span className="flex items-center gap-2">
                   <Mail size={20} />
                   hello@betterinternship.com
@@ -57,7 +61,10 @@ export default function HelpPage() {
                   Viber
                 </span>
               </Link>
-              <Link href="https://www.facebook.com/profile.php?id=61579853068043">
+              <Link
+                href="https://www.facebook.com/betterinternship.sherwin"
+                target="_blank"
+              >
                 <span className="flex items-center gap-2">
                   <Facebook size={20} />
                   Facebook
@@ -76,7 +83,10 @@ export default function HelpPage() {
                 <span>View the guide</span>
               </Card>
             </Link>
-            <Link href="mailto://hello@betterinternship.com">
+            <Link
+              href="https://www.facebook.com/betterinternship.sherwin"
+              target="_blank"
+            >
               <Card className="flex flex-col gap-4 p-16 h-[100%] hover:bg-primary hover:text-primary-foreground">
                 <Bug size={48} />
                 <span>Found a bug? Report it to us here.</span>
