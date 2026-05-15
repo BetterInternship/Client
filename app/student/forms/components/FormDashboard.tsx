@@ -351,7 +351,7 @@ export default function FormDashboard({
                 Select a form to preview and start the signing flow. If you run
                 into any issues,{" "}
                 <a
-                  href="https://www.facebook.com/profile.php?id=61586110929431"
+                  href="https://www.facebook.com/betterinternship.sherwin"
                   className="text-primary hover:underline transition-all duration-200"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -375,7 +375,7 @@ export default function FormDashboard({
                 <br />
                 Have a copy of your department's form templates? <br />
                 <a
-                  href="https://www.facebook.com/profile.php?id=61586110929431"
+                  href="https://www.facebook.com/betterinternship.sherwin"
                   className="text-primary underline"
                   target="_blank"
                 >

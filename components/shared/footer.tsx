@@ -9,7 +9,7 @@ const LINKS: FooterLink[] = [
   { label: "Terms", href: "/TermsConditions.pdf" },
   {
     label: "Need help?",
-    href: "https://www.facebook.com/profile.php?id=61579853068043",
+    href: "https://www.facebook.com/betterinternship.sherwin",
     className: "text-primary",
   },
 ];
