@@ -19,13 +19,11 @@ export function FormFillerRenderer({
   onFieldSelect,
   selectionTick = 0,
   autoScrollToSelectedField = true,
-  selectFieldOnInteraction = true,
 }: {
   onValuesChange?: (values: Record<string, string>) => void;
   onFieldSelect?: (fieldId: string) => void;
   selectionTick?: number;
   autoScrollToSelectedField?: boolean;
-  selectFieldOnInteraction?: boolean;
 }) {
   const form = useFormRendererContext();
   const formFiller = useFormFiller();
@@ -323,7 +321,6 @@ export function FormFillerRenderer({
             }}
             fieldRefs={fieldRefs.current}
             selectedFieldId={form.selectedPreviewId}
-            selectFieldOnInteraction={selectFieldOnInteraction}
           />
         </div>
       </div>
@@ -341,7 +338,6 @@ const BlocksRenderer = <T extends any[]>({
   onBlurValidate,
   fieldRefs,
   selectedFieldId,
-  selectFieldOnInteraction,
 }: {
   formKey: string;
   blocks: ClientBlock<T>[];
@@ -352,7 +348,6 @@ const BlocksRenderer = <T extends any[]>({
   onBlurValidate?: (fieldKey: string, nextValue?: unknown) => void;
   fieldRefs: Record<string, HTMLDivElement | null>;
   selectedFieldId?: string;
-  selectFieldOnInteraction: boolean;
 }) => {
   if (!blocks.length) return null;
   const sortedBlocks = blocks.toSorted((a, b) => a.order - b.order);
@@ -384,17 +379,9 @@ const BlocksRenderer = <T extends any[]>({
                 ref={(el) => {
                   if (el && actualField) fieldRefs[actualField.field] = el;
                 }}
-                onClick={() =>
-                  selectFieldOnInteraction &&
-                  !isPhantom &&
-                  setSelected(actualField?.field)
-                }
+                onClick={() => !isPhantom && setSelected(actualField?.field)}
                 className={`flex-1 transition-all py-2 px-1 ${isPhantom ? "cursor-not-allowed" : "cursor-pointer"} ${isSelected ? "ring-2 ring-blue-500 ring-offset-2 rounded-[0.33em]" : ""}`}
-                onFocus={() =>
-                  selectFieldOnInteraction &&
-                  !isPhantom &&
-                  setSelected(actualField?.field)
-                }
+                onFocus={() => !isPhantom && setSelected(actualField?.field)}
                 title={isPhantom ? "This field is not visible in the PDF" : ""}
               >
                 <FieldRenderer

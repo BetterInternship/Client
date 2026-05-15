@@ -9,7 +9,7 @@ const FormsLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div
       suppressHydrationWarning
-      className="h-screen h-[100svh] md:h-screen flex flex-col overflow-hidden"
+      className="h-full min-h-0 flex flex-col overflow-hidden"
     >
       <MyFormsContextProvider>
         <FormRendererContextProvider>
