@@ -243,7 +243,7 @@ export function FormFillerRenderer({
     <div className="relative h-full flex flex-col">
       <div
         ref={scrollContainerRef}
-        className="relative flex-1 overflow-auto flex flex-col"
+        className="relative flex-1 overflow-auto overscroll-contain [-webkit-overflow-scrolling:touch] flex flex-col"
       >
         <div className="space-y-3 px-7 flex-1 mb-5">
           <BlocksRenderer
@@ -270,7 +270,11 @@ export function FormFillerRenderer({
                       [fieldKey]:
                         nextValue === null || nextValue === undefined
                           ? ""
-                          : String(nextValue),
+                          : typeof nextValue === "string" ||
+                              typeof nextValue === "number" ||
+                              typeof nextValue === "boolean"
+                            ? String(nextValue)
+                            : "",
                     };
 
               // Use form values directly as params (already in correct format)
