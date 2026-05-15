@@ -14,20 +14,28 @@ import { useSignContext } from "@/components/providers/sign.ctx";
 import { formatTimestampDateWithoutTime } from "@/lib/utils";
 import { withSavedSignatureImagesForFields } from "@/lib/saved-signature-image";
 
+const isEditingFormControl = () => {
+  if (typeof document === "undefined") return false;
+
+  const activeElement = document.activeElement;
+  return (
+    activeElement instanceof HTMLInputElement ||
+    activeElement instanceof HTMLTextAreaElement ||
+    activeElement instanceof HTMLSelectElement ||
+    activeElement?.getAttribute("contenteditable") === "true"
+  );
+};
+
 export function FormFillerRenderer({
   onValuesChange,
   onFieldSelect,
   selectionTick = 0,
   autoScrollToSelectedField = true,
-  debugAddBottomPadding = false,
-  debugForceSingleScroll = false,
 }: {
   onValuesChange?: (values: Record<string, string>) => void;
   onFieldSelect?: (fieldId: string) => void;
   selectionTick?: number;
   autoScrollToSelectedField?: boolean;
-  debugAddBottomPadding?: boolean;
-  debugForceSingleScroll?: boolean;
 }) {
   const form = useFormRendererContext();
   const formFiller = useFormFiller();
@@ -169,97 +177,14 @@ export function FormFillerRenderer({
     onValuesChange?.(formatValues(finalValues));
   }, [finalValues, onValuesChange]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const params = new URLSearchParams(window.location.search);
-    const debugEnabled =
-      params.get("formScrollDebug") === "1" ||
-      window.localStorage.getItem("formScrollDebug") === "1";
-
-    if (!debugEnabled || !scrollContainerRef.current) return;
-
-    const scrollContainer = scrollContainerRef.current;
-    let lastLogTime = 0;
-
-    const logScrollState = (eventName: string) => {
-      const now = Date.now();
-      if (now - lastLogTime < 80 && eventName === "scroll") return;
-      lastLogTime = now;
-
-      const activeElement = document.activeElement as HTMLElement | null;
-      const activeRect = activeElement?.getBoundingClientRect();
-      const containerRect = scrollContainer.getBoundingClientRect();
-      const viewport = window.visualViewport;
-
-      console.log("[form-scroll-debug]", {
-        event: eventName,
-        windowScrollY: Math.round(window.scrollY),
-        windowInnerHeight: Math.round(window.innerHeight),
-        containerScrollTop: Math.round(scrollContainer.scrollTop),
-        containerTop: Math.round(containerRect.top),
-        containerBottom: Math.round(containerRect.bottom),
-        activeElement:
-          activeElement instanceof HTMLInputElement ||
-          activeElement instanceof HTMLTextAreaElement ||
-          activeElement instanceof HTMLSelectElement
-            ? {
-                tag: activeElement.tagName,
-                type: activeElement.getAttribute("type"),
-                name: activeElement.getAttribute("name"),
-                placeholder: activeElement.getAttribute("placeholder"),
-                valueLength: activeElement.value.length,
-              }
-            : activeElement
-              ? {
-                  tag: activeElement.tagName,
-                  id: activeElement.id,
-                  className: activeElement.className,
-                }
-              : null,
-        activeTop: activeRect ? Math.round(activeRect.top) : null,
-        activeBottom: activeRect ? Math.round(activeRect.bottom) : null,
-        visualViewportHeight: viewport ? Math.round(viewport.height) : null,
-        visualViewportOffsetTop: viewport
-          ? Math.round(viewport.offsetTop)
-          : null,
-        visualViewportPageTop: viewport ? Math.round(viewport.pageTop) : null,
-      });
-    };
-
-    const logInput = () => logScrollState("input");
-    const logFocusIn = () => logScrollState("focusin");
-    const logScroll = () => logScrollState("scroll");
-    const logWindowScroll = () => logScrollState("window.scroll");
-    const logViewportResize = () => logScrollState("visualViewport.resize");
-    const logViewportScroll = () => logScrollState("visualViewport.scroll");
-
-    scrollContainer.addEventListener("input", logInput, true);
-    scrollContainer.addEventListener("focusin", logFocusIn, true);
-    scrollContainer.addEventListener("scroll", logScroll, { passive: true });
-    window.addEventListener("scroll", logWindowScroll, { passive: true });
-    window.visualViewport?.addEventListener("resize", logViewportResize);
-    window.visualViewport?.addEventListener("scroll", logViewportScroll);
-
-    logScrollState("mounted");
-
-    return () => {
-      scrollContainer.removeEventListener("input", logInput, true);
-      scrollContainer.removeEventListener("focusin", logFocusIn, true);
-      scrollContainer.removeEventListener("scroll", logScroll);
-      window.removeEventListener("scroll", logWindowScroll);
-      window.visualViewport?.removeEventListener("resize", logViewportResize);
-      window.visualViewport?.removeEventListener("scroll", logViewportScroll);
-    };
-  }, []);
-
   // Scroll to selected field
   useEffect(() => {
     if (
       !autoScrollToSelectedField ||
       !form.selectedPreviewId ||
       !fieldRefs.current[form.selectedPreviewId] ||
-      !scrollContainerRef.current
+      !scrollContainerRef.current ||
+      isEditingFormControl()
     )
       return;
 
@@ -298,7 +223,7 @@ export function FormFillerRenderer({
   // Scroll to first field with error
   useEffect(() => {
     const errorFields = Object.keys(formFiller.errors);
-    if (errorFields.length === 0) return;
+    if (errorFields.length === 0 || isEditingFormControl()) return;
 
     const firstErrorField = errorFields[0];
     const firstFieldElement = fieldRefs.current[firstErrorField];
@@ -344,7 +269,7 @@ export function FormFillerRenderer({
     <div className="relative h-full flex flex-col [overflow-anchor:none]">
       <div
         ref={scrollContainerRef}
-        className={`relative flex-1 overflow-auto overscroll-contain [-webkit-overflow-scrolling:touch] [overflow-anchor:none] flex flex-col ${debugAddBottomPadding ? "pb-[180px]" : ""} ${debugForceSingleScroll ? "max-h-none" : ""}`}
+        className="relative flex-1 overflow-auto overscroll-contain [-webkit-overflow-scrolling:touch] [overflow-anchor:none] flex flex-col"
       >
         <div className="space-y-3 px-7 flex-1 mb-5">
           <BlocksRenderer

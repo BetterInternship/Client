@@ -8,7 +8,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { useFormRendererContext } from "@/components/features/student/forms/form-renderer.ctx";
 import { useFormFiller } from "@/components/features/student/forms/form-filler.ctx";
 import { useMyAutofill, useMyAutofillUpdate } from "@/hooks/use-my-autofill";
@@ -106,16 +105,6 @@ type SigningStep = "timeline" | "fields" | "preview-review" | "confirm";
 
 const DESKTOP_BACK_STEP_RESET_DELAY_MS = 320;
 const COMPACT_SIGNING_LAYOUT_BREAKPOINT_PX = 1150;
-const FORM_JITTER_DEBUG_DEFAULTS = {
-  disableParentUpdates: false,
-  hideFooter: false,
-  disableAnimations: false,
-  forceSingleScroll: false,
-  addBottomPadding: false,
-  hidePreviewPing: false,
-  plainFixedShell: false,
-};
-type FormJitterDebug = typeof FORM_JITTER_DEBUG_DEFAULTS;
 
 export function FormSigningLayout({
   formLabel,
@@ -165,12 +154,6 @@ export function FormSigningLayout({
     "form" | "pdf" | null
   >(null);
   const [selectionTick, setSelectionTick] = useState(0);
-  const [showJitterDebug, setShowJitterDebug] = useState(false);
-  const [jitterDebug, setJitterDebug] = useState<FormJitterDebug>(
-    FORM_JITTER_DEBUG_DEFAULTS,
-  );
-  const [debugPortalTarget, setDebugPortalTarget] =
-    useState<HTMLElement | null>(null);
 
   useEffect(() => {
     form.updateWetSignatureMode(!!noEsign);
@@ -182,11 +165,6 @@ export function FormSigningLayout({
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-
-    setShowJitterDebug(
-      new URLSearchParams(window.location.search).has("debugFormJitter"),
-    );
-    setDebugPortalTarget(document.body);
 
     const updateCompactSigningLayout = () => {
       setIsCompactSigningLayout(
@@ -704,31 +682,27 @@ export function FormSigningLayout({
                 mobileFieldsTab === "preview"
                   ? "bg-primary/10"
                   : "bg-transparent",
-                mobilePreviewNeedsAttention && !jitterDebug.hidePreviewPing
+                mobilePreviewNeedsAttention
                   ? "translate-x-1.5"
                   : "translate-x-0",
               )}
             >
-              {!jitterDebug.hidePreviewPing && (
+              <span
+                className="absolute -left-4 top-1/2 -translate-y-1/2"
+                aria-hidden="true"
+              >
                 <span
-                  className="absolute -left-4 top-1/2 -translate-y-1/2"
-                  aria-hidden="true"
-                >
-                  <span
-                    className={cn(
-                      "block h-2.5 w-2.5 rounded-full bg-primary transition-all duration-200",
-                      mobilePreviewNeedsAttention
-                        ? "tab-attention-dot-jitter scale-100 opacity-100"
-                        : "scale-75 opacity-0",
-                    )}
-                  />
-                </span>
-              )}
+                  className={cn(
+                    "block h-2.5 w-2.5 rounded-full bg-primary transition-all duration-200",
+                    mobilePreviewNeedsAttention
+                      ? "tab-attention-dot-jitter scale-100 opacity-100"
+                      : "scale-75 opacity-0",
+                  )}
+                />
+              </span>
               <span
                 className={cn(
-                  mobilePreviewNeedsAttention &&
-                    !jitterDebug.hidePreviewPing &&
-                    "tab-attention-jitter",
+                  mobilePreviewNeedsAttention && "tab-attention-jitter",
                 )}
               >
                 PDF Preview
@@ -739,47 +713,12 @@ export function FormSigningLayout({
       </div>
     ) : null;
 
-  const content = (
-    <div
-      className={cn(
-        "h-full min-h-0 flex flex-col [overflow-anchor:none]",
-        showJitterDebug &&
-          jitterDebug.plainFixedShell &&
-          "fixed inset-0 z-[9998] bg-white transform-none backdrop-blur-none",
-        showJitterDebug &&
-          jitterDebug.disableAnimations &&
-          "[&_*]:!animate-none [&_*]:!transition-none",
-      )}
-    >
-      {showJitterDebug && isMobileLayout && (
-        <div className="fixed right-2 top-20 z-[9999] max-w-[210px] rounded-[0.33em] border border-gray-300 bg-white/95 p-2 text-[11px] text-gray-800 shadow-lg">
-          <div className="mb-1 font-semibold text-primary">
-            Form jitter debug
-          </div>
-          {(Object.keys(jitterDebug) as Array<keyof FormJitterDebug>).map(
-            (key) => (
-              <label key={key} className="mb-1 flex items-center gap-1">
-                <input
-                  type="checkbox"
-                  checked={jitterDebug[key]}
-                  onChange={(event) =>
-                    setJitterDebug((prev) => ({
-                      ...prev,
-                      [key]: event.target.checked,
-                    }))
-                  }
-                />
-                <span>{key}</span>
-              </label>
-            ),
-          )}
-        </div>
-      )}
+  return (
+    <div className="h-full min-h-0 flex flex-col [overflow-anchor:none]">
       <div
         className={cn(
           "min-h-0 flex-1 px-0 py-0 mx-auto w-full transition-[max-width] duration-500 ease-in-out sm:px-6 sm:py-4",
           "max-w-7xl",
-          showJitterDebug && jitterDebug.plainFixedShell && "sm:p-0",
         )}
       >
         <div
@@ -1034,13 +973,7 @@ export function FormSigningLayout({
                       {renderMobileFieldsTabs()}
                       <div className="min-h-0 flex-1">
                         <FormFillerRenderer
-                          onValuesChange={
-                            jitterDebug.disableParentUpdates
-                              ? undefined
-                              : handleValuesChange
-                          }
-                          debugAddBottomPadding={jitterDebug.addBottomPadding}
-                          debugForceSingleScroll={jitterDebug.forceSingleScroll}
+                          onValuesChange={handleValuesChange}
                           selectionTick={selectionTick}
                           autoScrollToSelectedField={
                             selectedFieldSource === "pdf"
@@ -1048,79 +981,77 @@ export function FormSigningLayout({
                           onFieldSelect={handleFormFieldSelect}
                         />
                       </div>
-                      {!jitterDebug.hideFooter && (
-                        <div
-                          className={cn(
-                            isMobileLayout
-                              ? "overflow-hidden bg-white transition-all duration-300 ease-in-out"
-                              : "bg-white p-3",
-                            isMobileLayout &&
-                              (isMobilePreviewTabActive
-                                ? "max-h-0 translate-y-full opacity-0 pointer-events-none"
-                                : "max-h-24 translate-y-0 opacity-100"),
-                          )}
-                        >
-                          {isMobileLayout ? (
-                            <div className="flex items-center gap-2 p-3">
-                              <Button
-                                size="icon"
-                                variant="outline"
-                                disabled={nextLoading}
-                                className="h-11 w-11 shrink-0"
-                                onClick={() => {
-                                  if (noRecipientStep) {
-                                    onBack();
-                                    setCurrentStep(initialStep);
-                                    return;
-                                  }
+                      <div
+                        className={cn(
+                          isMobileLayout
+                            ? "overflow-hidden bg-white transition-all duration-300 ease-in-out"
+                            : "bg-white p-3",
+                          isMobileLayout &&
+                            (isMobilePreviewTabActive
+                              ? "max-h-0 translate-y-full opacity-0 pointer-events-none"
+                              : "max-h-24 translate-y-0 opacity-100"),
+                        )}
+                      >
+                        {isMobileLayout ? (
+                          <div className="flex items-center gap-2 p-3">
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              disabled={nextLoading}
+                              className="h-11 w-11 shrink-0"
+                              onClick={() => {
+                                if (noRecipientStep) {
+                                  onBack();
+                                  setCurrentStep(initialStep);
+                                  return;
+                                }
 
-                                  goToStep("timeline");
-                                }}
-                                aria-label="Back"
-                              >
-                                <ArrowLeft className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="lg"
-                                className="flex-1 whitespace-nowrap"
-                                disabled={!nextEnabled || nextLoading}
-                                onClick={() => void handleNext()}
-                              >
-                                <TextLoader loading={nextLoading}>
-                                  Next
-                                </TextLoader>
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                              <Button
-                                size="lg"
-                                variant="outline"
-                                disabled={nextLoading}
-                                className={cn(
-                                  "w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1",
-                                  noRecipientStep
-                                    ? "opacity-0 pointer-events-none"
-                                    : "",
-                                )}
-                                onClick={() => goToStep("timeline")}
-                              >
-                                Back
-                              </Button>
-                              <Button
-                                size="lg"
-                                className="w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1"
-                                disabled={!nextEnabled || nextLoading}
-                                onClick={() => void handleNext()}
-                              >
-                                <TextLoader loading={nextLoading}>
-                                  Next
-                                </TextLoader>
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                                goToStep("timeline");
+                              }}
+                              aria-label="Back"
+                            >
+                              <ArrowLeft className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="lg"
+                              className="flex-1 whitespace-nowrap"
+                              disabled={!nextEnabled || nextLoading}
+                              onClick={() => void handleNext()}
+                            >
+                              <TextLoader loading={nextLoading}>
+                                Next
+                              </TextLoader>
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <Button
+                              size="lg"
+                              variant="outline"
+                              disabled={nextLoading}
+                              className={cn(
+                                "w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1",
+                                noRecipientStep
+                                  ? "opacity-0 pointer-events-none"
+                                  : "",
+                              )}
+                              onClick={() => goToStep("timeline")}
+                            >
+                              Back
+                            </Button>
+                            <Button
+                              size="lg"
+                              className="w-full whitespace-nowrap sm:min-w-[140px] sm:flex-1"
+                              disabled={!nextEnabled || nextLoading}
+                              onClick={() => void handleNext()}
+                            >
+                              <TextLoader loading={nextLoading}>
+                                Next
+                              </TextLoader>
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -1236,10 +1167,4 @@ export function FormSigningLayout({
       </div>
     </div>
   );
-
-  if (showJitterDebug && jitterDebug.plainFixedShell && debugPortalTarget) {
-    return createPortal(content, debugPortalTarget);
-  }
-
-  return content;
 }
