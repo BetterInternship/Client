@@ -105,7 +105,7 @@ const ForgotPasswordForm = () => {
               </span>
               <Button
                 type="submit"
-                onClick={() => handle_request}
+                onClick={(e) => void handle_request(e)}
                 disabled={isLoading}
               >
                 {isLoading ? "Sending request..." : "Request password reset"}
