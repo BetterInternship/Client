@@ -309,8 +309,7 @@ export function FormSigningLayout({
     [form.formMetadata, previewValues],
   );
   const wetSignatureHiddenFieldNames = useMemo(
-    () =>
-      noEsign ? getSignatureDerivedFieldNames(form.formMetadata) : [],
+    () => (noEsign ? getSignatureDerivedFieldNames(form.formMetadata) : []),
     [form.formMetadata, noEsign],
   );
 
@@ -338,9 +337,16 @@ export function FormSigningLayout({
         prev === nextRequiredFieldsComplete ? prev : nextRequiredFieldsComplete,
       );
 
-      setPreviewValues((prev) =>
-        areFormValuesEqual(prev, nextValues) ? prev : nextValues,
-      );
+      const shouldUpdatePreviewValues =
+        !isMobileLayout ||
+        currentStep !== "fields" ||
+        mobileFieldsTab === "preview";
+
+      if (shouldUpdatePreviewValues) {
+        setPreviewValues((prev) =>
+          areFormValuesEqual(prev, nextValues) ? prev : nextValues,
+        );
+      }
 
       if (
         hasInitializedFieldValues &&
@@ -429,9 +435,7 @@ export function FormSigningLayout({
           }) && Object.keys(recipientEmailErrors).length === 0
         );
       case "fields":
-        return (
-          areRequiredFieldsComplete && (noEsign || signContext.hasAgreed)
-        );
+        return areRequiredFieldsComplete && (noEsign || signContext.hasAgreed);
       case "preview-review":
         return true;
       case "confirm":
