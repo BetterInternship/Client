@@ -19,11 +19,15 @@ export function FormFillerRenderer({
   onFieldSelect,
   selectionTick = 0,
   autoScrollToSelectedField = true,
+  debugAddBottomPadding = false,
+  debugForceSingleScroll = false,
 }: {
   onValuesChange?: (values: Record<string, string>) => void;
   onFieldSelect?: (fieldId: string) => void;
   selectionTick?: number;
   autoScrollToSelectedField?: boolean;
+  debugAddBottomPadding?: boolean;
+  debugForceSingleScroll?: boolean;
 }) {
   const form = useFormRendererContext();
   const formFiller = useFormFiller();
@@ -152,6 +156,69 @@ export function FormFillerRenderer({
     onValuesChange?.(formatValues(finalValues));
   }, [finalValues, onValuesChange]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    const debugEnabled =
+      params.get("formScrollDebug") === "1" ||
+      window.localStorage.getItem("formScrollDebug") === "1";
+
+    if (!debugEnabled || !scrollContainerRef.current) return;
+
+    const scrollContainer = scrollContainerRef.current;
+    let lastLogTime = 0;
+
+    const logScrollState = (eventName: string) => {
+      const now = Date.now();
+      if (now - lastLogTime < 80 && eventName === "scroll") return;
+      lastLogTime = now;
+
+      const activeElement = document.activeElement as HTMLElement | null;
+      const activeRect = activeElement?.getBoundingClientRect();
+      const containerRect = scrollContainer.getBoundingClientRect();
+      const viewport = window.visualViewport;
+
+      console.log("[form-scroll-debug]", {
+        event: eventName,
+        windowScrollY: Math.round(window.scrollY),
+        containerScrollTop: Math.round(scrollContainer.scrollTop),
+        containerTop: Math.round(containerRect.top),
+        containerBottom: Math.round(containerRect.bottom),
+        activeTag: activeElement?.tagName,
+        activeTop: activeRect ? Math.round(activeRect.top) : null,
+        activeBottom: activeRect ? Math.round(activeRect.bottom) : null,
+        visualViewportHeight: viewport ? Math.round(viewport.height) : null,
+        visualViewportOffsetTop: viewport
+          ? Math.round(viewport.offsetTop)
+          : null,
+        visualViewportPageTop: viewport ? Math.round(viewport.pageTop) : null,
+      });
+    };
+
+    const logInput = () => logScrollState("input");
+    const logFocusIn = () => logScrollState("focusin");
+    const logScroll = () => logScrollState("scroll");
+    const logViewportResize = () => logScrollState("visualViewport.resize");
+    const logViewportScroll = () => logScrollState("visualViewport.scroll");
+
+    scrollContainer.addEventListener("input", logInput, true);
+    scrollContainer.addEventListener("focusin", logFocusIn, true);
+    scrollContainer.addEventListener("scroll", logScroll, { passive: true });
+    window.visualViewport?.addEventListener("resize", logViewportResize);
+    window.visualViewport?.addEventListener("scroll", logViewportScroll);
+
+    logScrollState("mounted");
+
+    return () => {
+      scrollContainer.removeEventListener("input", logInput, true);
+      scrollContainer.removeEventListener("focusin", logFocusIn, true);
+      scrollContainer.removeEventListener("scroll", logScroll);
+      window.visualViewport?.removeEventListener("resize", logViewportResize);
+      window.visualViewport?.removeEventListener("scroll", logViewportScroll);
+    };
+  }, []);
+
   // Scroll to selected field
   useEffect(() => {
     if (
@@ -243,7 +310,7 @@ export function FormFillerRenderer({
     <div className="relative h-full flex flex-col">
       <div
         ref={scrollContainerRef}
-        className="relative flex-1 overflow-auto overscroll-contain [-webkit-overflow-scrolling:touch] flex flex-col"
+        className={`relative flex-1 overflow-auto overscroll-contain [-webkit-overflow-scrolling:touch] flex flex-col ${debugAddBottomPadding ? "pb-[180px]" : ""} ${debugForceSingleScroll ? "max-h-none" : ""}`}
       >
         <div className="space-y-3 px-7 flex-1 mb-5">
           <BlocksRenderer
