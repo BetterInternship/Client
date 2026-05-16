@@ -39,7 +39,7 @@ import {
   getFreshHistoryCutoffMsFromStorage,
   setFreshHistoryCutoffMsInStorage,
 } from "../fresh-history";
-import { SUPPORT_FACEBOOK } from "@/constants";
+import { STUDENT_FORM_GUIDE, SUPPORT_FACEBOOK } from "@/constants";
 
 type GeneratedFormItem = {
   form_process_id?: string;
