@@ -20,6 +20,7 @@ import { useBlurTransition } from "@/components/animata/blur";
 import {
   EMPLOYER_GUIDE,
   SUPPORT_CALENDAR,
+  SUPPORT_EMAIL,
   SUPPORT_EMAIL_LINK,
   SUPPORT_FACEBOOK,
   SUPPORT_PHONE,
@@ -49,13 +50,10 @@ export default function HelpPage() {
           <div className="grid gap-2 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1">
             <Card className="flex flex-col gap-2">
               <h4 className="tracking-tighter">Contact us</h4>
-              <Link
-                href="https://www.facebook.com/betterinternship.sherwin"
-                target="_blank"
-              >
+              <Link href={SUPPORT_EMAIL_LINK} target="_blank">
                 <span className="flex items-center gap-2">
                   <Mail size={20} />
-                  hello@betterinternship.com
+                  {SUPPORT_EMAIL}
                 </span>
               </Link>
               <Link href={SUPPORT_PHONE_LINK}>
@@ -70,10 +68,7 @@ export default function HelpPage() {
                   Viber
                 </span>
               </Link>
-              <Link 
-                href={SUPPORT_FACEBOOK}
-                target="_blank"
-              >
+              <Link href={SUPPORT_FACEBOOK} target="_blank">
                 <span className="flex items-center gap-2">
                   <Facebook size={20} />
                   Facebook
@@ -92,10 +87,7 @@ export default function HelpPage() {
                 <span>View the guide</span>
               </Card>
             </Link>
-            <Link
-              href={SUPPORT_FACEBOOK}
-              target="_blank"
-            >
+            <Link href={SUPPORT_FACEBOOK} target="_blank">
               <Card className="flex flex-col gap-4 p-16 h-[100%] hover:bg-primary hover:text-primary-foreground">
                 <Bug size={48} />
                 <span>Found a bug? Report it to us here.</span>
