@@ -16,10 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useProfile } from "@/hooks/use-employer-api";
-import {
-  Job,
-  UpdateJobChallengeListingPayload,
-} from "@/lib/db/db.types";
+import { Job, UpdateJobChallengeListingPayload } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useFormData } from "@/lib/form-data";
 import Head from "next/head";
@@ -115,6 +112,16 @@ const EditJobPage = ({
     Modal: AlertModal,
   } = useModal("alert-modal", { showCloseButton: false });
 
+  const listingInternshipPreferences = () => ({
+    internship_types: formData.internship_preferences?.internship_types,
+    job_setup_ids: formData.internship_preferences?.job_setup_ids,
+    job_category_ids: formData.internship_preferences?.job_category_ids,
+    job_commitment_ids: formData.internship_preferences?.job_commitment_ids,
+    expected_start_date: formData.internship_preferences?.expected_start_date,
+    require_github: formData.internship_preferences?.require_github,
+    require_portfolio: formData.internship_preferences?.require_portfolio,
+  });
+
   useEffect(() => {
     if (refreshFlag === "true") {
       const newUrl = new URL(window.location.href);
@@ -160,10 +167,7 @@ const EditJobPage = ({
       salary: formData.allowance === 0 ? formData.salary : undefined,
       salary_freq: formData.allowance === 0 ? formData.salary_freq : undefined,
       is_unlisted: formData.is_unlisted ?? false,
-      internship_preferences: {
-        ...formData.internship_preferences,
-        ...(isSuperListing ? { require_cover_letter: false } : {}),
-      },
+      internship_preferences: listingInternshipPreferences(),
       ...(isSuperListing
         ? {
             challenge: {
@@ -193,15 +197,6 @@ const EditJobPage = ({
   }, [job]);
 
   useEffect(() => {
-    if (!isSuperListing) return;
-    if (!formData.internship_preferences?.require_cover_letter) return;
-    setField("internship_preferences", {
-      ...formData.internship_preferences,
-      require_cover_letter: false,
-    });
-  }, [isSuperListing, formData.internship_preferences?.require_cover_letter]);
-
-  useEffect(() => {
     if (job && saving) {
       const edited_job: UpdateJobChallengeListingPayload = {
         id: formData.id,
@@ -213,10 +208,7 @@ const EditJobPage = ({
         salary: formData.salary ?? null,
         salary_freq: formData.salary_freq ?? undefined,
         is_unlisted: formData.is_unlisted,
-        internship_preferences: {
-          ...(formData.internship_preferences ?? {}),
-          ...(isSuperListing ? { require_cover_letter: false } : {}),
-        },
+        internship_preferences: listingInternshipPreferences(),
         ...(isSuperListing
           ? {
               challenge: {
@@ -386,7 +378,9 @@ const EditJobPage = ({
                       </h2>
                       <Textarea
                         value={challengeDescription}
-                        onChange={(e) => setChallengeDescription(e.target.value)}
+                        onChange={(e) =>
+                          setChallengeDescription(e.target.value)
+                        }
                         className="text-sm min-h-[140px]"
                         placeholder="Describe the challenge submission expected from applicants..."
                         maxLength={4000}
@@ -834,9 +828,7 @@ const EditJobPage = ({
                             tasks, projects, or roles in your company
                           </p>
                         </div>
-                        <div 
-                          className="relative mdx-click-area"
-                        >
+                        <div className="relative mdx-click-area">
                           <MDXEditor
                             className="min-h-[250px] border border-gray-200 rounded-[0.33em] overflow-y-auto"
                             markdown={formData.description ?? ""}
@@ -864,7 +856,7 @@ const EditJobPage = ({
                           />
                         </div>
                         <p className="text-sm text-gray-400 mb-1">(Optional)</p>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                           <div
                             onClick={() =>
                               setField("internship_preferences", {
@@ -929,50 +921,6 @@ const EditJobPage = ({
                               </Label>
                               <p className="text-xs text-gray-500">
                                 Require portfolio link
-                              </p>
-                            </div>
-                          </div>
-
-                          <div
-                            onClick={() => {
-                              if (isSuperListing) return;
-                              setField("internship_preferences", {
-                                ...formData.internship_preferences,
-                                require_cover_letter:
-                                  !formData.internship_preferences
-                                    ?.require_cover_letter,
-                              });
-                            }}
-                            className={`flex items-start gap-4 p-3 border rounded-[0.33em] transition-colors h-fit
-                            ${isSuperListing ? "cursor-not-allowed opacity-60 border-gray-200 bg-gray-50" : "cursor-pointer"}
-                            ${!isSuperListing && formData.internship_preferences?.require_cover_letter ? "border-primary border-opacity-85" : ""}
-                            ${!isSuperListing && !formData.internship_preferences?.require_cover_letter ? "border-gray-200 hover:border-gray-300" : ""}`}
-                          >
-                            <FormCheckbox
-                              checked={
-                                isSuperListing
-                                  ? false
-                                  : (formData.internship_preferences
-                                      ?.require_cover_letter ?? false)
-                              }
-                              setter={() => {
-                                if (isSuperListing) return;
-                                setField("internship_preferences", {
-                                  ...formData.internship_preferences,
-                                  require_cover_letter:
-                                    !formData.internship_preferences
-                                      ?.require_cover_letter,
-                                });
-                              }}
-                            />
-                            <div className="grid grid-rows-1 md:grid-rows-2">
-                              <Label className="text-xs font-medium text-gray-900">
-                                Cover Letter
-                              </Label>
-                              <p className="text-xs text-gray-500">
-                                {isSuperListing
-                                  ? "Disabled for super listings"
-                                  : "Require cover letter"}
                               </p>
                             </div>
                           </div>

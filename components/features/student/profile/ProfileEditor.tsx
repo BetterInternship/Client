@@ -277,7 +277,7 @@ export const ProfileEditor = forwardRef<
           type="multiple"
           value={openSections}
           onValueChange={(value) => setOpenSections(value as EditSectionKey[])}
-          className="overflow-hidden rounded-[0.33em] border border-blue-100 bg-white shadow-sm"
+          className="overflow-visible rounded-[0.33em] border border-blue-100 bg-white shadow-sm"
         >
           <EditAccordionItem
             value="resume"
@@ -608,7 +608,10 @@ function EditAccordionItem({
           {hasError && <span className="h-2 w-2 rounded-full bg-destructive" />}
         </span>
       </AccordionTrigger>
-      <AccordionContent className="px-4 pb-5 sm:px-5">
+      <AccordionContent
+        className="px-4 pb-5 sm:px-5"
+        contentClassName="overflow-visible"
+      >
         {children}
       </AccordionContent>
     </AccordionItem>

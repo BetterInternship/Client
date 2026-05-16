@@ -9,7 +9,9 @@
  */
 
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
+import { toastPresets } from "@/components/ui/sonner-toast";
 import { useCallback, useImperativeHandle, useRef, useState } from "react";
+import { toast } from "sonner";
 
 interface IUseFile {
   url: string;
@@ -144,7 +146,10 @@ export const FileUploadInput = ({
 
     // Check file size
     if (file.size > Math.floor(maxSize * 1024 * 1024)) {
-      alert("File size must be less than " + maxSize + "MB.");
+      toast.error(
+        "File size must be less than " + maxSize + "MB.",
+        toastPresets.destructive,
+      );
       return;
     }
 

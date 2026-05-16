@@ -26,23 +26,18 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
   onClose: () => void;
   onAddNow: () => void;
   onSubmit: (payload: {
-    coverLetter: string;
     challengeSubmission: string;
   }) => Promise<void>;
 }) {
   const profile = useProfileData();
-  const coverRef = useRef<ApplicationTextInputHandle | null>(null);
   const challengeRef = useRef<ApplicationTextInputHandle | null>(null);
   const [applying, setApplying] = useState(false);
-  const [coverError, setCoverError] = useState<string | null>(null);
   const [challengeError, setChallengeError] = useState<string | null>(null);
   const isSuperListing = Boolean(job?.challenge);
   const isMobile = useMobile();
 
   const needsGH = !!job?.internship_preferences?.require_github;
   const needsPF = !!job?.internship_preferences?.require_portfolio;
-  const needsCL =
-    (job?.internship_preferences?.require_cover_letter ?? true) === true;
 
   const hasGH = !!profile.data?.github_link?.trim();
   const hasPF = !!profile.data?.portfolio_link?.trim();
@@ -58,9 +53,7 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
   const preSubmitDisabled = unmetPreSubmit.length > 0;
 
   async function handleSubmit() {
-    setCoverError(null);
     setChallengeError(null);
-    const coverText = coverRef.current?.getValue().trim() ?? "";
     const challengeText = challengeRef.current?.getValue().trim() ?? "";
 
     if (isSuperListing && challengeText.length === 0) {
@@ -71,16 +64,9 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
       return;
     }
 
-    if (needsCL && coverText.length === 0) {
-      setCoverError("Please add a brief cover letter before submitting.");
-      coverRef.current?.focus();
-      return;
-    }
-
     try {
       setApplying(true);
       await onSubmit({
-        coverLetter: coverText,
         challengeSubmission: challengeText,
       });
     } finally {
@@ -142,32 +128,6 @@ export const ApplyConfirmModal = React.memo(function ApplyConfirmModal({
           </div>
         )}
 
-        {/* Cover Letter Input */}
-        {needsCL && (
-          <div className="space-y-3">
-            <div
-              className="rounded-[0.33em] border border-amber-200 bg-amber-50 
-                 text-amber-800 px-3 py-2 text-sm"
-            >
-              <span className="font-medium">Note:</span> A cover letter is
-              required for this application.
-            </div>
-            <ApplicationTextInput
-              ref={coverRef}
-              defaultValue=""
-              error={coverError}
-              label="Cover Letter"
-              maxLength={500}
-              placeholder={`Dear Hiring Manager,
-
-I am excited to apply for this position because...
-
-Best regards,
-[Your name]`}
-            />
-          </div>
-        )}
-
         {/* Requirements */}
         <RequirementsChecklist
           needsGH={needsGH}
@@ -178,14 +138,14 @@ Best regards,
         />
 
         {/* Inline error */}
-        {(challengeError || coverError) && (
+        {challengeError && (
           <div
             role="alert"
             aria-live="polite"
             className="mb-3 rounded-[0.33em] border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm"
           >
             <div className="font-medium mb-1">Incomplete requirements</div>
-            {challengeError ?? coverError}
+            {challengeError}
           </div>
         )}
 

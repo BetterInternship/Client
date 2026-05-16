@@ -57,12 +57,18 @@ export function FormFillerRenderer({
     () => form.formMetadata.getSignatureFieldsForClientService("initiator"),
     [form.formMetadata],
   );
+  const signatureFieldKeys = useMemo(
+    () => signatureFields.map((signatureField) => signatureField.field),
+    [signatureFields],
+  );
+  const signatureFieldKey = signatureFieldKeys.join("\n");
+  const profileFullName = getFullName(profile.data);
 
   useEffect(() => {
     const valuesWithPrefilledSignatures =
       form.formMetadata.setSignatureValueForSigningParty(
-        finalValues,
-        getFullName(profile.data),
+        formFiller.getFinalValues(autofillValues),
+        profileFullName,
         "initiator",
       );
     const valuesWithSavedSignatureImages = withSavedSignatureImagesForFields({
@@ -72,10 +78,17 @@ export function FormFillerRenderer({
     });
 
     formFiller.setValues(valuesWithSavedSignatureImages);
-    signContext.setRequiredSignatures(
-      signatureFields.map((signatureField) => signatureField.field),
-    );
-  }, [form, profile.data?.signatureImage, signatureFields]);
+  }, [
+    autofillValues,
+    form.formMetadata,
+    profile.data?.signatureImage,
+    profileFullName,
+    signatureFieldKey,
+  ]);
+
+  useEffect(() => {
+    signContext.setRequiredSignatures(signatureFieldKeys);
+  }, [signatureFieldKey]);
 
   // Initialize form values whenever form changes or profile loads
   useEffect(() => {
@@ -270,7 +283,11 @@ export function FormFillerRenderer({
                       [fieldKey]:
                         nextValue === null || nextValue === undefined
                           ? ""
-                          : String(nextValue),
+                          : typeof nextValue === "string" ||
+                              typeof nextValue === "number" ||
+                              typeof nextValue === "boolean"
+                            ? String(nextValue)
+                            : "",
                     };
 
               // Use form values directly as params (already in correct format)

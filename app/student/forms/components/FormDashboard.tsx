@@ -348,12 +348,21 @@ export default function FormDashboard({
                   </HeaderText>
                 </div>
               </div>
-              <p className="text-sm text-gray-600">
-                Select a form to preview and start the signing flow. If you run
-                into any issues,{" "}
+              <p className="text-sm text-gray-600 mt-2">
+                We have a{" "}
+                <a
+                  className="font-semibold"
+                  href={STUDENT_FORM_GUIDE}
+                  target="_blank"
+                >
+                  guide
+                </a>{" "}
+                for how to use the forms on our site.
+                <br />
+                If you encounter any issues,{" "}
                 <a
                   href={SUPPORT_FACEBOOK}
-                  className="text-primary hover:underline transition-all duration-200"
+                  className="text-primary font-semibold hover:underline transition-all duration-200"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -363,7 +372,7 @@ export default function FormDashboard({
             </div>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto md:pt-0 p-3 sm:p-4 md:p-5">
+          <div className="min-h-0 flex-1 overflow-y-auto pt-5 p-3 sm:p-4 md:p-5 border-t border-t-gray-300">
             {sortedTemplates.length ? (
               <FormTemplatesList
                 templates={sortedTemplates}

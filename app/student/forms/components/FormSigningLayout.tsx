@@ -309,8 +309,7 @@ export function FormSigningLayout({
     [form.formMetadata, previewValues],
   );
   const wetSignatureHiddenFieldNames = useMemo(
-    () =>
-      noEsign ? getSignatureDerivedFieldNames(form.formMetadata) : [],
+    () => (noEsign ? getSignatureDerivedFieldNames(form.formMetadata) : []),
     [form.formMetadata, noEsign],
   );
 
@@ -429,9 +428,7 @@ export function FormSigningLayout({
           }) && Object.keys(recipientEmailErrors).length === 0
         );
       case "fields":
-        return (
-          areRequiredFieldsComplete && (noEsign || signContext.hasAgreed)
-        );
+        return areRequiredFieldsComplete && (noEsign || signContext.hasAgreed);
       case "preview-review":
         return true;
       case "confirm":
@@ -981,6 +978,7 @@ export function FormSigningLayout({
                           autoScrollToSelectedField={
                             selectedFieldSource === "pdf"
                           }
+                          selectFieldOnInteraction={!isMobileLayout}
                           onFieldSelect={handleFormFieldSelect}
                         />
                       </div>

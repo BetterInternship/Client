@@ -124,7 +124,6 @@ export type ListingInternshipPreferences = {
   expected_start_date?: number | null; // If this is null, it means as soon as possible
   require_github?: boolean | null;
   require_portfolio?: boolean | null;
-  require_cover_letter?: boolean | null;
 };
 
 export interface RefDomain {

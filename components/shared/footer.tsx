@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 type FooterLink = { label: string; href: string; className?: string };
 
@@ -16,6 +17,12 @@ const LINKS: FooterLink[] = [
 
 export function Footer({ links = LINKS }: { links?: FooterLink[] }) {
   const year = new Date().getFullYear();
+  const pathname = usePathname();
+  const normalizedPathname = pathname.replace(/\/$/, "") || "/";
+  const visibleLinks =
+    normalizedPathname === "/help"
+      ? links.filter((link) => link.href !== "/help")
+      : links;
 
   return (
     <footer className="py-1 px-5">
@@ -27,7 +34,7 @@ export function Footer({ links = LINKS }: { links?: FooterLink[] }) {
 
           <nav aria-label="Footer" className="flex justify-center">
             <ul className="flex flex-wrap gap-x-2 md:gap-x-4 gap-y-2 text-xs">
-              {links.map((l) => (
+              {visibleLinks.map((l) => (
                 <li key={l.label}>
                   <Link
                     href={l.href}

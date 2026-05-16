@@ -17,7 +17,6 @@ import { toast } from "sonner";
 import { toastPresets } from "@/components/ui/sonner-toast";
 import { useBlockPageRefreshEffect } from "@/hooks/use-refresh-block";
 import { PDFPreview } from "@/components/shared/pdf-preview";
-import { AddResumeModal } from "@/components/features/student/profile/AddResumeModal";
 import { ProfileAccordion } from "@/components/features/student/profile/ProfileAccordion";
 import {
   ProfileEditForm,
@@ -61,11 +60,6 @@ export default function ProfilePage() {
   // Modals
   const { open: openResumeModal, Modal: ResumeModal } =
     useModal("resume-modal");
-  const {
-    open: openAddResumeModal,
-    close: closeAddResumeModal,
-    Modal: AddResumeModalBox,
-  } = useModal("add-resume-modal");
 
   const profileEditorRef = useRef<{ save: () => Promise<boolean> }>(null);
   const queryClient = useQueryClient();
@@ -222,7 +216,16 @@ export default function ProfilePage() {
     isRenaming: isRenamingResume,
     actions: {
       view: openResumePreview,
-      add: openAddResumeModal,
+      add: () =>
+        modalRegistry.addResume.open({
+          isAtResumeLimit: atResumeLimit,
+          onComplete: () => {
+            void resumes.refetch();
+            void queryClient.invalidateQueries({
+              queryKey: ["my-profile"],
+            });
+          },
+        }),
       rename: onRenameResume,
       delete: onDeleteResume,
     },
@@ -266,17 +269,33 @@ export default function ProfilePage() {
             actionSlot={isEditing ? editActions : undefined}
             onEdit={() => setIsEditing(true)}
             onPhotoSelect={(file) => {
+              if (!file) return;
+
+              const uploadToastId = toast(
+                "Uploading profile photo...",
+                toastPresets.loading,
+              );
+
               void pfpUpload(file).then((success) => {
                 if (success) {
                   void queryClient.invalidateQueries({
                     queryKey: ["my-profile"],
                   });
                   window.dispatchEvent(new Event(PFP_UPDATED_EVENT));
-                  toast.success(
-                    "Profile photo uploaded successfully.",
-                    toastPresets.success,
-                  );
+                  toast.success("Profile photo uploaded successfully.", {
+                    ...toastPresets.success,
+                    id: uploadToastId,
+                  });
+                  return;
                 }
+
+                toast.error(
+                  "Could not upload profile photo. Please try again.",
+                  {
+                    ...toastPresets.destructive,
+                    id: uploadToastId,
+                  },
+                );
               });
             }}
           />
@@ -305,23 +324,9 @@ export default function ProfilePage() {
           </div>
         </main>
 
-        <ResumeModal className="max-w-[80vw]">
+        <ResumeModal className="mt-16 max-h-[calc(100svh-5rem)] max-w-[80vw] sm:mt-20">
           <PDFPreview url={resumeURL} />
         </ResumeModal>
-
-        <AddResumeModalBox>
-          <AddResumeModal
-            onCancel={closeAddResumeModal}
-            onComplete={() => {
-              closeAddResumeModal();
-              void resumes.refetch();
-              void queryClient.invalidateQueries({
-                queryKey: ["my-profile"],
-              });
-            }}
-            isAtResumeLimit={atResumeLimit}
-          />
-        </AddResumeModalBox>
       </div>
     )
   );

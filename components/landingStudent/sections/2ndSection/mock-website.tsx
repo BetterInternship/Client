@@ -26,8 +26,8 @@ export function Tag({
     tone === "green"
       ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
       : tone === "blue"
-      ? "bg-blue-50 text-blue-700 ring-blue-200"
-      : "bg-slate-50 text-slate-700 ring-slate-200";
+        ? "bg-blue-50 text-blue-700 ring-blue-200"
+        : "bg-slate-50 text-slate-700 ring-slate-200";
   return (
     <span
       className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ${toneMap}`}
@@ -47,7 +47,6 @@ export function JobList({
 }) {
   return (
     <aside className="p-4 sm:p-6">
-
       {/* job cards */}
       <div className="space-y-3">
         {JOBS.map((job) => {
@@ -163,7 +162,6 @@ export function DetailsPane({ job }: { job: Job }) {
           <Tag tone="blue">Resume</Tag>
           <Tag>Github Profile</Tag>
           <Tag>Portfolio</Tag>
-          <Tag tone="blue">Cover Letter</Tag>
           {job.badge && <Tag tone="green">{job.badge}</Tag>}
         </div>
       </section>
@@ -207,14 +205,14 @@ export function SearchPreview() {
   const [selectedId, setSelectedId] = useState<string>(JOBS[0].id);
   const selectedJob = useMemo(
     () => JOBS.find((j) => j.id === selectedId)!,
-    [selectedId]
+    [selectedId],
   );
 
   // ⬅️ NEW: mobile popup state
   const [openId, setOpenId] = useState<string | null>(null);
   const openedJob = useMemo(
-    () => (openId ? JOBS.find((j) => j.id === openId) ?? null : null),
-    [openId]
+    () => (openId ? (JOBS.find((j) => j.id === openId) ?? null) : null),
+    [openId],
   );
 
   return (
