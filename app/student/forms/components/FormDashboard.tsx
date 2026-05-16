@@ -39,6 +39,7 @@ import {
   getFreshHistoryCutoffMsFromStorage,
   setFreshHistoryCutoffMsInStorage,
 } from "../fresh-history";
+import { SUPPORT_FACEBOOK } from "@/constants";
 
 type GeneratedFormItem = {
   form_process_id?: string;
@@ -351,7 +352,8 @@ export default function FormDashboard({
                 We have a{" "}
                 <a
                   className="font-semibold"
-                  href="https://www.canva.com/design/DAG2Z5YJXgA/9Do3emFWHbE3PtQUDPWLEA/view?utm_content=DAG2Z5YJXgA&utm_campaign=designshare&utm_medium=link&utm_source=viewer"
+                  href={STUDENT_FORM_GUIDE}
+                  target="_blank"
                 >
                   guide
                 </a>{" "}
@@ -359,7 +361,7 @@ export default function FormDashboard({
                 <br />
                 If you encounter any issues,{" "}
                 <a
-                  href="https://www.facebook.com/betterinternship.sherwin"
+                  href={SUPPORT_FACEBOOK}
                   className="text-primary font-semibold hover:underline transition-all duration-200"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -383,7 +385,7 @@ export default function FormDashboard({
                 <br />
                 Have a copy of your department's form templates? <br />
                 <a
-                  href="https://www.facebook.com/betterinternship.sherwin"
+                  href={SUPPORT_FACEBOOK}
                   className="text-primary underline"
                   target="_blank"
                 >
