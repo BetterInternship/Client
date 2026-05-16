@@ -12,6 +12,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { SUPPORT_FACEBOOK } from "@/constants";
 
 /**
  * The first step to registering where the user puts their personal information in.
@@ -91,7 +92,7 @@ export function RegisterStep({
           <AccordionContent className="pb-0 py-3 px-5 text-xs leading-6 text-muted-foreground border-b bg-gray-200">
             Want to see your university on our site? <br />
             <a
-              href="https://www.facebook.com/betterinternship.sherwin"
+              href={SUPPORT_FACEBOOK}
               target="_blank"
               rel="noopener noreferrer"
               className="font-medium text-primary underline hover:text-primary/80"
