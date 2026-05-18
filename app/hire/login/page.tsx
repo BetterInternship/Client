@@ -14,6 +14,7 @@ import { MailCheck, TriangleAlert, User } from "lucide-react";
 import { Loader } from "@/components/ui/loader";
 import { AnimatePresence, motion } from "framer-motion";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
+import { useBlurTransition } from "@/components/animata/blur";
 
 export default function LoginPage() {
   return (
@@ -41,6 +42,8 @@ function LoginContent() {
   const status = searchParams.get("status");
 
   const { isMobile } = useAppContext();
+
+  const blurTransition = useBlurTransition();
 
   redirect_if_logged_in();
 
@@ -93,9 +96,7 @@ function LoginContent() {
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-        animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
+        {...blurTransition}
         className={cn(
           "flex justify-center py-12 pt-12 h-fit overflow-y-auto",
           isMobile ? "px-2" : "px-6",

@@ -415,6 +415,9 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
   showActions = true,
   transparent = false,
 }) => {
+  const { isAuthenticated } = useAuthContext();
+  const showForCredit = isAuthenticated();
+
   return (
     <div
       className={cn(
@@ -439,6 +442,7 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
               onEnter={onSearch}
               moaOnly={moaOnly}
               onToggleMoa={onMoaToggle}
+              showForCredit={showForCredit}
             />
 
             <JobFilterProvider initial={initialFilterValues}>
@@ -467,7 +471,7 @@ export const Header: React.FC<{
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { desktopHeaderHidden } = useHeaderContext();
+  const { desktopHeaderHidden, navigationHidden } = useHeaderContext();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [moaOnly, setMoaOnly] = useState(false);
@@ -490,12 +494,64 @@ export const Header: React.FC<{
   const showProfileButton = routeExcluded(noProfileRoutes);
   const showFilters = pathname?.startsWith("/search") === true;
 
+  const currentQuery = searchParams.get("query") || "";
+  const currentMoa = searchParams.get("moa") === "Has MOA";
+
+  /**
+   * Push search query to /search with optional overrides
+   */
+  const pushSearch = useCallback(
+    (override?: { moa?: boolean; q?: string; replace?: boolean }) => {
+      const params = new URLSearchParams();
+      const q = override?.q ?? searchTerm;
+      const moa = override?.moa ?? moaOnly;
+
+      // Preserve existing filters
+      if (searchParams.get("position"))
+        params.set("position", searchParams.get("position")!);
+      if (searchParams.get("mode"))
+        params.set("mode", searchParams.get("mode")!);
+      if (searchParams.get("workload"))
+        params.set("workload", searchParams.get("workload")!);
+      if (searchParams.get("allowance"))
+        params.set("allowance", searchParams.get("allowance")!);
+
+      if (q) params.set("query", q);
+      if (moa) params.set("moa", "Has MOA");
+
+      const url = `/search/?${params.toString()}`;
+      if (override?.replace) {
+        router.replace(url);
+      } else {
+        router.push(url);
+      }
+    },
+    [router, searchParams, searchTerm, moaOnly],
+  );
+
+  /**
+   * Perform search
+   */
+  const doSearch = () => pushSearch();
+
   // Sync search params on mount and when route changes
   useEffect(() => {
     if (!showFilters) return;
-    setSearchTerm(searchParams.get("query") || "");
-    setMoaOnly(searchParams.get("moa") === "Has MOA");
-  }, [searchParams, showFilters]);
+    if (searchTerm === currentQuery && moaOnly === currentMoa) return;
+
+    const handle = setTimeout(() => {
+      pushSearch({ q: searchTerm, moa: moaOnly, replace: true });
+    }, 300);
+
+    return () => clearTimeout(handle);
+  }, [
+    searchParams,
+    moaOnly,
+    showFilters,
+    currentQuery,
+    currentMoa,
+    pushSearch,
+  ]);
 
   // Parse initial filter values from URL
   const initialFromUrl: Partial<JobFilter> = {
@@ -509,33 +565,6 @@ export const Header: React.FC<{
       .filter(Boolean),
     jobMoa: (searchParams.get("moa") || "").split(",").filter(Boolean),
   };
-
-  /**
-   * Push search query to /search with optional overrides
-   */
-  const pushSearch = (override?: { moa?: boolean; q?: string }) => {
-    const params = new URLSearchParams();
-    const q = override?.q ?? searchTerm;
-    const moa = override?.moa ?? moaOnly;
-
-    // Preserve existing filters
-    if (searchParams.get("position"))
-      params.set("position", searchParams.get("position")!);
-    if (searchParams.get("mode")) params.set("mode", searchParams.get("mode")!);
-    if (searchParams.get("workload"))
-      params.set("workload", searchParams.get("workload")!);
-    if (searchParams.get("allowance"))
-      params.set("allowance", searchParams.get("allowance")!);
-
-    if (q) params.set("query", q);
-    if (moa) params.set("moa", "Has MOA");
-    router.push(`/search/?${params.toString()}`);
-  };
-
-  /**
-   * Perform search
-   */
-  const doSearch = () => pushSearch();
 
   /**
    * Apply selected filters
@@ -553,7 +582,11 @@ export const Header: React.FC<{
   };
 
   // Hide header on register/verify pages
-  if (isSuperListingRoute || !routeExcluded(noHeaderRoutes)) {
+  if (
+    navigationHidden ||
+    isSuperListingRoute ||
+    !routeExcluded(noHeaderRoutes)
+  ) {
     return <></>;
   }
 

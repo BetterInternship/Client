@@ -11,6 +11,7 @@ import { useAppContext } from "@/lib/ctx-app";
 import { HelpCircle, MailCheck } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
+import { useBlurTransition } from "@/components/animata/blur";
 
 /**
  * Display the layout for the change password page.
@@ -49,6 +50,8 @@ const ResetPasswordForm = ({ hash }: { hash: string }) => {
 
   const router = useRouter();
 
+  const blurTransition = useBlurTransition();
+
   useEffect(() => {
     if (!success) return;
 
@@ -86,7 +89,6 @@ const ResetPasswordForm = ({ hash }: { hash: string }) => {
     try {
       const r = await EmployerUserService.resetPassword(hash, reenterPassword);
 
-      // @ts-ignore
       setSuccess(
         r.message ||
           "Password reset successful. Redirecting to login page in five seconds.",
@@ -101,12 +103,7 @@ const ResetPasswordForm = ({ hash }: { hash: string }) => {
   if (success) {
     return (
       <AnimatePresence>
-        <motion.div
-          initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-          animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-          className="w-full"
-        >
+        <motion.div {...blurTransition} className="w-full">
           <Card className="relative overflow-hidden flex flex-col gap-4 w-full">
             <div className="absolute top-0 left-0 right-0 h-1.5 rounded-t-[0.33em] overflow-hidden bg-emerald-100">
               <div
@@ -136,12 +133,7 @@ const ResetPasswordForm = ({ hash }: { hash: string }) => {
 
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-        animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
-        className="w-full"
-      >
+      <motion.div {...blurTransition} className="w-full">
         <Card className="flex flex-col gap-4 w-full">
           <div className="flex flex-row items-center gap-3 mb-2">
             <HeaderIcon icon={HelpCircle} />
@@ -165,7 +157,11 @@ const ResetPasswordForm = ({ hash }: { hash: string }) => {
             type="password"
           />
           <div className="flex justify-end items-center w-[100%]">
-            <Button type="submit" onClick={handle_request} disabled={isLoading}>
+            <Button
+              type="submit"
+              onClick={() => handle_request}
+              disabled={isLoading}
+            >
               {isLoading ? "Changing password..." : "Change password"}
             </Button>
           </div>

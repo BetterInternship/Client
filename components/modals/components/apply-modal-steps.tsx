@@ -5,16 +5,14 @@ import {
   useResumeUploadForm,
 } from "@/components/features/student/resume-parser/ResumeUploadForm";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Resume } from "@/lib/db/db.types";
 import { cn } from "@/lib/utils";
 import { MONTH_NAMES } from "@/lib/utils/date-utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, FileText } from "lucide-react";
 import Link from "next/link";
-import { RefObject } from "react";
 
-type ApplyStep = 1 | 2 | 3;
+type ApplyStep = 1 | 2;
 type InternshipType = "credited" | "voluntary";
 type ResumeUploadFormState = ReturnType<typeof useResumeUploadForm>;
 
@@ -25,18 +23,11 @@ export function ApplyStepHeader({
   step: ApplyStep;
   totalSteps: number;
 }) {
-  const title =
-    step === 1
-      ? "Choose your resume"
-      : step === 2
-        ? "Internship details"
-        : "Cover letter";
+  const title = step === 1 ? "Choose your resume" : "Internship details";
   const description =
     step === 1
       ? "Pick an existing resume or upload a new one before applying."
-      : step === 2
-        ? "These details help companies understand what kind of internship you need."
-        : "This listing requires a cover letter.";
+      : "These details help companies understand what kind of internship you need.";
 
   return (
     <div className="relative pr-10">
@@ -200,7 +191,6 @@ export function InternshipDetailsStep({
   saving,
   canApply,
   isReadOnly,
-  requiresCoverLetter,
   applyLabel,
   onCancel,
   onBack,
@@ -216,7 +206,6 @@ export function InternshipDetailsStep({
   saving: boolean;
   canApply: boolean;
   isReadOnly: boolean;
-  requiresCoverLetter: boolean;
   applyLabel: string;
   onCancel: () => void;
   onBack: () => void;
@@ -272,11 +261,7 @@ export function InternshipDetailsStep({
             Back
           </Button>
           <Button onClick={onContinue} disabled={!canApply || saving}>
-            {saving
-              ? "Applying..."
-              : requiresCoverLetter
-                ? "Continue"
-                : applyLabel}
+            {saving ? "Applying..." : applyLabel}
           </Button>
         </div>
       </div>
@@ -295,8 +280,7 @@ function InternshipDetailsSummary({
 }) {
   const startMonth =
     month !== "" && year !== ""
-      ? // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        `${MONTH_NAMES[Number(month)]} ${year}`
+      ? `${MONTH_NAMES[Number(month)]} ${year}`
       : "Not specified";
 
   return (
@@ -401,75 +385,6 @@ function ExpectedStartDateSelect({
             </option>
           ))}
         </select>
-      </div>
-    </div>
-  );
-}
-
-export function CoverLetterStep({
-  coverLetter,
-  coverLetterRef,
-  saving,
-  canSubmit,
-  applyLabel,
-  onCancel,
-  onBack,
-  onCoverLetterChange,
-  onSubmit,
-}: {
-  coverLetter: string;
-  coverLetterRef: RefObject<HTMLTextAreaElement | null>;
-  saving: boolean;
-  canSubmit: boolean;
-  applyLabel: string;
-  onCancel: () => void;
-  onBack: () => void;
-  onCoverLetterChange: (coverLetter: string) => void;
-  onSubmit: () => void;
-}) {
-  return (
-    <div className="space-y-6">
-      <div className="space-y-3 pt-2">
-        <label
-          htmlFor="cover-letter"
-          className="text-sm font-medium text-gray-900"
-        >
-          Cover letter
-        </label>
-        <Textarea
-          id="cover-letter"
-          ref={coverLetterRef}
-          value={coverLetter}
-          onChange={(event) => onCoverLetterChange(event.target.value)}
-          placeholder="Write your cover letter here..."
-          className="min-h-48 resize-y rounded-[0.33em] border-gray-200 focus-visible:ring-primary"
-        />
-      </div>
-
-      <div className="mt-6 flex justify-between gap-3 pt-4 border-t">
-        <Button
-          type="button"
-          variant="outline"
-          scheme="destructive"
-          onClick={onCancel}
-          disabled={saving}
-        >
-          Cancel
-        </Button>
-        <div className="flex gap-3">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onBack}
-            className="px-2"
-            disabled={saving}
-          >
-            Back
-          </Button>
-          <Button onClick={onSubmit} disabled={!canSubmit || saving}>
-            {saving ? "Applying..." : applyLabel}
-          </Button>
-        </div>
       </div>
     </div>
   );

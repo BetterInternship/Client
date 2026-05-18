@@ -36,7 +36,6 @@ const navItems: NavItem[] = [
 
 function SideNav({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
-  const { god } = useAuthContext();
 
   return (
     <nav className="flex flex-col p-3 gap-2">
@@ -44,16 +43,10 @@ function SideNav({ items }: { items: NavItem[] }) {
         const isActive = pathname.includes(href);
 
         return (
-          <Link
-            key={label}
-            href={label !== "Forms Automation" || god ? href : "#"}
-          >
+          <Link key={label} href={href}>
             <Button
               variant="ghost"
               scheme="default"
-              onClick={() =>
-                god && label === "Forms Automation" && alert("Coming Soon!")
-              }
               className={cn(
                 "w-full h-10 pl-4 flex flex-row justify-between border-0 hover:bg-primary/15 hover:text-primary",
                 isActive ? "text-primary bg-primary/10" : "font-normal",
@@ -85,13 +78,14 @@ const ContentLayout: React.FC<ContentLayoutProps> = ({
   className,
 }) => {
   const { isMobile } = useMobile();
+  const { isAuthenticated } = useAuthContext();
 
   return (
     <div className="w-full h-full flex flex-row space-x-0">
       {!isMobile ? (
         <>
           <aside className={cn("z-[100] min-h-stretch border-r bg-muted")}>
-            <SideNav items={navItems} />
+            {isAuthenticated() && <SideNav items={navItems} />}
           </aside>
         </>
       ) : (

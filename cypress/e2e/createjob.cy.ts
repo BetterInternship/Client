@@ -108,12 +108,6 @@ it("Employer make a new Job", function () {
     cy.get("[data-state=checked]")
   });
 
-  cy.contains("Cover Letter").parent().parent().within(() => {
-    cy.get("[data-state=unchecked]")
-    cy.get("button").click()
-    cy.get("[data-state=checked]")
-  });
-
   cy.contains("Publish Listing").should("be.enabled").click();
 
   cy.url().should("include", "/dashboard");

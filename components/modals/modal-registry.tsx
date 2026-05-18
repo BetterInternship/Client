@@ -1,5 +1,5 @@
 import { useGlobalModal } from "../providers/modal-provider/ModalProvider";
-import { LucideIcon } from "lucide-react";
+import { FileUp, LucideIcon, Trash2 } from "lucide-react";
 import { FormSubmissionSuccessModal } from "./components/FormSubmissionSuccessModal";
 import { FollowUpFormModal } from "./components/ResendFormModal";
 import { CancelFormModal } from "./components/CancelFormModal";
@@ -27,7 +27,15 @@ import ApplicationActionModal from "./ApplicationActionModal";
 import DeleteJobListingModal from "./DeleteJobListingModal";
 import { Job, PublicUser } from "@/lib/db/db.types";
 import DeleteResumeModal from "./DeleteResumeModal";
-import RenameResumeModal from "./RenameResumeModal";
+import { AddResumeModal } from "../features/student/profile/AddResumeModal";
+import { HeaderIcon } from "../ui/text";
+
+const modalTitleWithIcon = (Icon: LucideIcon, title: string) => (
+  <div className="flex min-w-0 items-center gap-3">
+    <HeaderIcon icon={Icon} />
+    <h2 className="truncate text-base font-semibold">{title}</h2>
+  </div>
+);
 
 /**
  * Simplifies modal config since we usually reuse each of these modal stuffs.
@@ -60,13 +68,41 @@ export const useModalRegistry = () => {
               onCancel={() => close("delete-resume")}
             />,
             {
-              title: `Delete ${resume.label}`,
+              title: modalTitleWithIcon(Trash2, `Delete ${resume.label}?`),
               closeOnBackdropClick: true,
               closeOnEscapeKey: true,
-              showHeaderDivider: true,
+              showHeaderDivider: false,
             },
           ),
         close: () => close("delete-resume"),
+      },
+      addResume: {
+        open: ({
+          onComplete,
+          isAtResumeLimit,
+        }: {
+          onComplete: () => void;
+          isAtResumeLimit: boolean;
+        }) =>
+          open(
+            "add-resume",
+            DefaultModalLayout,
+            <AddResumeModal
+              onCancel={() => close("add-resume")}
+              onComplete={() => {
+                close("add-resume");
+                onComplete();
+              }}
+              isAtResumeLimit={isAtResumeLimit}
+            />,
+            {
+              title: modalTitleWithIcon(FileUp, "Upload new resume"),
+              closeOnBackdropClick: true,
+              closeOnEscapeKey: true,
+              showHeaderDivider: false,
+            },
+          ),
+        close: () => close("add-resume"),
       },
       // modal for deleting a job listing.
       deleteListing: {
@@ -134,12 +170,10 @@ export const useModalRegistry = () => {
           profile,
           onApply,
           applyLabel,
-          requiresCoverLetter,
         }: {
           profile: PublicUser | null;
           onApply: (payload: ApplyPayload) => void | Promise<void>;
           applyLabel?: string;
-          requiresCoverLetter?: boolean;
         }) =>
           open(
             "complete-profile-apply",
@@ -147,7 +181,6 @@ export const useModalRegistry = () => {
             <ApplyModal
               profile={profile}
               applyLabel={applyLabel}
-              requiresCoverLetter={requiresCoverLetter}
               onApply={onApply}
               onCancel={() => close("complete-profile-apply")}
             />,

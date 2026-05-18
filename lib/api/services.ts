@@ -177,7 +177,29 @@ export type ApproveSignatoryResponse = {
   [k: string]: any;
 };
 
+export type UploadSignatureImageResponse = {
+  success?: boolean;
+  message?: string;
+  value?: string;
+  asset?: {
+    filename: string;
+    url: string;
+    mimeType: string;
+    sizeBytes: number;
+  };
+};
+
 export const FormService = {
+  async uploadSignatureImage(data: {
+    source: "draw" | "upload";
+    dataUrl: string;
+  }) {
+    return APIClient.post<UploadSignatureImageResponse>(
+      APIRouteBuilder("users").r("me/signature-image").build(),
+      data,
+    );
+  },
+
   async initiateForm(data: {
     formName: string;
     formVersion: number;
@@ -539,7 +561,6 @@ export const ApplicationService = {
   async createApplication(data: {
     job_id: string;
     resume_id: string;
-    cover_letter?: string;
     challenge_submission?: string;
   }) {
     return APIClient.post<CreateApplicationResponse>(
@@ -563,7 +584,6 @@ export const ApplicationService = {
   async updateApplication(
     id: string,
     data: {
-      coverLetter?: string;
       githubLink?: string;
       portfolioLink?: string;
       resumeFilename?: string;

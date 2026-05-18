@@ -6,7 +6,12 @@ import {
   getDocument,
   version as pdfjsVersion,
 } from "pdfjs-dist";
-import { type IFormSigningParty } from "@betterinternship/core/forms";
+import {
+  getSignatureImageFieldKey,
+  parseSignatureImageValue,
+  type IFormSigningParty,
+  type SignatureImageValue,
+} from "@betterinternship/core/forms";
 import type {
   PDFDocumentProxy,
   PDFPageProxy,
@@ -50,6 +55,40 @@ interface FormPreviewPdfDisplayProps {
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
+
+const SIGNATURE_IMAGE_OVERFLOW_SCALE = 1.8;
+
+const getSignatureImageSrc = (signatureImage: SignatureImageValue | null) => {
+  if (!signatureImage) return "";
+  if (signatureImage.image.storage === "bucket") {
+    return signatureImage.image.signedUrl || signatureImage.image.publicUrl || "";
+  }
+  return signatureImage.image.dataUrl;
+};
+
+const getSignatureImageValueForField = (
+  values: Record<string, string>,
+  fieldName: string,
+) => {
+  const normalizedFieldName = normalizePreviewFieldKey(fieldName);
+  const candidates = [
+    getSignatureImageFieldKey(fieldName),
+    getSignatureImageFieldKey(`${normalizedFieldName}:default`),
+    getSignatureImageFieldKey(normalizedFieldName),
+  ];
+
+  for (const key of candidates) {
+    const value = values[key];
+    if (value) return value;
+  }
+
+  const matchingEntry = Object.entries(values).find(([key, value]) => {
+    if (!key.startsWith("__signatureImage:") || !value) return false;
+    return normalizePreviewFieldKey(key.slice("__signatureImage:".length)) === normalizedFieldName;
+  });
+
+  return matchingEntry?.[1];
+};
 
 /**
  * PDF display component that shows form fields as boxes overlaid on the PDF
@@ -615,15 +654,21 @@ const PdfPageWithFields = ({
             !hasAssignedOwner || owner === "initiator" || owner === "student";
           const shouldDisplayValue = wetSignatureMode || isOwnedByInitiator;
           const normalizedFieldName = normalizePreviewFieldKey(fieldName);
+          const fieldType: PreviewField["type"] = field.type ?? "text";
+          const signatureImage =
+            fieldType === "signature" && shouldDisplayValue
+              ? parseSignatureImageValue(getSignatureImageValueForField(values, fieldName))
+              : null;
+          const signatureImageSrc = getSignatureImageSrc(signatureImage);
           const rawValue = shouldDisplayValue
             ? (values[fieldName] ??
               values[normalizedFieldName + ":default"] ??
               values[normalizedFieldName])
             : "";
-          const valueStr = shouldDisplayValue
+          const valueStr = shouldDisplayValue && !signatureImageSrc
             ? resolveDisplayValue(field, rawValue)
             : "";
-          const isFilled = valueStr.trim().length > 0;
+          const isFilled = !!signatureImageSrc || valueStr.trim().length > 0;
 
           // Get alignment and wrapping from field schema
           const align_h = field.align_h ?? "left";
@@ -631,7 +676,6 @@ const PdfPageWithFields = ({
           const shouldWrap = field.wrap ?? true;
 
           // Calculate optimal font size using PDF engine algorithm
-          const fieldType: PreviewField["type"] = field.type ?? "text";
           const resolvedFont = resolvePreviewFont(fieldType, field.font);
 
           let fontSizeDoc: number;
@@ -707,6 +751,8 @@ const PdfPageWithFields = ({
             !isClickable &&
             (hoveredFieldId === field.id ||
               (isTouchInteraction && activeTouchFieldId === field.id));
+          const signatureImageWidthPixels = widthPixels * SIGNATURE_IMAGE_OVERFLOW_SCALE;
+          const signatureImageHeightPixels = heightPixels * SIGNATURE_IMAGE_OVERFLOW_SCALE;
 
           return (
             <div
@@ -781,7 +827,25 @@ const PdfPageWithFields = ({
                   <div className="ml-2 h-0 w-0 border-x-4 border-x-transparent border-t-4 border-t-black" />
                 </div>
               )}
-              {isFilled && (
+              {signatureImageSrc ? (
+                <div
+                  className="pointer-events-none absolute"
+                  style={{
+                    left: `${(widthPixels - signatureImageWidthPixels) / 2}px`,
+                    top: `${(heightPixels - signatureImageHeightPixels) / 2}px`,
+                    width: `${signatureImageWidthPixels}px`,
+                    height: `${signatureImageHeightPixels}px`,
+                  }}
+                >
+                  <img
+                    src={signatureImageSrc}
+                    alt=""
+                    className="h-full w-full object-contain"
+                    draggable={false}
+                  />
+                </div>
+              ) : null}
+              {isFilled && !signatureImageSrc && (
                 <div
                   className="text-black"
                   style={{

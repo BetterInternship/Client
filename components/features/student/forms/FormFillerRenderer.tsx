@@ -12,6 +12,7 @@ import { useProfileData } from "@/lib/api/student.data.api";
 import { getFullName } from "@/lib/profile";
 import { useSignContext } from "@/components/providers/sign.ctx";
 import { formatTimestampDateWithoutTime } from "@/lib/utils";
+import { withSavedSignatureImagesForFields } from "@/lib/saved-signature-image";
 
 export function FormFillerRenderer({
   onValuesChange,
@@ -52,22 +53,42 @@ export function FormFillerRenderer({
     () => formFiller.getFinalValues(autofillValues),
     [formFiller, autofillValues],
   );
+  const signatureFields = useMemo(
+    () => form.formMetadata.getSignatureFieldsForClientService("initiator"),
+    [form.formMetadata],
+  );
+  const signatureFieldKeys = useMemo(
+    () => signatureFields.map((signatureField) => signatureField.field),
+    [signatureFields],
+  );
+  const signatureFieldKey = signatureFieldKeys.join("\n");
+  const profileFullName = getFullName(profile.data);
 
   useEffect(() => {
-    const signatureFields =
-      form.formMetadata.getSignatureFieldsForClientService("initiator");
     const valuesWithPrefilledSignatures =
       form.formMetadata.setSignatureValueForSigningParty(
-        finalValues,
-        getFullName(profile.data),
+        formFiller.getFinalValues(autofillValues),
+        profileFullName,
         "initiator",
       );
+    const valuesWithSavedSignatureImages = withSavedSignatureImagesForFields({
+      values: valuesWithPrefilledSignatures,
+      signatureFields,
+      signatureImage: profile.data?.signatureImage,
+    });
 
-    formFiller.setValues(valuesWithPrefilledSignatures);
-    signContext.setRequiredSignatures(
-      signatureFields.map((signatureField) => signatureField.field),
-    );
-  }, [form]);
+    formFiller.initializeValues(valuesWithSavedSignatureImages);
+  }, [
+    autofillValues,
+    form.formMetadata,
+    profile.data?.signatureImage,
+    profileFullName,
+    signatureFieldKey,
+  ]);
+
+  useEffect(() => {
+    signContext.setRequiredSignatures(signatureFieldKeys);
+  }, [signatureFieldKey]);
 
   // Initialize form values whenever form changes or profile loads
   useEffect(() => {
@@ -262,7 +283,11 @@ export function FormFillerRenderer({
                       [fieldKey]:
                         nextValue === null || nextValue === undefined
                           ? ""
-                          : String(nextValue),
+                          : typeof nextValue === "string" ||
+                              typeof nextValue === "number" ||
+                              typeof nextValue === "boolean"
+                            ? String(nextValue)
+                            : "",
                     };
 
               // Use form values directly as params (already in correct format)
@@ -287,7 +312,12 @@ export function FormFillerRenderer({
               }
 
               // Validate with the updated field that has fresh params
-              formFiller.validateField(fieldKey, updatedField, autofillValues, nextValue);
+              formFiller.validateField(
+                fieldKey,
+                updatedField,
+                autofillValues,
+                nextValue,
+              );
             }}
             fieldRefs={fieldRefs.current}
             selectedFieldId={form.selectedPreviewId}
@@ -358,7 +388,10 @@ const BlocksRenderer = <T extends any[]>({
                   field={actualField}
                   value={values[actualField.field]}
                   onChange={(v) => onChange(actualField.field, v)}
-                  onBlur={(nextValue) => onBlurValidate?.(actualField.field, nextValue)}
+                  onAuxValueChange={onChange}
+                  onBlur={(nextValue) =>
+                    onBlurValidate?.(actualField.field, nextValue)
+                  }
                   error={errors[actualField.field]}
                   allValues={values}
                   isPhantom={isPhantom}

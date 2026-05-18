@@ -14,6 +14,8 @@ export interface IAutocompleteOption<ID extends number | string> {
   name: string;
 }
 
+type MobileDropdownMode = "sheet" | "inline";
+
 /* -------------------------------------------------------
  * Base component (array-based). Single uses length 0..1.
  * -----------------------------------------------------*/
@@ -30,6 +32,7 @@ function AutocompleteBase<ID extends number | string>({
   allowCustomValue = false,
   preserveOptionOrder = false,
   emptyText = "...",
+  mobileDropdownMode = "sheet",
   ...props
 }: {
   required?: boolean;
@@ -44,6 +47,7 @@ function AutocompleteBase<ID extends number | string>({
   allowCustomValue?: boolean;
   preserveOptionOrder?: boolean;
   emptyText?: string;
+  mobileDropdownMode?: MobileDropdownMode;
 }) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -54,6 +58,7 @@ function AutocompleteBase<ID extends number | string>({
   });
   const rootRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const sheetInputRef = useRef<HTMLInputElement | null>(null);
   const lastSelectionRef = useRef(0);
 
   const inputId = useId();
@@ -129,7 +134,8 @@ function AutocompleteBase<ID extends number | string>({
   );
 
   const singleDisplay = !multiple && (selectedLabels[0] ?? "");
-  const useInlineMobileDropdown = isMobile;
+  const useMobileSheet = isMobile && mobileDropdownMode === "sheet";
+  const useInlineMobileDropdown = isMobile && mobileDropdownMode === "inline";
 
   useEffect(() => {
     if (!isOpen || !useInlineMobileDropdown) {
@@ -141,7 +147,8 @@ function AutocompleteBase<ID extends number | string>({
       const rootRect = rootRef.current?.getBoundingClientRect();
       if (!rootRect) return;
 
-      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+      const viewportHeight =
+        window.visualViewport?.height ?? window.innerHeight;
       const gap = 8;
       const availableHeight = viewportHeight - rootRect.bottom - gap;
       setDropdownMaxHeight(Math.max(0, Math.min(400, availableHeight)));
@@ -164,12 +171,24 @@ function AutocompleteBase<ID extends number | string>({
       );
     };
   }, [isOpen, useInlineMobileDropdown]);
-  const suppressMobileKeyboard = isMobile && !allowCustomValue;
+
+  useEffect(() => {
+    if (!isOpen || !useMobileSheet) return;
+
+    const focusTimer = window.setTimeout(() => {
+      sheetInputRef.current?.focus();
+    }, 80);
+
+    return () => window.clearTimeout(focusTimer);
+  }, [isOpen, useMobileSheet]);
+
+  const suppressMobileKeyboard =
+    isMobile && mobileDropdownMode === "inline" && !allowCustomValue;
 
   // --- keyboard helpers for multi
   const onMultiKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!multiple) return;
-    if (allowCustomValue && e.key === "Enter" && query.trim.length === 0) {
+    if (allowCustomValue && e.key === "Enter" && query.trim().length === 0) {
       const text = query.trim();
       const exact = findExactOption(text);
       const nextId = exact ? exact.id : (text as unknown as ID);
@@ -343,14 +362,59 @@ function AutocompleteBase<ID extends number | string>({
 
       {isOpen && (
         <>
+          {useMobileSheet && (
+            <button
+              type="button"
+              aria-label="Close options"
+              className="fixed inset-0 z-[1090] bg-black/25 backdrop-blur-[1px]"
+              onClick={() => setIsOpen(false)}
+            />
+          )}
           <ul
-            className="absolute left-0 right-0 z-50 mt-1 max-h-[400px] overflow-y-auto overscroll-contain rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5"
+            className={cn(
+              "overflow-y-auto overscroll-contain bg-white text-sm shadow-lg ring-1 ring-black ring-opacity-5",
+              useMobileSheet
+                ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 max-h-[70vh] rounded-t-[0.33em] border border-b-0 border-gray-200 pb-3 shadow-2xl"
+                : "absolute left-0 right-0 z-50 mt-1 max-h-[400px] rounded-[0.33em] py-1",
+            )}
             style={
               useInlineMobileDropdown && dropdownMaxHeight !== undefined
                 ? { maxHeight: dropdownMaxHeight }
                 : undefined
             }
           >
+            {useMobileSheet && (
+              <li className="sticky top-0 z-10 border-b border-gray-200 bg-white px-4 py-3">
+                <Input
+                  ref={sheetInputRef}
+                  value={query}
+                  placeholder={placeholder ?? "Search"}
+                  className="h-10 border-gray-300 text-base"
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    setIsOpen(true);
+                    if ((value?.length ?? 0) > 0 && !multiple) {
+                      setter([]);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (multiple) {
+                      onMultiKeyDown(e);
+                      return;
+                    }
+
+                    if (e.key === "Enter" && resolveQuerySelection(query)) {
+                      setIsOpen(false);
+                      e.preventDefault();
+                    }
+
+                    if (e.key === "Escape") {
+                      setIsOpen(false);
+                    }
+                  }}
+                />
+              </li>
+            )}
             {allowCustomValue && (
               <li className="w-full text-left px-4 py-2 text-sm text-gray-500 bg-gray-50 pointer-events-none">
                 Suggestions
@@ -367,7 +431,11 @@ function AutocompleteBase<ID extends number | string>({
                       if (multiple) {
                         // keep open for rapid multi-pick
                         setQuery("");
-                        inputRef.current?.focus();
+                        if (useMobileSheet) {
+                          sheetInputRef.current?.focus();
+                        } else {
+                          inputRef.current?.focus();
+                        }
                       } else {
                         setQuery("");
                         setIsOpen(false);
@@ -379,12 +447,7 @@ function AutocompleteBase<ID extends number | string>({
                     )}
                   >
                     {multiple ? (
-                      <input
-                        type="checkbox"
-                        readOnly
-                        checked={active}
-                        className="mr-2"
-                      />
+                      <input type="checkbox" readOnly checked={active} />
                     ) : null}
                     {option.name}
                   </li>
@@ -417,6 +480,7 @@ export const Autocomplete = <ID extends number | string>({
   allowCustomValue = false,
   preserveOptionOrder = false,
   emptyText,
+  mobileDropdownMode,
 }: {
   required?: boolean;
   options: IAutocompleteOption<ID>[];
@@ -429,6 +493,7 @@ export const Autocomplete = <ID extends number | string>({
   allowCustomValue?: boolean;
   preserveOptionOrder?: boolean;
   emptyText?: string;
+  mobileDropdownMode?: MobileDropdownMode;
 }) => {
   return (
     <AutocompleteBase<ID>
@@ -443,6 +508,7 @@ export const Autocomplete = <ID extends number | string>({
       allowCustomValue={allowCustomValue}
       preserveOptionOrder={preserveOptionOrder}
       emptyText={emptyText}
+      mobileDropdownMode={mobileDropdownMode}
       {...props}
     />
   );
@@ -461,6 +527,7 @@ export const AutocompleteMulti = <ID extends number | string>({
   label,
   allowCustomValue = false,
   emptyText,
+  mobileDropdownMode,
 }: {
   required?: boolean;
   options: IAutocompleteOption<ID>[];
@@ -471,6 +538,7 @@ export const AutocompleteMulti = <ID extends number | string>({
   label?: React.ReactNode;
   allowCustomValue?: boolean;
   emptyText?: string;
+  mobileDropdownMode?: MobileDropdownMode;
 }) => {
   return (
     <AutocompleteBase<ID>
@@ -484,6 +552,7 @@ export const AutocompleteMulti = <ID extends number | string>({
       label={label}
       allowCustomValue={allowCustomValue}
       emptyText={emptyText}
+      mobileDropdownMode={mobileDropdownMode}
     />
   );
 };
@@ -507,6 +576,7 @@ export function AutocompleteTreeMulti({
   className,
   label,
   tooltip,
+  mobileDropdownMode = "sheet",
 }: {
   required?: boolean;
   tree: TreeOption[];
@@ -516,6 +586,7 @@ export function AutocompleteTreeMulti({
   className?: string;
   label?: React.ReactNode;
   tooltip?: string;
+  mobileDropdownMode?: MobileDropdownMode;
 }) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -629,8 +700,11 @@ export function AutocompleteTreeMulti({
     [selected, labelMap],
   );
 
+  const useMobileSheet = isMobile && mobileDropdownMode === "sheet";
+  const useInlineMobileDropdown = isMobile && mobileDropdownMode === "inline";
+
   useEffect(() => {
-    if (!isOpen || !isMobile) {
+    if (!isOpen || !useInlineMobileDropdown) {
       setDropdownMaxHeight(undefined);
       return;
     }
@@ -639,7 +713,8 @@ export function AutocompleteTreeMulti({
       const rootRect = rootRef.current?.getBoundingClientRect();
       if (!rootRect) return;
 
-      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+      const viewportHeight =
+        window.visualViewport?.height ?? window.innerHeight;
       const gap = 8;
       const availableHeight = viewportHeight - rootRect.bottom - gap;
       setDropdownMaxHeight(Math.max(0, Math.min(400, availableHeight)));
@@ -661,7 +736,7 @@ export function AutocompleteTreeMulti({
         updateDropdownMaxHeight,
       );
     };
-  }, [isOpen, isMobile]);
+  }, [isOpen, useInlineMobileDropdown]);
 
   return (
     <div
@@ -714,10 +789,23 @@ export function AutocompleteTreeMulti({
 
       {isOpen && (
         <>
+          {useMobileSheet && (
+            <button
+              type="button"
+              aria-label="Close options"
+              className="fixed inset-0 z-[1090] bg-black/25 backdrop-blur-[1px]"
+              onClick={() => setIsOpen(false)}
+            />
+          )}
           <ul
-            className="absolute left-0 right-0 z-50 mt-1 max-h-[400px] overflow-y-auto overscroll-contain rounded-[0.33em] bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5"
+            className={cn(
+              "overflow-y-auto overscroll-contain bg-white text-sm shadow-lg ring-1 ring-black ring-opacity-5",
+              useMobileSheet
+                ? "fixed bottom-0 left-0 right-0 z-[1100] mt-0 max-h-[70vh] rounded-t-[0.33em] border border-b-0 border-gray-200 pb-3 shadow-2xl"
+                : "absolute left-0 right-0 z-50 mt-1 max-h-[400px] rounded-[0.33em] py-1",
+            )}
             style={
-              isMobile && dropdownMaxHeight !== undefined
+              useInlineMobileDropdown && dropdownMaxHeight !== undefined
                 ? { maxHeight: dropdownMaxHeight }
                 : undefined
             }

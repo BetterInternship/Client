@@ -38,16 +38,12 @@ export default function JobPage() {
   const { isAuthenticated } = useAuthContext();
 
   const handleApply = useCallback(
-    async ({ resumeId, coverLetter }: ApplyPayload) => {
+    async ({ resumeId }: ApplyPayload) => {
       if (!job.data?.id || !resumeId) return;
 
       const response = await applicationActions.create.mutateAsync({
         job_id: job.data.id,
         resume_id: resumeId,
-        cover_letter:
-          job.data.internship_preferences?.require_cover_letter === true
-            ? coverLetter
-            : "",
       });
 
       if (response.message) {

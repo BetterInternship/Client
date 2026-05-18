@@ -11,6 +11,7 @@ import { useAppContext } from "@/lib/ctx-app";
 import { AnimatePresence, motion } from "framer-motion";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { HelpCircle, MailCheck } from "lucide-react";
+import { useBlurTransition } from "@/components/animata/blur";
 
 /**
  * Display the layout for the forgot password page.
@@ -35,13 +36,14 @@ export default function ForgotPasswordPage() {
 /**
  * Layout for the forgot password form.
  */
-const ForgotPasswordForm = ({}) => {
+const ForgotPasswordForm = () => {
   const GENERIC_RESET_MESSAGE =
     "If an account with that email exists, a reset link will be sent shortly.";
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const blurTransition = useBlurTransition();
 
   // send password reset request if a valid email is entered.
   const handle_request = async (e: React.FormEvent) => {
@@ -69,12 +71,7 @@ const ForgotPasswordForm = ({}) => {
   return (
     <>
       <AnimatePresence>
-        <motion.div
-          initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-          animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-          className="w-full"
-        >
+        <motion.div {...blurTransition} className="w-full">
           <Card className="flex flex-col gap-4">
             <div className="flex flex-row items-center gap-3 mb-2">
               <HeaderIcon icon={HelpCircle} />
@@ -108,7 +105,7 @@ const ForgotPasswordForm = ({}) => {
               </span>
               <Button
                 type="submit"
-                onClick={handle_request}
+                onClick={(e) => void handle_request(e)}
                 disabled={isLoading}
               >
                 {isLoading ? "Sending request..." : "Request password reset"}

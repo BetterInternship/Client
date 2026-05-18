@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { TriangleAlert } from "lucide-react";
 import { useEffect } from "react";
+import { SUPPORT_FACEBOOK } from "@/constants";
 
 export default function Error({
   error,
@@ -28,10 +29,7 @@ export default function Error({
         </div>
         <span>
           Sorry for the inconvenience. Please{" "}
-          <a href="https://www.facebook.com/betterinternship.sherwin">
-            contact us for support
-          </a>
-          .
+          <a href={SUPPORT_FACEBOOK}>contact us for support</a>.
         </span>
         {error && (
           <div className="flex flex-col gap-4">

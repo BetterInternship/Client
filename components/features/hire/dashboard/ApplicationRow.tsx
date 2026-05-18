@@ -30,6 +30,7 @@ import { ActionButton } from "@/components/ui/action-button";
 import { FormCheckbox } from "@/components/EditForm";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import StatusBadge from "@/components/ui/status-badge";
+import { useBlurTransition } from "@/components/animata/blur";
 
 interface ApplicationRowProps {
   index?: number;
@@ -88,14 +89,10 @@ export function ApplicationRow({
   const challengeSubmission = application.challenge_submission?.trim() ?? "";
   const hasChallengeSubmission = challengeSubmission.length > 0;
 
+  const blurTransition = useBlurTransition({ delay: staggerDelay });
+
   return isMobile ? (
-    <motion.div
-      key={application.id}
-      initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-      animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
-      exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-      transition={{ duration: 0.3, delay: staggerDelay, ease: "easeOut" }}
-    >
+    <motion.div key={application.id} {...blurTransition}>
       <Card
         className={`flex flex-col hover:cursor-pointer transition-colors ${
           isSuperListing
@@ -180,14 +177,7 @@ export function ApplicationRow({
     <>
       <motion.tr
         key={application.id}
-        initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-        animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
-        exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-        transition={{
-          duration: 0.3,
-          delay: staggerDelay,
-          ease: "easeOut",
-        }}
+        {...blurTransition}
         className="group hover:cursor-pointer transition-colors odd:bg-white even:bg-gray-50 hover:bg-amber-100/50"
         onClick={onView}
       >
@@ -205,7 +195,7 @@ export function ApplicationRow({
         </td>
         <td className="px-4 py-2">{getFullName(application.user)} </td>
         <td className="px-4 py-2">
-          {formatDateWithoutTime(application.applied_at)}
+          {application.applied_at?.toLocaleDateString()}
         </td>
         <td className="px-4 py-2 w-40 overflow-visible">
           {filterKey !== "accepted" && filterKey !== "rejected" ? (
@@ -273,14 +263,7 @@ export function ApplicationRow({
     // desktop
     <motion.tr
       key={application.id}
-      initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-      animate={{ scale: 1, filter: "blur(0px)", opacity: 1 }}
-      exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-      transition={{
-        duration: 0.3,
-        delay: staggerDelay,
-        ease: "easeOut",
-      }}
+      {...blurTransition}
       className="group hover:cursor-pointer transition-colors odd:bg-white even:bg-gray-50 hover:bg-primary/25"
       onClick={onView}
     >
