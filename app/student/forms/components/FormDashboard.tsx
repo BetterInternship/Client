@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FileSearch, FileText } from "lucide-react";
+import type { ReactNode } from "react";
+import { FileSearch, FileText, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { FormTemplate } from "@/lib/db/forms-db.types";
@@ -27,12 +28,10 @@ import { FormActionAccordion } from "./FormActionAccordion";
 import { FormSigningPartyTimeline } from "./FormSigningPartyTimeline";
 import { FormMobileCloseConfirmation } from "./FormMobileCloseConfirmation";
 import { useMobile } from "@/hooks/use-mobile";
-import useModalRegistry from "@/components/modals/modal-registry";
 import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useHeaderContext } from "@/lib/ctx-header";
-import { useGlobalModal } from "@/components/providers/modal-provider/ModalProvider";
 import {
   FRESH_FORMS_QUERY_PARAM,
   clearFreshHistoryCutoffMsInStorage,
@@ -40,6 +39,7 @@ import {
   setFreshHistoryCutoffMsInStorage,
 } from "../fresh-history";
 import { STUDENT_FORM_GUIDE, SUPPORT_FACEBOOK } from "@/constants";
+import { Button } from "@/components/ui/button";
 
 type GeneratedFormItem = {
   form_process_id?: string;
@@ -72,10 +72,8 @@ export default function FormDashboard({
   isLoading: boolean;
 }) {
   const { isMobile } = useMobile();
-  const { setDesktopHeaderHidden } = useHeaderContext();
-  const { closeModal } = useGlobalModal();
+  const { setDesktopHeaderHidden, setNavigationHidden } = useHeaderContext();
   const searchParams = useSearchParams();
-  const modalRegistry = useModalRegistry();
   const headerTapStateRef = useRef<{
     count: number;
     timer: ReturnType<typeof setTimeout> | null;
@@ -166,6 +164,11 @@ export default function FormDashboard({
     return () => setDesktopHeaderHidden(false);
   }, [isMobile, isSigningFlow, setDesktopHeaderHidden]);
 
+  useEffect(() => {
+    setNavigationHidden(isMobile && !!selectedTemplate);
+    return () => setNavigationHidden(false);
+  }, [isMobile, selectedTemplate, setNavigationHidden]);
+
   const handleHeaderSecretTap = useCallback(() => {
     const tapState = headerTapStateRef.current;
     tapState.count += 1;
@@ -208,99 +211,51 @@ export default function FormDashboard({
     [form],
   );
 
+  const resetMobileSigningState = useCallback(() => {
+    setIsMobileSigningFlow(false);
+    setIsMobileExitConfirmationOpen(false);
+  }, []);
+
+  const closeMobileSheet = useCallback(() => {
+    resetMobileSigningState();
+    setSelectedTemplate(undefined);
+  }, [resetMobileSigningState]);
+
+  const requestMobileSheetClose = useCallback(() => {
+    if (isMobileSigningFlow) {
+      setIsMobileExitConfirmationOpen(true);
+      return;
+    }
+
+    closeMobileSheet();
+  }, [closeMobileSheet, isMobileSigningFlow]);
+
   useEffect(() => {
-    if (!isMobile) {
-      modalRegistry.formTemplateDetails.close();
-      setIsMobileSigningFlow(false);
-      return;
-    }
-
-    if (!selectedTemplate) {
-      modalRegistry.formTemplateDetails.close();
-      setIsMobileSigningFlow(false);
-      return;
-    }
-
-    modalRegistry.formTemplateDetails.open({
-      title: selectedTemplate.formLabel,
-      content: (
-        <FormRendererContextBridge value={form}>
-          <SignContextBridge value={signContext}>
-            <FormFillerContextBridge value={formFiller}>
-              <MobileFormTemplateDetailsContent
-                selectedTemplate={selectedTemplate}
-                generatedForms={filteredGeneratedForms}
-                isSigningFlow={isMobileSigningFlow}
-                setIsSigningFlow={setIsMobileSigningFlow}
-                showExitConfirmation={isMobileExitConfirmationOpen}
-                setShowExitConfirmation={setIsMobileExitConfirmationOpen}
-              />
-            </FormFillerContextBridge>
-          </SignContextBridge>
-        </FormRendererContextBridge>
-      ),
-      onRequestClose: () => {
-        if (isMobileSigningFlow) {
-          setIsMobileExitConfirmationOpen(true);
-          return;
-        }
-        setSelectedTemplate(undefined);
-      },
-      closeOnBackdropClick: !isMobileSigningFlow,
-      closeOnEscapeKey: !isMobileSigningFlow,
-      mobileFullscreen: isMobileSigningFlow,
-      onClose: () => {
-        setSelectedTemplate(undefined);
-        setIsMobileSigningFlow(false);
-        setIsMobileExitConfirmationOpen(false);
-      },
-    });
-  }, [
-    isMobile,
-    selectedTemplate,
-    filteredGeneratedForms,
-    isMobileSigningFlow,
-    isMobileExitConfirmationOpen,
-    form,
-    formFiller,
-    signContext,
-    form.loading,
-    form.document.name,
-    form.document.url,
-    form.formLabel,
-  ]);
+    if (isMobile) return;
+    resetMobileSigningState();
+  }, [isMobile, resetMobileSigningState]);
 
   useEffect(() => {
     if (!isMobile) return;
 
     const handlePopState = () => {
-      setIsMobileSigningFlow(false);
-      setIsMobileExitConfirmationOpen(false);
-      setSelectedTemplate(undefined);
-      closeModal("form-template-details");
+      closeMobileSheet();
     };
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [isMobile, closeModal]);
+  }, [closeMobileSheet, isMobile]);
 
   useEffect(() => {
     if (!isMobile) return;
 
-    const resetMobileTemplateModalState = () => {
-      setIsMobileSigningFlow(false);
-      setIsMobileExitConfirmationOpen(false);
-      setSelectedTemplate(undefined);
-      closeModal("form-template-details");
-    };
-
     const handlePageHide = () => {
-      resetMobileTemplateModalState();
+      closeMobileSheet();
     };
 
     const handlePageShow = (event: PageTransitionEvent) => {
       if (!event.persisted) return;
-      resetMobileTemplateModalState();
+      closeMobileSheet();
     };
 
     window.addEventListener("pagehide", handlePageHide);
@@ -309,18 +264,12 @@ export default function FormDashboard({
       window.removeEventListener("pagehide", handlePageHide);
       window.removeEventListener("pageshow", handlePageShow);
     };
-  }, [isMobile, closeModal]);
-
-  useEffect(() => {
-    return () => {
-      closeModal("form-template-details");
-    };
-  }, [closeModal]);
+  }, [closeMobileSheet, isMobile]);
 
   if (isLoading) return <Loader>Loading form templates...</Loader>;
 
   return (
-    <div className="h-full min-h-0 w-full bg-gray-50">
+    <div className="relative h-full min-h-0 w-full overflow-hidden bg-gray-50">
       <div
         className={cn(
           "grid h-[calc(100%-2px)] min-h-0 transition-[grid-template-columns] duration-500 ease-in-out",
@@ -511,7 +460,70 @@ export default function FormDashboard({
           )}
         </section>
       </div>
+      <AnimatePresence>
+        {isMobile && selectedTemplate && (
+          <MobileFormTemplateSheet
+            title={selectedTemplate.formLabel}
+            onClose={requestMobileSheetClose}
+          >
+            <FormRendererContextBridge value={form}>
+              <SignContextBridge value={signContext}>
+                <FormFillerContextBridge value={formFiller}>
+                  <MobileFormTemplateDetailsContent
+                    selectedTemplate={selectedTemplate}
+                    generatedForms={filteredGeneratedForms}
+                    isSigningFlow={isMobileSigningFlow}
+                    setIsSigningFlow={setIsMobileSigningFlow}
+                    showExitConfirmation={isMobileExitConfirmationOpen}
+                    setShowExitConfirmation={setIsMobileExitConfirmationOpen}
+                  />
+                </FormFillerContextBridge>
+              </SignContextBridge>
+            </FormRendererContextBridge>
+          </MobileFormTemplateSheet>
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+function MobileFormTemplateSheet({
+  title,
+  onClose,
+  children,
+}: {
+  title: ReactNode;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <motion.div
+      className="absolute inset-0 z-50 bg-white md:hidden"
+      role="dialog"
+      aria-modal="true"
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 16 }}
+      transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <div className="flex h-full flex-col overflow-hidden">
+        <div className="flex items-center justify-between border-b px-4 py-3">
+          <h2 className="min-w-0 truncate text-base font-semibold text-slate-900">
+            {title}
+          </h2>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            aria-label="Close form"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
+      </div>
+    </motion.div>
   );
 }
 
