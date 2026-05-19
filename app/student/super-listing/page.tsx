@@ -3,7 +3,12 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
+import {
+  Caveat,
+  JetBrains_Mono,
+  Open_Sans,
+  Space_Grotesk,
+} from "next/font/google";
 import {
   ArrowRight,
   BriefcaseBusiness,
@@ -39,6 +44,12 @@ const bodyFont = Open_Sans({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
   variable: "--font-paraluman-body",
+});
+
+const handwritingFont = Caveat({
+  subsets: ["latin"],
+  weight: ["700"],
+  variable: "--font-paraluman-handwriting",
 });
 
 type HeroStickyNoteData = {
@@ -292,7 +303,6 @@ function SuperListingsHero() {
         className="pointer-events-none absolute left-1/2 top-[43%] z-10 h-[26rem] w-[42rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(ellipse,rgba(255,248,218,0.24)_0%,rgba(255,233,151,0.12)_42%,transparent_72%)] blur-2xl"
         aria-hidden="true"
       />
-
       <div className="absolute inset-0 mx-auto w-full max-w-[1120px] xl:max-w-[1440px] 2xl:max-w-[1680px] min-[1800px]:max-w-[1920px]">
         <div className="absolute inset-x-[4%] bottom-[4%] top-[6%] sm:inset-x-[6%] sm:bottom-[5%] sm:top-[8%] ">
           {heroStickyNotes.map((note, index) => (
@@ -469,19 +479,16 @@ function SuperListingsPreview() {
   return (
     <section className="bg-transparent px-4 pb-14 pt-20 sm:px-6 lg:px-8 lg:pb-20 lg:pt-24">
       <div className="mx-auto max-w-[1120px]">
-        <div className="mb-7 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <h2 className="[font-family:var(--font-paraluman-heading)] text-3xl font-bold tracking-[-0.04em] text-[#071f49]">
+        <div className="relative mb-8 text-center">
+          <div className="pointer-events-none absolute left-1/2 top-1/2 h-56 w-[120%] -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.9)_0%,rgba(255,255,255,0.64)_48%,rgba(255,255,255,0)_78%)] blur-2xl" />
+          <div className="relative z-10">
+            <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
               Super Listings
+            </p>
+            <h2 className="[font-family:var(--font-paraluman-heading)] mt-3 text-[clamp(2.2rem,4.6vw,3.6rem)] font-black leading-[0.98] tracking-[-0.06em] text-[#052338]">
+              Find your <span className="text-[#0D6BFF]">challenge</span>
             </h2>
           </div>
-          <Link
-            href="/student/search"
-            className="hidden items-center gap-1 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-blue-600 hover:text-blue-700 sm:inline-flex"
-          >
-            View all challenges
-            <ArrowRight className="h-4 w-4" />
-          </Link>
         </div>
 
         <div className="-mx-4 flex snap-x gap-5 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:grid lg:grid-cols-5 lg:overflow-visible lg:px-0 lg:pb-0">
@@ -494,7 +501,7 @@ function SuperListingsPreview() {
 
         <Link
           href="/student/search"
-          className="mt-4 inline-flex items-center gap-1 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-blue-600 hover:text-blue-700 sm:hidden"
+          className="mx-auto mt-8 flex w-fit items-center justify-center gap-1 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-blue-600 hover:text-blue-700"
         >
           View all challenges
           <ArrowRight className="h-4 w-4" />
@@ -595,13 +602,13 @@ function SuperListingsCTA() {
             <h2 className="[font-family:var(--font-paraluman-heading)] text-3xl font-bold leading-tight tracking-[-0.04em] text-white sm:text-5xl">
               Skills speak louder.
             </h2>
-            <p className="mt-2 [font-family:var(--font-paraluman-heading)] text-4xl font-bold italic leading-tight tracking-[-0.04em] text-amber-300 sm:text-6xl">
+            <p className="[font-family:var(--font-paraluman-handwriting)] text-5xl font-bold leading-tight text-amber-300 sm:text-7xl">
               Are you ready?
             </p>
             <Button
               asChild
               size="lg"
-              className="mt-9 h-14 rounded-xl bg-white px-8 [font-family:var(--font-paraluman-heading)] text-base font-bold text-blue-600 shadow-medium hover:bg-blue-50"
+              className="mt-9 h-14 rounded-full bg-white px-8 [font-family:var(--font-paraluman-heading)] text-base font-bold text-[#0D6BFF] shadow-[0_0_34px_rgba(255,208,87,0.42),0_14px_36px_rgba(0,0,0,0.22)] transition-transform hover:-translate-y-0.5 hover:bg-white sm:h-16 sm:px-10"
             >
               <Link href="/student/search">
                 Explore challenges
@@ -623,6 +630,7 @@ export default function SuperListingsLandingPage() {
         headingFont.variable,
         monoFont.variable,
         bodyFont.variable,
+        handwritingFont.variable,
       )}
     >
       <SuperListingsHero />
