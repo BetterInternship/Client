@@ -1,750 +1,688 @@
 "use client";
 
-import Link from "next/link";
+import { useEffect, useState, type ReactNode } from "react";
 import Image from "next/image";
-import { ArrowRight, Zap, Target } from "lucide-react";
-import { useRef, useState, useEffect } from "react";
+import Link from "next/link";
+import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
 import {
-  motion,
-  useScroll,
-  useTransform,
-  useReducedMotion,
-} from "framer-motion";
-import { InteractiveGridPattern } from "@/components/landingStudent/sections/1stSection/interactive-grid-pattern";
+  ArrowRight,
+  BriefcaseBusiness,
+  Building2,
+  CheckCircle2,
+  Code2,
+  FileSearch,
+  PenLine,
+  Rocket,
+  Sparkles,
+  Trophy,
+  UserCheck,
+} from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { SuperListingBadge } from "@/components/shared/jobs";
 import { cn } from "@/lib/utils";
+import doodlePack from "../companies/sofi-ai/doodle-pack.png";
 
-function SectionReveal({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
+const headingFont = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["500", "700"],
+  variable: "--font-paraluman-heading",
+});
+
+const monoFont = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "600"],
+  variable: "--font-paraluman-mono",
+});
+
+const bodyFont = Open_Sans({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  variable: "--font-paraluman-body",
+});
+
+type HeroStickyNoteData = {
+  company: string;
+  headline: string;
+  role: string;
+  tone: "cream" | "blue" | "mint" | "lavender" | "yellow";
+  pinTone: "blue" | "gold";
+  spotlight: string;
   className?: string;
-}) {
-  return (
-    <motion.section
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.3 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className={className}
-    >
-      {children}
-    </motion.section>
-  );
-}
-
-type SuperListingBadgeSize = "body" | "heading" | "button";
-
-const superListingBadgeSizeClasses: Record<SuperListingBadgeSize, string> = {
-  body: "mx-1 align-middle",
-  heading: "mx-2 align-middle text-[0.38em] px-[0.72em] py-[0.38em]",
-  button: "mx-2 align-middle text-[0.75em] px-[0.72em] py-[0.32em] text-black",
 };
 
-function renderTextWithSuperListingBadge(
-  text: string,
-  size: SuperListingBadgeSize = "body",
-): React.ReactNode {
-  const parts = text.split(/(Super Listings|Super Listing)/g);
+type SuperListingData = {
+  company: string;
+  title: string;
+  tags: string[];
+  href: string;
+  logo: ReactNode;
+};
 
-  return parts.map((part, index) => {
-    if (part === "Super Listings" || part === "Super Listing") {
-      return (
-        <SuperListingBadge
-          key={`sl-badge-${index}`}
-          compact
-          className={cn(superListingBadgeSizeClasses[size])}
-        />
-      );
-    }
+type StepData = {
+  step: string;
+  title: string;
+  description: string;
+  icon: ReactNode;
+};
 
-    return <span key={`sl-text-${index}`}>{part}</span>;
-  });
-}
+type StatData = {
+  value: string;
+  label: string;
+  icon: ReactNode;
+};
 
-/* ---------- Magnetic CTA Button ---------- */
-function MagneticButton({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  const prefersReduce = useReducedMotion();
-  const ref = useRef<HTMLDivElement>(null);
-  const [tx, setTx] = useState(0);
-  const [ty, setTy] = useState(0);
+const heroStickyNotes: HeroStickyNoteData[] = [
+  {
+    company: "Anteriore",
+    headline: "Build what the future needs",
+    role: "Product & Engineering",
+    tone: "cream",
+    pinTone: "blue",
+    spotlight: "10% 27%",
+    className: "left-[2%] top-[19%]",
+  },
+  {
+    company: "Cebu Pacific",
+    headline: "Redesign journeys for millions",
+    role: "Digital Travel Experience",
+    tone: "blue",
+    pinTone: "gold",
+    spotlight: "31% 18%",
+    className: "left-[24%] top-[8%] hidden lg:block",
+  },
+  {
+    company: "Founders For Founders",
+    headline: "Help the next great founder rise",
+    role: "Accelerator Intern",
+    tone: "lavender",
+    pinTone: "blue",
+    spotlight: "88% 23%",
+    className: "right-[4%] top-[15%]",
+  },
+  {
+    company: "Miro",
+    headline: "Turn messy ideas into momentum",
+    role: "Internship Challenge",
+    tone: "mint",
+    pinTone: "blue",
+    spotlight: "11% 64%",
+    className: "left-[3%] top-[56%] hidden sm:block",
+  },
+  {
+    company: "Paraluman News",
+    headline: "Bring stories across languages",
+    role: "News Delivery",
+    tone: "yellow",
+    pinTone: "gold",
+    spotlight: "88% 64%",
+    className: "right-[3%] top-[56%] hidden sm:block",
+  },
+  {
+    company: "Philippine Chamber of Commerce",
+    headline: "Shape ideas that move business",
+    role: "Innovation Challenge",
+    tone: "cream",
+    pinTone: "blue",
+    spotlight: "17% 86%",
+    className: "left-[9%] bottom-[6%] hidden lg:block",
+  },
+  {
+    company: "Sofi AI",
+    headline: "Design AI people actually trust",
+    role: "Frontend / UI/UX",
+    tone: "blue",
+    pinTone: "gold",
+    spotlight: "70% 87%",
+    className: "right-[30%] bottom-[4%] hidden lg:block",
+  },
+  {
+    company: "Sofi AI",
+    headline: "Make AI feel worth talking about",
+    role: "Marketing Intern",
+    tone: "lavender",
+    pinTone: "blue",
+    spotlight: "88% 85%",
+    className: "right-[4%] bottom-[8%] hidden lg:block",
+  },
+];
 
-  const max = 6; // px
-  function onMove(e: React.MouseEvent) {
-    if (prefersReduce) return;
-    const el = ref.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const x = (e.clientX - r.left) / r.width - 0.5;
-    const y = (e.clientY - r.top) / r.height - 0.5;
-    setTx(x * max * 2);
-    setTy(y * max * 2);
-  }
-  function onLeave() {
-    setTx(0);
-    setTy(0);
-  }
+const previewListings: SuperListingData[] = [
+  {
+    company: "Anteriore",
+    title: "Startup Product and Engineering Challenge",
+    tags: ["Product", "Engineering"],
+    href: "/student/super-listing/anteriore",
+    logo: <Rocket className="h-5 w-5" />,
+  },
+  {
+    company: "Cebu Pacific",
+    title: "Digital Travel Experience Challenge",
+    tags: ["UX", "Travel"],
+    href: "/student/super-listing/cebu-pacific",
+    logo: <Building2 className="h-5 w-5" />,
+  },
+  {
+    company: "Founders For Founders",
+    title: "Startup Accelerator Intern",
+    tags: ["Startups", "Growth"],
+    href: "/student/super-listing/fff",
+    logo: <BriefcaseBusiness className="h-5 w-5" />,
+  },
+  {
+    company: "Sofi AI",
+    title: "Frontend AI Product Challenge",
+    tags: ["Frontend", "UI/UX"],
+    href: "/student/super-listing/sofi-ai",
+    logo: <PenLine className="h-5 w-5" />,
+  },
+  {
+    company: "Paraluman News",
+    title: "Multilingual News Delivery Challenge",
+    tags: ["Web", "News"],
+    href: "/student/super-listing/paraluman",
+    logo: <Sparkles className="h-5 w-5" />,
+  },
+];
 
+const howItWorksSteps: StepData[] = [
+  {
+    step: "1",
+    title: "Pick a challenge",
+    description: "Choose a challenge that matches your skills and interests.",
+    icon: <FileSearch className="h-10 w-10" />,
+  },
+  {
+    step: "2",
+    title: "Do real work",
+    description: "Complete the task and submit your best work.",
+    icon: <Code2 className="h-10 w-10" />,
+  },
+  {
+    step: "3",
+    title: "Get noticed",
+    description: "Stand out to top companies and get hired.",
+    icon: <CheckCircle2 className="h-10 w-10" />,
+  },
+];
+
+const stats: StatData[] = [
+  {
+    value: "5,000+",
+    label: "Challenges completed",
+    icon: <Trophy className="h-7 w-7" />,
+  },
+  {
+    value: "1,200+",
+    label: "Students hired",
+    icon: <UserCheck className="h-7 w-7" />,
+  },
+  {
+    value: "500+",
+    label: "Partner companies",
+    icon: <Building2 className="h-7 w-7" />,
+  },
+  {
+    value: "Real impact",
+    label: "On real projects",
+    icon: <Rocket className="h-7 w-7" />,
+  },
+];
+
+const stickyNoteToneClasses: Record<HeroStickyNoteData["tone"], string> = {
+  cream: "bg-[#FFF9EC]",
+  blue: "bg-[#F3F8FF]",
+  mint: "bg-[#F2FFFA]",
+  lavender: "bg-[#F8F4FF]",
+  yellow: "bg-[#FFFBEA]",
+};
+
+const stickyNotePinClasses: Record<HeroStickyNoteData["pinTone"], string> = {
+  blue: "bg-blue-600",
+  gold: "bg-amber-400",
+};
+
+function HeroStickyNote({
+  headline,
+  company,
+  role,
+  tone,
+  pinTone,
+  className,
+  isActive = false,
+}: HeroStickyNoteData & { isActive?: boolean }) {
   return (
-    <motion.div
-      ref={ref}
-      onMouseMove={onMove}
-      onMouseLeave={onLeave}
-      animate={{ x: tx, y: ty, rotate: tx * 0.3 }}
-      transition={{ type: "spring", stiffness: 200, damping: 15, mass: 0.3 }}
-      className={className}
+    <div
+      className={cn(
+        "absolute z-20 w-[168px] transition-[opacity,filter] duration-700",
+        "sm:w-[184px] lg:w-[210px]",
+        className,
+        isActive
+          ? "z-40 opacity-100 brightness-110"
+          : "opacity-70 saturate-[0.82] brightness-[0.82]",
+      )}
     >
-      {children}
-    </motion.div>
+      <span
+        className={cn(
+          "absolute left-1/2 top-0 z-20 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full shadow-sm ring-2 ring-white/80",
+          stickyNotePinClasses[pinTone],
+        )}
+        aria-hidden="true"
+      />
+      <div
+        className={cn(
+          "min-h-[118px] border border-[#081A3A]/5 px-3.5 pb-3.5 pt-6 text-center shadow-[0_14px_30px_rgba(8,26,58,0.15)] ring-1 ring-white/50",
+          "sm:min-h-[150px] sm:px-4 sm:pb-4 sm:pt-7",
+          isActive &&
+            "shadow-[0_18px_46px_rgba(8,26,58,0.22),0_0_24px_rgba(255,238,170,0.28)] ring-2 ring-amber-100/70",
+          stickyNoteToneClasses[tone],
+        )}
+      >
+        <p className="[font-family:var(--font-paraluman-heading)] text-[16px] font-bold leading-tight tracking-[-0.025em] text-[#081A3A] sm:text-[18px]">
+          {headline}
+        </p>
+        <p className="mt-3 [font-family:var(--font-paraluman-heading)] text-[11px] font-semibold leading-tight text-[#081A3A]/75">
+          {company}
+        </p>
+        <p className="mt-1 [font-family:var(--font-paraluman-body)] text-[10px] leading-snug text-[#081A3A]/55">
+          {role}
+        </p>
+      </div>
+    </div>
   );
 }
 
-export default function SuperListingStoryPage() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [randomPositions, setRandomPositions] = useState<{
-    tl: { top: string; left: string };
-    tr: { top: string; right: string };
-    bl: { bottom: string; left: string };
-    br: { bottom: string; right: string };
-  } | null>(null);
+function SuperListingsHero() {
+  const [activeNoteIndex, setActiveNoteIndex] = useState(0);
+  const [spotlightX, spotlightY] =
+    heroStickyNotes[activeNoteIndex].spotlight.split(" ");
 
   useEffect(() => {
-    // Generate random positions on mount
-    setRandomPositions({
-      tl: {
-        top: `${15 + Math.random() * 15}%`,
-        left: `${5 + Math.random() * 10}%`,
-      },
-      tr: {
-        top: `${20 + Math.random() * 20}%`,
-        right: `${5 + Math.random() * 10}%`,
-      },
-      bl: {
-        bottom: `${15 + Math.random() * 15}%`,
-        left: `${8 + Math.random() * 12}%`,
-      },
-      br: {
-        bottom: `${20 + Math.random() * 15}%`,
-        right: `${8 + Math.random() * 12}%`,
-      },
-    });
+    const interval = window.setInterval(() => {
+      setActiveNoteIndex((current) => (current + 1) % heroStickyNotes.length);
+    }, 2400);
+
+    return () => window.clearInterval(interval);
   }, []);
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  });
+  return (
+    <section className="relative min-h-[100svh] w-full overflow-hidden bg-[#061b3d]">
+      <Image
+        src="/super-listings/bg3.png"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover object-center"
+      />
+      <div className="absolute inset-0 bg-black/65" />
+      <div
+        className="pointer-events-none absolute left-1/2 top-[15svh] z-10 h-[101svh] w-[70rem] -translate-x-1/2 bg-[linear-gradient(168deg,rgba(255,246,205,0.2)_0%,rgba(255,236,156,0.5)_36%,rgba(255,247,208,0.24)_70%,transparent_100%)] opacity-95 [clip-path:polygon(45.5%_0,54.5%_0,100%_100%,0_100%)] blur-sm"
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute left-1/2 top-[43%] z-10 h-[26rem] w-[42rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(ellipse,rgba(255,248,218,0.24)_0%,rgba(255,233,151,0.12)_42%,transparent_72%)] blur-2xl"
+        aria-hidden="true"
+      />
 
-  // Parallax values
-  const heroY = useTransform(scrollYProgress, [0, 0.2], [0, 100]);
-  const heroScale = useTransform(scrollYProgress, [0, 0.3], [1, 0.95]);
-  const heroOpacity = useTransform(scrollYProgress, [0.15, 0.35], [1, 0.7]);
+      <div className="absolute inset-0 mx-auto w-full max-w-[1120px] xl:max-w-[1440px] 2xl:max-w-[1680px] min-[1800px]:max-w-[1920px]">
+        <div className="absolute inset-x-[4%] bottom-[4%] top-[6%] sm:inset-x-[6%] sm:bottom-[5%] sm:top-[8%] ">
+          <div
+            className="pointer-events-none absolute z-30 h-[22rem] w-[22rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,248,218,0.78)_0%,rgba(255,231,139,0.46)_28%,rgba(255,248,220,0.18)_48%,transparent_70%)]  transition-all duration-700"
+            style={{
+              left: spotlightX,
+              top: spotlightY,
+            }}
+            aria-hidden="true"
+          />
+          {heroStickyNotes.map((note, index) => (
+            <HeroStickyNote
+              key={`${note.company}-${note.role}`}
+              {...note}
+              isActive={index === activeNoteIndex}
+            />
+          ))}
+
+          <div className="absolute left-1/2 top-[45%] z-50 -translate-x-1/2 -translate-y-1/2 text-center sm:top-[50%]">
+            <h1 className="[font-family:var(--font-paraluman-heading)] text-[2.25rem] font-bold leading-[1.02] tracking-[-0.05em] sm:text-[3.6rem] md:text-[4.5rem]">
+              <span className="block whitespace-nowrap bg-[linear-gradient(110deg,#071f49_0%,#0b63f6_24%,#b9d8ff_38%,#0b63f6_52%,#4f9cff_66%,#071f49_82%,#071f49_100%)] bg-[length:220%_100%] bg-clip-text text-transparent [animation:runway-shine_8s_ease-in-out_infinite]">
+                Help build
+              </span>
+              <span className="block whitespace-nowrap bg-[linear-gradient(110deg,#071f49_0%,#0b63f6_24%,#b9d8ff_38%,#0b63f6_52%,#4f9cff_66%,#071f49_82%,#071f49_100%)] bg-[length:220%_100%] bg-clip-text text-transparent [animation:runway-shine_8s_ease-in-out_infinite]">
+                a better Philippines
+              </span>
+              <span className="block whitespace-nowrap bg-[linear-gradient(110deg,#071f49_0%,#0b63f6_24%,#b9d8ff_38%,#0b63f6_52%,#4f9cff_66%,#071f49_82%,#071f49_100%)] bg-[length:220%_100%] bg-clip-text text-transparent [animation:runway-shine_8s_ease-in-out_infinite]">
+                one problem at a time
+              </span>
+            </h1>
+            <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Button
+                asChild
+                size="lg"
+                className="h-11 rounded-[0.5em] px-6 shadow-medium"
+              >
+                <Link href="/student/search">
+                  Explore challenges
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                scheme="primary"
+                className="h-11 rounded-[0.5em] bg-white/85 px-6 shadow-soft"
+              >
+                <Link href="#how-it-works">How it works</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const DOODLE_SPRITES = {
+  dashedPath: { row: 0, col: 0 },
+  sparkle: { row: 0, col: 1 },
+  dotGrid: { row: 0, col: 2 },
+  arrow: { row: 0, col: 3 },
+  scribble: { row: 1, col: 0 },
+  circleAccent: { row: 1, col: 1 },
+  stickyNote: { row: 1, col: 2 },
+  secondArrow: { row: 1, col: 3 },
+  circleAccent2: { row: 2, col: 0 },
+  wavyLine: { row: 2, col: 1 },
+  profileBubble: { row: 2, col: 2 },
+  cornerDots: { row: 2, col: 3 },
+} as const;
+
+type DoodleName = keyof typeof DOODLE_SPRITES;
+
+function Doodle({
+  name,
+  className,
+  tone = "blue",
+}: {
+  name: DoodleName;
+  className?: string;
+  tone?: "blue" | "gold";
+}) {
+  const { row, col } = DOODLE_SPRITES[name];
+  const x = (col / 3) * 100 + 8;
+  const y = (row / 2) * 100 + 12;
 
   return (
-    <main
-      ref={containerRef}
-      className="relative min-h-screen overflow-x-hidden scroll-smooth bg-white text-black"
+    <span
+      aria-hidden="true"
+      className={cn(
+        "pointer-events-none absolute z-[1] block aspect-[384/341] overflow-hidden bg-transparent bg-no-repeat opacity-45 mix-blend-multiply select-none",
+        tone === "blue"
+          ? "[filter:hue-rotate(165deg)_saturate(1.7)_brightness(0.92)]"
+          : "[filter:hue-rotate(320deg)_saturate(1.8)_brightness(1.05)]",
+        className,
+      )}
     >
-      {/* Grid pattern background */}
-      <div className="pointer-events-none fixed inset-0 -z-20" aria-hidden>
-        <InteractiveGridPattern
-          width={36}
-          height={36}
-          squares={[60, 40]}
-          className="h-full w-full opacity-20 [mask-image:radial-gradient(120%_80%_at_50%_40%,black,transparent)]"
-          squaresClassName="border border-gray-300/10"
-        />
-      </div>
-
-      {/* Animated orbs - brand colors */}
-      <div className="pointer-events-none fixed inset-0 -z-10" aria-hidden>
-        <motion.span
-          className="absolute -top-16 -left-20 h-72 w-72 rounded-full bg-gradient-to-br from-primary/15 to-blue-400/10 blur-3xl"
-          animate={{ y: [0, 20, 0], x: [0, 10, 0] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.span
-          className="absolute -right-24 bottom-20 h-80 w-80 rounded-full bg-gradient-to-br from-purple-400/10 to-pink-300/10 blur-3xl"
-          animate={{ y: [0, -20, 0], x: [0, -10, 0] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        />
-      </div>
-
-      {/* HEADER */}
-      <header className="fixed inset-x-0 top-0 z-[9999]">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 sm:px-8">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <Link
-              href="/"
-              className="flex items-center gap-3 transition-opacity duration-200 hover:opacity-70"
-            >
-              <Image
-                src="/BetterInternshipLogo.png"
-                alt="BetterInternship"
-                width={40}
-                height={40}
-                className="h-10 w-10 sm:h-12 sm:w-12"
-              />
-              <span className="text-base font-black tracking-tight text-black sm:text-lg">
-                BetterInternship
-              </span>
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      {/* Hero Section with Parallax */}
-      <motion.section
+      <span
+        className="block h-full w-full bg-no-repeat"
         style={{
-          y: heroY,
-          scale: heroScale,
-          opacity: heroOpacity,
+          backgroundImage: `url(${doodlePack.src})`,
+          backgroundPosition: `${x}% ${y}%`,
+          backgroundSize: "400% 300%",
         }}
-        className="h-screen flex items-center justify-center overflow-visible"
+      />
+    </span>
+  );
+}
+
+function SuperListingsContentBackdrop({ children }: { children: ReactNode }) {
+  return (
+    <div className="relative overflow-hidden bg-[#f7fbff]">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(11,99,246,0.07)_1px,transparent_1px),linear-gradient(to_bottom,rgba(11,99,246,0.07)_1px,transparent_1px)] bg-[size:44px_44px] opacity-70" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_14%,rgba(11,99,246,0.1),transparent_28%),radial-gradient(circle_at_88%_38%,rgba(245,181,27,0.12),transparent_24%),radial-gradient(circle_at_30%_86%,rgba(11,99,246,0.08),transparent_28%)]" />
+
+      <Doodle
+        name="sparkle"
+        tone="gold"
+        className="-left-10 top-8 hidden w-36 sm:block lg:left-8 lg:w-44"
+      />
+      <Doodle
+        name="arrow"
+        className="right-5 top-20 hidden w-44 md:block lg:right-16"
+      />
+      <Doodle name="wavyLine" className="-right-12 top-[38%] w-44 md:w-60" />
+      <Doodle
+        name="stickyNote"
+        tone="gold"
+        className="-left-14 bottom-32 hidden w-48 md:block"
+      />
+      <Doodle
+        name="circleAccent"
+        className="left-[42%] top-[48%] hidden w-36 opacity-30 lg:block"
+      />
+      <Doodle
+        name="cornerDots"
+        tone="gold"
+        className="right-10 bottom-8 hidden w-32 sm:block"
+      />
+
+      <div className="relative z-10">{children}</div>
+    </div>
+  );
+}
+
+function SuperListingCard({ listing }: { listing: SuperListingData }) {
+  return (
+    <Card className="flex min-h-[255px] min-w-[220px] flex-col rounded-xl border-gray-200 bg-white p-5 shadow-soft transition-all duration-200 hover:-translate-y-1 hover:shadow-medium lg:min-w-0">
+      <div className="mb-5 flex items-center gap-3">
+        <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+          {listing.logo}
+        </span>
+        <p className="[font-family:var(--font-paraluman-heading)] text-sm font-bold text-[#071f49]">
+          {listing.company}
+        </p>
+      </div>
+      <h3 className="[font-family:var(--font-paraluman-heading)] text-base font-bold leading-snug tracking-[-0.025em] text-[#071f49]">
+        {listing.title}
+      </h3>
+      <div className="mt-5 flex flex-wrap gap-2">
+        {listing.tags.map((tag) => (
+          <span
+            key={`${listing.company}-${tag}`}
+            className="rounded-[0.33em] bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-600"
+          >
+            {tag}
+          </span>
+        ))}
+      </div>
+      <Link
+        href={listing.href}
+        className="mt-auto inline-flex items-center gap-1 pt-6 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-blue-600 hover:text-blue-700"
       >
-        {/* Lightning Icons - Top Left */}
-        <motion.div
-          style={randomPositions?.tl}
-          className="absolute text-amber-400/70 pointer-events-none"
-          animate={{ y: [0, -25, 0], rotate: [0, 12, 0], scale: [1, 1.1, 1] }}
-          transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <Zap className="w-12 h-12 sm:w-16 sm:h-16 filter drop-shadow-lg" />
-        </motion.div>
+        View challenge
+        <ArrowRight className="h-4 w-4" />
+      </Link>
+    </Card>
+  );
+}
 
-        {/* Lightning Icons - Top Right */}
-        <motion.div
-          style={randomPositions?.tr}
-          className="absolute text-amber-400/80 pointer-events-none"
-          animate={{ y: [0, 22, 0], rotate: [0, -15, 0], scale: [1, 0.95, 1] }}
-          transition={{
-            duration: 3.7,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.3,
-          }}
-        >
-          <Zap className="w-10 h-10 sm:w-14 sm:h-14 filter drop-shadow-lg" />
-        </motion.div>
-
-        {/* Lightning Icons - Bottom Left */}
-        <motion.div
-          style={randomPositions?.bl}
-          className="absolute text-amber-400/60 pointer-events-none"
-          animate={{ y: [0, -18, 0], rotate: [0, 18, 0], scale: [1, 1.15, 1] }}
-          transition={{
-            duration: 3.4,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.8,
-          }}
-        >
-          <Zap className="w-8 h-8 sm:w-12 sm:h-12 filter drop-shadow-lg" />
-        </motion.div>
-
-        {/* Lightning Icons - Bottom Right */}
-        <motion.div
-          style={randomPositions?.br}
-          className="absolute text-amber-400/75 pointer-events-none"
-          animate={{ y: [0, 20, 0], rotate: [0, -12, 0], scale: [1, 1.05, 1] }}
-          transition={{
-            duration: 4.1,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1.2,
-          }}
-        >
-          <Zap className="w-8 h-8 sm:w-12 sm:h-12 filter drop-shadow-lg" />
-        </motion.div>
-
-        {/* Animated background gradient */}
-        <div className="absolute inset-0 -z-10">
-          {/* Moving orbital circles */}
-          <motion.div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full border border-amber-400/20 pointer-events-none"
-            animate={{ rotate: 360, scale: [1, 1.05, 1] }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          />
-          <motion.div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full border border-amber-300/15 pointer-events-none"
-            animate={{ rotate: -360, scale: [1.05, 1, 1.05] }}
-            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          />
-
-          {/* Dynamic gradient blobs */}
-          <motion.div
-            className="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-gradient-to-r from-amber-300/20 to-orange-300/10 blur-3xl pointer-events-none"
-            animate={{ x: [0, 30, -20, 0], y: [0, -20, 30, 0] }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="absolute bottom-1/4 -right-20 w-96 h-96 rounded-full bg-gradient-to-l from-blue-300/15 to-purple-300/10 blur-3xl pointer-events-none"
-            animate={{ x: [0, -30, 20, 0], y: [0, 20, -30, 0] }}
-            transition={{
-              duration: 14,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 0.5,
-            }}
-          />
-
-          {/* Original animated orbs */}
-          <motion.div
-            className="absolute top-0 right-1/4 w-96 h-96 rounded-full bg-blue-200/20 blur-3xl"
-            animate={{ y: [0, 30, 0], x: [0, 20, 0] }}
-            transition={{ duration: 8, repeat: Infinity }}
-          />
-          <motion.div
-            className="absolute bottom-0 left-1/4 w-96 h-96 rounded-full bg-purple-200/20 blur-3xl"
-            animate={{ y: [0, -30, 0], x: [0, -20, 0] }}
-            transition={{ duration: 10, repeat: Infinity, delay: 1 }}
-          />
-
-          {/* Pulsing accent circles */}
-          <motion.div
-            className="absolute top-20 right-1/3 w-64 h-64 rounded-full border-2 border-amber-400/10 pointer-events-none"
-            animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.1, 0.3] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="absolute bottom-20 left-1/3 w-56 h-56 rounded-full border border-orange-400/10 pointer-events-none"
-            animate={{ scale: [1.2, 1, 1.2], opacity: [0.1, 0.3, 0.1] }}
-            transition={{
-              duration: 7,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 0.3,
-            }}
-          />
-        </div>
-
-        <div className="relative z-10 w-full max-w-6xl mx-auto px-6 sm:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-center -translate-y-16 sm:-translate-y-24 lg:-translate-y-28"
-          >
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="text-sm font-black uppercase tracking-widest text-amber-600 mb-6 drop-shadow-lg"
-            >
-              ✨ The Future of Hiring
-            </motion.p>
-            <h1 className="text-5xl sm:text-6xl lg:text-8xl font-black leading-tight tracking-tighter mb-6 drop-shadow-xl [text-shadow:_0_4px_20px_rgba(255,215,0,0.4)]">
-              Talent
-              <br />
-              <span style={{ color: "#FFD700" }}>Doesn't Always</span>
-              <br />
-              Wear a Resume
-            </h1>
-            <p className="text-base sm:text-lg text-gray-700 max-w-2xl mx-auto mb-10 leading-relaxed font-mono font-semibold">
-              The best builders are filtered out before they get a real chance.{" "}
-              {renderTextWithSuperListingBadge(
-                "With Super Listings, capability matters. Execution wins. You win.",
-              )}
-            </p>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-              <MagneticButton className="inline-block group">
-                <Link href="/student/search">
-                  <Button className="relative h-14 rounded-2xl border border-amber-400/80 bg-[linear-gradient(135deg,#f59e0b_0%,#f97316_60%,#ea580c_100%)] px-8 text-lg font-bold text-white shadow-xl transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-1 rotate-[-0.8deg] group-hover:rotate-[-0.3deg]">
-                    Explore Super Listings
-                    <Zap className="ml-3 h-5 w-5 drop-shadow-[0_0_4px_rgba(255,255,255,0.5)]" />
-                  </Button>
-                </Link>
-              </MagneticButton>
-            </motion.div>
-          </motion.div>
-        </div>
-
-        {/* Scroll indicator */}
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="absolute bottom-10 left-1/2 transform -translate-x-1/2 text-gray-400"
-        >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 14l-7 7m0 0l-7-7m7 7V3"
-            />
-          </svg>
-        </motion.div>
-      </motion.section>
-
-      {/* The Problem */}
-      <SectionReveal className="relative py-24 px-6 bg-white">
-        <div className="max-w-5xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="mb-16"
-          >
-            <p className="text-sm font-black uppercase tracking-widest text-amber-600 mb-3">
-              THE PROBLEM
-            </p>
-            <h2 className="text-4xl sm:text-6xl font-black mb-6">
-              What's Broken
+function SuperListingsPreview() {
+  return (
+    <section className="bg-transparent px-4 pb-14 pt-20 sm:px-6 lg:px-8 lg:pb-20 lg:pt-24">
+      <div className="mx-auto max-w-[1120px]">
+        <div className="mb-7 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <h2 className="[font-family:var(--font-paraluman-heading)] text-3xl font-bold tracking-[-0.04em] text-[#071f49]">
+              Super Listings
             </h2>
-          </motion.div>
-
-          <div className="grid gap-6 sm:grid-cols-3">
-            {[
-              {
-                icon: "🚫",
-                title: "Filtered Too Early",
-                desc: "Great builders get rejected before showing what they can do.",
-              },
-              {
-                icon: "📄",
-                title: "Resume-First",
-                desc: "Credentials matter more than actual capability and execution.",
-              },
-              {
-                icon: "⏰",
-                title: "Slow Process",
-                desc: "Hiring takes forever. Talent gets hired by someone else.",
-              },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="group relative"
-              >
-                <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#000_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-15" />
-                <div className="relative p-6 rounded-[0.33em] border-2 border-red-200 bg-red-50/40 hover:border-red-300 transition-all">
-                  <div className="text-4xl mb-3">{item.icon}</div>
-                  <h3 className="font-black text-lg mb-2">{item.title}</h3>
-                  <p className="text-gray-700 font-mono text-sm">{item.desc}</p>
-                </div>
-              </motion.div>
-            ))}
           </div>
+          <Link
+            href="/student/search"
+            className="hidden items-center gap-1 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-blue-600 hover:text-blue-700 sm:inline-flex"
+          >
+            View all challenges
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
-      </SectionReveal>
 
-      {/* The Journey */}
-      <section className="relative py-24 px-6 bg-gradient-to-b from-gray-50 to-white">
-        <div className="max-w-5xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="mb-16"
-          >
-            <p className="text-sm font-black uppercase tracking-widest text-amber-600 mb-3">
-              OUR JOURNEY
-            </p>
-            <h2 className="text-4xl sm:text-6xl font-black mb-4">
-              How We Got Here
-            </h2>
-          </motion.div>
-
-          <div className="space-y-8">
-            {[
-              {
-                phase: "Phase One",
-                year: "2025",
-                title: "Miro Changed Everything",
-                story:
-                  "One internship listing at Miro showed us something remarkable. A single opportunity unlocked momentum. We realized—builders don't need perfect resumes. They need one real shot.",
-                color: "from-blue-500 to-cyan-500",
-              },
-              {
-                phase: "Phase Two",
-                year: "2026",
-                title: "FFF Proved It",
-                story:
-                  "Founders for Founders proved our thesis. High-signal talent doesn't need fancy credentials. They need the right challenge and stage. We found the builders who move fast.",
-                color: "from-purple-500 to-pink-500",
-              },
-              {
-                phase: "Phase Three",
-                year: "Now",
-                title: "Super Listings: Built Different",
-                story:
-                  "We built the system. Super Listings fast-track talent by proving capability through challenges, not pedigree. It's how builders become visible. It's how teams find their next star.",
-                color: "from-amber-400 to-amber-600",
-              },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: i % 2 === 0 ? -30 : 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.2 }}
-                className="flex items-start gap-6"
-              >
-                <div
-                  className={`w-16 h-16 rounded-full bg-gradient-to-br ${item.color} flex items-center justify-center text-white font-black text-sm flex-shrink-0 mt-1 shadow-lg`}
-                >
-                  {item.year}
-                </div>
-                <div className="pt-1">
-                  <p className="text-xs font-black uppercase tracking-widest text-gray-500 mb-1">
-                    {item.phase}
-                  </p>
-                  <h3 className="text-2xl font-black mb-3">
-                    {renderTextWithSuperListingBadge(item.title)}
-                  </h3>
-                  <p className="text-gray-700 leading-relaxed max-w-2xl font-mono text-sm">
-                    {renderTextWithSuperListingBadge(item.story)}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* What is a Super Listing */}
-      <section className="relative py-24 px-6 bg-white">
-        <div className="max-w-5xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <p className="text-sm font-black uppercase tracking-widest text-amber-600 mb-3">
-              CORE CONCEPT
-            </p>
-            <h2 className="text-4xl sm:text-6xl font-black mb-6">
-              What IS a{" "}
-              <SuperListingBadge
-                compact
-                className={superListingBadgeSizeClasses.heading}
-              />
-              ?
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto font-mono">
-              A new way to hire. One that puts capability first. Signal beats
-              prestige.
-            </p>
-          </motion.div>
-
-          <div className="grid gap-8 sm:grid-cols-2 mb-12">
-            {[
-              {
-                icon: <Zap className="w-8 h-8" />,
-                title: "For Students",
-                subtitle: "Prove what you can do",
-                lines: [
-                  "Show execution, not credentials",
-                  "Build something real for a real team",
-                  "Get evaluated on capability",
-                  "Fast-track to companies that ship",
-                ],
-              },
-              {
-                icon: <Target className="w-8 h-8" />,
-                title: "For Founders",
-                subtitle: "Find builders faster",
-                lines: [
-                  "Discover talent before resume-grind",
-                  "See what people can actually build",
-                  "Hire the hunters, not the hunted",
-                  "Build teams of people who ship",
-                ],
-              },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.2 }}
-                className="group relative"
-              >
-                <div className="pointer-events-none absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[repeating-linear-gradient(135deg,#000_0_2px,transparent_2px_6px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-10" />
-                <Card className="relative p-8 rounded-[0.33em] border-2 border-gray-200 bg-white hover:border-amber-300 transition-all duration-300">
-                  <div className="text-amber-600 mb-4">{item.icon}</div>
-                  <h3 className="text-2xl font-black mb-1">{item.title}</h3>
-                  <p className="text-xs text-gray-500 mb-6 font-mono uppercase tracking-widest">
-                    {item.subtitle}
-                  </p>
-                  <ul className="space-y-3">
-                    {item.lines.map((line, j) => (
-                      <li key={j} className="flex items-start gap-3">
-                        <span className="text-amber-600 font-black mt-1">
-                          →
-                        </span>
-                        <span className="text-gray-700 font-mono text-sm">
-                          {line}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Core principles */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="group relative"
-          >
-            <div className="pointer-events-none absolute inset-0 translate-x-[8px] translate-y-[8px] bg-[repeating-linear-gradient(135deg,rgba(217,119,6,0.3)_0_2px,transparent_2px_8px)] opacity-0 transition-all group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:opacity-100" />
-            <div className="relative rounded-[0.33em] bg-gradient-to-br from-amber-50 to-orange-50 p-12 border-2 border-amber-200">
-              <h3 className="text-2xl font-black mb-8">
-                The{" "}
-                <SuperListingBadge
-                  compact
-                  className={superListingBadgeSizeClasses.heading}
-                />{" "}
-                Formula
-              </h3>
-              <div className="grid gap-6 sm:grid-cols-3">
-                {[
-                  {
-                    title: "Challenge First",
-                    desc: "Evaluate by what you ship and explain, not your resume.",
-                  },
-                  {
-                    title: "Speed Matters",
-                    desc: "Teams commit to moving fast. We reject slow hiring.",
-                  },
-                  {
-                    title: "Signal > Prestige",
-                    desc: "Clear execution and insight beat limited experience.",
-                  },
-                ].map((item, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.1 }}
-                  >
-                    <h4 className="font-black text-lg mb-2 text-amber-900">
-                      {item.title}
-                    </h4>
-                    <p className="text-gray-700 font-mono text-sm">
-                      {item.desc}
-                    </p>
-                  </motion.div>
-                ))}
-              </div>
+        <div className="-mx-4 flex snap-x gap-5 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:grid lg:grid-cols-5 lg:overflow-visible lg:px-0 lg:pb-0">
+          {previewListings.map((listing) => (
+            <div key={listing.company} className="snap-start lg:min-w-0">
+              <SuperListingCard listing={listing} />
             </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        className="relative py-32 px-6 bg-black text-white overflow-hidden"
-      >
-        <div className="absolute inset-0 opacity-30">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 border-2 border-amber-500/30 rounded-full"
-          />
-          <motion.div
-            animate={{ rotate: -360 }}
-            transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 border border-amber-400/20 rounded-full"
-          />
+          ))}
         </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto text-center">
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-sm font-black uppercase tracking-widest text-amber-400 mb-4"
-          >
-            READY?
-          </motion.p>
+        <Link
+          href="/student/search"
+          className="mt-4 inline-flex items-center gap-1 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-blue-600 hover:text-blue-700 sm:hidden"
+        >
+          View all challenges
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
+    </section>
+  );
+}
 
-          <h2 className="text-5xl sm:text-7xl font-black mb-6">
-            Show What
-            <br />
-            <span style={{ color: "#FFD700" }}>You Can Do</span>
-          </h2>
+function HowItWorksStep({ step }: { step: StepData }) {
+  return (
+    <div className="relative flex flex-col items-center text-center">
+      <span className="mb-5 flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 [font-family:var(--font-paraluman-heading)] text-base font-bold text-white shadow-soft">
+        {step.step}
+      </span>
+      <div className="mb-5 text-blue-600">{step.icon}</div>
+      <h3 className="[font-family:var(--font-paraluman-heading)] text-lg font-bold tracking-[-0.025em] text-[#071f49]">
+        {step.title}
+      </h3>
+      <p className="mt-2 max-w-[230px] text-sm font-medium leading-relaxed text-[#28466f]">
+        {step.description}
+      </p>
+    </div>
+  );
+}
 
-          <p className="text-lg sm:text-xl text-white/80 mb-10 max-w-3xl mx-auto font-mono leading-relaxed">
-            {renderTextWithSuperListingBadge(
-              "Super Listings are for builders. People who ship. People who think differently. People who don't need a resume to prove their worth.",
-            )}
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <MagneticButton>
-              <Link href="/student/search">
-                <Button className="h-14 rounded-[0.33em] border-2 border-white bg-white px-10 text-lg font-black text-black hover:bg-gray-100 transition-all">
-                  Explore Listings
-                  <ArrowRight className="ml-3 h-5 w-5" />
-                </Button>
-              </Link>
-            </MagneticButton>
-
-            <MagneticButton>
-              <Link href="/student/fff">
-                <Button className="h-14 rounded-[0.33em] border-2 border-amber-400 bg-transparent px-10 text-lg font-black text-amber-400 hover:bg-amber-400/10 transition-all">
-                  FFF Challenge
-                  <ArrowRight className="ml-3 h-5 w-5" />
-                </Button>
-              </Link>
-            </MagneticButton>
-
-            <MagneticButton>
-              <Link href="/student/super-listing/cebu-pacific">
-                <Button className="h-14 rounded-[0.33em] border-2 border-cyan-300 bg-transparent px-10 text-lg font-black text-cyan-300 hover:bg-cyan-300/10 transition-all">
-                  Cebu Pacific Challenge
-                  <ArrowRight className="ml-3 h-5 w-5" />
-                </Button>
-              </Link>
-            </MagneticButton>
-
-            <MagneticButton>
-              <Link href="/student/super-listing/pcc">
-                <Button className="h-14 rounded-[0.33em] border-2 border-emerald-300 bg-transparent px-10 text-lg font-black text-emerald-300 hover:bg-emerald-300/10 transition-all">
-                  PCC Challenge
-                  <ArrowRight className="ml-3 h-5 w-5" />
-                </Button>
-              </Link>
-            </MagneticButton>
+function StatsRow() {
+  return (
+    <div className="grid gap-6 pt-12 sm:grid-cols-2 lg:grid-cols-4">
+      {stats.map((stat) => (
+        <div
+          key={`${stat.value}-${stat.label}`}
+          className="flex items-center justify-center gap-4 text-left"
+        >
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+            {stat.icon}
+          </span>
+          <div>
+            <p className="[font-family:var(--font-paraluman-heading)] text-lg font-bold leading-tight tracking-[-0.025em] text-[#071f49]">
+              {stat.value}
+            </p>
+            <p className="text-sm font-medium leading-tight text-[#28466f]">
+              {stat.label}
+            </p>
           </div>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="text-center text-white/40 text-sm font-mono"
-          >
-            ✨ You're at the story's end. Now go write your own.
-          </motion.p>
         </div>
-      </motion.section>
+      ))}
+    </div>
+  );
+}
+
+function HowItWorksSection() {
+  return (
+    <section
+      id="how-it-works"
+      className="bg-transparent px-4 py-12 sm:px-6 lg:px-8 lg:py-20"
+    >
+      <div className="mx-auto max-w-[1120px]">
+        <div className="mb-14 flex items-center gap-3">
+          <h2 className="[font-family:var(--font-paraluman-heading)] text-3xl font-bold tracking-[-0.04em] text-[#071f49]">
+            How it works
+          </h2>
+        </div>
+
+        <div className="grid gap-12 md:grid-cols-3 md:gap-8">
+          {howItWorksSteps.map((step, index) => (
+            <div key={step.step} className="relative">
+              <HowItWorksStep step={step} />
+              {index < howItWorksSteps.length - 1 ? (
+                <ArrowRight
+                  className="absolute right-[-18px] top-24 hidden h-7 w-7 text-blue-600 md:block"
+                  aria-hidden="true"
+                />
+              ) : null}
+            </div>
+          ))}
+        </div>
+
+        <StatsRow />
+      </div>
+    </section>
+  );
+}
+
+function SuperListingsCTA() {
+  return (
+    <section className="bg-transparent px-4 pb-16 pt-8 sm:px-6 lg:px-8 lg:pb-24">
+      <div className="mx-auto max-w-[1120px]">
+        <div
+          className="relative flex min-h-[260px] items-center justify-center overflow-hidden rounded-2xl bg-[#061b3d] bg-cover bg-center px-6 py-12 text-center shadow-strong sm:min-h-[290px] sm:px-10 lg:min-h-[320px] lg:px-16"
+          style={{ backgroundImage: "url('/super-listings/bg2.png')" }}
+        >
+          <div
+            className="absolute inset-0 bg-[#061b3d]/10"
+            aria-hidden="true"
+          />
+          <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center">
+            <h2 className="[font-family:var(--font-paraluman-heading)] text-3xl font-bold leading-tight tracking-[-0.04em] text-white sm:text-5xl">
+              Skills speak louder.
+            </h2>
+            <p className="mt-2 [font-family:var(--font-paraluman-heading)] text-4xl font-bold italic leading-tight tracking-[-0.04em] text-amber-300 sm:text-6xl">
+              Are you ready?
+            </p>
+            <Button
+              asChild
+              size="lg"
+              className="mt-9 h-14 rounded-xl bg-white px-8 [font-family:var(--font-paraluman-heading)] text-base font-bold text-blue-600 shadow-medium hover:bg-blue-50"
+            >
+              <Link href="/student/search">
+                Explore challenges
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default function SuperListingsLandingPage() {
+  return (
+    <main
+      className={cn(
+        "min-h-screen overflow-x-hidden bg-white [font-family:var(--font-paraluman-body)]",
+        headingFont.variable,
+        monoFont.variable,
+        bodyFont.variable,
+      )}
+    >
+      <SuperListingsHero />
+      <SuperListingsContentBackdrop>
+        <SuperListingsPreview />
+        <HowItWorksSection />
+        <SuperListingsCTA />
+      </SuperListingsContentBackdrop>
+      <style jsx global>{`
+        @keyframes runway-shine {
+          0% {
+            background-position: 180% 50%;
+          }
+          100% {
+            background-position: -40% 50%;
+          }
+        }
+      `}</style>
     </main>
   );
 }
