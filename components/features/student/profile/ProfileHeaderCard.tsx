@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode, RefObject } from "react";
-import { Camera, Edit2 } from "lucide-react";
+import { Camera, CheckCircle2, Edit2, Mail } from "lucide-react";
 
 import type { IFileUploadRef } from "@/hooks/use-file";
 import { FileUploadInput } from "@/hooks/use-file";
@@ -57,6 +57,38 @@ export function ProfileHeaderCard({
           <h1 className="truncate text-2xl font-bold tracking-tight text-[#061858] sm:text-3xl">
             {getFullName(profile)}
           </h1>
+          {(profile.email || profile.edu_verification_email) && (
+            <ul className="mt-2 space-y-1 text-sm text-slate-500">
+              {profile.email && (
+                <li className="flex min-w-0 flex-wrap items-center gap-1.5">
+                  <Mail className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                  <span className="shrink-0 font-medium text-slate-400">
+                    Email:
+                  </span>
+                  <span className="min-w-0 break-all sm:truncate">
+                    {profile.email}
+                  </span>
+                </li>
+              )}
+              {profile.edu_verification_email && (
+                <li className="flex min-w-0 flex-wrap items-center gap-1.5">
+                  <Mail className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                  <span className="shrink-0 font-medium text-slate-400">
+                    School email:
+                  </span>
+                  <span className="min-w-0 break-all sm:truncate">
+                    {profile.edu_verification_email}
+                  </span>
+                  {profile.is_verified && (
+                    <span className="inline-flex shrink-0 items-center gap-1 font-medium text-emerald-600">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Verified
+                    </span>
+                  )}
+                </li>
+              )}
+            </ul>
+          )}
           {actionSlot ? (
             <div className="mt-3 w-full">{actionSlot}</div>
           ) : showEdit ? (

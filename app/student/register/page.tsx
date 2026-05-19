@@ -12,6 +12,9 @@ import { OTPEmailStep } from "./steps/OTPEmailStep";
 import { OTPEnterStep } from "./steps/OTPEnterStep";
 import { RegisterCarousel } from "@/components/features/student/register/RegisterCarousel";
 import { isNoUniversity } from "../../../lib/student-forms-access";
+import { motion } from "framer-motion";
+import { useBlurTransition } from "@/components/animata/blur";
+import { SUPPORT_FACEBOOK } from "@/constants";
 
 export interface FormInputs {
   first_name?: string;
@@ -35,6 +38,8 @@ export function RegisterPageContent() {
   const [step, setStep] = useState(
     searchParams.get("step") === "verify" ? 2 : 1,
   );
+
+  const blurTransition = useBlurTransition();
 
   const skipOtpStep = searchParams.get("edu-email") === "true";
 
@@ -153,7 +158,10 @@ export function RegisterPageContent() {
 
         {/* Form area */}
         <div className="col-span-1 lg:col-span-2 w-full bg-muted border-l border-l-gray-300 px-5">
-          <div className="flex flex-col justify-between h-full w-full p-3">
+          <motion.div
+            className="flex flex-col justify-between h-full w-full p-3"
+            {...blurTransition}
+          >
             {/* Header - DONT DELETE!!!!!!!!!!!!!! Otherwise layout will change */}
             <div></div>
 
@@ -194,13 +202,13 @@ export function RegisterPageContent() {
             <div className="space-y-3">
               <a
                 className="text-sm hover:underline"
-                href="https://www.facebook.com/betterinternship.sherwin"
+                href={SUPPORT_FACEBOOK}
                 target="_blank"
               >
                 Need help?
               </a>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>

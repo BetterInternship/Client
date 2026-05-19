@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
 import { useState, useEffect } from "react";
 import { useBlurTransition } from "@/components/animata/blur";
+import { SUPPORT_CALENDAR } from "@/constants";
 
 //maybe add employers id to cross check
 interface JobsContentProps {
@@ -111,7 +112,7 @@ export function JobsContent({
                 <Plus />
                 Add a listing to get started.
               </Button>
-              <Link href="https://calendar.app.google/boXRU8HEkisZT95D6">
+              <Link href={SUPPORT_CALENDAR}>
                 <Button className="px-8 py-6" variant="outline">
                   <Calendar />
                   Need help? Book a demo.

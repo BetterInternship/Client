@@ -471,7 +471,7 @@ export const Header: React.FC<{
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { desktopHeaderHidden } = useHeaderContext();
+  const { desktopHeaderHidden, navigationHidden } = useHeaderContext();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [moaOnly, setMoaOnly] = useState(false);
@@ -582,7 +582,11 @@ export const Header: React.FC<{
   };
 
   // Hide header on register/verify pages
-  if (isSuperListingRoute || !routeExcluded(noHeaderRoutes)) {
+  if (
+    navigationHidden ||
+    isSuperListingRoute ||
+    !routeExcluded(noHeaderRoutes)
+  ) {
     return <></>;
   }
 

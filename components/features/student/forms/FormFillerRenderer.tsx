@@ -77,7 +77,7 @@ export function FormFillerRenderer({
       signatureImage: profile.data?.signatureImage,
     });
 
-    formFiller.setValues(valuesWithSavedSignatureImages);
+    formFiller.initializeValues(valuesWithSavedSignatureImages);
   }, [
     autofillValues,
     form.formMetadata,

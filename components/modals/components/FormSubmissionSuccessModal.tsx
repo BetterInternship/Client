@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import useModalRegistry from "../modal-registry";
 import { IFormSigningParty } from "@betterinternship/core/forms";
 import { Badge } from "@/components/ui/badge";
+import { SUPPORT_FACEBOOK } from "@/constants";
 
 function AnimatedCheck() {
   return (
@@ -107,11 +108,11 @@ export function FormSubmissionSuccessModal({
               <div className="mt-4 mb-2 italic text-left text-gray-500">
                 For help, contact us at{" "}
                 <a
-                  href="https://www.facebook.com/betterinternship.sherwin/"
+                  href={SUPPORT_FACEBOOK}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  facebook.com/betterinternship.sherwin
+                  {SUPPORT_FACEBOOK}
                 </a>
                 .
               </div>

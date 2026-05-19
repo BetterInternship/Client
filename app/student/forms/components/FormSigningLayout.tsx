@@ -978,7 +978,6 @@ export function FormSigningLayout({
                           autoScrollToSelectedField={
                             selectedFieldSource === "pdf"
                           }
-                          selectFieldOnInteraction={!isMobileLayout}
                           onFieldSelect={handleFormFieldSelect}
                         />
                       </div>
