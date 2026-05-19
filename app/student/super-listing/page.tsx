@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
@@ -47,7 +47,6 @@ type HeroStickyNoteData = {
   role: string;
   tone: "cream" | "blue" | "mint" | "lavender" | "yellow";
   pinTone: "blue" | "gold";
-  spotlight: string;
   className?: string;
 };
 
@@ -79,17 +78,7 @@ const heroStickyNotes: HeroStickyNoteData[] = [
     role: "Product & Engineering",
     tone: "cream",
     pinTone: "blue",
-    spotlight: "10% 27%",
-    className: "left-[2%] top-[19%]",
-  },
-  {
-    company: "Cebu Pacific",
-    headline: "Redesign journeys for millions",
-    role: "Digital Travel Experience",
-    tone: "blue",
-    pinTone: "gold",
-    spotlight: "31% 18%",
-    className: "left-[24%] top-[8%] hidden lg:block",
+    className: "left-[5%] top-[16%] xl:left-[9%] 2xl:left-[13%]",
   },
   {
     company: "Founders For Founders",
@@ -97,8 +86,7 @@ const heroStickyNotes: HeroStickyNoteData[] = [
     role: "Accelerator Intern",
     tone: "lavender",
     pinTone: "blue",
-    spotlight: "88% 23%",
-    className: "right-[4%] top-[15%]",
+    className: "right-[5%] top-[16%] xl:right-[9%] 2xl:right-[13%]",
   },
   {
     company: "Miro",
@@ -106,8 +94,8 @@ const heroStickyNotes: HeroStickyNoteData[] = [
     role: "Internship Challenge",
     tone: "mint",
     pinTone: "blue",
-    spotlight: "11% 64%",
-    className: "left-[3%] top-[56%] hidden sm:block",
+    className:
+      "left-[4%] top-[43%] hidden sm:block xl:left-[8%] 2xl:left-[12%]",
   },
   {
     company: "Paraluman News",
@@ -115,8 +103,8 @@ const heroStickyNotes: HeroStickyNoteData[] = [
     role: "News Delivery",
     tone: "yellow",
     pinTone: "gold",
-    spotlight: "88% 64%",
-    className: "right-[3%] top-[56%] hidden sm:block",
+    className:
+      "right-[4%] top-[43%] hidden sm:block xl:right-[8%] 2xl:right-[12%]",
   },
   {
     company: "Philippine Chamber of Commerce",
@@ -124,8 +112,8 @@ const heroStickyNotes: HeroStickyNoteData[] = [
     role: "Innovation Challenge",
     tone: "cream",
     pinTone: "blue",
-    spotlight: "17% 86%",
-    className: "left-[9%] bottom-[6%] hidden lg:block",
+    className:
+      "left-[7%] bottom-[7%] hidden lg:block xl:left-[12%] 2xl:left-[17%]",
   },
   {
     company: "Sofi AI",
@@ -133,17 +121,8 @@ const heroStickyNotes: HeroStickyNoteData[] = [
     role: "Frontend / UI/UX",
     tone: "blue",
     pinTone: "gold",
-    spotlight: "70% 87%",
-    className: "right-[30%] bottom-[4%] hidden lg:block",
-  },
-  {
-    company: "Sofi AI",
-    headline: "Make AI feel worth talking about",
-    role: "Marketing Intern",
-    tone: "lavender",
-    pinTone: "blue",
-    spotlight: "88% 85%",
-    className: "right-[4%] bottom-[8%] hidden lg:block",
+    className:
+      "right-[7%] bottom-[7%] hidden lg:block xl:right-[12%] 2xl:right-[17%]",
   },
 ];
 
@@ -249,19 +228,22 @@ function HeroStickyNote({
   tone,
   pinTone,
   className,
-  isActive = false,
-}: HeroStickyNoteData & { isActive?: boolean }) {
+  spotlightIndex = 0,
+}: HeroStickyNoteData & { spotlightIndex?: number }) {
   return (
     <div
       className={cn(
-        "absolute z-20 w-[168px] transition-[opacity,filter] duration-700",
-        "sm:w-[184px] lg:w-[210px]",
+        "hero-sticky-note absolute isolate z-20 w-[178px] opacity-55 saturate-[0.78] brightness-[0.62]",
+        "sm:w-[200px] lg:w-[230px] 2xl:w-[250px]",
         className,
-        isActive
-          ? "z-40 opacity-100 brightness-110"
-          : "opacity-70 saturate-[0.82] brightness-[0.82]",
       )}
+      style={{ animationDelay: `-${spotlightIndex * 2.15}s` }}
     >
+      <span
+        className="hero-note-spotlight pointer-events-none absolute left-1/2 top-1/2 z-0 h-[18rem] w-[18rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,252,224,0.78)_0%,rgba(255,237,160,0.58)_48%,rgba(255,230,126,0.34)_68%,transparent_70%)] opacity-0"
+        style={{ animationDelay: `-${spotlightIndex * 2.15}s` }}
+        aria-hidden="true"
+      />
       <span
         className={cn(
           "absolute left-1/2 top-0 z-20 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full shadow-sm ring-2 ring-white/80",
@@ -271,14 +253,12 @@ function HeroStickyNote({
       />
       <div
         className={cn(
-          "min-h-[118px] border border-[#081A3A]/5 px-3.5 pb-3.5 pt-6 text-center shadow-[0_14px_30px_rgba(8,26,58,0.15)] ring-1 ring-white/50",
-          "sm:min-h-[150px] sm:px-4 sm:pb-4 sm:pt-7",
-          isActive &&
-            "shadow-[0_18px_46px_rgba(8,26,58,0.22),0_0_24px_rgba(255,238,170,0.28)] ring-2 ring-amber-100/70",
+          "relative z-10 min-h-[128px] border border-[#081A3A]/5 px-4 pb-4 pt-7 text-center shadow-[0_14px_30px_rgba(8,26,58,0.15)] ring-1 ring-white/50",
+          "sm:min-h-[160px] sm:px-5 sm:pb-5 sm:pt-8",
           stickyNoteToneClasses[tone],
         )}
       >
-        <p className="[font-family:var(--font-paraluman-heading)] text-[16px] font-bold leading-tight tracking-[-0.025em] text-[#081A3A] sm:text-[18px]">
+        <p className="[font-family:var(--font-paraluman-heading)] text-[17px] font-bold leading-tight tracking-[-0.025em] text-[#081A3A] sm:text-[19px]">
           {headline}
         </p>
         <p className="mt-3 [font-family:var(--font-paraluman-heading)] text-[11px] font-semibold leading-tight text-[#081A3A]/75">
@@ -293,18 +273,6 @@ function HeroStickyNote({
 }
 
 function SuperListingsHero() {
-  const [activeNoteIndex, setActiveNoteIndex] = useState(0);
-  const [spotlightX, spotlightY] =
-    heroStickyNotes[activeNoteIndex].spotlight.split(" ");
-
-  useEffect(() => {
-    const interval = window.setInterval(() => {
-      setActiveNoteIndex((current) => (current + 1) % heroStickyNotes.length);
-    }, 2400);
-
-    return () => window.clearInterval(interval);
-  }, []);
-
   return (
     <section className="relative min-h-[100svh] w-full overflow-hidden bg-[#061b3d]">
       <Image
@@ -317,7 +285,7 @@ function SuperListingsHero() {
       />
       <div className="absolute inset-0 bg-black/65" />
       <div
-        className="pointer-events-none absolute left-1/2 top-[15svh] z-10 h-[101svh] w-[70rem] -translate-x-1/2 bg-[linear-gradient(168deg,rgba(255,246,205,0.2)_0%,rgba(255,236,156,0.5)_36%,rgba(255,247,208,0.24)_70%,transparent_100%)] opacity-95 [clip-path:polygon(45.5%_0,54.5%_0,100%_100%,0_100%)] blur-sm"
+        className="pointer-events-none absolute left-1/2 top-[15svh] z-10 h-[101svh] w-[92rem] -translate-x-1/2 bg-[linear-gradient(168deg,rgba(255,246,205,0.18)_0%,rgba(255,236,156,0.5)_34%,rgba(255,247,208,0.24)_70%,transparent_100%)] opacity-95 [clip-path:polygon(43%_0,57%_0,100%_100%,0_100%)] blur-sm"
         aria-hidden="true"
       />
       <div
@@ -327,53 +295,43 @@ function SuperListingsHero() {
 
       <div className="absolute inset-0 mx-auto w-full max-w-[1120px] xl:max-w-[1440px] 2xl:max-w-[1680px] min-[1800px]:max-w-[1920px]">
         <div className="absolute inset-x-[4%] bottom-[4%] top-[6%] sm:inset-x-[6%] sm:bottom-[5%] sm:top-[8%] ">
-          <div
-            className="pointer-events-none absolute z-30 h-[22rem] w-[22rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,248,218,0.78)_0%,rgba(255,231,139,0.46)_28%,rgba(255,248,220,0.18)_48%,transparent_70%)]  transition-all duration-700"
-            style={{
-              left: spotlightX,
-              top: spotlightY,
-            }}
-            aria-hidden="true"
-          />
           {heroStickyNotes.map((note, index) => (
             <HeroStickyNote
               key={`${note.company}-${note.role}`}
               {...note}
-              isActive={index === activeNoteIndex}
+              spotlightIndex={index}
             />
           ))}
 
           <div className="absolute left-1/2 top-[45%] z-50 -translate-x-1/2 -translate-y-1/2 text-center sm:top-[50%]">
-            <h1 className="[font-family:var(--font-paraluman-heading)] text-[2.25rem] font-bold leading-[1.02] tracking-[-0.05em] sm:text-[3.6rem] md:text-[4.5rem]">
-              <span className="block whitespace-nowrap bg-[linear-gradient(110deg,#071f49_0%,#0b63f6_24%,#b9d8ff_38%,#0b63f6_52%,#4f9cff_66%,#071f49_82%,#071f49_100%)] bg-[length:220%_100%] bg-clip-text text-transparent [animation:runway-shine_8s_ease-in-out_infinite]">
-                Help build
+            <h1
+              className="[font-family:var(--font-paraluman-heading)] text-[1.9rem] font-bold leading-[1.02] tracking-[-0.05em] min-[430px]:text-[2.35rem] sm:text-[3.7rem] md:text-[4.4rem] lg:text-[4.8rem]"
+              style={{ textShadow: "0 4px 18px rgba(0, 0, 0, 0.35)" }}
+            >
+              <span className="block whitespace-nowrap text-[#FFF7E8]">
+                Help build a
               </span>
-              <span className="block whitespace-nowrap bg-[linear-gradient(110deg,#071f49_0%,#0b63f6_24%,#b9d8ff_38%,#0b63f6_52%,#4f9cff_66%,#071f49_82%,#071f49_100%)] bg-[length:220%_100%] bg-clip-text text-transparent [animation:runway-shine_8s_ease-in-out_infinite]">
-                a better Philippines
+              <span className="block whitespace-nowrap text-[#FFF7E8]">
+                better Philippines
               </span>
-              <span className="block whitespace-nowrap bg-[linear-gradient(110deg,#071f49_0%,#0b63f6_24%,#b9d8ff_38%,#0b63f6_52%,#4f9cff_66%,#071f49_82%,#071f49_100%)] bg-[length:220%_100%] bg-clip-text text-transparent [animation:runway-shine_8s_ease-in-out_infinite]">
+              <span className="block whitespace-nowrap text-[#F8EBD2]">
                 one problem at a time
               </span>
             </h1>
-            <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <p className="mx-auto mt-5 max-w-[540px] px-4 [font-family:var(--font-paraluman-body)] text-sm font-semibold leading-7 text-[rgba(255,247,232,0.82)] sm:text-base">
+              Challenge-based internships where students prove their skills
+              through real work, not just resumes.
+            </p>
+            <div className="mt-8 flex justify-center">
               <Button
                 asChild
                 size="lg"
-                className="h-11 rounded-[0.5em] px-6 shadow-medium"
+                className="h-14 rounded-full bg-[#FFF7E8] px-8 [font-family:var(--font-paraluman-heading)] text-base font-bold text-[#0D6BFF] shadow-[0_0_34px_rgba(255,208,87,0.42),0_14px_36px_rgba(0,0,0,0.22)] transition-transform hover:-translate-y-0.5 hover:bg-white sm:h-16 sm:px-10"
               >
                 <Link href="/student/search">
                   Explore challenges
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-5 w-5" />
                 </Link>
-              </Button>
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                scheme="primary"
-                className="h-11 rounded-[0.5em] bg-white/85 px-6 shadow-soft"
-              >
-                <Link href="#how-it-works">How it works</Link>
               </Button>
             </div>
           </div>
@@ -681,6 +639,48 @@ export default function SuperListingsLandingPage() {
           100% {
             background-position: -40% 50%;
           }
+        }
+
+        @keyframes hero-note-spotlight {
+          0%,
+          9% {
+            opacity: 0;
+          }
+          14%,
+          28% {
+            opacity: 1;
+          }
+          34%,
+          100% {
+            opacity: 0;
+          }
+        }
+
+        @keyframes hero-sticky-note {
+          0%,
+          9% {
+            opacity: 0.55;
+            filter: saturate(0.78) brightness(0.62);
+          }
+          14%,
+          28% {
+            opacity: 1;
+            filter: saturate(1.04) brightness(1.05);
+          }
+          34%,
+          100% {
+            opacity: 0.55;
+            filter: saturate(0.78) brightness(0.62);
+          }
+        }
+
+        .hero-note-spotlight {
+          animation: hero-note-spotlight 12.9s ease-in-out infinite;
+          mix-blend-mode: screen;
+        }
+
+        .hero-sticky-note {
+          animation: hero-sticky-note 12.9s ease-in-out infinite;
         }
       `}</style>
     </main>
