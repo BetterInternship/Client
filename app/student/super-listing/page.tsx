@@ -142,35 +142,35 @@ const previewListings: SuperListingData[] = [
     company: "Anteriore",
     title: "Startup Product and Engineering Challenge",
     tags: ["Product", "Engineering"],
-    href: "/student/super-listing/anteriore",
+    href: "/super-listing/anteriore",
     logo: <Rocket className="h-5 w-5" />,
   },
   {
     company: "Cebu Pacific",
     title: "Digital Travel Experience Challenge",
     tags: ["UX", "Travel"],
-    href: "/student/super-listing/cebu-pacific",
+    href: "/super-listing/cebu-pacific",
     logo: <Building2 className="h-5 w-5" />,
   },
   {
     company: "Founders For Founders",
     title: "Startup Accelerator Intern",
     tags: ["Startups", "Growth"],
-    href: "/student/super-listing/fff",
+    href: "/super-listing/fff",
     logo: <BriefcaseBusiness className="h-5 w-5" />,
   },
   {
     company: "Sofi AI",
     title: "Frontend AI Product Challenge",
     tags: ["Frontend", "UI/UX"],
-    href: "/student/super-listing/sofi-ai",
+    href: "/super-listing/sofi-ai",
     logo: <PenLine className="h-5 w-5" />,
   },
   {
     company: "Paraluman News",
     title: "Multilingual News Delivery Challenge",
     tags: ["Web", "News"],
-    href: "/student/super-listing/paraluman",
+    href: "/super-listing/paraluman",
     logo: <Sparkles className="h-5 w-5" />,
   },
 ];
@@ -338,7 +338,7 @@ function SuperListingsHero() {
                 size="lg"
                 className="h-14 rounded-full bg-[#FFF7E8] px-8 [font-family:var(--font-paraluman-heading)] text-base font-bold text-[#0D6BFF] shadow-[0_0_34px_rgba(255,208,87,0.42),0_14px_36px_rgba(0,0,0,0.22)] transition-transform hover:-translate-y-0.5 hover:bg-white sm:h-16 sm:px-10"
               >
-                <Link href="/student/search">
+                <Link href="/super-listing/search">
                   Explore challenges
                   <ArrowRight className="h-5 w-5" />
                 </Link>
@@ -500,7 +500,7 @@ function SuperListingsPreview() {
         </div>
 
         <Link
-          href="/student/search"
+          href="/super-listing/search"
           className="mx-auto mt-8 flex w-fit items-center justify-center gap-1 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-blue-600 hover:text-blue-700"
         >
           View all challenges
@@ -610,7 +610,7 @@ function SuperListingsCTA() {
               size="lg"
               className="mt-9 h-14 rounded-full bg-white px-8 [font-family:var(--font-paraluman-heading)] text-base font-bold text-[#0D6BFF] shadow-[0_0_34px_rgba(255,208,87,0.42),0_14px_36px_rgba(0,0,0,0.22)] transition-transform hover:-translate-y-0.5 hover:bg-white sm:h-16 sm:px-10"
             >
-              <Link href="/student/search">
+              <Link href="/super-listing/search">
                 Explore challenges
                 <ArrowRight className="h-5 w-5" />
               </Link>
