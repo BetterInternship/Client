@@ -71,15 +71,6 @@ function ListingsHero() {
         />
       </div>
       <div className="pointer-events-none absolute inset-0 bg-[#001138]/58" />
-      <div
-        className="pointer-events-none absolute left-1/2 top-0 z-[1] h-[58%] w-[76rem] -translate-x-1/2 bg-[linear-gradient(168deg,rgba(255,246,205,0.2)_0%,rgba(255,236,156,0.48)_38%,rgba(255,247,208,0.2)_72%,transparent_100%)] opacity-90 blur-sm [clip-path:polygon(42%_0,58%_0,82%_100%,18%_100%)] [mask-image:linear-gradient(to_bottom,#000_0%,#000_58%,transparent_100%)]"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute left-1/2 top-[55%] z-[1] h-[15rem] w-[58rem] -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-[radial-gradient(ellipse,rgba(255,242,194,0.24)_0%,rgba(255,230,150,0.13)_42%,transparent_72%)] blur-2xl"
-        aria-hidden="true"
-      />
-      <div className="pointer-events-none absolute inset-0 z-[2] bg-[radial-gradient(circle_at_50%_42%,rgba(255,248,218,0.2),transparent_28%),radial-gradient(circle_at_50%_18%,rgba(13,107,255,0.22),transparent_30%)]" />
 
       <div className="relative z-10 mx-auto max-w-4xl">
         <p className="mx-auto mb-4 inline-flex rounded-[0.33em] border border-[#FFF7E8]/22 bg-[#FFF7E8]/10 px-3 py-1 [font-family:var(--font-super-listings-mono)] text-xs font-semibold uppercase tracking-[0.14em] text-[#FFF7E8]/82">
