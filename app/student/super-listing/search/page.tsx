@@ -58,8 +58,8 @@ function LogoImage({
 type Listing = {
   company: string;
   title: string;
+  role: string;
   description: string;
-  tags: string[];
   href: string;
   logo: ReactNode;
 };
@@ -67,28 +67,34 @@ type Listing = {
 const listings: Listing[] = [
   {
     company: "Anteriore",
-    title: "Product & Engineering Intern",
+    title: "Build what the future needs",
+    role: "Product & Engineering Intern",
     description:
       "Build practical startup product flows inside a fast-moving engineering team.",
-    tags: ["Product", "Engineering", "Startup"],
     href: "/super-listing/anteriore",
-    logo: <LogoImage src={anterioreLogo} alt="Anteriore logo" />,
+    logo: (
+      <LogoImage
+        src={anterioreLogo}
+        alt="Anteriore logo"
+        className="brightness-0"
+      />
+    ),
   },
   {
     company: "Cebu Pacific",
-    title: "Digital Travel Experience Challenge",
+    title: "Redesign journeys for millions",
+    role: "Digital Travel Experience Challenge",
     description:
       "Redesign smoother digital journeys for millions of Filipino travelers.",
-    tags: ["UX", "Travel", "Product"],
     href: "/super-listing/cebu-pacific",
     logo: <LogoImage src={cebuPacificLogo} alt="Cebu Pacific logo" />,
   },
   {
     company: "Founders For Founders",
-    title: "Startup Accelerator Intern",
+    title: "Help the next great founder rise",
+    role: "Startup Accelerator Intern",
     description:
       "Help scout, support, and grow a founder community built for AI-native builders.",
-    tags: ["Startups", "Ops", "Community"],
     href: "/super-listing/fff",
     logo: (
       <span className="[font-family:var(--font-super-listings-heading)] text-xl font-black tracking-[-0.08em] text-[#0D6BFF]">
@@ -98,69 +104,77 @@ const listings: Listing[] = [
   },
   {
     company: "Miro",
-    title: "Miro-thon Internship Challenge",
+    title: "Turn messy ideas into momentum",
+    role: "Miro-thon Internship Challenge",
     description:
       "Build something impressive in a time-boxed creative challenge for Miro.",
-    tags: ["Product", "Creative", "Collaboration"],
     href: "/super-listing/miro",
     logo: <LogoImage src={miroLogo} alt="Miro logo" />,
   },
   {
     company: "Paraluman News",
-    title: "Multilingual News Delivery Challenge",
+    title: "Bring stories across languages",
+    role: "Multilingual News Delivery Challenge",
     description:
       "Design a practical publishing solution for faster multilingual news delivery.",
-    tags: ["Web", "News", "Language"],
     href: "/super-listing/paraluman",
     logo: <LogoImage src={paralumanLogo} alt="Paraluman News logo" />,
   },
   {
     company: "Philippine Chamber of Commerce",
-    title: "Business Innovation Challenge",
+    title: "Shape ideas that move business",
+    role: "Business Innovation Challenge",
     description:
       "Turn PCCI's member network into a usable operating system for business connections.",
-    tags: ["Business", "Strategy", "Software"],
     href: "/super-listing/pcc",
     logo: (
       <img
         src={PCC_LOGO_URL}
         alt="Philippine Chamber of Commerce logo"
-        className="h-12 w-12 object-contain"
+        className="h-12 w-12 object-contain brightness-0"
       />
     ),
   },
   {
     company: "Sofi AI",
-    title: "Frontend AI Product Challenge",
+    title: "Design AI people actually trust",
+    role: "Frontend AI Product Challenge",
     description:
       "Design trustworthy AI product flows for real business automation workflows.",
-    tags: ["Frontend", "UI/UX", "AI"],
     href: "/super-listing/sofi-ai",
-    logo: <LogoImage src={sofiAiLogo} alt="Sofi AI logo" />,
+    logo: (
+      <LogoImage src={sofiAiLogo} alt="Sofi AI logo" className="brightness-0" />
+    ),
   },
   {
     company: "Sofi AI",
-    title: "Marketing Intern",
+    title: "Make AI feel worth talking about",
+    role: "Marketing Intern",
     description:
       "Create a marketing proposal that makes an AI product feel worth talking about.",
-    tags: ["Marketing", "AI", "Content"],
     href: "/super-listing/sofi-ai-marketing",
-    logo: <LogoImage src={sofiAiLogo} alt="Sofi AI logo" />,
+    logo: (
+      <LogoImage src={sofiAiLogo} alt="Sofi AI logo" className="brightness-0" />
+    ),
   },
 ];
 
 function ListingsHero() {
   return (
     <section
-      className="relative isolate overflow-hidden bg-[#061b3d] bg-cover bg-center px-4 pb-28 pt-24 text-center sm:px-6 sm:pb-32 sm:pt-28 lg:px-8 lg:pb-36 lg:pt-32"
+      className="relative isolate overflow-hidden bg-[#001138] bg-cover bg-center px-4 pb-28 pt-24 text-center sm:px-6 sm:pb-32 sm:pt-28 lg:px-8 lg:pb-36 lg:pt-32"
       style={{ backgroundImage: "url('/super-listings/bg2.png')" }}
     >
-      <div className="pointer-events-none absolute inset-0 bg-[#061b3d]/58" />
+      <div className="pointer-events-none absolute inset-0 bg-[#001138]/58" />
       <div
-        className="pointer-events-none absolute left-1/2 top-0 z-[1] h-full w-[62rem] -translate-x-1/2 bg-[linear-gradient(168deg,rgba(255,246,205,0.18)_0%,rgba(255,236,156,0.46)_34%,rgba(255,247,208,0.24)_70%,transparent_100%)] opacity-95 [clip-path:polygon(43%_0,57%_0,100%_100%,0_100%)] blur-sm"
+        className="pointer-events-none absolute left-1/2 top-0 z-[1] h-[58%] w-[76rem] -translate-x-1/2 bg-[linear-gradient(168deg,rgba(255,246,205,0.2)_0%,rgba(255,236,156,0.48)_38%,rgba(255,247,208,0.2)_72%,transparent_100%)] opacity-90 blur-sm [clip-path:polygon(42%_0,58%_0,82%_100%,18%_100%)] [mask-image:linear-gradient(to_bottom,#000_0%,#000_58%,transparent_100%)]"
         aria-hidden="true"
       />
-      <div className="pointer-events-none absolute inset-0 z-[2] bg-[radial-gradient(circle_at_50%_33%,rgba(255,248,218,0.24),transparent_30%),radial-gradient(circle_at_50%_18%,rgba(13,107,255,0.22),transparent_30%)]" />
+      <div
+        className="pointer-events-none absolute left-1/2 top-[55%] z-[1] h-[15rem] w-[58rem] -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-[radial-gradient(ellipse,rgba(255,242,194,0.24)_0%,rgba(255,230,150,0.13)_42%,transparent_72%)] blur-2xl"
+        aria-hidden="true"
+      />
+      <div className="pointer-events-none absolute inset-0 z-[2] bg-[radial-gradient(circle_at_50%_42%,rgba(255,248,218,0.2),transparent_28%),radial-gradient(circle_at_50%_18%,rgba(13,107,255,0.22),transparent_30%)]" />
 
       <div className="relative z-10 mx-auto max-w-4xl">
         <h1
@@ -181,28 +195,24 @@ function ListingsHero() {
 function ListingCard({ listing }: { listing: Listing }) {
   return (
     <Card className="group flex min-h-[430px] flex-col rounded-[0.33em] border-[#dfe7f2] bg-white/95 p-6 shadow-[0_24px_70px_-54px_rgba(8,26,58,0.55)] transition-all duration-200 hover:-translate-y-1 hover:bg-white hover:shadow-[0_30px_90px_-58px_rgba(8,26,58,0.78)]">
-      <div className="mb-8 flex h-14 w-14 items-center justify-center rounded-[0.33em] bg-blue-50 text-[#0D6BFF] ring-1 ring-blue-100">
-        {listing.logo}
+      <div className="mb-7 flex items-center gap-3">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center text-[#0D6BFF]">
+          {listing.logo}
+        </div>
+        <p className="[font-family:var(--font-super-listings-heading)] text-base font-bold leading-tight text-[#081A3A]">
+          {listing.company}
+        </p>
       </div>
-      <p className="[font-family:var(--font-super-listings-heading)] text-base font-bold text-[#081A3A]">
-        {listing.company}
-      </p>
-      <h2 className="mt-6 [font-family:var(--font-super-listings-heading)] text-xl font-bold leading-snug tracking-[-0.04em] text-[#081A3A]">
+      <h2 className="[font-family:var(--font-super-listings-heading)] text-2xl font-black leading-[1.04] tracking-[-0.055em] text-[#081A3A]">
         {listing.title}
       </h2>
-      <p className="mt-5 [font-family:var(--font-super-listings-body)] text-sm font-semibold leading-7 text-[#081A3A]/78">
+      <p className="mt-4 [font-family:var(--font-super-listings-heading)] text-sm font-bold leading-snug text-[#0D6BFF]">
+        {listing.role}
+      </p>
+      <p className="mt-4 [font-family:var(--font-super-listings-body)] text-sm font-semibold leading-7 text-[#081A3A]/78">
         {listing.description}
       </p>
-      <div className="mt-7 flex flex-wrap gap-2">
-        {listing.tags.map((tag) => (
-          <span
-            key={`${listing.company}-${tag}`}
-            className="rounded-[0.33em] bg-blue-50 px-2.5 py-1.5 [font-family:var(--font-super-listings-body)] text-[11px] font-bold text-[#0D6BFF]"
-          >
-            {tag}
-          </span>
-        ))}
-      </div>
+
       <Link
         href={listing.href}
         className="mt-auto inline-flex h-14 items-center justify-center gap-2 rounded-[0.33em] border border-[#0D6BFF] px-5 [font-family:var(--font-super-listings-heading)] text-base font-bold text-[#0D6BFF] transition-colors hover:bg-[#0D6BFF] hover:text-white"
@@ -216,11 +226,11 @@ function ListingCard({ listing }: { listing: Listing }) {
 
 function ListingsGrid() {
   return (
-    <section className="relative overflow-hidden bg-[#f7fbff] px-4 py-14 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(13,107,255,0.07)_1px,transparent_1px),linear-gradient(to_bottom,rgba(13,107,255,0.07)_1px,transparent_1px)] bg-[size:44px_44px]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_12%,rgba(13,107,255,0.12),transparent_28%),radial-gradient(circle_at_88%_30%,rgba(245,181,27,0.13),transparent_24%),radial-gradient(circle_at_34%_88%,rgba(13,107,255,0.09),transparent_30%)]" />
+    <section className="relative overflow-hidden bg-[linear-gradient(to_bottom,#001138_0rem,#001138_8rem,#10284b_16rem,#eef7ff_30rem,#f7fbff_40rem,#ffffff_100%)] px-4 pb-14 pt-4 sm:px-6 sm:pb-16 lg:px-8 lg:pb-20">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(13,107,255,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(13,107,255,0.045)_1px,transparent_1px)] bg-[size:44px_44px] opacity-55 [mask-image:linear-gradient(to_bottom,transparent_0rem,transparent_16rem,#000_28rem)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_20rem,rgba(13,107,255,0.1),transparent_18rem),radial-gradient(circle_at_30%_86%,rgba(13,107,255,0.08),transparent_28%)]" />
       <div className="relative mx-auto grid max-w-[1120px] gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {listings.map((listing) => (
+        {[...listings].reverse().map((listing) => (
           <ListingCard
             key={`${listing.company}-${listing.title}`}
             listing={listing}

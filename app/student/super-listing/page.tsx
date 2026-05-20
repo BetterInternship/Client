@@ -64,6 +64,7 @@ type HeroStickyNoteData = {
 type SuperListingData = {
   company: string;
   title: string;
+  role: string;
   tags: string[];
   href: string;
   logo: ReactNode;
@@ -134,31 +135,36 @@ const heroStickyNotes: HeroStickyNoteData[] = [
 const previewListings: SuperListingData[] = [
   {
     company: "Anteriore",
-    title: "Startup Product and Engineering Challenge",
+    title: "Build what the future needs",
+    role: "Product & Engineering Intern",
     href: "/super-listing/anteriore",
     logo: <Rocket className="h-5 w-5" />,
   },
   {
     company: "Cebu Pacific",
-    title: "Digital Travel Experience Challenge",
+    title: "Redesign journeys for millions",
+    role: "Digital Travel Experience Challenge",
     href: "/super-listing/cebu-pacific",
     logo: <Building2 className="h-5 w-5" />,
   },
   {
     company: "Founders For Founders",
-    title: "Startup Accelerator Intern",
+    title: "Help the next great founder rise",
+    role: "Startup Accelerator Intern",
     href: "/super-listing/fff",
     logo: <BriefcaseBusiness className="h-5 w-5" />,
   },
   {
     company: "Sofi AI",
-    title: "Frontend AI Product Challenge",
+    title: "Design AI people actually trust",
+    role: "Frontend AI Product Challenge",
     href: "/super-listing/sofi-ai",
     logo: <PenLine className="h-5 w-5" />,
   },
   {
     company: "Paraluman News",
-    title: "Multilingual News Delivery Challenge",
+    title: "Bring stories across languages",
+    role: "Multilingual News Delivery Challenge",
     href: "/super-listing/paraluman",
     logo: <Sparkles className="h-5 w-5" />,
   },
@@ -404,12 +410,15 @@ function SuperListingsContentBackdrop({ children }: { children: ReactNode }) {
 
 function SuperListingCard({ listing }: { listing: SuperListingData }) {
   return (
-    <Card className="flex min-h-[255px] min-w-[220px] flex-col rounded-xl border-gray-200 bg-white p-5 shadow-soft transition-all duration-200 hover:-translate-y-1 hover:shadow-medium lg:min-w-0">
-      <h3 className="[font-family:var(--font-paraluman-heading)] text-lg font-bold leading-snug tracking-[-0.025em] text-[#071f49]">
+    <Card className="flex min-h-[255px] min-w-[220px] flex-col rounded-[0.33em] border-gray-200 bg-white p-5 shadow-soft transition-all duration-200 hover:-translate-y-1 hover:shadow-medium lg:min-w-0">
+      <h3 className="[font-family:var(--font-paraluman-heading)] text-xl font-black leading-[1.04] tracking-[-0.055em] text-[#071f49]">
         {listing.title}
       </h3>
       <p className="mt-3 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-blue-600">
         {listing.company}
+      </p>
+      <p className="mt-2 [font-family:var(--font-paraluman-heading)] text-xs font-bold leading-snug text-[#071f49]/60">
+        {listing.role}
       </p>
       <Link
         href={listing.href}
