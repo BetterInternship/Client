@@ -196,29 +196,6 @@ const howItWorksSteps: StepData[] = [
   },
 ];
 
-const stats: StatData[] = [
-  {
-    value: "5,000+",
-    label: "Challenges completed",
-    icon: <Trophy className="h-7 w-7" />,
-  },
-  {
-    value: "1,200+",
-    label: "Students hired",
-    icon: <UserCheck className="h-7 w-7" />,
-  },
-  {
-    value: "500+",
-    label: "Partner companies",
-    icon: <Building2 className="h-7 w-7" />,
-  },
-  {
-    value: "Real impact",
-    label: "On real projects",
-    icon: <Rocket className="h-7 w-7" />,
-  },
-];
-
 const stickyNoteToneClasses: Record<HeroStickyNoteData["tone"], string> = {
   cream: "bg-[#FFF9EC]",
   blue: "bg-[#F3F8FF]",
@@ -295,7 +272,11 @@ function SuperListingsHero() {
       />
       <div className="absolute inset-0 bg-black/65" />
       <div
-        className="pointer-events-none absolute left-1/2 top-[15svh] z-10 h-[101svh] w-[92rem] -translate-x-1/2 bg-[linear-gradient(168deg,rgba(255,246,205,0.18)_0%,rgba(255,236,156,0.5)_34%,rgba(255,247,208,0.24)_70%,transparent_100%)] opacity-95 [clip-path:polygon(43%_0,57%_0,100%_100%,0_100%)] blur-sm"
+        className="pointer-events-none absolute left-1/2 top-[15svh] z-10 h-[63svh] w-[76rem] -translate-x-1/2 bg-[linear-gradient(168deg,rgba(255,246,205,0.2)_0%,rgba(255,236,156,0.48)_38%,rgba(255,247,208,0.2)_72%,transparent_100%)] opacity-90 blur-sm [clip-path:polygon(42%_0,58%_0,82%_100%,18%_100%)] [mask-image:linear-gradient(to_bottom,#000_0%,#000_68%,transparent_100%)]"
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute left-1/2 top-[70svh] z-10 h-[18rem] w-[68rem] -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-[radial-gradient(ellipse,rgba(255,242,194,0.28)_0%,rgba(255,230,150,0.16)_42%,transparent_72%)] blur-2xl"
         aria-hidden="true"
       />
       <div
@@ -522,31 +503,6 @@ function HowItWorksStep({ step }: { step: StepData }) {
   );
 }
 
-function StatsRow() {
-  return (
-    <div className="grid gap-6 pt-12 sm:grid-cols-2 lg:grid-cols-4">
-      {stats.map((stat) => (
-        <div
-          key={`${stat.value}-${stat.label}`}
-          className="flex items-center justify-center gap-4 text-left"
-        >
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-            {stat.icon}
-          </span>
-          <div>
-            <p className="[font-family:var(--font-paraluman-heading)] text-lg font-bold leading-tight tracking-[-0.025em] text-[#071f49]">
-              {stat.value}
-            </p>
-            <p className="text-sm font-medium leading-tight text-[#28466f]">
-              {stat.label}
-            </p>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function HowItWorksSection() {
   return (
     <section
@@ -573,8 +529,6 @@ function HowItWorksSection() {
             </div>
           ))}
         </div>
-
-        <StatsRow />
       </div>
     </section>
   );
