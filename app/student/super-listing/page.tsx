@@ -284,7 +284,7 @@ function SuperListingsHero() {
       />
       <div className="absolute inset-0 bg-black/65" />
       <div
-        className="hero-light-cone pointer-events-none absolute left-1/2 top-[15svh] z-10 h-[63svh] w-[44rem] sm:w-[76rem] -translate-x-1/2 bg-[linear-gradient(168deg,rgba(255,246,205,0.2)_0%,rgba(255,236,156,0.48)_38%,rgba(255,247,208,0.2)_72%,transparent_100%)] opacity-90 blur-sm [clip-path:polygon(42%_0,58%_0,82%_100%,18%_100%)] [mask-image:linear-gradient(to_bottom,#000_0%,#000_68%,transparent_100%)] min-[1800px]:w-[87rem] min-[1800px]:[clip-path:polygon(43%_0,57%_0,92%_100%,8%_100%)]"
+        className="hero-light-cone pointer-events-none absolute left-1/2 top-[15svh] z-10 h-[63svh] w-[44rem] sm:w-[76rem] -translate-x-1/2 bg-[linear-gradient(168deg,rgba(255,246,205,0.2)_0%,rgba(255,236,156,0.48)_38%,rgba(255,247,208,0.2)_72%,transparent_100%)] opacity-90 blur-sm [clip-path:polygon(42%_0,58%_0,82%_100%,18%_100%)] [mask-image:linear-gradient(to_bottom,#000_0%,#000_68%,transparent_100%)] lg:w-[88rem] lg:[clip-path:polygon(43%_0,57%_0,90%_100%,10%_100%)] min-[1800px]:w-[104rem] min-[1800px]:[clip-path:polygon(44%_0,56%_0,94%_100%,6%_100%)]"
         aria-hidden="true"
       />
       <div
