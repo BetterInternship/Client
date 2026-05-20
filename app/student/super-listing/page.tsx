@@ -239,20 +239,19 @@ function HeroStickyNote({
   tone,
   pinTone,
   className,
-  spotlightIndex = 0,
-}: HeroStickyNoteData & { spotlightIndex?: number }) {
+}: HeroStickyNoteData) {
   return (
     <div
+      tabIndex={0}
       className={cn(
-        "hero-sticky-note absolute isolate z-20 w-[178px] opacity-55 saturate-[0.78] brightness-[0.62]",
+        "hero-sticky-note absolute isolate z-20 w-[178px] cursor-pointer opacity-55 saturate-[0.78] brightness-[0.62] outline-none transition-[filter,opacity] duration-300 ease-out",
         "sm:w-[200px] lg:w-[230px] 2xl:w-[250px]",
         className,
       )}
-      style={{ animationDelay: `-${spotlightIndex * 2.15}s` }}
+      aria-label={`${company}: ${headline}`}
     >
       <span
-        className="hero-note-spotlight pointer-events-none absolute left-1/2 top-1/2 z-0 h-[18rem] w-[18rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,252,224,0.78)_0%,rgba(255,237,160,0.58)_48%,rgba(255,230,126,0.34)_68%,transparent_70%)] opacity-0"
-        style={{ animationDelay: `-${spotlightIndex * 2.15}s` }}
+        className="hero-note-spotlight pointer-events-none absolute left-1/2 top-1/2 z-0 h-[18rem] w-[18rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,252,224,0.78)_0%,rgba(255,237,160,0.58)_48%,rgba(255,230,126,0.34)_68%,transparent_70%)] opacity-0 transition-opacity duration-300 ease-out"
         aria-hidden="true"
       />
       <span
@@ -264,7 +263,7 @@ function HeroStickyNote({
       />
       <div
         className={cn(
-          "relative z-10 min-h-[128px] border border-[#081A3A]/5 px-4 pb-4 pt-7 text-center shadow-[0_14px_30px_rgba(8,26,58,0.15)] ring-1 ring-white/50",
+          "hero-sticky-note-paper relative z-10 min-h-[128px] origin-top border border-[#081A3A]/5 px-4 pb-4 pt-7 text-center shadow-[0_14px_30px_rgba(8,26,58,0.15)] ring-1 ring-white/50",
           "sm:min-h-[160px] sm:px-5 sm:pb-5 sm:pt-8",
           stickyNoteToneClasses[tone],
         )}
@@ -305,12 +304,8 @@ function SuperListingsHero() {
       />
       <div className="absolute inset-0 mx-auto w-full max-w-[1120px] xl:max-w-[1440px] 2xl:max-w-[1680px] min-[1800px]:max-w-[1920px]">
         <div className="absolute inset-x-[4%] bottom-[4%] top-[6%] sm:inset-x-[6%] sm:bottom-[5%] sm:top-[8%] ">
-          {heroStickyNotes.map((note, index) => (
-            <HeroStickyNote
-              key={`${note.company}-${note.role}`}
-              {...note}
-              spotlightIndex={index}
-            />
+          {heroStickyNotes.map((note) => (
+            <HeroStickyNote key={`${note.company}-${note.role}`} {...note} />
           ))}
 
           <div className="absolute left-1/2 top-[45%] z-50 -translate-x-1/2 -translate-y-1/2 text-center sm:top-[50%]">
@@ -425,10 +420,7 @@ function SuperListingsContentBackdrop({ children }: { children: ReactNode }) {
         tone="gold"
         className="-left-14 bottom-32 hidden w-48 md:block"
       />
-      <Doodle
-        name="circleAccent"
-        className="left-[42%] top-[48%] hidden w-36 opacity-30 lg:block"
-      />
+
       <Doodle
         name="cornerDots"
         tone="gold"
@@ -649,46 +641,41 @@ export default function SuperListingsLandingPage() {
           }
         }
 
-        @keyframes hero-note-spotlight {
-          0%,
-          9% {
-            opacity: 0;
-          }
-          14%,
-          28% {
-            opacity: 1;
-          }
-          34%,
-          100% {
-            opacity: 0;
-          }
-        }
-
-        @keyframes hero-sticky-note {
-          0%,
-          9% {
-            opacity: 0.55;
-            filter: saturate(0.78) brightness(0.62);
-          }
-          14%,
-          28% {
-            opacity: 1;
-            filter: saturate(1.04) brightness(1.05);
-          }
-          34%,
-          100% {
-            opacity: 0.55;
-            filter: saturate(0.78) brightness(0.62);
-          }
-        }
-
         .hero-note-spotlight {
-          animation: hero-note-spotlight 12.9s ease-in-out infinite;
           mix-blend-mode: screen;
         }
 
-        .hero-sticky-note {
-          animation: hero-sticky-note 12.9s ease-in-out infinite;
+        @keyframes hero-sticky-note-swing {
+          0% {
+            transform: rotate(0deg);
+          }
+          24% {
+            transform: rotate(4.8deg);
+          }
+          50% {
+            transform: rotate(-3.8deg);
+          }
+          74% {
+            transform: rotate(2deg);
+          }
+          100% {
+            transform: rotate(0deg);
+          }
+        }
+
+        .hero-sticky-note:is(:hover, :focus-visible) {
+          opacity: 1;
+          filter: saturate(1.04) brightness(1.05);
+        }
+
+        .hero-sticky-note:is(:hover, :focus-visible) .hero-note-spotlight {
+          opacity: 1;
+        }
+
+        .hero-sticky-note:is(:hover, :focus-visible) .hero-sticky-note-paper {
+          animation: hero-sticky-note-swing 0.95s
+            cubic-bezier(0.34, 1.56, 0.64, 1);
+          transform-origin: 50% 0;
         }
       `}</style>
     </main>
