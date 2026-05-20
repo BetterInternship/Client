@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -56,6 +56,7 @@ type HeroStickyNoteData = {
   company: string;
   headline: string;
   role: string;
+  href: string;
   tone: "cream" | "blue" | "mint" | "lavender" | "yellow";
   pinTone: "blue" | "gold";
   className?: string;
@@ -82,6 +83,7 @@ const heroStickyNotes: HeroStickyNoteData[] = [
     company: "Anteriore",
     headline: "Build what the future needs",
     role: "Product & Engineering",
+    href: "/super-listing/anteriore",
     tone: "cream",
     pinTone: "blue",
     className:
@@ -91,6 +93,7 @@ const heroStickyNotes: HeroStickyNoteData[] = [
     company: "Founders For Founders",
     headline: "Help the next great founder rise",
     role: "Accelerator Intern",
+    href: "/super-listing/fff",
     tone: "lavender",
     pinTone: "blue",
     className:
@@ -100,6 +103,7 @@ const heroStickyNotes: HeroStickyNoteData[] = [
     company: "Miro",
     headline: "Turn messy ideas into momentum",
     role: "Internship Challenge",
+    href: "/super-listing/miro",
     tone: "mint",
     pinTone: "blue",
     className:
@@ -109,6 +113,7 @@ const heroStickyNotes: HeroStickyNoteData[] = [
     company: "Paraluman News",
     headline: "Bring stories across languages",
     role: "News Delivery",
+    href: "/super-listing/paraluman",
     tone: "yellow",
     pinTone: "gold",
     className:
@@ -118,6 +123,7 @@ const heroStickyNotes: HeroStickyNoteData[] = [
     company: "Philippine Chamber of Commerce",
     headline: "Shape ideas that move business",
     role: "Innovation Challenge",
+    href: "/super-listing/pcc",
     tone: "cream",
     pinTone: "blue",
     className:
@@ -127,6 +133,7 @@ const heroStickyNotes: HeroStickyNoteData[] = [
     company: "Sofi AI",
     headline: "Design AI people actually trust",
     role: "Frontend / UI/UX",
+    href: "/super-listing/sofi-ai",
     tone: "blue",
     pinTone: "gold",
     className:
@@ -206,22 +213,31 @@ const stickyNotePinClasses: Record<HeroStickyNoteData["pinTone"], string> = {
   gold: "bg-amber-400",
 };
 
+const stickyNoteSpotlightDelays = ["0s", "-24s", "-20s", "-16s", "-12s", "-8s"];
+
 function HeroStickyNote({
   headline,
   company,
   role,
+  href,
   tone,
   pinTone,
   className,
-}: HeroStickyNoteData) {
+  spotlightDelay = "0s",
+}: HeroStickyNoteData & { spotlightDelay?: string }) {
   return (
-    <div
-      tabIndex={0}
+    <Link
+      href={href}
       className={cn(
-        "hero-sticky-note absolute isolate z-20 w-[132px] cursor-pointer opacity-55 saturate-[0.78] brightness-[0.62] outline-none transition-[filter,opacity] duration-300 ease-out",
+        "hero-sticky-note absolute isolate z-20 block w-[132px] cursor-pointer opacity-55 saturate-[0.78] brightness-[0.62] outline-none transition-[filter,opacity] duration-300 ease-out",
         "sm:w-[200px] lg:w-[230px] 2xl:w-[250px]",
         className,
       )}
+      style={
+        {
+          "--note-delay": spotlightDelay,
+        } as CSSProperties
+      }
       aria-label={`${company}: ${headline}`}
     >
       <span
@@ -252,7 +268,7 @@ function HeroStickyNote({
           {role}
         </p>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -269,15 +285,15 @@ function SuperListingsHero() {
       />
       <div className="absolute inset-0 bg-black/65" />
       <div
-        className="pointer-events-none absolute left-1/2 top-[15svh] z-10 h-[63svh] w-[76rem] -translate-x-1/2 bg-[linear-gradient(168deg,rgba(255,246,205,0.2)_0%,rgba(255,236,156,0.48)_38%,rgba(255,247,208,0.2)_72%,transparent_100%)] opacity-90 blur-sm [clip-path:polygon(42%_0,58%_0,82%_100%,18%_100%)] [mask-image:linear-gradient(to_bottom,#000_0%,#000_68%,transparent_100%)]"
+        className="hero-light-cone pointer-events-none absolute left-1/2 top-[15svh] z-10 h-[63svh] w-[76rem] -translate-x-1/2 bg-[linear-gradient(168deg,rgba(255,246,205,0.2)_0%,rgba(255,236,156,0.48)_38%,rgba(255,247,208,0.2)_72%,transparent_100%)] opacity-90 blur-sm [clip-path:polygon(42%_0,58%_0,82%_100%,18%_100%)] [mask-image:linear-gradient(to_bottom,#000_0%,#000_68%,transparent_100%)] min-[1800px]:w-[87rem] min-[1800px]:[clip-path:polygon(43%_0,57%_0,92%_100%,8%_100%)]"
         aria-hidden="true"
       />
       <div
-        className="pointer-events-none absolute left-1/2 top-[70svh] z-10 h-[18rem] w-[68rem] -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-[radial-gradient(ellipse,rgba(255,242,194,0.28)_0%,rgba(255,230,150,0.16)_42%,transparent_72%)] blur-2xl"
+        className="hero-light-glow pointer-events-none absolute left-1/2 top-[70svh] z-10 h-[18rem] w-[68rem] -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-[radial-gradient(ellipse,rgba(255,242,194,0.28)_0%,rgba(255,230,150,0.16)_42%,transparent_72%)] blur-2xl"
         aria-hidden="true"
       />
       <div
-        className="pointer-events-none absolute left-1/2 top-[43%] z-10 h-[26rem] w-[42rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(ellipse,rgba(255,248,218,0.24)_0%,rgba(255,233,151,0.12)_42%,transparent_72%)] blur-2xl"
+        className="hero-light-glow pointer-events-none absolute left-1/2 top-[43%] z-10 h-[26rem] w-[42rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(ellipse,rgba(255,248,218,0.24)_0%,rgba(255,233,151,0.12)_42%,transparent_72%)] blur-2xl"
         aria-hidden="true"
       />
       <div className="absolute left-4 top-4 z-30 inline-flex transition-opacity duration-200 hover:opacity-75 sm:left-6 sm:top-6">
@@ -292,8 +308,16 @@ function SuperListingsHero() {
       </div>
       <div className="absolute inset-0 mx-auto w-full max-w-[1120px] xl:max-w-[1440px] 2xl:max-w-[1680px] min-[1800px]:max-w-[1920px]">
         <div className="absolute inset-x-[4%] bottom-[4%] top-[6%] sm:inset-x-[6%] sm:bottom-[5%] sm:top-[8%] ">
-          {heroStickyNotes.map((note) => (
-            <HeroStickyNote key={`${note.company}-${note.role}`} {...note} />
+          {heroStickyNotes.map((note, index) => (
+            <HeroStickyNote
+              key={`${note.company}-${note.role}`}
+              {...note}
+              spotlightDelay={
+                stickyNoteSpotlightDelays[
+                  index % stickyNoteSpotlightDelays.length
+                ]
+              }
+            />
           ))}
 
           <div className="absolute left-1/2 top-[45%] z-50 -translate-x-1/2 -translate-y-1/2 text-center sm:top-[50%]">
@@ -595,6 +619,36 @@ export default function SuperListingsLandingPage() {
           mix-blend-mode: screen;
         }
 
+        @keyframes hero-light-reveal {
+          0%,
+          58% {
+            opacity: 0;
+            filter: brightness(0.82);
+          }
+          100% {
+            opacity: 0.9;
+            filter: brightness(1);
+          }
+        }
+
+        @keyframes hero-glow-reveal {
+          0%,
+          58% {
+            opacity: 0;
+          }
+          100% {
+            opacity: 1;
+          }
+        }
+
+        .hero-light-cone {
+          animation: hero-light-reveal 3.4s ease-out both;
+        }
+
+        .hero-light-glow {
+          animation: hero-glow-reveal 3.4s ease-out both;
+        }
+
         @keyframes hero-sticky-note-swing {
           0% {
             transform: rotate(0deg);
@@ -613,14 +667,59 @@ export default function SuperListingsLandingPage() {
           }
         }
 
+        @keyframes hero-note-auto-highlight {
+          0%,
+          6%,
+          100% {
+            opacity: 0.55;
+            filter: saturate(0.78) brightness(0.62);
+          }
+          9%,
+          20% {
+            opacity: 1;
+            filter: saturate(1.04) brightness(1.05);
+          }
+          24% {
+            opacity: 0.55;
+            filter: saturate(0.78) brightness(0.62);
+          }
+        }
+
+        @keyframes hero-note-auto-spotlight {
+          0%,
+          6%,
+          100% {
+            opacity: 0;
+          }
+          9%,
+          20% {
+            opacity: 1;
+          }
+          24% {
+            opacity: 0;
+          }
+        }
+
         @media (min-width: 768px) {
+          .hero-sticky-note {
+            animation: hero-note-auto-highlight 30s ease-in-out infinite;
+            animation-delay: var(--note-delay);
+          }
+
+          .hero-sticky-note .hero-note-spotlight {
+            animation: hero-note-auto-spotlight 30s ease-in-out infinite;
+            animation-delay: var(--note-delay);
+          }
+
           .hero-sticky-note:is(:hover, :focus-visible) {
             opacity: 1;
             filter: saturate(1.04) brightness(1.05);
+            animation-play-state: paused;
           }
 
           .hero-sticky-note:is(:hover, :focus-visible) .hero-note-spotlight {
             opacity: 1;
+            animation-play-state: paused;
           }
 
           .hero-sticky-note:is(:hover, :focus-visible) .hero-sticky-note-paper {
