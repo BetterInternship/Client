@@ -534,8 +534,7 @@ function SuperListingsCTA() {
     <section className="bg-transparent px-4 pb-16 pt-8 sm:px-6 lg:px-8 lg:pb-24">
       <div className="mx-auto max-w-[1120px]">
         <div
-          className="relative flex min-h-[260px] items-center justify-center overflow-hidden rounded-2xl bg-[#061b3d] bg-cover bg-center px-6 py-12 text-center shadow-strong sm:min-h-[290px] sm:px-10 lg:min-h-[320px] lg:px-16"
-          style={{ backgroundImage: "url('/super-listings/bg2.png')" }}
+          className="relative flex min-h-[260px] items-center justify-center overflow-hidden rounded-2xl bg-[#061b3d] bg-[url('/super-listings/bg2_mobile.png')] bg-cover bg-center px-6 py-12 text-center shadow-strong sm:min-h-[290px] sm:bg-[url('/super-listings/bg2.png')] sm:px-10 lg:min-h-[320px] lg:px-16"
         >
           <div
             className="absolute inset-0 bg-[#061b3d]/10"
