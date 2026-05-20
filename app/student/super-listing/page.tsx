@@ -401,9 +401,9 @@ function Doodle({
 
 function SuperListingsContentBackdrop({ children }: { children: ReactNode }) {
   return (
-    <div className="relative overflow-hidden bg-[#f7fbff]">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(11,99,246,0.07)_1px,transparent_1px),linear-gradient(to_bottom,rgba(11,99,246,0.07)_1px,transparent_1px)] bg-[size:44px_44px] opacity-70" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_14%,rgba(11,99,246,0.1),transparent_28%),radial-gradient(circle_at_88%_38%,rgba(245,181,27,0.12),transparent_24%),radial-gradient(circle_at_30%_86%,rgba(11,99,246,0.08),transparent_28%)]" />
+    <div className="relative overflow-hidden bg-[linear-gradient(to_bottom,#000713_0rem,#000713_8rem,#10284b_16rem,#eef7ff_30rem,#f7fbff_40rem,#ffffff_100%)] pt-28">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(11,99,246,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(11,99,246,0.045)_1px,transparent_1px)] bg-[size:44px_44px] opacity-55 [mask-image:linear-gradient(to_bottom,transparent_0rem,transparent_16rem,#000_28rem)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_20rem,rgba(13,107,255,0.1),transparent_18rem),radial-gradient(circle_at_30%_86%,rgba(11,99,246,0.08),transparent_28%)]" />
 
       <Doodle
         name="sparkle"
@@ -469,16 +469,18 @@ function SuperListingCard({ listing }: { listing: SuperListingData }) {
 
 function SuperListingsPreview() {
   return (
-    <section className="bg-transparent px-4 pb-14 pt-20 sm:px-6 lg:px-8 lg:pb-20 lg:pt-24">
+    <section className="bg-transparent px-4 pb-14 pt-10 sm:px-6 lg:px-8 lg:pb-20 lg:pt-12">
       <div className="mx-auto max-w-[1120px]">
         <div className="relative mb-8 text-center">
-          <div className="pointer-events-none absolute left-1/2 top-1/2 h-56 w-[120%] -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.9)_0%,rgba(255,255,255,0.64)_48%,rgba(255,255,255,0)_78%)] blur-2xl" />
           <div className="relative z-10">
-            <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
+            <p className="[font-family:var(--font-paraluman-mono)] text-xs font-bold uppercase tracking-[0.18em] text-[#FFF7E8]/80">
               Super Listings
             </p>
-            <h2 className="[font-family:var(--font-paraluman-heading)] mt-3 text-[clamp(2.2rem,4.6vw,3.6rem)] font-black leading-[0.98] tracking-[-0.06em] text-[#052338]">
-              Find your <span className="text-[#0D6BFF]">challenge</span>
+            <h2
+              className="[font-family:var(--font-paraluman-heading)] mt-3 text-[clamp(2.2rem,4.6vw,3.6rem)] font-black leading-[0.98] tracking-[-0.06em] text-[#FFF7E8]"
+              style={{ textShadow: "0 4px 18px rgba(0, 0, 0, 0.35)" }}
+            >
+              Find your challenge
             </h2>
           </div>
         </div>
