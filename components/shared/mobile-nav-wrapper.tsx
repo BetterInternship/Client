@@ -21,6 +21,7 @@ export default function MobileNavWrapper() {
     pathname === "/miro" ||
     pathname === "/fff" ||
     pathname === "/super-listing" ||
+    pathname === "/super-listing/search" ||
     pathname === "/register" ||
     pathname === "/register/verify" ||
     pathname.startsWith("/companies/");
