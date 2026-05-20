@@ -76,12 +76,6 @@ type StepData = {
   icon: ReactNode;
 };
 
-type StatData = {
-  value: string;
-  label: string;
-  icon: ReactNode;
-};
-
 const heroStickyNotes: HeroStickyNoteData[] = [
   {
     company: "Anteriore",
@@ -141,35 +135,30 @@ const previewListings: SuperListingData[] = [
   {
     company: "Anteriore",
     title: "Startup Product and Engineering Challenge",
-    tags: ["Product", "Engineering"],
     href: "/super-listing/anteriore",
     logo: <Rocket className="h-5 w-5" />,
   },
   {
     company: "Cebu Pacific",
     title: "Digital Travel Experience Challenge",
-    tags: ["UX", "Travel"],
     href: "/super-listing/cebu-pacific",
     logo: <Building2 className="h-5 w-5" />,
   },
   {
     company: "Founders For Founders",
     title: "Startup Accelerator Intern",
-    tags: ["Startups", "Growth"],
     href: "/super-listing/fff",
     logo: <BriefcaseBusiness className="h-5 w-5" />,
   },
   {
     company: "Sofi AI",
     title: "Frontend AI Product Challenge",
-    tags: ["Frontend", "UI/UX"],
     href: "/super-listing/sofi-ai",
     logo: <PenLine className="h-5 w-5" />,
   },
   {
     company: "Paraluman News",
     title: "Multilingual News Delivery Challenge",
-    tags: ["Web", "News"],
     href: "/super-listing/paraluman",
     logo: <Sparkles className="h-5 w-5" />,
   },
@@ -291,7 +280,7 @@ function SuperListingsHero() {
 
           <div className="absolute left-1/2 top-[45%] z-50 -translate-x-1/2 -translate-y-1/2 text-center sm:top-[50%]">
             <h1
-              className="[font-family:var(--font-paraluman-heading)] text-[1.9rem] font-bold leading-[1.02] tracking-[-0.05em] min-[430px]:text-[2.35rem] sm:text-[3.7rem] md:text-[4.4rem] lg:text-[4.8rem]"
+              className="[font-family:var(--font-paraluman-heading)] text-[2.35rem] font-bold leading-[1.02] tracking-[-0.05em] min-[430px]:text-[2.85rem] sm:text-[3.7rem] md:text-[4.4rem] lg:text-[4.8rem]"
               style={{ textShadow: "0 4px 18px rgba(0, 0, 0, 0.35)" }}
             >
               <span className="block whitespace-nowrap text-[#FFF7E8]">
@@ -416,27 +405,12 @@ function SuperListingsContentBackdrop({ children }: { children: ReactNode }) {
 function SuperListingCard({ listing }: { listing: SuperListingData }) {
   return (
     <Card className="flex min-h-[255px] min-w-[220px] flex-col rounded-xl border-gray-200 bg-white p-5 shadow-soft transition-all duration-200 hover:-translate-y-1 hover:shadow-medium lg:min-w-0">
-      <div className="mb-5 flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-          {listing.logo}
-        </span>
-        <p className="[font-family:var(--font-paraluman-heading)] text-sm font-bold text-[#071f49]">
-          {listing.company}
-        </p>
-      </div>
-      <h3 className="[font-family:var(--font-paraluman-heading)] text-base font-bold leading-snug tracking-[-0.025em] text-[#071f49]">
+      <h3 className="[font-family:var(--font-paraluman-heading)] text-lg font-bold leading-snug tracking-[-0.025em] text-[#071f49]">
         {listing.title}
       </h3>
-      <div className="mt-5 flex flex-wrap gap-2">
-        {listing.tags.map((tag) => (
-          <span
-            key={`${listing.company}-${tag}`}
-            className="rounded-[0.33em] bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-600"
-          >
-            {tag}
-          </span>
-        ))}
-      </div>
+      <p className="mt-3 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-blue-600">
+        {listing.company}
+      </p>
       <Link
         href={listing.href}
         className="mt-auto inline-flex items-center gap-1 pt-6 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-blue-600 hover:text-blue-700"
