@@ -24,6 +24,7 @@ export default function MobileNavWrapper() {
     pathname === "/register" ||
     pathname === "/register/verify" ||
     pathname.startsWith("/companies/");
+  pathname.startsWith("/super-listing/");
 
   if (!isMobile || hide) {
     return null;
