@@ -10,7 +10,6 @@ import {
   CalendarDays,
   MapPin,
   Search,
-  Trophy,
 } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
@@ -37,25 +36,6 @@ const bodyFont = Open_Sans({
 
 type Challenge = (typeof challengePhChallenges)[number];
 
-function ChallengeMark({ challenge }: { challenge: Challenge }) {
-  const initials = challenge.shortTitle
-    .split(" ")
-    .slice(0, 2)
-    .map((word) => word[0])
-    .join("");
-
-  return (
-    <div
-      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.33em] border bg-white [font-family:var(--font-super-listings-heading)] text-sm font-black shadow-[0_12px_30px_-24px_rgba(8,26,58,0.7)]"
-      style={{
-        borderColor: `${challenge.accent}55`,
-        color: challenge.accent,
-      }}
-    >
-      {initials}
-    </div>
-  );
-}
 
 function ListingsHero() {
   return (
@@ -92,32 +72,23 @@ function ListingsHero() {
 }
 
 function ChallengeCard({ challenge }: { challenge: Challenge }) {
-  return (
-    <Card className="group flex min-h-[390px] flex-col rounded-[0.33em] border-[#dfe7f2] bg-white/95 p-4 shadow-[0_20px_58px_-50px_rgba(8,26,58,0.55)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_28px_80px_-58px_rgba(8,26,58,0.78)] sm:p-5">
-      <div className="mb-5 flex items-start gap-3">
-        <ChallengeMark challenge={challenge} />
-        <div className="min-w-0">
-          <p className="[font-family:var(--font-super-listings-heading)] text-sm font-bold leading-tight text-[#081A3A]">
-            {challenge.host}
-          </p>
-          <p className="mt-1 inline-flex items-center gap-1.5 [font-family:var(--font-super-listings-body)] text-xs font-bold leading-tight text-[#28466f]/72">
-            <Building2 className="h-3.5 w-3.5" />
-            {challenge.sector}
-          </p>
-        </div>
-      </div>
+  const amount =
+    challenge.reward.match(/(PHP[\s\d,]+)/i)?.[1]?.trim() ?? challenge.reward;
 
-      <div className="min-h-[7.25rem]">
+  return (
+    <Card className="group flex flex-col rounded-[0.33em] border-[#dfe7f2] bg-white/95 p-4 shadow-[0_20px_58px_-50px_rgba(8,26,58,0.55)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_28px_80px_-58px_rgba(8,26,58,0.78)] sm:p-5">
+      <div className="h-[4.5rem] overflow-hidden">
         <h2 className="[font-family:var(--font-super-listings-heading)] text-[1.35rem] font-black leading-[1.07] tracking-[-0.055em] text-[#081A3A]">
           {challenge.shortTitle}
         </h2>
-        <p
-          className="mt-3 [font-family:var(--font-super-listings-heading)] text-sm font-black leading-snug"
-          style={{ color: challenge.accent }}
-        >
-          {challenge.reward}
-        </p>
       </div>
+
+      <p
+        className="mt-3 [font-family:var(--font-super-listings-heading)] text-sm font-black leading-snug"
+        style={{ color: challenge.accent }}
+      >
+        {amount}
+      </p>
 
       <p className="mt-3 min-h-[5.5rem] [font-family:var(--font-super-listings-body)] text-sm font-semibold leading-6 text-[#081A3A]/78">
         {challenge.summary}
@@ -125,15 +96,15 @@ function ChallengeCard({ challenge }: { challenge: Challenge }) {
 
       <div className="mt-4 space-y-2 border-t border-[#dfe7f2] pt-4 [font-family:var(--font-super-listings-body)] text-xs font-bold text-[#28466f]/74">
         <p className="flex items-center gap-2">
-          <Trophy className="h-4 w-4 text-[#0D6BFF]" />
-          {challenge.rewardType}
+          <Building2 className="h-4 w-4 shrink-0 text-[#2388ff]" />
+          {challenge.host}
         </p>
         <p className="flex items-center gap-2">
-          <CalendarDays className="h-4 w-4 text-[#0D6BFF]" />
-          Due {challenge.deadline}
+          <CalendarDays className="h-4 w-4 shrink-0 text-[#2388ff]" />
+          {challenge.deadline}
         </p>
         <p className="flex items-center gap-2">
-          <MapPin className="h-4 w-4 text-[#0D6BFF]" />
+          <MapPin className="h-4 w-4 shrink-0 text-[#2388ff]" />
           {challenge.location}
         </p>
       </div>
@@ -151,7 +122,7 @@ function ChallengeCard({ challenge }: { challenge: Challenge }) {
 
       <Link
         href={`/challenges/${challenge.id}`}
-        className="mt-auto inline-flex h-11 items-center justify-center gap-2 rounded-[0.33em] border border-[#0D6BFF] px-4 [font-family:var(--font-super-listings-heading)] text-sm font-bold text-[#0D6BFF] transition-colors hover:bg-[#0D6BFF] hover:text-white"
+        className="mt-auto inline-flex h-11 items-center justify-center gap-2 rounded-[0.33em] border border-[#2388ff] px-4 [font-family:var(--font-super-listings-heading)] text-sm font-bold text-[#2388ff] transition-colors hover:bg-[#2388ff] hover:text-white"
       >
         View challenge
         <ArrowRight className="h-5 w-5" />
@@ -192,7 +163,7 @@ function ListingsGrid() {
       <div className="relative mx-auto mb-5 max-w-[1120px]">
         <div className="flex items-center gap-3 rounded-[0.33em] border border-[#dbe6f5] bg-white p-2">
           <label className="flex h-10 min-w-0 flex-1 items-center gap-3 rounded-[0.33em] px-3 transition-colors focus-within:bg-white">
-            <Search className="h-4 w-4 shrink-0 text-[#0D6BFF]" />
+            <Search className="h-4 w-4 shrink-0 text-[#2388ff]" />
             <input
               type="text"
               value={searchTerm}

@@ -7,13 +7,7 @@ import { geoMercator, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
 import type { GeometryCollection, Topology } from "topojson-specification";
-import {
-  ArrowRight,
-  CheckCircle2,
-  Compass,
-  FileText,
-  Trophy,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import { challengePhChallenges } from "@/app/student/challenges/data";
 import { cn } from "@/lib/utils";
@@ -100,59 +94,136 @@ const LAYOUTS = {
 
 export const mapCallouts: MapCallout[] = [
   {
-    id: "northern-talent",
+    id: "cagayan-ofw",
+    provinceName: "Cagayan",
+    psgc: "201500000",
+    challengeId: "ofw-remittance-helper",
+    color: "#2388ff",
+    anchor: { x: 540, y: 146 },
+    tooltipPosition: { x: 36, y: 70, width: 238, height: 124 },
+    mobileAnchor: { x: 202, y: 156 },
+    mobileTooltipPosition: { x: 18, y: 24, width: 170, height: 118 },
+  },
+  {
+    id: "benguet-agri",
     provinceName: "Benguet",
     psgc: "1401100000",
     challengeId: "agri-cold-chain",
-    color: "#2563EB",
-    anchor: { x: 432, y: 282 },
-    tooltipPosition: { x: 22, y: 50, width: 238, height: 124 },
+    color: "#2388ff",
+    anchor: { x: 495, y: 215 },
+    tooltipPosition: { x: 36, y: 70, width: 238, height: 124 },
     mobileAnchor: { x: 178, y: 214 },
-    mobileTooltipPosition: { x: 18, y: 24, width: 158, height: 118 },
+    mobileTooltipPosition: { x: 18, y: 24, width: 170, height: 118 },
   },
   {
-    id: "metro-adjacent",
+    id: "pangasinan-skills",
+    provinceName: "Pangasinan",
+    psgc: "105500000",
+    challengeId: "shs-skills-mapper",
+    color: "#2388ff",
+    anchor: { x: 477, y: 240 },
+    tooltipPosition: { x: 36, y: 70, width: 238, height: 124 },
+    mobileAnchor: { x: 174, y: 232 },
+    mobileTooltipPosition: { x: 18, y: 24, width: 170, height: 118 },
+  },
+  {
+    id: "cavite-flood",
     provinceName: "Cavite",
     psgc: "402100000",
     challengeId: "flood-ready-commutes",
-    color: "#7C3AED",
-    anchor: { x: 436, y: 347 },
-    tooltipPosition: { x: 22, y: 182, width: 238, height: 124 },
+    color: "#2388ff",
+    anchor: { x: 501, y: 318 },
+    tooltipPosition: { x: 36, y: 70, width: 238, height: 124 },
     mobileAnchor: { x: 181, y: 252 },
-    mobileTooltipPosition: { x: 16, y: 430, width: 170, height: 118 },
+    mobileTooltipPosition: { x: 18, y: 24, width: 170, height: 118 },
   },
   {
-    id: "central-visayas",
-    provinceName: "Cebu",
-    psgc: "702200000",
-    challengeId: "jeepney-demand-dashboard",
-    color: "#0891B2",
-    anchor: { x: 514, y: 454 },
-    tooltipPosition: { x: 22, y: 314, width: 238, height: 124 },
-    mobileAnchor: { x: 227, y: 316 },
-    mobileTooltipPosition: { x: 208, y: 24, width: 164, height: 118 },
+    id: "albay-health",
+    provinceName: "Albay",
+    psgc: "500500000",
+    challengeId: "barangay-health-queues",
+    color: "#2388ff",
+    anchor: { x: 620, y: 365 },
+    tooltipPosition: { x: 36, y: 70, width: 238, height: 124 },
+    mobileAnchor: { x: 222, y: 268 },
+    mobileTooltipPosition: { x: 18, y: 24, width: 170, height: 118 },
   },
   {
-    id: "western-visayas",
+    id: "palawan-plastic",
+    provinceName: "Palawan",
+    psgc: "1705300000",
+    challengeId: "coastal-plastic-recovery",
+    color: "#2388ff",
+    anchor: { x: 409, y: 508 },
+    tooltipPosition: { x: 36, y: 70, width: 238, height: 124 },
+    mobileAnchor: { x: 160, y: 342 },
+    mobileTooltipPosition: { x: 18, y: 24, width: 170, height: 118 },
+  },
+  {
+    id: "iloilo-stockout",
     provinceName: "Iloilo",
     psgc: "603000000",
     challengeId: "sari-sari-stockouts",
-    color: "#16A34A",
-    anchor: { x: 483, y: 436 },
-    tooltipPosition: { x: 22, y: 446, width: 238, height: 124 },
+    color: "#2388ff",
+    anchor: { x: 576, y: 462 },
+    tooltipPosition: { x: 36, y: 70, width: 238, height: 124 },
     mobileAnchor: { x: 208, y: 305 },
-    mobileTooltipPosition: { x: 108, y: 570, width: 174, height: 118 },
+    mobileTooltipPosition: { x: 18, y: 24, width: 170, height: 118 },
   },
   {
-    id: "mindanao-product",
+    id: "cebu-jeepney",
+    provinceName: "Cebu",
+    psgc: "702200000",
+    challengeId: "jeepney-demand-dashboard",
+    color: "#2388ff",
+    anchor: { x: 626, y: 491 },
+    tooltipPosition: { x: 36, y: 70, width: 238, height: 124 },
+    mobileAnchor: { x: 227, y: 316 },
+    mobileTooltipPosition: { x: 18, y: 24, width: 170, height: 118 },
+  },
+  {
+    id: "leyte-plastic",
+    provinceName: "Leyte",
+    psgc: "803700000",
+    challengeId: "coastal-plastic-recovery",
+    color: "#2388ff",
+    anchor: { x: 669, y: 464 },
+    tooltipPosition: { x: 36, y: 70, width: 238, height: 124 },
+    mobileAnchor: { x: 240, y: 306 },
+    mobileTooltipPosition: { x: 18, y: 24, width: 170, height: 118 },
+  },
+  {
+    id: "bukidnon-agri",
+    provinceName: "Bukidnon",
+    psgc: "1001300000",
+    challengeId: "agri-cold-chain",
+    color: "#2388ff",
+    anchor: { x: 680, y: 593 },
+    tooltipPosition: { x: 36, y: 70, width: 238, height: 124 },
+    mobileAnchor: { x: 247, y: 350 },
+    mobileTooltipPosition: { x: 18, y: 24, width: 170, height: 118 },
+  },
+  {
+    id: "zamboanga-stockout",
+    provinceName: "Zamboanga del Sur",
+    psgc: "907300000",
+    challengeId: "sari-sari-stockouts",
+    color: "#2388ff",
+    anchor: { x: 593, y: 608 },
+    tooltipPosition: { x: 36, y: 70, width: 238, height: 124 },
+    mobileAnchor: { x: 214, y: 360 },
+    mobileTooltipPosition: { x: 18, y: 24, width: 170, height: 118 },
+  },
+  {
+    id: "davao-health",
     provinceName: "Davao del Sur",
     psgc: "1102400000",
     challengeId: "barangay-health-queues",
-    color: "#EA580C",
-    anchor: { x: 556, y: 545 },
-    tooltipPosition: { x: 22, y: 578, width: 238, height: 124 },
+    color: "#2388ff",
+    anchor: { x: 695, y: 637 },
+    tooltipPosition: { x: 36, y: 70, width: 238, height: 124 },
     mobileAnchor: { x: 252, y: 370 },
-    mobileTooltipPosition: { x: 204, y: 430, width: 168, height: 118 },
+    mobileTooltipPosition: { x: 18, y: 24, width: 170, height: 118 },
   },
 ];
 
@@ -295,16 +366,7 @@ function getCalloutGeometry(
 
 function getLineStart(anchor: Point, tooltipPosition: TooltipPosition) {
   const width = tooltipPosition.width ?? 236;
-  const height = tooltipPosition.height ?? 126;
-  const verticalPadding = Math.min(28, height / 2 - 12);
-  const exitsRight = tooltipPosition.x + width / 2 < anchor.x;
-  const x = exitsRight ? tooltipPosition.x + width : tooltipPosition.x;
-  const y = Math.max(
-    tooltipPosition.y + verticalPadding,
-    Math.min(anchor.y, tooltipPosition.y + height - verticalPadding),
-  );
-
-  return { x, y };
+  return { x: tooltipPosition.x + width, y: anchor.y };
 }
 
 function LeaderLine({
@@ -318,38 +380,29 @@ function LeaderLine({
 }) {
   const { anchor, tooltipPosition } = getCalloutGeometry(callout, layoutName);
   const start = getLineStart(anchor, tooltipPosition);
-  const controlX = start.x + (anchor.x - start.x) * 0.55;
-  const controlY = start.y + (anchor.y - start.y) * 0.1;
-  const path = `M ${start.x} ${start.y} Q ${controlX} ${controlY} ${anchor.x} ${anchor.y}`;
+  const path = `M ${start.x} ${start.y} L ${anchor.x} ${anchor.y}`;
 
   return (
-    <g aria-hidden="true">
-      <motion.path
+    <motion.g
+      aria-hidden="true"
+      style={{
+        transformBox: "view-box",
+        transformOrigin: `${anchor.x}px ${anchor.y}px`,
+      }}
+      initial={{ scaleX: 0 }}
+      animate={{ scaleX: 1 }}
+      transition={{ duration: 0.38, ease: "easeOut" }}
+    >
+      <path
         d={path}
         fill="none"
         stroke={callout.color}
         strokeLinecap="round"
-        initial={false}
-        animate={{
-          opacity: isActive ? 0.92 : 0.42,
-          pathLength: isActive ? 1 : 0.96,
-          strokeWidth: isActive ? 2.6 : 1.4,
-        }}
-        transition={{ duration: 0.22, ease: "easeOut" }}
+        strokeDasharray="2 7"
+        strokeWidth={2}
+        opacity={0.88}
       />
-      <motion.circle
-        cx={anchor.x}
-        cy={anchor.y}
-        r={isActive ? 5.4 : 3.6}
-        fill={callout.color}
-        initial={false}
-        animate={{
-          opacity: isActive ? 0.95 : 0.68,
-          scale: isActive ? 1.12 : 1,
-        }}
-        transition={{ duration: 0.22, ease: "easeOut" }}
-      />
-    </g>
+    </motion.g>
   );
 }
 
@@ -357,14 +410,10 @@ function MapTooltip({
   callout,
   isActive,
   layoutName,
-  onActivate,
-  onDeactivate,
 }: {
   callout: MapCallout | PositionedCallout;
   isActive: boolean;
   layoutName: LayoutName;
-  onActivate: () => void;
-  onDeactivate: () => void;
 }) {
   const { tooltipPosition } = getCalloutGeometry(callout, layoutName);
   const width = tooltipPosition.width ?? 236;
@@ -382,17 +431,14 @@ function MapTooltip({
       y={tooltipPosition.y}
       width={width}
       height={height}
-      initial={false}
-      animate={{
-        scale: isActive ? 1.045 : 1,
-        filter: isActive ? "brightness(1.05)" : "brightness(1)",
-      }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       style={{
         overflow: "visible",
         transformBox: "fill-box",
         transformOrigin: "center",
       }}
-      transition={{ duration: 0.22, ease: "easeOut" }}
+      transition={{ duration: 0.22, delay: 0.36, ease: "easeOut" }}
     >
       <div
         tabIndex={0}
@@ -403,14 +449,8 @@ function MapTooltip({
         style={{
           ["--callout-color" as string]: callout.color,
           ["--tw-ring-color" as string]: `${callout.color}33`,
-          boxShadow: isActive
-            ? `0 26px 72px ${callout.color}30`
-            : "0 20px 58px -50px rgba(8, 26, 58, 0.7)",
+          boxShadow: `0 26px 72px ${callout.color}30`,
         }}
-        onMouseEnter={onActivate}
-        onMouseLeave={onDeactivate}
-        onFocusCapture={onActivate}
-        onBlurCapture={onDeactivate}
         aria-label={`${company}: ${title}`}
       >
         <span
@@ -422,7 +462,7 @@ function MapTooltip({
         <span className="mt-2 line-clamp-2 [font-family:var(--font-challenge-ph-heading)] text-[16px] font-black leading-[1.05] tracking-[-0.04em] text-[#081A3A]">
           {title}
         </span>
-        <span className="mt-auto inline-flex items-center gap-1 [font-family:var(--font-challenge-ph-heading)] text-xs font-bold text-[#0D6BFF]">
+        <span className="mt-auto inline-flex items-center gap-1 [font-family:var(--font-challenge-ph-heading)] text-xs font-bold text-[#2388ff]">
           <Link href={href} className="inline-flex items-center gap-1">
             View
             <ArrowRight className="h-3.5 w-3.5" />
@@ -433,51 +473,82 @@ function MapTooltip({
   );
 }
 
-function MapProvince({
-  name,
-  path,
-  centroid,
-  glowFilterId,
+function MapProvince({ name, path }: { name: string; path: string }) {
+  return (
+    <path
+      d={path}
+      aria-label={name}
+      className="pointer-events-none"
+      vectorEffect="non-scaling-stroke"
+      fill="#DDE2E8"
+      stroke="#FFFFFF"
+      strokeWidth={1.05}
+    >
+      <title>{name}</title>
+    </path>
+  );
+}
+
+function MapDot({
+  callout,
+  layoutName,
   isActive,
   onActivate,
   onDeactivate,
 }: {
-  name: string;
-  path: string;
-  centroid: Point;
-  glowFilterId: string;
+  callout: PositionedCallout;
+  layoutName: LayoutName;
   isActive: boolean;
   onActivate: () => void;
   onDeactivate: () => void;
 }) {
+  const { anchor } = getCalloutGeometry(callout, layoutName);
+  const challenge = challengesById.get(callout.challengeId);
+
   return (
-    <motion.path
-      d={path}
+    <g
+      role="button"
       tabIndex={0}
-      role="img"
-      aria-label={name}
+      aria-label={
+        challenge ? `${challenge.host}: ${challenge.shortTitle}` : "Challenge"
+      }
       className="cursor-pointer outline-none"
-      vectorEffect="non-scaling-stroke"
-      initial={false}
-      animate={{
-        fill: isActive ? "#9AA4B2" : "#DDE2E8",
-        stroke: isActive ? "#64748B" : "#FFFFFF",
-        strokeWidth: isActive ? 1.8 : 1.05,
-        scale: isActive ? 1.018 : 1,
-      }}
-      style={{
-        filter: isActive ? `url(#${glowFilterId})` : "none",
-        transformBox: "view-box",
-        transformOrigin: `${centroid.x}px ${centroid.y}px`,
-      }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
       onMouseEnter={onActivate}
       onMouseLeave={onDeactivate}
       onFocus={onActivate}
       onBlur={onDeactivate}
     >
-      <title>{name}</title>
-    </motion.path>
+      <motion.circle
+        cx={anchor.x}
+        cy={anchor.y}
+        r={5}
+        fill="none"
+        stroke="#66c2ff"
+        strokeWidth={2}
+        initial={false}
+        animate={
+          isActive
+            ? { r: [5, 18], opacity: [0.7, 0] }
+            : { r: 5, opacity: 0 }
+        }
+        transition={
+          isActive
+            ? { repeat: Infinity, duration: 1.1, ease: "easeOut" }
+            : { duration: 0.15 }
+        }
+      />
+      <motion.circle
+        cx={anchor.x}
+        cy={anchor.y}
+        r={4}
+        fill={callout.color}
+        stroke="#FFFFFF"
+        strokeWidth={2}
+        initial={false}
+        animate={{ r: isActive ? 5.3 : 4 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      />
+    </g>
   );
 }
 
@@ -491,11 +562,8 @@ function PhilippinesMap({
   const [activeCalloutId, setActiveCalloutId] = useState<string | null>(
     mapCallouts[0]?.id ?? null,
   );
-  const [activeProvinceKey, setActiveProvinceKey] = useState<string | null>(
-    null,
-  );
+  const [isDotInteracting, setIsDotInteracting] = useState(false);
   const layout = LAYOUTS[layoutName];
-  const glowFilterId = `province-glow-${layoutName}`;
 
   const projectedProvinces = useMemo(
     () => buildProjectedProvinces(provinceFeatures, layout),
@@ -534,9 +602,59 @@ function PhilippinesMap({
     });
   }, [calloutProvinceKeys, provinceCentroidsByKey]);
 
-  const activeLinkedProvinceKey = activeCalloutId
-    ? calloutProvinceKeys.get(activeCalloutId)
-    : null;
+  useEffect(() => {
+    if (isDotInteracting || positionedCallouts.length === 0) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      setActiveCalloutId((currentId) => {
+        const currentIndex = positionedCallouts.findIndex(
+          (callout) => callout.id === currentId,
+        );
+        const nextIndex = (currentIndex + 1) % positionedCallouts.length;
+
+        return positionedCallouts[nextIndex].id;
+      });
+    }, 2500);
+
+    return () => window.clearInterval(interval);
+  }, [isDotInteracting, positionedCallouts]);
+
+  const activeCallout =
+    positionedCallouts.find((callout) => callout.id === activeCalloutId) ??
+    positionedCallouts[0];
+
+  const dynamicActiveCallout = (() => {
+    if (!activeCallout) return null;
+    const anchor =
+      layoutName === "mobile"
+        ? (activeCallout.mobileAnchor ?? activeCallout.resolvedAnchor)
+        : activeCallout.resolvedAnchor;
+    const tooltipPos =
+      layoutName === "mobile"
+        ? (activeCallout.mobileTooltipPosition ?? activeCallout.tooltipPosition)
+        : activeCallout.tooltipPosition;
+    const cardHeight = tooltipPos.height ?? 124;
+    const margin = 20;
+    const newY = Math.max(
+      margin,
+      Math.min(anchor.y - cardHeight / 2, layout.height - cardHeight - margin),
+    );
+    if (layoutName === "mobile") {
+      return {
+        ...activeCallout,
+        mobileTooltipPosition: {
+          ...(activeCallout.mobileTooltipPosition ?? activeCallout.tooltipPosition),
+          y: newY,
+        },
+      };
+    }
+    return {
+      ...activeCallout,
+      tooltipPosition: { ...activeCallout.tooltipPosition, y: newY },
+    };
+  })();
 
   return (
     <svg
@@ -549,98 +667,63 @@ function PhilippinesMap({
         Philippines province infographic map
       </title>
       <desc id={`philippines-map-description-${layoutName}`}>
-        A custom SVG map of Philippine provinces with always-visible statistics
-        callouts.
+        A custom SVG map of Philippine provinces with challenge locations and
+        rotating challenge cards.
       </desc>
-      <defs>
-        <filter
-          id={glowFilterId}
-          x="-35%"
-          y="-35%"
-          width="170%"
-          height="170%"
-          colorInterpolationFilters="sRGB"
-        >
-          <feDropShadow
-            dx="0"
-            dy="6"
-            stdDeviation="5"
-            floodColor="#64748B"
-            floodOpacity="0.28"
-          />
-        </filter>
-      </defs>
-
       <g>
-        {projectedProvinces.map(({ feature: province, path, centroid }) => {
-          const provinceKey = getProvinceKey(province);
+        {projectedProvinces.map(({ feature: province, path }) => {
           const provinceName = getProvinceName(province);
-          const isActive =
-            activeProvinceKey === provinceKey ||
-            activeLinkedProvinceKey === provinceKey;
 
           return (
             <MapProvince
-              key={provinceKey}
+              key={getProvinceKey(province)}
               name={provinceName}
               path={path}
-              centroid={centroid}
-              glowFilterId={glowFilterId}
-              isActive={isActive}
-              onActivate={() => setActiveProvinceKey(provinceKey)}
-              onDeactivate={() => setActiveProvinceKey(null)}
             />
           );
         })}
       </g>
 
       <g>
-        {positionedCallouts.map((callout) => (
+        {dynamicActiveCallout ? (
           <LeaderLine
+            key={dynamicActiveCallout.id}
+            callout={dynamicActiveCallout}
+            layoutName={layoutName}
+            isActive
+          />
+        ) : null}
+      </g>
+
+      <g>
+        {positionedCallouts.map((callout) => (
+          <MapDot
             key={callout.id}
             callout={callout}
             layoutName={layoutName}
             isActive={activeCalloutId === callout.id}
+            onActivate={() => {
+              setIsDotInteracting(true);
+              setActiveCalloutId(callout.id);
+            }}
+            onDeactivate={() => setIsDotInteracting(false)}
           />
         ))}
       </g>
 
       <g>
-        {positionedCallouts.map((callout) => (
+        {dynamicActiveCallout ? (
           <MapTooltip
-            key={callout.id}
-            callout={callout}
+            key={dynamicActiveCallout.id}
+            callout={dynamicActiveCallout}
             layoutName={layoutName}
-            isActive={activeCalloutId === callout.id}
-            onActivate={() => setActiveCalloutId(callout.id)}
-            onDeactivate={() => setActiveCalloutId(null)}
+            isActive
           />
-        ))}
+        ) : null}
       </g>
     </svg>
   );
 }
-
-const guideSteps = [
-  {
-    icon: FileText,
-    eyebrow: "1. Pick a brief",
-    title: "Start with a real Philippine problem.",
-    body: "Each Challenge PH brief frames a concrete issue, the people affected, the reward, and the kind of output reviewers want to see.",
-  },
-  {
-    icon: Compass,
-    eyebrow: "2. Build the proof",
-    title: "Show how you think, not where you studied.",
-    body: "Submit a prototype, workflow, analysis, demo, or implementation plan. Strong entries make tradeoffs clear and work within local constraints.",
-  },
-  {
-    icon: Trophy,
-    eyebrow: "3. Get noticed",
-    title: "Win bounties, pilots, or internship paths.",
-    body: "Hosts review the work directly. The best submissions can lead to cash rewards, showcases, shortlist opportunities, or follow-up projects.",
-  },
-] as const;
 
 const entranceTransition = {
   duration: 0.58,
@@ -654,18 +737,18 @@ const entranceViewport = {
 
 function GuideSection() {
   return (
-    <section className="relative bg-[#f7fbff] px-4 py-14 text-[#081A3A] sm:px-6 sm:py-18 lg:px-8 lg:py-20">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(13,107,255,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(13,107,255,0.045)_1px,transparent_1px)] bg-[size:44px_44px] opacity-60 [mask-image:linear-gradient(to_bottom,#000_0%,transparent_78%)]" />
-      <div className="relative mx-auto max-w-6xl">
-        <motion.div
+    <section className="relative bg-white text-[#081A3A] mt-12">
+      <div className="pointer-events-none absolute inset-0 bg-[size:44px_44px] opacity-60 [mask-image:linear-gradient(to_bottom,#000_0%,transparent_78%)]" />
+      <div className="relative w-full p-0">
+        {/* <motion.div
           className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-end"
           initial={{ opacity: 0, y: 26 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={entranceViewport}
           transition={entranceTransition}
-        >
-          <div>
-            <p className="[font-family:var(--font-challenge-ph-mono)] text-xs font-semibold uppercase tracking-[0.14em] text-[#0D6BFF]">
+        > */}
+        {/* <div>
+            <p className="[font-family:var(--font-challenge-ph-mono)] text-xs font-semibold uppercase tracking-[0.14em] text-[#2388ff]">
               Guide
             </p>
             <h2 className="mt-3 [font-family:var(--font-challenge-ph-heading)] text-[clamp(2rem,5vw,4.5rem)] font-black leading-[0.98] tracking-[-0.06em]">
@@ -676,10 +759,14 @@ function GuideSection() {
             Challenge PH is for students and early-career builders who want to
             prove they can solve real problems. Instead of starting with a
             resume screen, you start with a brief and submit useful work.
-          </p>
-        </motion.div>
+          </p> */}
+        <img
+          src="/images/how.png"
+          className="w-full h-full object-contain"
+        ></img>
+        {/* </motion.div> */}
 
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
+        {/* <div className="mt-8 grid gap-4 md:grid-cols-3">
           {guideSteps.map((step, index) => {
             const Icon = step.icon;
 
@@ -695,7 +782,7 @@ function GuideSection() {
                   delay: index * 0.08,
                 }}
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-[0.33em] bg-[#eef7ff] text-[#0D6BFF]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-[0.33em] bg-[#eef7ff] text-[#2388ff]">
                   <Icon className="h-5 w-5" />
                 </div>
                 <p className="mt-5 [font-family:var(--font-challenge-ph-mono)] text-[0.68rem] font-semibold uppercase tracking-[0.11em] text-[#28466f]/58">
@@ -710,9 +797,9 @@ function GuideSection() {
               </motion.article>
             );
           })}
-        </div>
+        </div> */}
 
-        <motion.div
+        {/* <motion.div
           className="mt-5 rounded-[0.33em] border border-[#0D6BFF]/20 bg-[#eef7ff] p-5"
           initial={{ opacity: 0, y: 28 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -722,7 +809,7 @@ function GuideSection() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="max-w-2xl">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-[#0D6BFF]" />
+                <CheckCircle2 className="h-5 w-5 text-[#2388ff]" />
                 <h3 className="[font-family:var(--font-challenge-ph-heading)] text-xl font-black tracking-[-0.035em] text-[#081A3A]">
                   Built for practical, local execution.
                 </h3>
@@ -741,7 +828,7 @@ function GuideSection() {
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
-        </motion.div>
+        </motion.div> */}
       </div>
     </section>
   );
@@ -828,31 +915,48 @@ export default function PhilippinesInfographicMap() {
           <div className="relative z-10 flex min-h-full flex-1 flex-col">
             <div className="flex flex-1 items-center py-16 sm:py-20 lg:py-12">
               <div className="mx-auto max-w-xl text-center lg:mx-0 lg:text-left">
-                <p className="mx-auto inline-flex rounded-[0.33em] border border-white/35 bg-black/28 px-3 py-1 [font-family:var(--font-challenge-ph-mono)] text-xs font-semibold uppercase tracking-[0.14em] text-white shadow-[0_12px_34px_-26px_rgba(255,255,255,0.55)] backdrop-blur lg:mx-0">
+                <p className="mx-auto inline-flex items-center gap-2.5 rounded-full border border-white/[0.12] bg-white/[0.06] px-3.5 py-2 [font-family:var(--font-challenge-ph-mono)] text-xs font-bold uppercase tracking-[0.08em] text-[#66c2ff] backdrop-blur lg:mx-0">
+                  <span className="h-2 w-2 shrink-0 rounded-full bg-[#2388ff] shadow-[0_0_18px_#2388ff]" />
                   Bounties for real Philippine problems
                 </p>
-                <h1
-                  className="mt-5 [font-family:var(--font-challenge-ph-heading)] text-[clamp(3.3rem,8vw,7rem)] font-black leading-[0.9] tracking-[-0.06em] text-white"
-                  style={{ textShadow: "0 5px 22px rgba(0, 0, 0, 0.55)" }}
-                >
-                  Challenge PH
+                <h1 className="mt-6 [font-family:var(--font-challenge-ph-heading)] text-[clamp(3.3rem,8vw,7rem)] font-black leading-[0.9] tracking-[-0.06em]">
+                  <span className="bg-gradient-to-r from-white via-[#8cd3ff] to-[#2388ff] bg-clip-text text-transparent">
+                    Challenge PH
+                  </span>
                 </h1>
-                <p
-                  className="mx-auto mt-5 max-w-lg text-balance text-sm font-bold leading-6 text-white/90 sm:text-lg sm:leading-8 lg:mx-0"
-                  style={{ textShadow: "0 3px 14px rgba(0, 0, 0, 0.45)" }}
-                >
+                <p className="mx-auto mt-5 max-w-lg text-balance text-[clamp(15px,1.4vw,18px)] font-semibold leading-[1.72] text-[#9aa8c7] lg:mx-0">
                   Pick a real-world problem, study the brief, and build a
                   solution that can earn a bounty, pilot opportunity, or
                   internship path.
                 </p>
-                <div className="mt-7 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
+                <div className="mt-7 flex flex-wrap items-center justify-center gap-3.5 lg:justify-start">
                   <Link
                     href="/super-listing/search"
-                    className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[0.33em] bg-[#0D6BFF] px-5 [font-family:var(--font-challenge-ph-heading)] text-sm font-bold text-white shadow-[0_18px_54px_-40px_rgba(13,107,255,0.8)] transition-colors hover:bg-[#0A56CC] sm:w-auto"
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-white via-[#79caff] to-[#2388ff] px-5 [font-family:var(--font-challenge-ph-heading)] text-sm font-extrabold text-[#06111f] shadow-[0_18px_48px_rgba(35,136,255,0.34)] transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[0_26px_70px_rgba(35,136,255,0.46)]"
                   >
                     See all challenges
                     <ArrowRight className="h-4 w-4" />
                   </Link>
+                  <Link
+                    href="/super-listing/search"
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-white/[0.12] bg-white/[0.045] px-5 [font-family:var(--font-challenge-ph-heading)] text-sm font-bold text-white backdrop-blur transition-[background,border-color] hover:border-white/[0.24] hover:bg-white/[0.09]"
+                  >
+                    View the map
+                  </Link>
+                </div>
+                <div className="mx-auto mt-10 grid max-w-[540px] grid-cols-3 gap-3 lg:mx-0">
+                  <div className="rounded-[1.25rem] border border-white/[0.12] bg-white/[0.045] p-4 backdrop-blur">
+                    <strong className="block text-[1.6rem] font-black leading-none text-white [font-family:var(--font-challenge-ph-heading)]">8</strong>
+                    <span className="mt-2 block text-[13px] leading-tight text-[#9aa8c7]">open challenges</span>
+                  </div>
+                  <div className="rounded-[1.25rem] border border-white/[0.12] bg-white/[0.045] p-4 backdrop-blur">
+                    <strong className="block text-[1.6rem] font-black leading-none text-white [font-family:var(--font-challenge-ph-heading)]">12</strong>
+                    <span className="mt-2 block text-[13px] leading-tight text-[#9aa8c7]">pinned locations</span>
+                  </div>
+                  <div className="rounded-[1.25rem] border border-white/[0.12] bg-white/[0.045] p-4 backdrop-blur">
+                    <strong className="block text-[1.6rem] font-black leading-none text-white [font-family:var(--font-challenge-ph-heading)]">Free</strong>
+                    <span className="mt-2 block text-[13px] leading-tight text-[#9aa8c7]">to participate</span>
+                  </div>
                 </div>
               </div>
             </div>
