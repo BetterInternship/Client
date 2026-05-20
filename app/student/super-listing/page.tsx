@@ -66,7 +66,6 @@ type SuperListingData = {
   company: string;
   title: string;
   role: string;
-  tags: string[];
   href: string;
   logo: ReactNode;
 };
@@ -285,7 +284,7 @@ function SuperListingsHero() {
       />
       <div className="absolute inset-0 bg-black/65" />
       <div
-        className="hero-light-cone pointer-events-none absolute left-1/2 top-[15svh] z-10 h-[63svh] w-[76rem] -translate-x-1/2 bg-[linear-gradient(168deg,rgba(255,246,205,0.2)_0%,rgba(255,236,156,0.48)_38%,rgba(255,247,208,0.2)_72%,transparent_100%)] opacity-90 blur-sm [clip-path:polygon(42%_0,58%_0,82%_100%,18%_100%)] [mask-image:linear-gradient(to_bottom,#000_0%,#000_68%,transparent_100%)] min-[1800px]:w-[87rem] min-[1800px]:[clip-path:polygon(43%_0,57%_0,92%_100%,8%_100%)]"
+        className="hero-light-cone pointer-events-none absolute left-1/2 top-[15svh] z-10 h-[63svh] w-[44rem] sm:w-[76rem] -translate-x-1/2 bg-[linear-gradient(168deg,rgba(255,246,205,0.2)_0%,rgba(255,236,156,0.48)_38%,rgba(255,247,208,0.2)_72%,transparent_100%)] opacity-90 blur-sm [clip-path:polygon(42%_0,58%_0,82%_100%,18%_100%)] [mask-image:linear-gradient(to_bottom,#000_0%,#000_68%,transparent_100%)] min-[1800px]:w-[87rem] min-[1800px]:[clip-path:polygon(43%_0,57%_0,92%_100%,8%_100%)]"
         aria-hidden="true"
       />
       <div
@@ -557,9 +556,7 @@ function SuperListingsCTA() {
   return (
     <section className="bg-transparent px-4 pb-16 pt-8 sm:px-6 lg:px-8 lg:pb-24">
       <div className="mx-auto max-w-[1120px]">
-        <div
-          className="relative flex min-h-[260px] items-center justify-center overflow-hidden rounded-2xl bg-[#061b3d] bg-[url('/super-listings/bg2_mobile.png')] bg-cover bg-center px-6 py-12 text-center shadow-strong sm:min-h-[290px] sm:bg-[url('/super-listings/bg2.png')] sm:px-10 lg:min-h-[320px] lg:px-16"
-        >
+        <div className="relative flex min-h-[260px] items-center justify-center overflow-hidden rounded-2xl bg-[#061b3d] bg-[url('/super-listings/bg2_mobile.png')] bg-cover bg-center px-6 py-12 text-center shadow-strong sm:min-h-[290px] sm:bg-[url('/super-listings/bg2.png')] sm:px-10 lg:min-h-[320px] lg:px-16">
           <div
             className="absolute inset-0 bg-[#061b3d]/10"
             aria-hidden="true"
