@@ -84,7 +84,8 @@ const heroStickyNotes: HeroStickyNoteData[] = [
     role: "Product & Engineering",
     tone: "cream",
     pinTone: "blue",
-    className: "left-[5%] top-[16%] xl:left-[9%] 2xl:left-[13%]",
+    className:
+      "bottom-[9%] left-[6%] sm:bottom-auto sm:left-[5%] sm:top-[16%] xl:left-[9%] 2xl:left-[13%]",
   },
   {
     company: "Founders For Founders",
@@ -92,7 +93,8 @@ const heroStickyNotes: HeroStickyNoteData[] = [
     role: "Accelerator Intern",
     tone: "lavender",
     pinTone: "blue",
-    className: "right-[5%] top-[16%] xl:right-[9%] 2xl:right-[13%]",
+    className:
+      "bottom-[16%] right-[7%] sm:bottom-auto sm:right-[5%] sm:top-[16%] xl:right-[9%] 2xl:right-[13%]",
   },
   {
     company: "Miro",
@@ -216,14 +218,14 @@ function HeroStickyNote({
     <div
       tabIndex={0}
       className={cn(
-        "hero-sticky-note absolute isolate z-20 w-[178px] cursor-pointer opacity-55 saturate-[0.78] brightness-[0.62] outline-none transition-[filter,opacity] duration-300 ease-out",
+        "hero-sticky-note absolute isolate z-20 w-[132px] cursor-pointer opacity-55 saturate-[0.78] brightness-[0.62] outline-none transition-[filter,opacity] duration-300 ease-out",
         "sm:w-[200px] lg:w-[230px] 2xl:w-[250px]",
         className,
       )}
       aria-label={`${company}: ${headline}`}
     >
       <span
-        className="hero-note-spotlight pointer-events-none absolute left-1/2 top-1/2 z-0 h-[18rem] w-[18rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,252,224,0.78)_0%,rgba(255,237,160,0.58)_48%,rgba(255,230,126,0.34)_68%,transparent_70%)] opacity-0 transition-opacity duration-300 ease-out"
+        className="hero-note-spotlight pointer-events-none absolute left-1/2 top-1/2 z-0 hidden h-[18rem] w-[18rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,252,224,0.78)_0%,rgba(255,237,160,0.58)_48%,rgba(255,230,126,0.34)_68%,transparent_70%)] opacity-0 transition-opacity duration-300 ease-out md:block"
         aria-hidden="true"
       />
       <span
@@ -236,17 +238,17 @@ function HeroStickyNote({
       <div
         className={cn(
           "hero-sticky-note-paper relative z-10 min-h-[128px] origin-top border border-[#081A3A]/5 px-4 pb-4 pt-7 text-center shadow-[0_14px_30px_rgba(8,26,58,0.15)] ring-1 ring-white/50",
-          "sm:min-h-[160px] sm:px-5 sm:pb-5 sm:pt-8",
+          "max-sm:min-h-[100px] max-sm:px-3 max-sm:pb-3 max-sm:pt-5 sm:min-h-[160px] sm:px-5 sm:pb-5 sm:pt-8",
           stickyNoteToneClasses[tone],
         )}
       >
-        <p className="[font-family:var(--font-paraluman-heading)] text-[17px] font-bold leading-tight tracking-[-0.025em] text-[#081A3A] sm:text-[19px]">
+        <p className="[font-family:var(--font-paraluman-heading)] text-[13px] font-bold leading-tight tracking-[-0.025em] text-[#081A3A] sm:text-[19px]">
           {headline}
         </p>
-        <p className="mt-3 [font-family:var(--font-paraluman-heading)] text-[11px] font-semibold leading-tight text-[#081A3A]/75">
+        <p className="mt-2 [font-family:var(--font-paraluman-heading)] text-[10px] font-semibold leading-tight text-[#081A3A]/75 sm:mt-3 sm:text-[11px]">
           {company}
         </p>
-        <p className="mt-1 [font-family:var(--font-paraluman-body)] text-[10px] leading-snug text-[#081A3A]/55">
+        <p className="mt-1 [font-family:var(--font-paraluman-body)] text-[9px] leading-snug text-[#081A3A]/55 sm:text-[10px]">
           {role}
         </p>
       </div>
@@ -278,6 +280,16 @@ function SuperListingsHero() {
         className="pointer-events-none absolute left-1/2 top-[43%] z-10 h-[26rem] w-[42rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(ellipse,rgba(255,248,218,0.24)_0%,rgba(255,233,151,0.12)_42%,transparent_72%)] blur-2xl"
         aria-hidden="true"
       />
+      <div className="absolute left-4 top-4 z-30 inline-flex transition-opacity duration-200 hover:opacity-75 sm:left-6 sm:top-6">
+        <Image
+          src="/BetterInternshipLogo.png"
+          alt="BetterInternship"
+          width={40}
+          height={40}
+          className="h-10 w-10 sm:h-12 sm:w-12"
+          priority
+        />
+      </div>
       <div className="absolute inset-0 mx-auto w-full max-w-[1120px] xl:max-w-[1440px] 2xl:max-w-[1680px] min-[1800px]:max-w-[1920px]">
         <div className="absolute inset-x-[4%] bottom-[4%] top-[6%] sm:inset-x-[6%] sm:bottom-[5%] sm:top-[8%] ">
           {heroStickyNotes.map((note) => (
@@ -424,7 +436,7 @@ function SuperListingCard({ listing }: { listing: SuperListingData }) {
         href={listing.href}
         className="mt-auto inline-flex items-center gap-1 pt-6 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-blue-600 hover:text-blue-700"
       >
-        View challenge
+        View
         <ArrowRight className="h-4 w-4" />
       </Link>
     </Card>
@@ -602,19 +614,21 @@ export default function SuperListingsLandingPage() {
           }
         }
 
-        .hero-sticky-note:is(:hover, :focus-visible) {
-          opacity: 1;
-          filter: saturate(1.04) brightness(1.05);
-        }
+        @media (min-width: 768px) {
+          .hero-sticky-note:is(:hover, :focus-visible) {
+            opacity: 1;
+            filter: saturate(1.04) brightness(1.05);
+          }
 
-        .hero-sticky-note:is(:hover, :focus-visible) .hero-note-spotlight {
-          opacity: 1;
-        }
+          .hero-sticky-note:is(:hover, :focus-visible) .hero-note-spotlight {
+            opacity: 1;
+          }
 
-        .hero-sticky-note:is(:hover, :focus-visible) .hero-sticky-note-paper {
-          animation: hero-sticky-note-swing 0.95s
-            cubic-bezier(0.34, 1.56, 0.64, 1);
-          transform-origin: 50% 0;
+          .hero-sticky-note:is(:hover, :focus-visible) .hero-sticky-note-paper {
+            animation: hero-sticky-note-swing 0.95s
+              cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: 50% 0;
+          }
         }
       `}</style>
     </main>

@@ -162,9 +162,19 @@ const listings: Listing[] = [
 function ListingsHero() {
   return (
     <section
-      className="relative isolate overflow-hidden bg-[#001138] bg-cover bg-center px-4 pb-20 pt-16 text-center sm:px-6 sm:pb-28 sm:pt-24 lg:px-8 lg:pb-32 lg:pt-28"
+      className="relative isolate overflow-hidden bg-[#001138] bg-cover bg-center px-4 pb-20 pt-20 text-center sm:px-6 sm:pb-28 sm:pt-24 lg:px-8 lg:pb-32 lg:pt-28"
       style={{ backgroundImage: "url('/super-listings/bg2.png')" }}
     >
+      <div className="absolute left-4 top-4 z-30 inline-flex transition-opacity duration-200 hover:opacity-75 sm:left-6 sm:top-6">
+        <Image
+          src="/BetterInternshipLogo.png"
+          alt="BetterInternship"
+          width={40}
+          height={40}
+          className="h-10 w-10 sm:h-12 sm:w-12"
+          priority
+        />
+      </div>
       <div className="pointer-events-none absolute inset-0 bg-[#001138]/58" />
       <div
         className="pointer-events-none absolute left-1/2 top-0 z-[1] h-[58%] w-[76rem] -translate-x-1/2 bg-[linear-gradient(168deg,rgba(255,246,205,0.2)_0%,rgba(255,236,156,0.48)_38%,rgba(255,247,208,0.2)_72%,transparent_100%)] opacity-90 blur-sm [clip-path:polygon(42%_0,58%_0,82%_100%,18%_100%)] [mask-image:linear-gradient(to_bottom,#000_0%,#000_58%,transparent_100%)]"
@@ -221,7 +231,7 @@ function ListingCard({ listing }: { listing: Listing }) {
         href={listing.href}
         className="mt-auto inline-flex h-11 items-center justify-center gap-2 rounded-[0.33em] border border-[#0D6BFF] px-4 [font-family:var(--font-super-listings-heading)] text-sm font-bold text-[#0D6BFF] transition-colors hover:bg-[#0D6BFF] hover:text-white"
       >
-        View challenge
+        View
         <ArrowRight className="h-5 w-5" />
       </Link>
     </Card>
