@@ -39,15 +39,15 @@ const featuredBounties = challengePhChallenges.slice(0, 4);
 function HeroSection() {
   const socialProofItems = [
     {
-      value: 150,
-      label: "open challenges",
+      value: 151,
+      label: "challenges",
     },
     {
-      value: "6M",
+      value: "6.12M",
       label: "rewards",
     },
     {
-      value: "5",
+      value: "131",
       label: "successes",
     },
   ];
@@ -74,26 +74,13 @@ function HeroSection() {
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent via-[#031226]/78 to-[#031226]" />
       <div className="relative z-10 mx-auto grid w-full max-w-[92rem] flex-1 gap-10 px-4 pt-14 sm:px-6 lg:min-h-screen lg:grid-cols-[0.8fr_1.2fr] lg:items-center lg:px-8 lg:pt-8 xl:gap-12">
         <div className="lg:pl-8 xl:pl-14">
-          <h1 className="mt-6 max-w-3xl [font-family:var(--font-challenge-ph-heading)] text-[clamp(2.45rem,4.6vw,4.35rem)] font-bold leading-[0.96] tracking-[-0.04em]">
-            <span className="block bg-gradient-to-r from-white via-white to-[#8CD3FF] bg-clip-text text-transparent">
-              Solve real challenges
-            </span>
-            <span className="block">
-              <span className="bg-gradient-to-r from-white via-[#BFE7FF] to-[#66C2FF] bg-clip-text text-transparent">
-                in the
-              </span>{" "}
-              <span className="text-white">🇵🇭</span>
-            </span>
-            <span className="block bg-gradient-to-r from-[#BFE7FF] via-[#66C2FF] to-[#0D6BFF] bg-clip-text text-transparent">
-              Win rewards.
-            </span>
+          <h1 className="mt-6 [font-family:var(--font-challenge-ph-heading)] text-[clamp(2.45rem,4.6vw,4.35rem)] font-bold leading-[0.96] tracking-[-0.04em] whitespace-nowrap">
+            <span className="block text-white">Solve 🇵🇭 challenges</span>
+
+            <span className="block text-[#BFE7FF] ">Win rewards.</span>
             <span className="block text-[#FFC83D]">Make a difference.</span>
           </h1>
-          <div className="mt-6 max-w-2xl">
-            <p className="text-sm font-semibold leading-6 text-[#C5D4EA] sm:text-[0.95rem] sm:leading-7">
-              Open to all PH students nationwide.
-            </p>
-          </div>
+
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/super-listing/search"
@@ -101,18 +88,12 @@ function HeroSection() {
             >
               Explore bounties <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link
-              href="#problem-map"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-[0.55rem] border border-white/16 bg-white/[0.06] px-8 [font-family:var(--font-challenge-ph-heading)] font-bold text-white backdrop-blur transition hover:border-white/28 hover:bg-white/[0.1]"
-            >
-              Explore map <ArrowRight className="h-4 w-4" />
-            </Link>
           </div>
-          <div className="mt-10 max-w-2xl overflow-hidden rounded-[0.65rem] border border-white/10 bg-[#061A35]/58 backdrop-blur-md">
+          <div className="mt-10 max-w-xl overflow-hidden rounded-[0.65rem] border border-white/10 bg-[#061A35]/58 backdrop-blur-md whitespace-nowrap">
             <div className="grid divide-y divide-white/10 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
               {socialProofItems.map((item) => (
                 <div key={item.label} className="px-4 py-3.5">
-                  <p className="[font-family:var(--font-challenge-ph-heading)] text-2xl font-bold leading-none tracking-[-0.03em] text-white">
+                  <p className="[font-family:var(--font-challenge-ph-heading)] text-4xl font-bold leading-none tracking-[-0.03em] text-white">
                     {item.value}
                   </p>
                   <p className="mt-1.5 text-xs font-semibold leading-tight text-[#C5D4EA]">
@@ -121,6 +102,11 @@ function HeroSection() {
                 </div>
               ))}
             </div>
+          </div>
+          <div className="mt-6 max-w-2xl">
+            <p className="text-sm font-semibold leading-6 text-[#C5D4EA] sm:text-[0.95rem] sm:leading-7">
+              Open to all PH students nationwide.
+            </p>
           </div>
         </div>
         <div
