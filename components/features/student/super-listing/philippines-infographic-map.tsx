@@ -1090,7 +1090,6 @@ export function ChallengePhInteractiveMap({
   return (
     <div className={cn("relative w-full", className)}>
       <div className="pointer-events-none absolute inset-[-8%] bg-[radial-gradient(circle_at_64%_48%,rgba(13,107,255,0.34),transparent_46%),radial-gradient(circle_at_72%_70%,rgba(140,200,255,0.16),transparent_24%),radial-gradient(circle_at_50%_50%,transparent_0%,rgba(3,18,38,0.18)_78%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(140,200,255,0.055)_1px,transparent_1px),linear-gradient(to_bottom,rgba(140,200,255,0.04)_1px,transparent_1px)] bg-[size:46px_46px] opacity-45 [mask-image:radial-gradient(circle_at_64%_50%,#000_0%,transparent_74%)]" />
       <div className="pointer-events-none absolute inset-0 rounded-full bg-[#0D6BFF]/24 blur-3xl" />
       <div className="pointer-events-none absolute inset-8 rounded-full bg-[#8CC8FF]/12 blur-2xl" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_54%,rgba(3,18,38,0.22)_100%)]" />
@@ -1099,9 +1098,7 @@ export function ChallengePhInteractiveMap({
           provinceFeatures={provinceFeatures}
           layoutName="desktop"
         />
-      ) : (
-        <div className="aspect-square w-full animate-pulse rounded-[2rem] bg-white/[0.04]" />
-      )}
+      ) : null}
     </div>
   );
 }

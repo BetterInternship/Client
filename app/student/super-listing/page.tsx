@@ -72,20 +72,24 @@ function HeroSection() {
       <div className="pointer-events-none absolute bottom-[18%] right-[34%] h-1 w-1 animate-pulse rounded-full bg-[#8cd3ff]/70 shadow-[0_0_10px_rgba(140,211,255,0.5)] [animation-delay:1.9s] [animation-duration:3s]" />
       <div className="pointer-events-none absolute left-[72%] top-[68%] h-1.5 w-1.5 animate-pulse rounded-full bg-[#66c2ff]/60 shadow-[0_0_10px_rgba(102,194,255,0.45)] [animation-delay:2.4s] [animation-duration:3.8s]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent via-[#031226]/78 to-[#031226]" />
-      <div className="relative z-10 mx-auto grid w-full max-w-[92rem] flex-1 gap-10 px-4 pt-14 sm:px-6 lg:min-h-screen lg:grid-cols-[0.82fr_1.18fr] lg:items-center lg:px-8 lg:pt-8">
+      <div className="relative z-10 mx-auto grid w-full max-w-[112rem] flex-1 gap-4 px-4 pt-14 sm:px-6 lg:min-h-screen lg:grid-cols-[0.62fr_1.38fr] lg:items-center lg:px-8 lg:pt-8">
         <div>
-          <h1 className="mt-6 max-w-3xl text-white [font-family:var(--font-challenge-ph-heading)] text-[clamp(3.2rem,8vw,6.4rem)] font-bold leading-[0.92] tracking-[-0.05em]">
-            Solve real Philippine problems.
-            <span className="block bg-gradient-to-r from-white via-[#8cd3ff] to-[#2388ff] bg-clip-text text-transparent">
-              Win real bounties.
+          <h1 className="mt-6 max-w-none [font-family:var(--font-challenge-ph-heading)] text-[clamp(2.25rem,4.2vw,3.7rem)] font-bold leading-[0.98] tracking-[-0.035em]">
+            <span className="block bg-gradient-to-r from-white via-white to-[#8CD3FF] bg-clip-text text-transparent lg:whitespace-nowrap">
+              Solve real challenges in the 🇵🇭
+            </span>
+            <span className="block bg-gradient-to-r from-[#BFE7FF] via-[#66C2FF] to-[#0D6BFF] bg-clip-text text-transparent lg:whitespace-nowrap">
+              Win rewards.
+            </span>
+            <span className="block bg-gradient-to-r from-[#2D9CFF] via-[#0D6BFF] to-[#FFC83D] bg-clip-text text-transparent lg:whitespace-nowrap">
+              Make a difference.
             </span>
           </h1>
-          <p className="mt-6 max-w-2xl text-sm font-semibold leading-7 text-[#C5D4EA] sm:text-base">
-            <div>Solve real challenges in the Philippines. </div>
-            <div>Win rewards.</div>
-            <div>Make a difference.</div>
-            <div>Open to all students nationwide.</div>
-          </p>
+          <div className="mt-6 max-w-2xl">
+            <p className="text-sm font-semibold leading-6 text-[#C5D4EA] sm:text-[0.95rem] sm:leading-7">
+              Open to all PH students nationwide.
+            </p>
+          </div>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/super-listing/search"
@@ -93,12 +97,14 @@ function HeroSection() {
             >
               Explore bounties <ArrowRight className="h-4 w-4" />
             </Link>
+            <Link
+              href="#problem-map"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-[0.55rem] border border-white/16 bg-white/[0.06] px-8 [font-family:var(--font-challenge-ph-heading)] font-bold text-white backdrop-blur transition hover:border-white/28 hover:bg-white/[0.1]"
+            >
+              Explore map <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
           <div className="mt-10 max-w-2xl overflow-hidden rounded-[0.65rem] border border-white/10 bg-[#061A35]/58 backdrop-blur-md">
-            <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2.5 [font-family:var(--font-challenge-ph-mono)] text-[0.62rem] font-bold uppercase tracking-[0.16em] text-[#8CD3FF]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#2388ff] shadow-[0_0_14px_rgba(35,136,255,0.9)]" />
-              Challenge network online
-            </div>
             <div className="grid divide-y divide-white/10 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
               {socialProofItems.map((item) => (
                 <div key={item.label} className="px-4 py-3.5">
@@ -115,11 +121,29 @@ function HeroSection() {
         </div>
         <div
           id="problem-map"
-          className="relative mx-auto hidden w-full max-w-[68rem] -translate-y-12 scale-125 lg:block xl:-translate-y-16 xl:scale-[1.38]"
+          className="relative mx-auto hidden w-[140%] max-w-[118rem] -translate-x-16 -translate-y-20 scale-[1.75] scroll-mt-[28vh] transition-transform duration-500 ease-out lg:block xl:-translate-x-28 xl:-translate-y-32 xl:scale-[0.9]"
         >
           <ChallengePhInteractiveMap />
         </div>
       </div>
+      <style>
+        {`
+          html {
+            scroll-behavior: smooth;
+          }
+
+          #problem-map:target {
+            z-index: 30;
+            transform: translate(-4rem, -5rem) scale(2);
+          }
+
+          @media (min-width: 1280px) {
+            #problem-map:target {
+              transform: translate(-7rem, -8rem) scale(2.42);
+            }
+          }
+        `}
+      </style>
     </section>
   );
 }
