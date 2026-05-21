@@ -367,6 +367,22 @@ function getCalloutGeometry(
 function getLineStart(anchor: Point, tooltipPosition: TooltipPosition) {
   const width = tooltipPosition.width ?? 236;
   const height = tooltipPosition.height ?? 126;
+  const sideY = tooltipPosition.y + height * 0.5;
+
+  if (anchor.x < tooltipPosition.x) {
+    return {
+      x: tooltipPosition.x,
+      y: sideY,
+    };
+  }
+
+  if (anchor.x > tooltipPosition.x + width) {
+    return {
+      x: tooltipPosition.x + width,
+      y: sideY,
+    };
+  }
+
   return {
     x: Math.max(
       tooltipPosition.x,
@@ -379,40 +395,58 @@ function getLineStart(anchor: Point, tooltipPosition: TooltipPosition) {
   };
 }
 
-function LeaderLine({
+function SignalTrace({
   callout,
-  isActive: _isActive,
   layoutName,
 }: {
   callout: MapCallout | PositionedCallout;
-  isActive: boolean;
   layoutName: LayoutName;
 }) {
   const { anchor, tooltipPosition } = getCalloutGeometry(callout, layoutName);
-  const start = getLineStart(anchor, tooltipPosition);
-  const path = `M ${start.x} ${start.y} L ${anchor.x} ${anchor.y}`;
+  const end = getLineStart(anchor, tooltipPosition);
+  const direction = end.x < anchor.x ? -1 : 1;
+  const bendX = anchor.x + direction * (layoutName === "mobile" ? 44 : 84);
+  const bendY = Math.min(anchor.y - (layoutName === "mobile" ? 22 : 48), end.y);
+  const path = `M ${anchor.x} ${anchor.y} L ${bendX} ${bendY} H ${end.x}`;
 
   return (
-    <motion.g
-      aria-hidden="true"
-      style={{
-        transformBox: "view-box",
-        transformOrigin: `${anchor.x}px ${anchor.y}px`,
-      }}
-      initial={{ scaleX: 0 }}
-      animate={{ scaleX: 1 }}
-      transition={{ duration: 0.38, ease: "easeOut" }}
-    >
+    <g aria-hidden="true">
       <path
         d={path}
         fill="none"
-        stroke={callout.color}
+        stroke="rgba(255,211,106,0.7)"
         strokeLinecap="round"
-        strokeDasharray="2 7"
-        strokeWidth={2}
-        opacity={0.88}
+        strokeLinejoin="round"
+        strokeWidth={1.1}
+        filter="url(#challengeph-line-glow)"
+        opacity={0.22}
       />
-    </motion.g>
+      <motion.path
+        d={path}
+        fill="none"
+        stroke="#FFD36A"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.75}
+        filter="url(#challengeph-line-glow)"
+        initial={{ pathLength: 0, opacity: 0 }}
+        animate={{ pathLength: 1, opacity: 0.96 }}
+        transition={{ duration: 0.48, delay: 0.15, ease: "easeOut" }}
+      />
+      <motion.path
+        d={path}
+        fill="none"
+        stroke="#FFF2B8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={3}
+        strokeDasharray="2 42"
+        filter="url(#challengeph-line-glow)"
+        initial={{ pathLength: 0, opacity: 0, strokeDashoffset: 0 }}
+        animate={{ pathLength: 1, opacity: [0, 0.9, 0], strokeDashoffset: -96 }}
+        transition={{ duration: 0.58, delay: 0.16, ease: "easeOut" }}
+      />
+    </g>
   );
 }
 
@@ -431,13 +465,17 @@ function MapTooltip({
 }) {
   const { tooltipPosition } = getCalloutGeometry(callout, layoutName);
   const width = tooltipPosition.width ?? 236;
-  const height = tooltipPosition.height ?? 126;
+  const height = tooltipPosition.height ?? 122;
   const challenge = challengesById.get(callout.challengeId);
   const title = challenge?.shortTitle ?? "Challenge brief";
   const company = challenge?.host ?? "Challenge PH";
-  const href = challenge
-    ? `/challenges/${challenge.id}`
-    : "/super-listing/search";
+  const summary =
+    challenge?.summary ??
+    "Design a practical solution for a real Philippine challenge.";
+  const amount =
+    challenge?.reward.match(/(PHP[\s\d,]+)/i)?.[1]?.trim() ??
+    challenge?.reward ??
+    "Bounty";
 
   return (
     <motion.foreignObject
@@ -445,20 +483,20 @@ function MapTooltip({
       y={tooltipPosition.y}
       width={width}
       height={height}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
       style={{
         overflow: "visible",
         transformBox: "fill-box",
         transformOrigin: "center",
       }}
-      transition={{ duration: 0.22, delay: 0.36, ease: "easeOut" }}
+      transition={{ duration: 0.3, delay: 0.64, ease: "easeOut" }}
     >
       <div
         tabIndex={0}
         className={cn(
-          "group relative flex h-full w-full flex-col items-start overflow-hidden rounded-[0.7rem] border border-[#dbe6f5] bg-white px-4 py-3 text-left text-[#081A3A] shadow-[0_24px_80px_rgba(3,18,38,0.28)] outline-none transition-all duration-200 focus-visible:ring-4",
-          "hover:-translate-y-0.5 hover:border-[#8CC8FF]/70 hover:bg-white focus-visible:-translate-y-0.5 focus-visible:ring-[#2D7DFF]/25",
+          "group relative flex h-full w-full flex-col items-start overflow-hidden rounded-[0.65rem] border border-[#FFC83D]/50 bg-[linear-gradient(135deg,rgba(27,20,9,0.95),rgba(5,20,46,0.94))] px-4 py-3 text-left text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_0_24px_rgba(255,200,61,0.18),0_20px_60px_rgba(3,18,38,0.42)] outline-none backdrop-blur-2xl transition-all duration-200 focus-visible:ring-4",
+          "hover:-translate-y-0.5 hover:border-[#FFC83D]/75 focus-visible:-translate-y-0.5 focus-visible:ring-[#FFC83D]/25",
         )}
         onMouseEnter={onActivate}
         onMouseLeave={onDeactivate}
@@ -466,20 +504,20 @@ function MapTooltip({
         onBlur={onDeactivate}
         style={{
           ["--callout-color" as string]: callout.color,
-          boxShadow: `0 24px 80px ${callout.color}24`,
+          boxShadow:
+            "0 0 0 1px rgba(255,200,61,0.16), 0 0 24px rgba(255,200,61,0.18), 0 20px 60px rgba(3,18,38,0.42)",
         }}
         aria-label={`${company}: ${title}`}
       >
-        <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(13,107,255,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(13,107,255,0.045)_1px,transparent_1px)] bg-[size:18px_18px] opacity-55" />
-
-        <span className="relative mt-2 line-clamp-2 [font-family:var(--font-challenge-ph-heading)] text-[16px] font-black leading-[1.05] tracking-[-0.04em] text-[#081A3A]">
+        <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_90%_12%,rgba(255,200,61,0.16),transparent_34%),linear-gradient(to_bottom,rgba(255,255,255,0.045),transparent_48%)] opacity-95" />
+        <span className="relative line-clamp-2 [font-family:var(--font-challenge-ph-heading)] text-base font-black leading-[1.08] tracking-[-0.035em] text-[#FFF7E8]">
           {title}
         </span>
-        <span className="relative mt-auto inline-flex items-center gap-1 [font-family:var(--font-challenge-ph-heading)] text-xs font-bold text-[#0D6BFF]">
-          <Link href={href} className="inline-flex items-center gap-1">
-            View
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
+        <span className="relative mt-2 line-clamp-3 text-[0.7rem] font-semibold leading-[1.45] text-[#D8CDB5]">
+          {summary}
+        </span>
+        <span className="relative mt-auto [font-family:var(--font-challenge-ph-heading)] text-lg font-black tracking-[-0.035em] text-[#FFC83D] drop-shadow-[0_0_10px_rgba(255,200,61,0.38)]">
+          {amount}
         </span>
       </div>
     </motion.foreignObject>
@@ -489,22 +527,33 @@ function MapTooltip({
 function MapProvince({
   name,
   path,
+  index = 0,
   variant = "interactive",
 }: {
   name: string;
   path: string;
+  index?: number;
   variant?: "interactive" | "background";
 }) {
+  const isBackground = variant === "background";
+  const provinceShade = 0.74 + (index % 5) * 0.045;
+
   return (
     <path
       d={path}
       aria-label={name}
-      className="pointer-events-none"
+      className="pointer-events-none transition-colors duration-300"
       vectorEffect="non-scaling-stroke"
-      fill={variant === "background" ? "currentColor" : "#DDE2E8"}
-      stroke={variant === "background" ? "currentColor" : "#FFFFFF"}
-      strokeWidth={variant === "background" ? 0.6 : 1.05}
-      opacity={variant === "background" ? 0.78 : 1}
+      fill={
+        isBackground
+          ? "rgba(140, 200, 255, 0.20)"
+          : `rgba(185, 222, 255, ${provinceShade})`
+      }
+      stroke={
+        isBackground ? "rgba(140, 200, 255, 0.45)" : "rgba(255, 255, 255, 0.72)"
+      }
+      strokeWidth={isBackground ? 0.7 : 0.68}
+      opacity={isBackground ? 0.78 : 1}
     >
       <title>{name}</title>
     </path>
@@ -526,6 +575,15 @@ function MapDot({
 }) {
   const { anchor } = getCalloutGeometry(callout, layoutName);
   const challenge = challengesById.get(callout.challengeId);
+  const isWarmSignal = isActive;
+  const coreColor = isWarmSignal ? "#FF9D3D" : "#0D6BFF";
+  const ringColor = isWarmSignal ? "#FFD36A" : "#8CC8FF";
+  const glowFill = isWarmSignal
+    ? "rgba(255,157,61,0.24)"
+    : "rgba(45,125,255,0.18)";
+  const glowFilter = isWarmSignal
+    ? "url(#challengeph-warm-node-glow)"
+    : "url(#challengeph-node-glow)";
 
   return (
     <g
@@ -550,30 +608,49 @@ function MapDot({
       <motion.circle
         cx={anchor.x}
         cy={anchor.y}
-        r={7}
+        r={8}
         fill="none"
-        stroke="#8CC8FF"
-        strokeWidth={3}
+        stroke={ringColor}
+        strokeWidth={2}
         pointerEvents="none"
         initial={false}
         animate={
           isActive
-            ? { r: [7, 28], opacity: [0.95, 0] }
-            : { r: [7, 20], opacity: [0.42, 0] }
+            ? { r: [8, 34], opacity: [0.9, 0] }
+            : { r: [7, 24], opacity: [0.35, 0] }
         }
         transition={
           isActive
-            ? { repeat: Infinity, duration: 1.25, ease: "easeOut" }
-            : { repeat: Infinity, duration: 2.2, ease: "easeOut" }
+            ? { repeat: Infinity, duration: 1.35, ease: "easeOut" }
+            : { repeat: Infinity, duration: 2.4, ease: "easeOut" }
         }
+      />
+      <circle
+        cx={anchor.x}
+        cy={anchor.y}
+        r={isWarmSignal ? 15 : 12}
+        fill={glowFill}
+        filter={glowFilter}
+        pointerEvents="none"
+      />
+      <circle
+        cx={anchor.x}
+        cy={anchor.y}
+        r={isWarmSignal ? 24 : 18}
+        fill="none"
+        stroke={ringColor}
+        strokeOpacity={isWarmSignal ? 0.18 : 0.12}
+        strokeWidth={1}
+        pointerEvents="none"
       />
       <motion.circle
         cx={anchor.x}
         cy={anchor.y}
         r={5.5}
-        fill={callout.color}
-        stroke="#FFFFFF"
-        strokeWidth={2.5}
+        fill={coreColor}
+        stroke="#EAF6FF"
+        strokeWidth={2.2}
+        filter={glowFilter}
         pointerEvents="none"
         initial={false}
         animate={{ r: isActive ? 7 : 5.5 }}
@@ -665,18 +742,30 @@ function PhilippinesMap({
       layoutName === "mobile"
         ? (activeCallout.mobileAnchor ?? activeCallout.resolvedAnchor)
         : activeCallout.resolvedAnchor;
-    const cardWidth = layoutName === "mobile" ? 172 : 228;
-    const cardHeight = layoutName === "mobile" ? 118 : 126;
+    const cardWidth = layoutName === "mobile" ? 188 : 252;
+    const cardHeight = layoutName === "mobile" ? 132 : 140;
     const margin = layoutName === "mobile" ? 12 : 18;
-    const preferredY = anchor.y - cardHeight - 18;
-    const fallbackY = anchor.y + 18;
-    const newY =
-      preferredY > margin
-        ? preferredY
-        : Math.min(fallbackY, layout.height - cardHeight - margin);
+    const gap = layoutName === "mobile" ? 42 : 86;
+    const shouldPlaceRight = anchor.x < layout.width / 2;
+    const rightX = anchor.x + gap;
+    const leftX = anchor.x - cardWidth - gap;
+    const preferredX = shouldPlaceRight ? rightX : leftX;
+    const fallbackX = shouldPlaceRight ? leftX : rightX;
+    const fitsPreferred =
+      preferredX >= margin && preferredX + cardWidth <= layout.width - margin;
     const newX = Math.max(
       margin,
-      Math.min(anchor.x - cardWidth / 2, layout.width - cardWidth - margin),
+      Math.min(
+        fitsPreferred ? preferredX : fallbackX,
+        layout.width - cardWidth - margin,
+      ),
+    );
+    const newY = Math.max(
+      margin,
+      Math.min(
+        anchor.y - cardHeight * 0.76,
+        layout.height - cardHeight - margin,
+      ),
     );
     if (layoutName === "mobile") {
       return {
@@ -730,8 +819,98 @@ function PhilippinesMap({
           </desc>
         </>
       )}
-      <g>
-        {projectedProvinces.map(({ feature: province, path }) => {
+      <defs>
+        <filter
+          id="challengeph-map-glow"
+          x="-45%"
+          y="-45%"
+          width="190%"
+          height="190%"
+        >
+          <feDropShadow
+            dx="0"
+            dy="0"
+            stdDeviation="2.5"
+            floodColor="#EAF6FF"
+            floodOpacity="0.34"
+          />
+          <feDropShadow
+            dx="0"
+            dy="0"
+            stdDeviation="6"
+            floodColor="#2D7DFF"
+            floodOpacity="0.58"
+          />
+          <feDropShadow
+            dx="0"
+            dy="0"
+            stdDeviation="18"
+            floodColor="#2D7DFF"
+            floodOpacity="0.22"
+          />
+        </filter>
+        <filter
+          id="challengeph-node-glow"
+          x="-80%"
+          y="-80%"
+          width="260%"
+          height="260%"
+        >
+          <feDropShadow
+            dx="0"
+            dy="0"
+            stdDeviation="5"
+            floodColor="#2D7DFF"
+            floodOpacity="0.95"
+          />
+          <feDropShadow
+            dx="0"
+            dy="0"
+            stdDeviation="12"
+            floodColor="#8CC8FF"
+            floodOpacity="0.35"
+          />
+        </filter>
+        <filter
+          id="challengeph-line-glow"
+          x="-40%"
+          y="-40%"
+          width="180%"
+          height="180%"
+        >
+          <feDropShadow
+            dx="0"
+            dy="0"
+            stdDeviation="3"
+            floodColor="#8CC8FF"
+            floodOpacity="0.7"
+          />
+        </filter>
+        <filter
+          id="challengeph-warm-node-glow"
+          x="-90%"
+          y="-90%"
+          width="280%"
+          height="280%"
+        >
+          <feDropShadow
+            dx="0"
+            dy="0"
+            stdDeviation="5"
+            floodColor="#FF9D3D"
+            floodOpacity="0.95"
+          />
+          <feDropShadow
+            dx="0"
+            dy="0"
+            stdDeviation="15"
+            floodColor="#FFD36A"
+            floodOpacity="0.46"
+          />
+        </filter>
+      </defs>
+      <g filter={isBackground ? undefined : "url(#challengeph-map-glow)"}>
+        {projectedProvinces.map(({ feature: province, path }, index) => {
           const provinceName = getProvinceName(province);
 
           return (
@@ -739,6 +918,7 @@ function PhilippinesMap({
               key={getProvinceKey(province)}
               name={provinceName}
               path={path}
+              index={index}
               variant={variant}
             />
           );
@@ -749,11 +929,10 @@ function PhilippinesMap({
         <>
           <g>
             {dynamicActiveCallout ? (
-              <LeaderLine
+              <SignalTrace
                 key={dynamicActiveCallout.id}
                 callout={dynamicActiveCallout}
                 layoutName={layoutName}
-                isActive
               />
             ) : null}
           </g>
@@ -910,8 +1089,11 @@ export function ChallengePhInteractiveMap({
 
   return (
     <div className={cn("relative w-full", className)}>
-      <div className="absolute inset-0 rounded-full bg-[#0D6BFF]/18 blur-3xl" />
-      <div className="absolute inset-8 rounded-full bg-[#8CC8FF]/10 blur-2xl" />
+      <div className="pointer-events-none absolute inset-[-8%] bg-[radial-gradient(circle_at_64%_48%,rgba(13,107,255,0.34),transparent_46%),radial-gradient(circle_at_72%_70%,rgba(140,200,255,0.16),transparent_24%),radial-gradient(circle_at_50%_50%,transparent_0%,rgba(3,18,38,0.18)_78%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(140,200,255,0.055)_1px,transparent_1px),linear-gradient(to_bottom,rgba(140,200,255,0.04)_1px,transparent_1px)] bg-[size:46px_46px] opacity-45 [mask-image:radial-gradient(circle_at_64%_50%,#000_0%,transparent_74%)]" />
+      <div className="pointer-events-none absolute inset-0 rounded-full bg-[#0D6BFF]/24 blur-3xl" />
+      <div className="pointer-events-none absolute inset-8 rounded-full bg-[#8CC8FF]/12 blur-2xl" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_54%,rgba(3,18,38,0.22)_100%)]" />
       {provinceFeatures.length > 0 ? (
         <PhilippinesMap
           provinceFeatures={provinceFeatures}
