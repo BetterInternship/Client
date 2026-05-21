@@ -12,6 +12,7 @@ import {
   Search,
 } from "lucide-react";
 
+import { SuperListingMapBackground } from "@/components/features/student/super-listing/philippines-infographic-map";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { challengePhChallenges } from "@/app/student/challenges/data";
@@ -36,10 +37,9 @@ const bodyFont = Open_Sans({
 
 type Challenge = (typeof challengePhChallenges)[number];
 
-
 function ListingsHero() {
   return (
-    <section className="relative isolate overflow-hidden bg-[#001138] bg-[url('/super-listings/bg2_mobile.png')] bg-cover bg-center px-4 pb-20 pt-20 text-center sm:bg-[url('/super-listings/bg2.png')] sm:px-6 sm:pb-28 sm:pt-24 lg:px-8 lg:pb-32 lg:pt-28">
+    <section className="relative isolate overflow-hidden bg-[#001138] px-4 pb-20 pt-20 text-center sm:px-6 sm:pb-28 sm:pt-24 lg:px-8 lg:pb-32 lg:pt-28">
       <div className="absolute left-4 top-4 z-30 inline-flex transition-opacity duration-200 hover:opacity-75 sm:left-6 sm:top-6">
         <Image
           src="/BetterInternshipLogo.png"
@@ -50,17 +50,24 @@ function ListingsHero() {
           priority
         />
       </div>
-      <div className="pointer-events-none absolute inset-0 bg-[#001138]/58" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(102,194,255,0.14)_1px,transparent_1px),linear-gradient(to_bottom,rgba(102,194,255,0.1)_1px,transparent_1px)] bg-[size:36px_36px] opacity-55 [mask-image:radial-gradient(circle_at_center,#000_0%,transparent_78%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,transparent_0%,rgba(35,136,255,0.15)_38%,transparent_66%),radial-gradient(circle_at_50%_18%,rgba(35,136,255,0.26),transparent_28rem),radial-gradient(circle_at_12%_88%,rgba(102,194,255,0.16),transparent_24rem)]" />
+      <SuperListingMapBackground className="absolute -right-20 top-1/2 hidden w-[58rem] -translate-y-1/2 opacity-[0.16] [mask-image:linear-gradient(to_left,#000_52%,transparent_100%)] sm:block lg:right-[4%] lg:w-[66rem]" />
+      <div className="pointer-events-none absolute left-[14%] top-[28%] h-1.5 w-1.5 animate-pulse rounded-full bg-[#66c2ff]/80 shadow-[0_0_12px_rgba(102,194,255,0.65)] [animation-duration:2.8s]" />
+      <div className="pointer-events-none absolute right-[20%] top-[34%] h-2 w-2 animate-pulse rounded-full bg-[#2388ff]/75 shadow-[0_0_14px_rgba(35,136,255,0.62)] [animation-delay:0.7s] [animation-duration:3.2s]" />
+      <div className="pointer-events-none absolute bottom-[24%] left-[31%] h-1.5 w-1.5 animate-pulse rounded-full bg-white/65 shadow-[0_0_10px_rgba(255,255,255,0.5)] [animation-delay:1.2s] [animation-duration:3.6s]" />
+      <div className="pointer-events-none absolute bottom-[18%] right-[34%] h-1 w-1 animate-pulse rounded-full bg-[#8cd3ff]/70 shadow-[0_0_10px_rgba(140,211,255,0.5)] [animation-delay:1.9s] [animation-duration:3s]" />
+      <div className="pointer-events-none absolute left-[72%] top-[66%] h-1.5 w-1.5 animate-pulse rounded-full bg-[#66c2ff]/60 shadow-[0_0_10px_rgba(102,194,255,0.45)] [animation-delay:2.4s] [animation-duration:3.8s]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-[#001138]" />
 
       <div className="relative z-10 mx-auto max-w-4xl">
-        <p className="mx-auto mb-4 inline-flex rounded-[0.33em] border border-[#FFF7E8]/22 bg-[#FFF7E8]/10 px-3 py-1 [font-family:var(--font-super-listings-mono)] text-xs font-semibold uppercase tracking-[0.14em] text-[#FFF7E8]/82">
-          Bounties for real Philippine problems
-        </p>
         <h1
           className="[font-family:var(--font-super-listings-heading)] text-[clamp(2.5rem,6vw,5rem)] font-black leading-[0.98] tracking-[-0.06em]"
           style={{ textShadow: "0 4px 18px rgba(0, 0, 0, 0.35)" }}
         >
-          <span className="text-[#FFF7E8]">Challenge PH</span>
+          <span className="bg-gradient-to-r from-white via-[#8cd3ff] to-[#2388ff] bg-clip-text text-transparent">
+            Challenge PH
+          </span>
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-balance [font-family:var(--font-super-listings-body)] text-sm leading-6 text-[rgba(255,247,232,0.84)] sm:mt-6 sm:text-xl sm:leading-8">
           Pick a real-world problem, study the brief, and build a solution that
@@ -76,21 +83,18 @@ function ChallengeCard({ challenge }: { challenge: Challenge }) {
     challenge.reward.match(/(PHP[\s\d,]+)/i)?.[1]?.trim() ?? challenge.reward;
 
   return (
-    <Card className="group flex flex-col rounded-[0.33em] border-[#dfe7f2] bg-white/95 p-4 shadow-[0_20px_58px_-50px_rgba(8,26,58,0.55)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_28px_80px_-58px_rgba(8,26,58,0.78)] sm:p-5">
-      <div className="h-[4.5rem] overflow-hidden">
+    <Card className="group flex min-h-[20rem] flex-col rounded-[0.33em] border-[#dfe7f2] bg-white/95 p-4 shadow-[0_20px_58px_-50px_rgba(8,26,58,0.55)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_28px_80px_-58px_rgba(8,26,58,0.78)] sm:min-h-[25rem] sm:p-5">
+      <div className="overflow-hidden">
         <h2 className="[font-family:var(--font-super-listings-heading)] text-[1.35rem] font-black leading-[1.07] tracking-[-0.055em] text-[#081A3A]">
           {challenge.shortTitle}
         </h2>
       </div>
 
-      <p
-        className="mt-3 [font-family:var(--font-super-listings-heading)] text-sm font-black leading-snug"
-        style={{ color: challenge.accent }}
-      >
+      <p className="mt-1.5 [font-family:var(--font-super-listings-heading)] font-black leading-snug text-[#0D6BFF]">
         {amount}
       </p>
 
-      <p className="mt-3 min-h-[5.5rem] [font-family:var(--font-super-listings-body)] text-sm font-semibold leading-6 text-[#081A3A]/78">
+      <p className="mt-3 [font-family:var(--font-super-listings-body)] text-sm font-semibold leading-6 text-[#081A3A]/78">
         {challenge.summary}
       </p>
 
@@ -109,7 +113,7 @@ function ChallengeCard({ challenge }: { challenge: Challenge }) {
         </p>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-4 flex min-h-[4.5rem] flex-wrap content-start gap-2">
         {challenge.tags.slice(0, 2).map((tag) => (
           <span
             key={tag}
@@ -124,7 +128,7 @@ function ChallengeCard({ challenge }: { challenge: Challenge }) {
         href={`/challenges/${challenge.id}`}
         className="mt-auto inline-flex h-11 items-center justify-center gap-2 rounded-[0.33em] border border-[#2388ff] px-4 [font-family:var(--font-super-listings-heading)] text-sm font-bold text-[#2388ff] transition-colors hover:bg-[#2388ff] hover:text-white"
       >
-        View challenge
+        View
         <ArrowRight className="h-5 w-5" />
       </Link>
     </Card>
