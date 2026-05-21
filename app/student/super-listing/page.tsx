@@ -72,16 +72,22 @@ function HeroSection() {
       <div className="pointer-events-none absolute bottom-[18%] right-[34%] h-1 w-1 animate-pulse rounded-full bg-[#8cd3ff]/70 shadow-[0_0_10px_rgba(140,211,255,0.5)] [animation-delay:1.9s] [animation-duration:3s]" />
       <div className="pointer-events-none absolute left-[72%] top-[68%] h-1.5 w-1.5 animate-pulse rounded-full bg-[#66c2ff]/60 shadow-[0_0_10px_rgba(102,194,255,0.45)] [animation-delay:2.4s] [animation-duration:3.8s]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent via-[#031226]/78 to-[#031226]" />
-      <div className="relative z-10 mx-auto grid w-full max-w-[112rem] flex-1 gap-4 px-4 pt-14 sm:px-6 lg:min-h-screen lg:grid-cols-[0.62fr_1.38fr] lg:items-center lg:px-8 lg:pt-8">
-        <div>
-          <h1 className="mt-6 max-w-none [font-family:var(--font-challenge-ph-heading)] text-[clamp(2.25rem,4.2vw,3.7rem)] font-bold leading-[0.98] tracking-[-0.035em]">
-            <span className="block bg-gradient-to-r from-white via-white to-[#8CD3FF] bg-clip-text text-transparent lg:whitespace-nowrap">
-              Solve real challenges in the 🇵🇭
+      <div className="relative z-10 mx-auto grid w-full max-w-[92rem] flex-1 gap-10 px-4 pt-14 sm:px-6 lg:min-h-screen lg:grid-cols-[0.8fr_1.2fr] lg:items-center lg:px-8 lg:pt-8 xl:gap-12">
+        <div className="lg:pl-8 xl:pl-14">
+          <h1 className="mt-6 max-w-3xl [font-family:var(--font-challenge-ph-heading)] text-[clamp(2.45rem,4.6vw,4.35rem)] font-bold leading-[0.96] tracking-[-0.04em]">
+            <span className="block bg-gradient-to-r from-white via-white to-[#8CD3FF] bg-clip-text text-transparent">
+              Solve real challenges
             </span>
-            <span className="block bg-gradient-to-r from-[#BFE7FF] via-[#66C2FF] to-[#0D6BFF] bg-clip-text text-transparent lg:whitespace-nowrap">
+            <span className="block">
+              <span className="bg-gradient-to-r from-white via-[#BFE7FF] to-[#66C2FF] bg-clip-text text-transparent">
+                in the
+              </span>{" "}
+              <span className="text-white">🇵🇭</span>
+            </span>
+            <span className="block bg-gradient-to-r from-[#BFE7FF] via-[#66C2FF] to-[#0D6BFF] bg-clip-text text-transparent">
               Win rewards.
             </span>
-            <span className="block bg-gradient-to-r from-[#2D9CFF] via-[#0D6BFF] to-[#FFC83D] bg-clip-text text-transparent lg:whitespace-nowrap">
+            <span className="block bg-gradient-to-r from-[#2D9CFF] via-[#0D6BFF] to-[#FFC83D] bg-clip-text text-transparent">
               Make a difference.
             </span>
           </h1>
@@ -121,7 +127,7 @@ function HeroSection() {
         </div>
         <div
           id="problem-map"
-          className="relative mx-auto hidden w-[140%] max-w-[118rem] -translate-x-16 -translate-y-20 scale-[1.75] scroll-mt-[28vh] transition-transform duration-500 ease-out lg:block xl:-translate-x-28 xl:-translate-y-32 xl:scale-[0.9]"
+          className="relative mx-auto hidden w-full max-w-[70rem] -translate-y-6 scale-125 scroll-mt-[28vh] transition-transform duration-500 ease-out lg:block xl:scale-[1.42]"
         >
           <ChallengePhInteractiveMap />
         </div>
@@ -134,12 +140,12 @@ function HeroSection() {
 
           #problem-map:target {
             z-index: 30;
-            transform: translate(-4rem, -5rem) scale(2);
+            transform: translate(0, -2.5rem) scale(1.18);
           }
 
           @media (min-width: 1280px) {
             #problem-map:target {
-              transform: translate(-7rem, -8rem) scale(2.42);
+              transform: translate(0, -3rem) scale(1.25);
             }
           }
         `}
