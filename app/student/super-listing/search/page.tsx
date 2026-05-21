@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
 import {
+  ArrowLeft,
   ArrowRight,
   Building2,
   CalendarDays,
@@ -50,6 +51,13 @@ function ListingsHero() {
           priority
         />
       </div>
+      <Link
+        href="/super-listing"
+        className="absolute right-4 top-4 z-30 inline-flex h-10 items-center justify-center gap-2 rounded-[0.33em] border border-white/14 px-3 [font-family:var(--font-super-listings-heading)] text-xs font-bold text-white backdrop-blur transition-colors hover:bg-white/10 hover:text-white sm:right-6 sm:top-6 sm:h-11 sm:px-4 sm:text-sm"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to map
+      </Link>
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(102,194,255,0.14)_1px,transparent_1px),linear-gradient(to_bottom,rgba(102,194,255,0.1)_1px,transparent_1px)] bg-[size:36px_36px] opacity-55 [mask-image:radial-gradient(circle_at_center,#000_0%,transparent_78%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,transparent_0%,rgba(35,136,255,0.15)_38%,transparent_66%),radial-gradient(circle_at_50%_18%,rgba(35,136,255,0.26),transparent_28rem),radial-gradient(circle_at_12%_88%,rgba(102,194,255,0.16),transparent_24rem)]" />
       <SuperListingMapBackground className="absolute -right-20 top-1/2 hidden w-[58rem] -translate-y-1/2 opacity-[0.16] [mask-image:linear-gradient(to_left,#000_52%,transparent_100%)] sm:block lg:right-[4%] lg:w-[66rem]" />

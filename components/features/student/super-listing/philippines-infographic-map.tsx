@@ -78,8 +78,8 @@ const LAYOUTS = {
     width: 760,
     height: 760,
     projectionExtent: [
-      [330, 20],
-      [750, 740],
+      [170, 20],
+      [590, 740],
     ] as [[number, number], [number, number]],
   },
   mobile: {
@@ -366,12 +366,22 @@ function getCalloutGeometry(
 
 function getLineStart(anchor: Point, tooltipPosition: TooltipPosition) {
   const width = tooltipPosition.width ?? 236;
-  return { x: tooltipPosition.x + width, y: anchor.y };
+  const height = tooltipPosition.height ?? 126;
+  return {
+    x: Math.max(
+      tooltipPosition.x,
+      Math.min(anchor.x, tooltipPosition.x + width),
+    ),
+    y:
+      tooltipPosition.y < anchor.y
+        ? tooltipPosition.y + height
+        : tooltipPosition.y,
+  };
 }
 
 function LeaderLine({
   callout,
-  isActive,
+  isActive: _isActive,
   layoutName,
 }: {
   callout: MapCallout | PositionedCallout;
@@ -408,12 +418,16 @@ function LeaderLine({
 
 function MapTooltip({
   callout,
-  isActive,
+  isActive: _isActive,
   layoutName,
+  onActivate,
+  onDeactivate,
 }: {
   callout: MapCallout | PositionedCallout;
   isActive: boolean;
   layoutName: LayoutName;
+  onActivate?: () => void;
+  onDeactivate?: () => void;
 }) {
   const { tooltipPosition } = getCalloutGeometry(callout, layoutName);
   const width = tooltipPosition.width ?? 236;
@@ -443,26 +457,25 @@ function MapTooltip({
       <div
         tabIndex={0}
         className={cn(
-          "group flex h-full w-full flex-col items-start rounded-[0.33em] border border-[#dbe6f5] bg-white/95 px-4 py-3 text-left shadow-[0_20px_58px_-50px_rgba(8,26,58,0.7)] outline-none backdrop-blur transition-all duration-200 focus-visible:ring-4",
-          "hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_28px_80px_-56px_rgba(8,26,58,0.9)] focus-visible:-translate-y-0.5 focus-visible:ring-4",
+          "group relative flex h-full w-full flex-col items-start overflow-hidden rounded-[0.7rem] border border-[#dbe6f5] bg-white px-4 py-3 text-left text-[#081A3A] shadow-[0_24px_80px_rgba(3,18,38,0.28)] outline-none transition-all duration-200 focus-visible:ring-4",
+          "hover:-translate-y-0.5 hover:border-[#8CC8FF]/70 hover:bg-white focus-visible:-translate-y-0.5 focus-visible:ring-[#2D7DFF]/25",
         )}
+        onMouseEnter={onActivate}
+        onMouseLeave={onDeactivate}
+        onFocus={onActivate}
+        onBlur={onDeactivate}
         style={{
           ["--callout-color" as string]: callout.color,
-          ["--tw-ring-color" as string]: `${callout.color}33`,
-          boxShadow: `0 26px 72px ${callout.color}30`,
+          boxShadow: `0 24px 80px ${callout.color}24`,
         }}
         aria-label={`${company}: ${title}`}
       >
-        <span
-          className="rounded-[0.33em] px-2.5 py-1 [font-family:var(--font-challenge-ph-mono)] text-[10px] font-semibold uppercase tracking-[0.12em] text-white transition-transform duration-200 group-hover:scale-105 group-focus-visible:scale-105"
-          style={{ backgroundColor: callout.color }}
-        >
-          {company}
-        </span>
-        <span className="mt-2 line-clamp-2 [font-family:var(--font-challenge-ph-heading)] text-[16px] font-black leading-[1.05] tracking-[-0.04em] text-[#081A3A]">
+        <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(13,107,255,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(13,107,255,0.045)_1px,transparent_1px)] bg-[size:18px_18px] opacity-55" />
+
+        <span className="relative mt-2 line-clamp-2 [font-family:var(--font-challenge-ph-heading)] text-[16px] font-black leading-[1.05] tracking-[-0.04em] text-[#081A3A]">
           {title}
         </span>
-        <span className="mt-auto inline-flex items-center gap-1 [font-family:var(--font-challenge-ph-heading)] text-xs font-bold text-[#2388ff]">
+        <span className="relative mt-auto inline-flex items-center gap-1 [font-family:var(--font-challenge-ph-heading)] text-xs font-bold text-[#0D6BFF]">
           <Link href={href} className="inline-flex items-center gap-1">
             View
             <ArrowRight className="h-3.5 w-3.5" />
@@ -473,16 +486,25 @@ function MapTooltip({
   );
 }
 
-function MapProvince({ name, path }: { name: string; path: string }) {
+function MapProvince({
+  name,
+  path,
+  variant = "interactive",
+}: {
+  name: string;
+  path: string;
+  variant?: "interactive" | "background";
+}) {
   return (
     <path
       d={path}
       aria-label={name}
       className="pointer-events-none"
       vectorEffect="non-scaling-stroke"
-      fill="#DDE2E8"
-      stroke="#FFFFFF"
-      strokeWidth={1.05}
+      fill={variant === "background" ? "currentColor" : "#DDE2E8"}
+      stroke={variant === "background" ? "currentColor" : "#FFFFFF"}
+      strokeWidth={variant === "background" ? 0.6 : 1.05}
+      opacity={variant === "background" ? 0.78 : 1}
     >
       <title>{name}</title>
     </path>
@@ -518,34 +540,43 @@ function MapDot({
       onFocus={onActivate}
       onBlur={onDeactivate}
     >
+      <circle
+        cx={anchor.x}
+        cy={anchor.y}
+        r={18}
+        fill="transparent"
+        pointerEvents="all"
+      />
       <motion.circle
         cx={anchor.x}
         cy={anchor.y}
-        r={5}
+        r={7}
         fill="none"
-        stroke="#66c2ff"
-        strokeWidth={2}
+        stroke="#8CC8FF"
+        strokeWidth={3}
+        pointerEvents="none"
         initial={false}
         animate={
           isActive
-            ? { r: [5, 18], opacity: [0.7, 0] }
-            : { r: 5, opacity: 0 }
+            ? { r: [7, 28], opacity: [0.95, 0] }
+            : { r: [7, 20], opacity: [0.42, 0] }
         }
         transition={
           isActive
-            ? { repeat: Infinity, duration: 1.1, ease: "easeOut" }
-            : { duration: 0.15 }
+            ? { repeat: Infinity, duration: 1.25, ease: "easeOut" }
+            : { repeat: Infinity, duration: 2.2, ease: "easeOut" }
         }
       />
       <motion.circle
         cx={anchor.x}
         cy={anchor.y}
-        r={4}
+        r={5.5}
         fill={callout.color}
         stroke="#FFFFFF"
-        strokeWidth={2}
+        strokeWidth={2.5}
+        pointerEvents="none"
         initial={false}
-        animate={{ r: isActive ? 5.3 : 4 }}
+        animate={{ r: isActive ? 7 : 5.5 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
       />
     </g>
@@ -555,10 +586,13 @@ function MapDot({
 function PhilippinesMap({
   provinceFeatures,
   layoutName,
+  variant = "interactive",
 }: {
   provinceFeatures: ProvinceFeature[];
   layoutName: LayoutName;
+  variant?: "interactive" | "background";
 }) {
+  const isBackground = variant === "background";
   const [activeCalloutId, setActiveCalloutId] = useState<string | null>(
     mapCallouts[0]?.id ?? null,
   );
@@ -603,7 +637,7 @@ function PhilippinesMap({
   }, [calloutProvinceKeys, provinceCentroidsByKey]);
 
   useEffect(() => {
-    if (isDotInteracting || positionedCallouts.length === 0) {
+    if (isBackground || isDotInteracting || positionedCallouts.length === 0) {
       return;
     }
 
@@ -616,10 +650,10 @@ function PhilippinesMap({
 
         return positionedCallouts[nextIndex].id;
       });
-    }, 2500);
+    }, 6000);
 
     return () => window.clearInterval(interval);
-  }, [isDotInteracting, positionedCallouts]);
+  }, [isBackground, isDotInteracting, positionedCallouts]);
 
   const activeCallout =
     positionedCallouts.find((callout) => callout.id === activeCalloutId) ??
@@ -631,45 +665,71 @@ function PhilippinesMap({
       layoutName === "mobile"
         ? (activeCallout.mobileAnchor ?? activeCallout.resolvedAnchor)
         : activeCallout.resolvedAnchor;
-    const tooltipPos =
-      layoutName === "mobile"
-        ? (activeCallout.mobileTooltipPosition ?? activeCallout.tooltipPosition)
-        : activeCallout.tooltipPosition;
-    const cardHeight = tooltipPos.height ?? 124;
-    const margin = 20;
-    const newY = Math.max(
+    const cardWidth = layoutName === "mobile" ? 172 : 228;
+    const cardHeight = layoutName === "mobile" ? 118 : 126;
+    const margin = layoutName === "mobile" ? 12 : 18;
+    const preferredY = anchor.y - cardHeight - 18;
+    const fallbackY = anchor.y + 18;
+    const newY =
+      preferredY > margin
+        ? preferredY
+        : Math.min(fallbackY, layout.height - cardHeight - margin);
+    const newX = Math.max(
       margin,
-      Math.min(anchor.y - cardHeight / 2, layout.height - cardHeight - margin),
+      Math.min(anchor.x - cardWidth / 2, layout.width - cardWidth - margin),
     );
     if (layoutName === "mobile") {
       return {
         ...activeCallout,
         mobileTooltipPosition: {
-          ...(activeCallout.mobileTooltipPosition ?? activeCallout.tooltipPosition),
+          ...(activeCallout.mobileTooltipPosition ??
+            activeCallout.tooltipPosition),
+          x: newX,
           y: newY,
+          width: cardWidth,
+          height: cardHeight,
         },
       };
     }
     return {
       ...activeCallout,
-      tooltipPosition: { ...activeCallout.tooltipPosition, y: newY },
+      tooltipPosition: {
+        ...activeCallout.tooltipPosition,
+        x: newX,
+        y: newY,
+        width: cardWidth,
+        height: cardHeight,
+      },
     };
   })();
 
   return (
     <svg
       viewBox={`0 0 ${layout.width} ${layout.height}`}
-      className="h-auto w-full"
-      role="img"
-      aria-labelledby={`philippines-map-title-${layoutName} philippines-map-description-${layoutName}`}
+      className={cn(
+        "h-auto w-full",
+        isBackground &&
+          "text-[#66c2ff] drop-shadow-[0_0_18px_rgba(102,194,255,0.22)]",
+      )}
+      role={isBackground ? undefined : "img"}
+      aria-hidden={isBackground ? true : undefined}
+      aria-labelledby={
+        isBackground
+          ? undefined
+          : `philippines-map-title-${layoutName} philippines-map-description-${layoutName}`
+      }
     >
-      <title id={`philippines-map-title-${layoutName}`}>
-        Philippines province infographic map
-      </title>
-      <desc id={`philippines-map-description-${layoutName}`}>
-        A custom SVG map of Philippine provinces with challenge locations and
-        rotating challenge cards.
-      </desc>
+      {isBackground ? null : (
+        <>
+          <title id={`philippines-map-title-${layoutName}`}>
+            Philippines province infographic map
+          </title>
+          <desc id={`philippines-map-description-${layoutName}`}>
+            A custom SVG map of Philippine provinces with challenge locations
+            and rotating challenge cards.
+          </desc>
+        </>
+      )}
       <g>
         {projectedProvinces.map(({ feature: province, path }) => {
           const provinceName = getProvinceName(province);
@@ -679,49 +739,188 @@ function PhilippinesMap({
               key={getProvinceKey(province)}
               name={provinceName}
               path={path}
+              variant={variant}
             />
           );
         })}
       </g>
 
-      <g>
-        {dynamicActiveCallout ? (
-          <LeaderLine
-            key={dynamicActiveCallout.id}
-            callout={dynamicActiveCallout}
-            layoutName={layoutName}
-            isActive
-          />
-        ) : null}
-      </g>
+      {isBackground ? null : (
+        <>
+          <g>
+            {dynamicActiveCallout ? (
+              <LeaderLine
+                key={dynamicActiveCallout.id}
+                callout={dynamicActiveCallout}
+                layoutName={layoutName}
+                isActive
+              />
+            ) : null}
+          </g>
 
-      <g>
-        {positionedCallouts.map((callout) => (
-          <MapDot
-            key={callout.id}
-            callout={callout}
-            layoutName={layoutName}
-            isActive={activeCalloutId === callout.id}
-            onActivate={() => {
-              setIsDotInteracting(true);
-              setActiveCalloutId(callout.id);
-            }}
-            onDeactivate={() => setIsDotInteracting(false)}
-          />
-        ))}
-      </g>
+          <g>
+            {positionedCallouts.map((callout) => (
+              <MapDot
+                key={callout.id}
+                callout={callout}
+                layoutName={layoutName}
+                isActive={activeCalloutId === callout.id}
+                onActivate={() => {
+                  setIsDotInteracting(true);
+                  setActiveCalloutId(callout.id);
+                }}
+                onDeactivate={() => setIsDotInteracting(false)}
+              />
+            ))}
+          </g>
 
-      <g>
-        {dynamicActiveCallout ? (
-          <MapTooltip
-            key={dynamicActiveCallout.id}
-            callout={dynamicActiveCallout}
-            layoutName={layoutName}
-            isActive
-          />
-        ) : null}
-      </g>
+          <g>
+            {dynamicActiveCallout ? (
+              <MapTooltip
+                key={dynamicActiveCallout.id}
+                callout={dynamicActiveCallout}
+                layoutName={layoutName}
+                isActive
+                onActivate={() => setIsDotInteracting(true)}
+                onDeactivate={() => setIsDotInteracting(false)}
+              />
+            ) : null}
+          </g>
+        </>
+      )}
     </svg>
+  );
+}
+
+export function SuperListingMapBackground({
+  className,
+}: {
+  className?: string;
+}) {
+  const [provinceFeatures, setProvinceFeatures] = useState<ProvinceFeature[]>(
+    [],
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    loadProvinceFeatures()
+      .then((features) => {
+        if (isMounted) {
+          setProvinceFeatures(features);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setProvinceFeatures([]);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (provinceFeatures.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className={cn("pointer-events-none", className)} aria-hidden="true">
+      <PhilippinesMap
+        provinceFeatures={provinceFeatures}
+        layoutName="desktop"
+        variant="background"
+      />
+    </div>
+  );
+}
+
+export function ChallengePhSignalMap({ className }: { className?: string }) {
+  const [provinceFeatures, setProvinceFeatures] = useState<ProvinceFeature[]>(
+    [],
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    loadProvinceFeatures()
+      .then((features) => {
+        if (isMounted) {
+          setProvinceFeatures(features);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setProvinceFeatures([]);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return (
+    <div className={cn("relative aspect-square w-full", className)}>
+      <div className="absolute inset-0 rounded-full bg-[#0D6BFF]/16 blur-3xl" />
+      <div className="absolute inset-8 rounded-full bg-[#8CC8FF]/10 blur-2xl" />
+      {provinceFeatures.length > 0 ? (
+        <PhilippinesMap
+          provinceFeatures={provinceFeatures}
+          layoutName="desktop"
+          variant="background"
+        />
+      ) : (
+        <div className="h-full w-full animate-pulse rounded-[2rem] bg-white/[0.04]" />
+      )}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_58%_28%,rgba(45,125,255,0.35),transparent_0.8rem),radial-gradient(circle_at_58%_28%,rgba(45,125,255,0.22),transparent_2.8rem),radial-gradient(circle_at_66%_48%,rgba(45,125,255,0.38),transparent_0.8rem),radial-gradient(circle_at_66%_48%,rgba(45,125,255,0.18),transparent_2.8rem),radial-gradient(circle_at_74%_64%,rgba(45,125,255,0.35),transparent_0.8rem),radial-gradient(circle_at_74%_64%,rgba(45,125,255,0.18),transparent_2.8rem)]" />
+    </div>
+  );
+}
+
+export function ChallengePhInteractiveMap({
+  className,
+}: {
+  className?: string;
+}) {
+  const [provinceFeatures, setProvinceFeatures] = useState<ProvinceFeature[]>(
+    [],
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    loadProvinceFeatures()
+      .then((features) => {
+        if (isMounted) {
+          setProvinceFeatures(features);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setProvinceFeatures([]);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return (
+    <div className={cn("relative w-full", className)}>
+      <div className="absolute inset-0 rounded-full bg-[#0D6BFF]/18 blur-3xl" />
+      <div className="absolute inset-8 rounded-full bg-[#8CC8FF]/10 blur-2xl" />
+      {provinceFeatures.length > 0 ? (
+        <PhilippinesMap
+          provinceFeatures={provinceFeatures}
+          layoutName="desktop"
+        />
+      ) : (
+        <div className="aspect-square w-full animate-pulse rounded-[2rem] bg-white/[0.04]" />
+      )}
+    </div>
   );
 }
 
@@ -837,12 +1036,14 @@ function GuideSection() {
 function LandingFooter() {
   return (
     <motion.footer
-      className="relative isolate flex min-h-[50vh] items-start overflow-hidden border-t border-white/10 bg-black bg-[url('/super-listings/bg4.png')] bg-cover bg-bottom px-4 pb-12 pt-14 text-white sm:px-6 sm:pt-16 lg:px-8 lg:pt-18"
+      className="relative isolate flex min-h-[50vh] items-start overflow-hidden border-t border-white/10 bg-[#001138] px-4 pb-12 pt-14 text-white sm:px-6 sm:pt-16 lg:px-8 lg:pt-18"
       initial={{ opacity: 0, y: 34 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={entranceViewport}
       transition={entranceTransition}
     >
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(102,194,255,0.14)_1px,transparent_1px),linear-gradient(to_bottom,rgba(102,194,255,0.1)_1px,transparent_1px)] bg-[size:40px_40px] opacity-45 [mask-image:linear-gradient(to_bottom,#000_0%,transparent_86%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_18%,rgba(35,136,255,0.24),transparent_24rem),radial-gradient(circle_at_88%_88%,rgba(102,194,255,0.12),transparent_24rem)]" />
       <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
         <div className="max-w-xl">
           <p className="[font-family:var(--font-challenge-ph-heading)] text-3xl font-black leading-none tracking-[-0.05em] sm:text-5xl">
@@ -905,12 +1106,14 @@ export default function PhilippinesInfographicMap() {
     <>
       <section className="grid min-h-screen overflow-hidden bg-white lg:grid-cols-2">
         <motion.div
-          className="relative isolate flex min-h-[55rem] flex-col overflow-hidden bg-black px-4 pb-10 pt-5 text-[#FFF7E8] sm:px-6 lg:min-h-screen lg:px-10 xl:px-14"
+          className="relative isolate flex min-h-[55rem] flex-col overflow-hidden bg-[#001138] px-4 pb-10 pt-5 text-[#FFF7E8] sm:px-6 lg:min-h-screen lg:px-10 xl:px-14"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={entranceTransition}
         >
-          <div className="pointer-events-none absolute inset-0 bg-[url('/super-listings/bg.png')] bg-cover bg-center opacity-[0.9]" />
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(102,194,255,0.13)_1px,transparent_1px),linear-gradient(to_bottom,rgba(102,194,255,0.09)_1px,transparent_1px)] bg-[size:38px_38px] opacity-55 [mask-image:radial-gradient(circle_at_42%_48%,#000_0%,transparent_78%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(116deg,transparent_0%,rgba(35,136,255,0.14)_38%,transparent_68%),radial-gradient(circle_at_26%_22%,rgba(35,136,255,0.28),transparent_25rem),radial-gradient(circle_at_86%_80%,rgba(102,194,255,0.13),transparent_22rem)]" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-[#001138] to-transparent" />
 
           <div className="relative z-10 flex min-h-full flex-1 flex-col">
             <div className="flex flex-1 items-center py-16 sm:py-20 lg:py-12">
@@ -946,16 +1149,28 @@ export default function PhilippinesInfographicMap() {
                 </div>
                 <div className="mx-auto mt-10 grid max-w-[540px] grid-cols-3 gap-3 lg:mx-0">
                   <div className="rounded-[1.25rem] border border-white/[0.12] bg-white/[0.045] p-4 backdrop-blur">
-                    <strong className="block text-[1.6rem] font-black leading-none text-white [font-family:var(--font-challenge-ph-heading)]">8</strong>
-                    <span className="mt-2 block text-[13px] leading-tight text-[#9aa8c7]">open challenges</span>
+                    <strong className="block text-[1.6rem] font-black leading-none text-white [font-family:var(--font-challenge-ph-heading)]">
+                      8
+                    </strong>
+                    <span className="mt-2 block text-[13px] leading-tight text-[#9aa8c7]">
+                      open challenges
+                    </span>
                   </div>
                   <div className="rounded-[1.25rem] border border-white/[0.12] bg-white/[0.045] p-4 backdrop-blur">
-                    <strong className="block text-[1.6rem] font-black leading-none text-white [font-family:var(--font-challenge-ph-heading)]">12</strong>
-                    <span className="mt-2 block text-[13px] leading-tight text-[#9aa8c7]">pinned locations</span>
+                    <strong className="block text-[1.6rem] font-black leading-none text-white [font-family:var(--font-challenge-ph-heading)]">
+                      12
+                    </strong>
+                    <span className="mt-2 block text-[13px] leading-tight text-[#9aa8c7]">
+                      pinned locations
+                    </span>
                   </div>
                   <div className="rounded-[1.25rem] border border-white/[0.12] bg-white/[0.045] p-4 backdrop-blur">
-                    <strong className="block text-[1.6rem] font-black leading-none text-white [font-family:var(--font-challenge-ph-heading)]">Free</strong>
-                    <span className="mt-2 block text-[13px] leading-tight text-[#9aa8c7]">to participate</span>
+                    <strong className="block text-[1.6rem] font-black leading-none text-white [font-family:var(--font-challenge-ph-heading)]">
+                      Free
+                    </strong>
+                    <span className="mt-2 block text-[13px] leading-tight text-[#9aa8c7]">
+                      to participate
+                    </span>
                   </div>
                 </div>
               </div>
