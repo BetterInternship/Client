@@ -87,9 +87,7 @@ function HeroSection() {
             <span className="block bg-gradient-to-r from-[#BFE7FF] via-[#66C2FF] to-[#0D6BFF] bg-clip-text text-transparent">
               Win rewards.
             </span>
-            <span className="block bg-gradient-to-r from-[#2D9CFF] via-[#0D6BFF] to-[#FFC83D] bg-clip-text text-transparent">
-              Make a difference.
-            </span>
+            <span className="block text-[#FFC83D]">Make a difference.</span>
           </h1>
           <div className="mt-6 max-w-2xl">
             <p className="text-sm font-semibold leading-6 text-[#C5D4EA] sm:text-[0.95rem] sm:leading-7">
