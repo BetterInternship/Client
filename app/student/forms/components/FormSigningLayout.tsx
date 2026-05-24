@@ -289,12 +289,15 @@ export function FormSigningLayout({
       })),
     [form.keyedFields, fieldOwnerByName],
   );
-  const requiredManualFieldKeys = useMemo(() => {
+  const requiredManualFieldGroups = useMemo(() => {
     const fields = noEsign
       ? form.formMetadata.getFieldsForClientService(undefined)
       : form.fields;
 
-    return fields
+    const radioGroupMap = new Map<string, string[]>();
+    const normalKeys: string[] = [];
+
+    fields
       .filter((field) => {
         if (field.source !== "manual" || field.type === "signature")
           return false;
@@ -302,7 +305,20 @@ export function FormSigningLayout({
         if (noEsign) return true;
         return field.signing_party_id === "initiator";
       })
-      .map((field) => field.field);
+      .forEach((field) => {
+        const groupId = (field as any).radio_group_id as string | undefined;
+        if (groupId) {
+          if (!radioGroupMap.has(groupId)) radioGroupMap.set(groupId, []);
+          radioGroupMap.get(groupId)!.push(field.field);
+        } else {
+          normalKeys.push(field.field);
+        }
+      });
+
+    return [
+      ...normalKeys.map((k) => [k]),
+      ...Array.from(radioGroupMap.values()),
+    ];
   }, [form.fields, form.formMetadata, noEsign]);
   const previewValuesWithDerived = useMemo(
     () => withDerivedFormValues(form.formMetadata, previewValues),
@@ -315,10 +331,10 @@ export function FormSigningLayout({
 
   const computeRequiredFieldsComplete = useCallback(
     (nextValues: FormValues) =>
-      requiredManualFieldKeys.every(
-        (fieldKey) => !!getFieldValue(nextValues, fieldKey),
+      requiredManualFieldGroups.every((group) =>
+        group.some((fieldKey) => !!getFieldValue(nextValues, fieldKey)),
       ),
-    [requiredManualFieldKeys],
+    [requiredManualFieldGroups],
   );
 
   const handleValuesChange = useCallback(
@@ -630,9 +646,9 @@ export function FormSigningLayout({
     setMobileFieldsTab("form");
     setMobilePreviewNeedsAttention(false);
     setHasConfirmedDetails(false);
-    setAreRequiredFieldsComplete(requiredManualFieldKeys.length === 0);
+    setAreRequiredFieldsComplete(requiredManualFieldGroups.length === 0);
     setCurrentStep(initialStep);
-  }, [formLabel, initialStep, requiredManualFieldKeys.length, noEsign]);
+  }, [formLabel, initialStep, requiredManualFieldGroups.length, noEsign]);
 
   useEffect(() => {
     if (currentStep === "confirm") {
