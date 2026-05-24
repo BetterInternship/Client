@@ -21,15 +21,16 @@ export function RadioGroupFiller({
   selectedFieldId,
   fieldRefs,
 }: Props) {
-  const options = [...blocks]
-    .sort((a, b) => (a.field_schema?.x ?? 0) - (b.field_schema?.x ?? 0))
-    .map((block) => ({
-      fieldKey: block.field_schema!.field,
-      label:
-        block.field_schema?.radio_option_label ||
-        block.field_schema!.label ||
-        block.field_schema!.field,
-    }));
+  const sortedBlocks = [...blocks].sort((a, b) => (a.field_schema?.x ?? 0) - (b.field_schema?.x ?? 0));
+
+  const groupLabel = sortedBlocks[0]?.field_schema?.label || sortedBlocks[0]?.field_schema?.field || "";
+
+  const options = sortedBlocks.map((block) => ({
+    fieldKey: block.field_schema!.field,
+    label:
+      block.field_schema?.radio_option_label ||
+      block.field_schema!.field,
+  }));
 
   const selectedKey =
     options.find((o) => values[o.fieldKey] === "X")?.fieldKey ?? "";
@@ -52,9 +53,9 @@ export function RadioGroupFiller({
       className={`cursor-pointer px-1 py-2 transition-all ${isSelected ? "rounded-[0.33em] ring-2 ring-blue-500 ring-offset-2" : ""}`}
     >
       <div className="space-y-1.5">
-        {options[0] && (
+        {groupLabel && (
           <label className="text-sm font-medium text-gray-700">
-            {options[0].label}
+            {groupLabel}
           </label>
         )}
         <select
