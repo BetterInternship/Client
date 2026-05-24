@@ -16,7 +16,7 @@ import { Briefcase, Plus } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useAuthContext } from "../authctx";
 import { Job } from "@/lib/db/db.types";
-import { HeaderIcon, HeaderText } from "@/components/ui/text";
+import { HeaderTitle } from "@/components/ui/text";
 import { useRouter } from "next/navigation";
 
 const SUPER_LISTING_CREATE_PATH =
@@ -89,13 +89,9 @@ function DashboardContent() {
           isMobile ? "px-1" : "px-4",
         )}
       >
-        <div
-          className="flex flex-row items-center gap-3 mb-2"
-          onClick={handleSecretSuperListingAccess}
-        >
-          <HeaderIcon icon={Briefcase} />
-          <HeaderText>Job listings</HeaderText>
-        </div>
+        <HeaderTitle icon={Briefcase} onClick={handleSecretSuperListingAccess}>
+          Job listings
+        </HeaderTitle>
         <div className="flex flex-col flex-1">
           <div>
             <div className="flex gap-4 mb-4">

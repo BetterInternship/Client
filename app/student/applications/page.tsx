@@ -19,7 +19,7 @@ import { Loader } from "@/components/ui/loader";
 import { Card } from "@/components/ui/card";
 import { JobHead, SuperListingBadge } from "@/components/shared/jobs";
 import { UserApplication } from "@/lib/db/db.types";
-import { HeaderText, HeaderIcon } from "@/components/ui/text";
+import { HeaderTitle } from "@/components/ui/text";
 import { Separator } from "@/components/ui/separator";
 import { PageError } from "@/components/ui/error";
 import { cn } from "@/lib/utils";
@@ -61,10 +61,7 @@ export default function ApplicationsPage() {
     <div className="h-full overflow-y-auto py-6 px-4">
       <div className="max-w-5xl mx-auto">
         <div className="mb-6 sm:mb-8 animate-fade-in">
-          <div className="flex flex-row items-center gap-3 mb-2">
-            <HeaderIcon icon={BookA}></HeaderIcon>
-            <HeaderText>My Applications</HeaderText>
-          </div>
+          <HeaderTitle icon={BookA}>My Applications</HeaderTitle>
           <div className="flex-1 flex-row">
             <p className="text-gray-600 text-sm sm:text-base mb-2">
               Track your internship applications and their status

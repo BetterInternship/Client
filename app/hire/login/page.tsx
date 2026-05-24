@@ -13,7 +13,7 @@ import { Card } from "@/components/ui/card";
 import { MailCheck, TriangleAlert, User } from "lucide-react";
 import { Loader } from "@/components/ui/loader";
 import { AnimatePresence, motion } from "framer-motion";
-import { HeaderIcon, HeaderText } from "@/components/ui/text";
+import { HeaderTitle } from "@/components/ui/text";
 import { useBlurTransition } from "@/components/animata/blur";
 
 export default function LoginPage() {
@@ -105,10 +105,7 @@ function LoginContent() {
         <div className="flex items-center w-full max-w-2xl h-full">
           <Card className="w-full">
             {/* Welcome Message */}
-            <div className="flex flex-row items-center gap-3 mb-2">
-              <HeaderIcon icon={User} />
-              <HeaderText>Log in</HeaderText>
-            </div>
+            <HeaderTitle icon={User}>Log in</HeaderTitle>
             {/* Error Message */}
             {error && (
               <div

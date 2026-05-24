@@ -1,6 +1,5 @@
 "use client";
 
-import { HeaderIcon, HeaderText } from "@/components/ui/text";
 import { Newspaper, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";

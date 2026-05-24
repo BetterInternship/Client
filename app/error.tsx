@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { HeaderIcon, HeaderText } from "@/components/ui/text";
+import { HeaderTitle } from "@/components/ui/text";
 import { TriangleAlert } from "lucide-react";
 import { useEffect } from "react";
 import { SUPPORT_FACEBOOK } from "@/constants";
@@ -23,10 +23,9 @@ export default function Error({
     <div className="flex min-h-screen flex-col items-center justify-center gap-4">
       <Card className="flex flex-col gap-4 p-12">
         <img src="/error.png" alt="Error" className="mx-auto w-96" />
-        <div className="flex items-center gap-3">
-          <HeaderIcon icon={TriangleAlert} />
-          <HeaderText>Something went wrong.</HeaderText>
-        </div>
+        <HeaderTitle icon={TriangleAlert} className="mb-0">
+          Something went wrong.
+        </HeaderTitle>
         <span>
           Sorry for the inconvenience. Please{" "}
           <a href={SUPPORT_FACEBOOK}>contact us for support</a>.

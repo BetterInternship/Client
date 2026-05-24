@@ -9,7 +9,7 @@ import { EmployerUserService } from "@/lib/api/services";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
 import { AnimatePresence, motion } from "framer-motion";
-import { HeaderIcon, HeaderText } from "@/components/ui/text";
+import { HeaderTitle } from "@/components/ui/text";
 import { HelpCircle, MailCheck } from "lucide-react";
 import { useBlurTransition } from "@/components/animata/blur";
 
@@ -73,10 +73,7 @@ const ForgotPasswordForm = () => {
       <AnimatePresence>
         <motion.div {...blurTransition} className="w-full">
           <Card className="flex flex-col gap-4">
-            <div className="flex flex-row items-center gap-3 mb-2">
-              <HeaderIcon icon={HelpCircle} />
-              <HeaderText>Reset password</HeaderText>
-            </div>
+            <HeaderTitle icon={HelpCircle}>Reset password</HeaderTitle>
             {error && (
               <div className="mb-2 p-3 bg-red-50 border border-red-200 rounded-lg">
                 <p className="text-sm text-red-600 justify-center">{error}</p>

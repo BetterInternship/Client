@@ -28,7 +28,7 @@ import { FormActionAccordion } from "./FormActionAccordion";
 import { FormSigningPartyTimeline } from "./FormSigningPartyTimeline";
 import { FormMobileCloseConfirmation } from "./FormMobileCloseConfirmation";
 import { useMobile } from "@/hooks/use-mobile";
-import { HeaderIcon, HeaderText } from "@/components/ui/text";
+import { HeaderTitle } from "@/components/ui/text";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useHeaderContext } from "@/lib/ctx-header";
@@ -289,14 +289,9 @@ export default function FormDashboard({
         >
           <div className="  p-4 sm:px-4 md:px-6">
             <div className="flex w-full flex-col py-2 animate-fade-in">
-              <div className="flex flex-row items-center gap-3 mb-2">
-                <HeaderIcon icon={FileText} />
-                <div onClick={handleHeaderSecretTap}>
-                  <HeaderText>
-                    {formGroupDescription || "Form Templates"}
-                  </HeaderText>
-                </div>
-              </div>
+              <HeaderTitle icon={FileText} onClick={handleHeaderSecretTap}>
+                {formGroupDescription || "Form Templates"}
+              </HeaderTitle>
               <p className="text-sm text-gray-600 mt-2">
                 We have a{" "}
                 <a
