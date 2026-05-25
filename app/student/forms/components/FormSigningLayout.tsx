@@ -28,6 +28,7 @@ import { getFreshHistoryCutoffMsFromStorage } from "../fresh-history";
 import { getRecipientEmailErrors } from "./recipient-email-validation";
 import { useSignContext } from "@/components/providers/sign.ctx";
 import { withSubmittedSignatureImages } from "@/lib/signature-image-submit";
+import { useProfileData } from "@/lib/api/student.data.api";
 
 interface FlowTestSigningLayoutProps {
   formLabel?: string;
@@ -114,6 +115,7 @@ export function FormSigningLayout({
   onBack,
 }: FlowTestSigningLayoutProps) {
   const form = useFormRendererContext();
+  const profile = useProfileData();
   const modalRegistry = useModalRegistry();
   const formFiller = useFormFiller();
   const autofillValues = useMyAutofill();
@@ -424,8 +426,11 @@ export function FormSigningLayout({
   };
 
   const recipientEmailErrors = useMemo(
-    () => getRecipientEmailErrors(recipientEmails),
-    [recipientEmails],
+    () =>
+      getRecipientEmailErrors(recipientEmails, {
+        studentEmail: profile.data?.email,
+      }),
+    [recipientEmails, profile.data?.email],
   );
 
   const nextEnabled = useMemo(() => {

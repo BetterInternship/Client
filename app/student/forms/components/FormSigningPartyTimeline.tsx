@@ -5,6 +5,7 @@ import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import { StateRecord, StateRecordActions } from "@/hooks/base/useStateRecord";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
+import { useProfileData } from "@/lib/api/student.data.api";
 import {
   getRecipientEmailErrors,
   RECIPIENT_EMAIL_VALIDATION_DEBOUNCE_MS,
@@ -23,6 +24,7 @@ export const FormSigningPartyTimeline = ({
   isConfirmingRecipients?: boolean;
 }) => {
   const form = useFormRendererContext();
+  const profile = useProfileData();
   const recipients = form.formMetadata.getSigningParties();
 
   useEffect(() => {
@@ -32,13 +34,16 @@ export const FormSigningPartyTimeline = ({
 
     const validationTimeout = window.setTimeout(() => {
       recipientInputAPI.recipientErrorActions.overwrite(
-        getRecipientEmailErrors(recipientInputAPI.recipientEmails),
+        getRecipientEmailErrors(recipientInputAPI.recipientEmails, {
+          studentEmail: profile.data?.email,
+        }),
       );
     }, RECIPIENT_EMAIL_VALIDATION_DEBOUNCE_MS);
 
     return () => window.clearTimeout(validationTimeout);
   }, [
     isConfirmingRecipients,
+    profile.data?.email,
     recipientInputAPI?.recipientEmails,
     recipientInputAPI?.recipientErrorActions,
   ]);
