@@ -70,7 +70,7 @@ export const CommandMenu = ({
       role="toolbar"
       onClick={(e) => e.stopPropagation()}
       className={cn(
-        "flex gap-4 px-6 py-2 w-full justify-center items-stretch text-xs bg-white border border-gray-300 transition bg-clip-border",
+        "flex gap-4 px-6 py-2 w-full justify-center items-stretch text-xs bg-white border border-gray-200 transition bg-clip-border",
         className,
       )}
     >
