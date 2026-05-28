@@ -346,6 +346,7 @@ export default function SearchPage() {
         onUnselectPage={unselectAllOnPage}
         onSelectPage={selectAllOnPage}
         onApply={openMassApply}
+        onToggleSelect={toggleSelect}
       />
 
       <div className="flex-1 flex overflow-hidden border-primary ">
@@ -397,7 +398,7 @@ export default function SearchPage() {
                 </div>
               )}
 
-              <div className="my-2">
+              <div className="my-4">
                 <Paginator
                   totalItems={jobs.filteredJobs.length}
                   itemsPerPage={jobsPageSize}
@@ -474,7 +475,7 @@ export default function SearchPage() {
                 </div>
               )}
 
-              <div className="mt-4">
+              <div className="mt-2 mb-8">
                 <Paginator
                   totalItems={jobs.filteredJobs.length}
                   itemsPerPage={jobsPageSize}
