@@ -300,7 +300,7 @@ export function ApplicationRow({
             defaultItem={defaultStatus}
           />
         ) : (
-          <StatusBadge statusId={application.status || 0} />
+          <StatusBadge statusId={application.status || 0} className="py-1.5" />
         )}
       </td>
       <td>
