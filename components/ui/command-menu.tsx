@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { cn } from "@/lib/utils";
 import { ActionItem } from "./action-item";
 
@@ -19,22 +19,18 @@ export const CommandMenu = ({
   className?: string;
 }) => {
   const isActionItem = (x: any): x is ActionItem =>
-    x &&
-    typeof x === "object" &&
-    typeof x.id === "string" &&
-    typeof x.onClick === "function";
+    x && typeof x === "object" && typeof x.id === "string";
 
-  const groups = (items && items.length > 0 && Array.isArray(items[0])) 
-    ? (items as Array<Array<ActionItem | string>>) 
-    : [items as Array<ActionItem | string>];
+  const groups =
+    items && items.length > 0 && Array.isArray(items[0])
+      ? (items as Array<Array<ActionItem | string>>)
+      : [items as Array<ActionItem | string>];
 
   const renderGroup = (group: Array<ActionItem | string>, idx: number) => {
     return (
       <React.Fragment key={idx}>
-        {idx > 0 && (
-          <div className="w-px bg-gray-300 my-1 mx-1" />
-        )}
-        {group.map((item, idx) => 
+        {idx > 0 && <div className="w-px bg-gray-300 my-1 mx-1" />}
+        {group.map((item, idx) =>
           isActionItem(item) ? (
             <button
               key={item.id}
@@ -48,10 +44,9 @@ export const CommandMenu = ({
                 item.destructive
                   ? "text-red-700 hover:bg-red-300/50 active:bg-red-400/75"
                   : "text-gray-700 hover:bg-gray-300/50 active:bg-gray-400/75",
-                item.highlighted
-                  ? item.highlightColor
-                  : "",
+                item.highlighted ? item.highlightColor : "",
                 item.fgColor,
+                item.bgColor,
               )}
             >
               {item.icon && <item.icon size={18} />}
@@ -62,12 +57,12 @@ export const CommandMenu = ({
               key={typeof item === "string" ? `text-${item}` : `node-${idx}`}
               className="flex justify-center items-center text-gray-700 px-2"
             >
-              {item as React.ReactNode}
+              {item}
             </span>
           ),
         )}
       </React.Fragment>
-    )
+    );
   };
 
   return (
@@ -75,7 +70,7 @@ export const CommandMenu = ({
       role="toolbar"
       onClick={(e) => e.stopPropagation()}
       className={cn(
-        "flex gap-4 px-6 py-2 justify-center items-stretch text-xs bg-white border border-gray-300 rounded-[0.33em] transition bg-clip-padding bg-clip-border",
+        "flex gap-4 px-6 py-2 w-full justify-center items-stretch text-xs bg-white border border-gray-300 transition bg-clip-border",
         className,
       )}
     >
