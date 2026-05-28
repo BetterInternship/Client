@@ -33,32 +33,24 @@ export function ApplicationsCommandBar({
       {visible && (
         <>
           <motion.div
-            className="fixed bottom-4 z-[100] shadow-xl w-max overflow-hidden rounded-md"
-            initial={{
-              scale: 0.98,
-              filter: "blur(4px)",
-              opacity: 0,
-              x: "-50%",
-            }}
-            animate={{ scale: 1, filter: "blur(0px)", opacity: 1, x: "-50%" }}
-            exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            style={{ left: "50%" }}
+            className="fixed left-0 bottom-0 z-[100] shadow-xl w-full overflow-hidden rounded-0.33em"
+            initial={{ y: "100%", filter: "blur(4px)" }}
+            animate={{ y: "0%", filter: "blur(0px)" }}
+            exit={{ y: "100%", filter: "blur(4px)" }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
           >
-            <CommandMenu buttonLayout="vertical" items={statuses} />
+            <CommandMenu
+              buttonLayout="vertical"
+              items={statuses}
+              className="w-full"
+            />
           </motion.div>
           <motion.div
-            className="fixed top-20 z-[100] shadow-xl w-max mx-2 overflow-hidden rounded-md"
-            initial={{
-              scale: 0.98,
-              filter: "blur(4px)",
-              opacity: 0,
-              x: "-50%",
-            }}
-            animate={{ scale: 1, filter: "blur(0px)", opacity: 1, x: "-50%" }}
-            exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            style={{ left: "50%" }}
+            className="fixed left-0 top-0 z-[100] w-full overflow-hidden"
+            initial={{ y: "-100%", filter: "blur(4px)" }}
+            animate={{ y: "0%", filter: "blur(0px)" }}
+            exit={{ y: "-100%", filter: "blur(4px)" }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
           >
             <CommandMenu
               buttonLayout="vertical"
@@ -70,8 +62,6 @@ export function ApplicationsCommandBar({
                     onClick: onUnselectAll,
                   },
                   `${selectedCount} selected`,
-                ],
-                [
                   {
                     id: "select_all",
                     label: "Select all",
@@ -80,6 +70,7 @@ export function ApplicationsCommandBar({
                   },
                 ],
               ]}
+              className="w-full justify-between"
             />
           </motion.div>
         </>
@@ -90,23 +81,11 @@ export function ApplicationsCommandBar({
       {visible && (
         <>
           <motion.div
-            className="fixed bottom-4 z-[100] shadow-xl w-max overflow-hidden rounded-0.33em"
-            initial={{
-              scale: 0.98,
-              filter: "blur(4px)",
-              opacity: 0,
-              x: "-50%",
-            }}
-            animate={{
-              scale: 1,
-              filter: "blur(0px)",
-              opacity: 1,
-              x: "-50%",
-              backdropFilter: "blur(50%)",
-            }}
-            exit={{ scale: 0.98, filter: "blur(4px)", opacity: 0, x: "-50%" }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            style={{ left: "50%" }}
+            className="fixed left-0 bottom-0 z-[100] w-full"
+            initial={{ y: "100%", filter: "blur(4px)" }}
+            animate={{ y: "0%", filter: "blur(0px)" }}
+            exit={{ y: "100%", filter: "blur(4px)" }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
           >
             <CommandMenu
               items={[
