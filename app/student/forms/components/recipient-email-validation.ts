@@ -43,13 +43,13 @@ export const getRecipientEmailErrors = (
   });
 
   // Rule: all recipient emails must be unique
-  fieldNamesByEmail.forEach((fieldNames) => {
-    if (fieldNames.length < 2) return;
+  // fieldNamesByEmail.forEach((fieldNames) => {
+  //   if (fieldNames.length < 2) return;
 
-    fieldNames.forEach((fieldName) => {
-      errors[fieldName] = "Each recipient must have a unique email.";
-    });
-  });
+  //   fieldNames.forEach((fieldName) => {
+  //     errors[fieldName] = "Each recipient must have a unique email.";
+  //   });
+  // });
 
   return errors;
 };
