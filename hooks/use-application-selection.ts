@@ -6,26 +6,32 @@ import { EmployerApplication } from "@/lib/db/db.types";
  * @param applications Visible applications
  */
 export function useApplicationSelection(applications: EmployerApplication[]) {
-  const [selectedApplications, setSelectedApplications] = useState<Set<string>>(new Set());
+  const [selectedApplications, setSelectedApplications] = useState<Set<string>>(
+    new Set(),
+  );
+
+  const selectedApplicationsData = applications.filter((app) =>
+    selectedApplications.has(app.id!),
+  );
 
   const toggleSelect = (id: string, next?: boolean) => {
-      setSelectedApplications((prev) => {
-        const nextSet = new Set(prev);
-        if (typeof next === "boolean") {
-          next ? nextSet.add(id) : nextSet.delete(id);
-        } else {
-          nextSet.has(id) ? nextSet.delete(id) : nextSet.add(id);
-        }
-  
-        return nextSet;
-      });
-    };
-  
+    setSelectedApplications((prev) => {
+      const nextSet = new Set(prev);
+      if (typeof next === "boolean") {
+        next ? nextSet.add(id) : nextSet.delete(id);
+      } else {
+        nextSet.has(id) ? nextSet.delete(id) : nextSet.add(id);
+      }
+
+      return nextSet;
+    });
+  };
+
   const selectAll = () => {
     // only select all visible applications.
     setSelectedApplications(
-      new Set(applications.map((application) => application.id!))
-    )
+      new Set(applications.map((application) => application.id!)),
+    );
   };
 
   const unselectAll = () => {
@@ -33,11 +39,14 @@ export function useApplicationSelection(applications: EmployerApplication[]) {
   };
 
   const toggleSelectAll = () => {
-    selectedApplications.size === applications.length ? unselectAll() : selectAll();
+    selectedApplications.size === applications.length
+      ? unselectAll()
+      : selectAll();
   };
 
   return {
     selectedApplications,
+    selectedApplicationsData,
     toggleSelect,
     selectAll,
     unselectAll,

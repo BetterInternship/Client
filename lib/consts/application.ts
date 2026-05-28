@@ -92,3 +92,21 @@ export const DB_STATUS_MAP: Record<number, StatusConfig> = {
   6: { key: "rejected", action: "REJECT" },
   7: { key: "archived", action: "ARCHIVE" },
 };
+
+export const LABEL_ID_STRING_MAP = new Map<string, string>([
+  ["pending", "0"],
+  ["shortlisted", "1"],
+  ["accepted", "4"],
+  ["deleted", "5"],
+  ["rejected", "6"],
+  ["archived", "7"],
+]);
+
+export const LABEL_ID_MAP = new Map<string, number>([
+  ["pending", 0],
+  ["shortlisted", 1],
+  ["accepted", 4],
+  ["deleted", 5],
+  ["rejected", 6],
+  ["archived", 7],
+]);

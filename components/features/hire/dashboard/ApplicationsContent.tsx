@@ -27,19 +27,17 @@ import {
   UI_STATUS_MAP,
   ApplicationAction,
   ApplicationFilter,
+  LABEL_ID_STRING_MAP,
+  LABEL_ID_MAP,
 } from "@/lib/consts/application";
 import { type ActionItem } from "@/components/ui/action-item";
 import { ApplicationsCommandBar } from "./ApplicationsCommandBar";
 import { FormCheckbox } from "@/components/EditForm";
-import { DropdownMenu } from "@/components/ui/dropdown-menu";
-import { useRouter, useSearchParams } from "next/navigation";
 
 interface ApplicationsContentProps {
   applications: EmployerApplication[];
   isSuperListing?: boolean;
-  statusId: number[];
   isLoading?: boolean;
-  openChatModal: () => void;
   onApplicationClick: (application: EmployerApplication) => void;
   setSelectedApplication: (application: EmployerApplication) => void;
   onAction: (
@@ -47,8 +45,6 @@ interface ApplicationsContentProps {
     apps: EmployerApplication[],
     status?: number,
   ) => void;
-  applicantToDelete: EmployerApplication | null;
-  applicantToArchive: EmployerApplication | null;
 }
 
 export const ApplicationsContent = forwardRef<
@@ -59,7 +55,6 @@ export const ApplicationsContent = forwardRef<
     applications,
     isSuperListing = false,
     isLoading,
-    openChatModal,
     onApplicationClick,
     setSelectedApplication,
     onAction,
@@ -67,9 +62,6 @@ export const ApplicationsContent = forwardRef<
   ref,
 ) {
   const { isMobile } = useAppContext();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const selectedJobId = searchParams.get("jobId");
 
   const [commandBarsVisible, setCommandBarsVisible] = useState(false);
   const [activeFilter, setActiveFilter] = useState<ApplicationFilter>("all");
@@ -79,7 +71,7 @@ export const ApplicationsContent = forwardRef<
       new Date(a.applied_at ?? "").getTime(),
   );
 
-  const { app_statuses, get_app_status } = useDbRefs();
+  const { app_statuses } = useDbRefs();
 
   if (!app_statuses) return null;
 
@@ -173,6 +165,7 @@ export const ApplicationsContent = forwardRef<
 
   const {
     selectedApplications,
+    selectedApplicationsData,
     toggleSelect,
     selectAll,
     unselectAll,
@@ -194,10 +187,21 @@ export const ApplicationsContent = forwardRef<
   const someVisibleSelected =
     numVisibleSelected > 0 && numVisibleSelected < visibleApplications.length;
 
-  // separate statuses and visibility in the command bar and remove unused ones.
-  const command_bar_statuses = statuses.filter(
-    (status) => status.id !== "5" && status.id !== "7" && status.id !== "0",
+  const selectedAcceptedOrRejected = selectedApplicationsData.find(
+    (app) =>
+      app.status === LABEL_ID_MAP.get("accepted") ||
+      app.status === LABEL_ID_MAP.get("rejected"),
   );
+
+  // separate statuses and visibility in the command bar and remove unused ones.
+  const command_bar_statuses = selectedAcceptedOrRejected
+    ? ["Status locked for accepted/rejected applications."]
+    : statuses.filter(
+        (status) =>
+          status.id !== LABEL_ID_STRING_MAP.get("archived") &&
+          status.id !== LABEL_ID_STRING_MAP.get("deleted") &&
+          status.id !== LABEL_ID_STRING_MAP.get("pending"),
+      );
 
   const command_bar_visibility: ActionItem[] = [
     {
