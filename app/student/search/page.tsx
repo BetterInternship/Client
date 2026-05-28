@@ -30,6 +30,7 @@ import { Loader } from "@/components/ui/loader";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
 import { toast } from "sonner";
+import { SearchCommandBar } from "@/components/features/student/search/SearchCommandBar";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -331,73 +332,21 @@ export default function SearchPage() {
       UI
     ====================================================================================== */
 
-  // page toolbar (floating action bar)
-  const FloatingActionBar = (
-    <AnimatePresence>
-      {selectMode && (
-        <motion.div
-          className="fixed bottom-6 z-50 bg-gray-100 border border-gray-300 rounded-lg shadow-lg px-6 py-4 flex items-center gap-4 w-fit max-w-[90vw] mx-auto left-0 right-0"
-          initial={{ scale: 0.95, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.95, opacity: 0, y: 20 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-        >
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={selectAllOnPage}
-              className="h-8"
-            >
-              <CheckSquare className="w-4 h-4 mr-2" />
-              Select page
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={unselectAllOnPage}
-              className="h-8"
-            >
-              <Square className="w-4 h-4 mr-2" />
-              Unselect page
-            </Button>
-            <span className="text-sm text-gray-700 px-2">
-              {selectedIds.size} selected
-            </span>
-          </div>
-
-          <div className="h-6 w-px bg-gray-300" />
-
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              onClick={openMassApply}
-              className="h-8"
-              disabled={selectedIds.size === 0}
-            >
-              Apply to {selectedIds.size || 0}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8"
-              onClick={() => {
-                setSelectMode(false);
-                clearSelection();
-              }}
-            >
-              Cancel
-            </Button>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-
   return (
     <>
       {/* Floating action bar */}
-      {!isMobile && FloatingActionBar}
+      <SearchCommandBar
+        visible={selectMode}
+        selected={selectedJobsList}
+        selectedCount={selectedJobsList.length}
+        onCancel={() => {
+          setSelectMode(false);
+          clearSelection();
+        }}
+        onUnselectPage={unselectAllOnPage}
+        onSelectPage={selectAllOnPage}
+        onApply={openMassApply}
+      />
 
       <div className="flex-1 flex overflow-hidden border-primary ">
         {jobs.isPending ? (
@@ -459,44 +408,6 @@ export default function SearchPage() {
                 />
               </div>
             </div>
-
-            {/* Mobile mass apply toolbar */}
-            {selectMode && (
-              <motion.div
-                className="fixed inset-x-0 bottom-0 z-50 min-h-16 bg-gray-50 border-t border-gray-200 shadow-lg px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
-                initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-sm font-medium text-gray-700">
-                    {selectedIds.size} selected
-                  </span>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={openMassApply}
-                      disabled={selectedIds.size === 0}
-                      className="h-8"
-                    >
-                      Apply ({selectedIds.size})
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8"
-                      onClick={() => {
-                        setSelectMode(false);
-                        clearSelection();
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
-            )}
           </div>
         ) : (
           // Desktop split view
