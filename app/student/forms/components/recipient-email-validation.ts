@@ -12,15 +12,9 @@ export const getRecipientEmailErrors = (
   recipientEmails: Record<string, string>,
   options: RecipientEmailValidationOptions = {},
 ) => {
-  const errors: Record<string, string> = {};
-  const fieldNamesByEmail = new Map<string, string[]>();
-  const normalizedStudentEmail = options.studentEmail
-    ? normalizeEmail(options.studentEmail)
-    : "";
-
-  Object.entries(recipientEmails).forEach(([fieldName, emailValue]) => {
-    const trimmedEmail = emailValue.trim();
-    const normalizedEmail = normalizeEmail(emailValue);
+  return Object.entries(recipientEmails).reduce<Record<string, string>>(
+    (errors, [fieldName, emailValue]) => {
+      const trimmedEmail = emailValue.trim();
 
     if (!trimmedEmail) return;
 
@@ -40,7 +34,6 @@ export const getRecipientEmailErrors = (
       ...(fieldNamesByEmail.get(normalizedEmail) ?? []),
       fieldName,
     ]);
-  });
 
   // Rule: all recipient emails must be unique
   // fieldNamesByEmail.forEach((fieldNames) => {
@@ -51,5 +44,8 @@ export const getRecipientEmailErrors = (
   //   });
   // });
 
-  return errors;
+      return errors;
+    },
+    {},
+  );
 };
