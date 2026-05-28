@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { ClientBlock } from "@betterinternship/core/forms";
 import { FieldRenderer } from "./FieldRenderer";
+import { RadioGroupFiller } from "./RadioGroupFiller";
 import { HeaderRenderer, ParagraphRenderer } from "./BlockRenderer";
 import { useFormRendererContext } from "./form-renderer.ctx";
 import { getBlockField, isBlockField } from "./utils";
@@ -351,9 +352,40 @@ const BlocksRenderer = <T extends any[]>({
 }) => {
   if (!blocks.length) return null;
   const sortedBlocks = blocks.toSorted((a, b) => a.order - b.order);
+
+  // Pre-compute radio groups so we can collapse them into a single dropdown
+  const radioGroupMap = new Map<string, typeof sortedBlocks>();
+  for (const block of sortedBlocks) {
+    const groupId = (block.field_schema as any)?.radio_group_id as string | undefined;
+    if (!groupId) continue;
+    if (!radioGroupMap.has(groupId)) radioGroupMap.set(groupId, []);
+    radioGroupMap.get(groupId)!.push(block);
+  }
+  const renderedRadioGroups = new Set<string>();
+
   return sortedBlocks.map((block, i) => {
     const isForm = isBlockField(block);
     const field = isForm ? getBlockField(block) : null;
+
+    // Collapse all blocks in a radio group into a single dropdown
+    const radioGroupId = (block.field_schema as any)?.radio_group_id as string | undefined;
+    if (radioGroupId) {
+      if (renderedRadioGroups.has(radioGroupId)) return null;
+      renderedRadioGroups.add(radioGroupId);
+      return (
+        <div key={`radio-group-${radioGroupId}`}>
+          <RadioGroupFiller
+            blocks={radioGroupMap.get(radioGroupId)!}
+            values={values}
+            onChange={onChange}
+            errors={errors}
+            setSelected={setSelected}
+            selectedFieldId={selectedFieldId}
+            fieldRefs={fieldRefs}
+          />
+        </div>
+      );
+    }
 
     // Check if this is a phantom block
     const isPhantomBlock = block.block_type === "form_phantom_field";

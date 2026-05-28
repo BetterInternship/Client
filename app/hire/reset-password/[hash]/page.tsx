@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
 import { HelpCircle, MailCheck } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { HeaderIcon, HeaderText } from "@/components/ui/text";
+import { HeaderTitle } from "@/components/ui/text";
 import { useBlurTransition } from "@/components/animata/blur";
 
 /**
@@ -111,10 +111,7 @@ const ResetPasswordForm = ({ hash }: { hash: string }) => {
                 style={{ width: `${redirectProgress}%` }}
               />
             </div>
-            <div className="flex flex-row items-center gap-3 mb-2">
-              <HeaderIcon icon={MailCheck} />
-              <HeaderText>Password updated</HeaderText>
-            </div>
+            <HeaderTitle icon={MailCheck}>Password updated</HeaderTitle>
             <div className="mb-2 flex items-center gap-2 rounded-[0.33em] bg-emerald-600 px-4 py-3 text-white">
               <MailCheck className="h-5 w-5" />
               <p className="text-sm text-white">{success}</p>
@@ -135,10 +132,7 @@ const ResetPasswordForm = ({ hash }: { hash: string }) => {
     <AnimatePresence>
       <motion.div {...blurTransition} className="w-full">
         <Card className="flex flex-col gap-4 w-full">
-          <div className="flex flex-row items-center gap-3 mb-2">
-            <HeaderIcon icon={HelpCircle} />
-            <HeaderText>Reset password</HeaderText>
-          </div>
+          <HeaderTitle icon={HelpCircle}>Reset password</HeaderTitle>
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-sm text-red-600 justify-center">{error}</p>

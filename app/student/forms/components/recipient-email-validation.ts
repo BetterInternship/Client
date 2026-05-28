@@ -2,8 +2,15 @@ import { isValidEmail } from "@/lib/utils/string-utils";
 
 export const RECIPIENT_EMAIL_VALIDATION_DEBOUNCE_MS = 300;
 
+const normalizeEmail = (email: string) => email.trim().toLowerCase();
+
+type RecipientEmailValidationOptions = {
+  studentEmail?: string | null;
+};
+
 export const getRecipientEmailErrors = (
   recipientEmails: Record<string, string>,
+  options: RecipientEmailValidationOptions = {},
 ) => {
   return Object.entries(recipientEmails).reduce<Record<string, string>>(
     (errors, [fieldName, emailValue]) => {
@@ -27,7 +34,6 @@ export const getRecipientEmailErrors = (
       ...(fieldNamesByEmail.get(normalizedEmail) ?? []),
       fieldName,
     ]);
-  });
 
   // Rule: all recipient emails must be unique
   // fieldNamesByEmail.forEach((fieldNames) => {

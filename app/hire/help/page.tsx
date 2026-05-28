@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-import { HeaderIcon, HeaderText } from "@/components/ui/text";
+import { HeaderTitle } from "@/components/ui/text";
 import { useBlurTransition } from "@/components/animata/blur";
 import {
   EMPLOYER_GUIDE,
@@ -43,10 +43,7 @@ export default function HelpPage() {
           )}
           {...blurTransition}
         >
-          <div className="flex flex-row items-center gap-3 mb-2">
-            <HeaderIcon icon={HelpCircle} />
-            <HeaderText>Help</HeaderText>
-          </div>
+          <HeaderTitle icon={HelpCircle}>Help</HeaderTitle>
           <div className="grid gap-2 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1">
             <Card className="flex flex-col gap-2">
               <h4 className="tracking-tighter">Contact us</h4>

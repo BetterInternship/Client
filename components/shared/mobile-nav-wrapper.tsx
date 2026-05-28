@@ -20,7 +20,8 @@ export default function MobileNavWrapper() {
     pathname.startsWith("/forms/") ||
     pathname === "/miro" ||
     pathname === "/fff" ||
-    pathname.startsWith("/super-listing/") ||
+    pathname === "/super-listing" ||
+    pathname === "/super-listing/search" ||
     pathname === "/register" ||
     pathname === "/register/verify" ||
     pathname.startsWith("/companies/");

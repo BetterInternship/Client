@@ -125,16 +125,45 @@ export const FormFillerContextProvider = ({
     autofillValues?: FormValues,
   ) => {
     const errors: Record<string, string> = {};
+    const validatedRadioGroups = new Set<string>();
+
     for (const field of fields) {
-      const error = validateFieldHelper(
-        field,
-        valuesRef.current,
-        autofillValues ?? {},
-      );
-      if (error) errors[field.field] = error;
+      const radioGroupId = (field as any).radio_group_id as string | undefined;
+
+      if (radioGroupId) {
+        if (validatedRadioGroups.has(radioGroupId)) continue;
+        validatedRadioGroups.add(radioGroupId);
+
+        const groupFields = fields.filter(
+          (f) => (f as any).radio_group_id === radioGroupId,
+        );
+        const allValues = { ...(autofillValues ?? {}), ...valuesRef.current };
+        const anySelected = groupFields.some(
+          (f) => getFieldValue(allValues, f.field) === "X",
+        );
+
+        if (!anySelected) {
+          // Validate representative field with empty value to surface required error
+          const representative = groupFields[0];
+          if (representative) {
+            const error = validateFieldHelper(
+              representative,
+              { ...valuesRef.current, [representative.field]: "" },
+              autofillValues ?? {},
+            );
+            if (error) errors[representative.field] = error;
+          }
+        }
+      } else {
+        const error = validateFieldHelper(
+          field,
+          valuesRef.current,
+          autofillValues ?? {},
+        );
+        if (error) errors[field.field] = error;
+      }
     }
 
-    // If any errors, disallow proceed
     _setErrors(errors);
     return errors;
   };

@@ -12,7 +12,7 @@ import { Loader } from "@/components/ui/loader";
 import { Card } from "@/components/ui/card";
 import { JobHead, SuperListingBadge } from "@/components/shared/jobs";
 import { Job, SavedJob } from "@/lib/db/db.types";
-import { HeaderIcon, HeaderText } from "@/components/ui/text";
+import { HeaderTitle } from "@/components/ui/text";
 import { Separator } from "@/components/ui/separator";
 import { PageError } from "@/components/ui/error";
 import { SaveJobButton } from "@/components/features/student/job/save-job-button";
@@ -32,10 +32,7 @@ export default function SavedJobsPage() {
       <div className="max-w-5xl mx-auto">
         <div className="mb-6 sm:mb-8 animate-fade-in">
           <div>
-            <div className="flex flex-row items-center gap-3 mb-2">
-              <HeaderIcon icon={Heart} />
-              <HeaderText>Saved Jobs</HeaderText>
-            </div>
+            <HeaderTitle icon={Heart}>Saved Jobs</HeaderTitle>
             <Badge>{savedJobs.length} saved</Badge>
           </div>
         </div>

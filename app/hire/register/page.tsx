@@ -18,7 +18,7 @@ import { useAppContext } from "@/lib/ctx-app";
 import Link from "next/link";
 import { TriangleAlert, User } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { HeaderIcon, HeaderText } from "@/components/ui/text";
+import { HeaderTitle } from "@/components/ui/text";
 import { useBlurTransition } from "@/components/animata/blur";
 
 const [EmployerRegisterForm, useEmployerRegisterForm] =
@@ -187,10 +187,7 @@ const EmployerEditor = ({
       <AnimatePresence>
         <motion.div {...blurTransition} className="w-full">
           <Card>
-            <div className="flex flex-row items-center gap-3 mb-2">
-              <HeaderIcon icon={User} />
-              <HeaderText>Register</HeaderText>
-            </div>
+            <HeaderTitle icon={User}>Register</HeaderTitle>
             {missingFields.length > 0 && (
               <div
                 className={cn(
