@@ -13,7 +13,7 @@ import {
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Briefcase, Plus } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { useAuthContext } from "../authctx";
 import { Job } from "@/lib/db/db.types";
 import { HeaderTitle } from "@/components/ui/text";
@@ -25,16 +25,14 @@ const NORMAL_LISTING_CREATE_PATH = "/listings/create";
 
 function DashboardContent() {
   const { isMobile } = useMobile();
-  const { isAuthenticated, redirectIfNotLoggedIn, loading } = useAuthContext();
+  const { isAuthenticated, redirectIfNotLoggedIn } = useAuthContext();
   const router = useRouter();
   const superListingTapState = useRef({ count: 0, lastTapMs: 0 });
   const profile = useProfile();
   const applications = useEmployerApplications();
-  const { ownedJobs, update_job, delete_job } = useOwnedJobs();
+  const { ownedJobs, update_job, loading } = useOwnedJobs();
   const activeJobs = ownedJobs.filter((job) => job.is_active);
   const inactiveJobs = ownedJobs.filter((job) => !job.is_active);
-
-  const [isLoading, setLoading] = useState(true);
 
   redirectIfNotLoggedIn();
 
@@ -64,14 +62,6 @@ function DashboardContent() {
     const result = await update_job(jobId, updates);
     return result;
   };
-
-  useEffect(() => {
-    if (!ownedJobs) {
-      setLoading(true);
-    } else {
-      setLoading(false);
-    }
-  }, [ownedJobs, activeJobs, inactiveJobs]);
 
   if (loading || !isAuthenticated()) {
     return (
@@ -114,7 +104,7 @@ function DashboardContent() {
               employerId={profile.data?.id || ""}
               updateJob={handleUpdateJob}
               onAddListingClick={handleAddListingClick}
-              isLoading={isLoading}
+              isLoading={loading}
             />
             {isMobile && (
               <button

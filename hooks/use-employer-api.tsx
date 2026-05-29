@@ -225,7 +225,6 @@ export function useOwnedJobs(
 
   useEffect(() => {
     fetchOwnedJobs();
-    setLoading(false);
   }, [fetchOwnedJobs]);
 
   // Client-side filtering
