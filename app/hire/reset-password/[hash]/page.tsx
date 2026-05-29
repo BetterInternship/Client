@@ -153,7 +153,7 @@ const ResetPasswordForm = ({ hash }: { hash: string }) => {
           <div className="flex justify-end items-center w-[100%]">
             <Button
               type="submit"
-              onClick={() => handle_request}
+              onClick={(e) => void handle_request(e)}
               disabled={isLoading}
             >
               {isLoading ? "Changing password..." : "Change password"}
