@@ -79,7 +79,7 @@ function ApplicantPageContent() {
   };
 
   return (
-    <ContentLayout>
+    <ContentLayout className="!p-0">
       <div className="w-full h-full">
         <ApplicantPage
           application={userApplication}
