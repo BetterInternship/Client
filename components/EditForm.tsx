@@ -39,6 +39,8 @@ import { Input } from "./ui/input";
 import { Tooltip } from "react-tooltip";
 import { Textarea } from "./ui/textarea";
 import { Matcher } from "react-day-picker";
+import { AnimatePresence, motion } from "framer-motion";
+import { useBlurTransition } from "./animata/blur";
 
 interface EditFormContext<T extends IFormData> {
   formData: T;
@@ -378,6 +380,12 @@ export const FormCheckbox = ({
   labelAddon,
   ...props
 }: FormCheckboxProps) => {
+  const blurTransition = useBlurTransition({
+    scale: 0.5,
+    blurPx: 2,
+    duration: 0.15,
+  });
+
   return (
     <div className={className}>
       {label && (
@@ -401,10 +409,17 @@ export const FormCheckbox = ({
           )}
           onCheckedChange={(checked) => setter && setter(!!checked)}
         >
-          {indeterminate && (
-            <Minus className="text-primary opacity-75 h-4 w-4" />
-          )}
-          {checked && <Check className="text-primary opacity-75 h-4 w-4" />}
+          {indeterminate ? (
+            <motion.div key="checkIcon" {...blurTransition}>
+              <Minus className="text-primary opacity-75 h-4 w-4" />
+            </motion.div>
+          ) : checked ? (
+            <AnimatePresence>
+              <motion.div key="checkIcon" {...blurTransition}>
+                <Check className="text-primary opacity-75 h-4 w-4" />
+              </motion.div>
+            </AnimatePresence>
+          ) : null}
         </Checkbox>
         {sentence && (
           <div

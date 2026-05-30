@@ -275,7 +275,7 @@ export const HeaderButtons: React.FC = () => {
           <Button
             variant="ghost"
             className={cn(
-              "group w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-md",
+              "group w-20 px-2 py-1 flex-col gap-1 h-auto items-center justify-center rounded-[0.33em]",
               pathname === "/profile"
                 ? "text-primary"
                 : "opacity-80 hover:opacity-100 hover:bg-gray-100",
