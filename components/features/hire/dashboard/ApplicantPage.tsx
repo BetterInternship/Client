@@ -7,7 +7,7 @@ import { HorizontalCollapsible } from "@/components/ui/horizontal-collapse";
 import { useFile } from "@/hooks/use-file";
 import { UserService } from "@/lib/api/services";
 import { useAppContext } from "@/lib/ctx-app";
-import { EmployerApplication, PublicUser } from "@/lib/db/db.types";
+import { EmployerApplication, Job, PublicUser } from "@/lib/db/db.types";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { getFullName } from "@/lib/profile";
 import { cn } from "@/lib/utils";
@@ -28,6 +28,9 @@ import {
   HandHelping,
   Trash2,
   ArchiveRestore,
+  ChevronLeft,
+  ChevronRight,
+  HelpCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, useMemo } from "react";
@@ -44,8 +47,15 @@ import { useAuthContext } from "@/app/hire/authctx";
 import { ActionButton } from "@/components/ui/action-button";
 import StatusBadge from "@/components/ui/status-badge";
 import JobHeader from "./JobHeader";
+import { useEmployerApplications } from "@/hooks/use-employer-api";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Card } from "@/components/ui/card";
+import { HeaderTitle } from "@/components/ui/text";
+import { useBlurTransition } from "@/components/animata/blur";
 
 interface ApplicantPageProps {
+  jobId: string | undefined;
   application: EmployerApplication | undefined;
   userApplications?: EmployerApplication[] | undefined;
   statuses: ActionItem[];
@@ -54,14 +64,24 @@ interface ApplicantPageProps {
 }
 
 export function ApplicantPage({
+  jobId,
   application,
   userApplications,
   statuses,
   onArchive,
   onDelete,
 }: ApplicantPageProps) {
-  const router = useRouter();
   const user = application?.user as Partial<PublicUser>;
+  const otherApplicants =
+    useEmployerApplications().employer_applications.filter(
+      (app) =>
+        app.job_id === jobId &&
+        app.status === application?.status &&
+        app.visibility === "visible",
+    );
+  const applicantIndex = otherApplicants.findIndex(
+    (app) => app.user_id === application?.user_id,
+  );
   const internshipPreferences = user?.internship_preferences;
   const challengeSubmission = application?.challenge_submission?.trim() ?? "";
   const hasChallengeSubmission = challengeSubmission.length > 0;
@@ -88,6 +108,8 @@ export function ApplicantPage({
     highlighted: true,
     highlightColor: UI_STATUS_MAP.get(filterKey)?.bgColor,
   };
+
+  const blurTransition = useBlurTransition();
 
   const {
     url: resumeURL,
@@ -119,27 +141,83 @@ export function ApplicantPage({
     return <Loader>Getting applicant information...</Loader>;
   }
 
-  if (!application) {
-    return <div>Application not found.</div>;
+  if (!application || !jobId) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center">
+        <Card className="flex flex-col gap-4 p-12">
+          <img src="/error.png" alt="Error" className="mx-auto w-96" />
+          <HeaderTitle icon={HelpCircle} className="mb-0">
+            Application not found.
+          </HeaderTitle>
+          <div className="flex justify-between">
+            <Link href="/dashboard">
+              <Button>Go to dashboard</Button>
+            </Link>
+          </div>
+        </Card>
+      </div>
+    );
   }
+
+  const prevApplicantId = otherApplicants[applicantIndex + 1]?.id;
+  const nextApplicantId = otherApplicants[applicantIndex - 1]?.id;
 
   return (
     <div className="space-y-6">
-      <JobHeader job={application.job!} />
+      <JobHeader
+        job={application.job!}
+        backHref={`/dashboard/manage?jobId=${jobId}`}
+      />
       <motion.div
-        initial={{ scale: 0.98, filter: "blur(4px)", opacity: 0 }}
-        animate={
-          exitingBack
-            ? { scale: 0.98, filter: "blur(4px)", opacity: 0 }
-            : { scale: 1, filter: "blur(0px)", opacity: 1 }
-        }
-        transition={{ duration: 0.3, ease: "easeOut" }}
-        className="lg:flex w-full justify-center"
+        key={application?.id}
+        {...blurTransition}
+        className={cn(
+          "lg:grid lg:grid-rows-[auto_1fr] lg:grid-cols-auto w-full h-full",
+          isMobile ? "px-4" : "px-6",
+        )}
       >
+        <div className="h-fit col-span-2 mb-4">
+          {prevApplicantId ? (
+            <Link
+              replace
+              href={
+                "http://hire.localhost:3000/dashboard/applicant?applicationId=" +
+                prevApplicantId
+              }
+              aria-disabled={prevApplicantId === undefined}
+            >
+              <Button variant="ghost">
+                <ChevronLeft />
+              </Button>
+            </Link>
+          ) : (
+            <Button disabled variant="ghost">
+              <ChevronLeft />
+            </Button>
+          )}
+          {nextApplicantId ? (
+            <Link
+              replace
+              href={
+                "http://hire.localhost:3000/dashboard/applicant?applicationId=" +
+                nextApplicantId
+              }
+              aria-disabled={nextApplicantId === undefined}
+            >
+              <Button variant="ghost">
+                <ChevronRight />
+              </Button>
+            </Link>
+          ) : (
+            <Button disabled variant="ghost">
+              <ChevronRight />
+            </Button>
+          )}
+        </div>
         <div
           className={cn(
             "bg-white rounded-[0.33em] border border-gray-200 ",
-            isMobile ? "p-4" : "w-[50%] p-6",
+            isMobile ? "p-4" : "p-6",
           )}
         >
           {/* "header" ish portion */}
@@ -533,7 +611,7 @@ export function ApplicantPage({
             <PDFPreview url={resumeURL} />
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center h-96 px-8 w-full">
+          <div className="flex flex-col items-center justify-center px-8 w-full">
             <div className="text-center">
               <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">

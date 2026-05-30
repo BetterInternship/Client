@@ -19,13 +19,20 @@ import { toast } from "sonner";
 export default function JobHeader({
   job,
   onJobUpdate,
+  backHref,
 }: {
   job: Job;
   onJobUpdate?: (updates: Partial<Job>) => void;
+  backHref?: string;
 }) {
   const router = useRouter();
   const { ownedJobs, update_job, delete_job } = useOwnedJobs();
   const { saving } = useListingsBusinessLogic(ownedJobs);
+
+  const handleBack = () => {
+    if (backHref) return router.replace(backHref);
+    router.back();
+  };
 
   const handleToggleActive = async () => {
     if (!job.id) return;
@@ -145,7 +152,7 @@ export default function JobHeader({
               <Button
                 size="md"
                 variant="ghost"
-                onClick={() => router.push("/dashboard")}
+                onClick={() => router.back()}
                 className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-0 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -271,7 +278,7 @@ export default function JobHeader({
               <Button
                 size="md"
                 variant="ghost"
-                onClick={() => router.push("/dashboard")}
+                onClick={handleBack}
                 className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
