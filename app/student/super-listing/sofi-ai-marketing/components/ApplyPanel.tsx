@@ -14,6 +14,8 @@ import type { SofiAiSubmissionForm } from "./types";
 
 type ApplyPanelProps = {
   form: SofiAiSubmissionForm;
+  submissionsDisabled?: boolean;
+  submissionsDisabledMessage?: string;
   hasSubmitted: boolean;
   submittedEmail: string;
   isSubmitting: boolean;
@@ -47,6 +49,8 @@ function AsteriskList({ items }: { items: readonly string[] }) {
 
 export function ApplyPanel({
   form,
+  submissionsDisabled = false,
+  submissionsDisabledMessage = "Submissions are currently closed for this listing.",
   hasSubmitted,
   submittedEmail,
   isSubmitting,
@@ -194,6 +198,11 @@ export function ApplyPanel({
           <p className="[font-family:var(--font-paraluman-heading)] text-xl font-bold tracking-[-0.025em] text-[#052338]">
             Submission Form
           </p>
+          {submissionsDisabled ? (
+            <div className="mb-5 mt-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 [font-family:var(--font-paraluman-body)] text-sm font-semibold text-red-700">
+              {submissionsDisabledMessage}
+            </div>
+          ) : null}
           <form className="space-y-5" onSubmit={(e) => void onSubmit(e)}>
             <div className="grid gap-4">
               <div className="space-y-2">
@@ -202,6 +211,7 @@ export function ApplyPanel({
                 </label>
                 <Input
                   required
+                  disabled={submissionsDisabled || isSubmitting}
                   value={form.fullName}
                   onChange={updateField("fullName")}
                   className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
@@ -215,6 +225,7 @@ export function ApplyPanel({
                 <Input
                   required
                   type="email"
+                  disabled={submissionsDisabled || isSubmitting}
                   value={form.email}
                   onChange={updateField("email")}
                   className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
@@ -228,6 +239,7 @@ export function ApplyPanel({
                 <Input
                   required
                   type="tel"
+                  disabled={submissionsDisabled || isSubmitting}
                   value={form.contactNumber}
                   onChange={updateField("contactNumber")}
                   className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
@@ -247,6 +259,7 @@ export function ApplyPanel({
                 </div>
                 <Input
                   required
+                  disabled={submissionsDisabled || isSubmitting}
                   value={form.submissionLink}
                   onChange={updateField("submissionLink")}
                   className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
@@ -265,6 +278,7 @@ export function ApplyPanel({
                 </div>
                 <Input
                   required
+                  disabled={submissionsDisabled || isSubmitting}
                   value={form.videoSubmissionLink}
                   onChange={updateField("videoSubmissionLink")}
                   className="h-11 rounded-md border-[#052338]/14 bg-white text-[#052338] [font-family:var(--font-paraluman-body)] text-sm shadow-none focus-visible:ring-[#00B894]/20"
@@ -272,7 +286,7 @@ export function ApplyPanel({
               </div>
             </div>
 
-            {isDevelopment ? (
+            {submissionsDisabled ? null : isDevelopment ? (
               <p className="border-t border-[#052338]/10 pt-4 [font-family:var(--font-paraluman-body)] text-sm text-[#00866f]">
                 Captcha disabled in development.
               </p>
@@ -300,7 +314,7 @@ export function ApplyPanel({
             <div className="flex flex-col gap-3">
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || submissionsDisabled}
                 className="inline-flex h-11 w-fit items-center justify-center gap-2 rounded-md bg-[#052338] px-5 [font-family:var(--font-paraluman-heading)] text-sm font-bold text-white transition-all duration-200 hover:bg-[#0D3B33]"
               >
                 {isSubmitting ? (

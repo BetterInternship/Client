@@ -775,7 +775,7 @@ function FeaturedInternship() {
     {
       href: "/super-listing/sofi-ai-marketing",
       title: "Marketing Intern",
-      closed: false,
+      closed: true,
       icon: <Megaphone className="h-6 w-6" />,
     },
   ] as const;
