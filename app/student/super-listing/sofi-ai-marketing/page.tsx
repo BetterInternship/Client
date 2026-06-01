@@ -1,13 +1,15 @@
 "use client";
 
-import { type FormEvent, useMemo, useRef, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useSuperListingUnlock } from "@/hooks/use-super-listing-unlock";
+import useModalRegistry from "@/components/modals/modal-registry";
 import { toastPresets } from "@/components/ui/sonner-toast";
 import { OverviewPanel } from "./components/OverviewPanel";
 import { HowToApplyPanel } from "./components/HowToApplyPanel";
@@ -68,9 +70,14 @@ const PANEL_TABS: Array<{
 ];
 
 const SUPER_LISTING_SLUG = "sofi-ai-marketing";
+const SUBMISSIONS_DISABLED_MESSAGE =
+  "Submissions are currently closed for this listing.";
+const SUBMISSIONS_DISABLED = true;
 
 export default function SofiAiSuperListingPage() {
   const isDevelopment = process.env.NODE_ENV === "development";
+  const router = useRouter();
+  const modalRegistry = useModalRegistry();
 
   const [form, setForm] = useState<SofiAiSubmissionForm>(INITIAL_FORM_STATE);
   const [unlockForm, setUnlockForm] = useState<SuperListingUnlockForm>(
@@ -89,6 +96,7 @@ export default function SofiAiSuperListingPage() {
   const [activePanel, setActivePanel] = useState<PanelKey>("overview");
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
+  const [showClosedModal, setShowClosedModal] = useState(true);
   const unlock = useSuperListingUnlock({
     isDevelopment,
     slug: SUPER_LISTING_SLUG,
@@ -105,6 +113,28 @@ export default function SofiAiSuperListingPage() {
     if (!base) return "/api/super-listings/submission/sofi-ai-marketing";
     return `${base}/super-listings/submission/sofi-ai-marketing`;
   }, []);
+
+  useEffect(() => {
+    if (!showClosedModal) {
+      modalRegistry.superListingClosed.close();
+      return;
+    }
+
+    modalRegistry.superListingClosed.open({
+      description:
+        "We're sorry, but applications for this listing are now closed. Please explore our other listings to find more opportunities.",
+      accentColor: "#00A886",
+      onView: () => setShowClosedModal(false),
+      onLeave: () => {
+        setShowClosedModal(false);
+        router.push("/search");
+      },
+    });
+
+    return () => {
+      modalRegistry.superListingClosed.close();
+    };
+  }, [modalRegistry, router, showClosedModal]);
 
   const onFieldChange = (field: keyof SofiAiSubmissionForm, value: string) => {
     setForm((previous) => ({ ...previous, [field]: value }));
@@ -203,6 +233,13 @@ export default function SofiAiSuperListingPage() {
     event.preventDefault();
     setResultMessage("");
     setIsError(false);
+
+    // Hard stop: prevent any submission payload from being sent.
+    if (SUBMISSIONS_DISABLED) {
+      setIsError(true);
+      setResultMessage(SUBMISSIONS_DISABLED_MESSAGE);
+      return;
+    }
 
     if (unlock.isLocked) {
       setIsError(true);
@@ -343,6 +380,11 @@ export default function SofiAiSuperListingPage() {
 
             <div className="min-w-0">
               <div className="-mx-5 border-y border-[rgba(0,80,60,0.055)] bg-white/55 px-5 pb-3 shadow-[0_18px_48px_-42px_rgba(5,35,56,0.28)] backdrop-blur-[2px] sm:mx-0 sm:rounded-[0.75em] sm:border sm:px-6">
+                {SUBMISSIONS_DISABLED ? (
+                  <div className="mt-5 flex justify-center rounded-[0.33em] border border-red-500/25 bg-destructive px-4 py-3 [font-family:var(--font-paraluman-mono)] text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-[0_10px_24px_-18px_rgba(5,35,56,0.35)] sm:text-sm">
+                    {SUBMISSIONS_DISABLED_MESSAGE}
+                  </div>
+                ) : null}
                 <div className="border-b border-[#052338]/12">
                   <div className="flex justify-between gap-3 sm:justify-start sm:gap-7">
                     {visiblePanelTabs.map((tab) => {
@@ -422,6 +464,10 @@ export default function SofiAiSuperListingPage() {
                       {!unlock.isLocked && (
                         <ApplyPanel
                           form={form}
+                          submissionsDisabled={SUBMISSIONS_DISABLED}
+                          submissionsDisabledMessage={
+                            SUBMISSIONS_DISABLED_MESSAGE
+                          }
                           hasSubmitted={hasSubmitted}
                           submittedEmail={submittedEmail}
                           isSubmitting={isSubmitting}
