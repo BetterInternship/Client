@@ -14,6 +14,32 @@ import { getFullName } from "@/lib/profile";
 import { useSignContext } from "@/components/providers/sign.ctx";
 import { formatTimestampDateWithoutTime } from "@/lib/utils";
 import { withSavedSignatureImagesForFields } from "@/lib/saved-signature-image";
+import { getSignatureImageFieldKey } from "@betterinternship/core/forms";
+
+const getSignatureRecipientKey = (field: { signing_party_id?: string }) =>
+  field.signing_party_id || "initiator";
+
+const getCanonicalSignatureFields = (
+  signatureFields: { field: string; signing_party_id?: string }[],
+) => {
+  const seenRecipientIds = new Set<string>();
+  return signatureFields.filter((signatureField) => {
+    const recipientKey = getSignatureRecipientKey(signatureField);
+    if (seenRecipientIds.has(recipientKey)) return false;
+    seenRecipientIds.add(recipientKey);
+    return true;
+  });
+};
+
+const getRadioGroupId = (block: ClientBlock<any[]>) => {
+  const fieldSchema = block.field_schema as
+    | { radio_group_id?: unknown }
+    | undefined;
+
+  return typeof fieldSchema?.radio_group_id === "string"
+    ? fieldSchema.radio_group_id
+    : undefined;
+};
 
 export function FormFillerRenderer({
   onValuesChange,
@@ -35,14 +61,23 @@ export function FormFillerRenderer({
   const fieldRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // Deduplicate blocks: only keep first instance of each field ID
+  // Deduplicate blocks: only keep first instance of each field ID.
+  // Signatures are recipient-level inputs, so multiple placements for one signer
+  // collapse into one list entry while still filling every matching signature field.
   const deduplicatedBlocks = useMemo(() => {
     const seenFieldIds = new Set<string>();
+    const seenSignatureRecipientIds = new Set<string>();
     return filteredBlocks.filter((block) => {
       if (!isBlockField(block) && block.block_type !== "form_phantom_field")
         return true;
       const field = getBlockField(block) || block.phantom_field_schema;
       if (!field) return true;
+
+      if (field.type === "signature") {
+        const recipientKey = getSignatureRecipientKey(field);
+        if (seenSignatureRecipientIds.has(recipientKey)) return false;
+        seenSignatureRecipientIds.add(recipientKey);
+      }
 
       if (seenFieldIds.has(field.field)) return false;
       seenFieldIds.add(field.field);
@@ -59,7 +94,10 @@ export function FormFillerRenderer({
     [form.formMetadata],
   );
   const signatureFieldKeys = useMemo(
-    () => signatureFields.map((signatureField) => signatureField.field),
+    () =>
+      getCanonicalSignatureFields(signatureFields).map(
+        (signatureField) => signatureField.field,
+      ),
     [signatureFields],
   );
   const signatureFieldKey = signatureFieldKeys.join("\n");
@@ -350,13 +388,14 @@ const BlocksRenderer = <T extends any[]>({
   fieldRefs: Record<string, HTMLDivElement | null>;
   selectedFieldId?: string;
 }) => {
+  const form = useFormRendererContext();
   if (!blocks.length) return null;
   const sortedBlocks = blocks.toSorted((a, b) => a.order - b.order);
 
   // Pre-compute radio groups so we can collapse them into a single dropdown
   const radioGroupMap = new Map<string, typeof sortedBlocks>();
   for (const block of sortedBlocks) {
-    const groupId = (block.field_schema as any)?.radio_group_id as string | undefined;
+    const groupId = getRadioGroupId(block);
     if (!groupId) continue;
     if (!radioGroupMap.has(groupId)) radioGroupMap.set(groupId, []);
     radioGroupMap.get(groupId)!.push(block);
@@ -368,7 +407,7 @@ const BlocksRenderer = <T extends any[]>({
     const field = isForm ? getBlockField(block) : null;
 
     // Collapse all blocks in a radio group into a single dropdown
-    const radioGroupId = (block.field_schema as any)?.radio_group_id as string | undefined;
+    const radioGroupId = getRadioGroupId(block);
     if (radioGroupId) {
       if (renderedRadioGroups.has(radioGroupId)) return null;
       renderedRadioGroups.add(radioGroupId);
@@ -395,9 +434,61 @@ const BlocksRenderer = <T extends any[]>({
     const actualField = field || phantomField;
     const isPhantom = isPhantomBlock;
 
+    const signatureFieldsForRecipient =
+      actualField?.type === "signature"
+        ? form.formMetadata
+            .getSignatureFieldsForClientService(
+              getSignatureRecipientKey(actualField),
+            )
+            .filter(
+              (signatureField) =>
+                getSignatureRecipientKey(signatureField) ===
+                getSignatureRecipientKey(actualField),
+            )
+        : [];
+
     // Only check selection for form fields
-    const isSelected = isForm && field && selectedFieldId === field.field;
+    const isSelected =
+      isForm &&
+      actualField &&
+      (selectedFieldId === actualField.field ||
+        signatureFieldsForRecipient.some(
+          (signatureField) => signatureField.field === selectedFieldId,
+        ));
     const blockKey = `${formKey}:${actualField?.field || block.block_type}:${i}`;
+
+    const handleFieldChange = (value: any) => {
+      if (!actualField) return;
+      if (!signatureFieldsForRecipient.length) {
+        onChange(actualField.field, value);
+        return;
+      }
+
+      for (const signatureField of signatureFieldsForRecipient) {
+        onChange(signatureField.field, value);
+      }
+    };
+
+    const handleAuxValueChange = (key: string, value: any) => {
+      if (!signatureFieldsForRecipient.length) {
+        onChange(key, value);
+        return;
+      }
+
+      const signatureImageKeys = new Set(
+        signatureFieldsForRecipient.map((signatureField) =>
+          getSignatureImageFieldKey(signatureField.field),
+        ),
+      );
+      if (!signatureImageKeys.has(key)) {
+        onChange(key, value);
+        return;
+      }
+
+      for (const signatureImageKey of signatureImageKeys) {
+        onChange(signatureImageKey, value);
+      }
+    };
 
     return (
       <div key={blockKey}>
@@ -409,7 +500,12 @@ const BlocksRenderer = <T extends any[]>({
             >
               <div
                 ref={(el) => {
-                  if (el && actualField) fieldRefs[actualField.field] = el;
+                  if (!el || !actualField) return;
+
+                  fieldRefs[actualField.field] = el;
+                  for (const signatureField of signatureFieldsForRecipient) {
+                    fieldRefs[signatureField.field] = el;
+                  }
                 }}
                 onClick={() => !isPhantom && setSelected(actualField?.field)}
                 className={`flex-1 transition-all py-2 px-1 ${isPhantom ? "cursor-not-allowed" : "cursor-pointer"} ${isSelected ? "ring-2 ring-blue-500 ring-offset-2 rounded-[0.33em]" : ""}`}
@@ -419,8 +515,8 @@ const BlocksRenderer = <T extends any[]>({
                 <FieldRenderer
                   field={actualField}
                   value={values[actualField.field]}
-                  onChange={(v) => onChange(actualField.field, v)}
-                  onAuxValueChange={onChange}
+                  onChange={handleFieldChange}
+                  onAuxValueChange={handleAuxValueChange}
                   onBlur={(nextValue) =>
                     onBlurValidate?.(actualField.field, nextValue)
                   }
