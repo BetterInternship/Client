@@ -1,10 +1,13 @@
 "use client";
 
-import { DB_STATUS_MAP, UI_STATUS_MAP } from "@/lib/consts/application";
+import { DB_STATUS_MAP } from "@/lib/consts/application";
 import ContentLayout from "@/components/features/hire/content-layout";
 import { ApplicantPage } from "@/components/features/hire/dashboard/ApplicantPage";
-import { type ActionItem } from "@/components/ui/action-item";
-import { useEmployerApplications } from "@/hooks/use-employer-api";
+import { type DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import {
+  useEmployerApplications,
+  useOwnedJobs,
+} from "@/hooks/use-employer-api";
 import { UserService } from "@/lib/api/services";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { useSearchParams } from "next/navigation";
@@ -16,6 +19,7 @@ function ApplicantPageContent() {
   const applicationId = searchParams.get("applicationId");
   const [loading, setLoading] = useState(true);
   const applications = useEmployerApplications();
+  const jobs = useOwnedJobs();
   const { app_statuses } = useDbRefs();
 
   const { triggerAction } = useApplicationActions(applications.review);
@@ -23,9 +27,10 @@ function ApplicantPageContent() {
   const userApplication = applications?.employer_applications.find(
     (a) => applicationId === a.id,
   );
-  const otherApplications = applications?.employer_applications.filter(
+  const otherUserApplications = applications?.employer_applications.filter(
     (a) => a.user_id === userApplication?.user_id,
   );
+  const jobId = userApplication?.job_id;
   const userId = userApplication?.user_id;
 
   useEffect(() => {
@@ -59,32 +64,29 @@ function ApplicantPageContent() {
   const getStatuses = (applicationId: string) => {
     return unique_app_statuses
       .filter((status) => status.id !== 7 && status.id !== 5 && status.id !== 0)
-      .map((status): ActionItem => {
+      .map((status): DropdownMenuItem => {
         const config = DB_STATUS_MAP[status.id];
-        const uiProps = UI_STATUS_MAP.get(config?.key || "pending");
 
         return {
           id: status.id.toString(),
-          label: status.name,
-          icon: uiProps?.icon,
           onClick: () =>
             triggerAction(
               config?.action || "CHANGE_STATUS",
               [application],
               status.id,
             ),
-          destructive: uiProps?.destructive,
         };
       });
   };
 
   return (
-    <ContentLayout>
+    <ContentLayout className="!p-0">
       <div className="w-full h-full">
         <ApplicantPage
+          jobId={jobId!}
           application={userApplication}
           statuses={getStatuses(userApplication?.id || "")}
-          userApplications={otherApplications}
+          userApplications={otherUserApplications}
           onArchive={() => {
             if (!userApplication) return;
             if (userApplication.visibility === "archived") {

@@ -1,51 +1,79 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { ActionItem } from "./action-item";
-import StatusBadge from "./status-badge";
+import StatusBadge, {
+  getStatusFilterKey,
+  STATUS_COLOR_CLASSES,
+  STATUS_HOVER_CLASSES,
+} from "./status-badge";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
+
+export type DropdownMenuItem = {
+  id: string;
+  onClick?: () => void;
+};
 
 export const DropdownMenu = ({
   className,
   items,
   defaultItem,
   enabled = true,
+  placement = "bottom",
+  placeholder,
 }: {
   className?: string;
-  items: ActionItem[];
-  defaultItem: ActionItem;
+  items: DropdownMenuItem[];
+  defaultItem: DropdownMenuItem;
   enabled?: boolean;
+  placement?: "top" | "bottom";
+  placeholder?: ReactNode;
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [activeItem, setActiveItem] = useState<ActionItem>(defaultItem);
+  const [activeItem, setActiveItem] = useState<DropdownMenuItem>(defaultItem);
+  const [hasSelection, setHasSelection] = useState(!placeholder);
+  const activeStatusClass = hasSelection
+    ? STATUS_COLOR_CLASSES[getStatusFilterKey(parseInt(activeItem.id))]
+    : "border-gray-300 bg-background text-gray-700";
   const menuRef = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState<{ top: number; left: number; width: number }>({
-    top: 0,
-    left: 0,
-    width: 0,
-  });
+  const [pos, setPos] = useState<{
+    top?: number;
+    bottom?: number;
+    left: number;
+    width: number;
+  }>({ left: 0, width: 0 });
 
   useEffect(() => {
     if (!isOpen || !menuRef.current) return;
-    const rect = menuRef.current.getBoundingClientRect();
-    setPos({ top: rect.bottom + 4, left: rect.left, width: rect.width });
 
-    const handleScroll = () => {
+    const updatePosition = () => {
       const r = menuRef.current?.getBoundingClientRect();
-      if (r) setPos({ top: r.bottom + 4, left: r.left, width: r.width });
+      if (!r) return;
+
+      setPos(
+        placement === "top"
+          ? {
+              bottom: window.innerHeight - r.top + 4,
+              left: r.left,
+              width: r.width,
+            }
+          : { top: r.bottom + 4, left: r.left, width: r.width },
+      );
     };
-    window.addEventListener("scroll", handleScroll, true);
-    window.addEventListener("resize", handleScroll);
+
+    updatePosition();
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
     return () => {
-      window.removeEventListener("scroll", handleScroll, true);
-      window.removeEventListener("resize", handleScroll);
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
     };
-  }, [isOpen]);
+  }, [isOpen, placement]);
 
   useEffect(() => {
     setActiveItem(defaultItem);
-  }, [defaultItem]);
+    setHasSelection(!placeholder);
+  }, [defaultItem, placeholder]);
 
   useEffect(() => {
     const handleClickOut = (e: MouseEvent) => {
@@ -66,55 +94,84 @@ export const DropdownMenu = ({
       ref={menuRef}
       aria-disabled={!enabled}
       className={cn(
+        "relative inline-flex min-w-32 overflow-hidden rounded-[0.33em] border transition aria-disabled:cursor-not-allowed aria-disabled:pointer-events-none aria-disabled:opacity-50",
+        activeStatusClass,
         className,
-        "relative border border-gray-300 rounded-[0.33em] bg-white inline-flex aria-disabled:text-muted-foreground/50 aria-disabled:bg-muted/50 aria-disabled:cursor-not-allowed aria-disabled:pointer-events-none",
       )}
     >
       <div
-        className="flex flex-col gap-1"
+        className="w-full"
         onClick={(e) => {
           e.stopPropagation();
           if (!enabled) return;
           setIsOpen((prev) => !prev);
         }}
       >
-        <div className="flex gap-2 px-2 py-1 pr-4 items-center justify-between w-full">
-          {isOpen ? <ChevronUp size={cn(20)} /> : <ChevronDown size={cn(20)} />}
-          <StatusBadge statusId={parseInt(activeItem.id)} />
+        <div className="flex w-full items-center justify-between gap-2 px-2.5 py-1.5">
+          {hasSelection ? (
+            <StatusBadge
+              statusId={parseInt(activeItem.id)}
+              className="h-auto border-0 bg-transparent p-0 text-inherit shadow-none hover:bg-transparent"
+            />
+          ) : (
+            <span className="text-sm font-medium">{placeholder}</span>
+          )}
+          {isOpen ? (
+            placement === "top" ? (
+              <ChevronDown className="h-4 w-4 shrink-0 mt-0.5" />
+            ) : (
+              <ChevronUp className="h-4 w-4 shrink-0 mt-0.5" />
+            )
+          ) : placement === "top" ? (
+            <ChevronUp className="h-4 w-4 shrink-0 mt-0.5" />
+          ) : (
+            <ChevronDown className="h-4 w-4 shrink-0 mt-0.5" />
+          )}
         </div>
       </div>
       {createPortal(
         <AnimatePresence>
           {isOpen && (
             <motion.div
-              initial={{ opacity: 0, y: -4 }}
+              initial={{ opacity: 0, y: placement === "top" ? 4 : -4 }}
               animate={{ opacity: 1, y: -0 }}
-              exit={{ opacity: 0, y: -4 }}
+              exit={{ opacity: 0, y: placement === "top" ? 4 : -4 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
               style={{
                 position: "fixed",
                 top: pos.top,
+                bottom: pos.bottom,
                 left: pos.left,
                 width: pos.width,
               }}
-              className="bg-white shadow-lg z-[9999] min-w-max rounded-[0.33em] border-gray-300 border-2 overflow-hidden"
+              className="z-[9999] min-w-max overflow-hidden rounded-[0.33em] border border-gray-200 bg-white p-1 shadow-lg space-y-2"
               onClick={(e) => e.stopPropagation()}
             >
               {items.map((item, idx) => {
+                const itemFilterKey = getStatusFilterKey(parseInt(item.id));
+                const itemStatusClass = STATUS_COLOR_CLASSES[itemFilterKey];
+                const itemHoverClass = STATUS_HOVER_CLASSES[itemFilterKey];
+
                 return (
                   <div
                     key={idx}
                     className={cn(
-                      "flex gap-2 p-2 text-sm hover:bg-primary/10 transition cursor-pointer overflow-hidden",
+                      "flex cursor-pointer gap-3 overflow-hidden rounded-[0.33em] border px-2.5 py-2 text-sm transition",
+                      itemStatusClass,
+                      itemHoverClass,
                     )}
                     onClick={(e) => {
                       e.stopPropagation();
                       setActiveItem(item);
+                      setHasSelection(true);
                       setIsOpen(false);
                       item.onClick?.();
                     }}
                   >
-                    <StatusBadge statusId={parseInt(item.id)} />
+                    <StatusBadge
+                      statusId={parseInt(item.id)}
+                      className="h-auto border-0 bg-transparent p-0 text-inherit shadow-none hover:bg-transparent"
+                    />
                   </div>
                 );
               })}

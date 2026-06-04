@@ -342,6 +342,40 @@ export const UserService = {
     );
   },
 
+  async correctFormRecipient(eventId: string, recipientEmail: string) {
+    return APIClient.post<FetchResponse>(
+      APIRouteBuilder("users").r("me", "edit-recipient").build(),
+      {
+        eventId,
+        recipientEmail,
+      },
+    );
+  },
+
+  async getCorrectFormRecipientContext(eventId: string) {
+    return APIClient.get<
+      FetchResponse & {
+        context?: {
+          eventId: string;
+          formLabel: string;
+          signingPartyTitle: string;
+          oldEmail: string;
+          targetSigningPartyId: string;
+          signingParties: {
+            id: string;
+            title: string;
+            email: string;
+          }[];
+        };
+      }
+    >(
+      APIRouteBuilder("users")
+        .r("me", "edit-recipient")
+        .p({ eventId })
+        .build(),
+    );
+  },
+
   async getMyResumes() {
     return APIClient.get<ResumeArrayResponse>(
       APIRouteBuilder("users").r("me", "resumes").build(),

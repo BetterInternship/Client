@@ -61,6 +61,17 @@ export const AuthContextProvider = ({
   };
 
   useEffect(() => {
+    if (isLoading || !isAuthenticated) return;
+    if (typeof window === "undefined") return;
+
+    const redirectPath = sessionStorage.getItem("post_login_redirect");
+    if (!redirectPath) return;
+
+    sessionStorage.removeItem("post_login_redirect");
+    router.replace(redirectPath);
+  }, [isAuthenticated, isLoading, router]);
+
+  useEffect(() => {
     refreshAuthentication();
   }, []);
 
@@ -115,8 +126,13 @@ export const AuthContextProvider = ({
 
   const redirectIfNotLoggedIn = () =>
     useEffect(() => {
-      if (!isLoading && !isAuthenticated)
+      if (!isLoading && !isAuthenticated) {
+        if (typeof window !== "undefined") {
+          const redirectPath = `${window.location.pathname}${window.location.search}`;
+          sessionStorage.setItem("post_login_redirect", redirectPath);
+        }
         router.push(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`);
+      }
     }, [isAuthenticated, isLoading]);
 
   const redirectIfLoggedIn = () =>

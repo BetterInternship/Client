@@ -47,31 +47,34 @@ export const UI_STATUS_MAP = new Map<string, StatusProps>([
     "pending",
     {
       icon: Clock,
-      bgColor: "bg-orange-100",
-      fgColor: "text-orange-900",
+      bgColor: "bg-orange-700/10",
+      fgColor: "text-orange-700",
     },
   ],
   [
     "shortlisted",
-    { icon: Star, bgColor: "bg-amber-100", fgColor: "text-amber-900" },
+    { icon: Star, bgColor: "bg-amber-700/10", fgColor: "text-amber-700" },
   ],
   [
     "accepted",
-    { icon: Check, bgColor: "bg-green-100", fgColor: "text-green-900" },
+    { icon: Check, bgColor: "bg-green-700/10", fgColor: "text-green-700" },
   ],
   [
     "deleted",
     {
       icon: Trash,
-      bgColor: "bg-stone-200",
-      fgColor: "text-stone-900",
+      bgColor: "bg-stone-700/10",
+      fgColor: "text-stone-700",
       destructive: true,
     },
   ],
-  ["rejected", { icon: Ban, bgColor: "bg-red-100", fgColor: "text-red-900" }],
+  [
+    "rejected",
+    { icon: Ban, bgColor: "bg-red-700/10", fgColor: "text-red-700" },
+  ],
   [
     "archived",
-    { icon: Archive, bgColor: "bg-stone-200", fgColor: "text-stone-900" },
+    { icon: Archive, bgColor: "bg-stone-700/10", fgColor: "text-stone-700" },
   ],
 ]);
 
@@ -89,3 +92,21 @@ export const DB_STATUS_MAP: Record<number, StatusConfig> = {
   6: { key: "rejected", action: "REJECT" },
   7: { key: "archived", action: "ARCHIVE" },
 };
+
+export const LABEL_ID_STRING_MAP = new Map<string, string>([
+  ["pending", "0"],
+  ["shortlisted", "1"],
+  ["accepted", "4"],
+  ["deleted", "5"],
+  ["rejected", "6"],
+  ["archived", "7"],
+]);
+
+export const LABEL_ID_MAP = new Map<string, number>([
+  ["pending", 0],
+  ["shortlisted", 1],
+  ["accepted", 4],
+  ["deleted", 5],
+  ["rejected", 6],
+  ["archived", 7],
+]);

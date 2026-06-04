@@ -14,7 +14,7 @@ export default function JobDetailsPageRoute() {
     <Suspense>
       <JobDetailsPageRouteContent></JobDetailsPageRouteContent>
     </Suspense>
-  )
+  );
 }
 
 function JobDetailsPageRouteContent() {
@@ -24,31 +24,31 @@ function JobDetailsPageRouteContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-      const fetchJobData = async () => {
-        if (!jobId) {
-          setLoading(false);
-          return;
+    const fetchJobData = async () => {
+      if (!jobId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const response = await JobService.getAnyJobById(jobId);
+        if (response?.success && response.job) {
+          setJobData(response.job);
+        } else {
+          console.error("failed to load job data");
         }
-  
-        try {
-          setLoading(true);
-          const response = await JobService.getAnyJobById(jobId);
-          if (response?.success && response.job) {
-            setJobData(response.job);
-          } else {
-            console.error("failed to load job data");
-          }
-        } catch (error) {
-          console.error(error);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchJobData();
-    }, [jobId]);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchJobData();
+  }, [jobId]);
 
   const handleJobUpdate = (updates: Partial<Job>) => {
-    setJobData(prev => prev ? { ...prev, ...updates } : null);
+    setJobData((prev) => (prev ? { ...prev, ...updates } : null));
   };
 
   if (loading || !jobData) {
@@ -65,13 +65,12 @@ function JobDetailsPageRouteContent() {
         <JobHeader
           job={jobData}
           onJobUpdate={handleJobUpdate}
+          backHref={`/dashboard/manage?jobId=${jobId}`}
         />
         <div className="flex-1 overflow-auto pt-4 px-2 sm:px-8">
-          <JobDetailsPage
-            job={jobData}
-          />
+          <JobDetailsPage job={jobData} />
         </div>
       </div>
     </ContentLayout>
-  )
+  );
 }
