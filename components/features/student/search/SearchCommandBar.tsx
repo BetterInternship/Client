@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { ActionItem } from "@/components/ui/action-item";
 import { CommandMenu } from "@/components/ui/command-menu";
+import { Button } from "@/components/ui/button";
 import { useAppContext } from "@/lib/ctx-app";
 import { Job } from "@/lib/db/db.types";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,7 +14,6 @@ import {
   List,
 } from "lucide-react";
 import { useBlurTransition } from "@/components/animata/blur";
-import { cn } from "@/lib/utils";
 
 interface SearchCommandBarProps {
   visible: boolean;
@@ -88,7 +87,7 @@ export function SearchCommandBar({
 
   const renderSidebar = () => (
     <motion.div
-      className="fixed right-0 top-0 md:top-20 bottom-14 md:bottom-12 w-full md:max-w-sm bg-white border-l border-gray-200 flex flex-col overflow-hidden z-[110]"
+      className="fixed right-3 top-3 bottom-0 z-[110] flex w-[calc(100%-1.5rem)] flex-col overflow-hidden rounded-[0.33em] border border-gray-200 bg-white shadow-lg md:top-24 md:bottom-20 md:max-w-sm"
       initial={{ x: "100%", filter: "blur(4px)", opacity: 0 }}
       animate={{ x: "0%", filter: "blur(0px)", opacity: 1 }}
       exit={{ x: "100%", filter: "blur(4px)", opacity: 0 }}
@@ -131,45 +130,48 @@ export function SearchCommandBar({
     <>
       <AnimatePresence>{visible && isOpen && renderSidebar()}</AnimatePresence>
 
+      {/* Mobile bottom bar */}
       {isMobile ? (
         <AnimatePresence>
           {visible && (
             <>
               <motion.div
-                className="fixed left-0 bottom-0 z-[110] w-full"
+                className="fixed inset-x-0 bottom-0 z-[110] border-t border-gray-200 bg-gray-50 px-2 py-3 shadow-lg"
                 initial={{ y: "100%", filter: "blur(4px)", opacity: 0 }}
                 animate={{ y: "0%", filter: "blur(0px)", opacity: 1 }}
                 exit={{ y: "100%", filter: "blur(4px)", opacity: 0 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
               >
                 <CommandMenu
-                  buttonLayout="vertical"
+                  className="w-full border-0 bg-transparent px-0 py-0 shadow-none"
                   items={[
                     [
-                      `${selectedCount} selected`,
-                      {
-                        id: "apply",
-                        label: `Apply (${selectedCount})`,
-                        icon: Check,
-                        onClick: onApply,
-                        bgColor: "bg-primary/10",
-                        fgColor: "text-primary",
-                      },
-                      {
-                        id: "cancel",
-                        label: "Cancel",
-                        icon: X,
-                        onClick: onCancel,
-                      },
-                      {
-                        id: "job_list",
-                        label: "Selected jobs",
-                        icon: List,
-                        onClick: () => setIsOpen(!isOpen),
-                        highlighted: isOpen,
-                        highlightColor:
-                          "bg-primary/10 text-primary font-semibold",
-                      },
+                      <Button
+                        key="cancel"
+                        variant="ghost"
+                        size="icon"
+                        onClick={onCancel}
+                      >
+                        <X />
+                      </Button>,
+                      <Button
+                        key="job-list"
+                        variant="outline"
+                        onClick={() => setIsOpen(!isOpen)}
+                        className={"h-10" + (isOpen ? " bg-muted" : "")}
+                      >
+                        <List />
+                        <span>Open Selected Jobs ({selectedCount})</span>
+                      </Button>,
+                      <Button
+                        key="apply"
+                        size="sm"
+                        scheme="primary"
+                        onClick={onApply}
+                        className={"h-10"}
+                      >
+                        Apply ({selectedCount})
+                      </Button>,
                     ],
                   ]}
                 />
@@ -178,59 +180,71 @@ export function SearchCommandBar({
           )}
         </AnimatePresence>
       ) : (
+        // Desktop bottom bar
         <AnimatePresence>
           {visible && (
             <>
               <motion.div
-                className="fixed left-0 bottom-0 z-[110] w-full"
+                className="fixed inset-x-3 bottom-3 z-[110] md:bottom-4"
                 initial={{ y: "100%", filter: "blur(4px)", opacity: 0 }}
                 animate={{ y: "0%", filter: "blur(0px)", opacity: 1 }}
                 exit={{ y: "100%", filter: "blur(4px)", opacity: 0 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
               >
                 <CommandMenu
+                  className="mx-auto rounded-[0.33em] shadow-lg md:w-fit"
                   items={[
                     [
-                      {
-                        id: "cancel",
-                        icon: X,
-                        onClick: onCancel,
-                      },
-                      `${selectedCount} selected`,
+                      <Button
+                        key="cancel"
+                        variant="ghost"
+                        size="sm"
+                        onClick={onCancel}
+                      >
+                        <X />
+                      </Button>,
+                      <Button
+                        key="select-all"
+                        variant="outline"
+                        size="sm"
+                        onClick={onSelectPage}
+                      >
+                        <CheckSquare />
+                        <span>Select all</span>
+                      </Button>,
+                      <Button
+                        key="unselect-all"
+                        variant="outline"
+                        size="sm"
+                        onClick={onUnselectPage}
+                      >
+                        <Square />
+                        <span>Unselect all</span>
+                      </Button>,
+                    ],
+
+                    [
+                      <Button
+                        key="job-list"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsOpen(!isOpen)}
+                        className={isOpen ? "bg-muted" : ""}
+                      >
+                        {isOpen ? <PanelRightClose /> : <PanelRight />}
+                        <span>Selected jobs</span>
+                      </Button>,
                     ],
                     [
-                      {
-                        id: "select_all",
-                        label: "Select all",
-                        icon: CheckSquare,
-                        onClick: onSelectPage,
-                      },
-                      {
-                        id: "unselect_all",
-                        label: "Unselect all",
-                        icon: Square,
-                        onClick: onUnselectPage,
-                      },
-                    ],
-                    [
-                      {
-                        id: "apply",
-                        label: `Apply (${selectedCount})`,
-                        icon: Check,
-                        onClick: onApply,
-                        bgColor: "bg-primary/10",
-                        fgColor: "text-primary",
-                      },
-                    ],
-                    [
-                      {
-                        id: "job_list",
-                        label: "Selected jobs",
-                        icon: isOpen ? PanelRightClose : PanelRight,
-                        onClick: () => setIsOpen(!isOpen),
-                        highlighted: isOpen,
-                        highlightColor: "bg-muted",
-                      },
+                      <Button
+                        key="apply"
+                        size="sm"
+                        scheme="primary"
+                        onClick={onApply}
+                      >
+                        <Check />
+                        <span>Apply ({selectedCount})</span>
+                      </Button>,
                     ],
                   ]}
                 />
