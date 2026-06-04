@@ -61,6 +61,8 @@ export default function EditRecipientPage() {
   const [hasConfirmedDetails, setHasConfirmedDetails] = useState(false);
   const normalizedRecipientEmail = recipientEmail.trim().toLowerCase();
   const normalizedOldEmail = oldEmail.trim().toLowerCase();
+  const isCurrentUserSigningParty = (title: string) =>
+    ["student", "initiator"].includes(title.trim().toLowerCase());
   const editableError = useMemo(() => {
     if (!targetSigningPartyId) return "";
 
@@ -190,111 +192,111 @@ export default function EditRecipientPage() {
           </div>
         </Card>
       ) : (
-      <Card className="p-4 sm:p-6">
-        <p className="text-xs font-medium text-gray-700">
-          Step {isConfirming ? 2 : 1} of 2
-        </p>
-        <p className="text-xl font-semibold text-slate-900">{formLabel}</p>
-        <p className="mt-1 text-sm text-slate-600">
-          {isConfirming
-            ? "Please review the updated recipient details before submitting."
-            : "Update the email for this signing step so we can resend the request."}
-        </p>
+        <Card className="p-4 sm:p-6">
+          <p className="text-xs font-medium text-gray-700">
+            Step {isConfirming ? 2 : 1} of 2
+          </p>
+          <p className="text-xl font-semibold text-slate-900">{formLabel}</p>
+          <p className="mt-1 text-sm text-slate-600">
+            {isConfirming
+              ? "Please review the updated recipient details before submitting."
+              : "Update the email for this signing step so we can resend the request."}
+          </p>
 
-        {!isConfirming && (
-          <div className="mt-4">
-            <RecipientSigningPartyTimeline
-              mode="warning"
-              parties={signingParties.map((party) => ({
-                id: party.id,
-                title: party.title,
-                email: party.email,
-                isMe: /student|initiator/i.test(party.title),
-                isEditable: party.id === targetSigningPartyId,
-              }))}
-              oldEmail={oldEmail}
-              editableEmail={recipientEmail}
-              onEditableEmailChange={setRecipientEmail}
-              editableDisabled={submitting}
-              editableError={editableError}
-            />
-          </div>
-        )}
-
-        <form className="mt-4 space-y-3" onSubmit={onSubmit}>
-          {isConfirming && (
-            <div className="space-y-4">
-              <div className="mb-3 flex items-start gap-2">
-                <LucideClipboardCheck className="h-8 w-8 opacity-40" />
-                <span className="text-gray-700 font-semibold">
-                  Please check if all your inputs are correct
-                </span>
-              </div>
+          {!isConfirming && (
+            <div className="mt-4">
               <RecipientSigningPartyTimeline
+                mode="warning"
                 parties={signingParties.map((party) => ({
                   id: party.id,
                   title: party.title,
-                  email:
-                    party.id === targetSigningPartyId
-                      ? recipientEmail
-                      : party.email,
-                  isMe: /student|initiator/i.test(party.title),
+                  email: party.email,
+                  isMe: isCurrentUserSigningParty(party.title),
+                  isEditable: party.id === targetSigningPartyId,
                 }))}
-                isConfirmingRecipients
+                oldEmail={oldEmail}
+                editableEmail={recipientEmail}
+                onEditableEmailChange={setRecipientEmail}
+                editableDisabled={submitting}
+                editableError={editableError}
               />
-              <label className="flex cursor-pointer items-center gap-3 rounded-[0.33em] border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
-                <Checkbox
-                  checked={hasConfirmedDetails}
-                  onCheckedChange={(checked) =>
-                    setHasConfirmedDetails(checked === true)
-                  }
-                />
-                <span>I confirm all the details are correct</span>
-              </label>
             </div>
           )}
-          {statusType !== "idle" && (
-            <p
-              className={`text-sm ${statusType === "success" ? "text-emerald-700" : "text-red-600"}`}
-            >
-              {statusMessage}
-            </p>
-          )}
 
-          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+          <form className="mt-4 space-y-3" onSubmit={onSubmit}>
             {isConfirming && (
-              <Button
-                type="button"
-                variant="outline"
-                disabled={submitting}
-                onClick={() => setIsConfirming(false)}
-              >
-                Back
-              </Button>
+              <div className="space-y-4">
+                <div className="mb-3 flex items-start gap-2">
+                  <LucideClipboardCheck className="h-8 w-8 opacity-40" />
+                  <span className="text-gray-700 font-semibold">
+                    Please check if all your inputs are correct
+                  </span>
+                </div>
+                <RecipientSigningPartyTimeline
+                  parties={signingParties.map((party) => ({
+                    id: party.id,
+                    title: party.title,
+                    email:
+                      party.id === targetSigningPartyId
+                        ? recipientEmail
+                        : party.email,
+                    isMe: isCurrentUserSigningParty(party.title),
+                  }))}
+                  isConfirmingRecipients
+                />
+                <label className="flex cursor-pointer items-center gap-3 rounded-[0.33em] border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                  <Checkbox
+                    checked={hasConfirmedDetails}
+                    onCheckedChange={(checked) =>
+                      setHasConfirmedDetails(checked === true)
+                    }
+                  />
+                  <span>I confirm all the details are correct</span>
+                </label>
+              </div>
             )}
-            <Button
-              type={isConfirming ? "submit" : "button"}
-              disabled={
-                submitting ||
-                !eventId ||
-                contextQuery.isPending ||
-                !contextQuery.data?.success ||
-                !!editableError ||
-                (isConfirming && !hasConfirmedDetails)
-              }
-              onClick={() => {
-                if (!isConfirming) reviewChanges();
-              }}
-            >
-              {submitting
-                ? "Updating..."
-                : isConfirming
-                  ? "Confirm Changes"
-                  : "Review Changes"}
-            </Button>
-          </div>
-        </form>
-      </Card>
+            {statusType !== "idle" && (
+              <p
+                className={`text-sm ${statusType === "success" ? "text-emerald-700" : "text-red-600"}`}
+              >
+                {statusMessage}
+              </p>
+            )}
+
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+              {isConfirming && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={submitting}
+                  onClick={() => setIsConfirming(false)}
+                >
+                  Back
+                </Button>
+              )}
+              <Button
+                type={isConfirming ? "submit" : "button"}
+                disabled={
+                  submitting ||
+                  !eventId ||
+                  contextQuery.isPending ||
+                  !contextQuery.data?.success ||
+                  !!editableError ||
+                  (isConfirming && !hasConfirmedDetails)
+                }
+                onClick={() => {
+                  if (!isConfirming) reviewChanges();
+                }}
+              >
+                {submitting
+                  ? "Updating..."
+                  : isConfirming
+                    ? "Confirm Changes"
+                    : "Review Changes"}
+              </Button>
+            </div>
+          </form>
+        </Card>
       )}
     </div>
   );
