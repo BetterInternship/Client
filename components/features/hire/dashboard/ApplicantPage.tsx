@@ -1,8 +1,9 @@
-import { DB_STATUS_MAP, UI_STATUS_MAP } from "@/lib/consts/application";
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import { UserPfp } from "@/components/shared/pfp";
-import { ActionItem } from "@/components/ui/action-item";
-import { DropdownMenu } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  type DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { HorizontalCollapsible } from "@/components/ui/horizontal-collapse";
 import { useFile } from "@/hooks/use-file";
 import { UserService } from "@/lib/api/services";
@@ -58,7 +59,7 @@ interface ApplicantPageProps {
   jobId: string | undefined;
   application: EmployerApplication | undefined;
   userApplications?: EmployerApplication[] | undefined;
-  statuses: ActionItem[];
+  statuses: DropdownMenuItem[];
   onArchive?: () => void;
   onDelete?: () => void;
 }
@@ -93,20 +94,12 @@ export function ApplicantPage({
 
   const [exitingBack, setExitingBack] = useState(false);
 
-  const { to_university_name, get_app_status } = useDbRefs();
+  const { to_university_name } = useDbRefs();
 
   const currentStatusId = application?.status?.toString() ?? "0";
-  const config = DB_STATUS_MAP[application?.status || 0];
-  const filterKey = config?.key || "pending";
 
-  const defaultStatus: ActionItem = {
+  const defaultStatus: DropdownMenuItem = {
     id: currentStatusId,
-    label: get_app_status(application?.status || 0)?.name,
-    active: true,
-    disabled: false,
-    destructive: false,
-    highlighted: true,
-    highlightColor: UI_STATUS_MAP.get(filterKey)?.bgColor,
   };
 
   const blurTransition = useBlurTransition();

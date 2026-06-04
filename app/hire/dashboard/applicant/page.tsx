@@ -1,9 +1,9 @@
 "use client";
 
-import { DB_STATUS_MAP, UI_STATUS_MAP } from "@/lib/consts/application";
+import { DB_STATUS_MAP } from "@/lib/consts/application";
 import ContentLayout from "@/components/features/hire/content-layout";
 import { ApplicantPage } from "@/components/features/hire/dashboard/ApplicantPage";
-import { type ActionItem } from "@/components/ui/action-item";
+import { type DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import {
   useEmployerApplications,
   useOwnedJobs,
@@ -64,21 +64,17 @@ function ApplicantPageContent() {
   const getStatuses = (applicationId: string) => {
     return unique_app_statuses
       .filter((status) => status.id !== 7 && status.id !== 5 && status.id !== 0)
-      .map((status): ActionItem => {
+      .map((status): DropdownMenuItem => {
         const config = DB_STATUS_MAP[status.id];
-        const uiProps = UI_STATUS_MAP.get(config?.key || "pending");
 
         return {
           id: status.id.toString(),
-          label: status.name,
-          icon: uiProps?.icon,
           onClick: () =>
             triggerAction(
               config?.action || "CHANGE_STATUS",
               [application],
               status.id,
             ),
-          destructive: uiProps?.destructive,
         };
       });
   };

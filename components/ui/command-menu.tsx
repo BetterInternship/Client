@@ -21,7 +21,7 @@ export const CommandMenu = ({
   const renderGroup = (group: React.ReactNode[], idx: number) => {
     return (
       <React.Fragment key={idx}>
-        {idx > 0 && <div className="w-px bg-gray-300 my-1 mx-1" />}
+        {idx > 0 && <div className="h-6 w-px bg-gray-300 mx-1" />}
         {group.map((item, idx) =>
           typeof item === "string" ? (
             <span
@@ -43,7 +43,7 @@ export const CommandMenu = ({
       role="toolbar"
       onClick={(e) => e.stopPropagation()}
       className={cn(
-        "flex gap-4 px-6 py-2 w-full justify-center items-stretch text-xs bg-white border border-gray-200 transition bg-clip-border",
+        "flex gap-4 px-6 py-2 w-full justify-center items-center text-xs bg-white border border-gray-200 transition bg-clip-border",
         className,
       )}
     >

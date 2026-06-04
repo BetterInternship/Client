@@ -24,15 +24,15 @@ import {
 import { useEffect } from "react";
 import {
   DB_STATUS_MAP,
-  UI_STATUS_MAP,
   ApplicationAction,
   ApplicationFilter,
   LABEL_ID_STRING_MAP,
   LABEL_ID_MAP,
 } from "@/lib/consts/application";
-import { type ActionItem } from "@/components/ui/action-item";
 import { ApplicationsCommandBar } from "./ApplicationsCommandBar";
 import { FormCheckbox } from "@/components/EditForm";
+import { type DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { ActionButton } from "@/components/ui/action-button";
 
 interface ApplicationsContentProps {
   applications: EmployerApplication[];
@@ -75,35 +75,26 @@ export const ApplicationsContent = forwardRef<
 
   if (!app_statuses) return null;
 
-  const statuses = app_statuses
-    .map((status): ActionItem => {
+  const bulkStatusItems = app_statuses
+    .map((status): DropdownMenuItem => {
       // look up config for db id
       const config = DB_STATUS_MAP[status.id];
 
-      // get ui properties using mapped key
-      const filterKey =
-        config?.key || (status.name.toLowerCase() as ApplicationFilter);
-      const uiProps = UI_STATUS_MAP.get(filterKey);
+      const handleClick = () => {
+        const applicationsToUpdate = Array.from(selectedApplications)
+          .map((id) => sortedApplications.find((app) => app.id === id))
+          .filter((app): app is EmployerApplication => !!app);
+
+        onAction(
+          config.action || "CHANGE_STATUS",
+          applicationsToUpdate,
+          status.id,
+        );
+      };
 
       return {
         id: status.id.toString(),
-        label: status.name,
-        icon: uiProps?.icon,
-        onClick: () => {
-          const applicationsToUpdate = Array.from(selectedApplications)
-            .map((id) => sortedApplications.find((app) => app.id === id))
-            .filter((app): app is EmployerApplication => !!app);
-
-          onAction(
-            config.action || "CHANGE_STATUS",
-            applicationsToUpdate,
-            status.id,
-          );
-        },
-        destructive: uiProps?.destructive,
-        highlightColor: uiProps?.fgColor,
-        bgColor: uiProps?.bgColor,
-        fgColor: uiProps?.fgColor,
+        onClick: handleClick,
       };
     })
     .filter(Boolean);
@@ -112,11 +103,8 @@ export const ApplicationsContent = forwardRef<
   const getRowStatuses = (application: EmployerApplication) => {
     return app_statuses
       .filter((status) => status.id !== 7 && status.id !== 5 && status.id !== 0)
-      .map((status): ActionItem => {
+      .map((status): DropdownMenuItem => {
         const config = DB_STATUS_MAP[status.id];
-        const filterKey =
-          config?.key || (status.name.toLowerCase() as ApplicationFilter);
-        const uiProps = UI_STATUS_MAP.get(filterKey);
 
         const handleClick = () => {
           onAction(config.action || "CHANGE_STATUS", [application], status.id);
@@ -124,12 +112,7 @@ export const ApplicationsContent = forwardRef<
 
         return {
           id: status.id.toString(),
-          label: status.name,
-          icon: uiProps?.icon,
           onClick: handleClick,
-          destructive: uiProps?.destructive,
-          bgColor: uiProps?.bgColor,
-          fgColor: uiProps?.fgColor,
         };
       });
   };
@@ -195,20 +178,20 @@ export const ApplicationsContent = forwardRef<
 
   // separate statuses and visibility in the command bar and remove unused ones.
   const command_bar_statuses = selectedAcceptedOrRejected
-    ? ["Status locked for accepted/rejected applications."]
-    : statuses.filter(
+    ? [""]
+    : bulkStatusItems.filter(
         (status) =>
           status.id !== LABEL_ID_STRING_MAP.get("archived") &&
           status.id !== LABEL_ID_STRING_MAP.get("deleted") &&
           status.id !== LABEL_ID_STRING_MAP.get("pending"),
       );
 
-  const command_bar_visibility: ActionItem[] = [
-    {
-      id: "archive",
-      label: activeFilter === "archived" ? "Unarchive" : "Archive",
-      icon: activeFilter === "archived" ? ArchiveRestore : Archive,
-      onClick: () => {
+  const command_bar_visibility = [
+    <ActionButton
+      key="archive"
+      icon={activeFilter === "archived" ? ArchiveRestore : Archive}
+      label={activeFilter === "archived" ? "Unarchive" : "Archive"}
+      onClick={() => {
         const apps = Array.from(selectedApplications)
           .map((id) => sortedApplications.find((app) => app.id === id))
           .filter((app): app is EmployerApplication => !!app);
@@ -217,24 +200,28 @@ export const ApplicationsContent = forwardRef<
           onAction(activeFilter === "archived" ? "UNARCHIVE" : "ARCHIVE", apps);
           unselectAll();
         }
-      },
-    },
-    {
-      id: "delete",
-      label: "Delete",
-      icon: Trash2,
-      destructive: true,
-      onClick: () => {
-        const apps = Array.from(selectedApplications)
-          .map((id) => sortedApplications.find((app) => app.id === id))
-          .filter((app): app is EmployerApplication => !!app);
+      }}
+    />,
+    ...(activeFilter === "archived"
+      ? [
+          <ActionButton
+            key="delete"
+            icon={Trash2}
+            label="Delete"
+            destructive
+            onClick={() => {
+              const apps = Array.from(selectedApplications)
+                .map((id) => sortedApplications.find((app) => app.id === id))
+                .filter((app): app is EmployerApplication => !!app);
 
-        if (apps.length > 0) {
-          onAction("DELETE", apps);
-          unselectAll();
-        }
-      },
-    },
+              if (apps.length > 0) {
+                onAction("DELETE", apps);
+                unselectAll();
+              }
+            }}
+          />,
+        ]
+      : []),
   ];
 
   // make command bars visible when an applicant is selected.
@@ -304,13 +291,6 @@ export const ApplicationsContent = forwardRef<
         applicationVisibility={command_bar_visibility}
         onUnselectAll={unselectAll}
         onSelectAll={selectAll}
-        onDelete={() => {
-          const appToDelete = Array.from(selectedApplications)
-            .map((id) => sortedApplications.find((app) => app.id === id))
-            .find((app): app is EmployerApplication => !!app);
-          if (appToDelete) onAction("DELETE", [appToDelete]);
-        }}
-        onStatusChange={() => {}}
       />
       <div className="flex flex-col gap-2">
         {visibleApplications.length ? (
@@ -361,13 +341,6 @@ export const ApplicationsContent = forwardRef<
         applicationVisibility={command_bar_visibility}
         onUnselectAll={unselectAll}
         onSelectAll={selectAll}
-        onDelete={() => {
-          const appToDelete = Array.from(selectedApplications)
-            .map((id) => sortedApplications.find((app) => app.id === id))
-            .find((app): app is EmployerApplication => !!app);
-          if (appToDelete) onAction("DELETE", [appToDelete]);
-        }}
-        onStatusChange={() => {}}
       />
       {isLoading ? (
         <div className="w-full flex items-center justify-center">

@@ -1,7 +1,6 @@
 // Single row component for the applications table
 // Props in (application data), events out (onView, onNotes, etc.)
 // No business logic - just presentation and event emission
-import { ActionItem } from "@/components/ui/action-item";
 import { Card } from "@/components/ui/card";
 import { useAppContext } from "@/lib/ctx-app";
 import { EmployerApplication } from "@/lib/db/db.types";
@@ -11,11 +10,7 @@ import {
   formatDateWithoutTime,
   formatTimestampDateWithoutTime,
 } from "@/lib/utils/date-utils";
-import {
-  DB_STATUS_MAP,
-  UI_STATUS_MAP,
-  ApplicationAction,
-} from "@/lib/consts/application";
+import { ApplicationAction, DB_STATUS_MAP } from "@/lib/consts/application";
 import { motion } from "framer-motion";
 import {
   Archive,
@@ -28,7 +23,7 @@ import {
 } from "lucide-react";
 import { ActionButton } from "@/components/ui/action-button";
 import { FormCheckbox } from "@/components/EditForm";
-import { DropdownMenu } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, type DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import StatusBadge from "@/components/ui/status-badge";
 import { useBlurTransition } from "@/components/animata/blur";
 
@@ -41,7 +36,7 @@ interface ApplicationRowProps {
   setSelectedApplication: (app: EmployerApplication) => void;
   checkboxSelected?: boolean;
   onToggleSelect?: (next: boolean) => void;
-  statuses: ActionItem[];
+  statuses: DropdownMenuItem[];
 }
 
 interface InternshipPreferences {
@@ -63,7 +58,7 @@ export function ApplicationRow({
   onAction,
   statuses,
 }: ApplicationRowProps) {
-  const { to_university_name, get_app_status } = useDbRefs();
+  const { to_university_name } = useDbRefs();
   const { isMobile } = useAppContext();
   const preferences = (application.user?.internship_preferences ||
     {}) as InternshipPreferences;
@@ -73,18 +68,10 @@ export function ApplicationRow({
   const staggerDelay = index < MAX_STAGGER_ROWS ? index * 0.05 : 0;
 
   const currentStatusId = application.status?.toString() ?? "0";
+  const filterKey = DB_STATUS_MAP[application.status || 0]?.key || "pending";
 
-  const config = DB_STATUS_MAP[application.status || 0];
-  const filterKey = config?.key || "pending";
-
-  const defaultStatus: ActionItem = {
+  const defaultStatus: DropdownMenuItem = {
     id: currentStatusId,
-    label: get_app_status(application.status)?.name,
-    active: true,
-    disabled: false,
-    destructive: false,
-    highlighted: true,
-    highlightColor: UI_STATUS_MAP.get(filterKey)?.bgColor,
   };
   const challengeSubmission = application.challenge_submission?.trim() ?? "";
   const hasChallengeSubmission = challengeSubmission.length > 0;
