@@ -74,7 +74,7 @@
     "gsap": "^3.13.0",
     "immer": "^10.1.1",
     "input-otp": "^1.4.2",
-    "jspdf": "^3.0.1",
+    "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.2",
     "jszip": "^3.10.1",
     "knuth-shuffle-seeded": "^1.0.6",
