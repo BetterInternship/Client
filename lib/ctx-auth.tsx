@@ -112,15 +112,7 @@ export const AuthContextProvider = ({
 
   const logout = async () => {
     await AuthService.logout();
-    await queryClient.invalidateQueries({ queryKey: ["jobs"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-applications"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-saved-jobs"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-conversations"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-forms"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-form-templates"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-form-template"] });
-    await queryClient.invalidateQueries({ queryKey: ["my-resumes"] });
+    queryClient.clear();
     setIsAuthenticated(false);
   };
 
