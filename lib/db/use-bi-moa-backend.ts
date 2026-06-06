@@ -10,7 +10,7 @@
 import "server-only";
 import { Moa } from "./db.types";
 import { Kysely, PostgresDialect } from "kysely";
-import { DB } from "@betterinternship/schema.base";
+import { DB } from "@betterinternship/schema";
 import { Pool } from "pg";
 
 const DATABASE_URL = process.env.DATABASE_URL;

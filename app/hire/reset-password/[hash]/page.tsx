@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { FormInput } from "@/components/EditForm";
 import { Button } from "@/components/ui/button";
@@ -17,11 +17,8 @@ import { useBlurTransition } from "@/components/animata/blur";
  * Display the layout for the change password page.
  */
 
-export default function ResetPasswordPage({
-  params,
-}: {
-  params: { hash: string };
-}) {
+export default function ResetPasswordPage() {
+  const params = useParams();
   const { isMobile } = useAppContext();
   const { hash } = params;
 
@@ -33,7 +30,7 @@ export default function ResetPasswordPage({
       )}
     >
       <div className="flex justify-center items-center w-full max-w-2xl h-full">
-        <ResetPasswordForm hash={hash} />
+        <ResetPasswordForm hash={hash as string} />
       </div>
     </div>
   );
