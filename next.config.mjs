@@ -78,7 +78,7 @@ const nextConfig = {
           },
           {
             key: "Permissions-Policy",
-            value: "self",
+            value: "camera=(), microphone=(), geolocation=()",
           },
         ],
       },
