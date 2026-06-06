@@ -22,7 +22,7 @@ import {
   RefsData,
   IRefsContext,
 } from "./db.types";
-import { DB } from "@betterinternship/schema.base";
+import { DB } from "@betterinternship/schema";
 import { Kysely, PostgresDialect } from "kysely";
 import { Pool } from "pg";
 

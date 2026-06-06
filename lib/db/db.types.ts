@@ -20,7 +20,7 @@ import {
   CareerApplications,
   CareerSavedJobs,
   CareerResumes,
-} from "@betterinternship/schema.base";
+} from "@betterinternship/schema";
 import { Selectable } from "kysely";
 
 export type Database = DB;
