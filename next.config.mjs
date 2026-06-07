@@ -26,9 +26,9 @@ const connectOrigins = apiUrls
 
 const cspHeader = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline';
+  script-src 'self' 'unsafe-inline';
   frame-src 'self' http://localhost:* ${connectOrigins};
-  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  style-src 'self' https://fonts.googleapis.com;
   img-src 'self' blob: data:;
   font-src 'self' https://fonts.gstatic.com;
   connect-src 'self' http://localhost:* ${connectOrigins};
