@@ -42,7 +42,7 @@ const cspHeader = `
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   img-src 'self' blob: data: http://localhost:* ${imageOrigins};
   font-src 'self' https://fonts.gstatic.com;
-  connect-src 'self' http://localhost:* ${connectOrigins};
+  connect-src 'self' http://localhost:* https://storage.googleapis.com ${connectOrigins};
   object-src 'none';
   base-uri 'self';
   form-action 'self';
