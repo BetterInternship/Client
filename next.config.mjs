@@ -24,12 +24,23 @@ const connectOrigins = apiUrls
   .filter(Boolean)
   .join(" ");
 
+const imageOrigins = apiUrls
+  .map((url) => {
+    try {
+      return new URL(url).origin;
+    } catch (e) {
+      return "";
+    }
+  })
+  .filter(Boolean)
+  .join(" ");
+
 const cspHeader = `
   default-src 'self';
-  script-src 'self' 'unsafe-inline';
+  script-src 'self' 'unsafe-eval' 'unsafe-inline';
   frame-src 'self' http://localhost:* ${connectOrigins};
-  style-src 'self' https://fonts.googleapis.com;
-  img-src 'self' blob: data:;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  img-src 'self' blob: data: http://localhost:* ${imageOrigins};
   font-src 'self' https://fonts.gstatic.com;
   connect-src 'self' http://localhost:* ${connectOrigins};
   object-src 'none';
