@@ -19,7 +19,7 @@ import {
 import { ApplyModal } from "./components/ApplyModal";
 import type { ApplyPayload } from "./components/ApplyModal";
 import { MissingRequirementsModal } from "./components/MissingRequirementsModal";
-import { FormPreviewPdfDisplay } from "../features/student/forms/previewer";
+import { FormFillPdfViewer } from "@betterinternship/core/pdf-viewer";
 import { IFormSigningParty } from "@betterinternship/core/forms";
 import { ApplicationAction } from "@/lib/consts/application";
 import { EmployerApplication, Resume } from "@/lib/db/db.types";
@@ -414,10 +414,11 @@ export const useModalRegistry = () => {
           open(
             "preview-form-pdf",
             SlideUpModalLayout,
-            <FormPreviewPdfDisplay
+            <FormFillPdfViewer
               documentUrl={documentUrl}
               blocks={[]}
               values={{}}
+              showToolbar={false}
             />,
             {
               title: "PDF Preview",

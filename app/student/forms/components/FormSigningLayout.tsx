@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft, LucideClipboardCheck, MailWarningIcon } from "lucide-react";
-import { FormPreviewPdfDisplay } from "@/components/features/student/forms/previewer";
+import { FormFillPdfViewer } from "@betterinternship/core/pdf-viewer";
 import { FormFillerRenderer } from "@/components/features/student/forms/FormFillerRenderer";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -29,6 +29,7 @@ import { getRecipientEmailErrors } from "./recipient-email-validation";
 import { useSignContext } from "@/components/providers/sign.ctx";
 import { withSubmittedSignatureImages } from "@/lib/signature-image-submit";
 import { useProfileData } from "@/lib/api/student.data.api";
+import { useDbRefs } from "@/lib/db/use-refs";
 
 interface FlowTestSigningLayoutProps {
   formLabel?: string;
@@ -116,6 +117,7 @@ export function FormSigningLayout({
 }: FlowTestSigningLayoutProps) {
   const form = useFormRendererContext();
   const profile = useProfileData();
+  const refs = useDbRefs();
   const modalRegistry = useModalRegistry();
   const formFiller = useFormFiller();
   const autofillValues = useMyAutofill();
@@ -326,10 +328,40 @@ export function FormSigningLayout({
     () => withDerivedFormValues(form.formMetadata, previewValues),
     [form.formMetadata, previewValues],
   );
+  const previewValuesResolved = useMemo(() => {
+    const resolved = { ...previewValuesWithDerived };
+    for (const [key, value] of Object.entries(previewValuesWithDerived)) {
+      if (!value) continue;
+      const trimmed = String(value).trim();
+      const keyLower = key.toLowerCase();
+      if (keyLower.includes("university") && refs.to_university_name) {
+        resolved[key] = refs.to_university_name(trimmed, trimmed) ?? trimmed;
+      } else if (keyLower.includes("college") && refs.to_college_name) {
+        resolved[key] = refs.to_college_name(trimmed, trimmed) ?? trimmed;
+      } else if (keyLower.includes("department") && refs.to_department_name) {
+        resolved[key] = refs.to_department_name(trimmed, trimmed) ?? trimmed;
+      }
+    }
+    return resolved;
+  }, [previewValuesWithDerived, refs]);
   const wetSignatureHiddenFieldNames = useMemo(
     () => (noEsign ? getSignatureDerivedFieldNames(form.formMetadata) : []),
     [form.formMetadata, noEsign],
   );
+  const previewBlocksForViewer = useMemo(() => {
+    const hiddenSet = new Set(wetSignatureHiddenFieldNames.map(normalizeFieldName));
+    const raw = noEsign
+      ? previewKeyedFields.filter(
+          (field) =>
+            field.type !== "signature" &&
+            !hiddenSet.has(normalizeFieldName(field.field)),
+        )
+      : previewKeyedFields;
+    return raw.map((field) => ({
+      ...field,
+      id: field.id || field._id || `${field.field}:${field.page}:${field.x}:${field.y}`,
+    }));
+  }, [previewKeyedFields, noEsign, wetSignatureHiddenFieldNames]);
 
   const computeRequiredFieldsComplete = useCallback(
     (nextValues: FormValues) =>
@@ -840,21 +872,24 @@ export function FormSigningLayout({
               )}
               {documentUrl ? (
                 <>
-                  <FormPreviewPdfDisplay
+                  <FormFillPdfViewer
                     key={isMobileLayout ? "mobile-preview" : "desktop-preview"}
                     documentUrl={documentUrl}
-                    blocks={previewKeyedFields}
-                    values={previewValuesWithDerived}
+                    blocks={previewBlocksForViewer}
+                    values={previewValuesResolved}
                     fieldErrors={formFiller.errors}
                     selectionTick={selectionTick}
                     autoScrollToSelectedField={
                       !isMobileLayout && selectedFieldSource === "form"
                     }
                     signingParties={recipients}
-                    wetSignatureMode={!!noEsign}
-                    hiddenFieldNames={wetSignatureHiddenFieldNames}
                     onFieldClick={handlePdfFieldSelect}
                     selectedFieldId={form.selectedPreviewId ?? undefined}
+                    scale={isMobile ? 0.5 : 0.9}
+                    prefillUser={profile.data as Record<string, unknown> | null}
+                    showOwnership={!noEsign}
+                    fieldVisibility="all"
+                    currentSigningPartyId={!noEsign ? "initiator" : undefined}
                   />
                 </>
               ) : (
