@@ -4,6 +4,7 @@ import { useFormRendererContext } from "@/components/features/student/forms/form
 import { Button } from "@/components/ui/button";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { cn } from "@/lib/utils";
+import { resolveSignedUrl } from "@/lib/signed-url";
 
 export const FormActionButtons = ({
   handleSignViaBetterInternship,
@@ -30,11 +31,10 @@ export const FormActionButtons = ({
           size="lg"
           className="w-full text-lg sm:w-auto"
           variant="outline"
-          onClick={() => {
+          onClick={async () => {
             if (form.document.url) {
-              modalRegistry.previewFormPdf.open({
-                documentUrl: form.document.url,
-              });
+              const resolved = await resolveSignedUrl(form.document.url);
+              modalRegistry.previewFormPdf.open({ documentUrl: resolved });
             } else {
               alert("No document url provided for preview.");
             }

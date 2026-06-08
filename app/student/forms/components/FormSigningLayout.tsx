@@ -2,6 +2,7 @@
 
 import { ArrowLeft, LucideClipboardCheck, MailWarningIcon } from "lucide-react";
 import { FormFillPdfViewer } from "@betterinternship/core/pdf-viewer";
+import { useSignedUrl } from "@/lib/signed-url";
 import { FormFillerRenderer } from "@/components/features/student/forms/FormFillerRenderer";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -115,6 +116,7 @@ export function FormSigningLayout({
   noEsign,
   onBack,
 }: FlowTestSigningLayoutProps) {
+  const { url: resolvedDocumentUrl } = useSignedUrl(documentUrl ?? "");
   const form = useFormRendererContext();
   const profile = useProfileData();
   const refs = useDbRefs();
@@ -870,11 +872,11 @@ export function FormSigningLayout({
                   </div>
                 </div>
               )}
-              {documentUrl ? (
+              {resolvedDocumentUrl ? (
                 <>
                   <FormFillPdfViewer
                     key={isMobileLayout ? "mobile-preview" : "desktop-preview"}
-                    documentUrl={documentUrl}
+                    documentUrl={resolvedDocumentUrl}
                     blocks={previewBlocksForViewer}
                     values={previewValuesResolved}
                     fieldErrors={formFiller.errors}

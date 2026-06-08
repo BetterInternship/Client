@@ -14,6 +14,7 @@ import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { SigningStatusTimeline } from "./SigningStatusTimeline";
 import useModalRegistry from "../modals/modal-registry";
+import { resolveSignedUrl } from "@/lib/signed-url";
 
 /**
  * Form Log Item
@@ -43,12 +44,13 @@ export const FormLog = ({
   const [downloading, setDownloading] = useState(false);
   const [isOpen, setIsOpen] = useState(index === 0);
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!downloadUrl) return;
     try {
       setDownloading(true);
+      const resolved = await resolveSignedUrl(downloadUrl);
       const a = document.createElement("a");
-      a.href = downloadUrl!;
+      a.href = resolved;
       a.download = "";
       a.target = "_blank";
       a.rel = "noopener noreferrer";
