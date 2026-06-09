@@ -195,13 +195,6 @@ export function FormSigningLayout({
     });
     return ownerMap;
   }, [form.formMetadata, form.formName]);
-  const initiatorFieldNames = useMemo(() => {
-    const names = new Set<string>();
-    fieldOwnerByName.forEach((partyId, fieldName) => {
-      if (partyId === "initiator") names.add(fieldName);
-    });
-    return names;
-  }, [fieldOwnerByName]);
   const formFilloutProcess = useFormFilloutProcessRunner();
   const fromMe = useMemo(
     () =>
@@ -358,18 +351,21 @@ export function FormSigningLayout({
     const filtered: Record<string, string> = {};
     for (const key of Object.keys(previewValuesResolved)) {
       const normalized = key.replace(/:default$/i, "").replace(/:auto$/i, "");
-      if (initiatorFieldNames.has(normalized) || initiatorFieldNames.has(key)) {
-        filtered[key] = previewValuesResolved[key];
-      }
+      const owner =
+        fieldOwnerByName.get(normalized) ?? fieldOwnerByName.get(key);
+      if (owner !== undefined && owner !== "initiator") continue;
+      filtered[key] = previewValuesResolved[key];
     }
     return filtered;
-  }, [previewValuesResolved, initiatorFieldNames, noEsign]);
+  }, [previewValuesResolved, fieldOwnerByName, noEsign]);
   const wetSignatureHiddenFieldNames = useMemo(
     () => (noEsign ? getSignatureDerivedFieldNames(form.formMetadata) : []),
     [form.formMetadata, noEsign],
   );
   const previewBlocksForViewer = useMemo(() => {
-    const hiddenSet = new Set(wetSignatureHiddenFieldNames.map(normalizeFieldName));
+    const hiddenSet = new Set(
+      wetSignatureHiddenFieldNames.map(normalizeFieldName),
+    );
     const raw = noEsign
       ? previewKeyedFields.filter(
           (field) =>
@@ -379,7 +375,10 @@ export function FormSigningLayout({
       : previewKeyedFields;
     return raw.map((field) => ({
       ...field,
-      id: field.id || field._id || `${field.field}:${field.page}:${field.x}:${field.y}`,
+      id:
+        field.id ||
+        field._id ||
+        `${field.field}:${field.page}:${field.x}:${field.y}`,
     }));
   }, [previewKeyedFields, noEsign, wetSignatureHiddenFieldNames]);
 
