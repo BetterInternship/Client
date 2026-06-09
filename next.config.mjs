@@ -24,7 +24,10 @@ const connectOrigins = apiUrls
   .filter(Boolean)
   .join(" ");
 
-const imageOrigins = apiUrls
+const imageOrigins = [
+  ...apiUrls,
+  "https://storage.googleapis.com",
+]
   .map((url) => {
     try {
       return new URL(url).origin;
