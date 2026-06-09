@@ -25,13 +25,23 @@ export const useMyAutofill = () => {
       string,
       Record<string, string>
     >;
-    const autofillValues: FormValues = isFreshFormsModeEnabled
+    const initiatorFieldSet = new Set(form.fields.map((f) => f.field));
+
+    // Only keep autofill values for initiator-owned fields
+    const rawValues: FormValues = isFreshFormsModeEnabled
       ? {}
       : {
           ...(internshipMoaFields?.base ?? {}),
           ...(internshipMoaFields?.shared ?? {}),
           ...(internshipMoaFields?.[form.formName] ?? {}),
         };
+
+    const autofillValues: FormValues = {};
+    for (const key of Object.keys(rawValues)) {
+      if (initiatorFieldSet.has(key)) {
+        autofillValues[key] = rawValues[key];
+      }
+    }
 
     // Populate with prefillers as well
     for (const field of form.fields) {

@@ -195,6 +195,13 @@ export function FormSigningLayout({
     });
     return ownerMap;
   }, [form.formMetadata, form.formName]);
+  const initiatorFieldNames = useMemo(() => {
+    const names = new Set<string>();
+    fieldOwnerByName.forEach((partyId, fieldName) => {
+      if (partyId === "initiator") names.add(fieldName);
+    });
+    return names;
+  }, [fieldOwnerByName]);
   const formFilloutProcess = useFormFilloutProcessRunner();
   const fromMe = useMemo(
     () =>
@@ -346,6 +353,17 @@ export function FormSigningLayout({
     }
     return resolved;
   }, [previewValuesWithDerived, refs]);
+  const previewValuesForViewer = useMemo(() => {
+    if (noEsign) return previewValuesResolved;
+    const filtered: Record<string, string> = {};
+    for (const key of Object.keys(previewValuesResolved)) {
+      const normalized = key.replace(/:default$/i, "").replace(/:auto$/i, "");
+      if (initiatorFieldNames.has(normalized) || initiatorFieldNames.has(key)) {
+        filtered[key] = previewValuesResolved[key];
+      }
+    }
+    return filtered;
+  }, [previewValuesResolved, initiatorFieldNames, noEsign]);
   const wetSignatureHiddenFieldNames = useMemo(
     () => (noEsign ? getSignatureDerivedFieldNames(form.formMetadata) : []),
     [form.formMetadata, noEsign],
@@ -878,7 +896,7 @@ export function FormSigningLayout({
                     key={isMobileLayout ? "mobile-preview" : "desktop-preview"}
                     documentUrl={resolvedDocumentUrl}
                     blocks={previewBlocksForViewer}
-                    values={previewValuesResolved}
+                    values={previewValuesForViewer}
                     fieldErrors={formFiller.errors}
                     selectionTick={selectionTick}
                     autoScrollToSelectedField={
