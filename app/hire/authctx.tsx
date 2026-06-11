@@ -138,12 +138,7 @@ export const AuthContextProvider = ({
 
   const logout = async () => {
     await EmployerAuthService.logout();
-
-    await queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] });
-    await queryClient.invalidateQueries({
-      queryKey: ["my-employer-conversations"],
-    });
-
+    queryClient.clear();
     router.push("/login");
     setUser(null);
     setGod(false);

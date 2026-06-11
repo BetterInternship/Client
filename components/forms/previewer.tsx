@@ -11,6 +11,7 @@ import "./react-pdf-highlighter.css";
 import { Loader } from "@/components/ui/loader";
 import { cn } from "@/lib/utils";
 import { createPortal } from "react-dom";
+import { useSignedUrl } from "@/lib/signed-url";
 import {
   AreaHighlight,
   Comment,
@@ -60,6 +61,8 @@ export const DocumentRenderer = ({
     transform: DocumentObjectTransform,
   ) => void;
 }) => {
+  const { url: resolvedUrl } = useSignedUrl(documentUrl);
+
   // Triggered when highlighting is finished
   const onSelectionFinished = (position: ScaledPosition, content: Content) => {
     const newHighlight: DocumentHighlight = {
@@ -131,7 +134,7 @@ export const DocumentRenderer = ({
   return (
     <div>
       <PdfDecorator title={documentName ?? "No Name Specified"}>
-        <PdfLoader url={documentUrl} beforeLoad={<Loader />}>
+        <PdfLoader url={resolvedUrl} beforeLoad={<Loader />}>
           {(pdfDocument) => (
             <PdfHighlighter
               pdfDocument={pdfDocument}
