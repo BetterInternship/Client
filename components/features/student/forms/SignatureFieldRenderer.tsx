@@ -330,15 +330,21 @@ export const SignatureFieldRenderer = <T extends any[]>({
       <div className="space-y-4 rounded-[0.33em] border border-gray-300 p-4 px-5">
         <div className="space-y-1.5">
           <p className="text-xs text-slate-500">
-            Enter your full legal name, then choose one signature method.
+            Full name auto-filled from your profile.
           </p>
-          <FormInput
-            value={typedName ?? ""}
-            setter={handleTypedNameChange}
-            className="w-full"
-            placeholder="Enter full legal name"
-            onBlur={() => onBlur?.(value)}
-          />
+          <div
+            title="Edit your name in your Profile settings"
+            className="relative"
+          >
+            <FormInput
+              value={typedName ?? ""}
+              setter={handleTypedNameChange}
+              className="w-full cursor-not-allowed opacity-80"
+              placeholder="Enter full legal name"
+              onBlur={() => onBlur?.(value)}
+              disabled
+            />
+          </div>
         </div>
         <div className="space-y-2">
           <LabelWithTooltip label="Signature method" />
