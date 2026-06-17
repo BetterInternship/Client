@@ -2,7 +2,7 @@ const apiUrls = [
   process.env.NEXT_PUBLIC_API_URL,
   process.env.NEXT_PUBLIC_MOA_API_URL,
   process.env.NEXT_PUBLIC_API_SERVER_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_ORCA_URL,
 ].filter(Boolean);
 
 const connectOrigins = apiUrls
