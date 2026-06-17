@@ -17,8 +17,6 @@ export const withSavedSignatureImagesForFields = ({
   const nextValues = { ...values };
   for (const signatureField of signatureFields) {
     const imageFieldKey = getSignatureImageFieldKey(signatureField.field);
-    if (Object.prototype.hasOwnProperty.call(nextValues, imageFieldKey))
-      continue;
     nextValues[imageFieldKey] = signatureImage;
   }
 

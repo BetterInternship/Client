@@ -110,10 +110,15 @@ export function FormFillerRenderer({
         profileFullName,
         "initiator",
       );
+    const signatureImagePreference = autofillValues.__signature_image_enabled;
+    const effectiveSignatureImage =
+      signatureImagePreference === "false"
+        ? null
+        : profile.data?.signatureImage;
     const valuesWithSavedSignatureImages = withSavedSignatureImagesForFields({
       values: valuesWithPrefilledSignatures,
       signatureFields,
-      signatureImage: profile.data?.signatureImage,
+      signatureImage: effectiveSignatureImage,
     });
 
     formFiller.initializeValues(valuesWithSavedSignatureImages);
