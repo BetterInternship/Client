@@ -86,7 +86,7 @@
     "number-to-words": "^1.2.4",
     "pg": "^8.20.0",
     "pocketbase": "^0.26.1",
-    "posthog-js": "^1.255.1",
+    "posthog-js": "^1.386.6",
     "qrcode.react": "^4.2.0",
     "react": "^19",
     "react-countdown": "^2.3.6",
@@ -137,5 +137,11 @@
     "ts-jest": "^29.4.5",
     "typescript": "^5",
     "typescript-eslint": "^8.20.0"
+  },
+  "overrides": {
+    "js-yaml": ">=4.1.2",
+    "nanoid": ">=5.0.9",
+    "nodemailer": ">=9.0.0",
+    "tar": ">=7.5.16"
   }
 }
