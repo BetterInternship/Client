@@ -1,8 +1,14 @@
 "use client";
 
+import {
+  isBucketSignatureImagePayload,
+  parseSignatureImageValue,
+  serializeSignatureImageValue,
+  type FormValues,
+} from "@betterinternship/core/forms";
 import { useEffect, useState } from "react";
 
-const BUCKET_PREFIX =
+export const BUCKET_PREFIX =
   "https://storage.googleapis.com/better-internship-public-bucket/";
 
 export const isBucketUrl = (url: string): boolean =>
@@ -30,11 +36,22 @@ const resolveFromServer = async (
 };
 
 export const resolveSignedUrl = (url: string): Promise<string> => {
-  if (!isBucketUrl(url)) return Promise.resolve(url);
+  if (!isBucketUrl(url)) {
+    console.debug("[resolveSignedUrl] not a bucket URL, skip", { url });
+    return Promise.resolve(url);
+  }
 
   const cached = cache.get(url);
-  if (cached && cached.expiresAt > Date.now())
+  if (cached && cached.expiresAt > Date.now()) {
+    console.debug("[resolveSignedUrl] cache hit", { url, expiresAt: new Date(cached.expiresAt).toISOString() });
     return Promise.resolve(cached.signedUrl);
+  }
+
+  if (cached) {
+    console.debug("[resolveSignedUrl] cache expired", { url, expiredAt: new Date(cached.expiresAt).toISOString() });
+  } else {
+    console.debug("[resolveSignedUrl] not in cache", { url });
+  }
 
   const existing = inflight.get(url);
   if (existing) return existing;
@@ -44,10 +61,12 @@ export const resolveSignedUrl = (url: string): Promise<string> => {
       const signedUrl = result[url] ?? url;
       cache.set(url, { signedUrl, expiresAt: Date.now() + TTL_MS });
       inflight.delete(url);
+      console.debug("[resolveSignedUrl] server resolved", { url, signedUrl });
       return signedUrl;
     })
     .catch(() => {
       inflight.delete(url);
+      console.debug("[resolveSignedUrl] server fetch failed, returning original", { url });
       return url;
     });
   inflight.set(url, promise);
@@ -125,4 +144,36 @@ export const useSignedUrls = (urls: string[]) => {
   }, [key]);
 
   return { urls: resolved, loading };
+};
+
+export const resolveSignatureImageValue = async (
+  value: string,
+): Promise<string> => {
+  const parsed = parseSignatureImageValue(value);
+  if (!parsed || !isBucketSignatureImagePayload(parsed.image)) {
+    console.debug("[resolveSignatureImageValue] not a bucket payload", { value, parsed });
+    return value;
+  }
+  if (parsed.image.signedUrl) {
+    console.debug("[resolveSignatureImageValue] already has signedUrl, skip", { path: parsed.image.path, signedUrl: parsed.image.signedUrl });
+    return value;
+  }
+  const bucketUrl = `${BUCKET_PREFIX}${parsed.image.path}`;
+  console.debug("[resolveSignatureImageValue] requesting signed URL", { bucketUrl });
+  parsed.image.signedUrl = await resolveSignedUrl(bucketUrl);
+  console.debug("[resolveSignatureImageValue] resolved", { bucketUrl, signedUrl: parsed.image.signedUrl });
+  return serializeSignatureImageValue(parsed);
+};
+
+export const resolveSignatureImageValues = async (
+  values: FormValues,
+): Promise<FormValues> => {
+  const next = { ...values };
+  await Promise.all(
+    Object.entries(values).map(async ([key, value]) => {
+      if (!key.startsWith("__signatureImage:")) return;
+      next[key] = await resolveSignatureImageValue(value);
+    }),
+  );
+  return next;
 };

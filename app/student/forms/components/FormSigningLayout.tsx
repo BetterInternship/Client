@@ -358,6 +358,13 @@ export function FormSigningLayout({
     }
     return filtered;
   }, [previewValuesResolved, fieldOwnerByName, noEsign]);
+  useEffect(() => {
+    const sigEntries = Object.entries(previewValuesForViewer).filter(([k]) =>
+      k.startsWith("__signatureImage"),
+    );
+    if (sigEntries.length)
+      console.debug("[FormSigningLayout] signature image values", sigEntries);
+  }, [previewValuesForViewer]);
   const wetSignatureHiddenFieldNames = useMemo(
     () => (noEsign ? getSignatureDerivedFieldNames(form.formMetadata) : []),
     [form.formMetadata, noEsign],

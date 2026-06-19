@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@betterinternship/components": "1.5.28",
-    "@betterinternship/core": "^2.14.1",
+    "@betterinternship/core": "^2.16.0",
     "pdfjs-dist": "^4.4.168",
     "@betterinternship/schema": "^0.0.0",
     "@dnd-kit/core": "^6.3.1",

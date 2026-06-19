@@ -2,8 +2,9 @@ import {
   getSignatureImageFieldKey,
   type FormValues,
 } from "@betterinternship/core/forms";
+import { resolveSignatureImageValue } from "@/lib/signed-url";
 
-export const withSavedSignatureImagesForFields = ({
+export const withSavedSignatureImagesForFields = async ({
   values,
   signatureFields,
   signatureImage,
@@ -14,10 +15,11 @@ export const withSavedSignatureImagesForFields = ({
 }) => {
   if (!signatureImage?.trim()) return values;
 
+  const resolvedSignatureImage = await resolveSignatureImageValue(signatureImage);
   const nextValues = { ...values };
   for (const signatureField of signatureFields) {
     const imageFieldKey = getSignatureImageFieldKey(signatureField.field);
-    nextValues[imageFieldKey] = signatureImage;
+    nextValues[imageFieldKey] = resolvedSignatureImage;
   }
 
   return nextValues;
