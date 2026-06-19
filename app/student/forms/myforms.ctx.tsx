@@ -75,8 +75,6 @@ export const MyFormsContextProvider = ({
         timestamp: f.timestamp,
       })) ?? [];
 
-  console.log("FORMS FORMS FORMS", forms);
-
   // Helper function to check if form has pending instances
   const hasPendingInstance = (formLabel: string): boolean => {
     return mappedForms.some(
