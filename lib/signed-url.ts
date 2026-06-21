@@ -37,20 +37,12 @@ const resolveFromServer = async (
 
 export const resolveSignedUrl = (url: string): Promise<string> => {
   if (!isBucketUrl(url)) {
-    console.debug("[resolveSignedUrl] not a bucket URL, skip", { url });
     return Promise.resolve(url);
   }
 
   const cached = cache.get(url);
   if (cached && cached.expiresAt > Date.now()) {
-    console.debug("[resolveSignedUrl] cache hit", { url, expiresAt: new Date(cached.expiresAt).toISOString() });
     return Promise.resolve(cached.signedUrl);
-  }
-
-  if (cached) {
-    console.debug("[resolveSignedUrl] cache expired", { url, expiredAt: new Date(cached.expiresAt).toISOString() });
-  } else {
-    console.debug("[resolveSignedUrl] not in cache", { url });
   }
 
   const existing = inflight.get(url);
@@ -61,12 +53,10 @@ export const resolveSignedUrl = (url: string): Promise<string> => {
       const signedUrl = result[url] ?? url;
       cache.set(url, { signedUrl, expiresAt: Date.now() + TTL_MS });
       inflight.delete(url);
-      console.debug("[resolveSignedUrl] server resolved", { url, signedUrl });
       return signedUrl;
     })
     .catch(() => {
       inflight.delete(url);
-      console.debug("[resolveSignedUrl] server fetch failed, returning original", { url });
       return url;
     });
   inflight.set(url, promise);
@@ -151,17 +141,13 @@ export const resolveSignatureImageValue = async (
 ): Promise<string> => {
   const parsed = parseSignatureImageValue(value);
   if (!parsed || !isBucketSignatureImagePayload(parsed.image)) {
-    console.debug("[resolveSignatureImageValue] not a bucket payload", { value, parsed });
     return value;
   }
   if (parsed.image.signedUrl) {
-    console.debug("[resolveSignatureImageValue] already has signedUrl, skip", { path: parsed.image.path, signedUrl: parsed.image.signedUrl });
     return value;
   }
   const bucketUrl = `${BUCKET_PREFIX}${parsed.image.path}`;
-  console.debug("[resolveSignatureImageValue] requesting signed URL", { bucketUrl });
   parsed.image.signedUrl = await resolveSignedUrl(bucketUrl);
-  console.debug("[resolveSignatureImageValue] resolved", { bucketUrl, signedUrl: parsed.image.signedUrl });
   return serializeSignatureImageValue(parsed);
 };
 
