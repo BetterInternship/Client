@@ -6,6 +6,8 @@ import {
   ClientField,
   ClientPhantomField,
   FormValues,
+  parseSignatureImageValue,
+  SIGNATURE_IMAGE_FIELD_PREFIX,
 } from "@betterinternship/core/forms";
 import { useCallback, useMemo } from "react";
 import { getFreshHistoryCutoffMsFromStorage } from "@/app/student/forms/fresh-history";
@@ -100,6 +102,17 @@ export const useMyAutofillUpdate = () => {
           internshipMoaFieldsToSave[formName][field.field] =
             finalValues[field.field];
         }
+      }
+
+      const signatureImageKeys = Object.keys(finalValues).filter((key) =>
+        key.startsWith(SIGNATURE_IMAGE_FIELD_PREFIX),
+      );
+      if (signatureImageKeys.length > 0) {
+        const usedSignatureImage = signatureImageKeys.some((key) =>
+          parseSignatureImageValue(finalValues[key]),
+        );
+        internshipMoaFieldsToSave.shared.__signature_image_enabled =
+          usedSignatureImage ? "true" : "false";
       }
 
       // Save for future use

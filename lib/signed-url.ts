@@ -1,8 +1,14 @@
 "use client";
 
+import {
+  isBucketSignatureImagePayload,
+  parseSignatureImageValue,
+  serializeSignatureImageValue,
+  type FormValues,
+} from "@betterinternship/core/forms";
 import { useEffect, useState } from "react";
 
-const BUCKET_PREFIX =
+export const BUCKET_PREFIX =
   "https://storage.googleapis.com/better-internship-public-bucket/";
 
 export const isBucketUrl = (url: string): boolean =>
@@ -30,11 +36,14 @@ const resolveFromServer = async (
 };
 
 export const resolveSignedUrl = (url: string): Promise<string> => {
-  if (!isBucketUrl(url)) return Promise.resolve(url);
+  if (!isBucketUrl(url)) {
+    return Promise.resolve(url);
+  }
 
   const cached = cache.get(url);
-  if (cached && cached.expiresAt > Date.now())
+  if (cached && cached.expiresAt > Date.now()) {
     return Promise.resolve(cached.signedUrl);
+  }
 
   const existing = inflight.get(url);
   if (existing) return existing;
@@ -125,4 +134,32 @@ export const useSignedUrls = (urls: string[]) => {
   }, [key]);
 
   return { urls: resolved, loading };
+};
+
+export const resolveSignatureImageValue = async (
+  value: string,
+): Promise<string> => {
+  const parsed = parseSignatureImageValue(value);
+  if (!parsed || !isBucketSignatureImagePayload(parsed.image)) {
+    return value;
+  }
+  if (parsed.image.signedUrl) {
+    return value;
+  }
+  const bucketUrl = `${BUCKET_PREFIX}${parsed.image.path}`;
+  parsed.image.signedUrl = await resolveSignedUrl(bucketUrl);
+  return serializeSignatureImageValue(parsed);
+};
+
+export const resolveSignatureImageValues = async (
+  values: FormValues,
+): Promise<FormValues> => {
+  const next = { ...values };
+  await Promise.all(
+    Object.entries(values).map(async ([key, value]) => {
+      if (!key.startsWith("__signatureImage:")) return;
+      next[key] = await resolveSignatureImageValue(value);
+    }),
+  );
+  return next;
 };

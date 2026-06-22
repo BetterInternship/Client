@@ -104,19 +104,27 @@ export function FormFillerRenderer({
   const profileFullName = getFullName(profile.data);
 
   useEffect(() => {
-    const valuesWithPrefilledSignatures =
-      form.formMetadata.setSignatureValueForSigningParty(
-        formFiller.getFinalValues(autofillValues),
-        profileFullName,
-        "initiator",
-      );
-    const valuesWithSavedSignatureImages = withSavedSignatureImagesForFields({
-      values: valuesWithPrefilledSignatures,
-      signatureFields,
-      signatureImage: profile.data?.signatureImage,
-    });
+    (async () => {
+      const valuesWithPrefilledSignatures =
+        form.formMetadata.setSignatureValueForSigningParty(
+          formFiller.getFinalValues(autofillValues),
+          profileFullName,
+          "initiator",
+        );
+      const signatureImagePreference = autofillValues.__signature_image_enabled;
+      const effectiveSignatureImage =
+        signatureImagePreference === "false"
+          ? null
+          : profile.data?.signatureImage;
+      const valuesWithSavedSignatureImages =
+        await withSavedSignatureImagesForFields({
+          values: valuesWithPrefilledSignatures,
+          signatureFields,
+          signatureImage: effectiveSignatureImage,
+        });
 
-    formFiller.initializeValues(valuesWithSavedSignatureImages);
+      formFiller.initializeValues(valuesWithSavedSignatureImages);
+    })();
   }, [
     autofillValues,
     form.formMetadata,
