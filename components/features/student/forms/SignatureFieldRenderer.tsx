@@ -15,7 +15,7 @@ import {
   type ClientField,
   type SignatureImageValue,
 } from "@betterinternship/core/forms";
-import { Trash2, Type, UploadCloud } from "lucide-react";
+import { ImageUp, PenLine, Trash2, Type, UploadCloud } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 const MAX_SIGNATURE_UPLOAD_BYTES = 10 * 1024 * 1024;
@@ -50,7 +50,13 @@ export const SignatureFieldRenderer = <T extends any[]>({
     () => parseSignatureImageValue(rawSignatureImageValue),
     [rawSignatureImageValue],
   );
-  const [mode, setMode] = useState<SignatureMode>("type");
+  const [mode, setMode] = useState<SignatureMode>(
+    signatureImage?.source === "draw"
+      ? "draw"
+      : signatureImage?.source === "upload"
+        ? "upload"
+        : "type",
+  );
   const [typedName, setTypedName] = useState(value || "");
   const [uploadError, setUploadError] = useState("");
   const [isUploadDragging, setIsUploadDragging] = useState(false);
@@ -66,12 +72,9 @@ export const SignatureFieldRenderer = <T extends any[]>({
     setTypedName(value || "");
   }, [value]);
 
-  // Clear any existing draw/upload signature image on mount
   useEffect(() => {
-    if (signatureImage?.source) {
-      onAuxValueChange?.(imageFieldKey, "");
-    }
-  }, []);
+    if (signatureImage) setMode(signatureImage.source);
+  }, [signatureImage]);
 
   const emitSignatureImage = (nextImage: SignatureImageValue) => {
     const serializedValue = serializeSignatureImageValue(nextImage);
@@ -246,6 +249,18 @@ export const SignatureFieldRenderer = <T extends any[]>({
       title: "Type",
       icon: Type,
       onSelect: () => changeSignatureMode("type"),
+    },
+    {
+      id: "upload" as const,
+      title: "Upload",
+      icon: ImageUp,
+      onSelect: () => changeSignatureMode("upload"),
+    },
+    {
+      id: "draw" as const,
+      title: "Draw",
+      icon: PenLine,
+      onSelect: () => changeSignatureMode("draw"),
     },
   ];
 
