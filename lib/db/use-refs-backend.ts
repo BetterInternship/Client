@@ -34,7 +34,6 @@ const db = new Kysely<DB>({
   dialect: new PostgresDialect({
     pool: new Pool({
       connectionString: DATABASE_URL,
-      max: 1,
     }),
   }),
 });
