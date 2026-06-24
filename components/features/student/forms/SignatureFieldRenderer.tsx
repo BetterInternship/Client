@@ -59,13 +59,6 @@ export const SignatureFieldRenderer = <T extends any[]>({
         ? "upload"
         : "type",
   );
-  const [mode, setMode] = useState<SignatureMode>(
-    signatureImage?.source === "draw"
-      ? "draw"
-      : signatureImage?.source === "upload"
-        ? "upload"
-        : "type",
-  );
   const [typedName, setTypedName] = useState(value || "");
   const [uploadError, setUploadError] = useState("");
   const [isUploadDragging, setIsUploadDragging] = useState(false);
@@ -82,8 +75,6 @@ export const SignatureFieldRenderer = <T extends any[]>({
   }, [value]);
 
   useEffect(() => {
-    if (signatureImage) setMode(signatureImage.source);
-  }, [signatureImage]);
     if (signatureImage) setMode(signatureImage.source);
   }, [signatureImage]);
 
