@@ -310,6 +310,7 @@ export function FormFillerRenderer({
             formKey={form.formName}
             blocks={deduplicatedBlocks}
             values={finalValues}
+            values={finalValues}
             onChange={formFiller.setValue}
             errors={formFiller.errors}
             setSelected={(fieldId) => {

@@ -328,7 +328,7 @@ const EmployerEditor = ({
               >
                 I have read and agree to the{" "}
                 <a
-                  href="/TermsConditions.pdf"
+                  href="/terms"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:text-blue-800 underline font-medium"
@@ -338,7 +338,7 @@ const EmployerEditor = ({
                 </a>{" "}
                 and{" "}
                 <a
-                  href="/PrivacyPolicy.pdf"
+                  href="/student/privacy"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:text-blue-800 underline font-medium"

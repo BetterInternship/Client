@@ -14,7 +14,6 @@
   "dependencies": {
     "@betterinternship/components": "1.5.28",
     "@betterinternship/core": "^2.16.6",
-    "pdfjs-dist": "^4.4.168",
     "@betterinternship/schema": "^0.0.0",
     "@marsidev/react-turnstile": "^1.4.2",
     "@mdxeditor/editor": "^3.35.1",
@@ -69,6 +68,7 @@
     "kysely": "^0.28.16",
     "lucide-react": "^0.454.0",
     "next": "^15.5.19",
+    "pdfjs-dist": "^4.4.168",
     "pg": "^8.20.0",
     "posthog-js": "^1.386.6",
     "react": "^19",
@@ -81,6 +81,7 @@
     "react-markdown": "^10.1.0",
     "react-split-flap": "^0.1.7",
     "react-tooltip": "^5.30.0",
+    "remark-gfm": "^4.0.1",
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",

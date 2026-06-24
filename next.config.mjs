@@ -126,7 +126,7 @@ const nextConfig = {
         // Rewrite everything except _next and root-level common files
         rewrites.push({
           source:
-            "/:path((?!_next|fonts|BetterInternshipLogo|og|resume-loader|maintenance|PrivacyPolicy|TermsConditions|Student_MOA|Company_Information|student-preview|hire-preview|miro-preview|super-listings|student/ph-topojson).*)*",
+            "/:path((?!_next|fonts|BetterInternshipLogo|og|resume-loader|maintenance|PrivacyPolicy|TermsConditions|Student_MOA|Company_Information|student-preview|hire-preview|miro-preview|super-listings|student/ph-topojson|student/privacy|student/terms).*)*",
           has: [{ type: "host", value: host }],
           destination: `/${destination}/:path*`,
         });
