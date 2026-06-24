@@ -10,11 +10,13 @@ import { removeSignatureImageBackground } from "@/lib/signature-image-cleanup";
 import {
   createSignatureImageValue,
   getSignatureImageFieldKey,
+  isBucketSignatureImagePayload,
   parseSignatureImageValue,
   serializeSignatureImageValue,
   type ClientField,
   type SignatureImageValue,
 } from "@betterinternship/core/forms";
+import { BUCKET_PREFIX } from "@/lib/signed-url";
 import { ImageUp, PenLine, Trash2, Type, UploadCloud } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -83,8 +85,10 @@ export const SignatureFieldRenderer = <T extends any[]>({
 
   const getSignatureImageSrc = (signature: SignatureImageValue | null) => {
     if (!signature) return "";
-    if (signature.image.storage === "bucket") {
-      return signature.image.signedUrl || signature.image.publicUrl || "";
+    if (isBucketSignatureImagePayload(signature.image)) {
+      return (
+        signature.image.signedUrl || `${BUCKET_PREFIX}${signature.image.path}`
+      );
     }
     return signature.image.dataUrl;
   };
@@ -318,7 +322,9 @@ export const SignatureFieldRenderer = <T extends any[]>({
   };
 
   const signatureImageSrc = getSignatureImageSrc(signatureImage);
-  const isSavedSignatureImage = signatureImage?.image.storage === "bucket";
+  const isSavedSignatureImage = signatureImage
+    ? isBucketSignatureImagePayload(signatureImage.image)
+    : false;
 
   return (
     <div className="space-y-1.5">

@@ -41,7 +41,6 @@ export default function FormsPage() {
   );
 
   useEffect(() => {
-    console.log("PORFIE", profile.data);
     if (profile.isPending) return;
 
     setHasFormsAccess((currentAccess) => {

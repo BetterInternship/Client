@@ -184,17 +184,6 @@ export function FormSigningLayout({
       window.removeEventListener("resize", updateCompactSigningLayout);
   }, []);
 
-  const fieldOwnerByName = useMemo(() => {
-    const ownerMap = new Map<string, string>();
-    const allBlocks = form.formMetadata.getBlocksForEditorService();
-    allBlocks.forEach((block) => {
-      const fieldName =
-        block.field_schema?.field ?? block.phantom_field_schema?.field;
-      if (!fieldName || ownerMap.has(fieldName)) return;
-      ownerMap.set(fieldName, block.signing_party_id);
-    });
-    return ownerMap;
-  }, [form.formMetadata, form.formName]);
   const formFilloutProcess = useFormFilloutProcessRunner();
   const fromMe = useMemo(
     () =>
@@ -287,14 +276,6 @@ export function FormSigningLayout({
     [],
   );
 
-  const previewKeyedFields = useMemo(
-    () =>
-      (form.keyedFields ?? []).map((field) => ({
-        ...field,
-        signing_party_id: fieldOwnerByName.get(field.field),
-      })),
-    [form.keyedFields, fieldOwnerByName],
-  );
   const requiredManualFieldGroups = useMemo(() => {
     const fields = noEsign
       ? form.formMetadata.getFieldsForClientService(undefined)
@@ -346,18 +327,7 @@ export function FormSigningLayout({
     }
     return resolved;
   }, [previewValuesWithDerived, refs]);
-  const previewValuesForViewer = useMemo(() => {
-    if (noEsign) return previewValuesResolved;
-    const filtered: Record<string, string> = {};
-    for (const key of Object.keys(previewValuesResolved)) {
-      const normalized = key.replace(/:default$/i, "").replace(/:auto$/i, "");
-      const owner =
-        fieldOwnerByName.get(normalized) ?? fieldOwnerByName.get(key);
-      if (owner !== undefined && owner !== "initiator") continue;
-      filtered[key] = previewValuesResolved[key];
-    }
-    return filtered;
-  }, [previewValuesResolved, fieldOwnerByName, noEsign]);
+
   const wetSignatureHiddenFieldNames = useMemo(
     () => (noEsign ? getSignatureDerivedFieldNames(form.formMetadata) : []),
     [form.formMetadata, noEsign],
@@ -366,21 +336,20 @@ export function FormSigningLayout({
     const hiddenSet = new Set(
       wetSignatureHiddenFieldNames.map(normalizeFieldName),
     );
+    const allBlocks = form.formMetadata.getBlocksForEditorService();
     const raw = noEsign
-      ? previewKeyedFields.filter(
-          (field) =>
-            field.type !== "signature" &&
-            !hiddenSet.has(normalizeFieldName(field.field)),
+      ? allBlocks.filter(
+          (block) =>
+            block.block_type === "form_field" &&
+            block.field_schema?.type !== "signature" &&
+            !hiddenSet.has(normalizeFieldName(block.field_schema?.field ?? "")),
         )
-      : previewKeyedFields;
-    return raw.map((field) => ({
-      ...field,
-      id:
-        field.id ||
-        field._id ||
-        `${field.field}:${field.page}:${field.x}:${field.y}`,
+      : allBlocks;
+    return raw.map((block) => ({
+      ...block,
+      id: block._id,
     }));
-  }, [previewKeyedFields, noEsign, wetSignatureHiddenFieldNames]);
+  }, [form.formMetadata, noEsign, wetSignatureHiddenFieldNames]);
 
   const computeRequiredFieldsComplete = useCallback(
     (nextValues: FormValues) =>
@@ -895,7 +864,7 @@ export function FormSigningLayout({
                     key={isMobileLayout ? "mobile-preview" : "desktop-preview"}
                     documentUrl={resolvedDocumentUrl}
                     blocks={previewBlocksForViewer}
-                    values={previewValuesForViewer}
+                    values={previewValuesResolved}
                     fieldErrors={formFiller.errors}
                     selectionTick={selectionTick}
                     autoScrollToSelectedField={

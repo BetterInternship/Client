@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@betterinternship/components": "1.5.28",
-    "@betterinternship/core": "^2.15.0",
+    "@betterinternship/core": "^2.16.6",
     "pdfjs-dist": "^4.4.168",
     "@betterinternship/schema": "^0.0.0",
     "@marsidev/react-turnstile": "^1.4.2",
@@ -108,7 +108,7 @@
     "typescript-eslint": "^8.20.0"
   },
   "overrides": {
-    "js-yaml": ">=4.1.2",
+    "js-yaml": "4.1.1",
     "nanoid": ">=5.0.9",
     "nodemailer": ">=9.0.0",
     "postcss": "^8.5.15",
