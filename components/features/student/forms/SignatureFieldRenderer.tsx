@@ -266,6 +266,18 @@ export const SignatureFieldRenderer = <T extends any[]>({
       icon: PenLine,
       onSelect: () => changeSignatureMode("draw"),
     },
+    {
+      id: "upload" as const,
+      title: "Upload",
+      icon: ImageUp,
+      onSelect: () => changeSignatureMode("upload"),
+    },
+    {
+      id: "draw" as const,
+      title: "Draw",
+      icon: PenLine,
+      onSelect: () => changeSignatureMode("draw"),
+    },
   ];
 
   const SignatureModeCard = ({

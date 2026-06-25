@@ -6,8 +6,8 @@ import { usePathname } from "next/navigation";
 type FooterLink = { label: string; href: string; className?: string };
 
 const LINKS: FooterLink[] = [
-  { label: "Privacy", href: "/PrivacyPolicy.pdf" },
-  { label: "Terms", href: "/TermsConditions.pdf" },
+  { label: "Privacy", href: "/privacy" },
+  { label: "Terms", href: "/terms" },
   {
     label: "Need help?",
     href: "/help",
