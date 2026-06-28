@@ -50,7 +50,7 @@ For students and alumni that are given access to the Sites by the educational in
 
 ## Independent Platform Notice
 
-The educational institution does not provide the student’s personal information to BetterInternship and does not control how BetterInternship processes such information within the platform. Unless there is a separate written agreement stating otherwise, BetterInternship is responsible for the collection, use, storage, and processing of personal information submitted directly by the student through the platform.
+Educational institutions do not provide students’ personal information to BetterInternship and do not control how BetterInternship processes that information within the platform. Unless there is a separate written agreement stating otherwise, BetterInternship is responsible for the collection, use, storage, and processing of personal information submitted directly by students through the platform.
 
 # 2.0 Personal Information We Collect
 
