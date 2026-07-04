@@ -1,125 +1,167 @@
-import { useState, useEffect } from "react";
-import { Employer, PrivateUser } from "@/lib/db/db.types";
-import { handleApiError } from "./services";
-import { EmployerAuthService } from "./hire.api";
+import { Employer } from "@/lib/db/db.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { APIClient, APIRouteBuilder } from "@/lib/api/api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
+import { EmployerAuthService } from "./hire.api";
 
-/**
- * Retrieves aggregate employer information.
- * @returns
- */
-export function useEmployers() {
-  const queryClient = useQueryClient();
-  const { isPending, isFetching, error } = useQuery({
-    queryKey: ["god-employers"],
-    queryFn: async () => {
-      const { success, employers } =
-        await EmployerAuthService.getAllEmployers();
-      if (!success) return {};
-      await Promise.all(
-        employers.map((employer) =>
-          queryClient.setQueryData(["god-employers", employer.id], employer),
-        ),
-      );
-      updateEmployers();
-      return {};
-    },
-    staleTime: Infinity,
-  });
-  const [employers, setEmployers] = useState<Employer[]>([]);
-  const { isPending: isVerifying, mutate: verify } = useMutation({
-    mutationFn: EmployerAuthService.verifyEmployer,
-    onMutate: async (employerId) =>
-      (await queryClient.getQueryData([
-        "god-employers",
-        employerId,
-      ])) as Employer,
-    onSettled: async (response, error, variables, oldEmployer) => {
-      await queryClient.invalidateQueries({
-        queryKey: ["god-employers", response?.employer.id],
-      });
-      const result = await queryClient.setQueryData(
-        ["god-employers", response?.employer.id],
-        {
-          ...oldEmployer,
-          ...response?.employer,
-        },
-      );
-      updateEmployers();
-      return result;
-    },
-  });
-  const { isPending: isUnverifying, mutate: unverify } = useMutation({
-    mutationFn: EmployerAuthService.unverifyEmployer,
-    onMutate: async (employerId) =>
-      (await queryClient.getQueryData([
-        "god-employers",
-        employerId,
-      ])) as Employer,
-    onSettled: async (response, error, variables, oldEmployer) => {
-      await queryClient.invalidateQueries({
-        queryKey: ["god-employers", response?.employer.id],
-      });
-      const result = await queryClient.setQueryData(
-        ["god-employers", response?.employer.id],
-        {
-          ...oldEmployer,
-          ...response?.employer,
-        },
-      );
-      updateEmployers();
-      return result;
-    },
-  });
-
-  const updateEmployers = () => {
-    setTimeout(() =>
-      setEmployers(
-        queryClient
-          .getQueriesData({
-            queryKey: ["god-employers"],
-          })
-          .map((e) => e[1] as Employer)
-          .filter((e) => e?.id),
-      ),
-    );
-  };
-
-  useEffect(() => {
-    updateEmployers();
-  }, []);
-
-  return {
-    isPending,
-    isFetching,
-    isVerifying,
-    isUnverifying,
-    data: employers,
-    verify,
-    unverify,
-    error,
-  };
+export interface PaginatedEmployersResponse extends FetchResponse {
+  data: Employer[];
+  total: number;
 }
 
-/**
- * Retrieves aggregate user info.
- * @returns
- */
-export function useUsers() {
-  const { data, isFetching, isPending, error } = useQuery({
-    queryKey: ["god-students"],
-    queryFn: () => EmployerAuthService.getAllUsers(),
-    staleTime: Infinity,
-  });
+export interface WeeklyStatsResponse extends FetchResponse {
+  stats: {
+    week_start: string;
+    applications: number;
+    applicants: number;
+    applications_wow_growth: number | null;
+    applicants_wow_growth: number | null;
+  }[];
+}
 
-  return {
-    users: (data?.users as PrivateUser[]) ?? [],
-    isPending,
-    isFetching,
-    error,
-  };
+export function useGodEmployers(params: {
+  page: number;
+  limit: number;
+  search?: string;
+  is_verified?: string;
+  sort_by?: string;
+  sort_dir?: 'asc' | 'desc';
+}) {
+  return useQuery({
+    queryKey: ["god-employers", params],
+    queryFn: () =>
+      APIClient.get<PaginatedEmployersResponse>(
+        APIRouteBuilder("god")
+          .r("employers")
+          .p({
+            page: params.page,
+            limit: params.limit,
+            search: params.search,
+            is_verified: params.is_verified,
+            sort_by: params.sort_by,
+            sort_dir: params.sort_dir,
+          })
+          .build(),
+      ),
+  });
+}
+
+export function useVerifyEmployer() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: EmployerAuthService.verifyEmployer,
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["god-employers"] });
+    },
+  });
+}
+
+export function useUnverifyEmployer() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: EmployerAuthService.unverifyEmployer,
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["god-employers"] });
+    },
+  });
+}
+
+export function useWeeklyStats(weeks?: number) {
+  return useQuery({
+    queryKey: ["god-stats", weeks],
+    queryFn: () =>
+      APIClient.get<WeeklyStatsResponse>(
+        APIRouteBuilder("god")
+          .r("stats", "applications")
+          .p(weeks ? { weeks } : {})
+          .build(),
+      ),
+    staleTime: 0,
+  });
+}
+
+export function useCreateListing() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      employerId,
+      data,
+    }: {
+      employerId: string;
+      data: {
+        title: string;
+        description: string;
+        location?: string;
+        requirements?: string;
+        salary?: string;
+        allowance?: number;
+        salary_freq?: number;
+        is_active?: boolean;
+        is_unlisted?: boolean;
+      };
+    }) =>
+      APIClient.post<FetchResponse>(
+        APIRouteBuilder("god").r("employers", employerId, "listings").build(),
+        data,
+      ),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["god-employers"] });
+    },
+  });
+}
+
+export function useRegisterEmployer() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { name: string; user_email: string }) =>
+      APIClient.post<FetchResponse>(
+        APIRouteBuilder("god").r("register").build(),
+        data,
+      ),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["god-employers"] });
+    },
+  });
+}
+
+export function useRegisterAndList() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      name: string;
+      email: string;
+      title: string;
+      description: string;
+      location?: string;
+      requirements?: string;
+      salary?: string;
+      allowance?: number;
+      salary_freq?: number;
+      is_active?: boolean;
+      is_unlisted?: boolean;
+    }) =>
+      APIClient.post<FetchResponse>(
+        APIRouteBuilder("god").r("employers", "create-and-list").build(),
+        data,
+      ),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["god-employers"] });
+    },
+  });
+}
+
+export function useImportCsv() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (csv: string) =>
+      APIClient.post<FetchResponse>(
+        APIRouteBuilder("god").r("employers", "import-csv").build(),
+        { csv },
+      ),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["god-employers"] });
+    },
+  });
 }
 
 export const StudentGodAPI = {

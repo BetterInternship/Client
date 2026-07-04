@@ -56,19 +56,7 @@ export const EmployerAuthService = {
 
   async loginAsEmployer(employer_id: string) {
     return APIClient.post<AuthResponse>(
-      APIRouteBuilder("employer").r("proxy", employer_id).build(),
-    );
-  },
-
-  async getAllUsers() {
-    return APIClient.get<AuthResponse>(
-      APIRouteBuilder("employer").r("all-users").build(),
-    );
-  },
-
-  async getAllEmployers() {
-    return APIClient.get<EmployersResponse>(
-      APIRouteBuilder("employer").r("all").build(),
+      APIRouteBuilder("god").r("employers", employer_id, "proxy").build(),
     );
   },
 
@@ -80,13 +68,13 @@ export const EmployerAuthService = {
 
   async verifyEmployer(employer_id: string): Promise<EmployerResponse> {
     return APIClient.post<EmployerResponse>(
-      APIRouteBuilder("employer").r("verify", employer_id).build(),
+      APIRouteBuilder("god").r("employers", employer_id, "verify").build(),
     );
   },
 
   async unverifyEmployer(employer_id: string): Promise<EmployerResponse> {
     return APIClient.post<EmployerResponse>(
-      APIRouteBuilder("employer").r("unverify", employer_id).build(),
+      APIRouteBuilder("god").r("employers", employer_id, "unverify").build(),
     );
   },
 };
