@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ChevronRight } from "lucide-react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import MagneticButton from "@/components/ui/magnetic-button";
 import Link from "next/link";
@@ -79,7 +78,7 @@ export function HeroSection() {
                 <Button
                   type="button"
                   variant="ghost"
-                  className="bg-primary text-primary-foreground px-16 h-14 w-fit hover:shadow-2xl hover:shadow-primary/50 hover:bg-primary/90 hover:text-primary-foreground transition-shadow"
+                  className="bg-primary text-primary-foreground px-16 h-14 w-fit hover:shadow-2xl hover:shadow-primary/50 hover:bg-primary/90 hover:text-primary-foreground transition-all"
                 >
                   Post a job now
                   <ArrowRight />

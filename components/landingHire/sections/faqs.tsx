@@ -39,7 +39,7 @@ const faqItems = [
 
 export function FAQsSection() {
   return (
-    <section className="relative min-h-screen flex justify-center items-center overflow-hidden px-8">
+    <section className="relative min-h-screen flex justify-center items-center overflow-hidden p-8">
       <div className="flex flex-col gap-4 max-w-7xl w-full">
         <div className="flex gap-4 items-center">
           <HelpCircle className="w-8 h-8" />

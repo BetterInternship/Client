@@ -4,7 +4,7 @@ import { BellDot, MessageCircleHeart, Users } from "lucide-react";
 
 export function FeaturesSection() {
   return (
-    <section className="relative min-h-screen flex justify-center items-center overflow-hidden px-8">
+    <section className="relative h-fit flex justify-center items-center overflow-hidden p-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl">
         <div className="md:col-span-3">
           <p className="text-sm font-medium text-primary">
