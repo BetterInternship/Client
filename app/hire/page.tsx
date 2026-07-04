@@ -38,12 +38,12 @@ export default function HomePage() {
 
   const headerLinks: HeaderLink[] = [
     {
-      label: "FAQ",
-      href: "#faq",
+      label: "Why BetterInternship",
+      href: "#features",
     },
     {
-      label: "About Us",
-      href: "#about",
+      label: "FAQ",
+      href: "#faqs",
     },
   ];
 
@@ -53,8 +53,12 @@ export default function HomePage() {
       <div ref={heroRef}>
         <HeroSection />
       </div>
-      <FeaturesSection />
-      <FAQsSection />
+      <div id="features" className="scroll-mt-64">
+        <FeaturesSection />
+      </div>
+      <div id="faqs" className="scroll-mt-12">
+        <FAQsSection />
+      </div>
       <EndSection />
     </div>
   );
