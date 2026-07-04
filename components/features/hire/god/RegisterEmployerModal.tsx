@@ -77,7 +77,10 @@ export function RegisterEmployerModal({
     }
 
     try {
-      await registerEmployer.mutateAsync({ name: dba, user_email: email });
+      const result: any = await registerEmployer.mutateAsync({ name: dba, user_email: email });
+      if (result?.error) {
+        return toast.error(`Registration failed: ${result.error}`);
+      }
       toast.success(`"${dba}" registered. Check email for password.`);
       onClose();
     } catch (e: any) {
