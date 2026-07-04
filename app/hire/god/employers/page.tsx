@@ -167,12 +167,10 @@ function ListingFormFields({
           className="rounded-md border px-3 py-1.5 text-sm w-full"
         >
           <option value="">—</option>
-          <option value="1">Hourly</option>
-          <option value="2">Daily</option>
-          <option value="3">Weekly</option>
-          <option value="4">Bi-weekly</option>
-          <option value="5">Monthly</option>
-          <option value="6">Yearly</option>
+          <option value="0">Hour</option>
+          <option value="1">Day</option>
+          <option value="2">Week</option>
+          <option value="3">Month</option>
         </select>
       </div>
 
@@ -470,10 +468,14 @@ export default function GodEmployersPage() {
   const handleCreateListing = async () => {
     if (!listingEmployer) return;
     try {
-      await createListing.mutateAsync({
+      const result: any = await createListing.mutateAsync({
         employerId: listingEmployer.id,
         data: listingForm,
       });
+      if (result?.error) {
+        toast.error(`Failed to create listing: ${result.error}`);
+        return;
+      }
       toast.success(
         `Listing "${listingForm.title}" created for ${listingEmployer.name}.`,
       );
@@ -491,13 +493,17 @@ export default function GodEmployersPage() {
 
   const handleRegisterAndList = async () => {
     try {
-      const result = await registerAndList.mutateAsync({
+      const result: any = await registerAndList.mutateAsync({
         name: ralName,
         email: ralEmail,
         ...ralForm,
       });
+      if (result?.error) {
+        toast.error(`Failed: ${result.error}`);
+        return;
+      }
       const prefix =
-        (result as any)?.isNewEmployer !== false
+        result?.isNewEmployer !== false
           ? "Created"
           : "Found existing";
       toast.success(`${prefix} "${ralName}" and listing "${ralForm.title}".`);
@@ -570,9 +576,13 @@ export default function GodEmployersPage() {
     try {
       const text = await file.text();
       const rows = parseCsv(text);
-      const result = await importCsv.mutateAsync(rows);
-      const count = (result as any)?.count ?? 0;
-      toast.success(`Imported ${count} listings successfully.`);
+      const result: any = await importCsv.mutateAsync(rows);
+      if (result?.error) {
+        toast.error(`Import failed: ${result.error}`);
+        return;
+      }
+      const count = result?.count ?? 0;
+      toast.success(`Imported ${count} listing${count !== 1 ? 's' : ''} successfully.`);
       setShowImportCsv(false);
     } catch (err: any) {
       toast.error(err?.message ?? "Failed to import CSV.");
@@ -642,13 +652,17 @@ export default function GodEmployersPage() {
                 scheme={e.is_verified ? "warning" : "supportive"}
                 onClick={async () => {
                   try {
+                    let result: any;
                     if (e.is_verified) {
-                      await unverifyEmployer.mutateAsync(e.id);
-                      toast.success(`"${e.name}" unverified.`);
+                      result = await unverifyEmployer.mutateAsync(e.id);
                     } else {
-                      await verifyEmployer.mutateAsync(e.id);
-                      toast.success(`"${e.name}" verified.`);
+                      result = await verifyEmployer.mutateAsync(e.id);
                     }
+                    if (result?.error) {
+                      toast.error(`Failed: ${result.error}`);
+                      return;
+                    }
+                    toast.success(`"${e.name}" ${e.is_verified ? 'unverified' : 'verified'}.`);
                   } catch (err: any) {
                     toast.error(err?.message ?? "Failed to update employer.");
                   }
