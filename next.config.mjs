@@ -24,10 +24,7 @@ const connectOrigins = apiUrls
   .filter(Boolean)
   .join(" ");
 
-const imageOrigins = [
-  ...apiUrls,
-  "https://storage.googleapis.com",
-]
+const imageOrigins = [...apiUrls, "https://storage.googleapis.com"]
   .map((url) => {
     try {
       return new URL(url).origin;
@@ -60,9 +57,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  images: {
-    unoptimized: true,
-  },
+  images: {},
 
   // content security policy headers
   async headers() {
@@ -126,7 +121,7 @@ const nextConfig = {
         // Rewrite everything except _next and root-level common files
         rewrites.push({
           source:
-            "/:path((?!_next|fonts|BetterInternshipLogo|og|resume-loader|maintenance|PrivacyPolicy|TermsConditions|Student_MOA|Company_Information|student-preview|hire-preview|miro-preview|super-listings|student/ph-topojson).*)*",
+            "/:path((?!_next|fonts|BetterInternshipLogo|og|resume-loader|maintenance|PrivacyPolicy|TermsConditions|Student_MOA|Company_Information|student-preview|hire-preview|miro-preview|super-listings|student/ph-topojson)(?!.*\\.(?:jpg|jpeg|png|webp|gif)$).*)",
           has: [{ type: "host", value: host }],
           destination: `/${destination}/:path*`,
         });
