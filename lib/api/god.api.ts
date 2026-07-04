@@ -4,6 +4,22 @@ import { APIClient, APIRouteBuilder } from "@/lib/api/api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { EmployerAuthService } from "./hire.api";
 
+export interface ListingData {
+  title: string;
+  description: string;
+  location?: string;
+  requirements?: string;
+  salary?: string;
+  allowance?: number;
+  salary_freq?: number;
+  is_active?: boolean;
+  is_unlisted?: boolean;
+  is_year_round?: boolean;
+  start_date?: number;
+  end_date?: number;
+  internship_preferences?: Record<string, unknown>;
+}
+
 export interface PaginatedEmployersResponse extends FetchResponse {
   data: Employer[];
   total: number;
@@ -88,17 +104,7 @@ export function useCreateListing() {
       data,
     }: {
       employerId: string;
-      data: {
-        title: string;
-        description: string;
-        location?: string;
-        requirements?: string;
-        salary?: string;
-        allowance?: number;
-        salary_freq?: number;
-        is_active?: boolean;
-        is_unlisted?: boolean;
-      };
+      data: ListingData;
     }) =>
       APIClient.post<FetchResponse>(
         APIRouteBuilder("god").r("employers", employerId, "listings").build(),
@@ -127,19 +133,12 @@ export function useRegisterEmployer() {
 export function useRegisterAndList() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: {
-      name: string;
-      email: string;
-      title: string;
-      description: string;
-      location?: string;
-      requirements?: string;
-      salary?: string;
-      allowance?: number;
-      salary_freq?: number;
-      is_active?: boolean;
-      is_unlisted?: boolean;
-    }) =>
+    mutationFn: (
+      data: {
+        name: string;
+        email: string;
+      } & ListingData,
+    ) =>
       APIClient.post<FetchResponse>(
         APIRouteBuilder("god").r("employers", "create-and-list").build(),
         data,
@@ -153,10 +152,10 @@ export function useRegisterAndList() {
 export function useImportCsv() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (csv: string) =>
+    mutationFn: (rows: Record<string, string>[]) =>
       APIClient.post<FetchResponse>(
         APIRouteBuilder("god").r("employers", "import-csv").build(),
-        { csv },
+        { rows },
       ),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["god-employers"] });
