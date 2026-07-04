@@ -7,6 +7,7 @@ import MagneticButton from "@/components/ui/magnetic-button";
 import Link from "next/link";
 import { easeOut, motion, useReducedMotion, Variants } from "framer-motion";
 import { useBlurTransition } from "@/components/animata/blur";
+import { InteractiveGridPattern } from "@/components/landingStudent/sections/1stSection/interactive-grid-pattern";
 
 export function HeroSection() {
   const shouldReduceMotion = useReducedMotion();
@@ -35,7 +36,16 @@ export function HeroSection() {
   const blurTransition = useBlurTransition();
 
   return (
-    <section className="relative min-h-screen flex justify-center items-center overflow-hidden px-8">
+    <section className="relative min-h-screen flex justify-center items-center overflow-hidden px-8 bg-gradient-to-t from-primary/0 to-primary/10">
+      <div className="pointer-events-none absolute inset-0" aria-hidden>
+        <InteractiveGridPattern
+          width={36}
+          height={36}
+          squares={[60, 40]}
+          className="h-full w-full opacity-30 [mask-image:radial-gradient(120%_80%_at_50%_40%,black,transparent)]"
+          squaresClassName="border border-gray-200/10"
+        />
+      </div>
       <div className="flex w-full max-w-7xl flex-col gap-8 md:flex-row items-center">
         <div className="flex flex-col gap-2 md:w-1/2">
           <motion.img

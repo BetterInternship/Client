@@ -4,11 +4,21 @@ import MagneticButton from "@/components/ui/magnetic-button";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { InteractiveGridPattern } from "@/components/landingStudent/sections/1stSection/interactive-grid-pattern";
 
 export function EndSection() {
   return (
     <section className="relative py-16 md:py-24 px-6 md:px-8 overflow-hidden bg-gradient-to-b from-primary/0 to-primary/50">
-      <div className="mx-auto max-w-7xl rounded-[0.33em] border bg-white p-8 md:p-12 shadow-2xl">
+      <div className="pointer-events-none absolute inset-0" aria-hidden>
+        <InteractiveGridPattern
+          width={36}
+          height={36}
+          squares={[60, 40]}
+          className="h-full w-full opacity-30 [mask-image:radial-gradient(120%_80%_at_50%_40%,black,transparent)]"
+          squaresClassName="border border-gray-200/10"
+        />
+      </div>
+      <div className="relative mx-auto max-w-7xl rounded-[0.33em] border bg-white p-8 md:p-12 shadow-2xl">
         <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
           <div className="max-w-2xl">
             <p className="text-sm font-medium text-primary mb-3">
