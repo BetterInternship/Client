@@ -76,6 +76,7 @@ export function useWeeklyStats(weeks?: number) {
           .p(weeks ? { weeks } : {})
           .build(),
       ),
+    staleTime: 0,
   });
 }
 
