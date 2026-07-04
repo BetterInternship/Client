@@ -10,6 +10,7 @@ import { LogoCarouselBasic } from "@/components/landingStudent/sections/5thSecti
 import { InteractiveGridPattern } from "@/components/landingStudent/sections/1stSection/interactive-grid-pattern";
 import { Navigation } from "@/components/landingStudent/navigation";
 import { DoodleUnderline } from "@/components/landingStudent/ui/doodle-underline";
+import MagneticButton from "@/components/ui/magnetic-button";
 
 const HIRE_URL = process.env.NEXT_PUBLIC_CLIENT_HIRE_URL ?? "/hire";
 
@@ -25,51 +26,6 @@ const fadeUpDelayed: Variants = {
     transition: { duration: 0.8, ease: "easeOut", delay: 0.2 },
   },
 };
-
-/* ---------- Magnetic CTA ---------- */
-function MagneticButton({
-  children,
-  className = "",
-  asChild = false,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  asChild?: boolean;
-}) {
-  const prefersReduce = useReducedMotion();
-  const ref = useRef<HTMLDivElement>(null);
-  const [tx, setTx] = useState(0);
-  const [ty, setTy] = useState(0);
-
-  const max = 6; // px
-  function onMove(e: React.MouseEvent) {
-    if (prefersReduce) return;
-    const el = ref.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const x = (e.clientX - r.left) / r.width - 0.5;
-    const y = (e.clientY - r.top) / r.height - 0.5;
-    setTx(x * max * 2);
-    setTy(y * max * 2);
-  }
-  function onLeave() {
-    setTx(0);
-    setTy(0);
-  }
-
-  return (
-    <motion.div
-      ref={ref}
-      onMouseMove={onMove}
-      onMouseLeave={onLeave}
-      animate={{ x: tx, y: ty, rotate: tx * 0.3 }}
-      transition={{ type: "spring", stiffness: 200, damping: 15, mass: 0.3 }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-}
 
 /* ---------- Paper airplane path ---------- */
 function AirplanePath() {
@@ -120,10 +76,14 @@ export function HeroSection() {
 
       {/* orbs */}
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden>
-        <span className="absolute -top-16 -left-20 h-72 w-72 rounded-full
-          bg-gradient-to-br from-primary/25 to-blue-400/20 blur-xl sm:blur-3xl" />
-        <span className="absolute -right-24 bottom-20 h-80 w-80 rounded-full
-          bg-gradient-to-br from-primary/25 to-blue-400/20 blur-xl sm:blur-3xl" />
+        <span
+          className="absolute -top-16 -left-20 h-72 w-72 rounded-full
+          bg-gradient-to-br from-primary/25 to-blue-400/20 blur-xl sm:blur-3xl"
+        />
+        <span
+          className="absolute -right-24 bottom-20 h-80 w-80 rounded-full
+          bg-gradient-to-br from-primary/25 to-blue-400/20 blur-xl sm:blur-3xl"
+        />
       </div>
 
       {/* navigation */}

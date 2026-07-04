@@ -4,13 +4,9 @@ import {
   LandingHeader,
   HeaderLink,
 } from "@/components/landingHire/landing-header";
-import {
-  HeroSection,
-  Preview,
-  FAQ,
-  LogoCarouselBasic,
-} from "@/components/landingHire/sections";
-import { ConnectUniversitySection } from "@/components/landingHire/sections/connect-university";
+import { HeroSection } from "@/components/landingHire/sections/hero";
+import { FeaturesSection } from "@/components/landingHire/sections/features";
+import { FAQsSection } from "@/components/landingHire/sections/faqs";
 import { useEffect, useRef, useState } from "react";
 
 export default function HomePage() {
@@ -41,10 +37,6 @@ export default function HomePage() {
 
   const headerLinks: HeaderLink[] = [
     {
-      label: "Why BetterInternship",
-      href: "#why",
-    },
-    {
       label: "FAQ",
       href: "#faq",
     },
@@ -60,15 +52,8 @@ export default function HomePage() {
       <div ref={heroRef}>
         <HeroSection />
       </div>
-      <ConnectUniversitySection />
-      {/* FAQ */}
-      <FAQ />
-
-      {/* Call To Action */}
-      <Preview />
-
-      {/* Companies showcase */}
-      <LogoCarouselBasic />
+      <FeaturesSection />
+      <FAQsSection />
     </div>
   );
 }
