@@ -59,6 +59,7 @@ export default function GodStatsPage() {
   const { data, isFetching } = useWeeklyStats();
 
   const stats = data?.stats ?? [];
+  const tableStats = useMemo(() => [...stats].reverse(), [stats]);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
@@ -96,7 +97,7 @@ export default function GodStatsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {stats.map((row: any, i: number) => (
+                {tableStats.map((row: any, i: number) => (
                   <tr key={i} className="hover:bg-slate-50">
                     <td className="px-4 py-2.5 font-mono text-slate-700">
                       {new Date(row.week_start).toLocaleDateString("en-US", {
