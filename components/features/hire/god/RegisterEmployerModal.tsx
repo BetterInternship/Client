@@ -13,6 +13,8 @@ import { isValidEmail } from "@/lib/utils";
 import { APIClient, APIRouteBuilder } from "@/lib/api/api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { Autocomplete } from "@/components/ui/autocomplete";
+import { toast } from "sonner";
+import { useRegisterEmployer } from "@/lib/api/god.api";
 
 export type ModalRendererProps = {
   children?: React.ReactNode;
@@ -55,7 +57,7 @@ export function RegisterEmployerModal({
 }) {
   const [dba, setDba] = useState("");
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
+  const registerEmployer = useRegisterEmployer();
 
   useEffect(() => console.debug("[RegisterEmployerModal] mounted"), []);
 
@@ -67,38 +69,22 @@ export function RegisterEmployerModal({
 
     if (!isValidEmail(email)) {
       console.warn("[RegisterEmployerModal] invalid email");
-      return alert("Email is not valid.");
+      return toast.error("Email is not valid.");
     }
     if (!dba.length) {
       console.warn("[RegisterEmployerModal] empty DBA");
-      return alert("Company Name (DBA) is required.");
+      return toast.error("Company Name is required.");
     }
 
-    setLoading(true);
     try {
-      const url = APIRouteBuilder("employer").r("god", "register").build();
-      console.debug("[RegisterEmployerModal] POST", url, {
-        name: dba,
-        user_email: email,
-      });
-      const res = await APIClient.post<FetchResponse>(url, {
-        name: dba,
-        user_email: email,
-      });
-      console.debug("[RegisterEmployerModal] response:", res);
-
-      if (res?.success) {
-        alert("Account created. Check email for password.");
-        onClose();
-        window.location.reload();
-      } else {
-        alert("Something went wrong. Check console.");
+      const result: any = await registerEmployer.mutateAsync({ name: dba, user_email: email });
+      if (result?.error) {
+        return toast.error(`Registration failed: ${result.error}`);
       }
-    } catch (e) {
-      console.error("[RegisterEmployerModal] POST error:", e);
-      alert("Request failed. See console.");
-    } finally {
-      setLoading(false);
+      toast.success(`"${dba}" registered. Check email for password.`);
+      onClose();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Registration failed.");
     }
   };
 
@@ -119,10 +105,10 @@ export function RegisterEmployerModal({
             <div className="mt-2 flex gap-2">
               <Button
                 scheme="supportive"
-                disabled={loading}
+                disabled={registerEmployer.isPending}
                 onClick={() => void handleRegister()}
               >
-                {!loading ? "Register" : "Registering..."}
+                {!registerEmployer.isPending ? "Register" : "Registering..."}
               </Button>
               <Button variant="outline" onClick={onClose}>
                 Cancel
@@ -153,8 +139,8 @@ export function GenerateMagicLinkModal({
   const handleGen = async () => {
     if (!selectedEid) return alert("Select employer first.");
     setLoading(true);
-    const url = APIRouteBuilder("employer")
-      .r("god", "generate-magic-link")
+    const url = APIRouteBuilder("god")
+      .r("generate-magic-link")
       .build();
     const res = await APIClient.post<FetchResponse & { magicLink: string }>(
       url,
