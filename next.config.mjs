@@ -24,7 +24,13 @@ const connectOrigins = apiUrls
   .filter(Boolean)
   .join(" ");
 
-const imageOrigins = [...apiUrls, "https://storage.googleapis.com"]
+const imageOrigins = [
+  ...apiUrls,
+  "https://storage.googleapis.com",
+  "https://sofitech.ai",
+  "https://media.licdn.com",
+  "https://img.youtube.com",
+]
   .map((url) => {
     try {
       return new URL(url).origin;
@@ -57,7 +63,22 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  images: {},
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "sofitech.ai",
+      },
+      {
+        protocol: "https",
+        hostname: "media.licdn.com",
+      },
+      {
+        protocol: "https",
+        hostname: "img.youtube.com",
+      },
+    ],
+  },
 
   // content security policy headers
   async headers() {
