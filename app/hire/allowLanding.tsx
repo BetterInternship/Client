@@ -1,11 +1,15 @@
-"use client"
+"use client";
 
 import { usePathname } from "next/navigation";
 import Header from "@/components/features/hire/header";
 import { Footer } from "@/components/shared/footer";
 import { Suspense } from "react";
 
-export default function AllowLanding({ children }: { children: React.ReactNode }) {
+export default function AllowLanding({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const isStudentLanding = pathname === "/";
 
@@ -17,4 +21,3 @@ export default function AllowLanding({ children }: { children: React.ReactNode }
     </div>
   );
 }
-
