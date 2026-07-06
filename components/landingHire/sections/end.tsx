@@ -18,7 +18,7 @@ export function EndSection() {
           squaresClassName="border border-gray-200/10"
         />
       </div>
-      <div className="relative mx-auto max-w-7xl rounded-[0.33em] border bg-white p-8 md:p-12 shadow-2xl">
+      <div className="relative mx-auto max-w-7xl rounded-[0.33em] border bg-white/80 backdrop-blur-xl p-8 md:p-12 shadow-2xl">
         <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
           <div className="max-w-2xl">
             <p className="text-sm font-medium text-primary mb-3">

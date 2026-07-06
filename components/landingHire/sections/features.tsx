@@ -1,25 +1,38 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { BellDot, MessageCircleHeart, Users } from "lucide-react";
+import { ReactNode, useEffect, useRef, useState } from "react";
+import { BellDot, LucideIcon, MessageCircleHeart, Users } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAppContext } from "@/lib/ctx-app";
+import { LandingFeatureMassApply } from "./features/mass-applicant-actions";
+import { LandingFeatureNotifications } from "./features/notifications";
+import { LandingFeaturePipeline } from "./features/pipeline";
 
-const features = [
+type Feature = {
+  title: string;
+  desc: string;
+  Icon: LucideIcon;
+  Visual: ReactNode;
+};
+
+const features: Feature[] = [
   {
     title: "Mass Applicant Actions",
     desc: "Review, shortlist, or reject hundreds of candidates in a single click. No more tedious, one-by-one status updates.",
     Icon: Users,
+    Visual: <LandingFeatureMassApply />,
   },
   {
     title: "Instant Notifications",
     desc: "Keep candidates warm and your team aligned with automated alerts for interviews, offers, and next steps.",
     Icon: BellDot,
+    Visual: <LandingFeatureNotifications />,
   },
   {
     title: "University Pipelines",
     desc: "Tap directly into university and student networks without the hassle of manual university outreach.",
     Icon: MessageCircleHeart,
+    Visual: <LandingFeaturePipeline />,
   },
 ];
 
@@ -107,15 +120,17 @@ function DesktopFeaturesSection() {
         ))}
       </div>
       <div className="space-y-16">
-        {features.map((_, i) => (
+        {features.map((f, i) => (
           <div
             key={i}
             data-index={i}
             ref={(el) => {
               cardRefs.current[i] = el;
             }}
-            className="bg-black aspect-[16/10] rounded-[0.33em]"
-          ></div>
+            className="aspect-[16/10] rounded-[0.33em] overflow-hidden"
+          >
+            {f.Visual}
+          </div>
         ))}
       </div>
     </div>
