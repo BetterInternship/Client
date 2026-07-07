@@ -81,7 +81,7 @@ export function HeroSection() {
           </motion.p>
           <motion.div
             {...blurTransition}
-            className="mt-4 flex gap-8 items-center"
+            className="mt-4 flex flex-col md:flex-row gap-8 md:items-center"
           >
             <MagneticButton className="w-fit">
               <Link href="/register">
