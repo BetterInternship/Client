@@ -522,43 +522,55 @@ export default function GodEmployersPage() {
   const csvInputRef = useRef<HTMLInputElement>(null);
 
   const parseCsv = (text: string): Record<string, string>[] => {
-    const parseLine = (line: string): string[] => {
-      const result: string[] = [];
-      let current = '';
-      let inQuotes = false;
-      for (let i = 0; i < line.length; i++) {
-        const ch = line[i];
-        if (inQuotes) {
-          if (ch === '"') {
-            if (i + 1 < line.length && line[i + 1] === '"') {
-              current += '"';
-              i++;
-            } else {
-              inQuotes = false;
-            }
+    // Parses the whole file as one stream (not line-by-line) so that quoted
+    // fields containing commas or embedded newlines (e.g. multi-paragraph
+    // job descriptions) are kept intact instead of being split into bogus rows.
+    const raw = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
+    const rows: string[][] = [];
+    let row: string[] = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < raw.length; i++) {
+      const ch = raw[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (raw[i + 1] === '"') {
+            current += '"';
+            i++;
           } else {
-            current += ch;
+            inQuotes = false;
           }
-        } else if (ch === '"') {
-          inQuotes = true;
-        } else if (ch === ',') {
-          result.push(current.trim());
-          current = '';
         } else {
           current += ch;
         }
+      } else if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === ',') {
+        row.push(current.trim());
+        current = '';
+      } else if (ch === '\r') {
+        // ignore; the following \n (or end of field) terminates the row
+      } else if (ch === '\n') {
+        row.push(current.trim());
+        rows.push(row);
+        row = [];
+        current = '';
+      } else {
+        current += ch;
       }
-      result.push(current.trim());
-      return result;
-    };
+    }
+    if (current.length > 0 || row.length > 0) {
+      row.push(current.trim());
+      rows.push(row);
+    }
 
-    const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
-    if (lines.length < 2) {
+    const dataRows = rows.filter((r) => r.some((v) => v !== ''));
+    if (dataRows.length < 2) {
       throw new Error('CSV must have a header row and at least one data row.');
     }
-    const headers = parseLine(lines[0]).map((h) => h.trim().toLowerCase());
-    return lines.slice(1).map((line) => {
-      const values = parseLine(line);
+    const headers = dataRows[0].map((h) => h.trim().toLowerCase());
+    return dataRows.slice(1).map((values) => {
       const row: Record<string, string> = {};
       headers.forEach((h, i) => {
         row[h] = values[i] ?? '';
