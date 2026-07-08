@@ -523,6 +523,18 @@ export const JobService = {
       APIRouteBuilder("jobs").r(jobId).build(),
     );
   },
+
+  async unpauseJob(jobId: string) {
+    return APIClient.post<FetchResponse>(
+      APIRouteBuilder("jobs").r(jobId).r("unpause").build(),
+    );
+  },
+
+  async unpauseAllJobs() {
+    return APIClient.post<FetchResponse>(
+      APIRouteBuilder("jobs").r("unpause-all").build(),
+    );
+  },
 };
 
 interface ConversationResponse extends FetchResponse {

@@ -56,6 +56,8 @@ export interface Conversation extends Selectable<CareerConversations> {
 export type PrivateEmployerUser = Selectable<CareerEmployerUsers>;
 export type PublicEmployerUser = Omit<PrivateEmployerUser, "is_deactivated">;
 
+export type JobPauseReason = "dormant" | "unresponsive" | "neglected";
+
 export interface Job extends Omit<
   Partial<Selectable<CareerJobs>>,
   "internship_preferences"
@@ -64,6 +66,10 @@ export interface Job extends Omit<
   employers?: Partial<Employer>;
   challenge?: Partial<JobChallenge> | null;
   internship_preferences?: ListingInternshipPreferences;
+  // Merged in by the API from career.job_pauses — not columns on `jobs` itself.
+  paused?: boolean;
+  pause_reason?: JobPauseReason | null;
+  paused_at?: string | null;
 }
 
 export type JobChallengePayload = {

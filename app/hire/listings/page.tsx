@@ -8,6 +8,7 @@ import {
   ListingsSearchBar,
 } from "@/components/features/hire/listings";
 import { ShowUnverifiedBanner } from "@/components/ui/banner";
+import { PausedListingsBanner } from "@/components/features/hire/paused-listings-banner";
 import { Scrollbar } from "@/components/ui/scroll-area";
 import { useListingsBusinessLogic } from "@/hooks/hire/listings/use-listings-business-logic";
 import { useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
@@ -16,7 +17,8 @@ import { useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
 export default function MyListings() {
   // Get data from employer API hooks
   const { data: profile, loading: profileLoading } = useProfile();
-  const { ownedJobs, update_job, delete_job } = useOwnedJobs();
+  const { ownedJobs, update_job, delete_job, unpause_job, unpause_all_jobs } =
+    useOwnedJobs();
 
   // Business logic hook
   const {
@@ -53,6 +55,15 @@ export default function MyListings() {
               <ShowUnverifiedBanner />
             </div>
           )}
+          {/* Paused Listings Banner */}
+          {ownedJobs.some((job) => job.paused) && (
+            <div className="px-6 pt-6">
+              <PausedListingsBanner
+                jobs={ownedJobs}
+                onUnpauseAll={unpause_all_jobs}
+              />
+            </div>
+          )}
           {/* Content Area */}
           <div className="flex-1 p-6 flex gap-6 overflow-hidden">
             {/* Left Panel - Job List */}
@@ -77,6 +88,7 @@ export default function MyListings() {
                     onPageChange={handlePageChange}
                     updateJob={update_job}
                     set_is_editing={setIsEditing}
+                    unpauseJob={unpause_job}
                   />
               </div>
             </Scrollbar>
@@ -94,6 +106,7 @@ export default function MyListings() {
                   onCancel={handleCancel}
                   onShare={handleShare}
                   onDelete={openDeleteModal}
+                  onUnpause={unpause_job}
                   updateJob={update_job}
                   setIsEditing={setIsEditing}
                 />

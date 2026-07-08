@@ -11,6 +11,7 @@ interface ListingsJobPanelProps {
   onJobSelect: (job: Job) => void;
   onPageChange: (page: number) => void;
   updateJob: (jobId: string, job: Partial<Job>) => Promise<any>;
+  unpauseJob?: (jobId: string) => Promise<unknown>;
 }
 
 export function ListingsJobPanel({
@@ -19,6 +20,7 @@ export function ListingsJobPanel({
   onJobSelect,
   updateJob,
   set_is_editing,
+  unpauseJob,
 }: ListingsJobPanelProps) {
   return (
     <div className="w-96 flex flex-col h-full max-w-[1024px] mx-auto">
@@ -33,6 +35,7 @@ export function ListingsJobPanel({
             on_click={() => onJobSelect(job)}
             selected={job.id === selectedJobId}
             set_is_editing={set_is_editing}
+            unpause_job={unpauseJob}
           />
         ))}
       </div>
