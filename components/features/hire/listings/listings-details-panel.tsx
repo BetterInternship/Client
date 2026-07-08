@@ -13,6 +13,7 @@ interface ListingsDetailsPanelProps {
   onCancel: () => void;
   onShare: () => void;
   onDelete: () => void;
+  onUnpause?: (jobId: string) => Promise<unknown>;
   updateJob: (jobId: string, job: Partial<Job>) => Promise<any>;
   setIsEditing: (isEditing: boolean) => void;
 }
@@ -26,6 +27,7 @@ export function ListingsDetailsPanel({
   onCancel,
   onShare,
   onDelete,
+  onUnpause,
   updateJob,
   setIsEditing,
 }: ListingsDetailsPanelProps) {
@@ -109,6 +111,21 @@ export function ListingsDetailsPanel({
                 // >
                 //   Share
                 // </Button>,
+                ...(selectedJob.paused
+                  ? [
+                      <Button
+                        key="unpause"
+                        variant="outline"
+                        scheme="primary"
+                        disabled={saving}
+                        onClick={() =>
+                          selectedJob.id && onUnpause?.(selectedJob.id)
+                        }
+                      >
+                        Re-enable
+                      </Button>,
+                    ]
+                  : []),
                 <Button
                   key="delete"
                   variant="outline"

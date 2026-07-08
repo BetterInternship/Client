@@ -1,8 +1,9 @@
 ﻿import { Badge, BoolBadge } from "@/components/ui/badge";
-import { Job } from "@/lib/db/db.types";
+import { Job, JobPauseReason } from "@/lib/db/db.types";
 import { useDbMoa } from "@/lib/db/use-bi-moa";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { cn, formatCurrency } from "@/lib/utils";
+import { formatDateWithoutTime } from "@/lib/utils/date-utils";
 import {
   AlertTriangle,
   ArrowRight,
@@ -11,6 +12,7 @@ import {
   Clock,
   EyeOff,
   Monitor,
+  PauseCircle,
   PhilippinePeso,
   UserCheck,
   Zap,
@@ -21,10 +23,39 @@ import { Divider } from "../ui/divider";
 import { DropdownGroup } from "../ui/dropdown";
 import { Property } from "../ui/labels";
 import { Toggle } from "../ui/toggle";
+import { Button } from "../ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAppContext } from "@/lib/ctx-app";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { toAbbreviation } from "../../lib/utils/string-utils";
+
+const PAUSE_REASON_LABELS: Record<JobPauseReason, string> = {
+  dormant: "No logins in a long while",
+  unresponsive: "No recent logins, with an applicant waiting",
+  neglected: "An applicant has been waiting on this listing",
+};
+
+export const PausedBadge = ({
+  reason,
+  pausedAt,
+}: {
+  reason?: JobPauseReason | null;
+  pausedAt?: string | null;
+}) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <Badge type="destructive" className="cursor-default">
+        <PauseCircle className="w-3 h-3 mr-1" />
+        Paused
+      </Badge>
+    </TooltipTrigger>
+    <TooltipContent side="bottom">
+      {reason ? PAUSE_REASON_LABELS[reason] : "Paused due to inactivity"}
+      {pausedAt && ` · ${formatDateWithoutTime(pausedAt)}`}
+    </TooltipContent>
+  </Tooltip>
+);
 
 export const JobHead = ({
   title,
@@ -447,6 +478,7 @@ export const EmployerJobCard = ({
   on_click,
   update_job,
   set_is_editing,
+  unpause_job,
 }: {
   job: Job;
   selected?: boolean;
@@ -456,6 +488,7 @@ export const EmployerJobCard = ({
     job: Partial<Job>,
   ) => Promise<{ success: boolean }>;
   set_is_editing: (is_editing: boolean) => void;
+  unpause_job?: (job_id: string) => Promise<unknown>;
 }) => {
   return (
     <Card
@@ -483,6 +516,22 @@ export const EmployerJobCard = ({
         </div>
         <JobLocation location={job.location} />
         <JobBadges job={job} excludes={["moa"]} />
+        {job.paused && (
+          <div className="flex items-center justify-between gap-2 rounded-[0.33em] bg-destructive/10 border border-destructive/30 px-3 py-2">
+            <PausedBadge reason={job.pause_reason} pausedAt={job.paused_at} />
+            <Button
+              size="xs"
+              variant="outline"
+              scheme="primary"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (job.id) void unpause_job?.(job.id);
+              }}
+            >
+              Re-enable
+            </Button>
+          </div>
+        )}
       </div>
     </Card>
   );
