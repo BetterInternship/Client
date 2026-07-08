@@ -223,6 +223,35 @@ export function useOwnedJobs(
     }
   };
 
+  const unpause_job = async (job_id: string) => {
+    const response = await JobService.unpauseJob(job_id);
+    if (response.success) {
+      const newJobs = ownedJobs.map((job) =>
+        job.id === job_id
+          ? { ...job, paused: false, pause_reason: null, paused_at: null }
+          : job,
+      );
+      set_cache(newJobs);
+      setOwnedJobs(get_cache() ?? []);
+    }
+    return response;
+  };
+
+  const unpause_all_jobs = async () => {
+    const response = await JobService.unpauseAllJobs();
+    if (response.success) {
+      const newJobs = ownedJobs.map((job) => ({
+        ...job,
+        paused: false,
+        pause_reason: null,
+        paused_at: null,
+      }));
+      set_cache(newJobs);
+      setOwnedJobs(get_cache() ?? []);
+    }
+    return response;
+  };
+
   useEffect(() => {
     fetchOwnedJobs();
   }, [fetchOwnedJobs]);
@@ -237,6 +266,8 @@ export function useOwnedJobs(
     update_job,
     create_job,
     delete_job,
+    unpause_job,
+    unpause_all_jobs,
     loading,
     error,
     refetch: fetchOwnedJobs,

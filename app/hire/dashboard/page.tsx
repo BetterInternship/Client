@@ -4,6 +4,7 @@
 
 import ContentLayout from "@/components/features/hire/content-layout";
 import { JobsContent } from "@/components/features/hire/dashboard/JobsContent";
+import { PausedListingsBanner } from "@/components/features/hire/paused-listings-banner";
 import { Loader } from "@/components/ui/loader";
 import {
   useEmployerApplications,
@@ -30,7 +31,7 @@ function DashboardContent() {
   const superListingTapState = useRef({ count: 0, lastTapMs: 0 });
   const profile = useProfile();
   const applications = useEmployerApplications();
-  const { ownedJobs, update_job, loading } = useOwnedJobs();
+  const { ownedJobs, update_job, unpause_all_jobs, loading } = useOwnedJobs();
   const activeJobs = ownedJobs.filter((job) => job.is_active);
   const inactiveJobs = ownedJobs.filter((job) => !job.is_active);
 
@@ -82,6 +83,10 @@ function DashboardContent() {
         <HeaderTitle icon={Briefcase} onClick={handleSecretSuperListingAccess}>
           Job listings
         </HeaderTitle>
+        <PausedListingsBanner
+          jobs={ownedJobs}
+          onUnpauseAll={unpause_all_jobs}
+        />
         <div className="flex flex-col flex-1">
           <div>
             <div className="flex gap-4 mb-4">
