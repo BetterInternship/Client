@@ -33,30 +33,30 @@ export function LandingHeader({
       )}
     >
       <HeaderTitle />
-      <div className="flex gap-2">
-        {isMobile ? (
-          ""
-        ) : (
-          <div className="flex items-center text-sm text-primary gap-8 list-none">
-            {links.map((link) => (
-              <li key={link.label}>
-                <a
-                  className={cn(isPastHero ? "text-gray-900" : "text-white")}
-                  href={link.href}
-                >
-                  {link.label}
-                </a>
-              </li>
-            ))}
-          </div>
-        )}
+      <div className="flex items-center gap-2">
+        {!isMobile &&
+          links.map((link) => (
+            <Button
+              type="button"
+              variant="ghost"
+              size="md"
+              key={link.label}
+              className={cn(
+                "h-10 border-gray-300 bg-transparent px-4",
+                isPastHero ? "text-gray-900" : "text-white",
+              )}
+              onClick={() => router.push(link.href)}
+            >
+              {link.label}
+            </Button>
+          ))}
         <Button
           type="button"
           variant="ghost"
           size="md"
           className={cn(
-            "h-10 border-gray-300 hover:bg-gray-50 bg-transparent",
-            isPastHero ? "" : "text-white",
+            "h-10 border-gray-300 bg-transparent",
+            isPastHero ? "text-gray-900" : "text-white",
           )}
           onClick={() => router.push("/login")}
         >
@@ -67,8 +67,9 @@ export function LandingHeader({
           variant="outline"
           size="md"
           className={cn(
-            "h-10 border-gray-300 hover:bg-gray-50 bg-transparent",
-            isPastHero ? "" : "text-white",
+            "h-10 border-gray-300 bg-transparent",
+            isPastHero ? "text-gray-900" : "text-white",
+            "hover:bg-primary hover:border-primary/50 hover:text-white",
           )}
           onClick={() => router.push("/register")}
         >

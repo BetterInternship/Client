@@ -9,6 +9,7 @@ import { FeaturesSection } from "@/components/landingHire/sections/features";
 import { FAQsSection } from "@/components/landingHire/sections/faqs";
 import { useEffect, useRef, useState } from "react";
 import { EndSection } from "@/components/landingHire/sections/end";
+import { SocialProofSection } from "@/components/landingHire/sections/social-proof";
 
 export default function HomePage() {
   const heroRef = useRef<HTMLDivElement | null>(null);
@@ -53,6 +54,7 @@ export default function HomePage() {
       <div ref={heroRef}>
         <HeroSection />
       </div>
+      <SocialProofSection />
       <div id="features" className="scroll-mt-64">
         <FeaturesSection />
       </div>

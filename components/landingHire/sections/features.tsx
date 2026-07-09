@@ -8,7 +8,6 @@ import { LandingFeatureMassApply } from "./features/mass-applicant-actions";
 import { LandingFeatureNotifications } from "./features/notifications";
 import { LandingFeaturePipeline } from "./features/pipeline";
 import { cn } from "@/lib/utils/string-utils";
-import MagneticButton from "@/components/ui/magnetic-button";
 
 type Feature = {
   title: string;
@@ -44,7 +43,7 @@ function MobileFeaturesSection({
   cardRefs: RefObject<(HTMLDivElement | null)[]>;
 }) {
   return (
-    <div className="space-y-10">
+    <div className="space-y-20">
       {features.map((f, i) => (
         <div key={f.title} className="space-y-4">
           <div>
@@ -58,7 +57,7 @@ function MobileFeaturesSection({
             ref={(el) => {
               cardRefs.current[i] = el;
             }}
-            className="aspect-[16/10] rounded-[0.33em] overflow-hidden"
+            className="aspect-[12/16] md:aspect-[16/10] rounded-[0.33em] overflow-hidden"
           >
             {f.Visual}
           </div>

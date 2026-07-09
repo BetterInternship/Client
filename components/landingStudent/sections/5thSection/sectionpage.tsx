@@ -2,7 +2,7 @@
 
 import { LogoCarousel } from "@/components/landingStudent/sections/5thSection/companies";
 
-const demoLogos = [
+export const demoLogos = [
   {
     id: 1,
     name: "Asian Institute of Management",
