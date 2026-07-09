@@ -40,7 +40,10 @@ export function LandingHeader({
           <div className="flex items-center text-sm text-primary gap-8 list-none">
             {links.map((link) => (
               <li key={link.label}>
-                <a className="text-gray-900" href={link.href}>
+                <a
+                  className={cn(isPastHero ? "text-gray-900" : "text-white")}
+                  href={link.href}
+                >
                   {link.label}
                 </a>
               </li>
@@ -51,7 +54,10 @@ export function LandingHeader({
           type="button"
           variant="ghost"
           size="md"
-          className="h-10 border-gray-300 hover:bg-gray-50 bg-transparent"
+          className={cn(
+            "h-10 border-gray-300 hover:bg-gray-50 bg-transparent",
+            isPastHero ? "" : "text-white",
+          )}
           onClick={() => router.push("/login")}
         >
           Log in
@@ -60,7 +66,10 @@ export function LandingHeader({
           type="button"
           variant="outline"
           size="md"
-          className="h-10 border-gray-300 hover:bg-gray-50 bg-transparent"
+          className={cn(
+            "h-10 border-gray-300 hover:bg-gray-50 bg-transparent",
+            isPastHero ? "" : "text-white",
+          )}
           onClick={() => router.push("/register")}
         >
           Register

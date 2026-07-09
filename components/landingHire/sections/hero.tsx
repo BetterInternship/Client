@@ -46,7 +46,19 @@ export function HeroSection() {
           squaresClassName="border border-gray-200/10"
         />
       </div>
-      <div className="flex w-full max-w-7xl flex-col gap-8 md:flex-row items-center">
+      <motion.div
+        {...blurTransition}
+        className="hidden lg:block absolute right-0 inset-y-0 w-[50vw] overflow-hidden"
+      >
+        <Image
+          src="/hire-landing-hero.jpg"
+          alt="Interns collaborating in a modern office"
+          fill
+          className="object-cover"
+          priority
+        />
+      </motion.div>
+      <div className="flex w-full max-w-7xl flex-col gap-8 md:flex-row items-center relative z-10">
         <div className="flex flex-col gap-2 md:w-1/2">
           <motion.img
             src="/BetterInternshipLogo.png"
@@ -107,18 +119,6 @@ export function HeroSection() {
             </Link>
           </motion.div>
         </div>
-        <motion.div
-          {...blurTransition}
-          className="hidden lg:block lg:w-1/2 relative aspect-[4/3] w-full overflow-hidden rounded-[0.33em]"
-        >
-          <Image
-            src="/hire-landing-hero.jpg"
-            alt="Interns collaborating in a modern office"
-            fill
-            className="object-cover"
-            priority
-          />
-        </motion.div>
       </div>
     </section>
   );
