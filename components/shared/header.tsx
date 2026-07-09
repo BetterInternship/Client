@@ -1,10 +1,9 @@
 import { useAppContext } from "@/lib/ctx-app";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useAuthContext } from "@/app/hire/authctx";
 
 export const HeaderTitle = () => {
-  const { isMobile, view } = useAppContext();
+  const { view } = useAppContext();
   const { isAuthenticated } = useAuthContext();
 
   return (
@@ -19,7 +18,9 @@ export const HeaderTitle = () => {
       className="block outline-none focus:outline-none border-none"
     >
       <h1
-        className={"font-display font-bold text-gray-900 flex flex-row space-x-2 items-center text-lg"}
+        className={
+          "font-display font-bold text-gray-900 flex flex-row space-x-2 items-center text-lg"
+        }
       >
         <img
           src="/BetterInternshipLogo.png"

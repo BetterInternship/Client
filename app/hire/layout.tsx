@@ -103,7 +103,7 @@ const HTMLContent = ({
                 <ModalProvider>
                   <AllowLanding>
                     <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
-                      <div className="flex-grow max-h-[100svh] max-w-[100svw] overflow-auto flex flex-col">
+                      <div className="flex-grow max-h-[100svh] max-w-[100svw] overflow-auto flex flex-col scroll-smooth">
                         {children}
                       </div>
                     </div>
