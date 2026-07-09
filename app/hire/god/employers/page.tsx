@@ -36,6 +36,54 @@ import { Input } from "@/components/ui/input";
 
 const PAGE_SIZE = 20;
 
+const CATEGORY_GROUPS = [
+  {
+    label: 'Computer Science',
+    items: [
+      { name: 'Computer Science (general)', id: '1e3b7585-293b-430a-a5cb-c773e0639bb0' },
+      { name: 'Data Science/AI',            id: 'dc3780b4-b9c0-4294-a035-faa4e2086611' },
+      { name: 'Cybersecurity',              id: 'ca8ae32d-55a8-4ded-9cfe-1582d72cbaf1' },
+      { name: 'Full Stack',                 id: '381239bf-7c82-4f87-a1b8-39d952f8876b' },
+      { name: 'Backend',                    id: 'e5a73819-ee90-43fb-b71b-7ba12f0a4dbf' },
+      { name: 'Frontend',                   id: '8b323584-9340-41e8-928e-f9345f1ad59e' },
+      { name: 'QA',                         id: '91b180be-3d23-4f0a-bd64-c82cef9d3ae5' },
+      { name: 'IT',                         id: '8a557a6f-3933-4e11-9dbc-29d1358d7d70' },
+      { name: 'Game Dev',                   id: '3ef555ba-7911-49f8-ba3b-9504894519e5' },
+      { name: 'Software Engineering',       id: 'fc5ba110-e6df-440c-878f-b5f29be54ba9' },
+    ],
+  },
+  {
+    label: 'Business',
+    items: [
+      { name: 'Accounting/Finance',     id: '6506ab1d-f1a6-4c6f-a917-474a96e6d2bb' },
+      { name: 'HR/Administrative',      id: '976d7433-8297-4f8d-950d-3392682dadbb' },
+      { name: 'Marketing/Sales',        id: '1f6ab152-9754-4082-9fc2-4b276f5a9ef9' },
+      { name: 'Business Development',   id: '25bce220-1927-48c0-8e81-6be4af64d9b9' },
+      { name: 'Operations',             id: '61727f3b-dc36-458c-a487-5c44b5cd83a5' },
+    ],
+  },
+  {
+    label: 'Engineering',
+    items: [
+      { name: 'Chemical Engineering',    id: '657da8d0-69a7-4312-8da1-7bd97145310b' },
+      { name: 'Civil Engineering',       id: '06a890ac-5f7f-4763-b733-9e45cb03defd' },
+      { name: 'Electronics Engineering', id: '63624cde-383a-406e-af54-c58bd2af425f' },
+      { name: 'Mechanical Engineering',  id: 'f5bd5b55-14e3-44c7-be02-477e3ae446d2' },
+      { name: 'Industrial Engineering',  id: '0a28afa9-f9aa-4782-b29a-adaf18e1f388' },
+      { name: 'Aerospace Engineering',   id: '642e5b8e-41ac-478f-bc28-ed03ef653c78' },
+      { name: 'Electrical Engineering',  id: '94a29ca7-a014-474f-8958-68fc5c10e734' },
+    ],
+  },
+  {
+    label: 'Others',
+    items: [
+      { name: 'Design/Multimedia', id: 'f50b009d-5ed7-4ef1-851a-3fcf5d6572aa' },
+      { name: 'Legal',             id: '79161041-5009-4e66-84d2-a88357301427' },
+      { name: 'Research',          id: '31a39059-1050-4f22-8875-5b903b7db3bf' },
+    ],
+  },
+] as const;
+
 function ModalShell({
   open,
   onClose,
@@ -330,6 +378,33 @@ function ListingFormFields({
           />
         )}
       </div>
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-2">
+          Categories
+        </label>
+        <div className="flex flex-col gap-2">
+          {CATEGORY_GROUPS.map((group) => (
+            <div key={group.label}>
+              <div className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-1">
+                {group.label}
+              </div>
+              <div className="flex flex-wrap gap-x-4 gap-y-1">
+                {group.items.map(({ name, id }) => (
+                  <label key={id} className="flex items-center gap-1.5 text-sm text-slate-600">
+                    <input
+                      type="checkbox"
+                      checked={((prefs.job_category_ids as string[]) ?? []).includes(id)}
+                      onChange={() => togglePrefArray('job_category_ids', id)}
+                    />
+                    {name}
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="pt-2">
         <label className="block text-sm font-medium text-slate-700 mb-1">
           Other Requirements
@@ -879,8 +954,11 @@ export default function GodEmployersPage() {
             <br />
             Internship preferences: job_internship_types, job_setup_ids,
             job_workload_ids, job_expected_start_date, job_require_github,
-            job_require_portfolio
-            (use commas for multi-value, e.g. `credited,voluntary`).
+            job_require_portfolio, job_category_names
+            (use commas for multi-value fields, e.g.{" "}
+            <code className="text-xs bg-slate-100 px-1 rounded">credited,voluntary</code>{" "}
+            or{" "}
+            <code className="text-xs bg-slate-100 px-1 rounded">Backend,Data Science/AI</code>).
             <br />
             If an employer with the same name exists, the listing is added to
             the existing account.
