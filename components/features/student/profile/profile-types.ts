@@ -1,6 +1,10 @@
 import type { Resume } from "@/lib/db/db.types";
 
-export type ProfileSectionKey = "resume" | "internship" | "personal";
+export type ProfileSectionKey =
+  | "resume"
+  | "internship"
+  | "personal"
+  | "connected-accounts";
 
 export type ProfileResumeManager = {
   resumes: Resume[];

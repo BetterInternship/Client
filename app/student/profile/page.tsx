@@ -198,9 +198,18 @@ export default function ProfilePage() {
   const data = profile.data as PublicUser | undefined;
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("edit") === "true")
-      setIsEditing(true);
-  }, []);
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get("edit") === "true") setIsEditing(true);
+
+    if (searchParams.has("discord")) {
+      void queryClient.invalidateQueries({ queryKey: ["discord-link"] });
+      setOpenProfileSections((sections) =>
+        sections.includes("connected-accounts")
+          ? sections
+          : [...sections, "connected-accounts"],
+      );
+    }
+  }, [queryClient]);
 
   const handleCancelEditing = () => {
     setSaveError(null);

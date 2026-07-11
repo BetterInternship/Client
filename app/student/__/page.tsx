@@ -10,6 +10,11 @@ const InternalSetupPage = () => {
   const router = useRouter();
 
   useEffect(() => {
+    const redirectPath = window.sessionStorage.getItem("post_login_redirect");
+    if (redirectPath) {
+      window.sessionStorage.removeItem("post_login_redirect");
+    }
+
     void (async () => {
       await queryClient.invalidateQueries({ queryKey: ["jobs"] });
       await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
@@ -20,9 +25,9 @@ const InternalSetupPage = () => {
       await queryClient.invalidateQueries({ queryKey: ["my-form-templates"] });
       await queryClient.invalidateQueries({ queryKey: ["my-form-template"] });
       await queryClient.invalidateQueries({ queryKey: ["my-resumes"] });
-      router.push("/search");
+      router.replace(redirectPath || "/search");
     })();
-  });
+  }, [queryClient, router]);
 
   return (
     <div>
