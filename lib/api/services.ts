@@ -304,6 +304,7 @@ interface UploadResumeResponse {
     filename: string;
     uploaded_at: string;
   };
+  default_resume?: string;
   success?: boolean;
   message?: string;
 }
@@ -315,8 +316,13 @@ interface ResumeArrayResponse {
     filename: string;
     uploaded_at: string;
   }[];
+  default_resume: string | null;
   success?: boolean;
   message?: string;
+}
+
+interface DefaultResumeResponse extends FetchResponse {
+  default_resume: string;
 }
 
 export const UserService = {
@@ -369,10 +375,7 @@ export const UserService = {
         };
       }
     >(
-      APIRouteBuilder("users")
-        .r("me", "edit-recipient")
-        .p({ eventId })
-        .build(),
+      APIRouteBuilder("users").r("me", "edit-recipient").p({ eventId }).build(),
     );
   },
 
@@ -426,6 +429,13 @@ export const UserService = {
     return APIClient.post<UploadResumeResponse>(
       APIRouteBuilder("users").r("me", "resume", "update", resumeId).build(),
       { label: label },
+    );
+  },
+
+  async setDefaultResume(resumeId: string) {
+    return APIClient.post<DefaultResumeResponse>(
+      APIRouteBuilder("users").r("me", "resume", "default").build(),
+      { resume_id: resumeId },
     );
   },
 

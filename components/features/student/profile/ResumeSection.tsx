@@ -4,9 +4,9 @@ import { useMemo, useState } from "react";
 import {
   Check,
   Eye,
-  FileText,
   Loader2,
   Pencil,
+  Star,
   Trash2,
   Upload,
   X,
@@ -15,6 +15,7 @@ import { toast } from "sonner";
 
 import { FormInput } from "@/components/EditForm";
 import { Button } from "@/components/ui/button";
+import type { Resume } from "@/lib/db/db.types";
 import {
   compareResumesByUploadedAtDesc,
   formatResumeUploadedAt,
@@ -22,7 +23,15 @@ import {
 import type { ProfileResumeManager } from "./profile-types";
 
 export function ResumeSection({ manager }: { manager: ProfileResumeManager }) {
-  const { resumes, loading, maxAllowed, isRenaming, actions } = manager;
+  const {
+    resumes,
+    defaultResume,
+    loading,
+    maxAllowed,
+    isRenaming,
+    isSettingDefault,
+    actions,
+  } = manager;
   const [editingResumeId, setEditingResumeId] = useState<string | null>(null);
   const [editingLabel, setEditingLabel] = useState("");
   const sortedResumes = useMemo(
@@ -63,6 +72,7 @@ export function ResumeSection({ manager }: { manager: ProfileResumeManager }) {
         {!loading &&
           sortedResumes.map((resume) => {
             const isEditing = editingResumeId === resume.id;
+            const isDefault = defaultResume === resume.id;
             const currentLabel = resume.label ?? "";
 
             const handleSave = () => {
@@ -94,7 +104,6 @@ export function ResumeSection({ manager }: { manager: ProfileResumeManager }) {
                 className="flex flex-col gap-3 rounded-[0.33em] border border-blue-100 p-3 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="flex min-w-0 items-center gap-3">
-                  
                   <div className="min-w-0 flex-1">
                     {isEditing ? (
                       <FormInput
@@ -116,8 +125,15 @@ export function ResumeSection({ manager }: { manager: ProfileResumeManager }) {
                         disabled={isRenaming}
                       />
                     ) : (
-                      <div className="truncate text-sm font-semibold text-[#061858]">
-                        {resume.label || resume.filename || "Untitled resume"}
+                      <div className="flex items-center gap-2">
+                        <div className="truncate text-sm font-semibold text-[#061858]">
+                          {resume.label || resume.filename || "Untitled resume"}
+                        </div>
+                        {isDefault && (
+                          <span className="shrink-0 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+                            Default
+                          </span>
+                        )}
                       </div>
                     )}
                     <div className="text-xs text-slate-500">
@@ -134,7 +150,7 @@ export function ResumeSection({ manager }: { manager: ProfileResumeManager }) {
                         size="icon"
                         onClick={handleSave}
                         aria-label="Save resume label"
-                        disabled={isRenaming}
+                        disabled={isRenaming || isSettingDefault}
                       >
                         {isRenaming ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -147,19 +163,35 @@ export function ResumeSection({ manager }: { manager: ProfileResumeManager }) {
                         size="icon"
                         onClick={cancelEditing}
                         aria-label="Cancel rename"
-                        disabled={isRenaming}
+                        disabled={isRenaming || isSettingDefault}
                       >
                         <X className="h-4 w-4" />
                       </Button>
                     </>
                   ) : (
                     <>
+                      {!isDefault && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => void actions.setDefault(resume.id)}
+                          aria-label={`Set ${resume.label || "resume"} as default`}
+                          title="Set as default"
+                          disabled={isRenaming || isSettingDefault}
+                        >
+                          {isSettingDefault ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Star className="h-4 w-4" />
+                          )}
+                        </Button>
+                      )}
                       <Button
                         variant="outline"
                         size="icon"
                         onClick={() => void actions.view(resume.id)}
                         aria-label={`View ${resume.label || "resume"}`}
-                        disabled={isRenaming}
+                        disabled={isRenaming || isSettingDefault}
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -168,7 +200,7 @@ export function ResumeSection({ manager }: { manager: ProfileResumeManager }) {
                         size="icon"
                         onClick={() => startEditing(resume)}
                         aria-label={`Rename ${resume.label || "resume"}`}
-                        disabled={isRenaming}
+                        disabled={isRenaming || isSettingDefault}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -178,7 +210,7 @@ export function ResumeSection({ manager }: { manager: ProfileResumeManager }) {
                         size="icon"
                         onClick={() => void actions.delete(resume)}
                         aria-label={`Delete ${resume.label || "resume"}`}
-                        disabled={isRenaming}
+                        disabled={isRenaming || isSettingDefault}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
