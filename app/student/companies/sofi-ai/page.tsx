@@ -2,25 +2,9 @@
 
 import Link from "next/link";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
-import {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Instagram,
-  Linkedin,
-  Megaphone,
-  Play,
-  Youtube,
-} from "lucide-react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ArrowRight, ArrowUpRight, Megaphone, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -51,10 +35,6 @@ const bodyFont = Open_Sans({
   variable: "--font-paraluman-body",
 });
 
-const FEATURE_HEADING_CLASS =
-  "[font-family:var(--font-paraluman-heading)] text-[clamp(1.95rem,3.6vw,3.15rem)] font-black leading-[0.96] tracking-[-0.055em]";
-const BODY_COPY_CLASS =
-  "[font-family:var(--font-paraluman-body)] max-w-[60ch] text-base leading-7 text-[#184d45]/82 sm:text-lg sm:leading-[1.72]";
 const TRUST_PARTNERS = [
   "Radar.ph",
   "Bilyonaryo",
@@ -346,7 +326,7 @@ function HeroPanel({
           href="/"
           className="absolute left-4 top-4 z-20 inline-flex transition-opacity duration-200 hover:opacity-70 sm:left-6 sm:top-6"
         >
-          <Image
+          <img
             src="/BetterInternshipLogo.png"
             alt="BetterInternship"
             width={40}
