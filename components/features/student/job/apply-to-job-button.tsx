@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import useModalRegistry from "@/components/modals/modal-registry";
 import { isProfileEligibleForListing } from "@/lib/profile";
 import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
+import { ListingAlertButton } from "./listing-alert-button";
 
 export const ApplyToJobButton = ({
   profile,
@@ -26,6 +27,12 @@ export const ApplyToJobButton = ({
   const jobs = useJobsData();
   const applied = useMemo(() => !!jobs.isJobApplied(job.id!), [jobs]);
   const isSuperListing = Boolean(job.challenge);
+
+  // A hibernating listing can't be applied to — the CTA becomes a job alert
+  // toggle instead, everywhere ApplyToJobButton is rendered.
+  if (job.hibernating) {
+    return <ListingAlertButton job={job} className={className} />;
+  }
 
   /**
    * Handles apply checks

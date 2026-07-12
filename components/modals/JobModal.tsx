@@ -21,6 +21,7 @@ import { JobDetailsSummary, SuperChallengeDetails } from "../shared/jobs";
 import { SaveJobButton } from "../features/student/job/save-job-button";
 import { ApplyToJobButton } from "../features/student/job/apply-to-job-button";
 import { ShareJobButton } from "../features/student/job/share-job-button";
+import { HibernatingListingBanner } from "../features/student/job/hibernating-listing-banner";
 import { MissingNotice } from "../shared/jobs";
 import type { ApplyPayload } from "./components/ApplyModal";
 
@@ -91,6 +92,8 @@ export const JobModal = ({
               <div className="px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+96px)] space-y-5">
                 {/* Header (compact; no actions on mobile) */}
                 <HeaderCompact job={job} />
+
+                {job.hibernating && <HibernatingListingBanner job={job} />}
 
                 {/* Requirement chips + notice (like desktop) */}
                 <div className="flex flex-wrap gap-1.5">

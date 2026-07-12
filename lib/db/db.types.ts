@@ -57,6 +57,7 @@ export type PrivateEmployerUser = Selectable<CareerEmployerUsers>;
 export type PublicEmployerUser = Omit<PrivateEmployerUser, "is_deactivated">;
 
 export type JobPauseReason = "dormant" | "unresponsive" | "neglected";
+export type JobWaitlistRemovalReason = "notified" | "left" | "listing_deleted";
 
 export interface Job extends Omit<
   Partial<Selectable<CareerJobs>>,
@@ -67,9 +68,35 @@ export interface Job extends Omit<
   challenge?: Partial<JobChallenge> | null;
   internship_preferences?: ListingInternshipPreferences;
   // Merged in by the API from career.job_pauses — not columns on `jobs` itself.
+  // Owner-only (from GET /jobs/owned): the reason/date behind the pause.
   paused?: boolean;
   pause_reason?: JobPauseReason | null;
   paused_at?: string | null;
+  // Owner-only (from GET /jobs/owned): students currently waiting on this listing.
+  waiting_count?: number | null;
+  // Public annotation on every jobs endpoint — never carries the reason/date
+  // (see paused_at/pause_reason above, which stay owner-only).
+  hibernating?: boolean | null;
+}
+
+// A student's waitlist ("job alert") episode row, as returned by
+// GET /jobs/waitlisted. Display/dedupe logic lives client-side — see
+// useWaitlistsData in student.data.api.ts.
+export interface JobWaitlist {
+  id: string;
+  job_id: string;
+  created_at: string;
+  removed_at: string | null;
+  removal_reason: JobWaitlistRemovalReason | null;
+  notified_at: string | null;
+  job: {
+    id: string;
+    title: string | null;
+    is_active: boolean | null;
+    is_deleted: boolean | null;
+    hibernating: boolean;
+    employer: { id: string; name: string | null } | null;
+  };
 }
 
 export type JobChallengePayload = {

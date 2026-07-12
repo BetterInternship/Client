@@ -1,4 +1,5 @@
-﻿import { Badge, BoolBadge } from "@/components/ui/badge";
+﻿import { useState } from "react";
+import { Badge, BoolBadge } from "@/components/ui/badge";
 import { Job, JobPauseReason } from "@/lib/db/db.types";
 import { useDbMoa } from "@/lib/db/use-bi-moa";
 import { useDbRefs } from "@/lib/db/use-refs";
@@ -11,8 +12,8 @@ import {
   CheckCircle,
   Clock,
   EyeOff,
+  Moon,
   Monitor,
-  PauseCircle,
   PhilippinePeso,
   UserCheck,
   Zap,
@@ -26,9 +27,11 @@ import { Toggle } from "../ui/toggle";
 import { Button } from "../ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { useMobile } from "@/hooks/use-mobile";
+import { useModal } from "@/hooks/use-modal";
 import { useAppContext } from "@/lib/ctx-app";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { toAbbreviation } from "../../lib/utils/string-utils";
+import { HibernatingListingBanner } from "../features/student/job/hibernating-listing-banner";
 
 const PAUSE_REASON_LABELS: Record<JobPauseReason, string> = {
   dormant: "No logins in a long while",
@@ -36,6 +39,9 @@ const PAUSE_REASON_LABELS: Record<JobPauseReason, string> = {
   neglected: "An applicant has been waiting on this listing",
 };
 
+/** Employer-facing state badge — moon icon, no emoji (D11: "Hibernating" is
+ * the employer-side state name). Tooltip keeps the reason lines + date,
+ * since employers may see their own pause reason (students never do, D10). */
 export const PausedBadge = ({
   reason,
   pausedAt,
@@ -45,9 +51,9 @@ export const PausedBadge = ({
 }) => (
   <Tooltip>
     <TooltipTrigger asChild>
-      <Badge type="destructive" className="cursor-default">
-        <PauseCircle className="w-3 h-3 mr-1" />
-        Paused
+      <Badge type="default" className="cursor-default">
+        <Moon className="w-3 h-3 mr-1" />
+        Hibernating
       </Badge>
     </TooltipTrigger>
     <TooltipContent side="bottom">
@@ -450,6 +456,7 @@ export const JobCard = ({
       onClick={() => on_click && on_click(job)}
       className={cn(
         "group relative isolate overflow-hidden",
+        job.hibernating && "opacity-60 grayscale bg-gray-50",
         selected
           ? "ring-1 ring-primary ring-offset-1"
           : "hover:shadow-sm hover:border-gray-300 cursor-pointer",
@@ -461,6 +468,11 @@ export const JobCard = ({
         </div>
         <JobLocation location={job.location} />
         <JobBadges job={job} />
+        {job.hibernating && (
+          <p className="text-xs font-medium text-gray-500">
+            No longer accepting applicants
+          </p>
+        )}
       </div>
     </Card>
   );
@@ -490,50 +502,146 @@ export const EmployerJobCard = ({
   set_is_editing: (is_editing: boolean) => void;
   unpause_job?: (job_id: string) => Promise<unknown>;
 }) => {
+  const {
+    open: openLockModal,
+    close: closeLockModal,
+    Modal: LockModal,
+  } = useModal(`hibernating-lock-${job.id}`);
+  const [reEnabling, setReEnabling] = useState(false);
+  const waitingCount = job.waiting_count ?? 0;
+
+  const handleReEnable = async () => {
+    if (!job.id) return;
+    setReEnabling(true);
+    try {
+      await unpause_job?.(job.id);
+      closeLockModal();
+    } finally {
+      setReEnabling(false);
+    }
+  };
+
+  const handleCardClick = () => {
+    // D5: a hibernating listing can only be re-enabled or deleted — clicking
+    // it never slides into editing, it pops the lock modal instead.
+    if (job.paused) {
+      openLockModal();
+      return;
+    }
+    on_click && on_click(job);
+  };
+
   return (
-    <Card
-      key={job.id}
-      onClick={() => on_click && on_click(job)}
-      className={cn(
-        selected ? "selected ring-1 ring-primary ring-offset-1" : "",
-        !job.is_active ? "opacity-50" : "cursor-pointer",
-      )}
-    >
-      <div className="space-y-3">
-        <div className="flex items-start justify-between">
-          <JobHead title={job.title} employer={job.employer?.name} />
-          <div className="flex items-center gap-2 relative z-20">
-            <Toggle
-              state={job.is_active}
-              onClick={() => {
-                if (!job.id) return;
-                void update_job(job.id, {
-                  is_active: !job.is_active,
-                });
-              }}
-            />
-          </div>
-        </div>
-        <JobLocation location={job.location} />
-        <JobBadges job={job} excludes={["moa"]} />
+    <>
+      <Card
+        key={job.id}
+        onClick={handleCardClick}
+        className={cn(
+          "relative isolate overflow-hidden",
+          selected ? "selected ring-1 ring-primary ring-offset-1" : "",
+          job.paused
+            ? "opacity-70 grayscale bg-gray-50 cursor-pointer"
+            : !job.is_active
+              ? "opacity-50"
+              : "cursor-pointer",
+        )}
+      >
         {job.paused && (
-          <div className="flex items-center justify-between gap-2 rounded-[0.33em] bg-destructive/10 border border-destructive/30 px-3 py-2">
-            <PausedBadge reason={job.pause_reason} pausedAt={job.paused_at} />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-[-15%] top-1/2 z-10 h-[2px] -translate-y-1/2 -rotate-6 bg-destructive/50"
+          />
+        )}
+        <div className="relative space-y-3">
+          <div className="flex items-start justify-between">
+            <JobHead title={job.title} employer={job.employer?.name} />
+            <div className="flex items-center gap-2 relative z-20">
+              {job.paused ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="pointer-events-none opacity-50">
+                      <Toggle state={job.is_active} onClick={() => {}} />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    Re-enable the listing first
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                <Toggle
+                  state={job.is_active}
+                  onClick={() => {
+                    if (!job.id) return;
+                    void update_job(job.id, {
+                      is_active: !job.is_active,
+                    });
+                  }}
+                />
+              )}
+            </div>
+          </div>
+          <JobLocation location={job.location} />
+          <JobBadges job={job} excludes={["moa"]} />
+          {job.paused && (
+            <div className="flex items-center justify-between gap-2 flex-wrap rounded-[0.33em] bg-gray-100 border border-gray-300 px-3 py-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <PausedBadge reason={job.pause_reason} pausedAt={job.paused_at} />
+                {waitingCount > 0 && (
+                  <Badge type="accent">
+                    {waitingCount} student{waitingCount === 1 ? "" : "s"} waiting
+                  </Badge>
+                )}
+              </div>
+              <Button
+                size="xs"
+                variant="outline"
+                scheme="primary"
+                disabled={reEnabling}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void handleReEnable();
+                }}
+              >
+                {reEnabling ? "Re-enabling..." : "Re-enable"}
+              </Button>
+            </div>
+          )}
+        </div>
+      </Card>
+
+      <LockModal>
+        <div className="p-6 pt-0 space-y-4">
+          <h2 className="text-lg font-semibold text-gray-900">
+            This listing is hibernating
+          </h2>
+          <p className="text-sm text-gray-600 leading-relaxed">
+            It was paused automatically after a period of inactivity.
+            Students can ask to be alerted when it returns
+            {waitingCount > 0
+              ? ` — ${waitingCount} ${waitingCount === 1 ? "is" : "are"} waiting right now`
+              : ""}
+            . To edit this listing, re-enable it first. Re-enabling notifies
+            the waiting students that you&apos;re accepting applicants again.
+          </p>
+          <div className="flex justify-end gap-2">
             <Button
-              size="xs"
               variant="outline"
-              scheme="primary"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (job.id) void unpause_job?.(job.id);
-              }}
+              disabled={reEnabling}
+              onClick={closeLockModal}
             >
-              Re-enable
+              Cancel
+            </Button>
+            <Button
+              scheme="primary"
+              disabled={reEnabling}
+              onClick={() => void handleReEnable()}
+            >
+              {reEnabling ? "Re-enabling..." : "Re-enable listing"}
             </Button>
           </div>
-        )}
-      </div>
-    </Card>
+        </div>
+      </LockModal>
+    </>
   );
 };
 
@@ -558,6 +666,7 @@ export const MobileJobCard = ({
     <div
       className={cn(
         "card hover-lift relative isolate overflow-hidden p-6 animate-fade-in",
+        job.hibernating && "opacity-60 grayscale bg-gray-50",
       )}
       onClick={on_click}
     >
@@ -574,6 +683,11 @@ export const MobileJobCard = ({
           </div>
         </div>
         <JobBadges job={job} />
+        {job.hibernating && (
+          <p className="text-xs font-medium text-gray-500 mb-2">
+            No longer accepting applicants
+          </p>
+        )}
         <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
           {job.description || "No description available."}
         </p>
@@ -929,6 +1043,8 @@ export function JobDetails({
           actions={actions}
           disabled={missingRequired}
         />
+
+        {job.hibernating && <HibernatingListingBanner job={job} />}
 
         <Section title="Job Details">
           <JobDetailsSummary job={job} />

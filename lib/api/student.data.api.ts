@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useDbMoa } from "../db/use-bi-moa";
 import { hashStringToInt } from "../utils";
 import shuffle from "knuth-shuffle-seeded";
-import { PublicUser } from "@/lib/db/db.types";
+import { PublicUser, JobWaitlist } from "@/lib/db/db.types";
 
 /**
  * Normalize internship_preferences field which may be stored as JSON string or object
@@ -287,6 +287,67 @@ export function useProfileData() {
     data: (data?.user as PublicUser) ?? null,
     error,
     isPending,
+  };
+}
+
+/**
+ * A student's job alerts (waitlists on hibernating listings): open rows
+ * (still waiting) plus recently-notified rows ("It's back!" linger window —
+ * a 14-day client-side constant matching the server's
+ * WAITLIST_NOTIFIED_LINGER_DAYS). The server returns raw episode rows; if a
+ * job has both an open row and a lingering notified row (re-hibernated
+ * within the window, student rejoined), the open row wins — one card per
+ * job, per plan §4.4.
+ *
+ * @hook
+ */
+export function useWaitlistsData() {
+  const { isPending, data, error } = useQuery({
+    queryKey: ["my-waitlists"],
+    queryFn: () => JobService.getWaitlistedJobs(),
+    staleTime: 30 * 1000,
+  });
+
+  const deduped = useMemo(() => {
+    const rows = data?.waitlisted ?? [];
+    const byJob = new Map<string, JobWaitlist>();
+
+    for (const row of rows) {
+      const existing = byJob.get(row.job_id);
+      if (!existing) {
+        byJob.set(row.job_id, row);
+        continue;
+      }
+
+      const existingIsOpen = existing.removed_at === null;
+      if (existingIsOpen) continue; // open row already wins, nothing beats it
+
+      const rowIsOpen = row.removed_at === null;
+      if (rowIsOpen) {
+        byJob.set(row.job_id, row);
+        continue;
+      }
+
+      // both closed — keep whichever fired more recently
+      const existingTime = new Date(
+        existing.notified_at ?? existing.created_at,
+      ).getTime();
+      const rowTime = new Date(row.notified_at ?? row.created_at).getTime();
+      if (rowTime > existingTime) byJob.set(row.job_id, row);
+    }
+
+    return Array.from(byJob.values());
+  }, [data]);
+
+  return {
+    isPending,
+    error,
+    data: deduped,
+    alerts: deduped.filter((row) => row.removed_at === null),
+    notified: deduped.filter((row) => row.removal_reason === "notified"),
+    isWaitlisted: (jobId?: string | null) =>
+      !!jobId &&
+      deduped.some((row) => row.job_id === jobId && row.removed_at === null),
   };
 }
 

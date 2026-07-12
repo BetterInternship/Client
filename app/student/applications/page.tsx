@@ -4,21 +4,26 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowUpRight, BookA, Eye } from "lucide-react";
+import { toast } from "sonner";
+import { ArrowUpRight, Bell, BookA, CheckCircle2, Eye } from "lucide-react";
 
 // UI components
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 // Hooks (preserving existing implementations)
-import { useApplicationsData } from "@/lib/api/student.data.api";
+import {
+  useApplicationsData,
+  useWaitlistsData,
+} from "@/lib/api/student.data.api";
+import { useWaitlistActions } from "@/lib/api/student.actions.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { formatTimeAgo } from "@/lib/utils";
 import { Loader } from "@/components/ui/loader";
 import { Card } from "@/components/ui/card";
 import { JobHead, SuperListingBadge } from "@/components/shared/jobs";
-import { UserApplication } from "@/lib/db/db.types";
+import { JobWaitlist, UserApplication } from "@/lib/db/db.types";
 import { HeaderTitle } from "@/components/ui/text";
 import { Separator } from "@/components/ui/separator";
 import { PageError } from "@/components/ui/error";
@@ -74,6 +79,8 @@ export default function ApplicationsPage() {
         </div>
         <Separator className="mt-4 mb-8" />
 
+        <JobAlertsSection appliedApplications={applications.data} />
+
         {applications.isPending ? (
           <Loader>Loading your applications...</Loader>
         ) : applications.error ? (
@@ -117,6 +124,148 @@ export default function ApplicationsPage() {
     </div>
   );
 }
+
+/**
+ * "Job alerts" section — shown above the applications list, only when
+ * non-empty. Open waitlist rows render as "Alert set" cards; recently-fired
+ * ("It's back!") rows linger for 14 days unless the student has since
+ * applied or the listing is no longer live, per
+ * Docs/plans/HIBERNATING_LISTINGS_IMPLEMENTATION_PLAN.md §5. One card per
+ * job — useWaitlistsData already resolves an open row over a lingering
+ * notified one for the same job.
+ */
+function JobAlertsSection({
+  appliedApplications,
+}: {
+  appliedApplications: UserApplication[];
+}) {
+  const waitlists = useWaitlistsData();
+
+  const appliedJobIds = React.useMemo(
+    () =>
+      new Set(
+        appliedApplications.map((a) => a.job_id).filter((id): id is string => !!id),
+      ),
+    [appliedApplications],
+  );
+
+  const visibleNotified = waitlists.notified.filter((row) => {
+    if (appliedJobIds.has(row.job_id)) return false;
+    if (row.job.hibernating) return false;
+    if (!row.job.is_active || row.job.is_deleted) return false;
+    return true;
+  });
+
+  if (!waitlists.alerts.length && !visibleNotified.length) return null;
+
+  return (
+    <div className="mb-8 animate-fade-in">
+      <h2 className="text-lg font-semibold text-gray-900 mb-3">Job alerts</h2>
+      <div className="space-y-3">
+        {waitlists.alerts.map((row) => (
+          <AlertCard key={row.id} row={row} />
+        ))}
+        {visibleNotified.map((row) => (
+          <ItsBackCard key={row.id} row={row} />
+        ))}
+      </div>
+      <Separator className="mt-8" />
+    </div>
+  );
+}
+
+const AlertCard = ({ row }: { row: JobWaitlist }) => {
+  const router = useRouter();
+  const waitlistActions = useWaitlistActions();
+  const canOpenListing = !!row.job.id && !!row.job.is_active && !row.job.is_deleted;
+  const listingHref = `/search/${row.job.id}`;
+
+  const handleTurnOff = async (event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    try {
+      const response = await waitlistActions.leave.mutateAsync(row.job_id);
+      if (response.message) toast.error(response.message);
+    } catch {
+      toast.error("Couldn't update your alert. Please try again.");
+    }
+  };
+
+  return (
+    <Card
+      role={canOpenListing ? "link" : undefined}
+      tabIndex={canOpenListing ? 0 : undefined}
+      onClick={() => canOpenListing && router.push(listingHref)}
+      className={cn(
+        "rounded-[0.16em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+        canOpenListing &&
+          "cursor-pointer transition-colors hover:bg-gray-50 hover:border-primary/20",
+      )}
+    >
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <Badge type="default">
+            <Bell className="h-3 w-3 mr-1" />
+            Alert set · {formatTimeAgo(row.created_at)}
+          </Badge>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={waitlistActions.leave.isPending}
+            onClick={(event) => void handleTurnOff(event)}
+          >
+            Turn off alert
+          </Button>
+        </div>
+        <JobHead title={row.job.title} employer={row.job.employer?.name} />
+      </div>
+    </Card>
+  );
+};
+
+const ItsBackCard = ({ row }: { row: JobWaitlist }) => {
+  const router = useRouter();
+  const listingHref = `/search/${row.job.id}`;
+  const goToListing = () => router.push(listingHref);
+
+  return (
+    <Card
+      role="link"
+      tabIndex={0}
+      onClick={goToListing}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          goToListing();
+        }
+      }}
+      className="rounded-[0.16em] cursor-pointer transition-colors hover:bg-gray-50 hover:border-supportive/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+    >
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <Badge type="supportive">
+            <CheckCircle2 className="h-3 w-3 mr-1" />
+            It&apos;s back!
+          </Badge>
+          <Button
+            type="button"
+            scheme="supportive"
+            size="sm"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              goToListing();
+            }}
+          >
+            Apply now
+          </Button>
+        </div>
+        <JobHead title={row.job.title} employer={row.job.employer?.name} />
+      </div>
+    </Card>
+  );
+};
 
 const ApplicationCard = ({
   application,

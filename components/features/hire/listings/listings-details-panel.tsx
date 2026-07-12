@@ -86,23 +86,52 @@ export function ListingsDetailsPanel({
                 </Button>,
               ]
             : [
-              <Link href={{
-                pathname:"/listings/edit",
-                query: {
-                  jobId: selectedJob.id,
-                  refresh: true
-                }
-                }}
-                >
-                <Button
-                  key="edit"
-                  variant="outline"
-                  disabled={saving}
-                  // onClick={refreshPage}
-                >
-                  Edit
-                </Button>
-              </Link>,
+                ...(selectedJob.paused
+                  ? [
+                      <div
+                        key="hibernating-locked"
+                        className="flex items-center gap-2 flex-wrap text-sm text-gray-600"
+                      >
+                        <span>Hibernating — re-enable to edit.</span>
+                        <Button
+                          variant="outline"
+                          scheme="primary"
+                          disabled={saving}
+                          onClick={() =>
+                            selectedJob.id && onUnpause?.(selectedJob.id)
+                          }
+                        >
+                          Re-enable
+                        </Button>
+                        {!!selectedJob.waiting_count && (
+                          <span>
+                            · {selectedJob.waiting_count} student
+                            {selectedJob.waiting_count === 1 ? "" : "s"} waiting
+                          </span>
+                        )}
+                      </div>,
+                    ]
+                  : [
+                      <Link
+                        key="edit-link"
+                        href={{
+                          pathname: "/listings/edit",
+                          query: {
+                            jobId: selectedJob.id,
+                            refresh: true,
+                          },
+                        }}
+                      >
+                        <Button
+                          key="edit"
+                          variant="outline"
+                          disabled={saving}
+                          // onClick={refreshPage}
+                        >
+                          Edit
+                        </Button>
+                      </Link>,
+                    ]),
                 // <Button
                 //   key="share"
                 //   variant="outline"
@@ -111,21 +140,6 @@ export function ListingsDetailsPanel({
                 // >
                 //   Share
                 // </Button>,
-                ...(selectedJob.paused
-                  ? [
-                      <Button
-                        key="unpause"
-                        variant="outline"
-                        scheme="primary"
-                        disabled={saving}
-                        onClick={() =>
-                          selectedJob.id && onUnpause?.(selectedJob.id)
-                        }
-                      >
-                        Re-enable
-                      </Button>,
-                    ]
-                  : []),
                 <Button
                   key="delete"
                   variant="outline"
