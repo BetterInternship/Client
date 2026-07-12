@@ -83,6 +83,10 @@ export const AuthContextProvider = ({
         return null;
       }
 
+      await queryClient.invalidateQueries({
+        queryKey: ["my-employer-profile"],
+      });
+
       setUser(response.user as PublicEmployerUser);
 
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -108,7 +112,7 @@ export const AuthContextProvider = ({
       queryKey: ["my-employer-conversations"],
     });
 
-    setUser(response.user as PublicEmployerUser);
+    setUser(response.user);
     setIsAuthenticated(true);
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
