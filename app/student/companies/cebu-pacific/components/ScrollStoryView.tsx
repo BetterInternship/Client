@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { ScrollStoryModel } from "../model";
@@ -57,7 +56,7 @@ export function ScrollStoryView({ model, className }: ScrollStoryViewProps) {
               href="/"
               className="transition-opacity duration-200 hover:opacity-70"
             >
-              <Image
+              <img
                 src="/BetterInternshipLogo.png"
                 alt="BetterInternship"
                 width={40}
@@ -76,11 +75,13 @@ export function ScrollStoryView({ model, className }: ScrollStoryViewProps) {
               rel="noopener noreferrer"
               className="inline-flex items-center px-1 py-0.5 transition-opacity duration-200 hover:opacity-75"
             >
-              <Image
-                src={cebuPacificLogo}
+              <img
+                src={cebuPacificLogo.src}
                 alt="Cebu Pacific"
+                width={cebuPacificLogo.width}
+                height={cebuPacificLogo.height}
                 className="h-7 w-auto sm:h-8"
-                priority
+                fetchPriority="high"
               />
             </Link>
           </div>

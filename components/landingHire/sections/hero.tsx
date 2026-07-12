@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ChevronRight } from "lucide-react";
-import Image from "next/image";
 import MagneticButton from "@/components/ui/magnetic-button";
 import Link from "next/link";
 import { easeOut, motion, useReducedMotion, Variants } from "framer-motion";
@@ -50,12 +49,11 @@ export function HeroSection() {
         {...blurTransition}
         className="hidden lg:block absolute right-0 inset-y-0 w-[50vw] overflow-hidden"
       >
-        <Image
+        <img
           src="/hire-landing-hero.jpg"
           alt="Interns collaborating in a modern office"
-          fill
-          className="object-cover"
-          priority
+          className="absolute inset-0 h-full w-full object-cover"
+          fetchPriority="high"
         />
       </motion.div>
       <div className="flex w-full max-w-7xl flex-col gap-8 md:flex-row items-center relative z-10">

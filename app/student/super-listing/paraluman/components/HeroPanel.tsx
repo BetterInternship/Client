@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import paralumanLogo from "../logo.png";
@@ -76,11 +75,13 @@ export function HeroPanel({
             rel="noopener noreferrer"
             className="mx-auto inline-flex w-fit transition-opacity duration-300 hover:opacity-85"
           >
-            <Image
-              src={paralumanLogo}
+            <img
+              src={paralumanLogo.src}
               alt="Paraluman"
+              width={paralumanLogo.width}
+              height={paralumanLogo.height}
               className="h-auto w-24 sm:w-32"
-              priority
+              fetchPriority="high"
             />
           </Link>
 

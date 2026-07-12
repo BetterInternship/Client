@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
 import {
@@ -42,13 +41,13 @@ function ListingsHero() {
   return (
     <section className="relative isolate overflow-hidden bg-[#001138] px-4 pb-20 pt-20 text-center sm:px-6 sm:pb-28 sm:pt-24 lg:px-8 lg:pb-32 lg:pt-28">
       <div className="absolute left-4 top-4 z-30 inline-flex transition-opacity duration-200 hover:opacity-75 sm:left-6 sm:top-6">
-        <Image
+        <img
           src="/BetterInternshipLogo.png"
           alt="BetterInternship"
           width={40}
           height={40}
           className="h-10 w-10 sm:h-12 sm:w-12"
-          priority
+          fetchPriority="high"
         />
       </div>
       <Link

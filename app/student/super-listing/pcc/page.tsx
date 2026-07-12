@@ -1,7 +1,6 @@
 "use client";
 
 import { type FormEvent, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
 import { ArrowLeft } from "lucide-react";
@@ -262,7 +261,7 @@ export default function PccSuperListingPage() {
             href="/"
             className="transition-opacity duration-200 hover:opacity-70"
           >
-            <Image
+            <img
               src="/BetterInternshipLogo.png"
               alt="BetterInternship"
               width={40}
@@ -279,13 +278,13 @@ export default function PccSuperListingPage() {
             rel="noopener noreferrer"
             className="inline-flex items-center transition-opacity duration-200 hover:opacity-75"
           >
-            <Image
+            <img
               src={PCC_LOGO_URL}
               alt="Philippine Chamber of Commerce logo"
               width={150}
               height={46}
               className="h-auto w-[8rem] invert sm:w-[9.5rem]"
-              priority
+              fetchPriority="high"
             />
           </Link>
         </div>

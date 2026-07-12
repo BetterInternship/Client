@@ -53,7 +53,6 @@ function LogoColumn({ logos, columnIndex, currentTime }: LogoColumnProps) {
             transition: { duration: 0.3 },
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element -- next/image's optimizer counts against our Vercel image-transformation quota */}
           <img
             src={currentLogo.src}
             alt={currentLogo.name}
@@ -110,7 +109,6 @@ function LogoTile({
           }}
           exit={{ scale: 0.98, opacity: 0, transition: { duration: 0.2 } }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element -- next/image's optimizer counts against our Vercel image-transformation quota */}
           <img
             src={logo.src}
             alt={logo.name}

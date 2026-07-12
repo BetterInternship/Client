@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState, useRef } from "react";
 import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
-import miroIcon from "./miro-icon.svg";
+import miroIconRaw from "./miro-icon.svg";
+
+const miroIcon = miroIconRaw as { src: string };
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { HeaderTitle } from "@/components/shared/header";
@@ -884,7 +885,7 @@ export default function MiroThonLandingPage() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Image
+            <img
               src="/BetterInternshipLogo.png"
               alt="BetterInternship"
               width={40}
@@ -901,8 +902,8 @@ export default function MiroThonLandingPage() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Image
-              src={miroIcon}
+            <img
+              src={miroIcon.src}
               alt="Miro"
               width={40}
               height={40}
@@ -1024,8 +1025,8 @@ export default function MiroThonLandingPage() {
                       className="inline-flex items-center gap-1 sm:gap-2 align-middle hover:brightness-90 transition-all duration-200 -mt-2"
                       style={{ color: "#ffdc33" }}
                     >
-                      <Image
-                        src={miroIcon}
+                      <img
+                        src={miroIcon.src}
                         alt="Miro"
                         width={80}
                         height={80}

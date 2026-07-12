@@ -1,5 +1,3 @@
-import type { StaticImageData } from "next/image";
-
 export type PanelKey = "overview" | "challenge" | "submission";
 
 export type SubmissionStep = 1 | 2;
@@ -15,6 +13,6 @@ export type CebuPacificSubmissionForm = {
 export type CEOProfile = {
   name: string;
   role: string;
-  imageSrc: string | StaticImageData;
+  imageSrc: string;
   profileUrl: string;
 };

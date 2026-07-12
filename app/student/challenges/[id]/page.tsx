@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
@@ -244,13 +243,13 @@ export default async function ChallengePage({ params }: PageProps) {
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div className="inline-flex items-center gap-2">
-            <Image
+            <img
               src="/BetterInternshipLogo.png"
               alt="BetterInternship logo"
               width={32}
               height={32}
               className="h-6 w-6"
-              priority
+              fetchPriority="high"
             />
             <span className="[font-family:var(--font-challenge-ph-heading)] font-bold text-white">
               Challenge PH

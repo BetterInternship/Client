@@ -9,7 +9,6 @@ import {
   useState,
 } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight, Loader2 } from "lucide-react";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
@@ -241,7 +240,7 @@ export default function FFFPage() {
               href="/"
               className="transition-opacity duration-200 hover:opacity-70"
             >
-              <Image
+              <img
                 src="/BetterInternshipLogo.png"
                 alt="BetterInternship"
                 width={40}

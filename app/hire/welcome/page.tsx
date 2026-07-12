@@ -38,7 +38,6 @@ const FROSTED_CARD =
 function WelcomeLogo() {
   return (
     <div className="flex justify-center pb-4">
-      {/* eslint-disable-next-line @next/next/no-img-element -- next/image's optimizer counts against our Vercel image-transformation quota */}
       <img
         src="/BetterInternshipLogo.png"
         alt="BetterInternship"
@@ -135,7 +134,6 @@ function WelcomeContent() {
       )}
     >
       <div className="absolute inset-0 -z-10 overflow-hidden bg-[#eef1f6]">
-        {/* eslint-disable-next-line @next/next/no-img-element -- next/image's optimizer counts against our Vercel image-transformation quota */}
         <img
           src={isMobile ? "/hire/welcome-mobile.png" : "/hire/welcome.png"}
           alt=""

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
 import {
@@ -330,13 +329,13 @@ function HeroMainContent({
           rel="noopener noreferrer"
           className="inline-flex w-fit items-center gap-3 transition-all duration-300 hover:opacity-90"
         >
-          <Image
+          <img
             src={PCC_LOGO_URL}
             alt="Philippine Chamber of Commerce logo"
             width={160}
             height={48}
             className="h-auto w-[8.5rem] invert sm:w-[10rem]"
-            priority
+            fetchPriority="high"
           />
         </Link>
       </motion.div>
@@ -567,13 +566,13 @@ function HeroPanel({
           href="/"
           className="absolute left-4 top-4 z-20 inline-flex transition-opacity duration-200 hover:opacity-70 sm:left-6 sm:top-6"
         >
-          <Image
+          <img
             src="/BetterInternshipLogo.png"
             alt="BetterInternship"
             width={40}
             height={40}
             className="h-10 w-10 sm:h-12 sm:w-12"
-            priority
+            fetchPriority="high"
           />
         </Link>
         <div className={sharedHeroBackground} />
@@ -593,12 +592,11 @@ function HeroPanel({
             transition={{ duration: 1.05, ease: [0.22, 1, 0.36, 1] }}
             className="absolute inset-0"
           >
-            <Image
+            <img
               src={PCC_HERO_IMAGE_URL}
               alt="Philippine Chamber of Commerce banner"
-              fill
-              className="object-cover"
-              priority
+              className="absolute inset-0 h-full w-full object-cover"
+              fetchPriority="high"
             />
           </motion.div>
           <div className="absolute inset-0 bg-gradient-to-t from-[#173f69]/52 via-[#173f69]/10 to-transparent" />
@@ -626,11 +624,10 @@ function SponsorMarquee() {
               className="flex h-16 w-36 shrink-0 items-center justify-center rounded-[0.33em] border border-white/15 bg-white px-2 shadow-[0_14px_32px_-24px_rgba(0,0,0,0.45)] sm:h-20 sm:w-44"
             >
               <div className="relative h-10 w-full sm:h-12">
-                <Image
+                <img
                   src={brand.logoUrl}
                   alt={`${brand.name} logo`}
-                  fill
-                  className="object-contain"
+                  className="absolute inset-0 h-full w-full object-contain"
                 />
               </div>
             </div>

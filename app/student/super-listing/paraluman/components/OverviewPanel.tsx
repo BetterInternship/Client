@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -183,11 +182,10 @@ export function OverviewPanel({
         <div className="rounded-[0.33em] ">
           <div className="flex flex-col items-start gap-6 text-left sm:flex-row sm:items-end">
             <div className="relative h-52 w-52 flex-shrink-0 overflow-hidden rounded-[0.33em] border-2 border-[rgba(114,6,140,0.3)] shadow-xl sm:h-64 sm:w-64">
-              <Image
+              <img
                 src={ceoProfile.imageSrc}
                 alt={ceoProfile.name}
-                fill
-                className="object-cover"
+                className="absolute inset-0 h-full w-full object-cover"
               />
             </div>
 
