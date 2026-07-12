@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 interface Feature {
@@ -47,7 +46,7 @@ export function FeatureSteps({
     <div
       className={cn(
         "p-8 md:p-12 bg-black text-white dark:bg-black dark:text-white",
-        className
+        className,
       )}
     >
       <div className="max-w-7xl mx-auto w-full">
@@ -70,7 +69,7 @@ export function FeatureSteps({
                     "w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center border-2",
                     index === currentFeature
                       ? "bg-primary border-primary text-primary-foreground scale-110"
-                      : "bg-muted border-muted-foreground dark:bg-gray-800 dark:border-gray-600"
+                      : "bg-muted border-muted-foreground dark:bg-gray-800 dark:border-gray-600",
                   )}
                 >
                   {index <= currentFeature ? (
@@ -96,7 +95,7 @@ export function FeatureSteps({
 
           <div
             className={cn(
-              "order-1 md:order-2 relative md:h-[300px] lg:h-[400px] h-0 overflow-hidden rounded-lg"
+              "order-1 md:order-2 relative md:h-[300px] lg:h-[400px] h-0 overflow-hidden rounded-lg",
             )}
           >
             <AnimatePresence mode="wait">
@@ -111,7 +110,7 @@ export function FeatureSteps({
                       exit={{ y: -100, opacity: 0, rotateX: 20 }}
                       transition={{ duration: 0.5, ease: "easeInOut" }}
                     >
-                      <Image
+                      <img
                         src={feature.image}
                         alt={feature.step}
                         className="w-full h-full object-cover transition-transform transform"
@@ -119,7 +118,7 @@ export function FeatureSteps({
                         height={500}
                       />
                     </motion.div>
-                  )
+                  ),
               )}
             </AnimatePresence>
           </div>
