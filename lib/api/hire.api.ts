@@ -31,6 +31,12 @@ interface EmailStatusResponse extends FetchResponse {
   verified_user: boolean;
 }
 
+interface OnboardStatusResponse extends FetchResponse {
+  valid: boolean;
+  needs_onboarding?: boolean;
+  employer_name?: string;
+}
+
 export const EmployerAuthService = {
   async emailStatus(email: string) {
     return APIClient.post<EmailStatusResponse>(
@@ -63,6 +69,19 @@ export const EmployerAuthService = {
   async logout() {
     await APIClient.post<FetchResponse>(
       APIRouteBuilder("auth").r("hire", "logout").build(),
+    );
+  },
+
+  async getOnboardStatus(uid: string, hash: string) {
+    return APIClient.get<OnboardStatusResponse>(
+      APIRouteBuilder("auth").r("hire", "onboard", uid, hash).build(),
+    );
+  },
+
+  async onboard(uid: string, hash: string, password: string) {
+    return APIClient.post<FetchResponse>(
+      APIRouteBuilder("auth").r("hire", "onboard").build(),
+      { employer_user_id: uid, hash, password },
     );
   },
 

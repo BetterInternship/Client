@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import Image from "next/image";
 
 interface Logo {
   id: number;
@@ -117,7 +116,7 @@ function LogoTile({
             width={180}
             height={72}
             className="max-h-full max-w-full object-contain"
-            priority={slot < 2}
+            fetchPriority={slot < 2 ? "high" : "auto"}
           />
         </motion.div>
       </AnimatePresence>

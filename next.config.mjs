@@ -27,6 +27,9 @@ const connectOrigins = apiUrls
 const imageOrigins = [
   ...apiUrls,
   "https://storage.googleapis.com",
+  "https://sofitech.ai",
+  "https://media.licdn.com",
+  "https://img.youtube.com",
 ]
   .map((url) => {
     try {
@@ -61,7 +64,20 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "sofitech.ai",
+      },
+      {
+        protocol: "https",
+        hostname: "media.licdn.com",
+      },
+      {
+        protocol: "https",
+        hostname: "img.youtube.com",
+      },
+    ],
   },
 
   // content security policy headers
@@ -126,7 +142,7 @@ const nextConfig = {
         // Rewrite everything except _next and root-level common files
         rewrites.push({
           source:
-            "/:path((?!_next|fonts|BetterInternshipLogo|og|resume-loader|maintenance|PrivacyPolicy|TermsConditions|Student_MOA|Company_Information|student-preview|hire-preview|miro-preview|super-listings|student/ph-topojson|student/privacy|student/terms).*)*",
+            "/:path((?!_next|fonts|BetterInternshipLogo|og|resume-loader|maintenance|PrivacyPolicy|TermsConditions|Student_MOA|Company_Information|student-preview|hire-preview|miro-preview|super-listings|student/ph-topojson|student/privacy|student/terms)(?!.*\\.(?:jpg|jpeg|png|webp|gif)$).*)",
           has: [{ type: "host", value: host }],
           destination: `/${destination}/:path*`,
         });
