@@ -32,6 +32,7 @@ import { useAppContext } from "@/lib/ctx-app";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { toAbbreviation } from "../../lib/utils/string-utils";
 import { HibernatingListingBanner } from "../features/student/job/hibernating-listing-banner";
+import { ListingAlertButton } from "../features/student/job/listing-alert-button";
 
 const PAUSE_REASON_LABELS: Record<JobPauseReason, string> = {
   dormant: "No logins in a long while",
@@ -456,24 +457,33 @@ export const JobCard = ({
       onClick={() => on_click && on_click(job)}
       className={cn(
         "group relative isolate overflow-hidden",
-        job.hibernating && "opacity-60 grayscale bg-gray-50",
+        job.hibernating && "p-0",
         selected
           ? "ring-1 ring-primary ring-offset-1"
           : "hover:shadow-sm hover:border-gray-300 cursor-pointer",
       )}
     >
-      <div className="relative z-10 space-y-3">
+      <div
+        className={cn(
+          "relative z-10 space-y-3",
+          job.hibernating && "p-[1.5em]",
+        )}
+      >
         <div className="flex items-start justify-between">
           <JobHead title={job.title} employer={job.employer?.name} />
         </div>
-        <JobLocation location={job.location} />
-        <JobBadges job={job} />
         {job.hibernating && (
-          <p className="text-xs font-medium text-gray-500">
-            No longer accepting applicants
+          <p className="text-sm text-gray-500">
+            <span aria-hidden>😭</span> You just missed it. This internship
+            is no longer accepting applicants.
           </p>
         )}
+        <JobLocation location={job.location} />
+        {!job.hibernating && <JobBadges job={job} />}
       </div>
+      {job.hibernating && (
+        <ListingAlertButton job={job} variant="card-footer" />
+      )}
     </Card>
   );
 };
@@ -585,10 +595,14 @@ export const EmployerJobCard = ({
           {job.paused && (
             <div className="flex items-center justify-between gap-2 flex-wrap rounded-[0.33em] bg-gray-100 border border-gray-300 px-3 py-2">
               <div className="flex items-center gap-2 flex-wrap">
-                <PausedBadge reason={job.pause_reason} pausedAt={job.paused_at} />
+                <PausedBadge
+                  reason={job.pause_reason}
+                  pausedAt={job.paused_at}
+                />
                 {waitingCount > 0 && (
                   <Badge type="accent">
-                    {waitingCount} student{waitingCount === 1 ? "" : "s"} waiting
+                    {waitingCount} student{waitingCount === 1 ? "" : "s"}{" "}
+                    waiting
                   </Badge>
                 )}
               </div>
@@ -615,13 +629,13 @@ export const EmployerJobCard = ({
             This listing is hibernating
           </h2>
           <p className="text-sm text-gray-600 leading-relaxed">
-            It was paused automatically after a period of inactivity.
-            Students can ask to be alerted when it returns
+            It was paused automatically after a period of inactivity. Students
+            can ask to be alerted when it returns
             {waitingCount > 0
               ? ` — ${waitingCount} ${waitingCount === 1 ? "is" : "are"} waiting right now`
               : ""}
-            . To edit this listing, re-enable it first. Re-enabling notifies
-            the waiting students that you&apos;re accepting applicants again.
+            . To edit this listing, re-enable it first. Re-enabling notifies the
+            waiting students that you&apos;re accepting applicants again.
           </p>
           <div className="flex justify-end gap-2">
             <Button
@@ -665,12 +679,12 @@ export const MobileJobCard = ({
   return (
     <div
       className={cn(
-        "card hover-lift relative isolate overflow-hidden p-6 animate-fade-in",
-        job.hibernating && "opacity-60 grayscale bg-gray-50",
+        "card hover-lift relative isolate overflow-hidden animate-fade-in",
+        job.hibernating ? "" : "p-6",
       )}
       onClick={on_click}
     >
-      <>
+      <div className={cn(job.hibernating && "p-6")}>
         <div className="mb-4">
           <div className="flex-1 min-w-0">
             <h3 className="text-lg font-semibold text-gray-900 mb-2 leading-tight truncate">
@@ -682,21 +696,31 @@ export const MobileJobCard = ({
             </div>
           </div>
         </div>
-        <JobBadges job={job} />
         {job.hibernating && (
-          <p className="text-xs font-medium text-gray-500 mb-2">
-            No longer accepting applicants
+          <p className="text-sm text-gray-500 mb-4">
+            <span aria-hidden>😭</span> You just missed it. This internship
+            is no longer accepting applicants.
           </p>
         )}
-        <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
-          {job.description || "No description available."}
-        </p>
+        {!job.hibernating && <JobBadges job={job} />}
+        {!job.hibernating && (
+          <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
+            {job.description || "No description available."}
+          </p>
+        )}
         <div className="flex items-center justify-between pt-3 border-t border-gray-100 min-w-0">
           <div className="flex-1 min-w-0">
             <JobLocation location={job.location} />
           </div>
         </div>
-      </>
+      </div>
+      {job.hibernating && (
+        <ListingAlertButton
+          job={job}
+          variant="card-footer"
+          roundedClassName="rounded-b-xl"
+        />
+      )}
     </div>
   );
 };

@@ -353,7 +353,7 @@ export default function SearchPage() {
         onToggleSelect={toggleSelect}
       />
 
-      <div className="flex-1 flex overflow-hidden border-primary ">
+      <div className="flex-1 flex overflow-hidden border-primary">
         {jobs.isPending ? (
           <Loader>Loading...</Loader>
         ) : isMobile ? (

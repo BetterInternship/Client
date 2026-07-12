@@ -62,8 +62,8 @@ export const HibernatingListingBanner = ({
     >
       {applied ? (
         <p className="text-sm text-gray-700">
-          You&apos;ve already applied — your application is still visible to
-          the employer.
+          You&apos;ve already applied — your application is still visible to the
+          employer.
         </p>
       ) : onAlert ? (
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -97,8 +97,8 @@ export const HibernatingListingBanner = ({
             Get an alert when it&apos;s back
           </Button>
           <p className="text-xs text-gray-500">
-            We&apos;ll email you if this listing starts accepting
-            applications again. You can turn the alert off anytime.
+            We&apos;ll email you if this listing starts accepting applications
+            again. You can turn the alert off anytime.
           </p>
         </div>
       )}
