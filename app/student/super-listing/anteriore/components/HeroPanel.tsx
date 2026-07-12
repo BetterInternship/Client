@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Zap, ArrowUpRight } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -66,11 +65,13 @@ export function HeroPanel({
               rel="noopener noreferrer"
               className="inline-block transition-opacity duration-200 hover:opacity-85"
             >
-              <Image
-                src={anterioreLogo}
+              <img
+                src={anterioreLogo.src}
                 alt="Anteriore"
+                width={anterioreLogo.width}
+                height={anterioreLogo.height}
                 className="mx-auto h-auto w-[clamp(16rem,52vw,32rem)] [filter:brightness(0)_saturate(100%)_invert(21%)_sepia(17%)_saturate(1612%)_hue-rotate(184deg)_brightness(88%)_contrast(93%)]"
-                priority
+                fetchPriority="high"
               />
             </Link>
             <div className="mt-6 inline-block rounded-[0.33em] border-2 border-[#274b7d]/50 bg-white/85 px-5 py-2.5 sm:px-6 sm:py-3">

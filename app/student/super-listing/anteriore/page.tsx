@@ -2,7 +2,6 @@
 
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import useModalRegistry from "@/components/modals/modal-registry";
@@ -333,7 +332,7 @@ export default function AnteriorePage() {
               href="/"
               className="transition-opacity duration-200 hover:opacity-70"
             >
-              <Image
+              <img
                 src="/BetterInternshipLogo.png"
                 alt="BetterInternship"
                 width={40}
@@ -352,11 +351,13 @@ export default function AnteriorePage() {
               rel="noopener noreferrer"
               className="transition-opacity duration-200 hover:opacity-75"
             >
-              <Image
-                src={anterioreLogo}
+              <img
+                src={anterioreLogo.src}
                 alt="Anteriore"
+                width={anterioreLogo.width}
+                height={anterioreLogo.height}
                 className="h-7 w-auto [filter:brightness(0)_saturate(100%)_invert(21%)_sepia(17%)_saturate(1612%)_hue-rotate(184deg)_brightness(88%)_contrast(93%)] sm:h-8"
-                priority
+                fetchPriority="high"
               />
             </Link>
           </div>

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
 import {
@@ -175,13 +174,13 @@ function HeroMainContent({
           href="/"
           className="inline-flex w-fit items-center gap-3 transition-all duration-300 hover:opacity-90"
         >
-          <Image
+          <img
             src={SOFI_AI_LOGO_URL}
             alt="Sofi AI logo"
             width={160}
             height={48}
             className="h-auto w-16 grayscale brightness-0 contrast-150 sm:w-20"
-            priority
+            fetchPriority="high"
           />
           <span className="[font-family:var(--font-paraluman-heading)] text-lg font-bold tracking-[-0.035em] text-[#0D3B33] sm:text-xl">
             Internships
@@ -252,25 +251,21 @@ function HeroWorkflowScene({ reduceMotion }: { reduceMotion: boolean }) {
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <Image
-        src={heroBg}
+      <img
+        src={heroBg.src}
         alt=""
-        fill
-        priority
-        sizes="(min-width: 640px) 100vw, 0vw"
+        fetchPriority="high"
         className={cn(
-          "absolute inset-0 z-0 hidden object-cover object-center sm:block",
+          "absolute inset-0 z-0 hidden h-full w-full object-cover object-center sm:block",
           bgDrift,
         )}
       />
-      <Image
-        src={heroBgMobile}
+      <img
+        src={heroBgMobile.src}
         alt=""
-        fill
-        priority
-        sizes="(max-width: 639px) 100vw, 0vw"
+        fetchPriority="high"
         className={cn(
-          "absolute inset-0 z-0 object-cover object-center sm:hidden",
+          "absolute inset-0 z-0 h-full w-full object-cover object-center sm:hidden",
           bgDrift,
         )}
       />
@@ -641,7 +636,7 @@ function WallOfLove() {
                 </p>
                 <div className="mt-auto pt-8">
                   <div className="flex items-center gap-3">
-                    <Image
+                    <img
                       src={item.image}
                       alt={item.name}
                       width={48}
@@ -708,12 +703,10 @@ function MediaSpotlight() {
                 className="group overflow-hidden rounded-[0.45em] bg-white shadow-[0_18px_40px_-30px_rgba(5,35,56,0.5)] transition-transform duration-300 hover:-translate-y-1"
               >
                 <div className="relative aspect-video overflow-hidden bg-[#052338]">
-                  <Image
+                  <img
                     src={MEDIA_VIDEO_THUMBNAIL}
                     alt="Sofi AI video preview"
-                    fill
-                    sizes="(min-width: 1024px) 42vw, 100vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-[#052338]/10" />
                   <div className="absolute left-5 top-5 flex h-10 w-10 items-center justify-center rounded-[0.25em] bg-red-500 text-white shadow-[0_14px_30px_-18px_rgba(0,0,0,0.6)]">
@@ -889,7 +882,7 @@ function CompactFooter() {
       <div className="relative mx-auto flex max-w-7xl flex-col gap-6  sm:flex-row sm:items-end sm:justify-between">
         <div className="flex max-w-md items-center gap-4">
           <div className="flex items-center gap-2">
-            <Image
+            <img
               src="/BetterInternshipLogo.png"
               alt="BetterInternship logo"
               width={56}
@@ -899,7 +892,7 @@ function CompactFooter() {
             <span className="[font-family:var(--font-paraluman-heading)] text-lg font-black leading-none tracking-[-0.04em] text-[#052338] sm:text-xl">
               &times;
             </span>
-            <Image
+            <img
               src={SOFI_AI_LOGO_URL}
               alt="Sofi AI logo"
               width={92}
