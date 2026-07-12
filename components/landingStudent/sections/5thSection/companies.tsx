@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import Image from "next/image";
 
 interface Logo {
   id: number;
@@ -54,7 +53,8 @@ function LogoColumn({ logos, columnIndex, currentTime }: LogoColumnProps) {
             transition: { duration: 0.3 },
           }}
         >
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element -- next/image's optimizer counts against our Vercel image-transformation quota */}
+          <img
             src={currentLogo.src}
             alt={currentLogo.name}
             width={160}
@@ -110,13 +110,14 @@ function LogoTile({
           }}
           exit={{ scale: 0.98, opacity: 0, transition: { duration: 0.2 } }}
         >
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element -- next/image's optimizer counts against our Vercel image-transformation quota */}
+          <img
             src={logo.src}
             alt={logo.name}
             width={180}
             height={72}
             className="max-h-full max-w-full object-contain"
-            priority={slot < 2}
+            fetchPriority={slot < 2 ? "high" : "auto"}
           />
         </motion.div>
       </AnimatePresence>

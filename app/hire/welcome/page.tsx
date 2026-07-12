@@ -32,6 +32,22 @@ type OnboardState =
   | { status: "already-onboarded" }
   | { status: "form"; employerName: string };
 
+const FROSTED_CARD =
+  "bg-white/90 backdrop-blur-md border-white/70 shadow-2xl shadow-black/10";
+
+function WelcomeLogo() {
+  return (
+    <div className="flex justify-center pb-4">
+      {/* eslint-disable-next-line @next/next/no-img-element -- next/image's optimizer counts against our Vercel image-transformation quota */}
+      <img
+        src="/BetterInternshipLogo.png"
+        alt="BetterInternship"
+        className="h-32 w-32 rounded-full border border-gray-200 object-contain"
+      />
+    </div>
+  );
+}
+
 function WelcomeContent() {
   const searchParams = useSearchParams();
   const uid = searchParams.get("uid") ?? "";
@@ -114,21 +130,46 @@ function WelcomeContent() {
   return (
     <div
       className={cn(
-        "flex justify-center py-12 pt-12 h-full overflow-y-auto",
+        "relative z-0 flex justify-center py-12 pt-12 h-full overflow-y-auto",
         isMobile ? "px-2" : "px-6",
       )}
     >
-      <div className="flex justify-center items-center w-full max-w-2xl h-full">
-        {state.status === "loading" && <Loader>Loading your invite...</Loader>}
+      <div className="absolute inset-0 -z-10 overflow-hidden bg-[#eef1f6]">
+        {/* eslint-disable-next-line @next/next/no-img-element -- next/image's optimizer counts against our Vercel image-transformation quota */}
+        <img
+          src={isMobile ? "/hire/welcome-mobile.png" : "/hire/welcome.png"}
+          alt=""
+          fetchPriority="high"
+          className={cn(
+            "absolute inset-0 h-full w-full object-cover",
+            isMobile ? "object-[center_80%]" : "object-[40%_center]",
+          )}
+        />
+      </div>
+
+      <div className="relative z-10 flex justify-center items-center w-full max-w-md h-full">
+        {state.status === "loading" && (
+          <div
+            className={cn(
+              "flex flex-col items-center gap-4 px-10 py-8 rounded-[0.33em]",
+              FROSTED_CARD,
+              "border",
+            )}
+          >
+            <WelcomeLogo />
+            <Loader>Loading your invite...</Loader>
+          </div>
+        )}
 
         {state.status === "invalid" && (
           <AnimatePresence>
             <motion.div {...blurTransition} className="w-full">
-              <Card className="flex flex-col gap-4 w-full">
+              <Card className={cn("flex flex-col gap-4 w-full", FROSTED_CARD)}>
+                <WelcomeLogo />
                 <HeaderTitle icon={TriangleAlert}>
                   This link isn't valid
                 </HeaderTitle>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-600">
                   If you already have a password, log in below; otherwise use
                   Forgot password to set one.
                 </p>
@@ -154,9 +195,10 @@ function WelcomeContent() {
         {state.status === "already-onboarded" && (
           <AnimatePresence>
             <motion.div {...blurTransition} className="w-full">
-              <Card className="flex flex-col gap-4 w-full">
+              <Card className={cn("flex flex-col gap-4 w-full", FROSTED_CARD)}>
+                <WelcomeLogo />
                 <HeaderTitle icon={CheckCircle2}>You're all set</HeaderTitle>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-600">
                   This account already has a password set.
                 </p>
                 <div className="flex justify-end items-center w-full">
@@ -175,14 +217,16 @@ function WelcomeContent() {
         {state.status === "form" && (
           <AnimatePresence>
             <motion.div {...blurTransition} className="w-full">
-              <Card className="flex flex-col gap-4 w-full">
+              <Card className={cn("flex flex-col gap-4 w-full", FROSTED_CARD)}>
+                <WelcomeLogo />
                 <HeaderTitle icon={PartyPopper}>
                   {state.employerName
                     ? `Welcome, ${state.employerName}!`
                     : "Welcome!"}
                 </HeaderTitle>
-                <p className="text-sm text-gray-500">
-                  Your candidates are waiting — set a password to get started.
+                <p className="text-sm text-gray-600">
+                  Your have applicants waiting!
+                  <br /> Set a password for your account to view them.
                 </p>
                 {error && (
                   <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
