@@ -16,7 +16,6 @@ import { SaveJobButton } from "@/components/features/student/job/save-job-button
 import { ApplyToJobButton } from "@/components/features/student/job/apply-to-job-button";
 import { useApplicationActions } from "@/lib/api/student.actions.api";
 import { ShareJobButton } from "@/components/features/student/job/share-job-button";
-import { useAuthContext } from "@/lib/ctx-auth";
 import type { ApplyPayload } from "@/components/modals/components/ApplyModal";
 import { toast } from "sonner";
 
@@ -35,7 +34,6 @@ export default function JobPage() {
   const applicationActions = useApplicationActions();
 
   const profile = useProfileData();
-  const { isAuthenticated } = useAuthContext();
 
   const handleApply = useCallback(
     async ({ resumeId }: ApplyPayload) => {
@@ -165,7 +163,6 @@ export default function JobPage() {
                         portfolio_link: profile.data?.portfolio_link ?? null,
                       }}
                       job={job.data}
-                      isAuthenticated={isAuthenticated()}
                     />
                   </div>
                 </div>

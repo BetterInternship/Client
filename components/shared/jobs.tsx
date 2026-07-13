@@ -29,10 +29,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { useMobile } from "@/hooks/use-mobile";
 import { useModal } from "@/hooks/use-modal";
 import { useAppContext } from "@/lib/ctx-app";
-import { useProfileData } from "@/lib/api/student.data.api";
+import { useProfileData, useWaitlistsData } from "@/lib/api/student.data.api";
 import { toAbbreviation } from "../../lib/utils/string-utils";
 import { HibernatingListingBanner } from "../features/student/job/hibernating-listing-banner";
-import { ListingAlertButton } from "../features/student/job/listing-alert-button";
 
 const PAUSE_REASON_LABELS: Record<JobPauseReason, string> = {
   dormant: "No logins in a long while",
@@ -440,6 +439,7 @@ export const JobCard = ({
   selected?: boolean;
   on_click?: (job: Job) => void;
 }) => {
+  const waitlists = useWaitlistsData();
   const isSuperListing = Boolean(job.challenge);
   if (isSuperListing) {
     return (
@@ -451,38 +451,48 @@ export const JobCard = ({
     );
   }
 
+  const onAlert = waitlists.isWaitlisted(job.id);
+
   return (
     <Card
       key={job.id}
       onClick={() => on_click && on_click(job)}
       className={cn(
         "group relative isolate overflow-hidden",
-        job.hibernating && "p-0",
         selected
           ? "ring-1 ring-primary ring-offset-1"
           : "hover:shadow-sm hover:border-gray-300 cursor-pointer",
       )}
     >
-      <div
-        className={cn(
-          "relative z-10 space-y-3",
-          job.hibernating && "p-[1.5em]",
-        )}
-      >
+      <div className="relative z-10 space-y-3">
         <div className="flex items-start justify-between">
           <JobHead title={job.title} employer={job.employer?.name} />
         </div>
-        {job.hibernating && (
-          <p className="text-sm text-gray-500">
-            <span aria-hidden>😭</span> You just missed it. This internship
-            is no longer accepting applicants.
-          </p>
-        )}
         <JobLocation location={job.location} />
-        {!job.hibernating && <JobBadges job={job} />}
+        <JobBadges job={job} />
       </div>
       {job.hibernating && (
-        <ListingAlertButton job={job} variant="card-footer" />
+        <>
+          <div
+            aria-hidden
+            className="absolute inset-0 z-20 bg-gray-100/50 pointer-events-none"
+          />
+          <Badge
+            className={cn(
+              "absolute top-4 right-4 z-30 gap-1 ",
+              onAlert
+                ? "bg-blue-100 text-primary"
+                : "bg-yellow-100 text-yellow-800",
+            )}
+          >
+            {onAlert ? (
+              <Clock className="w-3 h-3" />
+            ) : (
+              <AlertTriangle className="w-3 h-3" />
+            )}
+            {onAlert ? "Waiting..." : "Just missed"}
+          </Badge>
+        </>
       )}
     </Card>
   );
@@ -671,55 +681,67 @@ export const MobileJobCard = ({
   job: Job;
   on_click: () => void;
 }) => {
+  const waitlists = useWaitlistsData();
   const isSuperListing = Boolean(job.challenge);
   if (isSuperListing) {
     return <SuperJobCard job={job} onClick={on_click} mobile />;
   }
 
+  const onAlert = waitlists.isWaitlisted(job.id);
+
   return (
     <div
-      className={cn(
-        "card hover-lift relative isolate overflow-hidden animate-fade-in",
-        job.hibernating ? "" : "p-6",
-      )}
+      className="card hover-lift relative isolate overflow-hidden animate-fade-in p-6"
       onClick={on_click}
     >
-      <div className={cn(job.hibernating && "p-6")}>
-        <div className="mb-4">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2 leading-tight truncate">
-              {job.title}
-            </h3>
-            <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-              <Building className="w-4 h-4 flex-shrink-0" />
-              <span className="font-medium truncate">{job.employer?.name}</span>
-            </div>
-          </div>
-        </div>
-        {job.hibernating && (
-          <p className="text-sm text-gray-500 mb-4">
-            <span aria-hidden>😭</span> You just missed it. This internship
-            is no longer accepting applicants.
-          </p>
-        )}
-        {!job.hibernating && <JobBadges job={job} />}
-        {!job.hibernating && (
-          <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
-            {job.description || "No description available."}
-          </p>
-        )}
-        <div className="flex items-center justify-between pt-3 border-t border-gray-100 min-w-0">
-          <div className="flex-1 min-w-0">
-            <JobLocation location={job.location} />
+      <div className="mb-4">
+        <div className="flex-1 min-w-0">
+          <h3
+            className={cn(
+              "text-lg font-semibold text-gray-900 mb-2 leading-tight truncate",
+              job.hibernating &&
+                "pr-32 [mask-image:linear-gradient(to_right,black_calc(100%_-_160px),transparent_calc(100%_-_120px))] [-webkit-mask-image:linear-gradient(to_right,black_calc(100%_-_160px),transparent_calc(100%_-_120px))]",
+            )}
+          >
+            {job.title}
+          </h3>
+          <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+            <Building className="w-4 h-4 flex-shrink-0" />
+            <span className="font-medium truncate">{job.employer?.name}</span>
           </div>
         </div>
       </div>
+      <JobBadges job={job} />
+      <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
+        {job.description || "No description available."}
+      </p>
+      <div className="flex items-center justify-between pt-3 border-t border-gray-100 min-w-0">
+        <div className="flex-1 min-w-0">
+          <JobLocation location={job.location} />
+        </div>
+      </div>
       {job.hibernating && (
-        <ListingAlertButton
-          job={job}
-          variant="card-footer"
-          roundedClassName="rounded-b-xl"
-        />
+        <>
+          <div
+            aria-hidden
+            className="absolute inset-0 z-20 bg-gray-100/50 pointer-events-none"
+          />
+          <Badge
+            className={cn(
+              "absolute top-4 right-4 z-30 gap-1 ",
+              onAlert
+                ? "bg-blue-100 text-primary"
+                : "bg-yellow-100 text-yellow-800",
+            )}
+          >
+            {onAlert ? (
+              <Clock className="w-3 h-3" />
+            ) : (
+              <AlertTriangle className="w-3 h-3" />
+            )}
+            {onAlert ? "Waiting..." : "Just missed"}
+          </Badge>
+        </>
       )}
     </div>
   );
@@ -907,34 +929,6 @@ function ReqPill({ ok, label }: { ok: boolean; label: string }) {
   return <BoolBadge state={ok} onValue={label} offValue={label} />;
 }
 
-export function MissingNotice({
-  show,
-  needsGithub,
-  needsPortfolio,
-}: {
-  show: boolean;
-  needsGithub: boolean;
-  needsPortfolio: boolean;
-}) {
-  if (!show) return null;
-  return (
-    <div className="flex items-start md:items-center gap-2 bg-warning px-5 py-3">
-      <AlertTriangle className="h-5 w-5 text-warning-foreground/90" />
-      <p className="text-sm text-warning-foreground/90 leading-snug">
-        This job requires{" "}
-        {needsGithub && needsPortfolio ? (
-          <b>GitHub and Portfolio</b>
-        ) : needsGithub ? (
-          <b>GitHub</b>
-        ) : (
-          <b>Portfolio</b>
-        )}
-        . Update your profile to meet these requirements.
-      </p>
-    </div>
-  );
-}
-
 function Section({
   title,
   children,
@@ -1024,7 +1018,6 @@ export function JobDetails({
   user,
   actions = [],
   applyDisabledText = "Complete required items to apply.",
-  isAuthenticated,
 }: {
   job: Job;
   user?: {
@@ -1033,7 +1026,6 @@ export function JobDetails({
   };
   actions?: React.ReactNode[];
   applyDisabledText?: string;
-  isAuthenticated: boolean;
 }) {
   const hasGithub = !!user?.github_link?.trim();
   const hasPortfolio = !!user?.portfolio_link?.trim();
@@ -1049,13 +1041,6 @@ export function JobDetails({
 
   return (
     <>
-      {isAuthenticated && (
-        <MissingNotice
-          show={missingRequired}
-          needsGithub={needsGithub && !hasGithub}
-          needsPortfolio={needsPortfolio && !hasPortfolio}
-        />
-      )}
       {job.hibernating && <HibernatingListingBanner job={job} />}
       <div
         className={cn(

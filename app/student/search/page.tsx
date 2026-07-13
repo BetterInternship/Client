@@ -509,7 +509,6 @@ export default function SearchPage() {
                       onApply={handleSingleApply}
                     />,
                   ]}
-                  isAuthenticated={isAuthenticated()}
                 />
               ) : (
                 <div className="h-full m-auto">
