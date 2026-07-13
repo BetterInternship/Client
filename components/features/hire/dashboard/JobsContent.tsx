@@ -4,6 +4,7 @@
 
 import { motion } from "framer-motion";
 import { EmployerApplication, Job } from "@/lib/db/db.types";
+import { FetchResponse } from "@/lib/api/use-fetch";
 import { JobListingsBox } from "./JobListingsBox";
 import { Button } from "@/components/ui/button";
 import { Calendar, Plus } from "lucide-react";
@@ -20,6 +21,7 @@ interface JobsContentProps {
   jobs: Job[];
   employerId: string;
   updateJob: (jobId: string, job: Partial<Job>) => Promise<any>;
+  onReactivate?: (jobId: string) => Promise<FetchResponse>;
   onAddListingClick?: () => void;
   isLoading?: boolean;
 }
@@ -29,6 +31,7 @@ export function JobsContent({
   jobs,
   employerId,
   updateJob: _updateJob,
+  onReactivate,
   onAddListingClick,
   isLoading,
 }: JobsContentProps) {
@@ -93,6 +96,7 @@ export function JobsContent({
                   key={job.id}
                   job={job}
                   applications={applications}
+                  onReactivate={onReactivate}
                   isLoading={isLoading}
                 />
               ))}

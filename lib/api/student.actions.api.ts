@@ -10,7 +10,7 @@
  */
 
 import { useQueryClient, useMutation } from "@tanstack/react-query";
-import { ApplicationService, UserService } from "./services";
+import { ApplicationService, JobService, UserService } from "./services";
 import { PublicUser } from "../db/db.types";
 
 /**
@@ -56,6 +56,33 @@ export const useJobActions = () => {
       mutationFn: (jobId: string) => UserService.saveJob(jobId),
       onSettled: () =>
         queryClient.invalidateQueries({ queryKey: ["my-saved-jobs"] }),
+    }),
+  };
+
+  return actions;
+};
+
+/**
+ * Join/leave a hibernating listing's waitlist ("job alert"). Invalidates the
+ * shared my-waitlists query so every surface (hero banner, compact button,
+ * applications page) stays in sync. No optimistic update — the banner/button
+ * morph once the mutation settles; on-page copy shows no success toast, only
+ * a failure one (see callers).
+ *
+ * @hook
+ */
+export const useWaitlistActions = () => {
+  const queryClient = useQueryClient();
+  const actions = {
+    join: useMutation({
+      mutationFn: (jobId: string) => JobService.joinWaitlist(jobId),
+      onSettled: () =>
+        queryClient.invalidateQueries({ queryKey: ["my-waitlists"] }),
+    }),
+    leave: useMutation({
+      mutationFn: (jobId: string) => JobService.leaveWaitlist(jobId),
+      onSettled: () =>
+        queryClient.invalidateQueries({ queryKey: ["my-waitlists"] }),
     }),
   };
 

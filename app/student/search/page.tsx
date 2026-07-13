@@ -136,7 +136,7 @@ export default function SearchPage() {
   }, [selectedIds.size, selectMode]);
 
   const toggleSelect = (job: Job) => {
-    if (!job.id || job.challenge) return;
+    if (!job.id || job.challenge || job.hibernating) return;
 
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -156,7 +156,7 @@ export default function SearchPage() {
   const selectAllOnPage = () => {
     const next = new Set(selectedIds);
     jobsPage.forEach((j) => {
-      if (j.id && !j.challenge) next.add(j.id);
+      if (j.id && !j.challenge && !j.hibernating) next.add(j.id);
     });
     setSelectedIds(next);
   };
@@ -164,7 +164,7 @@ export default function SearchPage() {
   const unselectAllOnPage = () => {
     const next = new Set(selectedIds);
     jobsPage.forEach((j) => {
-      if (j.id && !j.challenge) next.delete(j.id);
+      if (j.id && !j.challenge && !j.hibernating) next.delete(j.id);
     });
     setSelectedIds(next);
   };
@@ -172,7 +172,7 @@ export default function SearchPage() {
   const selectedJobsList = useMemo(
     () =>
       jobs.filteredJobs.filter(
-        (j) => j.id && selectedIds.has(j.id) && !j.challenge,
+        (j) => j.id && selectedIds.has(j.id) && !j.challenge && !j.hibernating,
       ),
     [jobs.filteredJobs, selectedIds],
   );
@@ -225,6 +225,10 @@ export default function SearchPage() {
         const eligible: Job[] = [];
 
         for (const job of selectedJobsList) {
+          if (job.hibernating) {
+            skipped.push({ job, reason: "No longer accepting applicants" });
+            continue;
+          }
           if (jobs.isJobApplied(job.id)) {
             skipped.push({ job, reason: "Already applied" });
             continue;
@@ -349,7 +353,7 @@ export default function SearchPage() {
         onToggleSelect={toggleSelect}
       />
 
-      <div className="flex-1 flex overflow-hidden border-primary ">
+      <div className="flex-1 flex overflow-hidden border-primary">
         {jobs.isPending ? (
           <Loader>Loading...</Loader>
         ) : isMobile ? (
@@ -364,7 +368,7 @@ export default function SearchPage() {
                       className="relative group"
                       onClick={() => handleJobCardClick(job)}
                     >
-                      {!job.challenge && (
+                      {!job.challenge && !job.hibernating && (
                         <button
                           type="button"
                           className={cn(
@@ -422,7 +426,7 @@ export default function SearchPage() {
                 <div className="space-y-3">
                   {jobsPage.map((job) => (
                     <div key={job.id} className="relative group">
-                      {!job.challenge && (
+                      {!job.challenge && !job.hibernating && (
                         <button
                           type="button"
                           aria-label={
@@ -505,7 +509,6 @@ export default function SearchPage() {
                       onApply={handleSingleApply}
                     />,
                   ]}
-                  isAuthenticated={isAuthenticated()}
                 />
               ) : (
                 <div className="h-full m-auto">

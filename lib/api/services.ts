@@ -5,6 +5,7 @@ import {
   UpdateJobChallengeListingPayload,
   Employer,
   Job,
+  JobWaitlist,
   PublicUser,
   SavedJob,
   UserApplication,
@@ -476,6 +477,10 @@ interface OwnedJobsResponse extends FetchResponse {
   jobs: Job[];
 }
 
+interface WaitlistedJobsResponse extends FetchResponse {
+  waitlisted?: JobWaitlist[];
+}
+
 export const JobService = {
   async getAllJobs() {
     return APIClient.get<JobsResponse>(APIRouteBuilder("jobs").build());
@@ -543,6 +548,24 @@ export const JobService = {
   async unpauseAllJobs() {
     return APIClient.post<FetchResponse>(
       APIRouteBuilder("jobs").r("unpause-all").build(),
+    );
+  },
+
+  async joinWaitlist(jobId: string) {
+    return APIClient.post<FetchResponse>(
+      APIRouteBuilder("jobs").r(jobId, "waitlist").build(),
+    );
+  },
+
+  async leaveWaitlist(jobId: string) {
+    return APIClient.delete<FetchResponse>(
+      APIRouteBuilder("jobs").r(jobId, "waitlist").build(),
+    );
+  },
+
+  async getWaitlistedJobs() {
+    return APIClient.get<WaitlistedJobsResponse>(
+      APIRouteBuilder("jobs").r("waitlisted").build(),
     );
   },
 };

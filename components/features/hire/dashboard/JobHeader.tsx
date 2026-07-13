@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { useOwnedJobs } from "@/hooks/use-employer-api";
@@ -26,8 +27,9 @@ export default function JobHeader({
   backHref?: string;
 }) {
   const router = useRouter();
-  const { ownedJobs, update_job, delete_job } = useOwnedJobs();
+  const { ownedJobs, update_job, delete_job, unpause_job } = useOwnedJobs();
   const { saving } = useListingsBusinessLogic(ownedJobs);
+  const [reEnabling, setReEnabling] = useState(false);
 
   const handleBack = () => {
     if (backHref) return router.replace(backHref);
@@ -35,13 +37,31 @@ export default function JobHeader({
   };
 
   const handleToggleActive = async () => {
-    if (!job.id) return;
+    if (!job.id || job.paused) return;
 
     const updates = { is_active: !job.is_active };
     const result = await update_job(job.id, updates);
 
     if (result.success && onJobUpdate) {
       onJobUpdate(updates);
+    }
+  };
+
+  const handleReEnable = async () => {
+    if (!job.id) return;
+    setReEnabling(true);
+    try {
+      const result = await unpause_job(job.id);
+      if (result.success && onJobUpdate) {
+        onJobUpdate({
+          paused: false,
+          pause_reason: null,
+          paused_at: null,
+          waiting_count: 0,
+        });
+      }
+    } finally {
+      setReEnabling(false);
     }
   };
 
@@ -114,22 +134,42 @@ export default function JobHeader({
           <span>Preview</span>
         </Button>
       </Link>
-      <Link
-        href={{
-          pathname: "/listings/edit",
-          query: { jobId: job.id },
-        }}
-      >
-        <Button
-          variant="ghost"
-          size="sm"
-          disabled={saving}
-          className="hover:bg-primary/10 gap-1"
+      {job.paused ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="pointer-events-none opacity-50">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="hover:bg-primary/10 gap-1"
+              >
+                <Edit size={16} />
+                <span>Edit</span>
+              </Button>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            Re-activate the listing first
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        <Link
+          href={{
+            pathname: "/listings/edit",
+            query: { jobId: job.id },
+          }}
         >
-          <Edit size={16} />
-          <span>Edit</span>
-        </Button>
-      </Link>
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={saving}
+            className="hover:bg-primary/10 gap-1"
+          >
+            <Edit size={16} />
+            <span>Edit</span>
+          </Button>
+        </Link>
+      )}
       <Button
         variant="ghost"
         size="sm"
@@ -160,10 +200,16 @@ export default function JobHeader({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="flex items-center gap-2 shrink-0">
-                    <Toggle
-                      state={job.is_active}
-                      onClick={() => void handleToggleActive()}
-                    />
+                    <div
+                      className={cn(
+                        job.paused && "pointer-events-none opacity-50",
+                      )}
+                    >
+                      <Toggle
+                        state={job.is_active}
+                        onClick={() => void handleToggleActive()}
+                      />
+                    </div>
                     <span
                       className={cn(
                         "text-xs px-2 py-1 rounded transition",
@@ -172,12 +218,40 @@ export default function JobHeader({
                           : "bg-muted text-muted-foreground",
                       )}
                     >
-                      {job.is_active ? "Active" : "Paused"}
+                      {job.is_active
+                        ? "Active"
+                        : job.paused
+                          ? "Inactive"
+                          : "Paused"}
                     </span>
+                    {job.paused && (
+                      <>
+                        {!!job.waiting_count && (
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {job.waiting_count} student
+                            {job.waiting_count === 1 ? "" : "s"} waiting
+                          </span>
+                        )}
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          scheme="primary"
+                          disabled={reEnabling}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void handleReEnable();
+                          }}
+                        >
+                          {reEnabling ? "Re-activating..." : "Re-activate"}
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
-                  Toggle the visibility of the listing to students.
+                  {job.paused
+                    ? "Re-activate the listing first"
+                    : "Toggle the visibility of the listing to students."}
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -238,28 +312,50 @@ export default function JobHeader({
                   <span>Preview</span>
                 </Button>
               </Link>
-              <Link
-                href={{
-                  pathname: "/listings/edit",
-                  query: { jobId: job.id },
-                }}
-                className="block"
-              >
-                <Button
-                  variant={pathname === "/listings/edit" ? "ghost" : "outline"}
-                  size="sm"
-                  disabled={saving}
-                  className={cn(
-                    "w-full justify-center gap-1",
-                    pathname === "/listings/edit"
-                      ? "hover:bg-primary/10 bg-primary/10 text-primary"
-                      : "hover:bg-primary/5",
-                  )}
+              {job.paused ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="pointer-events-none opacity-50">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-center gap-1 hover:bg-primary/5"
+                      >
+                        <Edit size={16} />
+                        <span>Edit</span>
+                      </Button>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    Re-activate the listing first
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                <Link
+                  href={{
+                    pathname: "/listings/edit",
+                    query: { jobId: job.id },
+                  }}
+                  className="block"
                 >
-                  <Edit size={16} />
-                  <span>Edit</span>
-                </Button>
-              </Link>
+                  <Button
+                    variant={
+                      pathname === "/listings/edit" ? "ghost" : "outline"
+                    }
+                    size="sm"
+                    disabled={saving}
+                    className={cn(
+                      "w-full justify-center gap-1",
+                      pathname === "/listings/edit"
+                        ? "hover:bg-primary/10 bg-primary/10 text-primary"
+                        : "hover:bg-primary/5",
+                    )}
+                  >
+                    <Edit size={16} />
+                    <span>Edit</span>
+                  </Button>
+                </Link>
+              )}
               <Button
                 variant="outline"
                 size="sm"
@@ -294,10 +390,16 @@ export default function JobHeader({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="flex items-center gap-2">
-                    <Toggle
-                      state={job.is_active}
-                      onClick={() => void handleToggleActive()}
-                    />
+                    <div
+                      className={cn(
+                        job.paused && "pointer-events-none opacity-50",
+                      )}
+                    >
+                      <Toggle
+                        state={job.is_active}
+                        onClick={() => void handleToggleActive()}
+                      />
+                    </div>
                     <span
                       className={cn(
                         "text-xs px-2 py-1 rounded transition",
@@ -306,12 +408,40 @@ export default function JobHeader({
                           : "bg-muted text-muted-foreground",
                       )}
                     >
-                      {job.is_active ? "Active" : "Paused"}
+                      {job.is_active
+                        ? "Active"
+                        : job.paused
+                          ? "Inactive"
+                          : "Paused"}
                     </span>
+                    {job.paused && (
+                      <>
+                        {!!job.waiting_count && (
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {job.waiting_count} student
+                            {job.waiting_count === 1 ? "" : "s"} waiting
+                          </span>
+                        )}
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          scheme="primary"
+                          disabled={reEnabling}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void handleReEnable();
+                          }}
+                        >
+                          {reEnabling ? "Re-activating..." : "Re-activate"}
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
-                  Toggle the visibility of the listing to students.
+                  {job.paused
+                    ? "Re-activate the listing first"
+                    : "Toggle the visibility of the listing to students."}
                 </TooltipContent>
               </Tooltip>
             </div>

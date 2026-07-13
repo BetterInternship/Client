@@ -311,6 +311,7 @@ export const useModalRegistry = () => {
           message,
           primaryAction,
           secondaryAction,
+          panelClassName,
         }: {
           icon: LucideIcon;
           iconColor: string;
@@ -318,6 +319,7 @@ export const useModalRegistry = () => {
           message: string;
           primaryAction: { label: string; onClick: () => void };
           secondaryAction?: { label: string; onClick: () => void };
+          panelClassName?: string;
         }) =>
           open(
             "warning",
@@ -336,6 +338,7 @@ export const useModalRegistry = () => {
               closeOnBackdropClick: false,
               closeOnEscapeKey: false,
               showCloseButton: false,
+              panelClassName,
             },
           ),
         close: () => close("warning"),
