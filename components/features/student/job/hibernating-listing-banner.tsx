@@ -56,7 +56,7 @@ export const HibernatingListingBanner = ({
   return (
     <div
       className={cn(
-        "rounded-[0.33em] border border-gray-200 bg-gray-50 px-5 py-4",
+        "border-b border-gray-200 bg-gray-50 px-5 py-4",
         className,
       )}
     >

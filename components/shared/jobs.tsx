@@ -1056,6 +1056,7 @@ export function JobDetails({
           needsPortfolio={needsPortfolio && !hasPortfolio}
         />
       )}
+      {job.hibernating && <HibernatingListingBanner job={job} />}
       <div
         className={cn(
           "flex-1 overflow-y-auto space-y-5",
@@ -1064,11 +1065,9 @@ export function JobDetails({
       >
         <HeaderWithActions
           job={job}
-          actions={actions}
+          actions={job.hibernating ? [] : actions}
           disabled={missingRequired}
         />
-
-        {job.hibernating && <HibernatingListingBanner job={job} />}
 
         <Section title="Job Details">
           <JobDetailsSummary job={job} />
