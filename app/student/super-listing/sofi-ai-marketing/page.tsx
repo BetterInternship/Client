@@ -1,7 +1,6 @@
 "use client";
 
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
@@ -330,24 +329,24 @@ export default function SofiAiSuperListingPage() {
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div className="inline-flex items-center gap-2">
-            <Image
+            <img
               src="/BetterInternshipLogo.png"
               alt="BetterInternship logo"
               width={32}
               height={32}
               className="h-7 w-7"
-              priority
+              fetchPriority="high"
             />
             <span className="[font-family:var(--font-paraluman-heading)] text-sm font-bold text-[#052338]/45">
               &times;
             </span>
-            <Image
+            <img
               src={SOFI_AI_LOGO_URL}
               alt="Sofi AI logo"
               width={150}
               height={46}
               className="h-auto w-14 grayscale brightness-0 contrast-150"
-              priority
+              fetchPriority="high"
             />
           </div>
         </div>

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
 import {
   ArrowRight,
@@ -55,13 +54,13 @@ function HeroSection() {
   return (
     <section className="relative isolate flex min-h-screen flex-col overflow-hidden bg-[#031226] pb-44 text-white">
       <div className="absolute left-4 top-4 z-30 inline-flex transition-opacity duration-200 hover:opacity-75 sm:left-6 sm:top-6">
-        <Image
+        <img
           src="/BetterInternshipLogo.png"
           alt="BetterInternship"
           width={40}
           height={40}
           className="h-10 w-10 sm:h-12 sm:w-12"
-          priority
+          fetchPriority="high"
         />
       </div>
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(140,200,255,0.1)_1px,transparent_1px),linear-gradient(to_bottom,rgba(140,200,255,0.08)_1px,transparent_1px)] bg-[size:40px_40px] opacity-55 [mask-image:radial-gradient(circle_at_70%_35%,#000_0%,transparent_78%)]" />

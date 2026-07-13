@@ -2,7 +2,6 @@
 
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import useModalRegistry from "@/components/modals/modal-registry";
@@ -339,7 +338,7 @@ export default function ParalumanPage() {
               href="/"
               className="transition-opacity duration-200 hover:opacity-70"
             >
-              <Image
+              <img
                 src="/BetterInternshipLogo.png"
                 alt="BetterInternship"
                 width={40}
@@ -358,11 +357,13 @@ export default function ParalumanPage() {
               rel="noopener noreferrer"
               className="transition-opacity duration-200 hover:opacity-75"
             >
-              <Image
-                src={paralumanLogo}
+              <img
+                src={paralumanLogo.src}
                 alt="Paraluman"
+                width={paralumanLogo.width}
+                height={paralumanLogo.height}
                 className="h-7 w-auto sm:h-8"
-                priority
+                fetchPriority="high"
               />
             </Link>
           </div>

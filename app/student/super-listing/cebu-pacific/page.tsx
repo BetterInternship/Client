@@ -2,7 +2,6 @@
 
 import { type FormEvent, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -265,7 +264,7 @@ export default function CebuPacificPage() {
             href="/"
             className="transition-opacity duration-200 hover:opacity-70"
           >
-            <Image
+            <img
               src="/BetterInternshipLogo.png"
               alt="BetterInternship"
               width={40}
@@ -284,11 +283,13 @@ export default function CebuPacificPage() {
             rel="noopener noreferrer"
             className="inline-flex items-center px-1 py-0.5 transition-opacity duration-200 hover:opacity-75"
           >
-            <Image
-              src={cebuPacificLogo}
+            <img
+              src={cebuPacificLogo.src}
               alt="Cebu Pacific"
+              width={cebuPacificLogo.width}
+              height={cebuPacificLogo.height}
               className="h-7 w-auto sm:h-8"
-              priority
+              fetchPriority="high"
             />
           </Link>
         </div>

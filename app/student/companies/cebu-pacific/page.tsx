@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { JetBrains_Mono, Open_Sans, Space_Grotesk } from "next/font/google";
 import {
@@ -305,11 +304,13 @@ function HeroMainContent({
           rel="noopener noreferrer"
           className="inline-flex w-fit items-center gap-3 transition-all duration-300 hover:opacity-90"
         >
-          <Image
-            src={cebuPacificLogo}
+          <img
+            src={cebuPacificLogo.src}
             alt="Cebu Pacific"
+            width={cebuPacificLogo.width}
+            height={cebuPacificLogo.height}
             className="h-auto w-28 sm:w-36"
-            priority
+            fetchPriority="high"
           />
           <span className="[font-family:var(--font-paraluman-mono)] mt-1.5 text-sm font-bold uppercase text-[#2574BB] sm:mt-2.5 sm:text-sm">
             Internships
@@ -612,12 +613,11 @@ function HeroPanel({
             transition={{ duration: 1.05, ease: [0.22, 1, 0.36, 1] }}
             className="absolute inset-0"
           >
-            <Image
-              src={heroImage}
+            <img
+              src={heroImage.src}
               alt="Airplane wing above the clouds"
-              fill
-              className="object-cover"
-              priority
+              className="absolute inset-0 h-full w-full object-cover"
+              fetchPriority="high"
             />
           </motion.div>
           <div className="absolute inset-0 bg-gradient-to-t from-[#173f69]/52 via-[#173f69]/10 to-transparent" />
