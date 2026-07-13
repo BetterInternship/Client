@@ -88,7 +88,7 @@ export function ListingsDetailsPanel({
                         key="hibernating-locked"
                         className="flex items-center gap-2 flex-wrap text-sm text-gray-600"
                       >
-                        <span>Hibernating — re-enable to edit.</span>
+                        <span>Inactive — re-activate to edit.</span>
                         <Button
                           variant="outline"
                           scheme="primary"
@@ -97,7 +97,7 @@ export function ListingsDetailsPanel({
                             selectedJob.id && onUnpause?.(selectedJob.id)
                           }
                         >
-                          Re-enable
+                          Re-activate
                         </Button>
                         {!!selectedJob.waiting_count && (
                           <span>

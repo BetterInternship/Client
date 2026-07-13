@@ -53,7 +53,7 @@ export const PausedBadge = ({
     <TooltipTrigger asChild>
       <Badge type="default" className="cursor-default">
         <Moon className="w-3 h-3 mr-1" />
-        Hibernating
+        Inactive
       </Badge>
     </TooltipTrigger>
     <TooltipContent side="bottom">
@@ -560,83 +560,90 @@ export const EmployerJobCard = ({
           "relative isolate overflow-hidden",
           selected ? "selected ring-1 ring-primary ring-offset-1" : "",
           job.paused
-            ? "opacity-70 grayscale bg-gray-50 cursor-pointer"
+            ? "bg-gray-50 cursor-pointer"
             : !job.is_active
               ? "opacity-50"
               : "cursor-pointer",
         )}
       >
-        {job.paused && (
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-[-15%] top-1/2 z-10 h-[2px] -translate-y-1/2 -rotate-6 bg-destructive/50"
-          />
-        )}
-        <div className="relative space-y-3">
-          <div className="flex items-start justify-between">
-            <JobHead title={job.title} employer={job.employer?.name} />
-            <div className="flex items-center gap-2 relative z-20">
-              {job.paused ? (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="pointer-events-none opacity-50">
-                      <Toggle state={job.is_active} onClick={() => {}} />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    Re-enable the listing first
-                  </TooltipContent>
-                </Tooltip>
-              ) : (
-                <Toggle
-                  state={job.is_active}
-                  onClick={() => {
-                    if (!job.id) return;
-                    void update_job(job.id, {
-                      is_active: !job.is_active,
-                    });
-                  }}
-                />
-              )}
-            </div>
-          </div>
-          <JobLocation location={job.location} />
-          <JobBadges job={job} excludes={["moa"]} />
+        <div className="relative">
           {job.paused && (
-            <div className="flex items-center justify-between gap-2 flex-wrap rounded-[0.33em] bg-gray-100 border border-gray-300 px-3 py-2">
-              <div className="flex items-center gap-2 flex-wrap">
-                <PausedBadge
-                  reason={job.pause_reason}
-                  pausedAt={job.paused_at}
-                />
-                {waitingCount > 0 && (
-                  <Badge type="accent">
-                    {waitingCount} student{waitingCount === 1 ? "" : "s"}{" "}
-                    waiting
-                  </Badge>
-                )}
-              </div>
-              <Button
-                size="xs"
-                variant="outline"
-                scheme="primary"
-                disabled={reEnabling}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  void handleReEnable();
-                }}
-              >
-                {reEnabling ? "Re-enabling..." : "Re-enable"}
-              </Button>
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center"
+            >
+              <span className="text-2xl font-extrabold tracking-widest text-destructive/70">
+                INACTIVE
+              </span>
             </div>
           )}
+          <div
+            className={cn(
+              "relative space-y-3",
+              job.paused && "opacity-70 grayscale",
+            )}
+          >
+            <div className="flex items-start justify-between">
+              <JobHead title={job.title} employer={job.employer?.name} />
+              <div className="flex items-center gap-2 relative z-20">
+                {job.paused ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="pointer-events-none opacity-50">
+                        <Toggle state={job.is_active} onClick={() => {}} />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      Re-activate the listing first
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Toggle
+                    state={job.is_active}
+                    onClick={() => {
+                      if (!job.id) return;
+                      void update_job(job.id, {
+                        is_active: !job.is_active,
+                      });
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+            <JobLocation location={job.location} />
+            <JobBadges job={job} excludes={["moa"]} />
+          </div>
         </div>
+        {job.paused && (
+          <div className="relative mt-3 flex items-center justify-between gap-2 flex-wrap rounded-[0.33em] bg-gray-100 border border-gray-300 px-3 py-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <PausedBadge reason={job.pause_reason} pausedAt={job.paused_at} />
+              {waitingCount > 0 && (
+                <Badge type="accent">
+                  {waitingCount} student{waitingCount === 1 ? "" : "s"} waiting
+                </Badge>
+              )}
+            </div>
+            <Button
+              size="xs"
+              variant="outline"
+              scheme="primary"
+              disabled={reEnabling}
+              onClick={(e) => {
+                e.stopPropagation();
+                void handleReEnable();
+              }}
+            >
+              {reEnabling ? "Re-activating..." : "Re-activate"}
+            </Button>
+          </div>
+        )}
       </Card>
 
       <LockModal>
         <div className="p-6 pt-0 space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900">
-            This listing is hibernating
+          <h2 className="text-2xl font-semibold text-gray-900">
+            This listing is inactive
           </h2>
           <p className="text-sm text-gray-600 leading-relaxed">
             It was paused automatically after a period of inactivity. Students
@@ -644,8 +651,8 @@ export const EmployerJobCard = ({
             {waitingCount > 0
               ? ` — ${waitingCount} ${waitingCount === 1 ? "is" : "are"} waiting right now`
               : ""}
-            . To edit this listing, re-enable it first. Re-enabling notifies the
-            waiting students that you&apos;re accepting applicants again.
+            . To edit this listing, re-activate it first. Re-activating notifies
+            the waiting students that you&apos;re accepting applicants again.
           </p>
           <div className="flex justify-end gap-2">
             <Button
@@ -660,7 +667,7 @@ export const EmployerJobCard = ({
               disabled={reEnabling}
               onClick={() => void handleReEnable()}
             >
-              {reEnabling ? "Re-enabling..." : "Re-enable listing"}
+              {reEnabling ? "Re-activating..." : "Re-activate listing"}
             </Button>
           </div>
         </div>

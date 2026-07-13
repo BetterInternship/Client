@@ -31,7 +31,8 @@ function DashboardContent() {
   const superListingTapState = useRef({ count: 0, lastTapMs: 0 });
   const profile = useProfile();
   const applications = useEmployerApplications();
-  const { ownedJobs, update_job, unpause_all_jobs, loading } = useOwnedJobs();
+  const { ownedJobs, update_job, unpause_job, unpause_all_jobs, loading } =
+    useOwnedJobs();
   const activeJobs = ownedJobs.filter((job) => job.is_active);
   const inactiveJobs = ownedJobs.filter((job) => !job.is_active);
 
@@ -108,6 +109,7 @@ function DashboardContent() {
               jobs={ownedJobs}
               employerId={profile.data?.id || ""}
               updateJob={handleUpdateJob}
+              onReactivate={unpause_job}
               onAddListingClick={handleAddListingClick}
               isLoading={loading}
             />
