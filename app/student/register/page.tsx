@@ -15,11 +15,7 @@ import { isNoUniversity } from "../../../lib/student-forms-access";
 import { motion } from "framer-motion";
 import { useBlurTransition } from "@/components/animata/blur";
 import { SUPPORT_FACEBOOK } from "@/constants";
-import {
-  consumePostLoginRedirect,
-  getPostLoginRedirect,
-  isDiscordSetupRedirect,
-} from "@/lib/post-login-redirect";
+import { consumePostLoginRedirect } from "@/lib/post-login-redirect";
 
 export interface FormInputs {
   first_name?: string;
@@ -51,14 +47,6 @@ export function RegisterPageContent() {
     finishedRef.current = true;
     router.replace(consumePostLoginRedirect());
   };
-  const skipVerification = () => {
-    if (isDiscordSetupRedirect(getPostLoginRedirect())) {
-      router.replace("/register/verify");
-      return;
-    }
-    finishRegistration();
-  };
-
   // modify url params based on current step.
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString());
@@ -199,7 +187,7 @@ export function RegisterPageContent() {
                     setStep(step + 1);
                   }}
                   onSkipAction={() => {
-                    skipVerification();
+                    finishRegistration();
                   }}
                 />
               )}

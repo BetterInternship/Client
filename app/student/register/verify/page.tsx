@@ -16,11 +16,6 @@ import { toastPresets } from "@/components/ui/sonner-toast";
 import { useStudentOtpVerification } from "@/hooks/use-student-otp-verification";
 import { StudentOtpInput } from "@/components/features/student/register/StudentOtpInput";
 import { isEduPhEmail } from "@/lib/utils/string-utils";
-import {
-  clearPostLoginRedirect,
-  consumePostLoginRedirect,
-  getPostLoginRedirect,
-} from "@/lib/post-login-redirect";
 
 const DEFAULT_VERIFICATION_REDIRECT = "/search";
 
@@ -34,20 +29,15 @@ export default function VerifyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { redirectIfNotLoggedIn } = useAuthContext();
-  const explicitRedirect = searchParams.get("redirect");
   const nextUrl = useMemo(
-    () =>
-      explicitRedirect
-        ? resolveVerificationRedirect(explicitRedirect)
-        : (getPostLoginRedirect() ?? DEFAULT_VERIFICATION_REDIRECT),
-    [explicitRedirect],
+    () => resolveVerificationRedirect(searchParams.get("redirect")),
+    [searchParams],
   );
   const profile = useProfileData();
   const queryClient = useQueryClient();
   const [mounted, setMounted] = useState(false);
 
   const handleBack = () => {
-    clearPostLoginRedirect();
     router.push("/search");
   };
 
@@ -58,10 +48,8 @@ export default function VerifyPage() {
   redirectIfNotLoggedIn();
 
   const finishVerification = useCallback(() => {
-    router.replace(
-      explicitRedirect ? nextUrl : consumePostLoginRedirect(nextUrl),
-    );
-  }, [explicitRedirect, nextUrl, router]);
+    if (nextUrl) router.replace(nextUrl);
+  }, [nextUrl, router]);
 
   // Redirect only after we know the profile state
   useEffect(() => {
