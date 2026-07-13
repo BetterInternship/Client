@@ -1,41 +1,95 @@
 "use client";
 
 // React imports
-import React from "react";
+import React, { Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowUpRight, Bell, BookA, CheckCircle2, Eye } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ArrowUpRight,
+  Bell,
+  BookA,
+  CheckCircle2,
+  Eye,
+  Heart,
+} from "lucide-react";
 
 // UI components
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@/components/ui/new-tabs";
 
 // Hooks (preserving existing implementations)
 import {
   useApplicationsData,
+  useJobsData,
   useWaitlistsData,
 } from "@/lib/api/student.data.api";
 import { useWaitlistActions } from "@/lib/api/student.actions.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useDbRefs } from "@/lib/db/use-refs";
-import { formatTimeAgo } from "@/lib/utils";
+import { formatTimeAgo, cn } from "@/lib/utils";
 import { Loader } from "@/components/ui/loader";
 import { Card } from "@/components/ui/card";
 import { JobHead, SuperListingBadge } from "@/components/shared/jobs";
 import { JobWaitlist, UserApplication } from "@/lib/db/db.types";
 import { HeaderTitle } from "@/components/ui/text";
-import { Separator } from "@/components/ui/separator";
 import { PageError } from "@/components/ui/error";
-import { cn } from "@/lib/utils";
 import { useFile } from "@/hooks/use-file";
 import { UserService } from "@/lib/api/services";
 import { useModal } from "@/hooks/use-modal";
 import { PDFPreview } from "@/components/shared/pdf-preview";
+import {
+  SavedJobCard,
+  SavedJobItem,
+} from "@/components/features/student/job/saved-job-card";
 
-export default function ApplicationsPage() {
+type TabValue = "applications" | "saved" | "alerts";
+
+const resolveTab = (raw: string | null): TabValue => {
+  if (raw === "saved") return "saved";
+  if (raw === "alerts") return "alerts";
+  return "applications";
+};
+
+const TAB_META: Record<TabValue, { icon: typeof BookA; label: string }> = {
+  applications: { icon: BookA, label: "My Applications" },
+  saved: { icon: Heart, label: "My Saved Jobs" },
+  alerts: { icon: Bell, label: "My Job Alerts" },
+};
+
+const tabTriggerClassName = cn(
+  "flex-1 px-2 text-xs whitespace-nowrap",
+  "sm:px-8 sm:text-sm",
+);
+
+export default function MyJobsPage() {
+  return (
+    <Suspense fallback={<Loader>Loading your jobs...</Loader>}>
+      <MyJobsPageInner />
+    </Suspense>
+  );
+}
+
+function MyJobsPageInner() {
   const { redirectIfNotLoggedIn } = useAuthContext();
+  redirectIfNotLoggedIn();
+
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const tab = resolveTab(searchParams.get("tab"));
+
   const rawApplications = useApplicationsData();
+  const jobs = useJobsData();
+  const waitlists = useWaitlistsData();
+
   const { url: resumeURL, sync: syncResumeURL } = useFile({
     fetcher: (resumeId: string) => UserService.getMyResumeURL(resumeId),
     route: (resumeId: string) => `/users/me/resume/${resumeId}`,
@@ -55,121 +109,204 @@ export default function ApplicationsPage() {
     }),
     [rawApplications],
   );
-  redirectIfNotLoggedIn();
+
+  const savedJobs = jobs.savedJobs as SavedJobItem[];
+
+  const appliedJobIds = React.useMemo(
+    () =>
+      new Set(
+        applications.data
+          .map((a) => a.job_id)
+          .filter((id): id is string => !!id),
+      ),
+    [applications.data],
+  );
+
+  const visibleNotified = React.useMemo(
+    () =>
+      waitlists.notified.filter((row) => {
+        if (appliedJobIds.has(row.job_id)) return false;
+        if (row.job.hibernating) return false;
+        if (!row.job.is_active || row.job.is_deleted) return false;
+        return true;
+      }),
+    [waitlists.notified, appliedJobIds],
+  );
+
+  const alertsCount = waitlists.alerts.length + visibleNotified.length;
+  const hasItsBack = visibleNotified.length > 0;
 
   const openResumePreview = async (resumeId: string) => {
     await syncResumeURL(resumeId);
     openResumeModal();
   };
 
+  const setTab = (next: string) => {
+    const value = resolveTab(next);
+    const query = value === "applications" ? "" : `?tab=${value}`;
+    router.replace(`${pathname}${query}`, { scroll: false });
+  };
+
   return (
-    <div className="h-full overflow-y-auto py-6 px-4">
+    <div className="h-full overflow-y-auto py-6 px-4 [scrollbar-gutter:stable]">
       <div className="max-w-5xl mx-auto">
-        <div className="mb-6 sm:mb-8 animate-fade-in">
-          <HeaderTitle icon={BookA}>My Applications</HeaderTitle>
-          <div className="flex-1 flex-row">
-            <p className="text-gray-600 text-sm sm:text-base mb-2">
-              Track your internship applications and their status
-            </p>
-            <Badge>
-              {applications.data.length}{" "}
-              {applications.data.length === 1 ? "application" : "applications"}
-            </Badge>
-          </div>
+        <div className="mb-6 sm:mb-8 overflow-hidden">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={tab}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              <HeaderTitle icon={TAB_META[tab].icon}>
+                {TAB_META[tab].label}
+              </HeaderTitle>
+            </motion.div>
+          </AnimatePresence>
         </div>
-        <Separator className="mt-4 mb-8" />
 
-        <JobAlertsSection appliedApplications={applications.data} />
+        <Tabs value={tab} onValueChange={setTab}>
+          <TabsList className="sticky top-0 z-10 mb-8 flex w-full bg-white">
+            <TabsTrigger value="applications" className={tabTriggerClassName}>
+              Applications
+              <span className="ml-1 max-[374px]:hidden text-muted-foreground">
+                {`(${applications.data.length})`}
+              </span>
+            </TabsTrigger>
+            <TabsTrigger value="saved" className={tabTriggerClassName}>
+              Saved
+              <span className="ml-1 max-[374px]:hidden text-muted-foreground">
+                {`(${savedJobs.length})`}
+              </span>
+            </TabsTrigger>
+            <TabsTrigger value="alerts" className={tabTriggerClassName}>
+              Alerts
+              {alertsCount > 0 && (
+                <span className="ml-1 max-[374px]:hidden text-muted-foreground">
+                  {`(${alertsCount})`}
+                </span>
+              )}
+              {hasItsBack && (
+                <span
+                  aria-hidden="true"
+                  className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-supportive align-middle"
+                />
+              )}
+            </TabsTrigger>
+          </TabsList>
 
-        {applications.isPending ? (
-          <Loader>Loading your applications...</Loader>
-        ) : applications.error ? (
-          <PageError
-            title="Failed to load applications"
-            description={applications.error.message}
-          />
-        ) : applications.data.length === 0 ? (
-          <div className="text-center py-16 animate-fade-in">
-            <Card className="max-w-md m-auto">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                No applications yet
-              </h3>
-              <p className="text-gray-500 mb-6 leading-relaxed">
-                Ready to start your internship journey? Browse our job listings
-                and submit your first application.
-              </p>
-              <Link href="/search">
-                <Button className="bg-primary hover:bg-primary/90">
-                  Browse Jobs
-                </Button>
-              </Link>
-            </Card>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {applications?.data.map((application) => (
-              <ApplicationCard
-                key={application.id ?? application.job_id}
-                application={application}
-                onPreviewResume={openResumePreview}
+          <TabsContent value="applications">
+            {applications.isPending ? (
+              <Loader>Loading your applications...</Loader>
+            ) : applications.error ? (
+              <PageError
+                title="Failed to load applications"
+                description={applications.error.message}
               />
-            ))}
-          </div>
-        )}
+            ) : applications.data.length === 0 ? (
+              <div className="text-center py-16 animate-fade-in">
+                <Card className="max-w-md m-auto">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    No applications yet
+                  </h3>
+                  <p className="text-gray-500 mb-6 leading-relaxed">
+                    Ready to start your internship journey? Browse our job
+                    listings and submit your first application.
+                  </p>
+                  <Link href="/search">
+                    <Button className="bg-primary hover:bg-primary/90">
+                      Browse Jobs
+                    </Button>
+                  </Link>
+                </Card>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {applications.data.map((application) => (
+                  <ApplicationCard
+                    key={application.id ?? application.job_id}
+                    application={application}
+                    onPreviewResume={openResumePreview}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="saved">
+            {jobs.isPending ? (
+              <Loader>Loading saved jobs...</Loader>
+            ) : jobs.error ? (
+              <PageError
+                title="Failed to load saved jobs."
+                description={jobs.error.message}
+              />
+            ) : savedJobs.length === 0 ? (
+              <div className="text-center py-16 animate-fade-in">
+                <Card className="max-w-md m-auto">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    No saved jobs yet
+                  </h3>
+                  <p className="text-gray-500 mb-6 leading-relaxed">
+                    Save jobs by clicking the heart icon on job listings to
+                    see them here.
+                  </p>
+                  <Link href="/search">
+                    <Button className="bg-primary hover:bg-primary/90">
+                      Browse Jobs
+                    </Button>
+                  </Link>
+                </Card>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {savedJobs.map((savedJob, index) => (
+                  <SavedJobCard
+                    key={savedJob.id ?? savedJob.job_id ?? `saved-job-${index}`}
+                    savedJob={savedJob}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="alerts">
+            {!waitlists.alerts.length && !visibleNotified.length ? (
+              <div className="text-center py-16 animate-fade-in">
+                <Card className="max-w-md m-auto">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    No job alerts
+                  </h3>
+                  <p className="text-gray-500 mb-6 leading-relaxed">
+                    Alerts come from listings that go on a temporary pause.
+                    Turn one on from a paused listing and we&apos;ll let you
+                    know the moment it&apos;s back.
+                  </p>
+                  <Link href="/search">
+                    <Button className="bg-primary hover:bg-primary/90">
+                      Browse Jobs
+                    </Button>
+                  </Link>
+                </Card>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {waitlists.alerts.map((row) => (
+                  <AlertCard key={row.id} row={row} />
+                ))}
+                {visibleNotified.map((row) => (
+                  <ItsBackCard key={row.id} row={row} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
 
         <ResumeModal className="max-w-[80vw]">
           <PDFPreview url={resumeURL} />
         </ResumeModal>
       </div>
-    </div>
-  );
-}
-
-/**
- * "Job alerts" section — shown above the applications list, only when
- * non-empty. Open waitlist rows render as "Alert set" cards; recently-fired
- * ("It's back!") rows linger for 14 days unless the student has since
- * applied or the listing is no longer live, per
- * Docs/plans/HIBERNATING_LISTINGS_IMPLEMENTATION_PLAN.md §5. One card per
- * job — useWaitlistsData already resolves an open row over a lingering
- * notified one for the same job.
- */
-function JobAlertsSection({
-  appliedApplications,
-}: {
-  appliedApplications: UserApplication[];
-}) {
-  const waitlists = useWaitlistsData();
-
-  const appliedJobIds = React.useMemo(
-    () =>
-      new Set(
-        appliedApplications.map((a) => a.job_id).filter((id): id is string => !!id),
-      ),
-    [appliedApplications],
-  );
-
-  const visibleNotified = waitlists.notified.filter((row) => {
-    if (appliedJobIds.has(row.job_id)) return false;
-    if (row.job.hibernating) return false;
-    if (!row.job.is_active || row.job.is_deleted) return false;
-    return true;
-  });
-
-  if (!waitlists.alerts.length && !visibleNotified.length) return null;
-
-  return (
-    <div className="mb-8 animate-fade-in">
-      <h2 className="text-lg font-semibold text-gray-900 mb-3">Job alerts</h2>
-      <div className="space-y-3">
-        {waitlists.alerts.map((row) => (
-          <AlertCard key={row.id} row={row} />
-        ))}
-        {visibleNotified.map((row) => (
-          <ItsBackCard key={row.id} row={row} />
-        ))}
-      </div>
-      <Separator className="mt-8" />
     </div>
   );
 }
@@ -295,6 +432,9 @@ const ApplicationCard = ({
   else statusBadgeType = "warning";
   const resumeId = application.resume_id;
   const listingHref = `/search/${job?.id}`;
+  const appliedAtIso = application.applied_at
+    ? new Date(application.applied_at).toISOString()
+    : "";
   const openListing = () => {
     if (canOpenListing) router.push(listingHref);
   };
@@ -328,7 +468,7 @@ const ApplicationCard = ({
           <div className="flex items-center gap-2">
             <Badge type={statusBadgeType}>{statusLabel}</Badge>
             <Badge type="accent">
-              Applied {formatTimeAgo(application.applied_at ?? "")}
+              Applied {formatTimeAgo(appliedAtIso)}
             </Badge>
             {isSuperListing && <SuperListingBadge compact className="w-fit" />}
           </div>
