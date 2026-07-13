@@ -29,6 +29,7 @@ import { useMobile } from "@/hooks/use-mobile";
 import { useAppContext } from "@/lib/ctx-app";
 import { useProfileData } from "@/lib/api/student.data.api";
 import { toAbbreviation } from "../../lib/utils/string-utils";
+import { formatDateWithoutTime } from "@/lib/utils";
 
 const PAUSE_REASON_LABELS: Record<JobPauseReason, string> = {
   dormant: "No logins in a long while",
@@ -647,6 +648,7 @@ function HeaderWithActions({
               <span className="truncate">{job.location}</span>
             </div>
           )}
+          <p>Posted on {formatDateWithoutTime(job.created_at)}</p>
         </div>
 
         {/* right: CTAs */}
