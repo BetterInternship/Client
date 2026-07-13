@@ -106,15 +106,17 @@ export default function JobPage() {
                   >
                     <ArrowLeft className="h-5 w-5 text-gray-500" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
-                    aria-label="More actions"
-                    onClick={() => setIsActionsSheetOpen(true)}
-                  >
-                    <EllipsisVertical className="h-5 w-5 text-gray-500" />
-                  </Button>
+                  {!job.data?.hibernating && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+                      aria-label="More actions"
+                      onClick={() => setIsActionsSheetOpen(true)}
+                    >
+                      <EllipsisVertical className="h-5 w-5 text-gray-500" />
+                    </Button>
+                  )}
                 </div>
               </div>
             ) : (
@@ -129,7 +131,7 @@ export default function JobPage() {
                       <ArrowLeft className="w-4 h-4" />
                       Back
                     </Button>
-                    {job.data && (
+                    {job.data && !job.data.hibernating && (
                       <div className="flex flex-wrap items-center gap-3">
                         <ShareJobButton id={job.data.id ?? ""} />
                         <SaveJobButton job={job.data} />
@@ -155,7 +157,7 @@ export default function JobPage() {
                   }
                 >
                   {/* Job Header Card */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 py-3 px-4">
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     {/* Job Details Grid */}
                     <JobDetails
                       user={{
@@ -169,7 +171,7 @@ export default function JobPage() {
               </div>
             )}
 
-            {isMobile && job.data && (
+            {isMobile && job.data && !job.data.hibernating && (
               <div className="absolute bottom-0 left-0 right-0 z-30 bg-white border-t p-4 pb-[calc(env(safe-area-inset-bottom)+16px)]">
                 <div className="max-w-4xl mx-auto flex gap-3">
                   <SaveJobButton job={job.data} />
