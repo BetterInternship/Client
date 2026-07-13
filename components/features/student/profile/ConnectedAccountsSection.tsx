@@ -33,6 +33,8 @@ export function ConnectedAccountsSection() {
       }
       await queryClient.invalidateQueries({ queryKey: ["discord-link"] });
       toast.success("Discord disconnected.", toastPresets.success);
+    } catch {
+      toast.error("Could not disconnect Discord. Please try again.");
     } finally {
       setDisconnecting(false);
     }

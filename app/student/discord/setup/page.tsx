@@ -20,8 +20,12 @@ function DiscordSetupContent() {
   const { redirectIfNotLoggedIn } = useAuthContext();
   const queryClient = useQueryClient();
   const attemptedRef = useRef(false);
+  const applyingRef = useRef(false);
+  const settingDefaultRef = useRef(false);
   const [setupState, setSetupState] = useState<SetupState>("idle");
   const [message, setMessage] = useState("");
+  const [canRetry, setCanRetry] = useState(false);
+  const [isSettingDefault, setIsSettingDefault] = useState(false);
 
   redirectIfNotLoggedIn();
 
@@ -42,23 +46,36 @@ function DiscordSetupContent() {
   });
 
   const apply = async () => {
+    if (applyingRef.current) return;
+
     if (!jobId) {
       setSetupState("error");
       setMessage("This Discord application link is missing a listing.");
       return;
     }
 
+    applyingRef.current = true;
+    setCanRetry(false);
     setSetupState("applying");
-    const result = await DiscordService.completeSetup(jobId);
-    if (!result.success) {
-      setSetupState("error");
-      setMessage(result.message || "Could not submit this application.");
-      return;
-    }
 
-    setSetupState("success");
-    setMessage("Your application was submitted successfully.");
-    void queryClient.invalidateQueries({ queryKey: ["my-applications"] });
+    try {
+      const result = await DiscordService.completeSetup(jobId);
+      if (!result.success) {
+        setSetupState("error");
+        setMessage(result.message || "Could not submit this application.");
+        return;
+      }
+
+      setSetupState("success");
+      setMessage("Your application was submitted successfully.");
+      void queryClient.invalidateQueries({ queryKey: ["my-applications"] });
+    } catch {
+      setSetupState("error");
+      setMessage("Could not reach BetterInternship. Please try again.");
+      setCanRetry(true);
+    } finally {
+      applyingRef.current = false;
+    }
   };
 
   useEffect(() => {
@@ -72,14 +89,26 @@ function DiscordSetupContent() {
   };
 
   const setDefaultAndRetry = async (resumeId: string) => {
-    const result = await UserService.setDefaultResume(resumeId);
-    if (!result.success) {
-      setMessage(result.message || "Could not select that resume.");
-      return;
+    if (settingDefaultRef.current || applyingRef.current) return;
+
+    settingDefaultRef.current = true;
+    setIsSettingDefault(true);
+    try {
+      const result = await UserService.setDefaultResume(resumeId);
+      if (!result.success) {
+        setMessage(result.message || "Could not select that resume.");
+        return;
+      }
+      await resumes.refetch();
+      attemptedRef.current = true;
+      await apply();
+    } catch {
+      setSetupState("error");
+      setMessage("Could not update your default resume. Please try again.");
+    } finally {
+      settingDefaultRef.current = false;
+      setIsSettingDefault(false);
     }
-    await resumes.refetch();
-    attemptedRef.current = true;
-    await apply();
   };
 
   if (status.isPending || resumes.isPending) {
@@ -147,7 +176,11 @@ function DiscordSetupContent() {
                     variant="outline"
                     className="w-full justify-start"
                     onClick={() => void setDefaultAndRetry(resume.id)}
+                    disabled={isSettingDefault || setupState === "applying"}
                   >
+                    {isSettingDefault && (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    )}
                     {resume.label || resume.filename}
                   </Button>
                 ))}
@@ -159,6 +192,15 @@ function DiscordSetupContent() {
                   <Upload className="h-4 w-4" />
                   Upload a resume
                 </a>
+              </Button>
+            )}
+            {canRetry && (
+              <Button
+                type="button"
+                className="w-full"
+                onClick={() => void apply()}
+              >
+                Try again
               </Button>
             )}
           </div>
