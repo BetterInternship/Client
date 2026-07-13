@@ -95,13 +95,13 @@ function DashboardContent() {
                 <span className="text-primary font-bold">
                   {activeJobs.length}
                 </span>{" "}
-                active listing{activeJobs.length !== 1 ? "s" : ""}
+                listing{activeJobs.length !== 1 ? "s" : ""} turned on
               </span>
               <span className="text-gray-500 pb-2">
                 <span className="text-primary font-bold">
                   {inactiveJobs.length}
                 </span>{" "}
-                inactive listing{inactiveJobs.length !== 1 ? "s" : ""}
+                listing{inactiveJobs.length !== 1 ? "s" : ""} turned off
               </span>
             </div>
             <JobsContent

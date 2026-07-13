@@ -41,7 +41,7 @@ export function PausedListingsBanner({
             <span className="font-medium">
               {pausedCount} of your listing{pausedCount !== 1 ? "s" : ""}
             </span>{" "}
-            {pausedCount !== 1 ? "are" : "is"} inactive
+            {pausedCount !== 1 ? "are" : "is"} marked inactive
             {waitingTotal > 0 && (
               <>
                 , and {waitingTotal} student{waitingTotal !== 1 ? "s" : ""}{" "}

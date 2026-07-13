@@ -107,36 +107,20 @@ export function JobListingsBox({
             </div>
           </div>
         )}
-        {job.paused && (
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <span className="text-lg font-extrabold tracking-tight text-destructive">
-              INACTIVE
-            </span>
-            <Button
-              size="xs"
-              variant="outline"
-              scheme="primary"
-              disabled={reEnabling}
-              onClick={(e) => {
-                e.stopPropagation();
-                void handleReEnable();
-              }}
-            >
-              {reEnabling ? "Re-activating..." : "Re-activate"}
-            </Button>
-          </div>
-        )}
-        <div
-          className={cn(
-            "flex flex-col gap-4",
-            job.paused && "opacity-70 grayscale",
-          )}
-        >
-          <div className="flex min-h-0 flex-1 flex-col w-full">
+        <div className="flex flex-col gap-4">
+          <div
+            className={cn(
+              "flex min-h-0 flex-1 flex-col w-full",
+              job.paused && "min-h-12",
+            )}
+          >
             <div className="flex items-start justify-between gap-2">
               <h1
                 className={cn(
-                  "flex-1 text-base line-clamp-2 leading-snug min-h-12 break-words",
+                  "flex-1 text-base leading-snug break-words",
+                  job.paused
+                    ? "line-clamp-1 opacity-70 grayscale"
+                    : "line-clamp-2 min-h-12",
                   isSuperListing && job.is_active
                     ? "font-bold text-amber-700"
                     : job.is_active
@@ -146,8 +130,21 @@ export function JobListingsBox({
               >
                 {job.title}
               </h1>
-              {!job.paused && (
-                <div className="-mt-0.5 flex shrink-0 items-start gap-2">
+              <div className="-mt-0.5 flex shrink-0 items-start gap-2">
+                {job.paused ? (
+                  <Button
+                    size="xs"
+                    variant="outline"
+                    scheme="primary"
+                    disabled={reEnabling}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      void handleReEnable();
+                    }}
+                  >
+                    {reEnabling ? "Re-activating..." : "Re-activate"}
+                  </Button>
+                ) : (
                   <Badge
                     strength="default"
                     type="accent"
@@ -165,13 +162,23 @@ export function JobListingsBox({
                     )}
                     <span>{job.is_active ? "Active" : "Paused"}</span>
                   </Badge>
-                </div>
-              )}
+                )}
+              </div>
             </div>
+            {job.paused && (
+              <span className="text-base font-extrabold tracking-tight text-destructive">
+                INACTIVE
+              </span>
+            )}
           </div>
           {isSuperListing ? (
-            <div className="flex min-h-8 flex-row items-center gap-2 rounded-sm">
-              {newApplicants > 0 ? (
+            <div
+              className={cn(
+                "flex min-h-8 flex-row items-center gap-2 rounded-sm",
+                job.paused && "opacity-70 grayscale",
+              )}
+            >
+              {newApplicants > 0 && !job.paused ? (
                 <div className="super-cta-glow flex min-w-0 w-full items-center gap-2 rounded-xl border border-amber-400/80 bg-[linear-gradient(135deg,#f59e0b_0%,#f97316_60%,#ea580c_100%)] px-3 py-1.5 text-xs font-bold text-white transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-1">
                   <Zap className="h-3.5 w-3.5 shrink-0 fill-current drop-shadow-[0_0_4px_rgba(255,255,255,0.45)]" />
                   <span className="min-w-0 flex-1 text-center drop-shadow-[0_1px_2px_rgba(0,0,0,0.15)]">
@@ -187,7 +194,12 @@ export function JobListingsBox({
               )}
             </div>
           ) : (
-            <div className="flex min-h-8 flex-row items-center gap-2 rounded-sm">
+            <div
+              className={cn(
+                "flex min-h-8 flex-row items-center gap-2 rounded-sm",
+                job.paused && "opacity-70 grayscale",
+              )}
+            >
               <Badge strength={"medium"}>
                 {applicants.length} total applicant
                 {applicants.length !== 1 ? "s" : ""}

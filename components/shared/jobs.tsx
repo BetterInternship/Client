@@ -1,10 +1,8 @@
-﻿import { useState } from "react";
-import { Badge, BoolBadge } from "@/components/ui/badge";
-import { Job, JobPauseReason } from "@/lib/db/db.types";
+﻿import { Badge, BoolBadge } from "@/components/ui/badge";
+import { Job } from "@/lib/db/db.types";
 import { useDbMoa } from "@/lib/db/use-bi-moa";
 import { useDbRefs } from "@/lib/db/use-refs";
 import { cn, formatCurrency } from "@/lib/utils";
-import { formatDateWithoutTime } from "@/lib/utils/date-utils";
 import {
   AlertTriangle,
   ArrowRight,
@@ -12,7 +10,6 @@ import {
   CheckCircle,
   Clock,
   EyeOff,
-  Moon,
   Monitor,
   PhilippinePeso,
   UserCheck,
@@ -23,45 +20,11 @@ import { Card } from "../ui/card";
 import { Divider } from "../ui/divider";
 import { DropdownGroup } from "../ui/dropdown";
 import { Property } from "../ui/labels";
-import { Toggle } from "../ui/toggle";
-import { Button } from "../ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { useMobile } from "@/hooks/use-mobile";
-import { useModal } from "@/hooks/use-modal";
 import { useAppContext } from "@/lib/ctx-app";
 import { useProfileData, useWaitlistsData } from "@/lib/api/student.data.api";
 import { toAbbreviation } from "../../lib/utils/string-utils";
 import { HibernatingListingBanner } from "../features/student/job/hibernating-listing-banner";
-
-const PAUSE_REASON_LABELS: Record<JobPauseReason, string> = {
-  dormant: "No logins in a long while",
-  unresponsive: "No recent logins, with an applicant waiting",
-  neglected: "An applicant has been waiting on this listing",
-};
-
-/** Employer-facing state badge — moon icon, no emoji (D11: "Hibernating" is
- * the employer-side state name). Tooltip keeps the reason lines + date,
- * since employers may see their own pause reason (students never do, D10). */
-export const PausedBadge = ({
-  reason,
-  pausedAt,
-}: {
-  reason?: JobPauseReason | null;
-  pausedAt?: string | null;
-}) => (
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <Badge type="default" className="cursor-default">
-        <Moon className="w-3 h-3 mr-1" />
-        Inactive
-      </Badge>
-    </TooltipTrigger>
-    <TooltipContent side="bottom">
-      {reason ? PAUSE_REASON_LABELS[reason] : "Paused due to inactivity"}
-      {pausedAt && ` · ${formatDateWithoutTime(pausedAt)}`}
-    </TooltipContent>
-  </Tooltip>
-);
 
 export const JobHead = ({
   title,
@@ -495,184 +458,6 @@ export const JobCard = ({
         </>
       )}
     </Card>
-  );
-};
-
-/**
- * The scrollable job card component.
- * Used in both hire and student UI.
- *
- * @component
- */
-export const EmployerJobCard = ({
-  job,
-  selected,
-  on_click,
-  update_job,
-  set_is_editing,
-  unpause_job,
-}: {
-  job: Job;
-  selected?: boolean;
-  on_click?: (job: Job) => void;
-  update_job: (
-    job_id: string,
-    job: Partial<Job>,
-  ) => Promise<{ success: boolean }>;
-  set_is_editing: (is_editing: boolean) => void;
-  unpause_job?: (job_id: string) => Promise<unknown>;
-}) => {
-  const {
-    open: openLockModal,
-    close: closeLockModal,
-    Modal: LockModal,
-  } = useModal(`hibernating-lock-${job.id}`);
-  const [reEnabling, setReEnabling] = useState(false);
-  const waitingCount = job.waiting_count ?? 0;
-
-  const handleReEnable = async () => {
-    if (!job.id) return;
-    setReEnabling(true);
-    try {
-      await unpause_job?.(job.id);
-      closeLockModal();
-    } finally {
-      setReEnabling(false);
-    }
-  };
-
-  const handleCardClick = () => {
-    // D5: a hibernating listing can only be re-enabled or deleted — clicking
-    // it never slides into editing, it pops the lock modal instead.
-    if (job.paused) {
-      openLockModal();
-      return;
-    }
-    on_click && on_click(job);
-  };
-
-  return (
-    <>
-      <Card
-        key={job.id}
-        onClick={handleCardClick}
-        className={cn(
-          "relative isolate overflow-hidden",
-          selected ? "selected ring-1 ring-primary ring-offset-1" : "",
-          job.paused
-            ? "bg-gray-50 cursor-pointer"
-            : !job.is_active
-              ? "opacity-50"
-              : "cursor-pointer",
-        )}
-      >
-        <div className="relative">
-          {job.paused && (
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center"
-            >
-              <span className="text-2xl font-extrabold tracking-widest text-destructive/70">
-                INACTIVE
-              </span>
-            </div>
-          )}
-          <div
-            className={cn(
-              "relative space-y-3",
-              job.paused && "opacity-70 grayscale",
-            )}
-          >
-            <div className="flex items-start justify-between">
-              <JobHead title={job.title} employer={job.employer?.name} />
-              <div className="flex items-center gap-2 relative z-20">
-                {job.paused ? (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="pointer-events-none opacity-50">
-                        <Toggle state={job.is_active} onClick={() => {}} />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">
-                      Re-activate the listing first
-                    </TooltipContent>
-                  </Tooltip>
-                ) : (
-                  <Toggle
-                    state={job.is_active}
-                    onClick={() => {
-                      if (!job.id) return;
-                      void update_job(job.id, {
-                        is_active: !job.is_active,
-                      });
-                    }}
-                  />
-                )}
-              </div>
-            </div>
-            <JobLocation location={job.location} />
-            <JobBadges job={job} excludes={["moa"]} />
-          </div>
-        </div>
-        {job.paused && (
-          <div className="relative mt-3 flex items-center justify-between gap-2 flex-wrap rounded-[0.33em] bg-gray-100 border border-gray-300 px-3 py-2">
-            <div className="flex items-center gap-2 flex-wrap">
-              <PausedBadge reason={job.pause_reason} pausedAt={job.paused_at} />
-              {waitingCount > 0 && (
-                <Badge type="accent">
-                  {waitingCount} student{waitingCount === 1 ? "" : "s"} waiting
-                </Badge>
-              )}
-            </div>
-            <Button
-              size="xs"
-              variant="outline"
-              scheme="primary"
-              disabled={reEnabling}
-              onClick={(e) => {
-                e.stopPropagation();
-                void handleReEnable();
-              }}
-            >
-              {reEnabling ? "Re-activating..." : "Re-activate"}
-            </Button>
-          </div>
-        )}
-      </Card>
-
-      <LockModal>
-        <div className="p-6 pt-0 space-y-4">
-          <h2 className="text-2xl font-semibold text-gray-900">
-            This listing is inactive
-          </h2>
-          <p className="text-sm text-gray-600 leading-relaxed">
-            It was paused automatically after a period of inactivity. Students
-            can ask to be alerted when it returns
-            {waitingCount > 0
-              ? ` — ${waitingCount} ${waitingCount === 1 ? "is" : "are"} waiting right now`
-              : ""}
-            . To edit this listing, re-activate it first. Re-activating notifies
-            the waiting students that you&apos;re accepting applicants again.
-          </p>
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              disabled={reEnabling}
-              onClick={closeLockModal}
-            >
-              Cancel
-            </Button>
-            <Button
-              scheme="primary"
-              disabled={reEnabling}
-              onClick={() => void handleReEnable()}
-            >
-              {reEnabling ? "Re-activating..." : "Re-activate listing"}
-            </Button>
-          </div>
-        </div>
-      </LockModal>
-    </>
   );
 };
 
