@@ -83,13 +83,16 @@ export function ApplyModal({
     hasInitialized.current = true;
 
     if (hasExistingResumes) {
-      setResumeChoice(resumes[0].id);
+      const defaultResume = resumes.find(
+        (resume) => resume.id === resumesData?.default_resume,
+      );
+      setResumeChoice(defaultResume?.id ?? resumes[0].id);
       setShowUpload(false);
     } else {
       setResumeChoice("new");
       setShowUpload(true);
     }
-  }, [resumesLoading, hasExistingResumes, resumes]);
+  }, [resumesLoading, hasExistingResumes, resumes, resumesData]);
 
   useEffect(() => {
     if (!hasSavedInternshipDetails) return;

@@ -38,6 +38,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [isDeletingResume, setIsDeletingResume] = useState(false);
   const [isRenamingResume, setIsRenamingResume] = useState(false);
+  const [isSettingDefaultResume, setIsSettingDefaultResume] = useState(false);
   const [openProfileSections, setOpenProfileSections] = useState<
     ProfileSectionKey[]
   >(["resume"]);
@@ -108,6 +109,41 @@ export default function ProfilePage() {
     }
   };
 
+  const onSetDefaultResume = async (
+    resumeId: string,
+    options: { silent?: boolean } = {},
+  ) => {
+    if (!resumeId) return false;
+
+    setIsSettingDefaultResume(true);
+    try {
+      const result = await UserService.setDefaultResume(resumeId);
+      if (!result?.success) {
+        if (!options.silent) {
+          toast.error(
+            (result as { error?: string })?.error ||
+              result?.message ||
+              "Failed to set default resume.",
+            toastPresets.destructive,
+          );
+        }
+        return false;
+      }
+
+      await resumes.refetch();
+      void queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+      if (!options.silent) {
+        toast.success("Default resume updated.", toastPresets.success);
+      }
+      return true;
+    } catch {
+      if (!options.silent) toast.error("Default resume could not be updated.");
+      return false;
+    } finally {
+      setIsSettingDefaultResume(false);
+    }
+  };
+
   const onDeleteResume = (resume: Resume) => {
     if (!resume.id) {
       toast.error("Resume not found.");
@@ -162,9 +198,18 @@ export default function ProfilePage() {
   const data = profile.data as PublicUser | undefined;
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("edit") === "true")
-      setIsEditing(true);
-  }, []);
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get("edit") === "true") setIsEditing(true);
+
+    if (searchParams.has("discord")) {
+      void queryClient.invalidateQueries({ queryKey: ["discord-link"] });
+      setOpenProfileSections((sections) =>
+        sections.includes("connected-accounts")
+          ? sections
+          : [...sections, "connected-accounts"],
+      );
+    }
+  }, [queryClient]);
 
   const handleCancelEditing = () => {
     setSaveError(null);
@@ -211,9 +256,11 @@ export default function ProfilePage() {
 
   const resumeManager: ProfileResumeManager = {
     resumes: resumes.data?.resumes ?? [],
+    defaultResume: resumes.data?.default_resume ?? null,
     loading: resumes.isPending,
     maxAllowed: maxResumesAllowed,
     isRenaming: isRenamingResume,
+    isSettingDefault: isSettingDefaultResume,
     actions: {
       view: openResumePreview,
       add: () =>
@@ -226,6 +273,7 @@ export default function ProfilePage() {
             });
           },
         }),
+      setDefault: onSetDefaultResume,
       rename: onRenameResume,
       delete: onDeleteResume,
     },
